@@ -148,7 +148,7 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> u64 {
     gxhash64(&material, FINGERPRINT_SEED)
 }
 
-// What:     `#[no_mangle]` keeps the symbol name unmangled so the JVM's
+// What:     `#[unsafe(no_mangle)]` keeps the symbol name unmangled so the JVM's
 //           `System.loadLibrary` + `native` lookup finds it by the exact name below.
 // Why:      Without it the linker would rename the symbol and JNI could not locate it.
 //
@@ -156,7 +156,7 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> u64 {
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     `pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFingerprint<'local>(...)`.
 ///           The JNI entry. The name encodes `Java_` + package + class (`NativeBridge`)
 ///           + method (`nativeFingerprint`), underscore-joined. Params: `env` (the JNI

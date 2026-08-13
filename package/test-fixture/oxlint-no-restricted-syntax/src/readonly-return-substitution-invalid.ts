@@ -9,7 +9,7 @@
  *
  * The controls carry the other half. A callee returning a freshly built array shares no
  * identity with its argument, so a caller mutating that result writes nothing the caller
- * owns, and attributing it would withhold an honest offer.
+ * owns, and attributing it would withhold an sound offer.
  *
  * @module
  */
@@ -160,7 +160,7 @@ export function measureThroughReturn(rows: Row[],): number {
  * Writes a property through a returned element.
  *
  * This was pinned as a boundary with a caution beside it: under `readonly Row[]` an
- * element property write is legal, so the offer looked honest and withholding it looked
+ * element property write is legal, so the offer looked sound and withholding it looked
  * like a precision loss the return substitution should not cause.
  *
  * The caution was answered by measurement rather than by argument, because the question is
@@ -208,7 +208,7 @@ type Config = {
 /**
  * Hands back a piece of the caller's own structure.
  *
- * Offering `readonly` here stays honest. This callable writes nothing, and handing the
+ * Offering `readonly` here stays sound. This callable writes nothing, and handing the
  * caller a value the caller already reaches grants no capability. What the offer depends
  * on is the caller substituting through the returned fact, which is the whole point of
  * recording it.

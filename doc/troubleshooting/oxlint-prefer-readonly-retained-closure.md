@@ -162,7 +162,7 @@ registry.keep((): string => label,);
 
 Accept the withholding.
 A withheld offer costs nothing at runtime and nothing in type safety.
-It means this rule could not prove a `readonly` annotation would be honest,
+It means this rule could not prove a `readonly` annotation would be sound,
 and leaving the parameter mutable is always sound.
 
 ## What will not help

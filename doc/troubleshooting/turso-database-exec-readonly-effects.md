@@ -48,7 +48,7 @@ The SQL and optional query-options positions are opaque native-boundary targets,
 not proven mutations.
 The migration inputs receive a proven receiver effect,
 while their primitive SQL constants do not acquire opaque caller-owned effects.
-Mutable `Database` parameters are honest without redundant `@mutates` contracts.
+Mutable `Database` parameters are sound without redundant `@mutates` contracts.
 
 The unit test also resolves `database.exec` from Done source through TypeScript
 and checks that another package major does not match.

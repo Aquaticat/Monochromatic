@@ -82,7 +82,7 @@ function readonlyArraySuggestions({
     project,
     type: elementType,
   },);
-  if (elementClassification.kind !== 'honest-readonly')
+  if (elementClassification.kind !== 'deep-readonly')
     return [];
   /**
    * Source file owning parameter type.
@@ -203,7 +203,7 @@ function readonlyDeepSuggestions({
    * `TS2552: Cannot find name 'ReadonlyDeep'`.
    *
    * An inline import type needs no statement, so nothing can delete what it depends on.
-   * The authored alias is lost with the gate, which is the honest trade: an alias exists to
+   * The authored alias is lost with the gate, which is the sound trade: an alias exists to
    * name an import statement, and there is no longer one to name.
    */
   const replacement = `import('type-fest').ReadonlyDeep<${authoredType}>`;

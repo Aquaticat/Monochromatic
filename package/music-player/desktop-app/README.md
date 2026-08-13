@@ -350,7 +350,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `ui/app.slint`:
    the window markup (seek bar,
    volume slider,
-   one combined control row holding the Open button,
+   one combined control row holding Settings then Open,
   a plain-HTML-styled three-state shuffle radio group,
    the prev/play-pause/next transport buttons,
    and the
@@ -385,10 +385,17 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The full page grid remains
   visible,
    so late-alphabet artists stay discoverable.
-   The wide page-tab FlexboxLayout pins `align-content` and
+   Page selectors default to wrapping radio controls.
+   Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
+   joined content-width segmented buttons,
+   raised content-width Chromium-like tabs,
+   and the previous rounded buttons.
+   Segmented sections and visible outlines stay fitted to label content;
+   unused row width remains transparent and unframed.
+   The choice applies immediately and persists across launches.
+   Each wide page-selector FlexboxLayout pins `align-content` and
   `cross-axis-alignment` to start (both default to stretch),
-   so its buttons keep the same natural size as in the narrow
-  layout instead of inflating to fill the taller list column.
+   so its controls keep their natural size instead of inflating to fill the taller list column.
    Each scroll region is driven by a prominent custom
   scrollbar in a right-hand gutter,
    since the default
@@ -440,7 +447,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 
 ## Page navigation UX choices
 
-Wide windows show the full page-button grid beside the selected page's rows as two independent scroll containers,
+Wide windows show the full page-control grid beside the selected page's rows as two independent scroll containers,
 so the page grid and the track list scroll separately;
  narrow windows keep the original vertical tab-then-list
 order under one shared Flickable.
@@ -835,8 +842,8 @@ On exit the engine saves the Source Root path,
  the playback position,
  volume,
  shuffle mode,
- and the
-repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/musicplayer` on Linux,
+ repeat-track flag,
+ and page-control style to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/musicplayer` on Linux,
 `~/Library/Application Support/dev.monochromatic.musicplayer` on macOS,
  the roaming AppData config directory on
 Windows,

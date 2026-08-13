@@ -1,12 +1,25 @@
 # `@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type`
 
-Oxlint JavaScript plugin containing the project-owned
-`prefer-readonly-parameter-type/prefer-readonly-parameter-types` semantic rule.
+Oxlint JavaScript plugin containing project-owned semantic rules for readonly parameter evidence:
+
+- `prefer-readonly-parameter-type/prefer-readonly-parameter-types` reports only mutable parameters with a proved
+  deeply readonly replacement;
+- `prefer-readonly-parameter-type/no-readonly-parameter-mutations` reports proved caller-reachable mutation through
+  readonly declarations;
+- `prefer-readonly-parameter-type/no-opaque-parameter-effects` reports unresolved effects reachable from parameter
+  state;
+- `prefer-readonly-parameter-type/no-invalid-parameter-effect-contracts` reports stale,
+  missing,
+  or inconsistent effect contracts and redundant ownership markers.
 
 ## Contract
 
-The rule combines TypeScript 7 semantic types with demand-driven,
+The rules combine TypeScript 7 semantic types with demand-driven,
 cross-file effect summaries.
+They compute category-neutral evidence once for each immutable semantic source snapshot,
+then separate reporting by policy.
+An unresolved effect can therefore withhold a readonly preference and propagate to mutable callers without becoming a
+preference diagnostic.
 Every call reached from caller-owned state has one accepted outcome:
 
 - exact repository-owned or source-map-resolved shipped implementation proves its effects;
@@ -98,7 +111,11 @@ not by method-name or package-name tables inside analyzer.
 
 Unresolved diagnostics name affected inputs and reached calls,
 then list the proof-preserving remediation paths.
-Inert `ForeignBorrowed` markers over deeply readonly types and stale `@mutates` documentation are reported.
+They never suggest a readonly replacement unless analysis proved one.
+Projected readonly types retaining unresolved callable behavior are reported by the opaque-effect rule,
+not as proved mutations.
+Inert `ForeignBorrowed` markers over deeply readonly types and stale `@mutates` documentation are reported by the
+contract rule.
 Ordinary `--fix` does not alter signatures or contracts;
 semantic rewrites remain suggestion-only.
 
@@ -114,6 +131,11 @@ This avoids scanning every callable in every configured source.
 
 Process-local final indexes use TypeScript's immutable semantic project snapshot as their authority.
 A source overlay refresh creates a different snapshot and cannot reuse the old final index.
+A process-local evidence cache above that index uses exact semantic source object identity.
+When several split rules are enabled in one Oxlint worker,
+the first rule computes callable and parameter evidence,
+and sibling reporters reuse the completed immutable result.
+Failed or partial computations are never cached.
 Schema-4 persistent entries validate exact source,
 module,
 semantic call,
@@ -279,7 +301,7 @@ lists every way to recover the offer and which of them change what is true rathe
 
 ## Self-hosting boundary
 
-The strict rule does not lint its own package under its effect policy.
+The enabled preference rule does not lint its own package under its effect policy.
 Its implementation necessarily calls TypeScript semantic handles,
 Oxlint host context methods,
 and ECMAScript collections whose runtime bodies are not part of the configured TypeScript project.
@@ -289,7 +311,10 @@ Self-application could pass only by restoring handwritten host authorities or by
 `prefer-readonly-parameter-type/prefer-readonly-parameter-types` for
 `package/oxlint-plugin/prefer-readonly-parameter-type/**`.
 Every other configured Oxlint rule remains active there.
-The package's unit corpus and external consumer tests exercise the strict rule directly.
+The package's unit corpus and external consumer tests exercise all four rules directly.
+The dedicated fixture asserts one diagnostic owned by each rule,
+projected unresolved capability excluded from the mutation rule,
+and one shared evidence computation across four distinct rule contexts.
 
 ## Verification
 
@@ -300,10 +325,10 @@ Package acceptance includes:
   exact runtime implementation,
   strict opacity,
   effect propagation,
-  diagnostic,
+  split-rule ownership,
   suggestion,
   bridge lifecycle,
-  and cache tests;
+  and cache-sharing tests;
 - conditional exports,
   runtime re-exports,
   declaration and runtime sibling mismatch,

@@ -184,7 +184,7 @@ await describe({
         /* Style-callback invocation now proves inside the analyzed workspace
          * callee instead of an audited caller-side catalog marking. */
         expect(invoked,).toEqual([],);
-        /* Unresolved reachability, and honest. `parseRateLimitSnapshots` reaches
+        /* Unresolved reachability, and sound. `parseRateLimitSnapshots` reaches
          * `Object.entries` in `rate-limit-parse-helpers.ts`, which nothing derives, and
          * this callable packages its own parameter into that call. The claim used to
          * read `[]` because the owned call edge walked the argument literal with only
@@ -974,7 +974,7 @@ await describe({
         expect(structuralMutated('invokeWritingSibling',),).toEqual([0,],);
         /* The construction channel asks the classifier rather than the leaf test, because the
          * leaf test answers yes for any array and cost the one offer this channel moved across
-         * the workspace. `honest-readonly` means every reachable position is readonly, so no
+         * the workspace. `deep-readonly` means every reachable position is readonly, so no
          * write can travel through the value, whatever the constructor keeps. */
         expect(structuralOpaque('constructFromReadonlyKeys',),).toEqual([],);
         /* Its control, since a collection of writable rows retains writable rows. Without it the
@@ -1118,7 +1118,7 @@ await describe({
          * `doc/planning/prefer-readonly-return-substitution.md`, section "A second false
          * offer, on the array path".
          *
-         * The fresh control is the half that keeps this honest. A callee allocating its
+         * The fresh control is the half that keeps this sound. A callee allocating its
          * own array shares no identity with its argument, so attributing a write through
          * that result would withhold an offer that is true. It is written without `map`
          * deliberately: a caller-supplied callback opens an opaque boundary of its own,
@@ -1521,7 +1521,7 @@ await describe({
          * that needs no collection member call at all: a parameter placed straight into
          * an object literal, mutated by the callee through a property its `@mutates`
          * blocks omit. Measured before the fix, `directRestrictedRowEffect` reported
-         * `mutated=[]` and the rule emitted `Parameter "row" should be readonly:
+         * `mutated=[]` and the rule emitted `Parameter "row" can be deeply readonly:
          * property label is writable` while the callee wrote `row.label`. */
         expect(omittedProperty,).toEqual([0,],);
         expect(omittedLookup,).toEqual([0,],);
@@ -1967,7 +1967,7 @@ await describe({
             opaque: [],
           },
           {
-            /* Opaque as well as mutated, and honest. The literal handed to
+            /* Opaque as well as mutated, and sound. The literal handed to
              * `Promise.resolve` holds a method that writes `closureState`, so an
              * unresolved callee receives a capability over caller-owned state. The claim
              * read `[]` until `parameterIndexes` began scanning packaged callables for

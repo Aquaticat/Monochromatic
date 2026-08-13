@@ -587,7 +587,7 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
     decision.gain
 }
 
-/// What:     `#[no_mangle] pub extern "system" fn Java_..._nativeTruePeakServiceCreate(...)
+/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceCreate(...)
 ///           -> jlong`. Open a service for the given database path and return its handle, or
 ///           `0` on failure.
 /// Why:      Kotlin creates one service at startup with its app-private `decisions.db` path.
@@ -598,7 +598,7 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
 /// ```ts
 /// export function nativeTruePeakServiceCreate(env, _class, dbPath: JString): jlong { ... }
 /// ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakServiceCreate<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -636,7 +636,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     handle
 }
 
-/// What:     `#[no_mangle] pub extern "system" fn Java_..._nativeTruePeakServiceRelease(...)`.
+/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeTruePeakServiceRelease(...)`.
 ///           Reclaim the boxed service, closing its channels so the actor thread exits.
 /// Why:      Kotlin releases the one service on shutdown.
 /// Gotcha:   Releasing twice is a use-after-free; Kotlin must release exactly once.
@@ -645,7 +645,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
 /// ```ts
 /// export function nativeTruePeakServiceRelease(_env, _class, handle: jlong): void { ... }
 /// ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakServiceRelease<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -676,7 +676,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     }
 }
 
-/// What:     `#[no_mangle] pub extern "system" fn Java_..._nativeResolveGain(...) -> jfloat`.
+/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeResolveGain(...) -> jfloat`.
 ///           Foreground: return the normalization gain for the current track, resolving and
 ///           caching a probe-or-full decision on a miss.
 /// Why:      Kotlin calls this on track load, then applies the gain to the engine.
@@ -685,7 +685,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
 /// ```ts
 /// export function nativeResolveGain(_env, _class, handle: jlong, fd: jint, fingerprint: jlong): jfloat { ... }
 /// ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeResolveGain<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,
@@ -716,7 +716,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeRes
     resolve_and_cache(service, fd, fingerprint as u64, false)
 }
 
-/// What:     `#[no_mangle] pub extern "system" fn Java_..._nativeWarmTrack(...) -> jfloat`.
+/// What:     `#[unsafe(no_mangle)] pub extern "system" fn Java_..._nativeWarmTrack(...) -> jfloat`.
 ///           Background warming: full-scan a track to an EXACT decision and cache it, skipping
 ///           tracks that are already exact.
 /// Why:      Kotlin's sweep calls this per track to upgrade probe estimates over idle time.
@@ -725,7 +725,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeRes
 /// ```ts
 /// export function nativeWarmTrack(_env, _class, handle: jlong, fd: jint, fingerprint: jlong): jfloat { ... }
 /// ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeWarmTrack<'local>(
     _env: JNIEnv<'local>,
     _class: JClass<'local>,

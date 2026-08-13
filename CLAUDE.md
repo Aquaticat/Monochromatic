@@ -185,6 +185,12 @@ Explain uncertainty and every valid remediation path.
 Avoid unexplained implementation terms;
  length is unconstrained.
 
+DNL:
+ Diagnostic names and messages use neutral operation or evidence terms.
+Never characterize code,
+types,
+or authors with moral judgments.
+
 JCH:
  Never use `@mutates` for absent effects.
 Move work to an ownership-known boundary,
@@ -1626,6 +1632,20 @@ AD4:
  Nested calls (`b(a())`) over method chaining;
  split chains of more than two nested calls across lines,
  no stacked `)))`.
+
+M1T:
+ Multi-row MD1 tabs keep each label on one content-width line plus horizontal padding.
+Never stretch or wrap text inside a tab;
+ wrap whole tabs across rows.
+
+PXF:
+ Screenshot-driven UI:
+ measure reference geometry,
+ colors,
+ spacing,
+ and states;
+ render final artifact side-by-side at matching scale before completion.
+Memory-based similarity is not evidence.
 
 ## Agent skills
 

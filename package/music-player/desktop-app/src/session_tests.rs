@@ -24,6 +24,7 @@ fn json_round_trip_preserves_fields() {
         volume: 0.7,
         shuffle: ShuffleMode::WithinPage,
         repeat_track: true,
+        page_control_style: PageControlStyle::Md1Tabs,
     };
     // What:     `serde_json::to_string(&original).unwrap()` serializes to JSON; `.unwrap()`
     //           panics on error (fine in a test).
@@ -95,4 +96,26 @@ fn old_track_list_format_degrades_to_no_root_but_keeps_settings() {
     // What:     omitted shuffle defaults to `Off`.
     // Why:      Confirms missing fields fall back rather than failing the parse.
     assert_eq!(parsed.shuffle, ShuffleMode::Off);
+    // Missing page-control preferences from older sessions default to radio controls.
+    assert_eq!(parsed.page_control_style, PageControlStyle::Radio);
+}
+
+
+// What:     `#[test] fn page_control_style_integer_conversion_covers_every_style()`.
+//           Exercise all named styles plus an invalid Slint integer.
+// Why:      The UI boundary must preserve every settings choice and make radio controls
+//           the safe default for stale or invalid values.
+#[test]
+fn page_control_style_integer_conversion_covers_every_style() {
+    assert_eq!(PageControlStyle::Radio.to_int(), 0);
+    assert_eq!(PageControlStyle::Md1Tabs.to_int(), 1);
+    assert_eq!(PageControlStyle::RoundedButtons.to_int(), 2);
+    assert_eq!(PageControlStyle::SegmentedButtons.to_int(), 3);
+    assert_eq!(PageControlStyle::ChromiumTabs.to_int(), 4);
+    assert_eq!(PageControlStyle::from_int(0), PageControlStyle::Radio);
+    assert_eq!(PageControlStyle::from_int(1), PageControlStyle::Md1Tabs);
+    assert_eq!(PageControlStyle::from_int(2), PageControlStyle::RoundedButtons);
+    assert_eq!(PageControlStyle::from_int(3), PageControlStyle::SegmentedButtons);
+    assert_eq!(PageControlStyle::from_int(4), PageControlStyle::ChromiumTabs);
+    assert_eq!(PageControlStyle::from_int(99), PageControlStyle::Radio);
 }

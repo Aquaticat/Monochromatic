@@ -5,7 +5,7 @@
 `prefer-readonly-parameter-type/prefer-readonly-parameter-types` initially treated
 `encoder.encode(text)` as an unresolved method effect.
 The call is observational,
-but a full `Readonly<TextEncoder>` projection remains dishonest because it also retains mutating `encodeInto`.
+but a full `Readonly<TextEncoder>` projection remains unsupported because it also retains mutating `encodeInto`.
 `new TextDecoder(...).decode(bytes)` also initially remained unresolved even though it does not change `bytes`.
 Unlike encoder `encode`,
  decoder `decode` operates on decoder state,
@@ -67,8 +67,8 @@ Semantic tests resolve the actual TypeScript 7 declaration to that owner and mem
 Effect-summary coverage proves exact `TextEncoder.encode` plus primitive text produces no caller-observable mutation.
 The TOML conformance decoder now accepts `new TextDecoder('utf-8', { fatal: true }).decode(bytes)` because the
 receiver is fresh and only the receiver effect is catalogued.
-Classifier coverage separately proves a full `Readonly<TextEncoder>` remains dishonest while
-`Pick<TextEncoder, 'encode'>` is honest.
+Classifier coverage separately proves a full `Readonly<TextEncoder>` remains unsupported while
+`Pick<TextEncoder, 'encode'>` is sound.
 Same-named methods on other owners do not inherit this treatment.
 
 ## Authoring guidance

@@ -64,6 +64,10 @@ export type ReadonlyParameterFacts = {
   readonly retained: boolean;
   readonly acceptedHostOpacity: boolean;
   readonly affected: boolean;
+  /**
+   * Whether semantic analysis proved caller-reachable referent mutation.
+   */
+  readonly provedMutation: boolean;
   readonly mutated: boolean;
   readonly uncertainty: UncertaintyBoundaries;
   readonly foreignHostCapability: boolean;
@@ -165,7 +169,7 @@ function factsForParameter({
    * a store is understood completely, and none of the verdicts downstream is about it.
    * Reproducing that means this fact has to be false for a parameter whose every recorded
    * cause is a store, because `acceptedHostOpacity` reads it, and that reaches `affected`
-   * and `mutated`, and those gate the stale contract and dishonest-type reports.
+   * and `mutated`, and those gate the stale contract and projected-capability reports.
    *
    * Gating the two opacity reports instead was tried and was wrong for the same reason,
    * one branch further out: it silences the reports and leaves those two facts shifted.
@@ -227,6 +231,8 @@ function factsForParameter({
     retained: uncertainty.retained,
     acceptedHostOpacity,
     affected,
+    provedMutation: effectSummary.referentMutatedParameterIndexes
+      .has(parameterIndex,),
     mutated,
     uncertainty,
     foreignHostCapability,
@@ -321,8 +327,8 @@ export function factsNeedForeignProof(facts: ReadonlyParameterFacts,): boolean {
    * Declared-type classification deciding which suppressible verdicts exist here.
    */
   const { kind, } = facts.classification;
-  return (kind === 'dishonest-readonly')
-    || (facts.mutated && (kind === 'honest-readonly'))
+  return (kind === 'projected-readonly-capability')
+    || (facts.mutated && (kind === 'deep-readonly'))
     || ((!facts.mutated) && (kind === 'mutable'))
     || facts.redundantMarkerPossible;
 }

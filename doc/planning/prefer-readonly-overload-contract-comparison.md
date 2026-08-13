@@ -77,7 +77,7 @@ Partly true.
 Invoking a caller-supplied step is a real possible runtime effect,
 and `JCH` does not forbid documenting it,
 since a step function can reach whatever the caller packaged in `args`.
-Writing `@mutates args` on all nine overloads would silence the finding honestly.
+Writing `@mutates args` on all nine overloads would silence the finding soundly.
 
 The reading the source supports is narrower than either:
 the check compares a set that can contain invoked capabilities against a set that can only contain

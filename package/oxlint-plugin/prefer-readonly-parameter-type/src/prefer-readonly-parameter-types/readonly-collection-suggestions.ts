@@ -109,14 +109,14 @@ export function readonlyCollectionSuggestions({
   const typeArguments = project.checker
     .getTypeArguments(collectionType,);
   if ((typeArguments.length !== projection.typeArgumentCount)
-    || (!typeArguments.every(function honestTypeArgument(type,): boolean {
+    || (!typeArguments.every(function deepReadonlyTypeArgument(type,): boolean {
       return classifyReadonlyType({
         checker: project.checker,
         project,
         type,
       },)
         .kind
-        === 'honest-readonly';
+        === 'deep-readonly';
     },)))
     return [];
   /**

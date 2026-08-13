@@ -152,7 +152,6 @@ export function opaqueEffectReport({
   parameterIndex,
   uncertainty,
   affectedNames,
-  alreadyReadonly,
 }: {
   readonly loc: {
     readonly start: {
@@ -169,7 +168,6 @@ export function opaqueEffectReport({
   readonly parameterIndex: number;
   readonly affectedNames?: ReadonlySet<string>;
   readonly uncertainty: UncertaintyBoundaries;
-  readonly alreadyReadonly?: boolean;
 },): Parameters<Context['report']>[0] {
   /**
    * Whether every unknown call is a method on one current input binding.
@@ -208,17 +206,10 @@ export function opaqueEffectReport({
     && everyCauseIsCollection;
   return {
     loc,
-    /* The already-readonly variant is chosen last among the general forms and never over a
-     * specific one. The collection and method messages name what the calls are, which is more
-     * use to a reader than naming what the type already is, and both carry remediations that
-     * still apply to a readonly input. Only the general message ends in advice to make the
-     * type honest, so only it misreads when the type already is. */
     messageId: onlyCollectionMembers
       ? 'opaqueCollectionEffect'
       : onlyInputMethods
       ? 'opaqueMethodEffect'
-      : (alreadyReadonly === true)
-      ? 'opaqueEffectAlreadyReadonly'
       : 'opaqueEffect',
     data: {
       inputSubject: onlyInputMethods

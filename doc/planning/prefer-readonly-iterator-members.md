@@ -280,7 +280,7 @@ because two very different results both count as progress and only one counts as
 -    Success:
      the uncertainty finding is replaced by a recorded mutation.
      `propagateEffects` genuinely writes through the map's values,
-     so the honest end state is the rule saying "this is written",
+     so the sound end state is the rule saying "this is written",
      not the rule saying nothing.
 
 -    Also acceptable:

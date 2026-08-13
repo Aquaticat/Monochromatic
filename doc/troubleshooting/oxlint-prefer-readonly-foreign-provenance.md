@@ -33,7 +33,7 @@ A sound exemption requires two independent facts:
 One owned mutable inbound path must remove the guarantee.
 Likewise,
 a fresh object containing one foreign field must not make an unrelated owned mutable sibling foreign.
-Primitive and honestly readonly siblings do not introduce mutable ownership and can be ignored for this coverage check.
+Primitive and soundly readonly siblings do not introduce mutable ownership and can be ignored for this coverage check.
 
 Nested closures add a separate ownership boundary in the analyzer.
 Call edges belonging to an active inner closure must not be attributed to the outer callable.
@@ -88,11 +88,11 @@ but invocation does not prove mutation of the function object or every captured 
 The effect model now keeps:
 
 - invoked-capability indexes for contract verification and propagation;
-- referent-mutation indexes for readonly-honesty checks;
+- referent-mutation indexes for readonly-soundy checks;
 - a combined affected-input set for complete `@mutates` contracts.
 
 Pure and throwing owned callbacks are summarized from their own bodies and do not taint captured readonly values.
-Unknown and external callbacks remain fail-closed and require honest invocation contracts.
+Unknown and external callbacks remain fail-closed and require sound invocation contracts.
 
 ## Verification
 

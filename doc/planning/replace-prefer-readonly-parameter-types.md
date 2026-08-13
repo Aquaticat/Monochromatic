@@ -100,12 +100,12 @@ The implemented semantic rule applies that correction:
   and synchronous `for...of` bindings;
 - a callee parameter is foreign only when every owned inbound call supplies wholly foreign mutable state;
   an ordinary owned call removes that guarantee;
-- object and array packages ignore primitive and honestly readonly siblings,
+- object and array packages ignore primitive and soundly readonly siblings,
   but one foreign field cannot hide an owned mutable sibling;
 - active nested-closure calls no longer create duplicate foreign inbound edges;
 - direct callback invocation is tracked separately from referent mutation;
   unknown callback capabilities still require `@mutates`,
-  while pure and throwing owned callbacks no longer make captured readonly values dishonest;
+  while pure and throwing owned callbacks no longer make captured readonly values unsupported;
 - focused fixtures cover callback,
   property,
   element,
@@ -351,7 +351,7 @@ The semantic-rule implementation and shared-configuration migration are complete
 - commit `8e7e6c8d9` distinguishes zero-effect intrinsic methods from mutating capabilities,
   preserves named type-alias package provenance,
   and audits `StdoutWriter.write` as receiver mutation;
-- after the user rejected an absent `message` mutation contract as dishonest,
+- after the user rejected an absent `message` mutation contract as unsupported,
   commit `c6e026a82` moves MCP response serialization to ownership-known call sites and passes primitive text through the
   generic writer;
 - after the user required a dedicated package seam,
@@ -391,7 +391,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   and git-clone-size ownership boundaries;
 - commit `d12de9816` resolves exact ambient `AbortSignal.any` identity,
   records its dependent-signal mutation,
-  and propagates honest contracts through git-clone-size;
+  and propagates sound contracts through git-clone-size;
 - commit `3d90851aa` originally treated direct callback invocation as a known capability mutation,
   applies nonzero imported-callable catalog targets,
   and expands exact Pi effect evidence;
@@ -415,14 +415,14 @@ The semantic-rule implementation and shared-configuration migration are complete
 - the 2026-07-13 sweep reported 1,014 replacement-rule diagnostics with no bridge-failure category:
   585 uncertain calls,
   272 readonly projections,
-  108 dishonest declarations,
+  108 unsupported declarations,
   48 missing contracts,
   and 1 stale contract;
   later package commits in this list postdate that baseline;
 - a later sweep before the Advisor and direct-callback commits reported 965 diagnostics:
   533 uncertain calls,
   265 readonly projections,
-  103 dishonest readonly declarations,
+  103 unsupported readonly declarations,
   63 missing contracts,
   and 1 stale contract,
   with no semantic bridge failure;
@@ -432,7 +432,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   496 uncertain calls,
   246 readonly projections,
   181 missing contracts,
-  125 dishonest readonly declarations,
+  125 unsupported readonly declarations,
   and 1 stale contract;
   direct callback invocation moved previously hidden effects into enforceable missing contracts,
   Advisor and shared model selection each reported zero diagnostics,
@@ -449,7 +449,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   exported hyperscript and Penpot option bags retain their mutable public declarations,
   and reflective `Object.entries`,
   JSON,
-  and state inputs retain honest mutable effects;
+  and state inputs retain sound mutable effects;
 - audited intrinsic result provenance now distinguishes pure receiver-value copies from mixed results:
   `slice`,
   `filter`,
@@ -468,7 +468,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   or otherwise non-callable comparators when receiver elements are nonprimitive;
 - the immutable root sweep recorded in process `proc_17` reported exactly 360 opaque-effect diagnostics and no readonly
   preference,
-  dishonest declaration,
+  unsupported declaration,
   missing contract,
   stale contract,
   semantic bridge failure,
@@ -486,7 +486,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   Oxlint with no findings,
   build,
   and unit tests;
-- the serialization phase resolves every isolated `JSON.stringify` boundary through complete local contracts and honest
+- the serialization phase resolves every isolated `JSON.stringify` boundary through complete local contracts and sound
   mutable persistence DTOs;
   observational consumers retain readonly views,
   broad sink-only serializers accept `object`,
@@ -495,7 +495,7 @@ The semantic-rule implementation and shared-configuration migration are complete
 - terminal-title exhaustiveness retains its `never` proof and fixed fallback message instead of coercing an impossible
   runtime value;
 - stable root process `proc_21` reports 263 opaque-effect diagnostics and no readonly preference,
-  dishonest declaration,
+  unsupported declaration,
   missing contract,
   stale contract,
   semantic bridge failure,
@@ -515,7 +515,7 @@ The semantic-rule implementation and shared-configuration migration are complete
 - `no-restricted-syntax/prefer-caught-value-text` rejects duplicate Error-and-fallback formatters while accepting
   domain-specific alternate branches;
 - stable root process `proc_26` reports 239 opaque-effect diagnostics and no readonly preference,
-  dishonest declaration,
+  unsupported declaration,
   missing contract,
   stale contract,
   semantic bridge failure,
@@ -573,7 +573,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   `f17220bcf`,
   `20d7d40d3`,
   and `9f537124b` audit Lezer and workspace TOML observations,
-  remove dishonest watcher option projections,
+  remove unsupported watcher option projections,
   and propagate timer,
   async-context,
   rejection,
@@ -643,7 +643,7 @@ The semantic-rule implementation and shared-configuration migration are complete
   and Kiwi;
   their focused Oxlint and type tasks pass after the final source changes;
 - root process `proc_191` reduced the replacement rule from 40 diagnostics in `proc_117` to 4:
-  one root file-enforcer dishonest declaration,
+  one root file-enforcer unsupported declaration,
   one Pi spawn readonly preference plus its stale contract,
   and one Git wrapper uncertainty;
   `518cdfb95`,
@@ -1010,7 +1010,7 @@ Remove the obsolete output suppression and its dedicated test cases from
 Classify every active directive before deleting it:
 
 - sites accepted by the new contract lose the directive;
-- sites violating the new contract receive an honest `ReadonlyDeep` projection,
+- sites violating the new contract receive an sound `ReadonlyDeep` projection,
   an ownership-correct declaration improvement,
   an accurate `@mutates` contract,
   or a local adapter around external mutation;
@@ -1085,7 +1085,7 @@ All discovered policy branches are resolved:
 - preserve `@mutates` in published declarations;
 - use TypeScript 7's unstable synchronous API without a TypeScript 6 fallback;
 - treat the CLI as authoritative until Oxlint supports JavaScript plugins in its language server;
-- author local projections with `type-fest`'s `ReadonlyDeep` while rejecting dishonest capability projections.
+- author local projections with `type-fest`'s `ReadonlyDeep` while rejecting unsupported capability projections.
 
 No policy question remains known.
 A newly discovered genuine policy fork reopens one-question-at-a-time grilling;
@@ -1106,7 +1106,7 @@ Current checkpoint:
   BOM and Unicode mapping,
   and native child cleanup;
 - the type corpus confirmed that `ReadonlyDeep` handles the tested collections and recursive structures but cannot make
-  retained capability methods honest;
+  retained capability methods sound;
 - installed Oxc isolated declarations and `rolldown-plugin-dts` 0.27.4 preserved all tested `@mutates` blocks through a
   re-exporting declaration bundle;
 - the advisor review converted unproved generalizations into explicit implementation acceptance gates;
@@ -1244,7 +1244,7 @@ so `@mutates` automatically requires a preceding blank line.
 ### Chosen layered type and effect contract
 
 For a nonmutating parameter,
-require a deeply readonly TypeScript type whenever that type honestly represents the callable contract.
+require a deeply readonly TypeScript type whenever that type soundly represents the callable contract.
 For external,
 identity-sensitive,
 callback-bearing,
@@ -1276,7 +1276,7 @@ the implementation must obtain an explicit effect summary or require complete `@
 assuming safety.
 
 The absence of `@mutates` is valid when analysis proves observation or a caller-observable effect.
-Observation still requires an honest deep-readonly type where one is available.
+Observation still requires an sound deep-readonly type where one is available.
 Proven effects permit mutable types,
 and a present contract must remain accurate.
 Unresolved possible effects require complete contracts naming each uncertain boundary and affected input.
@@ -1297,7 +1297,7 @@ to verify optional present tags,
 and to propagate diagnostics.
 Callback-capability invocation and referent mutation are separate effects.
 Proven callback invocation permits a mutable capability without requiring `@mutates`.
-Invoking an unknown callback requires an honest complete contract,
+Invoking an unknown callback requires an sound complete contract,
 but invocation alone does not claim that the function object or a pure owned callback's captures were mutated.
 Every call edge therefore has an inspectable effect summary or explicit uncertainty contract.
 Moving a callable between local and exported scope does not change the analysis.
@@ -1359,7 +1359,7 @@ not "always mutates.
 "
 The effect analyzer uses three outcomes:
 
-- proven observation requires an honest deep-readonly type and rejects a stale tag;
+- proven observation requires an sound deep-readonly type and rejects a stale tag;
 - proven caller-observable effect permits a mutable type and makes an accurate tag optional;
 - possible effect through an opaque external boundary reports `opaqueEffect` unless complete local documentation
   accounts for every affected input and uncertain boundary.
@@ -1465,7 +1465,7 @@ enable it in shared and fixture configs,
 and cover line,
 block,
 and list-style disable directives in fixtures and integration tests.
-Opaque cases must gain an honest type,
+Opaque cases must gain an sound type,
 verified effect summary,
 local external adapter,
 or existing file-class exemption instead of a comment bypass.
@@ -1509,7 +1509,7 @@ Distinct message IDs classify findings without independently configurable partia
 - `missingMutatesTag`;
 - `staleMutatesTag`;
 - `opaqueEffect`;
-- `dishonestReadonly`;
+- `projectedReadonlyCapability`;
 - `inconsistentMutatesContract`;
 - `semanticBridgeUnavailable`.
 
@@ -1528,7 +1528,7 @@ or opaque-boundary handling.
 
 Offer a suggestion only when the analyzer can generate a complete remediation without inventing human rationale:
 
-- replace a mutable type with one verified honest readonly form;
+- replace a mutable type with one verified sound readonly form;
 - remove a stale `@mutates` block only after closed-world proof of no effect;
 - perform exact mechanical syntax normalization around an otherwise complete tag.
 
@@ -1574,7 +1574,7 @@ Use whole-program ownership evidence to choose the remediation location.
 When every valid use treats a repository-owned type as immutable,
 make the type declaration deeply readonly and let consumers retain the canonical name.
 When lifecycle owners legitimately mutate the type,
-keep that declaration mutable and apply an honest readonly projection only at nonmutating parameter boundaries.
+keep that declaration mutable and apply an sound readonly projection only at nonmutating parameter boundaries.
 External capability types retain their original form only under the selected effect proof.
 
 Type-owner suggestions originate when the owner file is linted,
@@ -1667,7 +1667,7 @@ Follow-up probes added these bounded results:
   and an `AbortController` capability all produced queryable TypeScript 7 type structures;
 - `ReadonlyDeep<Map<...>>` and `ReadonlyDeep<Set<...>>` produced readonly mapped projections,
   while `ReadonlyDeep<AbortController>` retained the mutating `abort` capability and therefore demonstrated why
-  structural readonly alone cannot satisfy `dishonestReadonly` detection.
+  structural readonly alone cannot satisfy `projectedReadonlyCapability` detection.
 
 These results select the primary bridge but do not complete its acceptance suite.
 The remaining effect,
@@ -1704,10 +1704,10 @@ Each package that imports `ReadonlyDeep` must declare `type-fest` through the pn
 transitive or root dependency.
 
 `ReadonlyDeep` is authoring syntax,
-not proof that the resulting capability is honestly immutable.
+not proof that the resulting capability is soundly immutable.
 The semantic rule must still inspect the resolved projection and its reachable effects.
 The probe showed that `ReadonlyDeep<Map<...>>` and `ReadonlyDeep<Set<...>>` produce useful collection projections,
-while `ReadonlyDeep<AbortController>` retains `abort()` and must produce `dishonestReadonly` when used as a supposedly
+while `ReadonlyDeep<AbortController>` retains `abort()` and must produce `projectedReadonlyCapability` when used as a supposedly
 nonmutating contract.
 
 Suggestions may introduce `ReadonlyDeep<T>` only when the target package already declares `type-fest` or when the

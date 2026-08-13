@@ -1042,7 +1042,7 @@ So what is left is #115 as a linter-scope decision for whoever owns markdown sty
  and the standing question
  below.
 
-So the honest summary is that the soundness queue is empty and the precision,
+So the sound summary is that the soundness queue is empty and the precision,
  cost and documentation queue is
  not.
  Anyone resuming should read the sweep that answers whether any installed dependency reaches the external
@@ -1207,7 +1207,7 @@ The four outward handoffs now share one capture recorder,
 Two implementation points are load-bearing and neither is obvious from the site being edited:
 
 -    Construction asks **before** its per-argument classification.
-      The `honest-readonly` discharge there
+      The `sound-readonly` discharge there
      proves no write reaches *through* a handed value,
       and says nothing about a value obtained by *invoking*
      a callable that value carries,

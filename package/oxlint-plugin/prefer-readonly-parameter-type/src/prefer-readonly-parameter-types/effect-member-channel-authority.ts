@@ -220,7 +220,7 @@ const CHANNELS_BY_OWNER: Readonly<
    * the asymmetry is the design rather than an unfinished table. Membership must be
    * complete, because omitting a member there claims it restructures its receiver. A
    * channel entry claims the opposite direction, so an absent member simply stays
-   * unproven, and listing only what a probe has driven is what keeps this table honest.
+   * unproven, and listing only what a probe has driven is what keeps this table sound.
    *
    * `toISOString` reads `[[DateValue]]` and formats it, reaching no property of its
    * receiver. Its siblings are not all so simple: `toJSON` performs `ToPrimitive` and

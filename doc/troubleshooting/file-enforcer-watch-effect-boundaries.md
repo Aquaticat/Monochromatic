@@ -8,7 +8,7 @@ AbortSignal listener registration,
 `node:timers/promises` waiting,
 and `AsyncLocalStorage.run` callback capture.
 
-Wrapping callback-bearing option objects in `Readonly` also produced dishonest readonly declarations.
+Wrapping callback-bearing option objects in `Readonly` also produced unsupported readonly declarations.
 
 ## Source audit
 

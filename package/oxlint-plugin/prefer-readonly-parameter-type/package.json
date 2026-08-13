@@ -51,7 +51,7 @@
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
-  "description": "Oxlint semantic rule for honest readonly parameter types and verified mutation contracts.",
+  "description": "Oxlint semantic rule for sound readonly parameter types and verified mutation contracts.",
   "publishConfig": {
     "access": "public",
     "provenance": true,

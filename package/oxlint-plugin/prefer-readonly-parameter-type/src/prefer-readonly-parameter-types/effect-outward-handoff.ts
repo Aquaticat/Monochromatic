@@ -136,7 +136,7 @@ export function recordConstructionHandoff({
     handoff: `a construction of ${targetText}`,
     location: effectOriginLocation({ node, },),
   },);
-  /* Before the per-argument classification, never inside it. The `honest-readonly` return below
+  /* Before the per-argument classification, never inside it. The `deep-readonly` return below
    * proves that no write reaches **through** a handed value, which says nothing about a value obtained
    * by **invoking** a callable that value carries. A deeply readonly closure still hands back whatever
    * its body hands back. */
@@ -155,7 +155,7 @@ export function recordConstructionHandoff({
        * channel moved across the workspace: `new Set(supportedKeys,)` withheld a parameter whose
        * only handed value was a deeply readonly array of strings.
        *
-       * The classifier answers the question exactly. `honest-readonly` means every reachable
+       * The classifier answers the question exactly. `deep-readonly` means every reachable
        * position is readonly, so no write can travel through the value, which is a stronger and
        * more precise statement than the leaf test makes. Asked only here, because widening the
        * leaf test itself would move every path at once. */
@@ -178,7 +178,7 @@ export function recordConstructionHandoff({
           project,
           type: handedType,
         },);
-      if (handedClassification?.kind === 'honest-readonly')
+      if (handedClassification?.kind === 'deep-readonly')
         return;
       parameterIndexes({
         project,
@@ -317,7 +317,7 @@ function recordHandoffCaptures({
  * and the caller's row changing afterwards.
  *
  * Recorded as a handoff rather than routed through the call machinery. A tag receives a strings
- * array and the interpolated values as arguments, so the honest minimum is that whatever the
+ * array and the interpolated values as arguments, so the sound minimum is that whatever the
  * values carry reached something this analysis did not inspect, and that is what a handoff says.
  * Routing it as a proper call edge would be more precise and needs the formal mapping a tag's
  * signature implies, which is a larger change than the falsification requires.

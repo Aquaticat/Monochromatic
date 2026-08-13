@@ -28,11 +28,13 @@
 //     controller. Requests audio access once, shows `permissionGate` until
 //     granted, then signals the service to load and shows `playerScreen`.
 //   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
-//     volume, control row, page tabs + track list). Tap a track to play; tap
-//     the playing track to pause/resume.
+//     volume, control row, settings page, page controls + track list). Page
+//     controls default to radios and can switch to multi-row MD1 tabs, segmented
+//     buttons, Chromium-like tabs, or the previous rounded buttons.
+//     Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
-//     screens. `seekRow`/`volumeRow`/`controlRow`/`shuffleOption`/`pageTabs`/
-//     `trackPager`/`trackRow`: the pieces of the player screen.
+//     screens. `seekRow`/`volumeRow`/`controlRow`/`radioOption`/`pageTabs`/
+//     `settingsPage`/`pageTabs`/`trackPager`/`trackRow`: the pieces of the player screen.
 //   - `formatTime`: format a seconds value as `m:ss`.
 // ============================================================================
 
@@ -137,6 +139,16 @@ import android.util.Log
 // ```
 import androidx.activity.ComponentActivity
 
+// What:     `import androidx.activity.compose.BackHandler` intercepts system Back while
+//           a composable-controlled subpage is visible.
+// Why:      Back from Settings should return to the library instead of closing the app.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BackHandler } from "androidx/activity/compose";
+// ```
+import androidx.activity.compose.BackHandler
+
 // What:     `import androidx.activity.compose.rememberLauncherForActivityResult` pulls in
 //           the Compose helper that registers an activity-result launcher INSIDE a
 //           composition (the permission prompt below uses it).
@@ -190,9 +202,19 @@ import androidx.activity.result.contract.ActivityResultContracts
 // ```
 import androidx.compose.foundation.background
 
+// What:     `import androidx.compose.foundation.border` pulls in the modifier that draws
+//           an outline around a composable.
+// Why:      Segmented page controls need joined dividers and a group outline.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { border } from "androidx/compose/foundation";
+// ```
+import androidx.compose.foundation.border
+
 // What:     `import androidx.compose.foundation.clickable` pulls in the `clickable`
 //           MODIFIER (makes a composable respond to taps, taking an `onClick` lambda).
-// Why:      `shuffleOption` and `trackRow` make whole rows tappable.
+// Why:      `radioOption` and `trackRow` make whole rows tappable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -211,6 +233,26 @@ import androidx.compose.foundation.clickable
 // ```
 import androidx.compose.foundation.isSystemInDarkTheme
 
+// What:     `import androidx.compose.foundation.selection.selectable` makes a row one
+//           mutually exclusive selection target with radio semantics.
+// Why:      Radio labels and indicators should expose one action, not nested click targets.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { selectable } from "androidx/compose/foundation/selection";
+// ```
+import androidx.compose.foundation.selection.selectable
+
+// What:     `import androidx.compose.foundation.selection.selectableGroup` marks children
+//           as one mutually exclusive selection group for accessibility services.
+// Why:      TalkBack should announce segmented pages as one radio-like choice set.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { selectableGroup } from "androidx/compose/foundation/selection";
+// ```
+import androidx.compose.foundation.selection.selectableGroup
+
 // What:     `import androidx.compose.foundation.layout.Arrangement` pulls in
 //           `Arrangement`, the namespace describing how children are spaced inside a
 //           `Row`/`Column` (e.g. `Arrangement.spacedBy(8.dp)`).
@@ -221,6 +263,35 @@ import androidx.compose.foundation.isSystemInDarkTheme
 // import { Arrangement } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.Arrangement
+
+// What:     `import androidx.compose.foundation.layout.Box` pulls in a stacking container.
+// Why:      The MD1 page tab uses a thin Box as its selected underline.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Box } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.Box
+
+// What:     `import androidx.compose.foundation.layout.BoxWithConstraints` exposes parent
+//           width while composing children.
+// Why:      Chromium tabs cap pathological labels to available pager width.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BoxWithConstraints } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.BoxWithConstraints
+
+// What:     `import androidx.compose.foundation.layout.BoxScope` exposes child alignment
+//           modifiers inside a `Box`.
+// Why:      Extracted Chromium tab decoration still aligns to its owning tab box.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { BoxScope } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.BoxScope
 
 // What:     `import androidx.compose.foundation.layout.Column` pulls in `Column`, the
 //           vertical layout composable (stacks children top to bottom).
@@ -264,6 +335,16 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 // ```
 import androidx.compose.foundation.layout.FlowRow
 
+// What:     `import androidx.compose.foundation.layout.IntrinsicSize` provides content-based
+//           measurement modes for width and height.
+// Why:      Each MD1 tab must be only as wide as its padded label.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { IntrinsicSize } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.IntrinsicSize
+
 // What:     `import androidx.compose.foundation.layout.Row` pulls in `Row`, the horizontal
 //           layout composable (places children left to right).
 // Why:      Many UI pieces lay out horizontally in a `Row`.
@@ -273,6 +354,16 @@ import androidx.compose.foundation.layout.FlowRow
 // import { Row } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.Row
+
+// What:     `import androidx.compose.foundation.layout.defaultMinSize` adds minimum-size
+//           constraints without overriding larger content measurements.
+// Why:      Radio rows and MD1 tabs need a 48dp minimum touch target.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { defaultMinSize } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.defaultMinSize
 
 // What:     `import androidx.compose.foundation.layout.fillMaxSize` pulls in the
 //           `fillMaxSize` MODIFIER (make a composable occupy all available width AND
@@ -295,6 +386,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 // ```
 import androidx.compose.foundation.layout.fillMaxWidth
 
+// What:     `import androidx.compose.foundation.layout.height` fixes a composable's height.
+// Why:      The MD1 selected indicator is a 2dp line.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { height } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.height
+
 // What:     `import androidx.compose.foundation.layout.padding` pulls in the `padding`
 //           MODIFIER (inner spacing around a composable).
 // Why:      Most layouts pad their contents with `Modifier.padding(...)`.
@@ -314,6 +414,35 @@ import androidx.compose.foundation.layout.padding
 // import { size } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.size
+
+// What:     `import androidx.compose.foundation.layout.width` constrains a composable's width.
+// Why:      `width(IntrinsicSize.Max)` keeps each MD1 label on one content-width line.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { width } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.width
+
+// What:     `import androidx.compose.foundation.layout.widthIn` caps width without forcing
+//           short content to stretch.
+// Why:      Chromium labels stay content-width until parent width requires ellipsis.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { widthIn } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.widthIn
+
+// What:     `import androidx.compose.foundation.layout.wrapContentWidth` relaxes an
+//           inherited minimum width while retaining the parent's maximum width.
+// Why:      The segmented frame should fit its used segments, then wrap at screen width.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { wrapContentWidth } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.wrapContentWidth
 
 // What:     `import androidx.compose.foundation.lazy.LazyColumn` pulls in `LazyColumn`, a
 //           SCROLLING column that only composes visible items (like a virtualized list).
@@ -387,7 +516,7 @@ import androidx.compose.material3.OutlinedButton
 
 // What:     `import androidx.compose.material3.RadioButton` pulls in the radio-button
 //           composable.
-// Why:      `shuffleOption` shows a `RadioButton`.
+// Why:      `radioOption` shows a `RadioButton`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -550,6 +679,15 @@ import androidx.compose.ui.Alignment
 // ```
 import androidx.compose.ui.Modifier
 
+// What:     `import androidx.compose.ui.draw.clip` clips painting to a supplied shape.
+// Why:      Selected segment fills must stay inside the group's rounded outline.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { clip } from "androidx/compose/ui/draw";
+// ```
+import androidx.compose.ui.draw.clip
+
 // What:     `import androidx.compose.ui.graphics.Color` pulls in `Color`, Compose's color
 //           type (we use `Color.Transparent`).
 // Why:      `trackRow` uses `Color.Transparent` for non-current rows.
@@ -559,6 +697,26 @@ import androidx.compose.ui.Modifier
 // import { Color } from "androidx/compose/ui/graphics";
 // ```
 import androidx.compose.ui.graphics.Color
+
+// What:     `import androidx.compose.foundation.shape.GenericShape` creates a shape from
+//           measured path commands.
+// Why:      Chromium tabs need curved shoulders that rounded rectangles cannot express.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { GenericShape } from "androidx/compose/foundation/shape";
+// ```
+import androidx.compose.foundation.shape.GenericShape
+
+// What:     `import androidx.compose.foundation.shape.RoundedCornerShape` creates a shape
+//           whose four corners use the supplied radius.
+// Why:      The segmented group in the supplied reference has one rounded outer frame.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { RoundedCornerShape } from "androidx/compose/foundation/shape";
+// ```
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 // What:     `import androidx.compose.ui.platform.LocalContext` pulls in `LocalContext`, a
 //           Compose CompositionLocal whose `.current` gives the current Android `Context`.
@@ -570,6 +728,15 @@ import androidx.compose.ui.graphics.Color
 // ```
 import androidx.compose.ui.platform.LocalContext
 
+// What:     `import androidx.compose.ui.semantics.Role` names accessibility control roles.
+// Why:      Generic radio rows should announce themselves as radio buttons.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Role } from "androidx/compose/ui/semantics";
+// ```
+import androidx.compose.ui.semantics.Role
+
 // What:     `import androidx.compose.ui.text.style.TextOverflow` pulls in `TextOverflow`,
 //           the namespace describing how overflowing text is clipped (`Ellipsis`).
 // Why:      `trackRow` uses `TextOverflow.Ellipsis`.
@@ -579,6 +746,15 @@ import androidx.compose.ui.platform.LocalContext
 // import { TextOverflow } from "androidx/compose/ui/text/style";
 // ```
 import androidx.compose.ui.text.style.TextOverflow
+
+// What:     `import androidx.compose.ui.unit.Dp` names density-independent dimensions.
+// Why:      Chromium tab options carry parent width into content-width measurement.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Dp } from "androidx/compose/ui/unit";
+// ```
+import androidx.compose.ui.unit.Dp
 
 // What:     `import androidx.compose.ui.unit.dp` imports the `dp` EXTENSION PROPERTY on
 //           numbers: writing `24.dp` produces a density-independent-pixel dimension. It
@@ -1673,8 +1849,8 @@ private fun startingGate() {
 //           declares a PUBLIC (Kotlin default) composable taking the brain and an
 //           `onChooseFolder` callback (`() -> Unit`).
 // Why:      The player screen, the desktop's narrow (single-column) layout: a seek bar, a
-//           volume slider, a wrapping control row (open / shuffle / transport / repeat),
-//           then the page tabs and the selected page's track list. No title bar, matching
+//           volume slider, a wrapping control row (settings / open / shuffle / transport / repeat),
+//           then settings or the selected page's controls and track list. No title bar, matching
 //           the desktop's plain window. Tap a track to play it; tap the playing track to
 //           pause or resume.
 //
@@ -1701,6 +1877,41 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
      * source and use.
      */
     val state = controller.uiState
+    // What:     `val context = LocalContext.current` reads the current Android context.
+    // Why:      The page-control preference is loaded and saved through SessionStore.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const context = useContext(LocalContext);
+    // ```
+    /** Holds the current Android context for preference persistence. */
+    val context = LocalContext.current
+    // What:     `pageControlStyle` is remembered observable UI state seeded from storage.
+    // Why:      Changing a setting immediately recomposes the page selector.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const [pageControlStyle, setPageControlStyle] = useState(SessionStore.loadPageControlStyle(context));
+    // ```
+    /** Holds the selected page-control treatment. */
+    var pageControlStyle by remember { mutableStateOf(SessionStore.loadPageControlStyle(context)) }
+    // What:     `showingSettings` is remembered observable navigation state.
+    // Why:      The Settings button swaps the library area for the settings page.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const [showingSettings, setShowingSettings] = useState(false);
+    // ```
+    /** Tracks whether the settings page is visible. */
+    var showingSettings by remember { mutableStateOf(false) }
+    // What:     `BackHandler(enabled = showingSettings)` handles system Back only on Settings.
+    // Why:      Return to the library before allowing Back to close the activity.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useBackHandler(showingSettings, () => setShowingSettings(false));
+    // ```
+    BackHandler(enabled = showingSettings) { showingSettings = false }
     // What:     `var position by remember { mutableDoubleStateOf(0.0) }` declares a
     //           state-backed `Double` local via the `useState` idiom: `remember` keeps it
     //           across recompositions, `mutableDoubleStateOf(0.0)` is the (number-specialized)
@@ -1857,8 +2068,31 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             // ```ts
             // <controlRow state={state} controller={controller} onOpen={onChooseFolder}/>
             // ```
-            controlRow(state = state, controller = controller, onOpen = onChooseFolder)
-            // What:     `trackPager(state = state, controller = controller)` renders the page
+            controlRow(
+                state = state,
+                controller = controller,
+                onSettings = { showingSettings = true },
+                onOpen = onChooseFolder,
+            )
+            // What:     The settings/library branch renders one page in the remaining space.
+            // Why:      Settings replaces the page selector and tracks until the user returns.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return showingSettings ? <settingsPage .../> : <trackPager .../>;
+            // ```
+            if (showingSettings) {
+                settingsPage(
+                    style = pageControlStyle,
+                    onSelectStyle = { style ->
+                        pageControlStyle = style
+                        SessionStore.savePageControlStyle(context, style)
+                        Log.i(LOG_TAG, "page control style=${style.name}")
+                    },
+                    onBack = { showingSettings = false },
+                )
+            } else {
+                // What:     `trackPager(state = state, controller = controller)` renders the page
             //           tabs + track list. (Folds in the old inline note: page tabs and the
             //           track list share one scroll area, the desktop's narrow layout: a library
             //           with many folder pages would otherwise let the wrapping tab bar fill the
@@ -1870,7 +2104,12 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             // ```ts
             // <trackPager state={state} controller={controller}/>
             // ```
-            trackPager(state = state, controller = controller)
+                trackPager(
+                    state = state,
+                    controller = controller,
+                    pageControlStyle = pageControlStyle,
+                )
+            }
         }
     }
 }
@@ -2066,10 +2305,9 @@ private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
 // // (component function)
 // ```
 @Composable
-// What:     `private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) { ... }`
-//           declares a private composable taking the UI snapshot, the brain, and an
-//           `onOpen` callback.
-// Why:      Wrapping control row, in the desktop's order: Open (the folder picker), the
+// What:     `private fun controlRow(...)` declares a private composable taking the UI
+//           snapshot, controller, Settings callback, and Open callback.
+// Why:      Wrapping control row, in the desktop's order: Settings, Open, the
 //           three-state shuffle radios, the transport buttons, and repeat-track.
 //
 // In TS you'd write (pseudocode):
@@ -2080,7 +2318,12 @@ private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
  * Defines control row behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) {
+private fun controlRow(
+    state: PlayerUiState,
+    controller: PlayerController,
+    onSettings: () -> Unit,
+    onOpen: () -> Unit,
+) {
     // What:     `FlowRow( horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement =
     //           Arrangement.spacedBy(8.dp), ) { ... }`
     //           lays children left-to-right, WRAPPING to new lines on overflow, with 16dp
@@ -2098,6 +2341,14 @@ private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpe
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // What:     `Button(onClick = onSettings)` renders Settings immediately before Open.
+        // Why:      Open the page-control preference screen from the main controls.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <Button onClick={onSettings}>Settings</Button>
+        // ```
+        Button(onClick = onSettings) { Text("Settings") }
         // What:     `Button(onClick = onOpen) { Text("Open") }` renders the Open button; its
         //           trailing lambda `{ Text("Open") }` is the button's CONTENT (label).
         // Why:      Launch the folder picker.
@@ -2124,7 +2375,7 @@ private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpe
             // <Text>Shuffle</Text>
             // ```
             Text("Shuffle")
-            // What:     `shuffleOption("Off", state.shuffle == ShuffleMode.OFF) {
+            // What:     `radioOption("Off", state.shuffle == ShuffleMode.OFF) {
             //           controller.setShuffle(ShuffleMode.OFF) }`
             //           renders the "Off" radio. The second arg `state.shuffle == ShuffleMode.OFF`
             //           is its selected `Boolean` (enum value equality); the trailing lambda is
@@ -2133,11 +2384,11 @@ private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpe
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <shuffleOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
+            // <radioOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
             // controller.setShuffle(ShuffleMode.OFF)}/>
             // ```
-            shuffleOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
-            // What:     `shuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
+            radioOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
+            // What:     `radioOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
             //           controller.setShuffle(ShuffleMode.WITHIN_PAGE) }`
             //           renders the "Within page" radio (selected when the mode is
             //           `WITHIN_PAGE`; its action sets that mode).
@@ -2145,13 +2396,13 @@ private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpe
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <shuffleOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
+            // <radioOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
             // controller.setShuffle(ShuffleMode.WITHIN_PAGE)}/>
             // ```
-            shuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
+            radioOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
                 controller.setShuffle(ShuffleMode.WITHIN_PAGE)
             }
-            // What:     `shuffleOption("All", state.shuffle == ShuffleMode.ALL) {
+            // What:     `radioOption("All", state.shuffle == ShuffleMode.ALL) {
             //           controller.setShuffle(ShuffleMode.ALL) }`
             //           renders the "All" radio (selected when the mode is `ALL`; its action
             //           sets that mode).
@@ -2159,10 +2410,10 @@ private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpe
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <shuffleOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
+            // <radioOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
             // controller.setShuffle(ShuffleMode.ALL)}/>
             // ```
-            shuffleOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
+            radioOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
         }
         // What:     `Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement =
         //           Arrangement.spacedBy(8.dp)) { ... }`
@@ -2241,61 +2492,435 @@ private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpe
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `shuffleOption` is a UI component.
+// Why:      `radioOption` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) { ... }`
-//           declares a private composable for one shuffle radio.
-// Why:      One shuffle radio: a Material3 radio and its label, the whole pair clickable.
+// What:     `private fun radioOption(label: String, selected: Boolean, onSelect: () -> Unit) { ... }`
+//           declares a private composable for one reusable radio option.
+// Why:      Shuffle, settings, and page navigation share one accessible radio row.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function shuffleOption(props: { label: string; selected: boolean; onSelect: () => void; }) { ... }
+// function radioOption(props: { label: string; selected: boolean; onSelect: () => void; }) { ... }
 // ```
 /**
- * Defines shuffle option behavior for this music-player component; the TypeScript-oriented notes above explain
+ * Defines a reusable radio option; the TypeScript-oriented notes above explain
  * its call shape and effects.
  */
-private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
-    // What:     `Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onSelect() }, ) {
-    //           ... }`
-    //           lays out the radio and label, with `Modifier.clickable { onSelect() }` making
-    //           the WHOLE row tappable (the trailing lambda is the click handler).
-    // Why:      Allow tapping anywhere on the radio+label pair to select it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <Row
-    //   verticalAlignment={Alignment.CenterVertically}
-    //   modifier={Modifier.clickable(() => onSelect())}
-    // > ... </Row>
-    // ```
+private fun radioOption(label: String, selected: Boolean, onSelect: () -> Unit) {
+    // One 48dp row owns the selection semantics and action.
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { onSelect() },
+        modifier = Modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = onSelect,
+            ),
     ) {
-        // What:     `RadioButton(selected = selected, onClick = onSelect)` renders the radio
-        //           dot; `selected` shows its filled state; `onClick = onSelect` forwards the
-        //           selection action.
-        // Why:      Show and drive the radio.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <RadioButton selected={selected} onClick={onSelect}/>
-        // ```
-        RadioButton(selected = selected, onClick = onSelect)
-        // What:     `Text(label)` shows the option's label.
-        // Why:      Name the radio.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Text>{label}</Text>
-        // ```
-        Text(label)
+        // The indicator is display-only because the parent row owns the one action.
+        RadioButton(selected = selected, onClick = null)
+        Text(text = label, modifier = Modifier.padding(end = 8.dp))
+    }
+}
+
+// What:     `settingsPage` is a weighted Column child showing every page-control
+//           choice and a route back to the library.
+// Why:      The Settings button needs a dedicated page where the preference is explicit.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SettingsPage(props: SettingsProps) { ... }
+// ```
+/** Displays page-control preferences in place of the music library. */
+@Composable
+private fun ColumnScope.settingsPage(
+    style: PageControlStyle,
+    onSelectStyle: (PageControlStyle) -> Unit,
+    onBack: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1.0f, fill = true),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(text = "Page controls", style = MaterialTheme.typography.headlineSmall)
+        Text("Choose how library pages are shown.")
+        radioOption(
+            label = "Radio controls",
+            selected = style == PageControlStyle.RADIO,
+            onSelect = { onSelectStyle(PageControlStyle.RADIO) },
+        )
+        radioOption(
+            label = "Multi-row MD1 tabs",
+            selected = style == PageControlStyle.MD1_TABS,
+            onSelect = { onSelectStyle(PageControlStyle.MD1_TABS) },
+        )
+        radioOption(
+            label = "Rounded buttons",
+            selected = style == PageControlStyle.ROUNDED_BUTTONS,
+            onSelect = { onSelectStyle(PageControlStyle.ROUNDED_BUTTONS) },
+        )
+        radioOption(
+            label = "Segmented buttons",
+            selected = style == PageControlStyle.SEGMENTED_BUTTONS,
+            onSelect = { onSelectStyle(PageControlStyle.SEGMENTED_BUTTONS) },
+        )
+        radioOption(
+            label = "Chromium-like tabs",
+            selected = style == PageControlStyle.CHROMIUM_TABS,
+            onSelect = { onSelectStyle(PageControlStyle.CHROMIUM_TABS) },
+        )
+        Button(onClick = onBack) { Text("Back to library") }
+    }
+}
+
+// What:     `md1PageTab` renders a flat text tab with a selected underline.
+// Why:      This recreates the Material Design 1 tab visual while FlowRow supplies
+//           the requested multi-row layout.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function Md1PageTab(props: TabProps) { ... }
+// ```
+/** Displays one flat Material Design 1 page tab. */
+@Composable
+private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
+    /** Holds the selected underline color, or transparent for an inactive tab. */
+    val indicatorColor: Color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
+    /** Holds accent text for the active tab and regular surface text otherwise. */
+    val labelColor: Color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(IntrinsicSize.Max)
+            .defaultMinSize(minHeight = 48.dp)
+            .clickable { onSelect() },
+    ) {
+        Text(
+            text = label,
+            color = labelColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(indicatorColor),
+        )
+    }
+}
+
+// What:     `ChromiumTabColors` groups accent tint and neutral tab colors.
+// Why:      Active tab follows theme accent while inactive decoration stays neutral.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type ChromiumTabColors = {
+//   active: Color;
+//   activeOutline: Color;
+//   divider: Color;
+//   ink: Color;
+// };
+// ```
+/** Holds colors used by Chromium-like page tabs. */
+private data class ChromiumTabColors(
+    /** Fills selected tab with translucent accent tint. */
+    val active: Color,
+    /** Draws stronger accent contour around selected tab. */
+    val activeOutline: Color,
+    /** Draws neutral inactive baselines and separators. */
+    val divider: Color,
+    /** Draws tab labels. */
+    val ink: Color,
+)
+
+// What:     `chromiumTabColors` derives active tint from Material theme accent.
+// Why:      Selected tab follows user theme without painting inactive backgrounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function chromiumTabColors(): ChromiumTabColors { ... }
+// ```
+/** Returns accent-tinted Chromium-like tab colors. */
+@Composable
+private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
+    active = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
+    activeOutline = MaterialTheme.colorScheme.primary.copy(alpha = 0.65f),
+    divider = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.25f),
+    ink = MaterialTheme.colorScheme.onBackground,
+)
+
+// What:     `chromiumTabShape` traces Chromium's rounded top and outward shoulders.
+// Why:      Rounded rectangles cannot reproduce the concave transition into the tab strip.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function chromiumTabShape(): Shape { ... }
+// ```
+/** Returns content-width Chromium-like selected-tab silhouette. */
+private fun chromiumTabShape(): GenericShape = GenericShape { size, _ ->
+    /** Holds Chromium's 12dp shoulder relative to 35dp tab height. */
+    val shoulder: Float = size.height * 12f / 35f
+    /** Holds Chromium's 10dp upper corner relative to 35dp tab height. */
+    val radius: Float = size.height * 10f / 35f
+    /** Holds right-side edge before outward shoulder. */
+    val rightEdge: Float = size.width - shoulder
+    moveTo(0f, size.height)
+    cubicTo(
+        shoulder / 2f,
+        size.height,
+        shoulder,
+        size.height - shoulder / 2f,
+        shoulder,
+        size.height - shoulder,
+    )
+    lineTo(shoulder, radius)
+    cubicTo(shoulder, radius / 2f, shoulder + radius / 2f, 0f, shoulder + radius, 0f)
+    lineTo(rightEdge - radius, 0f)
+    cubicTo(rightEdge - radius / 2f, 0f, rightEdge, radius / 2f, rightEdge, radius)
+    lineTo(rightEdge, size.height - shoulder)
+    cubicTo(
+        rightEdge,
+        size.height - shoulder / 2f,
+        size.width - shoulder / 2f,
+        size.height,
+        size.width,
+        size.height,
+    )
+}
+
+// What:     `ChromiumPageTabOptions` groups inputs for one browser-style tab.
+// Why:      Tab function receives one named options boundary instead of positional values.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type ChromiumPageTabOptions = {
+//   label: string;
+//   selected: boolean;
+//   showDivider: boolean;
+//   maximumWidth: Dp;
+//   onSelect: () => void;
+// };
+// ```
+/** Holds rendering state and selection behavior for one Chromium-like tab. */
+private data class ChromiumPageTabOptions(
+    /** Holds one-line page label. */
+    val label: String,
+    /** Records whether this page is visible. */
+    val selected: Boolean,
+    /** Records whether this inactive tab needs a trailing separator. */
+    val showDivider: Boolean,
+    /** Caps pathological labels to available pager width. */
+    val maximumWidth: Dp,
+    /** Selects this page when invoked. */
+    val onSelect: () -> Unit,
+)
+
+// What:     `ChromiumPageTabPresentation` groups state with measured colors.
+// Why:      Extracted tab decoration receives one named rendering boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type ChromiumPageTabPresentation = {
+//   options: ChromiumPageTabOptions;
+//   colors: ChromiumTabColors;
+// };
+// ```
+/** Holds all values needed to paint Chromium tab contents. */
+private data class ChromiumPageTabPresentation(
+    /** Holds tab state and selection behavior. */
+    val options: ChromiumPageTabOptions,
+    /** Holds appearance-aware contour colors. */
+    val colors: ChromiumTabColors,
+)
+
+// What:     `chromiumPageTabContent` paints label, baseline, and separator.
+// Why:      Geometry and inner decoration remain independently readable and lint-sized.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ChromiumPageTabContent(presentation: ChromiumPageTabPresentation) { ... }
+// ```
+/** Paints inner decoration for one Chromium-like tab. */
+@Composable
+private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresentation) {
+    /** Holds tab state for concise decoration bindings. */
+    val options: ChromiumPageTabOptions = presentation.options
+    /** Holds measured colors for concise decoration bindings. */
+    val colors: ChromiumTabColors = presentation.colors
+    Text(
+        text = options.label,
+        color = colors.ink,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.padding(horizontal = 20.dp),
+    )
+    if (options.selected) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(colors.active),
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(colors.divider),
+        )
+    }
+    if (!options.selected && options.showDivider) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(2.dp)
+                .height(16.dp)
+                .background(colors.divider),
+        )
+    }
+}
+
+// What:     `chromiumPageTab` renders one measured browser-style tab.
+// Why:      Selected page needs Chromium's outlined top contour and outward shoulders.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ChromiumPageTab(options: ChromiumPageTabOptions) { ... }
+// ```
+/** Displays one selectable Chromium-like page tab. */
+@Composable
+private fun chromiumPageTab(options: ChromiumPageTabOptions) {
+    /** Holds measured dark or light Chromium colors. */
+    val colors: ChromiumTabColors = chromiumTabColors()
+    /** Holds curved selected-tab silhouette. */
+    val tabShape: GenericShape = chromiumTabShape()
+    /** Paints active contour while leaving inactive tabs on parent background. */
+    val stateModifier: Modifier = if (options.selected) {
+        Modifier
+            .clip(tabShape)
+            .background(colors.active)
+            .border(1.dp, colors.activeOutline, tabShape)
+    } else {
+        Modifier
+    }
+    Box(
+        modifier = Modifier
+            .widthIn(max = options.maximumWidth)
+            .width(IntrinsicSize.Max)
+            .height(41.dp)
+            .selectable(
+                selected = options.selected,
+                role = Role.Tab,
+                onClick = options.onSelect,
+            ),
+    ) {
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .width(IntrinsicSize.Max)
+                .height(35.dp)
+                .then(stateModifier),
+        ) {
+            chromiumPageTabContent(
+                ChromiumPageTabPresentation(
+                    options = options,
+                    colors = colors,
+                ),
+            )
+        }
+    }
+}
+
+// What:     `segmentedPageButton` renders one content-width rectangular section.
+// Why:      Adjacent sections form the joined control shown in the supplied reference.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SegmentedPageButton(props: SegmentProps) { ... }
+// ```
+/** Displays one selectable section inside a segmented page-control group. */
+@Composable
+private fun segmentedPageButton(label: String, selected: Boolean, onSelect: () -> Unit) {
+    /** Holds selected or unselected segment fill. */
+    val containerColor: Color = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    /** Holds text color contrasting with this segment's fill. */
+    val labelColor: Color = if (selected) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .background(containerColor)
+            .border(0.5.dp, MaterialTheme.colorScheme.outline)
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = onSelect,
+            ),
+    ) {
+        Text(
+            text = label,
+            color = labelColor,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+    }
+}
+
+// What:     `segmentedPageControls` renders content-width segments in one rounded frame.
+// Why:      A separate overlay keeps the shared border visible over child backgrounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SegmentedPageControls(props: PageControlsProps) { ... }
+// ```
+/** Displays a wrapped, mutually exclusive segmented page-control group. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
+    /** Holds the shared outer shape for clipping and border drawing. */
+    val groupShape: RoundedCornerShape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = Modifier
+            .wrapContentWidth(align = Alignment.Start)
+            .clip(groupShape),
+    ) {
+        FlowRow(modifier = Modifier.selectableGroup()) {
+            state.pageLabels.forEachIndexed { page, label ->
+                /** Records whether this page is currently visible. */
+                val selected: Boolean = page == state.selectedPage
+                segmentedPageButton(
+                    label = label,
+                    selected = selected,
+                    onSelect = { onSelectPage(page) },
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .border(2.dp, MaterialTheme.colorScheme.outline, groupShape),
+        )
     }
 }
 
@@ -2329,7 +2954,11 @@ private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit
  * Defines page tabs behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
+private fun pageTabs(
+    state: PlayerUiState,
+    pageControlStyle: PageControlStyle,
+    onSelectPage: (Int) -> Unit,
+) {
     // What:     `FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) { ... }` lays the
     //           tab buttons left-to-right, wrapping, with 4dp gaps.
     // Why:      A wrapping grid of page tabs.
@@ -2338,7 +2967,25 @@ private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
     // ```ts
     // <FlowRow horizontalArrangement={Arrangement.spacedBy(dp(4))}> ... </FlowRow>
     // ```
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    if (pageControlStyle == PageControlStyle.SEGMENTED_BUTTONS) {
+        segmentedPageControls(state = state, onSelectPage = onSelectPage)
+        return
+    }
+    BoxWithConstraints {
+        /** Holds pager width before entering nested FlowRow scope. */
+        val pageMaximumWidth: Dp = maxWidth
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(
+            if (
+                pageControlStyle == PageControlStyle.MD1_TABS ||
+                pageControlStyle == PageControlStyle.CHROMIUM_TABS
+            ) {
+                0.dp
+            } else {
+                4.dp
+            },
+        ),
+    ) {
         // What:     `state.pageLabels.forEachIndexed { page, label -> ... }` iterates the page
         //           labels WITH their indices. `forEachIndexed { page, label -> ... }` is a
         //           trailing lambda whose two parameters are the index `page` (an `Int`) and the
@@ -2364,28 +3011,29 @@ private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
             //   return <Button onClick={() => onSelectPage(page)}><Text>{label}</Text></Button>;
             // return <OutlinedButton onClick={() => onSelectPage(page)}><Text>{label}</Text></OutlinedButton>;
             // ```
-            if (page == state.selectedPage) {
-                // What:     `Button(onClick = { onSelectPage(page) }) { Text(label) }` renders the
-                //           active (filled) tab.
-                // Why:      Highlight the current page.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // <Button onClick={() => onSelectPage(page)}><Text>{label}</Text></Button>
-                // ```
+            /** Records whether this page is currently visible. */
+            val selected: Boolean = page == state.selectedPage
+            if (pageControlStyle == PageControlStyle.RADIO) {
+                radioOption(label = label, selected = selected, onSelect = { onSelectPage(page) })
+            } else if (pageControlStyle == PageControlStyle.MD1_TABS) {
+                md1PageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
+            } else if (pageControlStyle == PageControlStyle.CHROMIUM_TABS) {
+                chromiumPageTab(
+                    ChromiumPageTabOptions(
+                        label = label,
+                        selected = selected,
+                        showDivider = page < state.pageLabels.lastIndex && page + 1 != state.selectedPage,
+                        maximumWidth = pageMaximumWidth,
+                        onSelect = { onSelectPage(page) },
+                    ),
+                )
+            } else if (selected) {
                 Button(onClick = { onSelectPage(page) }) { Text(label) }
             } else {
-                // What:     `OutlinedButton(onClick = { onSelectPage(page) }) { Text(label) }`
-                //           renders an inactive (outlined) tab.
-                // Why:      Show the other selectable pages.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // <OutlinedButton onClick={() => onSelectPage(page)}><Text>{label}</Text></OutlinedButton>
-                // ```
                 OutlinedButton(onClick = { onSelectPage(page) }) { Text(label) }
             }
         }
+    }
     }
 }
 
@@ -2421,7 +3069,11 @@ private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
  * Defines track pager behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun ColumnScope.trackPager(state: PlayerUiState, controller: PlayerController) {
+private fun ColumnScope.trackPager(
+    state: PlayerUiState,
+    controller: PlayerController,
+    pageControlStyle: PageControlStyle,
+) {
     // What:     `if (state.queueSize == 0) { ... }` checks for an empty queue (`==` integer
     //           equality).
     // Why:      An empty queue shows either a loading notice or a "no music" message, then
@@ -2523,7 +3175,11 @@ private fun ColumnScope.trackPager(state: PlayerUiState, controller: PlayerContr
                 // ```ts
                 // <pageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
                 // ```
-                pageTabs(state = state, onSelectPage = { controller.selectPage(it) })
+                pageTabs(
+                    state = state,
+                    pageControlStyle = pageControlStyle,
+                    onSelectPage = { controller.selectPage(it) },
+                )
             }
         }
         // What:     `items(state.pageItems) { item -> ... }` emits one list row per element of

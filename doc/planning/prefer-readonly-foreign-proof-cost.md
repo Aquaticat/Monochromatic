@@ -309,8 +309,8 @@ and the verifier's own control flow decides whether to ask.
 `verifier.ts` reads the foreign answer in exactly four places,
 so the question "can the answer change a report" has a mechanical answer per parameter:
 
--    `classification.kind === 'dishonest-readonly'`.
--    `mutated && classification.kind === 'honest-readonly'`.
+-    `classification.kind === 'projected-readonly-capability'`.
+-    `mutated && classification.kind === 'sound-readonly'`.
 -    `(!mutated) && classification.kind === 'mutable'`.
 -    `(!affected)` together with a parameter type the redundant-marker report would act on.
 
@@ -466,7 +466,7 @@ Deferred against baseline:
 1196 opaque-call reports,
 666 opaque-method reports,
 32 offers,
-37 dishonest-readonly reports,
+37 projected-readonly-capability reports,
 6 stale contracts on both sides;
 3902 warnings and 3299 errors across every rule on both sides;
 and 7201 diagnostics identical as message-plus-location pairs,
@@ -514,7 +514,7 @@ Recorded so the count is not read as eight.
 
 The floor run measures something beyond wall time,
 and it narrows what the equivalence is worth.
-Disabling the proof outright leaves `dishonestReadonly` at 37 and `redundantForeignBorrowed` at 0,
+Disabling the proof outright leaves `projectedReadonlyCapability` at 37 and `redundantForeignBorrowed` at 0,
 exactly as both other runs report them.
 Only offers move,
  and only by seven.
@@ -535,11 +535,11 @@ which is exactly the set that reports and returns before any verdict reads the a
 For the rest,
  each clause stands for one reading verdict:
 
--    `kind === 'dishonest-readonly'`,
+-    `kind === 'projected-readonly-capability'`,
       unconditional,
-     covers the dishonest arm of the `mutated` verdict and the whole of the `(!mutated)` one.
+     covers the unsupported arm of the `mutated` verdict and the whole of the `(!mutated)` one.
      It is unconditional because both of those fire on that classification regardless of `mutated`.
--    `mutated && (kind === 'honest-readonly')` covers the honest arm of the `mutated` verdict.
+-    `mutated && (kind === 'sound-readonly')` covers the sound arm of the `mutated` verdict.
 -    `(!mutated) && (kind === 'mutable')` covers the offer suppression.
 -    `redundantMarkerPossible` covers the redundant-marker report,
      and carries `(!affected)` inside itself together with everything that report decides from the
@@ -570,7 +570,7 @@ Of 1937 findings,
  and an opaque parameter reports and returns before the
 foreign answer is read.
 Most of the remainder are parameters this repository already types `readonly`,
-which is `honest-readonly` and matches no branch the answer can move.
+which is `sound-readonly` and matches no branch the answer can move.
 The closure was running once per callable regardless,
 including for `includeActiveSource`,
  which asks for every callable in the active file purely to seed

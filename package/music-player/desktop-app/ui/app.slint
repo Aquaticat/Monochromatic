@@ -1,5 +1,5 @@
 // The player window: a seek bar on top, a volume slider, and one combined
-// control row (left to right: an Open button, a three-state shuffle radio group
+// control row (left to right: Settings and Open buttons, a three-state shuffle radio group
 // (Off / Within page / All), the transport buttons prev / play-pause / next, and
 // a "repeat track" checkbox; the checkbox is the native std-widgets CheckBox and
 // the shuffle radio is a custom control styled to echo Fluent's radio, since Slint
@@ -64,8 +64,11 @@ struct PageItem {
 component RadioButton inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
+    in property <bool> large-target: false;
     callback clicked();
     horizontal-stretch: 0;
+    height: root.large-target ? 48px : 20px;
+    preferred-height: root.height;
 
     HorizontalLayout {
         spacing: 8px;
@@ -114,6 +117,330 @@ component RadioButton inherits Rectangle {
     ta := TouchArea {
         clicked => {
             root.clicked();
+        }
+    }
+}
+
+// A Material Design 1 tab: a flat 48px-high text target with a 2px accent
+// indicator along the bottom when selected. PageControls lays these out in a
+// wrapping grid instead of the single scrolling row used by the original MD1
+// component, keeping every page visible.
+component Md1Tab inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    callback clicked();
+    horizontal-stretch: 0;
+    width: tab-label.preferred-width + 24px;
+    height: 48px;
+    preferred-height: 48px;
+    background: transparent;
+
+    tab-label := Text {
+        x: 12px;
+        width: parent.width - 24px;
+        height: parent.height - 2px;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        color: Palette.foreground;
+    }
+    Rectangle {
+        y: parent.height - 2px;
+        width: parent.width;
+        height: 2px;
+        background: root.selected ? Palette.accent-background : transparent;
+    }
+    TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// A content-width section in one joined segmented control. Adjacent sections
+// have no gap, and one-sided divider lines keep every seam a consistent width.
+component SegmentedButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    callback clicked();
+    horizontal-stretch: 0;
+    width: segment-label.preferred-width + 32px;
+    height: 48px;
+    preferred-height: 48px;
+    border-width: 1px;
+    border-color: Palette.foreground;
+    background: root.selected ? Palette.accent-background : Palette.control-background;
+
+    segment-label := Text {
+        x: 16px;
+        width: parent.width - 32px;
+        height: parent.height;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        color: root.selected ? Palette.accent-foreground : Palette.foreground;
+    }
+    TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// A wrapping segmented group whose transparent remainder never resembles a
+// full-width segment. Each naturally sized segment paints its own outline.
+component SegmentedControls inherits Rectangle {
+    in property <[string]> labels;
+    in property <int> selected-page;
+    callback select-page(int);
+    height: segment-layout.preferred-height;
+    preferred-height: segment-layout.preferred-height;
+    background: transparent;
+
+    segment-layout := FlexboxLayout {
+        width: parent.width;
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: SegmentedButton {
+            text: label;
+            selected: p == root.selected-page;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+}
+
+// Chromium's logical metrics: a 35px tab below 6px strip padding,
+// 10px top corners, 12px outward shoulders, 1px contour, and 20px insets.
+component ChromiumTab inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    in property <bool> show-divider;
+    callback clicked();
+    private property <color> active-color: Palette.accent-background.with-alpha(0.2);
+    private property <color> active-outline-color: Palette.accent-background.with-alpha(0.65);
+    private property <color> divider-color: Palette.foreground.with-alpha(0.25);
+    private property <color> ink-color: Palette.foreground;
+    horizontal-stretch: 0;
+    width: min(chromium-label.preferred-width + 40px, root.max-width);
+    height: 41px;
+    preferred-height: 41px;
+    background: transparent;
+
+    if !root.selected && chromium-touch.has-hover: Rectangle {
+        x: 12px;
+        y: 6px;
+        width: parent.width - 24px;
+        height: 35px;
+        border-radius: 10px;
+        background: Palette.accent-background.with-alpha(0.12);
+    }
+
+    if root.selected: Path {
+        y: 6px;
+        width: parent.width;
+        height: 35px;
+        viewbox-width: root.width / 1px;
+        viewbox-height: 35;
+        fit: fill;
+        fill: root.active-color;
+        MoveTo { x: 0; y: 35; }
+        CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
+        LineTo { x: 12; y: 10; }
+        QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
+        LineTo { x: root.width / 1px - 22; y: 0; }
+        QuadraticTo {
+            control-x: root.width / 1px - 12;
+            control-y: 0;
+            x: root.width / 1px - 12;
+            y: 10;
+        }
+        LineTo { x: root.width / 1px - 12; y: 23; }
+        CubicTo {
+            control-1-x: root.width / 1px - 12;
+            control-1-y: 29;
+            control-2-x: root.width / 1px - 6;
+            control-2-y: 35;
+            x: root.width / 1px;
+            y: 35;
+        }
+        LineTo { x: 0; y: 35; }
+        Close {}
+    }
+
+    if root.selected: Path {
+        y: 6px;
+        width: parent.width;
+        height: 35px;
+        viewbox-width: root.width / 1px;
+        viewbox-height: 35;
+        fit: fill;
+        fill: transparent;
+        stroke: root.active-outline-color;
+        stroke-width: 1px;
+        stroke-line-cap: round;
+        MoveTo { x: 0; y: 35; }
+        CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
+        LineTo { x: 12; y: 10; }
+        QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
+        LineTo { x: root.width / 1px - 22; y: 0; }
+        QuadraticTo {
+            control-x: root.width / 1px - 12;
+            control-y: 0;
+            x: root.width / 1px - 12;
+            y: 10;
+        }
+        LineTo { x: root.width / 1px - 12; y: 23; }
+        CubicTo {
+            control-1-x: root.width / 1px - 12;
+            control-1-y: 29;
+            control-2-x: root.width / 1px - 6;
+            control-2-y: 35;
+            x: root.width / 1px;
+            y: 35;
+        }
+    }
+
+    if !root.selected: Rectangle {
+        y: parent.height - 1px;
+        width: parent.width;
+        height: 1px;
+        background: root.divider-color;
+    }
+
+    if !root.selected && root.show-divider: Rectangle {
+        x: parent.width - 1px;
+        y: 16px;
+        width: 2px;
+        height: 16px;
+        border-radius: 1px;
+        background: root.divider-color;
+    }
+
+    chromium-label := Text {
+        x: 20px;
+        y: 6px;
+        width: parent.width - 40px;
+        height: 35px;
+        text: root.text;
+        font-size: 13px;
+        vertical-alignment: center;
+        horizontal-alignment: left;
+        overflow: elide;
+        color: root.ink-color;
+    }
+
+    chromium-touch := TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// A full-width Chromium tab strip with content-width tabs. Whole tabs wrap
+// between rows while strip paint remains behind unused row space.
+component ChromiumControls inherits Rectangle {
+    in property <[string]> labels;
+    in property <int> selected-page;
+    callback select-page(int);
+    height: chromium-layout.preferred-height;
+    preferred-height: chromium-layout.preferred-height;
+    background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
+
+    chromium-layout := FlexboxLayout {
+        width: parent.width;
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: ChromiumTab {
+            text: label;
+            selected: p == root.selected-page;
+            show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
+            max-width: root.width;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+}
+
+// One page selector with five user-selectable visual styles. Style 0 is the
+// default radio control, style 1 is a wrapping MD1 tab grid, style 2 keeps
+// the previous rounded button grid, style 3 joins content-width segments,
+// and style 4 uses raised Chromium-like tabs.
+component PageControls inherits VerticalLayout {
+    in property <[string]> labels;
+    in property <int> selected-page;
+    in property <int> control-style;
+    callback select-page(int);
+    alignment: start;
+
+    if root.control-style == 0: FlexboxLayout {
+        spacing-horizontal: 12px;
+        spacing-vertical: 4px;
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: RadioButton {
+            text: label;
+            selected: p == root.selected-page;
+            large-target: true;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+    if root.control-style == 1: FlexboxLayout {
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: Md1Tab {
+            text: label;
+            selected: p == root.selected-page;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+    if root.control-style == 2: FlexboxLayout {
+        spacing: 4px;
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: Button {
+            text: label;
+            primary: p == root.selected-page;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+    if root.control-style == 3: SegmentedControls {
+        labels: root.labels;
+        selected-page: root.selected-page;
+        select-page(p) => {
+            root.select-page(p);
+        }
+    }
+    if root.control-style == 4: ChromiumControls {
+        labels: root.labels;
+        selected-page: root.selected-page;
+        select-page(p) => {
+            root.select-page(p);
         }
     }
 }
@@ -253,6 +580,12 @@ export component AppWindow inherits Window {
     in property <[string]> page-labels: [];
     in property <int> selected-page: 0;
     in property <[PageItem]> page-items: [];
+    // Page selector style: 0 = radio controls, 1 = multi-row MD1 tabs,
+    // 2 = the previous rounded buttons, 3 = segmented buttons,
+    // 4 = Chromium-like tabs. Rust restores and persists this value.
+    in-out property <int> page-control-style: 0;
+    // Settings is a local navigation page, not playback state.
+    in-out property <bool> show-settings: false;
 
     // Outputs to Rust (each maps to one engine Command).
     callback toggle-play();
@@ -270,6 +603,8 @@ export component AppWindow inherits Window {
     // the track's full-queue index.
     callback select-index(int);
     callback open-files();
+    // Persist a page-control style selected on the settings page.
+    callback set-page-control-style(int);
     // The user clicked a page tab; the argument is the page index. Rust swaps the
     // visible page (refills `page-items` and updates `selected-page`).
     callback select-page(int);
@@ -350,6 +685,13 @@ export component AppWindow inherits Window {
             spacing-horizontal: 48px;
             spacing-vertical: 8px;
             vertical-stretch: 0;
+            Button {
+                text: "Settings";
+                primary: root.show-settings;
+                clicked => {
+                    root.show-settings = true;
+                }
+            }
             Button {
                 text: "Open";
                 // Highlight (accent style) when the queue is empty, so a fresh
@@ -457,8 +799,76 @@ export component AppWindow inherits Window {
         Rectangle {
             vertical-stretch: 1;
 
+            // Settings page. Each choice applies immediately and is persisted by
+            // Rust; Back returns to the library without changing playback.
+            if root.show-settings: VerticalLayout {
+                alignment: start;
+                spacing: 8px;
+                Text {
+                    text: "Page controls";
+                    font-size: 1.4 * Typography.body-rem * 1rem;
+                    color: Palette.foreground;
+                }
+                Text {
+                    text: "Choose how library pages are shown.";
+                    font-size: Typography.body-rem * 1rem;
+                    color: Palette.foreground;
+                }
+                RadioButton {
+                    text: "Radio controls";
+                    selected: root.page-control-style == 0;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 0;
+                        root.set-page-control-style(0);
+                    }
+                }
+                RadioButton {
+                    text: "Multi-row MD1 tabs";
+                    selected: root.page-control-style == 1;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 1;
+                        root.set-page-control-style(1);
+                    }
+                }
+                RadioButton {
+                    text: "Rounded buttons";
+                    selected: root.page-control-style == 2;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 2;
+                        root.set-page-control-style(2);
+                    }
+                }
+                RadioButton {
+                    text: "Segmented buttons";
+                    selected: root.page-control-style == 3;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 3;
+                        root.set-page-control-style(3);
+                    }
+                }
+                RadioButton {
+                    text: "Chromium-like tabs";
+                    selected: root.page-control-style == 4;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 4;
+                        root.set-page-control-style(4);
+                    }
+                }
+                Button {
+                    text: "Back to library";
+                    clicked => {
+                        root.show-settings = false;
+                    }
+                }
+            }
+
             // Wide: two independent scroll containers.
-            if root.width >= 900px: HorizontalLayout {
+            if !root.show-settings && root.width >= 900px: HorizontalLayout {
                 spacing: 24px;
                 alignment: stretch;
 
@@ -478,25 +888,12 @@ export component AppWindow inherits Window {
                         viewport-height: tabsContent.preferred-height;
                         tabsContent := VerticalLayout {
                             alignment: start;
-                            // align-content and cross-axis-alignment default to
-                            // stretch on FlexboxLayout; pin both to start so the wrapped tab
-                            // lines and the buttons keep their natural height,
-                            // packed at the top, rather than being inflated by any
-                            // surplus cross-axis height.
-                            FlexboxLayout {
-                                spacing: 4px;
-                                flex-wrap: wrap;
-                                alignment: start;
-                                align-content: start;
-                                cross-axis-alignment: start;
-                                vertical-stretch: 0;
-                                for label[p] in root.page-labels: Button {
-                                    text: label;
-                                    // Active page's tab drawn with the accent style.
-                                    primary: p == root.selected-page;
-                                    clicked => {
-                                        root.select-page(p);
-                                    }
+                            PageControls {
+                                labels: root.page-labels;
+                                selected-page: root.selected-page;
+                                control-style: root.page-control-style;
+                                select-page(p) => {
+                                    root.select-page(p);
                                 }
                             }
                         }
@@ -577,7 +974,7 @@ export component AppWindow inherits Window {
             }
 
             // Narrow: one shared scroll region, the original tab-then-list order.
-            if root.width < 900px: Rectangle {
+            if !root.show-settings && root.width < 900px: Rectangle {
                 narrowFlick := Flickable {
                     x: 0px;
                     y: 0px;
@@ -592,20 +989,12 @@ export component AppWindow inherits Window {
 
                         // Narrow page-tab bar: the vertical order, one tab grid
                         // followed by the selected page's rows.
-                        if root.page-labels.length > 0: FlexboxLayout {
-                            spacing: 4px;
-                            flex-wrap: wrap;
-                            alignment: start;
-                            align-content: start;
-                            cross-axis-alignment: start;
-                            vertical-stretch: 0;
-                            for label[p] in root.page-labels: Button {
-                                text: label;
-                                // Active page's tab drawn with the accent style.
-                                primary: p == root.selected-page;
-                                clicked => {
-                                    root.select-page(p);
-                                }
+                        if root.page-labels.length > 0: PageControls {
+                            labels: root.page-labels;
+                            selected-page: root.selected-page;
+                            control-style: root.page-control-style;
+                            select-page(p) => {
+                                root.select-page(p);
                             }
                         }
 

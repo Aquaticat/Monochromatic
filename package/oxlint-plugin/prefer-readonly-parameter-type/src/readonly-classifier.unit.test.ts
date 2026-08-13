@@ -48,7 +48,7 @@ await describe({
       },
       {
         parameter: 'readonlyObject:',
-        expected: 'honest-readonly',
+        expected: 'deep-readonly',
       },
       {
         parameter: 'objectValue:',
@@ -72,7 +72,7 @@ await describe({
       },
       {
         parameter: 'readonlyEncoder:',
-        expected: 'dishonest-readonly',
+        expected: 'projected-readonly-capability',
       },
       {
         parameter: 'encodeOnly:',
@@ -80,7 +80,7 @@ await describe({
       },
       {
         parameter: 'projectedController:',
-        expected: 'honest-readonly',
+        expected: 'deep-readonly',
       },
       {
         parameter: 'capabilityController:',
@@ -88,11 +88,11 @@ await describe({
       },
       {
         parameter: 'readonlyMap:',
-        expected: 'honest-readonly',
+        expected: 'deep-readonly',
       },
       {
         parameter: 'readonlyValues:',
-        expected: 'honest-readonly',
+        expected: 'deep-readonly',
       },
       {
         parameter: 'shallowReadonlyValues:',
@@ -104,7 +104,7 @@ await describe({
       },
       {
         parameter: 'projectedMethod:',
-        expected: 'dishonest-readonly',
+        expected: 'projected-readonly-capability',
       },
       {
         parameter: 'originalMethod:',
@@ -164,7 +164,7 @@ await describe({
         },);
         closeSemanticBridge();
         /* Both reach the head's writable slot, the member through readonly properties alone.
-         * Reading honest-readonly for the member is the wrong-offer direction: it withholds the
+         * Reading deep-readonly for the member is the wrong-offer direction: it withholds the
          * opaque effect an outward handoff would charge. */
         expect(kinds,).toEqual([
           'mutable',

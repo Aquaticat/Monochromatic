@@ -26,8 +26,8 @@ description = "Cross-compile the native engine .so for both 64-bit ABIs (arm64-v
 dir = "{{config_root}}/rust"
 shell = "node --input-type=module-typescript -e"
 run = '''
-const { existsSync, readdirSync, readFileSync, rmSync } = require("node:fs");
-const { join } = require("node:path");
+const { existsSync, readdirSync, readFileSync, rmSync } = await import("node:fs");
+const { join } = await import("node:path");
 const sdk = process.env.ANDROID_HOME;
 if (!sdk) {
   throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it. Run `mise install` at the repo root.");
@@ -43,17 +43,16 @@ if (ndks.length === 0) {
 // Pick the highest version, matching cargo-ndk's own autodetect choice.
 const ndkHome = join(ndkDir, ndks.sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).at(-1));
 const toolchainFile = join(ndkHome, "build", "cmake", "android.toolchain.cmake");
-// Self-heal against a poisoned opusic-sys CMake cache. If a configure ever ran
-// without the android toolchain (a host build: e.g. a bare `cargo ndk build` with
-// ANDROID_NDK_HOME unset) or against a different NDK, its cached compiler checks
-// are wrong for aarch64 (`SSE1_SUPPORTED:INTERNAL=1` from a host x86 clang). CMake
-// never re-evaluates those cached checks, so a later aarch64 compile dies on
-// `-msse unsupported`. Purge any opusic-sys build dir whose cache is not exactly
-// our android toolchain (or carries an x86 SSE marker); a healthy cache is kept,
-// so incremental builds stay fast. This makes the poisoning recurrence impossible
-// through this task, even after a stray manual run or an NDK bump.
-const buildRoot = "target/aarch64-linux-android";
-if (existsSync(buildRoot)) {
+// Self-heal against poisoned opusic-sys CMake caches for both ABIs. A configure
+// without the Android toolchain, against another NDK, or before this checkout was
+// moved leaves compiler checks and absolute CMAKE_CACHEFILE_DIR paths that CMake
+// never re-evaluates. Purge only caches whose toolchain, target path, or x86 SSE
+// marker is wrong; healthy caches stay incremental.
+const buildRoots = ["target/aarch64-linux-android", "target/x86_64-linux-android"];
+for (const buildRoot of buildRoots) {
+  if (!existsSync(buildRoot)) {
+    continue;
+  }
   for (const profile of readdirSync(buildRoot)) {
     const profBuild = join(buildRoot, profile, "build");
     if (!existsSync(profBuild)) {
@@ -63,12 +62,16 @@ if (existsSync(buildRoot)) {
       if (!entry.startsWith("opusic-sys-")) {
         continue;
       }
-      const cachePath = join(profBuild, entry, "out", "build", "CMakeCache.txt");
+      const cacheDir = join(process.cwd(), profBuild, entry, "out", "build");
+      const cachePath = join(cacheDir, "CMakeCache.txt");
       if (!existsSync(cachePath)) {
         continue;
       }
       const cache = readFileSync(cachePath, "utf8");
-      const healthy = cache.includes(toolchainFile) && !cache.includes("SSE1_SUPPORTED:INTERNAL=1");
+      const currentDirectory = `CMAKE_CACHEFILE_DIR:INTERNAL=${cacheDir}`;
+      const healthy = cache.includes(toolchainFile)
+        && cache.includes(currentDirectory)
+        && !cache.includes("SSE1_SUPPORTED:INTERNAL=1");
       if (!healthy) {
         console.log(`Purging poisoned opusic-sys CMake cache (forces clean reconfigure): ${join(profBuild, entry)}`);
         rmSync(join(profBuild, entry), { recursive: true, force: true });
@@ -81,7 +84,7 @@ if (existsSync(buildRoot)) {
 // reads ANDROID_NDK_HOME to apply the CMake android toolchain; without it that
 // build silently falls back to a HOST compile (and a /usr/local install). So set
 // it explicitly, derived from the mise SDK, keeping the build self-contained.
-const { execFileSync } = require("node:child_process");
+const { execFileSync } = await import("node:child_process");
 // Build both 64-bit ABIs in one invocation: arm64-v8a for physical devices and
 // x86_64 for emulators (which run the x86_64 system image on an x86_64 host). A
 // repeated -t makes cargo-ndk cross-compile each and drop libmusicplayer_native.so
@@ -134,8 +137,8 @@ dir = "{{config_root}}"
 depends = ["build:release"]
 shell = "node --input-type=module-typescript -e"
 run = '''
-const { execFileSync } = require("node:child_process");
-const { join } = require("node:path");
+const { execFileSync } = await import("node:child_process");
+const { join } = await import("node:path");
 const sdk = process.env.ANDROID_HOME;
 if (!sdk) {
   throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it. Run `mise install` at the repo root.");

@@ -62,7 +62,7 @@ export function redundantMarkerApplies({
     project,
     type: underlying,
   },);
-  return underlyingClassification.kind === 'honest-readonly';
+  return underlyingClassification.kind === 'deep-readonly';
 }
 
 /**

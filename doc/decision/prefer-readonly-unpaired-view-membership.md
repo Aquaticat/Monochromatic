@@ -96,7 +96,7 @@ offers unchanged at 4 and 33.
  `package/figma/kiwi` and `package/module/zip-writer`,
  and seven reappeared naming only
 `buffer`,
- which is the honest remainder:
+ which is the sound remainder:
  a `Uint8Array` is a different interface and this authority says
 nothing about it.
  No parameter became opaque that was not opaque before.
