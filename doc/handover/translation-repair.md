@@ -7966,3 +7966,106 @@ One half of it CANNOT be answered from existing data: whether a duplicate is
 Neither needs anything from the user, and both are now answered. `#72` was
  unanswerable from the existing 56-entry population, which is why `pass13` was
  restarted rather than left. That restart paid for itself.
+
+## Session 2026-08-13, second half: attribution readers, a safety gate, and two of my own errors
+
+### What landed
+
+CRITIC ATTRIBUTION IS COMPLETE END TO END. The writer path closed earlier; this
+ half built and hardened the reader. `score-attribution` reads a run and prints
+ per-critic rates, and it prints no corpus text, so its output is safe to paste
+ where the artifacts are not. Full record in
+ `doc/planning/critic-attribution.md`, including three reader defects fixed
+ before any real artifact existed and a fourth found by review afterwards.
+
+The one worth carrying forward: the reader treated a MALFORMED `chunkCritics`
+ key exactly like an ABSENT one, so a corrupt artifact silently joined the
+ pre-attribution population, and that population is the denominator of every
+ rate. Only absence means legacy now.
+
+THE DETERMINISTIC PRESERVATION CHECK IS BUILT, which is what the replan
+ proposed. `checkPreservation` in `preservation-check.ts`: everything in the
+ replaced text that no accepted issue quoted as defective must still be present
+ afterwards. Calibrated on the 50 real graded repairs rather than tuned by
+ taste. It rejects both damage regions and one wholesale deletion, and rejects
+ none of the 29 repairs graded sound.
+
+It is NOT yet wired into `applyPatchOperations`. The envelope carries
+ `issueIds` but not the quoted defect text, so the gate needs the quotes
+ threaded to the apply site. That wiring is the next step and is the only thing
+ standing between this check and its being load-bearing.
+
+RUN CONTINUITY is arranged and documented in
+ `doc/handover/translation-repair-run-continuity.md`. Two supervisors, one
+ single-shot and one chained, which cannot race because the chained one refuses
+ to launch while the other's pid is alive.
+
+### Two errors of mine, both the same shape
+
+I ASSERTED THAT `one-var` CONFLICTS WITH THE TSDOC RULE and offered that as the
+ reason to disable it. It does not. Measured afterwards: a combined declaration
+ carrying one TSDoc lints clean, and an inner TSDoc before a second declarator
+ is accepted too, so `require-tsdoc` never objected. The user found the real
+ cause, which is that the rule should always have been set to `never` and was
+ arriving from the `style` category with the opposite default.
+
+I PRE-GRADED THE REPAIR SHEET WITHOUT READING THIS DOCUMENT, which already
+ contained a full reading of that same sheet. The user caught it on item 1. Two
+ grades were wrong: item 1, where "a family misfortune" fixes the semantics and
+ is still not English anyone writes, and item 2, where the edit deleted the
+ hi3861 and Klipper clause the source does contain. Both are recorded at
+ `doc/handover/translation-repair.md` under "The repair sheet is not gradeable".
+
+The shape is the same in both: a claim asserted from what was in front of me
+ rather than from the record, when one `rg` would have settled it. Anything
+ grading these sheets should read the prior reading FIRST.
+
+### The pre-grades, and what they are worth
+
+Both outstanding sheets are pre-graded, ANCHORED at the user's explicit
+ instruction rather than blind. That was raised as a concern, because the
+ runbook keeps pre-grades out of the sheet so the agreement rate measures
+ concordance rather than correction effort, and the user overrode it knowingly.
+ So the agreement rate from this round is not comparable with earlier rounds.
+
+-   Repair sheet: 29 Y, 5 N, so 0.853, after the two corrections. The five
+    failures separate cleanly into four SAFETY failures (items 2, 21, 37 and 34)
+    and one QUALITY failure (item 1), which is precisely the split the replan
+    proposes and the single-column sheet cannot express.
+-   Damage sheet: 4 damage, 16 acceptable. It does NOT survive the
+    concentration guard: three of the four are one free-verse entry, so
+    dropping that entry leaves 1 in 17. Do not read 0.20 as a probe precision.
+
+Originals are preserved in `pre-grades-repair-round-three.json` and
+ `pre-grades-damage.json` beside the sheets, so the user's corrections do not
+ erase what the agent claimed.
+
+### New findings
+
+-   `#77` Kimi-K3 is 78.9% of all 90 voice losses in a run that ALREADY
+    contains the channel-marker fix, so that fix was a real cause and not the
+    only one. The sub-kind that would name the residue landed nine hours after
+    the pass started, and a running pass has a frozen module graph, so this
+    log cannot carry it. `#75` unblocks itself on the next resume.
+-   `#79` The editor replaced three correctly translated lines of one free-verse
+    entry with invented text, once with a correct translation of a DIFFERENT
+    line. Checked and NOT the alignment defect: that entry carries no alignment
+    finding.
+-   `#78` The working tree had been linting against a `node_modules` stale
+    relative to the lockfile, so 1447 warnings were not being reported at all
+    until an install synced them.
+
+### Two silent probe failures worth never repeating
+
+Both supported the same wrong conclusion, that the corpus run was dead:
+
+-   `pgrep --exact --list-full node | rg corpus-pass` found nothing while the
+    pass was running; `ps --no-headers -eo pid,etime,args` found it at once.
+-   `find <dir> -type f -newermt '-60 minutes'` matched nothing while eleven
+    files had been written in that window; a reference file made with
+    `touch --date='60 minutes ago'` and `find -newer` reported them correctly.
+
+A third, of the same family: a lint census built on `rg -- '-- '` reported no
+ findings outside the ignored rule while five real errors sat in the output. The
+ error COUNT in the summary line disagreed with the census the whole time, which
+ is what eventually exposed it. Census by rule name, never by substring.
