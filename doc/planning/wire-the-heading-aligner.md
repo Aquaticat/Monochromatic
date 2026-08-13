@@ -1215,3 +1215,58 @@ export function lexAlign({ sourceHeadings, targetHeadings, }) {
   return steps;
 }
 ```
+
+## What the ambiguous sections actually cost
+
+The blocker has been stated as "unpaired sections need a destination" without a
+ size attached, which made it sound larger than it is. Measured:
+
+```text
+  XingZ60       4 ambiguous, 11 paired,  5269 source chars
+  interrgned    9 ambiguous,  0 paired,  4101 source chars
+  noname        7 ambiguous,  0 paired,  1897 source chars
+
+  entries with any ambiguity      3 of 92
+  entries reduced to ZERO pairs   2
+  ambiguous sections             20
+  source characters they hold  11267
+  corpus target characters    405915
+  share of the corpus at stake  2.78%
+```
+
+So the destination decision governs 2.78% of the corpus, concentrated in three
+ entries, two of which the pipeline would decline entirely.
+
+That is small enough to change how blocked this is. The three candidate
+ destinations can be ranked on their own merits rather than deferred to `#70`:
+
+-   REPORT ONLY, doing no critic work on an ambiguous section. Pros: never
+    manufactures a false issue, which is `#71`'s stated requirement, and is the
+    honest answer when the evidence genuinely does not determine a pairing.
+    Cons: two entries get no processing at all, and a reader seeing an empty
+    result cannot tell it from a clean one without reading findings.
+-   ROUTE TO A TRANSLATE STAGE, treating an unpairable source section as
+    content needing translation rather than repair. Pros: matches the decided
+    goal, that the pipeline yields a good translation even when the input does
+    not make sense, and turns the two zeroed entries into useful work. Cons:
+    only coherent under a design that HAS a translate stage, so it presupposes
+    the `#70` outcome rather than standing alone.
+-   POSITIONAL FALLBACK, pairing by index when nothing is forced. Pros: keeps
+    today's coverage exactly, changes nothing for the 89 unaffected entries.
+    Cons: it is what production already does, and it is what produced `XingZ60`,
+    so it reintroduces the defect being fixed on precisely the sections where
+    the evidence is weakest.
+
+Ranking: ROUTE > REPORT > POSITIONAL.
+
+ROUTE over REPORT because the goal document already decided that absent or
+ broken input should still yield a translation, and REPORT leaves two entries
+ unserved when a translate stage would serve them. The gap between them is
+ conditional rather than absolute: REPORT wins outright if no translate stage
+ is built, which is why this ranking is contingent on `#70` and the earlier
+ blocking was not wrong, only oversized.
+
+REPORT over POSITIONAL because POSITIONAL reintroduces exactly the defect under
+ repair. It guesses hardest where evidence is weakest, and `#71` recorded that a
+ wrong pairing is worse than no pairing because it manufactures issues rather
+ than skipping work.
