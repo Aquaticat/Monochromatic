@@ -2,7 +2,14 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
-import type { IssueClaim, } from './issue-model.ts';
+import {
+  type ClaimAttribution,
+  retainAttributions,
+} from './critic-attribution.ts';
+import {
+  computeIssueClaimId,
+  type IssueClaim,
+} from './issue-model.ts';
 import {
   nonTranslationVotesStand,
   screenNonTranslationVotes,
@@ -55,6 +62,14 @@ export type ChunkCriticPhase = {
    * Critics heard, for the caller's degradation accounting.
    */
   readonly heardCritics: number;
+
+  /**
+   * Which critics raised each SURVIVING claim, keyed by deterministic claim id.
+   * Already filtered to the screened claims, unlike the pre-screening list
+   * `runCriticStage` returns, so a critic is never credited with a claim the
+   * screen threw away. Calibration only; adjudication never sees it.
+   */
+  readonly claimAttributions: readonly ClaimAttribution[];
 
   /**
    * Critic findings plus the contradiction record when votes fell.
@@ -152,6 +167,18 @@ export async function runChunkCriticPhase(
     );
   }
 
+  /**
+   * Identities of the claims screening left standing. Attribution is collected
+   * before the screen runs, so anything dropped here must lose its attribution
+   * too, or a critic keeps credit for a claim the pipeline discarded.
+   */
+  const survivingClaimIds = new Set(
+    screening.claims
+      .map(function toClaimId(claim,) {
+      return computeIssueClaimId({ claim, },);
+    },),
+  );
+
   return {
     claims: screening.claims,
     nonTranslationVotes: critic.nonTranslationVotes,
@@ -161,6 +188,10 @@ export async function runChunkCriticPhase(
       contradicted: screening.contradicted,
     },),
     heardCritics: critic.heardCritics,
+    claimAttributions: retainAttributions({
+      attributions: critic.claimAttributions,
+      claimIds: survivingClaimIds,
+    },),
     findings: [
       ...critic.findings,
       ...screening.findings,

@@ -31,6 +31,7 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  computeIssueClaimId,
   NON_TRANSLATION_BLOCK_VOTES,
   parseDocument,
   runChunkCriticPhase,
@@ -81,6 +82,36 @@ const NON_TRANSLATION_ISSUE = {
   category: 'accuracy/non-translation',
   severity: 'critical',
   summary: 'The target is not a translation of the source.',
+};
+
+/**
+ * Non-translation issue whose quotes DO anchor, so unlike
+ * `NON_TRANSLATION_ISSUE` it resolves into a claim and therefore acquires
+ * attribution that screening must later take away with it.
+ */
+const ANCHORED_NON_TRANSLATION = {
+  category: 'accuracy/non-translation',
+  severity: 'critical',
+  summary: 'The target is not a translation of the source.',
+  sourceQuote: '猫猫在窗台上睡觉',
+  targetQuote: 'The cat sleeps on the windowsill.',
+};
+
+/**
+ * Content critique that anchors into the TARGET and survives screening.
+ *
+ * Deliberately not an omission: `MISSING_TRANSLATION_LEAVES` excludes
+ * `omission`, `untranslated` and `non-translation` from contradiction counting,
+ * because those anchor happily onto an untranslated target and so prove
+ * nothing. A fluency critique only makes sense against text that was in fact
+ * translated, which is exactly what contradicts the votes.
+ */
+const CONTENT_CRITIQUE = {
+  category: 'fluency/awkward-phrasing',
+  severity: 'major',
+  summary: 'The waking clause reads oddly.',
+  sourceQuote: '太阳移动时她会醒来',
+  targetQuote: 'She wakes when the sun moves.',
 };
 
 /**
@@ -349,6 +380,49 @@ await describe({
 
         expect(phase.claims,).toStrictEqual([],);
         expect(phase.findings.length,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'DROPS attribution for claims screening removed, so a critic keeps '
+        + 'credit only for claims that survived. Attribution is collected at '
+        + 'resolution time, before the screen runs, so without the filter a '
+        + 'contradicted non-translation claim would still be counted as a hit '
+        + 'for whoever raised it',
+      fn: async () => {
+        /**
+         * Phase where every critic raises both an anchored non-translation
+         * claim and a content critique, so the votes are contradicted and the
+         * non-translation claim is filtered out while the critique stands.
+         */
+        const phase = await runPhase({
+          client: criticClient({
+            reportFor: () => ({
+              issues: [
+                ANCHORED_NON_TRANSLATION,
+                CONTENT_CRITIQUE,
+                CONTENT_CRITIQUE,
+              ],
+            }),
+          },),
+          criticModelIds: CRITICS,
+        },);
+
+        expect(phase.contradicted,).toBe(true,);
+
+        /**
+         * Identities still standing after the screen.
+         */
+        const survivingIds = new Set(phase.claims
+          .map(function toClaimId(claim,) {
+          return computeIssueClaimId({ claim, },);
+        },),);
+
+        expect(phase.claimAttributions.length,).toBeGreaterThan(0,);
+        for (const attribution of phase.claimAttributions)
+          expect(survivingIds.has(attribution.claimId,),).toBe(true,);
+        for (const claim of phase.claims)
+          expect(claim.category.endsWith('/non-translation',),).toBe(false,);
       },
     },),
   ],
