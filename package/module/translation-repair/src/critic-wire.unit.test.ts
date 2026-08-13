@@ -161,7 +161,7 @@ await describe({
         }
 
         expect(reasonOf({ ...VALID_WIRE, targetQuote: 'The dog barks.', },),)
-          .toBe('quote-not-found (target)',);
+          .toBe('quote-not-found (target) needle="The dog barks."',);
         expect(reasonOf({ ...VALID_WIRE, targetQuote: 'The cat', },),)
           .toBe('ambiguous-quote (target)',);
         // Front matter text locates uniquely but belongs to no block node.

@@ -147,7 +147,7 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (source)',
+          reason: 'quote-not-found (source) needle="狗狗喜欢游泳"',
         },);
       },
     },),
@@ -180,7 +180,8 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (target) [line-break-collapsible]',
+          reason: 'quote-not-found (target) [line-break-collapsible] '
+            + 'needle="小猫在窗台上打盹， 阳光晒得暖洋洋。"',
         },);
       },
     },),
@@ -194,7 +195,8 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (target) [line-break-ambiguous]',
+          reason: 'quote-not-found (target) [line-break-ambiguous] '
+            + 'needle="小猫趴着睡， 阳光很暖和。"',
         },);
       },
     },),
@@ -208,7 +210,49 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (target)',
+          reason: 'quote-not-found (target) needle="狗在院子里跑步"',
+        },);
+      },
+    },),
+    it({
+      name: 'TRUNCATES a paragraph-length needle, since a finding is a '
+        + 'scorecard line while critics quote whole paragraphs',
+      fn: async () => {
+        /**
+         * Absent quote longer than the preview bound, built from one repeated
+         * character so the truncation point is countable rather than guessed.
+         */
+        const quote = '狗'.repeat(200,);
+
+        /**
+         * Failure this miss produced.
+         */
+        const located = locateQuote({
+          document: WRAPPED,
+          side: 'target',
+          quote,
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: `quote-not-found (target) needle="${'狗'.repeat(60,)}…"`,
+        },);
+      },
+    },),
+    it({
+      name: 'FLATTENS a needle carrying a line break onto one line, so a '
+        + 'finding stays a single line whatever the critic quoted',
+      fn: async () => {
+        /**
+         * Absent quote carrying its own line break.
+         */
+        const located = locateQuote({
+          document: WRAPPED,
+          side: 'target',
+          quote: '狗在院子\n里跑步',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'quote-not-found (target) needle="狗在院子 里跑步"',
         },);
       },
     },),

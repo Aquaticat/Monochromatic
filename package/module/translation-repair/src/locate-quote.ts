@@ -128,6 +128,52 @@ function bindQuoteRegion(
 }
 
 /**
+ * Longest needle prefix a failure finding carries.
+ * Bounded because a finding is a scorecard line rather than a log record, and
+ * critics quote whole paragraphs.
+ */
+const NEEDLE_PREVIEW_CHARS = 60;
+
+/**
+ * Renders the missed quote into the failure finding, so a miss can be
+ * diagnosed rather than only counted.
+ *
+ * Without this the pipeline records THAT a quote failed and discards WHICH,
+ * which stalled every attempt to explain why one entry missed at ten times the
+ * corpus rate. Line breaks are collapsed so the preview stays one line, and it
+ * is truncated so a paragraph-length quote cannot swamp the finding.
+ *
+ * @param needle - punctuation-normalized quote that was not found
+ *
+ * @returns Quoted preview prefixed with a space, ready to append to a reason
+ *
+ * @example
+ * ```ts
+ * needlePreview({ needle: 'a quote that missed', },);
+ * ```
+ */
+function needlePreview(
+  {
+    needle,
+  }: {
+    readonly needle: string;
+  },
+): string {
+  /**
+   * Needle flattened to one line, since a finding is a single line.
+   */
+  const flat = collapseLineBreaks({ text: needle, },);
+  if (flat.length <= NEEDLE_PREVIEW_CHARS)
+    return ` needle=${JSON.stringify(flat,)}`;
+  return ` needle=${
+    JSON.stringify(`${flat.slice(
+      0,
+      NEEDLE_PREVIEW_CHARS,
+    )}…`,)
+  }`;
+}
+
+/**
  * Names the outcome a soft-line-break collapse would have produced for a
  * quote the punctuation-normalized search missed.
  * Diagnostic only, so the caller still refuses the quote:
@@ -268,7 +314,7 @@ export function locateQuote(
           haystack,
           needle,
         },)
-      }`,
+      }${needlePreview({ needle, },)}`,
     };
   }
   if (haystack.includes(
