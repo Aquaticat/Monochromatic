@@ -45,14 +45,22 @@ The supervisor is TypeScript run directly by node, not bash, for two reasons.
 touch ~/temp/agent/resume-supervisor.stop
 ```
 
-Checked on EVERY poll of the wait loop, not only at its ends, so it takes effect
- within a minute rather than whenever the field happens to clear. That
- distinction was a real defect for a while: the loop that waits for hours did
- not consult the stop file at all, so a stop request would have been honoured
- only at the one moment it mattered least.
+Checked on every poll of the WAIT loop, so while the supervisor is waiting for a
+ pass to stop, the file takes effect within a minute.
 
-To stop a run already in flight, kill the pass by pid; the supervisor will see
- the field clear, and the stop file then prevents the next launch.
+IT DOES NOTHING WHILE A PASS IS RUNNING, and this was learned the hard way
+ rather than reasoned about. The supervisor spends that time inside `run()`,
+ awaiting its child, and reaches no stop check until the pass exits. A stop file
+ placed during a run sits unread for as long as the run lasts, which can be
+ twelve hours.
+
+So there are two different operations:
+
+-   To stop the SUPERVISOR while a pass is running, kill it by pid. Verified:
+    killing the supervisor does NOT kill the pass, because the pass is a child
+    that outlives it. That is what makes swapping supervisors mid-run safe.
+-   To stop the RUN, kill the pass by pid. The supervisor then sees the field
+    clear, and a stop file placed at that point prevents the next launch.
 
 ## Guards, and what each one is for
 
@@ -78,8 +86,14 @@ To stop a run already in flight, kill the pass by pid; the supervisor will see
 -   **Spin guard.** A resume that exits in under two minutes is treated as a
     spin rather than as work, and the supervisor stands down instead of
     spending its remaining attempts.
--   **Attempt budget.** Eight resumes, so a failure mode nobody predicted
-    cannot run all night.
+-   **Attempt budget.** Sixty resumes. It began at eight and that was wrong, for
+    a reason worth keeping: its purpose is stopping a run that dies instantly
+    from spinning, which the SPIN GUARD above already does. What the count
+    actually consumed was legitimate operator restarts, since landing a pipeline
+    change means stopping the pass so it picks the change up. Three of eight
+    went that way inside an hour on 2026-08-13. Exhausting it would have ended
+    the night's run silently, which is the one outcome every guard here exists
+    to prevent.
 
 ## Verifying it rather than trusting it
 
