@@ -7362,3 +7362,57 @@ Guard proven by removal: with the filter disabled the fixture parses to three
 Scope: one entry of the corpus carries the character, and that entry was drawn
  three times into the twenty-item sample, so up to three of those items sat on a
  misaligned pairing. The sample is being redrawn.
+
+### Correction: the invisible character WELDS paragraphs, it does not split them
+
+The entry above this one described a lone U+FEFF becoming its own paragraph.
+That is what a fixture with blank lines either side does, and it is not the
+shape the corpus contains. The corpus shape has ordinary sentences directly
+above and below with no blank line, and a line carrying a byte-order mark is not
+blank to CommonMark, so it reads as a CONTINUATION and merges the two
+paragraphs into one block.
+
+```text
+REAL shape   (mark line, no blank lines around it)   1 block   two paragraphs MERGED
+fixture I wrote (blank lines around it)              2 blocks
+plain blank line                                     2 blocks
+```
+
+So that translation parsed to 29 blocks against the original's 33. They track
+ one-to-one to index 9, and after the first weld every English block pairs with
+ the wrong Chinese one, which is how a correct rendering of 期盼中，她看见光穿透暗影
+ was rewritten into a faithful rendering of 尽管前路漫布荆棘, two blocks away.
+
+The first fix dropped invisible-ONLY blocks, a shape the corpus never produces.
+It has been removed rather than kept: a guard that cannot fire reads as
+protection that is not there. The real fix blanks such a line to spaces before
+parsing, preserving length exactly as `maskHtmlComments` does, because node
+text, quotes, hashes and claim anchors are all sliced by absolute offset.
+
+After the fix that document reads 33 against 32 and the slice pairs correctly:
+
+```text
+期盼中，她看见光穿透暗影…      In her anticipation, she saw the light…
+在心灵最深处…                  In the deepest recesses of the soul…
+尽管前路漫布荆棘…              Despite the thorns that litter the path…
+或许她的世界里…                Perhaps in her world, the light is…
+```
+
+### Two traps worth keeping
+
+ECMAScript counts U+FEFF as WHITESPACE, so `'\u{FEFF}'.trim()` is empty and a
+ whitespace-first check skips the character it is hunting. The first draft of
+ the masker blanked nothing for exactly that reason.
+
+A guard proven by removal proves the guard RUNS. It does not prove the guard
+ addresses the defect, because the fixture came from the hypothesis rather than
+ from the corpus. Both the removal proof and the test passed while the corpus
+ case went untouched.
+
+### The drift figure re-measured
+
+`#69` was recorded against the broken parser and flagged as suspect. Re-measured
+ with the fix: 60 of 172 aligned pairs differ in block count, against 61 before,
+ so the welding accounted for exactly ONE pair. The premise stands and the
+ largest gaps are unchanged, including a section with 76 source blocks against
+ 5 target blocks.
