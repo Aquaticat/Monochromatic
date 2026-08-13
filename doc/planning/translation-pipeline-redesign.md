@@ -51,10 +51,12 @@ Five to fifteen times is not English being wordier than Chinese, so either those
 Any proposal that only answers "translate what is missing" answers pairs 3, 10
  and 6, and says nothing about pairs 7 and 5.
 
-### Pairs 7 and 5 are mispairing, and no entry carries unsupported content
+### Pairs 7 and 5 are mispairing, and the real asymmetry is transcribed images
 
 Settled 2026-08-13 by rebuilding the pairing outside the production fallback.
-This section CORRECTS the paragraph before it.
+This section CORRECTS the paragraph before it, and its own first version, which
+ claimed no entry carries unsupported content. That claim was wrong. What is
+ true is narrower and more useful.
 
 Pairs 7 and 5 do not exist under correct pairing. Both are products of the
  proportional-by-character fallback that `XingZ60` triggers, recorded as `#71`.
@@ -63,66 +65,118 @@ Pairing `XingZ60`'s sections by index instead leaves one real coverage gap,
  characters. The five-to-fifteen ratio is an artifact of the aligner rather than
  a property of the translation.
 
-So the branch resolves to MISPAIRED, and the "carries content the original does
- not" reading is refuted.
+So for pairs 7 and 5 the branch resolves to MISPAIRED.
 
-The corpus-wide check agrees, and it needed the right unit to say so. Measuring
- every entry except `XingZ60`, over the 271 pairs where both sides are present:
+#### Block counts, partitioned by whether the aligner trusted itself
 
-```text
-  equal block count           180
-  source has MORE blocks       38
-  target has MORE blocks       53
-
-  source >= 3x target blocks   11
-  target >= 3x source blocks    0
-```
-
-Not one pair in the corpus carries three times the blocks on the translation
- side. The extreme asymmetry runs in exactly one direction, and it is the
- coverage-gap direction every option already addresses.
-
-CHARACTER COUNTS CANNOT ANSWER THIS QUESTION, and reading them first gave the
- opposite answer. The same sweep in characters reports 255 pairs with the target
- longer and 83 at more than three times the source, which reads like widespread
- unsupported content. It is not. Chinese carries far more meaning per character
- than English, so over the 246 paired sections holding more than 100 source
- characters the expansion is:
+Counting BODY blocks only, since `nodes` includes the heading node and that +1
+ on both sides compresses every ratio. Partitioned on whether the entry emitted
+ an alignment finding, because a mispaired entry's block counts describe the
+ aligner rather than the translation:
 
 ```text
-  p10 1.72    median 2.91    p90 3.76    max 16.84
+                                  no finding    with finding
+  entries                             85              7
+  both-sides pairs                   251             33
+  differ in body-block count          75             25
+  target >= 1.5x source               10              6
+  target >= 2x   source                2              4
+  target >= 3x   source                0              2
+  source >= 3x   target                0              4
 ```
 
-A three-times character ratio is the MEDIAN translation, not an anomaly. A
- character threshold below about 3.8 flags ordinary work as suspect. Block
- counts are script-independent, and they are the unit this question needs.
+Every extreme pair in the corpus, in BOTH directions, sits in one of the seven
+ entries that emitted an alignment finding: `Aniloviraw`, `Hangmster`, `XIEPT2`,
+ `XingZ60`, `interrgned`, `noname`, `yingying`. Among the 85 cleanly-aligned
+ entries the maximum is 2x, reached twice.
 
-The 11 extreme source-heavy pairs sit in exactly two entries, and both are
- genuine partial translations rather than alignment faults:
+The bias runs the helpful way. Mispairing MANUFACTURES lopsided pairs, which is
+ visible in `XingZ60`'s production output pairing 20 blocks against 62. Including
+ the mispaired entries should therefore inflate the extreme counts, and the
+ cleanly-aligned population still returns zero.
 
--   `XIEPT2`, 8 pairs, the widest holding 1605 source characters against 20.
--   `shi_Yumiaoya`, 3 pairs, the widest holding 1203 source characters against
-    12.
+`XIEPT2` is BOTH partial and mispaired, so its individual figures are not
+ quotable even though its empty sections are real: target chunking does not
+ depend on pairing, but which source section each empty target sits against does.
 
-Their English pages carry headings with no bodies beneath them, `## Experience`
+#### Untranslated sections, counted properly
+
+A section whose target body is empty is the untranslated-section signal, and a
+ ratio test cannot see it because the denominator is zero. There are 10, in
+ three entries: `XIEPT2` 6, `shi_Yumiaoya` 3, `XingZ60` 1.
+
+`shi_Yumiaoya` emits no alignment finding, so it is a clean partial translation.
+Its English page carries headings with no bodies beneath them, `## Experience`
  followed immediately by `## Departure`, confirmed in the raw bytes.
 `parseDocument` reads them correctly as `kind: "heading"` nodes; the sections
  are empty because the translator left them empty. That is the case `#69`
  already decided: the pipeline must yield a good translation even when the
  translation fed in does not make sense.
 
-WHAT THIS CHANGES FOR THE OPTIONS. The claim that a proposal answering only
- "translate what is missing" says nothing about pairs 7 and 5 no longer holds,
- because pairs 7 and 5 are an aligner defect with its own fix in `#74`. Every
- remaining asymmetry in the corpus is a coverage gap.
+#### The translation does carry content the source markdown lacks
 
-The two sweeps are CONSISTENT despite different totals. This one finds 91 of
- 271 both-sides pairs differing in block count, a rate of 33.6%, against the
- earlier 60 of 172, a rate of 34.9%. The totals differ because the sweeps cover
- different entry sets, but the underlying rate is the same to about one point,
- so neither reading contradicts the other. Carry this one forward because it
- names its method: `alignDocumentSections` at the pinned corpus SHA, counting
- `nodes.length` per side, `XingZ60` excluded as the known mispairing.
+Block counts are blind to this, which is why the first version of this section
+ missed it. A section can hold one block that balloons.
+
+`Zha_Ke` is one section, 4 body blocks against 6, so every block test passes it.
+In characters it is 256 against 4310, a ratio of 16.84, the corpus maximum.
+The cause is legible in the block kinds: the Chinese page presents a letter as
+ an IMAGE, `<PhotoScroll photos={[...letter.webp]} />`, and the English page
+ additionally transcribes and translates that letter into a 3625-character
+ blockquote. The image block itself is present on both sides.
+
+This is a CLASS, not an entry. Comparing blockquote characters per side across
+ all 92 entries, with the image-block count identical on both sides in 91 of 92:
+
+```text
+  Mio               196 ->  4625     23.6x
+  Zha_Ke              0 ->  3625      transcribed outright
+  zheermao101        92 ->  3451     37.5x
+  dogesir_          103 ->  1832     17.8x
+  MizuharaNagisa      0 ->  1969      transcribed outright
+  wangzihao980       41 ->  1208     29.5x
+  mikaela_khara     242 ->  1397      5.8x
+  shihai4h          933 ->  4416      4.7x
+```
+
+The 2.91 median expansion is what keeps this list short and honest. Twenty
+ entries have English blockquotes exceeding Chinese by 500 characters or more,
+ but most of that excess is ORDINARY translation growth of a quote that exists
+ on both sides: `gqt` 1064 to 2761 is 2.6x, `Dethelly` 638 to 1899 is 3.0x,
+ `Toka_ls` 392 to 1013 is 2.6x. Only entries above the 3.76 p90 are candidates,
+ which is the 8 listed.
+
+CAUSE VERIFIED ONCE, INFERRED SEVEN TIMES. `Zha_Ke` was read directly and the
+ image-transcription account holds there. The other seven share the signature,
+ matching image counts with a large one-sided blockquote, and the account is
+ inferred rather than confirmed for each.
+
+#### What this changes for the options
+
+-   The claim that a proposal answering only "translate what is missing" says
+    nothing about pairs 7 and 5 no longer holds. Pairs 7 and 5 are an aligner
+    defect with its own fix in `#74`.
+-   A THIRD category exists that none of the three options addresses: accurate
+    English content with no source-markdown counterpart, because the source
+    holds it in an image. Roughly 31 thousand characters of one-sided blockquote
+    across the corpus, of which the 8 entries above p90 are the clear cases.
+-   This is a systematic FALSE-POSITIVE generator for the current pipeline. A
+    critic comparing markdown against markdown sees thousands of characters of
+    unsupported English and is correct to flag it on the evidence it was given.
+-   It is a specific hazard for OPTION B. Translating every slice from the
+    Chinese would DELETE these transcriptions, destroying accurate human work,
+    and the selection step would have no source-side evidence to prefer keeping
+    them. B needs an answer to this before it can be chosen.
+-   The user's standing ruling covers the policy question: keep translator
+    additions that are accurate. These are accurate.
+
+#### On the earlier 60 of 172
+
+Both sweeps report about a third of pairs differing, 33.6% here against 34.9%
+ there, but that agreement is weak evidence and the totals were never
+ reconciled. The two were produced by different code across a parser fix. Carry
+ this sweep forward because it names its method: `alignDocumentSections` at the
+ pinned corpus SHA, body blocks only, partitioned on alignment findings.
 
 ## The options
 
@@ -222,10 +276,11 @@ B > C > A.
     after, and B removes the before. The source-anchored damage question built
     on 2026-08-12 is the natural replacement, since it never needed the before
     text except to establish that the edit caused the change.
--   ~~What pairs 7 and 5 actually are.~~ ANSWERED 2026-08-13: they are
-    mispairing, and no entry in the corpus carries unsupported content. Details
-    in "Pairs 7 and 5 are mispairing, and no entry carries unsupported content".
-    This no longer gates the decision.
+-   ~~What pairs 7 and 5 actually are.~~ ANSWERED 2026-08-13: mispairing.
+    Details in "Pairs 7 and 5 are mispairing, and the real asymmetry is
+    transcribed images". This no longer gates the decision, but it RAISED a new
+    one: the transcribed-image class has no answer in any of the three options,
+    and it is a specific hazard for B.
 -   Cost. B multiplies generation by the editor roster over every slice of every
     entry, against a provider that already fails transport under load.
 
