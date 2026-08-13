@@ -285,3 +285,43 @@ Throughput improved over the same stretch, from 46 to 42 minutes per entry.
 A batch during congestion, then quiet. The existing note predicted the shape
  before it was observed, which is worth knowing before treating a timeout
  cluster as a new signal.
+
+## The needle telemetry was landed WITHOUT restarting, and why that differs from `pass12`
+
+Landed `b8c678e0a` at 14:10 UTC while `pass13` was 9 hours into a 720-minute
+ soft budget. The standing instruction is to land certainly-good pipeline
+ changes immediately and restart runs as needed, and this one was landed
+ immediately. It was NOT restarted, and the asymmetry with `pass12` is the
+ point worth recording.
+
+`pass12` WAS restarted for the quote-anchoring suffix, on the argument that
+ telemetry is measurable only on a pass that runs it, so leaving it alone would
+ spend days producing a population that cannot answer the question. That
+ argument does not transfer here, for three reasons.
+
+-   THE QUESTION IS ALREADY UNANSWERABLE BY RESTART. The needle preview exists
+    to explain why `Futajuhuacha` misses at 35% where every other entry is near
+    zero. That entry has SETTLED. Re-running it would mean discarding its
+    artifact, which is a different and larger action than restarting a pass.
+-   THE YIELD IS THIN. About 3 hours of soft budget remain, roughly 4 entries,
+    and most settled entries carry ZERO wrap-explained misses. The expected
+    gain is a handful of findings on entries that probably have none.
+-   A RESTART BUYS NO COVERAGE HERE. `pass12` was restarted when it had settled
+    nothing, so the restart cost nothing. `pass13` will end on its own within
+    hours, and starting `pass14` then carries the new telemetry from its first
+    slice while costing no in-flight work at all. Restarting now would discard
+    the entry currently in flight to gain the same thing a few hours earlier.
+
+So the rule this pair of decisions actually encodes is not "always restart" and
+ not "never restart mid-pass". It is: restart when the pass would otherwise
+ produce a population that CANNOT answer a live question, and wait when the
+ same telemetry arrives free at the next pass boundary.
+
+`pass14` should start from the current tip once `pass13` stops. The run monitor
+ emits `PROCESS GONE` at that point, which is the cue.
+
+NO CACHE BUMP was needed. `SLICE_CACHE_VERSION` covers changes to what
+ `ChunkRepairOutcome` means and `runShape` covers what the models are ASKED.
+The needle preview changes neither: it appends diagnostic text to a finding for
+ a claim that was already being discarded, so a slice cached before it and
+ resumed after it produces the same repair decisions.
