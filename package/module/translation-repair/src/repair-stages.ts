@@ -68,6 +68,18 @@ export type CriticStageResult = {
   readonly heardCritics: number;
 
   /**
+   * WHICH critics answered, sorted by model id.
+   *
+   * This is the denominator attribution needs and cannot supply. A critic that
+   * was heard and raised nothing produces no attribution entry, and so does a
+   * critic that was never heard at all; without the roster those two are
+   * indistinguishable, so hits can be counted but rates cannot. That is the
+   * same silence-reads-as-clean failure `#68` documents, and `#68` is
+   * answerable only because its telemetry carries the denominator.
+   */
+  readonly heardCriticIds: readonly SyntheticModelId[];
+
+  /**
    * Which critics raised each claim, keyed by deterministic claim id.
    * Built here because `aggregateClaims` collapses structurally identical
    * claims later, and after that collapse a second emitter is unrecoverable.
@@ -242,6 +254,11 @@ export async function runCriticStage(
     claims,
     nonTranslationVotes,
     heardCritics: reports.length,
+    heardCriticIds: gather.voices
+      .map(function toModelId(voice,) {
+      return voice.modelId;
+    },)
+      .toSorted(),
     claimAttributions: collectClaimAttributions({ emissions, },),
     findings,
   };

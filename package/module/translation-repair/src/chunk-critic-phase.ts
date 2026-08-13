@@ -64,6 +64,14 @@ export type ChunkCriticPhase = {
   readonly heardCritics: number;
 
   /**
+   * WHICH critics answered, sorted by model id. Attribution counts a critic's
+   * hits; this is what it was asked, so a rate can be computed rather than
+   * only a tally. Unfiltered by screening, since being heard is independent of
+   * whether the claims survived.
+   */
+  readonly heardCriticIds: readonly SyntheticModelId[];
+
+  /**
    * Which critics raised each SURVIVING claim, keyed by deterministic claim id.
    * Already filtered to the screened claims, unlike the pre-screening list
    * `runCriticStage` returns, so a critic is never credited with a claim the
@@ -188,6 +196,7 @@ export async function runChunkCriticPhase(
       contradicted: screening.contradicted,
     },),
     heardCritics: critic.heardCritics,
+    heardCriticIds: critic.heardCriticIds,
     claimAttributions: retainAttributions({
       attributions: critic.claimAttributions,
       claimIds: survivingClaimIds,

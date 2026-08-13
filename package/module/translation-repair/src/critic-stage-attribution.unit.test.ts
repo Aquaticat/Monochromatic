@@ -256,5 +256,41 @@ await describe({
         expect(critic.findings.length,).toBeGreaterThan(0,);
       },
     },),
+
+    it({
+      name: 'records WHICH critics answered, not merely how many, because that '
+        + 'is the denominator attribution cannot supply: a critic heard that '
+        + 'raised nothing and a critic never heard both produce no attribution '
+        + 'entry, so without the roster hits can be counted but rates cannot',
+      fn: async () => {
+        /**
+         * Stage result where only one of the two critics raises anything.
+         */
+        const critic = await runStage({
+          reportFor: (modelId,) => ((modelId === CRITICS[0])
+            ? { issues: [ANCHORING_WIRE,], }
+            : { issues: [], }),
+        },);
+
+        expect(critic.heardCriticIds,).toStrictEqual([...CRITICS,].toSorted(),);
+        expect(critic.heardCritics,).toBe(CRITICS.length,);
+
+        /**
+         * Critics that actually raised a claim.
+         */
+        const raisers = new Set(critic.claimAttributions
+          .flatMap(function toIds(attribution,) {
+          return attribution.proposers
+            .map(function toModelId(proposer,) {
+            return proposer.modelId;
+          },);
+        },),);
+
+        // The silent critic is in the roster and absent from attribution, which
+        // is the whole point: that difference is a measurable rate.
+        expect(raisers.has(CRITICS[0],),).toBe(true,);
+        expect(raisers.has(CRITICS[1],),).toBe(false,);
+      },
+    },),
   ],
 },);
