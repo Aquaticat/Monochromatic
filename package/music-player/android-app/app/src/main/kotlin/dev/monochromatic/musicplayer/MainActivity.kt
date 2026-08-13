@@ -273,6 +273,16 @@ import androidx.compose.foundation.layout.Arrangement
 // ```
 import androidx.compose.foundation.layout.Box
 
+// What:     `import androidx.compose.foundation.layout.BoxWithConstraints` exposes parent
+//           width while composing children.
+// Why:      Chromium tabs cap pathological labels to available pager width.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BoxWithConstraints } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.BoxWithConstraints
+
 // What:     `import androidx.compose.foundation.layout.BoxScope` exposes child alignment
 //           modifiers inside a `Box`.
 // Why:      Extracted Chromium tab decoration still aligns to its owning tab box.
@@ -413,6 +423,16 @@ import androidx.compose.foundation.layout.size
 // import { width } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.width
+
+// What:     `import androidx.compose.foundation.layout.widthIn` caps width without forcing
+//           short content to stretch.
+// Why:      Chromium labels stay content-width until parent width requires ellipsis.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { widthIn } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.widthIn
 
 // What:     `import androidx.compose.foundation.layout.wrapContentWidth` relaxes an
 //           inherited minimum width while retaining the parent's maximum width.
@@ -726,6 +746,15 @@ import androidx.compose.ui.semantics.Role
 // import { TextOverflow } from "androidx/compose/ui/text/style";
 // ```
 import androidx.compose.ui.text.style.TextOverflow
+
+// What:     `import androidx.compose.ui.unit.Dp` names density-independent dimensions.
+// Why:      Chromium tab options carry parent width into content-width measurement.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Dp } from "androidx/compose/ui/unit";
+// ```
+import androidx.compose.ui.unit.Dp
 
 // What:     `import androidx.compose.ui.unit.dp` imports the `dp` EXTENSION PROPERTY on
 //           numbers: writing `24.dp` produces a density-independent-pixel dimension. It
@@ -2678,6 +2707,7 @@ private fun chromiumTabShape(): GenericShape = GenericShape { size, _ ->
 //   label: string;
 //   selected: boolean;
 //   showDivider: boolean;
+//   maximumWidth: Dp;
 //   onSelect: () => void;
 // };
 // ```
@@ -2689,6 +2719,8 @@ private data class ChromiumPageTabOptions(
     val selected: Boolean,
     /** Records whether this inactive tab needs a trailing separator. */
     val showDivider: Boolean,
+    /** Caps pathological labels to available pager width. */
+    val maximumWidth: Dp,
     /** Selects this page when invoked. */
     val onSelect: () -> Unit,
 )
@@ -2786,6 +2818,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
     }
     Box(
         modifier = Modifier
+            .widthIn(max = options.maximumWidth)
             .width(IntrinsicSize.Max)
             .height(58.dp)
             .selectable(
@@ -2938,8 +2971,11 @@ private fun pageTabs(
         segmentedPageControls(state = state, onSelectPage = onSelectPage)
         return
     }
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(
+    BoxWithConstraints {
+        /** Holds pager width before entering nested FlowRow scope. */
+        val pageMaximumWidth: Dp = maxWidth
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(
             if (
                 pageControlStyle == PageControlStyle.MD1_TABS ||
                 pageControlStyle == PageControlStyle.CHROMIUM_TABS
@@ -2987,6 +3023,7 @@ private fun pageTabs(
                         label = label,
                         selected = selected,
                         showDivider = page < state.pageLabels.lastIndex && page + 1 != state.selectedPage,
+                        maximumWidth = pageMaximumWidth,
                         onSelect = { onSelectPage(page) },
                     ),
                 )
@@ -2996,6 +3033,7 @@ private fun pageTabs(
                 OutlinedButton(onClick = { onSelectPage(page) }) { Text(label) }
             }
         }
+    }
     }
 }
 
