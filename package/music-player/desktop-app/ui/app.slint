@@ -224,11 +224,11 @@ component ChromiumTab inherits Rectangle {
     in property <bool> selected;
     in property <bool> show-divider;
     callback clicked();
-    private property <color> active-color: Palette.color-scheme == ColorScheme.dark ? #383838 : #f8fafd;
+    private property <color> active-color: Palette.color-scheme == ColorScheme.dark ? #383838 : #e8eaed;
     private property <color> outline-color: Palette.color-scheme == ColorScheme.dark ? #626262 : #aeb0b4;
     private property <color> ink-color: Palette.color-scheme == ColorScheme.dark ? #ededeb : #202124;
     horizontal-stretch: 0;
-    width: chromium-label.preferred-width + 48px;
+    width: min(chromium-label.preferred-width + 48px, root.max-width);
     height: 58px;
     preferred-height: 58px;
     background: transparent;
@@ -307,6 +307,13 @@ component ChromiumTab inherits Rectangle {
         }
     }
 
+    if !root.selected: Rectangle {
+        y: parent.height - 1px;
+        width: parent.width;
+        height: 1px;
+        background: root.outline-color.with-alpha(0.55);
+    }
+
     if !root.selected && root.show-divider: Rectangle {
         x: parent.width - 1px;
         y: 21px;
@@ -357,6 +364,7 @@ component ChromiumControls inherits Rectangle {
             text: label;
             selected: p == root.selected-page;
             show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
+            max-width: root.width;
             clicked => {
                 root.select-page(p);
             }

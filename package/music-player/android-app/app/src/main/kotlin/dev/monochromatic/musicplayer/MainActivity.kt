@@ -2624,7 +2624,7 @@ private fun chromiumTabColors(): ChromiumTabColors {
     /** Records current system appearance for reference-matched colors. */
     val dark: Boolean = isSystemInDarkTheme()
     /** Holds selected tab fill measured from dark reference or Chromium light equivalent. */
-    val active: Color = if (dark) Color(0xFF383838) else Color(0xFFF8FAFD)
+    val active: Color = if (dark) Color(0xFF383838) else Color(0xFFE8EAED)
     /** Holds selected contour measured from dark reference or Chromium light equivalent. */
     val outline: Color = if (dark) Color(0xFF626262) else Color(0xFFAEB0B4)
     return ChromiumTabColors(
@@ -2791,7 +2791,12 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
     Box(
         modifier = Modifier
             .width(IntrinsicSize.Max)
-            .height(58.dp),
+            .height(58.dp)
+            .selectable(
+                selected = options.selected,
+                role = Role.Tab,
+                onClick = options.onSelect,
+            ),
     ) {
         Box(
             contentAlignment = Alignment.CenterStart,
@@ -2799,12 +2804,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
                 .align(Alignment.BottomStart)
                 .width(IntrinsicSize.Max)
                 .height(50.dp)
-                .then(stateModifier)
-                .selectable(
-                    selected = options.selected,
-                    role = Role.Tab,
-                    onClick = options.onSelect,
-                ),
+                .then(stateModifier),
         ) {
             chromiumPageTabContent(
                 ChromiumPageTabPresentation(
