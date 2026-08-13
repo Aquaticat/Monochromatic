@@ -382,9 +382,24 @@ THE PATTERN HAZARD RECURRED TWICE MORE after being written down, which is the
 
 The pass executes `node src/corpus-run/corpus-pass.ts` straight from SOURCE, so
  an agent session that stops mid-edit leaves a broken module graph and the
- unattended resume dies in seconds, spending the night on nothing. The watcher
- now runs the documented zero-quota `--plan` check first and refuses to start
- the real run if it fails.
+ unattended resume dies in seconds. The watcher now runs the documented
+ zero-quota `--plan` check first and refuses to start the real run if it fails.
+
+WHAT THE CHECK ACTUALLY BUYS, stated honestly because the first version of this
+ section overclaimed it. Trace both paths against a broken tree: without the
+ check the resume dies in seconds and the log says `SyntaxError`; with it the
+ resume refuses and the log says `--plan failed`. BOTH LOSE THE NIGHT. The check
+ buys legibility, not survival, and legibility is worth having, since a run that
+ died at 03:04 and a run that never started read identically in a settled-entry
+ count.
+
+What can genuinely save a night is the RETRY, which is why the check runs up to
+ three times with four-minute gaps before giving up. A permanently broken tree
+ is not repairable by anything in this script and retrying will not save it. The
+ transient failures will clear on their own: git contention against the corpus,
+ a network failure while constructing the client, a file caught half-written.
+ Those cost a whole night otherwise, and a resume twenty minutes late is still a
+ resume.
 
 `--plan` is the right check rather than a build, and the difference is not
  cosmetic. The build only proves `dist/` compiles, and the corpus pass never

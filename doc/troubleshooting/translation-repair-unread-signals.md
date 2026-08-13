@@ -778,7 +778,17 @@ The constraint is on what happens NEXT, and it falls on this document. Reading
  for the quote fields it omits, and it is the same rule.
 
 THE REMAINING WALL is accepted issues not recording which critic raised each
- claim, which blocks `#65` and `#68`.
+ claim, which blocks `#65`.
+
+It does NOT block `#68`, which earlier versions of this document and of
+ `256520df7` both claimed. `#68` is about the three PROBERS in the
+ introduced-defect probe, not the critics, and it already has per-model
+ attribution: it carries measured raise rates over the same 857 regions, 81
+ claims against 45 against 5. What `#68` waits on is `#66`'s human-graded ground
+ truth, which says which prober is right when they disagree. Getting this
+ straight changes the urgency rather than the work: `#65` is a DECISION task, so
+ critic attribution is groundwork, not something gating a measurement about to
+ be taken.
 
 ## The third wall is the same shape after all, and I said it was not
 

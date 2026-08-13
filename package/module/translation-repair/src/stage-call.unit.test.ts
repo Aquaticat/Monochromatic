@@ -234,7 +234,7 @@ await describe({
           {
             kind: 'refusal-shaped',
             rawText: 'I cannot help with that.',
-            detail: '',
+            marker: 'i-cannot',
           },
           {
             kind: 'schema-mismatch',
