@@ -117,11 +117,13 @@ Found 2026-08-13, after the reach measurement, by censusing findings across all
  56 settled entries.
 
 The refiner is a ONE-model stage, so its quorum is one voice and losing that
- voice loses the stage. Across 129 refiner invocations, 34 heard nothing:
+ voice loses the stage. Across 129 refiner invocations, 34 heard nothing, and
+ the partition by entry is exact:
 
 ```text
-  entries where the refiner answered every time        49
-  entries where the refiner answered NOT ONCE           7
+  entries that never invoked the refiner               20
+  entries that invoked it and it answered              29   (95 invocations, 0 silent)
+  entries that invoked it and it NEVER answered         7   (34 invocations, 34 silent)
 
   gqt              10 invocations, 10 silent, 0 rewrites selected
   chunchun_yudong   7 invocations,  7 silent, 0 selected
@@ -132,20 +134,39 @@ The refiner is a ONE-model stage, so its quorum is one voice and losing that
   TLL1122           1 invocation,   1 silent, 0 selected
 ```
 
-The failure is per-ENTRY and total, not a sporadic dropout. Every affected
- entry finished with `status` of `repaired`, so no deadline abort explains it,
- and the affected entries span 1498 to 9351 target characters and 33 to 143
- minutes, so neither size nor duration separates them from the rest. Entries
- that are not affected report `1/1 heard` throughout.
+The partition is what makes this a finding rather than a dropout rate. No entry
+ sits in between: an entry either heard from the refiner on every invocation or
+ on none. Independent per-call failure at 26% cannot produce that, so the cause
+ is a function of the ENTRY, meaning its content or the prompt built from it,
+ rather than transport flakiness.
+
+The clustering rests on `gqt` at 10 of 10, `chunchun_yudong` at 7 of 7 and
+ `Xu_Yushu` at 6 of 6. `TLL1122` had a single invocation, where "never
+ answered" and "one dropped call" are the same observation, so the singletons
+ carry no weight on their own.
+
+Every affected entry finished with `status` of `repaired`, so no deadline abort
+ explains it, and the affected entries span 1498 to 9351 target characters and
+ 33 to 143 minutes, so neither size nor duration separates them from the rest.
 
 So the lane's real reach is smaller than the 12.0% eligibility figure suggests:
  those blocks were eligible, were selected, and were then never rewritten,
  because the only model that could rewrite them never answered.
 
-The cause is not recoverable from the artifacts. `attemptStageCall` collapses
+The cause is not recoverable from these artifacts. `attemptStageCall` collapses
  every loss (refusal, schema mismatch, transport failure, timeout) into
  `heard: false`, warns with the reason, and discards it. The finding records
  only `stage-quorum-unmet (refiner 0/1)`, and nothing reads that finding.
+The run logs that carried the warnings no longer exist, checked rather than
+ assumed: a search over surviving task output finds `voice lost` lines only
+ from `pass13`, minutes old.
+
+It is recoverable from a live run, though, with no code change. The warning
+ names the reason (`schema-mismatch` and similar), so `pass13` writes it as it
+ happens, and its voice losses are being collected into
+ `node_modules/.monochromatic/translation-repair-runs-pass13/voice-loss.log`.
+Since the failure is entry-determined, `pass13` should reproduce it on the same
+ entries and name the cause.
 
 This bears on the decision rather than settling it. Whichever option is chosen,
  a lane that silently does nothing on an eighth of the corpus is worth less
