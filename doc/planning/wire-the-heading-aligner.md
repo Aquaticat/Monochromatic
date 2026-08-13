@@ -622,3 +622,35 @@ The cost is provider capacity: the probe is an ensemble, so it adds a fan-out
  per partial seed on every recall run. Its own design already limits the
  exposure, since an unjudged seed defaults to `derivable` and therefore excuses
  nothing.
+
+### Sized, and at the current scale it is not worth wiring
+
+The benefit was asserted before it was measured. Measuring it closes the
+ question the other way.
+
+The probe's ONLY power is to excuse a partial restoration. So its ceiling is
+ the number of partials, and the last recall run
+ (`recall-scorecard.json`, 2026-08-10) has:
+
+```text
+  judged seeds     27
+  restored         23
+  PARTIAL           1
+
+  strict rate    85.2%   (23/27)
+  lenient rate   88.9%   (24/27)
+```
+
+The strict and lenient rates sit 3.7 points apart, and that entire gap is ONE
+ seed. A third figure between them cannot exist: with one partial the probe can
+ only reproduce 85.2% or 88.9%, never anything in between.
+
+So the earlier claim here, that recall figures are "pessimistic by an unmeasured
+ amount", is now measured. The amount is at most one seed. Wiring an ensemble
+ fan-out to move a single seed is a poor return, and this half of `#74` should
+ be deferred rather than acted on.
+
+WHAT WOULD CHANGE IT: a larger recall run. Nine entries and 27 seeds is a small
+ population, and partials are the rare class within it. If a future run produces
+ partials in double figures, the probe starts earning its calls and this
+ conclusion should be re-taken rather than inherited.
