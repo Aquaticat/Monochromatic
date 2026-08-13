@@ -117,6 +117,13 @@ export {
   pickFallbackPatch,
 } from './editor-candidates.ts';
 export {
+  type ClaimAttribution,
+  type ClaimEmission,
+  type ClaimProposer,
+  collectClaimAttributions,
+  retainAttributions,
+} from './critic-attribution.ts';
+export {
   type CriticStageResult,
   type PanelStageResult,
   runCriticStage,

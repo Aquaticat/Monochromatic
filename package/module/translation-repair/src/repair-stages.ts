@@ -14,15 +14,21 @@ import {
 } from './adjudicate-wire.ts';
 import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import {
+  type ClaimAttribution,
+  type ClaimEmission,
+  collectClaimAttributions,
+} from './critic-attribution.ts';
 import { buildCriticMessages, } from './critic-prompt.ts';
 import {
   CRITIC_RESPONSE_FORMAT,
   isCriticReportWire,
   resolveCriticIssue,
 } from './critic-wire.ts';
-import type {
-  DocumentSide,
-  IssueClaim,
+import {
+  computeIssueClaimId,
+  type DocumentSide,
+  type IssueClaim,
 } from './issue-model.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
@@ -60,6 +66,14 @@ export type CriticStageResult = {
    * Critics whose reply arrived and validated.
    */
   readonly heardCritics: number;
+
+  /**
+   * Which critics raised each claim, keyed by deterministic claim id.
+   * Built here because `aggregateClaims` collapses structurally identical
+   * claims later, and after that collapse a second emitter is unrecoverable.
+   * Calibration only; adjudication never sees it.
+   */
+  readonly claimAttributions: readonly ClaimAttribution[];
 
   /**
    * Resolution failures in scorecard-stable wording.
@@ -175,9 +189,23 @@ export async function runCriticStage(
   const findings: string[] = [...gather.findings,];
 
   /**
-   * Validated claims across every report.
+   * One entry per resolved claim per critic, before deduplication collapses
+   * identical claims and takes the second emitter with it.
    */
-  const claims = reports.flatMap(function resolveReport(report,) {
+  const emissions: ClaimEmission[] = [];
+
+  /**
+   * Validated claims across every report.
+   * Iterates VOICES rather than reports so each claim keeps the speaker that
+   * `HeardVoice` carries; the traversal order is the same, so claim order is
+   * unchanged.
+   */
+  const claims = gather.voices
+    .flatMap(function resolveVoice(voice,) {
+    /**
+     * Report this critic returned.
+     */
+    const report = voice.value;
     return report.issues
       .flatMap(function resolveOne(wire,): readonly IssueClaim[] {
       /**
@@ -191,6 +219,10 @@ export async function runCriticStage(
         findings.push(resolution.reason,);
         return [];
       }
+      emissions.push({
+        claimId: computeIssueClaimId({ claim: resolution.claim, },),
+        modelId: voice.modelId,
+      },);
       return [resolution.claim,];
     },);
   },);
@@ -205,6 +237,7 @@ export async function runCriticStage(
     claims,
     nonTranslationVotes,
     heardCritics: reports.length,
+    claimAttributions: collectClaimAttributions({ emissions, },),
     findings,
   };
 }

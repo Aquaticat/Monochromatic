@@ -308,7 +308,7 @@ await describe({
           client: scriptedClient({
             outcome: {
               kind: 'schema-mismatch',
-              rawText: `${'purr\n'.repeat(200,)}`,
+              rawText: 'purr\n'.repeat(200,),
               detail: 'content is not valid JSON: Unexpected token',
             },
           },),
