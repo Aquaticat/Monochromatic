@@ -72,6 +72,11 @@ export type CriticStageResult = {
    * Built here because `aggregateClaims` collapses structurally identical
    * claims later, and after that collapse a second emitter is unrecoverable.
    * Calibration only; adjudication never sees it.
+   *
+   * BEFORE SCREENING: collected at resolution time, so this includes claims
+   * `screenNonTranslationVotes` may still drop. Callers must filter with
+   * `retainAttributions` against the surviving claim ids, or a critic ends up
+   * credited with a hit the pipeline threw away.
    */
   readonly claimAttributions: readonly ClaimAttribution[];
 
