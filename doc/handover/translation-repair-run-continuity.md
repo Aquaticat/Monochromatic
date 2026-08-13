@@ -45,10 +45,14 @@ The supervisor is TypeScript run directly by node, not bash, for two reasons.
 touch ~/temp/agent/resume-supervisor.stop
 ```
 
-Checked before each wait and again before each launch, so it takes effect
- promptly rather than after the current wait expires. To stop a run already in
- flight, kill the pass by pid; the supervisor will see the field clear, and the
- stop file then prevents the next launch.
+Checked on EVERY poll of the wait loop, not only at its ends, so it takes effect
+ within a minute rather than whenever the field happens to clear. That
+ distinction was a real defect for a while: the loop that waits for hours did
+ not consult the stop file at all, so a stop request would have been honoured
+ only at the one moment it mattered least.
+
+To stop a run already in flight, kill the pass by pid; the supervisor will see
+ the field clear, and the stop file then prevents the next launch.
 
 ## Guards, and what each one is for
 
@@ -63,6 +67,14 @@ Checked before each wait and again before each launch, so it takes effect
     loads that exact graph, resolves the corpus at the pinned tip, and
     constructs the client, so it also catches a corpus or key failure no build
     would. It runs against a throwaway runs directory, never the real one.
+-   **Watcher IDENTITY, not just liveness.** The supervisor defers to the
+    watcher by pid, and `kernel.pid_max` here is 4194304 with the counter
+    already at 4054937, so pids wrap within days. A recycled pid belonging to an
+    unrelated process would make the supervisor defer to a stranger for the rest
+    of the night while reporting itself armed. It now reads
+    `/proc/<pid>/cmdline` and requires the watcher's own script name, so a
+    recycled pid reads as gone. An unreadable process reads as ALIVE, because
+    launching a second pass is worse than waiting.
 -   **Spin guard.** A resume that exits in under two minutes is treated as a
     spin rather than as work, and the supervisor stands down instead of
     spending its remaining attempts.
@@ -79,6 +91,9 @@ Every check below was run against the live system before the supervisor was
 -   Negative control: a bogus pattern must exit non-zero. It did.
 -   Liveness: the watcher pid must read alive and a nonexistent pid must read
     dead. Both did.
+-   Identity: the watcher pid must match its own script name and must NOT match
+    a different one, and a dead pid must match nothing. All three did, so the
+    check distinguishes "this pid runs the watcher" from "this pid exists".
 -   End to end: with the stop file present, the supervisor logs its arming line
     and stands down, which exercises the whole file including module-level
     await.
