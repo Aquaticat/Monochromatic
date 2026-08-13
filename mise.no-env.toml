@@ -1008,9 +1008,9 @@ runWorkspaceNode('package/dev-script/task-util', 'depends', ['--sources', 'sh:ec
 description = "Install the Android SDK components package/music-player/android-app needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android (devices) and x86_64-linux-android (emulators) rustup targets. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
 shell = "node --input-type=module-typescript -e"
 run = '''
-const { existsSync, readdirSync } = require("node:fs");
-const { join } = require("node:path");
-const { execFileSync } = require("node:child_process");
+const { existsSync, readdirSync } = await import("node:fs");
+const { join } = await import("node:path");
+const { execFileSync } = await import("node:child_process");
 const sdk = process.env.ANDROID_HOME;
 if (!sdk) {
   throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it. Run `mise install` first.");
