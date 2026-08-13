@@ -1409,3 +1409,40 @@ The destination decision still stands, because with no translate stage
  `XIEPT2` gets nothing rather than getting translated. But the decision is now
  about ONE untranslated document, not about losing correct work, and it argues
  ROUTE over REPORT more strongly than before.
+
+## The wiring attempt, and the risk the blast radius did not measure
+
+Attempted 2026-08-13 and reverted deliberately. The scorer itself landed as
+ `alignHeadingsForced`; what follows is about connecting it.
+
+Replacing the proportional fallback in `alignDocumentSections` broke three
+ `chunk-document.unit.test.ts` cases. One break is correct and two are a
+ warning.
+
+THE CORRECT ONE: a leading-kind mismatch with equal counts now PAIRS rather
+ than reporting `structure-mismatch`. That is the spurious finding measured on
+ `Aniloviraw`, whose report read "source 1 chunks, target 1 chunks" while
+ calling the structures different. With one chunk on each side the old
+ `mirrored` test could only fail on leading node kinds, so it was reporting on
+ an asymmetric preamble and calling it structure.
+
+THE WARNING: two cases produced ZERO pairs for the whole document. Their
+ fixtures are synthetic and their headings share no tokens across the two
+ sides, so nothing is ever forced, the aligner refuses everything, and under the
+ ratified destination the entire document gets no critic work.
+
+`90 of 92 identical` does not cover this, and it is worth being precise about
+ why. That comparison ran over real corpus entries, whose headings carry
+ romanised names and therefore share tokens; it also compared PAIRINGS rather
+ than counting entries that ended with no pairing at all. A document with
+ genuinely disjoint heading vocabulary, pure Chinese headings against pure
+ English ones with no names anywhere, is the untested case. Its failure mode is
+ the worst kind: the entry settles, reports findings, and has done nothing.
+
+So wiring needs a FLOOR before it lands. Either the aligner forcing nothing at
+ all falls back to the old path, or the entry blocks loudly. Silently settling
+ an entry with zero pairs is the one outcome that must not be possible, and
+ choosing between those two is a decision rather than an implementation detail.
+
+The 92-entry comparison should also be re-run reporting zero-pair entries per
+ side, which the original did not.
