@@ -52,6 +52,32 @@ function bindsWord({ character, }: { readonly character: string; },): boolean {
 }
 
 /**
+ * Counts straight double quotes without building a character array.
+ *
+ * @param text - text to scan
+ *
+ * @returns How many straight double quotes it holds
+ *
+ * @example
+ * ```ts
+ * countStraightDoubles({ text: 'a "b" c', },);
+ * ```
+ */
+function countStraightDoubles({ text, }: { readonly text: string; },): number {
+  return (function count(): number {
+    /**
+     * Straight doubles seen so far.
+     */
+    let seen = 0;
+    for (let index = 0; index < text.length; index += 1) {
+      if (text.charAt(index,) === '"')
+        seen += 1;
+    }
+    return seen;
+  })();
+}
+
+/**
  * Restores the quote style the replaced text used.
  *
  * Only ever converts straight to curly, and only where the replaced text shows
@@ -97,73 +123,70 @@ export function restoreTypography(
 
   /**
    * Straight doubles in the replacement, which must pair up to be convertible.
+   *
+   * Counted by scanning rather than by building a character array. Splitting a
+   * string into characters is what the two lint rules here disagree about, and
+   * the disagreement has no correct answer at the surface: one forbids
+   * spreading a string, the other prefers spread over `Array.from`. Not
+   * building the array at all settles it, and index scanning is safe because
+   * every character this function compares or writes is ASCII, so a surrogate
+   * half is only ever copied through untouched.
    */
-  const straightDoubles = [...replacement,]
-    .filter(function isStraightDouble(character,) {
-      return character === '"';
-    },)
-    .length;
+  const straightDoubles = countStraightDoubles({ text: replacement, },);
 
   /**
    * Whether double quotes may be converted at all.
    */
   const convertDoubles = wantsCurlyDouble && ((straightDoubles % 2) === 0);
 
-  /**
-   * Characters of the replacement, so neighbours can be inspected.
-   */
-  const characters = [...replacement,];
+  return (function scan(): string {
+    /**
+     * Characters emitted so far.
+     */
+    const rebuilt: string[] = [];
 
-  /**
-   * Rebuilt characters, converted where the rules allow.
-   */
-  const rebuilt: string[] = [];
+    /**
+     * Whether the scan sits inside a backtick span.
+     */
+    let inCode = false;
 
-  /**
-   * Whether the scan currently sits inside a backtick span.
-   */
-  let inCode = false;
-
-  /**
-   * Whether the next convertible double quote opens rather than closes.
-   */
-  let doubleOpens = true;
-  for (const [index, character,] of characters.entries()) {
-    if (character === '`') {
-      inCode = !inCode;
-      rebuilt.push(character,);
-      continue;
-    }
-    if (inCode) {
-      rebuilt.push(character,);
-      continue;
-    }
-    if ((character === '\'') && wantsCurlyApostrophe) {
+    /**
+     * Whether the next convertible double quote opens rather than closes.
+     */
+    let doubleOpens = true;
+    for (let index = 0; index < replacement.length; index += 1) {
       /**
-       * Character before this one, empty at the start.
+       * Character under the cursor.
        */
-      const before = characters[index - 1] ?? '';
-
-      /**
-       * Character after this one, empty at the end.
-       */
-      const after = characters[index + 1] ?? '';
-      rebuilt.push(
-        (bindsWord({ character: before, },) && bindsWord({ character: after, },))
-          ? CURLY_APOSTROPHE
-          : character,
-      );
-      continue;
+      const character = replacement.charAt(index,);
+      if (character === '`') {
+        inCode = !inCode;
+        rebuilt.push(character,);
+        continue;
+      }
+      if (inCode) {
+        rebuilt.push(character,);
+        continue;
+      }
+      if ((character === '\'') && wantsCurlyApostrophe) {
+        /**
+         * Whether both neighbours bind this quote into one word.
+         */
+        const insideWord =
+          bindsWord({ character: replacement.charAt(index - 1,), },)
+          && bindsWord({ character: replacement.charAt(index + 1,), },);
+        rebuilt.push(insideWord ? CURLY_APOSTROPHE : character,);
+        continue;
+      }
+      if ((character === '"') && convertDoubles) {
+        rebuilt.push(doubleOpens ? CURLY_OPEN_DOUBLE : CURLY_CLOSE_DOUBLE,);
+        doubleOpens = !doubleOpens;
+        continue;
+      }
+      rebuilt.push(character,);
     }
-    if ((character === '"') && convertDoubles) {
-      rebuilt.push(doubleOpens ? CURLY_OPEN_DOUBLE : CURLY_CLOSE_DOUBLE,);
-      doubleOpens = !doubleOpens;
-      continue;
-    }
-    rebuilt.push(character,);
-  }
-
-  return rebuilt.join('',);
+    return rebuilt.join('',);
+  })();
 }
 
 //endregion Typography restoration
