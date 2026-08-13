@@ -109,6 +109,14 @@ export function seatJudges(
  * Below this the scorer renders `n/a` rather than a number, matching the
  * discipline already in `score-attribution.ts`. A rate over a handful of claims
  * looks exactly like a rate over a thousand and invites the same weight.
+ *
+ * PROVISIONAL, and stated so on purpose. This floor is a round number chosen to
+ * refuse obviously thin populations, not a calibrated threshold.
+ * `LOSS_FRACTION_LIMIT` in `preservation-check.ts` reads with the same
+ * authority and was fitted on 50 human-graded repairs; this one has nothing
+ * behind it yet. Cite it as a guard, never as a measured minimum, and refit it
+ * once the crosscheck has produced enough judged claims to say where a rate
+ * stops moving.
  */
 export const MIN_JUDGED_CLAIMS = 30;
 
