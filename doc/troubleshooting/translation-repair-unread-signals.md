@@ -225,6 +225,49 @@ Admitting those quotes was NOT done, and is blocked rather than merely
  `doc/planning/naturalness-lane-reach.md`. Landing it quietly would decide that
  question without asking.
 
+### How much of the 225 the wrapping explains, bounded before the telemetry lands
+
+Two attempts, one worthless and one usable. Both are recorded because the
+ worthless one looks convincing.
+
+The first compared the newline rate among quotes that DID locate (1.03% of
+ 5458 target anchors) against the rate a 41-character window covers a newline
+ when slid across the same prose (28.06%). A 27-fold deficit, and meaningless.
+
+It fails twice over. The corpus wraps at semantic boundaries, so lines are
+ short (median 49 characters against a median quote of 41) and quotes are
+ line-locked: 29.7% of located quotes are EXACTLY whole lines, 39.9% start
+ flush after a line break and 46.0% end flush before one. A uniform-random
+ window is not what a critic produces. Worse, the sample is survivors only, so
+ "located quotes rarely contain newlines" is what BOTH explanations predict:
+ critics rarely crossing wraps, and cross-wrap quotes failing and vanishing
+ from the sample.
+
+The second test avoids survivors entirely. If wrapping causes misses, entries
+ whose prose wraps more should miss more, and the miss rate is computed against
+ attempts rather than against successes:
+
+```text
+  54 entries with at least 10 anchoring attempts; median line length per entry
+  spans 12 to 149 characters, so the split has room to show an effect
+
+  prose mostly wrapped (share > 0.72)   26 entries   4.5% of attempts missed
+  prose less wrapped   (share <= 0.72)  27 entries   3.1% missed
+
+  median line <= 54                     27 entries   4.2% missed
+  median line >  54                     26 entries   3.6% missed
+```
+
+Both splits move in the direction the mechanism predicts, and neither moves
+ far. Treating the less-wrapped rate as the non-wrap baseline attributes
+ roughly a quarter of the misses in the wrapped group to wrapping, so the
+ expectation to hold going in is that soft wrapping explains a MINORITY of the
+ 225, not the bulk of them.
+
+That is a bound, not an answer: the split is coarse, and entries that wrap more
+ may differ in other ways. The suffix landed in `a6bbeca50` measures it
+ directly, one failed quote at a time, and should be believed over this.
+
 ### A gap this exposed
 
 The failing quote is not retained anywhere. Artifacts keep adjudicated issues
