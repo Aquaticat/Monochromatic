@@ -160,7 +160,7 @@ export type RelabelCase = {
  * const slice = locateSlice({ sourceText, targetText, before, },);
  * ```
  */
-function locateSlice(
+export function locateSlice(
   {
     sourceText,
     targetText,

@@ -63,6 +63,10 @@ run = "node src/corpus-run/recall-benchmark.ts"
 description = "Ask whether the introduced-defect probe can detect damage at all: one clean region and two with damage injected, cat-themed fixtures only"
 run = "node src/corpus-run/probe-sensitivity.ts"
 
+[tasks."damage-sample"]
+description = "Draw shipped regions at random and ask a human the same source-anchored damage question the probe asks, with the probe's verdict kept in the manifest"
+run = "node src/corpus-run/damage-sample.ts"
+
 [tasks."probe-verify"]
 description = "Probe damaged and unread regions with the accepted issues withheld, and write one blind sheet asking whether each flagged edit really damaged the text"
 run = "node src/corpus-run/probe-verify.ts"

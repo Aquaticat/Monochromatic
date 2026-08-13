@@ -144,6 +144,27 @@ function renderClaim({ claim, }: { readonly claim: ScreenedDefectClaim; },): str
 }
 
 /**
+ * Whether an item carries a machine claim to show the reader.
+ *
+ * @param item - item being rendered
+ *
+ * @returns Whether any claim accompanies it
+ *
+ * @example
+ * ```ts
+ * const shown = hasClaims({ item, },);
+ * ```
+ */
+function hasClaims({ item, }: { readonly item: VerifyItem; },): boolean {
+  /**
+   * Claims accompanying this item.
+   */
+  const { claims, } = item;
+
+  return claims.length > 0;
+}
+
+/**
  * Renders one sheet item.
  *
  * @param item - item to render
@@ -207,13 +228,21 @@ function renderItem(
     '',
     fenceForMarkdown({ text: editorAfter, },),
     '',
-    'An automated reviewer says the edit introduced a defect:',
-    '',
-    ...item.claims
-      .map(function toBlock(claim,) {
-        return renderClaim({ claim, },);
-      },),
-    '',
+    // A machine claim is shown only when the sheet's purpose is to judge THAT
+    // claim. On a sheet drawn to measure repair quality it is withheld, because
+    // telling a reader what an automated reviewer already concluded moves the
+    // answer, which is the same reason the detection sheet shows no correction.
+    ...(hasClaims({ item, },)
+      ? [
+        'An automated reviewer says the edit introduced a defect:',
+        '',
+        ...item.claims
+          .map(function toBlock(claim,) {
+            return renderClaim({ claim, },);
+          },),
+        '',
+      ]
+      : []),
     'Y if the edit lost or distorted something the original supports.',
     'N if the edit is acceptable, even where it is not the wording you would',
     'have chosen, and N if the only problem is a defect that was already there',
