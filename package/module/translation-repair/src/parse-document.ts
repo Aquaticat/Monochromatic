@@ -267,6 +267,25 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
     bodyOffset: split.bodyOffset,
   },);
 
+  /**
+   * Top-level blocks once disclosure containers are unwrapped.
+   *
+   * Computed ONCE and shared, because the node list and the footnote graph have
+   * to agree both about what counts as a top-level block and about what
+   * `block/N` names. They did not agree: the graph walked the RAW children, so
+   * a footnote definition sitting inside a container was invisible to it while
+   * being promoted for the node list, and every `nodeId` it emitted counted
+   * containers the node list had already unwrapped.
+   *
+   * One corpus translation reported all ten of its references unresolved while
+   * carrying all ten definitions, because every definition sat inside one.
+   */
+  const blocks = flattenContainers({
+    children: parsed
+      .root
+      .children,
+  },);
+
   return {
     text,
     documentHash: hashContent({ content: text, },),
@@ -281,20 +300,14 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
     // same top-level structure as a counterpart that does not; chunking and
     // alignment walk top-level blocks only.
     nodes: buildDocumentNodes({
-      children: flattenContainers({
-        children: parsed
-          .root
-          .children,
-      },),
+      children: blocks,
       bodyText: split.body,
       bodyOffset: split.bodyOffset,
     },),
     // The footnote graph scans the MASKED body so commented-out marker
     // look-alikes never become phantom references or definitions.
     footnoteGraph: buildFootnoteGraph({
-      children: parsed
-        .root
-        .children,
+      children: blocks,
       bodyText: masked,
       bodyOffset: split.bodyOffset,
     },),

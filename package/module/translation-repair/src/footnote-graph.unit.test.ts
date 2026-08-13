@@ -14,6 +14,7 @@ import {
   buildDocumentNodes,
   buildFootnoteGraph,
   MdxParseError,
+  parseDocument,
   parseMarkdownBody,
   parseMdxBody,
   scanFullwidthMarkers,
@@ -199,6 +200,109 @@ await describe({
           caught = error;
         }
         expect(caught instanceof UnpositionedNodeError,).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Page whose footnote definition is nested, exactly as the corpus nests them.
+ */
+const NESTED_DEFINITION = [
+  '## 猫',
+  '',
+  '<details>',
+  '<summary>More</summary>',
+  '',
+  'Whiskers naps here[^1]',
+  '',
+  '[^1]: On the warm windowsill.',
+  '',
+  '</details>',
+  '',
+].join('\n',);
+
+await describe({
+  name: 'parseDocument footnote graph over containers',
+  children: [
+    it({
+      name: 'resolves a reference whose DEFINITION sits inside a disclosure '
+        + 'container. The node list flattens containers while the graph walked '
+        + 'the RAW tree, so every definition inside one was invisible to it, '
+        + 'and one corpus translation reported all ten of its references '
+        + 'unresolved while carrying all ten definitions',
+      fn: async () => {
+        /**
+         * Graph built over the nested page.
+         */
+        const { footnoteGraph, } = parseDocument({ text: NESTED_DEFINITION, },);
+
+        expect(footnoteGraph.references.length,).toBe(1,);
+        expect(footnoteGraph.definitions.length,).toBe(1,);
+        expect(footnoteGraph.findings,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'still reports a genuinely dangling reference, so this widened what '
+        + 'the graph can SEE without blunting what it reports. One corpus '
+        + 'translation really did lose every one of its definitions',
+      fn: async () => {
+        /**
+         * Page referencing a definition that is nowhere at all.
+         */
+        const { footnoteGraph, } = parseDocument({
+          text: '## 猫\n\nWhiskers naps here[^1]\n',
+        },);
+
+        expect(footnoteGraph.definitions.length,).toBe(0,);
+        expect(footnoteGraph.findings.length,).toBe(1,);
+        expect(footnoteGraph.findings[0]?.kind,).toBe('unresolved-reference',);
+      },
+    },),
+
+    it({
+      name: 'emits nodeIds naming blocks of the SAME list the document exposes. '
+        + 'The graph counted containers the node list had already unwrapped, so '
+        + 'every id after one named a different block than it meant',
+      fn: async () => {
+        /**
+         * Page with a container BEFORE the footnote, which is what shifted ids.
+         */
+        const { footnoteGraph, nodes, } = parseDocument({
+          text: [
+            '## 猫',
+            '',
+            '<details>',
+            '<summary>More</summary>',
+            '',
+            'A nap.',
+            '',
+            '</details>',
+            '',
+            'Whiskers naps here[^1]',
+            '',
+            '[^1]: On the warm windowsill.',
+            '',
+          ].join('\n',),
+        },);
+
+        /**
+         * Block ids the document actually exposes.
+         */
+        const ids = new Set(nodes.map(function toId(
+          _node,
+          index,
+        ) {
+          return `block/${String(index,)}`;
+        },),);
+        for (
+          const entry of [
+            ...footnoteGraph.references,
+            ...footnoteGraph.definitions,
+          ]
+        )
+          expect(ids.has(entry.nodeId,),).toBe(true,);
       },
     },),
   ],
