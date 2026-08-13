@@ -496,10 +496,10 @@ This document is a census of signals the pipeline EMITS. Four separate
     preview of the needle. The 225 misses already recorded stay undiagnosable,
     but future ones name the quote that missed. See "The wall came down on one
     of the four".
--   `schema-mismatch` records that a model reply failed to parse, and
-    `attemptStageCall` discards the `rawText` the outcome carries. The
-    sub-kind, which is the diagnosis and decides between three different fixes,
-    is logged at debug and captured nowhere.
+-   ~~`schema-mismatch` records that a model reply failed to parse, and
+    `attemptStageCall` discards the `rawText` the outcome carries.~~ FIXED
+    2026-08-13 in `256520df7`. See "The second wall came down, and the client
+    was never the problem".
 -   Accepted issues record their claims but NOT which critic raised each one.
     So `#65` cannot ask whether a duplicated issue is independent
     corroboration, because independence means "different critics" and the
@@ -702,3 +702,54 @@ THE OTHER THREE WALLS still stand: `schema-mismatch` discards `rawText`,
 
 `Futajuhuacha` stays unexplained until a pass runs the new telemetry. That is
  the honest state: the instrument is built and has not yet been read.
+
+## The second wall came down, and the client was never the problem
+
+Two of the four recurring-wall instances are now fixed. This one carried a
+ wrong diagnosis in the earlier entry, and the correction is the useful part.
+
+THE EARLIER ENTRY SAID the client discards `rawText` and logs the sub-kind at
+ debug. Reading the source, `synthetic-client.ts` does neither. It already
+ returns `rawText` on every failure outcome AND a `detail` naming which of the
+ three faults fired:
+
+```text
+  truncated thinking   output was truncated inside its thinking block
+  unparseable          content is not valid JSON: <parser detail>
+  guard rejected       content parsed as JSON but failed the caller schema guard
+```
+
+The loss is ONE CALL DOWNSTREAM. `attemptStageCall` in `stage-call.ts` had:
+
+```text
+  l.warn(`${stage} ${modelId}: ${outcome.kind}, voice lost`,);
+```
+
+`outcome.kind` is the flattened union tag. Both the sub-kind and the model text
+ sat in scope, unread, on the same object. So the emitter was fine and the
+ consumer threw the diagnosis away, which is a different fix from the one the
+ earlier entry implied and a much smaller one.
+
+WHAT IT NOW RECORDS: the sub-kind by name, plus a bounded, line-flattened
+ opening of the model text. The opening is the diagnostic part. The Kimi-K3
+ outage was a two-character channel marker prefixing otherwise valid JSON, and
+ it explained 507 mismatches in a single pass; nothing shorter than the first
+ few characters was needed to see it.
+
+The refusal branch is covered too. A refusal and a parse failure call for
+ different responses and both read as a bare lost voice before this.
+
+VERIFIED BY MUTATION: restoring the bare-kind warning fails 9 assertions. The
+ test harness needed a capturing logger to make that possible, because the
+ existing cases asserted only that a voice was LOST and never read what the
+ loss recorded, which is how a warning this uninformative survived having tests.
+
+WHEN IT WILL BE READ. `pass13` cannot see it, being a frozen module graph. The
+ detached watcher resumes that run in a fresh process, so the resumed half
+ carries it and `#75`'s 74-and-counting voice losses become diagnosable without
+ any further action.
+
+THE TWO REMAINING WALLS are accepted issues not recording which critic raised
+ each claim, which blocks `#65` and `#68`, and that one is NOT this shape: the
+ attribution is genuinely absent rather than discarded downstream, so it needs
+ the claim to carry its speaker from the critic stage onward.
