@@ -117,6 +117,14 @@ export {
   pickFallbackPatch,
 } from './editor-candidates.ts';
 export {
+  checkPreservation,
+  type PreservationVerdict,
+} from './preservation-check.ts';
+export {
+  contentTokens,
+  properNouns,
+} from './preservation-tokens.ts';
+export {
   buildChunkCriticRecords,
   type ChunkCriticRecord,
   type ClaimAttribution,
