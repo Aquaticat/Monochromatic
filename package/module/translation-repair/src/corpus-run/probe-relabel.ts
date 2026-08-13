@@ -104,6 +104,8 @@ async function probeOnce(
     String(tally?.removalCorroborated ?? 0,)
   } contradicted=${String(tally?.contradicted ?? 0,)} unanchored=${
     String(tally?.unanchored ?? 0,)
+  } preExisting=${
+    String(tally?.preExisting ?? 0,)
   } none=${String(tally?.noneFound ?? 0,)} uncertain=${
     String(tally?.uncertain ?? 0,)
   }`;
