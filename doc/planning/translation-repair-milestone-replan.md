@@ -21,6 +21,16 @@ the repair sheet for round three was NOT graded, because the repairs damage
 text (`#67`), and the instrument built to catch that damage does not see it
 (`#66`).
 
+Two of those premises have since been measured and one did not survive.
+`#67` claimed the editor replaces far more text than the defect it was given,
+sized at 21 of 50 edits beyond 1.35 times the quoted span. Re-derived over the
+40 DISTINCT regions the draw actually covers, and against the widest span each
+region SERVES rather than the single issue that drew it, no region
+over-replaces. Envelopes merge overlapping and touching evidence, so a region is
+cut to cover every issue it serves, and the old figure measured that merge.
+What survives is that some replacements DROP source-supported content, which
+replacement width never evidenced.
+
 So the honest summary is that DETECTION is close to its bar and REPAIR is not
 fit to be measured yet.
 
@@ -85,7 +95,13 @@ Deleting a contributor's name is a different kind of failure from rendering
 
 Proposed: a deterministic preservation check at the apply gate, independent of
 any model. Every source-supported sentence present before an edit must still be
-represented after it. That alone would have blocked items 2, 7, 11, 15 and 21.
+represented after it.
+
+Sized honestly, that is TWO regions rather than five items: positions 2, 7, 11
+and 15 are one Acheron edit drawn four times, and 21 is a second. The 50 drawn
+items sit on 40 distinct regions in total, so every per-item rate in this
+document overstates by that factor.
+
 Quality then becomes a separate, later, gradeable question.
 
 ### Three: fix the measuring instruments before measuring again
