@@ -105,7 +105,28 @@ changes the default labels to `A`, `Abcdef`, and `Abcdefghijklmnopq`,
 selects style `3`, and renders it:
 
 ```sh
-mise run //package/music-player/desktop-app:lint:slint
+cd package/music-player/desktop-app
+node --input-type=module <<'EOF'
+import {
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
+
+mkdirSync('target', { recursive: true });
+const source = readFileSync('ui/app.slint', 'utf8');
+const repro = source
+  .replace(
+    'in property <[string]> page-labels: [];',
+    'in property <[string]> page-labels: ["A", "Abcdef", "Abcdefghijklmnopq"];',
+  )
+  .replace(
+    'in-out property <int> page-control-style: 0;',
+    'in-out property <int> page-control-style: 3;',
+  );
+writeFileSync('target/segmented-repro.slint', repro);
+EOF
+mise run lint:slint
 SLINT_BACKEND=software slint-viewer \
   --screenshot target/segmented-after.png \
   target/segmented-repro.slint
