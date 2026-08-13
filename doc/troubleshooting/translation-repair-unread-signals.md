@@ -296,6 +296,39 @@ The direction matters for the decision this feeds. If soft wrapping explains
  little, the anchoring lead closes, and the line-structure question in
  `doc/planning/naturalness-lane-reach.md` governs one change rather than two.
 
+### The side split varies by entry, so do not compare a sample to a population
+
+The quote-family findings carry a side, `source` or `target`, and across all 56
+ settled entries `quote-not-found` is almost exactly even, 112 against 113.
+
+At 7 settled entries `pass13` shows 17 source against 3 target. Under an even
+ split that is about a 0.26% outcome, which looks like a pipeline change and is
+ not one.
+
+The controlled comparison is the same entries in both runs, and it dissolves
+ the effect:
+
+```text
+                          pass13    old run, SAME 7 entries
+  quote-not-found source     17        12
+  quote-not-found target      3         6
+  empty-quote source          6         7
+  empty-quote target          4         3
+```
+
+Those seven entries were ALREADY source-skewed in the old run, 12 against 6,
+ while the corpus overall was even. The same holds for `empty-quote`, whose
+ corpus-wide skew of 112 source against 17 target is driven by entries outside
+ this sample entirely.
+
+So the side distribution is an entry property, and comparing a 7-entry sample
+ against a 56-entry population measures which entries were drawn rather than
+ what the pipeline did. Compare the same entries, or do not compare.
+
+This is the second finding in one session to dissolve the same way; the other
+ was a `needs-human` share that looked like a threefold shift and turned out to
+ be one entry. Both were caught, but both were nearly written down.
+
 ### A gap this exposed
 
 The failing quote is not retained anywhere. Artifacts keep adjudicated issues
