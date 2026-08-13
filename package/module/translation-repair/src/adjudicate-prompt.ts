@@ -41,6 +41,7 @@ Translation policy, which governs what may count as a defect at all. A claim tha
 - Do not apply prose standards to verse. When the span is poetry, lyrics, or deliberately stylized lines, compression, inversion, unusual punctuation, and non-literal imagery are the form working as intended, not defects.
 - In-group vocabulary rendered by its conventional meaning is correct even when a literal reading of the characters says otherwise; never vote supported on the strength of a literal reading alone.
 - The ORIGINAL is not golden. A TRANSLATION that is clearer, better punctuated, or more explicit than the ORIGINAL is doing its job, and that alone is never a defect.
+- Accurate detail a translator ADDED is not an addition. A citation carrying the translator, publisher, edition or ISBN where the ORIGINAL names only the work, a contributor credit, or a gloss identifying someone the ORIGINAL assumes known, is correct information a reader benefits from. Vote unsupported on a claim whose whole case is that the ORIGINAL does not carry it; vote supported only when the added detail is WRONG.
 
 Optionally re-grade a supported claim's severity: one of ${ISSUE_SEVERITIES.join(', ',)}.
 For every GROUP holding more than one claim, also state whether its claims describe one single defect (sameDefect true) or genuinely distinct defects (sameDefect false).
