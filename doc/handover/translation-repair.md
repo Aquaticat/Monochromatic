@@ -7279,3 +7279,52 @@ What the move does buy is real but narrower. The claim is now RAISED, SCREENED
  under both conditions, so that control passes without the screen ever being
  exercised. It shows the probe is not flagging every deletion; it does not show
  the screen dismisses correctly.
+
+### Re-anchoring the question emptied the sheet, and reading the five explains why
+
+Under the source-anchored prompt, `probe-verify` wrote ZERO items: 44 of 45
+ prober verdicts found nothing and the remaining one was unanchored. The screen
+ dismissed nothing, so this is the probers themselves, not the filter.
+
+That looked like an over-correction until the five regions were read against the
+ Chinese. They are not damaged. Each judged against the ORIGINAL rather than
+ against the pre-edit English:
+
+-   Acheron. Source: 她在技术领域也颇有研究，曾经发过...视频。The BEFORE text adds
+     "not just a gamer", "from hardware to software" and "shared her insights
+     with the community", none of which the source says. The AFTER renders
+     在技术领域也颇有研究 and drops the additions. The hi3861 video sentence is
+     untranslated in BOTH texts, so the edit did not delete it. The earlier note
+     in this document saying it did was wrong.
+-   Anilovr. The BEFORE text reverses the source's sentence order and adds "On
+     that day". The AFTER restores the order and drops the addition.
+-   AmbeR_the_anpa. Source line is 条目贡献：UP 主纪念馆（...）with no "Bilibi".
+     The BEFORE text carries "Bilibi - "; removing it is correct.
+-   Chinatsu_Suzuki. Source: 又像是哭诉又像是哀求。哀求 is PLEADING. The BEFORE
+     text said "reminiscing", which is simply wrong, and the AFTER says
+     "pleading". The edit fixed a mistranslation.
+-   Dethelly. Source: 私信里编号式地问上十几个问题。编号式地 IS "in numbered form"
+     and 私信里 IS "via private messages". The earlier note calling those
+     inventions was wrong; they are in the source, and the AFTER also restores a
+     whole first half the BEFORE text omitted.
+
+So all five are correct repairs, and a probe reporting no introduced defect on
+ them is RIGHT.
+
+### What that overturns
+
+The damaged set was never ground truth. It was assembled by reading edits
+ against the previous English, which is the same reference error the prompt
+ made, so "the repairs are too broken to grade" rests on five items that read as
+ damage only from that angle.
+
+Every probe figure taken before the re-anchoring measured change rather than
+ damage, including 0.400 against 0.150 and 14 of 15. They are withdrawn.
+
+`#67`'s surviving half, that the editor drops source-supported content, now has
+ no evidence behind it. The one omission found in these five predates the edit.
+
+What is NOT established: that repairs are fine generally. Five regions from four
+ entries were read, all drawn because someone thought they were bad, and the
+ probe agreeing with a re-reading of the same five is not a measurement of the
+ corpus. A fresh sample judged against the source is.
