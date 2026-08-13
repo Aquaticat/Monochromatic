@@ -63,6 +63,10 @@ run = "node src/corpus-run/recall-benchmark.ts"
 description = "Ask whether the introduced-defect probe can detect damage at all: one clean region and two with damage injected, cat-themed fixtures only"
 run = "node src/corpus-run/probe-sensitivity.ts"
 
+[tasks."probe-relabel"]
+description = "Re-probe the regions a human read as damaged, once with the accepted issues shown and once withheld, to separate a suppressing label from a hard judgement"
+run = "node src/corpus-run/probe-relabel.ts"
+
 [tasks."model-health"]
 description = "Ask every roster model one trivial structured question and report what came back, so schema-mismatch can be told apart from a dead model"
 run = "node src/corpus-run/model-health.ts"
