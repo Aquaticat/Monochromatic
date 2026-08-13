@@ -186,17 +186,48 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Immediate next steps
 
-PICK UP HERE (2026-08-06, end of the probe session).
+PICK UP HERE (2026-08-13, end of the overnight redesign-prerequisites session).
 
-STATE: `pass8-run-007` is running at tip `9533b0ba8`, 92 entries pending, zero
-settled. It needs FIFTEEN settled entries before the sheets can be drawn.
-Confirm it is alive with
-`ps --no-headers -eo pid,args | rg corpus-pass | rg --invert-match 'rg |pgrep'`
-before assuming anything; a bare `pgrep --full` matches its own command line.
+STATE: `pass13` is running into
+`node_modules/.monochromatic/translation-repair-runs-pass13`, cache version 9,
+10 entries settled and rising. It stops near 17 of 92 on the 720-minute soft
+budget, which is the design working rather than a fault. Confirm it is alive
+with `ps --no-headers -eo pid,args | rg corpus-pass | rg --invert-match 'rg |pgrep'`;
+a bare `pgrep --full` matches its own command line.
 
-WHEN THE FIRST ARTIFACT LANDS: read its `introducedDefects` block end to end.
-That is the only remaining unverified link, since every other part of the chain
-was exercised on throwaway fixtures rather than on real pipeline output.
+WHAT NEEDS YOU, in the order it blocks work:
+
+1.   `#70`, the pipeline-shape decision, B > C > A. THREE of its four
+    prerequisites are now answered and recorded in
+    `doc/planning/translation-pipeline-redesign.md`. The fourth, `#31`'s judge
+    crosscheck, is the only one still open and it is the one B stakes
+    everything on.
+2.   A policy answer for the TRANSCRIBED-IMAGE class, which is new and which
+    none of the three options addresses. Chinese pages hold letters as images;
+    English pages transcribe and translate them. Roughly 31 thousand characters
+    corpus-wide, 8 entries clearly. Option B would DELETE that accurate human
+    work, because a from-scratch translation of the Chinese markdown has no
+    source for it. Your standing ruling, keep accurate translator additions,
+    says these should survive, but B has no mechanism to make them survive.
+3.   `#66` and `#68`, human grading, unchanged and still the gate on probe
+    calibration.
+
+WHAT CHANGED OVERNIGHT that contradicts earlier records:
+
+-   `#74` is REFUTED, not merely blocked. `alignHeadings` cannot leave two
+    headings unpaired at all: a zero-affinity pairing scores 0 while two gaps
+    cost `2 * GAP_PENALTY`, so `Math.max` always prefers an unsupported
+    pairing. Confirmed independently from the corpus, 0 unpaired sections in
+    284 pairs. The designed fix was bounded by exactly that quantity, so it
+    could never have worked. Needs lexicographic scoring, a changed return
+    type, and an ambiguity path.
+-   Prerequisite 3 is MISPAIRING, not unsupported content, but the first
+    version of that answer overclaimed and was corrected in place.
+-   Option B's cost is 1.56x the editor calls and 3.9x its output, not a
+    multiplication of the run, because the editor already fires on 64% of
+    slices.
+-   `#72` stands. The re-open alarm was the monitor pooling `slice-cache` with
+    `artifacts`; the monitor is fixed.
 
 WHEN FIFTEEN SETTLE:
 1.    `mise run //package/module/translation-repair:draw-sample -- --final`.
