@@ -78,6 +78,12 @@ export {
   type ProposerView,
 } from './corpus-run/attribution-report.ts';
 export {
+  type JudgeSeating,
+  MIN_JUDGED_CLAIMS,
+  renderJudgedRate,
+  seatJudges,
+} from './corpus-run/judge-independence.ts';
+export {
   CATALOG_MODEL_IDS,
   type CatalogComparison,
   compareCatalog,
