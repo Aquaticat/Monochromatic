@@ -64,7 +64,7 @@ mod engine_worker;
 mod error;
 /// What:     `mod fingerprint;` declares the `fingerprint` child module
 ///           (`fingerprint.rs`), which holds the gxhash cache-key fingerprint and its
-///           `nativeFingerprint` JNI entry. The entry is `#[no_mangle]`, so the JVM
+///           `nativeFingerprint` JNI entry. The entry is `#[unsafe(no_mangle)]`, so the JVM
 ///           finds its symbol in the `.so` even though the module is private here.
 /// Why:      Keeps the new JNI export and its hashing out of this file (and under the
 ///           per-file code-line budget); nothing in this file calls it directly.
@@ -111,7 +111,7 @@ mod truepeak;
 ///           entry points (`nativeTruePeakServiceCreate`/`Release`, `nativeResolveGain`,
 ///           `nativeWarmTrack`) Kotlin calls to resolve and cache normalization gains.
 /// Why:      Keep the Turso-backed service and its JNI glue out of this file (max-lines) while
-///           its `#[no_mangle]` exports still land in the cdylib.
+///           its `#[unsafe(no_mangle)]` exports still land in the cdylib.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -214,19 +214,19 @@ use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};
 /// ```
 use jni::JNIEnv;
 
-// What:     `#[no_mangle]` is an ATTRIBUTE (a compiler annotation, written
+// What:     `#[unsafe(no_mangle)]` is an ATTRIBUTE (a compiler annotation, written
 //           `#[...]`) telling the compiler "do NOT rename this function's symbol".
 //           Rust normally scrambles ("mangles") symbol names for uniqueness; the JVM
 //           must find this function by the exact name `Java_dev_..._nativePing`, so
 //           mangling must be off.
-// Why:      Without `#[no_mangle]` the JVM's `System.loadLibrary` + `native` lookup
+// Why:      Without `#[unsafe(no_mangle)]` the JVM's `System.loadLibrary` + `native` lookup
 //           would fail to find the symbol and the call would crash at link time.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed; `export function nativePing()` keeps its name
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     `pub extern "system" fn Java_..._nativePing<'local>(...) -> jint`
 ///           declares the function. `pub` = visible outside this module. `extern
 ///           "system"` = use the platform's C/JVM calling convention so the JVM can
@@ -263,14 +263,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePin
     42
 }
 
-// What:     `#[no_mangle]` again: keep the symbol name unmangled so the JVM finds it.
+// What:     `#[unsafe(no_mangle)]` again: keep the symbol name unmangled so the JVM finds it.
 // Why:      Same reason as `nativePing`: the JVM looks this function up by exact name.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     Same declaration shape as `nativePing`: `pub extern "system"`, the JNI
 ///           mangled name, a `<'local>` lifetime, the two unused `_env`/`_class`
 ///           params, and a `-> jint` return.
@@ -332,14 +332,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpu
     }
 }
 
-// What:     `#[no_mangle]`: keep the symbol name as-is for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name as-is for JVM lookup.
 // Why:      Same as the other entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     Same JNI-entry declaration shape: `pub extern "system"`, mangled name,
 ///           `<'local>` lifetime, unused `_env`/`_class`, `-> jint`.
 /// Why:      A self-test slot that forces symphonia's registries to initialize.
@@ -390,14 +390,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSym
     1
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     The JNI entry declaration. Same shape as before, but with a THIRD
 ///           parameter `path: JString<'local>` (a borrowed Java-string handle), and
 ///           `env` is taken WITHOUT a leading `_` this time because we actually use it.
@@ -520,14 +520,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
     bench::benchmark_decode(source)
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration. Third parameter is `fd: jint` (a 32-bit signed JVM
 ///           int holding the Android file descriptor). `_env`/`_class` unused; returns
 ///           `jdouble` (throughput or negative error code).
@@ -605,14 +605,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
     bench::benchmark_decode(source)
 }
 
-// What:     `#[no_mangle]`: keep the symbol name unmangled so the JVM finds it.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name unmangled so the JVM finds it.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     `pub extern "system" fn Java_..._nativeTruePeakSynthetic<'local>(env,`
 ///           `_class, samples: JFloatArray, channels: jint) -> jfloat`. A TEST-ONLY
 ///           JNI entry that measures the true peak of an IN-MEMORY interleaved-`f32`
@@ -711,14 +711,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     truepeak::true_peak_interleaved(&buf, channels as usize)
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration with no extra params; `_env`/`_class` unused;
 ///           returns `jdouble` (latency in ms, or -1.0 on failure).
 /// Why:      Kotlin calls this to probe the native (raw ndk::audio) AAudio output
@@ -752,14 +752,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOut
     output::measure_output_latency_ms().unwrap_or(-1.0)
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration. No extra params; returns `jlong` (a 64-bit signed
 ///           int) that secretly holds a raw pointer to a heap `Engine`, used as an
 ///           opaque handle Kotlin passes back in later calls. We use `jlong` (not a
@@ -835,14 +835,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     }
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration with THREE extra params: `handle: jlong` (the
 ///           opaque engine handle from create), `fd: jint` (the file descriptor), and
 ///           `play: jboolean` (0 = false, non-zero = true, whether to start playing).
@@ -947,14 +947,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     }
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning
 ///           NOTHING (no `-> ...`, so the return type is `()`, Rust's "unit"/void).
 /// Why:      Kotlin calls this to resume playback of the loaded track; it is
@@ -1004,14 +1004,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.play();
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning
 ///           nothing (unit/void).
 /// Why:      Kotlin calls this to pause playback (keeping the loaded track and
@@ -1057,14 +1057,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.pause();
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and a target
 ///           `position_sec: jdouble` (64-bit float seconds); returns nothing (void).
 /// Why:      Kotlin calls this to seek; fire-and-forget.
@@ -1109,14 +1109,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.seek_to(position_sec);
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and a `volume:
 ///           jfloat` (32-bit float, linear gain 0.0..1.0); returns nothing (void).
 /// Why:      Kotlin calls this to set user volume; fire-and-forget.
@@ -1161,14 +1161,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.set_volume(volume);
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and a `gain:
 ///           jfloat` (32-bit float, linear normalization gain 0.0..1.0); returns
 ///           nothing (void).
@@ -1215,14 +1215,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.set_normalization_gain(gain);
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
 ///           `jdouble` (64-bit float, current position in seconds).
 /// Why:      Kotlin polls this to show the current playback position.
@@ -1269,14 +1269,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.position_sec()
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
 ///           `jdouble` (64-bit float, track duration in seconds).
 /// Why:      Kotlin reads this to size the seek bar / show total length.
@@ -1321,14 +1321,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     engine_ref.duration_sec()
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
 ///           `jboolean` (8-bit JVM boolean: 0 = false, non-zero = true).
 /// Why:      Kotlin reads this to know if audio is actually coming out right now.
@@ -1379,14 +1379,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     jboolean::from(engine_ref.is_playing())
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
 ///           `jboolean` (8-bit JVM boolean).
 /// Why:      Kotlin reads this to know when to advance to the next track.
@@ -1433,14 +1433,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     jboolean::from(engine_ref.is_ended())
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning a
 ///           `jboolean` (8-bit JVM boolean).
 /// Why:      Kotlin reads this "playWhenReady" intent (true from a play/load-and-play
@@ -1488,14 +1488,14 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     jboolean::from(engine_ref.play_when_ready())
 }
 
-// What:     `#[no_mangle]`: keep the symbol name for JVM lookup.
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
 // Why:      Same as the other JNI entry points.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // no annotation needed
 // ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// What:     JNI entry declaration taking the engine `handle: jlong` and returning
 ///           nothing (unit/void).
 /// Why:      Kotlin calls this once to tear down the engine (stop the worker, close
