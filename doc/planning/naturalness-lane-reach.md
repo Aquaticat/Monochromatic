@@ -190,12 +190,13 @@ What this leaves for the decision, now that the roster is three:
 -   Every reach and damage figure drawn from the 56-entry population still
     understates the lane, since a twelfth of its entries were refined on no
     voices at all. Numbers taken from `pass13` onward will not have that.
--   The cause is worth naming, because the model is still on the roster. All
-    nine voice losses `pass13` has recorded so far are Kimi-K3 returning
-    `schema-mismatch`, across the editor, critic and panel stages, with none
-    from either GLM. Kimi-K3 is also a refiner. That is the same failure family
-    as the channel-marker defect fixed at the parser earlier, so the parser fix
-    did not close all of it.
+-   The cause is worth naming, because the model is still on the roster. Of the
+    13 voice losses `pass13` had recorded an hour in, EVERY schema-mismatch is
+    Kimi-K3, twelve of them, across the editor, critic and panel stages. The
+    one remaining loss is GLM-5.2 exceeding its exchange deadline, which is a
+    different mechanism and not this one. Kimi-K3 is also a refiner. Schema
+    mismatch is the same failure family as the channel-marker defect fixed at
+    the parser earlier, so that fix did not close all of it.
 
 So the open question is no longer whether the lane survives a lost voice. It is
  whether one model losing its voice this often is acceptable on rosters where it
