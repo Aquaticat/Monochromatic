@@ -31,6 +31,22 @@ const DOCUMENT_TEXT =
  */
 const DOCUMENT = parseDocument({ text: DOCUMENT_TEXT, },);
 
+/**
+ * Invented document whose one paragraph soft-wraps, so a quote spanning the
+ * wrap holds a line break where a critic returns a space.
+ */
+const WRAPPED = parseDocument({
+  text: '## 猫的午睡\n\n小猫在窗台上打盹，\n阳光晒得暖洋洋。\n',
+},);
+
+/**
+ * Invented document repeating one soft-wrapped sentence, so collapsing the
+ * wrap finds the same quote twice.
+ */
+const WRAPPED_TWICE = parseDocument({
+  text: '## 猫的午睡\n\n小猫趴着睡，\n阳光很暖和。\n\n小猫趴着睡，\n阳光很暖和。\n',
+},);
+
 await describe({
   name: locateQuote.name,
   children: [
@@ -151,6 +167,53 @@ await describe({
     },),
 
     //endregion Failure reasons
+
+    //region Soft-line-break diagnosis
+
+    it({
+      name: 'names a miss the wrap explains, without locating it',
+      fn: async () => {
+        const located = locateQuote({
+          document: WRAPPED,
+          side: 'target',
+          quote: '小猫在窗台上打盹， 阳光晒得暖洋洋。',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'quote-not-found (target) [line-break-collapsible]',
+        },);
+      },
+    },),
+    it({
+      name: 'names a wrap-explained miss that collapses onto two occurrences',
+      fn: async () => {
+        const located = locateQuote({
+          document: WRAPPED_TWICE,
+          side: 'target',
+          quote: '小猫趴着睡， 阳光很暖和。',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'quote-not-found (target) [line-break-ambiguous]',
+        },);
+      },
+    },),
+    it({
+      name: 'leaves a genuinely absent quote unsuffixed',
+      fn: async () => {
+        const located = locateQuote({
+          document: WRAPPED,
+          side: 'target',
+          quote: '狗在院子里跑步',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'quote-not-found (target)',
+        },);
+      },
+    },),
+
+    //endregion Soft-line-break diagnosis
 
     //region Block-crossing splits
 

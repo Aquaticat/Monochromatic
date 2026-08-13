@@ -75,8 +75,14 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * that ships, with every prompt and every roster identical. Version 8 likewise:
  * naturalness eligibility stopped counting a repaired parse as a degraded one,
  * so slices that skipped the lane now enter it.
+ *
+ * Version 9 is the first bump for pure TELEMETRY, and it is still required:
+ * `quote-not-found` findings gained a suffix naming whether collapsing soft
+ * line breaks would have located the quote. No claim changes fate, but
+ * `findings` is part of the cached payload, so a resumed slice would report
+ * the old bare reason and understate the count the suffix exists to produce.
  */
-const SLICE_CACHE_VERSION = 8;
+const SLICE_CACHE_VERSION = 9;
 
 /**
  * Completion status of one repair run;

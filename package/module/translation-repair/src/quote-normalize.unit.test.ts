@@ -12,7 +12,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { normalizePunctuation, } from '../dist/final/node/index.mjs';
+import {
+  collapseLineBreaks,
+  normalizePunctuation,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Variant-to-canonical pairs the normalizer must collapse.
@@ -55,6 +58,52 @@ await describe({
          */
         const mixed = '老猫说：“打盹最舒服。”小猫写『喵』，又写「喵」，还写‘喵’和’喵‘。';
         expect(normalizePunctuation({ text: mixed, },),).toHaveLength(mixed.length,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: collapseLineBreaks.name,
+  children: [
+    it({
+      name: 'reads a soft wrap as one space',
+      fn: async () => {
+        expect(collapseLineBreaks({ text: '小猫打盹，\n阳光很暖和。', },),).toBe(
+          '小猫打盹， 阳光很暖和。',
+        );
+      },
+    },),
+    it({
+      name: 'leaves a blank line as two spaces, so a joined quote still misses',
+      fn: async () => {
+        expect(collapseLineBreaks({ text: '第一段。\n\n第二段。', },),).toBe(
+          '第一段。  第二段。',
+        );
+      },
+    },),
+    it({
+      name: 'reads a carriage return as a space too',
+      fn: async () => {
+        expect(collapseLineBreaks({ text: '小猫打盹，\r\n阳光很暖和。', },),).toBe(
+          '小猫打盹，  阳光很暖和。',
+        );
+      },
+    },),
+    it({
+      name: 'preserves length so offsets transfer',
+      fn: async () => {
+        /**
+         * Sample mixing wraps, a blank line, and punctuation left alone.
+         */
+        const mixed = '小猫打盹，\n阳光很暖和。\n\n老猫说：“喵。”\n';
+        expect(collapseLineBreaks({ text: mixed, },),).toHaveLength(mixed.length,);
+      },
+    },),
+    it({
+      name: 'leaves punctuation variants alone, unlike normalizePunctuation',
+      fn: async () => {
+        expect(collapseLineBreaks({ text: '老猫说：“喵。”', },),).toBe('老猫说：“喵。”',);
       },
     },),
   ],

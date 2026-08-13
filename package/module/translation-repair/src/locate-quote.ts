@@ -2,7 +2,10 @@ import type {
   DocumentSide,
   SpanAnchor,
 } from './issue-model.ts';
-import { normalizePunctuation, } from './quote-normalize.ts';
+import {
+  collapseLineBreaks,
+  normalizePunctuation,
+} from './quote-normalize.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
 
 //region Quote location
@@ -125,6 +128,58 @@ function bindQuoteRegion(
 }
 
 /**
+ * Names the outcome a soft-line-break collapse would have produced for a
+ * quote the punctuation-normalized search missed.
+ * Diagnostic only, so the caller still refuses the quote:
+ * the corpus soft-wraps its prose, and a critic quoting across a wrap returns
+ * a space where the document holds a line break, which this counts without
+ * yet acting on it.
+ *
+ * @param haystack - punctuation-normalized document text
+ *
+ * @param needle - punctuation-normalized quote
+ *
+ * @returns Suffix naming the collapsed outcome, empty when it changes nothing
+ *
+ * @example
+ * ```ts
+ * lineBreakSuffix({ haystack, needle, },);
+ * ```
+ */
+function lineBreakSuffix(
+  {
+    haystack,
+    needle,
+  }: {
+    readonly haystack: string;
+    readonly needle: string;
+  },
+): string {
+  /**
+   * Document text reading soft line breaks as spaces.
+   */
+  const collapsedHaystack = collapseLineBreaks({ text: haystack, },);
+
+  /**
+   * Quote reading soft line breaks as spaces.
+   */
+  const collapsedNeedle = collapseLineBreaks({ text: needle, },);
+
+  /**
+   * First collapsed occurrence.
+   */
+  const at = collapsedHaystack.indexOf(collapsedNeedle,);
+  if (at === (-1))
+    return '';
+  if (collapsedHaystack.includes(
+    collapsedNeedle,
+    at + 1,
+  ))
+    return ' [line-break-ambiguous]';
+  return ' [line-break-collapsible]';
+}
+
+/**
  * Locates one quote inside one document and binds it to its blocks.
  * Byte-exact search first;
  * when that misses, a punctuation-normalized search rescues quotes that
@@ -208,7 +263,12 @@ export function locateQuote(
   if (normalizedAt === (-1)) {
     return {
       located: false,
-      reason: `quote-not-found (${side})`,
+      reason: `quote-not-found (${side})${
+        lineBreakSuffix({
+          haystack,
+          needle,
+        },)
+      }`,
     };
   }
   if (haystack.includes(

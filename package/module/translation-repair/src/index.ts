@@ -52,7 +52,10 @@ export {
   locateQuote,
   type QuoteLocation,
 } from './locate-quote.ts';
-export { normalizePunctuation, } from './quote-normalize.ts';
+export {
+  collapseLineBreaks,
+  normalizePunctuation,
+} from './quote-normalize.ts';
 export {
   type AlignmentFinding,
   alignDocumentSections,
