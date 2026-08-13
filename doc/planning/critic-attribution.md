@@ -167,6 +167,34 @@ The bump is also a design lever rather than only a cost. If attribution lives in
 
 `runRefinePhase` must preserve the new field wherever it reconstructs outcomes.
 
+## Landed in full
+
+The path runs from the critic stage to the artifact. Each entry artifact now
+ carries `chunkCritics`: one record per chunk holding `chunkIndex`,
+ `heardCriticIds` and `claimAttributions`. `SLICE_CACHE_VERSION` moved to 10.
+
+TWO OF THE TRAPS BELOW TURNED OUT MOOT, by construction rather than by luck,
+ and that is the argument for this shape:
+
+-   Transitive clustering cannot miscredit anyone, because nothing is unioned
+    onto an issue. Attribution stays keyed by claim id and a consumer joins on
+    the ids an issue actually holds. There is no union to get wrong.
+-   Re-grading severity cannot orphan an entry, because no id is ever
+    recomputed. Adjudication re-grades the ISSUE; the member `AggregatedClaim`
+    keeps the id computed at resolution.
+
+Verified by mutation five times over, each having left the suite green
+ beforehand at least once: deleting the emission push, forcing the per-model
+ count to one, returning unfiltered attributions past the screen, emptying the
+ chunk records at the driver's return, and emptying the roster at both chunk
+ sites. The last two are the ones that matter most, because a change collecting
+ attribution perfectly and writing none of it is indistinguishable from never
+ having built it.
+
+The eligibility marker was subsumed rather than built. A nonempty
+ `heardCriticIds` says attribution was available for that chunk AND supplies the
+ denominator, so a separate per-entry boolean would be strictly weaker.
+
 ## What has landed, and two defects the building found
 
 Landed: `177f3e7b3` the collector and the stop to the discard, `5b93b5213` the
