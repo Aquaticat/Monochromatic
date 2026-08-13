@@ -34,7 +34,10 @@ function quotedBindings(names: readonly string[],): string {
    * Leading bindings preserving declaration order.
    */
   const leadingBindings = quoted
-    .slice(0, -1,)
+    .slice(
+      0,
+      -1,
+    )
     .join(', ',);
   return `${leadingBindings}, and ${finalBinding}`;
 }
@@ -72,8 +75,14 @@ export function parameterDiagnosticSubject({
   readonly parameterIndex: ParameterIndex;
   readonly targetIndexes: ReadonlyMap<string, number>;
 },): string {
-  if (isIdentifier(parameter.name,))
-    return `Parameter "${parameter.name.text}"`;
+  if (isIdentifier(parameter.name,)) {
+    /**
+     * Authored identifier name with no source trivia.
+     */
+    const identifierName = parameter.name
+      .text;
+    return `Parameter "${identifierName}"`;
+  }
   /**
    * Local names introduced by current binding pattern in authored order.
    */
