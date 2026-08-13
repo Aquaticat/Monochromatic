@@ -216,9 +216,58 @@ component SegmentedControls inherits Rectangle {
     }
 }
 
-// One page selector with four user-selectable visual styles. Style 0 is the
+// A Chromium-like browser tab: content-width text, rounded upper corners on
+// the active tab, a flat lower edge, and a short divider between inactive tabs.
+component ChromiumTab inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    callback clicked();
+    horizontal-stretch: 0;
+    width: chromium-label.preferred-width + 32px;
+    height: 48px;
+    preferred-height: 48px;
+    background: transparent;
+
+    if root.selected: Rectangle {
+        width: parent.width;
+        height: parent.height;
+        border-radius: 14px;
+        background: Palette.color-scheme == ColorScheme.dark ? #3b3b3b : #ffffff;
+    }
+    if root.selected: Rectangle {
+        y: 14px;
+        width: parent.width;
+        height: parent.height - 14px;
+        background: Palette.color-scheme == ColorScheme.dark ? #3b3b3b : #ffffff;
+    }
+    if !root.selected: Rectangle {
+        x: parent.width - 1px;
+        y: 12px;
+        width: 1px;
+        height: 24px;
+        background: Palette.foreground.with-alpha(0.2);
+    }
+    chromium-label := Text {
+        x: 16px;
+        width: parent.width - 32px;
+        height: parent.height;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        color: Palette.foreground;
+    }
+    TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// One page selector with five user-selectable visual styles. Style 0 is the
 // default radio control, style 1 is a wrapping MD1 tab grid, style 2 keeps
-// the previous rounded button grid, and style 3 joins content-width segments.
+// the previous rounded button grid, style 3 joins content-width segments,
+// and style 4 uses raised Chromium-like tabs.
 component PageControls inherits VerticalLayout {
     in property <[string]> labels;
     in property <int> selected-page;
@@ -277,6 +326,20 @@ component PageControls inherits VerticalLayout {
         selected-page: root.selected-page;
         select-page(p) => {
             root.select-page(p);
+        }
+    }
+    if root.control-style == 4: FlexboxLayout {
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: ChromiumTab {
+            text: label;
+            selected: p == root.selected-page;
+            clicked => {
+                root.select-page(p);
+            }
         }
     }
 }
@@ -417,8 +480,8 @@ export component AppWindow inherits Window {
     in property <int> selected-page: 0;
     in property <[PageItem]> page-items: [];
     // Page selector style: 0 = radio controls, 1 = multi-row MD1 tabs,
-    // 2 = the previous rounded buttons, 3 = segmented buttons. Rust restores
-    // and persists this value.
+    // 2 = the previous rounded buttons, 3 = segmented buttons,
+    // 4 = Chromium-like tabs. Rust restores and persists this value.
     in-out property <int> page-control-style: 0;
     // Settings is a local navigation page, not playback state.
     in-out property <bool> show-settings: false;
@@ -684,6 +747,15 @@ export component AppWindow inherits Window {
                     clicked => {
                         root.page-control-style = 3;
                         root.set-page-control-style(3);
+                    }
+                }
+                RadioButton {
+                    text: "Chromium-like tabs";
+                    selected: root.page-control-style == 4;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 4;
+                        root.set-page-control-style(4);
                     }
                 }
                 Button {

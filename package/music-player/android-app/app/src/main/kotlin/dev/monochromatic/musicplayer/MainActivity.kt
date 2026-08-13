@@ -30,7 +30,7 @@
 //   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
 //     volume, control row, settings page, page controls + track list). Page
 //     controls default to radios and can switch to multi-row MD1 tabs, segmented
-//     buttons, or the previous rounded buttons. Tap a track to play; tap the playing track to pause/resume.
+//     buttons, Chromium-like tabs, or the previous rounded buttons. Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
 //     screens. `seekRow`/`volumeRow`/`controlRow`/`radioOption`/`pageTabs`/
 //     `settingsPage`/`pageTabs`/`trackPager`/`trackRow`: the pieces of the player screen.
@@ -2479,8 +2479,8 @@ private fun radioOption(label: String, selected: Boolean, onSelect: () -> Unit) 
     }
 }
 
-// What:     `settingsPage` is a weighted Column child showing the three page-control
-//           choices and a route back to the library.
+// What:     `settingsPage` is a weighted Column child showing every page-control
+//           choice and a route back to the library.
 // Why:      The Settings button needs a dedicated page where the preference is explicit.
 //
 // In TS you'd write (pseudocode):
@@ -2522,6 +2522,11 @@ private fun ColumnScope.settingsPage(
             selected = style == PageControlStyle.SEGMENTED_BUTTONS,
             onSelect = { onSelectStyle(PageControlStyle.SEGMENTED_BUTTONS) },
         )
+        radioOption(
+            label = "Chromium-like tabs",
+            selected = style == PageControlStyle.CHROMIUM_TABS,
+            onSelect = { onSelectStyle(PageControlStyle.CHROMIUM_TABS) },
+        )
         Button(onClick = onBack) { Text("Back to library") }
     }
 }
@@ -2561,6 +2566,57 @@ private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
                 .height(2.dp)
                 .background(indicatorColor),
         )
+    }
+}
+
+// What:     `chromiumPageTab` renders one content-width browser-style tab.
+// Why:      Selected pages need the raised, rounded-upper-corner silhouette in the reference.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ChromiumPageTab(props: TabProps) { ... }
+// ```
+/** Displays one selectable Chromium-like page tab. */
+@Composable
+private fun chromiumPageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
+    /** Holds upper-rounded and lower-square active-tab corners. */
+    val tabShape: RoundedCornerShape = RoundedCornerShape(
+        topStart = 16.dp,
+        topEnd = 16.dp,
+        bottomEnd = 0.dp,
+        bottomStart = 0.dp,
+    )
+    /** Holds raised active-tab fill or transparent inactive fill. */
+    val containerColor: Color = if (selected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .width(IntrinsicSize.Max)
+            .defaultMinSize(minHeight = 48.dp)
+            .clip(tabShape)
+            .background(containerColor)
+            .selectable(
+                selected = selected,
+                role = Role.Tab,
+                onClick = onSelect,
+            ),
+    ) {
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        if (!selected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .width(1.dp)
+                    .height(24.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant),
+            )
+        }
     }
 }
 
@@ -2692,7 +2748,14 @@ private fun pageTabs(
     }
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(
-            if (pageControlStyle == PageControlStyle.MD1_TABS) 0.dp else 4.dp,
+            if (
+                pageControlStyle == PageControlStyle.MD1_TABS ||
+                pageControlStyle == PageControlStyle.CHROMIUM_TABS
+            ) {
+                0.dp
+            } else {
+                4.dp
+            },
         ),
     ) {
         // What:     `state.pageLabels.forEachIndexed { page, label -> ... }` iterates the page
@@ -2726,6 +2789,8 @@ private fun pageTabs(
                 radioOption(label = label, selected = selected, onSelect = { onSelectPage(page) })
             } else if (pageControlStyle == PageControlStyle.MD1_TABS) {
                 md1PageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
+            } else if (pageControlStyle == PageControlStyle.CHROMIUM_TABS) {
+                chromiumPageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
             } else if (selected) {
                 Button(onClick = { onSelectPage(page) }) { Text(label) }
             } else {

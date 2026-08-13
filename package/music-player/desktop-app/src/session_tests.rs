@@ -111,9 +111,11 @@ fn page_control_style_integer_conversion_covers_every_style() {
     assert_eq!(PageControlStyle::Md1Tabs.to_int(), 1);
     assert_eq!(PageControlStyle::RoundedButtons.to_int(), 2);
     assert_eq!(PageControlStyle::SegmentedButtons.to_int(), 3);
+    assert_eq!(PageControlStyle::ChromiumTabs.to_int(), 4);
     assert_eq!(PageControlStyle::from_int(0), PageControlStyle::Radio);
     assert_eq!(PageControlStyle::from_int(1), PageControlStyle::Md1Tabs);
     assert_eq!(PageControlStyle::from_int(2), PageControlStyle::RoundedButtons);
     assert_eq!(PageControlStyle::from_int(3), PageControlStyle::SegmentedButtons);
+    assert_eq!(PageControlStyle::from_int(4), PageControlStyle::ChromiumTabs);
     assert_eq!(PageControlStyle::from_int(99), PageControlStyle::Radio);
 }

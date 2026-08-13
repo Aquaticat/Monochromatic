@@ -388,6 +388,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    Page selectors default to wrapping radio controls.
    Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
    joined content-width segmented buttons,
+   raised content-width Chromium-like tabs,
    and the previous rounded buttons.
    Segmented sections and visible outlines stay fitted to label content;
    unused row width remains transparent and unframed.
