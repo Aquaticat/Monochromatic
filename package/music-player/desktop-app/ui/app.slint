@@ -221,6 +221,7 @@ component SegmentedControls inherits Rectangle {
 component ChromiumTab inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
+    in property <bool> show-divider;
     callback clicked();
     horizontal-stretch: 0;
     width: chromium-label.preferred-width + 32px;
@@ -240,7 +241,7 @@ component ChromiumTab inherits Rectangle {
         height: parent.height - 14px;
         background: Palette.color-scheme == ColorScheme.dark ? #3b3b3b : #e8eaed;
     }
-    if !root.selected: Rectangle {
+    if !root.selected && root.show-divider: Rectangle {
         x: parent.width - 1px;
         y: 12px;
         width: 1px;
@@ -337,6 +338,7 @@ component PageControls inherits VerticalLayout {
         for label[p] in root.labels: ChromiumTab {
             text: label;
             selected: p == root.selected-page;
+            show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
             clicked => {
                 root.select-page(p);
             }

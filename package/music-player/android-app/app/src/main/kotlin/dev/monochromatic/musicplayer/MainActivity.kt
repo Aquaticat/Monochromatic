@@ -2570,16 +2570,40 @@ private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
     }
 }
 
+// What:     `ChromiumPageTabOptions` groups inputs for one browser-style tab.
+// Why:      The tab function receives one named options boundary instead of positional values.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type ChromiumPageTabOptions = {
+//   label: string;
+//   selected: boolean;
+//   showDivider: boolean;
+//   onSelect: () => void;
+// };
+// ```
+/** Holds rendering state and selection behavior for one Chromium-like tab. */
+private data class ChromiumPageTabOptions(
+    /** Holds one-line page label. */
+    val label: String,
+    /** Records whether this page is visible. */
+    val selected: Boolean,
+    /** Records whether this inactive tab needs a trailing separator. */
+    val showDivider: Boolean,
+    /** Selects this page when invoked. */
+    val onSelect: () -> Unit,
+)
+
 // What:     `chromiumPageTab` renders one content-width browser-style tab.
 // Why:      Selected pages need the raised, rounded-upper-corner silhouette in the reference.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ChromiumPageTab(props: TabProps) { ... }
+// function ChromiumPageTab(options: ChromiumPageTabOptions) { ... }
 // ```
 /** Displays one selectable Chromium-like page tab. */
 @Composable
-private fun chromiumPageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
+private fun chromiumPageTab(options: ChromiumPageTabOptions) {
     /** Holds upper-rounded and lower-square active-tab corners. */
     val tabShape: RoundedCornerShape = RoundedCornerShape(
         topStart = 16.dp,
@@ -2588,7 +2612,11 @@ private fun chromiumPageTab(label: String, selected: Boolean, onSelect: () -> Un
         bottomStart = 0.dp,
     )
     /** Holds raised active-tab fill or transparent inactive fill. */
-    val containerColor: Color = if (selected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
+    val containerColor: Color = if (options.selected) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        Color.Transparent
+    }
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -2597,19 +2625,19 @@ private fun chromiumPageTab(label: String, selected: Boolean, onSelect: () -> Un
             .clip(tabShape)
             .background(containerColor)
             .selectable(
-                selected = selected,
+                selected = options.selected,
                 role = Role.Tab,
-                onClick = onSelect,
+                onClick = options.onSelect,
             ),
     ) {
         Text(
-            text = label,
+            text = options.label,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
         )
-        if (!selected) {
+        if (!options.selected && options.showDivider) {
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
@@ -2791,7 +2819,14 @@ private fun pageTabs(
             } else if (pageControlStyle == PageControlStyle.MD1_TABS) {
                 md1PageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
             } else if (pageControlStyle == PageControlStyle.CHROMIUM_TABS) {
-                chromiumPageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
+                chromiumPageTab(
+                    ChromiumPageTabOptions(
+                        label = label,
+                        selected = selected,
+                        showDivider = page < state.pageLabels.lastIndex && page + 1 != state.selectedPage,
+                        onSelect = { onSelectPage(page) },
+                    ),
+                )
             } else if (selected) {
                 Button(onClick = { onSelectPage(page) }) { Text(label) }
             } else {
