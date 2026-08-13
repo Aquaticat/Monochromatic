@@ -65,6 +65,14 @@ export {
   type MaskedCommentRegion,
   maskHtmlComments,
 } from './mask-html-comments.ts';
+export {
+  type AlignmentStep,
+  alignHeadings,
+} from './align-sections-order.ts';
+export {
+  headingAffinity,
+  latinTokens,
+} from './heading-affinity.ts';
 export { maskInvisibleLines, } from './mask-invisible-lines.ts';
 export { restoreTypography, } from './restore-typography.ts';
 export {
