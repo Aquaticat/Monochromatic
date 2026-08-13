@@ -7717,16 +7717,29 @@ If the proportion is small, the quote-anchoring lead is closed. If it is large,
 
 ### A second finding from the same census: the refiner goes silent
 
-The naturalness refiner is a ONE-model stage. Across 129 invocations it heard
- nothing 34 times, and the partition by entry is exact: 29 entries heard from
- it on every invocation, 7 heard from it on none, and none sat in between.
-Independent per-call failure cannot produce that, so the cause is a function of
- the entry rather than transport flakiness.
+CORRECTED LATER THE SAME DAY, and the correction closed it. Read the paragraph
+ below as the finding AS FIRST WRITTEN, then the correction under it.
 
-Those blocks were eligible, were selected, and were never rewritten. The lane's
- real reach is therefore below the 12.0% eligibility figure, which matters
- because the naturalness decision is one of the ones waiting on the user, and
- its Option B would triple the eligible blocks against the same single voice.
+The naturalness refiner was a ONE-model stage on the population measured.
+Across 129 invocations it heard nothing 34 times, and the partition by entry is
+ exact: 29 entries heard from it on every invocation, 7 heard from it on none,
+ and none sat in between. Independent per-call failure cannot produce that, so
+ the cause is a function of the entry rather than transport flakiness.
+
+Those blocks were eligible, were selected, and were never rewritten, so the
+ lane's real reach on that population is below the 12.0% eligibility figure.
+
+THE CORRECTION: that population ran 2026-08-06 to 08-11, and `eb21ffa6b` on
+ 08-12 took the lane from one refiner to three. Quorum is now two, so a single
+ lost voice cannot empty the stage, and `pass13` confirms it in practice: every
+ one of its `refine-candidates` findings reports `3/3 heard`, with Kimi-K3
+ losing the refiner voice and being retried back each time.
+
+So the reach deficit is real for the OLD figures and gone going forward, and
+ the objection this paragraph originally raised against Option B, that it would
+ triple the eligible blocks against a single voice, IS WITHDRAWN. What misled
+ the first reading was a stale comment in `run-config.ts`, since corrected.
+Recorded as `#73`, closed.
 
 The cause is not yet known, and getting it needs no code change. The warning in
  `attemptStageCall` names the reason but is discarded before it reaches any

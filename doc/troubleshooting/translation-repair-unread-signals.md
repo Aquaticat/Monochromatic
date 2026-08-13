@@ -334,9 +334,15 @@ It is one occurrence out of 4098 adjudicated issues, so it is recorded rather
 
 Recorded in full in `doc/planning/naturalness-lane-reach.md`, because it bears
  on a decision waiting there. In summary: `stage-quorum-unmet` is 34
- occurrences and every one is `refiner 0/1`, a one-model stage losing its only
- voice. The partition is exact, 29 entries heard from it always and 7 never, so
- the cause is entry-determined.
+ occurrences and every one is `refiner 0/1`, which is the artifact stating the
+ roster size itself. The partition is exact, 29 entries heard from it always
+ and 7 never, so the cause is entry-determined.
+
+ALREADY FIXED, and the census predates the fix. That population ran to
+ 2026-08-11, and `eb21ffa6b` on 08-12 took the lane from one refiner to three.
+Quorum is two now, so a single lost voice cannot empty the stage, and `pass13`
+ shows every `refine-candidates` finding at `3/3 heard`. The finding stands as
+ a description of the old population and not of the current pipeline.
 
 `quorumMet` itself is read where it matters. `restoration-judge.ts` and
  `derivability-probe.ts` both mark a seed unjudged rather than accept a
