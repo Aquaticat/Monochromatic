@@ -277,7 +277,7 @@ export function buildChunkCriticRecords(
       heardCriticIds: outcome.heardCriticIds
         .toSorted(),
       claimAttributions: outcome.claimAttributions
-        .map(function canonical(attribution,) {
+        .map(function canonical(attribution,): ClaimAttribution {
         return {
           claimId: attribution.claimId,
           proposers: attribution.proposers

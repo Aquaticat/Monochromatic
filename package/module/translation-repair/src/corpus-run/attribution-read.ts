@@ -40,7 +40,7 @@ function readClaimIds(
   {
     issue,
   }: {
-    readonly issue: Record<string, unknown>;
+    readonly issue: Readonly<Record<string, unknown>>;
   },
 ): readonly string[] {
   /**
@@ -78,7 +78,7 @@ function readIssueViews(
   {
     raw,
   }: {
-    readonly raw: Record<string, unknown>;
+    readonly raw: Readonly<Record<string, unknown>>;
   },
 ): readonly AcceptedIssueView[] {
   /**

@@ -204,6 +204,15 @@ export function judgeRegionProbe(
 }
 
 /**
+ * One region's evidence paired with the verdict the probe reached on it.
+ *
+ * Named rather than inferred from the mapping that builds it, because an
+ * inferred object literal carries WRITABLE properties, and every reader of the
+ * judged list then takes a mutable parameter it never mutates.
+ */
+type JudgedRegion = Readonly<RegionEvidence & { verdict: RegionProbeVerdict; }>;
+
+/**
  * One envelope's evidence as a single record carried it.
  */
 type RegionEvidence = {
@@ -395,7 +404,7 @@ export function summarizeProbeTelemetry(
   /**
    * Distinct regions with their verdicts, in insertion order.
    */
-  const judged = [...distinct.values(),].map(function toJudged(entry,) {
+  const judged = [...distinct.values(),].map(function toJudged(entry,): JudgedRegion {
     return {
       ...entry,
       verdict: judgeRegionProbe({
