@@ -131,7 +131,8 @@ TODO
    ```
 
 6. If any accessible IDEA window contains work that must be preserved,
-   select **File**, then **Save All**.
+   select **File**,
+    then **Save All**.
    The save indicators should clear before continuing.
 7. Decide whether losing unsaved IDE state is acceptable.
    Continue only with explicit authorization to terminate every process under `$IDEA_ROOT`.
