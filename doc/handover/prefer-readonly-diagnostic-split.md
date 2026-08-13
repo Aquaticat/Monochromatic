@@ -100,9 +100,17 @@ Further policy decisions:
 This evidence routing replaces the old type-level classification grouping.
 The mutation rule must never report a mutation that analysis has not proved.
 
-Open decision:
+Neutral internal classification names are:
 
-- whether implementation completion closes issue #422 or leaves it open until deferred enforcement.
+- `deep-readonly` for structure proved deeply readonly;
+- `projected-readonly-capability` for a readonly projection retaining unresolved callable behavior;
+- existing `mutable` and `opaque-capability` names remain.
+
+Both sides of the previous moralized opposition must disappear from the current readonly domain.
+
+Issue lifecycle:
+verified implementation closes issue #422.
+Deferred workspace enforcement lives only in the new readiness issue.
 
 Do not implement until the user confirms the grilling session has reached shared understanding.
 
