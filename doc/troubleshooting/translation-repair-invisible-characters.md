@@ -131,6 +131,48 @@ Blanking it rewrites the document being repaired, which is the one thing a
 No corpus fence contains an invisible-only line, so the fix is provably inert
  here.
 
+## Three known gaps, real and inert at this pin
+
+None is worth building against this corpus.
+Each would matter if the corpus were refreshed, so each is written down with
+ what makes it inert rather than left to be rediscovered.
+
+### CRLF documents get no invisible-line masking at all
+
+`maskInvisibleLines` splits on `\n`, so under CRLF every line fragment ends in a
+ carriage return, and `\r` is deliberately not in the invisible set: putting it
+ there would reinterpret a terminator as content and let it be replaced with a
+ space.
+The line therefore fails the predicate and is returned untouched.
+
+That is a missed weld and never a rewrite, so it cannot corrupt anything, and
+ the one CRLF file at this pin carries no invisible characters at all.
+The fix when it matters is a shared line scanner returning content and
+ terminator separately, feeding only the content to the predicate and preserving
+ the terminator verbatim, which also lets both maskers stop keeping separate
+ ideas of what a line is.
+
+### A weld inside a blockquote is not masked
+
+A line spelled `>` followed by an invisible character shows a reader nothing
+ beyond the marker, and it welds the blockquote's paragraphs.
+`isInvisibleOnly` sees the `>` and correctly reports the line as visible, since
+ it knows nothing about container prefixes.
+
+This was ASKED, not merely unobserved: the census reports the visible content of
+ every line carrying one of these characters, and no such line is a blockquote
+ marker with nothing after it.
+The two blockquote lines that do carry a zero-width space, in `Y1Ran`, both
+ carry a full sentence beside it.
+
+### Fence indentation is measured from the line, not the container
+
+`fencedLineFlags` reads indentation from the line start, while CommonMark
+ measures it from the enclosing container.
+A fence inside a list item whose content column is four or more therefore reads
+ as unfenced, and an invisible-only line inside that code block would be masked.
+Inert because the corpus contains no fenced code blocks at all.
+
 ## How to re-run the census
 
 Read-only, and it prints no corpus prose beyond the line each hit sits on.

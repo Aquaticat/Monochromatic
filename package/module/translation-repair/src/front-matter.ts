@@ -14,7 +14,8 @@ import { parse as parseYaml, } from 'yaml';
  */
 export type FrontMatterBlock = {
   /**
-   * Exact source slice spanning both fence lines, preserved byte-for-byte for output.
+   * Exact source slice spanning both fence lines, preserved code unit for code
+   * unit after decoding, which is what keeps every downstream offset valid.
    */
   readonly raw: string;
 
