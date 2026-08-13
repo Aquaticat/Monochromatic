@@ -245,7 +245,7 @@ await describe({
          */
         const text = '```\nalpha\n\u{200B}\nbeta\n```\n';
 
-        expect(maskInvisibleLines({ text, },),).toBe(text,);
+        expect(maskInvisibleLines({ text, },).masked,).toBe(text,);
       },
     },),
 
@@ -254,7 +254,7 @@ await describe({
         + 'the exemption ends where the code does',
       fn: async () => {
         expect(
-          maskInvisibleLines({ text: '```\n\u{200B}\n```\nAlpha.\n\u{200B}\nBeta.\n', },),
+          maskInvisibleLines({ text: '```\n\u{200B}\n```\nAlpha.\n\u{200B}\nBeta.\n', },).masked,
         ).toBe('```\n\u{200B}\n```\nAlpha.\n \nBeta.\n',);
       },
     },),

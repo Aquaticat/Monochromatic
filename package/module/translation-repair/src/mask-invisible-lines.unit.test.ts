@@ -36,7 +36,7 @@ await describe({
         + 'corpus translation carrying three of them parses to 29 blocks '
         + 'welded and 32 masked, measured through parseDocument at the pin',
       fn: async () => {
-        expect(maskInvisibleLines({ text: `Alpha.\n${MARK}\nBeta.\n`, },),)
+        expect(maskInvisibleLines({ text: `Alpha.\n${MARK}\nBeta.\n`, },).masked,)
           .toBe('Alpha.\n \nBeta.\n',);
       },
     },),
@@ -52,7 +52,7 @@ await describe({
          */
         const text = `Alpha.\n${MARK}\nBeta.\n\nGamma.\n${MARK}${MARK}\nDelta.\n`;
 
-        expect(maskInvisibleLines({ text, },).length,).toBe(text.length,);
+        expect(maskInvisibleLines({ text, },).masked.length,).toBe(text.length,);
       },
     },),
 
@@ -61,9 +61,9 @@ await describe({
         + 'text merely CONTAINS a mark, since only a line that shows nothing '
         + 'yet is not blank does the welding',
       fn: async () => {
-        expect(maskInvisibleLines({ text: 'Alpha.\n\nBeta.\n', },),)
+        expect(maskInvisibleLines({ text: 'Alpha.\n\nBeta.\n', },).masked,)
           .toBe('Alpha.\n\nBeta.\n',);
-        expect(maskInvisibleLines({ text: `Al${MARK}pha.\n`, },),)
+        expect(maskInvisibleLines({ text: `Al${MARK}pha.\n`, },).masked,)
           .toBe(`Al${MARK}pha.\n`,);
       },
     },),
@@ -90,7 +90,7 @@ await describe({
           '\u{3000}',
           '\u{2007}',
         ]) {
-          expect(maskInvisibleLines({ text: `Alpha.\n${space}\nBeta.\n`, },),)
+          expect(maskInvisibleLines({ text: `Alpha.\n${space}\nBeta.\n`, },).masked,)
             .toBe('Alpha.\n \nBeta.\n',);
         }
       },
@@ -108,7 +108,7 @@ await describe({
           '\u{2028}',
           '\u{2029}',
         ]) {
-          expect(maskInvisibleLines({ text: `Alpha.\n${character}\nBeta.\n`, },),)
+          expect(maskInvisibleLines({ text: `Alpha.\n${character}\nBeta.\n`, },).masked,)
             .toBe(`Alpha.\n${character}\nBeta.\n`,);
         }
       },
@@ -137,8 +137,120 @@ await describe({
         + 'the ordinary spaces alone would already have been blank and it is '
         + 'the invisible character that keeps the line from ending a paragraph',
       fn: async () => {
-        expect(maskInvisibleLines({ text: `Alpha.\n  ${MARK} \nBeta.\n`, },),)
+        expect(maskInvisibleLines({ text: `Alpha.\n  ${MARK} \nBeta.\n`, },).masked,)
           .toBe('Alpha.\n    \nBeta.\n',);
+      },
+    },),
+
+    it({
+      name: 'reports each blanked line as a region naming its offsets and the '
+        + 'code points it carried, so the tolerance is never silent. Both '
+        + 'parser defects this pipeline has hit were found by accident rather '
+        + 'than from an artifact, and a line that vanishes with nothing '
+        + 'recording it is the shape that hides the third one',
+      fn: async () => {
+        /**
+         * Two blanked lines with an untouched blank line between them.
+         */
+        const { regions, } = maskInvisibleLines({
+          text: `Alpha.\n${MARK}\nBeta.\n\nGamma.\n\u{00A0}\nDelta.\n`,
+        },);
+
+        expect(regions.length,).toBe(2,);
+        expect(regions[0]?.codePoints,).toEqual(['U+FEFF',],);
+        expect(regions[1]?.codePoints,).toEqual(['U+00A0',],);
+      },
+    },),
+
+    it({
+      name: 'anchors those regions at offsets that slice the ORIGINAL text back '
+        + 'out, which is what makes them usable as findings at all: every '
+        + 'anchor downstream indexes the body by absolute offset',
+      fn: async () => {
+        /**
+         * Body whose blanked line sits at a known place.
+         */
+        const text = `Alpha.\n${MARK}\nBeta.\n`;
+
+        /**
+         * Region for that line.
+         */
+        const { regions, } = maskInvisibleLines({ text, },);
+
+        /**
+         * First region, present because the mark stands alone on its line.
+         */
+        const [region,] = regions;
+
+        expect(text.slice(
+          region?.startOffset,
+          region?.endOffset,
+        ),).toBe(MARK,);
+      },
+    },),
+
+    it({
+      name: 'reports NOTHING for a body it left alone, so a run whose documents '
+        + 'carry no such line reads as no evidence rather than as unexamined',
+      fn: async () => {
+        /**
+         * Ordinary body with a blank line and a mark inside a word.
+         */
+        const { regions, } = maskInvisibleLines({
+          text: `Alpha.\n\nBe${MARK}ta.\n`,
+        },);
+
+        expect(regions.length,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'parseDocument invisible-line findings',
+  children: [
+    it({
+      name: 'surfaces the masking as a parse finding carrying the code point, '
+        + 'so a welded document is diagnosable from its artifact instead of '
+        + 'from someone happening to count blocks',
+      fn: async () => {
+        /**
+         * Document whose paragraphs a mark had welded.
+         */
+        const { parseFindings, } = parseDocument({
+          text: `Alpha.\n${MARK}\nBeta.\n`,
+        },);
+
+        expect(parseFindings.length,).toBe(1,);
+        expect(parseFindings[0]?.kind,).toBe('invisible-line-masked',);
+        expect(parseFindings[0]?.detail,).toContain('U+FEFF',);
+      },
+    },),
+
+    it({
+      name: 'keeps findings in SOURCE order across all three kinds, which the '
+        + 'type promises and the assembly order does not give: a downgrade '
+        + 'finding starts at the body offset, so it would sort ahead of a '
+        + 'comment appearing much later in the text',
+      fn: async () => {
+        /**
+         * Document carrying a masked line and a comment after it.
+         */
+        const { parseFindings, } = parseDocument({
+          text: `Alpha.\n${MARK}\nBeta.\n\n<!-- note -->\n\nGamma.\n`,
+        },);
+
+        /**
+         * Offsets in the order they are reported.
+         */
+        const offsets = parseFindings.map(function toOffset(finding,) {
+          return finding.startOffset;
+        },);
+
+        expect(offsets,).toEqual(offsets.toSorted(function ascending(left, right,) {
+          return left - right;
+        },),);
+        expect(parseFindings.length,).toBe(2,);
       },
     },),
   ],

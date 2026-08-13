@@ -22,14 +22,16 @@ import { flattenContainers, } from './unwrap-container.ts';
 
 //region Document parsing
 // Composition of the deterministic core: front matter split, tolerant parse
-// (comment masking, then strict MDX, then plain-markdown fallback), node
-// construction, footnote graph. Pure over its input; every later stage anchors claims
-// against the result and its hashes. Tolerance is never silent: every skipped
-// comment and every grammar downgrade surfaces as a parse finding.
+// (invisible-line masking, comment masking, then strict MDX, then plain-markdown
+// fallback), node construction, footnote graph. Pure over its input; every later
+// stage anchors claims against the result and its hashes. Tolerance is never
+// silent: every blanked line, every skipped comment and every grammar downgrade
+// surfaces as a parse finding.
 
 /**
  * One tolerance event from parsing:
- * a masked HTML comment or a whole-document grammar downgrade.
+ * a blanked invisible-only line, a masked HTML comment, or a whole-document
+ * grammar downgrade.
  * Findings are the trigger surface for any later repair-the-input stage
  * (deterministic or model-driven).
  *
@@ -46,11 +48,13 @@ import { flattenContainers, } from './unwrap-container.ts';
 export type ParseFinding = {
   /**
    * Tolerance class:
-   * masked comment, comment that never closed, or MDX-to-markdown downgrade.
+   * masked comment, comment that never closed, blanked invisible-only line, or
+   * MDX-to-markdown downgrade.
    */
   readonly kind:
     | 'html-comment-skipped'
     | 'unterminated-html-comment'
+    | 'invisible-line-masked'
     | 'mdx-downgraded';
 
   /**
@@ -191,20 +195,53 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   const split = splitFrontMatter({ text, },);
 
   /**
+   * Body with every invisible-only line blanked, plus each line blanked.
+   *
+   * Runs FIRST, because such a line is not blank to CommonMark and therefore
+   * welds the paragraphs either side of it into one block. One corpus
+   * translation parses to 29 blocks that way against the original's 33, and
+   * every block after the first weld pairs with the wrong original. Length is
+   * preserved, so every offset still indexes the same character.
+   */
+  const {
+    masked: unwelded,
+    regions: invisibleRegions,
+  } = maskInvisibleLines({ text: split.body, },);
+
+  /**
    * Body with HTML comments blanked, plus each masked region;
    * masking preserves length, so masked-parse positions index the original.
    */
   const {
     masked,
     regions,
-  } = maskHtmlComments({
-    // Invisible-only lines are blanked FIRST, because such a line is not blank
-    // to CommonMark and therefore welds the paragraphs either side of it into
-    // one block. One corpus translation parses to 29 blocks instead of 33 that
-    // way, and every block after the first weld pairs with the wrong original.
-    // Length is preserved, so every offset still indexes the same character.
-    text: maskInvisibleLines({ text: split.body, },),
-  },);
+  } = maskHtmlComments({ text: unwelded, },);
+
+  /**
+   * Findings for every blanked invisible-only line, in absolute offsets.
+   *
+   * Emitted so the tolerance is never silent. Both parser defects this pipeline
+   * has hit were found by accident rather than from an artifact, and a line
+   * that vanishes with nothing recording it is exactly the shape that hides the
+   * third one.
+   */
+  const invisibleFindings = invisibleRegions.map(
+    function toFinding(region,): ParseFinding {
+      /**
+       * Code points the line carried, named so the detail can be read.
+       */
+      const { codePoints, } = region;
+
+      return {
+        kind: 'invisible-line-masked',
+        startOffset: split.bodyOffset + region.startOffset,
+        endOffset: split.bodyOffset + region.endOffset,
+        detail: `line showing nothing yet not blank to CommonMark, welding the paragraphs either side of it; masked to spaces before parsing (${
+          codePoints.join(', ',)
+        })`,
+      };
+    },
+  );
 
   /**
    * Findings for every masked comment, in absolute document offsets.
@@ -261,10 +298,20 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
       bodyText: masked,
       bodyOffset: split.bodyOffset,
     },),
+    // Sorted, because `parseFindings` promises source order and the three
+    // sources are built in processing order instead: a downgrade finding starts
+    // at the body offset, so it would otherwise sort ahead of comments that
+    // appear much later in the text.
     parseFindings: [
+      ...invisibleFindings,
       ...commentFindings,
       ...parsed.findings,
-    ],
+    ].toSorted(function byOffset(
+      left,
+      right,
+    ) {
+      return left.startOffset - right.startOffset;
+    },),
   };
 }
 

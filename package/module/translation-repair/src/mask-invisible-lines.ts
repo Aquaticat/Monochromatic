@@ -106,6 +106,119 @@ function isInvisibleOnly({ line, }: { readonly line: string; },): boolean {
 }
 
 /**
+ * One line the mask blanked, in offsets into the text it was given.
+ *
+ * Reported so the tolerance is never silent. Both parser defects this pipeline
+ * has hit were found by accident rather than from an artifact, and a masked
+ * line that nobody can see is exactly the shape that hides the third one.
+ *
+ * @example
+ * ```ts
+ * const region: MaskedInvisibleLine = {
+ *   startOffset: 12,
+ *   endOffset: 13,
+ *   codePoints: ['U+FEFF',],
+ * };
+ * ```
+ */
+export type MaskedInvisibleLine = {
+  /**
+   * Offset of the line's first character.
+   */
+  readonly startOffset: number;
+
+  /**
+   * Exclusive end offset, before the line's terminator.
+   */
+  readonly endOffset: number;
+
+  /**
+   * Which invisible characters the line carried, named rather than embedded, so
+   * a finding can be read without the characters vanishing into it.
+   */
+  readonly codePoints: readonly string[];
+};
+
+/**
+ * Base code points are conventionally written in.
+ */
+const HEX_RADIX = 16;
+
+/**
+ * Fewest digits a code point is written with.
+ */
+const CODE_POINT_DIGITS = 4;
+
+/**
+ * Names an invisible character the way a reader can see.
+ *
+ * @param character - character to name
+ *
+ * @returns Code point in `U+XXXX` form
+ *
+ * @example
+ * ```ts
+ * const name = nameOf({ character: '\u{FEFF}', },);
+ * ```
+ */
+function nameOf({ character, }: { readonly character: string; },): string {
+  /**
+   * Code point, which is what identifies the character to whoever reads this.
+   */
+  const point = character.codePointAt(0,) ?? 0;
+
+  /**
+   * Hexadecimal digits, padded to the conventional minimum width.
+   */
+  const digits = point
+    .toString(HEX_RADIX,)
+    .toUpperCase();
+
+  /**
+   * Same padded to the conventional minimum width.
+   */
+  const padded = digits.padStart(
+    CODE_POINT_DIGITS,
+    '0',
+  );
+
+  return `U+${padded}`;
+}
+
+/**
+ * Names every character on a line that a reader cannot see.
+ *
+ * Scans rather than spreading, because spreading a string is restricted here
+ * for splitting complex characters, and the loop states plainly that this walks
+ * code points.
+ *
+ * @param line - line already known to show a reader nothing
+ *
+ * @returns Code point names in the order they appear
+ *
+ * @example
+ * ```ts
+ * const points = unseenCodePoints({ line: '\u{FEFF}', },);
+ * ```
+ */
+function unseenCodePoints({ line, }: { readonly line: string; },): readonly string[] {
+  return (function scan(): readonly string[] {
+    /**
+     * Names found so far.
+     */
+    const names: string[] = [];
+    for (const character of line) {
+      if (BLANK_TO_COMMONMARK.has(character,))
+        continue;
+
+      names.push(nameOf({ character, },),);
+    }
+
+    return names;
+  })();
+}
+
+/**
  * Replaces every invisible-only line outside fenced code with spaces.
  *
  * Written as a scan over lines rather than a pattern: the rule is one predicate
@@ -120,16 +233,27 @@ function isInvisibleOnly({ line, }: { readonly line: string; },): boolean {
  *
  * @param text - body text as written
  *
- * @returns Same text, same length, with invisible-only lines blanked
+ * @returns Same text, same length, with invisible-only lines blanked, plus one
+ * region per blanked line
  *
  * @example
  * ```ts
- * const masked = maskInvisibleLines({ text: body, },);
+ * const { masked, regions, } = maskInvisibleLines({ text: body, },);
  * ```
  */
 export function maskInvisibleLines(
   { text, }: { readonly text: string; },
-): string {
+): {
+  /**
+   * Text with every invisible-only line blanked, at its original length.
+   */
+  readonly masked: string;
+
+  /**
+   * One region per blanked line, in document order.
+   */
+  readonly regions: readonly MaskedInvisibleLine[];
+} {
   /**
    * Body split once, so the flags and the mask agree line for line.
    */
@@ -140,25 +264,71 @@ export function maskInvisibleLines(
    */
   const fenced = fencedLineFlags({ lines, },);
 
-  return lines
-    .map(function blankInvisible(
-      line,
-      index,
-    ) {
-      if (fenced[index] === true)
-        return line;
+  /**
+   * Lines blanked so far, recorded as the scan walks the text.
+   */
+  const regions: MaskedInvisibleLine[] = [];
 
-      if (!isInvisibleOnly({ line, },))
-        return line;
+  /**
+   * Where each line begins, so the scan carries no running cursor.
+   */
+  const lineStarts = (function measure(): readonly number[] {
+    /**
+     * Start offsets, one per line, built in document order.
+     */
+    const starts: number[] = [];
 
-      // Spaces rather than removal: a line of spaces is blank to CommonMark, so
-      // the paragraph break returns. Repeating over the line's own UTF-16
-      // length keeps the replacement exactly as long as what it replaces, which
-      // is what every absolute offset downstream depends on, and it sidesteps
-      // the question of how a code point maps to units entirely.
-      return ' '.repeat(line.length,);
-    },)
-    .join('\n',);
+    /**
+     * Offset of the line under the cursor.
+     */
+    let cursor = 0;
+    for (const line of lines) {
+      starts.push(cursor,);
+
+      // Past the line and the newline that split it off. The last line has no
+      // newline, and nothing reads the cursor after it, so the overshoot is
+      // harmless and costs no special case.
+      cursor += line.length + 1;
+    }
+
+    return starts;
+  })();
+
+  /**
+   * Rebuilt lines, blanked where they showed a reader nothing.
+   */
+  const rebuilt = lines.map(function blankInvisible(
+    line,
+    index,
+  ) {
+    if (fenced[index] === true)
+      return line;
+
+    if (!isInvisibleOnly({ line, },))
+      return line;
+
+    /**
+     * Where this line starts, measured before anything was rewritten.
+     */
+    const startOffset = lineStarts[index] ?? 0;
+    regions.push({
+      startOffset,
+      endOffset: startOffset + line.length,
+      codePoints: unseenCodePoints({ line, },),
+    },);
+
+    // Spaces rather than removal: a line of spaces is blank to CommonMark, so
+    // the paragraph break returns. Repeating over the line's own UTF-16
+    // length keeps the replacement exactly as long as what it replaces, which
+    // is what every absolute offset downstream depends on, and it sidesteps
+    // the question of how a code point maps to units entirely.
+    return ' '.repeat(line.length,);
+  },);
+
+  return {
+    masked: rebuilt.join('\n',),
+    regions,
+  };
 }
 
 //endregion Invisible line masking
