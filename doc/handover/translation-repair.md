@@ -8654,3 +8654,68 @@ That does not settle `#70`, which is the user's decision to make, but it removes
 The 18 pairs expanding beyond 4x are unexamined. They could be translator
  additions, which house policy keeps when accurate, or a pairing artifact.
  Worth a look before anyone cites the coverage table as complete.
+
+### The coverage table, calibrated against the corpus instead of a guess
+
+The buckets in the table above used an assumed expansion band of 1.5 to 2.5,
+ which was a guess about zh-to-en character growth and was wrong. A Chinese
+ character carries roughly an English word, so faithful translation expands
+ several-fold in characters. Measured over the same 254 pairs, the corpus states
+ its own band, and it is tight:
+
+```text
+p2    0.74      p50   2.94      p90   3.76
+p5    1.55      p75   3.35      p98   4.55
+p10   1.83
+p25   2.48
+```
+
+Median expansion is 2.94x. Half the median, 1.47x, is a defensible line for
+ "this section carries materially less than a translation should", and it is
+ derived rather than picked.
+
+Below that line sit 10 pairs of 254:
+
+```text
+shi_Yumiaoya    1203 ->   12   0.01
+shi_Yumiaoya     988 ->   13   0.01
+shi_Yumiaoya     695 ->   14   0.02
+cheonwoomaeng   1137 ->  529   0.47
+Y1Ran            215 ->  150   0.70
+shi_Yumiaoya     474 ->  350   0.74
+aiyysk           116 ->  153   1.32
+Considerate_cat  143 ->  190   1.33
+Chinatsu_Suzuki  667 ->  948   1.42
+noname3031      1191 -> 1694   1.42
+```
+
+The first six are the finding: three stubs, and three sections carrying under a
+ quarter of the expected text. The last four sit near the line and are ordinary
+ variation. So roughly 6 of 254 pairs, 2.4%, are genuinely under-covered, which
+ is the same figure the arbitrary buckets produced. The number was right before
+ and is now right for a stated reason.
+
+`cheonwoomaeng` at 1137 characters rendered as 529 is new, and it is not in
+ `shi_Yumiaoya`. Under-translation is therefore not confined to one entry, even
+ though the extreme stubs are.
+
+### The 18 expanded pairs, resolved
+
+They are not translator additions and not a pairing artifact: 17 of 18 sit in
+ entries with no `structure-mismatch` finding, and several have identical block
+ counts on both sides (`1->1`, `6->6`, `8->8`, `21->21`). Given p98 is 4.55, a
+ ratio just over 4 is simply the top of the normal distribution, and the ">4"
+ bucket was an artifact of the guessed band.
+
+Five pairs do stand clear of the distribution and remain unexplained:
+
+```text
+Zha_Ke          256 ->  4310   16.8
+Mio             250 ->  2622   10.5
+shihai4h       1813 -> 17764    9.8
+zheermao101     615 ->  4655    7.6
+MizuharaNagisa  456 ->  3030    6.6
+```
+
+Those are the candidates for genuine translator addition, which house policy
+ keeps when accurate. Nobody has read them.
