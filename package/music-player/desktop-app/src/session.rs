@@ -84,7 +84,7 @@ impl PageControlStyle {
         if self == PageControlStyle::RoundedButtons {
             return 2;
         }
-        0
+        return 0;
     }
 
     /// Decode Slint's integer representation, defaulting unknown values to radio controls.
@@ -95,7 +95,7 @@ impl PageControlStyle {
         if value == 2 {
             return PageControlStyle::RoundedButtons;
         }
-        PageControlStyle::Radio
+        return PageControlStyle::Radio;
     }
 }
 
