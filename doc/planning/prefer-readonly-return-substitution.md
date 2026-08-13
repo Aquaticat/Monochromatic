@@ -196,9 +196,10 @@ Narrowing it to published entry points was measured and rejected;
 reopening conditions are in the decision document.
 
 Overload canonicalization and interface dispatch are unmodelled,
- recorded in "Known
-limitations left in place, with the argument for leaving them",
- and neither is a branch to
+ recorded in
+"Known limitations left in place,
+with the argument for leaving them",
+and neither is a branch to
 patch in the discharge.
 
 Extending the discharge to further escape routes is now mostly moot:
@@ -11350,8 +11351,10 @@ Which narrows where to instrument,
 `viewResultUnaccounted` documents `reduce` as the member with no result relation,
  the case
 the aliasing fallback was kept for.
-So for `reduce` the observer, container and value arms are false by construction and
-`resultAliasesReceiverState` is what must be answering true.
+So for `reduce` the observer,
+container,
+and value arms are false by construction,
+and `resultAliasesReceiverState` is what must be answering true.
 The open question is why it answers differently for a chained receiver when the result type is
 identical,
  which points at how `elementTypes` are resolved for a view whose receiver is a call

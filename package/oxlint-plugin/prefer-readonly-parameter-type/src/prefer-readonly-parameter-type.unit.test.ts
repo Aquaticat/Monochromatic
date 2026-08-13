@@ -1837,29 +1837,37 @@ children: [
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-split-invalid.ts',);
       expect(diagnostics.length,).toBe(4,);
-      const diagnosticFor = function diagnosticFor(ruleName: string,): OxlintDiagnostic {
-        const diagnostic = diagnostics.find(function matchesRule(candidate,): boolean {
-          return candidate.code === `prefer-readonly-parameter-type(${ruleName})`;
-        },);
-        if (diagnostic === undefined)
-          throw new Error(`Expected diagnostic from ${ruleName}.`,);
-        return diagnostic;
-      };
-      expect(diagnosticFor('prefer-readonly-parameter-types',).message,).toContain(
-        'Parameter "state" can be deeply readonly',
+      /**
+       * Diagnostics indexed by exact public rule ID.
+       */
+      const diagnosticsByCode = new Map(
+        diagnostics.map(function indexDiagnostic(diagnostic,): [string, OxlintDiagnostic] {
+          return [diagnostic.code, diagnostic,];
+        },),
       );
-      expect(diagnosticFor('no-readonly-parameter-mutations',).message,).toContain(
-        'analysis proved a reachable mutation',
-      );
-      expect(diagnosticFor('no-opaque-parameter-effects',).message,).toContain(
-        'readonly projection that retains unresolved callable capability',
-      );
-      expect(diagnosticFor('no-invalid-parameter-effect-contracts',).message,).toContain(
-        'stale @mutates contract',
-      );
+      expect(
+        diagnosticsByCode
+          .get('prefer-readonly-parameter-type(prefer-readonly-parameter-types)',)
+          ?.message,
+      ).toContain('Parameter "state" can be deeply readonly',);
+      expect(
+        diagnosticsByCode
+          .get('prefer-readonly-parameter-type(no-readonly-parameter-mutations)',)
+          ?.message,
+      ).toContain('analysis proved a reachable mutation',);
+      expect(
+        diagnosticsByCode
+          .get('prefer-readonly-parameter-type(no-opaque-parameter-effects)',)
+          ?.message,
+      ).toContain('readonly projection that retains unresolved callable capability',);
+      expect(
+        diagnosticsByCode
+          .get('prefer-readonly-parameter-type(no-invalid-parameter-effect-contracts)',)
+          ?.message,
+      ).toContain('stale @mutates contract',);
       expect(diagnostics.some(function projectedCapabilityIsNotMutation(diagnostic,): boolean {
-        return diagnostic.code
-            === 'prefer-readonly-parameter-type(no-readonly-parameter-mutations)'
+        return (diagnostic.code
+            === 'prefer-readonly-parameter-type(no-readonly-parameter-mutations)')
           && diagnostic.message.includes('runner',);
       },),).toBe(false,);
     },

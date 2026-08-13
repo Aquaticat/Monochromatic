@@ -96,25 +96,20 @@ function reportStaleContract({
 }
 
 /**
- * Verifies one callable's type and mutation contracts.
+ * Reports one policy category from shared callable evidence.
  *
- * @param context - Rule context receiving diagnostics.
+ * @param context - Rule context receiving selected diagnostics.
  *
- * @param declaration - Callable declaration to verify.
+ * @param evidence - Category-neutral facts for one callable.
  *
- * @param effectSummary - Whole-project effects for callable.
- *
- * @param project - TypeScript project used by readonly classifier.
- *
- * @param proveForeignBorrowed - Complete backwards-closure proof for this callable, demanded at
- * most once and only when some parameter's verdict reads it.
+ * @param category - Public rule policy selecting applicable facts.
  *
  * @example
  * ```ts
- * verifyReadonlyCallable({ context, declaration, effectSummary, project, proveForeignBorrowed });
+ * reportReadonlyCallableEvidence({ context, evidence, category: 'preference' });
  * ```
  *
- * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+ * @mutates context - Emits selected diagnostics through foreign rule context.
  */
 export function reportReadonlyCallableEvidence({
   context,
@@ -125,6 +120,9 @@ export function reportReadonlyCallableEvidence({
   readonly evidence: ReadonlyCallableEvidence;
   readonly category: ReadonlyRuleCategory;
 }>,): void {
+  /**
+   * Shared semantic values used by every category reporter.
+   */
   const {
     declaration,
     project,
@@ -139,6 +137,9 @@ export function reportReadonlyCallableEvidence({
   const sourceFile = declaration.getSourceFile();
 
   parameterFacts.forEach(function reportParameter(facts,): void {
+    /**
+     * Parameter-level facts consumed by category branches.
+     */
     const {
       parameter,
       parameterIndex,

@@ -86,41 +86,22 @@ export function readonlyCallableEvidence({
   /**
    * Mutation blocks grouped by semantic parameter index.
    */
-  const blocksByParameter = blocks.reduce(
+  const blocksByParameter = new Map<number, typeof blocks>();
+  blocks.forEach(function groupBlock(block,): void {
     /**
-     * Adds one parsed block to its semantic parameter group.
-     *
-     * @param grouped - Immutable groups accumulated so far.
-     *
-     * @param block - Parsed block being grouped.
-     *
-     * @returns groups containing current block when its target resolves.
-     *
-     * @example
-     * ```ts
-     * blocks.reduce(groupBlock, new Map());
-     * ```
+     * Parameter index matching authored target.
      */
-    function groupBlock(grouped, block,): Map<number, typeof blocks> {
-      /**
-       * Parameter index matching authored target.
-       */
-      const parameterIndex = targetIndexes.get(block.parameterName,);
-      if (parameterIndex === undefined)
-        return grouped;
-      return new Map([
-        ...grouped,
-        [
-          parameterIndex,
-          [
-            ...grouped.get(parameterIndex,) ?? [],
-            block,
-          ],
-        ],
-      ],);
-    },
-    new Map<number, typeof blocks>(),
-  );
+    const parameterIndex = targetIndexes.get(block.parameterName,);
+    if (parameterIndex === undefined)
+      return;
+    blocksByParameter.set(
+      parameterIndex,
+      [
+        ...blocksByParameter.get(parameterIndex,) ?? [],
+        block,
+      ],
+    );
+  },);
   /**
    * Everything each split policy reads before foreign ownership.
    */
