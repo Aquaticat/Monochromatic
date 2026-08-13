@@ -52,6 +52,17 @@ export const styleRules: DummyRuleMap = {
       skipComments: true,
     },
   ],
+  // NEVER, meaning one declaration per statement, which is the direction this
+  // repo has always written. The rule arrived enabled by the `style` category
+  // with its opposite default and reported 1447 warnings across code nobody had
+  // touched, telling every consecutive `const` to merge into its predecessor.
+  // That is also unfollowable wherever an exported and a module-private
+  // constant sit next to each other, since one statement cannot be half
+  // exported.
+  'eslint/one-var': [
+    'warn',
+    'never',
+  ],
   'eslint/max-params': 'off',
   'eslint/max-depth': 'off',
   'eslint/max-lines-per-function': 'off',
