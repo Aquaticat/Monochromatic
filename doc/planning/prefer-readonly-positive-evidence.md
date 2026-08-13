@@ -151,10 +151,14 @@ if (opaque
 On one installed dependency tree,
 `mise run //package/module/translation-repair:lint:oxlint` produced:
 
-- baseline: 118 `prefer-readonly-parameter-types` errors;
-- prototype: 66 errors;
-- removed: 52 errors;
-- semantic-rule failures: zero in both runs.
+- baseline:
+  118 `prefer-readonly-parameter-types` errors;
+- prototype:
+  66 errors;
+- removed:
+  52 errors;
+- semantic-rule failures:
+  zero in both runs.
 
 The removed diagnostics comprised 46 general opaque-call messages,
 one method message,
@@ -269,7 +273,8 @@ Move `dishonestReadonly` to a correctness rule if this policy remains an error.
 Suggested wording:
 
 > Parameter `X` is declared readonly,
-> but this path mutates caller-reachable state: …
+> but this path mutates caller-reachable state:
+> …
 
 Include the mutation path.
 
