@@ -74,6 +74,7 @@ export {
   latinTokens,
 } from './heading-affinity.ts';
 export { fencedLineFlags, } from './code-fence-lines.ts';
+export { footnoteBreakCount, } from './footnote-break-count.ts';
 export { maskInvisibleLines, } from './mask-invisible-lines.ts';
 export { restoreTypography, } from './restore-typography.ts';
 export {

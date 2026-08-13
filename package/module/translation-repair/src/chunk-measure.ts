@@ -2,6 +2,7 @@ import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { PatchOperation, } from './apply-patch.ts';
 import type { RepairDocument, } from './parse-document.ts';
 import { downgradeCount, } from './downgrade-count.ts';
+import { footnoteBreakCount, } from './footnote-break-count.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import type { IssueResolutionTally, } from './tally-resolution.ts';
 import type { CandidateMeasurements, } from './select-candidate.ts';
@@ -115,9 +116,29 @@ export function measurePatchedCandidate(
     readonly targetDocument: RepairDocument;
   },
 ): CandidateMeasurements {
+  /**
+   * Whether the patch left document grammar no worse than it found it.
+   */
+  const grammarOk = downgradeCount({ document: patchedDocument, },)
+    <= downgradeCount({ document: targetDocument, },);
+
+  /**
+   * Whether the patch left footnote structure no worse than it found it.
+   *
+   * A broken footnote leaves the grammar perfectly valid, so the downgrade
+   * signal cannot see it, and four settled repairs shipped footnote damage
+   * because nothing else asked. Comparison rather than an absolute count: an
+   * input translation is free to arrive with dangling references, and one does.
+   *
+   * Chunk-scoped like every other measurement here, so it sees damage a patch
+   * does WITHIN one chunk. A definition deleted in one chunk whose reference
+   * lives in another still passes, since neither chunk's own count rises.
+   */
+  const footnotesOk = footnoteBreakCount({ document: patchedDocument, },)
+    <= footnoteBreakCount({ document: targetDocument, },);
+
   return {
-    integrityOk: downgradeCount({ document: patchedDocument, },)
-      <= downgradeCount({ document: targetDocument, },),
+    integrityOk: grammarOk && footnotesOk,
     resolvedHighSeverity: acceptedIssues.filter(function isResolvedHigh(issue,) {
       if (tallies[issue.issueId]
         ?.resolved

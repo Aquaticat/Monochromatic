@@ -297,6 +297,78 @@ await describe({
         expect(broken.integrityOk,).toBe(false,);
       },
     },),
+
+    it({
+      name: 'FAILS integrity when the patch breaks a footnote, which leaves the '
+        + 'grammar perfectly valid so the downgrade signal cannot see it. Four '
+        + 'settled repairs shipped exactly this damage while the pipeline was '
+        + 'already detecting it and consulting nothing: a definition invented, '
+        + 'one duplicated, a reference and a definition dropped, and a '
+        + 'reference invented in a page carrying no footnotes at all',
+      fn: async () => {
+        /**
+         * Translation whose one reference resolves.
+         */
+        const wholeText = 'Whiskers naps here[^1]\n\n[^1]: On the windowsill.\n';
+
+        /**
+         * Same translation with the definition gone, as a patch might drop it.
+         */
+        const droppedText = 'Whiskers naps here[^1]\n';
+
+        /**
+         * Same translation with a reference invented, as one patch really did.
+         */
+        const inventedText = 'Whiskers naps here[^1] and there[^2]\n\n[^1]: On the windowsill.\n';
+
+        for (const patched of [
+          droppedText,
+          inventedText,
+        ]) {
+          expect(
+            measurePatchedCandidate({
+              acceptedIssues: [],
+              tallies: {},
+              resolvedTotal: 0,
+              envelopes: [],
+              applied: [],
+              patchedDocument: parseDocument({ text: patched, },),
+              targetDocument: parseDocument({ text: wholeText, },),
+            },).integrityOk,
+          ).toBe(false,);
+        }
+      },
+    },),
+
+    it({
+      name: 'does NOT fail integrity for footnote damage the patch inherited, '
+        + 'since an input translation is free to arrive with a dangling '
+        + 'reference and one does. Refusing every repair of the chunk holding '
+        + 'it would discard work over a defect the repair did not cause',
+      fn: async () => {
+        /**
+         * Translation arriving already broken, and a patch that only rewords.
+         */
+        const before = 'Whiskers naps here[^1]\n';
+
+        /**
+         * Same damage, different wording, which is what a repair looks like.
+         */
+        const after = 'Whiskers dozes here[^1]\n';
+
+        expect(
+          measurePatchedCandidate({
+            acceptedIssues: [],
+            tallies: {},
+            resolvedTotal: 0,
+            envelopes: [],
+            applied: [],
+            patchedDocument: parseDocument({ text: after, },),
+            targetDocument: parseDocument({ text: before, },),
+          },).integrityOk,
+        ).toBe(true,);
+      },
+    },),
   ],
 },);
 
