@@ -63,9 +63,17 @@ It would invalidate on comment and test changes too, and a pass takes days, so
     were not. Artifacts kept under
     `node_modules/.monochromatic/translation-repair-runs-pass10`, and they are
     a consistent old-pipeline population rather than a mixed one.
--   `pass11`, started 04:27 UTC into
-    `node_modules/.monochromatic/translation-repair-runs-pass11`, running every
-    fix landed that night.
+-   `pass11`, started 04:27 UTC, stopped 04:36 UTC with nothing settled.
+    Superseded before it had produced anything, by the typography fix.
+-   `pass12`, started 04:35 UTC into
+    `node_modules/.monochromatic/translation-repair-runs-pass12`, running every
+    fix landed that night including document-wide typography restoration.
+
+Two restarts in ten minutes is cheap and a third would not be: a restart costs
+ whatever the current pass has settled, so its price rises with every hour.
+Batching is the reason `pass12` waited for a check that the other settled
+ policies, translator additions and declared names, had actually reached the
+ prompts. They had, so it started with nothing else pending.
 
 Restarting rather than continuing follows the standing instruction to land
  certainly-good pipeline changes immediately and restart runs as needed.
