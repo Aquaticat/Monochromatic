@@ -7788,3 +7788,56 @@ The general lesson is the one this handover already names: a committed fix with
  a passing test suite is not evidence that the pipeline uses the code it fixed.
 Asking whether a built feature FIRES caught typography restoration in the
  previous stretch and caught this in the current one.
+
+## Every open decision, consolidated 2026-08-13
+
+Supersedes the earlier "Four decisions waiting" list, which is now incomplete.
+Ordered by how much else is blocked behind each.
+
+### 1. What an unpaired source section is for (`#70`, blocks `#71` and `#74`)
+
+A section the translation genuinely lacks needs a destination. An empty target
+ produces the unrepairable 915-characters-against-nothing shape; skipping
+ contradicts the decided output goal.
+
+This now blocks TWO landings rather than one, which raises its value: both
+ options for the aligner produce explicitly unpaired sections, so neither can
+ land until this is answered. `doc/planning/translation-pipeline-redesign.md`
+ and `doc/planning/wire-the-heading-aligner.md`.
+
+### 2. Whether to wire the two unwired features (`#74`)
+
+The heading aligner and the derivability probe were both built, tested,
+ committed and never connected. The aligner is ranked B > C > A and is blocked
+ by decision 1. The derivability probe is not blocked by anything: wiring it
+ would let recall stop charging the pipeline for restorations of sentences that
+ were never derivable from the source.
+`doc/planning/wire-the-heading-aligner.md`.
+
+### 3. Line structure: does changing it count as damage (`#72` and the naturalness lane)
+
+This also now governs two changes rather than one. Admitting soft-wrapped
+ paragraphs into the naturalness lane triples its reach; admitting
+ wrap-spanning quotes into anchoring recovers discarded critic claims. Both
+ replace several lines with one, and nothing measures whether that is harm.
+Ranked B > C > A. `doc/planning/naturalness-lane-reach.md`.
+
+### 4. Which unit precision is denominated in (`#65`)
+
+Issue or envelope. 570 of 2650 accepted issues share a span with another, but
+ every duplicate pair shares one repair envelope, so the harm is counting
+ rather than wasted work. Ranked C > B > A.
+`doc/planning/duplicate-accepted-issues.md`.
+
+### 5. The damage sheet still wants human grading (`#66`, then `#68`)
+
+`#68` is blocked behind `#66`: which prober is right when they disagree cannot
+ be settled from telemetry.
+
+### Not decisions, just waiting on the running pass
+
+-   `#72`'s incidence, from the `[line-break-collapsible]` suffix.
+-   `#73`'s cause, from `voice-loss.log` in the `pass13` runs directory.
+
+Neither needs anything from the user. Both are unanswerable from the existing
+ 56-entry population, which is why `pass13` was restarted rather than left.
