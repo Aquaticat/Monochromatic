@@ -288,9 +288,43 @@ Thirteen is enough to test the quarter:
   one-sided 5% upper bound: true share <= 20.5%
 ```
 
-So the prediction above is REJECTED at the conventional level, and the data is
- consistent with any share at or below about 15%, including zero. It cannot yet
- separate "small" from "none".
+So the prediction above is REJECTED at the conventional level.
+
+### CLOSED at 30 misses: soft wrapping is not a material cause
+
+The count reached the pre-registered threshold with none suffixed:
+
+```text
+  observations   5% upper bound on the true wrap share
+      13              <= 20.5%
+      17              <= 16.1%
+      25              <= 11.2%
+      30              <=  9.5%     <- threshold, 10% now rejected at 4.24%
+```
+
+Thirty `quote-not-found` findings, 23 source and 7 target, and not one carries
+ either suffix. The point estimate is zero and the ceiling is 9.5%.
+
+THE SAMPLE WAS CHECKED BEFORE THE NULL WAS TRUSTED, because a lightly-wrapped
+ sample would produce this result for an uninteresting reason. It is not
+ lightly wrapped: the 7 settled entries have a median wrapped-prose share of
+ 69%, against 69% for the other 85 entries in the corpus. Individual shares run
+ from 0% to 97%, so the medians matching is the relevant comparison.
+
+VERDICT. The mechanism is real and is proven by unit test: a quote spanning a
+ soft wrap, returned with a space, fails both the exact and the
+ punctuation-normalized search. Its INCIDENCE in practice is at most 9.5% of
+ misses and indistinguishable from zero. Admitting wrap-spanning quotes would
+ therefore recover at most three of these thirty claims and plausibly none, so
+ the anchoring change is not worth making.
+
+The telemetry stays. It costs nothing, it is what closed this, and it will
+ notice if a future corpus wraps differently.
+
+CONSEQUENCE BEYOND THIS ISSUE: the line-structure question in
+ `doc/planning/naturalness-lane-reach.md` now governs ONE change, the
+ naturalness lane, rather than two. That decision got simpler rather than more
+ valuable, reversing what was recorded earlier.
 
 The direction matters for the decision this feeds. If soft wrapping explains
  little, the anchoring lead closes, and the line-structure question in

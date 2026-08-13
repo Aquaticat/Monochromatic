@@ -7864,17 +7864,18 @@ Issue or envelope. 570 of 2650 accepted issues share a span with another, but
 
 ### Not decisions, just waiting on the running pass
 
--   `#72`'s incidence, from the `[line-break-collapsible]` suffix. The
-    DIRECTION is already known and does not depend on further counting: the
-    "roughly a quarter" estimate is rejected, every miss so far is unsuffixed,
-    and the lead closes outright once 30 misses accumulate with none suffixed,
-    which is where even a 10% share falls below 5% likelihood. A monitor
-    carries the running tally and fires at that threshold. Live figures in
-    `doc/troubleshooting/translation-repair-unread-signals.md` rather than
-    repeated here, so there is one copy to keep true.
+-   `#72` is CLOSED. Soft wrapping is not a material cause of the quote misses:
+    30 misses, none wrap-explained, 5% ceiling 9.5%, on a sample verified to
+    wrap as much as the rest of the corpus (69% against 69%). The mechanism is
+    real and unit-tested; its incidence is indistinguishable from zero. So the
+    line-structure decision now governs ONE change, the naturalness lane,
+    rather than two, and got simpler rather than more valuable. Full record in
+    `doc/troubleshooting/translation-repair-unread-signals.md`. What stays open
+    is the other 398 discarded claims, whose cause is now unknown.
 -   `#73` is CLOSED, not waiting. It was already fixed by `eb21ffa6b` before it
     was found. `#75` replaces it, and needs no decision until a debug capture
     names which schema-mismatch sub-kind Kimi-K3 is hitting.
 
-Neither needs anything from the user. `#72` was unanswerable from the existing
- 56-entry population, which is why `pass13` was restarted rather than left.
+Neither needs anything from the user, and both are now answered. `#72` was
+ unanswerable from the existing 56-entry population, which is why `pass13` was
+ restarted rather than left. That restart paid for itself.
