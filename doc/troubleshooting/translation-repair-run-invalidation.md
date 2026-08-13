@@ -156,3 +156,47 @@ So the flag was raised by a single entry and is withdrawn. Sheet composition
 The general caution is the one this file keeps earning: a share computed from
  one entry describes that entry. It took three more to tell a population change
  from an outlier, and the first reading looked like a threefold shift.
+
+## The acceptance RATE has moved between passes, which invalidates cross-pass precision
+
+Measured at 8 settled entries, all 8 present in the 56-entry population, so this
+ is the same-entry comparison rather than a sample against a population.
+
+```text
+  entry              pass13 filed/acc    old filed/acc
+  Acheron               20/ 11              21/ 11
+  AkiraComplex           9/  1              12/  1
+  AmbeR_the_anpa        36/ 19              53/ 35
+  Anilovr               79/ 46              77/ 61
+  Arita                 71/ 46              74/ 45
+  Chinatsu_Suzuki       42/ 24              41/ 27
+  Considerate_cat       24/  8              26/  8
+  Dethelly             242/132             282/198
+
+  TOTAL                523/287             586/386
+
+  accept rate        54.9%               65.9%
+```
+
+Eleven points, z = 3.74, far beyond chance at these counts. Filing dropped 11%
+ and acceptance dropped 26%, so the change is in what the panel ACCEPTS rather
+ than only in what the critics raise.
+
+It is not uniform. Four entries are essentially unchanged, including one where
+ `pass13` accepts slightly more, and four dropped substantially.
+
+WHAT THIS DOES NOT SAY. The direction of quality is unknown. A lower acceptance
+ rate is an improvement if the panel is rejecting false positives it used to
+ accept, and a regression if it is rejecting real defects. Nothing here
+ distinguishes those, and the graded sheets that could were drawn from the OLD
+ population.
+
+WHAT IT DOES SAY, and it matters for every figure downstream: a precision number
+ measured on the old run describes a pipeline that accepted 65.9% of filed
+ issues. `pass13` accepts 54.9%. Those are different populations, so precision
+ figures cannot be carried across without saying which pass produced them.
+
+CAUSE UNKNOWN AND PROBABLY NOT ATTRIBUTABLE. The two runs differ by many
+ commits, not only by the night's work, and model sampling is not fixed. This is
+ a fact about the artifacts rather than a diagnosis, and chasing it to a single
+ commit would need a bisect over passes that each cost days.
