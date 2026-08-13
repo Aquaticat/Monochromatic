@@ -133,3 +133,26 @@ Worth watching rather than acting on. If the `needs-human` share stays near a
  third as `pass13` accumulates, the composition of any sheet drawn from it
  differs from the sheets drawn so far, and that matters for comparing precision
  figures across passes.
+
+### Watched, and it was one entry
+
+At 4 settled entries the share does not stay near a third:
+
+```text
+  pass13, 4 entries          14.1% needs-human
+  the same 4 in the old run  10.2%
+  the old run, all 56        10.1%
+
+  pass13 excluding AmbeR     10.6%
+  AmbeR_the_anpa alone       30.6%
+```
+
+`Acheron` is 5%, `Anilovr` 13%, `Arita` 10%. Drop the one outlier and pass13
+ sits at 10.6% against a 10.1% baseline, which is no difference at all.
+
+So the flag was raised by a single entry and is withdrawn. Sheet composition
+ across passes is not shifting.
+
+The general caution is the one this file keeps earning: a share computed from
+ one entry describes that entry. It took three more to tell a population change
+ from an outlier, and the first reading looked like a threefold shift.
