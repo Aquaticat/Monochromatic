@@ -7535,11 +7535,17 @@ The user was asleep with a standing instruction to keep working, to land
 
 ### Four decisions waiting, none blocked on further work
 
--   `#70` and `#71`, the same question. The section aligner now pairs `XingZ60`
-    correctly, but its two genuinely untranslated sections need a destination
-    and both available answers are bad: an empty target produces the
-    unrepairable 915-characters-against-nothing shape, and skipping contradicts
-    the decided output goal. `doc/planning/translation-pipeline-redesign.md`.
+-   `#70` and `#71`, the same question. Its two genuinely untranslated sections
+    need a destination and both available answers are bad: an empty target
+    produces the unrepairable 915-characters-against-nothing shape, and
+    skipping contradicts the decided output goal.
+    `doc/planning/translation-pipeline-redesign.md`.
+
+    CORRECTED 2026-08-13: this entry previously said the section aligner now
+    pairs `XingZ60` correctly. That is true of `alignHeadings` and FALSE of the
+    production path, which still merges source sections from the front and
+    slides the document by two. `alignHeadings` is called by nothing.
+    `doc/planning/wire-the-heading-aligner.md`.
 -   `#65`, the unit precision is denominated in. 570 of 2650 accepted issues
     share a span with another, but every duplicate pair shares one repair
     envelope, so the harm is counting rather than wasted work. Ranked C > B > A.
@@ -7747,3 +7753,38 @@ Tracked as task #73; the quote-anchoring work is task #72.
 -   Corpus content is unlicensed: artifacts, sheets and logs stay under
     `node_modules/.monochromatic/`, never in git, and grading sheets never go
     to a third-party model.
+
+### A third finding: the aligner fix was never wired in
+
+`alignHeadings` in `align-sections-order.ts` is a Needleman-Wunsch aligner that
+ allows gaps on either side, is covered by its own test file, is exported from
+ `index.ts`, and carries the gap-placement fix from `110fc3909`.
+Nothing calls it. A search across the repository finds it only in its own
+ definition, its own tests, and the re-export.
+
+The pipeline aligns through `alignDocumentSections` in `chunk-document.ts`,
+ which on a structure mismatch still merges adjacent source sections from the
+ front and aligns the rest proportionally by character fraction. Two merges
+ shift the document by two, which is the offset `#71` recorded.
+
+Run against the current build, `alignHeadings` produces the correct `XingZ60`
+ pairing outright, with affinity 1.00 on the three shared Latin names and the
+ two gaps landing on the two sections that genuinely have no translation.
+So the fix is wiring, not new logic.
+
+Blast radius re-measured on the current build, which `#71` asked for: 7 of 92
+ entries fall back to proportional, but five of those have EQUAL chunk counts
+ where proportional lands on index pairing anyway, and `XIEPT2` was inspected
+ pair by pair and is correct. Only `XingZ60` is wrong, confirming the earlier
+ count by a different route.
+
+NOT landed, and the reason is not caution: alignment feeds every later stage,
+ and wiring it produces explicitly unpaired sections, which is exactly the
+ destination question `#70` leaves open. Landing it would answer a question the
+ user owns. Options and ranking (B > C > A) are in
+ `doc/planning/wire-the-heading-aligner.md`.
+
+The general lesson is the one this handover already names: a committed fix with
+ a passing test suite is not evidence that the pipeline uses the code it fixed.
+Asking whether a built feature FIRES caught typography restoration in the
+ previous stretch and caught this in the current one.
