@@ -85,6 +85,24 @@ Every check below was run against the live system before the supervisor was
 -   Smoke check: run by hand at the current tip before arming, exit 0, client
     constructed.
 
+The two functions that decide the night, `run` and `smokeCheck`, are otherwise
+ never exercised until the moment they matter. They now have a self-test:
+
+```sh
+RESUME_SUPERVISOR_SELFTEST=1 node ~/temp/agent/resume-supervisor.ts
+```
+
+It runs the real guard through the real code path and logs what each returned,
+ then exits before the loop. Confirmed: `smokeCheck` true, `passRunning` true,
+ and the smoke log carried the child's own `PLAN ok` line, which is what proves
+ the spawn, the working directory, the environment override and the output
+ capture all work rather than merely not throwing. The resume itself calls the
+ same `run` with different arguments, so that path is proven too.
+
+Editing the supervisor file cannot disturb a supervisor already running, because
+ node reads a module completely before executing any of it. That is the property
+ bash lacks and the reason this is not a shell script.
+
 Two probes that FAILED silently while investigating this, both worth
  remembering:
 
