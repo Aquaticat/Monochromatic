@@ -75,6 +75,15 @@ Batching is the reason `pass12` waited for a check that the other settled
  policies, translator additions and declared names, had actually reached the
  prompts. They had, so it started with nothing else pending.
 
+`pass12` was NOT restarted for the naturalness-eligibility fix landed after it
+ (cache version 8), and the asymmetry is deliberate rather than fatigue.
+The typography fix touched every repaired region of every entry, 99 curly
+ characters lost corpus-wide; the eligibility fix touches only slices holding an
+ invisible-only line, which is 3 lines in `Toka_ls` and nowhere else.
+So `pass12` will refine `Toka_ls` on fewer slices than the current code would,
+ and nothing else differs.
+Restart it when convenient rather than urgently.
+
 Restarting rather than continuing follows the standing instruction to land
  certainly-good pipeline changes immediately and restart runs as needed.
 The new pass was confirmed authenticating and doing real work BEFORE the old
