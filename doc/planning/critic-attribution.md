@@ -347,3 +347,30 @@ The replacement counts rule names rather than trusting a substring:
  `rg --only-matching '^\s{0,3}\S{1,2} [a-z@/-]+\([a-z-]+\)' <log> | sort | uniq --count`.
  It reports every diagnostic marker `oxlint` emits, error and warning alike, so a
  census that misses a rule is visible as a census that does not sum.
+
+## The join, verified against a real artifact before the run produced one
+
+The reader's tests all build entries by hand, so they prove the fold and say
+ nothing about whether the join matches what the pipeline actually writes. If
+ the real issue structure nested claim ids differently, every rate would read
+ zero and nothing would error.
+
+Checked on a throwaway copy of `Acheron.json`, never the artifact itself. The
+ real structure is `issues[].issue.claims[].claimId`, and the reader walks
+ exactly that. Its 16 accepted claim ids were injected back as `chunkCritics`
+ across two chunks, including one id deliberately placed in BOTH chunks with a
+ different critic in each, which is the collision case the merge exists for.
+
+Result: `eligible=1 ineligible=0 chunks=2`, `sole=7 multi=4 selfRepeated=0
+ unattributed=0`, with both critics carrying nonzero raised and hit counts.
+
+THE RESULT IS NOT VACUOUS, which matters more than the numbers. Had the reader
+ failed to find claim ids at all, `unattributed` would have been 11 rather than
+ 0, since every accepted issue would have joined to nothing. And `sole + multi`
+ equals 11, which is exactly the artifact's own accepted-issue count, so the
+ population reconciles against a figure the reader did not compute.
+
+The artifact also carries a third status, `needs-human`, alongside `accepted`
+ and `rejected`. Only `accepted` counts toward hits, which is what the reader
+ does, but the third value is worth naming: a reader written against a
+ two-status assumption would have been wrong here without failing.
