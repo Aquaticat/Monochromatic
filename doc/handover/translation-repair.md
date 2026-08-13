@@ -3668,7 +3668,10 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   `git-policy/cli/src/index.ts`: main restructured it to a barrel; resolution
   keeps the barrel PLUS this branch's `resolveGit` export.
   `forbidden-strings.append.txt`: main's restructured version kept, with this
-  branch's unique `truncated-attempt` rename guard re-appended.
+  branch's unique retired-benchmark-module rename guard re-appended. The
+  retired name is deliberately not spelled here: the guard exists to keep it
+  out of the tree, and writing it in prose about the guard makes the document
+  its own violation.
   `mise.toml` conflicted in the AUTOSTASH, not in a commit, and the stashed copy
   was STALE generated output that would have deleted PATH entries for packages
   main added. Taken from the rebased tree; the original is preserved in
