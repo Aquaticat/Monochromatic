@@ -129,6 +129,7 @@ export {
   dedupeAcceptedIssues,
   type DedupeOutcome,
 } from './dedupe-issues.ts';
+export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,
   type PreservationVerdict,

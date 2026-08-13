@@ -10,6 +10,7 @@ import {
   selectCreditableIssues,
 } from './chunk-measure.ts';
 import { dedupeAcceptedIssues, } from './dedupe-issues.ts';
+import { isLineStructured, } from './line-structure.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import { parseDocument, } from './parse-document.ts';
 import { collectRepairRegions, } from './repair-region.ts';
@@ -237,15 +238,42 @@ export async function repairChunk(
   },);
 
   /**
+   * Editor rules for this slice, with the line-structure fact appended when it
+   * holds.
+   *
+   * COMPUTED AND HANDED OVER rather than left to the model to notice. The
+   * standing rule asks the editor to recognize line-structured text itself, and
+   * an attempt to write that same recognition as a heuristic failed its
+   * positive control, so asking a model to make the same judgement is not
+   * obviously safer. Here the pipeline measures the slice and states the answer.
+   *
+   * MEASURED ON THE SOURCE, never the translation, and the difference is not
+   * cosmetic. The ORIGINAL's shape is what a repair must preserve, and the
+   * translation may already have merged the lines that make it verse. Measured
+   * on `Toka_ls`: the Chinese verse chunk has a median node length of 22 and the
+   * English rendering of the same chunk has 99, so a predicate reading the
+   * target would never have fired on the one case this exists for.
+   */
+  const editorAddendum = [
+    models.editorRuleAddendum ?? '',
+    isLineStructured({ text: sourceText, },)
+      ? 'This region\'s CURRENT TEXT IS line-structured: treat every line as a unit, '
+        + 'keep one output line per input line in the same order, and recast only within a line.'
+      : '',
+  ]
+    .filter(function isPresent(part,): boolean {
+    return part !== '';
+  },)
+    .join('\n',);
+
+  /**
    * Editor result through the apply gate.
    */
   const editor = await runEditorStage({
     client,
     editorModelIds: models.editorModelIds,
     judgeModelIds: models.judgeModelIds,
-    ...(models.editorRuleAddendum === undefined
-      ? {}
-      : { editorRuleAddendum: models.editorRuleAddendum, }),
+    ...((editorAddendum === '') ? {} : { editorRuleAddendum: editorAddendum, }),
     sourceText,
     targetText,
     envelopes,
