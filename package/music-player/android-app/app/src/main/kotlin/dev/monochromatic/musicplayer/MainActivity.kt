@@ -30,7 +30,7 @@
 //   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
 //     volume, control row, settings page, page controls + track list). Page
 //     controls default to radios and can switch to multi-row MD1 tabs, segmented
-//     buttons, Chromium-like tabs, or the previous rounded buttons.
+//     buttons, Chromium-like tabs, LED hardware buttons, or the previous rounded buttons.
 //     Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
 //     screens. `seekRow`/`volumeRow`/`controlRow`/`radioOption`/`pageTabs`/
@@ -344,6 +344,16 @@ import androidx.compose.foundation.layout.FlowRow
 // import { IntrinsicSize } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.IntrinsicSize
+
+// What:     `import androidx.compose.foundation.layout.matchParentSize` makes a Box child use
+//           its measured parent's exact size without contributing a second measurement.
+// Why:      LED cap shading layers must cover one content-sized opening.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { matchParentSize } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.matchParentSize
 
 // What:     `import androidx.compose.foundation.layout.Row` pulls in `Row`, the horizontal
 //           layout composable (places children left to right).
@@ -688,6 +698,44 @@ import androidx.compose.ui.Modifier
 // ```
 import androidx.compose.ui.draw.clip
 
+// What:     `import androidx.compose.ui.draw.dropShadow` paints a configurable shadow behind
+//           a shaped composable.
+// Why:      Raised caps cast down-right shadows while active LEDs emit a radial bloom.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { dropShadow } from "androidx/compose/ui/draw";
+// ```
+import androidx.compose.ui.draw.dropShadow
+
+// What:     `import androidx.compose.ui.draw.innerShadow` paints a configurable shadow inside
+//           a shaped composable after its background.
+// Why:      Hardware plate shoulders and pressed-cap occlusion need recessed shading.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { innerShadow } from "androidx/compose/ui/draw";
+// ```
+import androidx.compose.ui.draw.innerShadow
+
+// What:     `import androidx.compose.ui.geometry.Offset` names a two-dimensional pixel offset.
+// Why:      Active label light uses a centered text-shadow glow.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Offset } from "androidx/compose/ui/geometry";
+// ```
+import androidx.compose.ui.geometry.Offset
+
+// What:     `import androidx.compose.ui.graphics.Brush` supplies gradient paint factories.
+// Why:      LED caps and bead-blasted plates require continuous directional shading.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Brush } from "androidx/compose/ui/graphics";
+// ```
+import androidx.compose.ui.graphics.Brush
+
 // What:     `import androidx.compose.ui.graphics.Color` pulls in `Color`, Compose's color
 //           type (we use `Color.Transparent`).
 // Why:      `trackRow` uses `Color.Transparent` for non-current rows.
@@ -697,6 +745,25 @@ import androidx.compose.ui.draw.clip
 // import { Color } from "androidx/compose/ui/graphics";
 // ```
 import androidx.compose.ui.graphics.Color
+
+// What:     `Shadow as TextShadow` aliases Compose's text-shadow value to distinguish it
+//           from the hardware surface-shadow value.
+// Why:      Selected LED legends need a white glow without making shadow APIs ambiguous.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Shadow as TextShadow } from "androidx/compose/ui/graphics";
+// ```
+import androidx.compose.ui.graphics.Shadow as TextShadow
+
+// What:     `Shadow as HardwareShadow` aliases Compose's configurable surface-shadow value.
+// Why:      Drop and inner shadow modifiers need explicit radius, spread, color, and offset.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Shadow as HardwareShadow } from "androidx/compose/ui/graphics/shadow";
+// ```
+import androidx.compose.ui.graphics.shadow.Shadow as HardwareShadow
 
 // What:     `import androidx.compose.foundation.shape.GenericShape` creates a shape from
 //           measured path commands.
@@ -747,6 +814,15 @@ import androidx.compose.ui.semantics.Role
 // ```
 import androidx.compose.ui.text.style.TextOverflow
 
+// What:     `import androidx.compose.ui.text.font.FontWeight` supplies named text weights.
+// Why:      Hardware legends use the supplied design's semibold printed ink.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { FontWeight } from "androidx/compose/ui/text/font";
+// ```
+import androidx.compose.ui.text.font.FontWeight
+
 // What:     `import androidx.compose.ui.unit.Dp` names density-independent dimensions.
 // Why:      Chromium tab options carry parent width into content-width measurement.
 //
@@ -755,6 +831,15 @@ import androidx.compose.ui.text.style.TextOverflow
 // import type { Dp } from "androidx/compose/ui/unit";
 // ```
 import androidx.compose.ui.unit.Dp
+
+// What:     `import androidx.compose.ui.unit.DpOffset` names a density-independent x/y offset.
+// Why:      Hardware shadows follow the supplied 315-degree top-left key light.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { DpOffset } from "androidx/compose/ui/unit";
+// ```
+import androidx.compose.ui.unit.DpOffset
 
 // What:     `import androidx.compose.ui.unit.dp` imports the `dp` EXTENSION PROPERTY on
 //           numbers: writing `24.dp` produces a density-independent-pixel dimension. It
@@ -2573,6 +2658,11 @@ private fun ColumnScope.settingsPage(
             onSelect = { onSelectStyle(PageControlStyle.SEGMENTED_BUTTONS) },
         )
         radioOption(
+            label = "Super fun LED segmented buttons",
+            selected = style == PageControlStyle.LED_SEGMENTED_BUTTONS,
+            onSelect = { onSelectStyle(PageControlStyle.LED_SEGMENTED_BUTTONS) },
+        )
+        radioOption(
             label = "Chromium-like tabs",
             selected = style == PageControlStyle.CHROMIUM_TABS,
             onSelect = { onSelectStyle(PageControlStyle.CHROMIUM_TABS) },
@@ -2924,6 +3014,165 @@ private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> U
     }
 }
 
+// What:     `ledPlateModifier` paints one compact anodized-metal backplate.
+// Why:      Every content-width LED cap needs the reference's directional sheen and convex edge.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ledPlateModifier(shape: RoundedShape): Modifier { ... }
+// ```
+/** Returns layered bead-blasted-metal styling for one LED button backplate. */
+private fun ledPlateModifier(shape: RoundedCornerShape): Modifier {
+    return Modifier
+        .clip(shape)
+        .background(Color(0xFF111111))
+        .background(
+            brush = Brush.linearGradient(
+                colors = listOf(Color(0x1FFFFFFF), Color.Transparent, Color(0x24000000)),
+            ),
+            shape = shape,
+        )
+        .innerShadow(
+            shape = shape,
+            shadow = HardwareShadow(
+                radius = 6.dp,
+                color = Color(0x17000000),
+                offset = DpOffset(x = 3.dp, y = 3.dp),
+            ),
+        )
+}
+
+// What:     `ledFaceModifier` paints either a raised reflective cap or a latched LED cap.
+// Why:      Selection must be redundantly visible through depth, cap light, and label light.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ledFaceModifier(selected: boolean, shape: RoundedShape): Modifier { ... }
+// ```
+/** Returns rigid translucent-cap styling for one LED page button state. */
+private fun ledFaceModifier(selected: Boolean, shape: RoundedCornerShape): Modifier {
+    /** Holds purple LED flood or unlit translucent factory pigment. */
+    val fill: Color = if (selected) Color(0xFFA63FD0) else Color(0xFFAAAAAA)
+    /** Holds radial cap illumination with a steep outer shoulder. */
+    val dome: Brush = Brush.radialGradient(
+        colors = if (selected) {
+            listOf(Color(0x5CFFFFFF), Color(0xFFA63FD0), Color(0xFF782597))
+        } else {
+            listOf(Color(0x36FFFFFF), Color(0xFFAAAAAA), Color(0xFF747474))
+        },
+    )
+    /** Holds LED bloom for selected caps and a physical cast shadow for raised caps. */
+    val outerShadow: HardwareShadow = if (selected) {
+        HardwareShadow(radius = 7.dp, spread = 1.dp, color = Color(0x73C874EA))
+    } else {
+        HardwareShadow(
+            radius = 2.6.dp,
+            color = Color(0x6B000000),
+            offset = DpOffset(x = 2.5.dp, y = 3.5.dp),
+        )
+    }
+    return Modifier
+        .matchParentSize()
+        .padding(if (selected) 2.dp else 0.dp)
+        .dropShadow(shape = shape, shadow = outerShadow)
+        .background(color = fill, shape = shape)
+        .background(brush = dome, shape = shape)
+        .innerShadow(
+            shape = shape,
+            shadow = HardwareShadow(
+                radius = 4.dp,
+                spread = 1.dp,
+                color = if (selected) Color(0x73000000) else Color(0x3D000000),
+                offset = DpOffset(x = 3.dp, y = 3.dp),
+            ),
+        )
+}
+
+// What:     `ledHardwarePageButton` renders one reflective cap in its metal opening.
+// Why:      Content-width pages need the supplied hardware states while each control wraps whole.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedHardwarePageButton(props: LedPageButtonProps) { ... }
+// ```
+/** Displays one selectable, content-width LED hardware page button. */
+@Composable
+private fun ledHardwarePageButton(
+    label: String,
+    selected: Boolean,
+    maximumWidth: Dp,
+    onSelect: () -> Unit,
+) {
+    /** Holds concentric plate radius from the supplied 9dp cap plus 8dp margin. */
+    val plateShape: RoundedCornerShape = RoundedCornerShape(17.dp)
+    /** Holds rigid cap silhouette. Independent wrapping requires rounded ends on each cap. */
+    val capShape: RoundedCornerShape = RoundedCornerShape(9.dp)
+    Box(
+        modifier = Modifier
+            .widthIn(max = maximumWidth)
+            .width(IntrinsicSize.Max)
+            .height(60.dp)
+            .then(ledPlateModifier(plateShape))
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
+            .padding(8.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(if (selected) 0xFF030304 else 0xFF050506), capShape),
+        ) {
+            Box(modifier = ledFaceModifier(selected = selected, shape = capShape))
+            Text(
+                text = label,
+                color = if (selected) Color.White else Color(0xFF3D3F45),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    shadow = if (selected) {
+                        TextShadow(color = Color(0xE6F0D4FF), offset = Offset.Zero, blurRadius = 4f)
+                    } else {
+                        null
+                    },
+                ),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = if (selected) 2.dp else 0.dp),
+            )
+        }
+    }
+}
+
+// What:     `ledPageControls` wraps content-width hardware buttons without painting unused row width.
+// Why:      Large libraries retain discoverable multi-row navigation and the reference's dark plate islands.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedPageControls(props: PageControlsProps) { ... }
+// ```
+/** Displays wrapped, mutually exclusive LED hardware page buttons. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ledPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
+    BoxWithConstraints {
+        /** Holds available pager width before entering FlowRow's receiver scope. */
+        val pageMaximumWidth: Dp = maxWidth
+        FlowRow(
+            modifier = Modifier.selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            state.pageLabels.forEachIndexed { page, label ->
+                ledHardwarePageButton(
+                    label = label,
+                    selected = page == state.selectedPage,
+                    maximumWidth = pageMaximumWidth,
+                    onSelect = { onSelectPage(page) },
+                )
+            }
+        }
+    }
+}
+
 // What:     `@OptIn(ExperimentalLayoutApi::class)` acknowledges the experimental `FlowRow`
 //           used by `pageTabs` (see the same annotation on `controlRow`).
 // Why:      `pageTabs` uses `FlowRow`.
@@ -2969,6 +3218,10 @@ private fun pageTabs(
     // ```
     if (pageControlStyle == PageControlStyle.SEGMENTED_BUTTONS) {
         segmentedPageControls(state = state, onSelectPage = onSelectPage)
+        return
+    }
+    if (pageControlStyle == PageControlStyle.LED_SEGMENTED_BUTTONS) {
+        ledPageControls(state = state, onSelectPage = onSelectPage)
         return
     }
     BoxWithConstraints {

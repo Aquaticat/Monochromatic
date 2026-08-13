@@ -48,9 +48,9 @@ use crate::command::ShuffleMode;
 use crate::identity;
 
 /// What:     `PageControlStyle` is the saved visual treatment for library-page selectors.
-///           It has five fixed values: radio controls, wrapping Material Design 1 tabs,
-///           the earlier rounded buttons, joined segmented buttons, and Chromium-like tabs.
-///           `Default` selects `Radio` for old sessions.
+///           It has six fixed values: radio controls, wrapping Material Design 1 tabs,
+///           the earlier rounded buttons, joined segmented buttons, Chromium-like tabs,
+///           and LED hardware buttons. `Default` selects `Radio` for old sessions.
 /// Why:      Users can choose a page selector while fresh and older installs start with
 ///           radio controls as requested.
 ///
@@ -61,7 +61,8 @@ use crate::identity;
 ///   | 'md1Tabs'
 ///   | 'roundedButtons'
 ///   | 'segmentedButtons'
-///   | 'chromiumTabs';
+///   | 'chromiumTabs'
+///   | 'ledSegmentedButtons';
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub enum PageControlStyle {
@@ -76,6 +77,8 @@ pub enum PageControlStyle {
     SegmentedButtons,
     /// Content-width browser tabs with raised active-tab silhouettes.
     ChromiumTabs,
+    /// Reflective hardware caps with latched LED selection.
+    LedSegmentedButtons,
 }
 
 /// What:     `impl PageControlStyle` adds conversion methods used at the Slint boundary.
@@ -100,6 +103,9 @@ impl PageControlStyle {
         if self == PageControlStyle::ChromiumTabs {
             return 4;
         }
+        if self == PageControlStyle::LedSegmentedButtons {
+            return 5;
+        }
         return 0;
     }
 
@@ -116,6 +122,9 @@ impl PageControlStyle {
         }
         if value == 4 {
             return PageControlStyle::ChromiumTabs;
+        }
+        if value == 5 {
+            return PageControlStyle::LedSegmentedButtons;
         }
         return PageControlStyle::Radio;
     }
