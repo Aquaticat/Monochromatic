@@ -201,12 +201,19 @@ Confirm process age and repeat the launcher probe before choosing this path.
 
 ## What does not work
 
-- **Repeatedly starting IDEA.** Each attempt connects to the same old endpoint and receives status 16.
-- **Deleting `.lock` or `.port` while the owner is alive.** The old instance was responsive,
-  so its endpoint was not stale. Removing coordination files can allow competing instances against the same config.
-- **Deleting config, plugins, or caches first.** The successful relaunch reused all existing state.
+- **Repeatedly starting IDEA.**
+   Each attempt connects to the same old endpoint and receives status 16.
+- **Deleting `.lock` or `.port` while the owner is alive.**
+   The old instance was responsive,
+  so its endpoint was not stale.
+   Removing coordination files can allow competing instances against the same config.
+- **Deleting config,
+   plugins,
+   or caches first.**
+   The successful relaunch reused all existing state.
   Destructive state reset was unnecessary.
-- **Treating the AI Assistant exceptions as the proven cause.** Their timing is suggestive,
+- **Treating the AI Assistant exceptions as the proven cause.**
+   Their timing is suggestive,
   but no pre-kill thread dump links them to the shutdown blocker.
 
 ## Upstream filing artifact
@@ -219,7 +226,9 @@ None covers IntelliJ IDEA or JetBrains IDE startup failures.
 JetBrains directs reproducible bug reports to YouTrack in
 `CONTRIBUTING.md` and welcomes bug-fix contributions with tests.
 No policy barring AI-assisted reports was found in `CONTRIBUTING.md`,
-`README.md`, `.github/`, or `.ai/`.
+`README.md`,
+ `.github/`,
+ or `.ai/`.
 The `.ai/` material describes contributor-agent guidance generation rather than a filing restriction.
 
 The duplicate search covered open and closed GitHub issues and pull requests,
@@ -228,29 +237,36 @@ YouTrack searches for the exact message,
 Station shutdown,
 and broader stuck-process startup failures.
 No exact report for a responsive instance returning status 16 was found.
-The closest tracker cluster is [IJPL-160882],
+The closest tracker cluster is [IJPL-160882][],
 an obsolete umbrella for an existing process that does not respond to activation.
-Recent reports such as [IJPL-234004] were closed as duplicates of that umbrella.
+Recent reports such as [IJPL-234004][] were closed as duplicates of that umbrella.
 That transport failure differs from this incident,
 where the old process accepted the connection and intentionally returned `ACTIVATE_DISPOSING`.
 
 The six filing constraints resolve as follows:
 
-1. **Is it really upstream's fault?** Not established.
+1. **Is it really upstream's fault?**
+    Not established.
    IDEA correctly prevented a second instance while shutdown was in progress.
    The component that prevented shutdown completion is unknown and could be an external plugin.
-2. **Can upstream fix it?** The launcher and shutdown UX are changeable,
+2. **Can upstream fix it?**
+    The launcher and shutdown UX are changeable,
    but no specific blocker or safe source-level correction was identified.
-3. **Are they supporting this use case?** Yes.
+3. **Are they supporting this use case?**
+    Yes.
    The cited source explicitly implements single-instance activation and shutdown responses.
-4. **Would the repo welcome our contribution?** Yes for reproducible bug fixes with tests,
-   according to `CONTRIBUTING.md`; no AI-assistance ban was found.
-5. **Will they likely fix it?** Not enough evidence.
+4. **Would the repo welcome our contribution?**
+    Yes for reproducible bug fixes with tests,
+   according to `CONTRIBUTING.md`;
+    no AI-assistance ban was found.
+5. **Will they likely fix it?**
+    Not enough evidence.
    IJPL-160882 records concern that a kill button could cause data loss.
    It was closed in favor of cause-specific tickets.
    Since the 2026.2.1 tag,
    the activation-listener file has two unrelated commits and `DirectoryLock.java` has none.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No.
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    No.
    Auto-prototyping is not triggered because constraints 1 and 5 do not hold.
    A source patch without a reproducible shutdown blocker would be speculative.
 
