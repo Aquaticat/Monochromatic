@@ -190,13 +190,20 @@ What this leaves for the decision, now that the roster is three:
 -   Every reach and damage figure drawn from the 56-entry population still
     understates the lane, since a twelfth of its entries were refined on no
     voices at all. Numbers taken from `pass13` onward will not have that.
--   The cause is worth naming, because the model is still on the roster. Of the
-    13 voice losses `pass13` had recorded an hour in, EVERY schema-mismatch is
-    Kimi-K3, twelve of them, across the editor, critic and panel stages. The
-    one remaining loss is GLM-5.2 exceeding its exchange deadline, which is a
-    different mechanism and not this one. Kimi-K3 is also a refiner. Schema
-    mismatch is the same failure family as the channel-marker defect fixed at
-    the parser earlier, so that fix did not close all of it.
+-   The cause is worth naming, because the model is still on the roster. Every
+    schema-mismatch voice loss `pass13` has recorded is Kimi-K3, across the
+    editor, critic, panel and refiner stages. The one non-Kimi loss is GLM-5.2
+    exceeding its exchange deadline, a different mechanism. Schema mismatch is
+    the same failure family as the channel-marker defect fixed at the parser
+    earlier, so that fix did not close all of it. Tracked as `#75`.
+-   THE LANE ITSELF IS HEALTHY NOW, which is the part that bears on this
+    decision. `refine-stage.ts` retries to a FULL roster rather than to quorum,
+    and at 3 settled entries every one of the 13 `refine-candidates` findings
+    reports `3/3 heard`, with no `stage-quorum-unmet` for any stage. Kimi-K3
+    lost the refiner voice three times and was retried back each time. So the
+    losses cost an extra call, not a narrower ensemble, and the reach figures a
+    future pass produces will not carry the silent-lane deficit the 56-entry
+    population does.
 
 So the open question is no longer whether the lane survives a lost voice. It is
  whether one model losing its voice this often is acceptable on rosters where it
