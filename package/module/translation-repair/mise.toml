@@ -47,6 +47,10 @@ run = "node src/corpus-run/sentinel-probe.ts"
 description = "Draw the stratified precision sample from settled artifacts into a grading sheet outside the repo (append -- --final for the gate sheet)"
 run = "node src/corpus-run/draw-sample.ts"
 
+[tasks."score-attribution"]
+description = "Report per-critic calibration from a run's settled artifacts: what each critic was asked, what it raised, and how often an accepted issue rested on it alone"
+run = "node src/corpus-run/score-attribution.ts"
+
 [tasks."score-agreement"]
 description = "Report precision off a graded sheet, plus agreement against blind pre-grades when they exist (override with -- --sheet PATH --pre-grades PATH)"
 run = "node src/corpus-run/score-agreement.ts"

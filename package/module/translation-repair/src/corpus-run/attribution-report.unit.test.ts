@@ -1,0 +1,270 @@
+/**
+ * Tests for the reader that turns recorded critic attribution into rates.
+ *
+ * Built alongside the writer on purpose. This pipeline's recurring failure is
+ * telemetry that is recorded and never read, and a data path with no reader is
+ * indistinguishable from one that was never built. These cases guard the two
+ * ways a reader can quietly lie about a population.
+ *
+ * The first is mixing eligibility with silence. An entry settled before
+ * attribution existed records no proposer for a claim its critics did raise, so
+ * averaging it in understates every critic at once, and "this critic raised
+ * nothing" becomes unreadable against "this entry could not have recorded it".
+ *
+ * The second is conflating self-repetition with agreement. One critic saying a
+ * thing twice and two critics saying it once produce the same claim, and the
+ * whole point of `#65` is which of those a duplicate came from.
+ *
+ * Fixtures are cat-themed invention.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  type AttributionEntry,
+  buildAttributionReport,
+} from '../../dist/final/node/index.mjs';
+
+/**
+ * Critic that raises most of the claims.
+ */
+const TABBY = 'hf:openai/gpt-oss-120b';
+
+/**
+ * Critic that is heard everywhere and rarely raises anything.
+ */
+const QUIET = 'hf:Qwen/Qwen3.6-27B';
+
+/**
+ * Claim both critics can propose.
+ */
+const NAP_CLAIM = 'issue/nap';
+
+/**
+ * Second claim identity.
+ */
+const PURR_CLAIM = 'issue/purr';
+
+/**
+ * Entry carrying attribution, with one chunk both critics were asked.
+ *
+ * @param proposers - proposers of the nap claim
+ *
+ * @param issueClaimIds - claims the single accepted issue represents
+ *
+ * @returns Eligible entry
+ *
+ * @example
+ * ```ts
+ * const entry = eligibleEntry({ proposers: [{ modelId: TABBY, emissionCount: 1, },], },);
+ * ```
+ */
+function eligibleEntry(
+  {
+    proposers,
+    issueClaimIds = [NAP_CLAIM,],
+  }: {
+    readonly proposers: readonly { readonly modelId: string; readonly emissionCount: number; }[];
+    readonly issueClaimIds?: readonly string[];
+  },
+): AttributionEntry {
+  return {
+    id: 'Whiskers',
+    chunkCritics: [
+      {
+        chunkIndex: 0,
+        heardCriticIds: [QUIET, TABBY,],
+        claimAttributions: [
+          {
+            claimId: NAP_CLAIM,
+            proposers,
+          },
+        ],
+      },
+    ],
+    issues: [
+      {
+        status: 'accepted',
+        claimIds: issueClaimIds,
+      },
+    ],
+  } as AttributionEntry;
+}
+
+await describe({
+  name: buildAttributionReport.name,
+  children: [
+    it({
+      name: 'EXCLUDES entries that carry no attribution rather than counting '
+        + 'them as critics that raised nothing, because an entry settled before '
+        + 'attribution existed records no proposer for claims its critics did '
+        + 'raise, and averaging it in understates every critic at once',
+      fn: async () => {
+        /**
+         * One eligible entry beside one settled before attribution existed.
+         */
+        const report = buildAttributionReport({
+          entries: [
+            eligibleEntry({ proposers: [{ modelId: TABBY, emissionCount: 1, },], },),
+            {
+              id: 'Mittens',
+              issues: [{ status: 'accepted', claimIds: [PURR_CLAIM,], },],
+            } as AttributionEntry,
+          ],
+        },);
+
+        expect(report.eligibleEntries,).toBe(1,);
+        expect(report.ineligibleEntries,).toBe(1,);
+        expect(report.chunks,).toBe(1,);
+        // The ineligible entry's accepted issue must not appear anywhere.
+        expect(
+          report.soleProposerAccepted + report.multiProposerAccepted
+            + report.unattributedAccepted,
+        ).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'gives a critic that was HEARD and raised nothing a row with a '
+        + 'real denominator, which is the whole reason the roster is recorded: '
+        + 'without it a quiet critic and an absent one are the same zero',
+      fn: async () => {
+        /**
+         * Entry where only one of two heard critics raised anything.
+         */
+        const report = buildAttributionReport({
+          entries: [eligibleEntry({
+            proposers: [{ modelId: TABBY, emissionCount: 1, },],
+          },),],
+        },);
+
+        /**
+         * Row for the critic that stayed silent.
+         */
+        const quiet = report.critics
+          .find(function isQuiet(critic,) {
+          return critic.modelId === QUIET;
+        },);
+
+        expect(quiet?.chunksHeard,).toBe(1,);
+        expect(quiet?.claimsRaised,).toBe(0,);
+        expect(quiet?.acceptedHits,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'separates SELF-REPETITION from agreement: one critic emitting a '
+        + 'claim twice counts as a sole proposer that repeated itself, never '
+        + 'as two critics agreeing, which is exactly what #65 asks of a '
+        + 'duplicate',
+      fn: async () => {
+        /**
+         * Entry where one critic said the same thing twice.
+         */
+        const repeated = buildAttributionReport({
+          entries: [eligibleEntry({
+            proposers: [{ modelId: TABBY, emissionCount: 2, },],
+          },),],
+        },);
+
+        expect(repeated.soleProposerAccepted,).toBe(1,);
+        expect(repeated.multiProposerAccepted,).toBe(0,);
+        expect(repeated.selfRepeatedAccepted,).toBe(1,);
+
+        /**
+         * Entry where two critics agreed once each.
+         */
+        const agreed = buildAttributionReport({
+          entries: [eligibleEntry({
+            proposers: [
+              { modelId: TABBY, emissionCount: 1, },
+              { modelId: QUIET, emissionCount: 1, },
+            ],
+          },),],
+        },);
+
+        expect(agreed.soleProposerAccepted,).toBe(0,);
+        expect(agreed.multiProposerAccepted,).toBe(1,);
+        expect(agreed.selfRepeatedAccepted,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'counts an accepted issue whose claim the index does not hold as '
+        + 'UNATTRIBUTED rather than as zero support, since on an eligible '
+        + 'entry that is a broken join and reporting it as a quiet critic '
+        + 'would hide the defect',
+      fn: async () => {
+        /**
+         * Accepted issue pointing at a claim no attribution covers.
+         */
+        const report = buildAttributionReport({
+          entries: [eligibleEntry({
+            proposers: [{ modelId: TABBY, emissionCount: 1, },],
+            issueClaimIds: [PURR_CLAIM,],
+          },),],
+        },);
+
+        expect(report.unattributedAccepted,).toBe(1,);
+        expect(report.soleProposerAccepted,).toBe(0,);
+        expect(report.multiProposerAccepted,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'counts only ACCEPTED issues toward hits, so a rejected claim '
+        + 'never credits the critic that raised it',
+      fn: async () => {
+        /**
+         * Entry whose only issue was rejected.
+         */
+        const report = buildAttributionReport({
+          entries: [{
+            ...eligibleEntry({ proposers: [{ modelId: TABBY, emissionCount: 1, },], },),
+            issues: [{ status: 'rejected', claimIds: [NAP_CLAIM,], },],
+          } as AttributionEntry,],
+        },);
+
+        expect(report.soleProposerAccepted,).toBe(0,);
+        expect(report.unattributedAccepted,).toBe(0,);
+        expect(
+          report.critics
+            .find(function isTabby(critic,) {
+            return critic.modelId === TABBY;
+          },)?.acceptedHits,
+        ).toBe(0,);
+        // Raising it still counts; only the ACCEPTED credit is withheld.
+        expect(
+          report.critics
+            .find(function isTabby(critic,) {
+            return critic.modelId === TABBY;
+          },)?.claimsRaised,
+        ).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'reports nothing rather than throwing when no entry carries '
+        + 'attribution, which is what every runs directory looks like until a '
+        + 'post-attribution pass settles its first entry',
+      fn: async () => {
+        /**
+         * Report over entries that all predate attribution.
+         */
+        const report = buildAttributionReport({
+          entries: [{ id: 'Mittens', issues: [], } as AttributionEntry,],
+        },);
+
+        expect(report.eligibleEntries,).toBe(0,);
+        expect(report.ineligibleEntries,).toBe(1,);
+        expect(report.critics,).toHaveLength(0,);
+      },
+    },),
+  ],
+},);

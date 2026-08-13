@@ -63,6 +63,16 @@ export {
   readHeadSha,
   resolveRunsDir,
 } from './corpus-run/run-config.ts';
+export { gatherAttributionEntries, } from './corpus-run/attribution-read.ts';
+export {
+  type AcceptedIssueView,
+  type AttributionEntry,
+  type AttributionReport,
+  buildAttributionReport,
+  type ChunkCriticView,
+  type CriticTally,
+  type ProposerView,
+} from './corpus-run/attribution-report.ts';
 export {
   discardSliceCache,
   listResumableEntries,
