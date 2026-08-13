@@ -7,6 +7,7 @@ import {
   gatherRelabelCases,
   type RelabelCase,
 } from './probe-relabel-case.ts';
+import { gatherControlCases, } from './probe-relabel-control.ts';
 import {
   createRunClient,
   resolveRunsDir,
@@ -25,12 +26,17 @@ import {
 // which leaves the corpus result unexplained: 2438 of 2571 prober verdicts
 // found nothing, including on every one of these regions.
 //
-// Two readings remain, and one paired run separates them. If withholding the
-// issue list lights these regions up, the list is doing far more damage on real
-// text than on a fixture, and the probe prompt is the thing to change. If both
-// arms stay dark, the label is exonerated and production damage is simply
-// harder to see than any fixture yet built, which makes the deterministic
-// preservation check the only credible safety gate.
+// The first run answered that: withholding the list took the damaged regions
+// from 0 of 15 prober verdicts raising anything to 7 of 15, with every region
+// drawing at least one admissible claim. The fixture understated the effect
+// because it carried ONE prior issue and these regions carry six to seventeen.
+//
+// That alone proves nothing, which is why the control arm exists. Every damaged
+// region is damaged by construction, so no claim raised there could be wrong,
+// and an unlabelled prober reporting the PRE-EXISTING defect would look exactly
+// like one finding the damage. Regions from the same entries that the reader did
+// NOT flag separate the two: a withheld arm equally loud there is re-reporting
+// old defects and the finding collapses.
 //
 // Reads corpus text through git at the pinned commit and writes nothing.
 
@@ -178,10 +184,29 @@ async function main(): Promise<void> {
     `RELABEL rebuilt ${String(cases.length,)} distinct damaged regions`,
   );
 
+  /**
+   * Regions from the same entries that the reader did NOT flag.
+   *
+   * The arm that decides whether the damaged result means anything: every
+   * damaged region is damaged by construction, so no claim raised there could
+   * be wrong, and only unflagged regions can show whether the withheld arm is
+   * detecting damage or re-reporting the defect the region was cut for.
+   */
+  const controls = await gatherControlCases({
+    manifestPath:
+      `${dir}/sample-manifest-milestone-three-precision-round-three.json`,
+    damaged: cases,
+  },);
+  console.log(
+    `RELABEL gathered ${String(controls.length,)} unflagged control regions`,
+  );
+
   // Sequential so this never competes with a running corpus pass for the
   // per-model stream slots.
   /* oxlint-disable no-await-in-loop -- sequential by design, see comment */
   for (const relabelCase of cases)
+    await probePair({ relabelCase, },);
+  for (const relabelCase of controls)
     await probePair({ relabelCase, },);
   /* oxlint-enable no-await-in-loop */
 
@@ -190,6 +215,13 @@ async function main(): Promise<void> {
       + 'region that reports damage only when the issue list is withheld is one '
       + 'the production prompt talks the probe out of. A region dark under both '
       + 'exonerates the label and indicts the difficulty of the judgement.',
+  );
+  console.log(
+    'NOTE a control line prints positions= empty. Read the withheld arm across '
+      + 'controls against the withheld arm across damaged regions: similar rates '
+      + 'mean the unlabelled prober is re-reporting pre-existing defects and the '
+      + 'damaged result proves nothing, and a much lower control rate means the '
+      + 'issue list is suppressing real detections.',
   );
 }
 
