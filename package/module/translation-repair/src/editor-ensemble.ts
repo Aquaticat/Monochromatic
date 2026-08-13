@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import {
   applyPatchOperations,
+  type PreservationMode,
   type PatchOperation,
   type PatchOutcome,
 } from './apply-patch.ts';
@@ -507,16 +508,19 @@ export function applyCandidate(
     targetText,
     envelopes,
     operations,
+    preservation,
   }: {
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
     readonly operations: readonly PatchOperation[];
+    readonly preservation: PreservationMode;
   },
 ): PatchOutcome {
   return applyPatchOperations({
     targetText,
     envelopes,
     operations,
+    preservation,
   },);
 }
 

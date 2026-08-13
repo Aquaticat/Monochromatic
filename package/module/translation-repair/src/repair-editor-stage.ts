@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { buildLicensedQuotes, } from './licensed-quotes.ts';
 import type { PatchOutcome, } from './apply-patch.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { buildEditorMessages, } from './edit-prompt.ts';
@@ -174,6 +175,18 @@ export async function runEditorStage(
   };
 
   /**
+   * Defect text each envelope's issues quoted, which the preservation gate
+   * treats as licensed to disappear.
+   */
+  const preservation = {
+    mode: 'enforce',
+    licensedQuotes: buildLicensedQuotes({
+      envelopes,
+      issues,
+    },),
+  } as const;
+
+  /**
    * One gated patch per heard editor, in roster order.
    */
   const built = buildEditorCandidates({
@@ -182,6 +195,7 @@ export async function runEditorStage(
     promptEnvelopes: plan.envelopes,
     targetText,
     envelopes,
+    preservation,
   },);
 
   /**
@@ -239,6 +253,7 @@ export async function runEditorStage(
     targetText,
     envelopes,
     operations: perEnvelope.operations,
+    preservation,
   },);
 
   /**

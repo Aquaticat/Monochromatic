@@ -1,5 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { checkPreservation, } from './preservation-check.ts';
+
 import { hashContent, } from './document-node.ts';
 import { restoreTypography, } from './restore-typography.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -41,6 +43,48 @@ export type PatchOperation = {
    */
   readonly newText: string;
 };
+
+/**
+ * One rejected operation with its scorecard-stable reason.
+ *
+ * @example
+ * ```ts
+ * const rejection: PatchRejection = { operation, reason: 'stale-base-hash', };
+ * ```
+ */
+/**
+ * Whether this application enforces the preservation gate, and with what
+ * licence.
+ *
+ * A DISCRIMINATED CHOICE rather than an optional map, so every caller states
+ * its intent. The naturalness lane rewrites whole paragraphs by design and has
+ * no accepted-issue quotes to license that, so an omitted map would silently
+ * make the gate reject exactly the work that lane exists to do.
+ *
+ * @example
+ * ```ts
+ * const preservation: PreservationMode = { mode: 'skip', };
+ * ```
+ */
+export type PreservationMode =
+  | {
+    /**
+     * Reject an operation that drops content no issue quoted.
+     */
+    readonly mode: 'enforce';
+
+    /**
+     * Defect text each envelope's issues quoted, keyed by envelope id. What an
+     * issue quoted is licensed to disappear.
+     */
+    readonly licensedQuotes: ReadonlyMap<string, readonly string[]>;
+  }
+  | {
+    /**
+     * Apply without the gate, for a stage licensed to rewrite wholesale.
+     */
+    readonly mode: 'skip';
+  };
 
 /**
  * One rejected operation with its scorecard-stable reason.
@@ -147,10 +191,12 @@ export function applyPatchOperations(
     targetText,
     envelopes,
     operations,
+    preservation,
   }: {
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
     readonly operations: readonly PatchOperation[];
+    readonly preservation: PreservationMode;
   },
 ): PatchOutcome {
   /**
@@ -261,6 +307,35 @@ export function applyPatchOperations(
     // Regions run to a median of 75 characters, so most carry no quote to learn
     // from, and a region-scoped rule stays silent exactly when an editor writes
     // a fresh contraction into a curly-quoted document.
+    if (preservation.mode === 'enforce') {
+      /**
+       * Whether the edit kept everything no issue asked it to change.
+       */
+      const preserved = checkPreservation({
+        before: envelope.baseText,
+        after: operation.newText,
+        licensedQuotes: preservation.licensedQuotes
+          .get(envelope.envelopeId,)
+          ?? [],
+      },);
+      if (!preserved.preserved) {
+        // Named in the reason so a scorecard can separate the two shapes: a
+        // vanished name or number is a different failure from a span replaced
+        // wholesale, and they call for different fixes upstream.
+        rejected.push({
+          operation,
+          reason: (preserved.lostDistinctive
+            .length
+            > 0)
+            ? `preservation-lost-distinctive (${preserved.lostDistinctive
+              .join(', ',)})`
+            : `preservation-bulk-loss (${preserved.lossFraction
+              .toFixed(2,)})`,
+        },);
+        continue;
+      }
+    }
+
     applied.push({
       ...operation,
       newText: restoreTypography({

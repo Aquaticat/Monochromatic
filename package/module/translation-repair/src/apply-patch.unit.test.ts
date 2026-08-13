@@ -223,6 +223,7 @@ await describe({
               newText: 'It purrs at dusk. ',
             },
           ],
+          preservation: { mode: 'skip', },
         },);
         expect(outcome.applied,).toHaveLength(2,);
         expect(outcome.rejected,).toHaveLength(0,);
@@ -281,6 +282,7 @@ await describe({
               newText: 'tabby rests',
             },
           ],
+          preservation: { mode: 'skip', },
         },);
         expect(outcome.rejected.map(function toReason(rejection,) {
           return rejection.reason;
@@ -326,6 +328,7 @@ await describe({
               newText: 'kitten dozes',
             },
           ],
+          preservation: { mode: 'skip', },
         },);
         expect(outcome.rejected[0]?.reason,).toBe('envelope-drift',);
         expect(outcome.patchedText,).toBe(`PREFIX ${TARGET_TEXT}`,);
@@ -359,6 +362,7 @@ await describe({
             targetText: TARGET_TEXT,
             envelopes: overlapping,
             operations: [],
+            preservation: { mode: 'skip', },
           },);
         },).toThrow(EnvelopeOverlapError,);
       },

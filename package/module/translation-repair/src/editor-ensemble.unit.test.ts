@@ -85,6 +85,7 @@ function candidateFor(
           newText,
         },
       ],
+      preservation: { mode: 'skip', },
     },),
   };
 }
@@ -255,6 +256,7 @@ await describe({
               newText: agreed,
             },
           ],
+          preservation: { mode: 'skip', },
         },);
 
         /** One editor patch plus an identical composite from another model. */

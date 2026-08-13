@@ -2,6 +2,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   applyPatchOperations,
+  type PreservationMode,
   type PatchOutcome,
 } from './apply-patch.ts';
 import {
@@ -76,12 +77,14 @@ export function buildEditorCandidates(
     promptEnvelopes,
     targetText,
     envelopes,
+    preservation,
   }: {
     readonly voices: readonly HeardVoice<EditorReportWire>[];
     readonly editorModelIds: readonly SyntheticModelId[];
     readonly promptEnvelopes: readonly EditableEnvelope[];
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
+    readonly preservation: PreservationMode;
   },
 ): EditorCandidateSet {
   /**
@@ -114,6 +117,7 @@ export function buildEditorCandidates(
           targetText,
           envelopes,
           operations: resolution.operations,
+          preservation,
         },),
       },
       findings: resolution.findings

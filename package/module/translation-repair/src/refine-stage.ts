@@ -234,6 +234,11 @@ export async function runRefineStage(
         targetText: repairedText,
         envelopes,
         operations: gated,
+        // EXEMPT, stated rather than defaulted. This lane rewrites a whole
+        // paragraph for naturalness and has no accepted-issue quotes to license
+        // that, so enforcing preservation here would reject exactly the work
+        // the lane exists to do.
+        preservation: { mode: 'skip', },
       },);
       if (patch.applied
         .length

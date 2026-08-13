@@ -152,6 +152,7 @@ await describe({
           promptEnvelopes: ENVELOPES,
           targetText: TARGET_TEXT,
           envelopes: ENVELOPES,
+          preservation: { mode: 'skip', },
         },);
 
         expect(candidates.map(function toId(candidate,) {
@@ -211,6 +212,7 @@ await describe({
             promptEnvelopes: ENVELOPES,
             targetText: TARGET_TEXT,
             envelopes: ENVELOPES,
+            preservation: { mode: 'skip', },
           },);
 
           expect(candidates.map(function toId(candidate,) {
@@ -245,6 +247,7 @@ await describe({
           promptEnvelopes: ENVELOPES,
           targetText: TARGET_TEXT,
           envelopes: ENVELOPES,
+          preservation: { mode: 'skip', },
         },);
 
         expect(candidates.length,).toBe(2,);
@@ -278,6 +281,7 @@ await describe({
           promptEnvelopes: ENVELOPES,
           targetText: TARGET_TEXT,
           envelopes: ENVELOPES,
+          preservation: { mode: 'skip', },
         },);
 
         expect(findings,).toStrictEqual([],);
@@ -313,6 +317,7 @@ await describe({
           promptEnvelopes: ENVELOPES,
           targetText: TARGET_TEXT,
           envelopes: ENVELOPES,
+          preservation: { mode: 'skip', },
         },);
 
         expect(findings.length,).toBe(1,);
@@ -344,6 +349,7 @@ await describe({
           promptEnvelopes: ENVELOPES,
           targetText: TARGET_TEXT,
           envelopes: ENVELOPES,
+          preservation: { mode: 'skip', },
         },);
 
         expect(findings.length,).toBe(2,);
@@ -366,6 +372,7 @@ await describe({
           promptEnvelopes: ENVELOPES,
           targetText: TARGET_TEXT,
           envelopes: ENVELOPES,
+          preservation: { mode: 'skip', },
         },);
 
         expect(candidates,).toStrictEqual([],);

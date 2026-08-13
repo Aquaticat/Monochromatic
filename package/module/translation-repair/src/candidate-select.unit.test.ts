@@ -331,6 +331,7 @@ function candidateFor(
           newText,
         },
       ],
+      preservation: { mode: 'skip', },
     },),
   };
 }
