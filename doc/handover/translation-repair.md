@@ -7185,3 +7185,26 @@ An earlier note in this document gave the control range as 12 to 63 characters;
 Control selection now orders unflagged regions by distance from the damaged
  region's replaced length in the same entry, which removes the gap by
  construction rather than hoping it does not matter.
+
+### Whether length-matched controls exist at all, per entry
+
+Measured over every distinct edited region each entry has, with the damaged
+ region's own length shown for comparison and itself excluded from the pool:
+
+```text
+entry             damaged  pool  nearest available
+Acheron              189      3  32, 12
+Anilovr               99     20  95, 120
+AmbeR_the_anpa        60     13  61, 51
+Chinatsu_Suzuki       79     10  84, 62
+Dethelly             268     52  316, 149
+```
+
+Four of the five entries match closely. Acheron cannot be matched at all: the
+ whole entry carries three edited regions, and once its damaged 189-character
+ region is excluded the only candidates are 32 and 12 characters.
+
+So run 003's control arm is well matched except for one entry, and that entry's
+ pair is a known exception rather than a silent weakness. Excluding Acheron, the
+ controls run 51 to 316 characters against damaged regions of 60 to 268, where
+ run 002's controls had a median of 41 against a damaged median of 99.
