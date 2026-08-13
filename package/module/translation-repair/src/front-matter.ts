@@ -321,7 +321,15 @@ export function splitFrontMatter({ text, }: { readonly text: string; },): SplitM
    * Candidate index of newline beginning EOF-terminated closing fence.
    */
   const eofCloseStart = text.length - closeEof.length;
-  if (text.endsWith(closeEof,) && (eofCloseStart >= (open.length - 1))) {
+
+  // The closing fence's line break may be the opening fence's own, which is
+  // what empty front matter looks like, but it may not start before it.
+  //
+  // That boundary is where the opening fence's TEXT ends, never `open.length`
+  // minus one: subtracting one assumes a single-character terminator, so under
+  // CRLF the bound landed one past the line break and `---\r\n---` was refused
+  // outright. Every other CRLF shape parsed, which is what kept this hidden.
+  if (text.endsWith(closeEof,) && (eofCloseStart >= FRONT_MATTER_FENCE.length)) {
     return buildSplit({
       text,
       closeStart: eofCloseStart,

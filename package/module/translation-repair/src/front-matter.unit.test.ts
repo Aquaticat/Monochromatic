@@ -145,5 +145,48 @@ await describe({
         );
       },
     },),
+
+    it({
+      name: 'reads EMPTY front matter closing at end of input under CRLF, the '
+        + 'one shape the first CRLF fix still refused. Its guard bounded the '
+        + 'closing fence by the opening fence LENGTH minus a single character, '
+        + 'which assumes a one-character terminator, so under CRLF the bound '
+        + 'sat one past the line break and the document reported no front '
+        + 'matter at all. Every other CRLF shape parsed, which is exactly what '
+        + 'kept it hidden',
+      fn: async () => {
+        /**
+         * Both spellings of a document that is nothing but empty front matter.
+         */
+        const lf = splitFrontMatter({ text: '---\n---', },);
+
+        /**
+         * Windows-flavoured counterpart, which used to report no front matter.
+         */
+        const crlf = splitFrontMatter({ text: '---\r\n---', },);
+
+        expect(lf.frontMatter?.data,).toBe(null,);
+        expect(crlf.frontMatter?.data,).toBe(null,);
+        expect(crlf.body,).toBe('',);
+        expect(crlf.bodyOffset,).toBe('---\r\n---'.length,);
+      },
+    },),
+
+    it({
+      name: 'keeps every other CRLF closing shape reading as it did, since the '
+        + 'guard being relaxed is what stops a closing fence being found before '
+        + 'the opening one has ended',
+      fn: async () => {
+        expect(
+          splitFrontMatter({ text: '---\r\nname: Ara\r\n---', },).frontMatter?.data,
+        ).toEqual({ name: 'Ara', },);
+        expect(
+          splitFrontMatter({ text: '---\r\n---\r\nBody\r\n', },).frontMatter?.data,
+        ).toBe(null,);
+        expect(
+          splitFrontMatter({ text: '---\r\nname: Ara\r\n', },).frontMatter,
+        ).toBe(undefined,);
+      },
+    },),
   ],
 },);
