@@ -117,6 +117,14 @@ const result = await repairTranslation({
   Model and corpus text reaches those sheets fenced
   (`fenceForMarkdown`), since a replacement is arbitrary text crossing into
   Markdown grammar and can otherwise invent a heading or a grade box.
+  A sheet is READ before it is handed to anyone, item by item, including the
+  reasoning it shows the grader.
+  A sheet whose generator ran is not a sheet that asks a sensible question:
+  the first introduced-defect verification sheet reached the user with all
+  eight of its reviewer claims argued against the pre-edit translation rather
+  than the original, one of them reporting a corrected mistranslation as
+  damage, and nothing in the pipeline could have caught that because every
+  stage had succeeded.
 - **A grade is bound to the draw it was written on.**
   Sheets print no issue ids, deliberately, because a hash is noise a human has
   to read past, so grades are joined back to machine verdicts BY POSITION.
