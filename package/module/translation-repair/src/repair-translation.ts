@@ -125,8 +125,15 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * the selection path carries its findings at all: `selectBestCandidate` built
  * them and every caller discarded them, so a judge going silent left no trace.
  * A version-18 slice under-counts on both.
+ *
+ * Version 20 finishes the audit that found version 19. The introduced-defect
+ * probe emitted findings and BOTH its live callers dropped them, on the
+ * accuracy path and in the naturalness lane, which is the one stage where a
+ * lost voice is least distinguishable from a clean result. Every producer of
+ * findings is now consumed except `derivability-probe.ts`, which is reached
+ * only by the recall benchmark and writes into no per-entry artifact.
  */
-const SLICE_CACHE_VERSION = 19;
+const SLICE_CACHE_VERSION = 20;
 
 /**
  * Completion status of one repair run;

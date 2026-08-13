@@ -253,6 +253,13 @@ export async function runRefinePhase(
       l,
     },);
 
+    // Same omission as the accuracy path: the refinement probe fans out to a
+    // roster and loses voices like every other stage, and nothing carried what
+    // it lost. Pushed here rather than beside the refine-stage findings above
+    // because the probe has not run at that point.
+    collected.findings
+      .push(...refinementDefects.findings,);
+
     collected.outcomes
       .push({
         ...outcome,

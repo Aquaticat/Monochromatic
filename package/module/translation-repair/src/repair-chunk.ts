@@ -420,6 +420,12 @@ export async function repairChunk(
       ...stageFindings,
       ...editor.findings,
       ...checker.findings,
+      // The probe fans out to a roster like every other stage and loses voices
+      // like every other stage, and its findings were dropped here. That is
+      // the exact complaint of the prober calibration work: a quiet stage
+      // reads identically to a clean run, so a prober that went silent looked
+      // like a prober that found nothing.
+      ...introducedDefects.findings,
     ],
   };
 }
