@@ -111,6 +111,48 @@ B > C > A.
  the majority of the prose the lane was built for, on a criterion that
  correlates with nothing about quality.
 
+## The lane also fails silently on an eighth of the corpus
+
+Found 2026-08-13, after the reach measurement, by censusing findings across all
+ 56 settled entries.
+
+The refiner is a ONE-model stage, so its quorum is one voice and losing that
+ voice loses the stage. Across 129 refiner invocations, 34 heard nothing:
+
+```text
+  entries where the refiner answered every time        49
+  entries where the refiner answered NOT ONCE           7
+
+  gqt              10 invocations, 10 silent, 0 rewrites selected
+  chunchun_yudong   7 invocations,  7 silent, 0 selected
+  Xu_Yushu          6 invocations,  6 silent, 0 selected
+  cheonwoomaeng     5 invocations,  5 silent, 0 selected
+  a2581911655       3 invocations,  3 silent, 0 selected
+  hakureico         2 invocations,  2 silent, 0 selected
+  TLL1122           1 invocation,   1 silent, 0 selected
+```
+
+The failure is per-ENTRY and total, not a sporadic dropout. Every affected
+ entry finished with `status` of `repaired`, so no deadline abort explains it,
+ and the affected entries span 1498 to 9351 target characters and 33 to 143
+ minutes, so neither size nor duration separates them from the rest. Entries
+ that are not affected report `1/1 heard` throughout.
+
+So the lane's real reach is smaller than the 12.0% eligibility figure suggests:
+ those blocks were eligible, were selected, and were then never rewritten,
+ because the only model that could rewrite them never answered.
+
+The cause is not recoverable from the artifacts. `attemptStageCall` collapses
+ every loss (refusal, schema mismatch, transport failure, timeout) into
+ `heard: false`, warns with the reason, and discards it. The finding records
+ only `stage-quorum-unmet (refiner 0/1)`, and nothing reads that finding.
+
+This bears on the decision rather than settling it. Whichever option is chosen,
+ a lane that silently does nothing on an eighth of the corpus is worth less
+ than its reach figure implies, and a one-model roster is why one loss costs
+ the whole stage. Option B triples the eligible blocks but would triple them
+ against the same single voice.
+
 ## What has to be settled first
 
 -   Whether changing line structure counts as damage. The introduced-defect
