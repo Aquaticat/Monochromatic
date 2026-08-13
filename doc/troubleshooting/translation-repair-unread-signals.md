@@ -548,3 +548,51 @@ Raised here rather than acted on, on scope rather than on cost. It would change
 The quote-anchoring findings are recorded, and now carry a diagnosis, but
  nothing acts on them either.
 Whether any of these should is a design question this document does not settle.
+
+## The `#72` re-open alarm was a pooling artifact, and the closure stands
+
+Fired 2026-08-13 by the run monitor: "`pass13` `#72` VERDICT AT RISK: 8 of 58
+ wrap-explained. The closure assumed about 3%; this is nearer 10%."
+
+The figure is arithmetically right and the conclusion is wrong. It pools two
+ populations that the artifact tree keeps separate:
+
+```text
+  artifacts     39 quote-not-found   1 collapsible    2.6%
+  slice-cache   19 quote-not-found   7 collapsible   36.8%
+  pooled        58                   8              13.8%
+```
+
+`#72` was closed on the SETTLED-ARTIFACT population, and that population reads
+ 2.6% here against the roughly 3% the closure assumed. It is the same number.
+The closure stands and needs no re-taking.
+
+This is the third time this session that a share computed over the wrong
+ population produced a false alarm, after the needs-human share and the
+ quote-side split. The tell is identical each time: a rate that moves by a
+ factor of three or more between a small reading and an established one, where
+ the small reading silently spans a different set of things.
+
+THE MONITOR SHOULD BE FIXED RATHER THAN THE DOCUMENT. It globs every `.json`
+ under the run root, so it will keep pooling `slice-cache` with `artifacts` on
+ every future check, and every future firing will overstate the same way.
+
+### The slice-cache reading is a real leading indicator, not noise
+
+36.8% against 2.6% is not a rounding difference, and it deserves an explanation
+ rather than a dismissal.
+
+The likely one is timing rather than behaviour. `artifacts` holds SETTLED
+ entries and `slice-cache` holds slices of entries still in flight, so the cache
+ is a window onto work that has not yet reached an artifact. If those 7
+ collapsible failures settle as they stand, the settled share rises and `#72`
+ genuinely would need re-taking.
+
+Held as a WATCH ITEM rather than a finding, for two reasons. The cache total is
+ 19 observations, which is small enough that a couple of entries dominate it.
+And the direction is not established: nothing here shows a cached failure
+ reaching an artifact unchanged, which is the step the inference needs.
+
+Re-read both populations separately when `pass13` settles more entries. The
+ comparison that matters is artifact-share then against artifact-share now, and
+ it is the only one that speaks to the closure.
