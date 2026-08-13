@@ -7416,3 +7416,42 @@ A guard proven by removal proves the guard RUNS. It does not prove the guard
  so the welding accounted for exactly ONE pair. The premise stands and the
  largest gaps are unchanged, including a section with 76 source blocks against
  5 target blocks.
+
+### What one entry's section alignment actually looks like
+
+`XingZ60`, rebuilt with the corrected parser. Thirteen aligned section pairs,
+ source against target, in blocks and characters:
+
+```text
+pair  0    10 blocks /  558 chars    5 blocks /  1024 chars
+pair  1     5 blocks /  223 chars    8 blocks /  1042 chars
+pair  2     2 blocks /   89 chars    4 blocks /   612 chars
+pair  3    62 blocks / 4641 chars    1 block  /    22 chars   <- heading only
+pair  4     2 blocks /   73 chars    2 blocks /   137 chars
+pair  5    20 blocks / 2908 chars   62 blocks / 14080 chars
+pair  6     7 blocks /  763 chars    2 blocks /   105 chars
+pair  7    18 blocks /  613 chars   20 blocks /  9551 chars
+pair  8     5 blocks /  255 chars    6 blocks /  1712 chars
+pair  9     9 blocks /  643 chars   18 blocks /  1434 chars
+pair 10    76 blocks / 3483 chars    5 blocks /   719 chars
+pair 11     6 blocks /  915 chars    9 blocks /  1931 chars
+pair 12    23 blocks / 1459 chars   14 blocks /   933 chars
+```
+
+Pair 3 is the sharpest case in the corpus so far. Its entire English side is the
+ string `## Memories by Friends`: a heading with 4641 characters of memorial
+ essay untranslated beneath it. The pipeline treats that as a translation with
+ defects in it.
+
+The gap runs BOTH ways, which the earlier framing missed. Pair 7 holds 613
+ characters of original against 9551 of translation, and pair 5 holds 2908
+ against 14080. A translation five to fifteen times its original is not
+ explained by English being wordier than Chinese, so either those sections carry
+ content the original does not, or section alignment is pairing the wrong ones.
+Neither has been established, and the artifacts cannot settle it because they
+ were written before the parser fix.
+
+This matters for `#70` beyond the untranslated case: a re-design premised on
+ "translate what is missing" answers pair 3 and pair 10, and says nothing about
+ pair 7. Whatever shape is proposed has to state what it does when the
+ translation carries far MORE than the original.
