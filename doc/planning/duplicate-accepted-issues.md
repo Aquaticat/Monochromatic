@@ -58,20 +58,39 @@ Cross-category pairs are the minority and some are legitimately distinct:
  a passage can be both mistranslated and emotionally flattened.
 Same-category-same-span is not that.
 
-## The cost is real work done twice
+## The cost is NOT duplicated work, and the first version of this said it was
+
+An earlier revision claimed the editor repaired each sentence twice, reading
+ "both copies carried repair regions" as two repairs.
+That was wrong, and the correction matters more than the original claim.
 
 ```text
-duplicate-span issues that shipped a repair          564 of 570
-duplicate pairs where BOTH copies carried regions    567
+duplicate pairs served by the SAME repair envelope   567
+duplicate pairs served by DIFFERENT envelopes          0
+duplicate pairs where one copy had no envelope         3
 ```
 
-So this is not bookkeeping.
-The editor was asked to repair the same sentence twice, the checkers verified
- both, and the introduced-defect probe judged both.
-Every stage after adjudication paid for each copy.
+Every one of them shares an envelope.
+Both issues point at the same repair because that is how a merged envelope is
+ recorded: one envelope names every issue it serves, so both copies list the
+ same regions and a naive read counts one repair as two.
 
-Spread rather than concentrated: 44 of 54 entries carry at least one, so no
- single bad entry explains it.
+The pipeline therefore ALREADY collapses these at the layer where the cost
+ would be, and merging is pervasive by design:
+
+```text
+accepted issues served by one repair envelope
+
+  median 1   p90 7   max 28
+  envelopes serving more than one issue: 395 of 857  (46.1%)
+```
+
+So the editor writes one repair, the checkers verify one repair, and the probe
+ judges one region.
+No model work is duplicated.
+
+Spread rather than concentrated: 44 of 54 entries carry at least one duplicate,
+ so no single bad entry explains the issue-level count either.
 
 ## What it does to precision
 
@@ -83,72 +102,85 @@ That does not bias precision in a knowable direction, because a duplicated
 
 Whether that is a distortion worth correcting depends on what the number is
  FOR.
-As "what fraction of what we ship is right", counting duplicates is correct,
- since the pipeline really does ship both.
-As "what fraction of the defects we find are real", it is wrong, since one
- defect is being counted twice.
+As "what fraction of the defects we find are real", counting duplicates is
+ wrong, since one defect is counted twice.
+As "what fraction of what we ship is right", the honest unit is the ENVELOPE
+ rather than the issue, because an envelope is what ships: one repair serves a
+ median of 1 accepted issue but a p90 of 7 and a maximum of 28.
+
+That maximum is the part worth pausing on.
+An entry whose repairs each serve many issues contributes far more issues than
+ envelopes, so an issue-denominated rate weights it far above an entry whose
+ repairs serve one issue each, without anyone choosing that weighting.
 Both readings have been used in this project, which is itself worth settling.
 
 ## Options
 
+### Option C: count by envelope, and leave the pipeline alone
+
+Change nothing about what the pipeline emits.
+Report issue-denominated rates alongside envelope-denominated ones, and draw
+ grading samples over envelopes rather than issues.
+
+Pros:
+ targets the harm that is actually there, which is counting rather than work;
+ risks nothing, since no stage changes behaviour;
+ keeps the corroboration evidence, which two critics independently claiming one
+ span really is;
+ envelope counts are already recorded in every artifact, so this is a reader
+ change rather than a pipeline change.
+
+Cons:
+ issue counts stay inflated wherever someone reads them without the envelope
+ figure beside them;
+ the adjudication panel still cannot see the agreement.
+
+### Option B: collapse on exact span equality and category equality
+
+Merge accepted issues whose spans match exactly and whose categories agree.
+
+Pros:
+ makes the issue count mean what a reader assumes it means;
+ provably cannot merge defects sitting at different offsets;
+ catches 412 of the 570.
+
+Cons:
+ buys no model work back, since the envelope already merged them;
+ discards the fact that two critics agreed, unless the merge deliberately keeps
+ both claim texts;
+ changes what every existing measurement counted, so prior numbers stop
+ comparing for no operational gain.
+
 ### Option A: collapse on span overlap at the accept gate
 
-Merge accepted issues whose spans overlap and whose categories match, keeping
- the strongest severity and both claim texts as evidence.
+The wider key: merge where spans overlap rather than match.
 
 Pros:
- removes the duplicated work at the point where it is cheapest, before the
- editor;
- the accept gate already merges clusters, so the mechanism exists;
- makes every downstream count mean one defect.
+ catches all 570 including the 158 that overlap without matching.
 
 Cons:
- overlap is not identity, so a genuine second defect in one sentence would be
- merged away;
- changes what every existing measurement counted, so prior numbers stop
- comparing.
-
-### Option B: collapse only on exact span equality and category equality
-
-The narrow version. Merge only where spans match exactly.
-
-Pros:
- provably safe against merging distinct defects at different offsets;
- still catches 412 of the 570, which is the bulk;
- the smallest change that could work.
-
-Cons:
- misses the 158 that overlap without matching exactly;
- an off-by-one in a critic's offsets defeats it entirely.
-
-### Option C: leave the pipeline alone and report duplicates as telemetry
-
-Count them, surface them per entry, decide later.
-
-Pros:
- costs nothing and risks nothing;
- keeps every existing measurement comparable;
- a duplicate is evidence that two critics independently saw the same thing,
- which is corroboration and might be worth keeping as a signal.
-
-Cons:
- the duplicated editor, checker and probe work keeps being paid for;
- every issue-denominated rate keeps double-counting.
+ everything wrong with B, plus overlap is not identity, so a genuine second
+ defect in one sentence would be merged away and silently lost.
 
 ## Ranking
 
-B > C > A.
+C > B > A.
 
-**B over C** because 15.5% of accepted issues driving duplicate repairs is a
- real cost being paid every pass, and exact-span-and-category equality is a
- conservative enough key that it cannot merge two defects sitting at different
- offsets. C is the safer choice only if the corroboration signal turns out to be
- worth more than the wasted work, and nothing has measured that.
+This ranking is the reverse of the first revision's, and the envelope
+ measurement is why.
+That revision ranked B first because duplicates looked like duplicated editor,
+ checker and probe work; once every pair turned out to share one envelope, the
+ argument for changing pipeline behaviour went with it.
 
-**C over A** because A's overlap key is the one that can destroy information.
- Two genuinely distinct defects in one sentence would be merged and one of them
- silently lost, and a lost defect is invisible in exactly the way this project
- keeps being bitten by. C wastes work; A can be wrong.
+**C over B** because the harm is now known to be confined to counting, and a
+ counting problem is fixed by counting differently rather than by changing what
+ the pipeline emits. B pays a real cost, breaking comparability with every
+ measurement taken so far, and buys back no model work at all.
+
+**B over A** because A's overlap key can merge two genuinely distinct defects
+ and lose one, and a lost defect is invisible in exactly the way this project
+ keeps being bitten by. Both share the same weak motivation; A additionally can
+ be wrong.
 
 ## What must be settled first
 
