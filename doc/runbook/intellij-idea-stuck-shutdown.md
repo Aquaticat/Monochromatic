@@ -271,6 +271,7 @@ TODO
     If a process survives SIGKILL,
     stop this runbook and do not delete `.lock` or `.port` files.
     Save work in unrelated applications and use KDE's normal **Restart** action.
+    The KDE login screen should appear after the restart.
     After login,
     resume at **Setup** step 5 to restore the shell variables before continuing.
 20. Locate the Toolbox desktop entry whose `Exec` line names the current IDEA binary:
