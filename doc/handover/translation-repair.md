@@ -8541,3 +8541,61 @@ hard-break exclusions                  12
 So the lane may now touch roughly 3.4 times the prose, and the precise rule
  still refuses genuine authored breaks. `multi-line` no longer appears as a
  reason at all.
+
+## The block-count gap re-measured under the forced aligner
+
+The 60-of-172 figure was computed while alignment distributed sections
+ proportionally by character fraction. `#71` established that this cannot
+ express absence and so slid whole documents, which made the number describe
+ alignment quality as much as translation coverage. `#69` and `#70` both rest
+ on it, so it needed recomputing before either could be decided.
+
+Recomputed over all 92 entries carrying both sides, with the shipped
+ `alignDocumentSections`:
+
+```text
+aligned pairs                    275   (was 172)
+differing in block count          85   30.9%   (was 60 of 172, 34.9%)
+identical                        190
+findings: structure-mismatch      21
+findings: sections-merged          0   (was the mechanism behind the old number)
+```
+
+### What changed, and what did not
+
+The RATE barely moved, from 34.9% to 30.9%. Sections whose translation covers a
+ fraction of their source are real, and the premise behind `#69` and `#70`
+ survives in that sense.
+
+The PAIR COUNT rose by more than half, 172 to 275, and `sections-merged` fell to
+ zero. That is the whole difference in one line: proportional merging welded
+ several source sections into one pair, so the old denominator counted welded
+ blobs where the new one counts sections.
+
+The headline example did not survive. The recorded worst case was a section with
+ 76 source blocks against 5 target blocks, cited as the clearest evidence that
+ the pipeline is repairing something that was never translated. Under correct
+ pairing that section does not exist. The largest gaps now are:
+
+```text
+shi_Yumiaoya   15 against 1
+shi_Yumiaoya   14 against 1
+shi_Yumiaoya   11 against 1
+shi_Yumiaoya   12 against 5
+mikaela_khara  18 against 14
+Aniloviraw     24 against 21
+```
+
+Four of the six worst are one entry, and its id begins `shi_`, so verse
+ formatting rather than missing translation is a live alternative reading for
+ those. Nobody has checked; it is recorded here as the next thing to look at
+ rather than as a conclusion.
+
+### Limitation of this recompute, stated plainly
+
+`alignDocumentSections` returns paired chunks, so a section the aligner REFUSED
+ appears in no pair and is not counted in either column. The 21
+ `structure-mismatch` findings are the only signal of refusal in this
+ measurement, and they count entries rather than sections. A gap figure that
+ accounted for refusals separately would need the aligner's steps, not its
+ pairs.
