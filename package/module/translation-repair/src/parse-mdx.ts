@@ -26,8 +26,6 @@ export class MdxParseError extends Error {
    *
    * @param cause - underlying micromark/remark parser error
    *
-   * @mutates cause - `super` may invoke a getter or proxy trap while storing supplied cause
-   *
    * @example
    * ```ts
    * new MdxParseError({ cause: error, },);

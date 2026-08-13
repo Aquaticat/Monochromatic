@@ -94,8 +94,6 @@ export class CorpusReadError extends Error {
    *
    * @param cause - underlying subprocess failure carrying git stderr
    *
-   * @mutates cause - `super` may invoke a getter or proxy trap while storing supplied cause
-   *
    * @example
    * ```ts
    * new CorpusReadError({ detail: 'people/ at deadbeef', cause: error, },);

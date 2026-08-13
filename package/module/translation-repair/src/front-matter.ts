@@ -69,8 +69,6 @@ export class FrontMatterParseError extends Error {
    *
    * @param cause - underlying YAML parser error
    *
-   * @mutates cause - `super` may invoke a getter or proxy trap while storing supplied cause
-   *
    * @example
    * ```ts
    * new FrontMatterParseError({ cause: error, },);

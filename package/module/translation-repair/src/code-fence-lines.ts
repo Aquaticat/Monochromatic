@@ -6,11 +6,19 @@
 // rewrites the document being repaired, which is the one thing a
 // length-preserving mask exists to avoid.
 //
-// Every judgement here is biased toward reporting a line as fenced. A line
-// wrongly reported fenced merely goes unmasked, which is the behaviour that
-// shipped before masking existed; a line wrongly reported unfenced can have its
-// content silently rewritten. The two errors are not comparable, so ambiguity
-// resolves toward the harmless one.
+// Ambiguity resolves toward reporting a line as fenced wherever there is a
+// choice. A line wrongly reported fenced merely goes unmasked, which is the
+// behaviour that shipped before masking existed; a line wrongly reported
+// unfenced can have its content silently rewritten. The two errors are not
+// comparable.
+//
+// That is a preference, not a guarantee, and one gap is known. CommonMark
+// measures fence indentation from the enclosing CONTAINER, while this reads it
+// from the line start, so a fence inside a list item whose content column is
+// four or more reads as unfenced here. An invisible-only line inside that block
+// would then be masked, which is the corrupting direction. Container tracking
+// is what closes it, and the pinned corpus contains no fenced code blocks at
+// all, so nothing is bought by building it yet.
 
 /**
  * Fewest marker characters a fence needs.

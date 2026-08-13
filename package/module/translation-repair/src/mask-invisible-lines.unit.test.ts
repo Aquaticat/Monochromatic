@@ -32,8 +32,9 @@ await describe({
     it({
       name: 'blanks a line holding only a byte-order mark, which is what lets '
         + 'the paragraph break return. Such a line is NOT blank to CommonMark, '
-        + 'so it welds the paragraphs either side of it into one block, and one '
-        + 'corpus translation parses to 32 blocks instead of 33 because of it',
+        + 'so it welds the paragraphs either side of it into one block: the '
+        + 'corpus translation carrying three of them parses to 29 blocks '
+        + 'welded and 32 masked, measured through parseDocument at the pin',
       fn: async () => {
         expect(maskInvisibleLines({ text: `Alpha.\n${MARK}\nBeta.\n`, },),)
           .toBe('Alpha.\n \nBeta.\n',);
