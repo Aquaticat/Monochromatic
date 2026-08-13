@@ -324,6 +324,37 @@ So the finer-grained pass turned up no second aligner. That is the useful
  outcome: the unwired-MODULE check earns its keep, and the unread-FIELD check
  did not, at least on these two types.
 
+## What the three unpaired sections actually are
+
+`#70` blocks this proposal, and it is stated as "an unpaired source section
+ needs a destination". That is abstract. There are exactly three of them at this
+ pin, and they are not one problem:
+
+```text
+  XingZ60  ### 其十：锦心          915 chars, 12 body lines, opens with an
+                                   HTML <details> disclosure block
+  XingZ60  ## 致曾划过夜空的流星    1459 chars, 22 body lines, prose
+  XIEPT2   (To-Do)                    7 chars, ZERO body lines
+```
+
+The `XIEPT2` one needs no decision. It is a seven-character placeholder with no
+ body, sitting in the English where the Chinese has a section. There is nothing
+ to translate into it and nothing to lose by leaving it unpaired, so it does
+ not belong in the same question as the other two.
+
+That leaves TWO genuinely untranslated sections, 2374 characters between them,
+ both in ONE entry. So `#70`'s blast radius is a single document's trailing
+ pair, not a corpus-wide policy.
+
+The 915-character one is also the "915 characters against nothing" shape the
+ handover cites as unrepairable. Worth knowing that its body opens with an HTML
+ disclosure block rather than prose, so whatever policy is chosen has to survive
+ markup and not only sentences.
+
+None of this decides the question. It shrinks it: the choice is what to do with
+ two trailing sections of one entry, with a placeholder that can be dropped from
+ consideration entirely.
+
 ## Verification notes
 
 Both load-bearing claims were checked at the level the recommendation needs,
