@@ -8,7 +8,7 @@
 // ```
 package dev.monochromatic.musicplayer
 
-// What:     `internal enum class PageControlStyle` declares three fixed page-navigation
+// What:     `internal enum class PageControlStyle` declares four fixed page-navigation
 //           treatments visible inside this app module. Sibling shapes could be a string
 //           union or sealed class; an enum gives stable `.name` strings for preferences.
 // Why:      The settings page needs mutually exclusive typed choices that can be persisted
@@ -16,7 +16,7 @@ package dev.monochromatic.musicplayer
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type PageControlStyle = 'RADIO' | 'MD1_TABS' | 'ROUNDED_BUTTONS';
+// type PageControlStyle = 'RADIO' | 'MD1_TABS' | 'ROUNDED_BUTTONS' | 'SEGMENTED_BUTTONS';
 // ```
 /**
  * Defines page-control style choices shared by UI and preference persistence.
@@ -50,7 +50,17 @@ internal enum class PageControlStyle {
     // 'ROUNDED_BUTTONS'
     // ```
     /** Uses the previous rounded page buttons. */
-    ROUNDED_BUTTONS;
+    ROUNDED_BUTTONS,
+
+    // What:     `SEGMENTED_BUTTONS` is the joined content-width button variant.
+    // Why:      Users can choose compact grouped buttons matching the supplied reference.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // 'SEGMENTED_BUTTONS'
+    // ```
+    /** Uses wrapping segmented page buttons. */
+    SEGMENTED_BUTTONS;
 
     // What:     `companion object` is the enum's shared static-like namespace.
     // Why:      Preference decoding belongs beside the variants it recognizes.

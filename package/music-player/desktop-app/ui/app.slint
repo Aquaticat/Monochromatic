@@ -158,9 +158,43 @@ component Md1Tab inherits Rectangle {
     }
 }
 
-// One page selector with three user-selectable visual styles. Style 0 is the
-// default radio control, style 1 is a wrapping MD1 tab grid, and style 2 keeps
-// the previous rounded button grid.
+// A content-width section in one joined segmented control. Adjacent sections
+// have no gap, the selected section uses the accent fill, and only the ends are
+// rounded when the whole group fits on one row.
+component SegmentedButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    in property <bool> is-edge;
+    callback clicked();
+    horizontal-stretch: 0;
+    width: segment-label.preferred-width + 32px;
+    height: 48px;
+    preferred-height: 48px;
+    border-width: 1px;
+    border-color: Palette.foreground.with-alpha(0.6);
+    border-radius: root.is-edge ? 8px : 0px;
+    background: root.selected ? Palette.accent-background : Palette.control-background;
+
+    segment-label := Text {
+        x: 16px;
+        width: parent.width - 32px;
+        height: parent.height;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        color: root.selected ? Palette.accent-foreground : Palette.foreground;
+    }
+    TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// One page selector with four user-selectable visual styles. Style 0 is the
+// default radio control, style 1 is a wrapping MD1 tab grid, style 2 keeps
+// the previous rounded button grid, and style 3 joins content-width segments.
 component PageControls inherits VerticalLayout {
     in property <[string]> labels;
     in property <int> selected-page;
@@ -209,6 +243,21 @@ component PageControls inherits VerticalLayout {
         for label[p] in root.labels: Button {
             text: label;
             primary: p == root.selected-page;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+    if root.control-style == 3: FlexboxLayout {
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: SegmentedButton {
+            text: label;
+            selected: p == root.selected-page;
+            is-edge: p == 0 || p == root.labels.length - 1;
             clicked => {
                 root.select-page(p);
             }
@@ -352,7 +401,8 @@ export component AppWindow inherits Window {
     in property <int> selected-page: 0;
     in property <[PageItem]> page-items: [];
     // Page selector style: 0 = radio controls, 1 = multi-row MD1 tabs,
-    // 2 = the previous rounded buttons. Rust restores and persists this value.
+    // 2 = the previous rounded buttons, 3 = segmented buttons. Rust restores
+    // and persists this value.
     in-out property <int> page-control-style: 0;
     // Settings is a local navigation page, not playback state.
     in-out property <bool> show-settings: false;
@@ -609,6 +659,15 @@ export component AppWindow inherits Window {
                     clicked => {
                         root.page-control-style = 2;
                         root.set-page-control-style(2);
+                    }
+                }
+                RadioButton {
+                    text: "Segmented buttons";
+                    selected: root.page-control-style == 3;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 3;
+                        root.set-page-control-style(3);
                     }
                 }
                 Button {

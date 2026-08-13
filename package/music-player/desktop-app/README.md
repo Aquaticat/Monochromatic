@@ -386,8 +386,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   visible,
    so late-alphabet artists stay discoverable.
    Page selectors default to wrapping radio controls.
-   Settings offers two alternatives:
-   flat multi-row Material Design 1 tabs with selected underlines,
+   Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
+   joined content-width segmented buttons,
    and the previous rounded buttons.
    The choice applies immediately and persists across launches.
    Each wide page-selector FlexboxLayout pins `align-content` and

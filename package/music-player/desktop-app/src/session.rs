@@ -48,14 +48,15 @@ use crate::command::ShuffleMode;
 use crate::identity;
 
 /// What:     `PageControlStyle` is the saved visual treatment for library-page selectors.
-///           It has three fixed values: radio controls, wrapping Material Design 1 tabs,
-///           and the earlier rounded buttons. `Default` selects `Radio` for old sessions.
+///           It has four fixed values: radio controls, wrapping Material Design 1 tabs,
+///           the earlier rounded buttons, and joined segmented buttons. `Default` selects
+///           `Radio` for old sessions.
 /// Why:      Users can choose a page selector while fresh and older installs start with
 ///           radio controls as requested.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PageControlStyle = 'radio' | 'md1Tabs' | 'roundedButtons';
+/// type PageControlStyle = 'radio' | 'md1Tabs' | 'roundedButtons' | 'segmentedButtons';
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub enum PageControlStyle {
@@ -66,6 +67,8 @@ pub enum PageControlStyle {
     Md1Tabs,
     /// Filled or outlined rounded buttons from the previous UI.
     RoundedButtons,
+    /// Joined content-width buttons with selected fill.
+    SegmentedButtons,
 }
 
 /// What:     `impl PageControlStyle` adds conversion methods used at the Slint boundary.
@@ -84,6 +87,9 @@ impl PageControlStyle {
         if self == PageControlStyle::RoundedButtons {
             return 2;
         }
+        if self == PageControlStyle::SegmentedButtons {
+            return 3;
+        }
         return 0;
     }
 
@@ -94,6 +100,9 @@ impl PageControlStyle {
         }
         if value == 2 {
             return PageControlStyle::RoundedButtons;
+        }
+        if value == 3 {
+            return PageControlStyle::SegmentedButtons;
         }
         return PageControlStyle::Radio;
     }
