@@ -8523,3 +8523,21 @@ The run did not need restarting for anything else. Every commit between the tip
 
 Voice loss is no longer a live problem: 2 entries of 21 carry one, one model
  each. The channel-marker fix held.
+
+### Verified after the change, not predicted
+
+The paragraph counts above are a property of the corpus and were measured before
+ editing anything, which makes them a reason to change the rule rather than
+ evidence the change worked. The after-state evidence is the shipped
+ `selectRefinableParagraphs` run over 60 real corpus pages:
+
+```text
+eligible under the old newline rule   120
+eligible now                          404
+of the 404, cut by the old rule       284   70.3%
+hard-break exclusions                  12
+```
+
+So the lane may now touch roughly 3.4 times the prose, and the precise rule
+ still refuses genuine authored breaks. `multi-line` no longer appears as a
+ reason at all.
