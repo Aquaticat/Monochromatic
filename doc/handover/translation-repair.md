@@ -8722,3 +8722,59 @@ MizuharaNagisa  456 ->  3030    6.6
 
 Those are the candidates for genuine translator addition, which house policy
  keeps when accurate. Nobody has read them.
+
+## Panel parity decides the crosscheck, and it decides against running it
+
+The judge crosscheck of `#31` was re-scoped onto near-tie claims, the ones where
+ removing a single vote could change the plurality. Counting them as entries
+ accumulated produced a result that looked like slow progress and was actually a
+ structural ceiling.
+
+### The near-tie rate did not drift, it split by pipeline tip
+
+```text
+tip cf68fdd51   2 entries    18 near-ties of  66 claims   27%
+tip 9cacc3f02   5 entries     5 near-ties of 253 claims    2%
+```
+
+An earlier projection of roughly four near-ties per entry came from averaging
+ across that boundary. It is not a rate; it is two different regimes.
+
+### The cause is the size of the panel, not its decisiveness
+
+The first guess was that fuller panels produce bigger margins. Measured, that is
+ false: mean voters per claim rose from 5.54 to 6.00 while the mean margin FELL
+ from 3.00 to 2.71. What changed is parity.
+
+```text
+voters 5   claims  383   margins 0:5   1:169 2:3   3:115 5:91          flippable 45.4%
+voters 6   claims 1372   margins 0:198 1:44  2:352 3:31  4:408 6:339   flippable 17.6%
+```
+
+With five voters a two-way split lands on an ODD margin, and margin 1 is the
+ single most common outcome, 169 of 383. With six it lands on an EVEN margin, so
+ margin 1 falls to 44 of 1372, and the margin-0 cases are exact ties that the
+ panel files as `needs-human`, which both scored arms already exclude.
+
+So on scored claims under a full six-model panel, the share a single removed
+ vote could flip is about 3%.
+
+### What that means for `#31`
+
+The crosscheck asks whether a verdict survives re-asking with its author
+ removed. Under the current panel it cannot change more than roughly three
+ verdicts in a hundred, and reaching a reportable per-arm rate would need most
+ of the remaining corpus. Spending on the order of a thousand calls to bound a
+ 3% effect is a bad trade, and the number it produced would be dominated by the
+ parity of whichever panels happened to be full.
+
+Recorded as the reason to stop rather than as a reason to wait.
+
+### The finding worth keeping
+
+Voice loss does not merely remove a voice. It changes the PARITY of the
+ electorate, and parity changes the shape of the verdict distribution: a
+ five-voter panel produces margin-1 verdicts 44% of the time, a six-voter panel
+ 3%. Anything that reads margins, including any future confidence weighting or
+ gating, is reading panel size as much as panel opinion. That is a live property
+ of the pipeline and nothing currently accounts for it.
