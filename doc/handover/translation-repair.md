@@ -7052,3 +7052,55 @@ Re-probe the specific regions a human graded as damaged, once with their
 That is the only remaining way to tell whether production damage is invisible
  because it is subtle or because the label suppresses it, and unlike the cat
  fixtures it uses cases already known to be damaged.
+
+### The paired re-probe on real damaged regions, and a correction
+
+The cat fixtures said the labelling effect was modest, one voice of three. On
+ the regions a human actually read as damaged it is total.
+Five distinct regions, rebuilt from the eight drawn positions, each probed twice
+ with the same three probers:
+
+```text
+entry              positions      issues  shown            withheld
+Acheron            2+7+11+15      8       0 raised, 3 none  1 removal, 1 unanchored, 1 none
+Anilovr            20             6       0 raised, 3 none  1 corroborated, 1 removal, 1 none
+AmbeR_the_anpa     21             8       0 raised, 3 none  2 removal, 1 none
+Chinatsu_Suzuki    37             7       0 raised, 3 none  1 corroborated, 2 none
+Dethelly           43            17       0 raised, 3 none  1 removal, 2 none
+```
+
+With the accepted issues shown, 0 of 15 prober verdicts raised anything.
+With them withheld, 7 of 15 raised, and every one of the five regions drew at
+ least one admissible claim.
+
+So the earlier reading from the fixtures, that probe blindness is not downstream
+ of detection precision, was WRONG, and the fixture is why.
+It carried ONE prior issue. These regions carry six to seventeen, and a region
+ whose every part is labelled a known defect has nothing left that a deletion
+ could damage.
+The prompt conflates two instructions: do not re-report the old defect, and
+ treat everything here as already accounted for.
+
+### What that does NOT yet establish
+
+Withholding the list is not obviously the fix.
+The list exists because a prober shown a defective region reports the defect it
+ was cut for, and the withheld arm may be doing exactly that rather than finding
+ the damage.
+Nothing here separates those, because all five regions are damaged by
+ construction, so there is no case where a raised claim would be wrong.
+
+The missing measurement is a CONTROL: regions from the same entries that the
+ reader did NOT flag, probed under both arms. If the withheld arm raises claims
+ just as often there, it is re-reporting pre-existing defects and its 7 of 15 is
+ worthless. If it stays quiet there, the label is suppressing real detections
+ and the stage can be fixed.
+
+### The shape a fix would take, if the control holds
+
+`screenNonTranslationVotes` is the precedent: deterministic evidence DISMISSES a
+ claim rather than a prompt preventing it. The same split applies here. Let the
+ prober run without the excusing list, then discard deterministically any claim
+ whose quoted wording falls inside a pre-existing issue's evidence span. That
+ keeps the defence against re-reporting the old defect while removing the
+ blanket licence that currently silences the stage.
