@@ -318,6 +318,80 @@ await describe({
     },),
 
     it({
+      name: 'never lets a critic MODEL ID reach any judging prompt, which is '
+        + 'the invariant attribution must not break: adjudication is '
+        + 'provenance-blind because a real defect can arrive from exactly one '
+        + 'critic, so proposer counts may calibrate critics and must never '
+        + 'influence whether a claim is accepted',
+      fn: async () => {
+        /** Every message the pipeline sent, by stage. */
+        const sent: { readonly stage: string; readonly text: string; }[] = [];
+
+        /** Scripted client that records what each stage was asked. */
+        const recording: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused by the repair pipeline',);
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            sent.push({
+              stage: request.responseFormat?.json_schema.name ?? '',
+              text: request.messages
+                .map(function toText(message,) {
+                return message.content;
+              },)
+                .join('\n',),
+            },);
+            return await scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },)
+              .chatJson(request,);
+          },
+          quotas: async () => {
+            throw new Error('quotas unused',);
+          },
+        };
+
+        /** Full run over the recording client. */
+        const result = await repairTranslation({
+          client: recording,
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        // The assertion is vacuous unless attribution actually exists, so this
+        // proves the run had proposer identity available to leak.
+        expect(
+          result.chunkCritics
+            .some(function hasProposers(record,) {
+            return record.claimAttributions.length > 0;
+          },),
+        ).toBe(true,);
+
+        /** Judging prompts, which must name no proposer. */
+        const judging = sent.filter(function isJudging(message,) {
+          return message.stage === 'panel_ballot';
+        },);
+
+        expect(judging.length,).toBeGreaterThan(0,);
+
+        // POSITIVE CONTROL. An absence proves nothing from a probe that cannot
+        // show a presence, so this confirms the recorder captured real prompt
+        // text before the model-id check is allowed to mean anything.
+        expect(
+          judging.some(function carriesPromptText(message,) {
+            return message.text.includes('butterflies',);
+          },),
+        ).toBe(true,);
+
+        for (const message of judging)
+          for (const modelId of MODELS.criticModelIds)
+            expect(message.text.includes(modelId,),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'gives an accepted issue no envelope could serve no resolution '
         + 'credit, however confidently the checkers call it fixed',
       fn: async () => {
