@@ -235,3 +235,31 @@ All three features are exported from `index.ts`, so a consumer outside the
 The cheap guard is the walk above, rooted at the entry points and refusing to
  traverse barrels. It takes a second to run and would have caught `110fc3909`
  the day it landed.
+
+### The same check one level finer, which found nothing serious
+
+Modules can fire while the values they produce go unread, which is how the
+ footnote graph hid. Checking every field of the two central types for a reader
+ outside its declaring file:
+
+```text
+  ChunkRepairOutcome, 16 fields: one with no reader
+    nonTranslationContradicted
+
+  RepairDocument, 6 fields: one with no reader
+    documentHash
+```
+
+`nonTranslationContradicted` is a false alarm, and worth writing down as one.
+The value is stored by `repair-chunk.ts` and read by nothing, but the FEATURE
+ fires: `chunk-critic-phase.ts` branches on `screening.contradicted` and
+ `non-translation-evidence.ts` dismisses contradicted votes at the point the
+ evidence is computed. Only the persisted copy is unread, which makes it
+ provenance rather than a defect.
+
+`documentHash` is genuinely dead. `parseDocument` hashes the full document text
+ on every call and nothing outside its own test ever reads the result.
+
+So the finer-grained pass turned up no second aligner. That is the useful
+ outcome: the unwired-MODULE check earns its keep, and the unread-FIELD check
+ did not, at least on these two types.
