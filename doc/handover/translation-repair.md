@@ -7812,16 +7812,38 @@ REWRITTEN at the end of the stretch rather than amended again. Three
  is the same accretion this session diagnosed elsewhere. What follows is the
  current state, not a history of it.
 
-### 1. What an unpaired source section is for (`#70`, blocks `#71`)
+### 1. Choose the pipeline shape: translate or repair (`#70`, blocks `#71`)
 
-Sized, and smaller than it reads. There are three unpaired sections at this
- pin, and one is a seven-character `(To-Do)` placeholder with no body that
- needs no decision at all. That leaves TWO genuinely untranslated sections, 915
- and 1459 characters, BOTH IN ONE ENTRY. So this is a policy for one document's
- trailing pair, not for the corpus.
+CORRECTED FRAMING. An earlier version of this list called this "what an
+ unpaired source section is for", as though a destination policy had to be
+ invented. `doc/planning/translation-pipeline-redesign.md` already settles that
+ it is not a separate decision: the destination falls out of which pipeline
+ shape is chosen, and it offers three options ranked B > C > A.
 
-The 915-character one opens with an HTML disclosure block rather than prose, so
- whichever policy is chosen has to survive markup.
+-   B, translate every slice and select against the existing text. An unpaired
+    section is then just a slice whose existing translation is empty.
+-   C, fill coverage gaps first, then repair the completed draft. The coverage
+    check fills it.
+-   A, route barely-covered sections to a translate stage. The section is the
+    sparse case the classifier routes.
+
+The ranking's reasoning is that C rests on judging whether source content is
+ represented anywhere, the same judgement that already produced five false
+ positives, and a coverage check that misses is invisible. B replaces detection
+ with selection, which is built and auditable.
+
+FOUR PREREQUISITES are listed there, and one is already on this board: `#31`'s
+ judge crosscheck, deferred since milestone three, because B stakes everything
+ on judges preferring a good human translation over a fluent machine one and
+ nothing has measured that. The others are what replaces the introduced-defect
+ differential, what pairs 7 and 5 actually are, and cost.
+
+What this session ADDS is scale, not framing: there are three unpaired sections
+ at this pin, one of which is a seven-character `(To-Do)` placeholder needing no
+ decision, leaving TWO genuinely untranslated sections of 915 and 1459
+ characters BOTH IN ONE ENTRY. The 915-character one opens with an HTML
+ disclosure block rather than prose. So whatever shape is chosen, the section
+ content it has to handle today is small and markup-bearing.
 
 Still the highest-value decision, because the aligner fix cannot land without
  it. `doc/planning/translation-pipeline-redesign.md` and
