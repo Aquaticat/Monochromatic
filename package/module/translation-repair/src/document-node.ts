@@ -148,6 +148,56 @@ export class UnpositionedNodeError extends Error {
 }
 
 /**
+ * Characters that occupy a line while showing nothing.
+ *
+ * A byte-order mark is the one that actually occurred: one corpus translation
+ * carries three lines holding U+FEFF and nothing else. Markdown reads such a
+ * line as an ordinary paragraph, so the translation gained a block the original
+ * did not have, and every later paragraph paired with the WRONG source
+ * paragraph. The editor then rewrote a correct sentence into a faithful
+ * translation of a different one, which no stage can catch: both texts are
+ * fluent, both render something in the source, and the checkers and the probe
+ * are all comparing against whatever paragraph the misalignment handed them.
+ *
+ * The siblings are listed because they fail identically and cost nothing to
+ * cover: a line of zero-width spaces or joiners is equally invisible and
+ * equally load-bearing to a positional pairing.
+ */
+const INVISIBLE_CHARACTERS: ReadonlySet<string> = new Set([
+  '\u{FEFF}',
+  '\u{200B}',
+  '\u{200C}',
+  '\u{200D}',
+  '\u{2060}',
+],);
+
+/**
+ * Whether a block shows a reader nothing at all.
+ *
+ * Written as a scan rather than a pattern: the rule is one predicate per
+ * character with no carried state, and it must not backtrack over a
+ * pathological block.
+ *
+ * @param text - block text as sliced from the document
+ *
+ * @returns Whether every character is whitespace or invisible
+ *
+ * @example
+ * ```ts
+ * showsNothing({ text: '\u{FEFF}', },);
+ * ```
+ */
+function showsNothing({ text, }: { readonly text: string; },): boolean {
+  for (const character of text) {
+    if (character.trim() === '')
+      continue;
+    if (!INVISIBLE_CHARACTERS.has(character,))
+      return false;
+  }
+  return true;
+}
+
+/**
  * Builds anchor-ready document nodes from top-level mdast children.
  *
  * @param children - top-level mdast blocks in source order
@@ -226,7 +276,15 @@ export function buildDocumentNodes(
       endOffset: bodyOffset + end,
       contentHash: hashContent({ content: text, },),
     };
-  },);
+  },)
+    // Filtered AFTER the map on purpose, so a surviving node keeps the index it
+    // had among the parser's children. Filtering first would renumber every
+    // node following an invisible block, and `block/N` is what accepted issues
+    // anchor to, so every claim recorded against an earlier parse would point
+    // somewhere else.
+    .filter(function showsSomething(node,) {
+      return !showsNothing({ text: node.text, },);
+    },);
 }
 
 //endregion Node construction
