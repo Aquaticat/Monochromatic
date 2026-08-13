@@ -471,3 +471,87 @@ The lesson is the one this document keeps repeating in a different form. A
  change measured only against the corpus is measured against the cases the
  corpus happens to contain, and a prototype that passes there can still be
  wrong about the mechanism it claims to use.
+
+## Attempt four resolves it: structure as a soft penalty, not a veto
+
+Two more attempts, and the fourth is the answer.
+
+### Attempt four, a hard veto, is wrong about the corpus
+
+Refusing outright to pair a preamble chunk with a heading chunk fixes `XingZ60`
+ and `XIEPT2` and REGRESSES four entries: `Hangmster`, `interrgned`, `noname`
+ and `yingying`.
+
+All four have the same shape, and it is a shape the corpus has every right to:
+ one side keeps content in a preamble where the other gives it a heading. On
+ `interrgned` the Chinese opens with prose about tangled threads and the
+ English titles that section `## Line`. Pairing them is CORRECT.
+
+So "preamble and heading are structurally incompatible" is simply false here.
+A translation may add or drop a heading for the same content.
+
+### Attempt five, a soft penalty, threads every case
+
+The distinction is not that the pairing is forbidden, it is that a better
+ global alignment may exist. That is what a penalty expresses and a veto
+ cannot.
+
+The working range follows from the algorithm rather than from tuning. Pairing
+ across a structure boundary costs the penalty; refusing costs two gaps, one on
+ each side. So the penalty must sit strictly between zero and
+ `-2 * GAP_PENALTY`:
+
+-   above `-0.7`, `Hangmster` still pairs its lone heading with the lone
+    English preamble instead of dropping both;
+-   below zero, `XIEPT2` prefers gapping its `(To-Do)` preamble and matching
+    all eight headings straight across.
+
+Swept from `-0.1` to `-0.69`, every value gives the same corpus result:
+
+```text
+  92 entries: 90 identical to production, 2 changed, 0 regressed
+    XingZ60  now correct
+    XIEPT2   now better than production: the (To-Do) preamble is left
+             unpaired and 经历 pairs with Experience
+```
+
+And on the invented cases that broke attempt three:
+
+```text
+  gap at the END                          correct
+  gap at the FRONT                        correct
+  gap in the MIDDLE, no evidence          slides to the end, see below
+  gap in the MIDDLE, name pins the tail   CORRECT: 老猫 unpaired, Mocha pinned
+  heading depth changed in translation    correct, still paired in order
+```
+
+The name signal survives because heading-to-heading scoring is untouched. Only
+ the structure boundary carries the new term, so an exact shared name still
+ outscores everything around it.
+
+### The one case that stays unsolved, and why that is acceptable
+
+A gap in the middle of a document whose headings share NO evidence cannot be
+ placed. Every arrangement scores identically, so the tiebreak decides and puts
+ it at the end. That is not a defect of this design; it is the absence of
+ information. Placing it correctly would need a signal nobody has yet, such as
+ comparing section bodies rather than headings.
+
+Worth stating plainly because the earlier claim that Option B "handles a gap
+ ANYWHERE" is still too strong. It handles a gap anywhere EVIDENCE reaches, and
+ falls back to the end-of-document prior otherwise.
+
+### What Option B now means, concretely
+
+-   A chunk-label adapter, since `alignHeadings` speaks heading indices and
+    `alignDocumentSections` speaks chunk objects. The correspondence is exact
+    on all 184 documents.
+-   One new term in the scoring: a penalty between zero and `-2 * GAP_PENALTY`
+    when exactly one side of a candidate pair is a preamble chunk.
+-   No change to `headingAffinity` itself, which is what keeps the name signal
+    intact.
+
+That is small, it is bounded, and it is now measured against 92 real entries
+ plus five invented ones rather than argued for. The blocker is unchanged:
+ three unpaired sections corpus-wide still need the destination `#70` owes
+ them.
