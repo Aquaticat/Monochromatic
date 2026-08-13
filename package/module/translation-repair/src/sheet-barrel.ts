@@ -78,6 +78,12 @@ export {
   type ProposerView,
 } from './corpus-run/attribution-report.ts';
 export {
+  buildCrosscheckCensus,
+  type CrosscheckArm,
+  type CrosscheckCensus,
+  type CrosscheckItem,
+} from './corpus-run/judge-crosscheck.ts';
+export {
   type JudgeSeating,
   MIN_JUDGED_CLAIMS,
   renderJudgedRate,
