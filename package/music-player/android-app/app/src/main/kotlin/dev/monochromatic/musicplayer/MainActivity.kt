@@ -2590,49 +2590,45 @@ private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
     }
 }
 
-// What:     `ChromiumTabColors` groups measured browser-tab colors.
-// Why:      Active contour colors stay consistent while the backplate follows the page.
+// What:     `ChromiumTabColors` groups accent tint and neutral tab colors.
+// Why:      Active tab follows theme accent while inactive decoration stays neutral.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // type ChromiumTabColors = {
 //   active: Color;
-//   outline: Color;
+//   activeOutline: Color;
+//   divider: Color;
 //   ink: Color;
 // };
 // ```
 /** Holds colors used by Chromium-like page tabs. */
 private data class ChromiumTabColors(
-    /** Fills selected tab contour. */
+    /** Fills selected tab with translucent accent tint. */
     val active: Color,
-    /** Draws selected contour and inactive separators. */
-    val outline: Color,
+    /** Draws stronger accent contour around selected tab. */
+    val activeOutline: Color,
+    /** Draws neutral inactive baselines and separators. */
+    val divider: Color,
     /** Draws tab labels. */
     val ink: Color,
 )
 
-// What:     `chromiumTabColors` selects measured dark or light contour colors.
-// Why:      Chromium geometry needs contrast without painting inactive-tab backgrounds.
+// What:     `chromiumTabColors` derives active tint from Material theme accent.
+// Why:      Selected tab follows user theme without painting inactive backgrounds.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function chromiumTabColors(): ChromiumTabColors { ... }
 // ```
-/** Returns Chromium-like colors for current system appearance. */
+/** Returns accent-tinted Chromium-like tab colors. */
 @Composable
-private fun chromiumTabColors(): ChromiumTabColors {
-    /** Records current system appearance for reference-matched colors. */
-    val dark: Boolean = isSystemInDarkTheme()
-    /** Holds selected tab fill measured from dark reference or Chromium light equivalent. */
-    val active: Color = if (dark) Color(0xFF383838) else Color(0xFFE8EAED)
-    /** Holds selected contour measured from dark reference or Chromium light equivalent. */
-    val outline: Color = if (dark) Color(0xFF626262) else Color(0xFFAEB0B4)
-    return ChromiumTabColors(
-        active = active,
-        outline = outline,
-        ink = MaterialTheme.colorScheme.onBackground,
-    )
-}
+private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
+    active = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
+    activeOutline = MaterialTheme.colorScheme.primary.copy(alpha = 0.65f),
+    divider = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.25f),
+    ink = MaterialTheme.colorScheme.onBackground,
+)
 
 // What:     `chromiumTabShape` traces Chromium's rounded top and outward shoulders.
 // Why:      Rounded rectangles cannot reproduce the concave transition into the tab strip.
@@ -2751,7 +2747,7 @@ private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresent
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(colors.outline.copy(alpha = 0.55f)),
+                .background(colors.divider),
         )
     }
     if (!options.selected && options.showDivider) {
@@ -2760,7 +2756,7 @@ private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresent
                 .align(Alignment.CenterEnd)
                 .width(1.dp)
                 .height(24.dp)
-                .background(colors.outline.copy(alpha = 0.55f)),
+                .background(colors.divider),
         )
     }
 }
@@ -2784,7 +2780,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
         Modifier
             .clip(tabShape)
             .background(colors.active)
-            .border(1.5.dp, colors.outline, tabShape)
+            .border(1.5.dp, colors.activeOutline, tabShape)
     } else {
         Modifier
     }

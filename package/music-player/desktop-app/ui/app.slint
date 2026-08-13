@@ -224,9 +224,10 @@ component ChromiumTab inherits Rectangle {
     in property <bool> selected;
     in property <bool> show-divider;
     callback clicked();
-    private property <color> active-color: Palette.color-scheme == ColorScheme.dark ? #383838 : #e8eaed;
-    private property <color> outline-color: Palette.color-scheme == ColorScheme.dark ? #626262 : #aeb0b4;
-    private property <color> ink-color: Palette.color-scheme == ColorScheme.dark ? #ededeb : #202124;
+    private property <color> active-color: Palette.accent-background.with-alpha(0.2);
+    private property <color> active-outline-color: Palette.accent-background.with-alpha(0.65);
+    private property <color> divider-color: Palette.foreground.with-alpha(0.25);
+    private property <color> ink-color: Palette.foreground;
     horizontal-stretch: 0;
     width: min(chromium-label.preferred-width + 48px, root.max-width);
     height: 58px;
@@ -282,7 +283,7 @@ component ChromiumTab inherits Rectangle {
         viewbox-height: 50;
         fit: fill;
         fill: transparent;
-        stroke: root.outline-color;
+        stroke: root.active-outline-color;
         stroke-width: 1.5px;
         stroke-line-cap: round;
         MoveTo { x: 0; y: 50; }
@@ -311,7 +312,7 @@ component ChromiumTab inherits Rectangle {
         y: parent.height - 1px;
         width: parent.width;
         height: 1px;
-        background: root.outline-color.with-alpha(0.55);
+        background: root.divider-color;
     }
 
     if !root.selected && root.show-divider: Rectangle {
@@ -320,7 +321,7 @@ component ChromiumTab inherits Rectangle {
         width: 1px;
         height: 24px;
         border-radius: 1px;
-        background: root.outline-color.with-alpha(0.55);
+        background: root.divider-color;
     }
 
     chromium-label := Text {
