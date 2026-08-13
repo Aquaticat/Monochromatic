@@ -194,7 +194,10 @@ function carriesHardBreak({ text, }: { readonly text: string; },): boolean {
   const lines = text.split('\n',);
 
   return lines
-    .slice(0, -1,)
+    .slice(
+      0,
+      -1,
+    )
     .some(function endsInBreak(line,): boolean {
       return line.endsWith('  ',) || line.endsWith('\\',);
     },);

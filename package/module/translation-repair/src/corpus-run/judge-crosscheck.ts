@@ -217,7 +217,8 @@ export function buildCrosscheckCensus(
       }
     }
 
-    return entry.issues.flatMap(function toClaims(issue,): readonly CrosscheckItem[] {
+    return entry.issues
+      .flatMap(function toClaims(issue,): readonly CrosscheckItem[] {
       return issue.claimIds
         .filter(function isAttributed(claimId,): boolean {
           return proposersOf.has(claimId,);
@@ -279,15 +280,25 @@ export function buildCrosscheckCensus(
       /**
        * Claims of this entry with no proposer recorded.
        */
-      const missing = entry.issues.reduce(
-        function countEntryMissing(running: number, issue,): number {
-          return running + issue.claimIds
-            .filter(function isMissing(claimId,): boolean {
-              return !attributed.has(claimId,);
-            },).length;
-        },
-        0,
-      );
+      const missing = entry.issues
+        .reduce(
+          function countEntryMissing(
+            running: number,
+            { claimIds, },
+          ): number {
+            /**
+             * Claims of this issue with no proposer recorded.
+             */
+            const unrecorded = claimIds
+              .filter(function isMissing(claimId,): boolean {
+                return !attributed.has(claimId,);
+              },)
+              .length;
+
+            return running + unrecorded;
+          },
+          0,
+        );
 
       // An entry attributing nothing is legacy; one attributing something and
       // still missing a claim has a join that disagrees with itself.
@@ -308,19 +319,24 @@ export function buildCrosscheckCensus(
   );
 
   return {
-    items: enumerated.filter(function isJudgeable(item,): boolean {
-      return item.judges.length > 0;
-    },),
-    unjudgeable: enumerated.filter(function isUnjudgeable(item,): boolean {
-      return item.judges.length === 0;
-    },),
+    items: enumerated
+      .filter(function isJudgeable({ judges, },): boolean {
+        return judges.length > 0;
+      },),
+    unjudgeable: enumerated
+      .filter(function isUnjudgeable({ judges, },): boolean {
+        return judges.length === 0;
+      },),
     unattributedLegacyClaims: unattributed.legacy,
     unattributedJoinFailures: unattributed.joinFailures,
-    entriesWithoutAttribution: entries.filter(function isBare(entry,): boolean {
-      return (entry.chunkCritics ?? []).every(function empty(chunk,): boolean {
-        return chunk.claimAttributions.length === 0;
-      },);
-    },).length,
+    entriesWithoutAttribution: entries
+      .filter(function isBare(entry,): boolean {
+        return (entry.chunkCritics ?? [])
+          .every(function empty({ claimAttributions, },): boolean {
+            return claimAttributions.length === 0;
+          },);
+      },)
+      .length,
     entriesCovered: entries.length,
   };
 }

@@ -86,8 +86,18 @@ function tallyAuthors(
     sole: number;
   }>();
 
-  for (const item of items) {
-    for (const modelId of item.proposers) {
+  for (
+    const {
+      arm,
+      proposers,
+    } of items
+  ) {
+    /**
+     * Whether one author raised this claim alone, computed once per claim
+     * rather than once per author of it.
+     */
+    const soleAuthored = proposers.length === 1;
+    for (const modelId of proposers) {
       /**
        * This author's row, created on first sight.
        */
@@ -99,13 +109,16 @@ function tallyAuthors(
       // Only the two arms a rate is computed over are counted here. An
       // `undecided` claim belongs to neither, and adding it to control would
       // put the panel's non-verdicts into a column read as rejections.
-      if (item.arm === 'accepted')
+      if (arm === 'accepted')
         row.accepted += 1;
-      else if (item.arm === 'control')
+      else if (arm === 'control')
         row.control += 1;
-      if (item.proposers.length === 1)
+      if (soleAuthored)
         row.sole += 1;
-      rows.set(modelId, row,);
+      rows.set(
+        modelId,
+        row,
+      );
     }
   }
 
@@ -118,7 +131,10 @@ function tallyAuthors(
         sole: counts.sole,
       };
     },)
-    .toSorted(function byAccepted(left, right,): number {
+    .toSorted(function byAccepted(
+      left,
+      right,
+    ): number {
       return right.accepted - left.accepted;
     },);
 }
@@ -229,31 +245,43 @@ async function main(): Promise<void> {
   },);
 
   /**
+   * Judgeable and unjudgeable claims, bound to names so counting them reads as
+   * one member step rather than as a chain through the census.
+   */
+  const {
+    items,
+    unjudgeable,
+  } = census;
+
+  /**
    * Claims per arm, counted separately because `undecided` belongs in no rate.
    */
-  const accepted = census.items.filter(function isAccepted(item,): boolean {
-    return item.arm === 'accepted';
-  },);
+  const accepted = items
+    .filter(function isAccepted({ arm, },): boolean {
+      return arm === 'accepted';
+    },);
 
   /**
    * Claims the panel decided against, the only legitimate control.
    */
-  const control = census.items.filter(function isControl(item,): boolean {
-    return item.arm === 'control';
-  },);
+  const control = items
+    .filter(function isControl({ arm, },): boolean {
+      return arm === 'control';
+    },);
 
   /**
    * Claims the panel declined to decide, held out of every rate.
    */
-  const undecided = census.items.filter(function isUndecided(item,): boolean {
-    return item.arm === 'undecided';
-  },);
+  const undecided = items
+    .filter(function isUndecided({ arm, },): boolean {
+      return arm === 'undecided';
+    },);
 
   console.log(
     `POPULATION entries=${String(census.entriesCovered,)} `
       + `withoutAttribution=${String(census.entriesWithoutAttribution,)} `
-      + `judgeable=${String(census.items.length,)} `
-      + `unjudgeable=${String(census.unjudgeable.length,)} `
+      + `judgeable=${String(items.length,)} `
+      + `unjudgeable=${String(unjudgeable.length,)} `
       + `legacyClaims=${String(census.unattributedLegacyClaims,)} `
       + `joinFailures=${String(census.unattributedJoinFailures,)}`,
   );
@@ -280,7 +308,7 @@ async function main(): Promise<void> {
       + 'into control would fill it with claims the panel mostly believed.',
   );
 
-  if (census.items.length === 0) {
+  if (items.length === 0) {
     console.log(
       'NOTE no entry carries attribution yet, so no claim can have its author '
         + 'barred and there is nothing to crosscheck. Entries settled before '
@@ -293,8 +321,13 @@ async function main(): Promise<void> {
    * Control-arm claims broken down by why the panel refused them.
    */
   const byStatus: Record<string, number> = {};
-  for (const item of [...control, ...undecided,])
-    byStatus[item.status] = (byStatus[item.status] ?? 0) + 1;
+  for (
+    const { status, } of [
+      ...control,
+      ...undecided,
+    ]
+  )
+    byStatus[status] = (byStatus[status] ?? 0) + 1;
   console.log(
     `NON-ACCEPTED BY STATUS ${
       Object
@@ -307,7 +340,7 @@ async function main(): Promise<void> {
   );
 
   console.log(`\n${headerLine()}`,);
-  for (const row of tallyAuthors({ items: census.items, },))
+  for (const row of tallyAuthors({ items, },))
     console.log(authorLine({ row, },),);
 
   console.log(
@@ -323,9 +356,9 @@ async function main(): Promise<void> {
       + 'and the provider serves no seventh. It measures whether a verdict '
       + 'survives being re-asked without its author, never precision.',
   );
-  if (census.unjudgeable.length > 0) {
+  if (unjudgeable.length > 0) {
     console.log(
-      `WARNING ${String(census.unjudgeable.length,)} claims were proposed by `
+      `WARNING ${String(unjudgeable.length,)} claims were proposed by `
         + 'the WHOLE roster, so nobody may judge them. They are reported here '
         + 'rather than dropped: they are the most corroborated claims in the '
         + 'run, and removing them would lift every rate by hiding exactly the '
