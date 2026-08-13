@@ -234,6 +234,44 @@ The failing quote is not retained anywhere. Artifacts keep adjudicated issues
  after the suffix landed. A recorded signal that omits the evidence needed to
  act on it is the same failure this document is about, one layer down.
 
+## The rejected-value family is small, and checked so nobody re-opens it
+
+Every `unknown-` finding carries the value the model actually sent, so the
+ census can read them off rather than guess. Over the same 56 entries there are
+ nine in total:
+
+```text
+  4  unknown-regrade-severity ()
+  2  unknown-regrade-severity (massive)
+  1  unknown-regrade-severity (small)
+  1  unknown-severity (minor,)
+  1  unknown-vote (support)
+```
+
+Severity accepts `neutral`, `minor`, `major`, `critical`.
+So four are the model omitting the field, three are it inventing a word outside
+ the vocabulary, and one is an invented vote.
+
+The ninth is the interesting one. `minor,` is a VALID severity rejected for a
+ trailing comma, which is the same shape as the Kimi-K3 channel-marker defect:
+ a good answer lost to a formatting artefact rather than to disagreement.
+It is one occurrence out of 4098 adjudicated issues, so it is recorded rather
+ than acted on. Should this family grow, punctuation trimming before the
+ vocabulary check is the cheap half of the fix.
+
+## The refiner goes silent on whole entries
+
+Recorded in full in `doc/planning/naturalness-lane-reach.md`, because it bears
+ on a decision waiting there. In summary: `stage-quorum-unmet` is 34
+ occurrences and every one is `refiner 0/1`, a one-model stage losing its only
+ voice. The partition is exact, 29 entries heard from it always and 7 never, so
+ the cause is entry-determined.
+
+`quorumMet` itself is read where it matters. `restoration-judge.ts` and
+ `derivability-probe.ts` both mark a seed unjudged rather than accept a
+ minority verdict. The other eight callers of `gatherStageVoices` do not read
+ it, relying on their own downstream guards.
+
 ## Dropped merge opinions do not explain the duplicate issues
 
 `group-index-out-of-range` is the adjudication panel naming a cluster number
