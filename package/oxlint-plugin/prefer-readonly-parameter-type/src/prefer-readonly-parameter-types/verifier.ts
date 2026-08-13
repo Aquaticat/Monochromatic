@@ -10,21 +10,10 @@ import type {
   Context,
   Fixer,
 } from '@oxlint/plugins';
-import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
-import type { CallableEffectSummary, } from './effect-summaries.ts';
-import type { ParameterIndex, } from './effect-slot-identity.ts';
-import {
-  MUTATION_CONTRACT_UNAVAILABLE,
-  mutationContractsForDeclaration,
-  mutationTargetIndexes,
-} from './mutation-contract-query.ts';
+import { MUTATION_CONTRACT_UNAVAILABLE, } from './mutation-contract-query.ts';
 import { opaqueEffectReport, } from './opaque-effect-diagnostic.ts';
-import type { classifyReadonlyType, } from './readonly-classifier.ts';
-import {
-  factsNeedForeignProof,
-  readonlyParameterFacts,
-  type ReadonlyParameterFacts,
-} from './readonly-parameter-facts.ts';
+import type { ReadonlyCallableEvidence, } from './readonly-callable-evidence.ts';
+import type { ReadonlyRuleCategory, } from './readonly-rule-category.ts';
 import { reportRedundantForeignBorrowed, } from './redundant-marker-report.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 
@@ -127,97 +116,29 @@ function reportStaleContract({
  *
  * @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
-export function verifyReadonlyCallable({
+export function reportReadonlyCallableEvidence({
   context,
-  declaration,
-  effectSummary,
-  project,
-  proveForeignBorrowed,
+  evidence,
+  category,
 }: ForeignBorrowed<{
   readonly context: Context;
-  readonly declaration: EffectCallableDeclaration;
-  readonly effectSummary: CallableEffectSummary;
-  readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-  readonly proveForeignBorrowed: () => ReadonlySet<ParameterIndex>;
+  readonly evidence: ReadonlyCallableEvidence;
+  readonly category: ReadonlyRuleCategory;
 }>,): void {
+  const {
+    declaration,
+    project,
+    contracts,
+    targetIndexes,
+    parameterFacts,
+    foreignBorrowedParameters,
+  } = evidence;
   /**
-   * Source file owning callable and authored comments.
+   * Source file owning callable and authored parameter ranges.
    */
   const sourceFile = declaration.getSourceFile();
-  /**
-   * Attached mutation contracts, when callable has TSDoc.
-   */
-  const contracts = mutationContractsForDeclaration({
-    declaration,
-    sourceFile,
-  },);
-  /**
-   * Valid contract targets mapped to parameter indexes.
-   */
-  const targetIndexes = mutationTargetIndexes({
-    declaration,
-    sourceFile,
-  },);
-  /**
-   * Parsed mutation blocks, absent when callable has no TSDoc.
-   */
-  const blocks = contracts === MUTATION_CONTRACT_UNAVAILABLE ? [] : contracts.blocks;
-  /**
-   * Mutation blocks grouped by semantic parameter index.
-   */
-  const blocksByParameter = new Map<number, typeof blocks>();
-  blocks.forEach(function groupBlock(block,): void {
-    /**
-     * Parameter index matching authored target.
-     */
-    const parameterIndex = targetIndexes.get(block.parameterName,);
-    if (parameterIndex === undefined)
-      return;
-    blocksByParameter.set(
-      parameterIndex,
-      [
-        ...blocksByParameter.get(parameterIndex,) ?? [],
-        block,
-      ],
-    );
-  },);
-  /**
-   * Whether callable has analyzable implementation body.
-   */
-  const hasBody = ('body' in declaration) && (declaration.body !== undefined);
-  if (!hasBody)
-    return;
-  /**
-   * Everything every parameter's verdict reads, apart from foreign ownership.
-   */
-  const parameterFacts = readonlyParameterFacts({
-    declaration,
-    effectSummary,
-    project,
-    targetIndexes,
-    blocksByParameter,
-  },);
-  /**
-   * Parameters a marker holds under foreign ownership, proven only when a verdict reads it.
-   *
-   * The proof is the most expensive answer this rule can ask for, one complete backwards caller
-   * closure over the whole configured scope per callable, and most callables have no parameter
-   * whose report it could change. Demanded here rather than inside a branch so that a callable
-   * either has the answer before it reports anything or fails before it reports anything: the
-   * closure charges the analysis budget, and a budget exhausted midway through a parameter list
-   * would otherwise leave half a callable's diagnostics emitted.
-   */
-  const foreignBorrowedParameters = parameterFacts
-      .some(function verdictReadsForeign(facts: ReadonlyParameterFacts,): boolean {
-        return factsNeedForeignProof(facts,);
-      },)
-    ? proveForeignBorrowed()
-    : new Set<ParameterIndex>();
 
-  parameterFacts.forEach(function verifyParameter(facts: ReadonlyParameterFacts,): void {
-    /**
-     * Declared parameter this verdict is about.
-     */
+  parameterFacts.forEach(function reportParameter(facts,): void {
     const {
       parameter,
       parameterIndex,
@@ -237,8 +158,7 @@ export function verifyReadonlyCallable({
       redundantMarkerPossible,
     } = facts;
     /**
-     * Whether exact ownership marker provenance reaches current parameter from
-     * boundary, property, element, destructuring, callback, or owned call.
+     * Whether exact ownership-marker provenance reaches current parameter.
      */
     const foreignBorrowed = foreignBorrowedParameters.has(parameterIndex,);
     /**
@@ -252,6 +172,78 @@ export function verifyReadonlyCallable({
         .end,
     },);
 
+    if (category === 'preference') {
+      if (((!opaque) || acceptedHostOpacity)
+        && (!mutated)
+        && (!retained)
+        && (!foreignBorrowed)
+        && (classification.kind === 'mutable')) {
+        /**
+         * Verified semantic type suggestions available for current syntax.
+         */
+        const suggestions = readonlyParameterSuggestions({
+          context,
+          parameter,
+          project,
+        },);
+        context.report({
+          node: context.sourceCode
+            .ast,
+          loc,
+          messageId: 'shouldBeReadonly',
+          data: {
+            parameterName,
+            reason: classification.reason,
+          },
+          ...suggestions.length === 0 ? {} : { suggest: suggestions, },
+        },);
+      }
+      return;
+    }
+
+    if (category === 'mutation') {
+      if (mutated
+        && (!foreignBorrowed)
+        && ((classification.kind === 'deep-readonly')
+          || (classification.kind === 'projected-readonly-capability'))) {
+        context.report({
+          loc,
+          messageId: 'readonlyParameterMutation',
+          data: {
+            parameterName,
+            reason: classification.kind === 'projected-readonly-capability'
+              ? `{classification.reason}; caller-reachable state is mutated`
+              : 'caller-reachable state is mutated',
+          },
+        },);
+      }
+      return;
+    }
+
+    if (category === 'opaque-effect') {
+      if (opaque && (!acceptedHostOpacity)) {
+        context.report(opaqueEffectReport({
+          loc,
+          inputSubject,
+          targetIndexes,
+          parameterIndex,
+          uncertainty,
+          ...(affectedNames === undefined) ? {} : { affectedNames, },
+        },),);
+      }
+      else if (classification.kind === 'projected-readonly-capability') {
+        context.report({
+          loc,
+          messageId: 'projectedCallableCapability',
+          data: {
+            parameterName,
+            reason: classification.reason,
+          },
+        },);
+      }
+      return;
+    }
+
     if (opaque
       && foreignHostCapability
       && (parameterBlocks.length === 0)) {
@@ -260,81 +252,8 @@ export function verifyReadonlyCallable({
         messageId: 'hostCapabilityContractRequired',
         data: { parameterName, },
       },);
-      return;
     }
-    if (opaque && (!acceptedHostOpacity)) {
-      context.report(opaqueEffectReport({
-        loc,
-        inputSubject,
-        targetIndexes,
-        parameterIndex,
-        uncertainty,
-        /* Whether the general message's closing advice, to make the type sound, would be
-         * telling this author to do what they already did. The charge is unaffected. */
-        alreadyReadonly: classification.kind === 'deep-readonly',
-        ...(affectedNames === undefined) ? {} : { affectedNames, },
-      },),);
-      return;
-    }
-    if (mutated
-      && (!foreignBorrowed)
-      && ((classification.kind === 'deep-readonly')
-        || (classification.kind === 'projected-readonly-capability'))) {
-      context.report({
-        loc,
-        messageId: 'projectedReadonlyCapability',
-        data: {
-          parameterName,
-          reason: classification.kind === 'projected-readonly-capability'
-            ? classification.reason
-            : 'declared readonly parameter has reachable mutation effect',
-        },
-      },);
-      return;
-    }
-    if ((!mutated) && (!foreignBorrowed)
-      && (classification.kind === 'projected-readonly-capability')) {
-      context.report({
-        loc,
-        messageId: 'projectedReadonlyCapability',
-        data: {
-          parameterName,
-          reason: classification.reason,
-        },
-      },);
-    }
-    /* `retained` gates the offer and nothing else, which is the whole of what a store
-     * changes. Every branch above answers exactly as it did before the store
-     * classification existed, because `opaque` is false for a parameter whose only
-     * recorded cause is a store, and a store is not a mutation so none of them was ever
-     * about it. Placing this test on the offer rather than ahead of the loop is the
-     * correction: an early return also took the dissound-type report away from a
-     * parameter that happened to be stored, which `storeCapabilityProjection` measures. */
-    if ((!mutated)
-      && (!retained)
-      && (!foreignBorrowed)
-      && (classification.kind === 'mutable')) {
-      /**
-       * Verified semantic type suggestions available for current syntax.
-       */
-      const suggestions = readonlyParameterSuggestions({
-        context,
-        parameter,
-        project,
-      },);
-      context.report({
-        node: context.sourceCode
-          .ast,
-        loc,
-        messageId: 'shouldBeReadonly',
-        data: {
-          parameterName,
-          reason: classification.reason,
-        },
-        ...suggestions.length === 0 ? {} : { suggest: suggestions, },
-      },);
-    }
-    if (hasBody && (!affected)
+    if ((!affected)
       && (contracts !== MUTATION_CONTRACT_UNAVAILABLE)) {
       parameterBlocks.forEach(function stale(block,): void {
         reportStaleContract({
@@ -344,10 +263,6 @@ export function verifyReadonlyCallable({
         },);
       },);
     }
-    /* `redundantMarkerPossible` already carries `!affected` together with everything the report
-     * decides from the declared type, which is what let the proof above be declined for a
-     * parameter this report could not have named. The report applies the same tests again on its
-     * own behalf. */
     if (redundantMarkerPossible && foreignBorrowed) {
       reportRedundantForeignBorrowed({
         context,

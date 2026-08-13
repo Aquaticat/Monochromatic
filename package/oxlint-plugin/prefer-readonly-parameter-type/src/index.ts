@@ -3,6 +3,9 @@ import {
   type Plugin,
 } from '@oxlint/plugins';
 
+import { noInvalidParameterEffectContracts, } from './no-invalid-parameter-effect-contracts.ts';
+import { noOpaqueParameterEffects, } from './no-opaque-parameter-effects.ts';
+import { noReadonlyParameterMutations, } from './no-readonly-parameter-mutations.ts';
 import { preferReadonlyParameterTypes, } from './prefer-readonly-parameter-types.ts';
 import { initializeExternalImplementationApi, } from './prefer-readonly-parameter-types/external-implementation-project.ts';
 import { initializeSemanticBridge, } from './prefer-readonly-parameter-types/typescript-sync-adapter.ts';
@@ -33,6 +36,11 @@ export {
   finalEffectIndexCacheStats,
   type FinalEffectIndexCacheStats,
 } from './prefer-readonly-parameter-types/effect-final-index-cache.ts';
+
+export {
+  readonlySourceEvidenceCacheStats,
+  type ReadonlySourceEvidenceCacheStats,
+} from './prefer-readonly-parameter-types/readonly-source-evidence.ts';
 
 export {
   buildEffectSummaryIndex,
@@ -76,7 +84,7 @@ initializeSemanticBridge();
 initializeExternalImplementationApi();
 
 /**
- * Oxlint plugin enforcing sound readonly parameter and mutation contracts.
+ * Oxlint plugin separating readonly preference, mutation, opacity, and contract policies.
  *
  * @example
  * ```typescript
@@ -93,6 +101,9 @@ const plugin: Plugin = eslintCompatPlugin({
   },
   rules: {
     'prefer-readonly-parameter-types': preferReadonlyParameterTypes,
+    'no-readonly-parameter-mutations': noReadonlyParameterMutations,
+    'no-opaque-parameter-effects': noOpaqueParameterEffects,
+    'no-invalid-parameter-effect-contracts': noInvalidParameterEffectContracts,
   },
 },);
 
