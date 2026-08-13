@@ -331,9 +331,16 @@ The needle preview changes neither: it appends diagnostic text to a finding for
 SUPERSEDES the `pass14` framing below, which was written before the target
  changed. The watcher RESUMES `translation-repair-runs-pass13` rather than
  creating a fresh `pass14` directory, and its script is
- `~/temp/agent/continue-pass13.sh`. The commit that introduced it,
+ `~/temp/agent/resume-run.sh`. The commit that introduced it,
  `a63c44a94`, says "arm pass14" and is inaccurate for that reason; it is not
  amended, per the no-amend rule.
+
+The script was `~/temp/agent/continue-pass13.sh` when first armed. It was
+ renamed on the rewrite that added the smoke check, because bash reads a script
+ INCREMENTALLY as it executes, so editing the file a running watcher is
+ mid-read can make it resume at a byte offset that no longer means what it did.
+ Every rewrite since stops the watcher by explicit pid first, then edits, then
+ relaunches.
 
 WHY RESUME rather than start fresh. A new runs directory has no artifacts and
  no slice cache, so `listResumableEntries` would find nothing in flight and the
@@ -360,6 +367,58 @@ TWO HAZARDS were found while arming it, both worth keeping:
     unattended launch, since `createRunClient` refuses to build a client with
     no key and the run would die instantly at 03:00 with only a log line.
     Verified from a `setsid` shell with stdin closed: the key resolves.
+
+THE PATTERN HAZARD RECURRED TWICE MORE after being written down, which is the
+ useful part of this record: knowing it was not enough to avoid it.
+ `pgrep --full 'continue-pass13.sh'` listed the watcher AND the shell running
+ the pgrep, because the pattern appears in that shell's own command line. The
+ second time it was `pkill --full`, which killed the shell issuing it, and the
+ command tool reported exit 144 with no other explanation. The rule that
+ survives: never match a watcher by a pattern that appears in the command line
+ doing the matching. Kill by explicit pid, and match with `--exact` against the
+ full command line.
+
+### The watcher smoke-checks the source before committing to a long run
+
+The pass executes `node src/corpus-run/corpus-pass.ts` straight from SOURCE, so
+ an agent session that stops mid-edit leaves a broken module graph and the
+ unattended resume dies in seconds, spending the night on nothing. The watcher
+ now runs the documented zero-quota `--plan` check first and refuses to start
+ the real run if it fails.
+
+`--plan` is the right check rather than a build, and the difference is not
+ cosmetic. The build only proves `dist/` compiles, and the corpus pass never
+ reads `dist/`; the unit tests do. `--plan` loads the exact source graph the
+ real run loads, resolves the corpus at the pinned tip, and constructs the
+ client, so it also catches a corpus or sops-key failure that a build could not
+ see. Measured: about ten seconds and exit 0 on healthy source.
+
+Each link was verified rather than assumed:
+
+-   Node exits 1 on both mid-edit break modes. Tested on throwaway files: a
+    truncated arrow function, and an imported module deleted out from under its
+    importer.
+-   `mise` propagates a task's non-zero exit rather than swallowing it. Tested
+    in a throwaway project with its own `mise.toml`, one failing task and one
+    passing task: exit 1 and exit 0 respectively.
+-   `--plan` writes only `artifacts/` into whatever runs directory it is given,
+    so the check runs against a `mktemp` throwaway and cannot perturb the
+    directory the resumed run is about to continue.
+
+The check is BOUNDED at 300 seconds, a thirty-fold margin over measured healthy
+ time, because a watcher that blocks forever on its own guard is worse than no
+ watcher: the night is lost with nothing in the log saying why. A TIMEOUT is
+ treated differently from a failure and PROCEEDS, since timing out means the
+ module graph loaded and only speed is in question, which is not the fault the
+ guard exists to catch. Only a genuine non-zero exit aborts.
+
+UNDIAGNOSED, and recorded because it is a plausible real failure rather than
+ only an artificial one. Given a runs directory that cannot be created
+ (`/proc/definitely/not/creatable`, while probing exit codes), `--plan` did not
+ fail fast. It printed nothing, not even its `START` line, and sat in state `R`
+ burning CPU for two and a half minutes until killed. A full disk would present
+ the same way. The cause was not chased, since the smoke check uses a creatable
+ `mktemp` directory and the 300-second bound covers it either way.
 
 ### Superseded: `pass14` is armed by a detached watcher, not by a note
 

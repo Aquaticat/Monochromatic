@@ -744,10 +744,38 @@ VERIFIED BY MUTATION: restoring the bare-kind warning fails 9 assertions. The
  existing cases asserted only that a voice was LOST and never read what the
  loss recorded, which is how a warning this uninformative survived having tests.
 
-WHEN IT WILL BE READ. `pass13` cannot see it, being a frozen module graph. The
- detached watcher resumes that run in a fresh process, so the resumed half
- carries it and `#75`'s 74-and-counting voice losses become diagnosable without
- any further action.
+WHEN IT WILL BE READ, and this is NARROWER than the first version of this
+ paragraph said. It claimed `#75`'s "74-and-counting voice losses become
+ diagnosable", which reads as covering the losses already on disk. It does not.
+ A warning is written once, at the moment the voice is lost, so the 74 losses
+ `pass13` has already recorded stay bare permanently. Only losses recorded
+ AFTER a fresh process starts carry the sub-kind and the opening. `pass13`
+ cannot see the change at all, being a frozen module graph; the detached
+ watcher resumes that run in a new process, so the resumed half onward is
+ diagnosable and the already-recorded 74 are not recoverable.
+
+The needle write-up in this document got the equivalent point right, saying the
+ misses already recorded stay undiagnosable. The voice-loss write-up did not,
+ and the two changes have identical reach.
+
+### Both fixes make the run log corpus-bearing, which it was not before
+
+The raw opening is model output on a translation task, so it is largely corpus
+ prose, and the needle preview carries corpus text by construction. Before
+ today the log recorded `schema-mismatch, voice lost` and `quote-not-found`,
+ which name a fault and quote nothing.
+
+As built this is safe. Both land only in run logs, which live outside git under
+ `node_modules/.monochromatic` and are gitignored, exactly like the artifacts
+ and grading sheets that have always held corpus text.
+
+The constraint is on what happens NEXT, and it falls on this document. Reading
+ those diagnoses and writing up what they say must not quote a needle or a raw
+ opening here, because this file is committed, and must not paste log excerpts
+ into `pi`/sol or any third-party model. `one-among-us/data` is unlicensed. The
+ same discipline the grading sheets already carry applies: name the fault class,
+ cite counts, quote nothing. `artifact-probe-read.unit.test.ts` states the rule
+ for the quote fields it omits, and it is the same rule.
 
 THE TWO REMAINING WALLS are accepted issues not recording which critic raised
  each claim, which blocks `#65` and `#68`, and that one is NOT this shape: the
