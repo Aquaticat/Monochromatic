@@ -12,17 +12,24 @@ IDE is being shut down
 
 The observed machine still had an IntelliJ IDEA process from the prior day.
 IDEA had received repeated non-forced shutdown requests,
-but the process remained alive and continued to own the single-instance endpoint.
-Every new launch therefore contacted that old process instead of creating a new IDE process.
+but the process remained alive and continued to own the single-instance endpoint:
+
+```text
+2026-08-12 21:10:39,974  Station requested IDE shutdown. force = false, restart = false
+2026-08-12 21:12:00,652  Station requested IDE shutdown. force = false, restart = false
+```
+
+Subsequent launch attempts therefore contacted that old process instead of creating a new IDE process.
 
 ## Root cause
 
 The immediate launch failure was a stuck existing IDEA instance that had entered the shutdown lifecycle.
 The evidence does not identify the component that blocked that shutdown.
 
-Source findings use the IntelliJ Community source at tag `idea/262.9437.185`,
+Source findings use the shared platform source from
+[JetBrains/intellij-community][] at tag `idea/262.9437.185`,
 commit `b75ab523e6adbe1d26112219729eacbcfd24daa0`,
-which is also tagged `idea/2026.2.1`.
+which is also tagged `idea/2026.2.1` and matches the installed Ultimate build.
 
 ### Step 1: a new launcher delegates to an existing instance
 
@@ -154,10 +161,41 @@ gtk-launch jetbrains-idea-e37c368f-a232-4031-8958-0c5d7640c421
 ```
 
 Verification crossed the window-manager boundary.
-A one-shot KWin script matched the new root process ID,
+The following one-shot KWin script used IDEA's verified `resourceClass`,
 found two IDEA windows,
 unminimized them,
-and activated each successfully:
+and activated each:
+
+```js
+// $HOME/temp/agent/verify-idea-window.js
+const marker = "PI_IDEA_WINDOW_K7M:";
+const ideaWindows = workspace.windowList().filter(
+  (window) => String(window.resourceClass).toLowerCase() === "jetbrains-idea"
+);
+console.info(`${marker} count=${ideaWindows.length}`);
+ideaWindows.forEach((window) => {
+  window.minimized = false;
+  workspace.activeWindow = window;
+  console.info(
+    `${marker} activated=true minimized=${window.minimized} active=${window.active}`
+  );
+});
+```
+
+It was loaded,
+run,
+read from KWin's journal output,
+and unloaded with:
+
+```bash
+qdbus org.kde.KWin /Scripting org.kde.kwin.Scripting.loadScript \
+  "$HOME/temp/agent/verify-idea-window.js" pi-verify-idea-window
+qdbus org.kde.KWin /Scripting org.kde.kwin.Scripting.start
+journalctl --boot --no-pager --output=cat --since='1 minute ago' \
+  | rg --fixed-strings 'PI_IDEA_WINDOW_K7M:'
+qdbus org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript \
+  pi-verify-idea-window
+```
 
 ```text
 count=2
@@ -261,8 +299,9 @@ The six filing constraints resolve as follows:
     no AI-assistance ban was found.
 5. **Will they likely fix it?**
     Not enough evidence.
-   IJPL-160882 records concern that a kill button could cause data loss.
-   It was closed in favor of cause-specific tickets.
+   Maintainer comments on IJPL-160882 say a kill button would not solve the cause
+   and could create more user problems.
+   Its closing comment retires the umbrella in favor of cause-specific tickets.
    Since the 2026.2.1 tag,
    the activation-listener file has two unrelated commits and `DirectoryLock.java` has none.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
@@ -278,5 +317,6 @@ This incident adds a distinct status-16 signal,
 but lacks the thread dump needed to identify the shutdown blocker or advance a cause-specific ticket.
 A bare report that killing the process worked would not add actionable upstream evidence.
 
+[JetBrains/intellij-community]: https://github.com/JetBrains/intellij-community
 [IJPL-160882]: https://youtrack.jetbrains.com/issue/IJPL-160882
 [IJPL-234004]: https://youtrack.jetbrains.com/issue/IJPL-234004
