@@ -8236,3 +8236,46 @@ Two consequences worth carrying forward.
 
 Both belong to the same family as the two silent probes recorded earlier today:
  a command that answers a question you did not ask, and reads as success.
+
+### The durable record was itself not connected
+
+Landing `stage-voice-lost` was not enough, and I nearly declared it done. A
+ reviewer asked whether all eight `gatherStageVoices` callers actually thread
+ `gather.findings` onward. Two did not.
+
+-   `candidate-select.ts` had no findings channel at all, so EVERY judge vote,
+    per envelope and per chunk, built findings and dropped them.
+-   `derivability-probe.ts` still has none.
+
+This was symptomless by construction. Under the old semantics findings were
+ documented as "empty when quorum was met", so a caller that discarded them
+ looked exactly like one with nothing to pass on. That is the same shape as the
+ alignment findings nobody read and the rejection reasons that reached only a
+ line count. The lesson generalizes: when a channel is usually empty, a caller
+ that drops it is invisible, so adding a producer is only half the change.
+
+`SelectionOutcome` now carries findings, `editor-ensemble` collects them across
+ every envelope vote, `selectChunkPatch` returns them beside its patch rather
+ than widening the shared `PatchOutcome`, and the editor and refine stages
+ spread them into findings they already write. `derivability-probe.ts` is left
+ alone deliberately: it is reached only through `recall-barrel.ts` for the
+ recall benchmark, which writes no per-entry artifact for a finding to land in.
+
+One finding per unheard model, not one naming a list, so counting findings
+ counts voices lost. A list-valued finding counts GATHERS that lost at least one
+ voice, which is a different number, and reading the first as the second is
+ exactly the mistake that made the old per-model tally unusable.
+
+### What the positive control does and does not cover
+
+Against the two rejected implementations, the previous shipped version and the
+ skip-to-the-first-brace rule:
+
+-   apology then JSON: the shipped rule leaves it alone, the skip-to-brace rule
+    MENDS it. This is the load-bearing case and it discriminates.
+-   fence behind a marker: shipped strips, the previous version loses the voice.
+-   two markers in a row: shipped strips both, the previous version loses it.
+-   a marker run reaching prose: all three agree, so this test discriminates
+    against NEITHER. It guards the transactional property against a
+    partial-strip implementation, which neither comparison has. Weaker test,
+    recorded as such rather than counted as proof.
