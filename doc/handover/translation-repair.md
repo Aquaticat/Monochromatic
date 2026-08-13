@@ -7708,3 +7708,42 @@ Whether `pass13` has settled entries carrying `[line-break-collapsible]`
 If the proportion is small, the quote-anchoring lead is closed. If it is large,
  it becomes an argument the user should hear when they settle the
  line-structure question.
+
+### A second finding from the same census: the refiner goes silent
+
+The naturalness refiner is a ONE-model stage. Across 129 invocations it heard
+ nothing 34 times, and the partition by entry is exact: 29 entries heard from
+ it on every invocation, 7 heard from it on none, and none sat in between.
+Independent per-call failure cannot produce that, so the cause is a function of
+ the entry rather than transport flakiness.
+
+Those blocks were eligible, were selected, and were never rewritten. The lane's
+ real reach is therefore below the 12.0% eligibility figure, which matters
+ because the naturalness decision is one of the ones waiting on the user, and
+ its Option B would triple the eligible blocks against the same single voice.
+
+The cause is not yet known, and getting it needs no code change. The warning in
+ `attemptStageCall` names the reason but is discarded before it reaches any
+ finding; the historical logs are gone, checked rather than assumed. So
+ `pass13`'s voice losses are being appended to
+ `node_modules/.monochromatic/translation-repair-runs-pass13/voice-loss.log`,
+ and because the failure is entry-determined `pass13` should reproduce it and
+ name the cause.
+
+Threading the reason into the finding was considered and deferred: it needs a
+ `StageVoice` union change, cache version 10 and another restart, and the log
+ route answers the question without any of them.
+
+Tracked as task #73; the quote-anchoring work is task #72.
+
+### Standing invariants for whoever picks this up
+
+-   Every `*.unit.test.ts` imports `../dist/final/node/index.mjs`, so always
+    run `buildAndTest`, never bare `test:unit`.
+-   A running pass has a frozen module graph, so rebuilding cannot affect it,
+    and a pass must be confirmed working before its predecessor is signalled.
+-   Any pipeline-behaviour change bumps `SLICE_CACHE_VERSION` in the same
+    commit. It has been missed once, on the very commit that added a gate.
+-   Corpus content is unlicensed: artifacts, sheets and logs stay under
+    `node_modules/.monochromatic/`, never in git, and grading sheets never go
+    to a third-party model.
