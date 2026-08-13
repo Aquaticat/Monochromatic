@@ -167,7 +167,7 @@ restore,
 or otherwise disturb it.
 
 The investigation's detached worktree has been removed.
-Implementation has started.
+Implementation is complete.
 
 Landed commits:
 
@@ -179,18 +179,25 @@ Landed commits:
 - `28d82a8f9` adds the four public rules,
   category-neutral callable and source evidence,
   a semantic-source evidence cache,
-  and thin category reporters.
+  and thin category reporters;
+- `253fa5841` adds split-rule ownership,
+  propagation,
+  external-worker,
+  and evidence-cache coverage;
+- `0e3307db5` completes neutral wording,
+  package documentation,
+  and cache-sharing verification;
+- `b9e427dfc` adds all four shared configuration entries,
+  leaving the preference rule at `error` and linking each extracted `off` rule to issue #423.
 
 The first package unit run confirmed the legacy fixture enabled only the preference rule.
 The dedicated fixture now enables all four rules,
 and the external-worker test enables the opaque-effect rule it measures.
 
-A later unit run passed every package suite except four assertions whose old totals assumed early-return suppression between
-policy categories.
-Measured deltas are intentional:
+The split revealed intentional diagnostic additions hidden by old early returns:
 opaque inputs carrying stale contracts now receive both independent diagnostics,
 and invalid host-capability boundaries receive both unresolved-effect and missing-contract diagnostics.
-Those assertions are being updated with rule-ownership checks rather than count-only acceptance.
+Updated assertions name rule ownership rather than accepting count changes alone.
 
 Coverage landed in `253fa5841` and follow-up fixes:
 
@@ -217,21 +224,41 @@ It requires direct promotion from `off` to `error`,
 allows reviewed fingerprinted acceptance with stale-entry detection,
 and defers no-disable policy until that mechanism is chosen.
 
-Shared configuration remains untouched as required until implementation and pre-configuration verification are complete.
+Shared configuration landed only after pre-configuration verification.
+Post-configuration verification established:
 
-## Planned verification
+- `mise run //package/config/oxlint:build` passed;
+- `mise run //package/config/oxlint:lint:types` passed;
+- importing `package/config/oxlint/dist/final/node/index.mjs` returned the preference rule at `error` and all three
+  extracted rules at `off`;
+- `mise run //package/module/caught-value:lint:oxlint` passed through the built shared configuration;
+- source and built configuration both contain every extracted rule;
+- three source comments link issue #423 and direct promotion to `error`;
+- current readonly-domain source and documentation contain zero rejected moralized classification terms;
+- affected editable investigation comments on issue #422 were updated to neutral terminology.
 
-Use package-specific `mise` tasks from the root and package `mise.toml` files.
-At minimum:
+The attempted historical `translation-repair` consumer task was stale session context:
+that package and task do not exist on current `main`.
+The existing `module/caught-value` package provided the successful shared-config consumer boundary instead.
 
-- build the plugin before consumers load it;
-- run the plugin type lint manually;
-- run every unit test covering exported rule paths;
-- exercise all three rules through Oxlint configuration at the consumer boundary;
-- prove the readonly-to-mutable propagation control still reports under the unresolved-effect rule;
-- run the affected shared configuration tests after the final config edit;
-- run Markdown lint for changed documentation.
+Independent review found and closed two semantic gaps in `96e04609a`:
 
-Record exact commands,
-results,
-and commits here as work lands.
+- accepted host opacity had been folded into legacy `mutated` facts;
+  the mutation rule now reads a separate `provedMutation` fact based only on referent-mutation evidence;
+- stale contracts were being reported while effects remained unresolved;
+  stale-contract reporting now requires `!opaque`.
+
+The same commit adds changed-source evidence-cache invalidation coverage.
+The full plugin unit suite passed after these fixes.
+Issue #423 now also requires extending self-hosting overrides before promotion.
+
+The evidence cache uses immutable semantic `SourceFile` identity as its key.
+Changed source text is measured to create one miss and one fresh computation.
+The real all-rules fixture verifies routing through Oxlint,
+while the direct cache test verifies one computation across four context objects.
+
+## Next action
+
+Post the implementation evidence to issue #422,
+close #422,
+and leave all deferred workspace enforcement in issue #423.
