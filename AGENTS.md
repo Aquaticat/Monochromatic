@@ -1555,6 +1555,15 @@ M1T:
 Never stretch or wrap text inside a tab;
  wrap whole tabs across rows.
 
+PXF:
+ Screenshot-driven UI:
+ measure reference geometry,
+ colors,
+ spacing,
+ and states;
+ render final artifact side-by-side at matching scale before completion.
+Memory-based similarity is not evidence.
+
 ## Agent skills
 
 SK1:
