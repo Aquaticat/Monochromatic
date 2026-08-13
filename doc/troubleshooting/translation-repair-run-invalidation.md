@@ -325,3 +325,40 @@ NO CACHE BUMP was needed. `SLICE_CACHE_VERSION` covers changes to what
 The needle preview changes neither: it appends diagnostic text to a finding for
  a claim that was already being discarded, so a slice cached before it and
  resumed after it produces the same repair decisions.
+
+### `pass14` is armed by a detached watcher, not by a note
+
+The paragraph above says `pass14` should start when `pass13` stops, and the run
+ monitor emits `PROCESS GONE` as the cue. That is a note to whoever reads it,
+ not a mechanism: the monitor is session-scoped and dies when the agent session
+ does, and `pass13`'s budget expires overnight.
+
+So the cue is now executed by a detached script at
+ `~/temp/agent/start-pass14.sh`, launched with `setsid nohup` and reparented to
+ `systemd`, which is what makes it independent of any agent session. It polls
+ for the corpus pass to exit, then starts `pass14` from the current tip into
+ `translation-repair-runs-pass14`.
+
+Its guards, because an unattended launcher is only safe with them:
+
+-   A 6-hour bound on the wait, well past `pass13`'s remaining budget, so a
+    wedged pass cannot leave the watcher alive indefinitely.
+-   A re-check after a 30-second settle, so it aborts if another launcher won
+    the race and a pass is running again.
+-   A refusal to start if `translation-repair-runs-pass14` already exists, so it
+    can never write into a directory holding another run's artifacts.
+
+It logs to `~/temp/agent/pass14-watcher.log`. To cancel it, `pkill --full
+ start-pass14.sh`.
+
+### Resumed slices will carry needle-less findings, which is not a pass-identity clue
+
+Findings are part of `ChunkRepairOutcome`, so a slice cached by `pass13` and
+ resumed by `pass14` keeps the finding text it was written with. An entry can
+ therefore hold `quote-not-found (target)` from a resumed slice beside
+ `quote-not-found (target) needle="..."` from a fresh one.
+
+That is harmless for every decision, since the preview is diagnostic and the
+ claim was discarded either way. It is worth stating only so a reader does not
+ treat a needle-less finding as evidence about which pipeline version produced
+ the entry. The `tip` field is what says that.
