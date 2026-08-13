@@ -1350,3 +1350,54 @@ Read that way, refusing to pair `XIEPT2` and routing it to a translate stage is
 The earlier sizing said 3 entries, 20 sections, 2 entries zeroed. With the
  preamble adapter it is 2 entries, 21 units, and only `XIEPT2` reduced to zero.
 `XingZ60` keeps 12 of its 13 pairs and loses only the one that was wrong.
+
+### `XIEPT2` settled: refusing it costs nothing
+
+The cost of attempt seven was stated as "refuses 8 pairings production gets
+ right", hedged with "arguably". The hedge is removable, and this document has
+ said two things about `XIEPT2` that needed reconciling: that it "pairs
+ correctly", and that its figures are "not quotable". Both are true and they
+ are about different questions.
+
+PRODUCTION PAIRS IT CORRECTLY. Dumped pair by pair, all eight are genuine
+ translations of each other: 经历 with Experience, 遇见 with Meeting, 阴影 with
+ Shadow, 事故 with Accident, 送行 with Farewell, 未来？ with Future?, 梦醒 with
+ Fact, and the postscript with Postscript. The `sections-merged` finding folded
+ the target preamble into pair 0, and everything after it lines up.
+
+AND EVERY ONE OF THOSE PAIRS IS EMPTY ON THE ENGLISH SIDE:
+
+```text
+  pair 0  经历      src 1600 ch / 17 blocks    tgt    7 ch / 1 block
+  pair 1  遇见      src 1114 ch / 12 blocks    tgt    0 ch / 0 blocks
+  pair 2  阴影      src 1160 ch / 23 blocks    tgt    0 ch / 0 blocks
+  pair 3  事故      src  983 ch / 17 blocks    tgt    0 ch / 0 blocks
+  pair 4  送行      src  576 ch / 14 blocks    tgt    0 ch / 0 blocks
+  pair 5  未来？    src  592 ch / 13 blocks    tgt    0 ch / 0 blocks
+  pair 6  梦醒      src  489 ch /  8 blocks    tgt    0 ch / 0 blocks
+  pair 7  后记      src  479 ch / 17 blocks    tgt   75 ch / 1 block
+```
+
+The two pairs that technically carry target text carry 7 characters, which is a
+ to-do marker, and 75, which is a contributor credit. The entry is 6994 source
+ characters against 82 target characters.
+
+So `XIEPT2` is not a translation with alignment trouble. It is an UNTRANSLATED
+ document with headings. Every one of its eight correct pairings would hand the
+ critics Chinese prose against nothing and collect omission claims for content
+ that was never written, which is exactly the work `#69` decided should be a
+ translation rather than a repair.
+
+REFUSING IT THEREFORE COSTS NOTHING. The coverage the aligner gives up is
+ coverage that produces noise.
+
+That removes the last hedge from attempts six and seven together:
+
+-   90 of 92 entries pair identically to production.
+-   `XingZ60` keeps 12 of 13 pairs and loses the one that was wrong.
+-   `XIEPT2` is refused, and it holds 82 characters of English.
+
+The destination decision still stands, because with no translate stage
+ `XIEPT2` gets nothing rather than getting translated. But the decision is now
+ about ONE untranslated document, not about losing correct work, and it argues
+ ROUTE over REPORT more strongly than before.
