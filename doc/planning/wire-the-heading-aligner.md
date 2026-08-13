@@ -29,7 +29,7 @@ The derivability probe is the OTHER unwired feature, and it is blocked on
  lenient without changing either, so it can be decided on its own and is the
  cheaper of the two to act on.
 
-Everything below is supporting evidence, including three prototype attempts
+Everything below is supporting evidence, including four prototype attempts
  that were wrong. The attempt history is kept deliberately: attempt three
  passed the entire corpus and was still wrong about its own mechanism, which is
  the most transferable thing here.
@@ -413,7 +413,7 @@ The derivability claim rested on a search for the word "derivability", which
  `recall-barrel.ts`, and neither `repair-benchmark.ts` nor
  `restoration-judge.ts` mentions it at all.
 
-## Prototyped, and the first two attempts were wrong
+## Prototyped, and four of the five attempts were wrong
 
 The ranking above left one thing open: whether the heading-to-chunk adapter is
  a few lines or enough code to change the answer. It was built against the
@@ -574,7 +574,7 @@ The lesson is the one this document keeps repeating in a different form. A
  corpus happens to contain, and a prototype that passes there can still be
  wrong about the mechanism it claims to use.
 
-## Attempt four resolves it: structure as a soft penalty, not a veto
+## Attempt five resolves it: structure as a soft penalty, not a veto
 
 Two more attempts, and the fourth is the answer.
 
