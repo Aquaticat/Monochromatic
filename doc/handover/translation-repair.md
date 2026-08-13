@@ -8468,3 +8468,58 @@ The `needs-human` split is the bigger one. Those 228 claims lean SUPPORTED, and
 
 None of these three needed a model call. Two needed a grep and one needed a
  fold over artifacts already on disk.
+
+## The naturalness lane was refusing four fifths of the prose it exists to read
+
+Session of 2026-08-13, late. The question was whether anything needed fixing
+ before the run kept accumulating. Tallying every finding across the settled
+ entries answered it: `refine-skipped (0 eligible paragraphs)` had fired 175
+ times.
+
+### What the filter was doing
+
+`refine-eligibility.ts` skipped any paragraph whose text contained a newline.
+ Its own module header, unchanged since it was written, says an mdast `break`, a
+ soft source wrap, and an HTML `<br>` are three different things and none of
+ them means verse. The code checked for `\n` and so treated all three as one.
+
+Measured at the pinned corpus commit before touching anything:
+
+```text
+prose paragraphs                  2067
+carrying an internal newline       811   39.2%
+of those, carrying a hard break     29
+soft-wrap only                     782
+```
+
+The rule was discarding 782 ordinary wrapped paragraphs to protect 29. The run
+ agreed: `multi-line` was the largest single exclusion at 135 of 386
+ paragraph-level skips, and the lane actually ran on 35 chunks.
+
+The replacement excludes a non-final line ending in two spaces or a backslash,
+ the two Markdown spellings of an authored break. `<br>` needs no new check,
+ since `MARKUP_MARKERS` already rejects any paragraph containing `<`. A trailing
+ marker after the last line does not count, because a break there separates the
+ paragraph from what follows rather than dividing it.
+
+This is strictly MORE precise, not looser. Every paragraph the old rule refused
+ for a real hard break is still refused. The verse risk in `#79` is not widened
+ by it, because verse is exactly what a hard break marks.
+
+### What this cost, and the restart
+
+Slice cache 20 to 21, since version-20 slices were refined over a fraction of
+ the prose the lane can now reach. The pass was terminated and the supervisor
+ resumed it, which picks up the new source automatically because the pass runs
+ from `src` rather than from a build.
+
+### Two things this did NOT justify
+
+The run did not need restarting for anything else. Every commit between the tip
+ the pass was running (`9cacc3f02`) and the eligibility fix touched only
+ measurement, reporting, barrels, or dead code, and none changes what the
+ pipeline produces for an entry. Checking that before restarting is the reason
+ the cache version stayed at 20 through all of them.
+
+Voice loss is no longer a live problem: 2 entries of 21 carry one, one model
+ each. The channel-marker fix held.
