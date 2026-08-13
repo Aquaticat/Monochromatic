@@ -94,14 +94,11 @@ The quote-anchoring telemetry then made it worth doing at once, on a different
 `pass12` was two hours from having settled anything, which is the cheapest a
  restart ever gets, and the cost only rises from here.
 
-The ordering held: `pass13` was confirmed streaming completions, applying an
- editor patch and hearing 3 of 3 checkers BEFORE `pass12` was signalled, so no
- window existed with nothing running.
-
 Restarting rather than continuing follows the standing instruction to land
  certainly-good pipeline changes immediately and restart runs as needed.
-The new pass was confirmed authenticating and doing real work BEFORE the old
- one was stopped, so no window existed with nothing running.
+The ordering held every time: `pass13` was confirmed streaming completions,
+ applying an editor patch and hearing 3 of 3 checkers BEFORE `pass12` was
+ signalled, so no window existed with nothing running.
 
 ## First artifact under the new code, and what it does and does not show
 
