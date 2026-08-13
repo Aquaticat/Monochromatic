@@ -60,8 +60,17 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * sheet without anything looking wrong. Bump this whenever
  * `ChunkRepairOutcome` changes shape OR an existing field changes meaning; the
  * structural guard in the cache store catches only the first of those.
+ *
+ * A GATE change is the second kind and is the easiest to miss, so version 6 is
+ * recorded here as the example: the footnote-integrity gate left the prompts,
+ * the roster and the texts identical, so the structural guard and `runShape`
+ * both matched, while a candidate the old gate shipped may be one the new gate
+ * refuses. `runShape` cannot catch that by construction, because it covers what
+ * the models are ASKED and a gate changes only what the code does with their
+ * answers. Nothing enforces this bump; it was missed once already, on the very
+ * commit that added that gate.
  */
-const SLICE_CACHE_VERSION = 5;
+const SLICE_CACHE_VERSION = 6;
 
 /**
  * Completion status of one repair run;
