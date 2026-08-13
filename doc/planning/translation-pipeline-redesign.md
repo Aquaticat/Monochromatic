@@ -281,8 +281,10 @@ B > C > A.
     transcribed images". This no longer gates the decision, but it RAISED a new
     one: the transcribed-image class has no answer in any of the three options,
     and it is a specific hazard for B.
--   Cost. B multiplies generation by the editor roster over every slice of every
-    entry, against a provider that already fails transport under load.
+-   ~~Cost.~~ MEASURED 2026-08-13, and it is smaller than this bullet assumed.
+    Details in "What option B actually costs". B raises editor CALLS by 1.67x
+    and editor OUTPUT volume by 3.9x, because the editor already runs on 60% of
+    slices. It does not multiply generation over the whole pipeline.
 
 ## What the prototype did, run against pair 3
 
@@ -447,3 +449,67 @@ The same fact is the warning: a design validated ONLY against `XingZ60` is
  correctly while still carrying genuine coverage gaps of 24 against 1, 18
  against 1 and 18 against 2, so it exercises the translate path without the
  alignment defect confounding it.
+
+## What option B actually costs
+
+Measured 2026-08-13 over the 10 entries `pass13` had settled, by re-deriving
+ slices with `subdivideChunkPair` at the pinned corpus SHA and reading the
+ editor envelopes out of the artifacts.
+
+The premise that needed checking is in option B's con list, "most expensive by
+ far, a full translation per slice per editor model", and in the settle-first
+ bullet, "B multiplies generation by the editor roster over every slice". Both
+ read as though the editor is idle today. It is not.
+
+```text
+  slices                              97
+  slices the editor runs on today     58   (60%)
+
+  editor CALLS      today  3 x 58 =  174
+  editor CALLS      in B   3 x 97 =  291      1.67x
+
+  distinct envelopes today           116, holding 8365 characters
+  target characters in all slices  32361
+
+  editor OUTPUT     today  ~25095 characters
+  editor OUTPUT     in B   ~97083 characters   3.9x
+
+  mean slice target   334 characters
+  mean repair envelope 72 characters
+```
+
+So B costs 1.67 times the editor calls, each producing about 4.6 times more
+ text, for 3.9 times the editor output volume. That is a real increase and it is
+ nothing like a multiplication of the run.
+
+The reason is that the current pipeline is ALREADY mostly-rewriting. The editor
+ fires on 60% of slices, so B's "every slice" adds 39 slices rather than 97.
+
+### What this does not measure
+
+Only the editor stage. The critic stage fans out to a six-model roster on every
+ slice, which is 582 calls over the same 97 slices, against the editor's 174.
+Panel, refiner and probe calls were not counted. So the editor is a MINORITY of
+ pipeline calls, and adding 117 of them is a small fraction of total traffic
+ rather than 67% of it.
+
+The 60% figure comes from 10 settled entries, which skew small: `Dethelly` at 24
+ slices is the largest and the corpus contains much larger documents. The slice
+ counts are exact, the ratio is a sample.
+
+### An unasked question that could invert the ranking
+
+Option B says the judges "choose per slice" among candidates, with the existing
+ translation as one candidate. If selection decides quality per slice, it is not
+ obvious the CRITIC stage is still needed at all: critics exist to find defects
+ for an editor to repair, and B repairs nothing.
+
+Dropping critics would remove 582 calls and add 117, making B CHEAPER than the
+ pipeline it replaces rather than more expensive. The redesign note does not say
+ whether critics survive B, and the answer moves B from "most expensive by far"
+ to "least expensive". This should be settled before the cost con is weighed.
+
+It is a genuine open question rather than a recommendation: critics may still be
+ wanted to inform the judges, and the transcribed-image class is a reason to keep
+ a stage that reasons about the source, since selection alone would have no
+ evidence for preferring a translation that carries image-borne content.
