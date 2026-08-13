@@ -64,6 +64,10 @@ export type ReadonlyParameterFacts = {
   readonly retained: boolean;
   readonly acceptedHostOpacity: boolean;
   readonly affected: boolean;
+  /**
+   * Whether semantic analysis proved caller-reachable referent mutation.
+   */
+  readonly provedMutation: boolean;
   readonly mutated: boolean;
   readonly uncertainty: UncertaintyBoundaries;
   readonly foreignHostCapability: boolean;
@@ -227,6 +231,8 @@ function factsForParameter({
     retained: uncertainty.retained,
     acceptedHostOpacity,
     affected,
+    provedMutation: effectSummary.referentMutatedParameterIndexes
+      .has(parameterIndex,),
     mutated,
     uncertainty,
     foreignHostCapability,

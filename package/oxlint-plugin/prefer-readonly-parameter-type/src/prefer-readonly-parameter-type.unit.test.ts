@@ -161,9 +161,7 @@ children: [
        * every guard left their diagnostics byte-identical. A fixture that answers the same
        * with and without the code it was written for tests that code not at all, and keeping
        * it would have recorded a passing count as evidence of a guard it never exercised. */
-      /* Four unresolved calls also carry stale @mutates blocks. The contract rule now reports
-       * those independently instead of losing them behind the opacity branch. */
-      expect(diagnostics.length,).toBe(20,);
+      expect(diagnostics.length,).toBe(16,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -237,9 +235,17 @@ children: [
     name: 'requires host contract and rejects same-named marker lookalike',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-host-capability-invalid.ts',);
-      /* Each invalid host boundary now receives its unresolved-effect finding and its
-       * independent missing-contract finding. */
-      expect(diagnostics.length,).toBe(4,);
+      /* Exact uncontracted host capability receives both its missing-contract and unresolved-effect
+       * findings; the same-named marker lookalike receives only unresolved effect. */
+      expect(diagnostics.length,).toBe(3,);
+      expect(diagnostics.filter(function opaqueRule(diagnostic,): boolean {
+        return diagnostic.code
+          === 'prefer-readonly-parameter-type(no-opaque-parameter-effects)';
+      },).length,).toBe(2,);
+      expect(diagnostics.filter(function contractRule(diagnostic,): boolean {
+        return diagnostic.code
+          === 'prefer-readonly-parameter-type(no-invalid-parameter-effect-contracts)';
+      },).length,).toBe(1,);
       expect(diagnostics.some(function missingContract(diagnostic,): boolean {
         return diagnostic.message.includes(
           'uses ForeignHostCapability for unresolved runtime behavior but lacks corresponding @mutates contract',
@@ -1876,9 +1882,7 @@ children: [
     name: 'reports readonly preference, stale contracts, and unresolved effects',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);
-      /* Four opaque parameters also carry stale contracts. Splitting the contract policy makes
-       * those stale blocks visible instead of returning from the opacity branch first. */
-      expect(diagnostics.length,).toBe(15,);
+      expect(diagnostics.length,).toBe(11,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -1890,9 +1894,17 @@ children: [
       expect(messages.some(function inheritedUncertainty(message,): boolean {
         return message.includes('but lacks its own @mutates contract',);
       },),).toBe(false,);
-      expect(messages.some(function staleContract(message,): boolean {
-        return message.includes('stale @mutates contract',);
-      },),).toBe(true,);
+      /**
+       * Resolved nonmutating parameter owns sole stale-contract diagnostic.
+       */
+      const contractDiagnostics = diagnostics.filter(function contractRule(diagnostic,): boolean {
+        return diagnostic.code
+          === 'prefer-readonly-parameter-type(no-invalid-parameter-effect-contracts)';
+      },);
+      expect(contractDiagnostics.length,).toBe(1,);
+      expect(contractDiagnostics[0]?.message,).toContain(
+        'Parameter "controller" has stale @mutates contract',
+      );
       expect(messages.some(function opacityPreemptsReadonlyShape(message,): boolean {
         return message.includes('uses a readonly projection that retains unresolved callable capability',);
       },),).toBe(false,);

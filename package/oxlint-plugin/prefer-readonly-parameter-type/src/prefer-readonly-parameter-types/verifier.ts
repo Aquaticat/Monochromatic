@@ -153,6 +153,7 @@ export function reportReadonlyCallableEvidence({
       retained,
       acceptedHostOpacity,
       affected,
+      provedMutation,
       mutated,
       uncertainty,
       foreignHostCapability,
@@ -203,7 +204,7 @@ export function reportReadonlyCallableEvidence({
     }
 
     if (category === 'mutation') {
-      if (mutated
+      if (provedMutation
         && (!foreignBorrowed)
         && ((classification.kind === 'deep-readonly')
           || (classification.kind === 'projected-readonly-capability'))) {
@@ -254,7 +255,8 @@ export function reportReadonlyCallableEvidence({
         data: { parameterName, },
       },);
     }
-    if ((!affected)
+    if ((!opaque)
+      && (!affected)
       && (contracts !== MUTATION_CONTRACT_UNAVAILABLE)) {
       parameterBlocks.forEach(function stale(block,): void {
         reportStaleContract({

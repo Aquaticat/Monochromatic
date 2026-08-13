@@ -97,13 +97,15 @@ function disposableDirectory(): DisposableDirectory {
  */
 function evidenceContext({
   filePath,
+  sourceText,
 }: {
   readonly filePath: string;
+  readonly sourceText: string;
 }): ForeignBorrowed<Context> {
   return {
     filename: filePath,
     sourceCode: {
-      text: FIXTURE.sourceText,
+      text: sourceText,
       hasBOM: false,
     },
   } as ForeignBorrowed<Context>;
@@ -154,7 +156,10 @@ function analyzeFromFourContexts({
     'effect-contract',
   ].map(function analyzeFromDistinctContext(): ReturnType<typeof readonlySourceEvidence> {
     return readonlySourceEvidence({
-      context: evidenceContext({ filePath, },),
+      context: evidenceContext({
+        filePath,
+        sourceText: FIXTURE.sourceText,
+      },),
     },);
   },);
 }
@@ -252,6 +257,76 @@ function measureSharedEvidence({
   },);
 }
 
+/**
+ * Completes changed-source measurement after initial cache snapshot.
+ *
+ * @param filePath - Configured source path receiving changed overlay.
+ *
+ * @param before - Counters after original source analysis.
+ *
+ * @returns cache deltas caused by changed source text.
+ *
+ * @example
+ * ```ts
+ * measureChangedAfterBefore({ filePath, before });
+ * ```
+ */
+function measureChangedAfterBefore({
+  filePath,
+  before,
+}: {
+  readonly filePath: string;
+  readonly before: ReturnType<typeof readonlySourceEvidenceCacheStats>;
+}): Pick<SharedEvidenceMeasurement, 'computationDelta' | 'missDelta'> {
+  readonlySourceEvidence({
+    context: evidenceContext({
+      filePath,
+      sourceText: `${FIXTURE.sourceText}\nexport const changed = true;\n`,
+    },),
+  },);
+  /**
+   * Cache counters after changed overlay entered semantic bridge.
+   */
+  const after = readonlySourceEvidenceCacheStats();
+  return {
+    computationDelta: after.computations - before.computations,
+    missDelta: after.misses - before.misses,
+  };
+}
+
+/**
+ * Measures invalidation when one source path receives changed text.
+ *
+ * @param filePath - Configured source path receiving both overlays.
+ *
+ * @returns cache deltas caused by changed source text.
+ *
+ * @example
+ * ```ts
+ * measureChangedSource({ filePath });
+ * ```
+ */
+function measureChangedSource({
+  filePath,
+}: {
+  readonly filePath: string;
+}): Pick<SharedEvidenceMeasurement, 'computationDelta' | 'missDelta'> {
+  readonlySourceEvidence({
+    context: evidenceContext({
+      filePath,
+      sourceText: FIXTURE.sourceText,
+    },),
+  },);
+  /**
+   * Cache counters after original source analysis.
+   */
+  const before = readonlySourceEvidenceCacheStats();
+  return measureChangedAfterBefore({
+    filePath,
+    before,
+  },);
+}
+
 await describe({
   name: readonlySourceEvidence.name,
   children: [
@@ -272,6 +347,23 @@ await describe({
         expect(measurement.missDelta,).toBe(1,);
         expect(measurement.hitDelta,).toBe(3,);
         expect(measurement.sameResult,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'recomputes when one source path receives changed text',
+      fn: async () => {
+        /**
+         * Disposable directory removed after invalidation assertions.
+         */
+        using directory = disposableDirectory();
+        /**
+         * Cache measurements across original and changed overlays.
+         */
+        const measurement = measureChangedSource({
+          filePath: writeEvidenceSource({ directoryPath: directory.path, },),
+        },);
+        expect(measurement.computationDelta,).toBe(1,);
+        expect(measurement.missDelta,).toBe(1,);
       },
     },),
   ],
