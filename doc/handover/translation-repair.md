@@ -7328,3 +7328,37 @@ What is NOT established: that repairs are fine generally. Five regions from four
  entries were read, all drawn because someone thought they were bad, and the
  probe agreeing with a re-reading of the same five is not a measurement of the
  corpus. A fresh sample judged against the source is.
+
+### An invisible character was misaligning a document, and no stage could see it
+
+Found by READING the drawn damage sheet, not by any measurement.
+
+`people/Toka_ls/page.en.md` carries three lines holding U+FEFF and nothing else.
+Verified with `parseDocument`: such a line becomes its own paragraph node, so
+the translation has a block the original lacks and every paragraph after it
+pairs with the WRONG source paragraph.
+
+The drawn item shows what follows. The source slice began at 期盼中 while the
+ target slice began two paragraphs earlier, and the editor, mapping them
+ positionally, replaced a correct rendering of 期盼中，她看见光穿透暗影 with a
+ faithful rendering of 尽管前路漫布荆棘, a sentence three lines away.
+
+Nothing downstream can catch that. Both texts are fluent, both translate
+ something the source really says, and the critics, the checkers and the probe
+ are all comparing against whatever paragraph the misalignment handed them. A
+ source-anchored probe does not help, because the source it is anchored to is
+ the wrong paragraph.
+
+Fixed in `buildDocumentNodes`: a block whose every character is whitespace or
+ invisible is dropped. Filtering runs AFTER the map so a surviving node keeps
+ the index it had among the parser's children, because accepted issues anchor to
+ `block/N` and renumbering would repoint every claim recorded against an earlier
+ parse.
+
+Guard proven by removal: with the filter disabled the fixture parses to three
+ nodes instead of two and ids read `block/0, block/1, block/2` instead of
+ `block/0, block/2`. Restored and green.
+
+Scope: one entry of the corpus carries the character, and that entry was drawn
+ three times into the twenty-item sample, so up to three of those items sat on a
+ misaligned pairing. The sample is being redrawn.
