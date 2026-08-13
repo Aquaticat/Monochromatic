@@ -7873,14 +7873,22 @@ One half of it CANNOT be answered from existing data: whether a duplicate is
 
 ### Not decisions, just waiting on the running pass
 
--   `#72` is CLOSED. Soft wrapping is not a material cause of the quote misses:
-    30 misses, none wrap-explained, 5% ceiling 9.5%, on a sample verified to
-    wrap as much as the rest of the corpus (69% against 69%). The mechanism is
-    real and unit-tested; its incidence is indistinguishable from zero. So the
-    line-structure decision now governs ONE change, the naturalness lane,
-    rather than two, and got simpler rather than more valuable. Full record in
-    `doc/troubleshooting/translation-repair-unread-signals.md`. What stays open
-    is the other 398 discarded claims, whose cause is now unknown.
+-   `#72` is CLOSED with a verdict rather than a null. Soft wrapping explains
+    about 3% of quote misses: 1 of 33 wrap-explained, one-sided 95% ceiling
+    13.5%, on a sample verified to wrap as much as the rest of the corpus (69%
+    against 69%). At that rate the change recovers roughly 7 of the 225 misses
+    in the settled population, which is not worth a behaviour change that also
+    decides the line-structure question.
+
+    It was first closed at 30 misses with NONE wrap-explained and a 9.5%
+    ceiling. One appeared an hour later, which loosened the bound rather than
+    tightening it. The decision did not move; the wording did, from "no effect"
+    to "a small real effect". Full record in
+    `doc/troubleshooting/translation-repair-unread-signals.md`.
+
+    So the line-structure decision governs ONE change, the naturalness lane,
+    rather than two. What stays open is the other 398 discarded claims, whose
+    dominant cause is unknown.
 -   `#73` is CLOSED, not waiting. It was already fixed by `eb21ffa6b` before it
     was found. `#75` replaces it, and needs no decision until a debug capture
     names which schema-mismatch sub-kind Kimi-K3 is hitting.
