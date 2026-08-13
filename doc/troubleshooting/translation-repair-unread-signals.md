@@ -302,8 +302,30 @@ The count reached the pre-registered threshold with none suffixed:
       30              <=  9.5%     <- threshold, 10% now rejected at 4.24%
 ```
 
-Thirty `quote-not-found` findings, 23 source and 7 target, and not one carries
- either suffix. The point estimate is zero and the ceiling is 9.5%.
+Thirty `quote-not-found` findings, 23 source and 7 target, and not one carried
+ either suffix. The point estimate was zero and the ceiling 9.5%.
+
+AMENDED ONE HOUR LATER, and the amendment matters more than the number. At 33
+ misses one IS suffixed, `quote-not-found (source) [line-break-collapsible]`,
+ meaning a quote that collapsing soft line breaks would have located uniquely.
+So the mechanism fires in practice, and "not one" expired exactly as two
+ earlier universal claims about accumulating data did.
+
+The bound LOOSENS with a positive observation rather than tightening:
+
+```text
+  1 of 33, point estimate 3.0%
+  one-sided 95% upper bound  <= 13.5%   (was <= 9.5% at 30 with zero)
+```
+
+THE VERDICT IS UNCHANGED and now rests on the point estimate rather than on a
+ zero. At 3.0%, admitting wrap-spanning quotes recovers about 7 of the 225
+ misses in the settled population. Seven claims is not worth a behaviour change
+ that also decides the line-structure question, and the change would still
+ replace several lines with one.
+
+What changed is the honesty of the claim, not the decision: this is "a small
+ real effect", not "no effect".
 
 THE SAMPLE WAS CHECKED BEFORE THE NULL WAS TRUSTED, because a lightly-wrapped
  sample would produce this result for an uninteresting reason. It is not
