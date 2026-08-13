@@ -25,6 +25,7 @@ import type { CallableEffectSummary, } from './effect-summary-index.ts';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import { bindingContainsForeignHostCapability, } from './foreign-host-capability-classifier.ts';
 import { inputUsageSubject, } from './input-diagnostic-description.ts';
+import { parameterDiagnosticSubject, } from './parameter-diagnostic-subject.ts';
 import {
   type UncertaintyBoundaries,
   uncertaintyBoundaries,
@@ -47,7 +48,7 @@ type ClassifierProject = Parameters<typeof classifyReadonlyType>[0]['project'];
 export type ReadonlyParameterFacts = {
   readonly parameter: EffectCallableDeclaration['parameters'][number];
   readonly parameterIndex: ParameterIndex;
-  readonly parameterName: string;
+  readonly parameterSubject: string;
   readonly inputSubject: string;
   readonly affectedNames?: ReadonlySet<string>;
   readonly parameterType: Type;
@@ -212,8 +213,11 @@ function factsForParameter({
   return {
     parameter,
     parameterIndex,
-    parameterName: parameter.name
-      .getText(declaration.getSourceFile(),),
+    parameterSubject: parameterDiagnosticSubject({
+      parameter,
+      parameterIndex,
+      targetIndexes,
+    },),
     inputSubject: inputUsageSubject({
       targetIndexes,
       parameterIndex,

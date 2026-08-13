@@ -1879,6 +1879,83 @@ children: [
     },
   },),
   it({
+    name: 'renders one-line searchable subjects across every public rule',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-subject-split-invalid.ts',);
+      expect(diagnostics.length,).toBe(4,);
+      /**
+       * Messages indexed by public rule owning each subject.
+       */
+      const messagesByCode = new Map(diagnostics.map(function indexMessage(
+        diagnostic,
+      ): readonly [string, string] {
+        return [diagnostic.code, diagnostic.message,];
+      },),);
+      expect(messagesByCode.get(
+        'prefer-readonly-parameter-type(prefer-readonly-parameter-types)',
+      ),).toContain(
+        'Destructured parameter with binding "state" can be deeply readonly',
+      );
+      expect(messagesByCode.get(
+        'prefer-readonly-parameter-type(no-readonly-parameter-mutations)',
+      ),).toContain(
+        'Destructured parameter with binding "state" is declared readonly',
+      );
+      expect(messagesByCode.get(
+        'prefer-readonly-parameter-type(no-opaque-parameter-effects)',
+      ),).toContain(
+        'Destructured parameter with binding "runner" uses a readonly projection',
+      );
+      expect(messagesByCode.get(
+        'prefer-readonly-parameter-type(no-invalid-parameter-effect-contracts)',
+      ),).toContain(
+        'Destructured parameter with binding "label" has stale @mutates contract',
+      );
+      expect(diagnostics.every(function messageIsOneLine(diagnostic,): boolean {
+        return (!diagnostic.message.includes('\n',))
+          && (!diagnostic.message.includes('\r',));
+      },),).toBe(true,);
+    },
+  },),
+  it({
+    name: 'renders every parameter binding shape without raw source text',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-subject-patterns-invalid.ts',);
+      expect(diagnostics.length,).toBe(9,);
+      /**
+       * Stable subjects rendered by preference findings.
+       */
+      const subjects = diagnostics.map(function diagnosticSubject(diagnostic,): string {
+        /**
+         * Rule-specific suffix following shared parameter subject.
+         */
+        const suffix = diagnostic.message.includes(' can be deeply readonly:',)
+          ? ' can be deeply readonly:'
+          : ' has stale @mutates contract.';
+        return diagnostic.message.split(suffix,)[0] ?? '';
+      },);
+      expect(subjects,).toContain('Parameter "value"');
+      expect(subjects,).toContain(
+        'Destructured parameter with bindings "raw" and "rest"',
+      );
+      expect(subjects.filter(function aliasedLocal(subject,): boolean {
+        return subject === 'Destructured parameter with binding "local"';
+      },).length,).toBe(2,);
+      expect(subjects,).toContain('Destructured parameter with binding "raw"');
+      expect(subjects,).toContain('Destructured parameter with binding "inner"');
+      expect(subjects,).toContain('Destructured parameter with binding "rest"');
+      expect(subjects,).toContain(
+        'Destructured parameter with bindings "first" and "rest"',
+      );
+      expect(subjects,).toContain('Parameter 1 at this location');
+      expect(diagnostics.every(function searchableOneLineSubject(diagnostic,): boolean {
+        return (!diagnostic.message.includes('\n',))
+          && (!diagnostic.message.includes('\r',))
+          && (!diagnostic.message.includes('source:',));
+      },),).toBe(true,);
+    },
+  },),
+  it({
     name: 'reports readonly preference, stale contracts, and unresolved effects',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);

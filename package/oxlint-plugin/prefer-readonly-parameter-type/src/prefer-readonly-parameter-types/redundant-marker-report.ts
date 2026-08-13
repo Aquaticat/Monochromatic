@@ -79,7 +79,7 @@ export function redundantMarkerApplies({
  *
  * @param parameterType - Semantic parameter type possibly carrying marker.
  *
- * @param parameterName - Authored parameter text used in diagnostics.
+ * @param parameterSubject - Authored parameter text used in diagnostics.
  *
  * @param loc - Report location spanning parameter binding.
  *
@@ -87,20 +87,20 @@ export function redundantMarkerApplies({
  *
  * @example
  * ```ts
- * reportRedundantForeignBorrowed({ context, project, parameterType, parameterName, loc });
+ * reportRedundantForeignBorrowed({ context, project, parameterType, parameterSubject, loc });
  * ```
  */
 export function reportRedundantForeignBorrowed({
   context,
   project,
   parameterType,
-  parameterName,
+  parameterSubject,
   loc,
 }: {
   readonly context: ForeignBorrowed<Context>;
   readonly project: Project;
   readonly parameterType: Type;
-  readonly parameterName: string;
+  readonly parameterSubject: string;
   readonly loc: SemanticReportLocation;
 },): void {
   /* Repeated rather than assumed from the caller. The predicate is the guard this report has
@@ -114,6 +114,6 @@ export function reportRedundantForeignBorrowed({
   context.report({
     loc,
     messageId: 'redundantForeignBorrowed',
-    data: { parameterName, },
+    data: { parameterSubject, },
   },);
 }
