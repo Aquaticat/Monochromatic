@@ -13,13 +13,26 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // A stage that loses voices retries exactly the lost ones on fresh
 // deadlines (user directive: quota regenerates faster than runs spend, so
 // forfeiting voices cheaply leaves capacity unused). The retry target
-// depends on what the stage produces: VOTING stages (panel, checkers)
-// stop at quorum because a majority is a majority, while UNION stages
-// (critics) retry to the full roster because measured convergence is low
-// (67 to 84 percent singleton issues across real-corpus artifacts), so
-// every unheard voice costs its findings nearly one-for-one. A roster
-// still short after every round proceeds with what it has and records the
+// depends on what the stage produces: VOTING stages stop at quorum because
+// a majority is a majority, while UNION stages retry to the full roster
+// because their product shrinks with every unheard voice. A roster still
+// short after every round proceeds with what it has and records the
 // degradation as a finding.
+//
+// WHICH STAGE IS WHICH is not the obvious split, and this comment stated it
+// wrongly until 2026-08-13. `full-roster` is passed by the EDITOR and
+// REFINER stages only. The CRITIC stage takes the `quorum` default, despite
+// being a union stage whose convergence is low (67 to 84 percent singleton
+// issues across real-corpus artifacts). That is deliberate: full-roster
+// retries for critics were tried and REVERTED by user decision on
+// 2026-07-23, because critics answered 7/7 on the first round nearly
+// always, slicing and panel-judged merging carry the thoroughness burden,
+// and waiting on a complete roster stalls a run when a voice wedges. The
+// reasoning lives at the call site in `repair-stages.ts`.
+//
+// The premise is worth re-checking rather than inheriting: on a SIX-model
+// roster `pass13` finished the critic stage one voice short on 18.6% of
+// invocations, which is not "7/7 nearly always". Recorded in `#75`.
 
 /**
  * Retry rounds after the initial fan-out;
