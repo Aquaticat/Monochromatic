@@ -777,7 +777,66 @@ The constraint is on what happens NEXT, and it falls on this document. Reading
  cite counts, quote nothing. `artifact-probe-read.unit.test.ts` states the rule
  for the quote fields it omits, and it is the same rule.
 
-THE TWO REMAINING WALLS are accepted issues not recording which critic raised
- each claim, which blocks `#65` and `#68`, and that one is NOT this shape: the
- attribution is genuinely absent rather than discarded downstream, so it needs
- the claim to carry its speaker from the critic stage onward.
+THE REMAINING WALL is accepted issues not recording which critic raised each
+ claim, which blocks `#65` and `#68`.
+
+## The third wall is the same shape after all, and I said it was not
+
+The paragraph above, and commit `256520df7`'s message, both say the attribution
+ is "genuinely absent rather than discarded downstream", so the fix would need
+ the claim to carry its speaker from the critic stage onward. That is wrong, and
+ wrong in the direction that matters: it makes a discarded value look like a
+ data-flow redesign, which is the difference between a contained change and one
+ nobody starts. Reading the source says otherwise.
+
+`gatherStageVoices` returns `HeardVoice<ValueT>`, whose TSDoc reads "One heard
+ voice with its speaker" and whose fields are `modelId` and `value`
+ (`stage-quorum.ts:53`). `runCriticStage` then does this, at
+ `repair-stages.ts:153`:
+
+```ts
+// package/module/translation-repair/src/repair-stages.ts
+const reports = gather.voices
+  .map(function toReport(voice,) {
+  return voice.value;
+},);
+```
+
+The speaker is discarded one line after arriving, and every claim built below
+ that line comes from `reports`, which no longer knows who said anything. This
+ is the third instance of the same shape, not a different one: `locate-quote`
+ had the needle in scope, `stage-call` had the sub-kind and the raw text in
+ scope, and `runCriticStage` has the `modelId` in scope.
+
+WHAT IS GENUINELY ABSENT is the destination, not the source. `issue-model.ts:10`
+ and `aggregate-claims.ts:15` both describe a mechanism in the present tense,
+ that "the shell maps claim ids to proposers for calibration, never for judging".
+ No such map exists. Every occurrence of `proposer` under `src/` is a comment or
+ a test name; none is an implementation. So the design named the right place,
+ recorded why it must sit outside the claim, and the map was never built while
+ its one input was being thrown away upstream.
+
+THE INVARIANT THE FIX MUST NOT BREAK, and the reason attribution cannot simply
+ be added to the claim: adjudication is provenance-blind by deliberate design,
+ `adjudicate-prompt.unit.test.ts` asserts the sheet "keeps proposer identity out
+ of the sheet", and `aggregate-claims.ts:17` records why. A real defect can
+ arrive with exactly one proposer; the reference run had `gpt-oss-120b` as the
+ sole finder of a planted seed. Proposer counts must never reach a judging
+ prompt. A side map keyed by claim id satisfies this, because
+ `computeIssueClaimId` already gives every claim a stable handle and the panel
+ never sees the map.
+
+THERE IS A WORKING PRECEDENT in a sibling stage. `editor-ensemble.ts:251` tracks
+ "every distinct APPLIED proposal for this envelope, first proposer" for edit
+ candidates, and `candidate-select.ts:29` uses provenance to stop a proposer
+ grading its own work. The pattern is established in this codebase; the critic
+ stage just never got it.
+
+COST OF LANDING IT, measured rather than assumed. A change to the chunk outcome
+ shape requires bumping `SLICE_CACHE_VERSION` (`repair-translation.ts:85`,
+ currently 9), and that bump was missed on the very commit that added the gate,
+ so it is worth pricing before deciding when. `corpus-pass.ts:566` calls
+ `discardSliceCache` the moment an entry settles, so the cache only ever holds
+ in-flight work. Confirmed on `pass13`: 12 settled artifacts, and the slice
+ cache holds one entry (`GLaDOSister`, 8 files, 216K). A bump therefore costs
+ one entry's partial slices, not twelve entries.
