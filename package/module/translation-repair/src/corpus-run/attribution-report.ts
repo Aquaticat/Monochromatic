@@ -239,6 +239,16 @@ export type AttributionReport = {
    * rather than a zero worth averaging.
    */
   readonly unattributedAccepted: number;
+
+  /**
+   * Accepted issues where SOME member claims attributed and others did not.
+   *
+   * Excluded from every other count here. A partial join is a defect rather
+   * than a measurement: the unattributed member may have come from a critic
+   * that gets no credit, so calling the issue sole-proposer would be a guess
+   * dressed as a count.
+   */
+  readonly partialJoinAccepted: number;
 };
 
 /**
@@ -302,6 +312,16 @@ type IssueSupport = {
   readonly contributors: readonly string[];
 
   /**
+   * Claims of this issue the attribution index does not hold.
+   *
+   * Zero for a sound join. A count between zero and the issue's claim total is
+   * a PARTIAL join, where some support is known and some missing, and such an
+   * issue cannot honestly be called sole-proposer or multi-proposer: the
+   * missing member may have been raised by a critic nobody credited.
+   */
+  readonly unresolvedClaims: number;
+
+  /**
    * Whether some critic emitted one of those claims more than once, which is
    * self-repetition and must never read as agreement.
    */
@@ -343,6 +363,11 @@ function readIssueSupport(
     contributors: [...new Set(proposers.map(function toModelId(proposer,): string {
       return proposer.modelId;
     },),),],
+    unresolvedClaims: issue.claimIds
+      .filter(function isUnresolved(claimId,): boolean {
+      return !proposersOf.has(claimId,);
+    },)
+      .length,
     repeated: proposers.some(function isRepeat(proposer,): boolean {
       return proposer.emissionCount > 1;
     },),
@@ -459,7 +484,30 @@ export function buildAttributionReport(
     },);
   },);
 
-  for (const support of supports) {
+  /**
+   * Accepted issues whose join is PARTIAL: some claims attributed, some not.
+   *
+   * Held out of every count below rather than counted anywhere. An issue like
+   * this is a defect in the join, not a datum about critics, and averaging it
+   * in would let a broken join read as a confident calibration.
+   */
+  const partialJoinAccepted = supports.filter(function isPartial(support,): boolean {
+    return (support.unresolvedClaims > 0) && (support.contributors
+      .length
+      > 0);
+  },)
+    .length;
+
+  /**
+   * Supports whose join is sound, which alone are calibration.
+   */
+  const sound = supports.filter(function isSound(support,): boolean {
+    return (support.unresolvedClaims === 0) || (support.contributors
+      .length
+      === 0);
+  },);
+
+  for (const support of sound) {
     for (const modelId of support.contributors)
       bump({
         counter: hits,
@@ -471,7 +519,7 @@ export function buildAttributionReport(
   /**
    * Accepted issues carrying no attribution at all.
    */
-  const unattributedAccepted = supports.filter(function isUnattributed(support,): boolean {
+  const unattributedAccepted = sound.filter(function isUnattributed(support,): boolean {
     return support.contributors
       .length
       === 0;
@@ -481,7 +529,7 @@ export function buildAttributionReport(
   /**
    * Accepted issues resting on exactly one critic.
    */
-  const soleProposerAccepted = supports.filter(function isSole(support,): boolean {
+  const soleProposerAccepted = sound.filter(function isSole(support,): boolean {
     return support.contributors
       .length
       === 1;
@@ -491,7 +539,7 @@ export function buildAttributionReport(
   /**
    * Accepted issues drawing more than one critic.
    */
-  const multiProposerAccepted = supports.filter(function isMulti(support,): boolean {
+  const multiProposerAccepted = sound.filter(function isMulti(support,): boolean {
     return support.contributors
       .length
       > 1;
@@ -502,7 +550,7 @@ export function buildAttributionReport(
    * Accepted issues where some critic repeated itself. Restricted to attributed
    * issues, so it stays a subset of what the sole and multi counts cover.
    */
-  const selfRepeatedAccepted = supports.filter(function isRepeated(support,): boolean {
+  const selfRepeatedAccepted = sound.filter(function isRepeated(support,): boolean {
     return support.repeated && (support.contributors
       .length
       > 0);
@@ -536,6 +584,7 @@ export function buildAttributionReport(
     multiProposerAccepted,
     selfRepeatedAccepted,
     unattributedAccepted,
+    partialJoinAccepted,
   };
 }
 

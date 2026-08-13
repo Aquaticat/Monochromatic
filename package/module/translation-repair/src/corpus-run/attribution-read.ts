@@ -4,15 +4,15 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { ArtifactParseError, } from '../artifact-guard.ts';
 import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
+import { decodeChunkCritics, } from './attribution-decode.ts';
 import type {
   AcceptedIssueView,
   AttributionEntry,
-  ChunkCriticView,
-  ProposerView,
 } from './attribution-report.ts';
 
 //region Attribution read
@@ -110,131 +110,6 @@ function readIssueViews(
 }
 
 /**
- * Reads the proposers of one recorded attribution.
- *
- * @param attribution - one recorded claim attribution
- *
- * @returns Proposers, empty when none parse
- *
- * @example
- * ```ts
- * const proposers = readProposers({ attribution, },);
- * ```
- */
-function readProposers(
-  {
-    attribution,
-  }: {
-    readonly attribution: Record<string, unknown>;
-  },
-): readonly ProposerView[] {
-  /**
-   * Recorded proposer entries.
-   */
-  const { proposers, } = attribution;
-  if (!isJsonArray(proposers,))
-    return [];
-
-  return proposers.flatMap(function toProposer(entry,) {
-    if (!isJsonRecord(entry,))
-      return [];
-
-    /**
-     * Critic that proposed the claim.
-     */
-    const { modelId, } = entry;
-
-    /**
-     * Times it emitted the claim.
-     */
-    const { emissionCount, } = entry;
-    if (((typeof modelId) !== 'string') || ((typeof emissionCount) !== 'number'))
-      return [];
-
-    return [{
-      modelId,
-      emissionCount,
-    },];
-  },);
-}
-
-/**
- * Reads an artifact's per-chunk calibration.
- *
- * Takes the raw array rather than the artifact, so the caller establishes
- * PRESENCE and this only has to parse. Whether an artifact carries calibration
- * at all is the eligibility question the whole report rests on, and it belongs
- * beside the key that encodes it rather than inside a return value that has to
- * smuggle absence back out.
- *
- * @param chunkCritics - raw calibration array the artifact carries
- *
- * @returns Chunk views, dropping records that do not parse
- *
- * @example
- * ```ts
- * const views = readChunkCritics({ chunkCritics, },);
- * ```
- */
-function readChunkCritics(
-  {
-    chunkCritics,
-  }: {
-    readonly chunkCritics: readonly unknown[];
-  },
-): readonly ChunkCriticView[] {
-  return chunkCritics.flatMap(function toView(record,) {
-    if (!isJsonRecord(record,))
-      return [];
-
-    /**
-     * Chunk position this record describes.
-     */
-    const { chunkIndex, } = record;
-    // Dropped rather than defaulted, like every other field in this parser. A
-    // record with no usable index is not chunk 0; inventing one would inflate
-    // the chunk count, which is the denominator every rate divides by.
-    if ((typeof chunkIndex) !== 'number')
-      return [];
-
-    /**
-     * Critics that answered on this chunk.
-     */
-    const { heardCriticIds, } = record;
-
-    /**
-     * Recorded attributions of this chunk.
-     */
-    const { claimAttributions, } = record;
-
-    return [{
-      chunkIndex,
-      heardCriticIds: (isJsonArray(heardCriticIds,) ? heardCriticIds : [])
-        .flatMap(function toModelId(modelId,) {
-        return ((typeof modelId) === 'string') ? [modelId,] : [];
-      },),
-      claimAttributions: (isJsonArray(claimAttributions,) ? claimAttributions : [])
-        .flatMap(function toAttribution(attribution,) {
-        if (!isJsonRecord(attribution,))
-          return [];
-
-        /**
-         * Deterministic identity of the attributed claim.
-         */
-        const { claimId, } = attribution;
-        if ((typeof claimId) !== 'string')
-          return [];
-
-        return [{
-          claimId,
-          proposers: readProposers({ attribution, },),
-        },];
-      },),
-    },];
-  },);
-}
-
-/**
  * Reads one artifact into the shape the report needs.
  *
  * @param name - artifact file name, used as a fallback identifier
@@ -257,12 +132,11 @@ function toEntry(
     readonly parsed: unknown;
   },
 ): AttributionEntry {
-  if (!isJsonRecord(parsed,)) {
-    return {
-      id: name,
-      issues: [],
-    };
-  }
+  if (!isJsonRecord(parsed,))
+    throw new ArtifactParseError({
+      path: name,
+      reason: 'a record',
+    },);
 
   /**
    * Entry identifier the artifact declares.
@@ -270,17 +144,25 @@ function toEntry(
   const { id, } = parsed;
 
   /**
-   * Raw calibration, which an artifact settled before attribution lacks.
+   * Identity used in any failure message below, so a throw names the file.
    */
-  const { chunkCritics, } = parsed;
+  const entryId = ((typeof id) === 'string') ? id : name;
 
   return {
-    id: ((typeof id) === 'string') ? id : name,
-    // OMITTED rather than set to undefined or to an empty array. Absence is
-    // what makes the entry ineligible, and an empty array would read instead as
-    // an entry whose critics were asked and raised nothing.
-    ...(isJsonArray(chunkCritics,)
-      ? { chunkCritics: readChunkCritics({ chunkCritics, },), }
+    id: entryId,
+    // ABSENT versus MALFORMED, and the difference decides the population. An
+    // artifact settled before attribution existed has no such key, and the key
+    // being OMITTED here is what makes the entry ineligible. A key that is
+    // present but not an array is corruption, and letting it fall through to
+    // the same omission would move a broken artifact into the pre-feature
+    // population on the strength of its own breakage.
+    ...(('chunkCritics' in parsed)
+      ? {
+        chunkCritics: decodeChunkCritics({
+          value: parsed.chunkCritics,
+          entryId,
+        },),
+      }
       : {}),
     issues: readIssueViews({ raw: parsed, },),
   };

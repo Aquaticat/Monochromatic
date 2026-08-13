@@ -93,18 +93,29 @@ function criticLine(
   },
 ): string {
   /**
-   * Claims raised per chunk this critic was heard on.
+   * Renders one rate, or names it undefined rather than inventing a zero.
+   *
+   * A critic heard on no chunk has no rate. Printing `0.00` for it would be
+   * FALSE rather than merely uninformative, and it would be indistinguishable
+   * from a critic that was heard often and raised nothing, which is the exact
+   * conflation the heard roster exists to prevent. Worse, a nonzero numerator
+   * over a zero denominator means the artifact is internally inconsistent, and
+   * that must never render as a tidy zero.
+   *
+   * @param count - numerator
+   *
+   * @returns Rendered rate
+   *
+   * @example
+   * ```ts
+   * const rendered = rate(critic.claimsRaised,);
+   * ```
    */
-  const raisedPerChunk = (critic.chunksHeard === 0)
-    ? 0
-    : critic.claimsRaised / critic.chunksHeard;
-
-  /**
-   * Accepted issues backed per chunk this critic was heard on.
-   */
-  const hitsPerChunk = (critic.chunksHeard === 0)
-    ? 0
-    : critic.acceptedHits / critic.chunksHeard;
+  function rate(count: number,): string {
+    if (critic.chunksHeard === 0)
+      return (count === 0) ? 'n/a' : 'INCONSISTENT';
+    return (count / critic.chunksHeard).toFixed(RATE_DIGITS,);
+  }
 
   return [
     critic.modelId
@@ -117,11 +128,9 @@ function criticLine(
       .padStart(COLUMN.emitted,),
     String(critic.acceptedHits,)
       .padStart(COLUMN.hits,),
-    raisedPerChunk
-      .toFixed(RATE_DIGITS,)
+    rate(critic.claimsRaised,)
       .padStart(COLUMN.raisedPerChunk,),
-    hitsPerChunk
-      .toFixed(RATE_DIGITS,)
+    rate(critic.acceptedHits,)
       .padStart(COLUMN.hitsPerChunk,),
   ].join('',);
 }
@@ -172,7 +181,8 @@ async function main(): Promise<void> {
     `\nSUPPORT sole=${String(report.soleProposerAccepted,)} `
       + `multi=${String(report.multiProposerAccepted,)} `
       + `selfRepeated=${String(report.selfRepeatedAccepted,)} `
-      + `unattributed=${String(report.unattributedAccepted,)}`,
+      + `unattributed=${String(report.unattributedAccepted,)} `
+      + `partialJoin=${String(report.partialJoinAccepted,)}`,
   );
   console.log(
     'NOTE sole means an accepted issue rested on exactly one critic, which is '
@@ -181,6 +191,15 @@ async function main(): Promise<void> {
       + 'twice, which must never read as agreement. That distinction is what '
       + 'issue 65 asks about duplicates.',
   );
+  if (report.partialJoinAccepted > 0) {
+    console.log(
+      `WARNING ${String(report.partialJoinAccepted,)} accepted issues joined `
+        + 'only SOME of their claims to attribution. Those are held out of every '
+        + 'count above rather than counted as support, because the unattributed '
+        + 'member may have come from a critic that got no credit. A nonzero '
+        + 'number here is a defect in the join, not a fact about critics.',
+    );
+  }
   if (report.unattributedAccepted > 0) {
     console.log(
       `WARNING ${String(report.unattributedAccepted,)} accepted issues on `

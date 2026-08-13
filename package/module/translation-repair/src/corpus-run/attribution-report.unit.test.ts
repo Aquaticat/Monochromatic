@@ -298,6 +298,70 @@ await describe({
     },),
 
     it({
+      name: 'separates the RAISED count from the EMISSION count numerically, '
+        + 'not merely in the support categories. Nothing else asserts an '
+        + 'emissions value at all, so an implementation that added '
+        + 'emissionCount into claimsRaised, or reported emissions wrongly, '
+        + 'would pass the whole suite while overstating how much a repeating '
+        + 'critic contributed',
+      fn: async () => {
+        /**
+         * One critic, one distinct claim, emitted twice.
+         */
+        const report = buildAttributionReport({
+          entries: [eligibleEntry({
+            proposers: [{ modelId: TABBY, emissionCount: 2, },],
+          },),],
+        },);
+
+        /**
+         * Row for the repeating critic.
+         */
+        const tabby = report.critics
+          .find(function isTabby(critic,) {
+          return critic.modelId === TABBY;
+        },);
+
+        // One distinct claim, two emissions of it. The difference between these
+        // two numbers IS the self-repetition, so collapsing them loses it.
+        expect(tabby?.claimsRaised,).toBe(1,);
+        expect(tabby?.emissions,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'holds a PARTIALLY joined accepted issue out of sole and multi '
+        + 'rather than calling it sole-proposer. An issue naming one attributed '
+        + 'claim and one the index does not hold has unknown support, since the '
+        + 'missing member may have come from a critic nobody credited, and '
+        + 'counting it as sole support would be a guess dressed as a count',
+      fn: async () => {
+        /**
+         * Accepted issue naming one known claim and one unknown one.
+         */
+        const report = buildAttributionReport({
+          entries: [eligibleEntry({
+            proposers: [{ modelId: TABBY, emissionCount: 1, },],
+            issueClaimIds: [NAP_CLAIM, PURR_CLAIM,],
+          },),],
+        },);
+
+        expect(report.partialJoinAccepted,).toBe(1,);
+        expect(report.soleProposerAccepted,).toBe(0,);
+        expect(report.multiProposerAccepted,).toBe(0,);
+        expect(report.unattributedAccepted,).toBe(0,);
+        // Held out of hits too: a hit count mixing sound and unsound joins is
+        // exactly the quietly-wrong number this whole reader exists to avoid.
+        expect(
+          report.critics
+            .find(function isTabby(critic,) {
+            return critic.modelId === TABBY;
+          },)?.acceptedHits,
+        ).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'reports nothing rather than throwing when no entry carries '
         + 'attribution, which is what every runs directory looks like until a '
         + 'post-attribution pass settles its first entry',
