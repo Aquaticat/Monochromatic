@@ -7135,3 +7135,42 @@ What remains true, and is a different fault, is that some of those replacements
  DROP source-supported content, which is what the probe work is about. The width
  of a replacement was never evidence of that, and reading it as evidence pointed
  `#67` at the wrong stage.
+
+### The control arm, run 002
+
+Fifteen regions, five a human read as damaged and ten unflagged from the same
+ entries, each probed with the accepted issues shown and again with them
+ withheld:
+
+```text
+arm                regions  admissible verdicts  regions flagged
+damaged/shown         5          0 of 15             0 of 5
+damaged/withheld      5          5 of 15             4 of 5
+control/shown        10          0 of 30             0 of 10
+control/withheld     10          3 of 30             2 of 10
+```
+
+Two things follow, and the first is larger than the question the run was built
+ to answer.
+
+The SHOWN arm is zero everywhere. Across 45 verdicts covering damaged and
+ undamaged regions alike, the production configuration raised nothing at all. A
+ stage that answers identically whether or not damage is present carries no
+ information, which is a stronger statement than "it misses things".
+
+The WITHHELD arm discriminates. Four of five damaged regions drew an admissible
+ claim against two of ten controls, and 5 of 15 verdicts against 3 of 30. That
+ is a detector with signal rather than a prober re-reporting whatever defect it
+ is shown, which was the reading the control existed to rule out.
+
+Run-to-run spread is real and worth carrying: the damaged withheld arm gave 7 of
+ 15 in run 001 and 5 of 15 in run 002 on identical inputs, while the shown arm
+ gave 0 of 15 both times. Five regions is a small denominator and the withheld
+ rate should be read as a band, not a point.
+
+CAVEAT, and it is why run 003 exists: run 002's controls were NOT matched on
+ replaced length. They replaced 12 to 63 characters where the damaged regions
+ replaced 60 to 268, and a shorter replacement has less room to drop anything,
+ so part of the control's quiet may be length rather than the absence of damage.
+Control selection now orders unflagged regions by distance from the damaged
+ region's replaced length in the same entry.
