@@ -61,7 +61,8 @@ TODO
 
    ```bash
    export IDEA_LOG="$(
-     find "$HOME/.cache/JetBrains" -maxdepth 4 -type f -name idea.log \
+     find "$HOME/.cache/JetBrains" -maxdepth 4 -type f \
+       -path '*/IntelliJIdea*/log/idea.log' \
        -printf '%T@ %p\n' \
        | sort --numeric-sort --reverse \
        | head --lines=1 \
@@ -82,10 +83,11 @@ TODO
 Status:
 TODO
 
-1. Detect an existing root IDEA process:
+1. Detect an existing root IDEA process,
+   including one launched with a file or URL argument:
 
    ```bash
-   export IDEA_PID="$(pgrep --oldest --full "^${IDEA_BIN}$" || true)"
+   export IDEA_PID="$(pgrep --oldest --full "^${IDEA_BIN}( |$)" || true)"
    printf 'IDEA_PID=%s\n' "${IDEA_PID:-none}"
    ```
 
@@ -111,10 +113,17 @@ TODO
    exit=16
    ```
 
-4. If step 3 returned anything other than the exact stuck-shutdown result,
+4. If the step 3 command does not return through IDEA's own startup handshake,
+   press **Ctrl+C** once.
+   The terminal should show `^C` and return to its prompt.
+   Stop this runbook because an unresponsive activation endpoint is a different failure.
+5. If step 3 returned `exit=0`,
+   stop the recovery steps and continue at **What to check**.
+   The existing IDEA instance is healthy and must not be terminated.
+6. If step 3 returned anything other than the exact stuck-shutdown result,
    stop this runbook.
    Do not kill the process because a different exit code needs a different diagnosis.
-5. Inspect the affected process and shutdown messages:
+7. Inspect the affected process and shutdown messages:
 
    ```bash
    ps --pid "$IDEA_PID" --format=pid,ppid,state,etimes,command
@@ -130,43 +139,107 @@ TODO
    Station requested IDE shutdown. force = false, restart = false
    ```
 
-6. If any accessible IDEA window contains work that must be preserved,
+8. If any accessible IDEA window contains work that must be preserved,
    select **File**,
-    then **Save All**.
+   then **Save All**.
    The save indicators should clear before continuing.
-7. Decide whether losing unsaved IDE state is acceptable.
+9. Decide whether losing unsaved IDE state is acceptable.
    Continue only with explicit authorization to terminate every process under `$IDEA_ROOT`.
    No process changes occur in this step.
-8. Send SIGTERM only to processes whose command starts with the IDEA installation path:
+10. Create a private evidence directory before terminating IDEA:
 
-   ```bash
-   mapfile -t IDEA_PIDS < <(pgrep --full "^${IDEA_ROOT}/" || true)
-   printf 'Sending SIGTERM to: %s\n' "${IDEA_PIDS[*]}"
-   if test "${#IDEA_PIDS[@]}" -gt 0; then
-     /usr/bin/kill --signal TERM "${IDEA_PIDS[@]}"
-   fi
-   ```
+    ```bash
+    mkdir --parents "$HOME/temp"
+    chmod 700 "$HOME/temp"
+    export IDEA_EVIDENCE="$(mktemp --directory "$HOME/temp/idea-shutdown.XXXXXXXX")"
+    chmod 700 "$IDEA_EVIDENCE"
+    printf 'IDEA_EVIDENCE=%s\n' "$IDEA_EVIDENCE"
+    ```
 
-   IDEA windows may close.
-   The command should not name Toolbox or unrelated JetBrains applications.
-9. Check for surviving IDEA processes:
+    The output path should begin with `$HOME/temp/idea-shutdown.`.
+11. Copy the current IDEA log into the evidence directory:
 
-   ```bash
-   pgrep --list-full --full "^${IDEA_ROOT}/" || printf '%s\n' 'No IDEA processes remain'
-   ```
+    ```bash
+    cp -- "$IDEA_LOG" "$IDEA_EVIDENCE/idea.log"
+    chmod 600 "$IDEA_EVIDENCE/idea.log"
+    test -s "$IDEA_EVIDENCE/idea.log" && printf '%s\n' 'IDEA log captured'
+    ```
 
-   If SIGTERM succeeded,
-   the output is exactly:
+    The final line should be exactly:
 
-   ```text
-   No IDEA processes remain
-   ```
+    ```text
+    IDEA log captured
+    ```
 
-10. If step 9 still listed IDEA processes,
+12. Capture the stuck process's thread dump:
+
+    ```bash
+    if test -x "$IDEA_ROOT/jbr/bin/jcmd"; then
+      "$IDEA_ROOT/jbr/bin/jcmd" "$IDEA_PID" Thread.print \
+        >"$IDEA_EVIDENCE/thread-dump.txt" 2>&1
+      dump_status=$?
+    else
+      printf '%s\n' 'Bundled jcmd is missing' >"$IDEA_EVIDENCE/thread-dump.txt"
+      dump_status=1
+    fi
+    chmod 600 "$IDEA_EVIDENCE/thread-dump.txt"
+    printf 'thread_dump_exit=%s\n' "$dump_status"
+    ```
+
+    `thread_dump_exit=0` means the dump succeeded.
+    Keep `thread-dump.txt` even when the status is nonzero because it contains the attach error.
+13. Preview every process that the termination pattern will match:
+
+    ```bash
+    pgrep --list-full --full "^${IDEA_ROOT}/" \
+      || printf '%s\n' 'No IDEA processes remain'
+    ```
+
+    Continue only if every listed command begins with `$IDEA_ROOT/`.
+    The list must not contain Toolbox or another JetBrains product.
+14. Send SIGTERM to the previewed IDEA installation process set:
+
+    ```bash
+    mapfile -t IDEA_PIDS < <(pgrep --full "^${IDEA_ROOT}/" || true)
+    printf 'Sending SIGTERM to: %s\n' "${IDEA_PIDS[*]}"
+    if test "${#IDEA_PIDS[@]}" -gt 0; then
+      /usr/bin/kill --signal TERM "${IDEA_PIDS[@]}"
+    fi
+    ```
+
+    IDEA windows may close.
+15. Check for surviving IDEA processes after a bounded wait:
+
+    ```bash
+    attempts=0
+    while pgrep --full "^${IDEA_ROOT}/" >/dev/null && test "$attempts" -lt 20; do
+      sleep 0.25
+      attempts=$((attempts + 1))
+    done
+    pgrep --list-full --full "^${IDEA_ROOT}/" \
+      || printf '%s\n' 'No IDEA processes remain'
+    ```
+
+    If SIGTERM succeeded,
+    the output is exactly:
+
+    ```text
+    No IDEA processes remain
+    ```
+
+16. If step 15 still listed IDEA processes,
     reconfirm authorization for forced termination.
     No process changes occur in this step.
-11. If authorized and processes survived SIGTERM,
-    send SIGKILL only to those IDEA processes:
+17. Preview the surviving process set again:
+
+    ```bash
+    pgrep --list-full --full "^${IDEA_ROOT}/" \
+      || printf '%s\n' 'No IDEA processes remain'
+    ```
+
+    Continue only if every listed command still begins with `$IDEA_ROOT/`.
+18. If authorized and processes survived SIGTERM,
+    send SIGKILL to the previewed IDEA installation process set:
 
     ```bash
     mapfile -t IDEA_PIDS < <(pgrep --full "^${IDEA_ROOT}/" || true)
@@ -177,40 +250,56 @@ TODO
     ```
 
     Any remaining IDEA windows should close immediately.
-12. Confirm that no IDEA installation process remains:
+19. Confirm that no IDEA installation process remains after a bounded wait:
 
     ```bash
-    pgrep --list-full --full "^${IDEA_ROOT}/" || printf '%s\n' 'No IDEA processes remain'
+    attempts=0
+    while pgrep --full "^${IDEA_ROOT}/" >/dev/null && test "$attempts" -lt 20; do
+      sleep 0.25
+      attempts=$((attempts + 1))
+    done
+    pgrep --list-full --full "^${IDEA_ROOT}/" \
+      || printf '%s\n' 'No IDEA processes remain'
     ```
 
-    Do not continue unless the output is exactly:
+    Continue only when the output is exactly:
 
     ```text
     No IDEA processes remain
     ```
 
-13. Locate the Toolbox desktop entry:
+    If a process survives SIGKILL,
+    stop this runbook and do not delete `.lock` or `.port` files.
+    Save work in unrelated applications and use KDE's normal **Restart** action.
+    After login,
+    resume at **Setup** step 5 to restore the shell variables before continuing.
+20. Locate the Toolbox desktop entry whose `Exec` line names the current IDEA binary:
 
     ```bash
     export IDEA_DESKTOP_FILE="$(
       find "$HOME/.local/share/applications" -maxdepth 1 -type f \
         -name 'jetbrains-idea-*.desktop' \
-        -print \
+        -exec grep --files-with-matches --fixed-strings "Exec=\"$IDEA_BIN\"" {} + \
         | head --lines=1
     )"
-    export IDEA_DESKTOP_ID="$(basename "$IDEA_DESKTOP_FILE" .desktop)"
-    printf 'IDEA_DESKTOP_ID=%s\n' "$IDEA_DESKTOP_ID"
+    if test -n "$IDEA_DESKTOP_FILE"; then
+      export IDEA_DESKTOP_ID="$(basename "$IDEA_DESKTOP_FILE" .desktop)"
+    else
+      export IDEA_DESKTOP_ID=''
+    fi
+    printf 'IDEA_DESKTOP_ID=%s\n' "${IDEA_DESKTOP_ID:-none}"
     ```
 
-    The value should start with `jetbrains-idea-`.
-14. Launch IDEA through its desktop entry:
+    The value should start with `jetbrains-idea-` or be exactly `none`.
+21. If step 20 found an ID that starts with `jetbrains-idea-`,
+    launch IDEA through that desktop entry:
 
     ```bash
     gtk-launch "$IDEA_DESKTOP_ID"
     ```
 
     An IDEA project or welcome window should appear.
-15. If no desktop entry was found in step 13,
+22. If step 20 printed `IDEA_DESKTOP_ID=none`,
     select **Launch** for IDEA in **JetBrains Toolbox** instead.
     An IDEA project or welcome window should appear.
 
@@ -222,10 +311,11 @@ TODO
 1. Confirm that exactly one root IDEA process is running:
 
    ```bash
-   pgrep --list-full --full "^${IDEA_BIN}$"
+   pgrep --list-full --full "^${IDEA_BIN}( |$)"
    ```
 
-   The output should contain one numeric PID followed by `$IDEA_BIN`.
+   The output should contain one numeric PID followed by `$IDEA_BIN`,
+   optionally with a file or URL argument.
 2. Probe the recovered activation endpoint:
 
    ```bash
@@ -286,7 +376,7 @@ TODO
 6. Read the KWin verification result:
 
    ```bash
-   journalctl --boot --no-pager --output=cat --since='1 minute ago' \
+   journalctl --boot --no-pager --output=cat \
      | grep --fixed-strings 'IDEA_RUNBOOK_WINDOW:' \
      | tail --lines=5
    ```
@@ -327,14 +417,38 @@ TODO
    Temporary KWin script removed
    ```
 
-3. Clear the shell-only runbook variables:
+3. Print the private evidence directory retained for diagnosis:
 
    ```bash
-   unset IDEA_BIN IDEA_DESKTOP_FILE IDEA_DESKTOP_ID IDEA_KWIN_SCRIPT IDEA_LOG IDEA_PID IDEA_PIDS IDEA_ROOT
+   printf 'IDEA_EVIDENCE=%s\n' "$IDEA_EVIDENCE"
+   ```
+
+   Keep this directory until the shutdown blocker has been diagnosed or reported.
+4. After the evidence is no longer needed,
+   confirm that the printed path begins with `$HOME/temp/idea-shutdown.`.
+   No files change in this step.
+5. Delete only the confirmed evidence directory:
+
+   ```bash
+   rm --recursive --force -- "$IDEA_EVIDENCE"
+   test ! -e "$IDEA_EVIDENCE" && printf '%s\n' 'IDEA evidence removed'
+   ```
+
+   The output should be exactly:
+
+   ```text
+   IDEA evidence removed
+   ```
+
+6. Clear the shell-only runbook variables:
+
+   ```bash
+   unset IDEA_BIN IDEA_DESKTOP_FILE IDEA_DESKTOP_ID IDEA_EVIDENCE IDEA_KWIN_SCRIPT \
+     IDEA_LOG IDEA_PID IDEA_PIDS IDEA_ROOT
    ```
 
    No output is expected.
-4. Leave IDEA running.
+7. Leave IDEA running.
    This runbook does not alter IDEA settings,
    plugins,
    caches,
