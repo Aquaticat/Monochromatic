@@ -24,6 +24,12 @@ type ScannerHit = Readonly<{
    */
   rule: string;
   /**
+   * Match span within the line, verbatim as `START..END`, or empty when the
+   * scanner reported none. Carried so a diagnostic can point at the match
+   * rather than only at its line.
+   */
+  span: string;
+  /**
    * Plugin-owned materialized path.
    */
   scannerPath: string;
@@ -112,30 +118,77 @@ function parseHit(line: string,): ScannerHit {
   if (ruleSeparator === (-1))
     throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
   /**
-   * Line-number separator; the last colon before the rule suffix keeps
-   * candidate paths that themselves embed colons out of the numeric field.
+   * Everything before the rule suffix: the candidate path followed by its
+   * location fields.
    */
-  const lineSeparator = line.lastIndexOf(
-    ':',
+  const located = line.slice(
+    0,
     ruleSeparator,
   );
+
+  /**
+   * Last colon of the located segment. Scanned from the right because a
+   * candidate path may itself embed colons, so the location fields can only be
+   * recognized from the end.
+   */
+  const lastSeparator = located.lastIndexOf(':',);
+  if (lastSeparator === (-1))
+    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+
+  /**
+   * Final location field, which is the MATCH SPAN when the scanner reports one
+   * and the line number when it does not.
+   *
+   * The scanner emits `path:LINE:START..END`, and this parser previously read
+   * only `path:LINE`, so it took `START..END` as the line number and rejected
+   * every hit it was given as malformed. It therefore worked only while the
+   * scan was clean: the first real violation was reported as unparseable
+   * output rather than as the violation, naming the wrong cause and hiding the
+   * match. Both shapes are accepted here, since the span is optional in the
+   * legacy form this parser was written against.
+   */
+  const lastField = located.slice(lastSeparator + 1,);
+
+  /**
+   * Whether that field is a span rather than a line number. A span carries the
+   * range separator; a line number cannot.
+   */
+  const carriesSpan = lastField.includes('..',);
+
+  /**
+   * Separator before the line number, which sits one field further left when a
+   * span is present.
+   */
+  const lineSeparator = carriesSpan
+    ? located.lastIndexOf(
+      ':',
+      lastSeparator - 1,
+    )
+    : lastSeparator;
   if (lineSeparator === (-1))
     throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+
   /**
    * Complete parsed hit.
    */
   const hit: ScannerHit = {
-    scannerPath: line.slice(
+    scannerPath: located.slice(
       0,
       lineSeparator,
     ),
     line: parsePositiveInteger({
-      value: line.slice(
-        lineSeparator + 1,
-        ruleSeparator,
-      ),
+      value: carriesSpan
+        ? located.slice(
+          lineSeparator + 1,
+          lastSeparator,
+        )
+        : lastField,
       line,
     },),
+    // Relayed verbatim rather than parsed into numbers. It reaches only a
+    // diagnostic message, and the scanner owns its column convention, so
+    // asserting one here would reject output this parser has no stake in.
+    span: carriesSpan ? lastField : '',
     rule: parseRuleToken({
       value: line.slice(ruleSeparator + ' rule='.length,),
       line,
@@ -155,7 +208,7 @@ function parseHit(line: string,): ScannerHit {
  *
  * @example
  * ```ts
- * parseScannerOutput({ stderr: '/tmp/candidate:1 rule=3', candidateForPath: () => candidate });
+ * parseScannerOutput({ stderr: '/tmp/candidate:19:1..31 rule=28', candidateForPath: () => candidate });
  * ```
  */
 export function parseScannerOutput({
@@ -182,7 +235,9 @@ export function parseScannerOutput({
       const candidate = candidateForPath(hit.scannerPath,);
       return {
         code: 'forbidden-string',
-        message: `Forbidden string matched at line ${String(hit.line)} (rule ${hit.rule}).`,
+        message: `Forbidden string matched at line ${String(hit.line)}${
+          hit.span === '' ? '' : ` columns ${hit.span}`
+        } (rule ${hit.rule}).`,
         path: candidate.path,
       };
     },);
