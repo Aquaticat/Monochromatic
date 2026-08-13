@@ -384,16 +384,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 // ```
 import androidx.compose.foundation.layout.height
 
-// What:     `import androidx.compose.foundation.layout.matchParentSize` makes a Box child
-//           exactly match the size determined by its content siblings.
-// Why:      The rounded segmented-group frame must overlay the wrapped segment grid.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { matchParentSize } from "androidx/compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.matchParentSize
-
 // What:     `import androidx.compose.foundation.layout.padding` pulls in the `padding`
 //           MODIFIER (inner spacing around a composable).
 // Why:      Most layouts pad their contents with `Modifier.padding(...)`.
