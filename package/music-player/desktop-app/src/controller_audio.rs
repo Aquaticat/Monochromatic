@@ -114,6 +114,16 @@ impl Controller {
         // ```
         let position_secs =
             frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| s.rate));
+        // What:     `Session::load().page_control_style` reads only the UI preference
+        //           from the existing session before the playback snapshot replaces it.
+        // Why:      Page style belongs to the UI rather than the audio controller, but
+        //           controller shutdown must preserve the independently saved choice.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const pageControlStyle = Session.load().pageControlStyle;
+        // ```
+        let page_control_style = Session::load().page_control_style;
         // What:     `Session { ... }`. Build the record from the Source Root + state.
         //           `self.source_root.clone()` copies the owned root option;
         //           `self.queue.current_path().cloned()` is the Selected Track's path (or
@@ -134,6 +144,7 @@ impl Controller {
             volume: self.volume,
             shuffle: self.queue.shuffle_mode(),
             repeat_track: self.queue.repeat_track(),
+            page_control_style,
         }
     }
 

@@ -49,6 +49,16 @@ mod ui_page;
 /// ```
 mod ui_font_scale;
 
+/// What:     `mod ui_page_style;` loads the sibling settings-persistence bridge.
+/// Why:      Page-control preference wiring uses generated `AppWindow` methods and stays
+///           separate so `main.rs` remains under its code-line limit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiPageStyle from "./ui_page_style";
+/// ```
+mod ui_page_style;
+
 /// What:     `#[cfg(test)] #[path = "ui_binding_tests.rs"] mod ui_binding_tests;` loads
 ///           the headless UI regression tests, compiled ONLY under `cargo test` /
 ///           `cargo nextest run`. `#[path]` names the sibling file explicitly because
@@ -1288,6 +1298,9 @@ fn main() -> Result<()> {
     // ```
     ui_font_scale::apply_os_font_scale(&app);
 
+    // Restore page-control preference and register settings persistence.
+    ui_page_style::apply(&app);
+
     // What:     `let launcher = Launcher::new();`. Construct the KDE taskbar-progress
     //           emitter (a cheap-to-clone session-bus handle, or a no-op without a
     //           bus).
@@ -1673,7 +1686,6 @@ fn main() -> Result<()> {
         // ```
         move |i| engine.send(Command::SelectIndex(i as usize))
     });
-
     // What:     `app.on_select_page({ ... })`. Register the tab-click handler; the
     //           closure takes the page index `p: i32`. It does NOT touch the engine:
     //           pagination is a pure display concern, so it just re-renders the

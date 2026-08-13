@@ -47,6 +47,58 @@ use crate::command::ShuffleMode;
 /// ```
 use crate::identity;
 
+/// What:     `PageControlStyle` is the saved visual treatment for library-page selectors.
+///           It has three fixed values: radio controls, wrapping Material Design 1 tabs,
+///           and the earlier rounded buttons. `Default` selects `Radio` for old sessions.
+/// Why:      Users can choose a page selector while fresh and older installs start with
+///           radio controls as requested.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type PageControlStyle = 'radio' | 'md1Tabs' | 'roundedButtons';
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub enum PageControlStyle {
+    /// Radio indicators and labels in a wrapping group.
+    #[default]
+    Radio,
+    /// Flat wrapping MD1 tabs with selected underlines.
+    Md1Tabs,
+    /// Filled or outlined rounded buttons from the previous UI.
+    RoundedButtons,
+}
+
+/// What:     `impl PageControlStyle` adds conversion methods used at the Slint boundary.
+/// Why:      Slint properties carry integers, while saved Rust state keeps named variants.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const pageControlStyleToInt = (style: PageControlStyle): number => ...;
+/// ```
+impl PageControlStyle {
+    /// Convert this style to Slint's stable integer representation.
+    pub fn to_int(self) -> i32 {
+        if self == PageControlStyle::Md1Tabs {
+            return 1;
+        }
+        if self == PageControlStyle::RoundedButtons {
+            return 2;
+        }
+        0
+    }
+
+    /// Decode Slint's integer representation, defaulting unknown values to radio controls.
+    pub fn from_int(value: i32) -> PageControlStyle {
+        if value == 1 {
+            return PageControlStyle::Md1Tabs;
+        }
+        if value == 2 {
+            return PageControlStyle::RoundedButtons;
+        }
+        PageControlStyle::Radio
+    }
+}
+
 // What:     `#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]`
 //           auto-implements: `Clone` (duplicable), `Debug` (`{:?}` printing),
 //           `PartialEq` (`==`, used in tests), and `Serialize`/`Deserialize` (JSON both
@@ -142,6 +194,15 @@ pub struct Session {
     /// repeatTrack: boolean;
     /// ```
     pub repeat_track: bool,
+    /// What:     `pub page_control_style: PageControlStyle` names the selected page
+    ///           navigation treatment.
+    /// Why:      Restore the user's radio, MD1 tab, or rounded-button preference.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// pageControlStyle: PageControlStyle;
+    /// ```
+    pub page_control_style: PageControlStyle,
 }
 
 /// What:     `impl Default for Session { ... }` provides the first-run / corrupt-file
@@ -181,6 +242,7 @@ impl Default for Session {
             volume: 1.0,
             shuffle: ShuffleMode::Off,
             repeat_track: false,
+            page_control_style: PageControlStyle::Radio,
         }
     }
 }

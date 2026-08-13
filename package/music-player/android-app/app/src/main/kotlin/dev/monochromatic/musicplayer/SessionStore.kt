@@ -195,6 +195,18 @@ object SessionStore {
      */
     private const val KEY_REPEAT: String = "repeat_track"
 
+    // What:     `KEY_PAGE_CONTROL_STYLE` is the SharedPreferences key for the page
+    //           selector treatment, stored as the enum's `.name` string.
+    // Why:      Keep this UI preference in the existing session preference file without
+    //           adding it to the playback controller's pure Session model.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const KEY_PAGE_CONTROL_STYLE = "page_control_style";
+    // ```
+    /** Defines the persisted page-control style key. */
+    private const val KEY_PAGE_CONTROL_STYLE: String = "page_control_style"
+
     // What:     `fun load(context: Context): Session { ... }` declares a public function
     //           taking a `Context` and returning a `core.Session`, block body.
     // Why:      Read the persisted session at launch; a blank store yields the model's
@@ -374,6 +386,44 @@ object SessionStore {
             // e.putBoolean(KEY_REPEAT, session.repeatTrack);
             // ```
             putBoolean(KEY_REPEAT, session.repeatTrack)
+        }
+    }
+
+    // What:     `fun loadPageControlStyle(context: Context): PageControlStyle` reads the
+    //           stored enum name, finds a matching entry, and falls back to `RADIO` when
+    //           the key is absent or unknown.
+    // Why:      Fresh installs and stale preference values safely use radio controls.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // loadPageControlStyle(context): PageControlStyle {
+    //   const name = prefs(context).getString(KEY_PAGE_CONTROL_STYLE, null);
+    //   return PageControlStyle.entries.find((style) => style.name === name) ?? 'RADIO';
+    // }
+    // ```
+    /** Loads the saved page-control style with radio controls as the fallback. */
+    internal fun loadPageControlStyle(context: Context): PageControlStyle {
+        // Read nullable text because a fresh store has no value yet.
+        /** Holds the persisted enum name, or null when no choice was saved. */
+        val storedName: String? = prefs(context).getString(KEY_PAGE_CONTROL_STYLE, null)
+        // Match known names without throwing; unknown names use the requested default.
+        return PageControlStyle.entries.firstOrNull { style -> style.name == storedName } ?: PageControlStyle.RADIO
+    }
+
+    // What:     `fun savePageControlStyle(context, style)` writes only the selected
+    //           enum name through the existing preferences editor.
+    // Why:      Style changes become durable immediately without replacing playback fields.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // savePageControlStyle(context, style): void {
+    //   prefs(context).edit((editor) => editor.putString(KEY_PAGE_CONTROL_STYLE, style.name));
+    // }
+    // ```
+    /** Persists one page-control style selection. */
+    internal fun savePageControlStyle(context: Context, style: PageControlStyle) {
+        prefs(context).edit {
+            putString(KEY_PAGE_CONTROL_STYLE, style.name)
         }
     }
 

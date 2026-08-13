@@ -28,11 +28,12 @@
 //     controller. Requests audio access once, shows `permissionGate` until
 //     granted, then signals the service to load and shows `playerScreen`.
 //   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
-//     volume, control row, page tabs + track list). Tap a track to play; tap
-//     the playing track to pause/resume.
+//     volume, control row, settings page, page controls + track list). Page
+//     controls default to radios and can switch to multi-row MD1 tabs or the
+//     previous rounded buttons. Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
 //     screens. `seekRow`/`volumeRow`/`controlRow`/`shuffleOption`/`pageTabs`/
-//     `trackPager`/`trackRow`: the pieces of the player screen.
+//     `settingsPage`/`pageTabs`/`trackPager`/`trackRow`: the pieces of the player screen.
 //   - `formatTime`: format a seconds value as `m:ss`.
 // ============================================================================
 
@@ -222,6 +223,15 @@ import androidx.compose.foundation.isSystemInDarkTheme
 // ```
 import androidx.compose.foundation.layout.Arrangement
 
+// What:     `import androidx.compose.foundation.layout.Box` pulls in a stacking container.
+// Why:      The MD1 page tab uses a thin Box as its selected underline.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Box } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.Box
+
 // What:     `import androidx.compose.foundation.layout.Column` pulls in `Column`, the
 //           vertical layout composable (stacks children top to bottom).
 // Why:      Several screens lay their content out in a `Column`.
@@ -274,6 +284,16 @@ import androidx.compose.foundation.layout.FlowRow
 // ```
 import androidx.compose.foundation.layout.Row
 
+// What:     `import androidx.compose.foundation.layout.defaultMinSize` adds minimum-size
+//           constraints without overriding larger content measurements.
+// Why:      Radio rows and MD1 tabs need a 48dp minimum touch target.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { defaultMinSize } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.defaultMinSize
+
 // What:     `import androidx.compose.foundation.layout.fillMaxSize` pulls in the
 //           `fillMaxSize` MODIFIER (make a composable occupy all available width AND
 //           height).
@@ -294,6 +314,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 // import { fillMaxWidth } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.fillMaxWidth
+
+// What:     `import androidx.compose.foundation.layout.height` fixes a composable's height.
+// Why:      The MD1 selected indicator is a 2dp line.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { height } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.height
 
 // What:     `import androidx.compose.foundation.layout.padding` pulls in the `padding`
 //           MODIFIER (inner spacing around a composable).
@@ -1673,8 +1702,8 @@ private fun startingGate() {
 //           declares a PUBLIC (Kotlin default) composable taking the brain and an
 //           `onChooseFolder` callback (`() -> Unit`).
 // Why:      The player screen, the desktop's narrow (single-column) layout: a seek bar, a
-//           volume slider, a wrapping control row (open / shuffle / transport / repeat),
-//           then the page tabs and the selected page's track list. No title bar, matching
+//           volume slider, a wrapping control row (settings / open / shuffle / transport / repeat),
+//           then settings or the selected page's controls and track list. No title bar, matching
 //           the desktop's plain window. Tap a track to play it; tap the playing track to
 //           pause or resume.
 //
@@ -1701,6 +1730,33 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
      * source and use.
      */
     val state = controller.uiState
+    // What:     `val context = LocalContext.current` reads the current Android context.
+    // Why:      The page-control preference is loaded and saved through SessionStore.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const context = useContext(LocalContext);
+    // ```
+    /** Holds the current Android context for preference persistence. */
+    val context = LocalContext.current
+    // What:     `pageControlStyle` is remembered observable UI state seeded from storage.
+    // Why:      Changing a setting immediately recomposes the page selector.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const [pageControlStyle, setPageControlStyle] = useState(SessionStore.loadPageControlStyle(context));
+    // ```
+    /** Holds the selected page-control treatment. */
+    var pageControlStyle by remember { mutableStateOf(SessionStore.loadPageControlStyle(context)) }
+    // What:     `showingSettings` is remembered observable navigation state.
+    // Why:      The Settings button swaps the library area for the settings page.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const [showingSettings, setShowingSettings] = useState(false);
+    // ```
+    /** Tracks whether the settings page is visible. */
+    var showingSettings by remember { mutableStateOf(false) }
     // What:     `var position by remember { mutableDoubleStateOf(0.0) }` declares a
     //           state-backed `Double` local via the `useState` idiom: `remember` keeps it
     //           across recompositions, `mutableDoubleStateOf(0.0)` is the (number-specialized)
@@ -1857,8 +1913,31 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             // ```ts
             // <controlRow state={state} controller={controller} onOpen={onChooseFolder}/>
             // ```
-            controlRow(state = state, controller = controller, onOpen = onChooseFolder)
-            // What:     `trackPager(state = state, controller = controller)` renders the page
+            controlRow(
+                state = state,
+                controller = controller,
+                onSettings = { showingSettings = true },
+                onOpen = onChooseFolder,
+            )
+            // What:     The settings/library branch renders one page in the remaining space.
+            // Why:      Settings replaces the page selector and tracks until the user returns.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return showingSettings ? <settingsPage .../> : <trackPager .../>;
+            // ```
+            if (showingSettings) {
+                settingsPage(
+                    style = pageControlStyle,
+                    onSelectStyle = { style ->
+                        pageControlStyle = style
+                        SessionStore.savePageControlStyle(context, style)
+                        Log.i(LOG_TAG, "page control style=${style.name}")
+                    },
+                    onBack = { showingSettings = false },
+                )
+            } else {
+                // What:     `trackPager(state = state, controller = controller)` renders the page
             //           tabs + track list. (Folds in the old inline note: page tabs and the
             //           track list share one scroll area, the desktop's narrow layout: a library
             //           with many folder pages would otherwise let the wrapping tab bar fill the
@@ -1870,7 +1949,12 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             // ```ts
             // <trackPager state={state} controller={controller}/>
             // ```
-            trackPager(state = state, controller = controller)
+                trackPager(
+                    state = state,
+                    controller = controller,
+                    pageControlStyle = pageControlStyle,
+                )
+            }
         }
     }
 }
@@ -2066,10 +2150,9 @@ private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
 // // (component function)
 // ```
 @Composable
-// What:     `private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) { ... }`
-//           declares a private composable taking the UI snapshot, the brain, and an
-//           `onOpen` callback.
-// Why:      Wrapping control row, in the desktop's order: Open (the folder picker), the
+// What:     `private fun controlRow(...)` declares a private composable taking the UI
+//           snapshot, controller, Settings callback, and Open callback.
+// Why:      Wrapping control row, in the desktop's order: Settings, Open, the
 //           three-state shuffle radios, the transport buttons, and repeat-track.
 //
 // In TS you'd write (pseudocode):
@@ -2080,7 +2163,12 @@ private fun volumeRow(volume: Float, onVolume: (Float) -> Unit) {
  * Defines control row behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) {
+private fun controlRow(
+    state: PlayerUiState,
+    controller: PlayerController,
+    onSettings: () -> Unit,
+    onOpen: () -> Unit,
+) {
     // What:     `FlowRow( horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement =
     //           Arrangement.spacedBy(8.dp), ) { ... }`
     //           lays children left-to-right, WRAPPING to new lines on overflow, with 16dp
@@ -2098,6 +2186,14 @@ private fun controlRow(state: PlayerUiState, controller: PlayerController, onOpe
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // What:     `Button(onClick = onSettings)` renders Settings immediately before Open.
+        // Why:      Open the page-control preference screen from the main controls.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <Button onClick={onSettings}>Settings</Button>
+        // ```
+        Button(onClick = onSettings) { Text("Settings") }
         // What:     `Button(onClick = onOpen) { Text("Open") }` renders the Open button; its
         //           trailing lambda `{ Text("Open") }` is the button's CONTENT (label).
         // Why:      Launch the folder picker.
@@ -2299,6 +2395,125 @@ private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit
     }
 }
 
+// What:     `settingsPage` is a weighted Column child showing the three page-control
+//           choices and a route back to the library.
+// Why:      The Settings button needs a dedicated page where the preference is explicit.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SettingsPage(props: SettingsProps) { ... }
+// ```
+/** Displays page-control preferences in place of the music library. */
+@Composable
+private fun ColumnScope.settingsPage(
+    style: PageControlStyle,
+    onSelectStyle: (PageControlStyle) -> Unit,
+    onBack: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1.0f, fill = true),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(text = "Page controls", style = MaterialTheme.typography.headlineSmall)
+        Text("Choose how library pages are shown.")
+        pageControlStyleOption(
+            label = "Radio controls",
+            selected = style == PageControlStyle.RADIO,
+            onSelect = { onSelectStyle(PageControlStyle.RADIO) },
+        )
+        pageControlStyleOption(
+            label = "Multi-row MD1 tabs",
+            selected = style == PageControlStyle.MD1_TABS,
+            onSelect = { onSelectStyle(PageControlStyle.MD1_TABS) },
+        )
+        pageControlStyleOption(
+            label = "Rounded buttons",
+            selected = style == PageControlStyle.ROUNDED_BUTTONS,
+            onSelect = { onSelectStyle(PageControlStyle.ROUNDED_BUTTONS) },
+        )
+        Button(onClick = onBack) { Text("Back to library") }
+    }
+}
+
+// What:     `pageControlStyleOption` renders one full-row radio choice.
+// Why:      Each setting needs a 48dp touch target and selected indicator.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function PageControlStyleOption(props: RadioOptionProps) { ... }
+// ```
+/** Displays one selectable page-control style. */
+@Composable
+private fun pageControlStyleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .clickable { onSelect() },
+    ) {
+        RadioButton(selected = selected, onClick = onSelect)
+        Text(text = label, modifier = Modifier.padding(end = 8.dp))
+    }
+}
+
+// What:     `pageRadioControl` renders one page label with a Material radio indicator.
+// Why:      Radio controls are the default page-navigation treatment.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function PageRadioControl(props: RadioOptionProps) { ... }
+// ```
+/** Displays one page as a radio control. */
+@Composable
+private fun pageRadioControl(label: String, selected: Boolean, onSelect: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .clickable { onSelect() },
+    ) {
+        RadioButton(selected = selected, onClick = onSelect)
+        Text(text = label, modifier = Modifier.padding(end = 8.dp))
+    }
+}
+
+// What:     `md1PageTab` renders a flat text tab with a selected underline.
+// Why:      This recreates the Material Design 1 tab visual while FlowRow supplies
+//           the requested multi-row layout.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function Md1PageTab(props: TabProps) { ... }
+// ```
+/** Displays one flat Material Design 1 page tab. */
+@Composable
+private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
+    /** Holds the selected underline color, or transparent for an inactive tab. */
+    val indicatorColor: Color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
+    /** Holds accent text for the active tab and regular surface text otherwise. */
+    val labelColor: Color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .clickable { onSelect() },
+    ) {
+        Text(
+            text = label,
+            color = labelColor,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(indicatorColor),
+        )
+    }
+}
+
 // What:     `@OptIn(ExperimentalLayoutApi::class)` acknowledges the experimental `FlowRow`
 //           used by `pageTabs` (see the same annotation on `controlRow`).
 // Why:      `pageTabs` uses `FlowRow`.
@@ -2329,7 +2544,11 @@ private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit
  * Defines page tabs behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
+private fun pageTabs(
+    state: PlayerUiState,
+    pageControlStyle: PageControlStyle,
+    onSelectPage: (Int) -> Unit,
+) {
     // What:     `FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) { ... }` lays the
     //           tab buttons left-to-right, wrapping, with 4dp gaps.
     // Why:      A wrapping grid of page tabs.
@@ -2364,25 +2583,15 @@ private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
             //   return <Button onClick={() => onSelectPage(page)}><Text>{label}</Text></Button>;
             // return <OutlinedButton onClick={() => onSelectPage(page)}><Text>{label}</Text></OutlinedButton>;
             // ```
-            if (page == state.selectedPage) {
-                // What:     `Button(onClick = { onSelectPage(page) }) { Text(label) }` renders the
-                //           active (filled) tab.
-                // Why:      Highlight the current page.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // <Button onClick={() => onSelectPage(page)}><Text>{label}</Text></Button>
-                // ```
+            /** Records whether this page is currently visible. */
+            val selected: Boolean = page == state.selectedPage
+            if (pageControlStyle == PageControlStyle.RADIO) {
+                pageRadioControl(label = label, selected = selected, onSelect = { onSelectPage(page) })
+            } else if (pageControlStyle == PageControlStyle.MD1_TABS) {
+                md1PageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
+            } else if (selected) {
                 Button(onClick = { onSelectPage(page) }) { Text(label) }
             } else {
-                // What:     `OutlinedButton(onClick = { onSelectPage(page) }) { Text(label) }`
-                //           renders an inactive (outlined) tab.
-                // Why:      Show the other selectable pages.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // <OutlinedButton onClick={() => onSelectPage(page)}><Text>{label}</Text></OutlinedButton>
-                // ```
                 OutlinedButton(onClick = { onSelectPage(page) }) { Text(label) }
             }
         }
@@ -2421,7 +2630,11 @@ private fun pageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
  * Defines track pager behavior for this music-player component; the TypeScript-oriented notes above explain its
  * call shape and effects.
  */
-private fun ColumnScope.trackPager(state: PlayerUiState, controller: PlayerController) {
+private fun ColumnScope.trackPager(
+    state: PlayerUiState,
+    controller: PlayerController,
+    pageControlStyle: PageControlStyle,
+) {
     // What:     `if (state.queueSize == 0) { ... }` checks for an empty queue (`==` integer
     //           equality).
     // Why:      An empty queue shows either a loading notice or a "no music" message, then
@@ -2523,7 +2736,11 @@ private fun ColumnScope.trackPager(state: PlayerUiState, controller: PlayerContr
                 // ```ts
                 // <pageTabs state={state} onSelectPage={(p) => controller.selectPage(p)}/>
                 // ```
-                pageTabs(state = state, onSelectPage = { controller.selectPage(it) })
+                pageTabs(
+                    state = state,
+                    pageControlStyle = pageControlStyle,
+                    onSelectPage = { controller.selectPage(it) },
+                )
             }
         }
         // What:     `items(state.pageItems) { item -> ... }` emits one list row per element of
