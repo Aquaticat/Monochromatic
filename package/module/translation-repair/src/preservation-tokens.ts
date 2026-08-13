@@ -84,6 +84,14 @@ const SENTENCE_ENDS = '.!?。！？';
 const LEADING_MARKS = ' \t\n\r"“‘\'(>[-*';
 
 /**
+ * Shortest capitalized run treated as a possible name.
+ *
+ * Two-letter capitals are overwhelmingly initials and abbreviations, whose
+ * disappearance an ordinary rewrite explains.
+ */
+const MIN_NAME_LENGTH = 3;
+
+/**
  * Reports whether a character starts a word made of letters or digits.
  *
  * @param character - single character
@@ -235,7 +243,7 @@ export function properNouns(
     let end = index;
     while ((end < text.length) && isWordCharacter(text[end] ?? '',))
       end += 1;
-    if ((end - index) < 3) {
+    if ((end - index) < MIN_NAME_LENGTH) {
       index = end;
       continue;
     }

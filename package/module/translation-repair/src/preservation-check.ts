@@ -79,6 +79,37 @@ export type PreservationVerdict = {
 };
 
 /**
+ * Reports whether every character of a token is a digit.
+ *
+ * EVERY character, not merely the first. A token like "10th" begins with a
+ * digit while being a word, and an edit rewriting "July 10th" as "July 10"
+ * loses it without losing anything: measured, that exact case rejected a repair
+ * a human graded sound.
+ *
+ * @param token - content token
+ *
+ * @returns True when the token is a bare number
+ *
+ * @example
+ * ```ts
+ * const isNumber = isAllDigits({ token: '611', },);
+ * ```
+ */
+function isAllDigits(
+  {
+    token,
+  }: {
+    readonly token: string;
+  },
+): boolean {
+  for (const character of token) {
+    if ((character < '0') || (character > '9'))
+      return false;
+  }
+  return token.length > 0;
+}
+
+/**
  * Removes the quoted defects from the replaced text, leaving what the edit had
  * no licence to change.
  *
@@ -186,9 +217,7 @@ export function checkPreservation(
     // "10th" begins with a digit while being a word, and an edit rewriting
     // "July 10th" as "July 10" loses it without losing anything: measured, that
     // exact case rejected a repair a human graded sound.
-    return names.has(token,) || ([...token,].every(function isDigit(character,): boolean {
-      return (character >= '0') && (character <= '9');
-    },));
+    return names.has(token,) || isAllDigits({ token, },);
   },),),].toSorted();
 
   /**
