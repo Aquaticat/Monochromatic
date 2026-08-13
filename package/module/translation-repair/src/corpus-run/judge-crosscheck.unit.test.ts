@@ -204,8 +204,10 @@ await describe({
     },),
 
     it({
-      name: 'counts a claim an issue names but attribution never covered, '
-        + 'rather than letting it vanish between the two records',
+      name: 'reports a claim missing from an ATTRIBUTED entry as a join '
+        + 'failure rather than as a legacy claim, since on an entry whose '
+        + 'critics were attributed every surviving claim should have a '
+        + 'proposer and folding it in would hide a broken join',
       fn: async () => {
         const census = buildCrosscheckCensus({
           entries: [
@@ -226,7 +228,8 @@ await describe({
         },);
 
         expect(census.items.length,).toBe(1,);
-        expect(census.unattributedClaims,).toBe(1,);
+        expect(census.unattributedJoinFailures,).toBe(1,);
+        expect(census.unattributedLegacyClaims,).toBe(0,);
       },
     },),
 
@@ -265,7 +268,12 @@ await describe({
         expect(census.entriesCovered,).toBe(2,);
         expect(census.entriesWithoutAttribution,).toBe(1,);
         expect(census.items.length,).toBe(1,);
-        expect(census.unattributedClaims,).toBe(1,);
+
+        // The legacy entry's claim is expected absence, not a broken join, and
+        // the two must stay apart: 1368 claims on this run sit in the legacy
+        // count, so a join failure folded in with them would be invisible.
+        expect(census.unattributedLegacyClaims,).toBe(1,);
+        expect(census.unattributedJoinFailures,).toBe(0,);
       },
     },),
 

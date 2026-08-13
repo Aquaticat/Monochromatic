@@ -55,6 +55,10 @@ run = "node src/corpus-run/score-attribution.ts"
 description = "Report precision off a graded sheet, plus agreement against blind pre-grades when they exist (override with -- --sheet PATH --pre-grades PATH)"
 run = "node src/corpus-run/score-agreement.ts"
 
+[tasks."score-crosscheck"]
+description = "Report the population a judge crosscheck would run over, per author and per arm, spending no quota"
+run = "node src/corpus-run/score-crosscheck.ts"
+
 [tasks."score-probe"]
 description = "Report what the shadow-mode introduced-defect probe found across a run's settled artifacts, over distinct shipped regions"
 run = "node src/corpus-run/score-probe.ts"

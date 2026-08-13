@@ -101,12 +101,25 @@ export type CrosscheckCensus = {
   readonly unjudgeable: readonly CrosscheckItem[];
 
   /**
-   * Claims named by an issue but carrying no attribution record.
+   * Claims on entries that predate attribution entirely.
    *
-   * These cannot be crosschecked at all, since there is no author to bar.
-   * Counted so a reading can see how much of the run the census covers.
+   * Expected, not a defect. An entry settled before attribution was recorded
+   * names claims no proposer was ever written for. Counted so a reading can
+   * see how much of the run the census covers.
    */
-  readonly unattributedClaims: number;
+  readonly unattributedLegacyClaims: number;
+
+  /**
+   * Claims on entries that DO carry attribution, yet whose id no attribution
+   * record holds.
+   *
+   * A DEFECT IN THE JOIN, and held apart from the legacy count for that
+   * reason. On an entry whose critics were attributed, every surviving claim
+   * should have a proposer; one that does not means the two records disagree
+   * about claim identity, and folding it in with the legacy claims would hide
+   * a broken join inside an expected number.
+   */
+  readonly unattributedJoinFailures: number;
 
   /**
    * Entries carrying no attribution at all, settled before it was recorded.
@@ -198,10 +211,17 @@ export function buildCrosscheckCensus(
   },);
 
   /**
-   * Claims an issue names that no attribution record covers.
+   * Claims an issue names that no attribution record covers, split by whether
+   * the entry carries attribution at all.
    */
-  const unattributedClaims = entries.reduce(
-    function countMissing(total: number, entry,): number {
+  const unattributed = entries.reduce(
+    function countMissing(
+      total: {
+        readonly legacy: number;
+        readonly joinFailures: number;
+      },
+      entry,
+    ) {
       /**
        * Claim ids this entry attributed.
        */
@@ -214,7 +234,10 @@ export function buildCrosscheckCensus(
         },),
       );
 
-      return total + entry.issues.reduce(
+      /**
+       * Claims of this entry with no proposer recorded.
+       */
+      const missing = entry.issues.reduce(
         function countEntryMissing(running: number, issue,): number {
           return running + issue.claimIds
             .filter(function isMissing(claimId,): boolean {
@@ -223,8 +246,23 @@ export function buildCrosscheckCensus(
         },
         0,
       );
+
+      // An entry attributing nothing is legacy; one attributing something and
+      // still missing a claim has a join that disagrees with itself.
+      return (attributed.size === 0)
+        ? {
+          legacy: total.legacy + missing,
+          joinFailures: total.joinFailures,
+        }
+        : {
+          legacy: total.legacy,
+          joinFailures: total.joinFailures + missing,
+        };
     },
-    0,
+    {
+      legacy: 0,
+      joinFailures: 0,
+    },
   );
 
   return {
@@ -234,7 +272,8 @@ export function buildCrosscheckCensus(
     unjudgeable: enumerated.filter(function isUnjudgeable(item,): boolean {
       return item.judges.length === 0;
     },),
-    unattributedClaims,
+    unattributedLegacyClaims: unattributed.legacy,
+    unattributedJoinFailures: unattributed.joinFailures,
     entriesWithoutAttribution: entries.filter(function isBare(entry,): boolean {
       return (entry.chunkCritics ?? []).every(function empty(chunk,): boolean {
         return chunk.claimAttributions.length === 0;
