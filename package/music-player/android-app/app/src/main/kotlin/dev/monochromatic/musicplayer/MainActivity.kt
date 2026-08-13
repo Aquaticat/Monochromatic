@@ -30,7 +30,8 @@
 //   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
 //     volume, control row, settings page, page controls + track list). Page
 //     controls default to radios and can switch to multi-row MD1 tabs, segmented
-//     buttons, Chromium-like tabs, or the previous rounded buttons. Tap a track to play; tap the playing track to pause/resume.
+//     buttons, Chromium-like tabs, or the previous rounded buttons.
+//     Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
 //     screens. `seekRow`/`volumeRow`/`controlRow`/`radioOption`/`pageTabs`/
 //     `settingsPage`/`pageTabs`/`trackPager`/`trackRow`: the pieces of the player screen.
