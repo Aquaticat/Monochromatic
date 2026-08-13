@@ -25,6 +25,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  buildChunkCriticRecords,
   type ClaimEmission,
   collectClaimAttributions,
   retainAttributions,
@@ -315,6 +316,71 @@ await describe({
             return attribution.claimId;
           },),
         ).toStrictEqual([NAP_CLAIM, PURR_CLAIM,],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: buildChunkCriticRecords.name,
+  children: [
+    it({
+      name: 'CANONICALIZES the nested arrays rather than inheriting their '
+        + 'order, so two callers holding the same evidence in different order '
+        + 'serialize to identical bytes. Every producer upstream already sorts, '
+        + 'which is exactly why this needs a test: the invariant holds today by '
+        + 'convention and this is what makes the artifact boundary enforce it',
+      fn: async () => {
+        /**
+         * Records whose nested arrays arrive in one order.
+         */
+        const forward = buildChunkCriticRecords({
+          outcomes: [
+            {
+              chunkIndex: 1,
+              heardCriticIds: ['hf:Qwen/Qwen3.6-27B', 'hf:openai/gpt-oss-120b',],
+              claimAttributions: [
+                {
+                  claimId: 'issue/aaa',
+                  proposers: [
+                    { modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },
+                    { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, },
+                  ],
+                },
+                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },], },
+              ],
+            },
+            { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], },
+          ],
+        },);
+
+        /**
+         * The same evidence, every nested array reversed.
+         */
+        const reversed = buildChunkCriticRecords({
+          outcomes: [
+            { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], },
+            {
+              chunkIndex: 1,
+              heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:Qwen/Qwen3.6-27B',],
+              claimAttributions: [
+                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },], },
+                {
+                  claimId: 'issue/aaa',
+                  proposers: [
+                    { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, },
+                    { modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },
+                  ],
+                },
+              ],
+            },
+          ],
+        },);
+
+        // Byte identity, not deep equality: this value is serialized into a
+        // cached artifact, so what matters is that JSON.stringify agrees.
+        expect(JSON.stringify(reversed,),).toBe(JSON.stringify(forward,),);
+        expect(forward[0]?.chunkIndex,).toBe(0,);
       },
     },),
   ],

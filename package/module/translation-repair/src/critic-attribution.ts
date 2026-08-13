@@ -240,6 +240,13 @@ export type ChunkCriticRecord = {
  *
  * @param outcomes - settled chunk outcomes in any order
  *
+ * Does NOT reject a repeated chunk index, deliberately, though the READER
+ * throws on one. The proportion matters: an artifact's primary value is the
+ * repaired text, and attribution is telemetry beside it. Failing here would
+ * abort an entry and discard hours of repair over a calibration invariant,
+ * while failing at read time costs only the report. The reader is the right
+ * place for that guard.
+ *
  * @returns One record per chunk, ordered by chunk index
  *
  * @example
@@ -258,8 +265,40 @@ export function buildChunkCriticRecords(
     .map(function toRecord(outcome,): ChunkCriticRecord {
     return {
       chunkIndex: outcome.chunkIndex,
-      heardCriticIds: outcome.heardCriticIds,
-      claimAttributions: outcome.claimAttributions,
+      // CANONICALIZED here rather than trusted from the caller. Every producer
+      // upstream already sorts, so this changes nothing today; what it adds is
+      // that the ARTIFACT BOUNDARY guarantees the order rather than inheriting
+      // it. A permuted array serializes to different bytes for identical
+      // evidence, and this value goes into a cached outcome.
+      //
+      // Code-unit order throughout, never `localeCompare`, which is
+      // locale-dependent and would order the same critics differently on two
+      // machines.
+      heardCriticIds: outcome.heardCriticIds
+        .toSorted(),
+      claimAttributions: outcome.claimAttributions
+        .map(function canonical(attribution,) {
+        return {
+          claimId: attribution.claimId,
+          proposers: attribution.proposers
+            .toSorted(function byModelId(
+              left,
+              right,
+            ): number {
+            if (left.modelId === right.modelId)
+              return 0;
+            return (left.modelId < right.modelId) ? (-1) : 1;
+          },),
+        };
+      },)
+        .toSorted(function byClaimId(
+          left,
+          right,
+        ): number {
+        if (left.claimId === right.claimId)
+          return 0;
+        return (left.claimId < right.claimId) ? (-1) : 1;
+      },),
     };
   },)
     .toSorted(function byChunkIndex(
