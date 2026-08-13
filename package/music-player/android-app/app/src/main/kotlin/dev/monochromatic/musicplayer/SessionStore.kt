@@ -407,7 +407,7 @@ object SessionStore {
         /** Holds the persisted enum name, or null when no choice was saved. */
         val storedName: String? = prefs(context).getString(KEY_PAGE_CONTROL_STYLE, null)
         // Match known names without throwing; unknown names use the requested default.
-        return PageControlStyle.entries.firstOrNull { style -> style.name == storedName } ?: PageControlStyle.RADIO
+        return PageControlStyle.fromStoredName(storedName)
     }
 
     // What:     `fun savePageControlStyle(context, style)` writes only the selected

@@ -50,5 +50,27 @@ internal enum class PageControlStyle {
     // 'ROUNDED_BUTTONS'
     // ```
     /** Uses the previous rounded page buttons. */
-    ROUNDED_BUTTONS,
+    ROUNDED_BUTTONS;
+
+    // What:     `companion object` is the enum's shared static-like namespace.
+    // Why:      Preference decoding belongs beside the variants it recognizes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // namespace PageControlStyle { ... }
+    // ```
+    /** Decodes persisted enum names without throwing on stale values. */
+    companion object {
+        // What:     `fromStoredName` finds the enum entry with a matching `.name`.
+        // Why:      Missing and unknown preference values must use radio controls.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // function fromStoredName(name: string | null): PageControlStyle { ... }
+        // ```
+        /** Returns matching style, or radio controls when no stored name is usable. */
+        internal fun fromStoredName(name: String?): PageControlStyle {
+            return entries.firstOrNull { style -> style.name == name } ?: RADIO
+        }
+    }
 }

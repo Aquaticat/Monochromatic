@@ -32,7 +32,7 @@
 //     controls default to radios and can switch to multi-row MD1 tabs or the
 //     previous rounded buttons. Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
-//     screens. `seekRow`/`volumeRow`/`controlRow`/`shuffleOption`/`pageTabs`/
+//     screens. `seekRow`/`volumeRow`/`controlRow`/`radioOption`/`pageTabs`/
 //     `settingsPage`/`pageTabs`/`trackPager`/`trackRow`: the pieces of the player screen.
 //   - `formatTime`: format a seconds value as `m:ss`.
 // ============================================================================
@@ -138,6 +138,16 @@ import android.util.Log
 // ```
 import androidx.activity.ComponentActivity
 
+// What:     `import androidx.activity.compose.BackHandler` intercepts system Back while
+//           a composable-controlled subpage is visible.
+// Why:      Back from Settings should return to the library instead of closing the app.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { BackHandler } from "androidx/activity/compose";
+// ```
+import androidx.activity.compose.BackHandler
+
 // What:     `import androidx.activity.compose.rememberLauncherForActivityResult` pulls in
 //           the Compose helper that registers an activity-result launcher INSIDE a
 //           composition (the permission prompt below uses it).
@@ -193,7 +203,7 @@ import androidx.compose.foundation.background
 
 // What:     `import androidx.compose.foundation.clickable` pulls in the `clickable`
 //           MODIFIER (makes a composable respond to taps, taking an `onClick` lambda).
-// Why:      `shuffleOption` and `trackRow` make whole rows tappable.
+// Why:      `radioOption` and `trackRow` make whole rows tappable.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -211,6 +221,16 @@ import androidx.compose.foundation.clickable
 // import { isSystemInDarkTheme } from "androidx/compose/foundation";
 // ```
 import androidx.compose.foundation.isSystemInDarkTheme
+
+// What:     `import androidx.compose.foundation.selection.selectable` makes a row one
+//           mutually exclusive selection target with radio semantics.
+// Why:      Radio labels and indicators should expose one action, not nested click targets.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { selectable } from "androidx/compose/foundation/selection";
+// ```
+import androidx.compose.foundation.selection.selectable
 
 // What:     `import androidx.compose.foundation.layout.Arrangement` pulls in
 //           `Arrangement`, the namespace describing how children are spaced inside a
@@ -273,6 +293,16 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 // import { FlowRow } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.FlowRow
+
+// What:     `import androidx.compose.foundation.layout.IntrinsicSize` provides content-based
+//           measurement modes for width and height.
+// Why:      Each MD1 tab must be only as wide as its padded label.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { IntrinsicSize } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.IntrinsicSize
 
 // What:     `import androidx.compose.foundation.layout.Row` pulls in `Row`, the horizontal
 //           layout composable (places children left to right).
@@ -343,6 +373,15 @@ import androidx.compose.foundation.layout.padding
 // import { size } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.size
+
+// What:     `import androidx.compose.foundation.layout.width` constrains a composable's width.
+// Why:      `width(IntrinsicSize.Min)` keeps MD1 tabs at their content width.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { width } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.width
 
 // What:     `import androidx.compose.foundation.lazy.LazyColumn` pulls in `LazyColumn`, a
 //           SCROLLING column that only composes visible items (like a virtualized list).
@@ -416,7 +455,7 @@ import androidx.compose.material3.OutlinedButton
 
 // What:     `import androidx.compose.material3.RadioButton` pulls in the radio-button
 //           composable.
-// Why:      `shuffleOption` shows a `RadioButton`.
+// Why:      `radioOption` shows a `RadioButton`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -598,6 +637,15 @@ import androidx.compose.ui.graphics.Color
 // import { LocalContext } from "androidx/compose/ui/platform";
 // ```
 import androidx.compose.ui.platform.LocalContext
+
+// What:     `import androidx.compose.ui.semantics.Role` names accessibility control roles.
+// Why:      Generic radio rows should announce themselves as radio buttons.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Role } from "androidx/compose/ui/semantics";
+// ```
+import androidx.compose.ui.semantics.Role
 
 // What:     `import androidx.compose.ui.text.style.TextOverflow` pulls in `TextOverflow`,
 //           the namespace describing how overflowing text is clipped (`Ellipsis`).
@@ -1757,6 +1805,16 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // ```
     /** Tracks whether the settings page is visible. */
     var showingSettings by remember { mutableStateOf(false) }
+    // What:     `BackHandler(enabled = showingSettings)` handles system Back only on Settings.
+    // Why:      Return to the library before allowing Back to close the activity.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useBackHandler(showingSettings, () => setShowingSettings(false));
+    // ```
+    BackHandler(enabled = showingSettings) {
+        showingSettings = false
+    }
     // What:     `var position by remember { mutableDoubleStateOf(0.0) }` declares a
     //           state-backed `Double` local via the `useState` idiom: `remember` keeps it
     //           across recompositions, `mutableDoubleStateOf(0.0)` is the (number-specialized)
@@ -2220,7 +2278,7 @@ private fun controlRow(
             // <Text>Shuffle</Text>
             // ```
             Text("Shuffle")
-            // What:     `shuffleOption("Off", state.shuffle == ShuffleMode.OFF) {
+            // What:     `radioOption("Off", state.shuffle == ShuffleMode.OFF) {
             //           controller.setShuffle(ShuffleMode.OFF) }`
             //           renders the "Off" radio. The second arg `state.shuffle == ShuffleMode.OFF`
             //           is its selected `Boolean` (enum value equality); the trailing lambda is
@@ -2229,11 +2287,11 @@ private fun controlRow(
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <shuffleOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
+            // <radioOption label="Off" selected={state.shuffle === ShuffleMode.OFF} onSelect={() =>
             // controller.setShuffle(ShuffleMode.OFF)}/>
             // ```
-            shuffleOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
-            // What:     `shuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
+            radioOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
+            // What:     `radioOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
             //           controller.setShuffle(ShuffleMode.WITHIN_PAGE) }`
             //           renders the "Within page" radio (selected when the mode is
             //           `WITHIN_PAGE`; its action sets that mode).
@@ -2241,13 +2299,13 @@ private fun controlRow(
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <shuffleOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
+            // <radioOption label="Within page" selected={state.shuffle === ShuffleMode.WITHIN_PAGE} onSelect={() =>
             // controller.setShuffle(ShuffleMode.WITHIN_PAGE)}/>
             // ```
-            shuffleOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
+            radioOption("Within page", state.shuffle == ShuffleMode.WITHIN_PAGE) {
                 controller.setShuffle(ShuffleMode.WITHIN_PAGE)
             }
-            // What:     `shuffleOption("All", state.shuffle == ShuffleMode.ALL) {
+            // What:     `radioOption("All", state.shuffle == ShuffleMode.ALL) {
             //           controller.setShuffle(ShuffleMode.ALL) }`
             //           renders the "All" radio (selected when the mode is `ALL`; its action
             //           sets that mode).
@@ -2255,10 +2313,10 @@ private fun controlRow(
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // <shuffleOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
+            // <radioOption label="All" selected={state.shuffle === ShuffleMode.ALL} onSelect={() =>
             // controller.setShuffle(ShuffleMode.ALL)}/>
             // ```
-            shuffleOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
+            radioOption("All", state.shuffle == ShuffleMode.ALL) { controller.setShuffle(ShuffleMode.ALL) }
         }
         // What:     `Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement =
         //           Arrangement.spacedBy(8.dp)) { ... }`
@@ -2337,61 +2395,40 @@ private fun controlRow(
 }
 
 // What:     `@Composable` marks the next function as a Compose component.
-// Why:      `shuffleOption` is a UI component.
+// Why:      `radioOption` is a UI component.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // (component function)
 // ```
 @Composable
-// What:     `private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) { ... }`
-//           declares a private composable for one shuffle radio.
-// Why:      One shuffle radio: a Material3 radio and its label, the whole pair clickable.
+// What:     `private fun radioOption(label: String, selected: Boolean, onSelect: () -> Unit) { ... }`
+//           declares a private composable for one reusable radio option.
+// Why:      Shuffle, settings, and page navigation share one accessible radio row.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function shuffleOption(props: { label: string; selected: boolean; onSelect: () => void; }) { ... }
+// function radioOption(props: { label: string; selected: boolean; onSelect: () => void; }) { ... }
 // ```
 /**
- * Defines shuffle option behavior for this music-player component; the TypeScript-oriented notes above explain
+ * Defines a reusable radio option; the TypeScript-oriented notes above explain
  * its call shape and effects.
  */
-private fun shuffleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
-    // What:     `Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onSelect() }, ) {
-    //           ... }`
-    //           lays out the radio and label, with `Modifier.clickable { onSelect() }` making
-    //           the WHOLE row tappable (the trailing lambda is the click handler).
-    // Why:      Allow tapping anywhere on the radio+label pair to select it.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // <Row
-    //   verticalAlignment={Alignment.CenterVertically}
-    //   modifier={Modifier.clickable(() => onSelect())}
-    // > ... </Row>
-    // ```
+private fun radioOption(label: String, selected: Boolean, onSelect: () -> Unit) {
+    // One 48dp row owns the selection semantics and action.
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { onSelect() },
+        modifier = Modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = onSelect,
+            ),
     ) {
-        // What:     `RadioButton(selected = selected, onClick = onSelect)` renders the radio
-        //           dot; `selected` shows its filled state; `onClick = onSelect` forwards the
-        //           selection action.
-        // Why:      Show and drive the radio.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <RadioButton selected={selected} onClick={onSelect}/>
-        // ```
-        RadioButton(selected = selected, onClick = onSelect)
-        // What:     `Text(label)` shows the option's label.
-        // Why:      Name the radio.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // <Text>{label}</Text>
-        // ```
-        Text(label)
+        // The indicator is display-only because the parent row owns the one action.
+        RadioButton(selected = selected, onClick = null)
+        Text(text = label, modifier = Modifier.padding(end = 8.dp))
     }
 }
 
@@ -2418,64 +2455,22 @@ private fun ColumnScope.settingsPage(
     ) {
         Text(text = "Page controls", style = MaterialTheme.typography.headlineSmall)
         Text("Choose how library pages are shown.")
-        pageControlStyleOption(
+        radioOption(
             label = "Radio controls",
             selected = style == PageControlStyle.RADIO,
             onSelect = { onSelectStyle(PageControlStyle.RADIO) },
         )
-        pageControlStyleOption(
+        radioOption(
             label = "Multi-row MD1 tabs",
             selected = style == PageControlStyle.MD1_TABS,
             onSelect = { onSelectStyle(PageControlStyle.MD1_TABS) },
         )
-        pageControlStyleOption(
+        radioOption(
             label = "Rounded buttons",
             selected = style == PageControlStyle.ROUNDED_BUTTONS,
             onSelect = { onSelectStyle(PageControlStyle.ROUNDED_BUTTONS) },
         )
         Button(onClick = onBack) { Text("Back to library") }
-    }
-}
-
-// What:     `pageControlStyleOption` renders one full-row radio choice.
-// Why:      Each setting needs a 48dp touch target and selected indicator.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function PageControlStyleOption(props: RadioOptionProps) { ... }
-// ```
-/** Displays one selectable page-control style. */
-@Composable
-private fun pageControlStyleOption(label: String, selected: Boolean, onSelect: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .defaultMinSize(minHeight = 48.dp)
-            .clickable { onSelect() },
-    ) {
-        RadioButton(selected = selected, onClick = onSelect)
-        Text(text = label, modifier = Modifier.padding(end = 8.dp))
-    }
-}
-
-// What:     `pageRadioControl` renders one page label with a Material radio indicator.
-// Why:      Radio controls are the default page-navigation treatment.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function PageRadioControl(props: RadioOptionProps) { ... }
-// ```
-/** Displays one page as a radio control. */
-@Composable
-private fun pageRadioControl(label: String, selected: Boolean, onSelect: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .defaultMinSize(minHeight = 48.dp)
-            .clickable { onSelect() },
-    ) {
-        RadioButton(selected = selected, onClick = onSelect)
-        Text(text = label, modifier = Modifier.padding(end = 8.dp))
     }
 }
 
@@ -2497,6 +2492,7 @@ private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .width(IntrinsicSize.Min)
             .defaultMinSize(minHeight = 48.dp)
             .clickable { onSelect() },
     ) {
@@ -2557,7 +2553,11 @@ private fun pageTabs(
     // ```ts
     // <FlowRow horizontalArrangement={Arrangement.spacedBy(dp(4))}> ... </FlowRow>
     // ```
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(
+            if (pageControlStyle == PageControlStyle.MD1_TABS) 0.dp else 4.dp,
+        ),
+    ) {
         // What:     `state.pageLabels.forEachIndexed { page, label -> ... }` iterates the page
         //           labels WITH their indices. `forEachIndexed { page, label -> ... }` is a
         //           trailing lambda whose two parameters are the index `page` (an `Int`) and the
@@ -2586,7 +2586,7 @@ private fun pageTabs(
             /** Records whether this page is currently visible. */
             val selected: Boolean = page == state.selectedPage
             if (pageControlStyle == PageControlStyle.RADIO) {
-                pageRadioControl(label = label, selected = selected, onSelect = { onSelectPage(page) })
+                radioOption(label = label, selected = selected, onSelect = { onSelectPage(page) })
             } else if (pageControlStyle == PageControlStyle.MD1_TABS) {
                 md1PageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
             } else if (selected) {

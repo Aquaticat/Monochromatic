@@ -1603,6 +1603,11 @@ AD4:
  split chains of more than two nested calls across lines,
  no stacked `)))`.
 
+M1T:
+ Multi-row MD1 tabs size each tab to its label plus horizontal padding.
+Never stretch tabs to row width;
+ wrap them naturally across rows.
+
 ## Agent skills
 
 SK1:
