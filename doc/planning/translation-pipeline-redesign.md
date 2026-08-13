@@ -146,10 +146,33 @@ The 2.91 median expansion is what keeps this list short and honest. Twenty
  `Toka_ls` 392 to 1013 is 2.6x. Only entries above the 3.76 p90 are candidates,
  which is the 8 listed.
 
-CAUSE VERIFIED ONCE, INFERRED SEVEN TIMES. `Zha_Ke` was read directly and the
- image-transcription account holds there. The other seven share the signature,
- matching image counts with a large one-sided blockquote, and the account is
- inferred rather than confirmed for each.
+CAUSE CHECKED STRUCTURALLY, and it holds for SIX of the eight rather than all.
+`Zha_Ke` was read directly. The others were then tested against a mechanical
+ signature: the largest one-sided English blockquote sitting within two blocks
+ of an image, with image counts identical on both sides and the Chinese
+ blockquote near zero.
+
+```text
+  Zha_Ke           3625ch bq   image within 2 blocks   largest ZH bq    0
+  MizuharaNagisa   1969ch bq   image within 2 blocks   largest ZH bq    0
+  zheermao101      2115ch bq   image within 2 blocks   largest ZH bq   92
+  dogesir_         1487ch bq   image within 2 blocks   largest ZH bq   54
+  Mio              2052ch bq   image within 2 blocks   largest ZH bq  132
+  wangzihao980     1098ch bq   image within 2 blocks   largest ZH bq   41
+
+  mikaela_khara     741ch bq   NO image nearby         largest ZH bq  224
+  shihai4h         1665ch bq   NO image nearby         largest ZH bq  330
+```
+
+`mikaela_khara` and `shihai4h` do NOT fit and are removed from the class. Their
+ excess is spread across several blockquotes rather than concentrated in one,
+ and each already carries a substantial Chinese blockquote, so their totals look
+ closer to ordinary expansion of quotes present on both sides.
+
+So the class is SIX entries with a verified signature, not eight. The
+ corpus-wide figure of about 31 thousand excess characters counts all twenty
+ entries above the 500-character cut and therefore OVERSTATES this class; the
+ six verified entries hold roughly 12 thousand characters between them.
 
 #### What this changes for the options
 
@@ -158,8 +181,8 @@ CAUSE VERIFIED ONCE, INFERRED SEVEN TIMES. `Zha_Ke` was read directly and the
     defect with its own fix in `#74`.
 -   A THIRD category exists that none of the three options addresses: accurate
     English content with no source-markdown counterpart, because the source
-    holds it in an image. Roughly 31 thousand characters of one-sided blockquote
-    across the corpus, of which the 8 entries above p90 are the clear cases.
+    holds it in an image. Six entries carry a verified signature, holding
+    roughly 12 thousand characters of one-sided blockquote between them.
 -   This is a systematic FALSE-POSITIVE generator for the current pipeline. A
     critic comparing markdown against markdown sees thousands of characters of
     unsupported English and is correct to flag it on the evidence it was given.

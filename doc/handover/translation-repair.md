@@ -205,7 +205,7 @@ WHAT NEEDS YOU, in the order it blocks work:
 2.   A policy answer for the TRANSCRIBED-IMAGE class, which is new and which
     none of the three options addresses. Chinese pages hold letters as images;
     English pages transcribe and translate them. Roughly 31 thousand characters
-    corpus-wide, 8 entries clearly. Option B would DELETE that accurate human
+    corpus-wide, 6 entries verified. Option B would DELETE that accurate human
     work, because a from-scratch translation of the Chinese markdown has no
     source for it. Your standing ruling, keep accurate translator additions,
     says these should survive, but B has no mechanism to make them survive.
