@@ -251,24 +251,59 @@ export async function gatherStageVoices<ValueT,>(
    * Roster shortfall wording shared by both degradation findings.
    */
   const shortfall = `${stage} ${String(voices.length,)}/${String(modelIds.length,)}`;
+
+  /**
+   * Models that never answered, in roster order.
+   */
+  const unheard = modelIds.filter(function neverHeard(modelId,): boolean {
+    return !voices.some(function isVoice(voice,): boolean {
+      return voice.modelId === modelId;
+    },);
+  },);
+
+  /**
+   * Naming of every model that went quiet, which the ARTIFACT carries and a
+   * log line does not.
+   *
+   * Voice loss reached only `l.warn` before this. That made every question
+   * about it, which model, which stage, how often, answerable solely from a
+   * captured run log, and on 2026-08-13 a run spent twenty minutes writing its
+   * log into a pipe whose reader had exited: the losses happened and nothing
+   * recorded them. Findings travel into the per-entry artifact, which is
+   * written durably and survives whatever spawned the pass.
+   *
+   * Emitted even when quorum was MET, which is the case the old findings
+   * dropped entirely and the one that hides a model degrading quietly while
+   * the stage still looks healthy.
+   */
+  const lostFindings: readonly string[] = (unheard.length === 0)
+    ? []
+    : [`stage-voice-lost (${stage}: ${unheard.join(', ',)})`,];
+
   if (!quorumMet) {
     return {
       voices,
       quorumMet,
-      findings: [`stage-quorum-unmet (${shortfall})`,],
+      findings: [
+        ...lostFindings,
+        `stage-quorum-unmet (${shortfall})`,
+      ],
     };
   }
   if ((retryTarget === 'full-roster') && (voices.length < modelIds.length)) {
     return {
       voices,
       quorumMet,
-      findings: [`stage-roster-incomplete (${shortfall})`,],
+      findings: [
+        ...lostFindings,
+        `stage-roster-incomplete (${shortfall})`,
+      ],
     };
   }
   return {
     voices,
     quorumMet,
-    findings: [],
+    findings: lostFindings,
   };
 }
 

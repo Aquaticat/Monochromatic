@@ -45,10 +45,13 @@ export type StageVoice<ValueT,> =
   };
 
 /**
- * Longest model text a lost-voice warning carries.
+ * Longest model text a lost-voice warning carries, counted in grapheme
+ * clusters so the bound cannot cut a character in half.
+ *
  * A parse failure is almost always diagnosable from the OPENING characters:
  * the Kimi-K3 outage was a two-character channel marker, and 507 mismatches in
- * one pass were explained by it.
+ * one pass were explained by it. Its 2026-08-13 recurrence was explained the
+ * same way, from `p|>` and `ep|>` recorded here.
  */
 const RAW_PREVIEW_CHARS = 120;
 
@@ -78,15 +81,13 @@ function lostVoiceCause(
   },
 ): string {
   /**
-   * Model text flattened to one line and bounded, since a warning is one line.
+   * Model text on one line.
    *
    * Both line terminators are replaced, not just the newline: a reply using
    * carriage returns would otherwise break the one-line guarantee this exists
-   * to keep. Bounded by CODE POINT rather than by `slice`, so cutting at the
-   * limit cannot split a surrogate pair and leave a lone half in the log, which
-   * is exactly the diagnostic that has to survive to be read.
+   * to keep.
    */
-  const opening = [...outcome
+  const flattened = outcome
     .rawText
     .replaceAll(
       '\r\n',
@@ -99,11 +100,33 @@ function lostVoiceCause(
     .replaceAll(
       '\r',
       ' ',
-    ),]
+    );
+
+  /**
+   * Grapheme clusters of the flattened text, in order.
+   *
+   * Segmented rather than sliced because the bound falls in the middle of real
+   * model output. `slice` counts UTF-16 code units and can cut a surrogate pair
+   * in half; iterating code points fixes that and still splits an emoji or a
+   * combining mark from its base. The preview is the whole diagnostic here, so
+   * it has to survive the cut intact.
+   */
+  const clusters = [...new Intl.Segmenter(
+    undefined,
+    { granularity: 'grapheme', },
+  ).segment(flattened,),];
+
+  /**
+   * Bounded opening of the model text, since a warning is one line.
+   */
+  const opening = clusters
     .slice(
       0,
       RAW_PREVIEW_CHARS,
     )
+    .map(function toText(cluster,): string {
+      return cluster.segment;
+    },)
     .join('',);
   if (outcome.kind === 'schema-mismatch')
     return `schema-mismatch (${outcome.detail}) raw=${JSON.stringify(opening,)}`;

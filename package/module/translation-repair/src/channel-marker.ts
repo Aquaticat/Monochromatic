@@ -221,19 +221,24 @@ export function stripChannelMarker(
   const trimmed = text.trimStart();
 
   /**
-   * Characters of leading marker consumed so far.
+   * Characters of leading marker consumed.
+   *
+   * Folded over a fixed number of slots rather than accumulated in a mutable
+   * cursor: once the run ends, every remaining slot returns the width
+   * unchanged, so the bound is expressed by the array length instead of by a
+   * break.
    */
-  let consumed = 0;
-
-  for (let step = 0; step < MARKER_RUN_LIMIT; step += 1) {
-    /**
-     * Width of the next marker, zero once the run has ended.
-     */
-    const width = markerWidth({ text: trimmed.slice(consumed,), },);
-    if (width === 0)
-      break;
-    consumed += width;
-  }
+  const consumed = Array.from({ length: MARKER_RUN_LIMIT, },)
+    .reduce(
+      function extend(width: number,): number {
+        /**
+         * Width of the next marker, zero once the run has ended.
+         */
+        const next = markerWidth({ text: trimmed.slice(width,), },);
+        return (next === 0) ? width : (width + next);
+      },
+      0,
+    );
 
   if (consumed === 0)
     return untouched;

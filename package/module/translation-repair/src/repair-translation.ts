@@ -112,8 +112,14 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * parse. A slice resumed from version 16 was decided by a smaller panel than
  * the same slice would convene now, and a chunk whose critic went unheard is
  * not the same chunk as one whose critic spoke.
+ *
+ * Version 18 changes the RECORD rather than the text: every stage now emits a
+ * `stage-voice-lost` finding naming the models that never answered, including
+ * when quorum was met. Findings are read as a whole per entry, so an entry
+ * holding version-17 and version-18 slices would under-report voice loss on
+ * exactly half of itself while looking complete.
  */
-const SLICE_CACHE_VERSION = 17;
+const SLICE_CACHE_VERSION = 18;
 
 /**
  * Completion status of one repair run;

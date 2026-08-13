@@ -197,6 +197,67 @@ await describe({
         // ceil(4 / 2) = 2 makes it a quorum.
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
+        // Quorum held, and two models still never answered. This assertion
+        // read `toHaveLength(0)` until 2026-08-13, which is precisely the case
+        // the findings dropped: a healthy-looking stage silently short two
+        // voices, recorded nowhere the artifact could carry.
+        expect(gather.findings,).toContain(
+          'stage-voice-lost (panel: hf:moonshotai/Kimi-K3, hf:openai/gpt-oss-120b)',
+        );
+      },
+    },),
+
+    it({
+      name: 'NAMES the models that went quiet even when quorum was met, since '
+        + 'voice loss reached only a log line before this and every question '
+        + 'about it, which model and which stage, was answerable solely from a '
+        + 'captured run log. On 2026-08-13 a run wrote its log into a pipe '
+        + 'whose reader had exited, so the losses happened and nothing kept '
+        + 'them; findings travel into the durable per-entry artifact instead',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Gather where one model of three never answers. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({
+            failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
+            calls,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+        },);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.findings,).toContain(
+          'stage-voice-lost (critic: hf:moonshotai/Kimi-K3)',
+        );
+      },
+    },),
+
+    it({
+      name: 'records NOTHING when the whole roster answered, so a clean stage '
+        + 'stays distinguishable from a degraded one rather than every entry '
+        + 'carrying a finding nobody can act on',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Gather over a fully healthy roster. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({ failuresByModel: {}, calls, },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+        },);
         expect(gather.findings,).toHaveLength(0,);
       },
     },),
