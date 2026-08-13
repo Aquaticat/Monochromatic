@@ -355,6 +355,34 @@ None of this decides the question. It shrinks it: the choice is what to do with
  two trailing sections of one entry, with a placeholder that can be dropped from
  consideration entirely.
 
+## How big the change actually is
+
+This document called Option B "small", then "clearly NOT small", then "small"
+ again, as later sections corrected earlier ones. None of the three carried a
+ number. Here is the enumeration instead, so nobody has to weigh adjectives:
+
+-   `chunkUnits`, one label plus a preamble flag per chunk. 13 lines in the
+    prototype.
+-   `pairScore`, the structure veto plus the existing affinity. 6 lines.
+-   One constant for the penalty.
+-   Replacing the `structure-mismatch` branch in `alignDocumentSections`.
+-   AND a signature change to `alignHeadings`, which is the part every earlier
+    estimate missed.
+
+That last one is not optional and was nearly written down wrong. `alignHeadings`
+ takes two `readonly string[]` and calls `headingAffinity` at three points
+ inside itself. It has no scoring hook. So the structural term cannot reach it
+ without either giving it one or passing units instead of strings, and its 10
+ existing test cases have to be reviewed against whichever is chosen.
+
+The prototype sidestepped this by reimplementing Needleman-Wunsch, 36 lines,
+ which is why the prototype looked smaller than the change. A prototype that
+ copies the thing it means to modify does not measure the modification.
+
+So: bounded and enumerable, roughly 20 lines of new logic plus an interface
+ change to a tested function. Not "small" without qualification, and not the
+ pure wiring the first version of this document claimed.
+
 ## Verification notes
 
 Both load-bearing claims were checked at the level the recommendation needs,
