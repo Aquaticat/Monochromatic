@@ -63,6 +63,10 @@ run = "node src/corpus-run/recall-benchmark.ts"
 description = "Ask whether the introduced-defect probe can detect damage at all: one clean region and two with damage injected, cat-themed fixtures only"
 run = "node src/corpus-run/probe-sensitivity.ts"
 
+[tasks."translate-probe"]
+description = "PROTOTYPE for #70: ask a translator ensemble to render the corpus section with the worst coverage gap, which the repair loop cannot express"
+run = "node src/corpus-run/translate-probe.ts"
+
 [tasks."damage-sample"]
 description = "Draw shipped regions at random and ask a human the same source-anchored damage question the probe asks, with the probe's verdict kept in the manifest"
 run = "node src/corpus-run/damage-sample.ts"
