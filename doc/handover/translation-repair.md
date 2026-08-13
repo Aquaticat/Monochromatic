@@ -7104,3 +7104,34 @@ The missing measurement is a CONTROL: regions from the same entries that the
  whose quoted wording falls inside a pre-existing issue's evidence span. That
  keeps the defence against re-reporting the old defect while removing the
  blanket licence that currently silences the stage.
+
+### The over-replacement statistic, re-derived on distinct regions
+
+The round-three draw of 50 items sits on 40 DISTINCT regions; six regions were
+ drawn more than once.
+Measuring each region's replaced text against the target-side span quoted by the
+ issue that drew it:
+
+```text
+over 1.35x the DRAWN issue's span     13 of 40 regions   (19 of 50 items)
+over 1.35x the WIDEST served span      0 of 40 regions
+```
+
+The second line is the one that matters, and it is why `#67`'s framing was
+ wrong.
+An envelope merges OVERLAPPING and TOUCHING target-side evidence, so a region is
+ cut to cover every issue it serves, and comparing its replacement against ONE
+ of those issues measures the merge rather than the editor.
+Against the widest span the region actually serves, nothing over-replaces.
+
+The comparison is conservative in the direction that matters. The widest single
+ served span is never longer than the union of the served spans, so a union
+ denominator would be larger, the ratios smaller, and the count still zero.
+
+So the editor is not replacing far more text than the defect it was given: it is
+ replacing the envelope it was given, and the envelope legitimately spans several
+ accepted issues.
+What remains true, and is a different fault, is that some of those replacements
+ DROP source-supported content, which is what the probe work is about. The width
+ of a replacement was never evidence of that, and reading it as evidence pointed
+ `#67` at the wrong stage.
