@@ -1270,3 +1270,83 @@ REPORT over POSITIONAL because POSITIONAL reintroduces exactly the defect under
  repair. It guesses hardest where evidence is weakest, and `#71` recorded that a
  wrong pairing is worse than no pairing because it manufactures issues rather
  than skipping work.
+
+## Attempt seven: the preamble as an empty-labelled unit, which now works
+
+Prototyped 2026-08-13 after the asymmetric-preamble finding. This SUPERSEDES
+ the blast-radius figures in the correction above, which were measured with a
+ naive offset adapter.
+
+### The adapter
+
+Build the alignable unit list as `(preamble ? [''] : []) ++ headings`.
+
+That makes UNIT INDEX EQUAL CHUNK INDEX by construction, because
+ `chunkByHeadings` emits the preamble as chunk 0 and then one chunk per
+ heading. There is no offset arithmetic left to get wrong, and offset
+ arithmetic is exactly what the previous adapter got wrong.
+
+The preamble carries an EMPTY label. `headingAffinity` returns `0` against
+ everything for it, including against another empty label, and it returns a
+ finite `0` rather than dividing by a zero token count, which was checked
+ rather than assumed.
+
+This is attempt TWO from earlier in this document, which failed under scoring
+ that could not withhold a pairing. Attempt six can, and that is what makes the
+ same adapter work now.
+
+### Blast radius, against production
+
+```text
+  identical pairing to alignDocumentSections   90
+  changed                                       2
+  entries reduced to zero pairs                 1
+  entries with ambiguity                        2, holding 21 units
+
+  XIEPT2    units  8v9    prod  8 -> lex  0    17 ambiguous
+  XingZ60   units 15v13   prod 13 -> lex 12     4 ambiguous
+```
+
+`Hangmster`, `yingying`, `interrgned` and `noname` now match production
+ EXACTLY, where the naive adapter reported all four as changed. That is the
+ adapter defect gone rather than a scoring change.
+
+The reason is worth stating because it validates the design. `interrgned` and
+ `noname` have UNEQUAL heading counts, 5v4 and 4v3, which is why aligning on
+ headings alone refused everything. Their CHUNK counts are equal, 5v5 and 4v4,
+ because the preamble makes up the difference. With equal unit counts and no
+ evidence anywhere, the aligner pairs by position, which is what production
+ does, so they agree.
+
+`Hangmster` is the case that a preamble-pairs-only-with-preamble rule would
+ have lost: one heading-led Chinese chunk against one preamble English chunk.
+As units they are `['## ...']` against `['']`, one against one, so the pairing
+ is forced and it is correct.
+
+### What it still refuses, and whether that is right
+
+`XIEPT2` is the whole remaining cost: 8 source units against 9 target units,
+ zero shared Latin tokens anywhere, so nothing is forced and all 17 units come
+ back ambiguous. Production pairs its 8 sections and, per the inspection
+ recorded earlier in this document, pairs them CORRECTLY.
+
+So the aligner refuses 8 pairings a human can verify are right. The affinity
+ function cannot see it, because the headings are translations rather than
+ shared names, and the aligner is honest about that.
+
+Whether the refusal is a loss depends on what `XIEPT2` is. It is a PARTIAL
+ TRANSLATION: 6 of its sections have an empty target body. Pairing it
+ "correctly" therefore hands the critics Chinese prose against bare English
+ headings, which produces omission claims for content that genuinely was never
+ translated. That is the work `#69` decided should be a TRANSLATION rather than
+ a repair.
+
+Read that way, refusing to pair `XIEPT2` and routing it to a translate stage is
+ the right outcome rather than a regression, and it argues for ROUTE over
+ REPORT in the destination ranking.
+
+### Revised cost of the destination decision
+
+The earlier sizing said 3 entries, 20 sections, 2 entries zeroed. With the
+ preamble adapter it is 2 entries, 21 units, and only `XIEPT2` reduced to zero.
+`XingZ60` keeps 12 of its 13 pairs and loses only the one that was wrong.
