@@ -198,6 +198,38 @@ Slicing is driven by the pairing, and with a single 22-character target block
  under every option, and it is invisible from the repair path because a section
  with a real translation always subdivides.
 
+### Read against the Chinese
+
+The output was checked rather than admired. What holds up:
+
+-   Structure survives intact, including the JSX components the archive uses.
+-   The classical idiom pair 一家之言，姑妄听之；兼听则明，偏信则暗 came back as
+    "What one person says, take with a grain of salt; listen to many and you see
+    clearly, trust one side and you stay in the dark."
+-   PRONOUNS, which is the highest-stakes question this corpus has. The subject
+    had at least three personas with different gender identities and the source
+    uses the neutral `TA` throughout. Every gendered pronoun in all three
+    renderings, 5 in Kimi-K3, 4 in GLM-5.2 and 3 in GLM-4.7-Flash, refers to a
+    DIFFERENT friend described in the same passage, never to the subject.
+    Neutral forms carry the subject in every one: 45 in Kimi-K3, 11 in each GLM.
+    Misgendering a trans person in their own memorial is the worst error this
+    pipeline could make, and none of the three made it.
+
+What does not hold up:
+
+-   `铃语` is the essay's AUTHOR, named in the heading and again in the byline
+    `<p style="text-align: center;">铃语</p>`. Kimi-K3 and GLM-5.2 render it
+    "Lingyu"; GLM-4.7-Flash renders it "The Bell's Whisper", translating a
+    person's name as prose. The identity block cannot help, since it declares
+    the subject's names and not a contributor's.
+-   GLM-4.7-Flash leaves `TA` untranslated 13 times. Faithful to the source's
+    deliberate choice and opaque to an English reader; whether that is right is
+    a policy question this proposal does not settle.
+
+So the prototype clears the bar that matters most and fails on a name, which is
+ the same class the declared-names rule already handles for subjects and does
+ not yet handle for contributors.
+
 ## What exists already
 
 `translate-wire.ts` and the `translate-probe` task are committed, called by
