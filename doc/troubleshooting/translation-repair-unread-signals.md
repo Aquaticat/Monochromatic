@@ -266,7 +266,35 @@ Both splits move in the direction the mechanism predicts, and neither moves
 
 That is a bound, not an answer: the split is coarse, and entries that wrap more
  may differ in other ways. The suffix landed in `a6bbeca50` measures it
- directly, one failed quote at a time, and should be believed over this.
+ directly, one failed quote at a time, and is the figure to believe.
+
+### What the direct measurement says so far, against that prediction
+
+At 3 settled entries `pass13` has produced 13 `quote-not-found` findings and
+ NONE of them carries either suffix. The telemetry is confirmed live, because a
+ bare reason can now only be produced by the line that always calls
+ `lineBreakSuffix`.
+
+Thirteen is enough to test the quarter:
+
+```text
+  if the true wrap share were   probability of seeing zero in 13
+    25%                            2.4%
+    20%                            5.5%
+    15%                           12.1%
+    10%                           25.4%
+     5%                           51.3%
+
+  one-sided 5% upper bound: true share <= 20.5%
+```
+
+So the prediction above is REJECTED at the conventional level, and the data is
+ consistent with any share at or below about 15%, including zero. It cannot yet
+ separate "small" from "none".
+
+The direction matters for the decision this feeds. If soft wrapping explains
+ little, the anchoring lead closes, and the line-structure question in
+ `doc/planning/naturalness-lane-reach.md` governs one change rather than two.
 
 ### A gap this exposed
 
