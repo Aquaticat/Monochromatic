@@ -89,6 +89,45 @@ Checked separately, since a merge could in principle leave blocks in no pair:
  across all 92 entries, every block on both sides belongs to some pair.
 `XIEPT2`'s extra target chunk is merged rather than lost.
 
+## Four settled repairs shipped broken footnotes, and the detector was right there
+
+The point of the fixed graph is that it can now be trusted, so it was pointed
+ at the pipeline's own output: parse each settled entry's input translation and
+ its `repairedText`, and compare the two graphs.
+
+56 entries examined, 4 broken, 0 healed:
+
+```text
+Dethelly       refs [1]     -> [1]      defs [1]     -> [1 2]    orphan-definition 2
+Futajuhuacha   refs [1 2]   -> [1 2]    defs [1 2]   -> [1 2 2]  duplicate-definition 2
+Y1Ran          refs [1 2 3] -> [2 3]    defs [1 2 3] -> [1 2]    unresolved-reference 3
+                                                                 orphan-definition 1
+gqt            refs []      -> [1]      defs []      -> []       unresolved-reference 1
+```
+
+Four different corruptions:
+
+-   `Dethelly` gained a definition nothing references.
+-   `Futajuhuacha` had a definition duplicated.
+-   `Y1Ran` lost a reference and a definition, from different footnotes, so one
+    reference now points nowhere and one definition is orphaned.
+-   `gqt` had a footnote reference INVENTED in a document that carried no
+    footnotes at all, pointing at a definition that has never existed.
+
+Three further entries changed footnote counts while staying internally
+ consistent: `Huasheng` lost a matched pair, `XIEPT2` gained one, `hakureico`
+ gained two. Those are not corruption on this measure, and whether a repair
+ should be inventing or removing footnotes at all is a separate question.
+
+Every one of the four passed the integrity check and shipped, because integrity
+ is `downgradeCount`, which counts only MDX grammar downgrades. Breaking a
+ footnote leaves the grammar perfectly valid.
+
+This is the whole thesis in one measurement: the pipeline computes a
+ deterministic detector for exactly this damage, on every document, and never
+ consults it. Had the apply gate asked, all four would have been caught, and
+ the graph would have had to be right first, which until 2026-08-13 it was not.
+
 ## What still reads nothing
 
 `alignment.findings` is turned into scorecard text and recorded.
