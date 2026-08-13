@@ -214,20 +214,37 @@ WHAT NEEDS YOU, in the order it blocks work:
 
 WHAT CHANGED OVERNIGHT that contradicts earlier records:
 
--   `#74` is REFUTED, not merely blocked. `alignHeadings` cannot leave two
-    headings unpaired at all: a zero-affinity pairing scores 0 while two gaps
-    cost `2 * GAP_PENALTY`, so `Math.max` always prefers an unsupported
-    pairing. Confirmed independently from the corpus, 0 unpaired sections in
-    284 pairs. The designed fix was bounded by exactly that quantity, so it
-    could never have worked. Needs lexicographic scoring, a changed return
-    type, and an ambiguity path.
+-   `#74` was REFUTED and is now REBUILT. The old fix could never have worked:
+    `alignHeadings` cannot leave two headings unpaired at all, because a
+    zero-affinity pairing scores 0 while two gaps cost `2 * GAP_PENALTY`, and
+    the designed penalty was bounded by exactly that quantity. Attempts six
+    (lexicographic scoring with an ambiguity path) and seven (the preamble as
+    an empty-labelled unit) are prototyped and measured against PRODUCTION:
+    90 of 92 entries pair identically, `XingZ60` keeps 12 of 13 pairs and loses
+    only the wrong one, and the single refused entry, `XIEPT2`, holds 82
+    characters of English against 6994 of Chinese. It is NOT LANDED, because
+    with no translate stage `XIEPT2` would get nothing at all, and that is the
+    destination decision `#70` owns.
+-   The dominant cause of alignment fallback is an ASYMMETRIC PREAMBLE, not a
+    missing section: exactly 5 entries corpus-wide, and they are 5 of the 7
+    that fall back. That was the bigger half of the work and it was long
+    assumed mechanical.
 -   Prerequisite 3 is MISPAIRING, not unsupported content, but the first
     version of that answer overclaimed and was corrected in place.
 -   Option B's cost is 1.56x the editor calls and 3.9x its output, not a
     multiplication of the run, because the editor already fires on 64% of
     slices.
--   `#72` stands. The re-open alarm was the monitor pooling `slice-cache` with
-    `artifacts`; the monitor is fixed.
+-   `#72` stands, through TWO alarms. The first pooled `slice-cache` with
+    `artifacts`; the second was `Futajuhuacha` supplying 7 of 8 hits. The
+    monitor now alarms only when a share survives dropping its largest single
+    contributor, which is the rule covering all three false alarms this
+    session.
+-   `quote-not-found` now records WHICH quote missed, not only that one did
+    (`b8c678e0a`), which takes down one of the four recurring-wall instances.
+    Landed without restarting `pass13`; a detached watcher at
+    `~/temp/agent/continue-pass13.sh` RESUMES that run when its budget expires,
+    carrying its settled entries forward rather than re-doing them. Cancel with
+    `pkill --full continue-pass13.sh`.
 
 WHEN FIFTEEN SETTLE:
 1.    `mise run //package/module/translation-repair:draw-sample -- --final`.
