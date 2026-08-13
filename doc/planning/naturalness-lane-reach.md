@@ -221,11 +221,43 @@ So the open question is no longer whether the lane survives a lost voice. It is
  whether one model losing its voice this often is acceptable on rosters where it
  sits, which is a separate decision from this one and is not blocking it.
 
+## What the line-structure change actually is, measured
+
+The question below was left abstract when it was written. It is measurable, and
+ the magnitude bears on the ranking:
+
+```text
+  620 blocks admitted
+
+  lines per block today    median 3, p90 5, max 12
+  after a rewrite          every one becomes 1
+  line breaks removed      1329 corpus-wide
+
+  line LENGTH in those blocks today   median 65, p90 130
+  after, each block is one line of    median 212, p90 413, max 1063
+```
+
+So admitting them removes 1329 line breaks and produces lines roughly three
+ times the current median, with a tail to 1063 characters.
+
+THIS WEAKENS THE B-OVER-C ARGUMENT ABOVE. That argument rests on the corpus
+ wrapping inconsistently, so that a one-line paragraph is "no more foreign to a
+ file than the file is to itself". Inside the affected blocks the wrapping is
+ not inconsistent: median 65 and p90 130 is a fairly tight distribution, and
+ single-lining lands well outside it.
+
+The ranking is not flipped here, because the choice turns on how much a long
+ line costs a human reading a diff, which is exactly the judgement being asked
+ for. But B's margin over C is smaller than that argument claimed, and anyone
+ who dislikes 1000-character lines should read C as the better option rather
+ than the cautious one.
+
 ## What has to be settled first
 
 -   Whether changing line structure counts as damage. The introduced-defect
     probe judges wording; nothing asks about layout, so today the question has
-    no instrument.
+    no instrument. The magnitude is now measured, above, so the judgement can
+    be made on numbers rather than on the abstraction.
 -   Cost. Three times the eligible blocks means three times the refine calls
     and three times the probe calls, against a provider that already returns
     transient failures under load.
