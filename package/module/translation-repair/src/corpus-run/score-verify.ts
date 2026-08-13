@@ -194,11 +194,22 @@ async function main(): Promise<void> {
   const dir = await resolveRunsDir();
 
   /**
+   * Which sheet to score, so one scorer serves every sheet this formatter
+   * writes rather than each sheet growing its own.
+   */
+  const { VERIFY_SHEET_BASENAME: configuredBasename, } = process.env;
+
+  /**
+   * Basename actually used.
+   */
+  const basename = configuredBasename ?? 'probe-verify';
+
+  /**
    * Graded sheet items, in sheet order.
    */
   const graded = parseGradedSheet({
     text: await readFile(
-      `${dir}/probe-verify-sheet.md`,
+      `${dir}/${basename}-sheet.md`,
       'utf8',
     ),
   },);
@@ -207,7 +218,7 @@ async function main(): Promise<void> {
    * Manifest rows, in the same order.
    */
   const manifest = await readVerifyManifest({
-    path: `${dir}/probe-verify-manifest.json`,
+    path: `${dir}/${basename}-manifest.json`,
   },);
   if (graded.length !== manifest.length) {
     throw new Error(
@@ -218,43 +229,52 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Tally per set.
+   * Tally per label, built from the labels the manifest actually carries.
+   *
+   * Built rather than declared because the two sheets partition on different
+   * things. A fixed pair of keys silently dropped every item whose label was
+   * not one of them, which would have scored a whole sheet as empty while
+   * reporting success.
    */
-  const tallies: Readonly<Record<string, KindTally>> = {
-    damaged: {
-      damage: 0,
-      invented: 0,
-      unscored: 0,
-    },
-    control: {
-      damage: 0,
-      invented: 0,
-      unscored: 0,
-    },
-  };
-
+  const tallies = new Map<string, KindTally>();
   for (const [index, item,] of graded.entries()) {
     /**
      * Manifest row for this position.
      */
     const row = manifest[index];
-    if (row === undefined)
-      continue;
+    if (row === undefined) {
+      throw new Error(
+        `sheet position ${String(index + 1,)} has no manifest row, so the join is short and every later verdict would shift`,
+      );
+    }
 
     /**
-     * Tally this row belongs to.
+     * Tally this row belongs to, created on first sight of its label.
      */
-    const tally = tallies[row.kind];
-    if (tally === undefined)
-      continue;
-
+    const tally = tallies.get(row.kind,) ?? {
+      damage: 0,
+      invented: 0,
+      unscored: 0,
+    };
     addGrade({
       tally,
       item,
     },);
+    tallies.set(
+      row.kind,
+      tally,
+    );
   }
 
-  for (const [kind, tally,] of Object.entries(tallies,)) {
+  for (
+    const [kind, tally,] of [...tallies,]
+      .toSorted(function byLabel(
+        left,
+        right,
+      ) {
+        return left[0] < right[0] ? (-1) : 1;
+      },)
+  ) {
     /**
      * Flags this set contributed that carry a verdict.
      */
@@ -271,10 +291,11 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    'NOTE the control line is the one that decides gating. Its precision is '
-      + 'what a gate would pay for on regions nobody had read, and the damaged '
-      + 'line only confirms the probe agrees where the answer was already '
-      + 'known.',
+    'NOTE read the labels as the drawing task meant them. On the verification '
+      + 'sheet they name what a READER already believed, so the control line is '
+      + 'the one that decides gating. On the damage sample they name what the '
+      + 'PROBE said, so probe-flagged carries its precision and probe-silent '
+      + 'carries its MISSES: a Y there is damage the probe did not see.',
   );
 }
 

@@ -43,10 +43,17 @@ export type VerifyItem = {
   readonly claims: readonly ScreenedDefectClaim[];
 
   /**
-   * Which set this item came from, recorded in the manifest and never on the
-   * sheet.
+   * Which partition this item belongs to, recorded in the manifest and never
+   * on the sheet.
+   *
+   * Deliberately a free label rather than a fixed pair, because the two sheets
+   * that share this formatter partition on different things and reusing one
+   * vocabulary for both would put the same word on two meanings. The
+   * verification sheet splits by what a READER already believed, and the damage
+   * sample splits by what the PROBE said. A scorer reads the label as written
+   * and never infers a meaning from it.
    */
-  readonly kind: 'damaged' | 'control';
+  readonly kind: string;
 };
 
 /**
