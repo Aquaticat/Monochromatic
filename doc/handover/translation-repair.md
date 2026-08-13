@@ -8237,6 +8237,24 @@ Two consequences worth carrying forward.
 Both belong to the same family as the two silent probes recorded earlier today:
  a command that answers a question you did not ask, and reads as success.
 
+### The silent probe, finally explained
+
+Earlier today `find -newermt '-60 minutes'` reported nothing while the target
+ existed, and it was recorded as an unexplained silent probe. It happened again
+ tonight with `-newermt '-10 minutes'`, which reported no slice-cache activity
+ while the run was actively writing. Measured directly, in one directory at one
+ moment:
+
+-   `find slice-cache -type f -mmin -10` reports 3 files. Correct.
+-   `find slice-cache -type f -newermt '10 minutes ago'` reports 0.
+-   `find slice-cache -type f -newermt '-10 minutes'` reports 0, exit status 0.
+
+So `-mmin` is reliable here and `-newermt` with a RELATIVE expression is not,
+ in either spelling, and neither wrong form errors. Use `-mmin -N`. The general
+ form of the lesson is the one already written down: validate a probe on a case
+ that must match before trusting it to report nothing, because an empty result
+ and a broken query are the same two characters on screen.
+
 ### The durable record was itself not connected
 
 Landing `stage-voice-lost` was not enough, and I nearly declared it done. A
