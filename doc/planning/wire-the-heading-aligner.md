@@ -399,3 +399,75 @@ Option C is now clearly worse than it looked. Its trailing-surplus assumption
 So the ranking stands at B > C > A, and the margin is wider than the earlier
  correction suggested, not narrower. The blocker is unchanged: three unpaired
  sections still need the destination `#70` owes them.
+
+## Correction: attempt three is fragile, and the "strict improvement" claim was wrong
+
+Attempt three was tested only against the corpus, which contains gaps at the
+ front and at the end and nowhere else. Run against invented cases covering
+ positions the corpus does not have, it fails:
+
+```text
+  gap at the END                          correct
+  gap at the FRONT                        correct
+  gap in the MIDDLE                       WRONG, gap slid to the end
+  middle gap WITH a shared Latin name     WRONG, and it ignored the name:
+                                          paired 老猫 with Mocha and left
+                                          the real Mocha unpaired
+  heading depth changed in translation    correct
+```
+
+The cause is the structural token itself. `headingAffinity` divides shared
+ tokens by the smaller token count, so adding a depth token to every label
+ saturates the score:
+
+```text
+  WITH the depth token          WITHOUT it
+  hdgb 小猫  vs hdgb Kitten  1   小猫   vs Kitten  0
+  hdgb 老猫  vs hdgb Mocha   1   老猫   vs Mocha   0
+  hdgb Mocha vs hdgb Mocha  1   Mocha vs Mocha   1
+  hdgb 老猫  vs hdgb Kitten  1   老猫   vs Kitten  0
+```
+
+Every same-depth pair scores 1.00, so a genuine name match is worth exactly as
+ much as an unrelated heading at the same depth. The signal the aligner was
+ supposed to gain is destroyed by the mechanism meant to deliver it.
+
+Without the token the same middle-gap case aligns correctly, gapping the middle
+ source section and pinning the tail on the real name match at affinity 1.00.
+
+So attempt three's corpus wins were not earned. `XingZ60` needs its gap at the
+ end, which is where the tiebreak already puts it, and `XIEPT2` came out right
+ only because saturation happened to make heading-to-heading pairing beat
+ heading-to-preamble pairing. Neither depended on structure being informative.
+
+### Why this cannot be fixed by feeding labels
+
+`XIEPT2` needs the aligner to refuse to pair a preamble chunk with a heading
+ chunk. Affinity returns a value between zero and one, and a zero-affinity
+ PAIRING still scores better than a gap, which costs `GAP_PENALTY`. So a label
+ can never express "these must not pair", only "these are unrelated", which is
+ what every cross-language heading pair already scores.
+
+Saturating the good pairs to 1.00 is the only way to express the preference
+ through labels, and that is precisely what destroys the name signal.
+
+The real change is therefore to `headingAffinity` or to the aligner: structural
+ incompatibility has to be expressible, as a mismatch penalty or a hard
+ constraint, separately from textual similarity.
+
+### What this does to the options
+
+Option B is still the right direction and is now clearly NOT small. It needs
+ the chunk-label adapter, plus a structural term in the scoring that does not
+ ride on the shared-token count. That is a design change to the affinity
+ function, not wiring.
+
+The ranking B > C > A is unchanged, because C is still the trailing-surplus
+ assumption that `XIEPT2` refutes and A is still confidently wrong on
+ `XingZ60`. What changes is the cost of B, which should not be presented as
+ cheap.
+
+The lesson is the one this document keeps repeating in a different form. A
+ change measured only against the corpus is measured against the cases the
+ corpus happens to contain, and a prototype that passes there can still be
+ wrong about the mechanism it claims to use.
