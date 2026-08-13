@@ -189,6 +189,45 @@ await describe({
         ],);
       },
     },),
+
+    it({
+      name: 'will not close on a marker trailed by an INVISIBLE character, '
+        + 'which CommonMark reads as code content. Only spaces and tabs may '
+        + 'follow a closing fence, and phrasing that check with trim() accepts '
+        + 'U+FEFF, U+00A0, U+2028 and U+2029 as well, so the fence would close '
+        + 'early and expose the next invisible-only line to masking. This is '
+        + 'the same trap the masker itself exists to document',
+      fn: async () => {
+        for (const trailing of [
+          '\u{FEFF}',
+          '\u{00A0}',
+          '\u{2028}',
+          '\u{2029}',
+        ]) {
+          expect(flagsOf(`\`\`\`\ncode\n\`\`\`${trailing}\nstill code\n`,),).toEqual([
+            true,
+            true,
+            true,
+            true,
+            true,
+          ],);
+        }
+      },
+    },),
+
+    it({
+      name: 'still closes on a marker trailed by ordinary spaces and tabs, '
+        + 'which CommonMark does allow, so the stricter check did not simply '
+        + 'stop closing fences from working',
+      fn: async () => {
+        expect(flagsOf('```\ncode\n```  \t\nAfter.',),).toEqual([
+          true,
+          true,
+          true,
+          false,
+        ],);
+      },
+    },),
   ],
 },);
 

@@ -135,6 +135,34 @@ function readFence({ line, }: { readonly line: string; },): FenceMarker {
 }
 
 /**
+ * Whether text is made only of spaces and tabs.
+ *
+ * Written as a scan rather than `trim()`, because ECMAScript trims far more
+ * than CommonMark counts as blank. U+FEFF, U+00A0, U+2028 and U+2029 all
+ * vanish under `trim()`, so a line spelled ```` ```<U+FEFF> ```` would read as
+ * a closing fence where CommonMark calls it code content, and the
+ * invisible-only line after it would then be exposed to masking. That is the
+ * same trap `mask-invisible-lines.ts` exists to document, one file over.
+ *
+ * @param text - text after a fence marker run
+ *
+ * @returns Whether CommonMark would accept it after a closing fence
+ *
+ * @example
+ * ```ts
+ * const bare = isSpacesAndTabs({ text: '  ', },);
+ * ```
+ */
+function isSpacesAndTabs({ text, }: { readonly text: string; },): boolean {
+  for (const character of text) {
+    if ((character !== ' ') && (character !== '\t'))
+      return false;
+  }
+
+  return true;
+}
+
+/**
  * Whether a fence-shaped line can open a block.
  *
  * A backtick fence may not carry a backtick in its info string, because that
@@ -203,12 +231,7 @@ function canClose(
    */
   const { info, } = fence;
 
-  /**
-   * Same with its surrounding spaces and tabs gone.
-   */
-  const trailing = info.trim();
-
-  return trailing === '';
+  return isSpacesAndTabs({ text: info, },);
 }
 
 /**

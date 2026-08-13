@@ -89,10 +89,27 @@ await describe({
           '\u{202F}',
           '\u{3000}',
           '\u{2007}',
-          '\u{00AD}',
         ]) {
           expect(maskInvisibleLines({ text: `Alpha.\n${space}\nBeta.\n`, },),)
             .toBe('Alpha.\n \nBeta.\n',);
+        }
+      },
+    },),
+
+    it({
+      name: 'leaves the CONDITIONALLY invisible characters alone, since masking '
+        + 'one would be a judgement about rendering rather than the restoration '
+        + 'of a lost paragraph break. A soft hyphen renders wherever a line '
+        + 'breaks, and the line and paragraph separators carry meaning of their '
+        + 'own; none has been observed welding anything',
+      fn: async () => {
+        for (const character of [
+          '\u{00AD}',
+          '\u{2028}',
+          '\u{2029}',
+        ]) {
+          expect(maskInvisibleLines({ text: `Alpha.\n${character}\nBeta.\n`, },),)
+            .toBe(`Alpha.\n${character}\nBeta.\n`,);
         }
       },
     },),

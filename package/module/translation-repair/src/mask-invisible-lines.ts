@@ -49,6 +49,13 @@ const BLANK_TO_COMMONMARK: ReadonlySet<string> = new Set([
  * ECMAScript whitespace, so any check phrased with `trim()` calls them empty
  * and passes over the very characters it exists to catch. That trap already
  * broke the first draft of this file once, with U+FEFF.
+ *
+ * Membership requires being invisible UNCONDITIONALLY, which is why three near
+ * misses are absent. U+00AD renders as a hyphen wherever a line happens to
+ * break; U+2028 and U+2029 carry line and paragraph meaning of their own.
+ * Masking a line made only of one of those would be a judgement about
+ * rendering rather than the restoration of a lost paragraph break, and
+ * declining costs nothing but a weld nobody has observed.
  */
 const SHOWS_NOTHING: ReadonlySet<string> = new Set([
   '\u{0020}',
@@ -58,14 +65,11 @@ const SHOWS_NOTHING: ReadonlySet<string> = new Set([
   '\u{200C}',
   '\u{200D}',
   '\u{2060}',
+  '\u{180E}',
   '\u{00A0}',
   '\u{202F}',
   '\u{2007}',
   '\u{3000}',
-  '\u{180E}',
-  '\u{00AD}',
-  '\u{2028}',
-  '\u{2029}',
 ],);
 
 /**
