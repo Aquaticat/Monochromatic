@@ -300,6 +300,39 @@ export async function runEditorStage(
       } judged, ${String(perEnvelope.declinedCount,)} declined)`,
       `editor-chunk-select (${String(chunkSet.candidates
         .length,)} distinct, ${String(chunkSet.collapsed,)} collapsed)`,
+      // WHY an operation was refused, not merely how many were. The count went
+      // into a log line and the reasons went nowhere, so the preservation gate
+      // could reject every edit in a run and the artifact would look ordinary.
+      // Counted by reason rather than listed, since one bad editor can produce
+      // many refusals of one kind and the shape is what a reader needs.
+      ...[...patch.rejected
+        .reduce(
+          function tally(
+            counts: Map<string, number>,
+            rejection,
+          ) {
+        /**
+         * Reason with its parenthetical detail stripped, so counts group.
+         */
+        const kind = rejection.reason
+          .split(' (',)[0]
+          ?? rejection.reason;
+        return counts.set(
+          kind,
+          (counts.get(kind,) ?? 0) + 1,
+        );
+      },
+          new Map<string, number>(),
+        ),]
+        .toSorted(function byKind(
+          [left,],
+          [right,],
+        ): number {
+        return (left < right) ? (-1) : 1;
+      },)
+        .map(function toFinding([kind, count,],): string {
+        return `editor-rejected ${kind} (${String(count,)})`;
+      },),
     ],
   };
 }
