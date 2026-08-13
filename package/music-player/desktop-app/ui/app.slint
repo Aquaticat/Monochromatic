@@ -224,7 +224,6 @@ component SegmentedControls inherits Rectangle {
 component LedSegmentButton inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
-    in property <length> max-width;
     callback clicked();
     horizontal-stretch: 0;
     width: min(led-label.preferred-width + 48px, root.max-width);
@@ -251,10 +250,10 @@ component LedSegmentButton inherits Rectangle {
 
         // Seeded-looking micro highlights suggest a bead-blasted plate without
         // requiring a raster tile that would scale differently across renderers.
-        Rectangle { x: 18%; y: 22%; width: 1px; height: 1px; background: #ffffff14; }
-        Rectangle { x: 42%; y: 68%; width: 1px; height: 1px; background: #ffffff10; }
-        Rectangle { x: 71%; y: 28%; width: 1px; height: 1px; background: #ffffff18; }
-        Rectangle { x: 86%; y: 72%; width: 1px; height: 1px; background: #ffffff0f; }
+        Rectangle { x: parent.width * 0.18; y: parent.height * 0.22; width: 1px; height: 1px; background: #ffffff14; }
+        Rectangle { x: parent.width * 0.42; y: parent.height * 0.68; width: 1px; height: 1px; background: #ffffff10; }
+        Rectangle { x: parent.width * 0.71; y: parent.height * 0.28; width: 1px; height: 1px; background: #ffffff18; }
+        Rectangle { x: parent.width * 0.86; y: parent.height * 0.72; width: 1px; height: 1px; background: #ffffff0f; }
     }
 
     opening := Rectangle {
@@ -273,8 +272,8 @@ component LedSegmentButton inherits Rectangle {
         height: root.selected ? 40px : 44px;
         border-radius: root.selected ? 7px : 9px;
         background: root.selected
-            ? @radial-gradient(circle at 38% 30%, #ffffff5c 0%, #a63fd0 58%, #782597 100%)
-            : @radial-gradient(circle at 38% 30%, #ffffff36 0%, #aaaaaa 58%, #747474 100%);
+            ? @radial-gradient(circle, #ffffff5c 0%, #a63fd0 58%, #782597 100%)
+            : @radial-gradient(circle, #ffffff36 0%, #aaaaaa 58%, #747474 100%);
         drop-shadow-offset-x: root.selected ? 0px : 2.5px;
         drop-shadow-offset-y: root.selected ? 0px : 3.5px;
         drop-shadow-blur: root.selected ? 10px : 5px;

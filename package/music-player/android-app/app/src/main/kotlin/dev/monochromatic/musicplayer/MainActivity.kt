@@ -3023,20 +3023,24 @@ private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> U
 // ```
 /** Returns layered bead-blasted-metal styling for one LED button backplate. */
 private fun ledPlateModifier(shape: RoundedCornerShape): Modifier {
+    /** Holds near-black anodized metal under its directional sheen. */
+    val plateColor: Color = Color(0xFF111111)
+    /** Holds key-light, neutral, and away-from-light plate values. */
+    val sheenColors: List<Color> = listOf(Color(0x1FFFFFFF), Color.Transparent, Color(0x24000000))
+    /** Holds broad dark falloff along the plate's bottom-right shoulder. */
+    val plateShadowColor: Color = Color(0x17000000)
     return Modifier
         .clip(shape)
-        .background(Color(0xFF111111))
+        .background(plateColor)
         .background(
-            brush = Brush.linearGradient(
-                colors = listOf(Color(0x1FFFFFFF), Color.Transparent, Color(0x24000000)),
-            ),
+            brush = Brush.linearGradient(colors = sheenColors),
             shape = shape,
         )
         .innerShadow(
             shape = shape,
             shadow = HardwareShadow(
                 radius = 6.dp,
-                color = Color(0x17000000),
+                color = plateShadowColor,
                 offset = DpOffset(x = 3.dp, y = 3.dp),
             ),
         )
@@ -3061,6 +3065,10 @@ private fun ledFaceModifier(selected: Boolean, shape: RoundedCornerShape): Modif
             listOf(Color(0x36FFFFFF), Color(0xFFAAAAAA), Color(0xFF747474))
         },
     )
+    /** Holds opening-edge occlusion at reduced opacity over transmitted LED light. */
+    val activeOcclusion: Color = Color(0x73000000)
+    /** Holds deeper unlit shoulder shading on reflective plastic. */
+    val inactiveOcclusion: Color = Color(0x3D000000)
     /** Holds LED bloom for selected caps and a physical cast shadow for raised caps. */
     val outerShadow: HardwareShadow = if (selected) {
         HardwareShadow(radius = 7.dp, spread = 1.dp, color = Color(0x73C874EA))
@@ -3082,7 +3090,7 @@ private fun ledFaceModifier(selected: Boolean, shape: RoundedCornerShape): Modif
             shadow = HardwareShadow(
                 radius = 4.dp,
                 spread = 1.dp,
-                color = if (selected) Color(0x73000000) else Color(0x3D000000),
+                color = if (selected) activeOcclusion else inactiveOcclusion,
                 offset = DpOffset(x = 3.dp, y = 3.dp),
             ),
         )
@@ -3107,6 +3115,12 @@ private fun ledHardwarePageButton(
     val plateShape: RoundedCornerShape = RoundedCornerShape(17.dp)
     /** Holds rigid cap silhouette. Independent wrapping requires rounded ends on each cap. */
     val capShape: RoundedCornerShape = RoundedCornerShape(9.dp)
+    /** Holds dark selected moat or raised-cap contact ring. */
+    val openingColor: Color = if (selected) Color(0xFF030304) else Color(0xFF050506)
+    /** Holds glowing selected legend or reflective day/night ink. */
+    val labelColor: Color = if (selected) Color.White else Color(0xFF3D3F45)
+    /** Holds emitted label light behind selected white ink. */
+    val labelGlow: Color = Color(0xE6F0D4FF)
     Box(
         modifier = Modifier
             .widthIn(max = maximumWidth)
@@ -3120,18 +3134,18 @@ private fun ledHardwarePageButton(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(if (selected) 0xFF030304 else 0xFF050506), capShape),
+                .background(openingColor, capShape),
         ) {
             Box(modifier = ledFaceModifier(selected = selected, shape = capShape))
             Text(
                 text = label,
-                color = if (selected) Color.White else Color(0xFF3D3F45),
+                color = labelColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     shadow = if (selected) {
-                        TextShadow(color = Color(0xE6F0D4FF), offset = Offset.Zero, blurRadius = 4f)
+                        TextShadow(color = labelGlow, offset = Offset.Zero, blurRadius = 4f)
                     } else {
                         null
                     },
