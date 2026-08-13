@@ -7624,3 +7624,87 @@ The second productive question was whether a built feature actually FIRES.
 -   An automatic slice-cache key over a hash of `src/` was considered and
     rejected: it would invalidate on comment and test changes, and a pass takes
     days.
+
+## Overnight autonomous stretch, continued (05:00 to 05:20 UTC)
+
+### What is running
+
+`pass13`, PID 1371047, into
+ `node_modules/.monochromatic/translation-repair-runs-pass13`, running slice
+ cache version 9.
+
+Cache version is the quickest way to tell whether two passes are comparable,
+ so for the record: `pass10` ran version 5, `pass12` ran version 7, `pass13`
+ runs version 9. Artifacts from different versions answer different questions
+ and should not be pooled.
+
+`pass12` was stopped at 05:14 UTC with nothing settled. The reasoning, and the
+ rule that a replacement pass must be confirmed working before its predecessor
+ is signalled, are in
+ `doc/troubleshooting/translation-repair-run-invalidation.md`.
+
+### What this stretch found
+
+The method carried over unchanged: census every signal the deterministic core
+ emits, check each is correct, check something consumes it. Applied this time
+ to the full 56-entry artifact population rather than to one stage.
+
+The finding: quote anchoring silently discards 398 critic claims. `locateQuote`
+ fails, `repair-stages.ts` pushes the reason and returns an empty array, and
+ the claim never reaches adjudication. `quote-not-found` alone accounts for 225
+ of those, across 45 of 56 entries.
+
+A mechanism explains part of it. The corpus soft-wraps prose, so a critic
+ quoting across a wrap returns a space where the document holds a line break,
+ and neither the byte-exact search nor the punctuation-normalized fallback can
+ match that. The full argument, including the competing explanation that was
+ ruled out first, is in
+ `doc/troubleshooting/translation-repair-unread-signals.md`.
+
+### What was landed, and what was deliberately not
+
+Landed (`a6bbeca50`): telemetry only. `quote-not-found` now names whether a
+ soft-line-break collapse would have located the quote uniquely, ambiguously,
+ or not at all. No claim changes fate.
+
+NOT landed: admitting those quotes. That is blocked, not deferred. A repair
+ anchored to a quote spanning a wrap replaces several lines with one, which is
+ the same line-structure question `doc/planning/naturalness-lane-reach.md`
+ leaves for the user. Landing the fix would decide it without asking.
+
+So the fix waits on the same decision the naturalness lane waits on, which
+ raises that decision's value: it now governs two changes rather than one.
+
+### Corrections to earlier claims
+
+-   A first pass at the duplicate-issue mechanism blamed dropped adjudication
+    merge opinions. Refuted by measurement: 36.8% duplicate with them, 35.1%
+    without. Recorded so the hypothesis is not raised again.
+-   A ceiling argument ("43 dropped opinions cannot explain 956 duplicates")
+    was drafted and dropped, because one dropped opinion can leave a
+    multi-claim cluster unmerged and produce more than one duplicate. The
+    empirical split carries the refutation without it.
+-   `doc/troubleshooting/translation-repair-unread-signals.md` still claimed
+    `footnoteGraph` was read by nothing. The chunk-integrity gate has read it
+    since the footnote work earlier the same night. Corrected.
+
+### A trap worth adding to the list
+
+`readdir` on the slice cache returned zero `.json` files while `find` returned
+ six, because the cache sharded by entry id into subdirectories. The empty
+ result looked exactly like "nothing cached yet" and would have been reported
+ as a starved pass. `readdir` needs `{ recursive: true, }` there.
+
+The general shape is the one already listed twice: a filter that silently
+ matches nothing reads identically to a genuine zero.
+
+### What the next session should check first
+
+Whether `pass13` has settled entries carrying `[line-break-collapsible]`
+ suffixes, and in what proportion. That number is the incidence the whole
+ investigation could not measure from existing artifacts, because a claim
+ discarded at anchoring never becomes a retained issue.
+
+If the proportion is small, the quote-anchoring lead is closed. If it is large,
+ it becomes an argument the user should hear when they settle the
+ line-structure question.
