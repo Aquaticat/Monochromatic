@@ -7208,3 +7208,37 @@ So run 003's control arm is well matched except for one entry, and that entry's
  pair is a known exception rather than a silent weakness. Excluding Acheron, the
  controls run 51 to 316 characters against damaged regions of 60 to 268, where
  run 002's controls had a median of 41 against a damaged median of 99.
+
+### Pooled over three relabel runs, and a correction to "zero"
+
+```text
+arm                verdicts  admissible  rate   regions flagged
+damaged/shown           45        2      0.044      2 of 15
+damaged/withheld        45       18      0.400     14 of 15
+control/shown           48        1      0.021      1 of 17
+control/withheld        48        6      0.125      4 of 17
+```
+
+Correction first. Runs 001 and 002 both gave 0 of 15 on the damaged shown arm,
+ and that was recorded here as the production configuration raising nothing at
+ all. Run 003 gave 2 of 15 on identical inputs, so the shown arm is not zero; it
+ is 3 admissible claims across 93 verdicts spanning both damaged and unflagged
+ regions.
+The substantive reading survives and is sharper with the extra run: shown
+ separates damaged from unflagged by 0.044 against 0.021, on two claims against
+ one, while withheld separates them by 0.400 against 0.125. Withholding the
+ issue list raises the damaged rate ninefold and flags 14 of 15 damaged regions
+ against 4 of 17 unflagged ones.
+
+### The limit that decides whether this can gate anything
+
+"Unflagged" is not "verified clean". The controls were never read by anyone: the
+ human read 50 drawn items, and these regions were not among them. So the 0.125
+ control rate bounds the false-positive rate only if those regions are actually
+ undamaged, which nothing establishes.
+
+The cheap way to settle it is four items. Exactly four control regions drew an
+ admissible claim in the withheld arm, and a human reading only those four says
+ whether the withheld arm is finding damage nobody had looked at or inventing
+ it. That is a far smaller ask than another 50-item sheet and it is the last
+ thing standing between this result and a gating decision.
