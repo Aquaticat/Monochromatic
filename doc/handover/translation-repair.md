@@ -7513,3 +7513,114 @@ Both were premised on sections whose translation covers a fraction of their
 Fixing alignment now outranks both. A pipeline that pairs sections wrongly
  cannot be repaired into correctness by any later stage, and cannot be
  re-designed around either.
+
+## Overnight autonomous stretch, 2026-08-13 (03:20 to 05:00 UTC)
+
+The user was asleep with a standing instruction to keep working, to land
+ certainly-good pipeline changes immediately, and to restart runs as needed.
+24 commits. Everything below is committed and pushed; the tree is clean and
+ 212 test suites pass with lint clean apart from the ignored rule.
+
+### What is running right now
+
+`pass12`, into `node_modules/.monochromatic/translation-repair-runs-pass12`,
+ started 04:35 UTC under every fix listed here EXCEPT the naturalness
+ eligibility one. It settles roughly one entry per 45 minutes, so a full pass is
+ days rather than hours.
+
+`pass10` (3 settled entries, old pipeline) and `pass11` (nothing settled) were
+ stopped. `pass10`'s artifacts are kept and are a CONSISTENT old-pipeline
+ population, not a mixed one. Full reasoning in
+ `doc/troubleshooting/translation-repair-run-invalidation.md`.
+
+### Four decisions waiting, none blocked on further work
+
+-   `#70` and `#71`, the same question. The section aligner now pairs `XingZ60`
+    correctly, but its two genuinely untranslated sections need a destination
+    and both available answers are bad: an empty target produces the
+    unrepairable 915-characters-against-nothing shape, and skipping contradicts
+    the decided output goal. `doc/planning/translation-pipeline-redesign.md`.
+-   `#65`, the unit precision is denominated in. 570 of 2650 accepted issues
+    share a span with another, but every duplicate pair shares one repair
+    envelope, so the harm is counting rather than wasted work. Ranked C > B > A.
+    `doc/planning/duplicate-accepted-issues.md`.
+-   Naturalness lane reach. 620 blocks of plain soft-wrapped prose are excluded
+    by a `multi-line` check; admitting them would triple the lane's reach.
+    Ranked B > C > A. `doc/planning/naturalness-lane-reach.md`.
+-   The damage sheet still wants human grading, which `#66` and `#68` both wait
+    on.
+
+### The method, because it is the transferable part
+
+`#71` was found because the artifact had recorded `alignment
+ structure-mismatch` for weeks and nothing read it. Treating that as a PATTERN
+ rather than an incident is what produced everything else: census every signal
+ the deterministic core emits, then check whether each is correct and whether
+ anything consumes it.
+
+That chain ran end to end. The census found the footnote graph was wrong about
+ 10 of its 15 findings; fixing it made the graph trustworthy; trusting it
+ revealed that 4 of 56 settled repairs had shipped broken footnotes; those are
+ now gated. Each step was only possible because of the one before.
+
+The second productive question was whether a built feature actually FIRES.
+ Typography restoration was wired in and doing almost nothing.
+
+### Defects found and fixed
+
+-   Invisible-line masking had two holes: a line of non-ASCII space welds
+    paragraphs exactly as a byte-order mark does and was not caught, and masking
+    did not know about fenced code. `7b5dbf6b4`.
+-   `---\r\n---` was refused outright, the one CRLF front-matter shape the
+    earlier fix still missed, because its guard assumed a one-character
+    terminator. `462b1690a`.
+-   A closing fence was accepted on `trim()`, so ```` ```<U+FEFF> ```` read as a
+    terminator. A bug in code committed an hour earlier, in the corrupting
+    direction. `908e39285`.
+-   The `#71` aligner slid every zero-evidence document by putting gaps at the
+    FRONT, reproducing the defect it exists to remove. `XingZ60` hid it because
+    three of its headings share names across the boundary. `110fc3909`.
+-   The footnote graph walked the RAW tree while the node list walked the
+    flattened one, so a definition inside a disclosure container was invisible
+    and every `nodeId` after a container named the wrong block. `08d92eb41`.
+-   Integrity did not notice broken footnotes, because it counted only MDX
+    grammar downgrades. `e10ece178`.
+-   Typography restoration learned its convention from the replaced REGION,
+    which at a median of 75 characters usually holds no quote at all.
+    `846f9ff6d`.
+-   Naturalness eligibility counted a repaired parse as a degraded one, a
+    regression introduced by the parse-finding work earlier the same night.
+    `99e9b2c94`.
+
+### Corrections made to earlier claims in this document and to the agent's own
+
+-   The duplicate-issue cost claim was WRONG and is corrected in `af8abf895`.
+    All 567 duplicate pairs share one repair envelope, so no model work is
+    duplicated; the ranking reversed with the claim.
+-   `#71`'s blast radius is one entry, but the first reasoning was wrong.
+    SEVEN entries emit `structure-mismatch`; six pair by index anyway. The
+    earlier check counted HEADINGS where the aligner compares CHUNKS.
+-   A running pass cannot see a rebuild, so `pass10` was never the mixed
+    population it was called at the time.
+
+### Three verification traps hit and caught, worth knowing about
+
+-   `git grep --extended-regexp '^\s*(\`\`\`|~~~)'` reported fence markers in
+    nearly every file. Backslash-backtick is the buffer-start anchor in GNU
+    regex. Fixed-string search shows the corpus has NO fenced code blocks.
+-   `rg FAIL` over test output matched the NAME of a test containing "FAILS".
+    Use `^\[error\]` or `AssertionError`.
+-   A refinement-eligibility probe returned zero eligible for every input
+    INCLUDING the clean control, because the fixtures were under the
+    120-character minimum. The positive control is what caught it.
+
+### Bounded and deliberately not built
+
+-   CRLF documents get no invisible-line masking, blockquote-payload welds are
+    not masked, and fence indentation is read from the line rather than the
+    container. All three are real, all three are inert at this pin, and all
+    three are recorded in
+    `doc/troubleshooting/translation-repair-invisible-characters.md`.
+-   An automatic slice-cache key over a hash of `src/` was considered and
+    rejected: it would invalidate on comment and test changes, and a pass takes
+    days.
