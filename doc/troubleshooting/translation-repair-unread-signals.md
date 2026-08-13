@@ -326,6 +326,28 @@ CONSEQUENCE BEYOND THIS ISSUE: the line-structure question in
  naturalness lane, rather than two. That decision got simpler rather than more
  valuable, reversing what was recorded earlier.
 
+### What the misses are NOT, which narrows what they can be
+
+With wrapping ruled out, the next candidate was a pipeline bug rather than
+ model behaviour: that the text a critic is SHOWN differs from the text
+ `locateQuote` SEARCHES. Any divergence there would defeat quotes wholesale and
+ would be ours to fix.
+
+There is none. `repair-chunk.ts` parses `documents` from exactly the
+ `sourceText` and `targetText` it then passes to the critic phase, and both
+ travel together into `runChunkCriticPhase`. `RepairDocument.text` is the
+ original source byte-for-byte rather than the masked variant, so masking does
+ not separate them either.
+
+So the remaining candidates are all model behaviour: paraphrasing instead of
+ quoting, eliding with an ellipsis, quoting across the chunk boundary it was
+ shown, or inventing text. Those cannot be told apart without the failing
+ quote, which nothing retains.
+
+That is worth stating positively rather than as another dead end. The expensive
+ branch, a systematic defect in our own plumbing, is eliminated. What is left is
+ a telemetry gap with a known and cheap remedy.
+
 The direction matters for the decision this feeds. If soft wrapping explains
  little, the anchoring lead closes, and the line-structure question in
  `doc/planning/naturalness-lane-reach.md` governs one change rather than two.
