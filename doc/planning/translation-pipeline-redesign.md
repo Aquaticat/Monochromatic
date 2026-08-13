@@ -276,3 +276,45 @@ The measurement is durable either way: it is recorded in `#71` and the
  offers the existing translation as evidence and as wording worth keeping where
  it is right, never as the thing being corrected, which is the anchoring the
  introduced-defect probe was moved to the same day.
+
+## The contributor-name gap, sized
+
+Added 2026-08-13. The prototype above fails on `铃语`, the essay's author,
+ because the identity block declares the SUBJECT's names and not a
+ contributor's. That gap is worth sizing before it is designed around.
+
+Searching the corpus for the pattern the prototype hit:
+
+```text
+  entries with contributor-named headings (其N：NAME)   1 of 92, 10 headings
+  entries with centred byline paragraphs                2, 9 paragraphs
+```
+
+The detection is pattern-specific, so a contributor named some other way would
+ not be counted. Taken as a lower bound, the exposure is one or two entries and
+ roughly ten names.
+
+So the gap is real and NARROW. It does not block option B: extending the
+ declared-names block to contributors, or a rule that a heading of the form
+ `其N：NAME` names a person rather than a topic, would cover the observed cases.
+
+## `XingZ60` is carrying most of the hard cases at once
+
+Worth stating because it cuts both ways. That single entry is:
+
+-   the ONLY entry whose sections mispair, out of 92;
+-   the source of both untranslated sections the aligner would leave unpaired,
+    915 and 1459 characters;
+-   the only entry with contributor-named headings, all ten of them;
+-   the source of the two largest block-count gaps cited in
+    `doc/decision/translation-repair-output-goal.md`, 76 against 5 and 62
+    against 1.
+
+A fix aimed at `XingZ60` therefore addresses a disproportionate share of the
+ known hard cases, which makes it attractive.
+
+The same fact is the warning: a design validated ONLY against `XingZ60` is
+ fitted to one document. `XIEPT2` is the useful second case, since it pairs
+ correctly while still carrying genuine coverage gaps of 24 against 1, 18
+ against 1 and 18 against 2, so it exercises the translate path without the
+ alignment defect confounding it.
