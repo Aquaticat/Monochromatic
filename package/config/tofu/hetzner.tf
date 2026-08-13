@@ -107,7 +107,7 @@ locals {
   # names the service; resolve_hosts.ts unions fresh DNS with seed_resolved_hosts.json
   # and the local accumulation cache so a moved host never silently loses egress.
   # Published/broad ranges that do not map to one host (anthropic, hetzner DNS,
-  # chrome) stay hardcoded below.
+  # syncthing/Oracle, chrome) stay hardcoded below.
   resolvable_hostnames = [
     # Design Systems News
     "designsystems.news",
@@ -158,9 +158,6 @@ locals {
     "nginx.org",
     # archive.ubuntu.com (443 CDN path plus port 80 via package_repo_http_ips)
     "archive.ubuntu.com",
-    # Syncthing release key and APT repository
-    "syncthing.net",
-    "apt.syncthing.net",
     # Nextcloud
     "nextcloud.com",
     "updates.nextcloud.com",
@@ -445,6 +442,12 @@ locals {
 
   hetzner_ips = ["185.12.64.0/24", "2a01:4ff:ff00::/64"]
 
+  syncthing_apt_ips = [
+    "141.144.200.0/21", # Oracle Cloud London (where the .net nodes live)
+    "193.122.0.0/17",   # Oracle Cloud Global range often used for their nodes
+    "2603:c022::/32"    # Syncthing IPv6 Range
+  ]
+
   # Single-host service CIDRs resolved from DNS names (see local.resolvable_hostnames).
   # Every resolved host is allowed on the 443 CDN path; archive.ubuntu.com is
   # additionally allowed on port 80 via package_repo_http_ips.
@@ -457,6 +460,7 @@ locals {
 
   small_cdn_ips = concat(
     local.hetzner_ips,
+    local.syncthing_apt_ips,
     local.anthropic_ips,
     local.chrome_ips,
     local.resolved_cdn_ips,
