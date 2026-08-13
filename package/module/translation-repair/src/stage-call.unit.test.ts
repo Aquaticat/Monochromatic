@@ -147,9 +147,11 @@ async function callWith(
   {
     client,
     signal,
+    logger = l,
   }: {
     readonly client: SyntheticClient;
     readonly signal: AbortSignal;
+    readonly logger?: typeof l;
   },
 ) {
   return await attemptStageCall({
@@ -166,8 +168,38 @@ async function callWith(
     responseFormat: PURR_FORMAT,
     validate: isPurrReply,
     stage: 'purr-check',
-    l,
+    l: logger,
   },);
+}
+
+/**
+ * Logger that keeps its warnings, so a case can read WHAT a lost voice
+ * recorded rather than only that a voice was lost.
+ *
+ * @returns Logger plus the array its warnings land in
+ *
+ * @example
+ * ```ts
+ * const { logger, warnings, } = capturingLogger();
+ * ```
+ */
+function capturingLogger(): {
+  readonly logger: typeof l;
+  readonly warnings: readonly string[];
+} {
+  /**
+   * Warnings recorded so far.
+   */
+  const warnings: string[] = [];
+  return {
+    logger: {
+      ...l,
+      warn: function record(message: string,): void {
+        warnings.push(message,);
+      },
+    } as typeof l,
+    warnings,
+  };
 }
 
 await describe({
@@ -218,6 +250,100 @@ await describe({
 
         for (const voice of voices)
           expect(voice.heard,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE SUB-KIND when a schema mismatch loses a voice, because '
+        + 'schema-mismatch covers truncated thinking, unparseable content and '
+        + 'a rejected guard, which need three different fixes and read '
+        + 'identically without it',
+      fn: async () => {
+        const { logger, warnings, } = capturingLogger();
+        await callWith({
+          client: scriptedClient({
+            outcome: {
+              kind: 'schema-mismatch',
+              rawText: '|>{"purr":"loud"}',
+              detail: 'content is not valid JSON: Unexpected token',
+            },
+          },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        expect(warnings,).toHaveLength(1,);
+        expect(warnings[0],).toContain('content is not valid JSON',);
+      },
+    },),
+
+    it({
+      name: 'carries the OPENING of the model text, which is where a parse '
+        + 'failure is diagnosable: the Kimi-K3 outage was a two-character '
+        + 'channel marker that explained 507 mismatches in one pass',
+      fn: async () => {
+        const { logger, warnings, } = capturingLogger();
+        await callWith({
+          client: scriptedClient({
+            outcome: {
+              kind: 'schema-mismatch',
+              rawText: '|>{"purr":"loud"}',
+              detail: 'content is not valid JSON: Unexpected token',
+            },
+          },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        expect(warnings[0],).toContain('|>',);
+      },
+    },),
+
+    it({
+      name: 'TRUNCATES a long reply and flattens its line breaks, so one lost '
+        + 'voice cannot bury the rest of a run log',
+      fn: async () => {
+        const { logger, warnings, } = capturingLogger();
+        await callWith({
+          client: scriptedClient({
+            outcome: {
+              kind: 'schema-mismatch',
+              rawText: `${'purr\n'.repeat(200,)}`,
+              detail: 'content is not valid JSON: Unexpected token',
+            },
+          },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        /**
+         * Warning the lost voice recorded.
+         */
+        const warning = warnings[0] ?? '';
+        expect(warning.length,).toBeLessThan(300,);
+        expect(warning.includes('\n',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'names the refusal MARKER when a refusal-shaped reply loses a '
+        + 'voice, since a refusal and a parse failure call for different '
+        + 'responses and both read as a bare lost voice otherwise',
+      fn: async () => {
+        const { logger, warnings, } = capturingLogger();
+        await callWith({
+          client: scriptedClient({
+            outcome: {
+              kind: 'refusal-shaped',
+              rawText: 'I cannot help with that.',
+              marker: 'i-cannot',
+            },
+          },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        expect(warnings[0],).toContain('i-cannot',);
       },
     },),
 

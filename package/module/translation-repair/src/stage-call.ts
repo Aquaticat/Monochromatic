@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type {
+  ChatJsonOutcome,
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
@@ -42,6 +43,57 @@ export type StageVoice<ValueT,> =
      */
     readonly heard: false;
   };
+
+/**
+ * Longest model text a lost-voice warning carries.
+ * A parse failure is almost always diagnosable from the OPENING characters:
+ * the Kimi-K3 outage was a two-character channel marker, and 507 mismatches in
+ * one pass were explained by it.
+ */
+const RAW_PREVIEW_CHARS = 120;
+
+/**
+ * Names WHY a voice was lost, not merely that one was.
+ *
+ * `schema-mismatch` covers three different faults needing three different
+ * fixes, truncated thinking, unparseable content and a rejected guard, and the
+ * client already distinguishes them in `detail`. That distinction was logged at
+ * DEBUG and discarded here, so a run recorded `schema-mismatch, voice lost`
+ * hundreds of times while saying nothing about which fault it was.
+ *
+ * @param outcome - non-ok exchange outcome
+ *
+ * @returns Cause with its sub-kind, plus a bounded opening of the model text
+ *
+ * @example
+ * ```ts
+ * lostVoiceCause({ outcome, },);
+ * ```
+ */
+function lostVoiceCause(
+  {
+    outcome,
+  }: {
+    readonly outcome: Exclude<ChatJsonOutcome<unknown>, { readonly kind: 'ok'; }>;
+  },
+): string {
+  /**
+   * Model text flattened to one line and bounded, since a warning is one line.
+   */
+  const opening = outcome
+    .rawText
+    .replaceAll(
+      '\n',
+      ' ',
+    )
+    .slice(
+      0,
+      RAW_PREVIEW_CHARS,
+    );
+  if (outcome.kind === 'schema-mismatch')
+    return `schema-mismatch (${outcome.detail}) raw=${JSON.stringify(opening,)}`;
+  return `refusal-shaped (${outcome.marker}) raw=${JSON.stringify(opening,)}`;
+}
 
 /**
  * Runs one schema-validated exchange for a pipeline stage.
@@ -107,7 +159,7 @@ export async function attemptStageCall<ValueT,>(
       validate,
     },);
     if (outcome.kind !== 'ok') {
-      l.warn(`${stage} ${modelId}: ${outcome.kind}, voice lost`,);
+      l.warn(`${stage} ${modelId}: ${lostVoiceCause({ outcome, },)}, voice lost`,);
       return { heard: false, };
     }
     return {
