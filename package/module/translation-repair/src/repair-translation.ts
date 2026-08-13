@@ -105,8 +105,15 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * `applyPatchOperations` and rejects an operation that drops content no
  * accepted issue quoted. A slice resumed from version 11 carries text an edit
  * the gate would now refuse already changed, so the two cannot be mixed.
+ *
+ * Version 17 is behaviour by way of WHO WAS HEARD. The channel-marker stripper
+ * now matches the shape of a truncated `<|word|>` tail rather than the single
+ * exact string `|>`, so replies that reached version 16 as lost voices now
+ * parse. A slice resumed from version 16 was decided by a smaller panel than
+ * the same slice would convene now, and a chunk whose critic went unheard is
+ * not the same chunk as one whose critic spoke.
  */
-const SLICE_CACHE_VERSION = 16;
+const SLICE_CACHE_VERSION = 17;
 
 /**
  * Completion status of one repair run;

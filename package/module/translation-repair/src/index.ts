@@ -153,9 +153,12 @@ export type {
   SyntheticClient,
 } from './chat-contract.ts';
 export {
+  type ChannelMarkerStrip,
+  stripChannelMarker,
+} from './channel-marker.ts';
+export {
   formatUsageNote,
   parseModelJson,
-  stripChannelMarker,
   stripCodeFence,
   stripThinkBlock,
 } from './model-content.ts';

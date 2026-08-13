@@ -9,11 +9,11 @@ import type {
   ChatTextRequest,
   SyntheticClient,
 } from './chat-contract.ts';
+import { stripChannelMarker, } from './channel-marker.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import {
   formatUsageNote,
   parseModelJson,
-  stripChannelMarker,
   stripCodeFence,
   stripThinkBlock,
 } from './model-content.ts';
@@ -356,11 +356,24 @@ export function createSyntheticClient(
     }
 
     /**
+     * Fence-stripped answer, with any truncated channel marker removed and
+     * reported. The marker is logged rather than dropped: the only reason the
+     * 2026-08-13 recurrence was diagnosable is that the raw opening had been
+     * recorded, and a silent strip loses that signal the next time the
+     * provider's token filter changes shape.
+     */
+    const {
+      content,
+      marker,
+    } = stripChannelMarker({ text: stripCodeFence({ text: answer, },), },);
+
+    if (marker !== '')
+      rl.info(`${request.modelId}: stripped channel marker ${JSON.stringify(marker,)} ahead of JSON`,);
+
+    /**
      * Parse attempt over fence-stripped answer.
      */
-    const attempt = parseModelJson({
-      text: stripChannelMarker({ text: stripCodeFence({ text: answer, },), },),
-    },);
+    const attempt = parseModelJson({ text: content, },);
 
     if (!attempt.parsed) {
       /**

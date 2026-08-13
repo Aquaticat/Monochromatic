@@ -6,60 +6,6 @@ import type { ExtractedCompletion, } from './completion-shape.ts';
 // parse attempts, and usage formatting for log lines.
 
 /**
- * Prefixes a provider has been observed emitting ahead of structured content.
- *
- * `|>` appeared on `hf:moonshotai/Kimi-K3` on 2026-08-12. Its JSON was correct
- * and complete; the marker sat in front of it, so every structured call from
- * that model failed to parse. Across four passes it went from zero
- * schema-mismatches to 507, in every role it holds, on unchanged pipeline code.
- *
- * Kept as an explicit list rather than a general "skip junk until the first
- * brace" rule. That rule would also swallow a model prefixing an apology or a
- * partial refusal, turning content the refusal detector is meant to classify
- * into a silent parse success.
- */
-const CHANNEL_MARKERS: readonly string[] = ['|>',];
-
-/**
- * Removes a known provider channel marker sitting in front of JSON.
- *
- * Only strips when what follows actually opens a JSON value, so a reply that
- * merely begins with these characters and then says something else still fails
- * to parse, loudly, the way malformed output should.
- *
- * @param text - model content, fence already removed
- *
- * @returns Content without the marker, or unchanged when no marker applies
- *
- * @example
- * ```ts
- * stripChannelMarker({ text: '|>{"count":2}', },);
- * ```
- */
-export function stripChannelMarker(
-  { text, }: { readonly text: string; },
-): string {
-  /**
-   * Input without leading whitespace so the marker sits at column zero.
-   */
-  const trimmed = text.trimStart();
-  for (const marker of CHANNEL_MARKERS) {
-    if (!trimmed.startsWith(marker,))
-      continue;
-
-    /**
-     * What follows the marker, which must itself open a JSON value.
-     */
-    const rest = trimmed
-      .slice(marker.length,)
-      .trimStart();
-    if (rest.startsWith('{',) || rest.startsWith('[',))
-      return rest;
-  }
-  return text;
-}
-
-/**
  * Strips one wrapping markdown code fence when present,
  * because models wrap JSON in fences despite instructions.
  * Single linear pass over fence positions; inner text is returned trimmed.
