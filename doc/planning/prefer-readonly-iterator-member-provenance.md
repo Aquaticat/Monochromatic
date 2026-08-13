@@ -91,7 +91,7 @@ a receiver element rather than alias one,
 element of the result and the existing probe shape cannot pass for it.
  That is not an accident of how the
 probe is written;
- it is the honest reason `entries` was left out.
+ it is the sound reason `entries` was left out.
 
 Marking `entries` as `RESULT_RELATION_RECEIVER_ELEMENTS` anyway would be sound,
  because everything reachable
@@ -100,7 +100,7 @@ through a pair can reach the receiver and over-attribution never loses a report,
 authority's own standard says must be probed,
  and the probe would be measuring something the symbol does not
 say.
- A fourth relation naming the position inside the yielded element is the honest representation.
+ A fourth relation naming the position inside the yielded element is the sound representation.
 
 ## Proposed order
 
@@ -457,7 +457,7 @@ say.
    from 16 when this arc started.
    ** Every remaining mention of an
    iterator member sits beside another cause that is doing the reporting,
-   which is the honest state:
+   which is the sound state:
    the
    iterator question is answered and what is left is about something else.
 

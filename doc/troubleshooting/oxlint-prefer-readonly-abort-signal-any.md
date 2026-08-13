@@ -174,7 +174,7 @@ Its tradeoff is maintaining a public effect contract that the rule does not requ
 - Recovering every enclosing variable declaration changes package-local anonymous `const` identities.
 - Recording no uncertainty target for `AbortSignal.any` hides the source signal's dependent-signal state.
 - Giving `AbortSignal.timeout` the same target as `any` invents caller-owned state on a primitive delay.
-- Claiming `Readonly<AbortSignal>` proves immutability is dishonest because it retains behavioral capabilities.
+- Claiming `Readonly<AbortSignal>` proves immutability is unsupported because it retains behavioral capabilities.
 - Suppressing the diagnostic discards both exact provenance and contract verification.
 
 ## Upstream filing artifact

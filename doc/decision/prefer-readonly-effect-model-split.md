@@ -46,7 +46,7 @@ A single `opaque` bit answers two different questions at once:
 - Does the callee mutate the structure passed in?
 - Can the callee cause user code to run with access to what the parameter reaches?
 
-For `blocks.filter(predicate)` where `blocks: readonly Block[]` the honest answers differ.
+For `blocks.filter(predicate)` where `blocks: readonly Block[]` the sound answers differ.
 The first is no,
  provably.
  The second is yes,

@@ -591,7 +591,7 @@ children: [
        * enumeration that cannot see those callers cannot license removing a charge on the
        * strength of what they substitute.
        *
-       * The offer count falls with it, which is the honest price of the change rather than a
+       * The offer count falls with it, which is the sound price of the change rather than a
        * side effect. The discharge now fires only for a callable no other file can import, so
        * on this fixture it fires for none of them.
        *
@@ -625,7 +625,7 @@ children: [
        * `handsReadonlyNamesOnward` takes `readonly string[]` and hands it to a call this rule
        * cannot resolve. The finding is true, since `readonly` is erased at compile time and the
        * callee receives the underlying array, but the general message closes by advising the
-       * author to make the type honest and it already is. That is issue #414's complaint in the
+       * author to make the type sound and it already is. That is issue #414's complaint in the
        * form that survived everything else.
        *
        * `handsMutableNamesOnward` is the control and must keep the general message. Its
@@ -838,7 +838,7 @@ children: [
        *
        * The two that remain are `localReceiverElements` and its caller, added with that
        * predicate and identical in shape to the first of the three but for being unexported.
-       * They are what keeps this number honest in both directions: without them the count
+       * They are what keeps this number sound in both directions: without them the count
        * would read zero and the feature would look dead rather than scoped, and a probe of
        * this feature reporting no difference would again be indistinguishable from a probe
        * that cannot see it.
@@ -1772,15 +1772,15 @@ children: [
       expect(mixedMessages.every(function omitsStoredBinding(message,): boolean {
         return !message.includes('"stored"',);
       },),).toBe(true,);
-      /* Both halves of the dishonest pair, which is where the withhold has to stop. A store
+      /* Both halves of the projected-capability pair, which is where the withhold has to stop. A store
        * decides one verdict, the offer, and no other. The first shape of this silenced
        * every verdict for a stored parameter, including this one, which is about the
        * declared type and has nothing to do with where a value went. No sweep of this
-       * repository could catch it: nothing here pairs retention with a dishonest declared
+       * repository could catch it: nothing here pairs retention with a capability-bearing declared
        * type, so the count of these reports held constant across three captures while one
        * of them was being suppressed. Two, not one, is the assertion. */
-      expect(messages.filter(function isDishonest(message,): boolean {
-        return message.includes('claims readonly semantics dishonestly',);
+      expect(messages.filter(function isProjectedCapability(message,): boolean {
+        return message.includes('retains callable capability despite its readonly projection',);
       },).length,).toBe(2,);
     },
   },),
@@ -1846,7 +1846,7 @@ children: [
         return message.includes('stale @mutates contract',);
       },),).toBe(true,);
       expect(messages.some(function opacityPreemptsReadonlyShape(message,): boolean {
-        return message.includes('claims readonly semantics dishonestly',);
+        return message.includes('retains callable capability despite its readonly projection',);
       },),).toBe(false,);
       /* Five, up from four, because `destructuredOpaqueEffect` joined them. Its report used to
        * name both bindings of its one destructured parameter and now names `state` alone,
@@ -1864,7 +1864,7 @@ children: [
           && message.includes('already readonly at every level',);
       },).length,).toBe(3,);
       /* Three of those five now carry the already-readonly text instead, because their input
-       * is honest-readonly and the general message closes by advising a type change that is
+       * is deep-readonly and the general message closes by advising a type change that is
        * already made. The count above is unchanged because both texts share a prefix, which is
        * deliberate: what the finding is about did not change, only what it advises.
        *

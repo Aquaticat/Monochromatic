@@ -398,7 +398,7 @@ export function resultReachableSymbolIds({
    * overwritten before it escapes stays a member, a transfer written above the one that
    * establishes its source still propagates, and an object rest of a primitive-only row
    * qualifies on its type alone. Each of those keeps opacity for a callable that would
-   * have been offered honestly.
+   * have been offered soundly.
    */
   const holders = new Set<number>();
   /**

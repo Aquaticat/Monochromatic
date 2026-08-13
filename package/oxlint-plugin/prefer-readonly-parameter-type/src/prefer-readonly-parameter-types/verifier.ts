@@ -269,23 +269,23 @@ export function verifyReadonlyCallable({
         targetIndexes,
         parameterIndex,
         uncertainty,
-        /* Whether the general message's closing advice, to make the type honest, would be
+        /* Whether the general message's closing advice, to make the type sound, would be
          * telling this author to do what they already did. The charge is unaffected. */
-        alreadyReadonly: classification.kind === 'honest-readonly',
+        alreadyReadonly: classification.kind === 'deep-readonly',
         ...(affectedNames === undefined) ? {} : { affectedNames, },
       },),);
       return;
     }
     if (mutated
       && (!foreignBorrowed)
-      && ((classification.kind === 'honest-readonly')
-        || (classification.kind === 'dishonest-readonly'))) {
+      && ((classification.kind === 'deep-readonly')
+        || (classification.kind === 'projected-readonly-capability'))) {
       context.report({
         loc,
-        messageId: 'dishonestReadonly',
+        messageId: 'projectedReadonlyCapability',
         data: {
           parameterName,
-          reason: classification.kind === 'dishonest-readonly'
+          reason: classification.kind === 'projected-readonly-capability'
             ? classification.reason
             : 'declared readonly parameter has reachable mutation effect',
         },
@@ -293,10 +293,10 @@ export function verifyReadonlyCallable({
       return;
     }
     if ((!mutated) && (!foreignBorrowed)
-      && (classification.kind === 'dishonest-readonly')) {
+      && (classification.kind === 'projected-readonly-capability')) {
       context.report({
         loc,
-        messageId: 'dishonestReadonly',
+        messageId: 'projectedReadonlyCapability',
         data: {
           parameterName,
           reason: classification.reason,
@@ -308,8 +308,8 @@ export function verifyReadonlyCallable({
      * classification existed, because `opaque` is false for a parameter whose only
      * recorded cause is a store, and a store is not a mutation so none of them was ever
      * about it. Placing this test on the offer rather than ahead of the loop is the
-     * correction: an early return also took the dishonest-type report away from a
-     * parameter that happened to be stored, which `storeDishonestProjection` measures. */
+     * correction: an early return also took the dissound-type report away from a
+     * parameter that happened to be stored, which `storeCapabilityProjection` measures. */
     if ((!mutated)
       && (!retained)
       && (!foreignBorrowed)

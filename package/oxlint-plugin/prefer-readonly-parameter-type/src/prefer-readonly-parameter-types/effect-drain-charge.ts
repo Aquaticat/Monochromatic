@@ -38,7 +38,7 @@ const DRAIN_PROVENANCE_LIMIT = 60;
  *
  * Opacity rather than mutation, because what the iterator does is exactly what cannot be seen
  * from the loop. A member that only reads is charged too, which costs precision and keeps the
- * claim honest: this says the channel is open, not that it was used.
+ * claim sound: this says the channel is open, not that it was used.
  *
  * @param project - TypeScript project resolving types and declarations.
  *

@@ -4,7 +4,7 @@ import {
 } from './readonly-external.fixture.js';
 
 /**
- * Mutable local projection used to test dishonest capability retention.
+ * Mutable local projection used to test projected callable-capability retention.
  */
 type ReadonlyDeep<T> = {
   readonly [Key in keyof T]: ReadonlyDeep<T[Key]>;
@@ -33,9 +33,9 @@ export function staleMutationContract(controller: AbortController,): AbortSignal
 /**
  * Claims readonly projection while retaining cancellation capability.
  *
- * @param controller - Dishonestly projected capability.
+ * @param controller - Readonly projection retaining callable capability.
  */
-export function dishonestReadonlyCapability(
+export function projectedReadonlyCapabilityCapability(
   controller: ReadonlyDeep<AbortController>,
 ): AbortSignal {
   return controller.signal;

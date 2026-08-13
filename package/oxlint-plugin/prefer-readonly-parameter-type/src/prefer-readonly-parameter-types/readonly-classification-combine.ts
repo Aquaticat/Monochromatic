@@ -7,27 +7,27 @@
 import type { ReadonlyClassification, } from './readonly-classifier.ts';
 
 /**
- * Honest readonly singleton result.
+ * Deep-readonly singleton result.
  */
-export const HONEST_READONLY: ReadonlyClassification = { kind: 'honest-readonly', };
+export const DEEP_READONLY: ReadonlyClassification = { kind: 'deep-readonly', };
 
 /**
  * Combines constituent classifications by diagnostic priority.
  *
  * @param classifications - Results from union or intersection constituents.
  *
- * @returns highest-priority non-readonly classification or honest readonly.
+ * @returns highest-priority non-readonly classification or sound readonly.
  *
  * @example
  * ```ts
- * combineClassifications([{ kind: 'honest-readonly' }]);
+ * combineClassifications([{ kind: 'deep-readonly' }]);
  * ```
  */
 export function combineClassifications(
   classifications: readonly ReadonlyClassification[],
 ): ReadonlyClassification {
-  return classifications.find(function dishonest(result,): boolean {
-    return result.kind === 'dishonest-readonly';
+  return classifications.find(function projectedCapability(result,): boolean {
+    return result.kind === 'projected-readonly-capability';
   },)
     ?? classifications.find(function opaque(result,): boolean {
       return result.kind === 'opaque-capability';
@@ -35,5 +35,5 @@ export function combineClassifications(
     ?? classifications.find(function mutable(result,): boolean {
       return result.kind === 'mutable';
     },)
-    ?? HONEST_READONLY;
+    ?? DEEP_READONLY;
 }

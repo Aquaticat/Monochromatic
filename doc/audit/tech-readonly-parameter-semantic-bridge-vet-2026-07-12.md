@@ -322,8 +322,8 @@ Role:
 Every consuming package declares the catalog dependency directly.
 
 Boundary:
- `ReadonlyDeep` does not establish effect honesty.
-Capability methods retained by the mapped type remain subject to `dishonestReadonly` analysis.
+ `ReadonlyDeep` does not establish effect soundy.
+Capability methods retained by the mapped type remain subject to `projectedReadonlyCapability` analysis.
 Project-owned duplicate utilities and synthesized inline structural types are rejected.
 
 ## Evidence collected
@@ -491,7 +491,7 @@ but also established two important algorithm requirements:
 - direct `ReadonlyMap` and `ReadonlySet` need collection-aware semantics because their observational methods are not
   syntactically readonly properties;
 - `ReadonlyDeep<AbortController>` appears structurally readonly while retaining the mutating `abort` method,
-  so capability effects must detect `dishonestReadonly` instead of trusting mapped-property flags.
+  so capability effects must detect `projectedReadonlyCapability` instead of trusting mapped-property flags.
 
 ## Execution manifests
 

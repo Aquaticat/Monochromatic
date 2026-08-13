@@ -579,7 +579,7 @@ the probe pass by removing the case that falsifies the claim.
  A probe whose arguments are chosen to make
 its assertion true measures the arguments rather than the member.
 
-So the honest form is conditional on an initial value being supplied,
+So the sound form is conditional on an initial value being supplied,
  which is an argument-count fact
 about the call rather than a fact about the member.
  That was then built,
@@ -817,7 +817,7 @@ Only one of those is a limit worth attacking.
  there is nothing to derive and `receiverClaimAnswerable` answers them
 separately,
  so the exit is correct.
- The single unowned observer is the analysis honestly declining.
+ The single unowned observer is the analysis soundly declining.
  The
 9 are the result gate,
  which is where the type-guard narrowing fixed above was found and is the same

@@ -11,7 +11,7 @@
  * relations, element applications and uncertainty provenance, none of which contribute a
  * counted bit. Exhausting the bound therefore means some summary was still growing, and a
  * summary missing effects is what produces a `readonly` offer for written state. Reporting
- * it is the only honest option: returning the partial summaries would claim a proof that
+ * it is the only sound option: returning the partial summaries would claim a proof that
  * nothing established.
  */
 export class EffectPropagationError extends Error {

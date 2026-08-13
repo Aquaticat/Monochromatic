@@ -212,7 +212,7 @@ export function opaqueEffectReport({
      * specific one. The collection and method messages name what the calls are, which is more
      * use to a reader than naming what the type already is, and both carry remediations that
      * still apply to a readonly input. Only the general message ends in advice to make the
-     * type honest, so only it misreads when the type already is. */
+     * type sound, so only it misreads when the type already is. */
     messageId: onlyCollectionMembers
       ? 'opaqueCollectionEffect'
       : onlyInputMethods

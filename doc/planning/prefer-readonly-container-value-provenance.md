@@ -212,7 +212,7 @@ element path,
 Both wrong-offer programs recorded above depend on those paths going away,
  and under this they do not.
 
-Three probes decide whether the record can be kept honest,
+Three probes decide whether the record can be kept sound,
  and all three were run:
 
 - `const stack: Node[] = [root,]; const alias = stack; alias.pop();` reports `referentMutated=[0]`
@@ -247,7 +247,7 @@ question again and not this one.
 `opaque=[]`,
  while adding the push makes it `opaque=[0]`.
 
-So the honest description is that this removes a wrong fact rather than a report.
+So the sound description is that this removes a wrong fact rather than a report.
  That is still worth doing
 on this repository's own standard,
  recorded in

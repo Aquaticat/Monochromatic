@@ -23,7 +23,7 @@ The design question is whether one rule should continue to report all of these s
 
 The recommended answer is no.
 A readonly preference should report only a proved replacement.
-Proved dishonest declarations and unresolved effects are different policies with different severity and remediation.
+Proved unsupported declarations and unresolved effects are different policies with different severity and remediation.
 
 ## Local source trace
 
@@ -143,7 +143,7 @@ It inserted one reporting guard:
 // package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/verifier.ts
 if (opaque
   && (!acceptedHostOpacity)
-  && (classification.kind === 'honest-readonly')) {
+  && (classification.kind === 'sound-readonly')) {
   return;
 }
 ```
@@ -164,7 +164,7 @@ The removed diagnostics comprised 46 general opaque-call messages,
 one method message,
 and five collection messages.
 `opaque-effect-diagnostic.ts` selects the already-readonly wording only after its method and collection variants.
-Changing only `opaqueEffectAlreadyReadonly` would therefore leave six reports on honest-readonly inputs.
+Changing only `opaqueEffectAlreadyReadonly` would therefore leave six reports on sound-readonly inputs.
 
 The direct control at
 `package/test-fixture/oxlint-no-restricted-syntax/src/readonly-result-provenance-invalid.ts`
@@ -280,9 +280,9 @@ Suggested wording:
 
 Include the exact suggested type.
 
-### Proved dishonest readonly
+### Proved unsupported readonly
 
-Move `dishonestReadonly` to a correctness rule if this policy remains an error.
+Move `projectedReadonlyCapability` to a correctness rule if this policy remains an error.
 Suggested wording:
 
 > Parameter `X` is declared readonly,
@@ -312,7 +312,7 @@ Do not say “or accept it” unless the message links to the exact acceptance m
 ### Split the policies
 
 - Pros:
-  honest rule names,
+  sound rule names,
   separate severity,
   preserved uncertainty audit,
   and only actionable preference errors.
@@ -349,7 +349,7 @@ Do not say “or accept it” unless the message links to the exact acceptance m
 
 Ranking:
  split > narrow > manifest > warning.
-Splitting beats narrowing because it preserves the uncertainty audit under an honest name.
+Splitting beats narrowing because it preserves the uncertainty audit under an sound name.
 Narrowing beats a manifest because positive evidence avoids exception debt.
 A manifest beats a blanket warning because each accepted site is explicit and can become stale.
 

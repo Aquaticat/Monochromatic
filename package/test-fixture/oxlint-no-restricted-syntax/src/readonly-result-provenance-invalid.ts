@@ -929,7 +929,7 @@ export function assertedLookupMutationEffect(
 /**
  * Restructures a receiver through computed member access.
  *
- * The sharpened syntax-shape probe. Unlike the map cases, `string[]` has an honest
+ * The sharpened syntax-shape probe. Unlike the map cases, `string[]` has an sound
  * deeply read-only projection, so nothing suppresses a suggestion here on grounds of
  * the value type. If computed access is invisible to the collection handling, this
  * parameter is offered as read-only while the body pushes to it, and applying that
@@ -2028,7 +2028,7 @@ export function nestedSelectorWriteEffect(rows: LabelledRow[],): void {
  *
  * The remaining shape of issue #414. The finding is true, since `readonly` is erased at compile
  * time and the callee receives the underlying array, but the general message closes by offering
- * to make the type honest and it already is. This one gets its own wording instead.
+ * to make the type sound and it already is. This one gets its own wording instead.
  *
  * @param handedNames - Strings handed to an unresolvable call.
  */

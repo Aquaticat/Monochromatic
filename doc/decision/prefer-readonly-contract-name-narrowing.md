@@ -103,7 +103,7 @@ A callee has to call a method,
 packaging one,
  and including them changed exactly one summary across the 53-function
 propagation fixture:
- `passedContainerClosureSemanticEffect` gained honest opacity where
+ `passedContainerClosureSemanticEffect` gained sound opacity where
 the closure handling already records the write and no offer was ever at stake.
 
 ## Why the removal, and not a smaller change

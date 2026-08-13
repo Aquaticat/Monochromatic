@@ -25,7 +25,7 @@ type ReadonlyDeep<T> = {
 };
 
 /**
- * Callable capability used to verify projection honesty.
+ * Callable capability used to verify projection soundy.
  */
 type SemanticMethodCapability = {
   readonly value: string;
@@ -180,7 +180,7 @@ export function classifyReadonlyObject(
 /**
  * Accepts projected capability that retains abort operation.
  *
- * @param projectedController - Dishonest readonly capability projection.
+ * @param projectedController - Readonly projection retaining callable capability.
  */
 export function classifyProjectedController(
   projectedController: ReadonlyDeep<AbortController>,
@@ -1233,7 +1233,7 @@ export function readsSemanticCycleHead(cycleHead: SemanticCycleHead,): string {
  * Reads the cycle member, which reaches the same writable slot one hop away.
  *
  * Mutable for the same reason the head is, and by a path made entirely of readonly properties.
- * Answering `honest-readonly` here would tell `effect-outward-handoff.ts` that nothing writes
+ * Answering `deep-readonly` here would tell `effect-outward-handoff.ts` that nothing writes
  * through a handed value of this type, withhold the opaque effect it would otherwise charge, and
  * offer `readonly` on a parameter a constructor can write through.
  *

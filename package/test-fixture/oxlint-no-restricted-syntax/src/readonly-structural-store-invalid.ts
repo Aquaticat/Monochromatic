@@ -730,25 +730,25 @@ export function reportMixedBindingCauses({
 }
 
 /**
- * Binding retaining a projection whose declared readonly is dishonest.
+ * Binding retaining a projection whose readonly projection retains callable capability.
  */
 let heldEncoder: Readonly<TextEncoder> | undefined;
 
 /**
  * Declares a readonly projection that still writes a supplied destination.
  *
- * Paired with `storeDishonestProjection` as the control half. `Readonly<TextEncoder>` keeps
+ * Paired with `storeCapabilityProjection` as the control half. `Readonly<TextEncoder>` keeps
  * `encodeInto`, so the declared type claims something the value does not honour, and this
  * shape must report that whatever else the callable does.
  *
- * @param encoder - Projection whose declared readonly is dishonest.
+ * @param encoder - Projection whose readonly projection retains callable capability.
  *
  * @example
  * ```ts
- * declareDishonestProjection(new TextEncoder(),);
+ * declareCapabilityProjection(new TextEncoder(),);
  * ```
  */
-export function declareDishonestProjection(encoder: Readonly<TextEncoder>,): void {
+export function declareCapabilityProjection(encoder: Readonly<TextEncoder>,): void {
   void encoder;
 }
 
@@ -756,7 +756,7 @@ export function declareDishonestProjection(encoder: Readonly<TextEncoder>,): voi
  * Stores that same projection, which must not change what its declared type reports.
  *
  * The pair exists because a sweep of this repository cannot catch what it protects. Nothing
- * here pairs retention with a dishonest declared type, so the count of dishonest reports
+ * here pairs retention with a capability-bearing readonly projection, so the projected-capability report count
  * held constant across three captures while this verdict was being suppressed. A store
  * silencing a verdict about a declared type is a placement mistake that only a shape built
  * to collide can show.
@@ -765,10 +765,10 @@ export function declareDishonestProjection(encoder: Readonly<TextEncoder>,): voi
  *
  * @example
  * ```ts
- * storeDishonestProjection(new TextEncoder(),);
+ * storeCapabilityProjection(new TextEncoder(),);
  * ```
  */
-export function storeDishonestProjection(encoder: Readonly<TextEncoder>,): void {
+export function storeCapabilityProjection(encoder: Readonly<TextEncoder>,): void {
   heldEncoder = encoder;
 }
 
@@ -4149,7 +4149,7 @@ export function allocateHandedRow(): Row {
  * Hands a capturing closure to a construction.
  *
  * A construction maps ordinary origins and a closure has none, so this recorded nothing at all and read
- * identically to its control. The `honest-readonly` discharge beside it cannot answer for this: it proves
+ * identically to its control. The `deep-readonly` discharge beside it cannot answer for this: it proves
  * no write reaches through the handed value, and says nothing about a value obtained by invoking a
  * callable that value carries.
  *
@@ -4608,7 +4608,7 @@ export async function readRowAsync(rowRead: Config,): Promise<Row> {
  * Keeps a closure completing with an async call resolving to a leaf.
  *
  * The precision subject. Every async function's declared return type is an object even when what it
- * resolves to is a leaf, so the leaf test alone charged this and withheld an honest offer.
+ * resolves to is a leaf, so the leaf test alone charged this and withheld an sound offer.
  *
  * @param asyncLabelGotten - Configuration whose label the closure reads.
  *

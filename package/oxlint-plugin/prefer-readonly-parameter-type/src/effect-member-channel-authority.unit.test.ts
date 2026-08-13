@@ -692,7 +692,7 @@ await describe({
             /* Scoped to collections, because the table no longer holds only those. A
              * `DataView` is a buffer accessor with no iterator at all, and the library
              * pairs no read-only view for it, which is what marks it as not a collection
-             * here rather than a name test doing the same job less honestly. */
+             * here rather than a name test doing the same job less soundly. */
             if (UNPAIRED_VIEW_INTERFACES.has(ownerName,))
               continue;
             expect(members.has(memberName,),).toBe(true,);

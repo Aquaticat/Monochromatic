@@ -159,7 +159,7 @@ and catalog-free architecture.
 
 ## What does not work
 
-- `ReadonlyDeep<ExtensionAPI>` keeps mutating methods and makes a dishonest immutability claim.
+- `ReadonlyDeep<ExtensionAPI>` keeps mutating methods and makes a unsupported immutability claim.
 - `ForeignBorrowed<ExtensionAPI>` records ownership but does not authorize unresolved behavior.
 - Local wrappers only move the bodyless call.
 - Global,

@@ -27,7 +27,7 @@ import {
 } from './readonly-callable-capability.ts';
 import {
   combineClassifications,
-  HONEST_READONLY,
+  DEEP_READONLY,
 } from './readonly-classification-combine.ts';
 
 /**
@@ -65,7 +65,7 @@ const READONLY_GENERIC_COLLECTION_OWNERS: ReadonlySet<string> = new Set([
  * ```
  */
 export type ReadonlyClassification =
-  | { readonly kind: 'honest-readonly'; }
+  | { readonly kind: 'deep-readonly'; }
   | {
     readonly kind: 'mutable';
     readonly reason: string;
@@ -75,7 +75,7 @@ export type ReadonlyClassification =
     readonly reason: string;
   }
   | {
-    readonly kind: 'dishonest-readonly';
+    readonly kind: 'projected-readonly-capability';
     readonly reason: string;
   };
 
@@ -164,7 +164,7 @@ type TraversalOutcome = {
 };
 
 /**
- * Classifies deep readonly honesty for one resolved type graph.
+ * Classifies deep readonly soundy for one resolved type graph.
  *
  * Recursive calls are bounded by unique TypeScript type IDs and break cycles
  * through active-state memoization.
@@ -233,7 +233,7 @@ export function classifyReadonlyType({
     const cached = memo.get(current.id,);
     if (cached === CLASSIFICATION_ACTIVE) {
       assumptions.count += 1;
-      return HONEST_READONLY;
+      return DEEP_READONLY;
     }
     if (cached !== undefined) {
       /* Reading an assumed outcome carries the assumption to whoever reads it. Without this a
@@ -329,7 +329,7 @@ export function classifyReadonlyType({
     },))
       return finish(CALLABLE_CAPABILITY,);
     if (!current.isObjectType())
-      return finish(HONEST_READONLY,);
+      return finish(DEEP_READONLY,);
     /**
      * Declared owner identity used by standard projection policy.
      */
@@ -435,7 +435,7 @@ export function classifyReadonlyType({
         if (callable) {
           return projectionClaimed
             ? {
-              kind: 'dishonest-readonly',
+              kind: 'projected-readonly-capability',
               reason: `${currentOwner}.${property.name} retains unknown callable capability`,
             }
             : {

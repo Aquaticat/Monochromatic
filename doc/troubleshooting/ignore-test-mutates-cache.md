@@ -133,7 +133,7 @@ Its tradeoff is repeating package implementation knowledge at every call site.
 
 - An empty target list for `test` is incorrect because `_testCache` is populated.
 - A path-argument target is incorrect because the implementation treats the path as string data.
-- A readonly projection of `Ignore` is dishonest because its callable methods retain mutable receiver state.
+- A readonly projection of `Ignore` is unsupported because its callable methods retain mutable receiver state.
 - Disabling the readonly rule discards both exact provenance and stale-contract checking.
 
 ## Upstream filing artifact

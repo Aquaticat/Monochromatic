@@ -61,7 +61,7 @@ function typeForeignCoverage({
     project,
     type,
   },);
-  return classification.kind === 'honest-readonly'
+  return classification.kind === 'deep-readonly'
     ? 'primitive'
     : 'owned';
 }

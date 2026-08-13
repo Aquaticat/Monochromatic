@@ -110,7 +110,7 @@ writable slot,
 alone:
 
 ```text
-head first:    cycleHead mutable, cycleMember honest-readonly
+head first:    cycleHead mutable, cycleMember sound-readonly
 member first:  cycleMember mutable, cycleHead mutable
 ```
 
@@ -119,7 +119,7 @@ Order cannot change what a type is,
 property of the type.
 
 The direction is the dangerous one.
-`effect-outward-handoff.ts:181` returns early on `honest-readonly` and skips the opaque effect
+`effect-outward-handoff.ts:181` returns early on `sound-readonly` and skips the opaque effect
 it would otherwise charge the handed slot,
  so the parameter reads as unmutated and the rule
 offers `readonly` on a parameter a constructor can write through.
@@ -320,7 +320,7 @@ So none of these offers is false,
 The finding is therefore a precision inconsistency,
  not unsoundness:
 the same write receives opposite verdicts depending on whether it is routed through a resolved callee,
-and `writeThroughIndex` is withheld an offer that would have been honest.
+and `writeThroughIndex` is withheld an offer that would have been sound.
 Withholding is always safe,
  so that half costs nothing but noise.
 
@@ -346,7 +346,7 @@ That record is current,
  including its claim that nothing rests on the unconsumed fact.
 What is new is only that the gap is observable from outside:
 it makes the same write receive opposite verdicts,
- and it withholds honest offers.
+ and it withholds sound offers.
 No false offer was produced by it in anything measured here.
 
 ## A second defect, in the escape test itself
@@ -621,7 +621,7 @@ holder set is worth closing on its own terms rather than inheriting an argument 
 It never had one.
  The ranking argued order and hazard and left size unstated,
  which makes a deferral hard
-to revisit honestly.
+to revisit soundly.
 
 Counted over the current workspace sweep,
  attributing each finding by the calls its own message names:
@@ -742,7 +742,7 @@ Across the workspace it changes no diagnostic at all:
  34 read-only offers
 byte-identical,
  14 stale contracts.
- That is the honest description and it is not an argument against the
+ That is the sound description and it is not an argument against the
 change.
  It moves a summary fact rather than a message,
  the fact is the one the fourth item is blocked
@@ -930,7 +930,7 @@ This rule contributes 1937,
 -    666 `used as the object for these method calls`,
       receiver opacity,
       the category all three follow-ups move.
--    37 `claims readonly semantics dishonestly`.
+-    37 `claims readonly semantics without supporting evidence`.
 -    32 `should be readonly`,
       the offers.
 -    6 `has stale @mutates contract`.
@@ -996,11 +996,11 @@ The write travels through a resolved callee's return value,
 A related gap surfaced in the same probe and is not the same claim.
 `structuralUnderReadonlyClaim`,
  written with `rows: readonly Row[]` already,
- performs the same laundered `push` and draws no `dishonestReadonly` report,
+ performs the same laundered `push` and draws no `projectedReadonlyCapability` report,
  only a request for a deeper projection.
 So the rule does not catch a false readonly claim by this route either,
  in the direction where the claim is already written down.
-Whether `dishonestReadonly` is meant to cover that is not established here.
+Whether `projectedReadonlyCapability` is meant to cover that is not established here.
 
 ## Sweep pre-registration for the holder closure
 
@@ -1030,7 +1030,7 @@ What each direction has to survive:
       a destructured binding name and an assignment target.
      Either appearing means `occurrenceEstablishesBinding` has a gap the fixture did not reach.
 -    Anything moving in a category the change cannot touch,
-      argument opacity or dishonest-readonly,
+      argument opacity or projected-readonly-capability,
       is a signal to stop and explain it rather than to reconcile it.
 
 The number that would narrow the change rather than ship it:
@@ -1062,7 +1062,7 @@ Against the pre-registered criteria:
       666 to 667,
       against a threshold of roughly a fifth of 666.
 -    Argument opacity,
-      dishonest-readonly and stale-mutates counts are unchanged.
+      projected-readonly-capability and stale-mutates counts are unchanged.
 
 The single new report is `getOnlyHandler` in
 `package/pi-plugin/agent-settled-notification/src/mise.verify-extension.ts`,
@@ -1215,7 +1215,7 @@ Measured:
  returns nothing,
  and no deferred relation is recorded there.
 
-So the honest description of what landed is
+So the sound description of what landed is
  "collection-member mutations on a returned result,
  and returns of one",
  not "writes through a returned parameter".
@@ -1224,7 +1224,7 @@ The wider phrasing was in an earlier draft of this document and is withdrawn.
 This is a boundary rather than a demonstrated false offer.
 Under `readonly Row[]` an element property write is legal,
  which is the retraction recorded in "What the caller-side gap costs",
- so the shallow offer here is honest.
+ so the shallow offer here is sound.
 The structural projection is where the same gap would bite,
  and that is unmeasured.
 
@@ -1233,7 +1233,7 @@ The structural projection is where the same gap would bite,
 `package/cli/markdown-lint/src/rule/semantic-line-breaks.ts` carries a scoped `unicorn/prefer-at` disable
 whose justification cites this asymmetry.
 Its description of the behaviour is accurate and its framing is defensible:
- the index path is the one whose offers were shown honest,
+ the index path is the one whose offers were shown sound,
  so treating it as the reference is fair.
 The comment stays as written,
  and the suppression is still required either way.
@@ -1385,7 +1385,7 @@ No `EffectPropagationError` anywhere.
 Category totals identical on both sides:
  argument opacity 1196,
  receiver opacity 667,
- dishonest contract 37,
+ unsupported contract 37,
  offer 32,
  stale `@mutates` 6.
 
@@ -1405,7 +1405,7 @@ That is the whole delta,
  which is the discriminator this was pre-registered against.
 
 The offer count did not move,
- which is the honest reading of a recovery that reached only dependency code.
+ which is the sound reading of a recovery that reached only dependency code.
 Restoring three deleted callees changed what the rule can say about one boundary.
 It did not change what the rule offers anywhere,
  because every affected caller was already reported for a reason that survives.
@@ -1709,8 +1709,8 @@ The pre-registration's phrasing invited the wrong reading and this is the correc
 Against `sweep-after-43`:
 
 ```text
-before 1938: argument-opacity=1196 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
-after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+before 1938: argument-opacity=1196 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
 ```
 
 Omission warnings unchanged at five upstream panics and no parent reads.
@@ -1756,7 +1756,7 @@ Whether that changed the sweep's answer is unknown and was not established.
 The analyzer sources had not changed since the run began,
  so a deterministic build would have written the same bytes,
  but no digest was taken before the rewrite and determinism was not measured either.
-The honest position is that the capture has no authority,
+The sound position is that the capture has no authority,
  not that it is probably fine.
 
 Two smaller hazards travel with it.
@@ -1891,8 +1891,8 @@ Quiet tree,
 Against the capture taken with the rest narrowing in place:
 
 ```text
-before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
-after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+before 1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
 added   0
 removed 0
 ```
@@ -2096,8 +2096,8 @@ Captured on a quiet tree against `sweep-after-45-reverted`,
  so no mid-run rebuild.
 
 ```text
-before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
-after  1971: argument-opacity=1232 receiver-opacity=664 dishonest=37 offer=32
+before 1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32
+after  1971: argument-opacity=1232 receiver-opacity=664 unsupported=37 offer=32
 added   42: argument-opacity=42
 removed 10: argument-opacity=7 receiver-opacity=3
 ```
@@ -2261,8 +2261,8 @@ If the repository contains a destructured parameter with one stored binding and 
 ## Sweep result for the retention channel
 
 ```text
-before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
-after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+before 1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
 added   0
 removed 0
 ```
@@ -2319,7 +2319,7 @@ export function declareAndStore(encoder: Readonly<TextEncoder>,): void {
 }
 ```
 
-`declareOnly` reports that the parameter claims readonly semantics dishonestly,
+`declareOnly` reports that the parameter claims readonly semantics without supporting evidence,
  because `Readonly<TextEncoder>` keeps `encodeInto` and that writes a supplied destination.
 `declareAndStore` reports nothing.
 Adding a store silenced a verdict about the declared type,
@@ -2328,12 +2328,12 @@ Adding a store silenced a verdict about the declared type,
 The cause is placement.
 The silent return sits ahead of every branch,
  so a retention-only parameter skips the mutation report through a declared readonly type,
- the independently dishonest declared type,
+ the independently unsupported declared type,
  the stale `@mutates` report and the redundant marker report,
  none of which the change was about.
 
 The repository cannot show this.
-`dishonest` held at thirty-seven and `stale-mutates` at six across all three captures,
+`unsupported` held at thirty-seven and `stale-mutates` at six across all three captures,
  which proves those shapes do not coincide with retention here,
  not that the branches are unreachable.
 A sweep can only refute a claim about the code it contains.
@@ -2349,7 +2349,7 @@ That is not what gating two report branches achieves either.
  and it feeds `affected`,
  which gates the stale contract report,
  and `mutated`,
- which gates the dishonest report.
+ which gates the unsupported report.
 A retention-only parameter carrying a host marker and a contract would take both of those
  away from their baseline while its two opacity reports stayed correctly quiet.
 
@@ -2412,21 +2412,21 @@ It is unreachable today and it errs toward speaking,
 ## Sweep result after folding
 
 ```text
-before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
-after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+before 1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
 added   0
 removed 0
 ```
 
 Equality with `sweep-after-45-reverted` again,
- with `dishonest` at thirty-seven,
+ with `unsupported` at thirty-seven,
  which was the addition to the criterion after the suppressed verdict was found.
 Both digests were identical before and after the run.
 
 The equality is worth reading carefully rather than as a third pass,
  because it is the one number this capture could not have moved.
-`dishonest` held at thirty-seven through the broken shape too.
-What establishes the fix is `storeDishonestProjection`,
+`unsupported` held at thirty-seven through the broken shape too.
+What establishes the fix is `storeUnsupportedProjection`,
  which reports now and did not before,
  and which is a unit test rather than a sweep line.
 
@@ -2446,7 +2446,7 @@ The store classification changes no verdict anywhere in this repository,
  existed.
 None of that is evidence about the shapes this repository lacks,
  which is why `readonly-structural-store-invalid.ts` now carries `reportMixedBindingCauses`
- and the dishonest pair:
+ and the unsupported pair:
  a fixture is the only instrument that reaches them.
 
 ## Sweep pre-registration for the iteration store
@@ -2480,7 +2480,7 @@ What each result would mean.
 -    Any message naming a store.
      A regression in the channel work,
       which three captures at equality say is closed.
--    `dishonest` away from thirty-seven,
+-    `unsupported` away from thirty-seven,
       or `stale-mutates` away from six.
      The iteration classification reaching verdicts that are not about it,
       which is the mistake the previous shape of the channel work made.
@@ -2494,8 +2494,8 @@ Both are controls in the fixture,
 ## Sweep result for the iteration store
 
 ```text
-before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
-after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+before 1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
 added   0
 removed 0
 ```
@@ -2510,7 +2510,7 @@ Searching the workspace for a `for...of` head whose target is not a declaration 
 No repository callable iterates into a binding it does not declare,
  so there was no offer here for this to take.
 
-`dishonest` and `stale-mutates` held,
+`unsupported` and `stale-mutates` held,
  which is the check that the classification stayed inside the verdict it is about.
 Wall clock 8m33s against 8m31s for the previous capture.
 
@@ -2702,7 +2702,7 @@ Three times faster than the run it was repeating,
  nothing added,
  nothing removed,
  offer thirty-two,
- dishonest thirty-seven.
+ unsupported thirty-seven.
 The two files are not the same file:
  their hashes differ and sixteen thousand two hundred eighty-nine lines differ between
  them,
@@ -2720,7 +2720,7 @@ Nothing about a change may be inferred from these numbers again without controll
  whatever varies,
  and I have not identified what that is.
 
-The honest statement of what the guard costs is that it is below the noise floor of the
+The sound statement of what the guard costs is that it is below the noise floor of the
  only instrument that has measured it.
 
 ## Stage one, and the boundary check that nearly did not happen in a linted place
@@ -3165,7 +3165,7 @@ writeThroughAliasedResult  withheld
  the offer implies `readonly Row[]`,
  and that annotation permits `rows[0].label = 'x'` because the element type stays mutable.
 By that reading,
- flipping the pin makes the rule withhold an offer that was honest.
+ flipping the pin makes the rule withhold an offer that was sound.
 
 The reading is about what the annotation permits.
 The question is what this analysis already does,
@@ -3235,10 +3235,10 @@ Four captures,
  each compared on all five counters:
 
 ```text
-after stage one       1939  argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
-after stage two       1939  argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
-after the progress fix 1939 argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
-after stage three     1939  argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
+after stage one       1939  argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32
+after stage two       1939  argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32
+after the progress fix 1939 argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32
+after stage three     1939  argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32
 ```
 
 Stage three was the one I expected to move,
@@ -3574,7 +3574,7 @@ Task forty-six,
 
 ```text
 1939 findings before and after
-argument-opacity 1197, receiver-opacity 667, dishonest 37, offer 32, stale-mutates 6
+argument-opacity 1197, receiver-opacity 667, unsupported 37, offer 32, stale-mutates 6
 added 3, all argument-opacity
 removed 3, all argument-opacity
 ```
@@ -3833,8 +3833,8 @@ A zero here is evidence about one syntactic form,
 ### The capture did not come back zero, and the movement is not about closures
 
 ```text
-before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
-after  1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1939: argument-opacity=1197 receiver-opacity=667 unsupported=37 offer=32 stale-mutates=6
+after  1966: argument-opacity=1227 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   83: argument-opacity=80 receiver-opacity=3
 removed 56: argument-opacity=50 receiver-opacity=6
 ```
@@ -3977,8 +3977,8 @@ With the closure branch disabled and nothing else altered,
  the sweep is identical to the enabled one:
 
 ```text
-before 1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1966: argument-opacity=1227 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1966: argument-opacity=1227 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -4054,7 +4054,7 @@ That is what a capture blended across two analyzer versions looks like:
  and the recorded incident of a sidecar rebuilt three minutes into a running sweep is
  exactly how such a blend gets made.
 
-The honest scope of this.
+The sound scope of this.
 Every conclusion in this document that rested on comparing against 1939 rested on a number
  that does not describe the code it named,
  and the affected captures are the ones reading 1939:
@@ -4259,13 +4259,13 @@ A rise on a parameter that never had an offer is a defect,
 
 Receiver opacity must not move at all,
  because nothing here touches receivers.
-Dishonest and stale-mutates must not move either.
+Unsupported and stale-mutates must not move either.
 
 ### The capture, and a criterion I wrote too tightly
 
 ```text
-before 1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1966: argument-opacity=1227 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   3: argument-opacity=3
 removed 2: argument-opacity=2
 ```
@@ -4275,7 +4275,7 @@ Both baselines carry digests,
  trusted.
 
 Receiver opacity,
- dishonest and stale-mutates all held still,
+ unsupported and stale-mutates all held still,
  as registered.
 Offers held still too,
  which the criterion allowed.
@@ -4352,7 +4352,7 @@ That is the soundness statement,
 
 No category other than argument opacity may move.
 Receiver opacity,
- dishonest,
+ unsupported,
  stale-mutates,
  host-capability and the rest are untouched by any of this work,
  and one of them moving means a change reached further than its author thought.
@@ -4549,8 +4549,8 @@ That is a measurement to run before it is an argument,
 ### The capture, and what three zeros in a row mean
 
 ```text
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -4671,7 +4671,7 @@ No assertion can defend it,
  the mutant was right to survive,
  and the cost it avoids is unmeasured.
 Wall clock is the obvious instrument and has already failed twice here,
- so the honest record is that the bound is justified by the mechanism and not by a measurement.
+ so the sound record is that the bound is justified by the mechanism and not by a measurement.
 
 ### The control no assertion could otherwise provide
 
@@ -4686,8 +4686,8 @@ What makes the fixture a test is that the suite completes at all.
 ### The capture
 
 ```text
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -4782,8 +4782,8 @@ The differing thread is what a survivor means:
 ### The capture
 
 ```text
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -4840,7 +4840,7 @@ Write one file where **every** parameter genuinely leaks,
  each with a unique name.
 Then any offer the file draws is a false offer by construction,
  and oxlint names them without any reasoning about the analyzer at all.
-Two controls that must still be offered keep the file honest.
+Two controls that must still be offered keep the file sound.
 
 Fourteen channels,
  and the file drew six offers.
@@ -4932,8 +4932,8 @@ Removing the await from the transparent forms moves the fixture offer count from
 ### The capture, and the first offer this work has moved in the workspace
 
 ```text
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=31 stale-mutates=6
 added   0:
 removed 1: offer=1
 ```
@@ -5074,8 +5074,8 @@ Their tasks were filed from reading rather than from measuring,
 ### The capture, and an over-approximation that turned out to be free
 
 ```text
-before 1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
-after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+before 1966: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=31 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=31 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -5158,8 +5158,8 @@ A fix that removed the false mutation and the withholding together would be a re
 ### The capture
 
 ```text
-before 1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
-after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+before 1966: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=31 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=31 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -5191,8 +5191,8 @@ Re-measured by disabling the spread branch in `passesValueOutward` at current HE
  against the current baseline:
 
 ```text
-before 1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
-after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+before 1966: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=31 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=31 stale-mutates=6
 added   3: argument-opacity=3
 removed 3: argument-opacity=3
 ```
@@ -5227,7 +5227,7 @@ The fixture measurements,
 ## The construction discharge, and the net across the whole effort
 
 The classifier answers what the leaf test could not.
-`honest-readonly` means every reachable
+`sound-readonly` means every reachable
  position is readonly,
  so no write travels through the value whatever a constructor keeps with it,
  while the leaf test answers yes for any array because an array is an object.
@@ -5265,15 +5265,15 @@ Measured against `sweep-51-prefix.txt`,
  digests recorded:
 
 ```text
-before 1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1966: argument-opacity=1227 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   3: argument-opacity=3
 removed 2: argument-opacity=2
 ```
 
 **Offers unchanged.**
 Receiver opacity,
- dishonest and stale-mutates unchanged.
+ unsupported and stale-mutates unchanged.
 One argument-opacity finding gained,
  and two that changed their boundary list rather than
  appearing or leaving.
@@ -5391,8 +5391,8 @@ Three of the four pass-two candidates were real.
 ### The pass-two capture
 
 ```text
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -5509,7 +5509,7 @@ Two candidates turned out to be correct behaviour,
 What this does not establish is that the shape space is closed.
  Each pass has found something,
  so
- the honest reading is that passes are still productive rather than that they are converging.
+ the sound reading is that passes are still productive rather than that they are converging.
  The
  channels covered are listed on task seventy-three so a later reader knows what was actually
  swept.
@@ -5517,8 +5517,8 @@ What this does not establish is that the shape space is closed.
 ### The pass-three capture
 
 ```text
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -5637,8 +5637,8 @@ Check the last of those first,
 ### The capture
 
 ```text
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -5932,8 +5932,8 @@ commit c44ea07ea
 06016e74673c7f2d47a5a0453926780230e72b2790359781b4a488344408f359  plugin index.mjs
 4bb8b08afcd5e7850fecdc2af7dd32da95c25a8ea84c5e061141c95fc16f8617  oxlint sidecar
 
-before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1968: argument-opacity=1229 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+before 1967: argument-opacity=1228 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1968: argument-opacity=1229 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
 added   1: argument-opacity=1
 removed 0:
 ```
@@ -6230,8 +6230,8 @@ commit 6da571326
 90fd87f2161a1ddcc2d8c3548adfddd888b31132d35a268b1a205fb849dcd168  plugin index.mjs
 65f82458808ed5abdc3dec40813316af8c76a4642026c5440709c70744e65b28  oxlint sidecar
 
-before 1968: argument-opacity=1229 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
-after  1999: argument-opacity=1277 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+before 1968: argument-opacity=1229 receiver-opacity=664 unsupported=37 offer=32 stale-mutates=6
+after  1999: argument-opacity=1277 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
 added   133: argument-opacity=129 receiver-opacity=4
 removed 102: argument-opacity=81  receiver-opacity=20 offer=1
 ```
@@ -6318,7 +6318,7 @@ return {
 ```
 
 The closure handed to `.map` does name `capture`,
- so the diagnostic is honest.
+ so the diagnostic is sound.
  The conservative part
  is the same one the lost offer shows:
  what the closure hands back holds only strings read off
@@ -6478,8 +6478,8 @@ Runtime 7m58,
  against 8m42 for the previous sweep.
 
 ```text
-before 1999: argument-opacity=1277 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
-after  2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+before 1999: argument-opacity=1277 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
+after  2004: argument-opacity=1282 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
 added   6: argument-opacity=6
 removed 1: argument-opacity=1
 ```
@@ -6844,8 +6844,8 @@ A returned fact alone must not cost an offer,
 ## The sweep for those three fixes found nothing, and the prediction was wrong
 
 ```text
-before 2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
-after  2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+before 2004: argument-opacity=1282 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
+after  2004: argument-opacity=1282 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
 added   0:
 removed 0:
 ```
@@ -6902,7 +6902,7 @@ The ratio settles it.
  and that caller's parameter otherwise clean.
  None of the 31 is that shape.
 
-So the honest reading is narrow.
+So the sound reading is narrow.
  The sweep confirms the soundness statement,
  that no offer rose,
  and it
@@ -7182,7 +7182,7 @@ Which property was read stays untracked,
  computed key needs no separate handling.
 
 No fixture charges the array-spread clause,
- and the honest reason is that the reachable shape needs a
+ and the sound reason is that the reachable shape needs a
  receiver declaring `Symbol.iterator`,
  which raises a separate untested question about whether a yield
  carries a returned fact.
@@ -7424,7 +7424,7 @@ And the method gains a check that would have produced all six at once.
  none of these five,
  because a hunt pass samples shapes while this samples the code.
 
-The honest limit on it:
+The sound limit on it:
  the audit says which channels lack the capture channel,
  not which of those
  channels a real escape can reach.
@@ -7446,8 +7446,8 @@ Commit `5e7cdfd83`,
  The two doc commits that landed while it ran left both unchanged.
 
 ```text
-before 2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
-after  2005: argument-opacity=1283 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+before 2004: argument-opacity=1282 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
+after  2005: argument-opacity=1283 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
 added   3: argument-opacity=3
 removed 2: argument-opacity=2
 runtime 8m54s
@@ -7503,7 +7503,7 @@ The criterion itself is satisfied on every clause that matters.
  No category other than argument opacity moved:
  receiver opacity held at
  648,
- dishonest at 37,
+ unsupported at 37,
  stale-mutates at 6.
 
 ### The five that moved, each attributed
@@ -7586,7 +7586,7 @@ This is the null sweep's explanation confirmed a second time,
  and says almost nothing
  about the offered minority either way.**
 
-The honest consequence for the criterion.
+The sound consequence for the criterion.
  The clause "offers falling is expected,
  and each fall is
  sampled to its cause" has now gone untested three sweeps running.
@@ -7944,8 +7944,8 @@ Commit `d1586f194`,
  byte-identical after it.
 
 ```text
-before 2005: argument-opacity=1283 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
-after  2006: argument-opacity=1284 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+before 2005: argument-opacity=1283 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
+after  2006: argument-opacity=1284 receiver-opacity=648 unsupported=37 offer=31 stale-mutates=6
 added   1: argument-opacity=1
 removed 0:
 runtime 8m48s
@@ -8158,7 +8158,7 @@ The proof that this is the right reading is already in the repository:
  So the two cases agree.
 
 One implementation constraint follows.
- The `honest-readonly` early return in `recordConstructionHandoff`
+ The `sound-readonly` early return in `recordConstructionHandoff`
  does not prove safety for a capture,
  because it describes writes reaching **through** the handed value and
  not values obtainable by **invoking** a callable that value carries.
@@ -8382,7 +8382,7 @@ The ordering consequence matters more than the finding.
  capture array indexed the same way,
  and stacking a second fact on a broken index would inherit the same
  fail-open twice over.
- Filed unmeasured and honestly so:
+ Filed unmeasured and soundly so:
  it needs an installed package whose shipped
  implementation provably mutates a formal,
  invoked with a spread,
@@ -8435,7 +8435,7 @@ What it needs is a test that fails without it,
  and there are two routes.
  A fixture package whose shipped
  implementation mutates a formal,
- which is the honest end-to-end version.
+ which is the sound end-to-end version.
  Or exporting the mapping helper and
  testing it directly against overlay nodes,
  which is permitted for exactly this and is cheap,
@@ -8518,7 +8518,7 @@ The general point,
  If the corpus
  structurally cannot,
  exporting the unit under test is not a workaround;
- it is the only honest way to hold it
+ it is the only sound way to hold it
  to the same standard as everything else here.
 
 ## The external channel has no coverage at all, which is the finding here
@@ -8635,7 +8635,7 @@ The two come apart because a resolved external summary whose effect sets are all
  A clean external callee is indistinguishable in the capture from one that never
  resolved.
 
-So the honest version of the finding,
+So the sound version of the finding,
  and it is still the finding:
 
 -    The external channel charges nothing anywhere in this workspace,
@@ -9422,7 +9422,7 @@ That delta is worth pausing on.
  because removing a withholding restores a false offer.
  This one kills by **lowering** it,
  because removing a
- precision recovery re-withholds an honest one.
+ precision recovery re-withholds an sound one.
  Both are correct kills and they point in opposite directions,
  so a mutation check read only as "the number moved" would have been satisfied by either.
  Reading which way it
@@ -9726,7 +9726,7 @@ Which means the 156 rejections are member calls whose receiver is **not an impor
  package export identity",
  and that is what it implements.
 
-So the honest statement is that the channel is narrower than "external calls".
+So the sound statement is that the channel is narrower than "external calls".
  It is "calls to package exports
  with a shipped implementation",
  and this workspace makes very few of those.
@@ -10293,7 +10293,7 @@ The remaining gates then pass without special handling.
  so a
  minimal authored lockfile satisfies it.
 
-The honest boundary,
+The sound boundary,
  stated on the test rather than left implied:
  a copied key shape does not prove pnpm would emit
  that key for a package installed this way.
@@ -11262,11 +11262,11 @@ for (const raw of choose ? (rows as unknown as string) : '') {
 ```
 
 Measured,
- with the honest iteration as the control:
+ with the sound iteration as the control:
 
 ```text
 prunedSelector, prunedNullish   referentMutated=[]   opaque=[]
-honestIteration                 referentMutated=[0]  opaque=[]
+soundIteration                 referentMutated=[0]  opaque=[]
 freshContainer                  referentMutated=[]   opaque=[]
 ```
 
@@ -11276,11 +11276,11 @@ an offer is minted from,
  so the hole is real on its own terms.
 
 What decided it was asking which shapes can reach it.
-Every honestly typed spelling attributes correctly:
+Every soundly typed spelling attributes correctly:
 
 ```text
-honestUnion      choose ? rows : 'abc'          referentMutated=[0]
-honestOptional   rows ?? []                     referentMutated=[0]
+soundUnion      choose ? rows : 'abc'          referentMutated=[0]
+soundOptional   rows ?? []                     referentMutated=[0]
 widenedUnknown   const held: unknown = rows     referentMutated=[0]
 ```
 
@@ -12214,7 +12214,7 @@ The collection path passes `elementStepsAttributed: true` because a write throug
 a destructured element,
  an iterated one or a spread one is attributed to the receiver's
 parameter,
- and that attribution is what makes trading the report for tracking honest.
+ and that attribution is what makes trading the report for tracking sound.
 The reader path passes `false`,
  with the note that nothing walks the elements of a call result
 reaching an argument,
@@ -12303,7 +12303,7 @@ Each closes a branch confirmed by reading the source,
  and the workspace
 sweep says each costs nothing.
 None is known to change an outcome on any program,
- and the honest reading is that this
+ and the sound reading is that this
 analysis charges these shapes through several independent paths,
  so removing one wrong
 discharge among them is not observable from the outside.
@@ -12510,7 +12510,7 @@ The unresolved-base guard is rejected earlier by the relation requirement,
  and the cycle guard
 needs an alias cycle that ordinary code reaches only through a temporal dead zone.
 
-The honest summary of the whole sequence is that the claim was right,
+The sound summary of the whole sequence is that the claim was right,
  the retraction was
 wrong,
  and the withdrawal of the retraction was right to reopen it.
@@ -12929,7 +12929,7 @@ is to stop reporting a parameter that is already as readonly as it can be.
 There is precedent for the principle.
 `effect-summaries.unit.test.ts` records the construction channel asking the classifier rather
 than the leaf test,
- on the ground that "`honest-readonly` means every reachable position is
+ on the ground that "`sound-readonly` means every reachable position is
 readonly,
  so no write can travel through the value",
  and `constructFromReadonlyKeys` is not
@@ -12992,7 +12992,7 @@ That is far more than the 57 the earlier text-based estimate suggested,
 instructive:
  the estimate matched declarations that *looked* like readonly arrays,
  while the
-rule asks `classifyReadonlyType` and gets `honest-readonly` for many shapes a regular expression
+rule asks `classifyReadonlyType` and gets `sound-readonly` for many shapes a regular expression
 over source will not recognise.
 The crude instrument undercounted by more than three to one here,
  having overcounted by five to
@@ -13033,7 +13033,7 @@ Its reported input is a rest parameter typed from `Parameters<MatcherSet[K]>`,
 at every level" is not evident from the declaration at all.
 
 So the claim the message makes is precisely `classifyReadonlyType`'s verdict of
-`honest-readonly`,
+`sound-readonly`,
  not an independent assertion about the source text.
 That is the right coupling:
  the sentence cannot disagree with the rule's own reasoning about

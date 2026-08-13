@@ -88,7 +88,7 @@ const UNKNOWN_CALL_REMEDIATION = '\n\nResolve the call by one of these proof-pre
  *
  * Issue #414's complaint in its remaining form. A parameter typed `readonly string[]` that
  * reaches an unresolved call is reported truthfully, and the general remediation list then
- * offers to make the type honest, which it already is. The finding is real, since `readonly`
+ * offers to make the type sound, which it already is. The finding is real, since `readonly`
  * is erased at runtime and an unresolved callee receives a mutable array, but the reader has
  * to be told that the exposure is runtime rather than type-level or the message reads as an
  * instruction they already followed.
@@ -139,7 +139,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
     fixable: 'code',
     hasSuggestions: true,
     docs: {
-      description: 'Require honest readonly parameter types and reject unresolved parameter-reachable effects.',
+      description: 'Require sound readonly parameter types and reject unresolved parameter-reachable effects.',
       recommended: true,
     },
     messages: {
@@ -155,7 +155,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       opaqueCollectionEffect:
         `{{inputSubject}} used as the object for these collection calls: {{boundaries}}.${COLLECTION_CHANGE_EXPLANATION}${COLLECTION_REMEDIATION}`,
-      dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
+      projectedReadonlyCapability: 'Parameter "{{parameterName}}" retains callable capability despite its readonly projection: {{reason}}.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
     },
   },

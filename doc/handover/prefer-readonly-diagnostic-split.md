@@ -19,15 +19,15 @@ The target policies are:
 - a separate audit rule reports unresolved parameter-reachable effects with cause-specific wording.
 
 Effect-summary construction and propagation must remain shared.
-Suppressing a report at an honest-readonly declaration must not remove its charge from mutable callers.
+Suppressing a report at an sound-readonly declaration must not remove its charge from mutable callers.
 
 ## User decisions
 
-The user selected the full split rather than the minimal honest-readonly reporting guard.
+The user selected the full split rather than the minimal sound-readonly reporting guard.
 
 The final shared Oxlint configuration must contain all three rule entries.
 Only `prefer-readonly-parameter-types` remains enabled at `error` initially.
-The dishonest-readonly correctness rule and unresolved-effect audit rule must be set to `off` because the full workspace is
+The projected-readonly-capability correctness rule and unresolved-effect audit rule must be set to `off` because the full workspace is
 not ready for them.
 
 Each disabled configuration entry must have a comment linking to one newly opened GitHub tracking issue.
@@ -117,10 +117,10 @@ Do not implement until the user confirms the grilling session has reached shared
 ## Existing evidence
 
 A detached-worktree prototype at `0d54ea643` added a reporting-only guard for
-`classification.kind === 'honest-readonly'` before `opaqueEffectReport`.
+`classification.kind === 'sound-readonly'` before `opaqueEffectReport`.
 On one matched dependency tree,
 the package lint moved from 118 to 66 `prefer-readonly-parameter-types` errors.
-The guard removed 52 honest-readonly reports.
+The guard removed 52 sound-readonly reports.
 
 The direct control pair in
 `package/test-fixture/oxlint-no-restricted-syntax/src/readonly-result-provenance-invalid.ts`

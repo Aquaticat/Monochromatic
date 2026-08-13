@@ -15,7 +15,7 @@
  * this way. It would not. A `file:` tarball is keyed `name@file:/absolute/path`, and a workspace link is
  * keyed `link:`, so neither reaches the gate. The key shape here is copied from this repository's own
  * `pnpm-lock.yaml`, and the gate under test reads a lockfile rather than an installer, so a copied shape
- * is the honest input. The boundary is worth stating rather than leaving implied.
+ * is the sound input. The boundary is worth stating rather than leaving implied.
  *
  * Driven through the effect summaries rather than through oxlint, which keeps this test about one thing.
  * The end-to-end falsification was run separately, and it produced both halves at once:

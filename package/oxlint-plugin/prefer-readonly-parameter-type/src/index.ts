@@ -76,7 +76,7 @@ initializeSemanticBridge();
 initializeExternalImplementationApi();
 
 /**
- * Oxlint plugin enforcing honest readonly parameter and mutation contracts.
+ * Oxlint plugin enforcing sound readonly parameter and mutation contracts.
  *
  * @example
  * ```typescript

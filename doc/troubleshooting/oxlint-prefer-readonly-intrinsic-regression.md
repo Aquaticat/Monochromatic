@@ -366,7 +366,7 @@ policy decisions rather than mechanical cleanups.
    The rationale already written into `readonlyEffectSelfHostingOverride` applies verbatim to
   every package.
    Broadening `files` to the workspace turns the rule off in practice,
-   which is honest about the
+   which is sound about the
   current information limit but abandons the guarantee the rule exists to provide.
 - Restore a minimal ECMAScript-intrinsic authority.
    Directly contradicts the audited constraint that no handwritten

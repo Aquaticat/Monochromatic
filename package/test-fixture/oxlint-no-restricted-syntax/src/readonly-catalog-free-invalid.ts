@@ -11,7 +11,7 @@ import {
 } from './readonly-external.fixture.js';
 
 /**
- * Reads honestly readonly data.
+ * Reads soundly readonly data.
  *
  * @param state - Immutable caller state.
  */
