@@ -230,6 +230,44 @@ So the prototype clears the bar that matters most and fails on a name, which is
  the same class the declared-names rule already handles for subjects and does
  not yet handle for contributors.
 
+## The section aligner turned out to need this decision too
+
+Added 2026-08-12, after `#71`'s aligner was measured against the pin.
+
+The aligner works. On `XingZ60` it pairs every section correctly, anchored by
+ three headings whose Latin names match outright, and it reports the two
+ genuinely untranslated sections as UNPAIRED rather than placing them somewhere.
+Today's proportional fallback slides all of that by two.
+
+Wiring it in is nonetheless blocked, and on this document's question rather than
+ on any remaining code.
+The pairable sections improve unambiguously.
+The unpaired ones need a destination, and both destinations available today are
+ ones the pipeline handles badly:
+
+-   Pairing an unpaired section with an EMPTY target survives.
+    `subdivideChunkPair` was run on exactly that and returned ONE slice carrying
+    915 characters of original against nothing.
+    That is the pathological shape recorded already: slicing is driven by the
+    pairing, so a section with no translation cannot be subdivided and arrives
+    whole, precisely where the work is largest, and the critics then file
+    omission after omission against text that is not there.
+-   Skipping the section is honest about what is known, and means source content
+    reaches no stage at all.
+    That contradicts `doc/decision/translation-repair-output-goal.md`, which
+    decided the pipeline yields a good translation of the ORIGINAL even where
+    the translation fed in does not make sense.
+
+Under option B both disappear, because an unpaired section is simply a slice
+ whose existing translation is empty, and every slice is translated regardless.
+Under option C the coverage check is what fills it.
+Under option A the section is exactly the sparse case the classifier routes.
+
+So the aligner is a reason to settle this document sooner, not a separate
+ decision.
+The measurement is durable either way: it is recorded in `#71` and the
+ tie-break defect it exposed is fixed and tested.
+
 ## What exists already
 
 `translate-wire.ts` and the `translate-probe` task are committed, called by
