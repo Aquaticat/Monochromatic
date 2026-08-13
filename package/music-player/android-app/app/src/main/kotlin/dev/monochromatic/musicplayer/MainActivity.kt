@@ -2668,10 +2668,10 @@ private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
 // ```
 /** Returns content-width Chromium-like selected-tab silhouette. */
 private fun chromiumTabShape(): GenericShape = GenericShape { size, _ ->
-    /** Holds measured shoulder width relative to 50dp tab height. */
-    val shoulder: Float = size.height * 12f / 50f
-    /** Holds measured upper-corner radius relative to 50dp tab height. */
-    val radius: Float = size.height * 10f / 50f
+    /** Holds Chromium's 12dp shoulder relative to 35dp tab height. */
+    val shoulder: Float = size.height * 12f / 35f
+    /** Holds Chromium's 10dp upper corner relative to 35dp tab height. */
+    val radius: Float = size.height * 10f / 35f
     /** Holds right-side edge before outward shoulder. */
     val rightEdge: Float = size.width - shoulder
     moveTo(0f, size.height)
@@ -2762,15 +2762,15 @@ private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresent
         color = colors.ink,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(horizontal = 24.dp),
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.padding(horizontal = 20.dp),
     )
     if (options.selected) {
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .height(2.dp)
+                .height(1.dp)
                 .background(colors.active),
         )
     } else {
@@ -2786,8 +2786,8 @@ private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresent
         Box(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .width(1.dp)
-                .height(24.dp)
+                .width(2.dp)
+                .height(16.dp)
                 .background(colors.divider),
         )
     }
@@ -2812,7 +2812,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
         Modifier
             .clip(tabShape)
             .background(colors.active)
-            .border(1.5.dp, colors.activeOutline, tabShape)
+            .border(1.dp, colors.activeOutline, tabShape)
     } else {
         Modifier
     }
@@ -2820,7 +2820,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
         modifier = Modifier
             .widthIn(max = options.maximumWidth)
             .width(IntrinsicSize.Max)
-            .height(58.dp)
+            .height(41.dp)
             .selectable(
                 selected = options.selected,
                 role = Role.Tab,
@@ -2832,7 +2832,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .width(IntrinsicSize.Max)
-                .height(50.dp)
+                .height(35.dp)
                 .then(stateModifier),
         ) {
             chromiumPageTabContent(

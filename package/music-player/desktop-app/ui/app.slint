@@ -216,9 +216,8 @@ component SegmentedControls inherits Rectangle {
     }
 }
 
-// A measured Chromium tab: 50px tall under 8px of tab-strip headroom,
-// with a 10px top radius, 12px outward shoulders, a 1.5px contour,
-// and the reference's left-aligned label spacing.
+// Chromium's logical metrics: a 35px tab below 6px strip padding,
+// 10px top corners, 12px outward shoulders, 1px contour, and 20px insets.
 component ChromiumTab inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
@@ -229,30 +228,30 @@ component ChromiumTab inherits Rectangle {
     private property <color> divider-color: Palette.foreground.with-alpha(0.25);
     private property <color> ink-color: Palette.foreground;
     horizontal-stretch: 0;
-    width: min(chromium-label.preferred-width + 48px, root.max-width);
-    height: 58px;
-    preferred-height: 58px;
+    width: min(chromium-label.preferred-width + 40px, root.max-width);
+    height: 41px;
+    preferred-height: 41px;
     background: transparent;
 
     if !root.selected && chromium-touch.has-hover: Rectangle {
         x: 12px;
-        y: 12px;
+        y: 6px;
         width: parent.width - 24px;
-        height: 42px;
-        border-radius: 8px;
-        background: Palette.color-scheme == ColorScheme.dark ? #363636 : #e9eaed;
+        height: 35px;
+        border-radius: 10px;
+        background: Palette.accent-background.with-alpha(0.12);
     }
 
     if root.selected: Path {
-        y: 8px;
+        y: 6px;
         width: parent.width;
-        height: 50px;
+        height: 35px;
         viewbox-width: root.width / 1px;
-        viewbox-height: 50;
+        viewbox-height: 35;
         fit: fill;
         fill: root.active-color;
-        MoveTo { x: 0; y: 50; }
-        CubicTo { control-1-x: 6; control-1-y: 50; control-2-x: 12; control-2-y: 44; x: 12; y: 38; }
+        MoveTo { x: 0; y: 35; }
+        CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
         LineTo { x: 12; y: 10; }
         QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
         LineTo { x: root.width / 1px - 22; y: 0; }
@@ -262,32 +261,32 @@ component ChromiumTab inherits Rectangle {
             x: root.width / 1px - 12;
             y: 10;
         }
-        LineTo { x: root.width / 1px - 12; y: 38; }
+        LineTo { x: root.width / 1px - 12; y: 23; }
         CubicTo {
             control-1-x: root.width / 1px - 12;
-            control-1-y: 44;
+            control-1-y: 29;
             control-2-x: root.width / 1px - 6;
-            control-2-y: 50;
+            control-2-y: 35;
             x: root.width / 1px;
-            y: 50;
+            y: 35;
         }
-        LineTo { x: 0; y: 50; }
+        LineTo { x: 0; y: 35; }
         Close {}
     }
 
     if root.selected: Path {
-        y: 8px;
+        y: 6px;
         width: parent.width;
-        height: 50px;
+        height: 35px;
         viewbox-width: root.width / 1px;
-        viewbox-height: 50;
+        viewbox-height: 35;
         fit: fill;
         fill: transparent;
         stroke: root.active-outline-color;
-        stroke-width: 1.5px;
+        stroke-width: 1px;
         stroke-line-cap: round;
-        MoveTo { x: 0; y: 50; }
-        CubicTo { control-1-x: 6; control-1-y: 50; control-2-x: 12; control-2-y: 44; x: 12; y: 38; }
+        MoveTo { x: 0; y: 35; }
+        CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
         LineTo { x: 12; y: 10; }
         QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
         LineTo { x: root.width / 1px - 22; y: 0; }
@@ -297,14 +296,14 @@ component ChromiumTab inherits Rectangle {
             x: root.width / 1px - 12;
             y: 10;
         }
-        LineTo { x: root.width / 1px - 12; y: 38; }
+        LineTo { x: root.width / 1px - 12; y: 23; }
         CubicTo {
             control-1-x: root.width / 1px - 12;
-            control-1-y: 44;
+            control-1-y: 29;
             control-2-x: root.width / 1px - 6;
-            control-2-y: 50;
+            control-2-y: 35;
             x: root.width / 1px;
-            y: 50;
+            y: 35;
         }
     }
 
@@ -317,20 +316,20 @@ component ChromiumTab inherits Rectangle {
 
     if !root.selected && root.show-divider: Rectangle {
         x: parent.width - 1px;
-        y: 21px;
-        width: 1px;
-        height: 24px;
+        y: 16px;
+        width: 2px;
+        height: 16px;
         border-radius: 1px;
         background: root.divider-color;
     }
 
     chromium-label := Text {
-        x: 24px;
-        y: 8px;
-        width: parent.width - 48px;
-        height: 50px;
+        x: 20px;
+        y: 6px;
+        width: parent.width - 40px;
+        height: 35px;
         text: root.text;
-        font-size: 15px;
+        font-size: 13px;
         vertical-alignment: center;
         horizontal-alignment: left;
         overflow: elide;
