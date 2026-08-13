@@ -85,9 +85,24 @@ The other three start at `off`,
 share the tracking-issue comment,
 and eventually move directly to `error`.
 
+Further policy decisions:
+
+- readiness may use a reviewed acceptance manifest;
+  accepted entries require stable site fingerprints and stale-entry detection;
+- readiness also includes fixes,
+  verified intrinsic or effect modeling,
+  and accurate effect contracts;
+- `no-readonly-parameter-mutations` reports only proved reachable mutations through readonly parameters;
+- projected readonly types retaining unresolved callable capabilities belong to
+  `no-opaque-parameter-effects`,
+  even when the callable body does not invoke them.
+
+This evidence routing replaces the old type-level classification grouping.
+The mutation rule must never report a mutation that analysis has not proved.
+
 Open decision:
 
-- readiness criteria and acceptance mechanism recorded by the new tracking issue.
+- whether implementation completion closes issue #422 or leaves it open until deferred enforcement.
 
 Do not implement until the user confirms the grilling session has reached shared understanding.
 
