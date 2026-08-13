@@ -174,3 +174,64 @@ The handover records the second productive question of the previous stretch as
 
 A committed fix with a passing test suite is not evidence that the pipeline
  uses the code it fixed.
+
+## The same check, run systematically
+
+The aligner was found by asking whether a built feature fires. Asking it of
+ every module rather than one turns up two more cases.
+
+Method: walk imports from the real entry points, `repair-translation.ts` and
+ the `corpus-run/` drivers, and do NOT traverse the barrel files. Barrels
+ re-export without depending, so a traversal that walks through them reports
+ every module reachable, which is the first answer this produced and it was
+ worthless. The control that makes the result meaningful is
+ `align-sections-order.ts`, which is independently known to be uncalled and
+ must therefore appear.
+
+```text
+  155 source modules, 146 reachable, 8 unreachable
+
+  align-sections-order.ts     imported by nothing but barrels
+  heading-affinity.ts         imported only by align-sections-order.ts
+  derivability-probe.ts       imported only by recall-barrel.ts
+  derivability-wire.ts        imported by derivability-probe.ts and recall-barrel.ts
+  probe-barrel.ts             re-export layer
+  recall-barrel.ts            re-export layer
+  refine-barrel.ts            re-export layer
+  sheet-barrel.ts             re-export layer
+```
+
+Four are pure re-export layers and are fine. The other four are two features.
+
+### The derivability probe is also unwired
+
+`runDerivabilityProbe` was added in `616264bdb`. Its own header describes what
+ it is for: an ensemble audit of whether deleted sentences are fully derivable
+ from the Chinese source, whose only power is to EXCUSE a partial restoration,
+ with the median deliberately rounded toward more derivable so the burden of
+ proof sits on the excuse.
+
+Nothing calls it. `recall-benchmark.ts`, the driver behind the
+ `recall-benchmark` task, imports its dependencies individually rather than
+ through a barrel and never mentions derivability. The restoration judge beside
+ it IS reached; the derivability probe is not.
+
+The consequence is specific rather than cosmetic: recall measurements charge a
+ partial restoration against the pipeline even where the deleted sentence was
+ not derivable from the source, which is exactly the case this probe was built
+ to excuse. Any recall figure taken so far was computed without it.
+
+Whether that is a defect or a deliberate pause is not something the code says.
+It is raised here rather than answered.
+
+### Why this shape of defect is invisible
+
+All three features are exported from `index.ts`, so a consumer outside the
+ package could import them and nothing looks dead. All three have passing unit
+ tests, so coverage does not fall. Neither `tsc` nor the linter objects to an
+ export with no internal consumer, because that is the normal shape of a public
+ API.
+
+The cheap guard is the walk above, rooted at the entry points and refusing to
+ traverse barrels. It takes a second to run and would have caught `110fc3909`
+ the day it landed.
