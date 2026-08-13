@@ -7169,8 +7169,19 @@ Run-to-run spread is real and worth carrying: the damaged withheld arm gave 7 of
  rate should be read as a band, not a point.
 
 CAVEAT, and it is why run 003 exists: run 002's controls were NOT matched on
- replaced length. They replaced 12 to 63 characters where the damaged regions
- replaced 60 to 268, and a shorter replacement has less room to drop anything,
- so part of the control's quiet may be length rather than the absence of damage.
+ replaced length, and the gap is measured rather than suspected.
+
+```text
+damaged  n=5   60, 79, 99, 189, 268                          median  99, mean 139.0
+control  n=10  12, 14, 32, 32, 41, 54, 63, 69, 69, 316       median  41, mean  70.2
+```
+
+Seven of the ten controls replaced less text than the SMALLEST damaged region,
+ and a shorter replacement has less room to drop anything, so the control's
+ quiet is partly a statement about length.
+An earlier note in this document gave the control range as 12 to 63 characters;
+ that was read off the first four lines before the run finished, and the full
+ range is 12 to 316.
 Control selection now orders unflagged regions by distance from the damaged
- region's replaced length in the same entry.
+ region's replaced length in the same entry, which removes the gap by
+ construction rather than hoping it does not matter.
