@@ -310,3 +310,92 @@ The derivability claim rested on a search for the word "derivability", which
  specifically, the only consumer outside the module's own files is
  `recall-barrel.ts`, and neither `repair-benchmark.ts` nor
  `restoration-judge.ts` mentions it at all.
+
+## Prototyped, and the first two attempts were wrong
+
+The ranking above left one thing open: whether the heading-to-chunk adapter is
+ a few lines or enough code to change the answer. It was built against the
+ already-exported `chunkByHeadings` and `alignHeadings`, with no package change
+ and no rebuild, and compared to `alignDocumentSections` across all 92 entries.
+
+Comparing by chunk INDEX is useless here and was the first mistake: a merged
+ pair reports its first chunk's index, so the merge that is the whole defect is
+ invisible. Every result below compares the first non-blank LINE of each side.
+
+### Attempt one: pair preamble with preamble, then offset by one
+
+Fixes `XingZ60`, breaks FIVE entries. When one side has a preamble and the
+ other does not, the separate preamble rule shifts everything after it, so
+ `XIEPT2`, `interrgned` and `noname` all slide by one, and `Hangmster` and
+ `yingying` have a correct single pair split into two gaps.
+
+### Attempt two: give the preamble an empty label and let the aligner place it
+
+Fixes `XingZ60`, breaks `XIEPT2`. Better, and still wrong, for a reason worth
+ keeping: `headingAffinity` scores only shared Latin tokens of three or more
+ characters, so between a Chinese heading and its English translation the
+ affinity is ZERO. With every score zero the alignment is decided entirely by
+ the gap-placement tiebreak, and `110fc3909` put gaps at the end. `XingZ60`
+ needs its gap at the end. `XIEPT2` needs one at the front, because the English
+ carries a `(To-Do)` preamble the Chinese has no counterpart for.
+
+A tiebreak cannot be right for both. The aligner needs a signal.
+
+### Attempt three: let the label carry the structure
+
+Heading DEPTH and preamble-ness are free, deterministic, and already present.
+Feeding them in as a token the existing affinity can see:
+
+```ts
+const DEPTH_TOKEN = ['hdga', 'hdgb', 'hdgc', 'hdgd', 'hdge', 'hdgf',];
+const PREAMBLE_TOKEN = 'pream';
+
+// One label per chunk: a preamble chunk cannot look like a heading chunk, and
+// two headings agree on structure only at the same depth.
+function chunkLabels({ document, },) {
+  return chunkByHeadings({ document, },).map(function toLabel(chunk,) {
+    const first = firstNonBlankLine({ text: chunk.text, },);
+    const depth = headingDepth({ text: first, },);
+    return (depth === null)
+      ? PREAMBLE_TOKEN
+      : `${DEPTH_TOKEN[depth - 1]} ${headingTextOf({ line: first, },)}`;
+  },);
+}
+```
+
+Result over all 92 entries: 90 identical to production, 2 changed, 0 regressed.
+
+```text
+  XIEPT2
+    production  ## 经历=(To-Do) | ## 遇见=## Meeting | ## 阴影=## Shadow | ...
+    prototype   x=(To-Do) | ## 经历=## Experience | ## 遇见=## Meeting | ...
+
+  XingZ60
+    production  ### 其一：伊良子=## Engagement in Trans | ### 其三：绘都=### Irako | ...
+    prototype   ### 其一：伊良子=### Irako | ### 其二：铃语=### Lingyu | ...
+```
+
+`XingZ60` becomes correct. `XIEPT2` becomes MORE correct than production: the
+ English `(To-Do)` preamble is left unpaired instead of absorbing `经历`, and
+ `经历` pairs with `Experience` where it belongs. Three unpaired sections are
+ produced corpus-wide, all of them real.
+
+### What this changes about the options
+
+Option B is confirmed as the right direction and is more than wiring, in a way
+ that is now measured rather than guessed: it needs the chunk-label adapter
+ above AND a structural component in the affinity. Both are small, and the
+ combination is a strict improvement on every entry at this pin.
+
+The structural token as prototyped rides inside the label string, which works
+ because affinity is shared-token based, but is a hack. A real change should
+ give `headingAffinity` the depth explicitly rather than smuggling it through
+ text.
+
+Option C is now clearly worse than it looked. Its trailing-surplus assumption
+ is exactly what attempt two implemented, and `XIEPT2` is the counterexample
+ sitting in the corpus: a gap that belongs at the FRONT.
+
+So the ranking stands at B > C > A, and the margin is wider than the earlier
+ correction suggested, not narrower. The blocker is unchanged: three unpaired
+ sections still need the destination `#70` owes them.
