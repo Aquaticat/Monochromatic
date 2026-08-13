@@ -1,8 +1,38 @@
-# The correct section aligner exists and nothing calls it
+# Two features were built and never wired, and what to do about the aligner
 
 Measured 2026-08-13 against the current build, at pin
  `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
 This is a PROPOSAL. Nothing here is decided, and nothing has been landed.
+
+## Verdict, in short
+
+`alignHeadings` is a working section aligner that nothing calls, so `#71` is
+ still live: production merges source sections from the front and slides
+ `XingZ60` by two.
+
+The fix is a chunk-label adapter plus ONE new scoring term, a penalty applied
+ when exactly one side of a candidate pair is a preamble chunk, valued strictly
+ between zero and `-2 * GAP_PENALTY`. `headingAffinity` itself stays untouched,
+ which is what keeps the shared-name signal intact.
+
+Validated across 92 corpus entries: 90 identical to production, 2 changed,
+ 0 regressed. `XingZ60` becomes correct and `XIEPT2` becomes better than
+ production. Four of five invented cases pass; the fifth, a middle gap in a
+ document sharing no evidence anywhere, is undecidable rather than wrong.
+
+Ranked B > C > A. BLOCKED on `#70`: the fix produces three unpaired sections
+ corpus-wide that need a destination, and it invalidates the slice cache
+ totally.
+
+The derivability probe is the OTHER unwired feature, and it is blocked on
+ nothing. Wiring it is additive, adding a third recall figure beside strict and
+ lenient without changing either, so it can be decided on its own and is the
+ cheaper of the two to act on.
+
+Everything below is supporting evidence, including three prototype attempts
+ that were wrong. The attempt history is kept deliberately: attempt three
+ passed the entire corpus and was still wrong about its own mechanism, which is
+ the most transferable thing here.
 
 ## The finding
 
