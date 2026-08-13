@@ -38,7 +38,9 @@ export {
 } from './prefer-readonly-parameter-types/effect-final-index-cache.ts';
 
 export {
+  readonlySourceEvidence,
   readonlySourceEvidenceCacheStats,
+  type ReadonlySourceEvidence,
   type ReadonlySourceEvidenceCacheStats,
 } from './prefer-readonly-parameter-types/readonly-source-evidence.ts';
 

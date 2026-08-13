@@ -1521,7 +1521,7 @@ await describe({
          * that needs no collection member call at all: a parameter placed straight into
          * an object literal, mutated by the callee through a property its `@mutates`
          * blocks omit. Measured before the fix, `directRestrictedRowEffect` reported
-         * `mutated=[]` and the rule emitted `Parameter "row" should be readonly:
+         * `mutated=[]` and the rule emitted `Parameter "row" can be deeply readonly:
          * property label is writable` while the callee wrote `row.label`. */
         expect(omittedProperty,).toEqual([0,],);
         expect(omittedLookup,).toEqual([0,],);

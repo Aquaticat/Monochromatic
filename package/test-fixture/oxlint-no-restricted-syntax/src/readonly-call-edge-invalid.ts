@@ -3,7 +3,7 @@
  *
  * Each function here is a hypothesis about the positional call-edge model, kept in one
  * file so a single lint run says which of them the rule currently gets wrong. Any
- * `should be readonly` offer in this file names a parameter some callee writes.
+ * `can be deeply readonly` offer in this file names a parameter some callee writes.
  *
  * @module
  */

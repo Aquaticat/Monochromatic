@@ -167,7 +167,40 @@ restore,
 or otherwise disturb it.
 
 The investigation's detached worktree has been removed.
-No implementation source changes have started.
+Implementation has started.
+
+Landed commits:
+
+- `c7d176520` adds neutral diagnostic-language policy `DNL` to `AGENTS.md` and generated `CLAUDE.md`;
+- `d81af397a` replaces moralized readonly terminology with `deep-readonly` and
+  `projected-readonly-capability` across current readonly code,
+  fixtures,
+  and documentation;
+- `28d82a8f9` adds the four public rules,
+  category-neutral callable and source evidence,
+  a semantic-source evidence cache,
+  and thin category reporters.
+
+The first package unit run confirmed the legacy fixture enabled only the preference rule.
+The dedicated fixture now enables all four rules,
+and the external-worker test enables the opaque-effect rule it measures.
+
+A later unit run passed every package suite except four assertions whose old totals assumed early-return suppression between
+policy categories.
+Measured deltas are intentional:
+opaque inputs carrying stale contracts now receive both independent diagnostics,
+and invalid host-capability boundaries receive both unresolved-effect and missing-contract diagnostics.
+Those assertions are being updated with rule-ownership checks rather than count-only acceptance.
+
+New coverage in progress:
+
+- one fixture with exactly one finding owned by each public rule;
+- a projected unresolved capability that must not appear under the mutation rule;
+- direct evidence-cache counters proving one computation plus three hits across four distinct contexts;
+- the existing readonly-to-mutable propagation pair now asserts ownership by
+  `no-opaque-parameter-effects`.
+
+Shared configuration remains untouched as required until implementation and verification are otherwise complete.
 
 ## Planned verification
 

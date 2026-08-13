@@ -21,8 +21,8 @@
  * The end-to-end falsification was run separately, and it produced both halves at once:
  *
  * ```text
- * consumer.ts:15: ... used by these calls: capture-retainer-probe@1.0.0 . retainCallback
- * consumer.ts:25: Parameter "config" should be readonly: property row is writable.
+ * consumer.ts:15: ... is exposed to these unresolved calls: capture-retainer-probe@1.0.0 . retainCallback
+ * consumer.ts:25: Parameter "config" can be deeply readonly: property row is writable.
  * ```
  *
  * That run needed `--threads=1` at the time, because the whole external channel was then failing with
@@ -428,7 +428,7 @@ await describe({
       fn: async () => {
         /* The callable handing a closure to a package that keeps it was offered `readonly` before
          * `recordExternalCaptureOpacity`. That was a false offer rather than an imprecision: the rule
-         * wrote `Parameter "config" should be readonly: property row is writable.` under
+         * wrote `Parameter "config" can be deeply readonly: property row is writable.` under
          * `oxlint --threads=1`, and the retained closure hands back the caller's own row.
          *
          * The proof callables carry the other half, and they are why the subject means anything. If any
@@ -598,7 +598,7 @@ await describe({
          * the subject's. Retention reaches an opaque formal and invocation reaches an invoked one, so
          * deleting invocation from `exposingFormals` leaves every other line here passing while this
          * false offer returns. Measured as a false offer in its own right: this reported
-         * `Parameter "config" should be readonly` under `oxlint --threads=1` before the channel
+         * `Parameter "config" can be deeply readonly` under `oxlint --threads=1` before the channel
          * existed. */
         expect(invokedCapture,).toEqual([0,],);
         /* The precision the per-formal charge exists for, and the pair that would fail if captures were

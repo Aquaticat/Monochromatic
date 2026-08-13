@@ -261,7 +261,7 @@ snapshots:
           '**/dist',
           '**/node_modules',
         ],
-        rules: { 'prefer-readonly-parameter-type/prefer-readonly-parameter-types': 'error', },
+        rules: { 'prefer-readonly-parameter-type/no-opaque-parameter-effects': 'error', },
       },
       null,
       2,

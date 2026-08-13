@@ -9,7 +9,7 @@
  *
  * Falsified against a dependency written for the purpose, in
  * `external-capture-channel.unit.test.ts`. The rule offered
- * `Parameter "config" should be readonly: property row is writable.` for a callable handing
+ * `Parameter "config" can be deeply readonly: property row is writable.` for a callable handing
  * `(): Row => config.row` to a package export that pushes it into a module-level array, while a sibling
  * callable in the same file reported that export by name and version, so the external path had provably
  * run.
