@@ -97,6 +97,27 @@ Proposed: a deterministic preservation check at the apply gate, independent of
 any model. Every source-supported sentence present before an edit must still be
 represented after it.
 
+BUILT 2026-08-13, and calibrated rather than tuned by taste. `checkPreservation`
+in `package/module/translation-repair/src/preservation-check.ts` states the rule
+as: everything in the replaced text that no accepted issue quoted as defective
+must still be present afterwards. What an issue DID quote is licensed to vanish,
+since changing it is the point of the edit.
+
+Measured on the 50 drawn repairs of this very round, 34 of them graded: it
+rejects both damage regions and one wholesale deletion, and rejects NONE of the
+29 repairs graded sound. The threshold sits in a measured gap, not on a round
+number, since the worst sound repair loses 57% of its unlicensed tokens and the
+deletion loses 92%.
+
+It is NOT yet wired into `applyPatchOperations`. Envelopes carry `issueIds` but
+not the quoted defect text, so the quotes have to be threaded to the apply site
+before the check can gate anything.
+
+WHAT IT CANNOT DO, so nobody expects it to: rewording is not deletion. The edit
+that turned "reminiscing" into "pleading" is real damage and passes, because the
+sentence is still there. Item 37 therefore remains a safety failure this gate
+does not catch, and tuning the gate until it fired would cost sound repairs.
+
 Sized honestly, that is TWO regions rather than five items: positions 2, 7, 11
 and 15 are one Acheron edit drawn four times, and 21 is a second. The 50 drawn
 items sit on 40 distinct regions in total, so every per-item rate in this
