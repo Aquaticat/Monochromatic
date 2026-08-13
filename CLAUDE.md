@@ -1332,6 +1332,17 @@ VUB:
  After building/deploying/installing artifact,
  verify by exercising it the way an end user would.
 
+PRF:
+ Read every generated artifact end to end before handing it to a human.
+Judge whether its CONTENT answers the question asked;
+ a generator that ran is not evidence its output makes sense.
+
+PR2:
+ Grading sheets especially:
+ read the items and the reasoning shown to the grader.
+Wrong framing produces gradeable-looking items that measure nothing,
+ and a human's hours are spent before anyone notices.
+
 VB1:
  Server:
  confirm correct responses,
