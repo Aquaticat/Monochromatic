@@ -6,6 +6,10 @@ import {
 } from '../chunk-document.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { parseDocument, } from '../parse-document.ts';
+import {
+  SLICE_CHAR_BUDGET,
+  subdivideChunkPair,
+} from '../slice-pair.ts';
 import { gatherStageVoices, } from '../stage-quorum.ts';
 import {
   buildTranslateMessages,
@@ -50,6 +54,18 @@ const SPARSE_RATIO = 0.25;
  * Decimal places a coverage ratio prints with.
  */
 const RATIO_DIGITS = 3;
+
+/**
+ * Slices translated in one probe run.
+ *
+ * The first attempt asked for a whole 4641-character section in one call and
+ * lost two voices of three: one timed out at six minutes, one returned
+ * schema-invalid output. Editors in this pipeline work on regions of median 75
+ * characters and at most 562, so that call was eight times larger than anything
+ * the stage has ever been asked for. A translate stage would run at SLICE
+ * granularity like every other stage, and this now does.
+ */
+const PROBE_SLICES = 3;
 
 /**
  * Share of a pair's source blocks the translation covers.
@@ -197,71 +213,97 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Sheet the translators read.
-   */
-  const plan = buildTranslateMessages({
-    sourceText: sourceSection,
-    existingText: targetSection,
-  },);
-
-  /**
-   * Translator voices over this section.
-   */
-  const gather = await gatherStageVoices({
-    client: createRunClient(),
-    modelIds: RUN_MODELS.editorModelIds,
-    messages: plan.messages,
-    signal: AbortSignal.timeout(RUN_PER_CALL_TIMEOUT_MS * 2,),
-    exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-    responseFormat: TRANSLATE_RESPONSE_FORMAT,
-    validate: isTranslateReportWire,
-    stage: 'translate-probe',
-    l,
-  },);
-
-  /**
-   * Voices heard, against the roster asked.
-   */
-  const {
-    voices,
-    findings,
-  } = gather;
-
-  /**
-   * How many spoke.
-   */
-  const heard = voices.length;
-
-  /**
-   * Roster the stage asked.
+   * Roster the stage asks.
    */
   const { editorModelIds, } = RUN_MODELS;
 
   /**
-   * Roster size for the same line.
+   * Paragraph-bound slices of this section, exactly as the pipeline cuts them.
    */
-  const asked = editorModelIds.length;
-  console.log(`TRANSLATE ${String(heard,)}/${String(asked,)} voices heard`,);
-  for (const voice of voices) {
+  const slices = subdivideChunkPair({
+    pair: sparsest,
+    sourceText,
+    targetText,
+    baseIndex: 0,
+    budget: SLICE_CHAR_BUDGET,
+  },);
+  console.log(
+    `TRANSLATE section subdivides into ${String(slices.length,)} slices; probing the first ${String(PROBE_SLICES,)}`,
+  );
+
+  /* oxlint-disable no-await-in-loop -- sequential by design so this never competes with a running corpus pass for per-model stream slots */
+  for (const slice of slices.slice(
+    0,
+    PROBE_SLICES,
+  )) {
     /**
-     * Rendered English from this voice.
+     * Texts of this slice.
      */
-    const { translation, } = voice.value;
+    const { text: sliceSource, } = slice.source;
 
     /**
-     * Blocks the rendered English parses to, which is the number worth
-     * comparing against the source side.
+     * Translation side, empty where the section was never translated.
      */
-    const { nodes: renderedNodes, } = parseDocument({ text: translation, },);
+    const { text: sliceTarget, } = slice.target;
     console.log(
-      `\n===== ${voice.modelId}: ${String(translation.length,)} chars, ${
-        String(renderedNodes.length,)
-      } blocks =====`,
+      `\n--- slice: ${String(sliceSource.length,)} source chars, ${
+        String(sliceTarget.length,)
+      } target chars ---`,
     );
-    console.log(translation,);
+    console.log(`SOURCE: ${sliceSource}`,);
+
+    /**
+     * Sheet the translators read for this slice.
+     */
+    const plan = buildTranslateMessages({
+      sourceText: sliceSource,
+      existingText: sliceTarget,
+    },);
+
+    try {
+      /**
+       * Translator voices over this slice.
+       */
+      const gather = await gatherStageVoices({
+        client: createRunClient(),
+        modelIds: editorModelIds,
+        messages: plan.messages,
+        signal: AbortSignal.timeout(RUN_PER_CALL_TIMEOUT_MS,),
+        exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+        responseFormat: TRANSLATE_RESPONSE_FORMAT,
+        validate: isTranslateReportWire,
+        stage: 'translate-probe',
+        l,
+      },);
+
+      /**
+       * Voices heard for this slice.
+       */
+      const {
+        voices,
+        findings,
+      } = gather;
+      console.log(
+        `HEARD ${String(voices.length,)}/${String(editorModelIds.length,)}`,
+      );
+      for (const voice of voices) {
+        /**
+         * Rendered English from this voice.
+         */
+        const { translation, } = voice.value;
+        console.log(`  ${voice.modelId}: ${translation}`,);
+      }
+      for (const finding of findings)
+        console.log(`  finding: ${finding}`,);
+    }
+    catch (error) {
+      // Reported rather than fatal. The first run died on an uncaught timeout
+      // and lost every slice after it, which turns one slow call into no
+      // measurement at all.
+      console.log(`  SLICE FAILED: ${String(error,)}`,);
+    }
   }
-  for (const finding of findings)
-    console.log(`TRANSLATE finding: ${finding}`,);
+  /* oxlint-enable no-await-in-loop */
 }
 
 await main();
