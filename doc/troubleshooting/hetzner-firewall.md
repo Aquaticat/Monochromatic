@@ -795,8 +795,10 @@ for _, destinationIP := range tfRule["destination_ips"].(*schema.Set).List() {
 
 The diagnosis and prototype fix were verified against repository commit
 `7fab53e54bddfca7ea2f3b19313683785a059bcb`
-before investigation-only scope was restored by commit `866747c1b`,
-OpenTofu 1.12.5,
+before investigation-only scope was restored by commit `866747c1b`.
+The requested `apt.syncthing.net` change then landed on main in commit
+`1f507bb7d`.
+Verification used OpenTofu 1.12.5,
 hcloud provider 1.60.1,
 and hcloud provider source tag `v1.60.1` at commit
 `96c590b233cf51fb308e7b8eb56b3ef23a81944c`.
@@ -855,13 +857,10 @@ and the OpenTofu and TypeScript gates passed.
 
 ### Verified workaround
 
-The prototype from commit `7fab53e54`,
-reverted by `866747c1b` to preserve investigation-only scope,
-replaces `syncthing_apt_ips` with `syncthing.net` and
+Commit `1f507bb7d` replaces `syncthing_apt_ips` with
 `apt.syncthing.net` in `local.resolvable_hostnames`.
 It also adds current `/32` and `/128` seeds to
 `package/config/tofu/src/seed_resolved_hosts.json`.
-With that patch,
 `resolve_hosts.ts` unions those seeds with fresh DNS and its local
 accumulation cache before the firewall widens and emits the destinations.
 
@@ -872,8 +871,8 @@ so this fixes freshness rather than narrowing the outbound surface.
 Previously observed addresses remain accumulated intentionally,
 which favors availability when DNS changes over prompt removal of old
 addresses.
-The prototype is not present in the current configuration and was never
-applied to the live firewalls.
+The fix is present in the current main-branch configuration but has not
+been applied to the live firewalls.
 
 ### What does not work
 
@@ -925,10 +924,9 @@ duplicate.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
    Yes,
    at the consumer boundary.
-   Commit `7fab53e54` captured it,
-   the OpenTofu plan and package gates verified it,
-   and commit `866747c1b` then restored investigation-only scope without
-   changing either upstream project.
+   Commit `7fab53e54` captured the prototype,
+   and commit `1f507bb7d` landed the requested APT-host subset on main after
+   the OpenTofu plan and package gates verified it.
 
 **Nothing to file upstream.**
 There is no additive issue or comment draft because the fault and fix are
