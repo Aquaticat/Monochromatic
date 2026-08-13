@@ -167,6 +167,37 @@ The bump is also a design lever rather than only a cost. If attribution lives in
 
 `runRefinePhase` must preserve the new field wherever it reconstructs outcomes.
 
+## What has landed, and two defects the building found
+
+Landed: `177f3e7b3` the collector and the stop to the discard, `5b93b5213` the
+ wiring guard, `4009a6da4` the carry through the screen, `b9a279ffa` the
+ ordering fix. All cache-neutral, so `SLICE_CACHE_VERSION` is still 9 and a
+ resumed run cannot be perturbed. The artifact carry and its bump remain open.
+
+TWO DEFECTS SURFACED, neither predicted by this document when it was written,
+ and both about determinism of a value headed for a cached outcome:
+
+-   `localeCompare` for proposer order. Locale-dependent, so two hosts could
+    order the same proposers differently. Replaced with code-unit comparison.
+    Caught by a test that failed on the expectation.
+-   Insertion order for the attributions themselves. Insertion order follows
+    voice ARRIVAL, and `gatherStageVoices` orders voices by retry round then
+    roster position, so a run that heard one critic first and another on a
+    retry serialized identical evidence differently. Replaced with a sort by
+    claim id.
+
+The second is the instructive one. The determinism test that existed could not
+ have caught it, because it used a single claim and its outer array therefore
+ always had length one. Sorting the inner arrays looked like it settled the
+ question and did not.
+
+THE TESTING LESSON, which cost a mutation to learn: the fold had tests and the
+ WIRING had none. Deleting the single `emissions.push` in `runCriticStage` left
+ the entire suite green, so the exact discard this work exists to fix was
+ reintroducible without anything noticing. Whatever carries attribution to the
+ artifact next, delete that line and confirm something fails before believing
+ it is guarded.
+
 ## Tests the change needs
 
 -   One critic emitting an identical claim twice records that critic once with
