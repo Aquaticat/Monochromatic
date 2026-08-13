@@ -1604,9 +1604,9 @@ AD4:
  no stacked `)))`.
 
 M1T:
- Multi-row MD1 tabs size each tab to its label plus horizontal padding.
-Never stretch tabs to row width;
- wrap them naturally across rows.
+ Multi-row MD1 tabs keep each label on one content-width line plus horizontal padding.
+Never stretch or wrap text inside a tab;
+ wrap whole tabs across rows.
 
 ## Agent skills
 

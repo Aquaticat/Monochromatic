@@ -395,7 +395,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 
 // What:     `import androidx.compose.foundation.layout.width` constrains a composable's width.
-// Why:      `width(IntrinsicSize.Min)` keeps MD1 tabs at their content width.
+// Why:      `width(IntrinsicSize.Max)` keeps each MD1 label on one content-width line.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -2544,13 +2544,15 @@ private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(IntrinsicSize.Min)
+            .width(IntrinsicSize.Max)
             .defaultMinSize(minHeight = 48.dp)
             .clickable { onSelect() },
     ) {
         Text(
             text = label,
             color = labelColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
         )
         Box(
