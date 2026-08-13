@@ -793,8 +793,9 @@ for _, destinationIP := range tfRule["destination_ips"].(*schema.Set).List() {
 
 ### Verification
 
-The diagnosis and fix were verified against repository commit
-`7fab53e54bddfca7ea2f3b19313683785a059bcb`,
+The diagnosis and prototype fix were verified against repository commit
+`7fab53e54bddfca7ea2f3b19313683785a059bcb`
+before investigation-only scope was restored by commit `866747c1b`,
 OpenTofu 1.12.5,
 hcloud provider 1.60.1,
 and hcloud provider source tag `v1.60.1` at commit
@@ -854,12 +855,14 @@ and the OpenTofu and TypeScript gates passed.
 
 ### Verified workaround
 
-Commit `7fab53e54` replaces `syncthing_apt_ips` with
-`syncthing.net` and `apt.syncthing.net` in
-`local.resolvable_hostnames`.
-It also commits current `/32` and `/128` seeds in
+The prototype from commit `7fab53e54`,
+reverted by `866747c1b` to preserve investigation-only scope,
+replaces `syncthing_apt_ips` with `syncthing.net` and
+`apt.syncthing.net` in `local.resolvable_hostnames`.
+It also adds current `/32` and `/128` seeds to
 `package/config/tofu/src/seed_resolved_hosts.json`.
-`resolve_hosts.ts` now unions those seeds with fresh DNS and its local
+With that patch,
+`resolve_hosts.ts` unions those seeds with fresh DNS and its local
 accumulation cache before the firewall widens and emits the destinations.
 
 Tradeoff:
@@ -869,8 +872,8 @@ so this fixes freshness rather than narrowing the outbound surface.
 Previously observed addresses remain accumulated intentionally,
 which favors availability when DNS changes over prompt removal of old
 addresses.
-The change has been committed but is not active until `tofu apply` updates
-the five live firewalls.
+The prototype is not present in the current configuration and was never
+applied to the live firewalls.
 
 ### What does not work
 
@@ -922,8 +925,10 @@ duplicate.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
    Yes,
    at the consumer boundary.
-   The OpenTofu plan and package gates verified it without changing either
-   upstream project.
+   Commit `7fab53e54` captured it,
+   the OpenTofu plan and package gates verified it,
+   and commit `866747c1b` then restored investigation-only scope without
+   changing either upstream project.
 
 **Nothing to file upstream.**
 There is no additive issue or comment draft because the fault and fix are
