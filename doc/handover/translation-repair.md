@@ -7242,3 +7242,40 @@ The cheap way to settle it is four items. Exactly four control regions drew an
  whether the withheld arm is finding damage nobody had looked at or inventing
  it. That is a far smaller ask than another 50-item sheet and it is the last
  thing standing between this result and a gating decision.
+
+### The prompt-to-screen move, and the limit it does NOT remove
+
+The probe now withholds the accepted issues from the prober and dismisses a
+ claim deterministically when its quoted wording restates one. Measured on the
+ labelling fixtures, with the guard proven live by removing it:
+
+```text
+fixture                guard present            guard removed
+deletion/unlabelled    3/3 removal-corroborated 3/3 removal-corroborated
+deletion/mislabelled   3/3 PRE-EXISTING         3/3 removal-corroborated
+deletion/licensed      3/3 none found           3/3 none found
+```
+
+The middle row is the finding, and it is not the one the change was hoping for.
+`deletion/mislabelled` deletes source-supported text under a FALSE accepted
+issue naming that text. All three probers detect the deletion, and the screen
+dismisses all three, because the wording they quote is exactly the wording the
+false issue complained about.
+
+So moving the defence from the prompt to the screen did NOT recover detection of
+ damage a false accepted issue licenses. A deterministic check cannot: it can
+ see that a claim restates an accepted issue, and it has no way to know whether
+ that issue was right.
+
+What the move does buy is real but narrower. The claim is now RAISED, SCREENED
+ and RECORDED with its quoted text and its reason, marked `pre-existing`, where
+ before the prompt stopped it being made at all and the region reported
+ `noneFound`. A count of dismissals is a measurement; silence was not. The
+ `pre-existing` tally is now the visible price of every accepted issue the
+ detector got wrong, which ties repair safety directly to detection precision
+ rather than leaving the link invisible.
+
+`deletion/licensed` also deserves a caveat: the probers reported nothing there
+ under both conditions, so that control passes without the screen ever being
+ exercised. It shows the probe is not flagging every deletion; it does not show
+ the screen dismisses correctly.
