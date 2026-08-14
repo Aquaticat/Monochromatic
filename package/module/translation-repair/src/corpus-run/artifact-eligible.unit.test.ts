@@ -17,6 +17,8 @@ import { mkdtemp, writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
+import spawn from 'nano-spawn';
+
 import {
   describe,
   expect,
@@ -258,6 +260,74 @@ await describe({
               return line.includes('DELIBERATELY',);
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'THROWS rather than returning an empty pool when a required commit '
+        + 'excludes every settled entry. This is the whole module\'s failure '
+        + 'mode taken to its limit: the caller goes on to compute a rate, and a '
+        + 'rate over zero entries is a denominator shrunk all the way to '
+        + 'nothing while the number above it still renders',
+      fn: async () => {
+        // Real commits, because tipContains asks git for ancestry and an
+        // invented sha is an UNRESOLVABLE commit rather than an excluded one.
+        // The root commit cannot contain HEAD, so requiring HEAD excludes it.
+        const root = (await spawn(
+          '/usr/bin/git',
+          [
+            '-C',
+            import.meta.dirname,
+            'rev-list',
+            '--max-parents=0',
+            'HEAD',
+          ],
+        )).stdout
+          .trim()
+          .split('\n',)[0] ?? '';
+
+        const head = (await spawn(
+          '/usr/bin/git',
+          [
+            '-C',
+            import.meta.dirname,
+            'rev-parse',
+            'HEAD',
+          ],
+        )).stdout
+          .trim();
+
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: root,
+            },
+          ],
+        },);
+
+        await expect(
+          selectEligible({
+            census: await censusByTip({ artifactsDir: dir, },),
+            requiredCommit: head,
+          },),
+        )
+          .rejects
+          .toThrow('excluded by generation filtering',);
+      },
+    },),
+
+    it({
+      name: 'THROWS on a directory that has settled nothing, for the same '
+        + 'reason: counting zero is fine, but pooling zero for a rate is not',
+      fn: async () => {
+        const dir = await writeArtifacts({ entries: [], },);
+
+        await expect(
+          selectEligible({ census: await censusByTip({ artifactsDir: dir, },), },),
+        )
+          .rejects
+          .toThrow('nothing to pool',);
       },
     },),
   ],

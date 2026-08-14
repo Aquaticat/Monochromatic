@@ -126,6 +126,74 @@ export class MixedGenerationError extends Error {
 }
 
 /**
+ * Raised when generation filtering leaves no entry to pool at all.
+ */
+export class EmptyPoolError extends Error {
+  /**
+   * Names why the pool came out empty and what would refill it.
+   *
+   * @param census - what the directory actually holds
+   *
+   * @param requiredCommit - commit that was required, absent when none was
+   *
+   * @example
+   * ```ts
+   * throw new EmptyPoolError({ census, requiredCommit, },);
+   * ```
+   */
+  constructor(
+    {
+      census,
+      requiredCommit,
+    }: {
+      readonly census: GenerationCensus;
+      readonly requiredCommit?: string;
+    },
+  ) {
+    super(
+      [
+        ...(census.total === 0
+          ? ['No entry has settled yet, so there is nothing to pool.',]
+          : [
+            `All ${
+              String(census.total,)
+            } settled entries were excluded by generation filtering.`,
+            ...(requiredCommit === undefined ? [] : [
+              `None of them records a pipeline containing ${
+                requiredCommit.slice(
+                  0,
+                  SHORT_SHA,
+                )
+              }:`,
+            ]),
+            ...census.groups
+              .map(function toLine(group,): string {
+                return `  ${
+                  group.tip
+                    .slice(
+                      0,
+                      SHORT_SHA,
+                    )
+                }  ${
+                  String(group.entryIds
+                    .length,)
+                } entries`;
+              },),
+          ]),
+        '',
+        'This THROWS rather than returning an empty pool, because every caller',
+        'of this function goes on to compute a rate. A rate over zero entries',
+        'is this module\'s own failure mode taken to its limit: a denominator',
+        'quietly shrunk, here all the way to nothing, while the number above it',
+        'still renders. Accumulate entries under the required pipeline, or',
+        'require an earlier commit that the settled entries actually contain.',
+      ].join('\n',),
+    );
+    this.name = 'EmptyPoolError';
+  }
+}
+
+/**
  * Renders the line naming artifacts no generation could hold.
  *
  * Always rendered when there are any, because an excluded artifact that goes
@@ -228,6 +296,9 @@ export async function selectEligible(
     if ((generationCount > 1) && (!pooledDeliberately))
       throw new MixedGenerationError({ census, },);
 
+    if (everyId.length === 0)
+      throw new EmptyPoolError({ census, },);
+
     return {
       entryIds: everyId,
       excludedIds: [],
@@ -273,6 +344,12 @@ export async function selectEligible(
         .entryIds;
     },)
     .toSorted();
+
+  if (entryIds.length === 0)
+    throw new EmptyPoolError({
+      census,
+      requiredCommit,
+    },);
 
   return {
     entryIds,

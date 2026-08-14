@@ -144,6 +144,7 @@ export {
 } from './corpus-run/artifact-generation.ts';
 export {
   type EligibleEntries,
+  EmptyPoolError,
   MixedGenerationError,
   selectEligible,
 } from './corpus-run/artifact-eligible.ts';
