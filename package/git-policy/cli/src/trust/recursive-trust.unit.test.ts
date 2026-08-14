@@ -226,6 +226,38 @@ await describe({
       },
     },),
     it({
+      name: 'unavailable recursive consent leaves root untrusted',
+      fn: async function testUnavailableRecursiveConsent() {
+        await using fixture = await createFixture();
+        /** Recursive root config. */
+        const outer = await discoverFixture(fixture.outer,);
+        /** Failure from unavailable second consent stage. */
+        const failure = await (async function captureUnavailableConsent(): Promise<unknown> {
+          try {
+            return await trustMjs({
+              discovered: outer,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: consentAdapters({
+                answers: ['approved', 'unavailable',],
+                disclosures: [],
+              },),
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await inspectTrust({
+          discovered: outer,
+          registryRoot: fixture.registryRoot,
+        },)).reason,).toBe('untrusted',);
+      },
+    },),
+    it({
       name: 'auto-enrolls descendants and blocks later byte changes',
       fn: async function testAutoEnrollment() {
         await using fixture = await createFixture();
