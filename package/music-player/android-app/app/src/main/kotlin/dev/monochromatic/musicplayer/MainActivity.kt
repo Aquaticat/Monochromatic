@@ -376,6 +376,15 @@ import androidx.compose.foundation.layout.defaultMinSize
 // ```
 import androidx.compose.foundation.layout.fillMaxSize
 
+// What:     `import androidx.compose.foundation.layout.fillMaxHeight` fills available height.
+// Why:      Selected LED opening's right cut arris spans the cap opening.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { fillMaxHeight } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.fillMaxHeight
+
 // What:     `import androidx.compose.foundation.layout.fillMaxWidth` pulls in the
 //           `fillMaxWidth` MODIFIER (occupy all available width).
 // Why:      Rows and the track list use `Modifier.fillMaxWidth()`.
@@ -1922,6 +1931,27 @@ private fun startingGate() {
     }
 }
 
+// What:     `pageSceneColor` selects LED reference ground or standard app background.
+// Why:      LED hardware follows true-black dark and low-glare light scenes without recoloring other styles.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function pageSceneColor(style: PageControlStyle): Color { ... }
+// ```
+/** Returns page ground for current control style and ambient theme. */
+@Composable
+private fun pageSceneColor(style: PageControlStyle): Color {
+    if (style != PageControlStyle.LED_SEGMENTED_BUTTONS) {
+        return MaterialTheme.colorScheme.background
+    }
+    if (isSystemInDarkTheme()) {
+        return Color.Black
+    }
+    /** Holds updated reference's low-glare bright-scene ground. */
+    val lightGround: Color = Color(0xFFECEEF1)
+    return lightGround
+}
+
 // What:     `@Composable` marks the next function as a Compose component.
 // Why:      `playerScreen` is the main UI component.
 //
@@ -2104,7 +2134,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     //   <Column modifier={...}> ... </Column>
     // )}</Scaffold>
     // ```
-    Scaffold { innerPadding ->
+    Scaffold(containerColor = pageSceneColor(pageControlStyle)) { innerPadding ->
         // What:     `Column( modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 12.dp),
         //           verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
         //           lays the screen out vertically. The modifier chain fills the screen, then
@@ -3014,32 +3044,115 @@ private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> U
     }
 }
 
+// What:     `LedPlateOptions` groups one plate shape with its ambient scene.
+// Why:      Plate styling accepts one named options boundary instead of positional values.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedPlateOptions = { shape: RoundedShape; lightScene: boolean };
+// ```
+/** Holds scene and geometry used to paint one LED backplate tile. */
+private data class LedPlateOptions(
+    /** Holds concentric outer plate silhouette. */
+    val shape: RoundedCornerShape,
+    /** Records whether silver hardware sits in bright ambient. */
+    val lightScene: Boolean,
+)
+
+// What:     `LedFaceOptions` groups state, scene, and geometry for one cap face.
+// Why:      Cap styling receives one named rendering boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedFaceOptions = { selected: boolean; lightScene: boolean; shape: RoundedShape };
+// ```
+/** Holds values used to paint one rigid translucent LED cap. */
+private data class LedFaceOptions(
+    /** Records whether both cap LEDs are active. */
+    val selected: Boolean,
+    /** Records whether hardware is in bright ambient. */
+    val lightScene: Boolean,
+    /** Holds cap silhouette after selected clearance. */
+    val shape: RoundedCornerShape,
+)
+
+// What:     `LedCapOptions` groups one cap's label and visual state.
+// Why:      Cap, cut-arris, and legend helpers consume one shared state object.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedCapOptions = { label: string; selected: boolean; lightScene: boolean };
+// ```
+/** Holds content and scene state for one LED cap opening. */
+private data class LedCapOptions(
+    /** Holds one-line page legend. */
+    val label: String,
+    /** Records whether cap is latched and lit. */
+    val selected: Boolean,
+    /** Records whether silver hardware sits in bright ambient. */
+    val lightScene: Boolean,
+)
+
+// What:     `LedPageButtonOptions` groups one button's rendering and action values.
+// Why:      Content-width hardware button accepts one named component boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedPageButtonOptions = { label: string; selected: boolean; maximumWidth: Dp; onSelect: () => void };
+// ```
+/** Holds content, measurement, state, and selection action for one LED page button. */
+private data class LedPageButtonOptions(
+    /** Holds one-line page legend. */
+    val label: String,
+    /** Records whether page is visible. */
+    val selected: Boolean,
+    /** Caps pathological labels to available pager width. */
+    val maximumWidth: Dp,
+    /** Selects this page when invoked. */
+    val onSelect: () -> Unit,
+)
+
+// What:     `LedPageControlsOptions` groups pager state with page-selection behavior.
+// Why:      Wrapping hardware group accepts one named component boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedPageControlsOptions = { state: PlayerUiState; onSelectPage: (page: number) => void };
+// ```
+/** Holds state and selection action for the wrapping LED hardware group. */
+private data class LedPageControlsOptions(
+    /** Holds current page labels and selected index. */
+    val state: PlayerUiState,
+    /** Selects one page index when invoked. */
+    val onSelectPage: (Int) -> Unit,
+)
+
 // What:     `ledPlateModifier` paints one compact anodized-metal backplate.
 // Why:      Every content-width LED cap needs the reference's directional sheen and convex edge.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ledPlateModifier(shape: RoundedShape): Modifier { ... }
+// function ledPlateModifier(options: LedPlateOptions): Modifier { ... }
 // ```
 /** Returns layered bead-blasted-metal styling for one LED button backplate. */
-private fun ledPlateModifier(shape: RoundedCornerShape, lightScene: Boolean): Modifier {
+private fun ledPlateModifier(options: LedPlateOptions): Modifier {
     /** Holds silver or near-black anodized metal under its directional sheen. */
-    val plateColor: Color = if (lightScene) Color(0xFFC4C6CA) else Color(0xFF111111)
+    val plateColor: Color = if (options.lightScene) Color(0xFFC4C6CA) else Color(0xFF111111)
     /** Holds scene-paired key-light, neutral, and away-from-light plate values. */
-    val sheenColors: List<Color> = if (lightScene) {
-        listOf(Color(0x66FFFFFF), Color.Transparent, Color(0x1F000000))
+    val sheenColors: List<Color> = if (options.lightScene) {
+        listOf(Color(0x29FFFFFF), Color.Transparent, Color(0x1F000000))
     } else {
-        listOf(Color(0x1FFFFFFF), Color.Transparent, Color(0x24000000))
+        listOf(Color(0x0FFFFFFF), Color.Transparent, Color(0x24000000))
     }
     /** Holds broad dark falloff along the plate's bottom-right shoulder. */
-    val plateShadowColor: Color = if (lightScene) Color(0x30000000) else Color(0x57000000)
+    val plateShadowColor: Color = if (options.lightScene) Color(0x30000000) else Color(0x57000000)
     /** Holds attached light-scene contact shadow; dark OLED ground cannot show it. */
-    val contactShadow: Modifier = if (lightScene) {
+    val contactShadow: Modifier = if (options.lightScene) {
         Modifier.dropShadow(
-            shape = shape,
+            shape = options.shape,
             shadow = HardwareShadow(
                 radius = 1.6.dp,
-                color = Color(0x57000000),
+                color = Color(0x99000000),
                 offset = DpOffset(x = 1.dp, y = 1.dp),
             ),
         )
@@ -3047,14 +3160,11 @@ private fun ledPlateModifier(shape: RoundedCornerShape, lightScene: Boolean): Mo
         Modifier
     }
     return contactShadow
-        .clip(shape)
+        .clip(options.shape)
         .background(plateColor)
-        .background(
-            brush = Brush.linearGradient(colors = sheenColors),
-            shape = shape,
-        )
+        .background(brush = Brush.linearGradient(colors = sheenColors), shape = options.shape)
         .innerShadow(
-            shape = shape,
+            shape = options.shape,
             shadow = HardwareShadow(
                 radius = 6.dp,
                 color = plateShadowColor,
@@ -3068,144 +3178,200 @@ private fun ledPlateModifier(shape: RoundedCornerShape, lightScene: Boolean): Mo
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ledFaceModifier(selected: boolean, shape: RoundedShape): Modifier { ... }
+// function ledFaceModifier(options: LedFaceOptions): Modifier { ... }
 // ```
 /** Returns rigid translucent-cap styling for one LED page button state. */
-private fun BoxScope.ledFaceModifier(
-    selected: Boolean,
-    lightScene: Boolean,
-    shape: RoundedCornerShape,
-): Modifier {
+private fun BoxScope.ledFaceModifier(options: LedFaceOptions): Modifier {
     /** Holds purple LED flood or unlit translucent factory pigment. */
-    val fill: Color = if (selected) Color(0xFFA63FD0) else Color(0xFFAAAAAA)
+    val fill: Color = if (options.selected) Color(0xFFA63FD0) else Color(0xFFAAAAAA)
     /** Holds radial cap illumination with a steep outer shoulder. */
     val dome: Brush = Brush.radialGradient(
-        colors = if (selected) {
+        colors = if (options.selected) {
             listOf(Color(0x5CFFFFFF), Color(0xFFA63FD0), Color(0xFF782597))
         } else {
             listOf(Color(0x36FFFFFF), Color(0xFFAAAAAA), Color(0xFF747474))
         },
     )
     /** Holds opening-edge occlusion scaled to ambient share of active-cap light. */
-    val activeOcclusion: Color = if (lightScene) Color(0x99000000) else Color(0x73000000)
+    val activeOcclusion: Color = if (options.lightScene) Color(0x99000000) else Color(0x73000000)
     /** Holds deeper unlit shoulder shading on reflective plastic. */
     val inactiveOcclusion: Color = Color(0x3D000000)
     /** Holds LED bloom for selected caps and a physical cast shadow for raised caps. */
-    val outerShadow: HardwareShadow = if (selected) {
+    val outerShadow: HardwareShadow = if (options.selected) {
         HardwareShadow(
             radius = 7.dp,
             spread = 1.dp,
-            color = if (lightScene) Color(0x29C874EA) else Color(0x52C874EA),
+            color = if (options.lightScene) Color(0x1AC874EA) else Color(0x2EC874EA),
         )
     } else {
         HardwareShadow(
             radius = 2.6.dp,
-            color = if (lightScene) Color(0x52000000) else Color(0x6B000000),
+            color = if (options.lightScene) Color(0x52000000) else Color(0x6B000000),
             offset = DpOffset(x = 2.5.dp, y = 3.5.dp),
         )
     }
     return Modifier
         .matchParentSize()
-        .padding(if (selected) 1.dp else 0.dp)
-        .dropShadow(shape = shape, shadow = outerShadow)
-        .background(color = fill, shape = shape)
-        .background(brush = dome, shape = shape)
+        .padding(if (options.selected) 1.dp else 0.dp)
+        .dropShadow(shape = options.shape, shadow = outerShadow)
+        .background(color = fill, shape = options.shape)
+        .background(brush = dome, shape = options.shape)
         .innerShadow(
-            shape = shape,
+            shape = options.shape,
             shadow = HardwareShadow(
                 radius = 4.dp,
                 spread = 1.dp,
-                color = if (selected) activeOcclusion else inactiveOcclusion,
+                color = if (options.selected) activeOcclusion else inactiveOcclusion,
                 offset = DpOffset(x = 3.dp, y = 3.dp),
             ),
         )
 }
 
-// What:     `ledHardwarePageButton` renders one reflective cap in its metal opening.
-// Why:      Content-width pages need the supplied hardware states while each control wraps whole.
+// What:     `ledCutLip` paints selected opening's lit bottom-right cut arris.
+// Why:      Hairline clearance still needs a depth cue after the visible moat was removed.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function LedHardwarePageButton(props: LedPageButtonProps) { ... }
+// function LedCutLip(lightScene: boolean) { ... }
+// ```
+/** Paints bottom and right hairlines around one latched cap. */
+@Composable
+private fun BoxScope.ledCutLip(lightScene: Boolean) {
+    /** Holds cut-arris light, stronger on reflective silver. */
+    val lipColor: Color = if (lightScene) Color(0x73FFFFFF) else Color(0x4DFFFFFF)
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomStart)
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(lipColor),
+    )
+    Box(
+        modifier = Modifier
+            .align(Alignment.TopEnd)
+            .fillMaxHeight()
+            .width(1.dp)
+            .background(lipColor),
+    )
+}
+
+// What:     `ledCapLabel` paints day/night ink and selected label LED light.
+// Why:      Legend remains readable by reflection when off and emission when on.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedCapLabel(options: LedCapOptions) { ... }
+// ```
+/** Displays one ellipsized hardware legend. */
+@Composable
+private fun ledCapLabel(options: LedCapOptions) {
+    /** Holds glowing selected legend or reflective day/night ink. */
+    val labelColor: Color = if (options.selected) Color.White else Color(0xFF3D3F45)
+    /** Holds emitted label light behind selected white ink. */
+    val labelGlow: Color = Color(0xE6F0D4FF)
+    Text(
+        text = options.label,
+        color = labelColor,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontWeight = FontWeight.SemiBold,
+            shadow = if (options.selected) {
+                TextShadow(color = labelGlow, offset = Offset.Zero, blurRadius = 4f)
+            } else {
+                null
+            },
+        ),
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .offset(y = if (options.selected) 2.dp else 0.dp),
+    )
+}
+
+// What:     `ledHardwareCap` combines one opening, rigid cap, cut arris, and legend.
+// Why:      Page button wrapper remains below method-length limit and material layers stay readable.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedHardwareCap(options: LedCapOptions) { ... }
+// ```
+/** Displays inner material layers for one LED page button. */
+@Composable
+private fun ledHardwareCap(options: LedCapOptions) {
+    /** Holds unchanged opening silhouette around selected and raised caps. */
+    val openingShape: RoundedCornerShape = RoundedCornerShape(9.dp)
+    /** Holds cap radius reduced by selected 1dp CNC clearance. */
+    val capShape: RoundedCornerShape = RoundedCornerShape(if (options.selected) 8.dp else 9.dp)
+    /** Holds selected seam or raised-cap contact ring for this scene. */
+    val openingColor: Color = if (options.lightScene) {
+        if (options.selected) Color(0xFF6E7075) else Color(0xFF85878C)
+    } else {
+        if (options.selected) Color(0xFF050508) else Color(0xFF050506)
+    }
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize().background(openingColor, openingShape),
+    ) {
+        Box(
+            modifier = ledFaceModifier(
+                LedFaceOptions(
+                    selected = options.selected,
+                    lightScene = options.lightScene,
+                    shape = capShape,
+                ),
+            ),
+        )
+        if (options.selected) {
+            ledCutLip(options.lightScene)
+        }
+        ledCapLabel(options)
+    }
+}
+
+// What:     `ledHardwarePageButton` renders one reflective cap in its metal opening.
+// Why:      Content-width pages need supplied hardware states while each control wraps whole.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedHardwarePageButton(options: LedPageButtonOptions) { ... }
 // ```
 /** Displays one selectable, content-width LED hardware page button. */
 @Composable
-private fun ledHardwarePageButton(
-    label: String,
-    selected: Boolean,
-    maximumWidth: Dp,
-    onSelect: () -> Unit,
-) {
+private fun ledHardwarePageButton(options: LedPageButtonOptions) {
     /** Records whether hardware is in bright ambient with its silver plate finish. */
     val lightScene: Boolean = !isSystemInDarkTheme()
-    /** Holds concentric plate radius from the supplied 9dp cap plus 8dp margin. */
+    /** Holds concentric plate radius from supplied 9dp cap plus 8dp margin. */
     val plateShape: RoundedCornerShape = RoundedCornerShape(17.dp)
-    /** Holds cap radius reduced by the selected 1dp CNC clearance. */
-    val capShape: RoundedCornerShape = RoundedCornerShape(if (selected) 8.dp else 9.dp)
-    /** Holds selected seam or raised-cap contact ring for this scene. */
-    val openingColor: Color = if (lightScene) {
-        if (selected) Color(0xFF6E7075) else Color(0xFF85878C)
-    } else {
-        if (selected) Color(0xFF050508) else Color(0xFF050506)
-    }
-    /** Holds glowing selected legend or reflective day/night ink. */
-    val labelColor: Color = if (selected) Color.White else Color(0xFF3D3F45)
-    /** Holds emitted label light behind selected white ink. */
-    val labelGlow: Color = Color(0xE6F0D4FF)
     Box(
         modifier = Modifier
-            .widthIn(max = maximumWidth)
+            .widthIn(max = options.maximumWidth)
             .width(IntrinsicSize.Max)
             .height(60.dp)
-            .then(ledPlateModifier(shape = plateShape, lightScene = lightScene))
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
+            .then(ledPlateModifier(LedPlateOptions(shape = plateShape, lightScene = lightScene)))
+            .selectable(selected = options.selected, role = Role.RadioButton, onClick = options.onSelect)
             .padding(8.dp),
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(openingColor, capShape),
-        ) {
-            Box(
-                modifier = ledFaceModifier(
-                    selected = selected,
-                    lightScene = lightScene,
-                    shape = capShape,
-                ),
-            )
-            Text(
-                text = label,
-                color = labelColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    shadow = if (selected) {
-                        TextShadow(color = labelGlow, offset = Offset.Zero, blurRadius = 4f)
-                    } else {
-                        null
-                    },
-                ),
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .offset(y = if (selected) 2.dp else 0.dp),
-            )
-        }
+        ledHardwareCap(
+            LedCapOptions(
+                label = options.label,
+                selected = options.selected,
+                lightScene = lightScene,
+            ),
+        )
     }
 }
 
 // What:     `ledPageControls` wraps content-width hardware buttons without painting unused row width.
-// Why:      Large libraries retain discoverable multi-row navigation and the reference's dark plate islands.
+// Why:      Large libraries retain discoverable multi-row navigation and joined plate appearance.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function LedPageControls(props: PageControlsProps) { ... }
+// function LedPageControls(options: LedPageControlsOptions) { ... }
 // ```
 /** Displays wrapped, mutually exclusive LED hardware page buttons. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ledPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
+private fun ledPageControls(options: LedPageControlsOptions) {
     BoxWithConstraints {
         /** Holds available pager width before entering FlowRow's receiver scope. */
         val pageMaximumWidth: Dp = maxWidth
@@ -3216,12 +3382,14 @@ private fun ledPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(plateOverlap),
             verticalArrangement = Arrangement.spacedBy(plateOverlap),
         ) {
-            state.pageLabels.forEachIndexed { page, label ->
+            options.state.pageLabels.forEachIndexed { page, label ->
                 ledHardwarePageButton(
-                    label = label,
-                    selected = page == state.selectedPage,
-                    maximumWidth = pageMaximumWidth,
-                    onSelect = { onSelectPage(page) },
+                    LedPageButtonOptions(
+                        label = label,
+                        selected = page == options.state.selectedPage,
+                        maximumWidth = pageMaximumWidth,
+                        onSelect = { options.onSelectPage(page) },
+                    ),
                 )
             }
         }
@@ -3276,7 +3444,7 @@ private fun pageTabs(
         return
     }
     if (pageControlStyle == PageControlStyle.LED_SEGMENTED_BUTTONS) {
-        ledPageControls(state = state, onSelectPage = onSelectPage)
+        ledPageControls(LedPageControlsOptions(state = state, onSelectPage = onSelectPage))
         return
     }
     BoxWithConstraints {
