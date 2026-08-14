@@ -8,7 +8,10 @@ import {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
 } from '../slice-pair.ts';
-import { readArtifactRecords, } from './probe-relabel-artifact.ts';
+import {
+  type ArtifactRecord,
+  readArtifactRecords,
+} from './probe-relabel-artifact.ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
@@ -38,6 +41,30 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
  * rate, not a ranking.
  */
 const CONTROL_REGIONS_PER_ENTRY = 2;
+
+/**
+ * One shipped region paired with the record that owns it.
+ *
+ * Named rather than inferred, because an inferred object literal carries
+ * writable properties and the ordering and filtering callbacks that read this
+ * list then take mutable parameters they never mutate.
+ */
+type OwnedRegion = Readonly<{
+  /**
+   * Record the region was shipped under.
+   */
+  record: ArtifactRecord;
+
+  /**
+   * Shipped region itself.
+   */
+  region: ArtifactRecord['repairRegions'][number];
+
+  /**
+   * Replaced text, the length the control matches on.
+   */
+  before: string;
+}>;
 
 /**
  * Orders an entry's unflagged regions by how closely they match the damaged
@@ -224,9 +251,9 @@ export async function gatherControlCases(
      */
     const candidates = byLengthDistance({
       regions: records
-        .flatMap(function toPairs(record,) {
+        .flatMap(function toPairs(record,): readonly OwnedRegion[] {
           return record.repairRegions
-            .map(function withOwner(region,) {
+            .map(function withOwner(region,): OwnedRegion {
               return {
                 record,
                 region,

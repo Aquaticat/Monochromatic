@@ -241,6 +241,28 @@ function parseProbeReading(
 }
 
 /**
+ * One issue record paired with the position it sat at in the artifact.
+ *
+ * Named rather than inferred, because an inferred object literal carries
+ * writable properties and every later callback reading this list then takes a
+ * mutable parameter it never mutates.
+ */
+type IndexedRecord = Readonly<{
+  /**
+   * Issue record as a plain record, already guarded.
+   *
+   * Readonly rather than bare `Record`, because a bare index signature is
+   * itself writable and every later reader would inherit that.
+   */
+  record: Readonly<Record<string, unknown>>;
+
+  /**
+   * Position in the artifact's issue list, carried for error paths.
+   */
+  index: number;
+}>;
+
+/**
  * Reads probe telemetry out of one settled artifact.
  *
  * @param value - parsed artifact JSON
@@ -290,7 +312,7 @@ export function readArtifactProbe(
     .map(function withIndex(
       entry,
       index,
-    ) {
+    ): IndexedRecord {
       return {
         record: requireRecord({
           value: entry,

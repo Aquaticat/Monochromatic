@@ -405,9 +405,11 @@ export async function repairTranslation(
       budget: sliceCharBudget,
     },);
     governance.push({
-      sourceText: pair.source.text,
+      sourceText: pair.source
+        .text,
       sliceIndices: carved.map(function toIndex(carvedSlice,): number {
-        return carvedSlice.target.chunkIndex;
+        return carvedSlice.target
+          .chunkIndex;
       },),
     },);
     slices.push(...carved,);
@@ -470,7 +472,10 @@ export async function repairTranslation(
         // Two slices can carry identical text and still be governed
         // differently, because the verdict belongs to the enclosing chunk. It
         // has to sit in the key rather than ride on the version alone.
-        lineStructuredSlices.has(slice.target.chunkIndex,),
+        lineStructuredSlices.has(
+          slice.target
+            .chunkIndex,
+        ),
       ],),
     },);
 
@@ -492,7 +497,10 @@ export async function repairTranslation(
         .text,
       targetText: slice.target
         .text,
-      lineStructured: lineStructuredSlices.has(slice.target.chunkIndex,),
+      lineStructured: lineStructuredSlices.has(
+        slice.target
+          .chunkIndex,
+      ),
       models,
       ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
       ...identityFragment,

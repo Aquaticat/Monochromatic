@@ -254,7 +254,7 @@ export function decodeChunkRecord(
   const claimAttributions = rawAttributions.map(function toAttribution(
     entry,
     index,
-  ) {
+  ): ChunkCriticView['claimAttributions'][number] {
     /**
      * Path of this attribution.
      */

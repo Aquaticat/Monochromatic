@@ -50,6 +50,25 @@ export type EditorCandidateSet = {
 };
 
 /**
+ * One editor's candidate paired with the findings its own reply raised.
+ *
+ * Named rather than inferred, because an inferred object literal carries
+ * writable properties and the two unwrapping maps that read this list then take
+ * mutable parameters they never mutate.
+ */
+type ResolvedVoice = Readonly<{
+  /**
+   * Patched candidate this voice proposed.
+   */
+  candidate: EditorCandidate;
+
+  /**
+   * Wire irregularities attributed to this voice.
+   */
+  findings: readonly string[];
+}>;
+
+/**
  * Resolves every heard editor's reply into its own patch through the same
  * deterministic gate, so the candidates are directly comparable.
  *
@@ -102,7 +121,7 @@ export function buildEditorCandidates(
   /**
    * One resolved candidate per voice, each carrying its own findings.
    */
-  const resolved = ordered.map(function toCandidate(voice,) {
+  const resolved = ordered.map(function toCandidate(voice,): ResolvedVoice {
     /**
      * Operations bound through the prompt plan.
      */
