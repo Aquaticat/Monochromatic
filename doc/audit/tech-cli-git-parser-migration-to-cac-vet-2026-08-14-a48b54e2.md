@@ -946,6 +946,85 @@ or nonzero process exit.
 Stop condition:
  any undeclared effect or command boundary requires manifest revision before continuing.
 
+### Numeric-preservation upstream prototype
+
+Candidate:
+ `cac@7.0.0` source at the pinned release commit.
+
+Prototype workspace:
+ fresh disposable clone
+`~/temp/agent/upstream-prototype.lgbktubA` with verified `cacjs/cac` origin,
+tag `v7.0.0`,
+and commit `77f602fcb2d1e75d24f5ecd94d5bf667acaa857a`.
+
+Candidate fix:
+ add MRI `string` metadata for every nonboolean declared option,
+then add upstream-style cases for exact `001`,
+`+2`,
+and `type: [String]` arrays.
+The patch is
+`~/temp/agent/cac-artifact-2026-08-14/cac-numeric-preservation.patch`.
+
+Top-level verification command:
+
+```text
+podman run --memory=2g --cpus=2 --pids-limit=128 --ulimit nofile=1024:1024 --rm --network none --read-only ... node /prototype/numeric-probe.mjs
+```
+
+Reachable command tree:
+ one Node process imports CAC TypeScript source through Node's type stripping and the audited MRI 1.2.0 source fixture.
+It parses four literal option values,
+asserts exact results,
+and writes one JSON line.
+
+Inspected files:
+ CAC production source,
+candidate diff,
+probe,
+MRI production source,
+and synthetic MRI package manifest.
+
+Expected reads:
+ read-only prototype clone,
+read-only Node image,
+and read-only MRI fixture.
+
+Expected writes:
+ bounded anonymous container state only;
+read-only root plus a 64 MiB `/tmp` tmpfs.
+
+Subprocesses:
+ Podman runtime and one Node process.
+Candidate and fixture code spawn none.
+
+Network:
+ disabled.
+
+Image,
+credentials,
+environment,
+and resource limits:
+ identical to the published-artifact behavior matrix.
+
+Pre-patch condition:
+ restore `src/utils.ts` and `tests/index.test.ts` from the pinned tag,
+run the same assertion harness,
+and require nonzero exit caused by the lexical mismatch.
+
+Post-patch condition:
+ reapply the recorded patch,
+run the same harness,
+and require exit zero with exact strings and exact string arrays.
+
+Failure condition:
+ pre-patch passes,
+post-patch fails,
+output differs,
+or an undeclared effect appears.
+
+Stop condition:
+ any undeclared command or effect requires manifest revision before continuing.
+
 ## Hard-gate exits
 
 ### CAC as the shared Git-region parser
