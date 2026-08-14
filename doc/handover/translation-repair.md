@@ -8843,3 +8843,70 @@ That the corrected sentence changes what the editor does. `Toka_ls` has still
  output. A structural check at the apply gate would turn the request into a
  guarantee, and it is the obvious next step if `Toka_ls` settles and still shows
  fabrication.
+
+## Two magic numbers in a row, the second one better disguised
+
+`#70` proposed re-designing the pipeline to PRODUCE a translation rather than
+ repair one. It died twice in one session, and the second death is the one worth
+ keeping.
+
+### First death: the evidence measured the aligner
+
+The premise was that many sections are only partly translated, resting on a
+ block-count gap of 60 of 172 pairs. Recomputed under the forced aligner it is
+ 85 of 275, and 81% of those pairs carry a full translation by character ratio.
+ Block count conflates a stub with a reformatted paragraph.
+
+### Second death: the dichotomy is false
+
+`accuracy/omission` is already a first-class issue category, and the recall
+ benchmark is built by DELETING sentences from the published English and judging
+ whether they come back against the Chinese. Repairing an omission already IS
+ translating the missing part from the source. There is no repair mode needing a
+ translate mode bolted beside it; there is one path.
+
+### The part I got wrong twice
+
+Asked what should replace `#70`, I proposed a per-entry escape hatch keyed on a
+ character ratio. The user rejected it: a ratio keyed to a magic number
+ inherently misses cases. Correct, and worse than they said, because a ratio
+ measures VOLUME rather than COVERAGE. A section can sit at a healthy 2.5x while
+ omitting half its sentences and expanding the rest, and at section granularity
+ it cannot see a skipped paragraph inside an otherwise sound section.
+
+I then reached for "the measured restoration rate" as the thing to improve. That
+ is the same error wearing a lab coat. Unpacked, 0.60 means:
+
+```text
+MIN_SENTENCE_LENGTH        40    only sentences over 40 chars can seed
+descending length order          so it measures the LONGEST sentences
+RESTORATION_WORD_THRESHOLD 1/2   "restored" is half the vanished words
+CONTENT_WORD_MIN_CHARS     4     what counts as a word at all
+denominator                      policy-declined and non-derivable removed,
+                                 exclusions I adjusted the same night
+```
+
+So it reads: of artificially deleted long sentences, 60% got at least half their
+ four-plus-letter words back, over a population I curated. That measures the
+ instrument, not the pipeline.
+
+### The distinction to hold
+
+Not every number is a magic number, and collapsing them would be its own error.
+ The panel-parity result is FORCED: six voters produce even margins because that
+ is arithmetic about integers, with no constant to choose. Counts of things that
+ exist are the same. What is suspect is a CONSTRUCTED SCORE: a threshold grader
+ over synthetic defects with a curated denominator. Tonight produced one of each
+ and I labelled both "measured".
+
+### What replaces it
+
+For "can this pipeline supply missing translation", the non-constructed
+ observation is to run it on a section that is missing translation and READ the
+ output. `shi_Yumiaoya` carries three sections at ratio 0.01 to 0.02, a thousand
+ characters of Chinese against a dozen of English. Either the critics file
+ omission claims covering that and the editor supplies Chinese-derived text, or
+ it invents. Three sections read carefully answer it; no aggregate can, and `PRF`
+ already says to judge the content rather than trust that a generator ran.
+
+That is n=1 and should be reported as n=1.

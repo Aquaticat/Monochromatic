@@ -36,7 +36,7 @@ description = "Build the node bundle, then run unit tests against the built dist
 run = ["mise run build", "mise run test:unit"]
 
 [tasks."corpus-pass"]
-description = "Run the pipeline over every complete corpus pair; artifacts land in node_modules/.monochromatic (append -- --plan for a zero-quota setup check)"
+description = "Run the pipeline over every complete corpus pair; artifacts land in node_modules/.monochromatic (append -- --plan for a zero-quota setup check, or -- --only Id1,Id2 to target named entries, which wants a throwaway TRANSLATION_REPAIR_RUNS_DIR)"
 run = "node src/corpus-run/corpus-pass.ts"
 
 [tasks."sentinel-probe"]
