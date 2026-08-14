@@ -37,66 +37,83 @@ run = ["mise run build", "mise run test:unit"]
 
 [tasks."corpus-pass"]
 description = "Run the pipeline over every complete corpus pair; artifacts land in node_modules/.monochromatic (append -- --plan for a zero-quota setup check, or -- --only Id1,Id2 to target named entries, which wants a throwaway TRANSLATION_REPAIR_RUNS_DIR)"
-run = "node src/corpus-run/corpus-pass.ts"
+depends = ["build"]
+run = "node dist/final/node/corpus-pass.mjs"
 
 [tasks."sentinel-probe"]
 description = "Run named corpus entries through the pipeline to validate a change (pass ids after --)"
-run = "node src/corpus-run/sentinel-probe.ts"
+depends = ["build"]
+run = "node dist/final/node/sentinel-probe.mjs"
 
 [tasks."draw-sample"]
 description = "Draw the stratified precision sample from settled artifacts into a grading sheet outside the repo (append -- --final for the gate sheet)"
-run = "node src/corpus-run/draw-sample.ts"
+depends = ["build"]
+run = "node dist/final/node/draw-sample.mjs"
 
 [tasks."score-attribution"]
 description = "Report per-critic calibration from a run's settled artifacts: what each critic was asked, what it raised, and how often an accepted issue rested on it alone"
-run = "node src/corpus-run/score-attribution.ts"
+depends = ["build"]
+run = "node dist/final/node/score-attribution.mjs"
 
 [tasks."score-agreement"]
 description = "Report precision off a graded sheet, plus agreement against blind pre-grades when they exist (override with -- --sheet PATH --pre-grades PATH)"
-run = "node src/corpus-run/score-agreement.ts"
+depends = ["build"]
+run = "node dist/final/node/score-agreement.mjs"
 
 [tasks."score-crosscheck"]
 description = "Report the population a judge crosscheck would run over, per author and per arm, spending no quota"
-run = "node src/corpus-run/score-crosscheck.ts"
+depends = ["build"]
+run = "node dist/final/node/score-crosscheck.mjs"
 
 [tasks."score-probe"]
 description = "Report what the shadow-mode introduced-defect probe found across a run's settled artifacts, over distinct shipped regions"
-run = "node src/corpus-run/score-probe.ts"
+depends = ["build"]
+run = "node dist/final/node/score-probe.mjs"
 
 [tasks."recall-benchmark"]
 description = "Measure recall: plant known omissions into clean translations, run the repair loop, and grade restoration against the deletions (append -- --plan for a zero-quota setup check)"
-run = "node src/corpus-run/recall-benchmark.ts"
+depends = ["build"]
+run = "node dist/final/node/recall-benchmark.mjs"
 
 [tasks."probe-sensitivity"]
 description = "Ask whether the introduced-defect probe can detect damage at all: one clean region and two with damage injected, cat-themed fixtures only"
-run = "node src/corpus-run/probe-sensitivity.ts"
+depends = ["build"]
+run = "node dist/final/node/probe-sensitivity.mjs"
 
 [tasks."translate-probe"]
 description = "PROTOTYPE for #70: ask a translator ensemble to render the corpus section with the worst coverage gap, which the repair loop cannot express"
-run = "node src/corpus-run/translate-probe.ts"
+depends = ["build"]
+run = "node dist/final/node/translate-probe.mjs"
 
 [tasks."damage-sample"]
 description = "Draw shipped regions at random and ask a human the same source-anchored damage question the probe asks, with the probe's verdict kept in the manifest"
-run = "node src/corpus-run/damage-sample.ts"
+depends = ["build"]
+run = "node dist/final/node/damage-sample.mjs"
 
 [tasks."probe-verify"]
 description = "Probe damaged and unread regions with the accepted issues withheld, and write one blind sheet asking whether each flagged edit really damaged the text"
-run = "node src/corpus-run/probe-verify.ts"
+depends = ["build"]
+run = "node dist/final/node/probe-verify.mjs"
 
 [tasks."score-verify"]
 description = "Join the graded blind verification sheet to its manifest and report what the unlabelled probe's flags are worth on regions nobody had read"
-run = "node src/corpus-run/score-verify.ts"
+depends = ["build"]
+run = "node dist/final/node/score-verify.mjs"
 
 [tasks."probe-relabel"]
 description = "Re-probe the regions a human read as damaged, once with the accepted issues shown and once withheld, to separate a suppressing label from a hard judgement"
-run = "node src/corpus-run/probe-relabel.ts"
+depends = ["build"]
+run = "node dist/final/node/probe-relabel.mjs"
 
 [tasks."model-health"]
 description = "Ask every roster model one trivial structured question and report what came back, so schema-mismatch can be told apart from a dead model"
-run = "node src/corpus-run/model-health.ts"
+depends = ["build"]
+run = "node dist/final/node/model-health.mjs"
 [tasks."model-catalog"]
 description = "Compare what the provider serves against the compiled catalog, so a model that vanished stops costing a silent lost voice per call and a model holding no run role becomes visible"
-run = "node src/corpus-run/model-catalog.ts"
+depends = ["build"]
+run = "node dist/final/node/model-catalog.mjs"
 [tasks."checker-sensitivity"]
 description = "Ask whether the resolution checkers can say no: a genuine fix, an untouched text, and a fix that damaged its slice, cat-themed fixtures only"
-run = "node src/corpus-run/checker-sensitivity.ts"
+depends = ["build"]
+run = "node dist/final/node/checker-sensitivity.mjs"
