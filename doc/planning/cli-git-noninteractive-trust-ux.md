@@ -2,16 +2,27 @@
 
 ## Status
 
-Implemented on `main` on 2026-08-13.
-Final package and packed-artifact verification is pending.
+Implemented on `main` on 2026-08-13
+and user-boundary verified on 2026-08-14.
 
 Implementation commits:
 
 - `6835b8c4e` classifies unavailable trust consent;
 - `6694f90b9` makes untrusted-config remediation actionable;
-- `34e8aa2a9` adds successful namespace and trust help.
+- `34e8aa2a9` adds successful namespace and trust help;
+- `f35927c7a` preserves real Git global short-circuit flags before namespace dispatch;
+- `5f1894f59` classifies terminal EOF as unavailable consent
+  and preserves previous records after unavailable re-trust.
 
-Regression tests landed in the adjacent test commits.
+Verification passed for the package build,
+full unit suite,
+type lint,
+packed trust consumer,
+Markdown lint,
+and direct pseudo-terminal probes of root and recursive EOF.
+Package Oxlint still reports its existing `test-import(require-eventual-artifact)` baseline:
+96 diagnostics across 42 test and performance files,
+with no production-source diagnostic.
 
 ## Incident
 
