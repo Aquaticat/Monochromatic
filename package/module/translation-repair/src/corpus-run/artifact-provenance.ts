@@ -84,10 +84,14 @@ export function abbreviate(
   );
 
   /**
-   * Shortest width at which no two of these ids read alike.
+   * Shortest width at which no two DISTINCT ids read alike.
    *
-   * Full length when even that cannot separate them, which means the same id
-   * was passed twice and no width would have helped.
+   * Distinct is what the comparison measures, and deliberately: a report
+   * naming one pipeline twice should print it the same way both times, so a
+   * repeated id is separated at the floor rather than growing the whole
+   * report chasing a difference that does not exist. Full length is reached
+   * only for ids in a prefix relation, and reaching it always separates them,
+   * so the fallback is a guard rather than an outcome.
    */
   const width = candidates.find(function separates(candidate,): boolean {
     return new Set(ids.map(function toPrefix(id,): string {

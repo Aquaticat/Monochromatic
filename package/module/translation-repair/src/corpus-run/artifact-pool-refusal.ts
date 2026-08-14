@@ -100,6 +100,112 @@ export function generationLines(
 }
 
 /**
+ * Artifacts excluded for one reason, named together so a refusal lists them by
+ * remedy rather than as one undifferentiated pile.
+ *
+ * @example
+ * ```ts
+ * const group: ExclusionGroup = { reason: 'unreadable', entryIds: ['Mittens',], };
+ * ```
+ */
+type ExclusionGroup = Readonly<{
+  /**
+   * Why these artifacts could not be placed, as a clause.
+   */
+  reason: string;
+
+  /**
+   * Entries excluded for it.
+   */
+  entryIds: readonly string[];
+}>;
+
+/**
+ * Explains a census that placed nothing, distinguishing empty from excluded.
+ *
+ * `total` counts PLACED entries only, so a directory holding nothing but
+ * unplaceable artifacts reports zero. Saying "nothing has settled yet" there
+ * would be false in the one case an operator most needs the truth: the files
+ * are present, and every one of them was excluded for a reason with a remedy.
+ *
+ * @param census - what the directory holds, having placed no entry
+ *
+ * @returns Lines naming what is present, or that nothing is
+ *
+ * @example
+ * ```ts
+ * const lines = emptyCensusLines({ census, },);
+ * ```
+ */
+function emptyCensusLines(
+  { census, }: { readonly census: GenerationCensus; },
+): readonly string[] {
+  /**
+   * Every way an artifact can fail to be placed, in the order a refusal lists
+   * them.
+   */
+  const kinds: readonly ExclusionGroup[] = [
+    {
+      reason: 'recording no usable pipeline',
+      entryIds: census.untaggedIds,
+    },
+    {
+      reason: 'settled before builds were recorded',
+      entryIds: census.preDigestIds,
+    },
+    {
+      reason: 'unreadable',
+      entryIds: census.malformedIds,
+    },
+  ];
+
+  /**
+   * The ones that actually occurred here.
+   */
+  const excluded = kinds.filter(function present(group,): boolean {
+    /**
+     * Entries excluded this way.
+     */
+    const { entryIds, } = group;
+
+    return entryIds.length > 0;
+  },);
+
+  /**
+   * How many artifacts are present but unplaceable.
+   */
+  const total = excluded.reduce(
+    function add(
+      soFar,
+      group,
+    ): number {
+      /**
+       * Entries excluded this way.
+       */
+      const { entryIds, } = group;
+
+      return soFar + entryIds.length;
+    },
+    0,
+  );
+
+  if (total === 0)
+    return ['No entry has settled yet, so there is nothing to pool.',];
+
+  return [
+    `No entry could be placed, though ${String(total,)} artifact${
+      total === 1 ? '' : 's'
+    } ${total === 1 ? 'is' : 'are'} present:`,
+    ...excluded.map(function toLine(group,): string {
+      return `  ${group.reason}: ${
+        group.entryIds
+          .join(', ',)
+      }`;
+    },),
+  ];
+}
+
+/**
  * Raised when a pool spans pipeline generations and the caller named none.
  */
 export class MixedGenerationError extends Error {
@@ -191,7 +297,7 @@ export class EmptyPoolError extends Error {
     super(
       [
         ...(census.total === 0
-          ? ['No entry has settled yet, so there is nothing to pool.',]
+          ? emptyCensusLines({ census, },)
           : [
             `All ${
               String(census.total,)

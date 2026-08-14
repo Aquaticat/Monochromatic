@@ -344,6 +344,62 @@ await describe({
     },),
 
     it({
+      name: 'refuses a SYMBOLIC tip such as HEAD or a branch name, which is not '
+        + 'an identity at all: it resolves against the READER\'s checkout at '
+        + 'read time rather than against whatever produced the artifact, so it '
+        + 'silently answers a different question, and a branch name answers one '
+        + 'whose answer changes',
+      fn: async () => {
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: 'HEAD',
+              digest: DIGEST_A,
+            },
+            {
+              entryId: 'Pepper',
+              tip: 'main',
+              digest: DIGEST_A,
+            },
+          ],
+        },);
+
+        const census = await censusByGeneration({ artifactsDir: dir, },);
+
+        expect(census.total,).toBe(0,);
+        expect(census.untaggedIds,).toEqual(['Mittens', 'Pepper',],);
+      },
+    },),
+
+    it({
+      name: 'names what is PRESENT when nothing could be placed, rather than '
+        + 'saying nothing has settled yet. A directory of unplaceable artifacts '
+        + 'reports zero placed entries, and the bare empty-directory line would '
+        + 'be false in the one case an operator most needs the truth: the files '
+        + 'are there and every one was excluded, each with its own remedy',
+      fn: async () => {
+        const dir = await writeArtifacts({
+          entries: [
+            { entryId: 'Mittens', },
+            {
+              entryId: 'Pepper',
+              tip: TIP_A,
+            },
+          ],
+        },);
+
+        await expect(
+          selectEligible({
+            census: await censusByGeneration({ artifactsDir: dir, },),
+          },),
+        )
+          .rejects
+          .toThrow('No entry could be placed',);
+      },
+    },),
+
+    it({
       name: 'reports an empty directory as zero rather than throwing, since a '
         + 'run that has settled nothing yet is an ordinary state',
       fn: async () => {
@@ -490,6 +546,46 @@ await describe({
           eligible.report
             .some(function counts(line: string,) {
               return line.includes('1 ELIGIBLE',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'WARNS that a required-commit pool is a post-baseline cohort when '
+        + 'two generations both satisfy it. Ancestry is a compatibility floor: '
+        + 'every descendant qualifies and descendants differ from each other '
+        + 'arbitrarily, so a rate over them belongs to no single pipeline, and '
+        + 'an earlier wording invited exactly the opposite reading',
+      fn: async () => {
+        const [root, head,] = await gitBounds();
+
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: head,
+              digest: DIGEST_A,
+            },
+            {
+              entryId: 'Biscuit',
+              tip: root,
+              digest: DIGEST_B,
+            },
+          ],
+        },);
+
+        const eligible = await selectEligible({
+          census: await censusByGeneration({ artifactsDir: dir, },),
+          requiredCommit: root,
+        },);
+
+        expect(eligible.entryIds,).toEqual(['Biscuit', 'Mittens',],);
+        expect(eligible.selection.kind,).toBe('required-commit',);
+        expect(
+          eligible.report
+            .some(function warns(line: string,) {
+              return line.includes('post-baseline COHORT',);
             },),
         ).toBe(true,);
       },

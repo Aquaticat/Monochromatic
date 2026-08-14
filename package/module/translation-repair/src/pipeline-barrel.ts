@@ -166,6 +166,7 @@ export {
   assertArtifactProvenance,
   type GenerationSelection,
 } from './corpus-run/artifact-provenance.ts';
+export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 export {
   assertPipelineDigest,
   digestPipeline,

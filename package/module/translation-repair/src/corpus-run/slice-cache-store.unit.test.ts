@@ -159,6 +159,94 @@ await describe({
     },),
 
     it({
+      name: 'DISCARDS slices filled by another pipeline instead of resuming '
+        + 'them. This is the one generation defect no reader can catch: the '
+        + 'settled artifact records a single digest, so an entry built half '
+        + 'from cached slices and half from current code looks like ordinary '
+        + 'work to every filter downstream while being internally mixed',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry cache directory.
+         */
+        const dir = join(
+          scratch.path,
+          'Mittens',
+        );
+
+        /**
+         * Cache filled by the pipeline that is about to be replaced.
+         */
+        const before = await openSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+
+        await before.persist(
+          'slice-hash-aaa',
+          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        );
+
+        /**
+         * Same directory reopened by a different build, which is what a resume
+         * after any behaviour change looks like.
+         */
+        const after = await openSliceCache({
+          dir,
+          generation: 'b'.repeat(64,),
+        },);
+
+        expect(after.resumed.size,).toBe(0,);
+
+        /**
+         * Reopening under the SAME new pipeline, which must now resume nothing
+         * either: the discarded slices are gone rather than merely skipped.
+         */
+        const again = await openSliceCache({
+          dir,
+          generation: 'b'.repeat(64,),
+        },);
+
+        expect(again.resumed.size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'DISCARDS an UNSTAMPED cache for the same reason, since a cache '
+        + 'that cannot prove which pipeline filled it is exactly the case the '
+        + 'stamp exists to remove',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry cache directory, filled by hand without a marker.
+         */
+        const dir = join(
+          scratch.path,
+          'Mittens',
+        );
+        await mkdir(
+          dir,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            dir,
+            'slice-hash-aaa.json',
+          ),
+          `${JSON.stringify(catOutcome({ chunkIndex: 0, },),)}\n`,
+        );
+
+        expect((await openSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },)).resumed
+          .size,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'creates the entry directory when it is absent, so a first run '
         + 'needs no setup and resumes from nothing',
       fn: async () => {
