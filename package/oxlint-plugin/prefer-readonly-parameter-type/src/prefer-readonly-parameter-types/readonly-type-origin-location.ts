@@ -309,8 +309,16 @@ export function readonlyTypeOrigin({
    * Optional named-origin property after sentinel narrowing.
    */
   const named = (typeof name) === 'symbol' ? {} : { name, };
+  /**
+   * Source owning normalized boundary identity.
+   */
+  const sourceFile = owner.getSourceFile();
+  /**
+   * Full source identity preserving distinct same-line boundaries.
+   */
+  const identity = `${sourceFile.fileName}:${String(owner.getStart(sourceFile,),)}`;
   return {
-    identity: `${owner.getSourceFile().fileName}:${String(owner.getStart(owner.getSourceFile(),),)}`,
+    identity,
     kind: originKind(owner,),
     ...named,
     location: originLocation({

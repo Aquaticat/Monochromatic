@@ -65,20 +65,6 @@ function declarationSymbols(type: Type,): readonly TypeScriptSymbol[] {
 }
 
 /**
- * Collects eager editable origins from semantic type graph.
- *
- * @param type - Inferred callback parameter type.
- *
- * @param project - Active project resolving declaration handles.
- *
- * @returns distinct normalized origins.
- *
- * @example
- * ```ts
- * editableOrigins({ type, project });
- * ```
- */
-/**
  * Eager origin collection plus declaration-resolution completeness.
  */
 export type ReadonlyTypeOriginResolution = {
@@ -86,6 +72,20 @@ export type ReadonlyTypeOriginResolution = {
   readonly resolutionIncomplete: boolean;
 };
 
+/**
+ * Collects eager editable origins from semantic type graph.
+ *
+ * @param type - Inferred callback parameter type.
+ *
+ * @param project - Active project resolving declaration handles.
+ *
+ * @returns distinct origins plus resolution completeness.
+ *
+ * @example
+ * ```ts
+ * editableOrigins({ type, project });
+ * ```
+ */
 function editableOrigins({
   type,
   project,
@@ -190,16 +190,23 @@ export function readonlyTypeOriginEvidenceFromResolution({
 },): ReadonlyTypeOriginEvidence {
   if (authored)
     return { kind: 'authored', };
-  if (resolution.resolutionIncomplete)
+  /**
+   * Origin set and completeness separated for branch readability.
+   */
+  const {
+    origins,
+    resolutionIncomplete,
+  } = resolution;
+  if (resolutionIncomplete)
     return { kind: 'uncertain', };
-  if (resolution.origins.length === 0)
+  if (origins.length === 0)
     return { kind: 'none', };
-  if (resolution.origins.length > 1)
+  if (origins.length > 1)
     return { kind: 'multiple', };
   /**
    * Sole origin after count narrowing.
    */
-  const origin = resolution.origins[0];
+  const [origin,] = origins;
   if (origin === undefined)
     return { kind: 'none', };
   return {

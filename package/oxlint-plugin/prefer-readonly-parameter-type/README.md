@@ -119,6 +119,51 @@ contract rule.
 Ordinary `--fix` does not alter signatures or contracts;
 semantic rewrites remain suggestion-only.
 
+## Diagnostic action guidance
+
+Every readonly-preference finding includes one complete action branch:
+
+- a mechanically verified local replacement names the exact transformation;
+- one workspace-owned inferred origin names its callable or type and repository-relative `path:line`,
+  then identifies a likely producer edit and states that no exact producer syntax was proved;
+- several origins state that no single edit site was proved and direct the reader to establish one common deeply
+  readonly element type at their merge boundary;
+- incomplete semantic declaration resolution withholds unique-origin advice;
+- no workspace-owned origin directs the reader to introduce an explicit deeply readonly type at the nearest
+  project-owned boundary supplying the callback value;
+- an authored type with no verified syntax replacement names the writable path and requires type checking after
+  changing its declaration or projection.
+
+Origin declarations are resolved eagerly in the active TypeScript snapshot.
+The evidence cache stores immutable source identity,
+owner name,
+repository-relative path,
+and line,
+not a semantic handle tied to a replaceable project object.
+Default-library and external-library declarations never become editable producer origins.
+Distinct producers on one source line retain distinct full-offset identities,
+while union constituents produced by one callable normalize to that one callable.
+
+Oxlint's JS plugin API supports one current-file primary range and no cross-file related range.
+The consumer therefore remains the underlined location,
+and a unique producer is carried in message text.
+
+Parameter-oriented reports never splice a raw binding pattern into message text.
+Identifier parameters retain their name.
+Destructured parameters list source-ordered local binding names,
+including aliases,
+nesting,
+defaults,
+holes,
+and rest bindings.
+An empty binding pattern falls back to its one-based parameter position.
+The same stable subject is shared by preference,
+mutation,
+projected-capability,
+host-contract,
+redundant-marker,
+and stale-contract reports.
+
 ## Demand and cache boundaries
 
 Each active source expands analysis through exact owned callee and callback identities only.
