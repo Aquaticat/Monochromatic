@@ -102,11 +102,17 @@ A one-worker cold-to-warm control measured:
 - repeated one-worker warm:
   the same 166 findings and 126 failures.
 
-Default-worker warm runs produced different finding and failure counts.
-That proves instability,
-not yet whether its final varying count is caused by a cache-write race,
-category execution order,
-or another worker-sensitive state transition.
+Two isolated default-worker cycles each cleared the disposable project's cache,
+ran cold,
+then ran warm.
+Both cold runs produced the same 188-finding fingerprint and no semantic-evidence failures.
+Both warm runs produced the same 178-finding fingerprint,
+but their semantic-failure counts were 73 and 71 with different category splits.
+
+The controlled matrix proves cold-to-warm coverage loss,
+one-worker versus default-worker diagnostic divergence,
+and default-worker warning-count instability.
+It does not identify a cache-write race or prove that scheduling alone caused earlier non-isolated diagnostic-count variation.
 The one-worker differential is sufficient to prove persistent omission loss.
 
 Raw logger warnings are not Oxlint diagnostics.

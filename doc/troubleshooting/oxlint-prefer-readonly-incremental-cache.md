@@ -112,11 +112,14 @@ A one-worker cold-to-warm control over `package/module/translation-repair` measu
   and no restored omission records;
 - repeated one-worker warm rerun:
   the same 166 findings and 126 failures;
-- repeated default-worker warm reruns:
-  179 findings with 61 failures,
-  then 178 findings with 75 failures.
+- two isolated default-worker cycles:
+  the same 188-finding cold fingerprint and 178-finding warm fingerprint in each cycle,
+  while warm semantic failures varied from 73 to 71.
 
-The warm cache therefore changes semantic coverage and makes the result worker-order-dependent.
+The warm cache therefore changes semantic coverage,
+worker count changes the surviving diagnostic fingerprint,
+and default-worker warning volume remains unstable.
+The controlled matrix does not prove that a cache-write race or scheduling alone caused earlier non-isolated diagnostic-count variation.
 This is not a performance-only regression.
 The plugin logger's warnings are outside Oxlint's diagnostic channel,
 so the damaged 166-finding run still prints `Found 0 warnings`.

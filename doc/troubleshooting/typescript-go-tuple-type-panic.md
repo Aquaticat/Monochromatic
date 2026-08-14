@@ -415,9 +415,16 @@ The immediate unchanged rerun produced:
 ```
 
 A second one-worker warm run reproduced the same counts.
-Two default-worker warm runs varied between 179 findings with 61 semantic failures and 178 findings with 75 semantic failures.
-This is a positive cold-to-warm control and a repeated worker-order control:
-the missing findings are not inferred from source inspection.
+A later isolated default-worker matrix cleared the disposable project's cache before each cold-to-warm cycle:
+
+- both cold runs produced the same 188-finding fingerprint and no semantic-evidence failures;
+- both warm runs produced the same 178-finding fingerprint;
+- warm semantic failures varied from 73 to 71 and changed category split.
+
+The matrix proves cold-to-warm coverage loss,
+one-worker versus default-worker diagnostic divergence,
+and warning-count instability under default workers.
+It does not prove that a cache-write race or scheduling alone caused earlier non-isolated diagnostic-count variation.
 
 `readonly-rule-visitor.ts:108` catches the secondary error and logs `caughtValueStack(error)`:
 
