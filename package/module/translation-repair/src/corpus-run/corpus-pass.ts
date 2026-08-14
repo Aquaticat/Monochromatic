@@ -23,6 +23,7 @@ import {
   smallBandIds,
 } from './band-order.ts';
 import { readOnlyIds, } from './entry-filter.ts';
+import { assertResumableGeneration, } from './pass-generation-guard.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
   discardSliceCache,
@@ -81,8 +82,23 @@ const MS_PER_MINUTE = 60_000;
  * A skipped entry is lost coverage in the verdict, not saved money: the plan
  * is flat rate, quota regenerates faster than runs spend, and the user
  * confirmed cost does not matter.
+ *
+ * Raised from 720 because twelve hours could not clear the corpus in ONE
+ * invocation, and every extra invocation was fragmenting the pool. Measured
+ * from artifact mtimes across an evening: about 27 minutes per entry over a
+ * clean stretch and about 53 averaged over a whole span including stalls. At
+ * 92 pending entries that is 41 to 81 hours, so a twelve-hour budget settles
+ * roughly 13 to 26 and stops, and reaching the full corpus needs four to seven
+ * resumes. Each resume re-reads HEAD, so under a policy of restarting whenever
+ * a fix lands, each one stamped a new commit: that is precisely how one
+ * directory came to hold 22 entries across four tips.
+ *
+ * Three days covers the pessimistic rate with room to spare. It is not a
+ * prediction that a run will take three days; `assertResumableGeneration` is
+ * what protects the pool now, and this only stops the BUDGET from being the
+ * thing that forces a fragmenting resume.
  */
-const SOFT_BUDGET_MINUTES = 720;
+const SOFT_BUDGET_MINUTES = 4_320;
 
 /**
  * Minutes of wall time ONE entry may run before its exchanges abort.
@@ -227,6 +243,15 @@ async function runCorpusPass(): Promise<void> {
    * Pipeline tip recorded into every artifact.
    */
   const tip = await readHeadSha();
+
+  // Before anything is settled: a resume reads HEAD again, so if HEAD moved
+  // since the entries already here were written, continuing would stamp a
+  // second commit into one pool and every reader that computes a rate would
+  // then refuse the lot.
+  await assertResumableGeneration({
+    artifactsDir,
+    tip,
+  },);
 
   /**
    * Entry ids already carrying an artifact this pass.

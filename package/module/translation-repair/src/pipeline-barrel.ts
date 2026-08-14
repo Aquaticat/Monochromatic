@@ -148,6 +148,10 @@ export {
   MixedGenerationError,
   selectEligible,
 } from './corpus-run/artifact-eligible.ts';
+export {
+  assertResumableGeneration,
+  TipDriftError,
+} from './corpus-run/pass-generation-guard.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,
