@@ -227,7 +227,7 @@ component LedSegmentButton inherits Rectangle {
     callback clicked();
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
     horizontal-stretch: 0;
-    width: min(led-label.preferred-width + 48px, root.max-width);
+    width: min(led-label.preferred-width + 64px, root.max-width);
     height: 60px;
     preferred-height: 60px;
     background: transparent;
@@ -357,9 +357,9 @@ component LedSegmentButton inherits Rectangle {
     }
 
     if root.selected: Text {
-        x: 23px;
+        x: 31px;
         y: 9px;
-        width: parent.width - 46px;
+        width: parent.width - 62px;
         height: 46px;
         text: root.text;
         font-size: Typography.body-rem * 1rem + 1px;
@@ -371,9 +371,9 @@ component LedSegmentButton inherits Rectangle {
     }
 
     led-label := Text {
-        x: 24px;
+        x: 32px;
         y: root.selected ? 10px : 8px;
-        width: parent.width - 48px;
+        width: parent.width - 64px;
         height: 44px;
         text: root.text;
         font-size: Typography.body-rem * 1rem;

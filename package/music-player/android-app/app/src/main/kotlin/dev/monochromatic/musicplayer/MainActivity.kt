@@ -3363,7 +3363,7 @@ private fun ledCapLabel(options: LedCapOptions) {
             },
         ),
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 24.dp)
             .offset(y = if (options.selected) 2.dp else 0.dp),
     )
 }
