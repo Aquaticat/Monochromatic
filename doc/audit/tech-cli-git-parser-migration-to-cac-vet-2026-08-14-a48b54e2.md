@@ -2,7 +2,7 @@
 
 Status:
  in progress.
- Lifecycle phase is serious alternative.
+ Lifecycle phase is finalist for the management-only integration shape.
  Started and last updated on 2026-08-14.
 
 Subject:
@@ -948,11 +948,165 @@ Stop condition:
 
 ## Hard-gate exits
 
-None yet.
+### CAC as the shared Git-region parser
+
+Outcome:
+ fail.
+
+Reason:
+ the pinned artifact does not preserve required argv semantics:
+
+- `001` becomes number `1`;
+- `+310000` becomes number `310000`;
+- `type: [String]` produces arrays containing already-damaged strings;
+- declared `--message -a` reports a missing message and parses `-a` as another flag;
+- lone `-` disappears rather than remaining positional;
+- declared boolean `--dry-run target` becomes option value `dryRun: 'target'` and removes the positional;
+- unknown option spellings and consumed values are normalized into an object rather than retained as the incumbent
+  `unknownOptions` token sequence.
+
+These are hard failures for cli-git's raw-argv fidelity and fail-closed classification constraints.
+Reading and rescanning `CAC.rawArgs` would retain the current owned parser responsibility rather than make CAC the parser.
+
+### CAC as the only cli-git parser
+
+Outcome:
+ fail.
+
+Reason:
+this shape includes the failed Git-region role.
+Management-command success cannot offset a hard failure in forwarded Git classification.
+
+### CAC for management commands only
+
+Outcome:
+ survives hard gates pending full validation.
+
+Reason:
+one-level command routing,
+boolean flags,
+ordinary string policy IDs,
+unknown-option rejection,
+unused-argument rejection,
+repetition,
+and post-`--` pathspec capture can match the incumbent.
+Exact policy values require an owned pre-parser because CAC cannot preserve numeric-looking or dash-led values.
+The resulting shape keeps every Git parser plus a management-specific scanner.
 
 ## Validation results
 
-Not started.
+### Published artifact on Linux x64
+
+Command:
+ the published-artifact behavior matrix from the recorded manifest.
+
+Environment:
+ Node 24.18.0 on Linux x64,
+network disabled,
+read-only container,
+2 GiB memory,
+2 CPUs,
+128-process ceiling,
+and 1,024-file-descriptor ceiling.
+
+Exit:
+ zero.
+
+Positive controls:
+
+- ordinary text option remained `text`;
+- tokens after `--` remained exact strings;
+- a declared option after a positional parsed successfully;
+- one-level command dispatch,
+  unknown-option rejection after validation,
+  unused-argument rejection,
+  and direct pathspec capture all executed.
+
+Observed failures are listed in the hard-gate exit for Git-region parsing.
+Additional integration observations:
+
+- `parse(..., { run: false })` still dispatched a command event;
+- built-in help wrote through `console.info`;
+- `trust --help --unknown` printed help and returned instead of validating the unknown option;
+- allowing unknown options retained exact `rawArgs` but reduced `--mystery value tail` to
+  `options.mystery = 'value'` and positional `tail`.
+
+Evidence:
+
+- harness SHA-256 is
+  `1c4a4f94e3a822c04eb63e859c2db804884ee7f93a3711105f1b59b771a38938`;
+- output is
+  `~/temp/agent/cac-artifact-2026-08-14/behavior-output.json`;
+- output SHA-256 is
+  `28187f009af73513f5e602fade8b68040938730019a1eef32cbe610578b69a3b`.
+
+### Management grammar without a lexical adapter
+
+A 41-case comparison exercised current `parseManagementArgs` and a direct CAC mapping in the bounded container.
+Thirty-seven cases matched.
+Four did not:
+
+- policy ID `001` became number `1`;
+- policy ID `+2` became number `2`;
+- policy ID `-x` was refused;
+- policy ID `--all` was refused instead of being consumed as the `--policy` value.
+
+Positive-control ordinary commands,
+text IDs,
+unknown options,
+missing values,
+joined values,
+repetition,
+and pathspecs matched.
+The unadapted output SHA-256 is
+`c81b9d978d8d34dec739a9a20cfdba0e72467ded97b373a1efc54225b24e1db6`.
+
+### Management grammar with owned policy normalization
+
+The second prototype added an owned linear scan that:
+
+- stops at a real pathspec separator;
+- captures exact separated and joined `--policy` values;
+- replaces each value with a non-dash,
+  nonnumeric placeholder before CAC parsing;
+- restores exact policy lexemes after CAC validation.
+
+All 44 catalog cases matched the current parser.
+The expanded catalog added joined numeric and empty values plus a pathspec named `--policy`.
+The process exited zero and stderr was empty.
+
+Evidence:
+
+- disposable worktree harness is
+  `~/temp/agent/mono-cac-probe.kbXvUyzU/cac-management-probe.mjs`;
+- harness SHA-256 is
+  `2ba5fb3d3e938e03650202e9ba1d6e47333b599a1b8c50ab17aa87b05d830162`;
+- adapted output is
+  `~/temp/agent/cac-artifact-2026-08-14/management-parity-adapted-output.json`;
+- adapted output SHA-256 is
+  `ee22911deadb1d948e90cf7adda81529d21a2e30c59a1de46953b5d1ad0ad33c`.
+
+The prototype adapter and its policy scanner occupy physical lines 9 through 94 of the 160-line harness.
+The comparison catalog begins at line 95.
+Current `management-parser.ts` lines 129 through 265 contain the replaceable specs and parse implementation,
+while its help constants,
+action type,
+and the 415-line shared argv parser remain required.
+This is not production line-count evidence because project TSDoc,
+runtime validation,
+logging,
+and lint requirements were intentionally absent from the disposable probe.
+
+### Remaining validation
+
+- rebuild the pinned source and compare its artifact boundary;
+- run or equivalently cover the complete relevant upstream suite;
+- verify the management-only shape under cli-git's TypeScript and bundling boundary;
+- exercise Linux,
+  macOS,
+  and Windows consumer behavior;
+- measure bundle and lifecycle impact against a positive-control unchanged build;
+- run the maintained cli-git package suites and user-boundary command from a disposable integration branch.
 
 ## Score arithmetic
 
@@ -980,4 +1134,10 @@ Other external parser technologies are out of scope.
 
 The historical Optique timing in repository history is motivation for a latency gate,
 not evidence about CAC.
-The current audit has not yet inspected CAC source or reproduced candidate behavior.
+Current runtime evidence covers Linux x64 only.
+The management adapter is a disposable untyped design probe,
+not production code and not an authorized migration.
+No source-level build comparison,
+macOS run,
+Windows run,
+or cli-git lifecycle benchmark has completed yet.

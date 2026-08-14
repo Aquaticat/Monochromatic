@@ -379,8 +379,53 @@ Source inspection identified capability risks to probe rather than assume:
 - parsed options and action callbacks use `any` in the shipped declarations;
 - `parse` mutates a stateful `CAC` instance and dispatches command events even with `run: false`.
 
-These findings do not yet settle practicality.
-A bounded artifact-level behavior matrix and cli-git integration prototype must determine which CAC integration shapes survive.
+These findings did not alone settle practicality.
+The subsequent bounded probes now separate rejected broad migration from the surviving management-only shape.
+
+### 2026-08-14 runtime and parity checkpoint
+
+The published `cac@7.0.0` artifact ran in a network-disabled,
+read-only Node 24.18.0 container with 2 GiB memory and 2 CPUs.
+Positive controls proved ordinary text options,
+post-`--` tokens,
+options after positionals,
+one-level command routing,
+and usage validation work.
+
+CAC failed hard requirements for replacing `src/parser/argv.ts` or the complete parser set:
+
+- numeric-looking option values lose exact spelling;
+- `type: [String]` runs after loss and returns an array;
+- dash-led declared values are treated as new options;
+- lone `-` disappears;
+- kebab-case booleans can consume the following token;
+- unknown option tokens are normalized rather than retained as a token sequence.
+
+Do not pursue CAC as the Git-region parser or as a complete parser replacement.
+Those integration shapes have exited the audit on hard-gate failure.
+
+Management-only use remains technically possible but is not yet recommended.
+A direct 41-case mapping matched the incumbent in 37 cases.
+The mismatches were policy IDs `001`,
+`+2`,
+`-x`,
+and `--all` when consumed as a policy value.
+A second prototype retained an owned policy scanner,
+replaced exact values with safe placeholders before CAC,
+and restored them after parsing.
+That shape matched all 44 expanded catalog cases with empty stderr.
+
+The result is the central tradeoff:
+CAC can own the closed command router only if cli-git keeps custom lexical parsing for exact policy values,
+keeps all Git-region parsers,
+keeps hand-authored exact help,
+and adds runtime validation around CAC's `any` result types.
+The untyped disposable adapter plus scanner occupies physical lines 9 through 94 of its harness.
+Current replaceable management specs and parsing occupy `management-parser.ts` lines 129 through 265,
+but production TSDoc,
+logging,
+validation,
+and lint requirements make this an upper-bound comparison rather than net line-count proof.
 
 ## Open risks
 
@@ -399,6 +444,10 @@ A bounded artifact-level behavior matrix and cli-git integration prototype must 
 
 ## Next action
 
-Finish targeted CAC source and maintenance evidence,
-write the execution manifest,
-then run the pinned artifact behavior matrix in a secret-free bounded container.
+Prototype and verify the upstream numeric-preservation fix required by the troubleshooting record,
+then complete source rebuild,
+upstream-suite,
+TypeScript,
+bundle,
+platform,
+and cli-git consumer validation for the surviving management-only shape.
