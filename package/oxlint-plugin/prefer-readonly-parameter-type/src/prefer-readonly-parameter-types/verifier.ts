@@ -15,6 +15,7 @@ import { opaqueEffectReport, } from './opaque-effect-diagnostic.ts';
 import type { ReadonlyCallableEvidence, } from './readonly-callable-evidence.ts';
 import type { ReadonlyRuleCategory, } from './readonly-rule-category.ts';
 import { reportRedundantForeignBorrowed, } from './redundant-marker-report.ts';
+import { readonlyPreferenceGuidance, } from './readonly-preference-guidance.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 
 import {
@@ -152,6 +153,7 @@ export function reportReadonlyCallableEvidence({
       affectedNames,
       parameterType,
       classification,
+      originEvidence,
       parameterBlocks,
       opaque,
       retained,
@@ -200,6 +202,10 @@ export function reportReadonlyCallableEvidence({
           data: {
             parameterSubject,
             reason: classification.reason,
+            guidance: readonlyPreferenceGuidance({
+              suggestions,
+              originEvidence,
+            },),
           },
           ...suggestions.length === 0 ? {} : { suggest: suggestions, },
         },);

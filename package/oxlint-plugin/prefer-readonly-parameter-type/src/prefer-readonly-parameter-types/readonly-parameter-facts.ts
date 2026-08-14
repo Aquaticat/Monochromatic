@@ -35,6 +35,10 @@ import {
   type ReadonlyClassification,
 } from './readonly-classifier.ts';
 import { redundantMarkerApplies, } from './redundant-marker-report.ts';
+import {
+  readonlyTypeOriginEvidence,
+  type ReadonlyTypeOriginEvidence,
+} from './readonly-type-origin.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
 /**
@@ -53,6 +57,7 @@ export type ReadonlyParameterFacts = {
   readonly affectedNames?: ReadonlySet<string>;
   readonly parameterType: Type;
   readonly classification: ReadonlyClassification;
+  readonly originEvidence: ReadonlyTypeOriginEvidence;
   readonly parameterBlocks: readonly ParsedMutationContractBlock[];
   readonly opaque: boolean;
   /**
@@ -210,6 +215,24 @@ function factsForParameter({
   const mutated = effectSummary.referentMutatedParameterIndexes
     .has(parameterIndex,)
     || acceptedHostOpacity;
+  /**
+   * Semantic readonly classification reused by origin and every reporter.
+   */
+  const classification = classifyReadonlyType({
+    checker: project.checker,
+    project,
+    type: parameterType,
+  },);
+  /**
+   * Eager inferred-origin metadata needed only for mutable replacement candidates.
+   */
+  const originEvidence: ReadonlyTypeOriginEvidence = classification.kind === 'mutable'
+    ? readonlyTypeOriginEvidence({
+      parameter,
+      parameterType,
+      project,
+    },)
+    : { kind: 'none', };
   return {
     parameter,
     parameterIndex,
@@ -225,11 +248,8 @@ function factsForParameter({
     },),
     ...(affectedNames === undefined) ? {} : { affectedNames, },
     parameterType,
-    classification: classifyReadonlyType({
-      checker: project.checker,
-      project,
-      type: parameterType,
-    },),
+    classification,
+    originEvidence,
     parameterBlocks,
     opaque,
     retained: uncertainty.retained,

@@ -60,6 +60,32 @@ async function lintReadonly(fixturePath: string,): Promise<readonly OxlintDiagno
 }
 
 /**
+ * Removes action guidance when a legacy assertion isolates diagnostic claim.
+ *
+ * @param message - Complete public diagnostic message.
+ *
+ * @returns preference claim through classification reason, or unchanged non-preference message.
+ *
+ * @example
+ * ```ts
+ * preferenceClaim('Parameter "x" can be deeply readonly: property x is writable. Guidance.');
+ * ```
+ */
+function preferenceClaim(message: string,): string {
+  /**
+   * Start of preference predicate in diagnostic message.
+   */
+  const preferenceAt = message.indexOf(' can be deeply readonly:',);
+  if (preferenceAt === (-1))
+    return message;
+  /**
+   * Separator after classification reason and before action guidance.
+   */
+  const guidanceAt = message.indexOf('. ', preferenceAt,);
+  return guidanceAt === (-1) ? message : message.slice(0, guidanceAt + 1,);
+}
+
+/**
  * Runs semantic rule after Oxlint creates high-count fixed allocator pool.
  *
  * @param fixturePath - Relative fixture path under source root.
@@ -163,7 +189,7 @@ children: [
        * it would have recorded a passing count as evidence of a guard it never exercised. */
       expect(diagnostics.length,).toBe(16,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       expect(messages.some(function catalogRemediationRemoved(message,): boolean {
         return message.includes('audited-call catalogue',);
@@ -199,7 +225,7 @@ children: [
        * remediation is a measured behaviour of this rule. */
       const messages = (await lintReadonly('readonly-result-provenance-invalid.ts',))
         .map(function diagnosticMessage(diagnostic,): string {
-          return diagnostic.message;
+          return preferenceClaim(diagnostic.message,);
         },);
       /**
        * Findings routed to the collection message.
@@ -309,7 +335,7 @@ children: [
        * gate keeps it that way. */
       expect(diagnostics.length,).toBe(3,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       expect(messages.some(function unknownCoercionStaysClosed(message,): boolean {
         return message.startsWith(
@@ -334,7 +360,7 @@ children: [
       const diagnostics = await lintReadonly('readonly-foreign-provenance-invalid.ts',);
       expect(diagnostics.length,).toBe(5,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       expect(messages.filter(function ownedChildDiagnostic(message,): boolean {
         return message.startsWith('Parameter "child" can be deeply readonly',);
@@ -357,7 +383,7 @@ children: [
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-member-channel-invalid.ts',);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       expect(messages.length,).toBe(4,);
       /* A channel entry for an iterator member discharges exactly when the iterator
@@ -515,7 +541,7 @@ children: [
        * `doc/decision/prefer-readonly-result-provenance.md` records that ordering. */
       const diagnostics = await lintReadonly('readonly-result-provenance-invalid.ts',);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       /* Five reports and three offers. The count went to seven while the packaged-callable
        * gap was open, since that gap produced offers rather than reports, and back to
@@ -962,7 +988,7 @@ children: [
        * catches because the accessor body sits in the caller's scope. */
       const diagnostics = await lintReadonly('readonly-call-edge-invalid.ts',);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       /**
        * Counts offers naming one parameter.
@@ -1022,7 +1048,7 @@ children: [
        * this repository that started saying it while no offer anywhere changed. */
       const diagnostics = await lintReadonly('readonly-structural-store-invalid.ts',);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       /* The store provenance never reaches a reader. It stays recorded on the summary,
        * because every analysis consumer still needs it, and this is the boundary it must
@@ -1801,7 +1827,7 @@ children: [
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-binding-origin-invalid.ts',);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       /* The whole expected set, pinned rather than probed by absence. Every other
        * claim in this case is that some parameter is *not* offered, which a fixture
@@ -1956,12 +1982,83 @@ children: [
     },
   },),
   it({
+    name: 'gives complete action paths for every inferred-origin state',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-inferred-origin-invalid.ts',);
+      expect(diagnostics.length,).toBe(7,);
+      /**
+       * Preference messages emitted by origin decision controls.
+       */
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      expect(messages.some(function verifiedAuthored(message,): boolean {
+        return message.includes('Verified edit: Prefix the authored array type with `readonly`.');
+      },),).toBe(true,);
+      expect(messages.some(function cautiousAuthored(message,): boolean {
+        return message.includes('No exact syntax replacement was proved for this authored type.');
+      },),).toBe(true,);
+      expect(messages.some(function noWorkspaceOrigin(message,): boolean {
+        return message.startsWith('Parameter "error" can be deeply readonly:')
+          && message.includes('No workspace-owned source origin was proved');
+      },),).toBe(true,);
+      /**
+       * Multi-origin guidance preserving uncertainty without location dump.
+       */
+      const multipleOrigin = messages.find(function multiple(message,): boolean {
+        return message.includes('has multiple workspace-owned origins',);
+      },);
+      if (multipleOrigin === undefined)
+        throw new Error('Expected multi-origin readonly guidance.',);
+      expect(multipleOrigin.includes('toLeft',)).toBe(false,);
+      expect(multipleOrigin.includes('toRight',)).toBe(false,);
+      expect(multipleOrigin,).toContain(
+        'Establish one common deeply readonly element type at their merge boundary',
+      );
+      expect(messages.some(function namedTypeOrigin(message,): boolean {
+        return message.includes(
+          'originates in type "NamedMutableRow" at package/test-fixture/oxlint-no-restricted-syntax/src/readonly-inferred-origin-invalid.ts:11',
+        )
+          && message.includes('No exact type syntax was proved for that producer');
+      },),).toBe(true,);
+      /**
+       * Every consumer of judged rows converges on sole mapping callback.
+       */
+      const callableOrigins = messages.filter(function callableOrigin(message,): boolean {
+        return message.includes(
+          'originates in callable "toJudged" at package/test-fixture/oxlint-no-restricted-syntax/src/readonly-inferred-origin-invalid.ts:22',
+        );
+      },);
+      expect(callableOrigins.length,).toBe(2,);
+      expect(callableOrigins.every(function cautiousProducer(message,): boolean {
+        return message.includes('Likely edit: give that callable an explicit deeply readonly return type.')
+          && message.includes('No exact type syntax was proved for that producer');
+      },),).toBe(true,);
+      expect(messages.every(function oneLine(message,): boolean {
+        return (!message.includes('\n',)) && (!message.includes('\r',));
+      },),).toBe(true,);
+    },
+  },),
+  it({
+    name: 'resolves a unique producer across a source-file boundary',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-cross-file-origin-invalid.ts',);
+      expect(diagnostics.length,).toBe(1,);
+      expect(diagnostics[0]?.message,).toContain(
+        'originates in callable "toCrossFileRow" at package/test-fixture/oxlint-no-restricted-syntax/src/readonly-origin-producer.ts:16',
+      );
+      expect(diagnostics[0]?.message,).toContain(
+        'Likely edit: give that callable an explicit deeply readonly return type.',
+      );
+    },
+  },),
+  it({
     name: 'reports readonly preference, stale contracts, and unresolved effects',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);
       expect(diagnostics.length,).toBe(11,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
-        return diagnostic.message;
+        return preferenceClaim(diagnostic.message,);
       },);
       expect(messages.some(function shouldReadonly(message,): boolean {
         return message.includes('can be deeply readonly',);
