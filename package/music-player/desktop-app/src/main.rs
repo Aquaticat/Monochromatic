@@ -49,6 +49,16 @@ mod ui_page;
 /// ```
 mod ui_font_scale;
 
+/// What:     `mod ui_led_plate;` loads the measured LED plate path adapter.
+/// Why:      Slint owns text wrapping while Rust turns final cap rectangles into one
+///           multi-line SVG outline behind generated `LedPlateGeometry` interface.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiLedPlate from "./ui_led_plate";
+/// ```
+mod ui_led_plate;
+
 /// What:     `mod ui_page_style;` loads the sibling settings-persistence bridge.
 /// Why:      Page-control preference wiring uses generated `AppWindow` methods and stays
 ///           separate so `main.rs` remains under its code-line limit.
@@ -1297,6 +1307,17 @@ fn main() -> Result<()> {
     // applyOsFontScale(app);
     // ```
     ui_font_scale::apply_os_font_scale(&app);
+
+    // What:     `ui_led_plate::apply(&app);` joins Slint's measured cap geometry to
+    //           one Rust-generated SVG path.
+    // Why:      The plate remains one surface without guessing text widths or
+    //           overlapping row plates.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // applyLedPlateGeometry(app);
+    // ```
+    ui_led_plate::apply(&app);
 
     // Restore page-control preference and register settings persistence.
     ui_page_style::apply(&app);

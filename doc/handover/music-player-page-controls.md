@@ -35,11 +35,17 @@ Keep this file current after each implementation or visual-verification step.
 - Selected LED color is derived from the runtime accent.
   The reference purple demonstrates state and material behavior,
   not a literal pigment.
+- Wrapped LED rows remain one connected machined backplate.
+  One explicit outline follows every content-width row extent and crosses each 8-unit vertical channel.
+  Independently rounded or overlapping row plates are forbidden.
+- Active LED legend text is always white in both ambient scenes.
 - Android's largest dark-mode background is always `#000000`,
   independent of page-control style.
 - Screenshot-driven corrections require measured,
   matching-scale side-by-side renders.
-- Final interactive launches are limited to this machine and Pixel 6 serial `1C171FDF600KWW`.
+- Final interactive launches are limited to this machine and the requester-designated Android target.
+  The requester disconnected Pixel 6 serial `1C171FDF600KWW` and authorized the local
+  `Pixel_9_Pro_Fold` AVD for current verification.
   The requester performs final visual approval.
 
 ## Stable persisted mapping
@@ -89,16 +95,29 @@ middle,
 last,
 and wrapped-row shoulders have been verified.
 
-LED code exists on both platforms but is not accepted.
-The requester rejected the current rendering as visually unlike the reference.
-The prior matching-scale desktop comparison was insufficient because it did not drive correction of obvious structural mismatches,
-and the Android capture exposed them more clearly.
-Current defects include separately pill-shaped plate tiles instead of one machined row plate,
-uniform pill cap corners instead of 9-unit end and 2-unit inner-facing corners,
-oversized center radial hot spots,
-device-scaled typography that does not retain the 15-unit hardware legend,
-a literal purple active pigment,
-and non-LED Android dark backgrounds that are not true black.
+LED controls have been rebuilt on both platforms but still await requester approval.
+Android measures one-line legends first,
+greedily packs their actual content widths,
+then draws one `GenericShape` from all row extents behind independent 48-unit targets.
+The path mirrors in RTL so shorter wrapped rows stay anchored to the physical right edge.
+Slint reports final `FlexboxLayout` cap rectangles through `LedPlateGeometry`.
+Rust groups those rectangles by row and returns one SVG outline with rounded transitions on both physical edges.
+No platform stacks or overlaps independent row plates.
+Both implementations use 8-unit margins and channels,
+44-unit caps,
+9-unit exposed corners,
+2-unit inner corners,
+1-unit selected clearance,
+15-unit legends,
+always-white active text,
+subtle dome and shoulder layers,
+and accent-derived selection.
+Android dark background and surface roles are true black for every style.
+
+The first Android `SubcomposeLayout` probe measured complete targets containing `fillMaxSize()` paint,
+which made every cap a full-width row.
+Commit `08c131258` corrected the probe to measure only text and derive fixed cap width.
+`doc/troubleshooting/segmented-controls-fill-row.md` records the diagnosis.
 
 ## Authoritative references
 
@@ -160,9 +179,11 @@ and a 1-unit contour.
 - `package/music-player/desktop-app/src/session.rs`
 - `package/music-player/desktop-app/src/session_tests.rs`
 - `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt`
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LedPageControls.kt`
 - `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PageControlStyle.kt`
 - `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SessionStore.kt`
 - `package/music-player/android-app/app/src/test/kotlin/dev/monochromatic/musicplayer/PageControlStyleTest.kt`
+- `package/music-player/android-app/app/src/test/kotlin/dev/monochromatic/musicplayer/LedPageControlsTest.kt`
 
 The principal symbols for the remaining Chromium work are `ChromiumTab`,
 `ChromiumControls`,
@@ -170,13 +191,14 @@ The principal symbols for the remaining Chromium work are `ChromiumTab`,
 and `chromiumPageTab`.
 The principal LED symbols include `LedSegmentButton`,
 `LedSegmentControls`,
-`LedPlateOptions`,
-`LedFaceOptions`,
+`LedLine`,
+`LedPackingOptions`,
 `LedCapOptions`,
+`packLedLines`,
+`ledCapWidth`,
 `ledPlateModifier`,
 `ledFaceModifier`,
 `ledHardwareCap`,
-`ledHardwarePageButton`,
 `ledPageControls`,
 and `pageSceneColor`.
 
@@ -213,10 +235,23 @@ LED implementation and reference corrections are:
 - `999599d77`:
    prior cap-width correction;
    still part of the requester-rejected LED rendering
+- `5b54692cc`:
+   dedicated Android LED renderer,
+   runtime dynamic accent,
+   and true-black dark theme surfaces
+- `3fd1aec8a`:
+   extracted Android LED layout and material helpers
+- `b495108be`:
+   prior Slint per-row plate materials,
+   source corner geometry,
+   runtime accent,
+   and revised material layers
+- `08c131258`:
+   content-width Android text probe and regression tests
 
 Current scoped Chromium implementation commit is
 `95dcbff91`.
-No LED commit is accepted as final.
+The rebuilt LED implementation awaits requester approval.
 Unrelated commits are interleaved in history,
 so inspect scoped paths rather than assuming a contiguous feature branch.
 
@@ -258,25 +293,57 @@ Rejected LED captures and comparisons remain useful as before-state evidence:
 - `/var/home/user/temp/agent/music-player-chromium-feet-render/package/music-player/desktop-app/target/led-buttons-reference-side-by-side.png`
 - `/var/home/user/temp/agent/music-player-android-led-final.png`
 
-Host and Android checks passed for the current code,
-but they do not establish LED visual fidelity.
-The LED style remains incomplete until corrected captures match the authoritative geometry and scene model.
+The one-piece desktop redesign passes Slint lint,
+Rust lint,
+Cargo check,
+and all 90 desktop tests.
+Its geometry tests cover incomplete reports,
+callback reordering,
+stale same-count generations,
+empty generations,
+single-row paths,
+inward and outward width changes,
+equal-width rows,
+and right-aligned row transitions.
+The one-piece Android redesign passes unit tests,
+Detekt,
+and Android lint.
+Its pure tests cover row packing,
+content-width caps,
+complete plate height,
+and LTR and RTL coordinate mapping.
+Release builds and post-redesign visual captures remain pending.
+
+The release was installed on `Pixel_9_Pro_Fold` AVD serial `emulator-5554`.
+UI Automator verified a content-width shared plate at `[25,484][1477,601]`,
+with six non-overlapping 48-unit targets from `[42,496][223,595]` through `[1298,496][1460,595]`.
+The state-verified content-width capture before connected-row correction is
+`/var/home/user/temp/agent/music-player-avd-led-content-width-dark.png`.
+It is superseded because separate wrapped-row islands are now rejected.
+Desktop dark and light reference-label renders are in
+`/var/home/user/temp/agent/music-player-led-shared-plate-render/package/music-player/desktop-app/target/`.
+These establish implementation behavior,
+not requester visual approval.
 
 ## Working-tree and process state
 
-Main worktree is clean for music-player files.
-`.serena/project.yml` is the only current unrelated modification.
-Do not stage or alter it for this work.
+Main worktree contains the scoped one-piece plate redesign pending commit.
+Concurrent unrelated modifications currently include `.serena/project.yml` and troubleshooting documents outside this task.
+Do not stage or alter those unrelated paths.
 
-Detached render worktree:
-`/var/home/user/temp/agent/music-player-led-render`.
-It is based on `a56c8025c` and has a scratch modification to
+Current detached render worktree:
+`/var/home/user/temp/agent/music-player-led-shared-plate-render`.
+It is based on `b495108be` and has fixture-only changes to
 `package/music-player/desktop-app/ui/app.slint`.
 Treat that worktree and its target images as disposable visual-analysis material,
 not source to merge wholesale.
+The older `/var/home/user/temp/agent/music-player-led-render` worktree remains rejected before-state material.
 
-A desktop app built before the reopened LED corrections is running in `proc_bcef`.
-It is useful only as before-state evidence and must not be presented as final.
+The current desktop release runs in `proc_4e50`.
+The `Pixel_9_Pro_Fold` AVD runs in `proc_fd67` with `-no-snapshot-save`.
+Android Emulator 37.1.11 emitted `bad color buffer handle 388` once after boot,
+but subsequent explicit-display screenshots rendered the app.
+Do not infer emulator stability from that single capture.
 Completed process records still available in the harness include:
 
 - `proc_d7a6`:
@@ -286,8 +353,9 @@ Completed process records still available in the harness include:
    Android compact Chromium release install and launch,
   exited successfully
 
-The current Android app runs the final release on Pixel 6 process PID `16662` when last observed.
-Re-measure rather than assuming that PID remains current.
+The current Android release runs on AVD serial `emulator-5554`.
+The Pixel 6 is disconnected.
+Re-enumerate devices before any future install.
 
 `doc/troubleshooting/README.md` indexes troubleshooting categories,
 not every standalone report.
@@ -295,37 +363,12 @@ The Chromium raster-scale report therefore needs no explicit entry under the cur
 
 ## Remaining work
 
-1.  Rebuild LED row geometry around one shared machined plate per wrapped row on Android.
-    Give caps 9-unit exposed end corners and 2-unit inner-facing corners,
-    with uniform 8-unit margin and channel.
-2.  Bring Slint plate and cap silhouettes to the same source geometry within its wrapping constraints.
-3.  Replace oversized radial hot spots with the source's near-flat plateau,
-    outer-15-percent dome falloff,
-    clipped directional shoulder,
-    selected hot layer,
-    and scene-specific shadows.
-4.  Keep hardware legend geometry at 15 logical units and preserve single-line ellipsis.
-5.  Derive selected fill,
-bloom,
-edge shade,
-label ink,
-and label glow from each platform's runtime accent.
-6.  Make Android's largest dark-mode background `#000000` for every style.
-7.  Render dark and light desktop fixtures with the reference labels at matching scale.
-    Build equivalent Android evidence,
-    then compare silhouettes,
-    row plate continuity,
-    dimensions,
-    corners,
-    spacing,
-    gradients,
-    shadows,
-    selected depth,
-    and typography.
-8.  Run all host checks,
-    install only on Pixel 6 `1C171FDF600KWW`,
-    verify rendered state before capture,
-    and launch a new final desktop build.
+1.  Complete platform checks for connected wrapped rows.
+2.  Rebuild desktop and Android releases.
+3.  Reinstall on `emulator-5554` and verify the connected wrapped state through UI Automator.
+4.  Capture dark and light connected-row scenes with an explicit display ID.
+5.  Relaunch the desktop release and obtain requester visual approval.
+6.  Restore the AVD display override after verification.
 
 ## Risks and guardrails
 
@@ -346,8 +389,8 @@ and label glow from each platform's runtime accent.
 - Do not reintroduce full-row segment decoration.
 - Do not add package-specific segmented sizing policy to `AGENTS.md`.
 - Do not include `.serena/project.yml` or detached-worktree scratch changes in commits.
-- Do not launch on an emulator or another attached Android target.
-  Always pass `-s 1C171FDF600KWW` or use the serial-pinned mise task.
+- Current Android verification is authorized only on local AVD serial `emulator-5554` while the Pixel is disconnected.
+  Reconfirm the target when the requester reconnects hardware.
 
 ## Progress log
 
@@ -405,3 +448,28 @@ and label glow from each platform's runtime accent.
   Next action:
   rebuild Android LED row composition and material layers from the generator,
   then apply the same measured geometry to Slint.
+- 2026-08-13,
+  22:10 EDT:
+  Rebuilt LED controls in commits `5b54692cc`,
+  `3fd1aec8a`,
+  `b495108be`,
+  `08c131258`,
+  `3d2077390`,
+  and `044e70ea6`.
+  The AVD exposed and drove correction of a greedy full-row Compose measurement probe.
+  Matching-scale desktop crops compare source and accent-derived hardware at one logical unit per pixel.
+  The subsequent overlapping-row approach was rejected because it did not model one continuous backplate.
+- 2026-08-13,
+  22:37 EDT:
+  Replaced overlapping row plates with one explicit multi-line silhouette on both platforms.
+  Compose now builds one direction-aware `GenericShape` from packed row widths.
+  Slint reports actual cap rectangles to a Rust adapter that generates one SVG outline,
+  including transitions on unequal right or left row edges.
+  A generation token rejects stale same-count reports,
+  and measured row membership controls cap-end corners.
+  Active legend ink remains white.
+  Focused checks pass through desktop tests and Android lint.
+  Next action:
+  commit the scoped redesign,
+  build both releases,
+  and capture measured dark and light wrapped scenes.

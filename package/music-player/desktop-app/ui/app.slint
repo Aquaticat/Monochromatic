@@ -47,6 +47,21 @@ global Typography {
     out property <float> body-rem: 14 * 0.0769;
 }
 
+// One small interface joins Slint's actual flex measurements to the Rust plate
+// path adapter. Buttons report final layout geometry; Rust returns one SVG path
+// and exact bounds. Path paint never participates in flex measurement.
+export global LedPlateGeometry {
+    in-out property <bool> adapter-ready: false;
+    in-out property <string> path: "";
+    in-out property <length> x: 0px;
+    in-out property <length> width: 0px;
+    in-out property <length> height: 0px;
+    in-out property <[bool]> starts: [];
+    in-out property <[bool]> ends: [];
+    callback begin(int, length) -> int;
+    callback report(int, int, int, length, length, length, length);
+}
+
 // One row on the selected page: the display path (relative to the loaded root)
 // plus its index into the full queue. The index survives filtering, so clicking a
 // filtered row still maps back to the right track. Rust fills these from the
@@ -216,62 +231,82 @@ component SegmentedControls inherits Rectangle {
     }
 }
 
-// A measured hardware page button adapted from the supplied LED master.
-// Overlapping square internal plate edges form one shared 60px machined plate
-// per wrapped row. Exposed plate and cap ends retain source radii. Each 44px
-// cap has 8px plate clearance; selection leaves a 1px CNC seam.
+// A measured hardware cap adapted from the supplied LED master. This element
+// paints no plate. It reports final flex geometry so one parent-level path can
+// surround every line as a single machined surface.
 component LedSegmentButton inherits Rectangle {
     in property <string> text;
-    in property <string> next-text;
     in property <bool> selected;
-    in property <bool> last-control;
+    in property <int> control-index;
+    in property <int> control-count;
+    in property <int> control-generation;
     callback clicked();
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
-    private property <bool> starts-row: root.x < 1px;
-    private property <length> next-control-width:
-        min(next-label-measure.preferred-width + 64px, root.max-width);
+    private property <bool> starts-row:
+        LedPlateGeometry.starts.length > root.control-index
+        && LedPlateGeometry.starts[root.control-index];
     private property <bool> ends-row:
-        root.last-control
-        || root.x + root.width - 8px + root.next-control-width > root.max-width;
+        LedPlateGeometry.ends.length > root.control-index
+        && LedPlateGeometry.ends[root.control-index];
     horizontal-stretch: 0;
     width: min(led-label.preferred-width + 64px, root.max-width);
     height: 60px;
     preferred-height: 60px;
     background: transparent;
-
-    // Zero-sized text exposes next label's true width without painting it.
-    next-label-measure := Text {
-        width: 0px;
-        height: 0px;
-        opacity: 0;
-        text: root.next-text;
-        font-size: 15px;
-        font-weight: 600;
+    changed x => {
+        LedPlateGeometry.report(
+            root.control-generation,
+            root.control-index,
+            root.control-count,
+            root.x,
+            root.y,
+            root.width,
+            root.height,
+        );
     }
-
-    plate := Rectangle {
-        width: parent.width;
-        height: parent.height;
-        border-top-left-radius: root.starts-row ? 17px : 0px;
-        border-bottom-left-radius: root.starts-row ? 17px : 0px;
-        border-top-right-radius: root.ends-row ? 17px : 0px;
-        border-bottom-right-radius: root.ends-row ? 17px : 0px;
-        clip: true;
-        background: root.light-scene ? #c4c6ca : #111111;
-
-        // Width-independent vertical ramp avoids a repeated seam where plate
-        // tiles overlap, while retaining subtle ambient-dependent treatment.
-        Rectangle {
-            width: parent.width;
-            height: parent.height;
-            border-top-left-radius: plate.border-top-left-radius;
-            border-bottom-left-radius: plate.border-bottom-left-radius;
-            border-top-right-radius: plate.border-top-right-radius;
-            border-bottom-right-radius: plate.border-bottom-right-radius;
-            background: root.light-scene
-                ? @linear-gradient(180deg, #ffffff29 0%, #ffffff0f 30%, transparent 55%, #0000001f 100%)
-                : @linear-gradient(180deg, #ffffff0f 0%, #ffffff06 30%, transparent 55%, #00000024 100%);
-        }
+    changed y => {
+        LedPlateGeometry.report(
+            root.control-generation,
+            root.control-index,
+            root.control-count,
+            root.x,
+            root.y,
+            root.width,
+            root.height,
+        );
+    }
+    changed width => {
+        LedPlateGeometry.report(
+            root.control-generation,
+            root.control-index,
+            root.control-count,
+            root.x,
+            root.y,
+            root.width,
+            root.height,
+        );
+    }
+    changed height => {
+        LedPlateGeometry.report(
+            root.control-generation,
+            root.control-index,
+            root.control-count,
+            root.x,
+            root.y,
+            root.width,
+            root.height,
+        );
+    }
+    changed control-generation => {
+        LedPlateGeometry.report(
+            root.control-generation,
+            root.control-index,
+            root.control-count,
+            root.x,
+            root.y,
+            root.width,
+            root.height,
+        );
     }
 
     opening := Rectangle {
@@ -348,7 +383,7 @@ component LedSegmentButton inherits Rectangle {
         border-bottom-right-radius: cap-face.border-bottom-right-radius;
         background: @radial-gradient(
             circle,
-            Palette.accent-foreground.with-alpha(0.11) 0%,
+            #ffffff1c 0%,
             transparent 60%
         );
     }
@@ -399,7 +434,7 @@ component LedSegmentButton inherits Rectangle {
         vertical-alignment: center;
         horizontal-alignment: center;
         overflow: elide;
-        color: Palette.accent-foreground.with-alpha(0.45);
+        color: #ffffff73;
     }
 
     led-label := Text {
@@ -413,7 +448,7 @@ component LedSegmentButton inherits Rectangle {
         vertical-alignment: center;
         horizontal-alignment: center;
         overflow: elide;
-        color: root.selected ? Palette.accent-foreground : #3d3f45;
+        color: root.selected ? #ffffff : #3d3f45;
         animate y, color { duration: 160ms; easing: ease; }
     }
 
@@ -429,20 +464,80 @@ component LedSegmentButton inherits Rectangle {
     }
 }
 
-// Wrapped rows remain content-width. Neighboring 60px plate tiles overlap by
-// the 8px margin, with square internal ends, to paint one continuous row plate.
+// Wrapped rows remain content-width. Rust converts actual cap positions into
+// one stepped SVG outline. Three copies of that same outline paint contact,
+// base metal, and ambient sheen without row seams or overlapping plates.
 component LedSegmentControls inherits Rectangle {
     in property <[string]> labels;
     in property <int> selected-page;
     callback select-page(int);
+    private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
+    private property <bool> geometry-adapter-ready: LedPlateGeometry.adapter-ready;
+    private property <int> geometry-generation: 0;
+    callback refresh-geometry();
+    init => {
+        root.refresh-geometry();
+    }
+    changed geometry-adapter-ready => {
+        root.refresh-geometry();
+    }
+    changed width => {
+        root.refresh-geometry();
+    }
+    changed labels => {
+        root.refresh-geometry();
+    }
+    refresh-geometry => {
+        if root.geometry-adapter-ready {
+            root.geometry-generation = LedPlateGeometry.begin(root.labels.length, root.width);
+        }
+    }
     height: led-layout.preferred-height;
     preferred-height: led-layout.preferred-height;
     background: transparent;
 
+    if LedPlateGeometry.path != "" && root.light-scene: Path {
+        x: LedPlateGeometry.x + 1px;
+        y: 1px;
+        width: LedPlateGeometry.width;
+        height: LedPlateGeometry.height;
+        viewbox-width: LedPlateGeometry.width / 1px;
+        viewbox-height: LedPlateGeometry.height / 1px;
+        fit: fill;
+        commands: LedPlateGeometry.path;
+        fill: #00000073;
+    }
+
+    if LedPlateGeometry.path != "": Path {
+        x: LedPlateGeometry.x;
+        width: LedPlateGeometry.width;
+        height: LedPlateGeometry.height;
+        viewbox-width: LedPlateGeometry.width / 1px;
+        viewbox-height: LedPlateGeometry.height / 1px;
+        fit: fill;
+        commands: LedPlateGeometry.path;
+        fill: root.light-scene ? #c4c6ca : #111111;
+    }
+
+    if LedPlateGeometry.path != "": Path {
+        x: LedPlateGeometry.x;
+        width: LedPlateGeometry.width;
+        height: LedPlateGeometry.height;
+        viewbox-width: LedPlateGeometry.width / 1px;
+        viewbox-height: LedPlateGeometry.height / 1px;
+        fit: fill;
+        commands: LedPlateGeometry.path;
+        fill: root.light-scene
+            ? @linear-gradient(180deg, #ffffff29 0%, #ffffff0f 30%, transparent 55%, #0000001f 100%)
+            : @linear-gradient(180deg, #ffffff0f 0%, #ffffff06 30%, transparent 55%, #00000024 100%);
+        stroke: root.light-scene ? #00000030 : #00000057;
+        stroke-width: 1px;
+    }
+
     led-layout := FlexboxLayout {
         width: parent.width;
         spacing-horizontal: -8px;
-        spacing-vertical: 8px;
+        spacing-vertical: -8px;
         flex-wrap: wrap;
         alignment: start;
         align-content: start;
@@ -450,8 +545,9 @@ component LedSegmentControls inherits Rectangle {
         vertical-stretch: 0;
         for label[p] in root.labels: LedSegmentButton {
             text: label;
-            next-text: p + 1 < root.labels.length ? root.labels[p + 1] : "";
-            last-control: p == root.labels.length - 1;
+            control-index: p;
+            control-count: root.labels.length;
+            control-generation: root.geometry-generation;
             selected: p == root.selected-page;
             max-width: root.width;
             clicked => {

@@ -201,4 +201,118 @@ class LedPageControlsTest {
             ),
         )
     }
+
+    // What:     `emptyRowsProduceNoConnectedPlateHeight` covers empty library geometry.
+    // Why:      Connected backdrop must not reserve space without controls.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("empty rows produce no height", () => { ... });
+    // ```
+    /** Confirms empty control has zero plate height. */
+    @Test
+    fun emptyRowsProduceNoConnectedPlateHeight() {
+        assertEquals(
+            0,
+            ledMultilineHeight(
+                LedMultilineHeightOptions(lineCount = 0, plateHeightPx = 60, rowPitchPx = 52),
+            ),
+        )
+    }
+
+    // What:     `wrappedRowsFormOneMultilinePlate` covers complete backplate height.
+    // Why:      One plate contains 60-unit first row plus 52-unit second-row pitch.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("wrapped rows form one plate", () => { ... });
+    // ```
+    /** Confirms one stepped plate contains both cap rows. */
+    @Test
+    fun wrappedRowsFormOneMultilinePlate() {
+        assertEquals(
+            112,
+            ledMultilineHeight(
+                LedMultilineHeightOptions(lineCount = 2, plateHeightPx = 60, rowPitchPx = 52),
+            ),
+        )
+    }
+
+    // What:     `leftToRightPlateUsesLogicalCoordinate` covers default physical start edge.
+    // Why:      Content-width row steps must remain anchored to left in LTR.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("LTR coordinate", () => { ... });
+    // ```
+    /** Confirms LTR start coordinate remains unchanged. */
+    @Test
+    fun leftToRightPlateUsesLogicalCoordinate() {
+        assertEquals(
+            80f,
+            ledPlateX(LedPlateCoordinateOptions(valuePx = 80f, canvasWidthPx = 300f, rightToLeft = false)),
+        )
+    }
+
+    // What:     `rightToLeftPlateMirrorsLogicalCoordinate` covers localized physical start edge.
+    // Why:      Short wrapped rows must step from left while staying anchored to right in RTL.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("RTL coordinate", () => { ... });
+    // ```
+    /** Confirms RTL maps logical width inward from physical right edge. */
+    @Test
+    fun rightToLeftPlateMirrorsLogicalCoordinate() {
+        assertEquals(
+            220f,
+            ledPlateX(LedPlateCoordinateOptions(valuePx = 80f, canvasWidthPx = 300f, rightToLeft = true)),
+        )
+    }
+
+    // What:     `narrowerNextRowUsesOuterThenInnerRadius` covers inward plate step.
+    // Why:      Convex exposed corner stays broad while concave channel corner stays tight.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("inward radii", () => { ... });
+    // ```
+    /** Confirms narrowing step uses outer then inner hardware radii. */
+    @Test
+    fun narrowerNextRowUsesOuterThenInnerRadius() {
+        assertEquals(
+            LedTransitionRadii(firstPx = 17f, secondPx = 2f),
+            ledTransitionRadii(
+                LedTransitionRadiusOptions(
+                    differencePx = -100f,
+                    rowPitchPx = 52f,
+                    outerRadiusPx = 17f,
+                    innerRadiusPx = 2f,
+                ),
+            ),
+        )
+    }
+
+    // What:     `widerNextRowUsesInnerThenOuterRadius` covers outward plate step.
+    // Why:      Concave channel corner stays tight before broad exposed lower-row corner.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("outward radii", () => { ... });
+    // ```
+    /** Confirms widening step uses inner then outer hardware radii. */
+    @Test
+    fun widerNextRowUsesInnerThenOuterRadius() {
+        assertEquals(
+            LedTransitionRadii(firstPx = 2f, secondPx = 17f),
+            ledTransitionRadii(
+                LedTransitionRadiusOptions(
+                    differencePx = 100f,
+                    rowPitchPx = 52f,
+                    outerRadiusPx = 17f,
+                    innerRadiusPx = 2f,
+                ),
+            ),
+        )
+    }
 }
