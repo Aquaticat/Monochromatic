@@ -176,6 +176,9 @@ Chromium implementation and source analysis culminate in:
    compact Chromium logical source metrics
 - `7cdef5304`:
    Chromium metric and raster-scale investigation
+- `9e19e347f`:
+   active Chromium feet paint 12 logical units outside content and hit bounds;
+   edge gutters preserve first and last feet
 
 LED implementation and reference corrections are:
 
@@ -188,8 +191,8 @@ LED implementation and reference corrections are:
 - `abd8faff0`:
    final committed LED scene-fidelity pass
 
-Current main `HEAD` when this handover was written is
-`abd8faff0a3e1cda0ad01b42f2bfdc4f02ae04ce`.
+Current scoped implementation commit is
+`9e19e347f18a5dd15be252b72b3854412641e7b7`.
 Unrelated commits are interleaved in history,
 so inspect scoped paths rather than assuming a contiguous feature branch.
 
@@ -226,8 +229,12 @@ Useful artifacts include:
 ## Working-tree and process state
 
 Main worktree is clean for music-player files.
-`.serena/project.yml` is modified by tooling and is unrelated;
-do not stage or alter it for this work.
+Current unrelated concurrent changes include `.serena/project.yml`,
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts`,
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/readonly-type-origin-location.ts`,
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/readonly-type-origin.ts`,
+and `doc/troubleshooting/oxlint-js-plugin-cross-file-locations.md`.
+Do not stage or alter them for this work.
 
 Detached render worktree:
 `/var/home/user/temp/agent/music-player-led-render`.
@@ -251,10 +258,11 @@ That PID is historical and must not be assumed current.
 
 ## Remaining work
 
-1.  Fix Chromium active feet in Slint and Compose.
-    Separate paint overflow from content and hit-test bounds,
-    or enlarge the paint layer while preserving logical tab width.
-    Confirm both 12-unit shoulders visibly protrude and are not clipped at row or wrap boundaries.
+1.  Visually verify the implemented Chromium active-foot overflow in Slint and Compose.
+    Confirm both 12-unit shoulders visibly protrude and are not clipped at first,
+    middle,
+    last,
+    or wrapped-row positions.
 2.  Run desktop Slint lint,
     desktop Rust lint and tests,
     Android Detekt,
@@ -304,3 +312,17 @@ That PID is historical and must not be assumed current.
   and remaining user-boundary checks.
   Next action:
   inspect both Chromium tab implementations and change their active silhouette paint bounds.
+- 2026-08-13,
+  20:31 EDT:
+  Implemented active-foot overflow in commit `9e19e347f`.
+  Slint paths now paint 12 logical units past each tab body inside strip-edge gutters.
+  Compose now uses an unclipped draw-phase path,
+  selected-tab sibling elevation,
+  and matching FlowRow gutters without enlarging content or hit bounds.
+  Desktop Slint lint and Android Detekt pass.
+  Next action:
+  complete platform builds and tests,
+  then render dark,
+  light,
+  edge,
+  and wrapped positions.
