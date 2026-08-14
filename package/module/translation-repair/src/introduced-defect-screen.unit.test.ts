@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type AdjudicatedIssue,
   flattenSpace,
   type IntroducedDefectCheckWire,
   type RepairRegion,
@@ -71,6 +72,42 @@ function catCheck(
     omittedText,
     reason: 'the second clause is gone',
   };
+}
+
+/**
+ * Wording the critic objected to, quoted target-side, as an accepted issue the
+ * region serves.
+ *
+ * Only the fields `collectPriorQuotes` reads are populated. Widening it would
+ * make the fixture harder to read without testing anything more.
+ *
+ * @param quotedText - target-side wording the critic complained about
+ *
+ * @returns Issue shaped as the screen reads it
+ *
+ * @example
+ * ```ts
+ * const issues = [catIssue({ quotedText: 'is doing the sleeping', },),];
+ * ```
+ */
+function catIssue(
+  { quotedText, }: { readonly quotedText: string; },
+): AdjudicatedIssue {
+  return {
+    issueId: 'adjudicated/nap',
+    claims: [
+      {
+        claim: {
+          spans: [
+            {
+              side: 'target',
+              quotedText,
+            },
+          ],
+        },
+      },
+    ],
+  } as unknown as AdjudicatedIssue;
 }
 
 await describe({
@@ -334,6 +371,75 @@ await describe({
         },);
         expect(tally?.corroborated,).toBe(0,);
         expect(tally?.claims,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS a removal claim whose dropped wording CONTAINS the prior '
+        + 'quote, which is the over-deletion signal itself: the edit took the '
+        + 'objected-to phrase and unrelated content with it. Checking '
+        + 'containment both ways here suppressed exactly this, and it is the '
+        + 'damage a reader found as a deleted contributor credit. Measured: '
+        + 'removal-corroborated ran 159 across the original 56-entry run and 0 '
+        + 'across every run after the reclassification landed',
+      fn: async () => {
+        const [tally,] = screenIntroducedDefects({
+          regions: [REGION,],
+          ballots: {
+            'hf:cat/one': [catCheck({
+              verdict: 'introduced-defect',
+              omittedText: 'is doing the sleeping, and she wakes at dusk',
+            },),],
+          },
+          issues: [catIssue({ quotedText: 'is doing the sleeping', },),],
+        },);
+
+        expect(tally?.removalCorroborated,).toBe(1,);
+        expect(tally?.preExisting,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'still DISCOUNTS a removal claim whose dropped wording sits INSIDE '
+        + 'the prior quote, since removing the phrase the critic objected to is '
+        + 'what the repair was for. Without this the fix above would just turn '
+        + 'the suppression off and count every licensed removal as damage',
+      fn: async () => {
+        const [tally,] = screenIntroducedDefects({
+          regions: [REGION,],
+          ballots: {
+            'hf:cat/one': [catCheck({
+              verdict: 'introduced-defect',
+              omittedText: 'doing the sleeping',
+            },),],
+          },
+          issues: [catIssue({ quotedText: 'is doing the sleeping', },),],
+        },);
+
+        expect(tally?.removalCorroborated,).toBe(0,);
+        expect(tally?.preExisting,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'leaves ADDED-wording claims discounted in both containment '
+        + 'directions, because those quote the AFTER text: a prober pointing at '
+        + 'wording the editor KEPT is restating the accepted issue however much '
+        + 'of it it quoted',
+      fn: async () => {
+        const [tally,] = screenIntroducedDefects({
+          regions: [REGION,],
+          ballots: {
+            'hf:cat/one': [catCheck({
+              verdict: 'introduced-defect',
+              evidence: 'The cat sleeps.',
+            },),],
+          },
+          issues: [catIssue({ quotedText: 'cat sleeps', },),],
+        },);
+
+        expect(tally?.corroborated,).toBe(0,);
+        expect(tally?.preExisting,).toBe(1,);
       },
     },),
   ],

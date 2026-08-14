@@ -348,29 +348,53 @@ function countsAsDamage(
  * `screenNonTranslationVotes` already set as precedent: deterministic evidence
  * dismisses a claim rather than a prompt preventing it.
  *
- * Containment is checked BOTH ways because the two quotes are cut by different
- * parties. A critic quotes the phrase it objected to, and a prober quotes as
- * much of the surrounding wording as it thinks damaged, so neither is reliably
- * the longer one.
+ * Containment is checked BOTH ways for ADDED wording, because those two quotes
+ * are cut by different parties. A critic quotes the phrase it objected to, and a
+ * prober quotes as much of the surrounding wording as it thinks damaged, so
+ * neither is reliably the longer one.
+ *
+ * REMOVAL CLAIMS TAKE ONLY ONE DIRECTION, and the difference is the whole point.
+ * A removal claim quotes the wording that DISAPPEARED, drawn from the before
+ * text, which is the same side the critic quoted, on a region that exists
+ * precisely because the critic quoted something in it. So containment is close
+ * to guaranteed, and which way it runs is the entire signal:
+ *
+ * - Dropped wording INSIDE the prior quote was licensed to disappear. Removing
+ *   the objected-to phrase is what the repair was for, so a prober reporting its
+ *   absence is restating the accepted issue. Discounted.
+ * - Dropped wording CONTAINING the prior quote means the edit took the
+ *   objected-to phrase AND unrelated content with it. That is the over-deletion
+ *   shape a human grader found as a deleted contributor credit, and it is a NEW
+ *   defect the critic never asked for. It must survive.
+ *
+ * Checking both ways here suppressed exactly the second case. Measured:
+ * removal-corroborated ran 159 across the original 56-entry run and 0 across
+ * every run after this reclassification landed, while corroborated held its rate
+ * per region, because added-wording claims quote the AFTER text and never
+ * collided.
  *
  * @param quoted - wording the claim anchors on, already flattened
  *
  * @param priorQuotes - flattened target-side quotes of the served issues
  *
+ * @param removal - whether the claim anchors on wording the edit dropped
+ *
  * @returns Whether the claim restates an accepted issue
  *
  * @example
  * ```ts
- * const known = restatesPriorIssue({ quoted, priorQuotes, },);
+ * const known = restatesPriorIssue({ quoted, priorQuotes, removal: false, },);
  * ```
  */
 function restatesPriorIssue(
   {
     quoted,
     priorQuotes,
+    removal,
   }: {
     readonly quoted: string;
     readonly priorQuotes: readonly string[];
+    readonly removal: boolean;
   },
 ): boolean {
   if (quoted === '')
@@ -378,6 +402,9 @@ function restatesPriorIssue(
 
   return priorQuotes
     .some(function overlaps(prior,) {
+      if (removal)
+        return prior.includes(quoted,);
+
       return prior.includes(quoted,) || quoted.includes(prior,);
     },);
 }
@@ -548,6 +575,7 @@ export function screenIntroducedDefects(
               && restatesPriorIssue({
                 quoted,
                 priorQuotes,
+                removal: anchored === 'removal-corroborated',
               },)
             ? 'pre-existing'
             : anchored,

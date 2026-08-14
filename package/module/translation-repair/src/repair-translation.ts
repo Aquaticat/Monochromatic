@@ -164,8 +164,20 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * others sit at medians 20, 22, 23 and 29, inside the verse range, and fail
  * only for want of a fifth block. Version-22 slices therefore carry the
  * corrected sentence on a seventh of the verse it was written for.
+ *
+ * Version 24 stops the introduced-defect screen discarding over-deletions. A
+ * cached slice carries the whole `repairChunk` outcome, probe report included,
+ * so version-23 slices hold tallies screened by the old rule. That rule asked
+ * whether a claim restated an accepted issue by testing containment BOTH ways,
+ * which is right for added wording but wrong for removals: a removal claim
+ * quotes what DISAPPEARED, drawn from the same side the critic quoted, on a
+ * region that exists because the critic quoted something in it. Dropped wording
+ * CONTAINING the prior quote is the over-deletion signal itself, and it was
+ * being read as a restatement. Measured: removal-corroborated ran 159 across
+ * the original 56-entry run and 0 across every run after the reclassification
+ * landed, while corroborated held its per-region rate.
  */
-const SLICE_CACHE_VERSION = 23;
+const SLICE_CACHE_VERSION = 24;
 
 /**
  * Completion status of one repair run;
