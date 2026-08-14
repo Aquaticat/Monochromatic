@@ -1,9 +1,10 @@
-import { isLineStructured, } from './line-structure.ts';
-
 //region Line structure addendum
 // Turns the computed line-structure fact into the sentence the editor is given.
 // Split from `repair-chunk` because it is a pure text decision and that file is
 // at its line budget.
+//
+// DECIDED BY THE CALLER, on the enclosing CHUNK, not here on the slice. See
+// `buildEditorAddendum` for why the unit matters more than the predicate.
 
 /**
  * Instruction added when the source slice is line-structured.
@@ -35,36 +36,44 @@ const LINE_STRUCTURE_RULE = 'This region\'s ORIGINAL IS line-structured: each '
 /**
  * Builds the editor rule addendum for one slice.
  *
- * MEASURED ON THE SOURCE, never the translation. The original's shape is what a
- * repair must preserve, and the translation may already have merged the lines
- * that make it verse. Measured on `Toka_ls`: its Chinese verse chunk has a
- * median node length of 22 while the English rendering of the same chunk has
- * 99, so a predicate reading the target would never fire on the case this
- * exists for.
+ * TAKES THE VERDICT, DOES NOT COMPUTE IT, because the slice is the wrong unit to
+ * compute it on. `isLineStructured` needs at least five blocks before it will
+ * answer anything but false, and slicing cuts a verse section into pieces
+ * smaller than that. Measured on `Toka_ls`: the verse chunk is line-structured
+ * at 21 blocks, median 22, and subdivides into seven slices of which ONE still
+ * trips the predicate. Four of the other six sit at medians 20, 22, 23 and 29,
+ * squarely inside the verse range, and fail only for want of a fifth block.
+ *
+ * So the caller decides on the enclosing chunk and every slice carved from it
+ * inherits the answer. Subdivision is the pipeline's own choice and cannot
+ * change whether the original is verse.
  *
  * @param baseAddendum - configured addendum, possibly empty
  *
- * @param sourceText - original-side text of this slice
+ * @param lineStructured - whether the enclosing chunk's ORIGINAL is
+ * line-structured; measured on the source because the translation may already
+ * have merged the lines that make it verse, and on `Toka_ls` the Chinese chunk
+ * sits at median 22 against the English rendering's 101
  *
  * @returns Addendum, empty when there is nothing to add
  *
  * @example
  * ```ts
- * const addendum = buildEditorAddendum({ baseAddendum: '', sourceText, },);
+ * const addendum = buildEditorAddendum({ baseAddendum: '', lineStructured: true, },);
  * ```
  */
 export function buildEditorAddendum(
   {
     baseAddendum,
-    sourceText,
+    lineStructured,
   }: {
     readonly baseAddendum: string;
-    readonly sourceText: string;
+    readonly lineStructured: boolean;
   },
 ): string {
   return [
     baseAddendum,
-    isLineStructured({ text: sourceText, },) ? LINE_STRUCTURE_RULE : '',
+    lineStructured ? LINE_STRUCTURE_RULE : '',
   ]
     .filter(function isPresent(part,): boolean {
     return part !== '';

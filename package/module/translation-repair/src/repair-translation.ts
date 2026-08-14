@@ -10,6 +10,10 @@ import {
 import { hashContent, } from './document-node.ts';
 import { collectIdentityLines, } from './identity-context.ts';
 import {
+  type ChunkGovernance,
+  governedSliceIndices,
+} from './line-structure-inherit.ts';
+import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
@@ -149,8 +153,18 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * asserted something untrue about the text in front of the model and then asked
  * for one output line per INPUT line, which on an already-merged translation
  * asks for the merge to be preserved.
+ *
+ * Version 23 moves the line-structure decision from the slice to the enclosing
+ * CHUNK. Version 22 asked the predicate about each slice, and the predicate
+ * needs at least five blocks before it will answer anything but false, so
+ * subdivision destroyed the evidence it reads. Measured on the version-22
+ * `Toka_ls` run: the verse chunk is line-structured at 21 blocks, median 22,
+ * and subdivides into seven slices of which ONE still trips it, while four
+ * others sit at medians 20, 22, 23 and 29, inside the verse range, and fail
+ * only for want of a fifth block. Version-22 slices therefore carry the
+ * corrected sentence on a seventh of the verse it was written for.
  */
-const SLICE_CACHE_VERSION = 22;
+const SLICE_CACHE_VERSION = 23;
 
 /**
  * Completion status of one repair run;
@@ -366,15 +380,43 @@ export async function repairTranslation(
    * globally in document order.
    */
   const slices: ChunkPair[] = [];
+
+  /**
+   * Slices whose enclosing CHUNK's original is line-structured.
+   *
+   * Decided on the chunk and inherited by its slices, because the predicate
+   * needs at least five blocks and subdivision routinely leaves fewer. Measured
+   * on `Toka_ls`: the verse chunk trips at 21 blocks, median 22, then
+   * subdivides into seven slices of which one still trips, while four more sit
+   * at medians 20, 22, 23 and 29 and fail only for want of a fifth block.
+   * Deciding per slice therefore dropped the instruction on most of the verse
+   * it exists for.
+   */
+  const governance: ChunkGovernance[] = [];
   for (const pair of alignment.pairs) {
-    slices.push(...subdivideChunkPair({
+    /**
+     * Slices carved from this chunk.
+     */
+    const carved = subdivideChunkPair({
       pair,
       sourceText,
       targetText,
       baseIndex: slices.length,
       budget: sliceCharBudget,
-    },),);
+    },);
+    governance.push({
+      sourceText: pair.source.text,
+      sliceIndices: carved.map(function toIndex(carvedSlice,): number {
+        return carvedSlice.target.chunkIndex;
+      },),
+    },);
+    slices.push(...carved,);
   }
+
+  /**
+   * Slices the line-structure rule governs, inherited from their chunk.
+   */
+  const lineStructuredSlices = governedSliceIndices({ chunks: governance, },);
   rl.info(
     `${String(alignment.pairs
       .length,)} chunk pairs, ${String(slices.length,)} slices, ${
@@ -425,6 +467,10 @@ export async function repairTranslation(
           .text,
         slice.target
           .text,
+        // Two slices can carry identical text and still be governed
+        // differently, because the verdict belongs to the enclosing chunk. It
+        // has to sit in the key rather than ride on the version alone.
+        lineStructuredSlices.has(slice.target.chunkIndex,),
       ],),
     },);
 
@@ -446,6 +492,7 @@ export async function repairTranslation(
         .text,
       targetText: slice.target
         .text,
+      lineStructured: lineStructuredSlices.has(slice.target.chunkIndex,),
       models,
       ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
       ...identityFragment,

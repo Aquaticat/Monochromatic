@@ -49,6 +49,10 @@ import {
  *
  * @param targetText - translation chunk text
  *
+ * @param lineStructured - whether the ENCLOSING chunk's original is
+ * line-structured, decided by the caller because a slice is too small a unit to
+ * decide it on; see `buildEditorAddendum`
+ *
  * @param models - role roster
  *
  * @param adjudicationConfig - tally thresholds and weights
@@ -76,6 +80,7 @@ export async function repairChunk(
     chunkIndex,
     sourceText,
     targetText,
+    lineStructured,
     models,
     adjudicationConfig,
     identityContext,
@@ -87,6 +92,7 @@ export async function repairChunk(
     readonly chunkIndex: number;
     readonly sourceText: string;
     readonly targetText: string;
+    readonly lineStructured: boolean;
     readonly models: RepairModels;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
@@ -239,11 +245,11 @@ export async function repairChunk(
 
   /**
    * Editor rules for this slice, with the line-structure fact appended when the
-   * SOURCE is line-structured.
+   * enclosing chunk's ORIGINAL is line-structured.
    */
   const editorAddendum = buildEditorAddendum({
     baseAddendum: models.editorRuleAddendum ?? '',
-    sourceText,
+    lineStructured,
   },);
 
   /**

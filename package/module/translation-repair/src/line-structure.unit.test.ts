@@ -24,6 +24,7 @@ import {
 
 import {
   buildEditorAddendum,
+  governedSliceIndices,
   isLineStructured,
 } from '../dist/final/node/index.mjs';
 
@@ -166,22 +167,10 @@ await describe({
         + 'text is line-structured told the editor something untrue about the '
         + 'text in front of it',
       fn: async () => {
-        /** Source shaped like verse: many short blocks. */
-        const verseSource = slice({
-          blocks: [
-            'Paws on the windowsill',
-            'A tail curled tight',
-            'Rain against the glass',
-            'The kettle starts to sing',
-            'Nobody comes home',
-            'The cushion keeps its shape',
-          ],
-        },);
-
-        /** Addendum the editor is handed for that slice. */
+        /** Addendum the editor is handed for a governed slice. */
         const addendum = buildEditorAddendum({
           baseAddendum: '',
-          sourceText: verseSource,
+          lineStructured: true,
         },);
 
         expect(addendum.includes('ORIGINAL IS line-structured',),).toBe(true,);
@@ -195,18 +184,10 @@ await describe({
         + 'one carrying a correct translation of a DIFFERENT line, and a rule '
         + 'that only preserved line counts would have permitted every one',
       fn: async () => {
-        /** Any line-structured source produces the rule. */
+        /** Rule text handed to a governed slice. */
         const addendum = buildEditorAddendum({
           baseAddendum: '',
-          sourceText: slice({
-            blocks: [
-              'Paws on the windowsill',
-              'A tail curled tight',
-              'Rain against the glass',
-              'The kettle starts to sing',
-              'Nobody comes home',
-            ],
-          },),
+          lineStructured: true,
         },);
 
         expect(addendum.includes('never invent a line',),).toBe(true,);
@@ -216,20 +197,156 @@ await describe({
 
     it({
       name: 'adds nothing for ordinary prose, so the rule reaches only the '
-        + 'slices the predicate names and cannot quietly govern the corpus',
+        + 'slices its chunk governs and cannot quietly govern the corpus',
       fn: async () => {
         expect(buildEditorAddendum({
           baseAddendum: '',
-          sourceText: slice({
-            blocks: [
-              'The cat considered the windowsill at some length, weighing the sun against the draught.',
-              'Having decided, she then reconsidered, which is the privilege of cats and of committees.',
-              'The kettle boiled unattended, as kettles will when nobody in the house has hands.',
-              'By evening the cushion had taken her shape and refused, politely, to give it back.',
-              'This is the whole of the afternoon, and it was enough for everyone concerned.',
-            ],
-          },),
+          lineStructured: false,
         },),).toBe('',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: governedSliceIndices.name,
+  children: [
+    it({
+      name: 'governs EVERY slice carved from a line-structured chunk, including '
+        + 'slices too small for the predicate to judge on their own. Toka_ls '
+        + 'measured the cost of the alternative: its verse chunk trips at 21 '
+        + 'blocks, median 22, subdivides into seven slices, and only one of the '
+        + 'seven still trips, so deciding per slice dropped the rule on six '
+        + 'sevenths of the verse it exists for',
+      fn: async () => {
+        /**
+         * A verse chunk whole, as the aligner produces it.
+         */
+        const verseChunk = slice({
+          blocks: [
+            'Paws on the windowsill',
+            'A tail curled tight',
+            'Rain against the glass',
+            'The kettle starts to sing',
+            'Nobody comes home',
+            'The cushion keeps its shape',
+          ],
+        },);
+
+        /**
+         * Two of its slices; the second is a two-block fragment the predicate
+         * refuses to judge, which is the case that regressed.
+         */
+        const governed = governedSliceIndices({
+          chunks: [{
+            sourceText: verseChunk,
+            sliceIndices: [4, 5,],
+          },],
+        },);
+
+        expect(governed.has(4,),).toBe(true,);
+        expect(governed.has(5,),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'asks the predicate about the WHOLE chunk, so a fragment that would '
+        + 'answer false alone still inherits true, proving the verdict is not '
+        + 'silently recomputed per slice',
+      fn: async () => {
+        /**
+         * Two blocks: under the five-block floor, so judged alone this is false.
+         */
+        const fragment = slice({
+          blocks: [
+            'Paws on the windowsill',
+            'A tail curled tight',
+          ],
+        },);
+
+        expect(isLineStructured({ text: fragment, },),).toBe(false,);
+
+        expect(
+          governedSliceIndices({
+            chunks: [{
+              sourceText: slice({
+                blocks: [
+                  'Paws on the windowsill',
+                  'A tail curled tight',
+                  'Rain against the glass',
+                  'The kettle starts to sing',
+                  'Nobody comes home',
+                ],
+              },),
+              sliceIndices: [9,],
+            },],
+          },).has(9,),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'governs nothing carved from a prose chunk, so inheritance widens '
+        + 'reach only where the chunk earned it',
+      fn: async () => {
+        expect(
+          governedSliceIndices({
+            chunks: [{
+              sourceText: slice({
+                blocks: [
+                  'The cat considered the windowsill at some length, weighing the sun against the draught.',
+                  'Having decided, she then reconsidered, which is the privilege of cats and of committees.',
+                  'The kettle boiled unattended, as kettles will when nobody in the house has hands.',
+                  'By evening the cushion had taken her shape and refused, politely, to give it back.',
+                  'This is the whole of the afternoon, and it was enough for everyone concerned.',
+                ],
+              },),
+              sliceIndices: [0, 1, 2,],
+            },],
+          },).size,
+        ).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'keeps chunks independent, so one verse section does not govern the '
+        + 'prose sections beside it',
+      fn: async () => {
+        /**
+         * One verse chunk and one prose chunk, as a mixed entry produces.
+         */
+        const governed = governedSliceIndices({
+          chunks: [
+            {
+              sourceText: slice({
+                blocks: [
+                  'Paws on the windowsill',
+                  'A tail curled tight',
+                  'Rain against the glass',
+                  'The kettle starts to sing',
+                  'Nobody comes home',
+                ],
+              },),
+              sliceIndices: [0, 1,],
+            },
+            {
+              sourceText: slice({
+                blocks: [
+                  'The cat considered the windowsill at some length, weighing the sun against the draught.',
+                  'Having decided, she then reconsidered, which is the privilege of cats and of committees.',
+                  'The kettle boiled unattended, as kettles will when nobody in the house has hands.',
+                  'By evening the cushion had taken her shape and refused, politely, to give it back.',
+                  'This is the whole of the afternoon, and it was enough for everyone concerned.',
+                ],
+              },),
+              sliceIndices: [2, 3,],
+            },
+          ],
+        },);
+
+        expect([...governed,].toSorted(function ascending(left, right,) {
+          return left - right;
+        },),).toEqual([0, 1,],);
       },
     },),
   ],

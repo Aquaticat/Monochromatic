@@ -130,6 +130,10 @@ export {
   type DedupeOutcome,
 } from './dedupe-issues.ts';
 export { buildEditorAddendum, } from './line-structure-addendum.ts';
+export {
+  type ChunkGovernance,
+  governedSliceIndices,
+} from './line-structure-inherit.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,
