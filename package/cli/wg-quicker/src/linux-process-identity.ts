@@ -170,7 +170,9 @@ export function processArgumentsMatch(
   /**
    * Actual vector includes executable argument before compared process arguments.
    */
-  const actualLength = identity.commandLine.length;
+  const actualLength = identity
+    .commandLine
+    .length;
   /**
    * Expected vector gains one slot for executable argument.
    */
