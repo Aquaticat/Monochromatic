@@ -392,7 +392,9 @@ async function main(): Promise<void> {
   );
 }
 
-// Guarded like every sibling task script. Unguarded, this ran on IMPORT, so
+// Guarded so this runs only when INVOKED. This comment used to claim every
+// sibling task script was guarded too; it was not, and ten of them ran on
+// import until 2026-08-14. Unguarded, this ran on IMPORT, so
 // anything that pulled this module into the package bundle made importing the
 // library scan a corpus directory and print to stdout.
 if (import.meta.main)

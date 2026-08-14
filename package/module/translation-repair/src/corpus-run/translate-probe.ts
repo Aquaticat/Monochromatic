@@ -306,6 +306,11 @@ async function main(): Promise<void> {
   /* oxlint-enable no-await-in-loop */
 }
 
-await main();
+// Guarded so this runs only when INVOKED. Unguarded it ran on IMPORT, so
+// anything pulling this module into the bundle performed the whole task as a
+// side effect of loading the library: for the probing scripts that means live
+// model calls, and for every one of them it means writing files.
+if (import.meta.main)
+  await main();
 
 //endregion Translate probe
