@@ -435,6 +435,7 @@ component ChromiumTab inherits Rectangle {
     private property <color> divider-color: Palette.foreground.with-alpha(0.25);
     private property <color> ink-color: Palette.foreground;
     horizontal-stretch: 0;
+    clip: false;
     width: min(chromium-label.preferred-width + 40px, root.max-width);
     height: 41px;
     preferred-height: 41px;
@@ -450,10 +451,11 @@ component ChromiumTab inherits Rectangle {
     }
 
     if root.selected: Path {
+        x: -12px;
         y: 6px;
-        width: parent.width;
+        width: parent.width + 24px;
         height: 35px;
-        viewbox-width: root.width / 1px;
+        viewbox-width: root.width / 1px + 24;
         viewbox-height: 35;
         fit: fill;
         fill: root.active-color;
@@ -461,20 +463,20 @@ component ChromiumTab inherits Rectangle {
         CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
         LineTo { x: 12; y: 10; }
         QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
-        LineTo { x: root.width / 1px - 22; y: 0; }
+        LineTo { x: root.width / 1px + 2; y: 0; }
         QuadraticTo {
-            control-x: root.width / 1px - 12;
+            control-x: root.width / 1px + 12;
             control-y: 0;
-            x: root.width / 1px - 12;
+            x: root.width / 1px + 12;
             y: 10;
         }
-        LineTo { x: root.width / 1px - 12; y: 23; }
+        LineTo { x: root.width / 1px + 12; y: 23; }
         CubicTo {
-            control-1-x: root.width / 1px - 12;
+            control-1-x: root.width / 1px + 12;
             control-1-y: 29;
-            control-2-x: root.width / 1px - 6;
+            control-2-x: root.width / 1px + 18;
             control-2-y: 35;
-            x: root.width / 1px;
+            x: root.width / 1px + 24;
             y: 35;
         }
         LineTo { x: 0; y: 35; }
@@ -482,10 +484,11 @@ component ChromiumTab inherits Rectangle {
     }
 
     if root.selected: Path {
+        x: -12px;
         y: 6px;
-        width: parent.width;
+        width: parent.width + 24px;
         height: 35px;
-        viewbox-width: root.width / 1px;
+        viewbox-width: root.width / 1px + 24;
         viewbox-height: 35;
         fit: fill;
         fill: transparent;
@@ -496,20 +499,20 @@ component ChromiumTab inherits Rectangle {
         CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
         LineTo { x: 12; y: 10; }
         QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
-        LineTo { x: root.width / 1px - 22; y: 0; }
+        LineTo { x: root.width / 1px + 2; y: 0; }
         QuadraticTo {
-            control-x: root.width / 1px - 12;
+            control-x: root.width / 1px + 12;
             control-y: 0;
-            x: root.width / 1px - 12;
+            x: root.width / 1px + 12;
             y: 10;
         }
-        LineTo { x: root.width / 1px - 12; y: 23; }
+        LineTo { x: root.width / 1px + 12; y: 23; }
         CubicTo {
-            control-1-x: root.width / 1px - 12;
+            control-1-x: root.width / 1px + 12;
             control-1-y: 29;
-            control-2-x: root.width / 1px - 6;
+            control-2-x: root.width / 1px + 18;
             control-2-y: 35;
-            x: root.width / 1px;
+            x: root.width / 1px + 24;
             y: 35;
         }
     }
@@ -559,9 +562,11 @@ component ChromiumControls inherits Rectangle {
     height: chromium-layout.preferred-height;
     preferred-height: chromium-layout.preferred-height;
     background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
+    clip: false;
 
     chromium-layout := FlexboxLayout {
-        width: parent.width;
+        x: 12px;
+        width: max(0px, parent.width - 24px);
         flex-wrap: wrap;
         alignment: start;
         align-content: start;
@@ -571,7 +576,7 @@ component ChromiumControls inherits Rectangle {
             text: label;
             selected: p == root.selected-page;
             show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
-            max-width: root.width;
+            max-width: chromium-layout.width;
             clicked => {
                 root.select-page(p);
             }

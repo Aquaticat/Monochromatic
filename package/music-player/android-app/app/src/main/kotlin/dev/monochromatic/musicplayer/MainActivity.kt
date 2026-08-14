@@ -698,6 +698,26 @@ import androidx.compose.ui.Alignment
 // ```
 import androidx.compose.ui.Modifier
 
+// What:     `import androidx.compose.ui.zIndex` controls sibling painting order without
+//           changing measurement or placement.
+// Why:      Selected Chromium feet must remain above inactive baselines on both sides.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { zIndex } from "androidx/compose/ui";
+// ```
+import androidx.compose.ui.zIndex
+
+// What:     `import androidx.compose.ui.draw.drawBehind` adds custom pixel drawing before
+//           a composable paints its normal content.
+// Why:      Chromium feet must paint beyond layout width without enlarging wrapping or touch bounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { drawBehind } from "androidx/compose/ui/draw";
+// ```
+import androidx.compose.ui.draw.drawBehind
+
 // What:     `import androidx.compose.ui.draw.clip` clips painting to a supplied shape.
 // Why:      Selected segment fills must stay inside the group's rounded outline.
 //
@@ -736,6 +756,15 @@ import androidx.compose.ui.draw.innerShadow
 // ```
 import androidx.compose.ui.geometry.Offset
 
+// What:     `import androidx.compose.ui.geometry.Size` names pixel width and height together.
+// Why:      Chromium path construction receives the tab body dimensions as one value.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Size } from "androidx/compose/ui/geometry";
+// ```
+import androidx.compose.ui.geometry.Size
+
 // What:     `import androidx.compose.ui.graphics.Brush` supplies gradient paint factories.
 // Why:      LED caps and bead-blasted plates require continuous directional shading.
 //
@@ -754,6 +783,16 @@ import androidx.compose.ui.graphics.Brush
 // import { Color } from "androidx/compose/ui/graphics";
 // ```
 import androidx.compose.ui.graphics.Color
+
+// What:     `import androidx.compose.ui.graphics.Path` builds an open contour from move,
+//           line, and curve commands.
+// Why:      Active Chromium tabs need a silhouette that reaches outside their layout box.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Path } from "androidx/compose/ui/graphics";
+// ```
+import androidx.compose.ui.graphics.Path
 
 // What:     `Shadow as TextShadow` aliases Compose's text-shadow value to distinguish it
 //           from the hardware surface-shadow value.
@@ -774,15 +813,15 @@ import androidx.compose.ui.graphics.Shadow as TextShadow
 // ```
 import androidx.compose.ui.graphics.shadow.Shadow as HardwareShadow
 
-// What:     `import androidx.compose.foundation.shape.GenericShape` creates a shape from
-//           measured path commands.
-// Why:      Chromium tabs need curved shoulders that rounded rectangles cannot express.
+// What:     `import androidx.compose.ui.graphics.drawscope.Stroke` describes outline width
+//           instead of a filled path.
+// Why:      Chromium's accent contour must follow the same overflowing path as its fill.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { GenericShape } from "androidx/compose/foundation/shape";
+// import { Stroke } from "androidx/compose/ui/graphics/drawscope";
 // ```
-import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.ui.graphics.drawscope.Stroke
 
 // What:     `import androidx.compose.foundation.shape.RoundedCornerShape` creates a shape
 //           whose four corners use the supplied radius.
@@ -2779,42 +2818,86 @@ private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
     ink = MaterialTheme.colorScheme.onBackground,
 )
 
-// What:     `chromiumTabShape` traces Chromium's rounded top and outward shoulders.
-// Why:      Rounded rectangles cannot reproduce the concave transition into the tab strip.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function chromiumTabShape(): Shape { ... }
-// ```
-/** Returns content-width Chromium-like selected-tab silhouette. */
-private fun chromiumTabShape(): GenericShape = GenericShape { size, _ ->
-    /** Holds Chromium's 12dp shoulder relative to 35dp tab height. */
-    val shoulder: Float = size.height * 12f / 35f
+/**
+ * What:     `chromiumTabShoulder` stores Chromium's 12dp shoulder reach as a reusable
+ *           density-independent length.
+ * Why:      Drawing and row-edge gutters must use one value so neither foot is clipped.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const chromiumTabShoulder = dp(12);
+ * ```
+ */
+private val chromiumTabShoulder: Dp = 12.dp
+
+/**
+ * What:     `chromiumTabPath` traces an open path around Chromium's rounded top and
+ *           outward feet. `Size` supplies body bounds while `shoulder` supplies pixel reach.
+ * Why:      Open contour fills across its baseline but leaves the stroked baseline absent,
+ *           matching Chromium while both feet paint outside content and touch bounds.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function chromiumTabPath(size: Size, shoulder: number): Path { ... }
+ * ```
+ *
+ * @param size Content-body width and logical tab height in pixels.
+ * @param shoulder Foot reach beyond each body edge in pixels.
+ * @return Open fill-and-outline contour for one active tab.
+ */
+private fun chromiumTabPath(size: Size, shoulder: Float): Path {
     /** Holds Chromium's 10dp upper corner relative to 35dp tab height. */
     val radius: Float = size.height * 10f / 35f
-    /** Holds right-side edge before outward shoulder. */
-    val rightEdge: Float = size.width - shoulder
-    moveTo(0f, size.height)
-    cubicTo(
-        shoulder / 2f,
+    /** Owns mutable contour commands returned after construction. */
+    val path: Path = Path()
+    path.moveTo(-shoulder, size.height)
+    path.cubicTo(
+        -shoulder / 2f,
         size.height,
-        shoulder,
+        0f,
         size.height - shoulder / 2f,
-        shoulder,
+        0f,
         size.height - shoulder,
     )
-    lineTo(shoulder, radius)
-    cubicTo(shoulder, radius / 2f, shoulder + radius / 2f, 0f, shoulder + radius, 0f)
-    lineTo(rightEdge - radius, 0f)
-    cubicTo(rightEdge - radius / 2f, 0f, rightEdge, radius / 2f, rightEdge, radius)
-    lineTo(rightEdge, size.height - shoulder)
-    cubicTo(
-        rightEdge,
-        size.height - shoulder / 2f,
-        size.width - shoulder / 2f,
-        size.height,
+    path.lineTo(0f, radius)
+    path.cubicTo(0f, radius / 2f, radius / 2f, 0f, radius, 0f)
+    path.lineTo(size.width - radius, 0f)
+    path.cubicTo(size.width - radius / 2f, 0f, size.width, radius / 2f, size.width, radius)
+    path.lineTo(size.width, size.height - shoulder)
+    path.cubicTo(
         size.width,
+        size.height - shoulder / 2f,
+        size.width + shoulder / 2f,
         size.height,
+        size.width + shoulder,
+        size.height,
+    )
+    return path
+}
+
+/**
+ * What:     `chromiumActiveTabBackground` extends `Modifier` with overflowing custom paint.
+ * Why:      Draw phase may exceed layout bounds, so active feet protrude without changing
+ *           content width, FlowRow wrapping, semantics, or hit targets.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function chromiumActiveTabBackground(modifier: Modifier, colors: Colors): Modifier { ... }
+ * ```
+ *
+ * @param colors Accent-derived active fill and outline colors.
+ * @return Modifier that paints active silhouette before tab content.
+ */
+private fun Modifier.chromiumActiveTabBackground(colors: ChromiumTabColors): Modifier = drawBehind {
+    /** Converts logical shoulder reach to current screen-density pixels. */
+    val shoulder: Float = chromiumTabShoulder.toPx()
+    /** Builds body-aligned contour with one shoulder outside each horizontal edge. */
+    val path: Path = chromiumTabPath(size = size, shoulder = shoulder)
+    drawPath(path = path, color = colors.active)
+    drawPath(
+        path = path,
+        color = colors.activeOutline,
+        style = Stroke(width = 1.dp.toPx()),
     )
 }
 
@@ -2925,14 +3008,9 @@ private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresent
 private fun chromiumPageTab(options: ChromiumPageTabOptions) {
     /** Holds measured dark or light Chromium colors. */
     val colors: ChromiumTabColors = chromiumTabColors()
-    /** Holds curved selected-tab silhouette. */
-    val tabShape: GenericShape = chromiumTabShape()
-    /** Paints active contour while leaving inactive tabs on parent background. */
+    /** Paints active overflow while leaving inactive tabs on parent background. */
     val stateModifier: Modifier = if (options.selected) {
-        Modifier
-            .clip(tabShape)
-            .background(colors.active)
-            .border(1.dp, colors.activeOutline, tabShape)
+        Modifier.chromiumActiveTabBackground(colors)
     } else {
         Modifier
     }
@@ -2941,6 +3019,8 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
             .widthIn(max = options.maximumWidth)
             .width(IntrinsicSize.Max)
             .height(41.dp)
+            // Keeps both overflowing feet above neighboring inactive baselines.
+            .zIndex(if (options.selected) 1f else 0f)
             .selectable(
                 selected = options.selected,
                 role = Role.Tab,
@@ -3450,7 +3530,16 @@ private fun pageTabs(
     BoxWithConstraints {
         /** Holds pager width before entering nested FlowRow scope. */
         val pageMaximumWidth: Dp = maxWidth
+        /** Reserves paint-only edge room for Chromium feet without spacing adjacent tab bodies. */
+        val chromiumPaintGutter: Dp = if (pageControlStyle == PageControlStyle.CHROMIUM_TABS) {
+            chromiumTabShoulder
+        } else {
+            0.dp
+        }
+        /** Caps tab bodies to width remaining inside optional paint gutters. */
+        val pageContentMaximumWidth: Dp = pageMaximumWidth - chromiumPaintGutter * 2
         FlowRow(
+            modifier = Modifier.padding(horizontal = chromiumPaintGutter),
             horizontalArrangement = Arrangement.spacedBy(
             if (
                 pageControlStyle == PageControlStyle.MD1_TABS ||
@@ -3499,7 +3588,7 @@ private fun pageTabs(
                         label = label,
                         selected = selected,
                         showDivider = page < state.pageLabels.lastIndex && page + 1 != state.selectedPage,
-                        maximumWidth = pageMaximumWidth,
+                        maximumWidth = pageContentMaximumWidth,
                         onSelect = { onSelectPage(page) },
                     ),
                 )
