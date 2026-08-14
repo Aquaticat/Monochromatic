@@ -3,6 +3,11 @@
 ## Status
 
 Assessment started on 2026-08-14.
+The user narrowed this session to CAC only.
+No other external CLI parser technology may be discovered,
+audited,
+scored,
+or ranked.
 No recommendation or adoption decision exists yet.
 No product code,
 dependency,
@@ -15,8 +20,9 @@ hypotheses,
 findings,
 rejected paths,
 or next action changes.
-The detailed technology evidence will live in the vet report required by
-`.agents/skills/choosing-technology/SKILL.md` once external screening crosses its substantial-evaluation threshold.
+Detailed evidence belongs in
+`doc/audit/tech-cli-git-parser-migration-to-cac-vet-2026-08-14-a48b54e2.md`.
+The unqualified same-day report is the superseded broader-scope record and must not receive new evidence.
 
 ## User request
 
@@ -96,9 +102,9 @@ The applicable overlays are:
   transformed,
   or forwarded to real Git.
 
-The keeping-the-incumbent candidate remains in scope.
-At least two other concrete CLI technologies must receive evidence-backed screening so CAC is not assessed in isolation.
-No candidate can be recommended from README or registry metadata alone.
+The repository-owned parser set remains only as CAC's replacement-parity baseline.
+No other external CLI technology is in scope.
+CAC cannot receive a practicality conclusion from README or registry metadata alone.
 
 ## Current parser map
 
@@ -251,16 +257,15 @@ No soft score can offset a hard-gate failure.
    test,
    and public diagnostic contract in `package/git-policy/cli/`.
 2. Freeze hard constraints and equal-weight soft criteria from measured repository evidence.
-3. Freeze and run the required discovery query schedule.
-4. Screen CAC,
-   the incumbent,
-   and concrete alternatives through license,
+3. Freeze and run the CAC-only discovery query schedule.
+4. Screen CAC through license,
    provenance,
    security,
    platform,
    source,
    maintenance,
    and auditability gates.
+   Use the incumbent only for replacement parity.
 5. Clone serious external candidates under private `~/temp/agent/` paths and inspect the consumed source paths.
 6. Validate finalists equally,
    then exercise relevant cli-git boundaries in secret-free disposable fixtures.
@@ -270,7 +275,7 @@ No soft score can offset a hard-gate failure.
    cons,
    a complete ranking,
    and either a recommendation or an explicit no-recommendation result.
-8. Synchronize this handover after each material evidence phase and complete the vet report before concluding.
+8. Synchronize this handover after each material evidence phase and complete the CAC-only vet report before concluding.
 
 ## Evidence log
 
@@ -320,6 +325,15 @@ and a packed lifecycle benchmark.
 Migration completeness requires mapping every affected parser branch to these tests rather than treating management examples alone
 as parity.
 
+### 2026-08-14 CAC-only scope checkpoint
+
+The user excluded every other external CLI parser technology from this session.
+The active compatibility fingerprint is
+`a48b54e274b6d6bda3057027fbcc2ced424ea8c0a00b03a2ce868425a534f986`.
+The original unqualified vet report is superseded because its fingerprint included broad alternative discovery.
+CAC integration shapes may still be compared with each other,
+and current owned behavior remains the required parity baseline.
+
 ## Open risks
 
 - CAC may fit management subcommands while being unsuitable for transparent Git-argv inspection.
@@ -337,6 +351,5 @@ as parity.
 
 ## Next action
 
-Freeze the external discovery query schedule,
-create the vet report at the first substantial external evidence checkpoint,
-and screen CAC plus concrete alternatives without executing third-party code.
+Run the frozen CAC-only discovery schedule,
+then inspect CAC's pinned source and package provenance without executing third-party code.

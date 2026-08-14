@@ -1,22 +1,17 @@
 # Technology vet: cli-git parser migration to CAC
 
 Status:
- superseded before external evidence collection.
- Lifecycle phase stopped at discovered.
+ in progress.
+ Lifecycle phase is discovered.
  Started and last updated on 2026-08-14.
-
-The user narrowed the assessment to CAC only.
-The active report is
-`doc/audit/tech-cli-git-parser-migration-to-cac-vet-2026-08-14-a48b54e2.md`.
-This broader-scope report is retained because its compatibility fingerprint includes external alternative discovery.
 
 Subject:
  cli-git parser migration to CAC.
 
 Decision scope:
- assess whether CAC should replace any or all repository-owned parsers in
-`@monochromatic-dev/git-policy-cli`,
-including management-only and Git-region integration shapes.
+ assess whether CAC is practical for any or all repository-owned parser roles in
+`@monochromatic-dev/git-policy-cli`.
+Do not evaluate other external CLI parser technologies.
 
 Governing skill:
 
@@ -24,19 +19,29 @@ Governing skill:
 - SHA-256 is `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
 
 Compatibility fingerprint:
- `a0ef33c2a224a2928cec31b25feec57b9933af367edb6087660a0f485e96be05`.
+ `a48b54e274b6d6bda3057027fbcc2ced424ea8c0a00b03a2ce868425a534f986`.
 
 Active audit owner:
  Pi session `01a00016-a9a0-747d-8174-191632f05b8e`.
 
 Prior compatible report:
  none found.
+The incompatible broader-scope report is
+`doc/audit/tech-cli-git-parser-migration-to-cac-vet-2026-08-14.md`.
+It stopped before external evidence collection when the user limited this audit to CAC.
 
 ## Context
 
-The user asked whether migrating cli-git to CAC is practical.
+The user asked whether migrating cli-git to CAC is practical,
+then explicitly limited this session to CAC.
 CAC is interpreted as the open-source npm CLI framework.
 The target is `package/git-policy/cli/`.
+The incumbent is inspected only as CAC's replacement-parity baseline.
+No other external CLI parser technology will be discovered,
+screened,
+audited,
+scored,
+or ranked.
 This report is an evaluation,
 not adoption authority.
 Product code,
@@ -146,67 +151,75 @@ No unresolved preference exists before evidence collection.
 
 ## Frozen discovery schedule
 
+This is a CAC-only capability audit rather than a category selection.
+Search results naming another parser are out of scope and will not become candidates.
+
 ### Npm registry
 
-Use the official npm registry search API with 50 results per page,
-default relevance order,
-and no negative filter.
-Run each literal query:
+Use the official npm registry package and search APIs with default relevance order and no negative filter.
+Run each literal lookup or query:
 
-- `command line parser typescript`;
-- `cli framework typescript`;
-- `argv parser typescript`;
-- `zero dependency cli parser`;
-- `cac alternative cli`.
+- exact package metadata for `cac`;
+- exact version metadata for the current `cac` release;
+- registry search `cac cli`;
+- registry search `cac command line parser`.
 
-For each query,
-continue until the registry reports exhaustion or two consecutive complete pages add no screening survivor.
+Continue each search query until the registry reports exhaustion or two consecutive complete pages add no new CAC provenance,
+package,
+or taxonomy evidence.
 
-### GitHub repositories
+### GitHub
 
-Use GitHub repository search with 100 results per page,
-default best-match order,
-and no negative filter.
-Run each literal query:
+Use the repository named by official npm metadata.
+Inspect its code,
+license,
+releases,
+CI,
+security policy,
+contribution policy,
+issues,
+pull requests,
+and organization ownership.
+Run these literal GitHub searches scoped to that repository where the API supports scope:
 
-- `command line parser language:TypeScript`;
-- `cli framework language:TypeScript`;
-- `argv parser language:TypeScript`;
-- `zero dependency cli parser language:TypeScript`;
-- `cac alternative cli language:TypeScript`.
+- `allowUnknownOptions`;
+- `--`;
+- `rawArgs`;
+- `process.exit`;
+- `help`;
+- `TypeScript`;
+- `Node 22`;
+- `Windows`.
 
-For each query,
-continue until GitHub reports exhaustion or two consecutive complete pages add no screening survivor.
+For tracker maintenance,
+inspect every issue created or updated in the last twelve months when at most twenty exist,
+otherwise the ten most recently updated issues.
+Inspect the ten most recently updated pull requests by the same method.
 
 ### Broader web
 
 Use the configured web search provider for each literal query:
 
-- `CAC npm alternative TypeScript CLI parser`;
-- `JavaScript CLI framework allow unknown options parse argv`;
-- `TypeScript CLI parser preserve double dash passthrough`;
-- `CAC versus Commander CLI framework`;
-- `TypeScript Git argv parser library`.
+- `CAC npm TypeScript CLI framework official`;
+- `CAC allow unknown options parse argv`;
+- `CAC double dash passthrough raw argv`;
+- `CAC process exit help behavior`;
+- `CAC CLI framework Git argv`;
+- `CAC npm security vulnerability`.
 
 The provider exposes no page cursor through this harness.
-Record that limit and corroborate candidates through registry and repository enumeration.
+Record that limit and follow claims back to npm or CAC's repository.
+Do not evaluate another parser surfaced by these searches.
 
 ### This repository
 
 Run uncapped searches for:
 
-- `cac`;
-- `@optique` and `Optique`;
-- `parseArgs`;
-- `commander`;
-- `yargs`;
-- `clipanion`;
-- `cleye`;
-- `citty`;
-- `sade`;
-- `mri`;
-- `minimist`;
-- `arg`;
+- lowercase whole-word `cac`;
+- uppercase whole-word `CAC`;
+- `@optique` and `Optique` for migration history;
+- `parseArgv` and `tryParseArgv`;
+- `management-parser`;
 - `argv` plus `parser`.
 
 Inspect matching manifests,
@@ -224,8 +237,8 @@ and handovers.
 
 After the initial schedule:
 
-1. Collect every new problem-class synonym in candidate metadata.
-2. Append one de-duplicated query round to each applicable source.
+1. Collect every new CAC synonym or feature term from official metadata.
+2. Append one de-duplicated CAC-only query round to each applicable source.
 3. Freeze the expanded schedule.
 4. Record later terms without adding queries.
 
@@ -236,7 +249,7 @@ No source class is saturated.
 
 ## Candidate ledger
 
-### Repository-owned cli-git parsers
+### Incumbent parity baseline
 
 Discovery source:
  current repository manifest,
@@ -245,18 +258,13 @@ tests,
 history,
 and user request to assess replacement.
 
-Base category:
- repository-owned inspectable local technology.
-
-Overlays:
- incumbent replacement,
-high-trust,
-human auditability,
-and multi-platform.
+Role:
+ replacement-parity baseline only.
+It is not an external technology candidate in this CAC-only audit.
 
 Screening result:
- pending complete parity inventory and validation.
-Keeping the incumbent remains a candidate.
+ not applicable.
+Its current behavior and maintained tests define what CAC integration must preserve.
 
 ### CAC
 
@@ -312,7 +320,7 @@ Primary evidence:
 - `doc/decision/cli-git-policies-platform.md:318-343`.
 
 Outcome:
-retain as finalist unless later validation fails.
+retain as replacement-parity baseline for CAC validation.
 
 ## Execution manifests
 
@@ -345,11 +353,12 @@ Not started.
 
 ## Ranking
 
-No ranking or recommendation exists before discovery,
+No CAC practicality conclusion exists before discovery,
 hard-gate confirmation,
-equal-depth validation,
+validation of each viable CAC integration shape,
 scoring,
 and sensitivity analysis finish.
+Other external parser technologies are out of scope.
 
 ## Evidence limits
 
