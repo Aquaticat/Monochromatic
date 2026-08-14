@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { DeepReadonlyData, } from './readonly-data.ts';
 
 import type {
   ChatJsonOutcome,
@@ -115,7 +116,7 @@ function lostVoiceCause(
    * segmenter hands back its own records, whose fields the host declares
    * writable, and nothing here owns or mutates them.
    */
-  const clusters: ForeignBorrowed<readonly Intl.SegmentData[]> = [
+  const clusters: readonly DeepReadonlyData<Pick<Intl.SegmentData, 'segment'>>[] = [
     ...new Intl.Segmenter(
       undefined,
       { granularity: 'grapheme', },

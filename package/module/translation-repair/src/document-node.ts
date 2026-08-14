@@ -2,6 +2,7 @@ import { createHash, } from 'node:crypto';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { DeepReadonlyData, } from './readonly-data.ts';
 import type { RootContent, } from 'mdast';
 
 //region Document node model
@@ -148,6 +149,22 @@ export class UnpositionedNodeError extends Error {
 }
 
 /**
+ * Readonly mdast fields this module reads while constructing document nodes.
+ *
+ * The FULL node view rather than a narrow projection of the fields read here.
+ * A narrow Pick is assignable from real mdast values but rejects object
+ * LITERALS through excess-property checking, which broke the footnote-graph
+ * test fixtures. This view exists to borrow without copying, so it has to
+ * accept what callers already hold.
+ *
+ * @example
+ * ```ts
+ * const child: DocumentNodeChild = root.children[0];
+ * ```
+ */
+type DocumentNodeChild = DeepReadonlyData<RootContent>;
+
+/**
  * Builds anchor-ready document nodes from top-level mdast children.
  *
  * @param children - top-level mdast blocks in source order
@@ -171,7 +188,7 @@ export function buildDocumentNodes(
     bodyText,
     bodyOffset,
   }: {
-    readonly children: ForeignBorrowed<readonly RootContent[]>;
+    readonly children: ForeignBorrowed<readonly DocumentNodeChild[]>;
     readonly bodyText: string;
     readonly bodyOffset: number;
   },

@@ -4,6 +4,8 @@ import type {
   RootContent,
 } from 'mdast';
 
+import type { DeepReadonlyData, } from './readonly-data.ts';
+
 import {
   MdxParseError,
   parseMdxBody,
@@ -12,6 +14,26 @@ import {
   type ProtectedAtom,
   scanTextAtoms,
 } from './protected-atom.ts';
+
+/**
+ * Recursively readonly mdast root, as this module BORROWS the parse result.
+ *
+ * @example
+ * ```ts
+ * const root: ReadonlyMdastRoot = attempt.root;
+ * ```
+ */
+type ReadonlyMdastRoot = DeepReadonlyData<Root>;
+
+/**
+ * Recursively readonly mdast content node.
+ *
+ * @example
+ * ```ts
+ * const node: ReadonlyMdastContent = root.children[0];
+ * ```
+ */
+type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 //region Paragraph inspection
 // Reads one paragraph, base or candidate, into the ordered atom sequence the
@@ -88,7 +110,9 @@ const MARKUP_KINDS: ReadonlySet<string> = new Set([
  * const atoms = atomsOfNode({ node, },);
  * ```
  */
-function atomsOfNode({ node, }: { readonly node: RootContent; },): readonly ProtectedAtom[] {
+function atomsOfNode(
+  { node, }: { readonly node: ReadonlyMdastContent; },
+): readonly ProtectedAtom[] {
   if (node.type === 'text')
     return scanTextAtoms({ text: node.value, },);
   if (node.type === 'inlineCode')
@@ -135,7 +159,7 @@ type ParseAttempt =
     /**
      * Tree of the paragraph.
      */
-    readonly root: Root;
+    readonly root: ReadonlyMdastRoot;
   }
   | { readonly kind: 'refused'; };
 
@@ -264,7 +288,7 @@ export function inspectParagraph(
    * over a tree of unknown depth; children push reversed to keep document
    * order on pop.
    */
-  const pending: RootContent[] = [...block.children,].toReversed();
+  const pending: ReadonlyMdastContent[] = [...block.children,].toReversed();
 
   /**
    * Atoms in document order.
