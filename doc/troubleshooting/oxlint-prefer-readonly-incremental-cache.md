@@ -84,6 +84,51 @@ semantic-host lifecycle,
 external consumer,
 and package Oxlint pass.
 
+## Schema 4 loses deliberate omission identities
+
+Issue #427 found a correctness gap in the schema 4 cache.
+A fresh summary scan can catch the TypeScript 7.0.2 tuple serializer panic,
+omit only the affected callable,
+and record its key in process-local `omittedCallableKeys`.
+The completeness assertion receives that set and accepts the deliberate absence.
+
+`PersistentEffectCacheHit` restores summaries,
+`dependenciesResolved`,
+and `directDependencies`.
+It does not restore omitted callable keys.
+The cache-hit branch in `effect-demand-index.ts` therefore returns without repopulating the set.
+A warm completeness assertion sees a caller edge with no callee summary and no omission identity,
+then throws `Owned effect edge lacks callee summary`.
+
+A one-worker cold-to-warm control over `package/module/translation-repair` measured:
+
+- cold:
+  188 findings,
+  no semantic-evidence failures,
+  and 2 deliberate omissions;
+- immediate warm rerun:
+  166 findings,
+  126 semantic-evidence failures,
+  and no restored omission records;
+- repeated one-worker warm rerun:
+  the same 166 findings and 126 failures;
+- repeated default-worker warm reruns:
+  179 findings with 61 failures,
+  then 178 findings with 75 failures.
+
+The warm cache therefore changes semantic coverage and makes the result worker-order-dependent.
+This is not a performance-only regression.
+The plugin logger's warnings are outside Oxlint's diagnostic channel,
+so the damaged 166-finding run still prints `Found 0 warnings`.
+
+A complete fix must either persist and validate per-source omission identities with a schema bump,
+or refuse to persist a source containing an omission.
+The former retains narrow fail-closed behavior without recomputing the upstream panic in every process.
+Acceptance requires exact diagnostic equality across cold and warm processes,
+plus one-worker and default-worker equality.
+The upstream panic and detailed reproduction are recorded in
+[`typescript-go-tuple-type-panic.md`](typescript-go-tuple-type-panic.md).
+
 ## Traversal-phase resolution
 
 The rule remains an Oxlint JavaScript rule and uses only Oxlint's released JavaScript-plugin boundary.
@@ -604,18 +649,16 @@ It is not an acceptable permanent package configuration.
 
 ### Preserve the persistent cache as operational guidance
 
-Keep `node_modules/.cache/prefer-readonly-parameter-type` across ordinary lint invocations.
-The cache is content-addressed and validates its dependency surfaces before reuse.
-This does not prevent legitimate analyzer,
-project,
-declaration,
-compiler,
-lockfile,
-or dependency invalidations.
+Keep `node_modules/.cache/prefer-readonly-parameter-type` across ordinary lint invocations only when the run has no
+deliberately omitted callable.
+The cache is content-addressed and validates its dependency surfaces,
+but schema 4 does not validate omission completeness.
 
 Tradeoff:
 stale identities remain until cache maintenance evicts them,
 and intentional cache deletion forces the next run cold.
+If an omission warning appears,
+the next warm run is not an acceptable verification result until omission metadata round-trips.
 
 ## What does not work
 
@@ -646,21 +689,25 @@ and intentional cache deletion forces the next run cold.
 
 Check these surfaces in order:
 
-1.  Analyzer digest rotation.
+1.  Semantic integrity before timing.
+    Compare cold and warm diagnostic fingerprints,
+    search stderr for `semantic evidence unavailable`,
+    and compare one-worker with default-worker output.
+2.  Analyzer digest rotation.
     Any semantic-plugin source change rebuilds every scope once.
-2.  Whole-scope surface churn.
+3.  Whole-scope surface churn.
     Lockfile,
     compiler-option,
     declaration,
     and project-membership changes legitimately invalidate whole scopes.
-3.  Whole-scope closure fallback.
+4.  Whole-scope closure fallback.
     Files whose module references cannot be statically resolved snapshot the whole indexed scope.
     Their transitive dependents inherit that fallback.
     Probe `directModuleDependencies` for `MODULE_DEPENDENCIES_UNRESOLVED`.
-4.  Repeated manifest discovery.
+5.  Repeated manifest discovery.
     Count `could not read workspace package identity` records and cache ancestor-directory results when the count is
     high.
-5.  Cold rebuild cost.
+6.  Cold rebuild cost.
     Synchronous IPC to the TypeScript 7 Go child dominated the earlier profile.
     Incremental caching avoids repeated rebuilds,
     but does not reduce a legitimate cold rebuild.

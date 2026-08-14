@@ -1,14 +1,14 @@
-# typescript-go 7.0.2 panics serializing a tuple-flagged type, aborting a whole Oxlint semantic program
+# typescript-go 7.0.2 tuple serialization panic plus cached omission metadata causes nondeterministic Oxlint coverage loss
 
-A repository-wide `mise run lint:oxlint` loses the readonly analysis of one file when the
-TypeScript API server panics inside its type-serialization path.
-The loss is reported rather than silent:
- the rule catches the failure and emits
-`Readonly semantic analysis unavailable` for that file,
- carrying the panic text.
-So this costs coverage,
- not soundness;
- no offer is made for the file on partial information.
+TypeScript's sync API panics while serializing some instantiated tuple types.
+The readonly analyzer catches a fresh panic and omits only that callable,
+but its persistent cache does not store the omitted callable identity.
+A warm run forgets why the summary is absent,
+throws a secondary `Owned effect edge lacks callee summary` error,
+and loses diagnostics according to rule and worker execution order.
+
+The raw logger prints stacks but Oxlint still reports `Found 0 warnings`.
+The affected run can therefore lose coverage without a counted analysis-integrity diagnostic.
 
 ## Symptom
 
@@ -33,6 +33,23 @@ The panic is not caused by anything in this repository's rule changes.
 It appears in all five workspace sweeps taken while investigating an unrelated soundness
 question,
  the earliest of which predates every change in that series.
+
+### Warm-cache variant
+
+A fresh package run can log the upstream panic and continue with a deliberately omitted callable.
+The unchanged warm run instead emits repeated records such as:
+
+```text
+[warn] [effect-contract] semantic evidence unavailable for .../splice-slices.unit.test.ts:
+node-not-found: SemanticBridgeError: Owned effect edge lacks callee summary:
+.../splice-slices.unit.test.ts:967:2384:263.
+    at assertReachedCallSummaries (.../plugin-prefer-readonly-parameter-type.mjs:4:65412)
+```
+
+The callable key names `chunkAt`.
+The stack is followed by bundled plugin frames,
+while Oxlint's summary still says `Found 0 warnings`.
+The exact warning and finding counts change with worker count.
 
 ### A second surface: a dependency's shipped implementation
 
@@ -257,61 +274,89 @@ A future version is worth retesting the same way:
  sweep,
  and grep the output for `semantic rule failed`.
 
-## The omission was fail-closed on one side only, fixed
+## Fresh omission handling works, warm omission handling does not
 
-Recorded 2026-08-07,
- because the panic's cost was much larger than this document described and the
-reason was on our side.
+Recorded 2026-08-07:
+the first omission implementation was fail-closed only in propagation.
+`assertReachedCallSummaries` rejected an intentionally missing callee and aborted the program.
+Commit `32a648016` added process-local omission identities to the assertion,
+which restored the intended fresh-process behavior.
 
-`effect-demand-index.ts` catches the failed summary build and omits that one callable,
- and its comment
-states the omission is fail-closed:
- callers hit the absent-callee branch in
-`effect-fixed-point-propagation.ts` and take opacity.
- That half was true.
- `assertReachedCallSummaries` in
-`effect-reached-edge.ts` then refused any call edge whose callee had no summary,
- including the one just
-omitted on purpose,
- and threw.
- The throw aborts the whole program's analysis.
+The catch in
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-demand-index.ts:257`
+records the omitted identity:
 
-So one panicking callable cost every file in that program its readonly analysis rather than costing
-itself its summary.
- Measured before the fix:
- `package/claude-code-plugin/statusline` lost `activity.ts`,
-`render.ts` and `statusline.ts` entirely,
- reported as `semantic rule failed, so ... has no readonly
-analysis this run`.
+```ts
+catch (error) {
+  omittedCallableKeys.add(callableKey(declaration,),);
+  dl.warn(
+    `omitting ${callableKey(declaration,)} from the effect index: ${caughtValueStack(error,)}`,
+  );
+  return [];
+}
+```
 
-The assertion now receives the set of deliberately omitted keys and skips them,
- for callee and callback
-edges alike.
- Measured after:
- workspace semantic failures 3 to 0,
- rule findings 1677 to 1678,
- which is the
-one real finding those three files were hiding,
- and read-only offers unchanged at 33.
+The assertion receives that process-local set at `effect-demand-index.ts:360`:
 
-The panic itself is untouched and still fires.
- Checked across every sweep taken during this work,
- the
-earliest predating all of it:
- 16 occurrences each time, so nothing in the rule's own changes caused or
-worsened it.
+```ts
+assertReachedCallSummaries({
+  summaries,
+  omittedCallableKeys,
+},);
+```
+
+That path works on a fresh cache.
+The cache path loses the fact.
+`effect-summary-persistent-cache.ts:104` declares everything a hit restores:
+
+```ts
+export type PersistentEffectCacheHit = {
+  readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
+  readonly dependenciesResolved: boolean;
+  readonly directDependencies: readonly string[];
+};
+```
+
+There is no omitted-callable field.
+The cache-hit branch at `effect-demand-index.ts:208` returns summaries and dependencies only:
+
+```ts
+if (hit !== LAYERED_SUMMARY_CACHE_MISS) {
+  closureResolver.seedEdges({
+    fileName: sourceFile.fileName,
+    edges: hit.edges,
+  },);
+  return {
+    fileSummaries: hit.summaries,
+    dependencies: reachedSourceFileNames({
+      fileSummaries: hit.summaries,
+      indexedFileNames,
+    },),
+  };
+}
+```
+
+The warm completeness assertion consequently sees the caller edge but neither the callee summary nor its omission identity.
+It throws the secondary `Owned effect edge lacks callee summary` error.
+
+The fix needs either:
+
+- persisted,
+  validated per-source omitted identities plus a cache schema bump;
+- or refusal to persist a source containing an omission.
+
+Persisting the identities retains narrow fail-closed behavior without rerunning the upstream panic in every process.
 
 ## The remaining cost, and the shape of a narrower catch
 
-With the assertion fixed the panic no longer costs a program its analysis,
- but it still costs 16
-callables their summaries per sweep,
- counted identically in every sweep taken during this work.
- Their
-callers take opacity through the absent-callee branch,
- so this is precision rather than soundness:
- the
-answer is conservative, not wrong.
+On a fresh cache,
+the panic costs each affected callable its summary.
+Its callers take opacity through the absent-callee branch,
+so that direction is conservative.
+On a warm cache,
+the missing omission metadata expands the loss beyond those callables and makes coverage depend on execution order.
+The cold and warm states are therefore different soundness states,
+not only different log volume.
 
 The trigger is narrower than "a tuple".
  `findGerundInText` in
@@ -323,12 +368,12 @@ tuple.
  The serializer reads `Reference | Tuple` off that type's own object flags and immediately asserts
 tuple data,
  which an instantiated type does not carry.
- So the shape to look for when this fires elsewhere
-is a `?? []` or `: []` fallback beside a non-tuple array type, not a declared tuple.
+ So the shape to look for when this fires elsewhere is a `?? []` or `: []` fallback beside a non-tuple array type,
+not a declared tuple.
 
 A narrower catch would recover the 16.
- The panic surfaces when a type crosses the sync bridge, so
-catching it at the type query rather than at the callable would lose one fact instead of one summary,
+ The panic surfaces when a type crosses the sync bridge,
+so catching it at the type query rather than at the callable would lose one fact instead of one summary,
 and the rule already treats an unresolved type as fail-closed nearly everywhere.
  The cost is that
 `getTypeAtLocation` is called from about a dozen modules,
@@ -340,18 +385,62 @@ fail-closed direction.
  a wide mechanical change to recover precision is worth doing
 deliberately rather than at the end of a long session.
 
-## What we do about it
+## Warm-cache verification
 
-An internal failure no longer reports a lint issue.
-The rule catches it,
- logs a warning naming the file,
- and leaves that file without readonly analysis for the run.
-The reasoning is attribution:
- a panic inside the upstream API is not a fact about the linted file,
- so putting an error on that file blames an author who can do nothing about it.
-One consequence worth knowing:
- a file that panics no longer fails the lint,
- so the warning is the only signal.
+Issue #427 supplied the first package-level reproduction with the extracted rules enabled.
+A detached worktree at `da3f2f4f9710ffd353de90eef87f0114e3ded1fa` used TypeScript 7.0.2,
+Oxlint 1.78.0,
+and one Oxlint worker.
+The plugin and shared config were rebuilt from that worktree.
+
+After removing only cache entries whose payload named the disposable worktree,
+the first run produced:
+
+```text
+188 findings
+185 no-opaque-parameter-effects
+3 prefer-readonly-parameter-types
+0 semantic evidence unavailable
+2 omitted callables after the upstream panic
+```
+
+The immediate unchanged rerun produced:
+
+```text
+166 findings
+163 no-opaque-parameter-effects
+3 prefer-readonly-parameter-types
+126 semantic evidence unavailable
+0 fresh omission records
+```
+
+A second one-worker warm run reproduced the same counts.
+Two default-worker warm runs varied between 179 findings with 61 semantic failures and 178 findings with 75 semantic failures.
+This is a positive cold-to-warm control and a repeated worker-order control:
+the missing findings are not inferred from source inspection.
+
+`readonly-rule-visitor.ts:108` catches the secondary error and logs `caughtValueStack(error)`:
+
+```ts
+catch (error) {
+  rl.warn(
+    `semantic evidence unavailable for ${context.filename}: ${
+      error instanceof SemanticBridgeError
+        ? `${error.reason}: ${caughtValueStack(error,)}`
+        : caughtValueStack(error,)
+    }`,
+  );
+}
+```
+
+This logger output is outside Oxlint's diagnostics.
+The same warm run prints `Found 0 warnings and 166 errors` while stderr contains 128 logger warnings.
+The minified stack is not an action path,
+and the Oxlint summary does not disclose the missing analysis.
+
+Until omission metadata round-trips,
+extracted-rule acceptance cannot use warm output or compare worker counts.
+The acceptance harness needs fresh-process versus warm-process diagnostic equality and one-worker versus default-worker equality.
 
 ## Minimal reproduction
 
@@ -416,69 +505,67 @@ Receiving the type object at all requires that response,
  the first request that returns this type panics.
 There is no sequence of API calls that reads the construct safely.
 
-What is available is a smaller blast radius.
-The failure currently costs the whole file,
- because the catch wraps the whole run.
-That is built.
-A callable whose summary cannot be built is omitted from the index with a warning naming
-the cause,
- rather than aborting the run for its whole file.
-Omission is fail-closed on both sides:
- callers of an absent callee take opacity,
- which also fixed a defect of its own,
- since propagation previously returned silently there and turned an unresolved callee into
- a no-effect one.
-The rule skips verifying an omitted callable rather than reporting against code whose
-author cannot act on it.
+What is available is a smaller blast radius on a fresh cache.
+A callable whose summary cannot be built is omitted from the index with a warning naming the cause,
+rather than aborting the run for its whole file.
+Callers of that absent callee take opacity,
+and the rule skips verifying the omitted callable.
 
-Measured at workspace scale by diagnostic position,
- which is what distinguishes the two
-states.
-Before,
- the only diagnostic in `package/webapp-productivity/rss/src/index.ts` sat at `1:1`,
- the bail-out report standing in for the file's whole analysis.
-After,
- it sits at `171:39`,
- a real finding in the body,
- and the sweep carries two omission warnings naming the callables that were dropped.
+The warm-cache regression invalidates the broader prior claim that omission is fail-closed on both sides.
+That statement is true only while `omittedCallableKeys` remains in process memory.
+Once a persisted summary is read,
+the analyzer can abort category evidence,
+continue with partially loaded state,
+and lose findings.
+The verified cold/warm differential under "Warm-cache verification" supersedes earlier workspace counts in this document.
 
 ## Verified workarounds
 
-None at our boundary.
-The rule cannot avoid asking the API for types,
- which is its entire mechanism,
- and it
-cannot tell in advance which request will hit the bad type.
+The upstream panic has no semantic workaround at the consumer boundary.
+The rule cannot inspect a type response that the API aborts while serializing.
 
-The partial mitigation already in place is that per-package lint tasks do not reproduce
-it,
- so `mise run //package/<path>:lint:oxlint` gives complete analysis for any single
-package,
- including the one the sweep loses.
-The tradeoff is that it is a per-package workflow:
- a repository-wide sweep still loses one
-program,
- and no per-package run tells you which.
+The current shared config keeps the extracted rules off.
+That avoids invoking them across test files carrying the reproduced tuple shape,
+while the preference rule continues to run on ordinary source.
+The tradeoff is explicit:
+mutation,
+opacity,
+and contract policy are not enforced until #423's acceptance gate passes.
+
+For investigation only,
+deleting cache entries belonging to a disposable project gives one complete cold run.
+The tradeoff is that the panic is recomputed,
+the next unchanged run is damaged again,
+and clearing user cache is not an acceptable operational fix.
+
+The earlier claim that every per-package task avoids the panic is superseded.
+`mise run //package/module/translation-repair:lint:oxlint` reproduces both the fresh omission and warm-cache failure when the extracted rules are enabled.
 
 ## What does not work
 
-- Narrowing the repository-wide run to the file,
-   the package,
-   or the package family.
-  All three complete without the panic,
-   so none of them can serve as a minimal harness.
-- Attributing it to this repository's accessor-body scan over type-position names.
+- Treating one warm run as a rollout baseline.
+  Repeated default-worker runs changed both finding and failure counts;
+  one-worker warm runs were stable but consistently incomplete.
+- Rebuilding only the shared config.
+  It does not restore omission metadata absent from already persisted payloads.
+- Treating stderr stacks as counted lint warnings.
+  Oxlint reports zero warnings because the plugin logger is outside its diagnostic channel.
+- Inferring that the warm run is conservative because the fresh omission path is conservative.
+  The warm run lost findings and changed a surviving diagnostic's cause set.
+- Attributing the panic to this repository's accessor-body scan over type-position names.
   Disproved by the baseline sweep,
-   as recorded under "Root cause".
-- Passing paths through the mise task,
-   as in `mise run lint:oxlint -- <path>`.
+  as recorded under "Root cause".
+- Passing paths through the root mise task,
+  as in `mise run lint:oxlint -- <path>`.
   That task has no usage spec,
-   so mise splices the argument into the script body and the
-  run dies with `ERR_INVALID_TYPESCRIPT_SYNTAX` before oxlint starts.
-  Invoke `oxlint-wrapper` directly instead,
-   as the verification commands do.
+  so mise splices the argument into the script body and the run dies with `ERR_INVALID_TYPESCRIPT_SYNTAX` before Oxlint starts.
 
 ## Upstream filing decision
+
+The warm-cache omission defect is in this repository's persistence model,
+not in TypeScript,
+so it needs no upstream report.
+The upstream decision in this section applies only to the tuple serialization panic.
 
 Filing upstream is out of scope by the repository owner's standing instruction for this
 work,
