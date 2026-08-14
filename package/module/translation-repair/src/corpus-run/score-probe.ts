@@ -30,6 +30,10 @@ import {
   HEADER_ONLY_BINDING_NOTE,
 } from '../sheet-binding.ts';
 import { resolveRunsDir, } from './run-config.ts';
+import {
+  keepEligible,
+  resolvePool,
+} from './artifact-pool.ts';
 
 //region Score probe
 // Reports what the shadow-mode introduced-defect probe found across a run's
@@ -65,11 +69,14 @@ async function gatherReadings(
   /**
    * Artifact file names, JSON only.
    */
-  const names = (await readdir(artifactsDir,))
-    .filter(function isArtifact(name,) {
-      return name.endsWith('.json',);
-    },)
-    .toSorted();
+  const names = keepEligible({
+    names: (await readdir(artifactsDir,))
+      .filter(function isArtifact(name,) {
+        return name.endsWith('.json',);
+      },)
+      .toSorted(),
+    eligible: await resolvePool({ artifactsDir, },),
+  },);
 
   /**
    * One reading set per artifact, read concurrently.

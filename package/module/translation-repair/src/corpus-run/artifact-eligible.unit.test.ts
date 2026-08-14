@@ -122,10 +122,12 @@ await describe({
     },),
 
     it({
-      name: 'THROWS on an artifact carrying no tip rather than filing it under '
-        + 'an unknown generation. An artifact that cannot be placed cannot be '
-        + 'pooled safely, and skipping it would shrink the denominator while '
-        + 'every rate above it looked ordinary',
+      name: 'EXCLUDES an artifact carrying no tip and names it, rather than '
+        + 'either pooling it blind or aborting the whole census. This package '
+        + 'already decided a corrupt artifact costs its own row and not the run, '
+        + 'because a pass killed at its hard cap leaves truncated files; an '
+        + 'exclusion that goes unmentioned is the silently smaller denominator '
+        + 'this guard exists to prevent, so it is reported instead',
       fn: async () => {
         const dir = await writeArtifacts({
           entries: [
@@ -137,9 +139,22 @@ await describe({
           ],
         },);
 
-        await expect(censusByTip({ artifactsDir: dir, },),)
-          .rejects
-          .toThrow('records no usable pipeline commit',);
+        const census = await censusByTip({ artifactsDir: dir, },);
+
+        expect(census.total,).toBe(1,);
+        expect(census.untaggedIds,).toEqual(['Biscuit',],);
+        expect(census.malformedIds.length,).toBe(0,);
+
+        const eligible = await selectEligible({ census, },);
+
+        expect(eligible.entryIds,).toEqual(['Mittens',],);
+        expect(
+          eligible.report
+            .some(function names(line: string,) {
+              return line.includes('Biscuit',)
+                && line.includes('recording no pipeline commit',);
+            },),
+        ).toBe(true,);
       },
     },),
 

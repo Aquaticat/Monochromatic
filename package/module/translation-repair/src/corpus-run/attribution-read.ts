@@ -16,6 +16,10 @@ import type {
   AcceptedIssueView,
   AttributionEntry,
 } from './attribution-report.ts';
+import {
+  keepEligible,
+  resolvePool,
+} from './artifact-pool.ts';
 
 //region Attribution read
 // Parses settled artifacts into the shape the attribution report needs,
@@ -245,8 +249,12 @@ export async function gatherAttributionEntries(
   /**
    * Artifact file names.
    */
-  const names = (await readdir(artifactsDir,)).filter(function isArtifact(name,) {
-    return name.endsWith('.json',);
+  const names = keepEligible({
+    names: (await readdir(artifactsDir,))
+      .filter(function isArtifact(name,) {
+        return name.endsWith('.json',);
+      },),
+    eligible: await resolvePool({ artifactsDir, },),
   },);
 
   /**

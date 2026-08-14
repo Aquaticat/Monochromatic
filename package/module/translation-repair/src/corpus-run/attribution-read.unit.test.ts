@@ -34,6 +34,14 @@ import {
 import { gatherAttributionEntries, } from '../../dist/final/node/index.mjs';
 
 /**
+ * Pipeline commit every fixture artifact carries unless its case sets one.
+ *
+ * Invented, and shared, so the fixture directory is one generation and the
+ * generation guard passes without these parsing cases having to think about it.
+ */
+const SHARED_TIP = 'f000000000000000000000000000000000000000';
+
+/**
  * Critic used throughout.
  */
 const TABBY = 'hf:openai/gpt-oss-120b';
@@ -73,12 +81,30 @@ async function writeArtifacts(
   await Promise.all(Object
     .entries(artifacts,)
     .map(async function writeOne([name, body,],) {
+    /**
+     * Body as written, with a pipeline commit supplied when the case did not
+     * name one.
+     *
+     * Every settled artifact carries `tip`, and the readers now refuse a pool
+     * they cannot partition by it. These cases are about PARSING rather than
+     * about generations, so they get one shared commit and stay a
+     * single-generation pool; a case that wants to exercise the generation
+     * guard sets its own. Deliberately not defaulted inside the reader: an
+     * artifact with no commit is exactly what must not be quietly accepted.
+     */
+    const written = (((typeof body) === 'object') && (body !== null))
+      ? {
+        tip: SHARED_TIP,
+        ...body,
+      }
+      : body;
+
     await writeFile(
       join(
         dir,
         name,
       ),
-      ((typeof body) === 'string') ? body : JSON.stringify(body,),
+      ((typeof written) === 'string') ? written : JSON.stringify(written,),
       'utf8',
     );
   },),);

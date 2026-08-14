@@ -32,6 +32,10 @@ import {
   resolveRunsDir,
 } from './run-config.ts';
 import { resolveSheetPath, } from './sheet-path.ts';
+import {
+  keepEligible,
+  resolvePool,
+} from './artifact-pool.ts';
 
 //region Draw sample
 // Reads every settled artifact, bands each entry by its zh source bytes,
@@ -255,15 +259,18 @@ async function drawGradingSample(): Promise<void> {
   /**
    * Artifact file names present in the run.
    */
-  const names = (await readdir(artifactsDir,))
-    .filter(function isArtifact(name,) {
-      return name.endsWith('.json',);
-    },)
-    // Sorted so the pool is built in one fixed order. The draw itself sorts by
-    // keys derived from the seed and the ids, so it does not depend on this,
-    // but the POOL report and any error naming "the first bad artifact" do, and
-    // a report that changes with directory order is a report nobody can cite.
-    .toSorted();
+  const names = keepEligible({
+    names: (await readdir(artifactsDir,))
+      .filter(function isArtifact(name,) {
+        return name.endsWith('.json',);
+      },)
+      // Sorted so the pool is built in one fixed order. The draw itself sorts by
+      // keys derived from the seed and the ids, so it does not depend on this,
+      // but the POOL report and any error naming "the first bad artifact" do, and
+      // a report that changes with directory order is a report nobody can cite.
+      .toSorted(),
+    eligible: await resolvePool({ artifactsDir, },),
+  },);
 
   /**
    * Every settled entry banded with its candidates.

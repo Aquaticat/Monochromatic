@@ -44,6 +44,12 @@ export type EligibleEntries = Readonly<{
   excludedIds: readonly string[];
 
   /**
+   * Entries whose artifact would not parse, carried through so the reader that
+   * reports malformed artifacts still sees them.
+   */
+  malformedIds: readonly string[];
+
+  /**
    * One line per generation, for printing above any rate this draw produces.
    */
   report: readonly string[];
@@ -120,6 +126,56 @@ export class MixedGenerationError extends Error {
 }
 
 /**
+ * Renders the line naming artifacts no generation could hold.
+ *
+ * Always rendered when there are any, because an excluded artifact that goes
+ * unmentioned is exactly a silently smaller denominator.
+ *
+ * @param census - what the pool actually holds
+ *
+ * @returns One line when entries were unplaceable, none otherwise
+ *
+ * @example
+ * ```ts
+ * const lines = unplaceableLines({ census, },);
+ * ```
+ */
+function unplaceableLines(
+  { census, }: { readonly census: GenerationCensus; },
+): readonly string[] {
+  /**
+   * Artifacts that parsed but recorded no commit, so no generation holds them.
+   */
+  const untagged = census.untaggedIds
+    .length;
+
+  /**
+   * Artifacts that would not parse, kept for the malformed-artifact reader.
+   */
+  const malformed = census.malformedIds
+    .length;
+
+  return [
+    ...(untagged === 0
+      ? []
+      : [`POOL   ${String(untagged,)} artifact${
+        untagged === 1 ? '' : 's'
+      } EXCLUDED, parsed but recording no pipeline commit: ${
+        census.untaggedIds
+          .join(', ',)
+      }`,]),
+    ...(malformed === 0
+      ? []
+      : [`POOL   ${String(malformed,)} artifact${
+        malformed === 1 ? '' : 's'
+      } unreadable, passed through to be reported as malformed: ${
+        census.malformedIds
+          .join(', ',)
+      }`,]),
+  ];
+}
+
+/**
  * Selects the entries one draw may pool.
  *
  * @param census - every settled entry, partitioned by pipeline commit
@@ -175,10 +231,12 @@ export async function selectEligible(
     return {
       entryIds: everyId,
       excludedIds: [],
+      malformedIds: census.malformedIds,
       report: [
         `POOL ${String(census.total,)} entries across ${
           String(generationCount,)
         } pipeline generation${generationCount === 1 ? '' : 's'}`,
+        ...unplaceableLines({ census, },),
         ...(generationCount > 1
           ? ['POOL pooled DELIBERATELY: this number spans pipeline versions',]
           : []),
@@ -218,6 +276,7 @@ export async function selectEligible(
 
   return {
     entryIds,
+    malformedIds: census.malformedIds,
     excludedIds: everyId
       .filter(function wasExcluded(entryId,): boolean {
         return !entryIds.includes(entryId,);
@@ -229,6 +288,7 @@ export async function selectEligible(
       )}: ${String(entryIds.length,)} of ${
         String(census.total,)
       } settled entries eligible`,
+      ...unplaceableLines({ census, },),
       ...verdicts
         .map(function toLine(verdict,): string {
           /**

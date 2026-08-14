@@ -77,9 +77,33 @@ export type GenerationCensus = Readonly<{
   groups: readonly TipGroup[];
 
   /**
-   * Settled entries across every group.
+   * Placed entries across every group.
    */
   total: number;
+
+  /**
+   * Entries whose artifact would not parse at all.
+   *
+   * KEPT IN THE POOL DELIBERATELY, and separate from `untaggedIds` for that
+   * reason. A pass killed at its hard cap can leave one truncated artifact, and
+   * this package already decided such a file costs its own row and not the
+   * whole run. Filtering it out here would not protect anything: it would take
+   * the file away from the reader whose job is to report it as malformed, so a
+   * corrupt artifact would vanish from the failure list instead of appearing on
+   * it. Generation filtering answers a generation question; a file that is not
+   * JSON has not reached that question yet.
+   */
+  malformedIds: readonly string[];
+
+  /**
+   * Entries whose artifact parsed but recorded no usable commit.
+   *
+   * EXCLUDED from every pool, because this is a real artifact of unknown
+   * generation and pooling it is exactly the silent mixing this module exists
+   * to stop. Named in the report so the exclusion is visible rather than a
+   * quietly smaller denominator.
+   */
+  untaggedIds: readonly string[];
 }>;
 
 /**
@@ -120,6 +144,88 @@ export class ArtifactGenerationError extends Error {
 }
 
 /**
+ * How one artifact places into a generation.
+ */
+type Placement =
+  | Readonly<{
+    kind: 'tagged';
+    tip: string;
+  }>
+  | Readonly<{ kind: 'malformed'; }>
+  | Readonly<{ kind: 'untagged'; }>;
+
+/**
+ * Reads one artifact's recorded pipeline commit.
+ *
+ * Reports rather than throws, because this package already decided a corrupt
+ * artifact costs its own row and not the whole run. The two failure kinds stay
+ * distinct because they are handled oppositely: a malformed file belongs to the
+ * reader that reports malformed files, and an untagged one belongs nowhere.
+ *
+ * @param artifactsDir - directory holding the artifact
+ *
+ * @param name - artifact file name
+ *
+ * @returns How this artifact places
+ *
+ * @example
+ * ```ts
+ * const placement = await readTip({ artifactsDir, name: 'Acheron.json', },);
+ * ```
+ */
+async function readTip(
+  {
+    artifactsDir,
+    name,
+  }: {
+    readonly artifactsDir: string;
+    readonly name: string;
+  },
+): Promise<Placement> {
+  /**
+   * Raw artifact text.
+   */
+  const text = await readFile(
+    `${artifactsDir}/${name}`,
+    'utf8',
+  );
+
+  try {
+    /**
+     * Artifact as parsed JSON.
+     */
+    const parsed: unknown = JSON.parse(text,);
+
+    if (((typeof parsed) !== 'object') || (parsed === null))
+      return { kind: 'untagged', };
+    if (!('tip' in parsed))
+      return { kind: 'untagged', };
+
+    /**
+     * Commit as the artifact recorded it.
+     */
+    const { tip, } = parsed;
+
+    if (((typeof tip) !== 'string') || (tip === ''))
+      return { kind: 'untagged', };
+
+    return {
+      kind: 'tagged',
+      tip,
+    };
+  }
+  catch (error) {
+    // A truncated artifact is an ordinary outcome of a pass killed at its hard
+    // cap. Logged rather than swallowed so a systematic write fault is visible
+    // instead of showing up as a quietly smaller pool.
+    console.log(
+      `POOL malformed ${name}: ${String(error,)}`,
+    );
+    return { kind: 'malformed', };
+  }
+}
+
+/**
  * Partitions every settled artifact by the pipeline commit it recorded.
  *
  * @param artifactsDir - directory holding one JSON per settled entry
@@ -148,6 +254,16 @@ export async function censusByTip(
    */
   const byTip = new Map<string, string[]>();
 
+  /**
+   * Entries whose artifact would not parse.
+   */
+  const malformedIds: string[] = [];
+
+  /**
+   * Entries whose artifact parsed but recorded no usable commit.
+   */
+  const untaggedIds: string[] = [];
+
   /* oxlint-disable no-await-in-loop -- sequential on purpose: one artifact at a time keeps peak memory flat across a directory that reaches hundreds of megabytes */
   for (const name of names) {
     /**
@@ -159,39 +275,26 @@ export async function censusByTip(
     );
 
     /**
-     * Settled artifact of this entry.
+     * How this artifact places: its commit, or why it has none.
      */
-    const parsed: unknown = JSON.parse(
-      await readFile(
-        `${artifactsDir}/${name}`,
-        'utf8',
-      ),
-    );
+    const placement = await readTip({
+      artifactsDir,
+      name,
+    },);
+
+    if (placement.kind === 'malformed') {
+      malformedIds.push(entryId,);
+      continue;
+    }
+    if (placement.kind === 'untagged') {
+      untaggedIds.push(entryId,);
+      continue;
+    }
 
     /**
-     * Whether the artifact parsed to something with fields at all.
+     * Commit this artifact recorded.
      */
-    const isRecord = ((typeof parsed) === 'object') && (parsed !== null);
-    if (!isRecord)
-      throw new ArtifactGenerationError({
-        entryId,
-        reason: 'a JSON object',
-      },);
-
-    /**
-     * Pipeline commit this run recorded.
-     */
-    const { tip, } = parsed as { readonly tip?: unknown; };
-
-    /**
-     * Whether the recorded commit is usable as a generation key.
-     */
-    const isUsableTip = ((typeof tip) === 'string') && (tip !== '');
-    if (!isUsableTip)
-      throw new ArtifactGenerationError({
-        entryId,
-        reason: 'a non-empty `tip` string',
-      },);
+    const { tip, } = placement;
 
     byTip.set(
       tip,
@@ -234,7 +337,13 @@ export async function censusByTip(
 
         return rightSize - leftSize;
       },),
-    total: names.length,
+    total: names.length
+      - malformedIds
+        .length
+      - untaggedIds
+        .length,
+    malformedIds,
+    untaggedIds,
   };
 }
 
