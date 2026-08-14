@@ -629,6 +629,11 @@ Alternate-worktree writes:
 
 ### Long-form flags
 
+CLH:
+ Before automating CLI prompts with pipes, PTYs, or drivers,
+ run `--help` and inspect current docs/source for native noninteractive flags.
+ Prefer flags over terminal emulation.
+
 LFF:
  Use long-form (`--flag`) CLI options,
  not bundled single-letter short flags;
