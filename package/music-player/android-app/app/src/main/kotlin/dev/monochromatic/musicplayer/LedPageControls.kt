@@ -658,10 +658,20 @@ internal fun ledCapWidth(options: LedCapWidthOptions): Int =
 private fun ledPalette(): LedPalette {
     /** Reads current runtime accent pigment. */
     val accent: Color = MaterialTheme.colorScheme.primary
-    /** Reads runtime accent's deeper hardware-pigment role. */
-    val accentBody: Color = MaterialTheme.colorScheme.primaryContainer
-    /** Reads accessible ink for deeper accent pigment. */
-    val onAccentBody: Color = MaterialTheme.colorScheme.onPrimaryContainer
+    /** Records scene so both schemes select a similarly deep accent tone. */
+    val darkScene: Boolean = androidx.compose.foundation.isSystemInDarkTheme()
+    /** Uses dark container or light primary to preserve one deep cap-pigment treatment. */
+    val accentBody: Color = if (darkScene) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+    /** Selects readable ink paired with chosen deep accent role. */
+    val onAccentBody: Color = if (darkScene) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onPrimary
+    }
     return LedPalette(
         selectedFill = accentBody,
         selectedEdge = lerp(accentBody, Color.Black, LED_ACCENT_EDGE_MIX),
