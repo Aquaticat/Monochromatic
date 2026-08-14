@@ -135,6 +135,18 @@ export {
   type ChunkSlice,
   governedSliceIndices,
 } from './line-structure-inherit.ts';
+export {
+  ArtifactGenerationError,
+  censusByTip,
+  type GenerationCensus,
+  tipContains,
+  type TipGroup,
+} from './corpus-run/artifact-generation.ts';
+export {
+  type EligibleEntries,
+  MixedGenerationError,
+  selectEligible,
+} from './corpus-run/artifact-eligible.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,
