@@ -2,7 +2,7 @@
 
 Status:
  in progress.
- Lifecycle phase is discovered.
+ Lifecycle phase is serious alternative.
  Started and last updated on 2026-08-14.
 
 Subject:
@@ -244,8 +244,121 @@ After the initial schedule:
 
 ## Query ledger and saturation
 
-No external query has run yet.
-No source class is saturated.
+### Npm registry initial schedule
+
+Exact metadata lookups resolved `cac` latest and `cac@7.0.0` through the official registry.
+They identified version 7.0.0,
+MIT licensing,
+Node `>=20.19.0`,
+the repository `cacjs/cac`,
+and the signed npm tarball.
+
+The search `cac cli` reported 346,631 results.
+The first 50-result page contained `cac`.
+The complete pages at offsets 50 and 100 added no CAC package,
+provenance source,
+or taxonomy evidence.
+
+The search `cac command line parser` reported 593,845 results.
+The first 50-result page contained `cac`.
+The complete pages at offsets 50 and 100 added no CAC package,
+provenance source,
+or taxonomy evidence.
+
+These broad totals contain other technologies that are excluded by the user's CAC-only scope.
+No result became another candidate.
+The two-page CAC evidence saturation rule is met for both registry searches.
+
+### GitHub schedule
+
+Official npm metadata named `https://github.com/cacjs/cac`.
+The source clone is
+`~/temp/agent/cac-2026-08-14` at signed release tag `v7.0.0`,
+commit `77f602fcb2d1e75d24f5ecd94d5bf667acaa857a`.
+
+Uncapped clone searches completed for:
+
+- `allowUnknownOptions`;
+- literal `--` handling;
+- `rawArgs`;
+- `process.exit`;
+- help;
+- TypeScript;
+- Node 22;
+- Windows;
+- `mri`;
+- numeric coercion;
+- unused args.
+
+The search schedule located the parsing,
+validation,
+help,
+type,
+test,
+CI,
+and release paths.
+It also located current tracker reports for numeric coercion and multi-word commands.
+No recursively expanded technology query was added.
+
+### Broader web initial schedule
+
+The six initial searches consistently resolved the official npm package,
+`cacjs/cac`,
+release `v7.0.0`,
+source files,
+and current issues.
+The security query added independent package-security indexes,
+but primary GitHub Advisory Database searches found no advisory whose affected npm package is exactly `cac` or `mri`.
+
+The web provider exposes no page cursor.
+Registry and repository evidence independently established package identity and source coverage.
+Other parser names in results were excluded without screening under the user's CAC-only scope.
+
+### Repository schedule
+
+Uncapped whole-word searches found no lowercase `cac` or uppercase `CAC` reference outside the new assessment documents.
+The target package declares no CAC dependency.
+
+The `parseArgv`,
+`tryParseArgv`,
+and `management-parser` searches located the current replacement boundary.
+The Optique history sanity search found 182 matches across package and documentation scope,
+including current historical comments and prior decisions.
+The source and package manifest confirm that Optique is no longer a runtime dependency.
+
+### Expansion round
+
+Official metadata added the terms `Command And Conquer`,
+`mri`,
+`rawArgs`,
+`allowUnknownOptions`,
+numeric coercion,
+and unused args.
+
+The registry expansion query `cac command and conquer mri` reported 1,643,715 results.
+Its first 50-result page contained `cac`.
+The complete pages at offsets 50 and 100 added no CAC evidence.
+
+The GitHub expansion searched every added term in the pinned clone and current tracker.
+The web expansion ran:
+
+- `CAC mri numeric coercion option values issue`;
+- `cacjs CAC allowUnknownOptions rawArgs mri`;
+- `cacjs CAC unused args v7`;
+- `cacjs CAC Command And Conquer CLI package provenance`.
+
+It corroborated issue `cacjs/cac#165`,
+issue `cacjs/cac#162`,
+the v7 unused-argument release change,
+the official release,
+and npm provenance.
+The expansion round is frozen.
+
+### Terminal discovery result
+
+CAC-only discovery is saturated with the one user-named candidate.
+The source classes identify no second CAC package or independent implementation.
+Category-wide alternative saturation is intentionally excluded by the user's explicit scope.
 
 ## Candidate ledger
 
@@ -266,28 +379,54 @@ Screening result:
  not applicable.
 Its current behavior and maintained tests define what CAC integration must preserve.
 
-### CAC
+### CAC 7.0.0
 
 Discovery source:
- user-named candidate.
+ user-named candidate,
+then official npm metadata and `cacjs/cac` release `v7.0.0`.
 
 Base category:
- pending confirmation as inspectable open-source local technology.
+ inspectable open-source local technology.
 
 Overlays:
  incumbent replacement,
 high-trust,
 human auditability,
 and multi-platform.
+The native,
+Wasm,
+and prebuilt overlay is not applicable to the published runtime after inspecting the tarball and inlined parser source.
 
 Screening result:
- pending official registry,
-repository,
-license,
-provenance,
-source,
-maintenance,
-and runtime evidence.
+ serious alternative.
+
+Screening evidence:
+
+- MIT license text is present in source and tarball;
+- npm metadata declares Node `>=20.19.0`,
+  compatible with cli-git's narrower Node range;
+- published metadata declares no runtime,
+  optional,
+  or bundled dependency;
+- the build statically inlines `mri` 1.2.0,
+  whose MIT source is separately inspectable;
+- the tarball has five files,
+  41,198 unpacked bytes,
+  no lifecycle script,
+  one 19,503-byte ESM runtime,
+  and one 4,871-byte declaration file;
+- npm integrity is
+  `sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==`;
+- measured tarball SHA-512 is
+  `b62c566209b9668383fb783a51379af757a8c39cfa0001da868de0d15f4235235be3980cf1299f96901cf8645dd489c2e00a8dff4ed49eb829e7a63de0df6125`;
+- npm publish and SLSA attestations bind that digest to `cacjs/cac`,
+  tag `v7.0.0`,
+  commit `77f602fcb2d1e75d24f5ecd94d5bf667acaa857a`,
+  and `.github/workflows/release.yml`;
+- GitHub's advisory database returned no exact affected-package record for npm `cac` or the inlined `mri`.
+
+Capability and consumer parity remain pending,
+so no hard-gate conclusion or recommendation follows from screening.
 
 ## Evidence records
 
@@ -321,6 +460,96 @@ Primary evidence:
 
 Outcome:
 retain as replacement-parity baseline for CAC validation.
+
+### CAC package identity and provenance
+
+Candidate and version:
+ `cac@7.0.0`,
+release tag `v7.0.0`,
+commit `77f602fcb2d1e75d24f5ecd94d5bf667acaa857a`.
+
+Claim and relevance:
+ exact source and published artifact are identifiable and inspectable.
+This establishes the source-to-package boundary required before runtime validation.
+
+Gate:
+ open-source license,
+provenance,
+inspectability,
+and reproducibility.
+
+Status:
+ pass for targeted screening;
+rebuild comparison remains pending.
+
+Primary evidence accessed 2026-08-14:
+
+- `https://registry.npmjs.org/cac/7.0.0`;
+- `https://registry.npmjs.org/-/npm/v1/attestations/cac@7.0.0`;
+- `https://github.com/cacjs/cac/releases/tag/v7.0.0`;
+- clone `~/temp/agent/cac-2026-08-14` at the pinned commit;
+- tarball `~/temp/agent/cac-artifact-2026-08-14/cac-7.0.0.tgz`.
+
+Relevant source excerpts:
+
+```ts
+// cacjs/cac package.json:22-26
+"engines": {
+  "node": ">=20.19.0"
+}
+```
+
+```ts
+// cacjs/cac tsdown.config.ts:3-12
+export default lib(
+  {
+    inlineDeps: ['mri'],
+  },
+  {
+    inputOptions: {
+      resolve: {
+        alias: {
+          mri: 'mri/lib/index.mjs',
+```
+
+Outcome:
+advance CAC to targeted source and runtime validation.
+
+### CAC source and test surface checkpoint
+
+Candidate and version:
+ `cac@7.0.0` plus inlined `mri@1.2.0`.
+
+Claim and relevance:
+ the production parser is compact enough to audit but its declared dependency count understates the inlined MRI boundary.
+
+Gate:
+ human auditability,
+dependency surface,
+and test quality.
+
+Status:
+ targeted evidence collected;
+final rating pending execution.
+
+Primary evidence accessed 2026-08-14:
+
+- CAC clone has six production TypeScript files and 960 physical source lines;
+- a rough blank-and-comment exclusion leaves 728 lines;
+- CAC has one 211-line test file with fifteen test calls;
+- no fuzzing or mutation harness is present;
+- coverage is configured through a reusable workflow;
+- the most recent sampled Codecov report on merged PR `#172` reported 66.06 percent line coverage;
+- MRI adds 119 source lines and 446 test lines across twenty-three test calls;
+- CAC CI builds and tests Node 22,
+  24,
+  and 25 on Ubuntu and Windows;
+- Deno receives a separate Ubuntu example run;
+- CAC's own workflow does not run a macOS job.
+
+Outcome:
+source is inspectable,
+but cli-git's macOS requirement must be validated at the consumer boundary and upstream test breadth remains a scored concern.
 
 ## Execution manifests
 

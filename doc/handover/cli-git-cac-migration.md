@@ -334,6 +334,54 @@ The original unqualified vet report is superseded because its fingerprint includ
 CAC integration shapes may still be compared with each other,
 and current owned behavior remains the required parity baseline.
 
+### 2026-08-14 CAC discovery checkpoint
+
+CAC-only discovery is complete and frozen.
+The pinned candidate is `cac@7.0.0`,
+release tag `v7.0.0`,
+commit `77f602fcb2d1e75d24f5ecd94d5bf667acaa857a`.
+The source clone is `~/temp/agent/cac-2026-08-14`.
+
+Screening passed license,
+Node-version,
+inspectability,
+and initial package-provenance gates:
+
+- source and tarball carry the MIT license;
+- the package requires Node `>=20.19.0`,
+  which covers cli-git's supported range;
+- the published package has no declared runtime dependency or lifecycle script;
+- its build inlines MIT-licensed `mri@1.2.0`,
+  so MRI remains part of the audit surface even though npm reports zero dependencies;
+- npm SLSA provenance binds the measured tarball digest to the signed release tag and source commit;
+- exact GitHub Advisory Database queries found no advisory affecting npm `cac` or `mri`.
+
+The published tarball contains five files and 41,198 unpacked bytes.
+Its runtime is one 19,503-byte ESM file plus a 4,871-byte declaration file.
+The CAC source has 960 physical TypeScript lines across six files;
+MRI adds 119 source lines.
+CAC's test source has fifteen test calls,
+no fuzz or mutation harness,
+and current CI covers Ubuntu and Windows on Node 22,
+24,
+and 25.
+It does not run macOS,
+so macOS remains a consumer-validation requirement.
+
+Source inspection identified capability risks to probe rather than assume:
+
+- MRI coerces option values that look numeric,
+  and current `cacjs/cac#165` reports leading-character loss;
+- a dash-led token after a value option is treated as another option rather than that option's value;
+- the lone `-` spelling needs direct verification because MRI's scanner does not visibly classify it as positional;
+- `allowUnknownOptions` suppresses validation but does not preserve an unknown-token fact list;
+- help writes through `console.info` rather than an injected sink;
+- parsed options and action callbacks use `any` in the shipped declarations;
+- `parse` mutates a stateful `CAC` instance and dispatches command events even with `run: false`.
+
+These findings do not yet settle practicality.
+A bounded artifact-level behavior matrix and cli-git integration prototype must determine which CAC integration shapes survive.
+
 ## Open risks
 
 - CAC may fit management subcommands while being unsuitable for transparent Git-argv inspection.
@@ -351,5 +399,6 @@ and current owned behavior remains the required parity baseline.
 
 ## Next action
 
-Run the frozen CAC-only discovery schedule,
-then inspect CAC's pinned source and package provenance without executing third-party code.
+Finish targeted CAC source and maintenance evidence,
+write the execution manifest,
+then run the pinned artifact behavior matrix in a secret-free bounded container.
