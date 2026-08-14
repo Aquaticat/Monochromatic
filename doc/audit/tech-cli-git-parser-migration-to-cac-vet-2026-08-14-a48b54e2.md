@@ -551,13 +551,295 @@ Outcome:
 source is inspectable,
 but cli-git's macOS requirement must be validated at the consumer boundary and upstream test breadth remains a scored concern.
 
+### CAC lexical-preservation source trace
+
+Candidate and version:
+ `cac@7.0.0` with inlined `mri@1.2.0`.
+
+Claim and relevance:
+ CAC does not preserve every option lexeme and token role required by cli-git's current Git-region parser.
+The behavior is implemented in MRI and then normalized again by CAC.
+
+Gate:
+ replacement parity,
+fail-closed Git classification,
+and human auditability.
+
+Status:
+ scored concern for management-only use;
+potential hard failure for Git-region replacement pending artifact reproduction.
+
+Primary source:
+ clone `~/temp/agent/mri-2026-08-14` at `v1.2.0`,
+commit `e73e9f9d5b02124d14ac17dac2c4801687d3e99a`,
+and CAC clone at the pinned candidate commit.
+
+MRI converts an untyped option value to a number whenever unary plus produces a non-NaN number
+(`src/index.js:5-11`):
+
+```js
+function toVal(out, key, val, opts) {
+  var x, old=out[key], nxt=(
+    !!~opts.string.indexOf(key) ? (val == null || val === true ? '' : String(val))
+    : typeof val === 'boolean' ? val
+    : !!~opts.boolean.indexOf(key) ? (val === 'false' ? false : val === 'true' || (out._.push((x = +val,x * 0 === 0) ? x : val),!!val))
+    : (x = +val,x * 0 === 0) ? x : val
+```
+
+MRI treats a following dash-led token as another option rather than a value
+(`src/index.js:89-95`):
+
+```js
+name = arg.substring(j, idx);
+val = arg.substring(++idx) || (i+1 === len || (''+args[i+1]).charCodeAt(0) === 45 || args[++i]);
+arr = (j === 2 ? [name] : name);
+```
+
+CAC supplies MRI aliases and boolean names but no `string` option,
+then applies optional transforms after MRI has already changed the value
+(`cacjs/cac src/utils.ts:48-69`,
+`src/cac.ts:282-331`).
+An upstream `type: [String]` transform therefore cannot restore a lost leading plus or zero.
+Open issue `cacjs/cac#165` reports the same 7.0.0 numeric coercion,
+and its 2026-06-17 comment reports the leading-plus loss with `type: [String]`.
+
+CAC stores the caller's full argv reference in `rawArgs` at `src/cac.ts:192`.
+A consumer can reparse that array,
+but doing so recreates the parser logic the dependency was meant to replace.
+
+Outcome:
+artifact and adapter probes must distinguish management-only use from Git-region use.
+A broad migration cannot claim lexical preservation merely because `rawArgs` remains accessible.
+
+### CAC boolean-name source trace
+
+Candidate and version:
+ `cac@7.0.0`.
+
+Claim and relevance:
+ option declarations normalize kebab-case names before MRI receives boolean metadata.
+This can make a boolean spelling consume the following token,
+which is unsafe for Git's many kebab-case flags.
+
+Gate:
+ replacement parity and fail-closed Git classification.
+
+Status:
+ potential hard failure for Git-region replacement pending artifact reproduction.
+
+Primary source:
+
+```ts
+// cacjs/cac src/option.ts:27-39
+this.names = removeBrackets(rawName)
+  .split(',')
+  .map((v: string) => {
+    let name = v.trim().replace(/^-{1,2}/, '')
+    if (name.startsWith('no-')) {
+      this.negated = true
+      name = name.replace(/^no-/, '')
+    }
+    return camelcaseOptionName(name)
+  })
+```
+
+`getMriOptions` then registers only those normalized names
+(`src/utils.ts:48-69`).
+Open PR `cacjs/cac#169` demonstrates `--include-locked` consuming the following positional and adds raw-name tracking,
+but it has no review or merge as of 2026-08-14.
+
+Outcome:
+current 7.0.0 source has no configuration that registers raw kebab spelling as MRI's boolean key.
+Consumer-side scanning can work around it only by retaining owned token-role logic.
+
+### CAC process and type boundary
+
+Candidate and version:
+ `cac@7.0.0`.
+
+Claim and relevance:
+ CAC permits caller-supplied argv and throws typed runtime errors,
+but help output and public result typing do not match cli-git's pure parser seam directly.
+
+Gate:
+ process integration,
+TypeScript compatibility,
+and human auditability.
+
+Status:
+ scored concern;
+management adapter validation pending.
+
+Primary source:
+
+- `parse(argv, { run: false })` accepts explicit argv at `src/cac.ts:174-190`;
+- parsing mutates `rawArgs`,
+  `args`,
+  `options`,
+  and matched-command state at `src/cac.ts:192-232`;
+- command events dispatch during parsing at `src/cac.ts:211-224` even when `run` is false;
+- built-in help is checked before command validation at `src/cac.ts:234-253`;
+- help and version write through `console.info` at `src/command.ts:239-254`;
+- unknown-option,
+  required-value,
+  and unused-argument checks run only from `runMatchedCommand` at `src/cac.ts:341-352`;
+- shipped `ParsedArgv.options`,
+  `OptionConfig`,
+  actions,
+  and `runMatchedCommand` use `any` in `dist/index.d.ts`.
+
+Outcome:
+a management-only adapter can avoid process exit and pass explicit argv,
+but exact help must remain caller-owned and cli-git must project CAC's `any` result through its own validated type boundary.
+
+### Maintenance audit
+
+Candidate and version:
+ `cac@7.0.0` and repository activity through 2026-08-14.
+
+Claim and relevance:
+ releases and maintainer-authored work resumed in 2026,
+while behavior reports and external fixes receive limited public tracker response.
+
+Gate:
+ maintenance and release health.
+
+Status:
+ scored concern,
+not a hard failure.
+
+Primary evidence:
+ GitHub API issue,
+pull-request,
+release,
+commit,
+and timeline data captured under
+`~/temp/agent/cac-artifact-2026-08-14/`.
+
+Findings:
+
+- version 7.0.0 was published on 2026-02-27;
+  the preceding stable release,
+  6.7.14,
+  was published on 2022-08-29;
+- the repository had 36 commits from 2025-08-14 through the query date;
+  31 used maintainer Kevin Deng's email,
+  while the remaining five each used a different author email;
+- five issues were created or updated in that period,
+  so every one was inspected;
+- those issues received no maintainer comment in the measured period;
+  issue `#151` received one maintainer closure action after its fix reached 7.0.0;
+- current numeric-coercion issue `#165` and multi-word-command issue `#170` have no assignee,
+  label,
+  milestone,
+  or maintainer response;
+- the ten most recently updated pull requests were inspected;
+- maintainer `sxzz` merged PR `#172` 958 seconds after creation and merged PR `#171` 504,640 seconds after creation;
+- PR `#171` received one maintainer approval;
+- current behavior-fix PRs `#169` and `#173` have no review;
+- no security policy,
+fuzz harness,
+or mutation harness is present;
+- the issue template welcomes bug reports,
+feature requests,
+and reproduction links and states no ban on outside or AI-assisted contributions.
+
+Outcome:
+maintenance is concentrated in one current maintainer and releases reach npm,
+but unresolved behavior fixes and absent public triage lower confidence for integration-specific defects.
+
 ## Execution manifests
 
-No third-party command tree has been executed.
-Execution manifests will be written after source inspection and before any candidate install,
-build,
-test,
-or consumer probe.
+### Published-artifact behavior matrix
+
+Candidate:
+ `cac@7.0.0`.
+
+Pinned artifact:
+ `~/temp/agent/cac-artifact-2026-08-14/cac-7.0.0.tgz`,
+SHA-512
+`b62c566209b9668383fb783a51379af757a8c39cfa0001da868de0d15f4235235be3980cf1299f96901cf8645dd489c2e00a8dff4ed49eb829e7a63de0df6125`.
+
+Top-level command:
+
+```text
+podman run --memory=2g --cpus=2 --pids-limit=128 --ulimit nofile=1024:1024 --rm --network none --read-only ... node /probe/behavior-probe.mjs
+```
+
+Reachable candidate command tree:
+ import one extracted ESM file and call its in-process parsing API.
+The source path contains no filesystem,
+network,
+process-execution,
+plugin,
+native,
+Wasm,
+or generated-command call.
+The harness does not call an action that performs external work.
+
+Inspected files:
+ CAC `src/*.ts`,
+MRI `src/index.js`,
+published `dist/index.js`,
+source and published manifests,
+and tarball contents.
+
+Expected reads:
+ read-only Node image,
+read-only harness,
+and read-only extracted CAC package.
+
+Expected writes:
+ bounded anonymous container state only;
+read-only root plus a 64 MiB `/tmp` tmpfs.
+
+Subprocesses:
+ Podman runtime and one Node process.
+Candidate code spawns none.
+
+Network:
+ disabled.
+
+Image:
+ local `docker.io/library/node:24-slim`,
+Node `v24.18.0`,
+image ID `2f35c3d18013b7d65e31c40f0602e4c0a65a18efc65c16e2b98497f13f4da921`,
+digest `sha256:d45d78e7929b46875bbd4e29bea672d5bc48186c6c3588306521c815e78352d6`.
+
+Credentials and environment:
+ no home mount,
+no repository mount,
+no ambient credential environment,
+and no network.
+
+Outputs:
+ one JSON object containing exact results for positive controls,
+management grammar cases,
+Git-region parity cases,
+help behavior,
+event dispatch,
+and error classes.
+
+Success condition:
+ process exits zero,
+every catalog case produces a captured result,
+and positive controls prove the harness distinguishes expected values.
+
+Failure condition:
+ import failure,
+uncaptured throw,
+missing case,
+unexpected external effect,
+resource limit,
+or nonzero process exit.
+
+Stop condition:
+ any undeclared read,
+write,
+subprocess,
+network,
+native,
+or Wasm boundary requires manifest revision before continuing.
 
 ## Hard-gate exits
 
