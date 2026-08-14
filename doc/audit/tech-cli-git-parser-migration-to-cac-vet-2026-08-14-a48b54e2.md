@@ -1150,6 +1150,123 @@ or unexplained artifact difference.
 
 Deno and non-Linux platform jobs remain separate validation items.
 
+### Disposable cli-git production-style integration
+
+Candidate:
+ published `cac@7.0.0` through a catalog-pinned dependency in a disposable repository worktree.
+
+Workspace:
+ `~/temp/agent/mono-cac-probe.kbXvUyzU` at baseline commit
+`2c97605157965903408f73619adc4344f48fc82e`.
+The worktree is outside the evaluation branch and will not be committed or merged.
+
+Prototype boundary:
+
+- replace only management routing in `management-parser.ts`;
+- add sibling `management-cac-parser.ts` for a fresh CAC instance,
+  exact policy-value placeholders,
+  lone-dash preservation,
+  runtime checks around CAC's `any` option result,
+  and stable refusal mapping;
+- retain all Git-region parsers,
+  authored help strings,
+  action types,
+  management runtime,
+  diagnostics,
+  and tests;
+- catalog-pin CAC 7.0.0 in the disposable worktree only.
+
+Dependency operation:
+ run filtered `pnpm install --ignore-scripts` to regenerate the disposable lock and package links.
+Lifecycle scripts remain disabled.
+No package install mutation reaches the evaluation worktree.
+
+Top-level verification operations:
+
+```text
+mise run //package/git-policy/cli:lint:types
+mise run //package/git-policy/cli:lint:oxlint
+mise run //package/git-policy/cli:build
+mise run //package/git-policy/cli:test:unit
+mise run //package/git-policy/cli:pack:npm
+mise run //package/git-policy/cli:test:built:trust
+```
+
+Additional probes:
+
+- compare the frozen 44-case incumbent catalog with prototype results;
+- import the built package root and call its exported authoring API;
+- invoke the packed shadow `git` command for help,
+  trust help,
+  invalid usage,
+  and selected management argument cases;
+- inspect the final MJS for bundled CAC/MRI markers and unresolved imports;
+- compare package and built-artifact bytes against the unchanged baseline;
+- run lifecycle latency only after establishing unchanged-build timing spread and a positive control.
+
+Reachable command tree:
+ pnpm with lifecycle execution disabled;
+repo-owned mise task programs;
+TypeScript checker;
+oxlint;
+Rolldown;
+module-test child processes;
+packaging;
+Podman consumer fixtures;
+the built shadow executable;
+and subprocesses already declared by the inspected package tasks.
+
+Candidate code execution:
+ CAC and inlined MRI run during management tests,
+consumer commands,
+and bundled artifact invocations.
+They do not spawn subprocesses or perform I/O themselves.
+
+Network:
+ dependency retrieval may use the package registry during filtered install.
+All candidate behavior probes and maintained tests use no candidate-controlled network.
+Existing package tasks that bootstrap disposable containers retain their inspected package-manager and apt network behavior.
+
+Reads and writes:
+ only the disposable worktree,
+its ignored dependency/build trees,
+private scratch,
+and task-declared disposable container filesystems.
+User repository state,
+Git configuration,
+trust registry,
+and shared package state are not verification targets.
+
+Credentials and environment:
+ no candidate command receives ambient credentials.
+Built trust and lifecycle tasks use their existing explicit disposable fixtures.
+
+Resource ceilings:
+ existing cli-git Podman tasks cap memory and CPUs as declared in `package/git-policy/cli/mise.toml`.
+Filtered install and host-side lint/build remain package-scoped.
+No stress or fan-out benchmark is authorized.
+
+Expected outputs:
+ zero exits,
+unchanged diagnostics and 44-case results,
+one self-contained MJS artifact,
+passing package import and CLI consumer commands,
+measured byte deltas,
+and timing distributions.
+
+Failure condition:
+ any behavior mismatch,
+type or lint finding,
+test failure,
+externalized CAC runtime import,
+side-effectful package import,
+undeclared write,
+resource breach,
+or latency contract failure.
+
+Stop condition:
+ any undeclared command boundary or effect requires manifest revision before continuing.
+
 ## Hard-gate exits
 
 ### CAC as the shared Git-region parser
