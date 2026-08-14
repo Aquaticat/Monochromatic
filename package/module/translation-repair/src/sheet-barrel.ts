@@ -83,6 +83,7 @@ export {
   type CrosscheckCensus,
   type CrosscheckItem,
 } from './corpus-run/judge-crosscheck.ts';
+export { readOnlyIds, } from './corpus-run/entry-filter.ts';
 export {
   type JudgeSeating,
   MIN_JUDGED_CLAIMS,

@@ -22,6 +22,7 @@ import {
   type SizedEntry,
   smallBandIds,
 } from './band-order.ts';
+import { readOnlyIds, } from './entry-filter.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
   discardSliceCache,
@@ -252,6 +253,25 @@ async function runCorpusPass(): Promise<void> {
   const people = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
 
   /**
+   * Entry ids this invocation is restricted to, empty when unrestricted.
+   */
+  const onlyIds = readOnlyIds({ argv: process.argv, },);
+  if (onlyIds.size > 0) {
+    /**
+     * Chosen ids in a stable order, so two runs of one selection log alike.
+     */
+    const chosen = [...onlyIds,]
+      .toSorted()
+      .join(',',);
+
+    console.log(
+      `ONLY ${chosen} (ordering is bypassed; run `
+        + 'this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+        + 'entry never enters a pool later draws treat as natural accumulation)',
+    );
+  }
+
+  /**
    * Encoder measuring page-source byte size once per entry.
    */
   const sizer = new TextEncoder();
@@ -268,7 +288,9 @@ async function runCorpusPass(): Promise<void> {
    * itself to the same band forever.
    */
   const settled: SizedEntry[] = [];
-  for (const id of people) {
+  for (const id of onlyIds.size === 0 ? people : people.filter(function isChosen(candidate,): boolean {
+    return onlyIds.has(candidate,);
+  },)) {
     try {
       /**
        * Original zh page text for this entry.
