@@ -484,6 +484,36 @@ if (args.includes('rev-parse')) process.exitCode = 1;
       },
     },),
     it({
+      name: 'prints namespace and trust help without loading repository config',
+      fn: async function testManagementHelp(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(tempDirectory.path, 'cli-git.config.ts',),
+          'not valid TypeScript config',
+        );
+        /** Successful namespace help result. */
+        const namespaceHelp = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['cli-git', '--help',],
+        },);
+        expect(namespaceHelp.stdout,).toContain('Usage: git cli-git');
+        expect(namespaceHelp.stdout,).toContain('git cli-git trust --help');
+        expect(namespaceHelp.stderr,).toBe('',);
+        /** Successful trust-specific help result. */
+        const trustHelp = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['cli-git', 'trust', '--help',],
+        },);
+        expect(trustHelp.stdout,).toContain('terminal stdin and stderr');
+        expect(trustHelp.stdout,).toContain('--yes');
+        expect(trustHelp.stdout,).toContain('prints every disclosure');
+        expect(trustHelp.stdout,).toContain('recursive descendant authority');
+        expect(trustHelp.stdout,).toContain('full account permissions');
+        expect(trustHelp.stderr,).toBe('',);
+      },
+    },),
+    it({
       name: 'runs trust status and direct check management commands',
       fn: async function testManagementCommands(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
