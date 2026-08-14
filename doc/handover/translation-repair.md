@@ -9070,3 +9070,43 @@ Also recorded there: with the three extracted effect rules temporarily set to
 `error`, this one package goes from 3 errors to 177, effectively all
 `no-opaque-parameter-effects`, with `JSON.stringify` a large share, plus 65
 `SemanticBridgeError` warnings carrying bundled stack traces.
+
+### `#426` landed: readers now name the generation they read
+
+`censusByTip` partitions an artifacts directory by the commit each run recorded.
+`selectEligible` turns that into what one draw may pool and REFUSES when the
+directory spans generations and the caller named neither a required commit nor
+deliberate pooling. `resolvePool` reads the policy from the environment and
+prints the census, so a rate cannot be printed without the lines saying which
+pipeline produced the entries under it.
+
+        TRANSLATION_REPAIR_REQUIRED_COMMIT   commit an eligible pipeline must contain
+        TRANSLATION_REPAIR_POOL_ALL=yes      opt into a deliberately mixed pool
+
+Wired into the four readers that produce numbers: `score-probe`,
+`attribution-read`, `draw-sample`, `damage-sample`. Deliberately NOT wired into
+`corpus-pass`, whose directory reads answer "which entries already settled" and
+"how many exist now"; filtering those would make a pass re-run settled work.
+
+Verified on the live directory, both directions. Unfiltered, `score-probe`
+refuses. Requiring `fc7912929` it runs over 1 of 22 and names the other 21.
+
+Two failure kinds are handled OPPOSITELY, which an existing test forced and was
+right to:
+
+-   MALFORMED, would not parse: kept in the pool. `attribution-read` guarantees
+    one corrupt file costs its own row and not the run, because a pass killed at
+    its hard cap leaves truncated artifacts. Filtering it here would take the
+    file from the reader whose job is to report it.
+-   UNTAGGED, parsed but no commit: excluded and named. A real artifact of
+    unknown generation is exactly what must not be pooled.
+
+Neither throws. The first version threw on both, which would have let one
+truncated file destroy every report over the directory.
+
+### The current-generation pool is 1
+
+`MTF_0615` settled 21:12 and is the first entry carrying both 08-13 behaviour
+fixes. Against `fc7912929` the eligible pool is 1 of 22. `#60`, `#66` and `#68`
+need many more before any rate over them means anything; the filter now makes
+that visible instead of letting 22 read as the denominator.
