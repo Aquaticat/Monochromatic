@@ -181,9 +181,6 @@ export type TrustWarning = Readonly<{
   message: string;
 }>;
 /**
- * Trust consent and output adapters.
- */
-/**
  * Result of one explicit interactive trust prompt.
  *
  * @example
@@ -196,6 +193,14 @@ export type TrustConsentOutcome =
   | 'declined'
   | 'unavailable';
 
+/**
+ * Trust consent and output adapters.
+ *
+ * @example
+ * ```ts
+ * const adapters: TrustConsentAdapters = { disclose, prompt, now };
+ * ```
+ */
 export type TrustConsentAdapters = {
   /**
    * Writes human-readable disclosure to stderr boundary.

@@ -28,9 +28,6 @@ export const MANAGEMENT_USAGE: string = [
 ].join('\n',);
 
 /**
- * One resolved management action.
- */
-/**
  * Successful namespace help shown without repository access.
  */
 export const MANAGEMENT_HELP: string = [
@@ -66,6 +63,14 @@ export const TRUST_HELP: string = [
   '  --help  Show this help without reading repository configuration.',
 ].join('\n',);
 
+/**
+ * One resolved management action.
+ *
+ * @example
+ * ```ts
+ * const action: ManagementAction = { command: 'help', topic: 'management' };
+ * ```
+ */
 export type ManagementAction =
   | Readonly<{
     /**
@@ -123,7 +128,12 @@ export type ManagementAction =
  */
 const TRUST_SPEC: ArgvSpec = {
   flags: {
-    help: { names: ['--help', '-h',], },
+    help: {
+      names: [
+        '--help',
+        '-h',
+      ],
+    },
     yes: { names: ['--yes',], },
   },
   valueOptions: {},
@@ -174,7 +184,10 @@ export function parseManagementArgs(args: readonly string[],): ManagementAction 
   if ((name === '--help') || (name === '-h')) {
     if (rest.length > 0)
       return MANAGEMENT_REFUSED;
-    return { command: 'help', topic: 'management', };
+    return {
+      command: 'help',
+      topic: 'management',
+    };
   }
   if ((name === 'untrust') || (name === 'status')) {
     /**
@@ -212,7 +225,10 @@ export function parseManagementArgs(args: readonly string[],): ManagementAction 
       .help
       ?? 0)
       > 0)
-      return { command: 'help', topic: 'trust', };
+      return {
+        command: 'help',
+        topic: 'trust',
+      };
     return {
       command: 'trust',
       yes: (parsed.flagCounts

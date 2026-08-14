@@ -162,7 +162,7 @@ try {
     /**
      * Whether invocation is successful help and must skip recovery mutation.
      */
-    const isManagementHelp = (typeof managementAction !== 'symbol')
+    const isManagementHelp = ((typeof managementAction) !== 'symbol')
       && (managementAction.command === 'help');
     if (!isManagementHelp) {
       /**
