@@ -31,7 +31,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      shouldBeReadonly: 'Parameter "{{parameterName}}" can be deeply readonly: {{reason}}.',
+      shouldBeReadonly: '{{parameterSubject}} can be deeply readonly: {{reason}}. {{guidance}}',
     },
   },
   /**

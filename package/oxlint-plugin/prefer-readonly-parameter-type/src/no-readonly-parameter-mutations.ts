@@ -30,7 +30,7 @@ export const noReadonlyParameterMutations: CreateOnceRule = {
     },
     messages: {
       readonlyParameterMutation:
-        'Parameter "{{parameterName}}" is declared readonly, but analysis proved a reachable mutation: {{reason}}.',
+        '{{parameterSubject}} is declared readonly, but analysis proved a reachable mutation: {{reason}}.',
     },
   },
   /**

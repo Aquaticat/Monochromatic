@@ -30,11 +30,11 @@ export const noInvalidParameterEffectContracts: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
+      staleMutatesTag: '{{parameterSubject}} has stale @mutates contract.',
       hostCapabilityContractRequired:
-        'Parameter "{{parameterName}}" uses ForeignHostCapability for unresolved runtime behavior but lacks corresponding @mutates contract.',
+        '{{parameterSubject}} uses ForeignHostCapability for unresolved runtime behavior but lacks corresponding @mutates contract.',
       redundantForeignBorrowed:
-        'Parameter "{{parameterName}}" carries a ForeignBorrowed marker that no longer affects classification: its underlying type is deeply readonly and no effect reaches it. Remove the marker, or mark the mutable foreign type it was intended to identify.',
+        '{{parameterSubject}} carries a ForeignBorrowed marker that no longer affects classification: its underlying type is deeply readonly and no effect reaches it. Remove the marker, or mark the mutable foreign type it was intended to identify.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
     },
   },

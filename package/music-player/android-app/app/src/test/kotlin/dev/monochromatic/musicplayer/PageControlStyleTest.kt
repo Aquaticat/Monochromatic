@@ -51,6 +51,10 @@ class PageControlStyleTest {
         assertEquals(PageControlStyle.ROUNDED_BUTTONS, PageControlStyle.fromStoredName("ROUNDED_BUTTONS"))
         assertEquals(PageControlStyle.SEGMENTED_BUTTONS, PageControlStyle.fromStoredName("SEGMENTED_BUTTONS"))
         assertEquals(PageControlStyle.CHROMIUM_TABS, PageControlStyle.fromStoredName("CHROMIUM_TABS"))
+        assertEquals(
+            PageControlStyle.LED_SEGMENTED_BUTTONS,
+            PageControlStyle.fromStoredName("LED_SEGMENTED_BUTTONS"),
+        )
         assertEquals(PageControlStyle.RADIO, PageControlStyle.fromStoredName(null))
         assertEquals(PageControlStyle.RADIO, PageControlStyle.fromStoredName("future-style"))
     }

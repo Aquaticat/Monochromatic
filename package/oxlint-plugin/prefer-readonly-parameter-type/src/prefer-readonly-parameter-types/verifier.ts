@@ -15,6 +15,7 @@ import { opaqueEffectReport, } from './opaque-effect-diagnostic.ts';
 import type { ReadonlyCallableEvidence, } from './readonly-callable-evidence.ts';
 import type { ReadonlyRuleCategory, } from './readonly-rule-category.ts';
 import { reportRedundantForeignBorrowed, } from './redundant-marker-report.ts';
+import { readonlyPreferenceGuidance, } from './readonly-preference-guidance.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 
 import {
@@ -29,6 +30,8 @@ import {
  *
  * @param block - Shared parsed mutation block.
  *
+ * @param parameterSubject - Stable one-line subject for targeted parameter.
+ *
  * @param commentBodyStartOffset - Absolute source start of comment body.
  *
  * @mutates context - Emits Oxlint diagnostics through foreign rule context.
@@ -36,10 +39,12 @@ import {
 function reportStaleContract({
   context,
   block,
+  parameterSubject,
   commentBodyStartOffset,
 }: ForeignBorrowed<{
   readonly context: Context;
   readonly block: ParsedMutationContractBlock;
+  readonly parameterSubject: string;
   readonly commentBodyStartOffset: number;
 }>,): void {
   /**
@@ -80,7 +85,7 @@ function reportStaleContract({
       end: commentBodyStartOffset + block.blockEndOffset,
     },),
     messageId: 'staleMutatesTag',
-    data: { parameterName: block.parameterName, },
+    data: { parameterSubject, },
     suggest: [
       {
         desc: `Remove stale @mutates ${block.parameterName} block.`,
@@ -143,11 +148,12 @@ export function reportReadonlyCallableEvidence({
     const {
       parameter,
       parameterIndex,
-      parameterName,
+      parameterSubject,
       inputSubject,
       affectedNames,
       parameterType,
       classification,
+      originEvidence,
       parameterBlocks,
       opaque,
       retained,
@@ -194,8 +200,12 @@ export function reportReadonlyCallableEvidence({
           loc,
           messageId: 'shouldBeReadonly',
           data: {
-            parameterName,
+            parameterSubject,
             reason: classification.reason,
+            guidance: readonlyPreferenceGuidance({
+              suggestions,
+              originEvidence,
+            },),
           },
           ...suggestions.length === 0 ? {} : { suggest: suggestions, },
         },);
@@ -212,7 +222,7 @@ export function reportReadonlyCallableEvidence({
           loc,
           messageId: 'readonlyParameterMutation',
           data: {
-            parameterName,
+            parameterSubject,
             reason: classification.kind === 'projected-readonly-capability'
               ? `{classification.reason}; caller-reachable state is mutated`
               : 'caller-reachable state is mutated',
@@ -238,7 +248,7 @@ export function reportReadonlyCallableEvidence({
           loc,
           messageId: 'projectedCallableCapability',
           data: {
-            parameterName,
+            parameterSubject,
             reason: classification.reason,
           },
         },);
@@ -252,7 +262,7 @@ export function reportReadonlyCallableEvidence({
       context.report({
         loc,
         messageId: 'hostCapabilityContractRequired',
-        data: { parameterName, },
+        data: { parameterSubject, },
       },);
     }
     if ((!opaque)
@@ -262,6 +272,7 @@ export function reportReadonlyCallableEvidence({
         reportStaleContract({
           context,
           block,
+          parameterSubject,
           commentBodyStartOffset: contracts.commentBodyStartOffset,
         },);
       },);
@@ -271,7 +282,7 @@ export function reportReadonlyCallableEvidence({
         context,
         project,
         parameterType,
-        parameterName,
+        parameterSubject,
         loc,
       },);
     }

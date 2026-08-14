@@ -7,7 +7,6 @@
 import type {
   Context,
   Fixer,
-  Suggestion,
 } from '@oxlint/plugins';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { ParameterDeclaration, } from 'typescript/unstable/ast';
@@ -17,6 +16,7 @@ import {
 } from 'typescript/unstable/ast/is';
 
 import { classifyReadonlyType, } from './readonly-classifier.ts';
+import type { ReadonlySuggestion, } from './readonly-suggestion.ts';
 
 /**
  * Supported mutable standard collection projections.
@@ -55,7 +55,7 @@ export function readonlyCollectionSuggestions({
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-}>): Suggestion[] {
+}>): ReadonlySuggestion[] {
   if ((parameter.type === undefined)
     || (!isTypeReferenceNode(parameter.type,))
     || (!isIdentifier(parameter.type
@@ -157,9 +157,20 @@ export function readonlyCollectionSuggestions({
           .hasBOM ? 1 : 0),
     ),
   ];
+  /**
+   * Authored mutable collection owner named without source trivia.
+   */
+  const mutableName = parameter.type
+    .typeName
+    .text;
+  /**
+   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   */
+  const diagnosticGuidance = `Replace the mutable collection owner \`${mutableName}\` with \`${projection.readonlyName}\`.`;
   return [
     {
-      desc: `Replace ${authoredType} with ${replacement}.`,
+      diagnosticGuidance,
+      desc: diagnosticGuidance,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,

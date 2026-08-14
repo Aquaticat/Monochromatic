@@ -216,6 +216,213 @@ component SegmentedControls inherits Rectangle {
     }
 }
 
+// A hardware page button adapted from the supplied LED segmented-control master.
+// Each control is a content-width metal tile so Slint's wrapping layout never
+// paints unused row width. Adjacent tiles overlap by the 8px plate margin,
+// visually forming one backplate while preserving 8px between caps. The 60px
+// plate surrounds a 44px cap; selection leaves the updated 1px CNC seam.
+component LedSegmentButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    callback clicked();
+    private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
+    horizontal-stretch: 0;
+    width: min(led-label.preferred-width + 48px, root.max-width);
+    height: 60px;
+    preferred-height: 60px;
+    background: transparent;
+
+    plate := Rectangle {
+        width: parent.width;
+        height: parent.height;
+        border-radius: 17px;
+        clip: true;
+        background: root.light-scene ? #c4c6ca : #111111;
+        inner-shadow-offset-x: 3px;
+        inner-shadow-offset-y: 3px;
+        inner-shadow-blur: 6px;
+        inner-shadow-color: root.light-scene ? #00000030 : #00000057;
+
+        Rectangle {
+            width: parent.width;
+            height: parent.height;
+            border-radius: parent.border-radius;
+            background: root.light-scene
+                ? @linear-gradient(135deg, #ffffff29 0%, #ffffff0f 30%, transparent 55%, #0000001f 100%)
+                : @linear-gradient(135deg, #ffffff0f 0%, #ffffff06 30%, transparent 55%, #00000024 100%);
+        }
+
+        // Seeded-looking micro highlights suggest a bead-blasted plate without
+        // requiring a raster tile that would scale differently across renderers.
+        Rectangle { x: parent.width * 0.18; y: parent.height * 0.22; width: 1px; height: 1px; background: #ffffff14; }
+        Rectangle { x: parent.width * 0.42; y: parent.height * 0.68; width: 1px; height: 1px; background: #ffffff10; }
+        Rectangle { x: parent.width * 0.71; y: parent.height * 0.28; width: 1px; height: 1px; background: #ffffff18; }
+        Rectangle { x: parent.width * 0.86; y: parent.height * 0.72; width: 1px; height: 1px; background: #ffffff0f; }
+    }
+
+    opening := Rectangle {
+        x: 8px;
+        y: 8px;
+        width: parent.width - 16px;
+        height: 44px;
+        border-radius: 10px;
+        background: root.light-scene
+            ? (root.selected ? #6e7075 : #85878c)
+            : (root.selected ? #050508 : #050506);
+    }
+
+    cap-face := Rectangle {
+        x: root.selected ? 9px : 8px;
+        y: root.selected ? 9px : 8px;
+        width: parent.width - (root.selected ? 18px : 16px);
+        height: root.selected ? 42px : 44px;
+        border-radius: root.selected ? 8px : 9px;
+        background: root.selected ? #a63fd0 : #aaaaaa;
+        drop-shadow-offset-x: root.selected ? 0px : 2.5px;
+        drop-shadow-offset-y: root.selected ? 0px : 3.5px;
+        drop-shadow-blur: root.selected ? 10px : 5px;
+        drop-shadow-color: root.selected
+            ? (root.light-scene ? #c874ea1a : #c874ea2e)
+            : (root.light-scene ? #00000052 : #0000006b);
+        animate x, y, width, height, background, drop-shadow-color {
+            duration: 160ms;
+            easing: ease;
+        }
+    }
+
+    Rectangle {
+        x: cap-face.x;
+        y: cap-face.y;
+        width: cap-face.width;
+        height: cap-face.height;
+        border-radius: cap-face.border-radius;
+        background: root.selected
+            ? @radial-gradient(circle, #ffffff5c 0%, transparent 100%)
+            : @radial-gradient(circle, #ffffff36 0%, transparent 100%);
+    }
+
+    Rectangle {
+        x: cap-face.x;
+        y: cap-face.y;
+        width: cap-face.width;
+        height: cap-face.height;
+        border-radius: cap-face.border-radius;
+        background: @linear-gradient(
+            135deg,
+            #ffffff38 0%,
+            #ffffff1f 25%,
+            #ffffff08 45%,
+            #0000000a 55%,
+            #0000002e 75%,
+            #00000052 100%
+        );
+    }
+
+    if root.selected: Rectangle {
+        x: cap-face.x;
+        y: cap-face.y;
+        width: cap-face.width;
+        height: 4px;
+        background: @linear-gradient(
+            180deg,
+            (root.light-scene ? #00000099 : #00000073) 0%,
+            transparent 100%
+        );
+    }
+    if root.selected: Rectangle {
+        x: cap-face.x;
+        y: cap-face.y;
+        width: 4px;
+        height: cap-face.height;
+        background: @linear-gradient(
+            90deg,
+            (root.light-scene ? #00000099 : #00000073) 0%,
+            transparent 100%
+        );
+    }
+
+    if root.selected: Rectangle {
+        x: cap-face.x;
+        y: cap-face.y + cap-face.height;
+        width: cap-face.width;
+        height: 1px;
+        background: root.light-scene ? #ffffff73 : #ffffff4d;
+    }
+    if root.selected: Rectangle {
+        x: cap-face.x + cap-face.width;
+        y: cap-face.y;
+        width: 1px;
+        height: cap-face.height;
+        background: root.light-scene ? #ffffff73 : #ffffff4d;
+    }
+
+    if root.selected: Text {
+        x: 23px;
+        y: 9px;
+        width: parent.width - 46px;
+        height: 46px;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem + 1px;
+        font-weight: 600;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        overflow: elide;
+        color: #f0d4ff80;
+    }
+
+    led-label := Text {
+        x: 24px;
+        y: root.selected ? 10px : 8px;
+        width: parent.width - 48px;
+        height: 44px;
+        text: root.text;
+        font-size: Typography.body-rem * 1rem;
+        font-weight: 600;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+        overflow: elide;
+        color: root.selected ? #ffffff : #3d3f45;
+        animate y, color { duration: 160ms; easing: ease; }
+    }
+
+    TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// Wrapping LED controls stay content-width and leave every unused row pixel
+// transparent. Metal tiles overlap by their 8px margins, joining the apparent
+// plate while every label-cap pair still wraps as a whole control.
+component LedSegmentControls inherits Rectangle {
+    in property <[string]> labels;
+    in property <int> selected-page;
+    callback select-page(int);
+    height: led-layout.preferred-height;
+    preferred-height: led-layout.preferred-height;
+    background: transparent;
+
+    led-layout := FlexboxLayout {
+        width: parent.width;
+        spacing-horizontal: -8px;
+        spacing-vertical: -8px;
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: LedSegmentButton {
+            text: label;
+            selected: p == root.selected-page;
+            max-width: root.width;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+}
+
 // Chromium's logical metrics: a 35px tab below 6px strip padding,
 // 10px top corners, 12px outward shoulders, 1px contour, and 20px insets.
 component ChromiumTab inherits Rectangle {
@@ -228,6 +435,7 @@ component ChromiumTab inherits Rectangle {
     private property <color> divider-color: Palette.foreground.with-alpha(0.25);
     private property <color> ink-color: Palette.foreground;
     horizontal-stretch: 0;
+    clip: false;
     width: min(chromium-label.preferred-width + 40px, root.max-width);
     height: 41px;
     preferred-height: 41px;
@@ -243,10 +451,11 @@ component ChromiumTab inherits Rectangle {
     }
 
     if root.selected: Path {
+        x: -12px;
         y: 6px;
-        width: parent.width;
+        width: parent.width + 24px;
         height: 35px;
-        viewbox-width: root.width / 1px;
+        viewbox-width: root.width / 1px + 24;
         viewbox-height: 35;
         fit: fill;
         fill: root.active-color;
@@ -254,20 +463,20 @@ component ChromiumTab inherits Rectangle {
         CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
         LineTo { x: 12; y: 10; }
         QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
-        LineTo { x: root.width / 1px - 22; y: 0; }
+        LineTo { x: root.width / 1px + 2; y: 0; }
         QuadraticTo {
-            control-x: root.width / 1px - 12;
+            control-x: root.width / 1px + 12;
             control-y: 0;
-            x: root.width / 1px - 12;
+            x: root.width / 1px + 12;
             y: 10;
         }
-        LineTo { x: root.width / 1px - 12; y: 23; }
+        LineTo { x: root.width / 1px + 12; y: 23; }
         CubicTo {
-            control-1-x: root.width / 1px - 12;
+            control-1-x: root.width / 1px + 12;
             control-1-y: 29;
-            control-2-x: root.width / 1px - 6;
+            control-2-x: root.width / 1px + 18;
             control-2-y: 35;
-            x: root.width / 1px;
+            x: root.width / 1px + 24;
             y: 35;
         }
         LineTo { x: 0; y: 35; }
@@ -275,10 +484,11 @@ component ChromiumTab inherits Rectangle {
     }
 
     if root.selected: Path {
+        x: -12px;
         y: 6px;
-        width: parent.width;
+        width: parent.width + 24px;
         height: 35px;
-        viewbox-width: root.width / 1px;
+        viewbox-width: root.width / 1px + 24;
         viewbox-height: 35;
         fit: fill;
         fill: transparent;
@@ -289,20 +499,20 @@ component ChromiumTab inherits Rectangle {
         CubicTo { control-1-x: 6; control-1-y: 35; control-2-x: 12; control-2-y: 29; x: 12; y: 23; }
         LineTo { x: 12; y: 10; }
         QuadraticTo { control-x: 12; control-y: 0; x: 22; y: 0; }
-        LineTo { x: root.width / 1px - 22; y: 0; }
+        LineTo { x: root.width / 1px + 2; y: 0; }
         QuadraticTo {
-            control-x: root.width / 1px - 12;
+            control-x: root.width / 1px + 12;
             control-y: 0;
-            x: root.width / 1px - 12;
+            x: root.width / 1px + 12;
             y: 10;
         }
-        LineTo { x: root.width / 1px - 12; y: 23; }
+        LineTo { x: root.width / 1px + 12; y: 23; }
         CubicTo {
-            control-1-x: root.width / 1px - 12;
+            control-1-x: root.width / 1px + 12;
             control-1-y: 29;
-            control-2-x: root.width / 1px - 6;
+            control-2-x: root.width / 1px + 18;
             control-2-y: 35;
-            x: root.width / 1px;
+            x: root.width / 1px + 24;
             y: 35;
         }
     }
@@ -352,9 +562,11 @@ component ChromiumControls inherits Rectangle {
     height: chromium-layout.preferred-height;
     preferred-height: chromium-layout.preferred-height;
     background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
+    clip: false;
 
     chromium-layout := FlexboxLayout {
-        width: parent.width;
+        x: 12px;
+        width: max(0px, parent.width - 24px);
         flex-wrap: wrap;
         alignment: start;
         align-content: start;
@@ -364,7 +576,7 @@ component ChromiumControls inherits Rectangle {
             text: label;
             selected: p == root.selected-page;
             show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
-            max-width: root.width;
+            max-width: chromium-layout.width;
             clicked => {
                 root.select-page(p);
             }
@@ -372,10 +584,10 @@ component ChromiumControls inherits Rectangle {
     }
 }
 
-// One page selector with five user-selectable visual styles. Style 0 is the
+// One page selector with six user-selectable visual styles. Style 0 is the
 // default radio control, style 1 is a wrapping MD1 tab grid, style 2 keeps
 // the previous rounded button grid, style 3 joins content-width segments,
-// and style 4 uses raised Chromium-like tabs.
+// style 4 uses raised Chromium-like tabs, and style 5 uses LED hardware caps.
 component PageControls inherits VerticalLayout {
     in property <[string]> labels;
     in property <int> selected-page;
@@ -437,6 +649,13 @@ component PageControls inherits VerticalLayout {
         }
     }
     if root.control-style == 4: ChromiumControls {
+        labels: root.labels;
+        selected-page: root.selected-page;
+        select-page(p) => {
+            root.select-page(p);
+        }
+    }
+    if root.control-style == 5: LedSegmentControls {
         labels: root.labels;
         selected-page: root.selected-page;
         select-page(p) => {
@@ -538,9 +757,12 @@ export component AppWindow inherits Window {
         root.probe-os-font(root.os-font-size);
     }
 
-    // Pure black under dark mode (OLED-friendly, maximum contrast) instead of the
-    // style's near-black Palette.background; light mode keeps the adaptive default.
-    background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
+    // Pure black under dark mode (OLED-friendly, maximum contrast). The LED
+    // hardware's light scene uses its specified low-glare #eceef1 ground;
+    // other light-mode styles retain the adaptive system background.
+    background: Palette.color-scheme == ColorScheme.dark
+        ? #000000
+        : (root.page-control-style == 5 ? #eceef1 : Palette.background);
 
     // Inputs from Rust (the engine pushes these via Update messages).
     in property <string> track-name: "";
@@ -582,7 +804,8 @@ export component AppWindow inherits Window {
     in property <[PageItem]> page-items: [];
     // Page selector style: 0 = radio controls, 1 = multi-row MD1 tabs,
     // 2 = the previous rounded buttons, 3 = segmented buttons,
-    // 4 = Chromium-like tabs. Rust restores and persists this value.
+    // 4 = Chromium-like tabs, 5 = super fun LED segmented buttons.
+    // Rust restores and persists this value.
     in-out property <int> page-control-style: 0;
     // Settings is a local navigation page, not playback state.
     in-out property <bool> show-settings: false;
@@ -848,6 +1071,15 @@ export component AppWindow inherits Window {
                     clicked => {
                         root.page-control-style = 3;
                         root.set-page-control-style(3);
+                    }
+                }
+                RadioButton {
+                    text: "Super fun LED segmented buttons";
+                    selected: root.page-control-style == 5;
+                    large-target: true;
+                    clicked => {
+                        root.page-control-style = 5;
+                        root.set-page-control-style(5);
                     }
                 }
                 RadioButton {

@@ -25,6 +25,7 @@ import type { CallableEffectSummary, } from './effect-summary-index.ts';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import { bindingContainsForeignHostCapability, } from './foreign-host-capability-classifier.ts';
 import { inputUsageSubject, } from './input-diagnostic-description.ts';
+import { parameterDiagnosticSubject, } from './parameter-diagnostic-subject.ts';
 import {
   type UncertaintyBoundaries,
   uncertaintyBoundaries,
@@ -34,6 +35,10 @@ import {
   type ReadonlyClassification,
 } from './readonly-classifier.ts';
 import { redundantMarkerApplies, } from './redundant-marker-report.ts';
+import {
+  readonlyTypeOriginEvidence,
+  type ReadonlyTypeOriginEvidence,
+} from './readonly-type-origin.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
 /**
@@ -47,11 +52,12 @@ type ClassifierProject = Parameters<typeof classifyReadonlyType>[0]['project'];
 export type ReadonlyParameterFacts = {
   readonly parameter: EffectCallableDeclaration['parameters'][number];
   readonly parameterIndex: ParameterIndex;
-  readonly parameterName: string;
+  readonly parameterSubject: string;
   readonly inputSubject: string;
   readonly affectedNames?: ReadonlySet<string>;
   readonly parameterType: Type;
   readonly classification: ReadonlyClassification;
+  readonly originEvidence: ReadonlyTypeOriginEvidence;
   readonly parameterBlocks: readonly ParsedMutationContractBlock[];
   readonly opaque: boolean;
   /**
@@ -209,11 +215,39 @@ function factsForParameter({
   const mutated = effectSummary.referentMutatedParameterIndexes
     .has(parameterIndex,)
     || acceptedHostOpacity;
+  /**
+   * Semantic readonly classification reused by origin and every reporter.
+   */
+  const classification = classifyReadonlyType({
+    checker: project.checker,
+    project,
+    type: parameterType,
+  },);
+  /**
+   * Whether every local preference gate except deferred foreign-ownership proof passes.
+   */
+  const originCanAffectPreference = (classification.kind === 'mutable')
+    && ((!opaque) || acceptedHostOpacity)
+    && (!mutated)
+    && (!uncertainty.retained);
+  /**
+   * Eager inferred-origin metadata needed only for reportable replacement candidates.
+   */
+  const originEvidence: ReadonlyTypeOriginEvidence = originCanAffectPreference
+    ? readonlyTypeOriginEvidence({
+      parameter,
+      parameterType,
+      project,
+    },)
+    : { kind: 'none', };
   return {
     parameter,
     parameterIndex,
-    parameterName: parameter.name
-      .getText(declaration.getSourceFile(),),
+    parameterSubject: parameterDiagnosticSubject({
+      parameter,
+      parameterIndex,
+      targetIndexes,
+    },),
     inputSubject: inputUsageSubject({
       targetIndexes,
       parameterIndex,
@@ -221,11 +255,8 @@ function factsForParameter({
     },),
     ...(affectedNames === undefined) ? {} : { affectedNames, },
     parameterType,
-    classification: classifyReadonlyType({
-      checker: project.checker,
-      project,
-      type: parameterType,
-    },),
+    classification,
+    originEvidence,
     parameterBlocks,
     opaque,
     retained: uncertainty.retained,

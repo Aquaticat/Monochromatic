@@ -7,7 +7,6 @@
 import type {
   Context,
   Fixer,
-  Suggestion,
 } from '@oxlint/plugins';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { ParameterDeclaration, } from 'typescript/unstable/ast';
@@ -15,6 +14,7 @@ import { isArrayTypeNode, } from 'typescript/unstable/ast/is';
 
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 import { readonlyCollectionSuggestions, } from './readonly-collection-suggestions.ts';
+import type { ReadonlySuggestion, } from './readonly-suggestion.ts';
 import { typeFestResolvesFrom, } from './type-fest-reachability.ts';
 
 /**
@@ -63,7 +63,7 @@ function readonlyArraySuggestions({
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-}>,): Suggestion[] {
+}>,): ReadonlySuggestion[] {
   if ((parameter.type === undefined) || (!isArrayTypeNode(parameter.type,)))
     return [];
   /**
@@ -113,10 +113,14 @@ function readonlyArraySuggestions({
    */
   const replacement = `readonly ${parameter.type
     .getText(sourceFile,)}`;
+  /**
+   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   */
+  const diagnosticGuidance = 'Prefix the authored array type with `readonly`.';
   return [
     {
-      desc: `Replace ${parameter.type
-        .getText(sourceFile,)} with ${replacement}.`,
+      diagnosticGuidance,
+      desc: diagnosticGuidance,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,
@@ -146,7 +150,7 @@ function readonlyDeepSuggestions({
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-}>,): Suggestion[] {
+}>,): ReadonlySuggestion[] {
   if (parameter.type === undefined)
     return [];
   /* Emitting a name the file cannot resolve replaces one broken emission with another,
@@ -227,9 +231,14 @@ function readonlyDeepSuggestions({
         .hasBOM,
     },),
   ];
+  /**
+   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   */
+  const diagnosticGuidance = 'Wrap the complete authored parameter type with `import(\'type-fest\').ReadonlyDeep<...>`.';
   return [
     {
-      desc: `Wrap ${authoredType} with type-fest ReadonlyDeep.`,
+      diagnosticGuidance,
+      desc: diagnosticGuidance,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,
@@ -264,7 +273,7 @@ export function readonlyParameterSuggestions({
   readonly context: Context;
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
-}>,): Suggestion[] {
+}>,): ReadonlySuggestion[] {
   return [
     ...readonlyArraySuggestions({
       context,

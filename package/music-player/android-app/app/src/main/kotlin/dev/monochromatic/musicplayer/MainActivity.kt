@@ -30,7 +30,7 @@
 //   - `playerScreen`: the desktop's narrow single-column layout (seek bar,
 //     volume, control row, settings page, page controls + track list). Page
 //     controls default to radios and can switch to multi-row MD1 tabs, segmented
-//     buttons, Chromium-like tabs, or the previous rounded buttons.
+//     buttons, Chromium-like tabs, LED hardware buttons, or the previous rounded buttons.
 //     Tap a track to play; tap the playing track to pause/resume.
 //   - `startingGate`/`loadingNotice`/`permissionGate`: small placeholder/notice
 //     screens. `seekRow`/`volumeRow`/`controlRow`/`radioOption`/`pageTabs`/
@@ -376,6 +376,15 @@ import androidx.compose.foundation.layout.defaultMinSize
 // ```
 import androidx.compose.foundation.layout.fillMaxSize
 
+// What:     `import androidx.compose.foundation.layout.fillMaxHeight` fills available height.
+// Why:      Selected LED opening's right cut arris spans the cap opening.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { fillMaxHeight } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.fillMaxHeight
+
 // What:     `import androidx.compose.foundation.layout.fillMaxWidth` pulls in the
 //           `fillMaxWidth` MODIFIER (occupy all available width).
 // Why:      Rows and the track list use `Modifier.fillMaxWidth()`.
@@ -404,6 +413,16 @@ import androidx.compose.foundation.layout.height
 // import { padding } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.padding
+
+// What:     `import androidx.compose.foundation.layout.offset` translates measured content
+//           without changing FlowRow's layout size.
+// Why:      A latched LED legend travels 2dp downward with its rigid cap.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { offset } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.offset
 
 // What:     `import androidx.compose.foundation.layout.size` pulls in the `size` MODIFIER
 //           (fix a composable's width and height).
@@ -679,6 +698,26 @@ import androidx.compose.ui.Alignment
 // ```
 import androidx.compose.ui.Modifier
 
+// What:     `import androidx.compose.ui.zIndex` controls sibling painting order without
+//           changing measurement or placement.
+// Why:      Selected Chromium feet must remain above inactive baselines on both sides.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { zIndex } from "androidx/compose/ui";
+// ```
+import androidx.compose.ui.zIndex
+
+// What:     `import androidx.compose.ui.draw.drawBehind` adds custom pixel drawing before
+//           a composable paints its normal content.
+// Why:      Chromium feet must paint beyond layout width without enlarging wrapping or touch bounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { drawBehind } from "androidx/compose/ui/draw";
+// ```
+import androidx.compose.ui.draw.drawBehind
+
 // What:     `import androidx.compose.ui.draw.clip` clips painting to a supplied shape.
 // Why:      Selected segment fills must stay inside the group's rounded outline.
 //
@@ -687,6 +726,53 @@ import androidx.compose.ui.Modifier
 // import { clip } from "androidx/compose/ui/draw";
 // ```
 import androidx.compose.ui.draw.clip
+
+// What:     `import androidx.compose.ui.draw.dropShadow` paints a configurable shadow behind
+//           a shaped composable.
+// Why:      Raised caps cast down-right shadows while active LEDs emit a radial bloom.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { dropShadow } from "androidx/compose/ui/draw";
+// ```
+import androidx.compose.ui.draw.dropShadow
+
+// What:     `import androidx.compose.ui.draw.innerShadow` paints a configurable shadow inside
+//           a shaped composable after its background.
+// Why:      Hardware plate shoulders and pressed-cap occlusion need recessed shading.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { innerShadow } from "androidx/compose/ui/draw";
+// ```
+import androidx.compose.ui.draw.innerShadow
+
+// What:     `import androidx.compose.ui.geometry.Offset` names a two-dimensional pixel offset.
+// Why:      Active label light uses a centered text-shadow glow.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Offset } from "androidx/compose/ui/geometry";
+// ```
+import androidx.compose.ui.geometry.Offset
+
+// What:     `import androidx.compose.ui.geometry.Size` names pixel width and height together.
+// Why:      Chromium path construction receives the tab body dimensions as one value.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Size } from "androidx/compose/ui/geometry";
+// ```
+import androidx.compose.ui.geometry.Size
+
+// What:     `import androidx.compose.ui.graphics.Brush` supplies gradient paint factories.
+// Why:      LED caps and bead-blasted plates require continuous directional shading.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Brush } from "androidx/compose/ui/graphics";
+// ```
+import androidx.compose.ui.graphics.Brush
 
 // What:     `import androidx.compose.ui.graphics.Color` pulls in `Color`, Compose's color
 //           type (we use `Color.Transparent`).
@@ -698,15 +784,44 @@ import androidx.compose.ui.draw.clip
 // ```
 import androidx.compose.ui.graphics.Color
 
-// What:     `import androidx.compose.foundation.shape.GenericShape` creates a shape from
-//           measured path commands.
-// Why:      Chromium tabs need curved shoulders that rounded rectangles cannot express.
+// What:     `import androidx.compose.ui.graphics.Path` builds an open contour from move,
+//           line, and curve commands.
+// Why:      Active Chromium tabs need a silhouette that reaches outside their layout box.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { GenericShape } from "androidx/compose/foundation/shape";
+// import { Path } from "androidx/compose/ui/graphics";
 // ```
-import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.ui.graphics.Path
+
+// What:     `Shadow as TextShadow` aliases Compose's text-shadow value to distinguish it
+//           from the hardware surface-shadow value.
+// Why:      Selected LED legends need a white glow without making shadow APIs ambiguous.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Shadow as TextShadow } from "androidx/compose/ui/graphics";
+// ```
+import androidx.compose.ui.graphics.Shadow as TextShadow
+
+// What:     `Shadow as HardwareShadow` aliases Compose's configurable surface-shadow value.
+// Why:      Drop and inner shadow modifiers need explicit radius, spread, color, and offset.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Shadow as HardwareShadow } from "androidx/compose/ui/graphics/shadow";
+// ```
+import androidx.compose.ui.graphics.shadow.Shadow as HardwareShadow
+
+// What:     `import androidx.compose.ui.graphics.drawscope.Stroke` describes outline width
+//           instead of a filled path.
+// Why:      Chromium's accent contour must follow the same overflowing path as its fill.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Stroke } from "androidx/compose/ui/graphics/drawscope";
+// ```
+import androidx.compose.ui.graphics.drawscope.Stroke
 
 // What:     `import androidx.compose.foundation.shape.RoundedCornerShape` creates a shape
 //           whose four corners use the supplied radius.
@@ -747,6 +862,15 @@ import androidx.compose.ui.semantics.Role
 // ```
 import androidx.compose.ui.text.style.TextOverflow
 
+// What:     `import androidx.compose.ui.text.font.FontWeight` supplies named text weights.
+// Why:      Hardware legends use the supplied design's semibold printed ink.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { FontWeight } from "androidx/compose/ui/text/font";
+// ```
+import androidx.compose.ui.text.font.FontWeight
+
 // What:     `import androidx.compose.ui.unit.Dp` names density-independent dimensions.
 // Why:      Chromium tab options carry parent width into content-width measurement.
 //
@@ -755,6 +879,15 @@ import androidx.compose.ui.text.style.TextOverflow
 // import type { Dp } from "androidx/compose/ui/unit";
 // ```
 import androidx.compose.ui.unit.Dp
+
+// What:     `import androidx.compose.ui.unit.DpOffset` names a density-independent x/y offset.
+// Why:      Hardware shadows follow the supplied 315-degree top-left key light.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { DpOffset } from "androidx/compose/ui/unit";
+// ```
+import androidx.compose.ui.unit.DpOffset
 
 // What:     `import androidx.compose.ui.unit.dp` imports the `dp` EXTENSION PROPERTY on
 //           numbers: writing `24.dp` produces a density-independent-pixel dimension. It
@@ -1837,6 +1970,27 @@ private fun startingGate() {
     }
 }
 
+// What:     `pageSceneColor` selects LED reference ground or standard app background.
+// Why:      LED hardware follows true-black dark and low-glare light scenes without recoloring other styles.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function pageSceneColor(style: PageControlStyle): Color { ... }
+// ```
+/** Returns page ground for current control style and ambient theme. */
+@Composable
+private fun pageSceneColor(style: PageControlStyle): Color {
+    if (style != PageControlStyle.LED_SEGMENTED_BUTTONS) {
+        return MaterialTheme.colorScheme.background
+    }
+    if (isSystemInDarkTheme()) {
+        return Color.Black
+    }
+    /** Holds updated reference's low-glare bright-scene ground. */
+    val lightGround: Color = Color(0xFFECEEF1)
+    return lightGround
+}
+
 // What:     `@Composable` marks the next function as a Compose component.
 // Why:      `playerScreen` is the main UI component.
 //
@@ -2019,7 +2173,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     //   <Column modifier={...}> ... </Column>
     // )}</Scaffold>
     // ```
-    Scaffold { innerPadding ->
+    Scaffold(containerColor = pageSceneColor(pageControlStyle)) { innerPadding ->
         // What:     `Column( modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 12.dp),
         //           verticalArrangement = Arrangement.spacedBy(8.dp), ) { ... }`
         //           lays the screen out vertically. The modifier chain fills the screen, then
@@ -2573,6 +2727,11 @@ private fun ColumnScope.settingsPage(
             onSelect = { onSelectStyle(PageControlStyle.SEGMENTED_BUTTONS) },
         )
         radioOption(
+            label = "Super fun LED segmented buttons",
+            selected = style == PageControlStyle.LED_SEGMENTED_BUTTONS,
+            onSelect = { onSelectStyle(PageControlStyle.LED_SEGMENTED_BUTTONS) },
+        )
+        radioOption(
             label = "Chromium-like tabs",
             selected = style == PageControlStyle.CHROMIUM_TABS,
             onSelect = { onSelectStyle(PageControlStyle.CHROMIUM_TABS) },
@@ -2659,42 +2818,86 @@ private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
     ink = MaterialTheme.colorScheme.onBackground,
 )
 
-// What:     `chromiumTabShape` traces Chromium's rounded top and outward shoulders.
-// Why:      Rounded rectangles cannot reproduce the concave transition into the tab strip.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function chromiumTabShape(): Shape { ... }
-// ```
-/** Returns content-width Chromium-like selected-tab silhouette. */
-private fun chromiumTabShape(): GenericShape = GenericShape { size, _ ->
-    /** Holds Chromium's 12dp shoulder relative to 35dp tab height. */
-    val shoulder: Float = size.height * 12f / 35f
+/**
+ * What:     `chromiumTabShoulder` stores Chromium's 12dp shoulder reach as a reusable
+ *           density-independent length.
+ * Why:      Drawing and row-edge gutters must use one value so neither foot is clipped.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const chromiumTabShoulder = dp(12);
+ * ```
+ */
+private val chromiumTabShoulder: Dp = 12.dp
+
+/**
+ * What:     `chromiumTabPath` traces an open path around Chromium's rounded top and
+ *           outward feet. `Size` supplies body bounds while `shoulder` supplies pixel reach.
+ * Why:      Open contour fills across its baseline but leaves the stroked baseline absent,
+ *           matching Chromium while both feet paint outside content and touch bounds.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function chromiumTabPath(size: Size, shoulder: number): Path { ... }
+ * ```
+ *
+ * @param size Content-body width and logical tab height in pixels.
+ * @param shoulder Foot reach beyond each body edge in pixels.
+ * @return Open fill-and-outline contour for one active tab.
+ */
+private fun chromiumTabPath(size: Size, shoulder: Float): Path {
     /** Holds Chromium's 10dp upper corner relative to 35dp tab height. */
     val radius: Float = size.height * 10f / 35f
-    /** Holds right-side edge before outward shoulder. */
-    val rightEdge: Float = size.width - shoulder
-    moveTo(0f, size.height)
-    cubicTo(
-        shoulder / 2f,
+    /** Owns mutable contour commands returned after construction. */
+    val path: Path = Path()
+    path.moveTo(-shoulder, size.height)
+    path.cubicTo(
+        -shoulder / 2f,
         size.height,
-        shoulder,
+        0f,
         size.height - shoulder / 2f,
-        shoulder,
+        0f,
         size.height - shoulder,
     )
-    lineTo(shoulder, radius)
-    cubicTo(shoulder, radius / 2f, shoulder + radius / 2f, 0f, shoulder + radius, 0f)
-    lineTo(rightEdge - radius, 0f)
-    cubicTo(rightEdge - radius / 2f, 0f, rightEdge, radius / 2f, rightEdge, radius)
-    lineTo(rightEdge, size.height - shoulder)
-    cubicTo(
-        rightEdge,
-        size.height - shoulder / 2f,
-        size.width - shoulder / 2f,
-        size.height,
+    path.lineTo(0f, radius)
+    path.cubicTo(0f, radius / 2f, radius / 2f, 0f, radius, 0f)
+    path.lineTo(size.width - radius, 0f)
+    path.cubicTo(size.width - radius / 2f, 0f, size.width, radius / 2f, size.width, radius)
+    path.lineTo(size.width, size.height - shoulder)
+    path.cubicTo(
         size.width,
+        size.height - shoulder / 2f,
+        size.width + shoulder / 2f,
         size.height,
+        size.width + shoulder,
+        size.height,
+    )
+    return path
+}
+
+/**
+ * What:     `chromiumActiveTabBackground` extends `Modifier` with overflowing custom paint.
+ * Why:      Draw phase may exceed layout bounds, so active feet protrude without changing
+ *           content width, FlowRow wrapping, semantics, or hit targets.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function chromiumActiveTabBackground(modifier: Modifier, colors: Colors): Modifier { ... }
+ * ```
+ *
+ * @param colors Accent-derived active fill and outline colors.
+ * @return Modifier that paints active silhouette before tab content.
+ */
+private fun Modifier.chromiumActiveTabBackground(colors: ChromiumTabColors): Modifier = drawBehind {
+    /** Converts logical shoulder reach to current screen-density pixels. */
+    val shoulder: Float = chromiumTabShoulder.toPx()
+    /** Builds body-aligned contour with one shoulder outside each horizontal edge. */
+    val path: Path = chromiumTabPath(size = size, shoulder = shoulder)
+    drawPath(path = path, color = colors.active)
+    drawPath(
+        path = path,
+        color = colors.activeOutline,
+        style = Stroke(width = 1.dp.toPx()),
     )
 }
 
@@ -2805,14 +3008,9 @@ private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresent
 private fun chromiumPageTab(options: ChromiumPageTabOptions) {
     /** Holds measured dark or light Chromium colors. */
     val colors: ChromiumTabColors = chromiumTabColors()
-    /** Holds curved selected-tab silhouette. */
-    val tabShape: GenericShape = chromiumTabShape()
-    /** Paints active contour while leaving inactive tabs on parent background. */
+    /** Paints active overflow while leaving inactive tabs on parent background. */
     val stateModifier: Modifier = if (options.selected) {
-        Modifier
-            .clip(tabShape)
-            .background(colors.active)
-            .border(1.dp, colors.activeOutline, tabShape)
+        Modifier.chromiumActiveTabBackground(colors)
     } else {
         Modifier
     }
@@ -2821,6 +3019,8 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
             .widthIn(max = options.maximumWidth)
             .width(IntrinsicSize.Max)
             .height(41.dp)
+            // Keeps both overflowing feet above neighboring inactive baselines.
+            .zIndex(if (options.selected) 1f else 0f)
             .selectable(
                 selected = options.selected,
                 role = Role.Tab,
@@ -2924,6 +3124,358 @@ private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> U
     }
 }
 
+// What:     `LedPlateOptions` groups one plate shape with its ambient scene.
+// Why:      Plate styling accepts one named options boundary instead of positional values.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedPlateOptions = { shape: RoundedShape; lightScene: boolean };
+// ```
+/** Holds scene and geometry used to paint one LED backplate tile. */
+private data class LedPlateOptions(
+    /** Holds concentric outer plate silhouette. */
+    val shape: RoundedCornerShape,
+    /** Records whether silver hardware sits in bright ambient. */
+    val lightScene: Boolean,
+)
+
+// What:     `LedFaceOptions` groups state, scene, and geometry for one cap face.
+// Why:      Cap styling receives one named rendering boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedFaceOptions = { selected: boolean; lightScene: boolean; shape: RoundedShape };
+// ```
+/** Holds values used to paint one rigid translucent LED cap. */
+private data class LedFaceOptions(
+    /** Records whether both cap LEDs are active. */
+    val selected: Boolean,
+    /** Records whether hardware is in bright ambient. */
+    val lightScene: Boolean,
+    /** Holds cap silhouette after selected clearance. */
+    val shape: RoundedCornerShape,
+)
+
+// What:     `LedCapOptions` groups one cap's label and visual state.
+// Why:      Cap, cut-arris, and legend helpers consume one shared state object.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedCapOptions = { label: string; selected: boolean; lightScene: boolean };
+// ```
+/** Holds content and scene state for one LED cap opening. */
+private data class LedCapOptions(
+    /** Holds one-line page legend. */
+    val label: String,
+    /** Records whether cap is latched and lit. */
+    val selected: Boolean,
+    /** Records whether silver hardware sits in bright ambient. */
+    val lightScene: Boolean,
+)
+
+// What:     `LedPageButtonOptions` groups one button's rendering and action values.
+// Why:      Content-width hardware button accepts one named component boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedPageButtonOptions = { label: string; selected: boolean; maximumWidth: Dp; onSelect: () => void };
+// ```
+/** Holds content, measurement, state, and selection action for one LED page button. */
+private data class LedPageButtonOptions(
+    /** Holds one-line page legend. */
+    val label: String,
+    /** Records whether page is visible. */
+    val selected: Boolean,
+    /** Caps pathological labels to available pager width. */
+    val maximumWidth: Dp,
+    /** Selects this page when invoked. */
+    val onSelect: () -> Unit,
+)
+
+// What:     `LedPageControlsOptions` groups pager state with page-selection behavior.
+// Why:      Wrapping hardware group accepts one named component boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LedPageControlsOptions = { state: PlayerUiState; onSelectPage: (page: number) => void };
+// ```
+/** Holds state and selection action for the wrapping LED hardware group. */
+private data class LedPageControlsOptions(
+    /** Holds current page labels and selected index. */
+    val state: PlayerUiState,
+    /** Selects one page index when invoked. */
+    val onSelectPage: (Int) -> Unit,
+)
+
+// What:     `ledPlateModifier` paints one compact anodized-metal backplate.
+// Why:      Every content-width LED cap needs the reference's directional sheen and convex edge.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ledPlateModifier(options: LedPlateOptions): Modifier { ... }
+// ```
+/** Returns layered bead-blasted-metal styling for one LED button backplate. */
+private fun ledPlateModifier(options: LedPlateOptions): Modifier {
+    /** Holds silver or near-black anodized metal under its directional sheen. */
+    val plateColor: Color = if (options.lightScene) Color(0xFFC4C6CA) else Color(0xFF111111)
+    /** Holds scene-paired key-light, neutral, and away-from-light plate values. */
+    val sheenColors: List<Color> = if (options.lightScene) {
+        listOf(Color(0x29FFFFFF), Color.Transparent, Color(0x1F000000))
+    } else {
+        listOf(Color(0x0FFFFFFF), Color.Transparent, Color(0x24000000))
+    }
+    /** Holds broad dark falloff along the plate's bottom-right shoulder. */
+    val plateShadowColor: Color = if (options.lightScene) Color(0x30000000) else Color(0x57000000)
+    /** Holds attached light-scene contact shadow; dark OLED ground cannot show it. */
+    val contactShadow: Modifier = if (options.lightScene) {
+        Modifier.dropShadow(
+            shape = options.shape,
+            shadow = HardwareShadow(
+                radius = 1.6.dp,
+                color = Color(0x99000000),
+                offset = DpOffset(x = 1.dp, y = 1.dp),
+            ),
+        )
+    } else {
+        Modifier
+    }
+    return contactShadow
+        .clip(options.shape)
+        .background(plateColor)
+        .background(brush = Brush.linearGradient(colors = sheenColors), shape = options.shape)
+        .innerShadow(
+            shape = options.shape,
+            shadow = HardwareShadow(
+                radius = 6.dp,
+                color = plateShadowColor,
+                offset = DpOffset(x = 3.dp, y = 3.dp),
+            ),
+        )
+}
+
+// What:     `ledFaceModifier` paints either a raised reflective cap or a latched LED cap.
+// Why:      Selection must be redundantly visible through depth, cap light, and label light.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ledFaceModifier(options: LedFaceOptions): Modifier { ... }
+// ```
+/** Returns rigid translucent-cap styling for one LED page button state. */
+private fun BoxScope.ledFaceModifier(options: LedFaceOptions): Modifier {
+    /** Holds purple LED flood or unlit translucent factory pigment. */
+    val fill: Color = if (options.selected) Color(0xFFA63FD0) else Color(0xFFAAAAAA)
+    /** Holds radial cap illumination with a steep outer shoulder. */
+    val dome: Brush = Brush.radialGradient(
+        colors = if (options.selected) {
+            listOf(Color(0x5CFFFFFF), Color(0xFFA63FD0), Color(0xFF782597))
+        } else {
+            listOf(Color(0x36FFFFFF), Color(0xFFAAAAAA), Color(0xFF747474))
+        },
+    )
+    /** Holds opening-edge occlusion scaled to ambient share of active-cap light. */
+    val activeOcclusion: Color = if (options.lightScene) Color(0x99000000) else Color(0x73000000)
+    /** Holds deeper unlit shoulder shading on reflective plastic. */
+    val inactiveOcclusion: Color = Color(0x3D000000)
+    /** Holds LED bloom for selected caps and a physical cast shadow for raised caps. */
+    val outerShadow: HardwareShadow = if (options.selected) {
+        HardwareShadow(
+            radius = 7.dp,
+            spread = 1.dp,
+            color = if (options.lightScene) Color(0x1AC874EA) else Color(0x2EC874EA),
+        )
+    } else {
+        HardwareShadow(
+            radius = 2.6.dp,
+            color = if (options.lightScene) Color(0x52000000) else Color(0x6B000000),
+            offset = DpOffset(x = 2.5.dp, y = 3.5.dp),
+        )
+    }
+    return Modifier
+        .matchParentSize()
+        .padding(if (options.selected) 1.dp else 0.dp)
+        .dropShadow(shape = options.shape, shadow = outerShadow)
+        .background(color = fill, shape = options.shape)
+        .background(brush = dome, shape = options.shape)
+        .innerShadow(
+            shape = options.shape,
+            shadow = HardwareShadow(
+                radius = 4.dp,
+                spread = 1.dp,
+                color = if (options.selected) activeOcclusion else inactiveOcclusion,
+                offset = DpOffset(x = 3.dp, y = 3.dp),
+            ),
+        )
+}
+
+// What:     `ledCutLip` paints selected opening's lit bottom-right cut arris.
+// Why:      Hairline clearance still needs a depth cue after the visible moat was removed.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedCutLip(lightScene: boolean) { ... }
+// ```
+/** Paints bottom and right hairlines around one latched cap. */
+@Composable
+private fun BoxScope.ledCutLip(lightScene: Boolean) {
+    /** Holds cut-arris light, stronger on reflective silver. */
+    val lipColor: Color = if (lightScene) Color(0x73FFFFFF) else Color(0x4DFFFFFF)
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomStart)
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(lipColor),
+    )
+    Box(
+        modifier = Modifier
+            .align(Alignment.TopEnd)
+            .fillMaxHeight()
+            .width(1.dp)
+            .background(lipColor),
+    )
+}
+
+// What:     `ledCapLabel` paints day/night ink and selected label LED light.
+// Why:      Legend remains readable by reflection when off and emission when on.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedCapLabel(options: LedCapOptions) { ... }
+// ```
+/** Displays one ellipsized hardware legend. */
+@Composable
+private fun ledCapLabel(options: LedCapOptions) {
+    /** Holds glowing selected legend or reflective day/night ink. */
+    val labelColor: Color = if (options.selected) Color.White else Color(0xFF3D3F45)
+    /** Holds emitted label light behind selected white ink. */
+    val labelGlow: Color = Color(0xE6F0D4FF)
+    Text(
+        text = options.label,
+        color = labelColor,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontWeight = FontWeight.SemiBold,
+            shadow = if (options.selected) {
+                TextShadow(color = labelGlow, offset = Offset.Zero, blurRadius = 4f)
+            } else {
+                null
+            },
+        ),
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .offset(y = if (options.selected) 2.dp else 0.dp),
+    )
+}
+
+// What:     `ledHardwareCap` combines one opening, rigid cap, cut arris, and legend.
+// Why:      Page button wrapper remains below method-length limit and material layers stay readable.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedHardwareCap(options: LedCapOptions) { ... }
+// ```
+/** Displays inner material layers for one LED page button. */
+@Composable
+private fun ledHardwareCap(options: LedCapOptions) {
+    /** Holds unchanged opening silhouette around selected and raised caps. */
+    val openingShape: RoundedCornerShape = RoundedCornerShape(9.dp)
+    /** Holds cap radius reduced by selected 1dp CNC clearance. */
+    val capShape: RoundedCornerShape = RoundedCornerShape(if (options.selected) 8.dp else 9.dp)
+    /** Holds selected seam or raised-cap contact ring for this scene. */
+    val openingColor: Color = if (options.lightScene) {
+        if (options.selected) Color(0xFF6E7075) else Color(0xFF85878C)
+    } else {
+        if (options.selected) Color(0xFF050508) else Color(0xFF050506)
+    }
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize().background(openingColor, openingShape),
+    ) {
+        Box(
+            modifier = ledFaceModifier(
+                LedFaceOptions(
+                    selected = options.selected,
+                    lightScene = options.lightScene,
+                    shape = capShape,
+                ),
+            ),
+        )
+        if (options.selected) {
+            ledCutLip(options.lightScene)
+        }
+        ledCapLabel(options)
+    }
+}
+
+// What:     `ledHardwarePageButton` renders one reflective cap in its metal opening.
+// Why:      Content-width pages need supplied hardware states while each control wraps whole.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedHardwarePageButton(options: LedPageButtonOptions) { ... }
+// ```
+/** Displays one selectable, content-width LED hardware page button. */
+@Composable
+private fun ledHardwarePageButton(options: LedPageButtonOptions) {
+    /** Records whether hardware is in bright ambient with its silver plate finish. */
+    val lightScene: Boolean = !isSystemInDarkTheme()
+    /** Holds concentric plate radius from supplied 9dp cap plus 8dp margin. */
+    val plateShape: RoundedCornerShape = RoundedCornerShape(17.dp)
+    Box(
+        modifier = Modifier
+            .widthIn(max = options.maximumWidth)
+            .width(IntrinsicSize.Max)
+            .height(60.dp)
+            .then(ledPlateModifier(LedPlateOptions(shape = plateShape, lightScene = lightScene)))
+            .selectable(selected = options.selected, role = Role.RadioButton, onClick = options.onSelect)
+            .padding(8.dp),
+    ) {
+        ledHardwareCap(
+            LedCapOptions(
+                label = options.label,
+                selected = options.selected,
+                lightScene = lightScene,
+            ),
+        )
+    }
+}
+
+// What:     `ledPageControls` wraps content-width hardware buttons without painting unused row width.
+// Why:      Large libraries retain discoverable multi-row navigation and joined plate appearance.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LedPageControls(options: LedPageControlsOptions) { ... }
+// ```
+/** Displays wrapped, mutually exclusive LED hardware page buttons. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ledPageControls(options: LedPageControlsOptions) {
+    BoxWithConstraints {
+        /** Holds available pager width before entering FlowRow's receiver scope. */
+        val pageMaximumWidth: Dp = maxWidth
+        /** Overlaps adjacent 8dp plate margins so apparent cap gaps remain exactly 8dp. */
+        val plateOverlap: Dp = (-8).dp
+        FlowRow(
+            modifier = Modifier.selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(plateOverlap),
+            verticalArrangement = Arrangement.spacedBy(plateOverlap),
+        ) {
+            options.state.pageLabels.forEachIndexed { page, label ->
+                ledHardwarePageButton(
+                    LedPageButtonOptions(
+                        label = label,
+                        selected = page == options.state.selectedPage,
+                        maximumWidth = pageMaximumWidth,
+                        onSelect = { options.onSelectPage(page) },
+                    ),
+                )
+            }
+        }
+    }
+}
+
 // What:     `@OptIn(ExperimentalLayoutApi::class)` acknowledges the experimental `FlowRow`
 //           used by `pageTabs` (see the same annotation on `controlRow`).
 // Why:      `pageTabs` uses `FlowRow`.
@@ -2971,10 +3523,23 @@ private fun pageTabs(
         segmentedPageControls(state = state, onSelectPage = onSelectPage)
         return
     }
+    if (pageControlStyle == PageControlStyle.LED_SEGMENTED_BUTTONS) {
+        ledPageControls(LedPageControlsOptions(state = state, onSelectPage = onSelectPage))
+        return
+    }
     BoxWithConstraints {
         /** Holds pager width before entering nested FlowRow scope. */
         val pageMaximumWidth: Dp = maxWidth
+        /** Reserves paint-only edge room for Chromium feet without spacing adjacent tab bodies. */
+        val chromiumPaintGutter: Dp = if (pageControlStyle == PageControlStyle.CHROMIUM_TABS) {
+            chromiumTabShoulder
+        } else {
+            0.dp
+        }
+        /** Caps tab bodies to width remaining inside optional paint gutters. */
+        val pageContentMaximumWidth: Dp = pageMaximumWidth - chromiumPaintGutter * 2
         FlowRow(
+            modifier = Modifier.padding(horizontal = chromiumPaintGutter),
             horizontalArrangement = Arrangement.spacedBy(
             if (
                 pageControlStyle == PageControlStyle.MD1_TABS ||
@@ -3023,7 +3588,7 @@ private fun pageTabs(
                         label = label,
                         selected = selected,
                         showDivider = page < state.pageLabels.lastIndex && page + 1 != state.selectedPage,
-                        maximumWidth = pageMaximumWidth,
+                        maximumWidth = pageContentMaximumWidth,
                         onSelect = { onSelectPage(page) },
                     ),
                 )

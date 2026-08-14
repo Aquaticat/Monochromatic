@@ -86,6 +86,17 @@ initializeSemanticBridge();
 initializeExternalImplementationApi();
 
 /**
+ * Pure origin-resolution classifier, exported for built-artifact branch tests.
+ *
+ * @internal
+ */
+export {
+  readonlyTypeOriginEvidenceFromResolution,
+  type ReadonlyTypeOriginEvidence,
+  type ReadonlyTypeOriginResolution,
+} from './prefer-readonly-parameter-types/readonly-type-origin.ts';
+
+/**
  * Oxlint plugin separating readonly preference, mutation, opacity, and contract policies.
  *
  * @example
