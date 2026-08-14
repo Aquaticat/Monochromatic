@@ -94,3 +94,26 @@ Restart into a NEW directory,
 via `TRANSLATION_REPAIR_RUNS_DIR`.
 Restarting into the existing one would skip every already-settled entry,
 which is precisely the set that needs redoing.
+
+This is now enforced rather than remembered.
+`assertResumableGeneration` in `pass-generation-guard.ts` runs before a pass settles anything
+and refuses when the artifacts already present record a different commit from the one this invocation would stamp.
+`TRANSLATION_REPAIR_ALLOW_TIP_DRIFT=yes` opts out for a deliberately mixed directory.
+
+## The resume trap this closes
+
+Restarting on a fix was only half the problem.
+The other half is that a pass stopping at its soft budget is continued by a fresh invocation,
+and that invocation reads `HEAD` again.
+Any commit in between,
+including one this policy says needs no restart,
+changes what the resume stamps.
+Four such resumes are the entire explanation for the four-tip directory described above.
+
+The soft budget was therefore also raised from 720 minutes to 4320.
+Measured from artifact mtimes:
+about 27 minutes per entry over a clean stretch,
+about 53 averaged across a span including stalls.
+At 92 pending entries that is 41 to 81 hours,
+so twelve hours settled roughly 13 to 26 and required four to seven resumes to finish.
+The budget must not be the thing that fragments the pool.
