@@ -24,7 +24,7 @@ index 47276c9..4dbeb56 100644
      }
    }
  
- diff --git a/tests/index.test.ts b/tests/index.test.ts
+diff --git a/tests/index.test.ts b/tests/index.test.ts
 index bbb176b..7abafbf 100644
 --- a/tests/index.test.ts
 +++ b/tests/index.test.ts
