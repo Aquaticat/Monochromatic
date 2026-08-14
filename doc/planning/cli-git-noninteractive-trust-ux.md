@@ -133,9 +133,9 @@ with an outcome that distinguishes at least:
 type TrustConsentOutcome = 'approved' | 'declined' | 'unavailable';
 ```
 
-Return `unavailable` when either terminal stream required by the prompt is absent.
+Return `unavailable` when either terminal stream required by the prompt is absent
+or input ends before a response.
 Continue to return `declined` for a completed interactive response other than exact `yes`.
-Keep EOF or an aborted read distinguishable rather than silently relabeling it as rejection.
 
 When consent is unavailable,
 retain exit `2` and emit a stable machine-readable code such as `trust-consent-unavailable`:
@@ -146,7 +146,7 @@ retain exit `2` and emit a stable machine-readable code such as `trust-consent-u
   "sequence": 0,
   "type": "engine-failure",
   "code": "trust-consent-unavailable",
-  "message": "Interactive consent unavailable. After review, rerun `git cli-git trust --yes`; no record installed."
+  "message": "Interactive consent unavailable. After review, rerun `git cli-git trust --yes`; no new record installed."
 }
 ```
 
@@ -262,7 +262,8 @@ Cover:
 - MJS and TypeScript configs;
 - recursive and non-recursive configs;
 - disclosure output for every successful `--yes` stage;
-- unchanged trust registry after every rejected or unavailable path;
+- unchanged trust registry after every unavailable path,
+  including re-trust with a previous record;
 - namespace and trust help exit `0` without reading or executing repository config;
 - unknown options still exit `2`;
 - packed CLI behavior through the existing built trust fixture.

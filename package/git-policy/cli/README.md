@@ -294,7 +294,7 @@ Do not remove the retained directory merely to silence that diagnostic;
 the preserved snapshots and journal are the evidence needed to distinguish an unlanded commit from a landed commit
 whose index installation was interrupted.
 
-Use the namespaced Optique management commands:
+Use the namespaced cli-git management commands:
 
 ```sh
 git cli-git --help
@@ -373,9 +373,10 @@ and arbitrary-code authority.
 including CI and agent sessions.
 Without `--yes`,
 trust requires terminal stdin and stderr.
-Missing terminal streams emit `trust-consent-unavailable` with exit `2`,
-recommend `git cli-git trust --yes` after review,
-and install no record.
+Missing terminal streams or input ending before a response emit `trust-consent-unavailable` with exit `2`
+and recommend `git cli-git trust --yes` after review.
+The failed attempt installs or replaces no trust record;
+a previous record remains unchanged.
 A completed interactive response other than exact `yes` remains a decline reported as `trust-failed`.
 Trusted code is not sandboxed:
 it runs with full account file,

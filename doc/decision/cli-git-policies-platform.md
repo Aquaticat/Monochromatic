@@ -329,7 +329,7 @@ git cli-git untrust
 git cli-git status
 ```
 
-Management parsing uses Optique.
+Management parsing uses the internal argv region parser.
 Namespace and trust help write human-readable stdout and exit `0` before real-Git resolution,
 transaction recovery,
 repository config discovery,
@@ -466,13 +466,16 @@ Root approval remains in memory until stored-artifact execution and validation s
 Failure leaves no persistent record.
 A completed interactive response other than exact `yes` remains a decline.
 When stdin or stderr is not a terminal,
-cli-git emits `trust-consent-unavailable`,
-recommends `git cli-git trust --yes` after review,
-and installs no record.
+or input ends before a response,
+cli-git emits `trust-consent-unavailable`
+and recommends `git cli-git trust --yes` after review.
+The failed attempt installs or replaces no record;
+a previous record remains unchanged.
 If validated config declares child trust,
 cli-git prints a second disclosure naming the root and descendant authority and requests separate consent.
 A decline at that second stage installs ordinary non-recursive root trust.
-Unavailable terminal consent at that stage installs no record.
+Unavailable consent at that stage installs or replaces no record;
+a previous record remains unchanged.
 `--yes` prints both applicable disclosures and skips input reads.
 Automation uses this explicit form and receives no detected-CI auto-trust.
 

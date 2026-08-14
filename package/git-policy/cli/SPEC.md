@@ -537,7 +537,7 @@ git [<git-global-options>] cli-git fix [--policy <id>]... -- <pathspec>...
 
 Rules:
 
-- Management parsing uses Optique.
+- Management parsing uses the internal argv region parser.
 - Namespace and trust help write human-readable text to stdout and exit `0`.
 - Help returns before resolving real Git,
   recovering transactions,
@@ -1174,12 +1174,13 @@ Persistent replacement occurs only after both consent stages and config validati
 Root preflight safely reads bytes and metadata but does not execute config.
 It emits a human-readable disclosure to stderr containing every item required by the decision.
 Interactive approval accepts only an explicit affirmative response.
-Empty or invalid completed input declines and leaves no record.
-EOF or an aborted prompt remains a failed read rather than a completed decline.
+Empty or invalid completed input declines without installing a new record.
 When stdin or stderr is not a terminal,
-cli-git emits `trust-consent-unavailable`,
-recommends `git cli-git trust --yes` after review,
-and leaves no record.
+or input ends before a response,
+cli-git emits `trust-consent-unavailable`
+and recommends `git cli-git trust --yes` after review.
+The failed attempt installs or replaces no record;
+a previous record remains unchanged.
 
 Root approval authorizes execution of the candidate stored artifact in temporary registry state.
 Validation failure deletes temporary state.
@@ -1190,7 +1191,8 @@ If config declares `trust.children: true`,
 a second disclosure names the canonical repository root and states that current and future descendant mounts inherit
 authority.
 Declining the second stage installs ordinary root trust with `recursiveChildren: false`.
-Unavailable terminal consent during the second stage leaves no record.
+Unavailable consent during the second stage installs or replaces no record;
+a previous record remains unchanged.
 Accepting installs it with `recursiveChildren: true`.
 `--yes` prints and accepts every applicable disclosure.
 
@@ -1654,7 +1656,7 @@ No step uploads to npm.
 ## Contract fixture verification
 
 Issue #341 verifies the declarations and authoring examples in a disposable TypeScript consumer.
-It also parses every management command form with an Optique fixture and rejects the mutually exclusive or missing
+It also parses every management command form with a management parser fixture and rejects the mutually exclusive or missing
 scope forms.
 Runtime slices must replace those contract fixtures with built-package user-boundary tests rather than relying on the
 document-only evidence.
