@@ -72,6 +72,22 @@ not "did the fix touch a different file",
 and nothing computes that.
 Recorded because the idea is sound in principle and may apply once the fix stream slows.
 
+## What counts as a behaviour fix
+
+Only a change that alters what a pass WRITES.
+A change confined to the readers does not,
+and restarting for one would burn the accumulation over a typo.
+
+The two families are disjoint and can be checked rather than judged.
+`corpus-pass.ts` imports none of `artifact-eligible.ts`, `artifact-pool.ts` or `artifact-generation.ts`;
+those are reached only through `pipeline-barrel.ts` and the four rate-producing readers.
+Before restarting, confirm the changed file is on the path the pass actually runs.
+
+Worked example from the session that set this policy:
+the empty-pool guard landed before pass14 started and is in its tip,
+while a diagnostic wording fix landed after it started and did not trigger a restart,
+because `artifact-eligible.ts` cannot change a single byte any artifact records.
+
 ## Operational note
 
 Restart into a NEW directory,
