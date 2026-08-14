@@ -57,6 +57,25 @@ export type VerifyItem = {
 };
 
 /**
+ * One verify item paired with the digest its blind order sorts on.
+ *
+ * Named rather than inferred, because an inferred object literal carries
+ * writable properties, and the comparator and unwrapping map that read it then
+ * take mutable parameters they never mutate.
+ */
+type DigestedItem = Readonly<{
+  /**
+   * Item being ordered.
+   */
+  item: VerifyItem;
+
+  /**
+   * Stable hash of the edit's identity, the sort key.
+   */
+  digest: string;
+}>;
+
+/**
  * Orders items by a digest of their identity.
  *
  * Deterministic so a re-run produces the same sheet, and independent of kind so
@@ -76,7 +95,7 @@ export function orderBlind(
   { items, }: { readonly items: readonly VerifyItem[]; },
 ): readonly VerifyItem[] {
   return items
-    .map(function withDigest(item,) {
+    .map(function withDigest(item,): DigestedItem {
       /**
        * Region and texts this item judges.
        */

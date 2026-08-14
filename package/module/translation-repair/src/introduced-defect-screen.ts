@@ -412,6 +412,25 @@ function countAdmissibility(
 }
 
 /**
+ * One prober's check on a region, paired with who cast it.
+ *
+ * Named rather than inferred from the mapping that builds it: an inferred
+ * object literal carries writable properties, and every later reader of the
+ * cast list then takes a mutable parameter it never mutates.
+ */
+type CastCheck = Readonly<{
+  /**
+   * Prober that cast this check.
+   */
+  modelId: string;
+
+  /**
+   * Check as the wire carried it.
+   */
+  check: IntroducedDefectCheckWire;
+}>;
+
+/**
  * Screens every prober ballot into one tally per region.
  *
  * A check naming a region outside the sheet, or carrying a verdict outside the
@@ -465,7 +484,7 @@ export function screenIntroducedDefects(
           .filter(function isThisRegion(check,) {
             return check.region === (index + 1);
           },)
-          .map(function withSpeaker(check,) {
+          .map(function withSpeaker(check,): CastCheck {
             return {
               modelId,
               check,
