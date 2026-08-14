@@ -511,6 +511,14 @@ if (args.includes('rev-parse')) process.exitCode = 1;
         expect(trustHelp.stdout,).toContain('recursive descendant authority');
         expect(trustHelp.stdout,).toContain('full account permissions');
         expect(trustHelp.stderr,).toBe('',);
+        /** Unknown trust option remains a usage failure. */
+        const unknownOption = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: ['cli-git', 'trust', '--unknown',],
+        },),);
+        expect(unknownOption.exitCode,).toBe(2,);
+        expect(unknownOption.stdout,).toBe('',);
+        expect(unknownOption.stderr,).toContain('Usage: git cli-git trust');
       },
     },),
     it({
