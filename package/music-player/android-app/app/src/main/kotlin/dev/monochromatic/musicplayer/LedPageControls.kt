@@ -450,6 +450,18 @@ internal data class LedPackingOptions(
     val gapPx: Int,
 )
 
+/** Groups measured legend width with cap width limits. */
+internal data class LedCapWidthOptions(
+    /** Stores natural measured legend width. */
+    val labelWidthPx: Int,
+    /** Stores horizontal legend inset on one side. */
+    val insetPx: Int,
+    /** Stores visible and owned minimum target width. */
+    val minimumWidthPx: Int,
+    /** Stores row-capacity maximum after plate margins. */
+    val maximumWidthPx: Int,
+)
+
 /** Groups state and selection action for complete wrapping LED control. */
 internal data class LedPageControlsOptions(
     /** Holds current pages and selected page index. */
@@ -516,6 +528,14 @@ private data class LedPlateOptions(
     val shape: RoundedCornerShape,
 )
 
+/** Groups legend content with selected-state-invariant measurement style. */
+private data class LedProbeLabelOptions(
+    /** Holds one page label. */
+    val label: String,
+    /** Holds fixed legend measurement style. */
+    val style: TextStyle,
+)
+
 /** Groups cap brush bounds with state-dependent pigment. */
 private data class LedBrushOptions(
     /** Holds measured cap bounds in physical pixels. */
@@ -578,8 +598,8 @@ private data class LedPositionedMeasureOptions(
     val measure: LedMeasureOptions,
     /** Holds packed row membership and widths. */
     val lines: List<LedLine>,
-    /** Holds initially measured target widths. */
-    val probeCaps: List<Placeable>,
+    /** Holds target widths derived from measured legends. */
+    val capWidthsPx: List<Int>,
 )
 
 /** Groups exact layers and geometry for deferred placement. */
@@ -626,6 +646,12 @@ internal fun packLedLines(options: LedPackingOptions): List<LedLine> =
             )
         }
     }
+
+/** Returns content-width cap width from actual legend measurement. */
+internal fun ledCapWidth(options: LedCapWidthOptions): Int =
+    (options.labelWidthPx + options.insetPx * 2)
+        .coerceAtLeast(options.minimumWidthPx)
+        .coerceAtMost(options.maximumWidthPx)
 
 /** Returns selected LED colors derived from runtime Material accent. */
 @Composable
@@ -937,29 +963,40 @@ private fun ledTargetOptions(options: LedTargetFactoryOptions): LedTargetOptions
     onSelect = { options.layout.onSelectPage(options.page) },
 )
 
-/** Measures natural target widths under available row capacity. */
-private fun SubcomposeMeasureScope.measureLedProbeCaps(options: LedMeasureOptions): List<Placeable> {
+/** Displays unpadded legend solely for actual intrinsic measurement. */
+@Composable
+private fun ledProbeLabel(options: LedProbeLabelOptions) {
+    Text(
+        text = options.label,
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Ellipsis,
+        style = options.style,
+    )
+}
+
+/** Measures natural legend widths and derives content-width cap targets. */
+private fun SubcomposeMeasureScope.measureLedProbeWidths(options: LedMeasureOptions): List<Int> {
     /** Caps one target to row width after both plate margins. */
     val maximumCapWidthPx: Int =
         (options.constraints.maxWidth - options.marginPx * 2).coerceAtLeast(1)
-    return options.layout.state.pageLabels.mapIndexed { page, _ ->
-        subcompose("led-cap-$page") {
-            ledCapTarget(
-                ledTargetOptions(
-                    LedTargetFactoryOptions(
-                        layout = options.layout,
-                        page = page,
-                        first = false,
-                        last = false,
-                    ),
-                ),
-            )
+    /** Converts per-side legend inset to physical pixels. */
+    val insetPx: Int = ledLegendHorizontalInset.roundToPx()
+    /** Leaves both label insets inside maximum cap width. */
+    val maximumLabelWidthPx: Int = (maximumCapWidthPx - insetPx * 2).coerceAtLeast(1)
+    return options.layout.state.pageLabels.mapIndexed { page, label ->
+        /** Measures only legend so greedy cap paint cannot claim whole row. */
+        val labelPlaceable: Placeable = subcompose("led-label-$page") {
+            ledProbeLabel(LedProbeLabelOptions(label = label, style = options.layout.labelStyle))
         }.single().measure(
-            Constraints(
-                minWidth = 0,
-                maxWidth = maximumCapWidthPx,
-                minHeight = options.targetHeightPx,
-                maxHeight = options.targetHeightPx,
+            Constraints(minWidth = 0, maxWidth = maximumLabelWidthPx),
+        )
+        ledCapWidth(
+            LedCapWidthOptions(
+                labelWidthPx = labelPlaceable.width,
+                insetPx = insetPx,
+                minimumWidthPx = options.targetHeightPx,
+                maximumWidthPx = maximumCapWidthPx,
             ),
         )
     }
@@ -983,7 +1020,7 @@ private fun SubcomposeMeasureScope.measureLedPositionedCaps(
             )
         }.single().measure(
             Constraints.fixed(
-                width = options.probeCaps[page].width,
+                width = options.capWidthsPx[page],
                 height = options.measure.targetHeightPx,
             ),
         )
@@ -1020,20 +1057,20 @@ private fun Placeable.PlacementScope.placeLedRows(options: LedPlacementOptions) 
 
 /** Measures all LED hardware layers and returns content-width layout result. */
 private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions): MeasureResult {
-    /** Measures real targets before deciding row boundaries. */
-    val probeCaps: List<Placeable> = measureLedProbeCaps(options)
-    /** Packs actual measured widths into immutable rows. */
+    /** Measures real legends before deciding target and row widths. */
+    val capWidthsPx: List<Int> = measureLedProbeWidths(options)
+    /** Packs actual content widths into immutable rows. */
     val lines: List<LedLine> = packLedLines(
         LedPackingOptions(
-            capWidthsPx = probeCaps.map { placeable -> placeable.width },
+            capWidthsPx = capWidthsPx,
             maximumWidthPx = options.constraints.maxWidth,
             marginPx = options.marginPx,
             gapPx = options.gapPx,
         ),
     )
-    /** Re-composes targets with row-position corner geometry. */
+    /** Composes targets once with row-position corner geometry. */
     val positionedCaps: List<List<Placeable>> = measureLedPositionedCaps(
-        LedPositionedMeasureOptions(measure = options, lines = lines, probeCaps = probeCaps),
+        LedPositionedMeasureOptions(measure = options, lines = lines, capWidthsPx = capWidthsPx),
     )
     /** Measures exact shared plate behind each row. */
     val plates: List<Placeable> = measureLedPlates(options, lines)

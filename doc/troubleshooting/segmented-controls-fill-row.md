@@ -54,6 +54,17 @@ maxWidth = width
 The divider therefore determines the containing segment's width.
 The text's natural width never gets to determine the `Box` width.
 
+The same mechanism affected the LED renderer introduced in commit `5b54692cc`.
+Its `SubcomposeLayout` tried to discover each target width by measuring the complete `ledCapTarget`.
+A visual cap descendant used `Modifier.fillMaxSize()`.
+The probe supplied a bounded row maximum, so that visual descendant consumed the maximum and made every cap its own full-width row.
+
+The corrected probe measures only the one-line `Text` legend.
+It derives target width as measured legend plus both 24-unit insets,
+clamped between the 48-unit owned target minimum and available row width.
+The renderer then composes the visual cap under fixed constraints at that derived width.
+This keeps measurement tied to actual Compose text shaping without letting greedy decoration participate in intrinsic width.
+
 ### Slint
 
 The faulty version at commit `d228ebc79` drew an overlay using the wrapping container's full width.
@@ -154,6 +165,7 @@ Patterns that work cleanly:
 Patterns that fail:
 
 - A Compose decoration uses `fillMaxWidth()` inside the content-sized segment.
+- A `SubcomposeLayout` width probe measures a complete target containing `fillMaxSize()` decoration.
 - A Slint overlay binds its visible border to `parent.width` around `FlexboxLayout`.
 - Slint 1.17.0 tries to derive a parent wrapper width from the wrapping flex layout's preferred width.
 
@@ -186,6 +198,8 @@ The workaround uses square section outlines until the package adopts a Slint rel
   The labels are correct, but the visible control still appears full-width.
 - Adding `wrapContentWidth` alone on Android does not neutralize a descendant `fillMaxWidth()`.
   The descendant still receives and consumes the relaxed maximum width.
+- Measuring the full LED target before row packing still gives `fillMaxSize()` a bounded maximum.
+  Subcomposition changes when measurement happens, not how fill modifiers consume constraints.
 
 ## Upstream filing decision
 

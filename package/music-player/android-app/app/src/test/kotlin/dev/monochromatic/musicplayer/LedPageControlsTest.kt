@@ -132,4 +132,73 @@ class LedPageControlsTest {
             ),
         )
     }
+
+    // What:     `measuredLegendProducesContentWidthCap` covers unconstrained natural width.
+    // Why:      Cap paint must follow measured legend rather than claim complete row width.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("measured legend produces content width", () => { ... });
+    // ```
+    /** Confirms normal legend receives both source insets. */
+    @Test
+    fun measuredLegendProducesContentWidthCap() {
+        assertEquals(
+            104,
+            ledCapWidth(
+                LedCapWidthOptions(
+                    labelWidthPx = 56,
+                    insetPx = 24,
+                    minimumWidthPx = 48,
+                    maximumWidthPx = 300,
+                ),
+            ),
+        )
+    }
+
+    // What:     `shortLegendKeepsOwnedMinimumWidth` covers visible Android target floor.
+    // Why:      Narrow legends still own and paint at least 48 logical units.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("short legend keeps minimum", () => { ... });
+    // ```
+    /** Confirms short label cannot shrink below target minimum. */
+    @Test
+    fun shortLegendKeepsOwnedMinimumWidth() {
+        assertEquals(
+            48,
+            ledCapWidth(
+                LedCapWidthOptions(
+                    labelWidthPx = 0,
+                    insetPx = 8,
+                    minimumWidthPx = 48,
+                    maximumWidthPx = 300,
+                ),
+            ),
+        )
+    }
+
+    // What:     `pathologicalLegendEllipsizesAtRowCapacity` covers maximum clamp.
+    // Why:      One whole control must fit without overflowing its plate or wrapping label.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("pathological legend clamps", () => { ... });
+    // ```
+    /** Confirms oversized label clamps to available cap width. */
+    @Test
+    fun pathologicalLegendEllipsizesAtRowCapacity() {
+        assertEquals(
+            100,
+            ledCapWidth(
+                LedCapWidthOptions(
+                    labelWidthPx = 1_000,
+                    insetPx = 24,
+                    minimumWidthPx = 48,
+                    maximumWidthPx = 100,
+                ),
+            ),
+        )
+    }
 }
