@@ -25,7 +25,9 @@ import {
 
 import {
   bandOf,
+  assertSourceBytes,
   classifyBand,
+  type SizeBand,
   countSettledPerBand,
   MEDIUM_BAND_MAX_BYTES,
   MEDIUM_PAGE_BYTES,
@@ -35,6 +37,28 @@ import {
   SMALL_BAND_MAX_BYTES,
   SMALL_PAGE_BYTES,
 } from '../../dist/final/node/index.mjs';
+
+/**
+ * Bands a raw byte count, stating the unit explicitly.
+ *
+ * This case sweeps byte counts around the band cuts, which are byte
+ * counts by definition and cannot be produced from text, so the
+ * assertion is the honest way to reach `classifyBand`.
+ *
+ * @param count - UTF-8 byte length under test
+ *
+ * @returns Band that count falls in
+ *
+ * @example
+ * ```ts
+ * expect(bandAt(1_842,),).toBe('small',);
+ * ```
+ */
+function bandAt(count: number,): SizeBand {
+  assertSourceBytes(count,);
+  return classifyBand({ sourceBytes: count, },);
+}
+
 
 /**
  * Builds an entry reduced to what ordering reads.
@@ -117,7 +141,7 @@ await describe({
           1_000_000,
         ])
           expect(bandOf({ sourceBytes, },),).toBe(
-            classifyBand({ sourceBytes, },),
+            bandAt(sourceBytes,),
           );
       },
     },),

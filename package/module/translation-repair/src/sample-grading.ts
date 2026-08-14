@@ -418,6 +418,87 @@ export function assertRepairMeasurable(
 }
 
 /**
+ * UTF-8 byte length of an entry's zh source, branded so a CHARACTER count
+ * cannot be passed where a byte count belongs.
+ *
+ * Branded rather than left a bare `number` because the two quantities differ by
+ * roughly a factor of two on this corpus and the wrong one silently classifies
+ * large pages as small. Mint it with {@link sourceBytesOf}; a raw number will
+ * not type-check.
+ *
+ * @example
+ * ```ts
+ * const bytes: SourceBytes = sourceBytesOf({ text: source, },);
+ * ```
+ */
+export type SourceBytes = number & { readonly __brand: 'SourceBytes'; };
+
+/**
+ * Narrows a count already known to be a UTF-8 byte length.
+ *
+ * An assertion function rather than a cast, because `no-unsafe-type-assertion`
+ * refuses a narrowing `as` and this repository's guidance names assertion
+ * functions as the mechanism for runtime narrowing. The check is real: a byte
+ * length is a non-negative safe integer, so a fractional or negative count is a
+ * caller bug rather than a small measurement error.
+ *
+ * Calling this is an EXPLICIT claim that the number was measured in bytes. It
+ * cannot verify that, which is the point of routing ordinary use through
+ * {@link sourceBytesOf} instead; reach for this only where the byte count is
+ * the thing under test, as at a band boundary.
+ *
+ * @param count - byte length to narrow
+ *
+ * @returns Nothing; it narrows `count` in the caller on success
+ *
+ * @throws {@link RangeError} when the count is not a non-negative safe integer
+ *
+ * @example
+ * ```ts
+ * assertSourceBytes(SMALL_BAND_MAX_BYTES - 1,);
+ * ```
+ */
+export function assertSourceBytes(
+  count: number,
+): asserts count is SourceBytes {
+  if ((!Number.isSafeInteger(count,)) || (count < 0))
+    throw new RangeError(
+      `A UTF-8 byte length is a non-negative safe integer; received ${
+        String(count,)
+      }. A fractional or negative value means the caller measured something `
+        + 'other than bytes.',
+    );
+}
+
+/**
+ * Measures source text in UTF-8 bytes.
+ *
+ * The ordinary way to obtain a {@link SourceBytes}: it takes the TEXT rather
+ * than a count, so there is no opportunity to hand it the wrong unit. A number
+ * has already lost the evidence of which unit it is.
+ *
+ * @param text - source text to measure
+ *
+ * @returns Its UTF-8 byte length
+ *
+ * @example
+ * ```ts
+ * const bytes = sourceBytesOf({ text: '雨', },); // 3
+ * ```
+ */
+export function sourceBytesOf(
+  { text, }: { readonly text: string; },
+): SourceBytes {
+  /**
+   * Encoded length of the text, unbranded until asserted.
+   */
+  const { length, } = new TextEncoder()
+    .encode(text,);
+  assertSourceBytes(length,);
+  return length;
+}
+
+/**
  * Classifies a page into its size band by zh source byte length, using the
  * same tertile cuts the accumulation loop sorts by.
  *
@@ -459,7 +540,7 @@ export function assertRepairMeasurable(
  * ```
  */
 export function classifyBand(
-  { sourceBytes, }: { readonly sourceBytes: number; },
+  { sourceBytes, }: { readonly sourceBytes: SourceBytes; },
 ): SizeBand {
   if (sourceBytes < SMALL_BAND_MAX_BYTES)
     return 'small';

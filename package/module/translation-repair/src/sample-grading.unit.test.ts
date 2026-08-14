@@ -8,6 +8,7 @@ import {
   type AdjudicatedIssue,
   allocateBandQuota,
   type BandQuota,
+  assertSourceBytes,
   classifyBand,
   classifySourceAnchor,
   drawStratifiedSample,
@@ -19,6 +20,28 @@ import {
   type SizeBand,
   SMALL_BAND_MAX_BYTES,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Bands a raw byte count, stating the unit explicitly.
+ *
+ * These cases probe the band BOUNDARIES, which are byte counts by
+ * definition and cannot be produced from text, so the assertion is the
+ * honest way to reach `classifyBand` rather than a cast around its guard.
+ *
+ * @param count - UTF-8 byte length under test
+ *
+ * @returns Band that count falls in
+ *
+ * @example
+ * ```ts
+ * expect(bandAt(1_842,),).toBe('small',);
+ * ```
+ */
+function bandAt(count: number,): SizeBand {
+  assertSourceBytes(count,);
+  return classifyBand({ sourceBytes: count, },);
+}
+
 
 /**
  * Builds a grading candidate for the given entry and band; only the fields a
@@ -135,27 +158,27 @@ await describe({
         it({
           name: 'is small below the small cut',
           fn: async () => {
-            expect(classifyBand({ sourceBytes: SMALL_BAND_MAX_BYTES - 1, },),)
+            expect(bandAt(SMALL_BAND_MAX_BYTES - 1,),)
               .toBe('small',);
-            expect(classifyBand({ sourceBytes: 0, },),)
+            expect(bandAt(0,),)
               .toBe('small',);
           },
         },),
         it({
           name: 'is medium from the small cut up to the medium cut',
           fn: async () => {
-            expect(classifyBand({ sourceBytes: SMALL_BAND_MAX_BYTES, },),)
+            expect(bandAt(SMALL_BAND_MAX_BYTES,),)
               .toBe('medium',);
-            expect(classifyBand({ sourceBytes: MEDIUM_BAND_MAX_BYTES - 1, },),)
+            expect(bandAt(MEDIUM_BAND_MAX_BYTES - 1,),)
               .toBe('medium',);
           },
         },),
         it({
           name: 'is large at and above the medium cut',
           fn: async () => {
-            expect(classifyBand({ sourceBytes: MEDIUM_BAND_MAX_BYTES, },),)
+            expect(bandAt(MEDIUM_BAND_MAX_BYTES,),)
               .toBe('large',);
-            expect(classifyBand({ sourceBytes: 40_700, },),)
+            expect(bandAt(40_700,),)
               .toBe('large',);
           },
         },),

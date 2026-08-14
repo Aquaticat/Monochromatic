@@ -25,6 +25,7 @@ import {
 import { readOnlyIds, } from './entry-filter.ts';
 import { assertResumableGeneration, } from './pass-generation-guard.ts';
 import { repairTranslation, } from '../repair-translation.ts';
+import { sourceBytesOf, } from '../sample-grading.ts';
 import {
   discardSliceCache,
   listResumableEntries,
@@ -579,15 +580,20 @@ async function runCorpusPass(): Promise<void> {
         timestamp: new Date().toISOString(),
         // CHARACTER counts, and named that way on purpose. They are UTF-16 code
         // unit lengths for eyeballing an entry's size in a log, and they are
-        // NOT the input `classifyBand` wants: that takes UTF-8 BYTES, which run
+        // NOT what `classifyBand` wants: that takes UTF-8 BYTES, which run
         // roughly twice these numbers on this corpus and up to three times on
         // pure han text. Feeding these into it classifies large pages as small,
-        // which has already produced one wrong band census. Read the source and
-        // encode it, the way `corpus-run/draw-entry-load.ts` does.
+        // which has already produced one wrong band census.
         sourceChars: entry.sourceText
           .length,
         targetChars: entry.targetText
           .length,
+
+        // The band input, recorded so analysis over this directory has the
+        // RIGHT number nearest to hand rather than the tempting wrong one.
+        // Artifacts settled before 2026-08-14 lack this field, so a reader must
+        // treat its absence as "measure the source yourself" rather than zero.
+        sourceBytes: sourceBytesOf({ text: entry.sourceText, },),
         issueCount: result.issues
           .length,
         acceptedCount: accepted.length,

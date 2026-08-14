@@ -11,6 +11,7 @@ import { assertArtifactProvenance, } from './artifact-provenance.ts';
 import {
   classifyBand,
   extractGradingCandidate,
+  sourceBytesOf,
   type GradingCandidate,
   type SizeBand,
 } from '../sample-grading.ts';
@@ -180,11 +181,7 @@ export async function loadEntry(
   /**
    * Size band from the source's UTF-8 byte length.
    */
-  const band = classifyBand({
-    sourceBytes: new TextEncoder()
-      .encode(source,)
-      .length,
-  },);
+  const band = classifyBand({ sourceBytes: sourceBytesOf({ text: source, },), },);
 
   return {
     id: parsed.id,

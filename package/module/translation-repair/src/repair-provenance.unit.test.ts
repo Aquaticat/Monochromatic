@@ -23,7 +23,9 @@ import {
   type AdjudicatedIssue,
   buildIssueRecords,
   type ChunkRepairOutcome,
+  assertSourceBytes,
   classifyBand,
+  type SizeBand,
   collectRepairRegions,
   type EditableEnvelope,
   extractGradingCandidate,
@@ -34,6 +36,28 @@ import {
   parseSettledArtifact,
   type PatchOperation,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Bands a raw byte count, stating the unit explicitly.
+ *
+ * These cases probe the band BOUNDARIES, which are byte counts by
+ * definition and cannot be produced from text, so the assertion is the
+ * honest way to reach `classifyBand` rather than a cast around its guard.
+ *
+ * @param count - UTF-8 byte length under test
+ *
+ * @returns Band that count falls in
+ *
+ * @example
+ * ```ts
+ * expect(bandAt(1_842,),).toBe('small',);
+ * ```
+ */
+function bandAt(count: number,): SizeBand {
+  assertSourceBytes(count,);
+  return classifyBand({ sourceBytes: count, },);
+}
+
 
 /**
  * Translation before repair.
@@ -209,7 +233,7 @@ function throughArtifact(
       return extractGradingCandidate({
         issue: accepted.issue,
         entryId: parsed.id,
-        band: classifyBand({ sourceBytes: 2_000, },),
+        band: bandAt(2_000,),
         ...(accepted.repair === undefined
           ? {}
           : { repair: accepted.repair, }),

@@ -140,9 +140,12 @@ export {
 } from './sheet-binding.ts';
 export {
   assertRepairMeasurable,
+  assertSourceBytes,
   type BandQuota,
   classifyBand,
   classifySourceAnchor,
+  type SourceBytes,
+  sourceBytesOf,
   type SourceAnchorKind,
   countUnrecordedRepairs,
   UnmeasurableRepairError,
