@@ -3,9 +3,11 @@
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
+  MANAGEMENT_HELP,
   MANAGEMENT_REFUSED,
   MANAGEMENT_USAGE,
   parseManagementArgs,
+  TRUST_HELP,
 } from './management-parser.ts';
 import {
   createEngineFailureEvent,
@@ -147,6 +149,10 @@ export async function runManagementCommand({
   if (parsed === MANAGEMENT_REFUSED) {
     console.error(MANAGEMENT_USAGE,);
     return 2;
+  }
+  if (parsed.command === 'help') {
+    console.log(parsed.topic === 'trust' ? TRUST_HELP : MANAGEMENT_HELP,);
+    return 0;
   }
 
   if ((parsed.command === 'trust')

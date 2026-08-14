@@ -30,7 +30,53 @@ export const MANAGEMENT_USAGE: string = [
 /**
  * One resolved management action.
  */
+/**
+ * Successful namespace help shown without repository access.
+ */
+export const MANAGEMENT_HELP: string = [
+  'Usage: git cli-git <command> [options]',
+  '',
+  'Manage cli-git trust and run repository policies.',
+  '',
+  'Commands:',
+  '  trust    Review and trust exact repository configuration.',
+  '  untrust  Revoke stored repository trust.',
+  '  status   Inspect repository trust without executing configuration.',
+  '  check    Check policies over an explicit scope.',
+  '  fix      Apply policy fixes over an explicit scope.',
+  '',
+  'Run git cli-git trust --help for trust consent and security details.',
+].join('\n',);
+
+/**
+ * Successful trust help shown without repository access.
+ */
+export const TRUST_HELP: string = [
+  'Usage: git cli-git trust [--yes]',
+  '',
+  'Review and trust the exact repository configuration snapshot.',
+  '',
+  'Without --yes, trust requires terminal stdin and stderr and accepts only exact yes.',
+  '--yes gives explicit noninteractive consent, prints every disclosure, and accepts every applicable consent stage.',
+  'Applicable stages include recursive descendant authority when requested by validated configuration.',
+  'Trusted configuration runs with full account permissions.',
+  '',
+  'Options:',
+  '  --yes   Give explicit noninteractive consent after review.',
+  '  --help  Show this help without reading repository configuration.',
+].join('\n',);
+
 export type ManagementAction =
+  | Readonly<{
+    /**
+     * Successful help action requiring no repository access.
+     */
+    command: 'help';
+    /**
+     * Help surface selected by invocation.
+     */
+    topic: 'management' | 'trust';
+  }>
   | Readonly<{
     /**
      * Trust command granting consent to current config bytes.
@@ -76,7 +122,10 @@ export type ManagementAction =
  * Declared surface of the `trust` command.
  */
 const TRUST_SPEC: ArgvSpec = {
-  flags: { yes: { names: ['--yes',], }, },
+  flags: {
+    help: { names: ['--help', '-h',], },
+    yes: { names: ['--yes',], },
+  },
   valueOptions: {},
 };
 
@@ -122,6 +171,11 @@ export function parseManagementArgs(args: readonly string[],): ManagementAction 
    * Arguments after command name.
    */
   const rest = args.slice(1,);
+  if ((name === '--help') || (name === '-h')) {
+    if (rest.length > 0)
+      return MANAGEMENT_REFUSED;
+    return { command: 'help', topic: 'management', };
+  }
   if ((name === 'untrust') || (name === 'status')) {
     /**
      * Parsed bare-command region, rejecting any option.
@@ -154,6 +208,11 @@ export function parseManagementArgs(args: readonly string[],): ManagementAction 
         .length
         > 0))
       return MANAGEMENT_REFUSED;
+    if ((parsed.flagCounts
+      .help
+      ?? 0)
+      > 0)
+      return { command: 'help', topic: 'trust', };
     return {
       command: 'trust',
       yes: (parsed.flagCounts

@@ -4,6 +4,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
+import { parseManagementArgs, } from './management-parser.ts';
 import { runManagementCommand, } from './management.ts';
 import { parseCommitRegion, } from './parser/commit.ts';
 import { printPostCommandOutput, } from './post-command-output.ts';
@@ -151,15 +152,30 @@ export async function runCliGit(): Promise<void> {
 try {
   if (isManagementCommand) {
     /**
-     * Real Git required for startup transaction recovery.
+     * Arguments owned by cli-git management after namespace dispatch.
      */
-    const gitPath = await resolveGit();
-    await recoverCommitTransaction({
-      args: rawArgs,
-      gitPath,
-    },);
+    const managementArgs = rawArgs.slice(managementLayout.subcommandIndex + 1,);
+    /**
+     * Early parse used only to keep successful help free of repository access.
+     */
+    const managementAction = parseManagementArgs(managementArgs,);
+    /**
+     * Whether invocation is successful help and must skip recovery mutation.
+     */
+    const isManagementHelp = (typeof managementAction !== 'symbol')
+      && (managementAction.command === 'help');
+    if (!isManagementHelp) {
+      /**
+       * Real Git required for startup transaction recovery.
+       */
+      const gitPath = await resolveGit();
+      await recoverCommitTransaction({
+        args: rawArgs,
+        gitPath,
+      },);
+    }
     process.exitCode = await runManagementCommand({
-      args: rawArgs.slice(managementLayout.subcommandIndex + 1,),
+      args: managementArgs,
       gitGlobalArgs: rawArgs.slice(
         0,
         managementLayout.subcommandIndex,
