@@ -1,0 +1,63 @@
+diff --git a/src/utils.ts b/src/utils.ts
+index 47276c9..4dbeb56 100644
+--- a/src/utils.ts
++++ b/src/utils.ts
+@@ -46,10 +46,11 @@ interface MriOptions {
+     [k: string]: string[]
+   }
+   boolean: string[]
++  string: string[]
+ }
+ 
+ export function getMriOptions(options: Option[]): MriOptions {
+-  const result: MriOptions = { alias: {}, boolean: [] }
++  const result: MriOptions = { alias: {}, boolean: [], string: [] }
+ 
+   for (const [index, option] of options.entries()) {
+     // We do not set default values in mri options
+@@ -77,6 +78,8 @@ export function getMriOptions(options: Option[]): MriOptions {
+       } else {
+         result.boolean.push(option.names[0])
+       }
++    } else {
++      result.string.push(option.names[0])
+     }
+   }
+ 
+ diff --git a/tests/index.test.ts b/tests/index.test.ts
+index bbb176b..7abafbf 100644
+--- a/tests/index.test.ts
++++ b/tests/index.test.ts
+@@ -64,6 +64,32 @@ test('negated option', () => {
+   })
+ })
+ 
++test('preserves exact string option values', () => {
++  const cli = cac()
++
++  cli.option('--policy <id>', 'Policy identifier')
++
++  expect(
++    cli.parse(['node', 'bin', '--policy', '001'], { run: false }).options,
++  ).toMatchObject({ policy: '001' })
++  expect(
++    cli.parse(['node', 'bin', '--policy', '+2'], { run: false }).options,
++  ).toMatchObject({ policy: '+2' })
++})
++
++test('preserves exact values before explicit string array transforms', () => {
++  const cli = cac()
++
++  cli.option('--policy <id>', 'Policy identifier', { type: [String] })
++
++  expect(
++    cli.parse(['node', 'bin', '--policy', '001'], { run: false }).options,
++  ).toMatchObject({ policy: ['001'] })
++  expect(
++    cli.parse(['node', 'bin', '--policy', '+2'], { run: false }).options,
++  ).toMatchObject({ policy: ['+2'] })
++})
++
+ test('double dashes', () => {
+   const cli = cac()
+ 
