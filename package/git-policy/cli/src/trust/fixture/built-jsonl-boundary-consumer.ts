@@ -29,6 +29,42 @@ export async function verifyJsonlFailureBoundaries({
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
   /**
+   * Successful namespace help from packed shadow git.
+   */
+  const namespaceHelp = await execute({
+    command: 'git',
+    args: ['cli-git', '--help',],
+    expectedExit: 0,
+    cwd: repository,
+    env,
+  },);
+  assertIncludes({
+    text: namespaceHelp.stdout,
+    expected: 'Usage: git cli-git',
+    context: 'packed namespace help',
+  },);
+  if (namespaceHelp.stderr !== '')
+    throw new Error(`packed namespace help leaked stderr\n${namespaceHelp.stderr}`,);
+
+  /**
+   * Successful trust help from packed shadow git.
+   */
+  const trustHelp = await execute({
+    command: 'git',
+    args: ['cli-git', 'trust', '--help',],
+    expectedExit: 0,
+    cwd: repository,
+    env,
+  },);
+  assertIncludes({
+    text: trustHelp.stdout,
+    expected: 'recursive descendant authority',
+    context: 'packed trust help',
+  },);
+  if (trustHelp.stderr !== '')
+    throw new Error(`packed trust help leaked stderr\n${trustHelp.stderr}`,);
+
+  /**
    * Direct-check setup failure outside Git worktree.
    */
   const unavailableDirectCheck = await execute({
@@ -91,9 +127,9 @@ export async function verifyJsonlFailureBoundaries({
     throw new Error(`untrusted direct check leaked stderr\n${untrustedDirectCheck.stderr}`,);
 
   /**
-   * Declined trust failure remains stdout JSONL beside stderr disclosure.
+   * Unavailable trust consent remains stdout JSONL beside stderr disclosure.
    */
-  const declinedTrust = await execute({
+  const unavailableTrust = await execute({
     command: 'git',
     args: [
       'cli-git',
@@ -104,13 +140,18 @@ export async function verifyJsonlFailureBoundaries({
     env,
   },);
   assertJsonl({
-    text: declinedTrust.stdout,
-    expectedCode: 'trust-failed',
-    context: 'declined trust management',
+    text: unavailableTrust.stdout,
+    expectedCode: 'trust-consent-unavailable',
+    context: 'unavailable trust consent',
   },);
   assertIncludes({
-    text: declinedTrust.stderr,
+    text: unavailableTrust.stdout,
+    expected: 'git cli-git trust --yes',
+    context: 'unavailable trust remediation',
+  },);
+  assertIncludes({
+    text: unavailableTrust.stderr,
     expected: 'Exact snapshot state: new',
-    context: 'declined trust disclosure',
+    context: 'unavailable trust disclosure',
   },);
 }
