@@ -225,7 +225,7 @@ component LedSegmentButton inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
     callback clicked();
-    private property <bool> light-scene: Palette.color-scheme == ColorScheme.light;
+    private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
     horizontal-stretch: 0;
     width: min(led-label.preferred-width + 48px, root.max-width);
     height: 60px;
@@ -242,10 +242,6 @@ component LedSegmentButton inherits Rectangle {
         inner-shadow-offset-y: 3px;
         inner-shadow-blur: 6px;
         inner-shadow-color: root.light-scene ? #00000030 : #00000057;
-        drop-shadow-offset-x: root.light-scene ? 1px : 0px;
-        drop-shadow-offset-y: root.light-scene ? 1px : 0px;
-        drop-shadow-blur: root.light-scene ? 2px : 0px;
-        drop-shadow-color: root.light-scene ? #00000099 : transparent;
 
         Rectangle {
             width: parent.width;
