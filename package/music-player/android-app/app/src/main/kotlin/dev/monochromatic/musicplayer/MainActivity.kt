@@ -2819,16 +2819,37 @@ private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
 )
 
 /**
- * What:     `chromiumTabShoulder` stores Chromium's 12dp shoulder reach as a reusable
- *           density-independent length.
- * Why:      Drawing and row-edge gutters must use one value so neither foot is clipped.
+ * What:     `chromiumTabVisibleHeight` stores Android's 48dp visible-control minimum.
+ * Why:      Chromium styling must remain visibly touchable rather than adding transparent hit padding.
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * const chromiumTabShoulder = dp(12);
+ * const chromiumTabVisibleHeight = dp(48);
  * ```
  */
-private val chromiumTabShoulder: Dp = 12.dp
+private val chromiumTabVisibleHeight: Dp = 48.dp
+
+/**
+ * What:     `chromiumTabStripInset` stores Chromium's 6dp space above the visible contour.
+ * Why:      Enlarging the Android face must preserve the source strip-to-tab relationship.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const chromiumTabStripInset = dp(6);
+ * ```
+ */
+private val chromiumTabStripInset: Dp = 6.dp
+
+/**
+ * What:     `chromiumTabShoulder` scales Chromium's 12-of-35 shoulder ratio to visible height.
+ * Why:      Enlarged Android tabs retain Chromium's contour proportions and matching edge gutters.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const chromiumTabShoulder = chromiumTabVisibleHeight * 12 / 35;
+ * ```
+ */
+private val chromiumTabShoulder: Dp = chromiumTabVisibleHeight * 12f / 35f
 
 /**
  * What:     `chromiumTabPath` traces an open path around Chromium's rounded top and
@@ -3016,10 +3037,10 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
     }
     Box(
         modifier = Modifier
-            // Reserves Android's minimum target inside layout so neighboring targets never overlap.
-            .widthIn(min = 48.dp, max = options.maximumWidth)
+            // Makes both visible face and owned target meet Android's minimum size.
+            .widthIn(min = chromiumTabVisibleHeight, max = options.maximumWidth)
             .width(IntrinsicSize.Max)
-            .height(48.dp)
+            .height(chromiumTabVisibleHeight + chromiumTabStripInset)
             // Keeps both overflowing feet above neighboring inactive baselines.
             .zIndex(if (options.selected) 1f else 0f)
             .selectable(
@@ -3031,11 +3052,11 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
-                // Keeps Chromium's 6dp strip inset while the outer box owns a 48dp touch target.
+                // Places the visibly 48dp face after Chromium's source-derived strip inset.
                 .align(Alignment.TopStart)
-                .offset(y = 6.dp)
+                .offset(y = chromiumTabStripInset)
                 .width(IntrinsicSize.Max)
-                .height(35.dp)
+                .height(chromiumTabVisibleHeight)
                 .then(stateModifier),
         ) {
             chromiumPageTabContent(
