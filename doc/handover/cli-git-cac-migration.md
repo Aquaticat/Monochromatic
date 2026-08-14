@@ -404,7 +404,7 @@ CAC failed hard requirements for replacing `src/parser/argv.ts` or the complete 
 Do not pursue CAC as the Git-region parser or as a complete parser replacement.
 Those integration shapes have exited the audit on hard-gate failure.
 
-Management-only use remains technically possible but is not yet recommended.
+Management-only use reaches Node 24 parity but ultimately fails the complete package runtime gate.
 A direct 41-case mapping matched the incumbent in 37 cases.
 The mismatches were policy IDs `001`,
 `+2`,
@@ -463,7 +463,9 @@ explicit runtime validation fixed that mismatch.
 
 The production shape is not a simplification.
 Its sibling CAC adapter occupies 570 physical lines and 291 measured noncomment code lines.
-It removes 123 physical lines from the incumbent management parser and adds eight delegation lines.
+Together with the delegated parser,
+it totals 720 physical and 360 measured code lines versus the incumbent's 265 physical and 159 code lines.
+The measured increases are 455 physical and 201 code lines.
 The custom exact-value scanner remains,
 and now also handles collision-free placeholders,
 lone-dash restoration,
@@ -500,15 +502,42 @@ The candidate passed all maintained lifecycle budgets.
 311.0310 ms p95,
 and 316.5200 ms maximum against the 925 ms ceiling across thirty measured runs.
 No-config startup measured 87.5854 ms median and 94.3790 ms maximum against 275 ms.
-The absolute latency gate therefore passes;
-an unchanged-baseline band is still required before attributing incremental cost to CAC.
+The absolute latency gate passes.
+Two runs per shape found a 292.2756 to 292.6579 ms baseline `wide-commit` median band and a
+299.5193 to 300.6160 ms candidate band.
+The measured candidate delta is 6.8614 to 8.3404 ms,
+still far below the 925 ms contract.
+Other scenario bands overlap or move in opposite directions,
+so the audit does not infer one universal startup cost.
+
+### 2026-08-14 terminal runtime checkpoint
+
+The exact Node 22.18.0 lower-bound probe ended the surviving management-only shape.
+Official image digest
+`sha256:0d130e2ee18e88e1561375276daced6bff032539200173f2daf48c2e33f38ff5`
+rejected both unchanged and CAC-integrated built artifacts on retained `await using` syntax.
+A source-level candidate probe separately failed because shared logger code calls absent `Error.isError`.
+Node 24 release notes identify both language and API surfaces as Node 24 additions.
+
+This defect predates CAC,
+but the frozen hard gate applies to the resulting package range
+`^22.18.0 || >=24.11.0`.
+The management-only shape therefore is not a validated finalist.
+The durable diagnosis and remediation paths are in
+`doc/troubleshooting/cli-git-node-22-runtime-contract.md`.
+
+No CAC shape is scored:
+Git-region and complete replacement fail argv fidelity,
+while management-only fails the final package runtime gate.
+The recommendation is to retain the repository-owned parsers.
+Even after a future Node-floor correction,
+CAC keeps the custom scanner and adds code,
+so it has no practical simplification benefit.
 
 ## Open risks
 
-- CAC may fit management subcommands while being unsuitable for transparent Git-argv inspection.
-- A split result may be best:
-  framework use for `git cli-git` management commands while retaining purpose-built Git region parsers.
-  This must be scored as a concrete integration shape rather than assumed.
+- A future Node-floor correction would remove the package runtime blocker,
+  but it would not remove CAC's exact-value scanner or the measured code increase.
 - Existing historical comments can obscure which parser behavior is current.
   Source and tests,
   not comments alone,
@@ -520,8 +549,7 @@ an unchanged-baseline band is still required before attributing incremental cost
 
 ## Next action
 
-Finish unchanged-baseline latency distributions,
-then close platform evidence,
-score the surviving management-only shape,
-run sensitivity analysis,
-and write the final practicality recommendation.
+Validate the final audit and troubleshooting Markdown,
+release the audit lock,
+remove disposable worktrees,
+and report the terminal recommendation.

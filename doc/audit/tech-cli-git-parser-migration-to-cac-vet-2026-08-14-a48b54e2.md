@@ -1,8 +1,8 @@
 # Technology vet: cli-git parser migration to CAC
 
 Status:
- in progress.
- Lifecycle phase is finalist for the management-only integration shape.
+ complete with no validated CAC integration shape.
+ Lifecycle phase is terminal hard-gate result.
  Started and last updated on 2026-08-14.
 
 Subject:
@@ -1406,7 +1406,7 @@ Management-command success cannot offset a hard failure in forwarded Git classif
 ### CAC for management commands only
 
 Outcome:
- survives hard gates pending full validation.
+ fail at the final package runtime gate.
 
 Reason:
 one-level command routing,
@@ -1415,9 +1415,32 @@ ordinary string policy IDs,
 unknown-option rejection,
 unused-argument rejection,
 repetition,
-and post-`--` pathspec capture can match the incumbent.
-Exact policy values require an owned pre-parser because CAC cannot preserve numeric-looking or dash-led values.
-The resulting shape keeps every Git parser plus a management-specific scanner.
+and post-`--` pathspec capture can match the incumbent only with an owned exact-value scanner and runtime validators.
+That adapted shape reached 52-case parity on Node 24.
+
+The exact lower supported runtime then rejected both the unchanged and CAC-integrated application artifacts before
+package import:
+
+```text
+Node.js v22.18.0
+SyntaxError: Unexpected identifier 'output'
+```
+
+The token is an emitted `await using` declaration.
+A source-level candidate probe separately reached shared logger initialization and failed because Node 22.18.0 has no
+`Error.isError`.
+Node's 24.0.0 release notes identify explicit resource management and `Error.isError` as Node 24 additions.
+
+This is a pre-existing cli-git engine-contract defect,
+not a CAC defect:
+CAC's own Node 22 matrix passes,
+and the unchanged baseline artifact fails the same import.
+It nevertheless means the complete migration shape cannot satisfy the frozen package range
+`^22.18.0 || >=24.11.0`.
+Hard gates apply to the resulting package,
+not only to code introduced by the candidate.
+The durable diagnosis is
+`doc/troubleshooting/cli-git-node-22-runtime-contract.md`.
 
 ## Validation results
 
@@ -1618,8 +1641,14 @@ Evidence:
 
 The production-shaped CAC module occupies 570 physical lines and 291 measured nonblank,
 noncomment lines.
-It replaces 123 physical lines from `management-parser.ts` while adding eight delegation lines there.
-This is direct evidence that CAC does not simplify the management implementation under current exact-value,
+Together with its delegated `management-parser.ts`,
+the candidate occupies 720 physical and 360 measured code lines versus the incumbent's 265 physical and 159 code lines.
+The measured deltas are 455 physical and 201 code lines.
+This line-count evidence belongs only to the net-removal criterion;
+auditability,
+migration burden,
+and seam fit use separate evidence to avoid double counting.
+CAC does not simplify the management implementation under current exact-value,
 type,
 TSDoc,
 logging,
@@ -1688,50 +1717,149 @@ was 87.5854 ms median,
 91.6632 ms p95,
 and 94.3790 ms maximum against a 275 ms budget.
 No scenario exceeded its contract.
-Candidate evidence SHA-256 is
+First candidate evidence SHA-256 is
 `6d2eb6cdb834a3c193fbc1fbeb6a5f57bc1d64f5eb2a47f2fa128a1239304740`.
 
-This passes the absolute latency hard gate.
-It does not establish CAC's incremental cost until the same unchanged baseline runs establish the measurement band.
+Two unchanged-baseline runs and two candidate runs establish run-to-run median bands.
+The benchmark's direct-versus-wrapper samples are the positive control:
+they visibly resolve more than eighty milliseconds of wrapper-added work in the startup scenarios.
 
-### Remaining validation
+`wide-commit` produced:
 
-- finish unchanged-baseline lifecycle distributions;
-- determine whether existing upstream Windows evidence plus platform-independent adapter source is enough for platform scoring;
-- run a second complete cli-git unit pass if the isolated retry does not sufficiently close the transient fixture failure;
-- measure bundle and lifecycle impact against a positive-control unchanged build;
-- run the maintained cli-git package suites and user-boundary command from a disposable integration branch.
+- baseline median band 292.2756 to 292.6579 ms;
+- candidate median band 299.5193 to 300.6160 ms;
+- candidate-minus-baseline band 6.8614 to 8.3404 ms.
+
+The nonoverlapping wide-commit bands show a measured regression,
+but it remains far below the 925 ms contract.
+The movement is not uniform:
+no-config candidate medians were 0.2577 to 4.5207 ms lower than the baseline band,
+and several other scenario bands overlap or move in opposite directions.
+Do not infer a universal startup cost from the wide-commit delta.
+
+Evidence hashes:
+
+- baseline run one:
+  `43dab7b1ea57dccaf26d2da03fce28a5a842a62cc0eb0dec0e6a94d4449dbf9b`;
+- baseline run two:
+  `99f2da23342905eba3a3ace9a93f63b16aedc89249b25b8499136122a68694a8`;
+- candidate run two:
+  `a236e3e92fa0242d1d89005c9ac54e15244fb4f8f5cf1903bb452071ba93762d`;
+- median-band comparison:
+  `151d57b99cad0e976733f1295f5aaec285976b5d2f430bdd9bdcdf45a098b0bf`.
+
+This passes the absolute latency gate.
+The later Node 22 package failure still exits the management-only shape before scoring.
+The benchmark JSON labels both artifacts with baseline revision `2c9760515` because the prototype was uncommitted;
+artifact paths and hashes,
+not that embedded revision field,
+distinguish the runs.
+
+### Node 22.18 lower-bound result
+
+Official `node:22.18.0-slim` resolved to digest
+`sha256:0d130e2ee18e88e1561375276daced6bff032539200173f2daf48c2e33f38ff5`.
+The network-disabled probe failed before the planned 52-case combined validation could complete.
+
+- unchanged built artifact import exited `1` on retained `await using`;
+- CAC candidate built artifact import exited `1` on the same syntax;
+- candidate source harness exited `1` because shared logger code called absent `Error.isError`;
+- Node 24.18.0 remains the positive control for package import,
+  help,
+  invalid usage,
+  tests,
+  built trust,
+  and performance.
+
+Baseline stderr SHA-256 is
+`37b72db335be0c716f8b24248cf7cddd0bb082017358e89c89b00af6d3f18a47`.
+Candidate stderr SHA-256 is
+`02ca3774d5b3beadc967a14d6e88d842db192665a035b914549a7c2990327f1a`.
+
+Validation stopped at this hard gate.
+No combined macOS or Windows adapter run,
+second full unit run,
+or remote disposable branch is warranted for a candidate that cannot load on the declared lower runtime.
 
 ## Score arithmetic
 
-Not started.
-Only validated finalists will be scored.
+Not applicable.
+All CAC integration shapes failed at least one hard gate,
+and the governing skill forbids offsetting hard failures with points.
+The management-only shape therefore never became a validated finalist.
 
 ## Sensitivity
 
-Not started.
+Not applicable.
+There is no scored finalist or ordering to perturb.
+Changing weights cannot repair raw-argv fidelity or the package's Node 22 load failure.
 
 ## Pros and cons
 
-Not started.
+### CAC as Git-region or complete parser
 
-## Ranking
+Pros:
 
-No CAC practicality conclusion exists before discovery,
-hard-gate confirmation,
-validation of each viable CAC integration shape,
-scoring,
-and sensitivity analysis finish.
-Other external parser technologies are out of scope.
+- compact MIT source with reproducible SLSA-bound artifact;
+- no declared runtime dependency and an auditable inlined MRI implementation;
+- successful upstream Ubuntu and Windows runtime matrix.
+
+Cons:
+
+- changes numeric-looking values;
+- refuses dash-led declared values;
+- loses lone dash;
+- mishandles relevant kebab-case booleans;
+- normalizes away unknown token facts;
+- fails exact Git argv and fail-closed classifier requirements.
+
+### CAC for management commands only
+
+Pros:
+
+- routes the closed one-level command namespace;
+- rejects unknown options and unused arguments;
+- reproduces 52 incumbent cases with an owned adapter;
+- preserves authored output and exit contracts when built on Node 24;
+- passes every absolute lifecycle budget;
+- adds only 8,354 bytes to the application artifact.
+
+Cons:
+
+- retains a custom exact-value scanner and every Git parser;
+- adds 455 physical and 201 measured code lines across the management boundary;
+- needs runtime checks for CAC's `any` option declarations and repeated-boolean arrays;
+- retains authored help because CAC writes built-in help through `console.info`;
+- introduces stateful parse and throw/catch behavior into the pure-parser seam;
+- cannot make the complete package load on its declared Node 22.18 floor;
+- has no remaining practical simplification benefit after parity work.
+
+## Ranking and recommendation
+
+There is no validated CAC ranking.
+
+- CAC as a shared Git-region parser and as the complete parser both exit on raw-argv hard failures.
+- CAC for management commands only is the closest shape,
+  but exits on the resulting package's Node 22 hard gate.
+
+Do not migrate cli-git to CAC.
+Retain the repository-owned parsers.
+Even if cli-git's pre-existing runtime floor is later raised to Node 24 or its output is made Node 22-compatible,
+the management-only prototype adds code and keeps the exact-value scanner,
+so CAC provides no practical simplification to justify the dependency and regression surface.
+Other external parser technologies remain outside this audit.
 
 ## Evidence limits
 
-The historical Optique timing in repository history is motivation for a latency gate,
+The historical Optique timing is motivation for a latency gate,
 not evidence about CAC.
-Direct combined cli-git adapter runtime evidence covers Linux x64.
 The expanded typed adapter is disposable evaluation code,
 not an authorized migration.
-Upstream release-commit CAC runtime jobs passed on Windows for all three maintained Node versions,
-but combined cli-git adapter behavior has not run there or on macOS.
-The candidate lifecycle benchmark passes every absolute contract;
-the unchanged-baseline comparison is still running.
+The Node 22 failure is a pre-existing cli-git contract defect rather than a CAC defect,
+but hard gates apply to the resulting package.
+CAC's release-commit Windows tests passed;
+combined cli-git adapter behavior ran only on Linux/Node 24 before the Node 22 stop.
+GitHub had expired CAC's failed release-commit lint log,
+so its exact diagnostic remains unknown.
+The first full cli-git unit run had one Git fixture lock collision that passed on isolated retry;
+validation stopped at the later hard gate before a second complete run.
