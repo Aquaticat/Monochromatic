@@ -131,6 +131,30 @@ A candidate and its proposed integration shape must satisfy every constraint:
 - relevant upstream and cli-git consumer-boundary validation;
 - wrapper-added `wide-commit` latency at or below the maintained 925-millisecond ceiling.
 
+### Single-artifact clarification
+
+The initial shorthand said "one self-contained MJS artifact."
+Before scoring,
+consumer evidence showed that reading this as "no declared external dependency" contradicts the frozen baseline and
+canonical package contract:
+
+- `package/git-policy/cli/README.md` says the tarball contains one `dist/final/node/index.mjs` application artifact;
+- the same README permits fallback only to names in cli-git's packed runtime dependencies;
+- `package/git-policy/cli/SPEC.md` likewise permits those declared package edges during installed artifact resolution;
+- the unchanged application artifact already imports declared external packages such as `valibot`,
+  `yuku-parser`,
+  and `yuku-ast`.
+
+The requirement therefore means one emitted public application MJS,
+no extra private workspace artifact or chunk,
+and every external runtime edge declared in the packed manifest.
+It does not mean zero installed dependencies.
+An externalized CAC import without a packed CAC dependency would still fail.
+This is a clarification of the pre-existing baseline contract,
+not a candidate-specific relaxation,
+so the compatibility fingerprint remains unchanged.
+The clarification is recorded before rating CAC.
+
 ## Frozen criteria
 
 No priority ordering was supplied,
@@ -1289,6 +1313,64 @@ or latency contract failure.
 
 Stop condition:
  any undeclared command boundary or effect requires manifest revision before continuing.
+
+### Node 22.18 combined-shape validation
+
+Purpose:
+ exercise the exact lower supported Node boundary for CAC plus the typed cli-git adapter.
+
+Image retrieval:
+ fetch official `docker.io/library/node:22.18.0-slim` because it is not present locally,
+then record its resolved digest before candidate execution.
+Network is allowed only for this image retrieval.
+
+Top-level runtime operations in the network-disabled container:
+
+- run the 52-case baseline-versus-candidate parity harness;
+- import the built candidate application artifact;
+- run management help;
+- run trust help;
+- run invalid trust,
+  check,
+  and fix option forms and assert exit `2` plus authored usage routing.
+
+Reads:
+ read-only candidate worktree,
+read-only evaluation worktree for the incumbent comparator,
+read-only evidence harness,
+and read-only Node image.
+
+Writes:
+ 64 MiB `/tmp` tmpfs and host evidence files only.
+
+Subprocesses:
+ Podman runtime and bounded Node invocations.
+Candidate CAC/MRI code spawns none.
+
+Credentials:
+ none mounted or forwarded.
+
+Resource ceilings:
+ 2 GiB memory,
+2 CPUs,
+128 processes,
+and 1,024 file descriptors.
+
+Success condition:
+ 52 parity matches,
+zero side-effect output on import,
+exact help routing,
+and three invalid command forms exiting `2` with no stdout.
+
+Failure condition:
+ any mismatch,
+unsupported syntax or API,
+output drift,
+undeclared effect,
+or wrong exit.
+
+Stop condition:
+ any undeclared command or effect requires manifest revision before continuing.
 
 ## Hard-gate exits
 
