@@ -20,6 +20,16 @@ const VALUE_TAKING_GLOBAL_OPTIONS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Pre-subcommand option tokens that make real Git bypass subcommand execution.
+ */
+const SHORT_CIRCUIT_GLOBAL_OPTIONS: ReadonlySet<string> = new Set([
+  '--version',
+  '-v',
+  '--help',
+  '-h',
+],);
+
+/**
  * Parsed result of walking the pre-subcommand portion of `git`'s args.
  */
 export type GlobalOptionLayout = {
@@ -31,6 +41,10 @@ export type GlobalOptionLayout = {
    * Index of the subcommand within args, or `args.length` if absent.
    */
   readonly subcommandIndex: number;
+  /**
+   * Whether a parsed option token bypasses subcommand execution.
+   */
+  readonly willShortCircuit: boolean;
 };
 
 /**
@@ -80,22 +94,27 @@ function applyChdir({
  *
  * @param cwd - Effective cwd accumulated so far.
  *
- * @returns Effective cwd plus the subcommand index.
+ * @param willShortCircuit - Whether parsed option token bypasses subcommand execution.
+ *
+ * @returns Effective cwd plus subcommand layout.
  */
 function walkGlobalOptions({
   args,
   index,
   cwd,
+  willShortCircuit,
 }: {
   readonly args: readonly string[];
   readonly index: number;
   readonly cwd: string;
+  readonly willShortCircuit: boolean;
 },): GlobalOptionLayout {
   if (index >= args
     .length) {
     return {
       effectiveCwd: cwd,
       subcommandIndex: args.length,
+      willShortCircuit,
     };
   }
 
@@ -107,6 +126,7 @@ function walkGlobalOptions({
     return {
       effectiveCwd: cwd,
       subcommandIndex: index,
+      willShortCircuit,
     };
   }
 
@@ -120,6 +140,7 @@ function walkGlobalOptions({
       return {
         effectiveCwd: cwd,
         subcommandIndex: index,
+        willShortCircuit,
       };
     }
     return walkGlobalOptions({
@@ -129,6 +150,7 @@ function walkGlobalOptions({
         from: cwd,
         path,
       },),
+      willShortCircuit,
     },);
   }
 
@@ -137,6 +159,7 @@ function walkGlobalOptions({
       args,
       index: index + 2,
       cwd,
+      willShortCircuit,
     },);
   }
 
@@ -145,12 +168,15 @@ function walkGlobalOptions({
       args,
       index: index + 1,
       cwd,
+      willShortCircuit: willShortCircuit
+        || SHORT_CIRCUIT_GLOBAL_OPTIONS.has(arg,),
     },);
   }
 
   return {
     effectiveCwd: cwd,
     subcommandIndex: index,
+    willShortCircuit,
   };
 }
 
@@ -163,15 +189,15 @@ function walkGlobalOptions({
  *
  * @param args - Raw git arguments.
  *
- * @returns Effective cwd plus the subcommand index.
+ * @returns Effective cwd plus subcommand and short-circuit layout.
  *
  * @example
  * ```ts
  * parseGlobalOptions(['-C', '/repo', 'status']);
- * // { effectiveCwd: '/repo', subcommandIndex: 2 }
+ * // { effectiveCwd: '/repo', subcommandIndex: 2, willShortCircuit: false }
  *
- * parseGlobalOptions(['commit', '-C', 'HEAD~']);
- * // { effectiveCwd: process.cwd(), subcommandIndex: 0 }
+ * parseGlobalOptions(['--version', 'status']);
+ * // { effectiveCwd: process.cwd(), subcommandIndex: 1, willShortCircuit: true }
  * ```
  */
 export function parseGlobalOptions(args: readonly string[],): GlobalOptionLayout {
@@ -179,5 +205,6 @@ export function parseGlobalOptions(args: readonly string[],): GlobalOptionLayout
     args,
     index: 0,
     cwd: process.cwd(),
+    willShortCircuit: false,
   },);
 }

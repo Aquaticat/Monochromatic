@@ -56,21 +56,6 @@ const rl = tagged({
   l,
 },);
 
-/**
- * Pre-subcommand argv tokens that cause git to short-circuit: it prints
- * version/help and ignores the subcommand. When any of these appears, the
- * rules pipeline is skipped entirely so wrapper injections do not slot
- * between the short-circuit flag and a later token, which git would then
- * try to parse as flags of its `version` (or `help`) subcommand and reject
- * with `unknown switch ...`.
- */
-const SHORT_CIRCUIT_FLAGS: ReadonlySet<string> = new Set([
-  '--version',
-  '-v',
-  '--help',
-  '-h',
-],);
-
 //endregion Rule pipeline
 
 //region Execution: resolve real git, apply rules, spawn
@@ -145,18 +130,9 @@ export async function runCliGit(): Promise<void> {
    */
   const managementLayout = parseGlobalOptions(rawArgs,);
   /**
-   * Pre-subcommand region scanned before management namespace dispatch.
+   * Whether parsed real-Git option token bypasses named subcommand execution.
    */
-  const rawPreSubcommand = rawArgs.slice(
-    0,
-    managementLayout.subcommandIndex,
-  );
-  /**
-   * Whether real Git short-circuits before any named subcommand can run.
-   */
-  const willShortCircuit = rawPreSubcommand.some(function isShortCircuitFlag(arg,) {
-    return SHORT_CIRCUIT_FLAGS.has(arg,);
-  },);
+  const { willShortCircuit, } = managementLayout;
   /**
    * Whether wrapper owns this invocation as a management command.
    */
