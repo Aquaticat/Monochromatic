@@ -40,6 +40,14 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
+ * Pipeline commit the fixtures are filled under.
+ *
+ * Every case that resumes a cache has to agree with the marker, since a cache
+ * filled by another pipeline is discarded rather than resumed.
+ */
+const TEST_TIP = 'aaaaaaaaa';
+
+/**
  * Throwaway directory removed on scope exit.
  *
  * @returns Disposable directory handle
@@ -130,7 +138,7 @@ await describe({
         /**
          * Cache opened on a directory that does not exist yet.
          */
-        const first = await openSliceCache({ dir, },);
+        const first = await openSliceCache({ dir, tip: TEST_TIP, },);
 
         expect(first.resumed.size,).toBe(0,);
         await first.persist(
@@ -141,7 +149,7 @@ await describe({
         /**
          * Cache reopened, which is what a resumed run does.
          */
-        const second = await openSliceCache({ dir, },);
+        const second = await openSliceCache({ dir, tip: TEST_TIP, },);
 
         expect(second.resumed.size,).toBe(1,);
         expect(second.resumed
@@ -165,6 +173,7 @@ await describe({
             'nested',
             'Mittens',
           ),
+          tip: TEST_TIP,
         },);
 
         expect(cache.resumed.size,).toBe(0,);
@@ -211,7 +220,7 @@ await describe({
           'utf8',
         );
 
-        expect((await openSliceCache({ dir, },)).resumed.size,).toBe(0,);
+        expect((await openSliceCache({ dir, tip: TEST_TIP, },)).resumed.size,).toBe(0,);
       },
     },),
 
@@ -242,7 +251,7 @@ await describe({
           'utf8',
         );
 
-        expect((await openSliceCache({ dir, },)).resumed.size,).toBe(0,);
+        expect((await openSliceCache({ dir, tip: TEST_TIP, },)).resumed.size,).toBe(0,);
       },
     },),
 
@@ -259,7 +268,7 @@ await describe({
           scratch.path,
           'Mittens',
         );
-        const cache = await openSliceCache({ dir, },);
+        const cache = await openSliceCache({ dir, tip: TEST_TIP, },);
         await cache.persist(
           'slice-hash-aaa',
           JSON.stringify(catOutcome({ chunkIndex: 0, },),),
@@ -273,7 +282,7 @@ await describe({
           'utf8',
         );
 
-        expect((await openSliceCache({ dir, },)).resumed.size,).toBe(1,);
+        expect((await openSliceCache({ dir, tip: TEST_TIP, },)).resumed.size,).toBe(1,);
       },
     },),
   ],
@@ -314,6 +323,7 @@ await describe({
             scratch.path,
             'Mittens',
           ),
+          tip: TEST_TIP,
         },);
         await cache.persist(
           'slice-hash-aaa',
@@ -388,7 +398,7 @@ await describe({
         /**
          * Cache holding one finished slice.
          */
-        const cache = await openSliceCache({ dir, },);
+        const cache = await openSliceCache({ dir, tip: TEST_TIP, },);
         await cache.persist(
           'slice-hash-aaa',
           JSON.stringify(catOutcome({ chunkIndex: 0, },),),
@@ -399,7 +409,7 @@ await describe({
         await discardSliceCache({ dir, },);
 
         expect((await listResumableEntries({ dir: scratch.path, },)).size,).toBe(0,);
-        expect((await openSliceCache({ dir, },)).resumed.size,).toBe(0,);
+        expect((await openSliceCache({ dir, tip: TEST_TIP, },)).resumed.size,).toBe(0,);
       },
     },),
 

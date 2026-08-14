@@ -22,11 +22,11 @@ import {
   type SizedEntry,
   smallBandIds,
 } from './band-order.ts';
+import { buildSettledArtifact, } from './artifact-build.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import { readOnlyIds, } from './entry-filter.ts';
 import { assertResumableGeneration, } from './pass-generation-guard.ts';
 import { repairTranslation, } from '../repair-translation.ts';
-import { sourceBytesOf, } from '../sample-grading.ts';
 import {
   discardSliceCache,
   listResumableEntries,
@@ -514,7 +514,10 @@ async function runCorpusPass(): Promise<void> {
      * each slice completes.
      */
     /* oxlint-disable-next-line no-await-in-loop -- per-entry setup, sequential by design */
-    const sliceCache = await openSliceCache({ dir: entryCacheDir, },);
+    const sliceCache = await openSliceCache({
+      dir: entryCacheDir,
+      tip,
+    },);
 
     /**
      * Start time of this entry, for its duration.
@@ -571,39 +574,19 @@ async function runCorpusPass(): Promise<void> {
       /**
        * Rich artifact for later grading; corpus-derived, hence gitignored.
        */
-      const artifact = {
-        id: entry.id,
+      const artifact = buildSettledArtifact({
+        entryId: entry.id,
         tip,
         corpusSha: RUN_CORPUS_PIN.commitSha,
         callConfig: RUN_CALL_CONFIG,
         status: result.status,
         durationMs,
-        timestamp: new Date().toISOString(),
-        // CHARACTER counts, and named that way on purpose. They are UTF-16 code
-        // unit lengths for eyeballing an entry's size in a log, and they are
-        // NOT what `classifyBand` wants: that takes UTF-8 BYTES, which run
-        // roughly twice these numbers on this corpus and up to three times on
-        // pure han text. Feeding these into it classifies large pages as small,
-        // which has already produced one wrong band census.
-        sourceChars: entry.sourceText
-          .length,
-        targetChars: entry.targetText
-          .length,
-
-        // The band input, recorded so analysis over this directory has the
-        // RIGHT number nearest to hand rather than the tempting wrong one.
-        // Artifacts settled before 2026-08-14 lack this field, so a reader must
-        // treat its absence as "measure the source yourself" rather than zero.
-        sourceBytes: sourceBytesOf({ text: entry.sourceText, },),
-        issueCount: result.issues
-          .length,
+        sourceText: entry.sourceText,
+        targetText: entry.targetText,
+        result,
         acceptedCount: accepted.length,
         resolvedCount: resolved.length,
-        findings: result.findings,
-        issues: result.issues,
-        chunkCritics: result.chunkCritics,
-        repairedText: result.repairedText,
-      };
+      },);
       /* oxlint-disable-next-line no-await-in-loop -- one artifact written per entry, sequential by design */
       await writeFileAtomic({
         path: join(

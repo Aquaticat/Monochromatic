@@ -189,20 +189,89 @@ export async function listResumableEntries(
 }
 
 /**
- * Opens an entry's slice cache: ensures its directory exists, loads any
- * finished slices, and returns a write-through cache for the pipeline.
+ * File recording which pipeline produced the slices in a cache directory.
+ *
+ * Deliberately not a `.json` slice name, so {@link loadResumedSlices} cannot
+ * mistake it for a finished slice.
+ */
+const GENERATION_MARKER = 'generation.txt';
+
+/**
+ * Reads the pipeline a cache directory was filled by.
  *
  * @param dir - per-entry slice-cache directory
+ *
+ * @returns Recorded commit, or empty when the cache predates stamping or has
+ * never been written
+ *
+ * @example
+ * ```ts
+ * const cachedTip = await readCacheGeneration({ dir, },);
+ * ```
+ */
+async function readCacheGeneration(
+  { dir, }: { readonly dir: string; },
+): Promise<string> {
+  try {
+    /**
+     * Raw marker text, including its trailing newline.
+     */
+    const text = await readFile(
+      join(
+        dir,
+        GENERATION_MARKER,
+      ),
+      'utf8',
+    );
+    return text.trim();
+  }
+  catch (error) {
+    // Absent is the ordinary state for a cache written before stamping
+    // existed, and for a directory that has never been used. Logged rather
+    // than swallowed so a permission fault is visible instead of reading as a
+    // routine miss.
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
+      return '';
+    console.log(`SLICE cache generation unreadable in ${dir}: ${String(error,)}`,);
+    return '';
+  }
+}
+
+/**
+ * Opens an entry's slice cache: ensures its directory exists, loads any
+ * finished slices produced by THIS pipeline, and returns a write-through cache.
+ *
+ * A cache filled by a different pipeline is DISCARDED rather than resumed.
+ * Resuming it is the one generation defect no reader can catch: the settled
+ * artifact records a single tip, so an entry built half from cached slices and
+ * half from current code looks like ordinary work to every filter downstream,
+ * while being internally mixed. Cross-artifact mixing is at least visible in a
+ * census; this is not visible anywhere.
+ *
+ * An UNSTAMPED cache is discarded for the same reason. It cannot prove which
+ * pipeline filled it, and an unprovable cache is exactly the case the stamp
+ * exists to remove.
+ *
+ * @param dir - per-entry slice-cache directory
+ *
+ * @param tip - pipeline commit this pass runs under
  *
  * @returns Cache resuming finished slices and persisting new ones
  *
  * @example
  * ```ts
- * const sliceCache = await openSliceCache({ dir: entryCacheDir, },);
+ * const sliceCache = await openSliceCache({ dir: entryCacheDir, tip, },);
  * ```
  */
 export async function openSliceCache(
-  { dir, }: { readonly dir: string; },
+  {
+    dir,
+    tip,
+  }: {
+    readonly dir: string;
+    readonly tip: string;
+  },
 ): Promise<SliceCache> {
   await mkdir(
     dir,
@@ -210,9 +279,52 @@ export async function openSliceCache(
   );
 
   /**
-   * Slices this entry already finished on earlier runs.
+   * Pipeline that filled this cache, empty when it never said.
    */
-  const resumed = await loadResumedSlices({ dir, },);
+  const cachedTip = await readCacheGeneration({ dir, },);
+
+  /**
+   * Slices this entry already finished on earlier runs, kept only when the
+   * pipeline that produced them is the one running now.
+   */
+  const resumed = (cachedTip === tip)
+    ? await loadResumedSlices({ dir, },)
+    : new Map<string, ChunkRepairOutcome>();
+
+  if (cachedTip !== tip) {
+    /**
+     * Slices about to be thrown away, counted before the directory is cleared.
+     */
+    const discarded = await loadResumedSlices({ dir, },);
+    if (discarded.size > 0)
+      console.log(
+        `SLICE discarding ${String(discarded.size,)} cached slices in ${dir}: `
+          + `filled by ${cachedTip === '' ? '(unstamped)' : cachedTip}, `
+          + `running ${tip}`,
+      );
+    await rm(
+      dir,
+      {
+        recursive: true,
+        force: true,
+      },
+    );
+    await mkdir(
+      dir,
+      { recursive: true, },
+    );
+  }
+
+  // Written after any discard, so the marker always describes what the
+  // directory now holds. A torn write reads as a mismatch on the next open,
+  // which discards rather than resumes, so the failure direction is safe.
+  await writeFile(
+    join(
+      dir,
+      GENERATION_MARKER,
+    ),
+    `${tip}\n`,
+  );
 
   return {
     resumed,
