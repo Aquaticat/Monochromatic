@@ -428,6 +428,8 @@ component LedSegmentControls inherits Rectangle {
 component ChromiumTab inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
+    in property <bool> previous-selected;
+    in property <bool> next-selected;
     in property <bool> show-divider;
     callback clicked();
     private property <color> active-color: Palette.accent-background.with-alpha(0.2);
@@ -442,9 +444,9 @@ component ChromiumTab inherits Rectangle {
     background: transparent;
 
     if !root.selected && chromium-touch.has-hover: Rectangle {
-        x: 12px;
+        x: root.previous-selected ? 12px : 0px;
         y: 6px;
-        width: parent.width - 24px;
+        width: parent.width - (root.previous-selected ? 12px : 0px) - (root.next-selected ? 12px : 0px);
         height: 35px;
         border-radius: 10px;
         background: Palette.accent-background.with-alpha(0.12);
@@ -518,8 +520,9 @@ component ChromiumTab inherits Rectangle {
     }
 
     if !root.selected: Rectangle {
+        x: root.previous-selected ? 12px : 0px;
         y: parent.height - 1px;
-        width: parent.width;
+        width: parent.width - (root.previous-selected ? 12px : 0px) - (root.next-selected ? 12px : 0px);
         height: 1px;
         background: root.divider-color;
     }
@@ -575,6 +578,8 @@ component ChromiumControls inherits Rectangle {
         for label[p] in root.labels: ChromiumTab {
             text: label;
             selected: p == root.selected-page;
+            previous-selected: p > 0 && p - 1 == root.selected-page;
+            next-selected: p < root.labels.length - 1 && p + 1 == root.selected-page;
             show-divider: p < root.labels.length - 1 && p + 1 != root.selected-page;
             max-width: chromium-layout.width;
             clicked => {
