@@ -178,6 +178,15 @@ import androidx.compose.ui.draw.innerShadow
 // ```
 import androidx.compose.ui.geometry.Offset
 
+// What:     `Size` stores measured pixel width and height for cached cap brushes.
+// Why:      Offset dome and glow geometry depends on actual content-width cap bounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { Size } from "compose/geometry";
+// ```
+import androidx.compose.ui.geometry.Size
+
 // What:     `Brush` creates continuous linear and radial paint ramps.
 // Why:      Rigid plastic and bead-blasted metal use smooth material shading.
 //
@@ -223,6 +232,15 @@ import androidx.compose.ui.graphics.shadow.Shadow as HardwareShadow
 // ```
 import androidx.compose.ui.layout.Placeable
 
+// What:     `MeasureResult` returns constrained dimensions and deferred placement.
+// Why:      Extracted row measurement keeps layout logic below method-length limits.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type MeasureResult = { width: number; height: number; place(): void };
+// ```
+import androidx.compose.ui.layout.MeasureResult
+
 // What:     `SubcomposeLayout` measures cap targets before creating one plate per resulting row.
 // Why:      Standard FlowRow cannot expose wrapped-row bounds to a shared backdrop.
 //
@@ -231,6 +249,15 @@ import androidx.compose.ui.layout.Placeable
 // import { SubcomposeLayout } from "compose/layout";
 // ```
 import androidx.compose.ui.layout.SubcomposeLayout
+
+// What:     `SubcomposeMeasureScope` exposes density, subcomposition, and layout result creation.
+// Why:      Focused measurement helpers share Compose's exact child-measure boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type SubcomposeMeasureScope = MeasureScope & { subcompose(key: unknown, content: UiNode): UiNode[] };
+// ```
+import androidx.compose.ui.layout.SubcomposeMeasureScope
 
 // What:     `LocalDensity` converts the 15-unit engraved legend size into a `TextUnit`.
 // Why:      Hardware ink keeps reference geometry instead of inheriting device font enlargement.
@@ -376,6 +403,33 @@ private val ledInnerRadius: Dp = 2.dp
 /** Stores shared plate radius concentric with cap end plus margin. */
 private val ledPlateRadius: Dp = 17.dp
 
+/** Stores runtime accent's away-edge darkening mix. */
+private const val LED_ACCENT_EDGE_MIX: Float = 0.28f
+
+/** Stores runtime accent's hot-layer foreground mix. */
+private const val LED_ACCENT_HOT_MIX: Float = 0.22f
+
+/** Stores runtime accent's emitted-ink foreground mix. */
+private const val LED_ACCENT_INK_GLOW_MIX: Float = 0.72f
+
+/** Stores first-quarter shoulder transition. */
+private const val LED_GRADIENT_QUARTER: Float = 0.25f
+
+/** Stores highlight-to-neutral shoulder transition. */
+private const val LED_GRADIENT_NEAR_MIDDLE: Float = 0.45f
+
+/** Stores neutral-to-shadow material transition. */
+private const val LED_GRADIENT_MIDDLE: Float = 0.55f
+
+/** Stores broad edge-falloff transition. */
+private const val LED_GRADIENT_THREE_QUARTERS: Float = 0.75f
+
+/** Stores dome's first edge-shadow transition. */
+private const val LED_DOME_EDGE_START: Float = 0.86f
+
+/** Stores dome's final edge-shadow transition. */
+private const val LED_DOME_EDGE_END: Float = 0.93f
+
 /** Describes measured cap indexes sharing one machined row plate. */
 internal data class LedLine(
     /** Lists source page indexes in visual row order. */
@@ -462,6 +516,90 @@ private data class LedPlateOptions(
     val shape: RoundedCornerShape,
 )
 
+/** Groups cap brush bounds with state-dependent pigment. */
+private data class LedBrushOptions(
+    /** Holds measured cap bounds in physical pixels. */
+    val size: Size,
+    /** Records selected latch state. */
+    val selected: Boolean,
+    /** Holds runtime accent-derived colors. */
+    val palette: LedPalette,
+)
+
+/** Groups stable scene and state read by every measured row child. */
+private data class LedLayoutOptions(
+    /** Holds current pages and selected page index. */
+    val state: PlayerUiState,
+    /** Selects one page index. */
+    val onSelectPage: (Int) -> Unit,
+    /** Records bright ambient scene. */
+    val lightScene: Boolean,
+    /** Holds runtime accent-derived colors. */
+    val palette: LedPalette,
+    /** Holds selected-state-invariant legend metrics. */
+    val labelStyle: TextStyle,
+    /** Holds shared plate silhouette. */
+    val plateShape: RoundedCornerShape,
+)
+
+/** Groups incoming constraints with physical row geometry. */
+private data class LedMeasureOptions(
+    /** Holds stable scene and player state. */
+    val layout: LedLayoutOptions,
+    /** Holds parent measurement bounds. */
+    val constraints: Constraints,
+    /** Stores physical plate margin. */
+    val marginPx: Int,
+    /** Stores physical inter-cap and inter-row channel. */
+    val gapPx: Int,
+    /** Stores physical plate height. */
+    val plateHeightPx: Int,
+    /** Stores physical owned target height. */
+    val targetHeightPx: Int,
+    /** Stores target's vertical origin inside plate. */
+    val targetOffsetYPx: Int,
+)
+
+/** Groups one target's source page and position within a packed row. */
+private data class LedTargetFactoryOptions(
+    /** Holds stable scene and player state. */
+    val layout: LedLayoutOptions,
+    /** Identifies source page index. */
+    val page: Int,
+    /** Records first logical cap in row. */
+    val first: Boolean,
+    /** Records last logical cap in row. */
+    val last: Boolean,
+)
+
+/** Groups inputs for row-position-aware cap measurement. */
+private data class LedPositionedMeasureOptions(
+    /** Holds physical geometry and stable state. */
+    val measure: LedMeasureOptions,
+    /** Holds packed row membership and widths. */
+    val lines: List<LedLine>,
+    /** Holds initially measured target widths. */
+    val probeCaps: List<Placeable>,
+)
+
+/** Groups exact layers and geometry for deferred placement. */
+private data class LedPlacementOptions(
+    /** Holds packed row membership and widths. */
+    val lines: List<LedLine>,
+    /** Holds row-position-aware target layers. */
+    val positionedCaps: List<List<Placeable>>,
+    /** Holds one shared plate layer per row. */
+    val plates: List<Placeable>,
+    /** Stores physical plate margin. */
+    val marginPx: Int,
+    /** Stores physical channel. */
+    val gapPx: Int,
+    /** Stores physical plate height. */
+    val plateHeightPx: Int,
+    /** Stores target vertical origin inside plate. */
+    val targetOffsetYPx: Int,
+)
+
 /**
  * Packs measured cap widths into content-width rows.
  *
@@ -498,11 +636,11 @@ private fun ledPalette(): LedPalette {
     val onAccent: Color = MaterialTheme.colorScheme.onPrimary
     return LedPalette(
         selectedFill = accent,
-        selectedEdge = lerp(accent, Color.Black, 0.28f),
-        selectedHot = lerp(accent, onAccent, 0.22f),
+        selectedEdge = lerp(accent, Color.Black, LED_ACCENT_EDGE_MIX),
+        selectedHot = lerp(accent, onAccent, LED_ACCENT_HOT_MIX),
         selectedGlow = accent,
         selectedInk = onAccent,
-        selectedInkGlow = lerp(accent, onAccent, 0.72f),
+        selectedInkGlow = lerp(accent, onAccent, LED_ACCENT_INK_GLOW_MIX),
     )
 }
 
@@ -583,6 +721,47 @@ private fun ledPlateModifier(options: LedPlateOptions): Modifier {
         )
 }
 
+/** Returns near-flat offset dome with falloff concentrated near cap edge. */
+private fun ledDomeBrush(size: Size): Brush = Brush.radialGradient(
+    colorStops = arrayOf(
+        0f to Color.White.copy(alpha = 0.03f),
+        LED_GRADIENT_MIDDLE to Color.White.copy(alpha = 0.015f),
+        LED_GRADIENT_THREE_QUARTERS to Color.Transparent,
+        LED_DOME_EDGE_START to Color.Black.copy(alpha = 0.07f),
+        LED_DOME_EDGE_END to Color.Black.copy(alpha = 0.13f),
+        1f to Color.Black.copy(alpha = 0.22f),
+    ),
+    center = Offset(x = size.width * 0.38f, y = size.height * 0.30f),
+    radius = size.maxDimension * 0.95f,
+)
+
+/** Returns selected cap's gentle accent-derived top-left hot layer. */
+private fun ledHotBrush(options: LedBrushOptions): Brush = Brush.radialGradient(
+    colors = listOf(options.palette.selectedHot.copy(alpha = 0.11f), Color.Transparent),
+    center = Offset(x = options.size.width * 0.40f, y = options.size.height * 0.34f),
+    radius = options.size.maxDimension * 0.60f,
+)
+
+/** Returns directional plastic shoulder from reference's 315-degree key light. */
+private fun ledShoulderBrush(options: LedBrushOptions): Brush = Brush.linearGradient(
+    colorStops = arrayOf(
+        0f to Color.White.copy(alpha = 0.22f),
+        LED_GRADIENT_QUARTER to Color.White.copy(alpha = 0.12f),
+        LED_GRADIENT_NEAR_MIDDLE to Color.White.copy(alpha = 0.03f),
+        LED_GRADIENT_MIDDLE to Color.Black.copy(alpha = 0.04f),
+        LED_GRADIENT_THREE_QUARTERS to if (options.selected) {
+            options.palette.selectedEdge.copy(alpha = 0.18f)
+        } else {
+            Color.Black.copy(alpha = 0.18f)
+        },
+        1f to if (options.selected) {
+            options.palette.selectedEdge.copy(alpha = 0.32f)
+        } else {
+            Color.Black.copy(alpha = 0.32f)
+        },
+    ),
+)
+
 /** Returns rigid cap surface with source-derived material ramps. */
 private fun Modifier.ledFaceModifier(options: LedCapOptions): Modifier {
     /** Selects accent-derived lit pigment or invariant unlit plastic. */
@@ -607,47 +786,22 @@ private fun Modifier.ledFaceModifier(options: LedCapOptions): Modifier {
     } else {
         Color.Black.copy(alpha = 0.22f)
     }
-    return this
-        .padding(if (options.selected) 1.dp else 0.dp)
+    return this.padding(if (options.selected) 1.dp else 0.dp)
         .dropShadow(shape = options.capShape, shadow = outerShadow)
         .clip(options.capShape)
         .background(fill)
         .drawWithCache {
-            /** Builds near-flat offset dome with falloff concentrated near outer edge. */
-            val dome: Brush = Brush.radialGradient(
-                colorStops = arrayOf(
-                    0f to Color.White.copy(alpha = 0.03f),
-                    0.55f to Color.White.copy(alpha = 0.015f),
-                    0.75f to Color.Transparent,
-                    0.86f to Color.Black.copy(alpha = 0.07f),
-                    0.93f to Color.Black.copy(alpha = 0.13f),
-                    1f to Color.Black.copy(alpha = 0.22f),
-                ),
-                center = Offset(x = size.width * 0.38f, y = size.height * 0.30f),
-                radius = size.maxDimension * 0.95f,
-            )
-            /** Builds gentle selected hot layer around top-left LED diffusion. */
-            val hot: Brush = Brush.radialGradient(
-                colors = listOf(options.palette.selectedHot.copy(alpha = 0.11f), Color.Transparent),
-                center = Offset(x = size.width * 0.40f, y = size.height * 0.34f),
-                radius = size.maxDimension * 0.60f,
-            )
-            /** Builds directional plastic shoulder from 315-degree key light. */
-            val shoulder: Brush = Brush.linearGradient(
-                colorStops = arrayOf(
-                    0f to Color.White.copy(alpha = 0.22f),
-                    0.25f to Color.White.copy(alpha = 0.12f),
-                    0.45f to Color.White.copy(alpha = 0.03f),
-                    0.55f to Color.Black.copy(alpha = 0.04f),
-                    0.75f to Color.Black.copy(alpha = 0.18f),
-                    1f to Color.Black.copy(alpha = 0.32f),
-                ),
-            )
+            /** Groups measured bounds and state for material brushes. */
+            val brushOptions = LedBrushOptions(size = size, selected = options.selected, palette = options.palette)
+            /** Caches dome layer for current cap size. */
+            val dome: Brush = ledDomeBrush(size)
+            /** Caches active hot layer even when inactive draw omits it. */
+            val hot: Brush = ledHotBrush(brushOptions)
+            /** Caches directional shoulder layer. */
+            val shoulder: Brush = ledShoulderBrush(brushOptions)
             onDrawBehind {
                 drawRect(brush = dome)
-                if (options.selected) {
-                    drawRect(brush = hot)
-                }
+                if (options.selected) drawRect(brush = hot)
                 drawRect(brush = shoulder)
             }
         }
@@ -771,116 +925,167 @@ private fun ledRowPlate(options: LedPlateOptions) {
     Box(modifier = Modifier.fillMaxSize().then(ledPlateModifier(options)))
 }
 
+/** Builds one target descriptor from shared layout state and packed position. */
+private fun ledTargetOptions(options: LedTargetFactoryOptions): LedTargetOptions = LedTargetOptions(
+    label = options.layout.state.pageLabels[options.page],
+    selected = options.page == options.layout.state.selectedPage,
+    first = options.first,
+    last = options.last,
+    lightScene = options.layout.lightScene,
+    palette = options.layout.palette,
+    labelStyle = options.layout.labelStyle,
+    onSelect = { options.layout.onSelectPage(options.page) },
+)
+
+/** Measures natural target widths under available row capacity. */
+private fun SubcomposeMeasureScope.measureLedProbeCaps(options: LedMeasureOptions): List<Placeable> {
+    /** Caps one target to row width after both plate margins. */
+    val maximumCapWidthPx: Int =
+        (options.constraints.maxWidth - options.marginPx * 2).coerceAtLeast(1)
+    return options.layout.state.pageLabels.mapIndexed { page, _ ->
+        subcompose("led-cap-$page") {
+            ledCapTarget(
+                ledTargetOptions(
+                    LedTargetFactoryOptions(
+                        layout = options.layout,
+                        page = page,
+                        first = false,
+                        last = false,
+                    ),
+                ),
+            )
+        }.single().measure(
+            Constraints(
+                minWidth = 0,
+                maxWidth = maximumCapWidthPx,
+                minHeight = options.targetHeightPx,
+                maxHeight = options.targetHeightPx,
+            ),
+        )
+    }
+}
+
+/** Measures target layers again with row-position-aware corner silhouettes. */
+private fun SubcomposeMeasureScope.measureLedPositionedCaps(
+    options: LedPositionedMeasureOptions,
+): List<List<Placeable>> = options.lines.mapIndexed { rowIndex, line ->
+    line.pageIndexes.mapIndexed { position, page ->
+        subcompose("led-positioned-$rowIndex-$page") {
+            ledCapTarget(
+                ledTargetOptions(
+                    LedTargetFactoryOptions(
+                        layout = options.measure.layout,
+                        page = page,
+                        first = position == 0,
+                        last = position == line.pageIndexes.lastIndex,
+                    ),
+                ),
+            )
+        }.single().measure(
+            Constraints.fixed(
+                width = options.probeCaps[page].width,
+                height = options.measure.targetHeightPx,
+            ),
+        )
+    }
+}
+
+/** Measures one exact shared plate behind every packed row. */
+private fun SubcomposeMeasureScope.measureLedPlates(options: LedMeasureOptions, lines: List<LedLine>): List<Placeable> =
+    lines.mapIndexed { rowIndex, line ->
+        subcompose("led-plate-$rowIndex") {
+            ledRowPlate(
+                LedPlateOptions(
+                    lightScene = options.layout.lightScene,
+                    shape = options.layout.plateShape,
+                ),
+            )
+        }.single().measure(Constraints.fixed(width = line.widthPx, height = options.plateHeightPx))
+    }
+
+/** Places shared plates first, then non-overlapping targets over each row. */
+private fun Placeable.PlacementScope.placeLedRows(options: LedPlacementOptions) {
+    options.lines.forEachIndexed { rowIndex, line ->
+        /** Computes this row's vertical origin. */
+        val rowYPx: Int = rowIndex * (options.plateHeightPx + options.gapPx)
+        options.plates[rowIndex].placeRelative(x = 0, y = rowYPx)
+        line.pageIndexes.foldIndexed(options.marginPx) { position, capXPx, _ ->
+            /** Places measured target over shared plate. */
+            val cap: Placeable = options.positionedCaps[rowIndex][position]
+            cap.placeRelative(x = capXPx, y = rowYPx + options.targetOffsetYPx)
+            capXPx + cap.width + options.gapPx
+        }
+    }
+}
+
+/** Measures all LED hardware layers and returns content-width layout result. */
+private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions): MeasureResult {
+    /** Measures real targets before deciding row boundaries. */
+    val probeCaps: List<Placeable> = measureLedProbeCaps(options)
+    /** Packs actual measured widths into immutable rows. */
+    val lines: List<LedLine> = packLedLines(
+        LedPackingOptions(
+            capWidthsPx = probeCaps.map { placeable -> placeable.width },
+            maximumWidthPx = options.constraints.maxWidth,
+            marginPx = options.marginPx,
+            gapPx = options.gapPx,
+        ),
+    )
+    /** Re-composes targets with row-position corner geometry. */
+    val positionedCaps: List<List<Placeable>> = measureLedPositionedCaps(
+        LedPositionedMeasureOptions(measure = options, lines = lines, probeCaps = probeCaps),
+    )
+    /** Measures exact shared plate behind each row. */
+    val plates: List<Placeable> = measureLedPlates(options, lines)
+    /** Computes content width rather than reserving unused row width. */
+    val contentWidthPx: Int = lines.maxOfOrNull { line -> line.widthPx } ?: 0
+    /** Computes plate rows separated by one source channel. */
+    val contentHeightPx: Int = if (lines.isEmpty()) {
+        0
+    } else {
+        lines.size * options.plateHeightPx + (lines.size - 1) * options.gapPx
+    }
+    return layout(
+        width = options.constraints.constrainWidth(contentWidthPx),
+        height = options.constraints.constrainHeight(contentHeightPx),
+    ) {
+        placeLedRows(
+            LedPlacementOptions(
+                lines = lines,
+                positionedCaps = positionedCaps,
+                plates = plates,
+                marginPx = options.marginPx,
+                gapPx = options.gapPx,
+                plateHeightPx = options.plateHeightPx,
+                targetOffsetYPx = options.targetOffsetYPx,
+            ),
+        )
+    }
+}
+
 /** Displays wrapped LED caps over one content-width plate per measured row. */
 @Composable
 internal fun ledPageControls(options: LedPageControlsOptions) {
-    /** Reads bright or dark ambient once for every shared row and cap. */
-    val lightScene: Boolean = !androidx.compose.foundation.isSystemInDarkTheme()
-    /** Derives selected pigments from current runtime accent. */
-    val palette: LedPalette = ledPalette()
-    /** Holds selected-state-invariant hardware legend metrics. */
-    val labelStyle: TextStyle = ledLabelStyle()
-    /** Holds shared plate silhouette. */
-    val plateShape: RoundedCornerShape = RoundedCornerShape(ledPlateRadius)
+    /** Reads stable scene and state shared by every measured layer. */
+    val layoutOptions = LedLayoutOptions(
+        state = options.state,
+        onSelectPage = options.onSelectPage,
+        lightScene = !androidx.compose.foundation.isSystemInDarkTheme(),
+        palette = ledPalette(),
+        labelStyle = ledLabelStyle(),
+        plateShape = RoundedCornerShape(ledPlateRadius),
+    )
     SubcomposeLayout(modifier = Modifier.selectableGroup()) { constraints ->
-        /** Converts source geometry to physical pixels for exact row packing. */
-        val marginPx: Int = ledChannel.roundToPx()
-        /** Converts inter-cap channel to physical pixels. */
-        val gapPx: Int = ledChannel.roundToPx()
-        /** Converts plate height to physical pixels. */
-        val plateHeightPx: Int = ledPlateHeight.roundToPx()
-        /** Converts owned target height to physical pixels. */
-        val targetHeightPx: Int = ledTargetHeight.roundToPx()
-        /** Centers 48-unit target around 44-unit cap inside 60-unit plate. */
-        val targetOffsetYPx: Int = (ledPlateHeight - ledTargetHeight).roundToPx() / 2
-        /** Caps one target to row width after both plate margins. */
-        val maximumCapWidthPx: Int = (constraints.maxWidth - marginPx * 2).coerceAtLeast(1)
-        /** Measures real targets before deciding row boundaries. */
-        val capPlaceables: List<Placeable> = options.state.pageLabels.mapIndexed { page, label ->
-            subcompose("led-cap-$page") {
-                ledCapTarget(
-                    LedTargetOptions(
-                        label = label,
-                        selected = page == options.state.selectedPage,
-                        first = false,
-                        last = false,
-                        lightScene = lightScene,
-                        palette = palette,
-                        labelStyle = labelStyle,
-                        onSelect = { options.onSelectPage(page) },
-                    ),
-                )
-            }.single().measure(
-                Constraints(
-                    minWidth = 0,
-                    maxWidth = maximumCapWidthPx,
-                    minHeight = targetHeightPx,
-                    maxHeight = targetHeightPx,
-                ),
-            )
-        }
-        /** Packs actual measured widths into immutable rows. */
-        val lines: List<LedLine> = packLedLines(
-            LedPackingOptions(
-                capWidthsPx = capPlaceables.map { placeable -> placeable.width },
-                maximumWidthPx = constraints.maxWidth,
-                marginPx = marginPx,
-                gapPx = gapPx,
+        measureLedControl(
+            LedMeasureOptions(
+                layout = layoutOptions,
+                constraints = constraints,
+                marginPx = ledChannel.roundToPx(),
+                gapPx = ledChannel.roundToPx(),
+                plateHeightPx = ledPlateHeight.roundToPx(),
+                targetHeightPx = ledTargetHeight.roundToPx(),
+                targetOffsetYPx = (ledPlateHeight - ledTargetHeight).roundToPx() / 2,
             ),
         )
-        /** Re-composes targets with row-position corner geometry. */
-        val positionedCaps: List<List<Placeable>> = lines.mapIndexed { rowIndex, line ->
-            line.pageIndexes.mapIndexed { position, page ->
-                subcompose("led-positioned-$rowIndex-$page") {
-                    ledCapTarget(
-                        LedTargetOptions(
-                            label = options.state.pageLabels[page],
-                            selected = page == options.state.selectedPage,
-                            first = position == 0,
-                            last = position == line.pageIndexes.lastIndex,
-                            lightScene = lightScene,
-                            palette = palette,
-                            labelStyle = labelStyle,
-                            onSelect = { options.onSelectPage(page) },
-                        ),
-                    )
-                }.single().measure(
-                    Constraints.fixed(
-                        width = capPlaceables[page].width,
-                        height = targetHeightPx,
-                    ),
-                )
-            }
-        }
-        /** Measures one exact shared plate behind each row. */
-        val plates: List<Placeable> = lines.mapIndexed { rowIndex, line ->
-            subcompose("led-plate-$rowIndex") {
-                ledRowPlate(LedPlateOptions(lightScene = lightScene, shape = plateShape))
-            }.single().measure(Constraints.fixed(width = line.widthPx, height = plateHeightPx))
-        }
-        /** Computes content width rather than reserving unused row width. */
-        val contentWidthPx: Int = lines.maxOfOrNull { line -> line.widthPx } ?: 0
-        /** Computes plate rows separated by one source channel. */
-        val contentHeightPx: Int = if (lines.isEmpty()) {
-            0
-        } else {
-            lines.size * plateHeightPx + (lines.size - 1) * gapPx
-        }
-        layout(
-            width = constraints.constrainWidth(contentWidthPx),
-            height = constraints.constrainHeight(contentHeightPx),
-        ) {
-            lines.forEachIndexed { rowIndex, line ->
-                /** Computes this row's vertical origin. */
-                val rowYPx: Int = rowIndex * (plateHeightPx + gapPx)
-                plates[rowIndex].placeRelative(x = 0, y = rowYPx)
-                line.pageIndexes.foldIndexed(marginPx) { position, capXPx, _ ->
-                    /** Places measured target over shared plate. */
-                    val cap: Placeable = positionedCaps[rowIndex][position]
-                    cap.placeRelative(x = capXPx, y = rowYPx + targetOffsetYPx)
-                    capXPx + cap.width + gapPx
-                }
-            }
-        }
     }
 }
