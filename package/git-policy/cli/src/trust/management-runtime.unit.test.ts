@@ -278,6 +278,29 @@ await describe({
       },
     },),
     it({
+      name: 'untrusted direct check reports interactive and noninteractive remediation',
+      fn: async function testUntrustedRemediation() {
+        await using fixture = await createFixture();
+        /** Blocked direct-check process before initial trust. */
+        const error = await runManagementFailure({
+          fixture,
+          args: ['check', '--all',],
+        },);
+        expect(error.exitCode,).toBe(2,);
+        expect(parseManagementOutput(error.stdout,),).toMatchObject({
+          schemaVersion: 1,
+          sequence: 0,
+          type: 'engine-failure',
+          code: 'config-untrusted',
+          message: [
+            `cli-git configuration at ${fixture.configPath} is not trusted.`,
+            'Review it, then run `git cli-git trust` in an interactive terminal.',
+            'For explicit noninteractive consent, run `git cli-git trust --yes`.',
+          ].join(' ',),
+        },);
+      },
+    },),
+    it({
       name: 'untrust recovers record after config deletion',
       fn: async function testDeletedConfigUntrust() {
         await using fixture = await createFixture();
