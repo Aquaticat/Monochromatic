@@ -167,7 +167,15 @@ export function processArgumentsMatch(
     readonly expected: readonly string[];
   },
 ): boolean {
-  if (identity.commandLine.length !== (expected.length + 1))
+  /**
+   * Actual vector includes executable argument before compared process arguments.
+   */
+  const actualLength = identity.commandLine.length;
+  /**
+   * Expected vector gains one slot for executable argument.
+   */
+  const expectedLength = expected.length + 1;
+  if (actualLength !== expectedLength)
     return false;
   /**
    * Nonempty executable argument intentionally independent from runtime install path.
