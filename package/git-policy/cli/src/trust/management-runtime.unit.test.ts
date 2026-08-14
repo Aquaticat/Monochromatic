@@ -255,18 +255,22 @@ await describe({
       },
     },),
     it({
-      name: 'noninteractive trust without yes declines with exit two',
-      fn: async function testNoninteractiveDecline() {
+      name: 'noninteractive trust without yes reports unavailable consent and remediation',
+      fn: async function testNoninteractiveConsentUnavailable() {
         await using fixture = await createFixture();
-        /** Declined trust process. */
+        /** Unavailable interactive-consent process. */
         const error = await runManagementFailure({ fixture, args: ['trust',], },);
         expect(error.exitCode,).toBe(2,);
         expect(parseManagementOutput(error.stdout,),).toMatchObject({
           schemaVersion: 1,
           sequence: 0,
           type: 'engine-failure',
-          code: 'trust-failed',
-          message: 'Trust declined; no persistent record was installed.',
+          code: 'trust-consent-unavailable',
+          message: [
+            'Interactive consent is unavailable because stdin or stderr is not a terminal.',
+            'After reviewing the disclosure, run `git cli-git trust --yes`.',
+            'No record was installed.',
+          ].join(' ',),
         },);
         expect(error.stderr,).toContain('Exact snapshot state: new',);
         const status = await runManagement({ fixture, args: ['status',], },);
