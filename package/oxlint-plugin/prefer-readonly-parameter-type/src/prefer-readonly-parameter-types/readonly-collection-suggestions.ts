@@ -157,9 +157,15 @@ export function readonlyCollectionSuggestions({
           .hasBOM ? 1 : 0),
     ),
   ];
+  /**
+   * Authored mutable collection owner named without source trivia.
+   */
+  const mutableName = parameter.type
+    .typeName
+    .text;
   return [
     {
-      diagnosticGuidance: `Replace the mutable collection owner \`${parameter.type.typeName.text}\` with \`${projection.readonlyName}\`.`,
+      diagnosticGuidance: `Replace the mutable collection owner \`${mutableName}\` with \`${projection.readonlyName}\`.`,
       desc: `Replace ${authoredType} with ${replacement}.`,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(

@@ -30,6 +30,11 @@ const WORKSPACE_MARKER = 'pnpm-workspace.yaml';
 const displayRootsByConfig = new Map<string, string>();
 
 /**
+ * Sentinel for origin boundary carrying no stable identifier name.
+ */
+const ORIGIN_NAME_UNAVAILABLE: unique symbol = Symbol('origin boundary name unavailable');
+
+/**
  * Eager immutable description of one editable semantic type origin.
  */
 export type ReadonlyTypeOrigin = {
@@ -51,6 +56,9 @@ export type ReadonlyTypeOrigin = {
  * ```
  */
 function displayRoot(configFileName: string,): string {
+  /**
+   * Previously resolved display root for configured project.
+   */
   const cached = displayRootsByConfig.get(configFileName,);
   if (cached !== undefined)
     return cached;
@@ -100,14 +108,23 @@ function originOwner(declaration: Node,): Node {
   /**
    * Ancestor cursor beginning at semantic declaration.
    */
-  const cursor = { current: declaration, };
-  while (cursor.current.parent !== undefined) {
+  const cursor = {
+    current: declaration,
+    pending: true,
+  };
+  while (cursor.pending) {
     if (isFunctionLikeDeclaration(cursor.current,)
       || isTypeAliasDeclaration(cursor.current,)
       || isInterfaceDeclaration(cursor.current,)
       || isClassDeclaration(cursor.current,))
       return cursor.current;
-    cursor.current = cursor.current.parent;
+    /**
+     * Next owner candidate in semantic source tree.
+     */
+    const { parent, } = cursor.current;
+    cursor.pending = parent !== undefined;
+    if (parent !== undefined)
+      cursor.current = parent;
   }
   return declaration;
 }
@@ -124,27 +141,35 @@ function originOwner(declaration: Node,): Node {
  * originName(callback);
  * ```
  */
-function originName(owner: Node,): string | undefined {
+function originName(
+  owner: Node,
+): string | typeof ORIGIN_NAME_UNAVAILABLE {
   if (isFunctionLikeDeclaration(owner,)) {
     if (!('name' in owner))
-      return undefined;
+      return ORIGIN_NAME_UNAVAILABLE;
     /**
      * Optional callable name narrowed outside property access.
      */
     const callableName = owner.name;
     if (callableName === undefined)
-      return undefined;
-    return isIdentifier(callableName,) ? callableName.text : undefined;
+      return ORIGIN_NAME_UNAVAILABLE;
+    return isIdentifier(callableName,)
+      ? callableName.text
+      : ORIGIN_NAME_UNAVAILABLE;
   }
   if (isTypeAliasDeclaration(owner,) || isInterfaceDeclaration(owner,))
-    return owner.name.text;
+    return owner.name
+      .text;
   if (!isClassDeclaration(owner,))
-    return undefined;
+    return ORIGIN_NAME_UNAVAILABLE;
   /**
    * Optional class name narrowed outside property access.
    */
   const className = owner.name;
-  return className?.text;
+  if (className === undefined)
+    return ORIGIN_NAME_UNAVAILABLE;
+  return className
+    .text;
 }
 
 /**
@@ -206,8 +231,12 @@ function originLocation({
   /**
    * One-based line containing producer boundary.
    */
-  const line = sourceFile
-    .getLineAndCharacterOfPosition(owner.getStart(sourceFile,),)
+  const lineAndCharacter = sourceFile
+    .getLineAndCharacterOfPosition(owner.getStart(sourceFile,),);
+  /**
+   * One-based source line.
+   */
+  const line = lineAndCharacter
     .line + 1;
   return `${relativePath}:${String(line,)}`;
 }
@@ -237,9 +266,13 @@ export function workspaceOrigin({
    * Source file inspected through active project metadata.
    */
   const sourceFile = node.getSourceFile();
+  /**
+   * Program metadata distinguishing workspace source from libraries.
+   */
+  const { program, } = project;
   return isWorkspaceSourceFileName(sourceFile.fileName,)
-    && (!project.program.isSourceFileDefaultLibrary(sourceFile,))
-    && (!project.program.isSourceFileFromExternalLibrary(sourceFile,));
+    && (!program.isSourceFileDefaultLibrary(sourceFile,))
+    && (!program.isSourceFileFromExternalLibrary(sourceFile,));
 }
 
 /**
@@ -271,9 +304,13 @@ export function readonlyTypeOrigin({
    * Stable name when boundary declares an identifier.
    */
   const name = originName(owner,);
+  /**
+   * Optional named-origin property after sentinel narrowing.
+   */
+  const named = (typeof name) === 'symbol' ? {} : { name, };
   return {
     kind: originKind(owner,),
-    ...(name === undefined) ? {} : { name, },
+    ...named,
     location: originLocation({
       owner,
       project,

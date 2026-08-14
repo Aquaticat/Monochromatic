@@ -111,10 +111,14 @@ function editableOrigins({
     }
     declarationSymbols(current,)
       .flatMap(function symbolDeclarations(symbol,): readonly Node[] {
-        return symbol.declarations.flatMap(function resolveDeclaration(handle,): readonly Node[] {
-          const declaration = handle.resolve(project,);
-          return declaration === undefined ? [] : [declaration,];
-        },);
+        return symbol.declarations
+          .flatMap(function resolveDeclaration(handle,): readonly Node[] {
+            /**
+             * Declaration eagerly resolved through active project snapshot.
+             */
+            const declaration = handle.resolve(project,);
+            return declaration === undefined ? [] : [declaration,];
+          },);
       },)
       .filter(function editableDeclaration(declaration,): boolean {
         return workspaceOrigin({
@@ -174,7 +178,12 @@ export function readonlyTypeOriginEvidence({
   const callable = parameter.parent;
   if (!(isFunctionExpression(callable,) || isArrowFunction(callable,)))
     return { kind: 'none', };
-  if (project.checker.getContextualType(callable,) === undefined)
+  /**
+   * Contextual callback type proving parameter was supplied by surrounding expression.
+   */
+  const contextualType = project.checker
+    .getContextualType(callable,);
+  if (contextualType === undefined)
     return { kind: 'none', };
   /**
    * Editable origins eagerly resolved in current project snapshot.

@@ -3,6 +3,11 @@ import type { ReadonlyTypeOrigin, } from './readonly-type-origin-location.ts';
 import type { ReadonlyTypeOriginEvidence, } from './readonly-type-origin.ts';
 
 /**
+ * Sentinel for verified suggestion guidance being unavailable.
+ */
+const VERIFIED_GUIDANCE_UNAVAILABLE: unique symbol = Symbol('verified suggestion guidance unavailable');
+
+/**
  * Describes unique origin boundary for reader.
  *
  * @param origin - Eager workspace-owned origin metadata.
@@ -72,23 +77,29 @@ function uniqueOriginGuidance(origin: ReadonlyTypeOrigin,): string {
  */
 function verifiedSuggestionGuidance(
   suggestions: readonly ReadonlySuggestion[],
-): string | undefined {
+): string | typeof VERIFIED_GUIDANCE_UNAVAILABLE {
   /**
-   * Human-readable descriptions from verified suggestion channel.
+   * Human-readable one-line transformations from verified suggestion channel.
    */
   const descriptions = suggestions.map(function describedSuggestion(suggestion,): string {
     return suggestion.diagnosticGuidance;
   },);
   if (descriptions.length === 0)
-    return undefined;
+    return VERIFIED_GUIDANCE_UNAVAILABLE;
   if (descriptions.length === 1)
     return `Verified edit: ${descriptions[0]}`;
-  return `Verified alternatives: ${descriptions.map(function numbered(
-    description,
-    index,
-  ): string {
-    return `${String(index + 1,)}. ${description}`;
-  },).join(' ',)}`;
+  /**
+   * Numbered verified alternatives joined without line breaks.
+   */
+  const alternatives = descriptions
+    .map(function numbered(
+      description,
+      index,
+    ): string {
+      return `${String(index + 1,)}. ${description}`;
+    },)
+    .join(' ',);
+  return `Verified alternatives: ${alternatives}`;
 }
 
 /**
@@ -115,8 +126,11 @@ export function readonlyPreferenceGuidance({
   readonly suggestions: readonly ReadonlySuggestion[];
   readonly originEvidence: ReadonlyTypeOriginEvidence;
 },): string {
+  /**
+   * Exact local transformation when suggestion builder proved one.
+   */
   const verified = verifiedSuggestionGuidance(suggestions,);
-  if (verified !== undefined)
+  if ((typeof verified) !== 'symbol')
     return verified;
   if (originEvidence.kind === 'authored') {
     return 'No exact syntax replacement was proved for this authored type. Make the reported writable path deeply readonly in its declaration or replace the annotation with a deeply readonly projection, then run type checking.';
