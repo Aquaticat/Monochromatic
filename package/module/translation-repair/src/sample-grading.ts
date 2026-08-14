@@ -421,7 +421,35 @@ export function assertRepairMeasurable(
  * Classifies a page into its size band by zh source byte length, using the
  * same tertile cuts the accumulation loop sorts by.
  *
- * @param sourceBytes - UTF-8 byte length of the entry's zh source
+ * BYTES, NOT CHARACTERS, and the gap is wide enough to move an entry two bands.
+ * The corpus is mostly Chinese, so UTF-8 spends about three bytes per han
+ * character; measured whole-file across settled pages the ratio lands between
+ * 1.65 and 2.61 once Latin names, punctuation and markup are mixed in. A
+ * CHARACTER count passed here silently classifies large pages as small.
+ *
+ * This has happened. The settled artifact records `sourceChars`, a CHARACTER
+ * count, and it is the nearest-looking field to hand when writing an ad-hoc
+ * census over the artifacts directory. Passing it straight in reported a
+ * 20-entry pool as 16 small, 4 medium and 0 large when the true spread was 7,
+ * 7 and 6, and produced a recommendation to keep accumulating until large
+ * entries appeared, of which six had already settled.
+ *
+ * Take the bytes from the SOURCE TEXT, never from the artifact:
+ *
+ * ```ts
+ * const source = await readCorpusFile({ pin, relPath: `people/${id}/page.md`, },);
+ * const band = classifyBand({
+ *   sourceBytes: new TextEncoder()
+ *     .encode(source,)
+ *     .length,
+ * },);
+ * ```
+ *
+ * `corpus-run/draw-entry-load.ts` is the one production caller and does exactly
+ * that. Copy it rather than reaching for the artifact field.
+ *
+ * @param sourceBytes - UTF-8 BYTE length of the entry's zh source, never a
+ * character count
  *
  * @returns The entry's size band
  *

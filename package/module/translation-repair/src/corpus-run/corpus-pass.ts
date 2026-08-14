@@ -577,6 +577,13 @@ async function runCorpusPass(): Promise<void> {
         status: result.status,
         durationMs,
         timestamp: new Date().toISOString(),
+        // CHARACTER counts, and named that way on purpose. They are UTF-16 code
+        // unit lengths for eyeballing an entry's size in a log, and they are
+        // NOT the input `classifyBand` wants: that takes UTF-8 BYTES, which run
+        // roughly twice these numbers on this corpus and up to three times on
+        // pure han text. Feeding these into it classifies large pages as small,
+        // which has already produced one wrong band census. Read the source and
+        // encode it, the way `corpus-run/draw-entry-load.ts` does.
         sourceChars: entry.sourceText
           .length,
         targetChars: entry.targetText
