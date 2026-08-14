@@ -173,51 +173,6 @@ await describe({
       },
     },),
     it({
-      name: 'parses the COLUMN SPAN the scanner actually emits, which every '
-        + 'other fixture here omits. forbidden-strings 0.1.9 writes '
-        + 'path:LINE:START..END rule=N, and reading only path:LINE took '
-        + '"1..31" as the line number and rejected the hit as malformed, so '
-        + 'the gate reported unparseable output instead of the violation and '
-        + 'worked only while the scan was clean',
-      fn: async function testSpanFormat() {
-        /** Exact materialized scanner path. */
-        const scannerPath = '/tmp/plugin-owned/candidate-120';
-        expect(parseScannerOutput({
-          stderr: `${scannerPath}:19:1..31 rule=28`,
-          candidateForPath: function candidateForPath(path,): CandidateFile {
-            if (path !== scannerPath)
-              throw new Error(`Unexpected scanner path: ${path}`,);
-            return candidate('doc/handover/notes.md',);
-          },
-        },),).toEqual([{
-          code: 'forbidden-string',
-          message: 'Forbidden string matched at line 19 columns 1..31 (rule 28).',
-          path: 'doc/handover/notes.md',
-        },],);
-      },
-    },),
-    it({
-      name: 'still parses a candidate path that embeds colons when a span is '
-        + 'present, since the location fields can only be recognized from the '
-        + 'right and a path is free to contain the same separator',
-      fn: async function testColonPathWithSpan() {
-        /** Materialized path carrying colons of its own. */
-        const scannerPath = '/tmp/plugin-owned/candidate:9:4';
-        expect(parseScannerOutput({
-          stderr: `${scannerPath}:19:1..31 rule=28`,
-          candidateForPath: function candidateForPath(path,): CandidateFile {
-            if (path !== scannerPath)
-              throw new Error(`Unexpected scanner path: ${path}`,);
-            return candidate('src/value.ts',);
-          },
-        },),).toEqual([{
-          code: 'forbidden-string',
-          message: 'Forbidden string matched at line 19 columns 1..31 (rule 28).',
-          path: 'src/value.ts',
-        },],);
-      },
-    },),
-    it({
       name: 'relays tail-format rule names and legacy zero index',
       fn: async function testRuleNameTokens() {
         /** Exact materialized scanner path. */

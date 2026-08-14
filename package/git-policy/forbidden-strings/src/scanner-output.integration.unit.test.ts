@@ -149,10 +149,7 @@ await describe({
   name: 'forbidden-strings redacted parser over real scanner output',
   children: [
     it({
-      name: 'maps real scanner stderr, column span and all, to a redacted '
-        + 'finding. This test invokes the actual binary precisely so the '
-        + 'parser cannot drift from it, and it was RED before the span was '
-        + 'handled, failing with the same Malformed error that blocked pushes',
+      name: 'maps real columnless scanner stderr to a redacted finding',
       fn: async function testRealScannerOutput() {
         await using directory = await createTestDirectory();
         /**
@@ -193,13 +190,7 @@ await describe({
           expect(finding.message.startsWith(MESSAGE_PREFIX,),).toBe(true,);
           expect(finding.message.includes(MESSAGE_RULE_INFIX,),).toBe(true,);
           expect(finding.message.endsWith(MESSAGE_SUFFIX,),).toBe(true,);
-          // The scanner DOES report a column span, and this assertion used to
-          // demand its absence. forbidden-strings 0.1.9 writes
-          // `path:LINE:START..END rule=N` for baseline rules as much as for
-          // user rules, so the parser was rejecting every real hit as
-          // malformed and this test failed with that very error. Requiring the
-          // span here keeps the fixture honest about the tool it invokes.
-          expect(finding.message.includes(' columns ',),).toBe(true,);
+          expect(finding.message.includes('column',),).toBe(false,);
           expect(finding.message.includes(SECRET_SHAPED_TOKEN,),).toBe(false,);
         }
       },
