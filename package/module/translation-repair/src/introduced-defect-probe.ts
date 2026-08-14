@@ -62,6 +62,50 @@ export type IntroducedDefectReport = {
 };
 
 /**
+ * Screened claim counts summed across every probed region.
+ *
+ * Named so the fold that builds it states its own type. Left to the seed
+ * literal every count is writable, and the accumulator parameter then reports
+ * as mutable in a fold that only ever reads it.
+ */
+type ClaimTotals = Readonly<{
+  /**
+   * Claims that a second prober confirmed as added damage.
+   */
+  corroborated: number;
+
+  /**
+   * Claims that a second prober confirmed as dropped content.
+   */
+  removalCorroborated: number;
+
+  /**
+   * Claims the baseline text refuted.
+   */
+  contradicted: number;
+
+  /**
+   * Claims quoting text neither side carries.
+   */
+  unanchored: number;
+
+  /**
+   * Claims restating a defect an accepted issue already named.
+   */
+  preExisting: number;
+
+  /**
+   * Probers that read the region and raised nothing.
+   */
+  noneFound: number;
+
+  /**
+   * Probers that declined to answer.
+   */
+  uncertain: number;
+}>;
+
+/**
  * Report of a probe that never ran, for chunks with nothing replaced.
  */
 export const EMPTY_INTRODUCED_DEFECT_REPORT: IntroducedDefectReport = {
@@ -184,12 +228,18 @@ export async function runIntroducedDefectProbe(
 
   /**
    * Claims summed across regions, for one readable log line.
+   *
+   * The accumulator carries an explicit type rather than taking one from the
+   * seed literal. An inferred seed makes every count writable, and the rule
+   * then reports the fold's own parameter while naming the enclosing function
+   * as the origin, which is the signature line rather than anything that
+   * produced a value.
    */
-  const totals = screened.reduce(
+  const totals: ClaimTotals = screened.reduce(
     function addRegion(
       running,
       tally,
-    ) {
+    ): ClaimTotals {
       return {
         corroborated: running.corroborated + tally.corroborated,
         removalCorroborated: running.removalCorroborated + tally.removalCorroborated,
@@ -208,7 +258,7 @@ export async function runIntroducedDefectProbe(
       preExisting: 0,
       noneFound: 0,
       uncertain: 0,
-    },
+    } satisfies ClaimTotals,
   );
 
   // The negative counts belong in the line as much as the positive ones. All
