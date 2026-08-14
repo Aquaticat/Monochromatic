@@ -33,6 +33,7 @@ const ENGINE_FAILURE_CODES: readonly EngineFailureCode[] = [
   'fix-cycle',
   'fix-pass-limit',
   'transaction-failed',
+  'trust-consent-unavailable',
   'trust-failed',
 ];
 

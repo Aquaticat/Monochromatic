@@ -34,7 +34,10 @@ import {
   untrustConfig,
   untrustRepository,
 } from './trust-service.ts';
-import type { TrustConsentAdapters, } from './types.ts';
+import type {
+  TrustConsentAdapters,
+  TrustConsentOutcome,
+} from './types.ts';
 
 /** Real Git binary for nested disposable repositories. */
 const REAL_GIT = await resolveGit();
@@ -132,7 +135,7 @@ function consentAdapters({
   answers,
   disclosures,
 }: Readonly<{
-  answers: readonly boolean[];
+  answers: readonly TrustConsentOutcome[];
   disclosures: string[];
 }>,): TrustConsentAdapters {
   /** Prompt cursor isolated to adapter fixture. */
@@ -143,7 +146,7 @@ function consentAdapters({
     },
     prompt: function nextConsent() {
       /** Next explicit answer. */
-      const answer = answers[state.index] ?? false;
+      const answer = answers[state.index] ?? 'declined';
       state.index += 1;
       return Promise.resolve(answer,);
     },
@@ -168,7 +171,7 @@ await describe({
           discovered: outer,
           registryRoot: fixture.registryRoot,
           yes: false,
-          adapters: consentAdapters({ answers: [true, true,], disclosures, },),
+          adapters: consentAdapters({ answers: ['approved', 'approved',], disclosures, },),
         },);
         expect(disclosures,).toHaveLength(2,);
         expect(disclosures[1],).toContain(fixture.outer,);
@@ -206,7 +209,7 @@ await describe({
           discovered: outer,
           registryRoot: fixture.registryRoot,
           yes: false,
-          adapters: consentAdapters({ answers: [true, false,], disclosures: [], },),
+          adapters: consentAdapters({ answers: ['approved', 'declined',], disclosures: [], },),
         },);
         expect(trusted.record.recursiveChildren,).toBe(false,);
         /** Descendant remains untrusted without recursive authority. */

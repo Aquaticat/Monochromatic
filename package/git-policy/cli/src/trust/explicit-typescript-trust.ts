@@ -280,7 +280,20 @@ export async function trustTypeScript({
     candidate,
     state,
   },),);
-  if (!(yes || await adapters.prompt()))
+  /**
+   * Root trust decision preserving unavailable terminal state.
+   */
+  const rootConsent = yes ? 'approved' : await adapters.prompt();
+  if (rootConsent === 'unavailable')
+    throw new TrustedConfigError(
+      'trust-consent-unavailable',
+      [
+        'Interactive consent is unavailable because stdin or stderr is not a terminal.',
+        'After reviewing the disclosure, run `git cli-git trust --yes`.',
+        'No record was installed.',
+      ].join(' ',),
+    );
+  if (rootConsent === 'declined')
     throw new TrustedConfigError(
       'trust-failed',
       'Trust declined; no persistent record was installed.',
@@ -305,7 +318,20 @@ export async function trustTypeScript({
     if (!validated.recursiveChildren)
       return false;
     adapters.disclose(recursiveDisclosure(discovered.repositoryRoot,),);
-    return yes || await adapters.prompt();
+    /**
+     * Recursive trust decision preserving unavailable terminal state.
+     */
+    const recursiveConsent = yes ? 'approved' : await adapters.prompt();
+    if (recursiveConsent === 'unavailable')
+      throw new TrustedConfigError(
+        'trust-consent-unavailable',
+        [
+          'Interactive consent is unavailable because stdin or stderr is not a terminal.',
+          'After reviewing the disclosure, run `git cli-git trust --yes`.',
+          'No record was installed.',
+        ].join(' ',),
+      );
+    return recursiveConsent === 'approved';
   })();
   /**
    * Registry-wide lock serializes enrollment and revocation.

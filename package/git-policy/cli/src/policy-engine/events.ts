@@ -92,6 +92,7 @@ export type EngineFailureCode =
   | 'fix-cycle'
   | 'fix-pass-limit'
   | 'transaction-failed'
+  | 'trust-consent-unavailable'
   | 'trust-failed';
 
 /**

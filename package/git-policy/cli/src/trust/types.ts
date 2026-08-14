@@ -183,6 +183,19 @@ export type TrustWarning = Readonly<{
 /**
  * Trust consent and output adapters.
  */
+/**
+ * Result of one explicit interactive trust prompt.
+ *
+ * @example
+ * ```ts
+ * const outcome: TrustConsentOutcome = 'approved';
+ * ```
+ */
+export type TrustConsentOutcome =
+  | 'approved'
+  | 'declined'
+  | 'unavailable';
+
 export type TrustConsentAdapters = {
   /**
    * Writes human-readable disclosure to stderr boundary.
@@ -191,7 +204,7 @@ export type TrustConsentAdapters = {
   /**
    * Requests explicit interactive affirmative response.
    */
-  readonly prompt: () => Promise<boolean>;
+  readonly prompt: () => Promise<TrustConsentOutcome>;
   /**
    * Supplies audit timestamp.
    */

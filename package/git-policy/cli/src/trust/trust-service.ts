@@ -40,7 +40,10 @@ import type {
 
 export { trustMjs, } from './explicit-trust.ts';
 export { trustTypeScript, } from './explicit-typescript-trust.ts';
-export type { TrustConsentAdapters, } from './types.ts';
+export type {
+  TrustConsentAdapters,
+  TrustConsentOutcome,
+} from './types.ts';
 
 /**
  * Explicitly trusts discovered MJS or TypeScript configuration.

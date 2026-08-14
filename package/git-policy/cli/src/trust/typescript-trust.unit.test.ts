@@ -70,7 +70,7 @@ async function createFixture(source: string,): Promise<TypeScriptTrustFixture> {
 function adapters(disclosures: string[],): TrustConsentAdapters {
   return {
     disclose: function disclose(text,) { disclosures.push(text,); },
-    prompt: function approve() { return Promise.resolve(true,); },
+    prompt: function approve() { return Promise.resolve('approved',); },
     now: function fixedTime() { return new Date('2026-07-10T00:00:00.000Z',); },
   };
 }

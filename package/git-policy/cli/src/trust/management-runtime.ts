@@ -23,6 +23,7 @@ import {
   untrustRepository,
 } from './trust-service.ts';
 import { TrustedConfigError, } from './config-loader.ts';
+import type { TrustConsentOutcome, } from './types.ts';
 
 /**
  * Trust management action parsed by Optique.
@@ -102,13 +103,13 @@ function emitTrustFailure({
 /**
  * Requests explicit interactive consent without auto-trusting CI.
  *
- * @returns whether user typed exact affirmative `yes`
+ * @returns explicit prompt outcome, including unavailable terminal streams
  */
-async function promptForTrust(): Promise<boolean> {
+async function promptForTrust(): Promise<TrustConsentOutcome> {
   if ((!process.stdin
     .isTTY) || (!process.stderr
       .isTTY))
-    return false;
+    return 'unavailable';
   /**
    * Disposable readline prompt bound to terminal streams.
    */
@@ -122,7 +123,9 @@ async function promptForTrust(): Promise<boolean> {
   const answer = await prompt.question('Type yes to trust this exact snapshot: ',);
   return answer.trim()
     .toLowerCase()
-    === 'yes';
+    === 'yes'
+    ? 'approved'
+    : 'declined';
 }
 
 /**

@@ -25,6 +25,7 @@ import type {
 export type TrustedConfigFailureCode =
   | 'config-untrusted'
   | 'config-changed'
+  | 'trust-consent-unavailable'
   | 'trust-failed';
 /**
  * Trusted configuration loading failure.

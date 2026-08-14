@@ -40,7 +40,7 @@ import {
   untrustConfig,
 } from './trust-service.ts';
 import { captureTrustCandidate, } from './candidate.ts';
-import type { TrustWarning, } from './types.ts';
+import type { TrustConsentAdapters, TrustWarning, } from './types.ts';
 
 /** Real Git binary for disposable fixtures. */
 const REAL_GIT = await resolveGit();
@@ -128,13 +128,13 @@ async function fixtureConfig(fixture: TrustFixture,) {
  *
  * @returns trust consent adapters
  */
-function trustAdapters(disclosures: string[],) {
+function trustAdapters(disclosures: string[],): TrustConsentAdapters {
   return {
     disclose: function captureDisclosure(text: string,) {
       disclosures.push(text,);
     },
     prompt: function rejectUnexpectedPrompt() {
-      return Promise.resolve(false,);
+      return Promise.resolve('declined',);
     },
     now: function fixedAuditTime() {
       return new Date('2026-07-10T00:00:00.000Z',);
