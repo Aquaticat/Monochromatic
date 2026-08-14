@@ -67,15 +67,27 @@ async function gatherReadings(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<GatheredProbe> {
   /**
+   * One directory listing, shared with the census.
+   *
+   * Taken once and threaded through, because the accumulation writes into this
+   * directory continuously: a second listing inside the census would classify a
+   * different set of files from the one this reader goes on to read.
+   */
+  const listed = (await readdir(artifactsDir,))
+    .filter(function isArtifact(name,) {
+      return name.endsWith('.json',);
+    },)
+    .toSorted();
+
+  /**
    * Artifact file names, JSON only.
    */
   const names = keepEligible({
-    names: (await readdir(artifactsDir,))
-      .filter(function isArtifact(name,) {
-        return name.endsWith('.json',);
-      },)
-      .toSorted(),
-    eligible: await resolvePool({ artifactsDir, },),
+    names: listed,
+    eligible: await resolvePool({
+      artifactsDir,
+      names: listed,
+    },),
   },);
 
   /**

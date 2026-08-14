@@ -54,7 +54,13 @@ const POOL_ALL_VALUE = 'yes';
  * ```
  */
 export async function resolvePool(
-  { artifactsDir, }: { readonly artifactsDir: string; },
+  {
+    artifactsDir,
+    names,
+  }: {
+    readonly artifactsDir: string;
+    readonly names?: readonly string[];
+  },
 ): Promise<EligibleEntries> {
   /**
    * Generation policy as the invoker set it.
@@ -65,11 +71,6 @@ export async function resolvePool(
   } = process.env;
 
   /**
-   * Settled entries partitioned by the commit each recorded.
-   */
-  const census = await censusByTip({ artifactsDir, },);
-
-  /**
    * Required commit as a plain string, empty when none was set.
    *
    * An exported-but-empty variable is an ordinary shell accident, so it is
@@ -77,6 +78,30 @@ export async function resolvePool(
    * satisfy.
    */
   const required = requiredCommit ?? '';
+
+  // Two different pools asked for at once. Preferring either silently records a
+  // policy nobody chose, and the report printed above the resulting number
+  // would name that policy as though it had been requested.
+  if ((required !== '') && (poolAll === POOL_ALL_VALUE))
+    throw new Error(
+      `${REQUIRED_COMMIT_VAR} and ${POOL_ALL_VAR} are both set, which asks for `
+        + 'a filtered pool and an unfiltered one at the same time.\n'
+        + 'Unset whichever was not meant. A required commit selects entries '
+        + 'whose pipeline contains it; pooling all takes every generation and '
+        + 'says so above the number.',
+    );
+
+  /**
+   * Settled entries partitioned by the commit each recorded.
+   *
+   * Given the caller's own listing when it has one, so census and reader
+   * classify the same files rather than two views of a directory the
+   * accumulation is still writing into.
+   */
+  const census = await censusByTip({
+    artifactsDir,
+    ...((names === undefined) ? {} : { names, }),
+  },);
 
   /**
    * Entries this reader may pool.

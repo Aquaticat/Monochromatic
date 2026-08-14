@@ -121,14 +121,32 @@ async function collectShippedRegions(
   { dir, }: { readonly dir: string; },
 ): Promise<readonly RegionRef[]> {
   /**
+   * Directory the settled artifacts sit in, named once so the listing, the
+   * census and the later reads cannot drift onto different paths.
+   */
+  const artifactsDir = `${dir}/artifacts`;
+
+  /**
+   * One directory listing, shared with the census.
+   *
+   * Taken once and threaded through, because the accumulation writes into this
+   * directory continuously: a second listing inside the census would classify a
+   * different set of files from the one this reader goes on to read.
+   */
+  const listed = (await readdir(artifactsDir,))
+    .filter(function isArtifact(name,) {
+      return name.endsWith('.json',);
+    },);
+
+  /**
    * Artifact file names of the settled entries.
    */
   const files = keepEligible({
-    names: (await readdir(`${dir}/artifacts`,))
-      .filter(function isArtifact(name,) {
-        return name.endsWith('.json',);
-      },),
-    eligible: await resolvePool({ artifactsDir: `${dir}/artifacts`, },),
+    names: listed,
+    eligible: await resolvePool({
+      artifactsDir,
+      names: listed,
+    },),
   },);
 
   /**

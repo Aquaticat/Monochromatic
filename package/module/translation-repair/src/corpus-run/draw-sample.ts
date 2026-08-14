@@ -36,6 +36,10 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
+import {
+  type EntryContribution,
+  loadEntry,
+} from './draw-entry-load.ts';
 
 //region Draw sample
 // Reads every settled artifact, bands each entry by its zh source bytes,
@@ -51,151 +55,6 @@ import {
 // gate sample. The reconcile below aborts loudly if a parsed accepted count
 // disagrees with the artifact's own tally, so the sample is never silently
 // short.
-
-/**
- * One settled entry: its parsed accepted issues and its size band.
- */
-type BandedEntry = {
-  /**
-   * Entry id.
-   */
-  readonly id: string;
-
-  /**
-   * Size band from the entry's zh source bytes.
-   */
-  readonly band: SizeBand;
-
-  /**
-   * Accepted issues flattened into grading candidates.
-   */
-  readonly candidates: readonly GradingCandidate[];
-};
-
-/**
- * One entry's share of a band, carried as a record rather than a formatted
- * string so the sort compares numbers instead of reparsing its own output.
- */
-type EntryContribution = {
-  /**
-   * Entry id.
-   */
-  readonly id: string;
-
-  /**
-   * Candidates this entry contributes to the band.
-   */
-  readonly count: number;
-};
-
-/**
- * Loads one artifact, reconciles its accepted count against the pipeline's own
- * tally, bands the entry, and flattens its accepted issues into candidates.
- *
- * @param artifactsDir - directory holding the artifact JSON files
- *
- * @param name - artifact file name
- *
- * @returns The banded entry
- *
- * @throws {@link Error} when the parsed accepted count disagrees with the
- * artifact's recorded `acceptedCount`
- */
-async function loadEntry(
-  {
-    artifactsDir,
-    name,
-  }: {
-    readonly artifactsDir: string;
-    readonly name: string;
-  },
-): Promise<BandedEntry> {
-  /**
-   * Raw artifact JSON, untyped until parsed.
-   */
-  const raw: unknown = JSON.parse(await readFile(
-    join(
-      artifactsDir,
-      name,
-    ),
-    'utf8',
-  ),);
-
-  /**
-   * Parsed accepted issues for this entry.
-   */
-  const parsed = parseSettledArtifact({ value: raw, },);
-
-  // The reconcile is REQUIRED, not opportunistic. It used to run only when
-  // `acceptedCount` happened to be a number, which meant the one artifact shape
-  // it could not check was the shape most likely to be wrong: a missing or
-  // malformed field passed silently and its entry joined the pool unverified.
-  // `corpus-pass.ts` writes this field on every artifact it produces, so an
-  // artifact without it did not come from this pipeline, and this reader feeds
-  // the precision gate where a short population is the exact harm.
-  if (!isJsonRecord(raw,))
-    throw new Error(
-      `reconcile failed for ${parsed.id}: artifact is not an object, so the `
-        + 'accepted count it recorded cannot be read and the pool would be '
-        + 'built from an unverified entry.',
-    );
-
-  /**
-   * The accepted count the pipeline recorded when it wrote the artifact.
-   */
-  const declaredAccepted = raw.acceptedCount;
-  if ((typeof declaredAccepted) !== 'number')
-    throw new Error(
-      `reconcile failed for ${parsed.id}: artifact records no numeric `
-        + `acceptedCount (found ${JSON.stringify(declaredAccepted,)}). Every `
-        + 'artifact this pipeline writes carries one, so its absence means the '
-        + 'file came from somewhere else and nothing can confirm the accepted '
-        + 'population is complete.',
-    );
-  if (declaredAccepted
-    !== parsed.acceptedIssues
-    .length)
-    throw new Error(
-      `reconcile failed for ${parsed.id}: artifact acceptedCount `
-        + `${String(declaredAccepted,)} != parsed ${
-          String(parsed.acceptedIssues
-            .length,)
-        }; the accepted population would be silently short.`,
-    );
-
-  /**
-   * The entry's zh source at the pinned corpus commit.
-   */
-  const source = await readCorpusFile({
-    pin: RUN_CORPUS_PIN,
-    relPath: `people/${parsed.id}/page.md`,
-  },);
-
-  /**
-   * Size band from the source's UTF-8 byte length.
-   */
-  const band = classifyBand({
-    sourceBytes: new TextEncoder()
-      .encode(source,)
-      .length,
-  },);
-
-  return {
-    id: parsed.id,
-    band,
-    candidates: parsed.acceptedIssues
-      .map(function toCandidate(accepted,) {
-        return extractGradingCandidate({
-          issue: accepted.issue,
-          entryId: parsed.id,
-          band,
-          ...(accepted.repair === undefined
-            ? {}
-            : { repair: accepted.repair, }),
-        },);
-      },),
-  };
-}
 
 /**
  * Draws the stratified precision sample and writes the grading sheet outside
@@ -257,19 +116,38 @@ async function drawGradingSample(): Promise<void> {
   );
 
   /**
+   * One directory listing, shared with the census.
+   *
+   * Taken once and threaded through, because the accumulation writes into this
+   * directory continuously: a second listing inside the census would classify a
+   * different set of files from the one this draw goes on to read, so an
+   * artifact arriving between the two would join the census while never
+   * entering the candidate pool.
+   */
+  const listed = (await readdir(artifactsDir,))
+    .filter(function isArtifact(name,) {
+      return name.endsWith('.json',);
+    },)
+    // Sorted so the pool is built in one fixed order. The draw itself sorts by
+    // keys derived from the seed and the ids, so it does not depend on this,
+    // but the POOL report and any error naming "the first bad artifact" do, and
+    // a report that changes with directory order is a report nobody can cite.
+    .toSorted();
+
+  /**
+   * Entries this draw may pool, with the commit each recorded.
+   */
+  const eligible = await resolvePool({
+    artifactsDir,
+    names: listed,
+  },);
+
+  /**
    * Artifact file names present in the run.
    */
   const names = keepEligible({
-    names: (await readdir(artifactsDir,))
-      .filter(function isArtifact(name,) {
-        return name.endsWith('.json',);
-      },)
-      // Sorted so the pool is built in one fixed order. The draw itself sorts by
-      // keys derived from the seed and the ids, so it does not depend on this,
-      // but the POOL report and any error naming "the first bad artifact" do, and
-      // a report that changes with directory order is a report nobody can cite.
-      .toSorted(),
-    eligible: await resolvePool({ artifactsDir, },),
+    names: listed,
+    eligible,
   },);
 
   /**
@@ -280,6 +158,7 @@ async function drawGradingSample(): Promise<void> {
       return loadEntry({
         artifactsDir,
         name,
+        eligible,
       },);
     },),
   );

@@ -2,6 +2,42 @@ import {
   type GenerationCensus,
   tipContains,
 } from './artifact-generation.ts';
+import type { GenerationSelection, } from './artifact-provenance.ts';
+
+/**
+ * Pipeline commit each placed entry recorded, for the whole census.
+ *
+ * @param census - what the directory holds
+ *
+ * @returns Lookup from entry id to recorded commit
+ *
+ * @example
+ * ```ts
+ * const tipByEntry = mapTips({ census, },);
+ * ```
+ */
+function mapTips(
+  { census, }: { readonly census: GenerationCensus; },
+): ReadonlyMap<string, string> {
+  return new Map(
+    census.groups
+      .flatMap(function toPairs(group,): readonly (readonly [
+        string,
+        string,
+      ])[] {
+        return group.entryIds
+          .map(function toPair(entryId,): readonly [
+            string,
+            string,
+          ] {
+            return [
+              entryId,
+              group.tip,
+            ];
+          },);
+      },),
+  );
+}
 
 //region Artifact eligibility
 // Turns a generation census into the set of entries one draw may pool, and
@@ -48,6 +84,23 @@ export type EligibleEntries = Readonly<{
    * reports malformed artifacts still sees them.
    */
   malformedIds: readonly string[];
+
+  /**
+   * Pipeline commit recorded by each pooled entry, keyed by entry id.
+   *
+   * Structured rather than left implicit in {@link EligibleEntries.report},
+   * because a reader cannot build a truthful record of what it sampled out of
+   * prose, and because it lets a reader check the bytes it loaded against the
+   * entry the pool admitted. Carries only placed entries: a malformed artifact
+   * has no tip and is absent here.
+   */
+  tipByEntry: ReadonlyMap<string, string>;
+
+  /**
+   * How these entries were chosen, so a later reader knows what the pool
+   * licenses it to claim.
+   */
+  selection: GenerationSelection;
 
   /**
    * One line per generation, for printing above any rate this draw produces.
@@ -335,6 +388,14 @@ export async function selectEligible(
       entryIds: everyId,
       excludedIds: [],
       malformedIds: census.malformedIds,
+      tipByEntry: mapTips({ census, },),
+      selection: (generationCount === 1) && (census.groups[0] !== undefined)
+        ? {
+          kind: 'single-tip',
+          tip: census.groups[0]
+            .tip,
+        }
+        : { kind: 'all-tips', },
       report: [
         `POOL ${String(census.total,)} ${
           pluralEntries({ count: census.total, },)
@@ -385,6 +446,19 @@ export async function selectEligible(
       requiredCommit,
     },);
 
+  /**
+   * Generations that actually contributed entries, which is what the pool
+   * spans; a generation excluded by the required commit contributes nothing.
+   */
+  const pooledTips = verdicts
+    .filter(function isEligible(verdict,): boolean {
+      return verdict.contains;
+    },)
+    .map(function toTip(verdict,): string {
+      return verdict.group
+        .tip;
+    },);
+
   return {
     entryIds,
     malformedIds: census.malformedIds,
@@ -392,13 +466,33 @@ export async function selectEligible(
       .filter(function wasExcluded(entryId,): boolean {
         return !entryIds.includes(entryId,);
       },),
+    tipByEntry: mapTips({ census, },),
+    selection: {
+      kind: 'required-commit',
+      commit: requiredCommit,
+    },
     report: [
-      `POOL requires ${requiredCommit.slice(
+      // Says CONTAINING, not "produced by". Ancestry is a compatibility floor:
+      // every descendant tip qualifies and descendants may differ from each
+      // other arbitrarily, so this pool is a post-baseline cohort rather than
+      // one pipeline version. An earlier wording read "requires X: N of M
+      // eligible", which invited exactly the reading that a rate over it could
+      // be published as X's rate, and did: it was cited that way in a handover
+      // note the same evening it was written.
+      `POOL commits CONTAINING ${requiredCommit.slice(
         0,
         SHORT_SHA,
       )}: ${String(entryIds.length,)} of ${
         String(census.total,)
-      } settled entries eligible`,
+      } settled entries eligible, spanning ${
+        String(pooledTips.length,)
+      } pipeline generation${pooledTips.length === 1 ? '' : 's'}`,
+      ...(pooledTips.length > 1
+        ? [
+          'POOL   this is a post-baseline COHORT, not one generation: a rate',
+          'POOL   over it belongs to no single pipeline version',
+        ]
+        : []),
       ...unplaceableLines({ census, },),
       ...verdicts
         .map(function toLine(verdict,): string {

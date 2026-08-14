@@ -230,20 +230,37 @@ async function readTip(
  *
  * @param artifactsDir - directory holding one JSON per settled entry
  *
+ * @param names - directory listing the CALLER already took, so census and
+ * caller classify the same set; omitted only by callers that have not listed
+ * the directory themselves
+ *
  * @returns Census grouped by commit, largest group first
  *
  * @example
  * ```ts
- * const census = await censusByTip({ artifactsDir, },);
+ * const census = await censusByTip({ artifactsDir, names, },);
  * ```
  */
 export async function censusByTip(
-  { artifactsDir, }: { readonly artifactsDir: string; },
+  {
+    artifactsDir,
+    names: listed,
+  }: {
+    readonly artifactsDir: string;
+    readonly names?: readonly string[];
+  },
 ): Promise<GenerationCensus> {
   /**
    * Artifact file names, sorted so the census is reproducible.
+   *
+   * Accepting the caller's listing matters more than saving one read. A reader
+   * that lists the directory, censuses it separately, then loads each file is
+   * taking THREE views of a directory the accumulation is still writing into,
+   * and an artifact arriving between the first two joins the census while never
+   * entering the candidate pool. One listing threaded through closes the gap
+   * between the two views this module controls.
    */
-  const names = (await readdir(artifactsDir,))
+  const names = (listed ?? await readdir(artifactsDir,))
     .filter(function isArtifact(name,): boolean {
       return name.endsWith('.json',);
     },)
