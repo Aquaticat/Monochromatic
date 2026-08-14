@@ -1,4 +1,5 @@
 import { sourceBytesOf, } from '../sample-grading.ts';
+import type { PipelineDigest, } from './pipeline-digest.ts';
 
 //region Artifact build
 // The SHAPE of one settled artifact, in one place.
@@ -22,6 +23,10 @@ import { sourceBytesOf, } from '../sample-grading.ts';
  * where the code came from and never what ran: a dirty worktree leaves it
  * unchanged while the pipeline differs, and a documentation commit moves it
  * while the pipeline does not
+ *
+ * @param pipelineDigest - built output the pass ran, as IDENTITY. This is the
+ * field two artifacts must share before their results may be pooled, since it
+ * moves exactly when executed bytes do
  *
  * @param corpusSha - corpus commit the texts were read at
  *
@@ -52,6 +57,7 @@ export function buildSettledArtifact(
   {
     entryId,
     tip,
+    pipelineDigest,
     corpusSha,
     callConfig,
     status,
@@ -64,6 +70,7 @@ export function buildSettledArtifact(
   }: {
     readonly entryId: string;
     readonly tip: string;
+    readonly pipelineDigest: PipelineDigest;
     readonly corpusSha: string;
     readonly callConfig: unknown;
     readonly status: string;
@@ -83,6 +90,12 @@ export function buildSettledArtifact(
   return {
     id: entryId,
     tip,
+
+    // What actually ran, beside where it came from. Artifacts settled before
+    // 2026-08-14 carry only `tip`, so a reader meeting one has no identity for
+    // it at all and must refuse it rather than assume it shares this pipeline.
+    pipelineDigest,
+
     corpusSha,
     callConfig,
     status,

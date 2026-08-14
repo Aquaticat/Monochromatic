@@ -26,6 +26,7 @@ import { buildSettledArtifact, } from './artifact-build.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import { readOnlyIds, } from './entry-filter.ts';
 import { assertResumableGeneration, } from './pass-generation-guard.ts';
+import { digestPipeline, } from './pipeline-digest.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
   discardSliceCache,
@@ -246,6 +247,20 @@ async function runCorpusPass(): Promise<void> {
    */
   const tip = await readHeadSha();
 
+  /**
+   * Identity of the built pipeline this invocation is running, taken over the
+   * directory the runner was loaded from.
+   *
+   * `tip` cannot answer this and never could: it moves for a documentation
+   * commit that changes nothing that runs, and stays put across an uncommitted
+   * edit that changes everything. Every corpus-run task builds before it runs
+   * and runs its built file, so the files beside this one ARE the pipeline.
+   */
+  const {
+    digest: pipelineDigest,
+    fileCount,
+  } = await digestPipeline({ dir: import.meta.dirname, },);
+
   // Before anything is settled: a resume reads HEAD again, so if HEAD moved
   // since the entries already here were written, continuing would stamp a
   // second commit into one pool and every reader that computes a rate would
@@ -442,7 +457,7 @@ async function runCorpusPass(): Promise<void> {
   },);
 
   console.log(
-    `START tip=${tip} pending=${String(pending.length,)} done=${String(done.size,)} soft=${String(SOFT_BUDGET_MS,)}ms hard=${String(HARD_CAP_MS,)}ms`,
+    `START tip=${tip} pipeline=${pipelineDigest} files=${String(fileCount,)} pending=${String(pending.length,)} done=${String(done.size,)} soft=${String(SOFT_BUDGET_MS,)}ms hard=${String(HARD_CAP_MS,)}ms`,
   );
 
   /**
@@ -453,7 +468,7 @@ async function runCorpusPass(): Promise<void> {
   if (process.argv
     .includes('--plan',)) {
     console.log(
-      `PLAN ok tip=${tip} client=constructed pending=${String(pending.length,)} first=${
+      `PLAN ok tip=${tip} pipeline=${pipelineDigest} client=constructed pending=${String(pending.length,)} first=${
         pending
           .slice(
             0,
@@ -577,6 +592,7 @@ async function runCorpusPass(): Promise<void> {
       const artifact = buildSettledArtifact({
         entryId: entry.id,
         tip,
+        pipelineDigest,
         corpusSha: RUN_CORPUS_PIN.commitSha,
         callConfig: RUN_CALL_CONFIG,
         status: result.status,

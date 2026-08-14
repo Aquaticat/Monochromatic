@@ -152,6 +152,20 @@ export {
   TipDriftError,
   UnplaceableArtifactError,
 } from './corpus-run/pass-generation-guard.ts';
+export {
+  abbreviate,
+  ArtifactProvenanceError,
+  assertArtifactProvenance,
+  type GenerationSelection,
+} from './corpus-run/artifact-provenance.ts';
+export {
+  assertPipelineDigest,
+  digestPipeline,
+  isDigestShaped,
+  type PipelineDigest,
+  PipelineDigestError,
+  type PipelineStamp,
+} from './corpus-run/pipeline-digest.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,
