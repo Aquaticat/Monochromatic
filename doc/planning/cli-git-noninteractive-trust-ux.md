@@ -12,7 +12,8 @@ Implementation commits:
 - `34e8aa2a9` adds successful namespace and trust help;
 - `f35927c7a` preserves real Git global short-circuit flags before namespace dispatch;
 - `5f1894f59` classifies terminal EOF as unavailable consent
-  and preserves previous records after unavailable re-trust.
+  and preserves previous records after unavailable re-trust;
+- `54ad78083` distinguishes global option tokens from flag-shaped option values.
 
 Verification passed for the package build,
 full unit suite,
