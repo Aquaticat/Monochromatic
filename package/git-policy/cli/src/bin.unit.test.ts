@@ -497,6 +497,31 @@ if (args.includes('rev-parse')) process.exitCode = 1;
       },
     },),
     it({
+      name: 'does not treat global option values as short-circuit flags',
+      fn: async function testGlobalValueBeforeManagement(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Directory named like short-circuit flag but consumed by `-C`. */
+        const optionValueDirectory = join(tempDirectory.path, '--version',);
+        /** Empty path proving management help does not forward to real Git. */
+        const emptyPath = join(tempDirectory.path, 'empty-path',);
+        await Promise.all([
+          mkdir(optionValueDirectory,),
+          mkdir(emptyPath,),
+        ],);
+        /** Management help after value-taking global option. */
+        const result = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['-C', '--version', 'cli-git', '--help',],
+          env: {
+            ...process.env,
+            PATH: emptyPath,
+          },
+        },);
+        expect(result.stdout,).toContain('Usage: git cli-git');
+        expect(result.stderr,).toBe('',);
+      },
+    },),
+    it({
       name: 'prints namespace and trust help without loading repository config',
       fn: async function testManagementHelp(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
