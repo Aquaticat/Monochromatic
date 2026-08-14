@@ -658,15 +658,17 @@ internal fun ledCapWidth(options: LedCapWidthOptions): Int =
 private fun ledPalette(): LedPalette {
     /** Reads current runtime accent pigment. */
     val accent: Color = MaterialTheme.colorScheme.primary
-    /** Reads accent's accessible foreground. */
-    val onAccent: Color = MaterialTheme.colorScheme.onPrimary
+    /** Reads runtime accent's deeper hardware-pigment role. */
+    val accentBody: Color = MaterialTheme.colorScheme.primaryContainer
+    /** Reads accessible ink for deeper accent pigment. */
+    val onAccentBody: Color = MaterialTheme.colorScheme.onPrimaryContainer
     return LedPalette(
-        selectedFill = accent,
-        selectedEdge = lerp(accent, Color.Black, LED_ACCENT_EDGE_MIX),
-        selectedHot = lerp(accent, onAccent, LED_ACCENT_HOT_MIX),
+        selectedFill = accentBody,
+        selectedEdge = lerp(accentBody, Color.Black, LED_ACCENT_EDGE_MIX),
+        selectedHot = lerp(accent, onAccentBody, LED_ACCENT_HOT_MIX),
         selectedGlow = accent,
-        selectedInk = onAccent,
-        selectedInkGlow = lerp(accent, onAccent, LED_ACCENT_INK_GLOW_MIX),
+        selectedInk = onAccentBody,
+        selectedInkGlow = lerp(accent, onAccentBody, LED_ACCENT_INK_GLOW_MIX),
     )
 }
 
