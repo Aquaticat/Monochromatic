@@ -145,9 +145,23 @@ export async function runCliGit(): Promise<void> {
    */
   const managementLayout = parseGlobalOptions(rawArgs,);
   /**
+   * Pre-subcommand region scanned before management namespace dispatch.
+   */
+  const rawPreSubcommand = rawArgs.slice(
+    0,
+    managementLayout.subcommandIndex,
+  );
+  /**
+   * Whether real Git short-circuits before any named subcommand can run.
+   */
+  const willShortCircuit = rawPreSubcommand.some(function isShortCircuitFlag(arg,) {
+    return SHORT_CIRCUIT_FLAGS.has(arg,);
+  },);
+  /**
    * Whether wrapper owns this invocation as a management command.
    */
-  const isManagementCommand = rawArgs[managementLayout.subcommandIndex] === 'cli-git';
+  const isManagementCommand = (!willShortCircuit)
+    && (rawArgs[managementLayout.subcommandIndex] === 'cli-git');
 
 try {
   if (isManagementCommand) {
@@ -183,24 +197,6 @@ try {
     },);
   }
   else {
-  /**
-   * Layout of `rawArgs` consulted before the rules run so short-circuit flags can be detected on the user's literal input.
-   */
-  const { subcommandIndex: rawSubcommandIndex, } = parseGlobalOptions(rawArgs,);
-  /**
-   * Pre-subcommand region of `rawArgs`; scanned for flags that make git ignore the subcommand entirely.
-   */
-  const rawPreSubcommand = rawArgs.slice(
-    0,
-    rawSubcommandIndex,
-  );
-  /**
-   * True when git will short-circuit on a pre-subcommand `--version`/`-v`/`--help`/`-h`; rule injections between the flag and the subcommand would be parsed by the wrong git subcommand and error.
-   */
-  const willShortCircuit = rawPreSubcommand.some(function isShortCircuitFlag(arg,) {
-    return SHORT_CIRCUIT_FLAGS.has(arg,);
-  },);
-
   /**
    * Absolute real Git path needed before repository config executes.
    */
