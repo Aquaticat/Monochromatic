@@ -50,9 +50,12 @@ A later explicit adoption request is required before implementation or a decisio
 
 ## Initial repository checkpoint
 
-- Baseline branch: `main`.
-- Baseline commit: `54ad78083e8baf95c62d3b0682843967722c563d`.
-- Target package: `package/git-policy/cli/`.
+- Baseline branch:
+  `main`.
+- Baseline commit:
+  `54ad78083e8baf95c62d3b0682843967722c563d`.
+- Target package:
+  `package/git-policy/cli/`.
 - `package/git-policy/cli/package.json` currently declares neither CAC nor Optique.
 - Its runtime dependencies are `nano-spawn`,
   `rolldown`,
