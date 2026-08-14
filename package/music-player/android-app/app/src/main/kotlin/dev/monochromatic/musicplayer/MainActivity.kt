@@ -3055,7 +3055,7 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
                 // Places the visibly 48dp face after Chromium's source-derived strip inset.
                 .align(Alignment.TopStart)
                 .offset(y = chromiumTabStripInset)
-                .width(IntrinsicSize.Max)
+                .fillMaxWidth()
                 .height(chromiumTabVisibleHeight)
                 .then(stateModifier),
         ) {
