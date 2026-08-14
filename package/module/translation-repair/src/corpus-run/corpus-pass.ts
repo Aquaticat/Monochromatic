@@ -22,6 +22,7 @@ import {
   type SizedEntry,
   smallBandIds,
 } from './band-order.ts';
+import { writeFileAtomic, } from './atomic-write.ts';
 import { readOnlyIds, } from './entry-filter.ts';
 import { assertResumableGeneration, } from './pass-generation-guard.ts';
 import { repairTranslation, } from '../repair-translation.ts';
@@ -604,17 +605,17 @@ async function runCorpusPass(): Promise<void> {
         repairedText: result.repairedText,
       };
       /* oxlint-disable-next-line no-await-in-loop -- one artifact written per entry, sequential by design */
-      await writeFile(
-        join(
+      await writeFileAtomic({
+        path: join(
           artifactsDir,
           `${entry.id}.json`,
         ),
-        `${JSON.stringify(
+        text: `${JSON.stringify(
           artifact,
           undefined,
           2,
         )}\n`,
-      );
+      },);
       console.log(
         `TALLY ${entry.id} status=${result.status} issues=${String(result.issues
           .length,)} accepted=${String(accepted.length,)} resolved=${String(resolved.length,)} findings=${String(result.findings

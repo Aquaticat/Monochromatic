@@ -223,5 +223,60 @@ await describe({
           .toThrow('different pipeline commit',);
       },
     },),
+
+    it({
+      name: 'REFUSES to resume a directory holding an UNTAGGED artifact, which '
+        + 'reading only the tip groups missed entirely: a directory of nothing '
+        + 'but unplaceable artifacts produced no groups and sailed through. Such '
+        + 'an entry is counted as settled by the scheduler so it never retries, '
+        + 'and excluded by the pool filter so it never appears in a rate; it '
+        + 'ceases to exist and no count says so',
+      fn: async () => {
+        const dir = await writeArtifacts({ tips: { Pepper: 'aaaaaaaaa', }, },);
+        await writeFile(
+          join(
+            dir,
+            'Mittens.json',
+          ),
+          JSON.stringify({ status: 'repaired', },),
+          'utf8',
+        );
+
+        await expect(
+          assertResumableGeneration({
+            artifactsDir: dir,
+            tip: 'aaaaaaaaa',
+          },),
+        )
+          .rejects
+          .toThrow('Mittens',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a MALFORMED artifact for the same reason, and names it, '
+        + 'since deleting the file is the whole remedy and an operator cannot '
+        + 'delete what the refusal does not name',
+      fn: async () => {
+        const dir = await writeArtifacts({ tips: { Pepper: 'aaaaaaaaa', }, },);
+        await writeFile(
+          join(
+            dir,
+            'Biscuit.json',
+          ),
+          '{ "tip": "aaaaaaaaa", "status": "rep',
+          'utf8',
+        );
+
+        await expect(
+          assertResumableGeneration({
+            artifactsDir: dir,
+            tip: 'aaaaaaaaa',
+          },),
+        )
+          .rejects
+          .toThrow('Biscuit',);
+      },
+    },),
   ],
 },);

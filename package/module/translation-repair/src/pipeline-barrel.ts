@@ -151,6 +151,7 @@ export {
 export {
   assertResumableGeneration,
   TipDriftError,
+  UnplaceableArtifactError,
 } from './corpus-run/pass-generation-guard.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {

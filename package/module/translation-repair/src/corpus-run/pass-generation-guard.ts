@@ -98,6 +98,45 @@ export class TipDriftError extends Error {
 }
 
 /**
+ * Raised when an artifact records no pipeline commit that can be read.
+ */
+export class UnplaceableArtifactError extends Error {
+  /**
+   * Names every unplaceable artifact and what removing it restores.
+   *
+   * @param entryIds - entries whose artifact carries no usable commit
+   *
+   * @example
+   * ```ts
+   * throw new UnplaceableArtifactError({ entryIds: ['Mittens',], },);
+   * ```
+   */
+  constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
+    super(
+      [
+        `${String(entryIds.length,)} artifact${
+          entryIds.length === 1 ? '' : 's'
+        } in this directory record no readable pipeline commit:`,
+        ...entryIds.map(function toLine(entryId,): string {
+          return `  ${entryId}`;
+        },),
+        '',
+        'Each one is an entry that has SILENTLY CEASED TO EXIST. The scheduler',
+        'counts every .json name as settled, so it will never be retried, and',
+        'the pool filter excludes an artifact of unknown generation, so it is',
+        'absent from every rate. Nothing else reports the gap.',
+        '',
+        'Deleting the file is the whole remedy: the next pass re-runs that',
+        'entry from scratch. A truncated artifact is the ordinary trace of a',
+        'pass killed at its hard cap, so this is expected maintenance rather',
+        'than evidence of a defect.',
+      ].join('\n',),
+    );
+    this.name = 'UnplaceableArtifactError';
+  }
+}
+
+/**
  * Refuses a resume that would add a second pipeline commit to one pool.
  *
  * Silent on a fresh directory and on a resume under the same commit, which are
@@ -129,9 +168,33 @@ export async function assertResumableGeneration(
     return;
 
   /**
-   * Commits the settled entries already record.
+   * Commits the settled entries already record, and the artifacts no commit
+   * could be read from.
    */
-  const { groups, } = await censusByTip({ artifactsDir, },);
+  const {
+    groups,
+    untaggedIds,
+    malformedIds,
+  } = await censusByTip({ artifactsDir, },);
+
+  // An artifact that cannot be placed is WORSE than a foreign tip, and reading
+  // only `groups` missed it entirely: a directory holding nothing but
+  // unplaceable artifacts produced no groups at all and sailed through.
+  //
+  // It is worse because the scheduler counts every `.json` name as settled, so
+  // such an entry is never retried, and the pool filter excludes it, so it is
+  // absent from every rate. The entry silently ceases to exist, and no count
+  // anywhere says so. Deleting the file is the whole remedy.
+  /**
+   * Artifacts carrying no usable pipeline commit, whatever the reason.
+   */
+  const unplaceable = [
+    ...untaggedIds,
+    ...malformedIds,
+  ].toSorted();
+
+  if (unplaceable.length > 0)
+    throw new UnplaceableArtifactError({ entryIds: unplaceable, },);
 
   /**
    * Recorded commits that are not the one this invocation would stamp.
