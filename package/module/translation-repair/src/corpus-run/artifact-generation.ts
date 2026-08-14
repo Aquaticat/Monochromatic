@@ -1,4 +1,5 @@
 import {
+  access,
   readdir,
   readFile,
 } from 'node:fs/promises';
@@ -24,10 +25,86 @@ import spawn from 'nano-spawn';
 // answers ancestry exactly, so eligibility is computed rather than estimated.
 
 /**
- * Real git binary; the repo PATH shim's staging guards are irrelevant to
- * read-only calls.
+ * Real git binary, preferred over the PATH entry.
+ *
+ * `git` on this repository's PATH resolves to `node_modules/.bin/git`, a shim
+ * carrying staging guards. Those guards are irrelevant to read-only calls, but
+ * resolving through a shim makes ancestry depend on a wrapper that exists for
+ * an unrelated reason, so the real binary is asked for by name.
  */
-const GIT_BINARY = '/usr/bin/git';
+const SYSTEM_GIT = '/usr/bin/git';
+
+/**
+ * One in-flight or settled probe for the git command, keyed by the path
+ * probed.
+ *
+ * A Map rather than a module-root `let`, which the lint rule forbids and
+ * which this does not need: the entry is written once. Holding a PROMISE
+ * rather than a value keeps resolution on first use rather than on import,
+ * so loading this module never touches the filesystem, and concurrent
+ * callers share one probe instead of racing several.
+ */
+const gitProbe = new Map<string, Promise<string>>();
+
+/**
+ * Finds a git to spawn, preferring the real binary over the PATH entry.
+ *
+ * @returns Command name or absolute path
+ *
+ * @example
+ * ```ts
+ * const git = await detectGit();
+ * ```
+ */
+async function detectGit(): Promise<string> {
+  try {
+    await access(SYSTEM_GIT,);
+    return SYSTEM_GIT;
+  }
+  catch (error) {
+    // Absent is ordinary anywhere that is not this machine. Logged rather
+    // than swallowed, because falling back to PATH means ancestry is
+    // answered by whatever git the shell resolves, including a shim, and
+    // that is worth seeing in a report which turns on ancestry.
+    console.log(
+      `POOL ${SYSTEM_GIT} not present (${String(error,)}); using git from PATH`,
+    );
+    return 'git';
+  }
+}
+
+/**
+ * Git command to spawn, resolved once per process.
+ *
+ * Not itself async: it hands back the memoised promise, so concurrent
+ * callers share one probe rather than racing several.
+ *
+ * @returns Promise of the command to spawn
+ *
+ * @example
+ * ```ts
+ * const git = await resolveGit();
+ * ```
+ */
+function resolveGit(): Promise<string> {
+  /**
+   * Probe already started for this path, when one has been.
+   */
+  const started = gitProbe.get(SYSTEM_GIT,);
+  if (started !== undefined)
+    return started;
+
+  /**
+   * Probe this call starts, stored before it settles so a second caller
+   * joins it rather than spawning its own.
+   */
+  const probe = detectGit();
+  gitProbe.set(
+    SYSTEM_GIT,
+    probe,
+  );
+  return probe;
+}
 
 /**
  * Directory of this source file, for locating the worktree via git.
@@ -457,6 +534,35 @@ export async function censusByTip(
 }
 
 /**
+ * Whether the repository answering ancestry has a truncated history.
+ *
+ * Asked of the same checkout ancestry is resolved against, since that is the
+ * one whose history can be short.
+ *
+ * @returns Whether this is a shallow clone
+ *
+ * @example
+ * ```ts
+ * if (await isShallowRepository()) throw new Error('cannot decide',);
+ * ```
+ */
+async function isShallowRepository(): Promise<boolean> {
+  /**
+   * Git's own answer, `true` or `false` on one line.
+   */
+  const { stdout, } = await spawn(
+    await resolveGit(),
+    [
+      '-C',
+      HERE,
+      'rev-parse',
+      '--is-shallow-repository',
+    ],
+  );
+  return stdout.trim() === 'true';
+}
+
+/**
  * Whether a failed git call was a clean "not an ancestor" answer.
  *
  * Asked as a boolean rather than by returning the status, because the only
@@ -515,7 +621,7 @@ export async function tipContains(
 ): Promise<boolean> {
   try {
     await spawn(
-      GIT_BINARY,
+      await resolveGit(),
       [
         '-C',
         HERE,
@@ -528,8 +634,28 @@ export async function tipContains(
     return true;
   }
   catch (error) {
-    if (isCleanNegative({ error, },))
+    if (isCleanNegative({ error, },)) {
+      // Exit 1 means "not an ancestor" only in a COMPLETE history. In a shallow
+      // clone the traversal stops at the graft boundary, so a commit that is a
+      // real ancestor beyond that boundary reports the same clean negative, and
+      // this pool would quietly lose every entry produced before the cut.
+      //
+      // Asked only here, on the negative path, so the ordinary answer costs no
+      // extra process.
+      if (await isShallowRepository())
+        throw new Error(
+          `Cannot decide whether ${tip} contains ${commit}: this is a SHALLOW `
+            + 'repository, and `git merge-base --is-ancestor` reports the same '
+            + 'exit status for "not an ancestor" and "history stops before the '
+            + 'answer".\nA shallow clone therefore cannot separate a stale '
+            + 'generation from an old one, and treating the negative as final '
+            + 'would drop entries from the pool while every rate above it '
+            + 'looked ordinary. Unshallow the repository, or run the reader '
+            + 'against a full clone.',
+          { cause: error, },
+        );
       return false;
+    }
 
     throw new Error(
       `Cannot place pipeline commit ${tip} against required commit ${commit}.\n`

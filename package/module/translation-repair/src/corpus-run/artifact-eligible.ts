@@ -414,18 +414,24 @@ export async function selectEligible(
    * Whether each generation contains the required commit, resolved once per
    * generation rather than once per entry.
    */
-  const verdicts = await Promise.all(
-    census.groups
-      .map(async function toVerdict(group,): Promise<GenerationVerdict> {
-        return {
-          group,
-          contains: await tipContains({
-            tip: group.tip,
-            commit: requiredCommit,
-          },),
-        };
+  // Sequential rather than `Promise.all`, which spawned one git process per
+  // generation with no bound. Generations are few today, but the count comes
+  // from a directory nobody controls, and an unbounded fan-out of processes is
+  // the kind of thing that is fine until the day the directory is messy.
+  // Ancestry is answered once per generation at startup, so serialising it
+  // costs nothing worth measuring.
+  const verdicts: GenerationVerdict[] = [];
+  /* oxlint-disable no-await-in-loop -- bounding process fan-out is the point */
+  for (const group of census.groups) {
+    verdicts.push({
+      group,
+      contains: await tipContains({
+        tip: group.tip,
+        commit: requiredCommit,
       },),
-  );
+    },);
+  }
+  /* oxlint-enable no-await-in-loop */
 
   /**
    * Entries whose pipeline contains the required commit.
