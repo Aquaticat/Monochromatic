@@ -177,8 +177,14 @@ Chromium implementation and source analysis culminate in:
 - `7cdef5304`:
    Chromium metric and raster-scale investigation
 - `9e19e347f`:
-   active Chromium feet paint 12 logical units outside content and hit bounds;
+   active Chromium feet paint outside content and hit bounds;
    edge gutters preserve first and last feet
+- `7acb783d1`:
+   inactive Slint baselines leave room for selected-foot overlap
+- `3858a0802`:
+   Android targets reserve the platform minimum inside layout
+- `72881bd1b`:
+   Android visible faces grow to `48dp` and scale Chromium's contour ratios
 
 LED implementation and reference corrections are:
 
@@ -190,9 +196,13 @@ LED implementation and reference corrections are:
 - `a56c8025c`
 - `abd8faff0`:
    final committed LED scene-fidelity pass
+- `999599d77`:
+   cap widths match the authoritative `56`,
+   `104`,
+   and `200`-unit reference geometry
 
 Current scoped implementation commit is
-`9e19e347f18a5dd15be252b72b3854412641e7b7`.
+`72881bd1b`.
 Unrelated commits are interleaved in history,
 so inspect scoped paths rather than assuming a contiguous feature branch.
 
@@ -207,15 +217,31 @@ The final committed LED implementation passed:
 - Android lint
 - Android unit tests
 
-Compact Chromium desktop dark and light renders were captured and inspected.
-The compact Chromium Android release was installed and resumed on the Pixel 6.
-Useful prior artifacts include:
+Final Chromium-foot desktop renders cover dark and light scenes,
+first,
+middle,
+row-end,
+wrapped-start,
+last,
+and pathological ellipsis states.
+A matching-scale shoulder comparison was made against the supplied Chromium screenshot.
+The final Android release was installed only on Pixel 6 `1C171FDF600KWW`.
+Its visible tab is `48dp`,
+its outer target is `54dp`,
+and UI Automator measured `[64,878][247,998]` at the device's `356dpi` override.
+Useful artifacts include:
 
 - `package/music-player/desktop-app/target/chromium-tabs-logical-dark.png`
 - `package/music-player/desktop-app/target/chromium-tabs-logical-light.png`
 - `package/music-player/desktop-app/target/chromium-tabs-logical-side-by-side.png`
 - `/var/home/user/temp/agent/chromium-tabs-android-logical.png`
 - `/var/home/user/temp/agent/chromium-tabs-android-logical-crop.png`
+- `/var/home/user/temp/agent/music-player-chromium-feet-render/package/music-player/desktop-app/target/chromium-feet-first-dark.png`
+- `/var/home/user/temp/agent/music-player-chromium-feet-render/package/music-player/desktop-app/target/chromium-feet-last-light.png`
+- `/var/home/user/temp/agent/music-player-chromium-feet-render/package/music-player/desktop-app/target/chromium-feet-long-ellipsis-dark.png`
+- `/var/home/user/temp/agent/music-player-chromium-feet-render/package/music-player/desktop-app/target/chromium-feet-reference-side-by-side.png`
+- `/var/home/user/temp/agent/music-player-android-chromium-visible-48dp.png`
+- `/var/home/user/temp/agent/music-player-android-chromium-visible-48dp-crop.png`
 
 Updated LED desktop renders were inspected in a detached render worktree.
 Useful artifacts include:
@@ -225,16 +251,24 @@ Useful artifacts include:
 - `/var/home/user/temp/agent/led-buttons-updated/dark-reference.png`
 - `/var/home/user/temp/agent/led-buttons-updated/light-reference.png`
 - `/var/home/user/temp/agent/music-player-led-comparison.html`
+- `/var/home/user/temp/agent/music-player-chromium-feet-render/package/music-player/desktop-app/target/led-buttons-reference-side-by-side.png`
+- `/var/home/user/temp/agent/music-player-android-led-final.png`
+
+The final checks pass:
+
+- desktop Slint lint
+- desktop Rust check and Rust lint
+- all 79 desktop tests
+- Android release build
+- Android Detekt
+- Android lint
+- Android unit tests
 
 ## Working-tree and process state
 
 Main worktree is clean for music-player files.
-Current unrelated concurrent changes include `.serena/project.yml`,
-`package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts`,
-`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/readonly-type-origin-location.ts`,
-`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/readonly-type-origin.ts`,
-and `doc/troubleshooting/oxlint-js-plugin-cross-file-locations.md`.
-Do not stage or alter them for this work.
+`.serena/project.yml` is the only current unrelated modification.
+Do not stage or alter it for this work.
 
 Detached render worktree:
 `/var/home/user/temp/agent/music-player-led-render`.
@@ -243,7 +277,7 @@ It is based on `a56c8025c` and has a scratch modification to
 Treat that worktree and its target images as disposable visual-analysis material,
 not source to merge wholesale.
 
-No feature process is currently running.
+The final desktop app is running for requester verification in `proc_bcef`.
 Completed process records still available in the harness include:
 
 - `proc_d7a6`:
@@ -253,39 +287,26 @@ Completed process records still available in the harness include:
    Android compact Chromium release install and launch,
   exited successfully
 
-The Android app process observed during compact Chromium verification was PID `5927`.
-That PID is historical and must not be assumed current.
+The current Android app runs the final release on Pixel 6 process PID `16662` when last observed.
+Re-measure rather than assuming that PID remains current.
+
+`doc/troubleshooting/README.md` indexes troubleshooting categories,
+not every standalone report.
+The Chromium raster-scale report therefore needs no explicit entry under the current index policy.
 
 ## Remaining work
 
-1.  Visually verify the implemented Chromium active-foot overflow in Slint and Compose.
-    Confirm both 12-unit shoulders visibly protrude and are not clipped at first,
-    middle,
-    last,
-    or wrapped-row positions.
-2.  Run desktop Slint lint,
-    desktop Rust lint and tests,
-    Android Detekt,
-    Android lint,
-    and Android unit tests after the feet change.
-3.  Render Chromium dark and light states at the reference's logical scale.
-    Compare side by side and inspect first tab,
-    middle tab,
-    last tab,
-    wrapped rows,
-    and a pathological long label.
-4.  Finish the matching-scale LED comparison against both authoritative hero SVGs.
-5.  Build and install the final Android release on serial `1C171FDF600KWW`.
-    Capture the Chromium and LED settings on the device without launching on any other device.
-6.  Launch the final desktop build on this machine for requester verification.
-7.  Check whether `doc/troubleshooting/README.md` requires an explicit
-    `chromium-tab-raster-scale.md` entry under its existing index policy.
+1.  Requester visually verifies the already launched desktop app and installed Pixel 6 release.
+2.  Apply any visual corrections reported by the requester,
+    then repeat the matching state probe before recapturing.
 
 ## Risks and guardrails
 
 - Drawing shoulders inside the current tab bounds recreates the clipping defect.
   Increasing nominal control width can instead break content-width wrapping,
   so keep visual overflow distinct from layout width when the toolkit permits it.
+- Android's `48dp` requirement applies to both the visible face and owned target for this package.
+  Transparent target padding is insufficient.
 - The first and last active Chromium tabs need explicit edge inspection.
   A middle-tab screenshot alone cannot prove both feet survive row clipping.
 - Do not infer visual fidelity from successful compilation.
@@ -326,3 +347,15 @@ That PID is historical and must not be assumed current.
   light,
   edge,
   and wrapped positions.
+- 2026-08-13,
+  21:06 EDT:
+  Completed host and Pixel verification after requester corrections.
+  Android Chromium tabs now have a visibly `48dp` face inside a `54dp` row,
+  with source corner and shoulder ratios scaled proportionally.
+  UI Automator confirmed a `120px` target at `356dpi`,
+  consecutive rows do not overlap,
+  and the state-verified screenshot is
+  `/var/home/user/temp/agent/music-player-android-chromium-visible-48dp.png`.
+  LED cap widths now match the authoritative reference and were compared at matching scale in both scenes.
+  The final Pixel release is installed,
+  and the final desktop app is running in `proc_bcef` for requester inspection.

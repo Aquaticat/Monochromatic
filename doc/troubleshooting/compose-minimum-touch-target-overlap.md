@@ -43,23 +43,30 @@ only `41dp` tall.
 
 ## Fix
 
-Reserve Android's target inside each custom tab's layout while keeping Chromium's
-visible geometry separate:
+Reserve Android's target inside each custom tab's layout and make the visible
+face itself at least `48dp` tall.
+Transparent target padding does not satisfy a visible-size requirement.
+Scale Chromium's source contour ratios from its `35dp` source height onto the
+Android face while preserving the source-derived `6dp` strip inset:
 
 ```kotlin
 // package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt
+private val chromiumTabVisibleHeight: Dp = 48.dp
+private val chromiumTabStripInset: Dp = 6.dp
+private val chromiumTabShoulder: Dp = chromiumTabVisibleHeight * 12f / 35f
+
 Box(
     modifier = Modifier
-        .widthIn(min = 48.dp, max = options.maximumWidth)
+        .widthIn(min = chromiumTabVisibleHeight, max = options.maximumWidth)
         .width(IntrinsicSize.Max)
-        .height(48.dp)
+        .height(chromiumTabVisibleHeight + chromiumTabStripInset)
         .selectable(/* ... */),
 ) {
     Box(
         modifier = Modifier
             .align(Alignment.TopStart)
-            .offset(y = 6.dp)
-            .height(35.dp),
+            .offset(y = chromiumTabStripInset)
+            .height(chromiumTabVisibleHeight),
     ) {
         // Visible Chromium tab.
     }
@@ -68,10 +75,12 @@ Box(
 
 The outer box owns semantics,
 selection,
-and the explicit `48dp` target.
-The inner box keeps the source-derived `6dp` strip inset and `35dp` silhouette.
+and a `54dp` layout target.
+The inner box is visibly `48dp` tall after the `6dp` strip inset.
+Top-corner and shoulder geometry retain Chromium's `10:35` and `12:35` source
+ratios.
 Visual feet still draw outside horizontal content bounds,
-but the touch target itself does not depend on paint overflow.
+but the target does not depend on paint overflow.
 
 ## Verification
 
@@ -94,13 +103,21 @@ adb -s 1C171FDF600KWW shell uiautomator dump /sdcard/music-player.xml
 adb -s 1C171FDF600KWW exec-out cat /sdcard/music-player.xml
 ```
 
-On the Pixel 6 at `356dpi`,
-UI Automator reported the first row at `[54,878][237,985]` and the next wrapped row
-starting at `y=985`.
-The `107px` height is approximately `48.1dp`,
-and consecutive rows meet without overlap.
-The selected screenshot was captured only after the UI tree reported
-`selected="true"` for those same bounds.
+Before visible enlargement,
+the Pixel 6 at `356dpi` reported the first row as `107px` tall,
+approximately `48.1dp`,
+only because Compose expanded the undersized target.
+
+After the final fix,
+UI Automator reported the first tab target at `[64,878][247,998]`.
+Its `120px` height is approximately `53.9dp`,
+which contains the `6dp` strip inset plus the visibly `48dp` tab.
+The visible path region measured approximately `106px`,
+or `47.6dp` after pixel rounding.
+The next wrapped row starts at `y=998`,
+so target rows meet without overlap.
+The final screenshot was captured only after the UI tree reported
+`selected="true"` for the same target bounds.
 
 ## Sources
 

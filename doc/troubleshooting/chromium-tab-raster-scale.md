@@ -11,8 +11,9 @@ a `50px` or `50dp` visible shape,
 and `24px` or `24dp` horizontal label insets.
 Those values came from reading raster pixels as logical UI dimensions.
 
-The working implementation uses Chromium's source dimensions as logical pixels or density-independent pixels,
-while preserving this music player's content-width and whole-control wrapping requirements.
+The desktop implementation uses Chromium's source dimensions as logical pixels.
+Android preserves Chromium's contour ratios but scales the visible tab face to the platform's `48dp` custom-control minimum.
+Both preserve this music player's content-width and whole-control wrapping requirements.
 
 ## Root cause
 
@@ -127,11 +128,16 @@ mise run //package/music-player/android-app:test:unit
 
 ### Values that reproduce Chromium's logical geometry
 
-- `41` total row height: `35` tab height plus `6` strip padding.
-- `10` top-corner radius and `12` bottom shoulder radius.
+- `41` source row height:
+   `35` tab height plus `6` strip padding.
+- `10:35` top-corner ratio and `12:35` bottom-shoulder ratio.
 - `20` horizontal text inset when icon and close controls are omitted.
 - `2` by `16` inactive separators.
 - `1`-unit active contour.
+
+Desktop uses the source values directly.
+Android uses a visible `48dp` face plus the `6dp` strip inset,
+then scales the corner and shoulder ratios to that face.
 
 ### Values that reproduce the oversized imitation
 
@@ -143,11 +149,12 @@ mise run //package/music-player/android-app:test:unit
 
 ## Verified workarounds
 
-Use Chromium's logical geometry in both renderers:
+Use Chromium's logical geometry as source geometry in both renderers:
 
 - `package/music-player/desktop-app/ui/app.slint` expresses the dimensions directly in Slint logical pixels.
 - `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt`
-  expresses the same dimensions in Compose `dp` and scales the path from its `35dp` height.
+  scales the `10:35` corner and `12:35` shoulder ratios onto a visibly `48dp` face.
+  Its total row is `54dp` after Chromium's `6dp` strip inset.
 
 Keep project-specific behavior explicit:
 
@@ -163,11 +170,16 @@ and its standard tab includes favicon and close-control allocation.
 
 ## What does not work
 
-- **Treating raster pixels as DIPs:** screenshot density makes geometry scale-dependent.
-- **Scaling every measured screenshot dimension by one guessed ratio:** text rendering and capture scaling can differ.
-- **Copying Chromium's `232`-DIP standard content width:** violates the accepted content-width requirement.
-- **Using only a rounded rectangle:** omits the outward lower shoulders that identify the supplied silhouette.
-- **Adding favicon or close glyphs for resemblance:** creates affordances the page selector does not support.
+- **Treating raster pixels as DIPs:**
+   screenshot density makes geometry scale-dependent.
+- **Scaling every measured screenshot dimension by one guessed ratio:**
+   text rendering and capture scaling can differ.
+- **Copying Chromium's `232`-DIP standard content width:**
+   violates the accepted content-width requirement.
+- **Using only a rounded rectangle:**
+   omits the outward lower shoulders that identify the supplied silhouette.
+- **Adding favicon or close glyphs for resemblance:**
+   creates affordances the page selector does not support.
 
 ## Upstream filing decision
 
@@ -175,19 +187,25 @@ No `.out-of-scope/` entry matches Chromium tab dimensions.
 GitHub searches across open and closed `chromium/chromium` issues for
 `tab height width logical DIP` found no matching report.
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?**
+    No.
    Chromium's source is internally consistent;
    the defect was this project's raster-to-logical conversion.
-2. **Can upstream fix it?** No.
+2. **Can upstream fix it?**
+    No.
    Chromium cannot correct dimensions in this repository's Slint and Compose components.
-3. **Are they supporting this use case?** No.
+3. **Are they supporting this use case?**
+    No.
    Chromium supports its own browser strip,
    not a wrapping third-party music-page selector.
-4. **Would the repo welcome our contribution?** Not evaluated beyond the public source and tracker search,
+4. **Would the repo welcome our contribution?**
+    Not evaluated beyond the public source and tracker search,
    because there is no upstream defect or relevant patch.
-5. **Will they likely fix it?** Not applicable;
+5. **Will they likely fix it?**
+    Not applicable;
    there is nothing upstream to fix.
-6. **Have we prototyped a minimal upstream fix?** No upstream patch exists.
+6. **Have we prototyped a minimal upstream fix?**
+    No upstream patch exists.
    The minimal consumer fix was implemented and verified in this repository.
 
 There is no issue or additive comment to file upstream.
