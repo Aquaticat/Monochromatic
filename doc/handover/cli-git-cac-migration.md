@@ -407,7 +407,8 @@ CAC failed hard requirements for replacing `src/parser/argv.ts` or the complete 
 Do not pursue CAC as the Git-region parser or as a complete parser replacement.
 Those integration shapes have exited the audit on hard-gate failure.
 
-Management-only use reaches Node 24 parity but ultimately fails the complete package runtime gate.
+Management-only use reaches Linux/Node 26.7.0 parity and Node 24.18.0 built-consumer validation,
+but ultimately fails the complete package runtime gate.
 A direct 41-case mapping matched the incumbent in 37 cases.
 The mismatches were policy IDs `001`,
 `+2`,
@@ -454,7 +455,7 @@ and upstream comment draft are in
 
 ### 2026-08-14 production integration checkpoint
 
-A typed disposable package integration now matches the incumbent on 52 management cases.
+A typed disposable package integration matches the incumbent on 52 management cases under Linux/Node 26.7.0.
 The expanded set includes exact numeric and dash-led policies,
 repeated booleans,
 lone dashes,
@@ -505,7 +506,7 @@ The candidate passed all maintained lifecycle budgets.
 311.0310 ms p95,
 and 316.5200 ms maximum against the 925 ms ceiling across thirty measured runs.
 No-config startup measured 87.5854 ms median and 94.3790 ms maximum against 275 ms.
-The absolute latency gate passes.
+The Linux/Node 24.18.0 absolute latency gate passes.
 Two runs per shape found a 292.2756 to 292.6579 ms baseline `wide-commit` median band and a
 299.5193 to 300.6160 ms candidate band.
 The measured candidate delta is 6.8614 to 8.3404 ms,

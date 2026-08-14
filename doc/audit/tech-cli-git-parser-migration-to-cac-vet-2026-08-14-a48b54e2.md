@@ -153,7 +153,7 @@ An externalized CAC import without a packed CAC dependency would still fail.
 This is a clarification of the pre-existing baseline contract,
 not a candidate-specific relaxation,
 so the compatibility fingerprint remains unchanged.
-The clarification is recorded before rating CAC.
+The clarification was recorded before rating CAC in commit `c659bdc88` on 2026-08-14.
 
 ## Frozen criteria
 
@@ -1416,7 +1416,7 @@ unknown-option rejection,
 unused-argument rejection,
 repetition,
 and post-`--` pathspec capture can match the incumbent only with an owned exact-value scanner and runtime validators.
-That adapted shape reached 52-case parity on Node 24.
+That adapted shape reached 52-case parity on the Linux host's Node 26.7.0 runtime.
 
 The exact lower supported runtime then rejected both the unchanged and CAC-integrated application artifacts before
 package import:
@@ -1639,7 +1639,7 @@ Evidence:
 - complete disposable integration patch SHA-256:
   `5a3bdaf4aabcc7f001463089e3975126ad8a257bb80c89daa31781d42e2bade4`;
 - result:
-  52 matches and zero mismatches.
+  52 matches and zero mismatches on Linux/Node 26.7.0.
 
 The production-shaped CAC module occupies 570 physical lines and 291 measured nonblank,
 noncomment lines.
@@ -1750,6 +1750,16 @@ Evidence hashes:
 - median-band comparison:
   `151d57b99cad0e976733f1295f5aaec285976b5d2f430bdd9bdcdf45a098b0bf`.
 
+The task's fixed output path overwrote the first candidate JSON during run two.
+The first run's full-file hash and command output remain recorded,
+and its summary medians were preserved in
+`candidate-latency-1-summary.json` with SHA-256
+`976a8d9c3b528768645dc901b350cc19e4157705ce34d6c1293eb1d597de02fc`.
+The two baseline files,
+second candidate file,
+and comparison file remain complete.
+The latency comparison is not load-bearing for the rejection.
+
 This passes the absolute latency gate.
 The later Node 22 package failure still exits the management-only shape before scoring.
 The benchmark JSON labels both artifacts with baseline revision `2c9760515` because the prototype was uncommitted;
@@ -1766,12 +1776,13 @@ The network-disabled probe failed before the planned 52-case combined validation
 - unchanged built artifact import exited `1` on retained `await using`;
 - CAC candidate built artifact import exited `1` on the same syntax;
 - candidate source harness exited `1` because shared logger code called absent `Error.isError`;
-- Node 24.18.0 remains the positive control for package import,
-  help,
+- Linux/Node 26.7.0 is the positive control for typed 52-case parity,
+  package import,
+  authored help,
   invalid usage,
-  tests,
-  built trust,
-  and performance.
+  type checking,
+  and unit execution;
+- Linux/Node 24.18.0 is the positive control for the built-trust consumer and maintained lifecycle benchmark.
 
 Baseline stderr SHA-256 is
 `37b72db335be0c716f8b24248cf7cddd0bb082017358e89c89b00af6d3f18a47`.
@@ -1822,7 +1833,7 @@ Pros:
 - routes the closed one-level command namespace;
 - rejects unknown options and unused arguments;
 - reproduces 52 incumbent cases with an owned adapter;
-- preserves authored output and exit contracts when built on Node 24;
+- preserves authored output and exit contracts in the built Linux/Node 26.7.0 command probes;
 - passes every absolute lifecycle budget;
 - adds only 8,354 bytes to the application artifact.
 
@@ -1859,8 +1870,10 @@ The expanded typed adapter is disposable evaluation code,
 not an authorized migration.
 The Node 22 failure is a pre-existing cli-git contract defect rather than a CAC defect,
 but hard gates apply to the resulting package.
-CAC's release-commit Windows tests passed;
-combined cli-git adapter behavior ran only on Linux/Node 24 before the Node 22 stop.
+CAC's release-commit Windows tests passed.
+The typed combined parity and command probes ran on Linux/Node 26.7.0;
+the built-trust and lifecycle consumers ran on Linux/Node 24.18.0.
+No typed 52-case Node 24 or combined macOS/Windows adapter run completed before the Node 22 stop.
 GitHub had expired CAC's failed release-commit lint log,
 so its exact diagnostic remains unknown.
 The first full cli-git unit run had one Git fixture lock collision that passed on isolated retry;

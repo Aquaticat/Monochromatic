@@ -147,19 +147,24 @@ This second failure confirms that removing only the `await using` syntax would n
 
 ### Positive control
 
-Node 24.18.0 imported the same candidate artifact with no stderr,
+Linux/Node 26.7.0 imported the candidate artifact with no stderr,
 exposed `definePolicy` as a function,
 ran authored management and trust help,
 and returned exit `2` for invalid trust,
 check,
 and fix options.
-The maintained Linux/Node 24 built-trust consumer also passed.
+The maintained Linux/Node 24.18.0 built-trust consumer and lifecycle benchmark also executed the packed candidate
+successfully.
 
 ### Working catalog
 
-- Node 24.18.0 candidate package import.
-- Node 24.18.0 built management help and invalid-usage contracts.
-- Node 24.18.0 maintained package tests and lifecycle benchmark.
+- Node 26.7.0 typed parity,
+  candidate package import,
+  built management help,
+  invalid-usage contracts,
+  type checking,
+  and unit execution.
+- Node 24.18.0 built-trust consumer and maintained lifecycle benchmark.
 
 ### Failing catalog
 
@@ -177,10 +182,7 @@ The maintained Linux/Node 24 built-trust consumer also passed.
 Pros:
 
 - makes package metadata truthful for current source and built output;
-- matches the already verified Node 24.18.0 import,
-  tests,
-  built consumer,
-  and benchmark;
+- matches the verified Node 24.18.0 built consumer and benchmark plus the Node 26.7.0 import and command probes;
 - avoids replacing widespread explicit resource management and error classification.
 
 Cons:
@@ -189,7 +191,7 @@ Cons:
 - requires all consumers to use the Node 24 branch already present in the engine range.
 
 This is the minimal verified alignment:
-the unchanged artifact passes on Node 24.18.0 and fails on Node 22.18.0.
+the unchanged packed artifact executes in the Node 24.18.0 lifecycle benchmark and fails import on Node 22.18.0.
 The package is unpublished,
 so changing its declared floor is a design correction rather than a published compatibility break.
 
@@ -249,7 +251,9 @@ Preserving Node 22 is second because it retains broader support but requires an 
 5. **Will they likely fix it?**
    Not applicable to Node or CAC.
 6. **Have we prototyped a minimal compatible fix?**
-   The minimal metadata alignment is verified by the Node 22 failure and Node 24 positive control.
+   The minimal metadata alignment is verified by the Node 22 failure,
+   Node 24.18.0 built consumers,
+   and Node 26.7.0 import and command probes.
    A true Node 22 compatibility implementation has not been prototyped.
 
 Do not file an issue against Node or CAC.
