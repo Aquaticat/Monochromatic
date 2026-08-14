@@ -550,9 +550,10 @@ so it has no practical simplification benefit.
   writes help,
   or normalizes argv unexpectedly can alter safety and automation behavior even when ordinary examples pass.
 
-## Next action
+## Completion state
 
-Validate the final audit and troubleshooting Markdown,
-release the audit lock,
-remove disposable worktrees,
-and report the terminal recommendation.
+Final audit and troubleshooting Markdown validation passed.
+The audit lock is released.
+Both disposable repository worktrees were removed after preserving the production integration patch and hashed evidence
+under `~/temp/agent/cac-artifact-2026-08-14/`.
+No audit work remains.

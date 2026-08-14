@@ -1636,6 +1636,8 @@ Evidence:
   `aa0e9ea2025bc55cea22020a0bd2ecbe20610a5791751dbd974bde024c7da9c2`;
 - parity output SHA-256:
   `357df839b1ffaa31026fde5eafdb71dc261adb55a2e6c75ef012bc91f145cfac`;
+- complete disposable integration patch SHA-256:
+  `5a3bdaf4aabcc7f001463089e3975126ad8a257bb80c89daa31781d42e2bade4`;
 - result:
   52 matches and zero mismatches.
 
@@ -1863,3 +1865,5 @@ GitHub had expired CAC's failed release-commit lint log,
 so its exact diagnostic remains unknown.
 The first full cli-git unit run had one Git fixture lock collision that passed on isolated retry;
 validation stopped at the later hard gate before a second complete run.
+The two disposable repository worktrees were removed after preserving the integration patch and hashed evidence under
+`~/temp/agent/cac-artifact-2026-08-14/`.
