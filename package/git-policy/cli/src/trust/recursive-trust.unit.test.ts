@@ -258,6 +258,45 @@ await describe({
       },
     },),
     it({
+      name: 'unavailable recursive re-trust preserves previous MJS record',
+      fn: async function testUnavailableRecursiveRetrust() {
+        await using fixture = await createFixture();
+        /** Recursive root config. */
+        const outer = await discoverFixture(fixture.outer,);
+        /** Previously installed recursive record. */
+        const initial = await trustMjs({
+          discovered: outer,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: consentAdapters({ answers: [], disclosures: [], },),
+        },);
+        /** Failure from unavailable second-stage re-trust consent. */
+        const failure = await (async function captureUnavailableRetrust(): Promise<unknown> {
+          try {
+            return await trustMjs({
+              discovered: outer,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: consentAdapters({
+                answers: ['approved', 'unavailable',],
+                disclosures: [],
+              },),
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await loadTrustedConfig({
+          discovered: outer,
+          registryRoot: fixture.registryRoot,
+        },)).record,).toEqual(initial.record,);
+      },
+    },),
+    it({
       name: 'auto-enrolls descendants and blocks later byte changes',
       fn: async function testAutoEnrollment() {
         await using fixture = await createFixture();

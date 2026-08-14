@@ -288,9 +288,9 @@ export async function trustTypeScript({
     throw new TrustedConfigError(
       'trust-consent-unavailable',
       [
-        'Interactive consent is unavailable because stdin or stderr is not a terminal.',
+        'Interactive consent is unavailable because stdin or stderr is not a terminal, or input ended before a response.',
         'After reviewing the disclosure, run `git cli-git trust --yes`.',
-        'No record was installed.',
+        'No new trust record was installed.',
       ].join(' ',),
     );
   if (rootConsent === 'declined')
@@ -326,9 +326,9 @@ export async function trustTypeScript({
       throw new TrustedConfigError(
         'trust-consent-unavailable',
         [
-          'Interactive consent is unavailable because stdin or stderr is not a terminal.',
+          'Interactive consent is unavailable because stdin or stderr is not a terminal, or input ended before a response.',
           'After reviewing the disclosure, run `git cli-git trust --yes`.',
-          'No record was installed.',
+          'No new trust record was installed.',
         ].join(' ',),
       );
     return recursiveConsent === 'approved';

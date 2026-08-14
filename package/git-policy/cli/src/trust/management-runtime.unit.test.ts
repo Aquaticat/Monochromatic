@@ -267,9 +267,9 @@ await describe({
           type: 'engine-failure',
           code: 'trust-consent-unavailable',
           message: [
-            'Interactive consent is unavailable because stdin or stderr is not a terminal.',
+            'Interactive consent is unavailable because stdin or stderr is not a terminal, or input ended before a response.',
             'After reviewing the disclosure, run `git cli-git trust --yes`.',
-            'No record was installed.',
+            'No new trust record was installed.',
           ].join(' ',),
         },);
         expect(error.stderr,).toContain('Exact snapshot state: new',);

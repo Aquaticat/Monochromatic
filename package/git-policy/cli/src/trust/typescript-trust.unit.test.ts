@@ -345,6 +345,58 @@ export default {
       },
     },),
     it({
+      name: 'unavailable recursive re-trust preserves previous TypeScript record',
+      fn: async function testUnavailableRecursiveRetrust() {
+        await using fixture = await createFixture(
+          'export default { trust: { children: true } };\n',
+        );
+        /** Previously installed recursive record. */
+        const initial = await trustTypeScript({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: adapters([],),
+        },);
+        /** Ordered root approval then unavailable recursive consent. */
+        const promptState = {
+          index: 0,
+          outcomes: ['approved', 'unavailable',] as const,
+        };
+        /** Adapter exposing unavailable second-stage consent. */
+        const unavailableAdapters: TrustConsentAdapters = {
+          ...adapters([],),
+          prompt: function nextConsent() {
+            /** Current staged outcome. */
+            const outcome = promptState.outcomes[promptState.index]
+              ?? 'unavailable';
+            promptState.index += 1;
+            return Promise.resolve(outcome,);
+          },
+        };
+        /** Failure from unavailable second-stage re-trust consent. */
+        const failure = await (async function captureUnavailableRetrust(): Promise<unknown> {
+          try {
+            return await trustTypeScript({
+              discovered: fixture.discovered,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: unavailableAdapters,
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await loadTrustedConfig({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+        },)).record,).toEqual(initial.record,);
+      },
+    },),
+    it({
       name: 'leaves no record when build is invalid',
       fn: async function testFailedBuild() {
         await using fixture = await createFixture(`const target = './policy.ts';\nawait import(target);\nexport default {};\n`,);

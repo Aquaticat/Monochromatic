@@ -5,6 +5,7 @@
  */
 import { createInterface, } from 'node:readline/promises';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   createEngineFailureEvent,
   type EngineFailureCode,
@@ -26,8 +27,18 @@ import { TrustedConfigError, } from './config-loader.ts';
 import type { TrustConsentOutcome, } from './types.ts';
 
 /**
- * Trust management action parsed by Optique.
+ * Trust management action parsed by management argv parser.
  */
+/**
+ * Logger root for trust management boundaries.
+ *
+ * @example
+ * ```ts
+ * const rl = tagged({ tag: someFunction.name, l, });
+ * ```
+ */
+const l = tagged({ tag: 'cli-git', },);
+
 export type TrustManagementAction = Readonly<{
   /**
    * Action discriminator.
@@ -104,8 +115,17 @@ function emitTrustFailure({
  * Requests explicit interactive consent without auto-trusting CI.
  *
  * @returns explicit prompt outcome, including unavailable terminal streams
+ *
+ * @throws unexpected readline failure that is not terminal EOF
  */
 async function promptForTrust(): Promise<TrustConsentOutcome> {
+  /**
+   * Function-tagged prompt lifecycle logger.
+   */
+  const rl = tagged({
+    tag: promptForTrust.name,
+    l,
+  },);
   if ((!process.stdin
     .isTTY) || (!process.stderr
       .isTTY))
@@ -117,15 +137,25 @@ async function promptForTrust(): Promise<TrustConsentOutcome> {
     input: process.stdin,
     output: process.stderr,
   },);
-  /**
-   * Exact interactive response.
-   */
-  const answer = await prompt.question('Type yes to trust this exact snapshot: ',);
-  return answer.trim()
-    .toLowerCase()
-    === 'yes'
-    ? 'approved'
-    : 'declined';
+  try {
+    /**
+     * Exact interactive response.
+     */
+    const answer = await prompt.question('Type yes to trust this exact snapshot: ',);
+    return answer === 'yes'
+      ? 'approved'
+      : 'declined';
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,)
+      && (error.name === 'AbortError')
+      && ('code' in error)
+      && (error.code === 'ABORT_ERR')) {
+      rl.debug(`interactive trust prompt ended without input: ${String(error,)}`,);
+      return 'unavailable';
+    }
+    throw error;
+  }
 }
 
 /**
