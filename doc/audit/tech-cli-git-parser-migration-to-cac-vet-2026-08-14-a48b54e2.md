@@ -841,6 +841,111 @@ network,
 native,
 or Wasm boundary requires manifest revision before continuing.
 
+### Management-parser parity probe
+
+Candidate:
+ `cac@7.0.0` management-only integration shape.
+
+Pinned inputs:
+
+- the same extracted CAC artifact and digest as the published-artifact behavior matrix;
+- current parser source from disposable worktree
+  `~/temp/agent/mono-cac-probe.kbXvUyzU` at assessment commit `2c9760515`;
+- current read-only workspace dependencies mounted only for the incumbent parser's Valibot import;
+- local harness `cac-management-probe.mjs` in the disposable worktree.
+
+Top-level command:
+
+```text
+podman run --memory=2g --cpus=2 --pids-limit=128 --ulimit nofile=1024:1024 --rm --network none --read-only ... node /probe/cac-management-probe.mjs
+```
+
+Reachable command tree:
+ one Node process imports current pure management-parser source and the pinned CAC ESM artifact.
+It constructs a new CAC instance per case,
+parses explicit synthetic argv,
+runs CAC validation,
+normalizes refusal sentinels,
+and compares JSON results.
+No command action performs external work.
+
+Inspected files:
+ behavior-matrix source set,
+current `management-parser.ts`,
+current `parser/argv.ts`,
+and the complete harness.
+
+Expected reads:
+ read-only Node image,
+disposable worktree,
+current workspace dependency directory,
+and extracted CAC artifact.
+
+Expected writes:
+ bounded anonymous container state only;
+read-only root plus a 64 MiB `/tmp` tmpfs.
+
+Subprocesses:
+ Podman runtime and one Node process.
+Imported code spawns none.
+
+Network:
+ disabled.
+
+Image and resource limits:
+ identical to the published-artifact behavior matrix.
+
+Credentials and environment:
+ no home mount,
+no repository write mount,
+no ambient credential environment,
+and no network.
+
+Outputs:
+ one JSON object with total cases,
+equal cases,
+mismatches,
+and every compared result.
+The catalog covers help,
+trust,
+untrust,
+status,
+check,
+fix,
+unknown options,
+missing values,
+repetition,
+joined values,
+numeric-looking policy IDs,
+dash-led policy IDs,
+pre-separator positionals,
+and exact post-`--` pathspecs.
+
+Positive control:
+ ordinary one-level commands,
+booleans,
+text policy values,
+and post-`--` pathspecs must match the incumbent.
+A catalog with no equal rows is a harness failure rather than evidence.
+
+Success condition:
+ process exits zero,
+all catalog rows execute,
+and the JSON count equals the literal harness catalog.
+Parity is an observed result,
+not a success condition.
+
+Failure condition:
+ import failure,
+uncaptured throw,
+missing row,
+unexpected external effect,
+resource limit,
+or nonzero process exit.
+
+Stop condition:
+ any undeclared effect or command boundary requires manifest revision before continuing.
+
 ## Hard-gate exits
 
 None yet.
