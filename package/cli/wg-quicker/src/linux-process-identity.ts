@@ -145,20 +145,20 @@ export async function readLinuxProcessIdentity(
 }
 
 /**
- * Checks complete process command identity.
+ * Checks process arguments independently from executable install path.
  *
- * @param identity - Live procfs identity.
+ * @param identity - Live procfs identity retaining executable argument.
  *
- * @param expected - Exact command argument vector.
+ * @param expected - Exact arguments following nonempty executable argument.
  *
- * @returns Whether command vectors have equal length and values.
+ * @returns Whether argument vectors have equal length and values.
  *
  * @example
  * ```ts
- * processCommandMatches({ identity, expected: ['/usr/bin/node', 'watcher.mjs'] });
+ * processArgumentsMatch({ identity, expected: ['watcher.mjs'] });
  * ```
  */
-export function processCommandMatches(
+export function processArgumentsMatch(
   {
     identity,
     expected,
@@ -167,14 +167,18 @@ export function processCommandMatches(
     readonly expected: readonly string[];
   },
 ): boolean {
-  if (identity.commandLine
-    .length
-    !== expected.length)
+  if (identity.commandLine.length !== (expected.length + 1))
+    return false;
+  /**
+   * Nonempty executable argument intentionally independent from runtime install path.
+   */
+  const [executable,] = identity.commandLine;
+  if ((executable === undefined) || (executable === ''))
     return false;
   return expected.every(function sameArgument(
     value,
     index,
   ): boolean {
-    return identity.commandLine[index] === value;
+    return identity.commandLine[index + 1] === value;
   },);
 }

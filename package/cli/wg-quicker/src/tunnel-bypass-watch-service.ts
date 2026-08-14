@@ -9,7 +9,7 @@ import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { BypassRouteError, } from './errors.ts';
 import {
   PROCESS_ABSENT,
-  processCommandMatches,
+  processArgumentsMatch,
   readLinuxProcessIdentity,
   type LinuxProcessIdentity,
 } from './linux-process-identity.ts';
@@ -66,7 +66,7 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Checks live process is exact watcher command from sidecar.
+ * Checks live process has exact watcher script and state arguments.
  *
  * @param identity - Persisted watcher identity.
  *
@@ -99,10 +99,9 @@ async function watcherIsRunning(
     || (live.state === 'Z')) {
     return false;
   }
-  if (!processCommandMatches({
+  if (!processArgumentsMatch({
     identity: live,
     expected: [
-      process.execPath,
       WATCHER_PATH,
       statePath,
     ],
@@ -439,10 +438,9 @@ export async function startBypassWatcher(
   const live = await readLinuxProcessIdentity({ pid, },);
   if (live === PROCESS_ABSENT)
     throw new BypassRouteError('Bypass route watcher disappeared before readiness.',);
-  if (!processCommandMatches({
+  if (!processArgumentsMatch({
     identity: live,
     expected: [
-      process.execPath,
       WATCHER_PATH,
       statePath,
     ],
