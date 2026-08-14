@@ -11,6 +11,7 @@ import { hashContent, } from './document-node.ts';
 import { collectIdentityLines, } from './identity-context.ts';
 import {
   type ChunkGovernance,
+  type ChunkSlice,
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 import {
@@ -407,9 +408,13 @@ export async function repairTranslation(
     governance.push({
       sourceText: pair.source
         .text,
-      sliceIndices: carved.map(function toIndex(carvedSlice,): number {
-        return carvedSlice.target
-          .chunkIndex;
+      slices: carved.map(function toSlice(carvedSlice,): ChunkSlice {
+        return {
+          index: carvedSlice.target
+            .chunkIndex,
+          sourceText: carvedSlice.source
+            .text,
+        };
       },),
     },);
     slices.push(...carved,);

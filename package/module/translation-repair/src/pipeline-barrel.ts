@@ -132,6 +132,7 @@ export {
 export { buildEditorAddendum, } from './line-structure-addendum.ts';
 export {
   type ChunkGovernance,
+  type ChunkSlice,
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 export { isLineStructured, } from './line-structure.ts';

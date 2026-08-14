@@ -240,7 +240,16 @@ await describe({
         const governed = governedSliceIndices({
           chunks: [{
             sourceText: verseChunk,
-            sliceIndices: [4, 5,],
+            slices: [
+              {
+                index: 4,
+                sourceText: verseChunk,
+              },
+              {
+                index: 5,
+                sourceText: 'Paws on the windowsill',
+              },
+            ],
           },],
         },);
 
@@ -278,7 +287,10 @@ await describe({
                   'Nobody comes home',
                 ],
               },),
-              sliceIndices: [9,],
+              slices: [{
+                index: 9,
+                sourceText: fragment,
+              },],
             },],
           },).has(9,),
         ).toBe(true,);
@@ -301,10 +313,80 @@ await describe({
                   'This is the whole of the afternoon, and it was enough for everyone concerned.',
                 ],
               },),
-              sliceIndices: [0, 1, 2,],
+              slices: [
+                {
+                  index: 0,
+                  sourceText: 'The kettle boiled unattended.',
+                },
+                {
+                  index: 1,
+                  sourceText: 'By evening the cushion had taken her shape.',
+                },
+                {
+                  index: 2,
+                  sourceText: 'This is the whole of the afternoon.',
+                },
+              ],
             },],
           },).size,
         ).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'governs a slice whose OWN original is line-structured even when its '
+        + 'enclosing chunk is not, which is a stanza sitting inside a section '
+        + 'whose prose dominates the chunk median. Chunk-only governance loses '
+        + 'these: measured across the 92 entries at the pinned corpus commit it '
+        + 'covers 195 slices against slice-only 55, yet four entries go '
+        + 'BACKWARDS, interrgned from 5 to 1 and three others from 1 to 0. The '
+        + 'union cannot lose to either reading',
+      fn: async () => {
+        /**
+         * A chunk dominated by long prose blocks, so the chunk does not trip.
+         */
+        const proseHeavy = slice({
+          blocks: [
+            'The cat considered the windowsill at some length, weighing the sun against the draught.',
+            'Having decided, she then reconsidered, which is the privilege of cats and of committees.',
+            'The kettle boiled unattended, as kettles will when nobody in the house has hands.',
+            'By evening the cushion had taken her shape and refused, politely, to give it back.',
+            'This is the whole of the afternoon, and it was enough for everyone concerned.',
+            'Paws on the windowsill',
+            'A tail curled tight',
+            'Rain against the glass',
+            'The kettle starts to sing',
+            'Nobody comes home',
+          ],
+        },);
+
+        /**
+         * The stanza alone, which DOES trip on its own.
+         */
+        const stanza = slice({
+          blocks: [
+            'Paws on the windowsill',
+            'A tail curled tight',
+            'Rain against the glass',
+            'The kettle starts to sing',
+            'Nobody comes home',
+          ],
+        },);
+
+        expect(isLineStructured({ text: proseHeavy, },),).toBe(false,);
+        expect(isLineStructured({ text: stanza, },),).toBe(true,);
+
+        expect(
+          governedSliceIndices({
+            chunks: [{
+              sourceText: proseHeavy,
+              slices: [{
+                index: 7,
+                sourceText: stanza,
+              },],
+            },],
+          },).has(7,),
+        ).toBe(true,);
       },
     },),
 
@@ -327,7 +409,16 @@ await describe({
                   'Nobody comes home',
                 ],
               },),
-              sliceIndices: [0, 1,],
+              slices: [
+                {
+                  index: 0,
+                  sourceText: 'Paws on the windowsill',
+                },
+                {
+                  index: 1,
+                  sourceText: 'A tail curled tight',
+                },
+              ],
             },
             {
               sourceText: slice({
@@ -339,7 +430,16 @@ await describe({
                   'This is the whole of the afternoon, and it was enough for everyone concerned.',
                 ],
               },),
-              sliceIndices: [2, 3,],
+              slices: [
+                {
+                  index: 2,
+                  sourceText: 'The kettle boiled unattended, as kettles will.',
+                },
+                {
+                  index: 3,
+                  sourceText: 'By evening the cushion had taken her shape.',
+                },
+              ],
             },
           ],
         },);
