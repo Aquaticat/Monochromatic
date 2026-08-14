@@ -45,7 +45,7 @@ import {
  * Every case that resumes a cache has to agree with the marker, since a cache
  * filled by another pipeline is discarded rather than resumed.
  */
-const TEST_TIP = 'aaaaaaaaa';
+const TEST_TIP = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
 /**
  * Throwaway directory removed on scope exit.

@@ -136,7 +136,6 @@ export {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 export {
-  ArtifactGenerationError,
   censusByTip,
   type GenerationCensus,
   tipContains,

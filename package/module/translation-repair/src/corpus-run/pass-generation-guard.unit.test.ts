@@ -73,7 +73,7 @@ function withDriftVar({ value, }: { readonly value: string; },): Disposable {
  *
  * @example
  * ```ts
- * const dir = await writeArtifacts({ tips: { Mittens: 'aaaaaaaaa', }, },);
+ * const dir = await writeArtifacts({ tips: { Mittens: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', }, },);
  * ```
  */
 async function writeArtifacts(
@@ -118,7 +118,7 @@ await describe({
 
         await assertResumableGeneration({
           artifactsDir: dir,
-          tip: 'aaaaaaaaa',
+          tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         },);
       },
     },),
@@ -130,14 +130,14 @@ await describe({
       fn: async () => {
         const dir = await writeArtifacts({
           tips: {
-            Mittens: 'aaaaaaaaa',
-            Pepper: 'aaaaaaaaa',
+            Mittens: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            Pepper: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           },
         },);
 
         await assertResumableGeneration({
           artifactsDir: dir,
-          tip: 'aaaaaaaaa',
+          tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         },);
       },
     },),
@@ -150,15 +150,15 @@ await describe({
       fn: async () => {
         const dir = await writeArtifacts({
           tips: {
-            Mittens: 'aaaaaaaaa',
-            Pepper: 'aaaaaaaaa',
+            Mittens: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            Pepper: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           },
         },);
 
         await expect(
           assertResumableGeneration({
             artifactsDir: dir,
-            tip: 'bbbbbbbbb',
+            tip: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
           },),
         )
           .rejects
@@ -173,18 +173,20 @@ await describe({
       fn: async () => {
         const dir = await writeArtifacts({
           tips: {
-            Mittens: 'aaaaaaaaa',
-            Pepper: 'bbbbbbbbb',
+            Mittens: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            Pepper: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
           },
         },);
 
         await expect(
           assertResumableGeneration({
             artifactsDir: dir,
-            tip: 'ccccccccc',
+            tip: 'cccccccccccccccccccccccccccccccccccccccc',
           },),
         )
           .rejects
+          // Nine characters: the refusal abbreviates, so asserting the full id would
+          // pass only if the message stopped abbreviating.
           .toThrow('bbbbbbbbb',);
       },
     },),
@@ -194,13 +196,13 @@ await describe({
         + 'deliberately mixed directory is not blocked, while a stray value '
         + 'cannot switch the guard off by accident',
       fn: async () => {
-        const dir = await writeArtifacts({ tips: { Mittens: 'aaaaaaaaa', }, },);
+        const dir = await writeArtifacts({ tips: { Mittens: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', }, },);
 
         using _override = withDriftVar({ value: 'yes', },);
 
         await assertResumableGeneration({
           artifactsDir: dir,
-          tip: 'bbbbbbbbb',
+          tip: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
         },);
       },
     },),
@@ -209,14 +211,14 @@ await describe({
       name: 'ignores a value that is not the exact opt-in, because a guard a '
         + 'stray `0` or empty string can disable is not a guard',
       fn: async () => {
-        const dir = await writeArtifacts({ tips: { Mittens: 'aaaaaaaaa', }, },);
+        const dir = await writeArtifacts({ tips: { Mittens: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', }, },);
 
         using _override = withDriftVar({ value: '0', },);
 
         await expect(
           assertResumableGeneration({
             artifactsDir: dir,
-            tip: 'bbbbbbbbb',
+            tip: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
           },),
         )
           .rejects
@@ -232,7 +234,7 @@ await describe({
         + 'and excluded by the pool filter so it never appears in a rate; it '
         + 'ceases to exist and no count says so',
       fn: async () => {
-        const dir = await writeArtifacts({ tips: { Pepper: 'aaaaaaaaa', }, },);
+        const dir = await writeArtifacts({ tips: { Pepper: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', }, },);
         await writeFile(
           join(
             dir,
@@ -245,7 +247,7 @@ await describe({
         await expect(
           assertResumableGeneration({
             artifactsDir: dir,
-            tip: 'aaaaaaaaa',
+            tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           },),
         )
           .rejects
@@ -258,7 +260,7 @@ await describe({
         + 'since deleting the file is the whole remedy and an operator cannot '
         + 'delete what the refusal does not name',
       fn: async () => {
-        const dir = await writeArtifacts({ tips: { Pepper: 'aaaaaaaaa', }, },);
+        const dir = await writeArtifacts({ tips: { Pepper: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', }, },);
         await writeFile(
           join(
             dir,
@@ -271,7 +273,7 @@ await describe({
         await expect(
           assertResumableGeneration({
             artifactsDir: dir,
-            tip: 'aaaaaaaaa',
+            tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           },),
         )
           .rejects

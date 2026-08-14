@@ -107,40 +107,61 @@ export type GenerationCensus = Readonly<{
 }>;
 
 /**
- * Raised when an artifact carries no usable pipeline commit.
+ * Characters in a SHA-1 object id, the shorter of the two git uses.
  */
-export class ArtifactGenerationError extends Error {
-  /**
-   * Names the artifact and what was wrong with its recorded commit.
-   *
-   * @param entryId - entry whose artifact is at fault
-   *
-   * @param reason - what the commit field should have been
-   *
-   * @example
-   * ```ts
-   * throw new ArtifactGenerationError({ entryId: 'Acheron', reason: 'a string', },);
-   * ```
-   */
-  constructor(
-    {
-      entryId,
-      reason,
-    }: {
-      readonly entryId: string;
-      readonly reason: string;
-    },
-  ) {
-    super(
-      `Artifact ${entryId} records no usable pipeline commit: expected ${reason}.\n`
-        + 'Every artifact must carry `tip`, the repo commit its run started '
-        + 'under, because that is the only thing that says which pipeline '
-        + 'produced it. An artifact without one cannot be placed in any '
-        + 'generation, so pooling it would mix versions silently, which is the '
-        + 'exact failure this check exists to prevent.',
-    );
-    this.name = 'ArtifactGenerationError';
+const SHA1_LENGTH = 40;
+
+/**
+ * Characters in a SHA-256 object id, for repositories using that hash.
+ */
+const SHA256_LENGTH = 64;
+
+/**
+ * Whether a recorded tip is a canonical full object id.
+ *
+ * A nonempty string was the whole test before, which accepted ` `, `HEAD`,
+ * `main` and any revision expression. Those are not identities: `HEAD` in a
+ * settled artifact resolves against the READER's checkout at read time rather
+ * than against whatever produced the artifact, so it silently answers a
+ * different question than the one asked, and a branch name answers a question
+ * whose answer changes.
+ *
+ * Scanned rather than matched with a pattern: the rule is one predicate per
+ * character over a fixed-length string, which is a linear pass that cannot
+ * backtrack, and the codebase forbids a regex where an index scan says the
+ * same thing.
+ *
+ * @param value - tip as the artifact recorded it
+ *
+ * @returns Whether it is 40 or 64 lowercase hex characters
+ *
+ * @example
+ * ```ts
+ * const usable = isObjectId({ value: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379', },);
+ * ```
+ */
+function isObjectId({ value, }: { readonly value: string; },): boolean {
+  if ((value.length !== SHA1_LENGTH) && (value.length !== SHA256_LENGTH))
+    return false;
+
+  for (const character of value) {
+    /**
+     * Whether it is one of `0` to `9`.
+     */
+    const isDigit = (character >= '0') && (character <= '9');
+
+    /**
+     * Whether it is one of `a` to `f`. Uppercase is refused deliberately: git
+     * writes lowercase, so an uppercase id came from somewhere else, and two
+     * spellings of one commit would count as two generations.
+     */
+    const isLowerHex = (character >= 'a') && (character <= 'f');
+
+    if ((!isDigit) && (!isLowerHex))
+      return false;
   }
+
+  return true;
 }
 
 /**
@@ -269,7 +290,7 @@ async function readTip(
      */
     const { tip, } = parsed;
 
-    if (((typeof tip) !== 'string') || (tip === ''))
+    if (((typeof tip) !== 'string') || (!isObjectId({ value: tip, },)))
       return { kind: 'untagged', };
 
     return {
