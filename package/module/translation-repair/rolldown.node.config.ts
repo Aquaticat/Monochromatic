@@ -11,7 +11,15 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
 // Building the runners makes the executed thing a FILE. Identity, staleness and
 // reproducibility all become questions about `dist/final/node` rather than
 // about an import graph.
-export default nodeConfig({
+/**
+ * Node build: the library index plus every corpus-run runner.
+ *
+ * @example
+ * ```ts
+ * // consumed by rolldown as this file default export
+ * ```
+ */
+const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: {
     index: './src/index.ts',
     "checker-sensitivity": "./src/corpus-run/checker-sensitivity.ts",
@@ -33,3 +41,5 @@ export default nodeConfig({
     "translate-probe": "./src/corpus-run/translate-probe.ts",
   },
 },);
+
+export default config;
