@@ -1181,6 +1181,17 @@ Dependency operation:
 Lifecycle scripts remain disabled.
 No package install mutation reaches the evaluation worktree.
 
+Mise trust isolation:
+ the first dependency command stopped before pnpm because mise 2026.7.0 emitted
+`Config files in .../mise.toml are not trusted.`
+Mise documents that trust is machine-local state under `MISE_STATE_DIR`.
+The revised operation sets `MISE_STATE_DIR` to private scratch,
+trusts the disposable worktree's explicit `mise.toml` there,
+and passes the same isolated state directory to every worktree mise command.
+It does not modify the user's ordinary mise trust registry.
+The diagnosis and runnable proof are in
+`doc/troubleshooting/mise-disposable-worktree-trust.md`.
+
 Top-level verification operations:
 
 ```text
