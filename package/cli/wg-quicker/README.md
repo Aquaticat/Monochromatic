@@ -193,8 +193,14 @@ and restarts an unexpectedly exited monitor child.
 A state-owner token,
 PID,
 process start time,
-and complete command-line check prevent signaling a reused or unrelated PID during teardown.
-Shutdown signals the validated detached process group so monitor and in-flight route-command children terminate before ownership release.
+nonempty executable argument,
+and exact watcher-script and state arguments prevent signaling a reused or unrelated PID during teardown.
+The executable installation path may differ after a Node runtime update.
+Shutdown signals the validated detached process group
+so monitor and in-flight route-command children terminate before ownership release.
+See
+[`doc/troubleshooting/node-runtime-watcher-upgrade.md`](doc/troubleshooting/node-runtime-watcher-upgrade.md)
+for the diagnosed upgrade failure and verified recovery.
 
 On `down`,
  persisted state identifies the exact watcher,
