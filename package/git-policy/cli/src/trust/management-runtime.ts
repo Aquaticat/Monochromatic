@@ -27,9 +27,6 @@ import { TrustedConfigError, } from './config-loader.ts';
 import type { TrustConsentOutcome, } from './types.ts';
 
 /**
- * Trust management action parsed by management argv parser.
- */
-/**
  * Logger root for trust management boundaries.
  *
  * @example
@@ -39,6 +36,9 @@ import type { TrustConsentOutcome, } from './types.ts';
  */
 const l = tagged({ tag: 'cli-git', },);
 
+/**
+ * Trust management action parsed by management argv parser.
+ */
 export type TrustManagementAction = Readonly<{
   /**
    * Action discriminator.
