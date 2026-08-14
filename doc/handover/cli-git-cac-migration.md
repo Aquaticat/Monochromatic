@@ -100,6 +100,118 @@ The keeping-the-incumbent candidate remains in scope.
 At least two other concrete CLI technologies must receive evidence-backed screening so CAC is not assessed in isolation.
 No candidate can be recommended from README or registry metadata alone.
 
+## Current parser map
+
+The target does not have one replaceable parser boundary.
+The measured source map at baseline is:
+
+- `package/git-policy/cli/src/parse-global-options.ts` locates the real Git subcommand,
+  applies ordered `-C` semantics,
+  and preserves global help and version short-circuits.
+- `package/git-policy/cli/src/management-parser.ts` implements the closed `git cli-git` grammar.
+  It is 265 physical lines,
+  including declarations and TSDoc.
+- `package/git-policy/cli/src/parser/argv.ts` is the shared subset parser used by management and Git-region parsers.
+  It is 415 physical lines and has eighteen direct unit cases.
+- `package/git-policy/cli/src/parser/` contains twenty production TypeScript files and 3,953 physical lines.
+  Most of this surface is Git-specific classification rather than generic command routing.
+- `parseArgv` or `tryParseArgv` is consumed by management plus the `add`,
+  `clean`,
+  `reset`,
+  `stash`,
+  `commit`,
+  `push`,
+  and `status` regions.
+- Branch creation uses a separate linear scan over `branch`,
+  `checkout`,
+  and `switch` because it must model creation modes,
+  Git's accepted option abbreviations,
+  option arity,
+  and implicit remote-branch guessing.
+- Commit parsing separately normalizes attached short-option values,
+  identifies pathspecs,
+  and extracts transaction paths.
+- Clean parsing separately resolves left-to-right positive and negated mode toggles.
+- Add parsing separately distinguishes broad staging tokens from option values and pathspecs.
+
+A technology result therefore needs an integration shape:
+
+- keep the owned parsers;
+- use CAC only for the closed management namespace;
+- use CAC for management plus shared Git-region tokenization while retaining Git-specific scanners;
+- or replace every parser path with CAC plus adapters.
+
+The last shape cannot be credited with deleting the complete parser directory unless a prototype demonstrates the Git-specific
+facts without recreating those scans around CAC.
+
+## Frozen hard constraints
+
+These constraints come from current source,
+`package/git-policy/cli/SPEC.md`,
+`doc/decision/cli-git-policies-platform.md`,
+and maintained CI or performance contracts.
+A candidate or integration shape that fails one is ineligible.
+
+- Preserve exact wrapper argv until an explicit cli-git transform or escape removal owns a change.
+- Preserve Git global-option layout,
+  chained `-C`,
+  and real Git help or version short-circuits before management dispatch.
+- Preserve the complete management grammar in `package/git-policy/cli/SPEC.md`.
+- Preserve successful namespace and trust help on stdout with exit `0`,
+  before real-Git resolution,
+  transaction recovery,
+  config discovery,
+  candidate building,
+  or trust-registry access.
+- Preserve usage failures on stderr with exit `2` and no repository config load.
+- Preserve pathspec bytes after `--` without wrapper reinterpretation.
+- Preserve repeated `--policy` values,
+  stable first-occurrence deduplication,
+  exact scope validation,
+  and unknown-option rejection for management commands.
+- Preserve Git-region subset behavior where undeclared options remain forwardable,
+  declared values may begin with `-`,
+  options may follow positionals,
+  joined values are classified correctly,
+  and a missing declared value fails closed.
+- Preserve Git-supported long-option abbreviations and short-option clusters wherever current guards depend on them.
+- Preserve fail-closed policy facts for ambiguous or malformed guarded invocations.
+- Keep the package-root import side-effect free and the packed package to one self-contained MJS artifact.
+- Support the package's Node range,
+  `^22.18.0 || >=24.11.0`.
+- Keep Linux,
+  macOS,
+  and Windows compatibility exercised by the cli-git host-evidence matrix.
+- Remain within every maintained lifecycle budget.
+  The current `wide-commit` wrapper-added ceiling is 925 milliseconds for 256 changed paths in the bounded benchmark.
+- Pass the complete relevant upstream suite and cli-git consumer-boundary suite from a disposable,
+  secret-free environment.
+- Use inspectable source with compatible license,
+  source-to-package provenance,
+  and no unaudited native,
+  Wasm,
+  downloaded,
+  or generated runtime boundary.
+
+## Frozen soft criteria
+
+The user supplied no priority ordering,
+so every applicable criterion has weight 1 before candidate-specific evidence is rated:
+
+- net removal of repository-owned parser and adapter code;
+- human auditability of the resulting parse and forwarding boundary;
+- runtime and bundle overhead within the hard budget;
+- direct and transitive runtime dependency surface;
+- TypeScript inference and declaration compatibility;
+- help and diagnostic control without process-global interception;
+- upstream maintenance and release health;
+- migration and regression-test burden;
+- future management-command extensibility;
+- fit with the existing pure-parser plus process-adapter seam.
+
+A structurally avoided risk receives a strong evidenced rating.
+No soft score can offset a hard-gate failure.
+
 ## Questions the evidence must answer
 
 - Which cli-git parsing surfaces are true framework candidates,
@@ -171,6 +283,43 @@ The key practicality threshold is therefore net simplification with strict behav
 not removal of an installed framework.
 This is a starting hypothesis only.
 
+### 2026-08-14 incumbent audit checkpoint
+
+Repository history shows that cli-git removed Optique on 2026-07-15:
+
+- `1e53f52e02989b152576c0683f6f228b24c40140` added the owned Git argv region parser;
+- `4879a44e6a2460ab3c2531744e24a1f2aef27aeb` moved commit-region parsing to it;
+- `be3c522375d9c2652f44921c7396233c93c2397d` moved management parsing and removed the dependency.
+
+The change was not only dependency cleanup.
+The commit history records a thousand-path commit taking 4.24 seconds through Optique,
+with 2.56 seconds in discarded option-mismatch suggestion work,
+then 0.89 seconds through the owned parser.
+Treat these values as historical motivation,
+not a current CAC comparison.
+The maintained benchmark now measures thirty recorded runs after six warm-ups in a bounded two-CPU,
+2 GiB container.
+Its 2026-07-16 wide-commit evidence had a 456.3-millisecond maximum wrapper-added result for 256 changed paths;
+the current contract allows 925 milliseconds.
+
+The source audit also shows why a framework-wide migration may be a category mismatch.
+The closed management grammar is conventional CLI parsing.
+The forwarded Git surfaces are partial semantic inspections of an external grammar:
+they intentionally accept unknown future options,
+model only guard-relevant arity,
+and leave raw argv for real Git.
+CAC must be evaluated separately for these two roles.
+
+Current verification layers include direct argv parser cases,
+commit parser cases,
+policy and transform tests that consume parser facts,
+ninety-six wrapper tests in `src/bin.unit.test.ts`,
+trust management subprocess tests,
+packed JSONL boundary fixtures,
+and a packed lifecycle benchmark.
+Migration completeness requires mapping every affected parser branch to these tests rather than treating management examples alone
+as parity.
+
 ## Open risks
 
 - CAC may fit management subcommands while being unsuitable for transparent Git-argv inspection.
@@ -188,5 +337,6 @@ This is a starting hypothesis only.
 
 ## Next action
 
-Inventory the complete current cli-git parsing and diagnostic surface,
-then update this handover with frozen hard constraints before external candidate screening.
+Freeze the external discovery query schedule,
+create the vet report at the first substantial external evidence checkpoint,
+and screen CAC plus concrete alternatives without executing third-party code.
