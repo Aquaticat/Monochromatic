@@ -109,6 +109,94 @@ async function watcherPid(
   return value.pid;
 }
 
+
+/**
+ * Starts detached watcher through alternate Node executable argument.
+ *
+ * @param fixture - Disposable namespace keeping process and routes isolated.
+ *
+ * @returns Registered detached watcher PID for cleanup assertions.
+ *
+ * @example
+ * ```ts
+ * await startPriorRuntimeWatcher({ fixture });
+ * ```
+ */
+async function startPriorRuntimeWatcher(
+  { fixture, }: { readonly fixture: BypassFixture; },
+): Promise<number> {
+  /**
+   * Alternate executable argument modeling prior mise-managed Node installation.
+   */
+  const executablePath = `${fixture.stateDirectory}/node-prior-runtime`;
+  await runSudo({
+    args: [
+      'ln',
+      '--symbolic',
+      process.execPath,
+      executablePath,
+    ],
+  },);
+  /**
+   * Built watcher entry used by production detached process.
+   */
+  const watcherPath = new URL(
+    '../dist/final/node/bypass-watch.mjs',
+    import.meta.url,
+  ).pathname;
+  /**
+   * Detached watcher PID printed by short-lived privileged launcher.
+   */
+  const processIdText = await runSudo({
+    args: [
+      process.execPath,
+      '--input-type=module',
+      '--eval',
+      [
+        "const { spawn } = await import('node:child_process');",
+        "const watcher = spawn('ip', process.argv.slice(1), { detached: true, stdio: 'ignore' });",
+        'watcher.unref();',
+        "if ((watcher.pid === undefined) || (watcher.pid <= 0)) throw new Error('Watcher lacks PID.');",
+        'console.log(String(watcher.pid));',
+      ].join(' ',),
+      'netns',
+      'exec',
+      fixture.namespace,
+      'env',
+      `WG_QUICKER_RUNTIME_DIRECTORY=${fixture.stateDirectory}`,
+      executablePath,
+      watcherPath,
+      fixture.statePath,
+    ],
+  },);
+  /**
+   * Positive watcher process identifier returned to caller.
+   */
+  const processId = Number(processIdText.trim(),);
+  if ((!Number.isSafeInteger(processId)) || (processId <= 0))
+    throw new Error(`Prior-runtime watcher returned invalid PID: ${processIdText}`,);
+  /**
+   * Bounded sidecar readiness cursor.
+   */
+  const cursor = { attempt: 0, };
+  while (cursor.attempt < WATCH_PROBE_ATTEMPTS) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Detached watcher creates sidecar asynchronously.
+    const result = await runSudoAllowingFailure({
+      args: [
+        'test',
+        '-e',
+        `${fixture.statePath}.watcher.json`,
+      ],
+    },);
+    if (result.exitCode === 0)
+      return processId;
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Bounded readiness wait avoids busy spin.
+    await wait(WATCH_PROBE_DELAY_MS,);
+    cursor.attempt += 1;
+  }
+  throw new Error(`Prior-runtime watcher ${String(processId,)} did not register.`,);
+}
+
 /**
  * Polls active `ip monitor` child under watcher.
  *
@@ -280,6 +368,75 @@ assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'rule', 'show',], },)).i
 assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'rule', 'show',], },)).includes('51:',));
 
 //endregion Exact teardown ownership
+
+//region Prior-runtime watcher cleanup
+
+await addBypass({
+  fixture,
+  watchRouteChanges: false,
+},);
+/**
+ * Watcher launched through executable argument differing from current runtime.
+ */
+const priorRuntimeWatcherPid = await startPriorRuntimeWatcher({ fixture, },);
+/**
+ * Guaranteed cleanup preserving disposable fixture when regression assertion fails.
+ */
+await using priorRuntimeWatcherCleanup: AsyncDisposable = {
+  async [Symbol.asyncDispose](): Promise<void> {
+    await runSudoAllowingFailure({
+      args: [
+        'kill',
+        '--signal',
+        'KILL',
+        '--',
+        `-${String(priorRuntimeWatcherPid,)}`,
+      ],
+    },);
+  },
+};
+/**
+ * Sidecar text rewritten to legacy shape from incident before command persistence.
+ */
+const priorRuntimeWatcherSidecarText = await runSudo({
+  args: [
+    'cat',
+    `${fixture.statePath}.watcher.json`,
+  ],
+},);
+/**
+ * Parsed prior-runtime watcher identity used for backward-compatibility fixture.
+ */
+const priorRuntimeWatcherSidecar: unknown = JSON.parse(priorRuntimeWatcherSidecarText,);
+if (((typeof priorRuntimeWatcherSidecar) !== 'object')
+  || (priorRuntimeWatcherSidecar === null)
+  || (!('ownerId' in priorRuntimeWatcherSidecar))
+  || (!('pid' in priorRuntimeWatcherSidecar))
+  || (!('startTime' in priorRuntimeWatcherSidecar))
+  || ((typeof priorRuntimeWatcherSidecar.ownerId) !== 'string')
+  || ((typeof priorRuntimeWatcherSidecar.pid) !== 'number')
+  || ((typeof priorRuntimeWatcherSidecar.startTime) !== 'string')) {
+  throw new Error('Prior-runtime watcher sidecar has invalid shape.',);
+}
+assert.equal(priorRuntimeWatcherSidecar.pid, priorRuntimeWatcherPid,);
+await writeRootFixtureFile({
+  path: `${fixture.statePath}.watcher.json`,
+  contents: JSON.stringify({
+    ownerId: priorRuntimeWatcherSidecar.ownerId,
+    pid: priorRuntimeWatcherSidecar.pid,
+    startTime: priorRuntimeWatcherSidecar.startTime,
+  },),
+},);
+await removeBypass({ fixture, },);
+assert.notEqual((await runSudoAllowingFailure({
+  args: [
+    'test',
+    '-e',
+    `/proc/${String(priorRuntimeWatcherPid,)}`,
+  ],
+},)).exitCode, 0,);
+
+//endregion Prior-runtime watcher cleanup
 
 //region Detached route-change watcher
 
