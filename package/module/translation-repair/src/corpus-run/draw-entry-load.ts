@@ -113,24 +113,44 @@ export async function loadEntry(
   const parsed = parseSettledArtifact({ value: raw, },);
 
   /**
+   * Entry id the pool keyed this file by, which is its file name.
+   */
+  const keyedId = name.slice(
+    0,
+    -'.json'.length,
+  );
+
+  /**
    * Commit the pool recorded for this file, absent when it placed no tip.
    */
   const expectedTip = eligible.tipByEntry
-    .get(name.slice(
-      0,
-      -'.json'.length,
-    ),);
+    .get(keyedId,);
+
+  /**
+   * Built pipeline the pool recorded for this file, absent when it placed none.
+   */
+  const expectedDigest = eligible.digestByEntry
+    .get(keyedId,);
 
   // These BYTES, against what the pool said about this file. The pool keyed the
   // entry by file name and classified its generation from a separate read, so
   // until this check the draw could admit one artifact and sample another.
+  //
+  // The digest is the half that answers "same pipeline": checking only the tip
+  // accepts a file rewritten by a different build under one commit, which is
+  // precisely the substitution the generation census exists to catch.
   assertArtifactProvenance({
     name,
     observedId: parsed.id,
     observedTip: (isJsonRecord(raw,) && ((typeof raw.tip) === 'string'))
       ? raw.tip
       : '',
+    observedDigest:
+      (isJsonRecord(raw,) && ((typeof raw.pipelineDigest) === 'string'))
+        ? raw.pipelineDigest
+        : '',
     ...((expectedTip === undefined) ? {} : { expectedTip, }),
+    ...((expectedDigest === undefined) ? {} : { expectedDigest, }),
   },);
 
   // The reconcile is REQUIRED, not opportunistic. It used to run only when
