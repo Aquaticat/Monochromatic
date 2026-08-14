@@ -1025,6 +1025,128 @@ or an undeclared effect appears.
 Stop condition:
  any undeclared command or effect requires manifest revision before continuing.
 
+### Upstream Node CI and rebuild validation
+
+Candidate:
+ `cac@7.0.0` source at the pinned release commit.
+
+Source input:
+ read-only clone `~/temp/agent/cac-2026-08-14` at
+`77f602fcb2d1e75d24f5ecd94d5bf667acaa857a`.
+
+#### Dependency-fetch phase
+
+Top-level operations:
+
+1. Copy the read-only source into private scratch.
+2. Activate the manifest-pinned `pnpm@10.30.3` through Node 24 Corepack.
+3. Run `pnpm install --frozen-lockfile --ignore-scripts`.
+4. Enumerate every installed package manifest containing
+   `preinstall`,
+   `install`,
+   `postinstall`,
+   or `prepare`.
+5. Record scratch byte use and stop if it exceeds 1.5 GiB.
+
+Reachable command tree:
+ container shell,
+Corepack,
+pnpm,
+registry fetches,
+filesystem extraction,
+and manifest enumeration.
+The `--ignore-scripts` gate prevents package lifecycle execution.
+
+Network:
+ enabled only for Corepack and lockfile package retrieval.
+Expected endpoint is `registry.npmjs.org` from Corepack and pinned lock metadata.
+No source or script may choose another endpoint.
+
+Writes:
+ private `~/temp/agent/cac-upstream-validation-2026-08-14` scratch only.
+No repository,
+real home,
+or credential path is mounted writable.
+
+Stop condition:
+ any lifecycle execution,
+unexpected endpoint,
+undeclared command,
+or disk ceiling breach stops validation before CI commands.
+
+#### Offline CI phase
+
+Top-level operations in order:
+
+```text
+corepack pnpm run build
+corepack pnpm run typecheck
+corepack pnpm run lint
+corepack pnpm run test
+```
+
+Statically discovered root subprocesses:
+
+- `tsdown` for the ESM and declaration build;
+- `tsgo --noEmit` for type checking;
+- `eslint --cache .` for lint;
+- `vitest` for the fifteen test calls and example subprocess cases.
+
+The pinned development graph includes native build tooling used by tsdown and tsgo.
+It is not part of CAC's published runtime.
+The phase remains inside the resource-bounded,
+secret-free container and uses the frozen lockfile tree produced with lifecycle scripts disabled.
+
+Network:
+ disabled.
+
+Reads and writes:
+ private scratch is writable for `dist`,
+cache,
+and test output;
+Node image is read-only;
+no real repository or home is mounted.
+
+Subprocesses:
+ Podman runtime,
+Corepack,
+pnpm,
+the four declared package CLIs,
+and their bounded worker or example Node processes.
+
+Image and ceilings:
+ local Node 24.18.0 image and digest from the artifact matrix,
+2 GiB memory,
+2 CPUs,
+256 processes,
+1,024 file descriptors,
+and 1.5 GiB scratch ceiling.
+
+Credentials and environment:
+ disposable HOME,
+Corepack,
+pnpm,
+and npm cache paths under scratch;
+no ambient credentials.
+
+Expected outputs:
+ four zero exits,
+upstream test summary,
+rebuilt `dist/index.js` and `dist/index.d.ts`,
+artifact hashes,
+and exact diff against the extracted npm artifact.
+
+Success condition:
+ all four commands pass and rebuilt artifacts are explained byte-for-byte or by an inspected deterministic difference.
+
+Failure condition:
+ any command failure,
+undeclared effect,
+resource ceiling,
+or unexplained artifact difference.
+
+Deno and non-Linux platform jobs remain separate validation items.
+
 ## Hard-gate exits
 
 ### CAC as the shared Git-region parser
@@ -1175,6 +1297,37 @@ This is not production line-count evidence because project TSDoc,
 runtime validation,
 logging,
 and lint requirements were intentionally absent from the disposable probe.
+
+### Numeric-preservation source prototype
+
+The [troubleshooting record](../troubleshooting/cac-option-value-coercion.md) contains the full source trace,
+workarounds,
+duplicate search,
+upstream filing decision,
+and additive comment draft.
+The matching patch is
+`doc/troubleshooting/cac-option-value-coercion.patch`.
+
+The fresh upstream clone matched the pinned origin,
+tag,
+and commit.
+The same four-case assertion harness ran before and after the source patch in the recorded bounded container.
+
+- Pre-patch exit was `1` with an assertion mismatch.
+- Post-patch exit was `0`.
+- Post-patch output preserved `'001'`,
+  `'+2'`,
+  `['001']`,
+  and `['+2']` exactly.
+- Post-patch stderr was empty.
+- Patch SHA-256 is
+  `b3362641520169a1068f172ecdd6e0e2e9b4f8663bc8061bec2f276c221eb0d2`.
+
+This proves the numeric bug is fixable upstream.
+It does not change the audit's hard failure for broad cli-git migration because the patch does not fix dash-led values,
+lone `-`,
+kebab-case boolean metadata,
+or unknown-token facts.
 
 ### Remaining validation
 
