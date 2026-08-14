@@ -122,6 +122,25 @@ export function probeFlaggedIssue(
 }
 
 /**
+ * One graded item reduced to the two facts the agreement table joins on.
+ *
+ * Named rather than inferred, because an inferred object literal carries
+ * writable properties and every cell count reading it then takes a mutable
+ * parameter it never mutates.
+ */
+type JoinedReading = Readonly<{
+  /**
+   * Human verdict on the repair.
+   */
+  verdict: RepairVerdict;
+
+  /**
+   * Whether the probe flagged this item.
+   */
+  flagged: boolean;
+}>;
+
+/**
  * Scores the probe against the human repair grades.
  *
  * @param items - graded issues paired with their probe readings
@@ -139,7 +158,7 @@ export function scoreProbeAgainstGrades(
   /**
    * Items carrying both a probe reading and a place in the table.
    */
-  const joined = items.flatMap(function toJoined(item,) {
+  const joined: readonly JoinedReading[] = items.flatMap(function toJoined(item,) {
     /**
      * Probe reading of this item, when its chunk was probed.
      */
