@@ -1310,10 +1310,6 @@ ATS:
  explicit minimum 48dp layout width + height.
 Never rely on Compose expanding touch beyond bounds where adjacent targets can overlap.
 
-VIS:
- Control size requirements apply to visible face + layout target unless explicitly touch-only.
-Transparent hit padding never satisfies requested visible minimum.
-
 SCF:
  Screenshot after scripted input:
  verify intended rendered state first,
