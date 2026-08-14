@@ -75,6 +75,28 @@ type GenerationVerdict = Readonly<{
 }>;
 
 /**
+ * Width of the longest noun {@link pluralEntries} returns, so a count and its
+ * noun keep a fixed column in a report listing several generations.
+ */
+const ENTRY_NOUN_WIDTH = 'entries'.length;
+
+/**
+ * Names a count of entries with the matching noun.
+ *
+ * @param count - how many entries
+ *
+ * @returns Singular noun at one, plural otherwise
+ *
+ * @example
+ * ```ts
+ * const noun = pluralEntries({ count: 1, },);
+ * ```
+ */
+function pluralEntries({ count, }: { readonly count: number; },): string {
+  return count === 1 ? 'entry' : 'entries';
+}
+
+/**
  * Raised when a pool spans pipeline generations and the caller named none.
  */
 export class MixedGenerationError extends Error {
@@ -111,7 +133,12 @@ export class MixedGenerationError extends Error {
             }  ${
               String(group.entryIds
                 .length,)
-            } entries`;
+            } ${
+              pluralEntries({
+                count: group.entryIds
+                  .length,
+              },)
+            }`;
           },),
         '',
         'Pooling them would mix pipeline versions into one rate, and that rate',
@@ -177,7 +204,12 @@ export class EmptyPoolError extends Error {
                 }  ${
                   String(group.entryIds
                     .length,)
-                } entries`;
+                } ${
+                  pluralEntries({
+                    count: group.entryIds
+                      .length,
+                  },)
+                }`;
               },),
           ]),
         '',
@@ -304,7 +336,9 @@ export async function selectEligible(
       excludedIds: [],
       malformedIds: census.malformedIds,
       report: [
-        `POOL ${String(census.total,)} entries across ${
+        `POOL ${String(census.total,)} ${
+          pluralEntries({ count: census.total, },)
+        } across ${
           String(generationCount,)
         } pipeline generation${generationCount === 1 ? '' : 's'}`,
         ...unplaceableLines({ census, },),
@@ -383,7 +417,13 @@ export async function selectEligible(
             String(group.entryIds
               .length,)
               .padStart(COUNT_WIDTH,)
-          } entries  ${verdict.contains ? 'ELIGIBLE' : 'stale, excluded'}`;
+          } ${
+            pluralEntries({
+              count: group.entryIds
+                .length,
+            },)
+              .padEnd(ENTRY_NOUN_WIDTH,)
+          }  ${verdict.contains ? 'ELIGIBLE' : 'stale, excluded'}`;
         },),
     ],
   };
