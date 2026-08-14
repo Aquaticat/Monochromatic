@@ -163,10 +163,14 @@ export function readonlyCollectionSuggestions({
   const mutableName = parameter.type
     .typeName
     .text;
+  /**
+   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   */
+  const diagnosticGuidance = `Replace the mutable collection owner \`${mutableName}\` with \`${projection.readonlyName}\`.`;
   return [
     {
-      diagnosticGuidance: `Replace the mutable collection owner \`${mutableName}\` with \`${projection.readonlyName}\`.`,
-      desc: `Replace ${authoredType} with ${replacement}.`,
+      diagnosticGuidance,
+      desc: diagnosticGuidance,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,

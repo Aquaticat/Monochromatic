@@ -113,11 +113,14 @@ function readonlyArraySuggestions({
    */
   const replacement = `readonly ${parameter.type
     .getText(sourceFile,)}`;
+  /**
+   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   */
+  const diagnosticGuidance = 'Prefix the authored array type with `readonly`.';
   return [
     {
-      diagnosticGuidance: 'Prefix the authored array type with `readonly`.',
-      desc: `Replace ${parameter.type
-        .getText(sourceFile,)} with ${replacement}.`,
+      diagnosticGuidance,
+      desc: diagnosticGuidance,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,
@@ -228,10 +231,14 @@ function readonlyDeepSuggestions({
         .hasBOM,
     },),
   ];
+  /**
+   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   */
+  const diagnosticGuidance = 'Wrap the complete authored parameter type with `import(\'type-fest\').ReadonlyDeep<...>`.';
   return [
     {
-      diagnosticGuidance: "Wrap the complete authored parameter type with `import('type-fest').ReadonlyDeep<...>`.",
-      desc: `Wrap ${authoredType} with type-fest ReadonlyDeep.`,
+      diagnosticGuidance,
+      desc: diagnosticGuidance,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,

@@ -16,7 +16,12 @@ const VERIFIED_GUIDANCE_UNAVAILABLE: unique symbol = Symbol('verified suggestion
  *
  * @example
  * ```ts
- * originSubject({ kind: 'callable', name: 'toRow', location: 'src/a.ts:4' });
+ * originSubject({
+ *   identity: '/repo/src/a.ts:10',
+ *   kind: 'callable',
+ *   name: 'toRow',
+ *   location: 'src/a.ts:4',
+ * });
  * ```
  */
 function originSubject(origin: ReadonlyTypeOrigin,): string {
@@ -42,7 +47,12 @@ function originSubject(origin: ReadonlyTypeOrigin,): string {
  *
  * @example
  * ```ts
- * uniqueOriginGuidance({ kind: 'callable', name: 'toRow', location: 'src/a.ts:4' });
+ * uniqueOriginGuidance({
+ *   identity: '/repo/src/a.ts:10',
+ *   kind: 'callable',
+ *   name: 'toRow',
+ *   location: 'src/a.ts:4',
+ * });
  * ```
  */
 function uniqueOriginGuidance(origin: ReadonlyTypeOrigin,): string {
@@ -137,6 +147,9 @@ export function readonlyPreferenceGuidance({
   }
   if (originEvidence.kind === 'unique')
     return uniqueOriginGuidance(originEvidence.origin,);
+  if (originEvidence.kind === 'uncertain') {
+    return 'At least one semantic declaration could not be resolved, so no unique workspace-owned origin was proved. Establish an explicit deeply readonly type at the nearest project-owned merge or producer boundary, then run type checking.';
+  }
   if (originEvidence.kind === 'multiple') {
     return 'Its inferred parameter type has multiple workspace-owned origins, so no single producer edit was proved. Establish one common deeply readonly element type at their merge boundary, then annotate every producer to satisfy it.';
   }

@@ -1985,7 +1985,7 @@ children: [
     name: 'gives complete action paths for every inferred-origin state',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-inferred-origin-invalid.ts',);
-      expect(diagnostics.length,).toBe(7,);
+      expect(diagnostics.length,).toBe(11,);
       /**
        * Preference messages emitted by origin decision controls.
        */
@@ -2005,16 +2005,17 @@ children: [
       /**
        * Multi-origin guidance preserving uncertainty without location dump.
        */
-      const multipleOrigin = messages.find(function multiple(message,): boolean {
+      const multipleOrigins = messages.filter(function multiple(message,): boolean {
         return message.includes('has multiple workspace-owned origins',);
       },);
-      if (multipleOrigin === undefined)
-        throw new Error('Expected multi-origin readonly guidance.',);
-      expect(multipleOrigin.includes('toLeft',)).toBe(false,);
-      expect(multipleOrigin.includes('toRight',)).toBe(false,);
-      expect(multipleOrigin,).toContain(
-        'Establish one common deeply readonly element type at their merge boundary',
-      );
+      expect(multipleOrigins.length,).toBe(3,);
+      expect(multipleOrigins.every(function omitsOriginDump(message,): boolean {
+        return (!message.includes('toLeft',))
+          && (!message.includes('toRight',))
+          && message.includes(
+            'Establish one common deeply readonly element type at their merge boundary',
+          );
+      },),).toBe(true,);
       expect(messages.some(function namedTypeOrigin(message,): boolean {
         return message.includes(
           'originates in type "NamedMutableRow" at package/test-fixture/oxlint-no-restricted-syntax/src/readonly-inferred-origin-invalid.ts:11',
@@ -2033,6 +2034,14 @@ children: [
       expect(callableOrigins.every(function cautiousProducer(message,): boolean {
         return message.includes('Likely edit: give that callable an explicit deeply readonly return type.')
           && message.includes('No exact type syntax was proved for that producer');
+      },),).toBe(true,);
+      expect(messages.some(function anonymousArrowOrigin(message,): boolean {
+        return message.includes('originates in an anonymous callable at ')
+          && message.includes('readonly-inferred-origin-invalid.ts:');
+      },),).toBe(true,);
+      expect(messages.some(function sameOwnerUnion(message,): boolean {
+        return message.includes('originates in callable "toEither" at ')
+          && (!message.includes('has multiple workspace-owned origins',));
       },),).toBe(true,);
       expect(messages.every(function oneLine(message,): boolean {
         return (!message.includes('\n',)) && (!message.includes('\r',));

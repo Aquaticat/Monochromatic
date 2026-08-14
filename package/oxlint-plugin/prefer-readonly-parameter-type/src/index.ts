@@ -97,6 +97,17 @@ initializeExternalImplementationApi();
  * });
  * ```
  */
+/**
+ * Pure origin-resolution classifier, exported for built-artifact branch tests.
+ *
+ * @internal
+ */
+export {
+  readonlyTypeOriginEvidenceFromResolution,
+  type ReadonlyTypeOriginEvidence,
+  type ReadonlyTypeOriginResolution,
+} from './prefer-readonly-parameter-types/readonly-type-origin.ts';
+
 const plugin: Plugin = eslintCompatPlugin({
   meta: {
     name: 'prefer-readonly-parameter-type',

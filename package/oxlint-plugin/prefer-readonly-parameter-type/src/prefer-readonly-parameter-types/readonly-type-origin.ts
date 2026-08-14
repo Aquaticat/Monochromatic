@@ -25,6 +25,7 @@ export type ReadonlyTypeOriginEvidence =
   | { readonly kind: 'authored'; }
   | { readonly kind: 'none'; }
   | { readonly kind: 'multiple'; }
+  | { readonly kind: 'uncertain'; }
   | {
     readonly kind: 'unique';
     readonly origin: ReadonlyTypeOrigin;
@@ -77,13 +78,21 @@ function declarationSymbols(type: Type,): readonly TypeScriptSymbol[] {
  * editableOrigins({ type, project });
  * ```
  */
+/**
+ * Eager origin collection plus declaration-resolution completeness.
+ */
+export type ReadonlyTypeOriginResolution = {
+  readonly origins: readonly ReadonlyTypeOrigin[];
+  readonly resolutionIncomplete: boolean;
+};
+
 function editableOrigins({
   type,
   project,
 }: {
   readonly type: Type;
   readonly project: Project;
-},): readonly ReadonlyTypeOrigin[] {
+},): ReadonlyTypeOriginResolution {
   /**
    * Type graph pending union and intersection expansion.
    */
@@ -93,9 +102,13 @@ function editableOrigins({
    */
   const visited = new Set<number>();
   /**
-   * Origins keyed after normalization to callable or named type owner.
+   * Origins keyed by full source identity after boundary normalization.
    */
-  const originsByLocation = new Map<string, ReadonlyTypeOrigin>();
+  const originsByIdentity = new Map<string, ReadonlyTypeOrigin>();
+  /**
+   * Mutable resolution state preventing partial provenance from becoming unique.
+   */
+  const resolution = { incomplete: false, };
   while (pending.length > 0) {
     /**
      * Next semantic type,
@@ -117,7 +130,11 @@ function editableOrigins({
              * Declaration eagerly resolved through active project snapshot.
              */
             const declaration = handle.resolve(project,);
-            return declaration === undefined ? [] : [declaration,];
+            if (declaration === undefined) {
+              resolution.incomplete = true;
+              return [];
+            }
+            return [declaration,];
           },);
       },)
       .filter(function editableDeclaration(declaration,): boolean {
@@ -133,13 +150,62 @@ function editableOrigins({
         },);
       },)
       .forEach(function recordOrigin(origin,): void {
-        originsByLocation.set(
-          origin.location,
+        originsByIdentity.set(
+          origin.identity,
           origin,
         );
       },);
   }
-  return [...originsByLocation.values(),];
+  return {
+    origins: [...originsByIdentity.values(),],
+    resolutionIncomplete: resolution.incomplete,
+  };
+}
+
+
+/**
+ * Classifies collected origins without overclaiming partial resolution.
+ *
+ * @param authored - Whether parameter carries authored type syntax.
+ *
+ * @param resolution - Eager editable origins and resolution completeness.
+ *
+ * @returns authored,
+ * absent,
+ * uncertain,
+ * multiple,
+ * or unique evidence.
+ *
+ * @example
+ * ```ts
+ * readonlyTypeOriginEvidenceFromResolution({ authored: false, resolution });
+ * ```
+ */
+export function readonlyTypeOriginEvidenceFromResolution({
+  authored,
+  resolution,
+}: {
+  readonly authored: boolean;
+  readonly resolution: ReadonlyTypeOriginResolution;
+},): ReadonlyTypeOriginEvidence {
+  if (authored)
+    return { kind: 'authored', };
+  if (resolution.resolutionIncomplete)
+    return { kind: 'uncertain', };
+  if (resolution.origins.length === 0)
+    return { kind: 'none', };
+  if (resolution.origins.length > 1)
+    return { kind: 'multiple', };
+  /**
+   * Sole origin after count narrowing.
+   */
+  const origin = resolution.origins[0];
+  if (origin === undefined)
+    return { kind: 'none', };
+  return {
+    kind: 'unique',
+    origin,
+  };
 }
 
 /**
@@ -170,8 +236,15 @@ export function readonlyTypeOriginEvidence({
   readonly parameterType: Type;
   readonly project: Project;
 },): ReadonlyTypeOriginEvidence {
-  if (parameter.type !== undefined)
-    return { kind: 'authored', };
+  if (parameter.type !== undefined) {
+    return readonlyTypeOriginEvidenceFromResolution({
+      authored: true,
+      resolution: {
+        origins: [],
+        resolutionIncomplete: false,
+      },
+    },);
+  }
   /**
    * Callable syntactically owning unannotated parameter.
    */
@@ -185,22 +258,11 @@ export function readonlyTypeOriginEvidence({
     .getContextualType(callable,);
   if (contextualType === undefined)
     return { kind: 'none', };
-  /**
-   * Editable origins eagerly resolved in current project snapshot.
-   */
-  const origins = editableOrigins({
-    type: parameterType,
-    project,
+  return readonlyTypeOriginEvidenceFromResolution({
+    authored: false,
+    resolution: editableOrigins({
+      type: parameterType,
+      project,
+    },),
   },);
-  if (origins.length === 0)
-    return { kind: 'none', };
-  if (origins.length > 1)
-    return { kind: 'multiple', };
-  return {
-    kind: 'unique',
-    origin: origins[0] ?? {
-      kind: 'expression',
-      location: 'unknown location',
-    },
-  };
 }

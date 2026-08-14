@@ -38,6 +38,7 @@ const ORIGIN_NAME_UNAVAILABLE: unique symbol = Symbol('origin boundary name unav
  * Eager immutable description of one editable semantic type origin.
  */
 export type ReadonlyTypeOrigin = {
+  readonly identity: string;
   readonly kind: 'callable' | 'type' | 'expression';
   readonly name?: string;
   readonly location: string;
@@ -309,6 +310,7 @@ export function readonlyTypeOrigin({
    */
   const named = (typeof name) === 'symbol' ? {} : { name, };
   return {
+    identity: `${owner.getSourceFile().fileName}:${String(owner.getStart(owner.getSourceFile(),),)}`,
     kind: originKind(owner,),
     ...named,
     location: originLocation({

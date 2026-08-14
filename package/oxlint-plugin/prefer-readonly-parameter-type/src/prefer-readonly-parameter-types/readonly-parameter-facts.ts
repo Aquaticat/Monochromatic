@@ -224,9 +224,16 @@ function factsForParameter({
     type: parameterType,
   },);
   /**
-   * Eager inferred-origin metadata needed only for mutable replacement candidates.
+   * Whether every local preference gate except deferred foreign-ownership proof passes.
    */
-  const originEvidence: ReadonlyTypeOriginEvidence = classification.kind === 'mutable'
+  const originCanAffectPreference = (classification.kind === 'mutable')
+    && ((!opaque) || acceptedHostOpacity)
+    && (!mutated)
+    && (!uncertainty.retained);
+  /**
+   * Eager inferred-origin metadata needed only for reportable replacement candidates.
+   */
+  const originEvidence: ReadonlyTypeOriginEvidence = originCanAffectPreference
     ? readonlyTypeOriginEvidence({
       parameter,
       parameterType,

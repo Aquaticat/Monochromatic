@@ -98,6 +98,82 @@ export const matchingMergedRows = mergedRows.filter(function matchingMerged(entr
 
 //endregion Multiple origins
 
+//region Arrow and normalized-origin controls
+
+/**
+ * Rows inferred from anonymous arrow producer.
+ */
+const arrowRows = SOURCE_VALUES.map(value => ({ arrow: value, }),);
+
+/**
+ * Reads rows from one anonymous arrow origin.
+ */
+export const matchingArrowRows = arrowRows.filter(entry => entry.arrow > 0,);
+
+/**
+ * Same-line arrow producers whose display locations collide but identities do not.
+ */
+const sameLineLeft = SOURCE_VALUES.map(value => ({ sameLineLeft: value, }),); const sameLineRight = SOURCE_VALUES.map(value => ({ sameLineRight: value, }),);
+
+/**
+ * Merge carrying two same-line origins.
+ */
+const sameLineMerged = [
+  ...sameLineLeft,
+  ...sameLineRight,
+];
+
+/**
+ * Reads merge whose producers share one display line.
+ */
+export const matchingSameLineRows = sameLineMerged.filter(
+  entry => ('sameLineLeft' in entry) || ('sameLineRight' in entry),
+);
+
+/**
+ * Rows whose union constituents share one producer callable.
+ */
+const sameOwnerRows = SOURCE_VALUES.map(function toEither(value,) {
+  return value > 1
+    ? { sameOwnerLeft: value, }
+    : { sameOwnerRight: value, };
+},);
+
+/**
+ * Reads union produced by one callable.
+ */
+export const matchingSameOwnerRows = sameOwnerRows.filter(
+  entry => ('sameOwnerLeft' in entry) || ('sameOwnerRight' in entry),
+);
+
+/**
+ * Left side of authored intersection.
+ */
+type IntersectionLeft = {
+  left: number;
+};
+
+/**
+ * Right side of authored intersection.
+ */
+type IntersectionRight = {
+  right: number;
+};
+
+/**
+ * Rows contextually inferred from authored intersection.
+ */
+const intersectionRows: (IntersectionLeft & IntersectionRight)[] = [];
+
+/**
+ * Reads intersection carrying two type origins.
+ */
+export const matchingIntersectionRows = intersectionRows.filter(
+  entry => entry.left + entry.right > 0,
+);
+
+//endregion Arrow and normalized-origin controls
+
 //region No workspace origin
 
 /**
