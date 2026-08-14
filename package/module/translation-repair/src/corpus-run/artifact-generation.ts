@@ -1,28 +1,35 @@
-import {
-  access,
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { access, } from 'node:fs/promises';
 
 import spawn from 'nano-spawn';
+
+import {
+  readdirArtifacts,
+  readPlacement,
+} from './artifact-placement.ts';
 
 //region Artifact generation
 // Which PIPELINE VERSION produced each settled artifact, and which ones a draw
 // may therefore pool together.
 //
-// Every artifact already records the repo commit its run started under, as
-// `tip`, written by `corpus-pass`. Until this module nothing read it back. Six
-// readers globbed the artifacts directory and pooled whatever was there, so a
-// draw silently mixed pipeline generations and the resulting rate described no
-// pipeline that ever existed.
+// Every artifact records the built output its pass executed, as
+// `pipelineDigest`, and the repo commit that pass started under, as `tip`. The
+// digest is the identity: it moves exactly when executed bytes move, while the
+// tip moves for a documentation commit and stays put across an uncommitted
+// edit. The tip is kept because it has ancestry, which a digest cannot have,
+// and a draw asking for entries at or after a baseline needs ancestry.
+//
+// Until this module nothing read either back. Six readers globbed the artifacts
+// directory and pooled whatever was there, so a draw silently mixed pipeline
+// generations and the resulting rate described no pipeline that ever existed.
 //
 // That is the same contaminated-denominator failure this milestone has already
 // hit twice: once when block count turned out to measure the aligner rather than
 // translation coverage, and once when a verification sheet drew only regions
 // someone already believed were bad.
 //
-// NOTHING HERE IS A THRESHOLD. The artifact carries an exact commit and git
-// answers ancestry exactly, so eligibility is computed rather than estimated.
+// NOTHING HERE IS A THRESHOLD. The artifact carries an exact digest and an exact
+// commit, and git answers ancestry exactly, so eligibility is computed rather
+// than estimated.
 
 /**
  * Real git binary, preferred over the PATH entry.
@@ -120,18 +127,18 @@ const HERE = import.meta.dirname;
 const NOT_ANCESTOR_EXIT = 1;
 
 /**
- * Settled entries sharing one pipeline commit.
+ * Settled entries produced by one built pipeline.
  *
  * @example
  * ```ts
- * const group: TipGroup = { tip: 'a6bbeca50...', entryIds: ['Acheron',], };
+ * const group: GenerationGroup = { digest: '53b5a4752...', entryIds: ['Acheron',], };
  * ```
  */
-export type TipGroup = Readonly<{
+export type GenerationGroup = Readonly<{
   /**
-   * Repo commit the run recorded, exactly as written.
+   * Digest of the built output these runs executed, exactly as recorded.
    */
-  tip: string;
+  digest: string;
 
   /**
    * Entries settled under it, in directory-sorted order.
@@ -140,23 +147,33 @@ export type TipGroup = Readonly<{
 }>;
 
 /**
- * Every settled entry, partitioned by the pipeline commit that produced it.
+ * Every settled entry, partitioned by the pipeline that produced it.
  *
  * @example
  * ```ts
- * const census = await censusByTip({ artifactsDir, },);
+ * const census = await censusByGeneration({ artifactsDir, },);
  * ```
  */
 export type GenerationCensus = Readonly<{
   /**
    * Groups ordered by size, largest first, so a report leads with the bulk.
    */
-  groups: readonly TipGroup[];
+  groups: readonly GenerationGroup[];
 
   /**
    * Placed entries across every group.
    */
   total: number;
+
+  /**
+   * Repo commit each placed entry recorded, keyed by entry id.
+   *
+   * Kept per entry rather than per group because one generation can span
+   * several commits: a documentation commit moves the tip while the built
+   * output stays identical, so those runs are one pipeline recorded under two
+   * provenances. Ancestry is therefore asked per commit, never per group.
+   */
+  tipByEntry: ReadonlyMap<string, string>;
 
   /**
    * Entries whose artifact would not parse at all.
@@ -173,7 +190,7 @@ export type GenerationCensus = Readonly<{
   malformedIds: readonly string[];
 
   /**
-   * Entries whose artifact parsed but recorded no usable commit.
+   * Entries whose artifact parsed but recorded nothing usable.
    *
    * EXCLUDED from every pool, because this is a real artifact of unknown
    * generation and pooling it is exactly the silent mixing this module exists
@@ -181,214 +198,20 @@ export type GenerationCensus = Readonly<{
    * quietly smaller denominator.
    */
   untaggedIds: readonly string[];
+
+  /**
+   * Entries settled before artifacts recorded which build produced them.
+   *
+   * Also excluded from every pool, and separate from `untaggedIds` because the
+   * remedy differs. These are sound results whose pipeline can no longer be
+   * named, so deleting them buys nothing; a directory holding them is finished
+   * and the next accumulation belongs in a fresh one.
+   */
+  preDigestIds: readonly string[];
 }>;
 
 /**
- * Characters in a SHA-1 object id, the shorter of the two git uses.
- */
-const SHA1_LENGTH = 40;
-
-/**
- * Characters in a SHA-256 object id, for repositories using that hash.
- */
-const SHA256_LENGTH = 64;
-
-/**
- * Whether a recorded tip is a canonical full object id.
- *
- * A nonempty string was the whole test before, which accepted ` `, `HEAD`,
- * `main` and any revision expression. Those are not identities: `HEAD` in a
- * settled artifact resolves against the READER's checkout at read time rather
- * than against whatever produced the artifact, so it silently answers a
- * different question than the one asked, and a branch name answers a question
- * whose answer changes.
- *
- * Scanned rather than matched with a pattern: the rule is one predicate per
- * character over a fixed-length string, which is a linear pass that cannot
- * backtrack, and the codebase forbids a regex where an index scan says the
- * same thing.
- *
- * @param value - tip as the artifact recorded it
- *
- * @returns Whether it is 40 or 64 lowercase hex characters
- *
- * @example
- * ```ts
- * const usable = isObjectId({ value: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379', },);
- * ```
- */
-function isObjectId({ value, }: { readonly value: string; },): boolean {
-  if ((value.length !== SHA1_LENGTH) && (value.length !== SHA256_LENGTH))
-    return false;
-
-  for (const character of value) {
-    /**
-     * Whether it is one of `0` to `9`.
-     */
-    const isDigit = (character >= '0') && (character <= '9');
-
-    /**
-     * Whether it is one of `a` to `f`. Uppercase is refused deliberately: git
-     * writes lowercase, so an uppercase id came from somewhere else, and two
-     * spellings of one commit would count as two generations.
-     */
-    const isLowerHex = (character >= 'a') && (character <= 'f');
-
-    if ((!isDigit) && (!isLowerHex))
-      return false;
-  }
-
-  return true;
-}
-
-/**
- * Lists the REGULAR FILES of an artifacts directory.
- *
- * Directory entries are checked rather than assumed. A directory named
- * `backup.json` otherwise reached `readFile` and threw EISDIR out of the whole
- * census, and a symlink was followed wherever it pointed, which could duplicate
- * another artifact under a second identity or leave the directory entirely.
- * Neither is an artifact, and neither should cost more than being skipped.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @returns Names of regular files only, unsorted
- *
- * @example
- * ```ts
- * const names = await readdirArtifacts({ artifactsDir, },);
- * ```
- */
-async function readdirArtifacts(
-  { artifactsDir, }: { readonly artifactsDir: string; },
-): Promise<readonly string[]> {
-  return (await readdir(
-    artifactsDir,
-    { withFileTypes: true, },
-  ))
-    .filter(function isRegularFile(entry,): boolean {
-      return entry.isFile();
-    },)
-    .map(function toName(entry,): string {
-      return entry.name;
-    },);
-}
-
-/**
- * How one artifact places into a generation.
- */
-type Placement =
-  | Readonly<{
-    kind: 'tagged';
-    tip: string;
-  }>
-  | Readonly<{ kind: 'malformed'; }>
-  | Readonly<{ kind: 'untagged'; }>;
-
-/**
- * Reads one artifact's recorded pipeline commit.
- *
- * Reports rather than throws, because this package already decided a corrupt
- * artifact costs its own row and not the whole run. The two failure kinds stay
- * distinct because they are handled oppositely: a malformed file belongs to the
- * reader that reports malformed files, and an untagged one belongs nowhere.
- *
- * @param artifactsDir - directory holding the artifact
- *
- * @param name - artifact file name
- *
- * @returns How this artifact places
- *
- * @example
- * ```ts
- * const placement = await readTip({ artifactsDir, name: 'Acheron.json', },);
- * ```
- */
-async function readTip(
-  {
-    artifactsDir,
-    name,
-  }: {
-    readonly artifactsDir: string;
-    readonly name: string;
-  },
-): Promise<Placement> {
-  /**
-   * Entry id the pool will key this artifact by, which is its file name.
-   */
-  const keyedId = name.slice(
-    0,
-    -'.json'.length,
-  );
-
-  if (keyedId === '')
-    return { kind: 'untagged', };
-
-  try {
-    // INSIDE the try, deliberately. It used to sit outside, so a vanished
-    // file, an unreadable one, or a directory named `something.json` threw
-    // out of the whole census instead of costing its own row. That is the
-    // opposite of this module's stated policy, and it aborts a pass at
-    // startup now that the resume guard runs the census.
-    /**
-     * Raw artifact text.
-     */
-    const text = await readFile(
-      `${artifactsDir}/${name}`,
-      'utf8',
-    );
-
-    /**
-     * Artifact as parsed JSON.
-     */
-    const parsed: unknown = JSON.parse(text,);
-
-    if (((typeof parsed) !== 'object') || (parsed === null))
-      return { kind: 'untagged', };
-
-    // The file name is what the pool keys on and what the scheduler calls
-    // settled, while every reader downstream uses the id INSIDE. Unequal means
-    // one artifact would be admitted under one identity and read under
-    // another, which is how `Mittens-copy.json` becomes a second settled entry
-    // and `Mittens.json.json` becomes an entry called `Mittens.json`.
-    if (('id' in parsed) && (parsed.id !== keyedId)) {
-      console.log(
-        `POOL ${name} records id ${JSON.stringify(parsed.id,)}, which is not `
-          + 'its file name; treating it as unplaceable',
-      );
-      return { kind: 'untagged', };
-    }
-
-    if (!('tip' in parsed))
-      return { kind: 'untagged', };
-
-    /**
-     * Commit as the artifact recorded it.
-     */
-    const { tip, } = parsed;
-
-    if (((typeof tip) !== 'string') || (!isObjectId({ value: tip, },)))
-      return { kind: 'untagged', };
-
-    return {
-      kind: 'tagged',
-      tip,
-    };
-  }
-  catch (error) {
-    // A truncated artifact is an ordinary outcome of a pass killed at its hard
-    // cap, and so, now that the read happens here, is a file that vanished or
-    // could not be opened. Logged rather than swallowed so a systematic write
-    // fault is visible instead of showing up as a quietly smaller pool.
-    console.log(
-      `POOL malformed ${name}: ${String(error,)}`,
-    );
-    return { kind: 'malformed', };
-  }
-}
-
-/**
- * Partitions every settled artifact by the pipeline commit it recorded.
+ * Partitions every settled artifact by the pipeline that produced it.
  *
  * @param artifactsDir - directory holding one JSON per settled entry
  *
@@ -396,14 +219,14 @@ async function readTip(
  * caller classify the same set; omitted only by callers that have not listed
  * the directory themselves
  *
- * @returns Census grouped by commit, largest group first
+ * @returns Census grouped by built pipeline, largest group first
  *
  * @example
  * ```ts
- * const census = await censusByTip({ artifactsDir, names, },);
+ * const census = await censusByGeneration({ artifactsDir, names, },);
  * ```
  */
-export async function censusByTip(
+export async function censusByGeneration(
   {
     artifactsDir,
     names: listed,
@@ -429,9 +252,14 @@ export async function censusByTip(
     .toSorted();
 
   /**
-   * Entry ids gathered under each recorded commit.
+   * Entry ids gathered under each recorded build.
    */
-  const byTip = new Map<string, string[]>();
+  const byDigest = new Map<string, string[]>();
+
+  /**
+   * Commit each placed entry recorded, for ancestry.
+   */
+  const tipByEntry = new Map<string, string>();
 
   /**
    * Entries whose artifact would not parse.
@@ -439,9 +267,14 @@ export async function censusByTip(
   const malformedIds: string[] = [];
 
   /**
-   * Entries whose artifact parsed but recorded no usable commit.
+   * Entries whose artifact parsed but recorded nothing usable.
    */
   const untaggedIds: string[] = [];
+
+  /**
+   * Entries recording a commit but no build.
+   */
+  const preDigestIds: string[] = [];
 
   /* oxlint-disable no-await-in-loop -- sequential on purpose: one artifact at a time keeps peak memory flat across a directory that reaches hundreds of megabytes */
   for (const name of names) {
@@ -451,7 +284,7 @@ export async function censusByTip(
      * A file called exactly `.json` has an EMPTY stem, and an empty id in a
      * report is a blank line nobody can act on, so such a file is carried by
      * its name instead. It can only ever appear among the unplaceable, since
-     * `readTip` refuses an empty stem before reading anything.
+     * `readPlacement` refuses an empty stem before reading anything.
      */
     const entryId = (name === '.json')
       ? name
@@ -461,9 +294,9 @@ export async function censusByTip(
       );
 
     /**
-     * How this artifact places: its commit, or why it has none.
+     * How this artifact places: its build and commit, or why it has neither.
      */
-    const placement = await readTip({
+    const placement = await readPlacement({
       artifactsDir,
       name,
     },);
@@ -476,16 +309,19 @@ export async function censusByTip(
       untaggedIds.push(entryId,);
       continue;
     }
+    if (placement.kind === 'pre-digest') {
+      preDigestIds.push(entryId,);
+      continue;
+    }
 
-    /**
-     * Commit this artifact recorded.
-     */
-    const { tip, } = placement;
-
-    byTip.set(
-      tip,
+    tipByEntry.set(
+      entryId,
+      placement.tip,
+    );
+    byDigest.set(
+      placement.digest,
       [
-        ...(byTip.get(tip,) ?? []),
+        ...(byDigest.get(placement.digest,) ?? []),
         entryId,
       ],
     );
@@ -494,14 +330,14 @@ export async function censusByTip(
 
   return {
     groups: [
-      ...byTip
+      ...byDigest
         .entries(),
     ]
       .map(function toGroup(
-        [tip, entryIds,],
-      ): TipGroup {
+        [digest, entryIds,],
+      ): GenerationGroup {
         return {
-          tip,
+          digest,
           entryIds,
         };
       },)
@@ -523,13 +359,11 @@ export async function censusByTip(
 
         return rightSize - leftSize;
       },),
-    total: names.length
-      - malformedIds
-        .length
-      - untaggedIds
-        .length,
+    total: tipByEntry.size,
+    tipByEntry,
     malformedIds,
     untaggedIds,
+    preDigestIds,
   };
 }
 

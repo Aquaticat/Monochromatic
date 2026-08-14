@@ -8,6 +8,11 @@
  * while the directory looked full. Six readers globbed that directory and none
  * of them read the `tip` the artifacts already carried.
  *
+ * A generation is now the BUILT PIPELINE, recorded as `pipelineDigest`, because
+ * the commit answered the question wrongly in both directions: it moves for a
+ * documentation commit that changes nothing that runs, and stays put across an
+ * uncommitted edit that changes everything.
+ *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
@@ -30,9 +35,80 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  censusByTip,
+  censusByGeneration,
   selectEligible,
 } from '../../dist/final/node/index.mjs';
+
+/**
+ * One built pipeline, as a digest-shaped invention.
+ */
+const DIGEST_A = 'a'.repeat(64,);
+
+/**
+ * A second built pipeline, differing from {@link DIGEST_A} everywhere.
+ */
+const DIGEST_B = 'b'.repeat(64,);
+
+/**
+ * One repo commit, as an object-id-shaped invention.
+ */
+const TIP_A = '1'.repeat(40,);
+
+/**
+ * A second repo commit, for the case where one pipeline carries two of them.
+ */
+const TIP_B = '2'.repeat(40,);
+
+/**
+ * The two commits of this repository ancestry can be asked about safely.
+ *
+ * Real commits, because `tipContains` asks git and an invented sha is an
+ * UNRESOLVABLE commit rather than an excluded one. The root cannot contain
+ * HEAD, so requiring HEAD excludes anything settled at the root.
+ *
+ * @returns Root commit first, HEAD second
+ *
+ * @example
+ * ```ts
+ * const [root, head,] = await gitBounds();
+ * ```
+ */
+async function gitBounds(): Promise<readonly [string, string,]> {
+  /**
+   * First commit of this history, which contains nothing but itself.
+   */
+  const root = (await spawn(
+    '/usr/bin/git',
+    [
+      '-C',
+      import.meta.dirname,
+      'rev-list',
+      '--max-parents=0',
+      'HEAD',
+    ],
+  )).stdout
+    .trim()
+    .split('\n',)[0] ?? '';
+
+  /**
+   * Current commit, which contains the root.
+   */
+  const head = (await spawn(
+    '/usr/bin/git',
+    [
+      '-C',
+      import.meta.dirname,
+      'rev-parse',
+      'HEAD',
+    ],
+  )).stdout
+    .trim();
+
+  return [
+    root,
+    head,
+  ];
+}
 
 /**
  * Writes a throwaway artifacts directory.
@@ -41,13 +117,14 @@ import {
  * runs directory, which holds hours of ungraded work.
  *
  * @param entries - one record per artifact; omitting `tip` writes an artifact
- * that carries no pipeline commit at all
+ * carrying no provenance at all, and omitting `digest` writes one from before
+ * artifacts recorded which build produced them
  *
  * @returns Path of the artifacts directory
  *
  * @example
  * ```ts
- * const dir = await writeArtifacts({ entries: [{ entryId: 'Mittens', tip: 'abc', },], },);
+ * const dir = await writeArtifacts({ entries: [{ entryId: 'Mittens', tip: TIP_A, digest: DIGEST_A, },], },);
  * ```
  */
 async function writeArtifacts(
@@ -55,6 +132,7 @@ async function writeArtifacts(
     readonly entries: readonly Readonly<{
       entryId: string;
       tip?: string;
+      digest?: string;
     }>[];
   },
 ): Promise<string> {
@@ -69,14 +147,13 @@ async function writeArtifacts(
   await Promise.all(
     entries.map(async function writeOne(entry,) {
       /**
-       * Artifact body, carrying a pipeline commit only when one was given.
+       * Artifact body, carrying each identity only when one was given.
        */
-      const body = 'tip' in entry
-        ? {
-          tip: entry.tip,
-          status: 'repaired',
-        }
-        : { status: 'repaired', };
+      const body = {
+        status: 'repaired',
+        ...('tip' in entry ? { tip: entry.tip, } : {}),
+        ...('digest' in entry ? { pipelineDigest: entry.digest, } : {}),
+      };
 
       await writeFile(
         join(
@@ -93,10 +170,10 @@ async function writeArtifacts(
 }
 
 await describe({
-  name: censusByTip.name,
+  name: censusByGeneration.name,
   children: [
     it({
-      name: 'partitions settled entries by the commit each recorded, largest '
+      name: 'partitions settled entries by the BUILD each recorded, largest '
         + 'group first, which is the reading that was impossible before: the '
         + 'field was written into every artifact and read by nothing',
       fn: async () => {
@@ -104,26 +181,63 @@ await describe({
           entries: [
             {
               entryId: 'Mittens',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
             {
               entryId: 'Pepper',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
             {
               entryId: 'Biscuit',
-              tip: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+              tip: TIP_B,
+              digest: DIGEST_B,
             },
           ],
         },);
 
-        const census = await censusByTip({ artifactsDir: dir, },);
+        const census = await censusByGeneration({ artifactsDir: dir, },);
 
         expect(census.total,).toBe(3,);
         expect(census.groups.length,).toBe(2,);
-        expect(census.groups[0]?.tip,).toBe('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',);
+        expect(census.groups[0]?.digest,).toBe(DIGEST_A,);
         expect(census.groups[0]?.entryIds,).toEqual(['Mittens', 'Pepper',],);
         expect(census.groups[1]?.entryIds,).toEqual(['Biscuit',],);
+      },
+    },),
+
+    it({
+      name: 'pools two DIFFERENT COMMITS as one generation when they ran the '
+        + 'same build, which is the case the commit could never get right: a '
+        + 'documentation commit moves the tip while every byte that runs stays '
+        + 'identical, and splitting those entries refuses a pool that is sound',
+      fn: async () => {
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: TIP_A,
+              digest: DIGEST_A,
+            },
+            {
+              entryId: 'Pepper',
+              tip: TIP_B,
+              digest: DIGEST_A,
+            },
+          ],
+        },);
+
+        const census = await censusByGeneration({ artifactsDir: dir, },);
+
+        expect(census.groups.length,).toBe(1,);
+        expect(census.tipByEntry.get('Mittens',),).toBe(TIP_A,);
+        expect(census.tipByEntry.get('Pepper',),).toBe(TIP_B,);
+
+        const eligible = await selectEligible({ census, },);
+
+        expect(eligible.entryIds,).toEqual(['Mittens', 'Pepper',],);
+        expect(eligible.selection.kind,).toBe('single-generation',);
       },
     },),
 
@@ -139,13 +253,14 @@ await describe({
           entries: [
             {
               entryId: 'Mittens',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
             { entryId: 'Biscuit', },
           ],
         },);
 
-        const census = await censusByTip({ artifactsDir: dir, },);
+        const census = await censusByGeneration({ artifactsDir: dir, },);
 
         expect(census.total,).toBe(1,);
         expect(census.untaggedIds,).toEqual(['Biscuit',],);
@@ -158,9 +273,73 @@ await describe({
           eligible.report
             .some(function names(line: string,) {
               return line.includes('Biscuit',)
-                && line.includes('recording no pipeline commit',);
+                && line.includes('recording no usable pipeline',);
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'keeps an artifact that records a commit but no BUILD out of every '
+        + 'generation, and apart from the unreadable ones. It is a sound result '
+        + 'whose pipeline can no longer be named, so deleting it buys nothing '
+        + 'and pooling it is the silent mixing this module exists to stop',
+      fn: async () => {
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: TIP_A,
+              digest: DIGEST_A,
+            },
+            {
+              entryId: 'Biscuit',
+              tip: TIP_A,
+            },
+          ],
+        },);
+
+        const census = await censusByGeneration({ artifactsDir: dir, },);
+
+        expect(census.total,).toBe(1,);
+        expect(census.preDigestIds,).toEqual(['Biscuit',],);
+        expect(census.untaggedIds.length,).toBe(0,);
+        expect(census.malformedIds.length,).toBe(0,);
+
+        const eligible = await selectEligible({ census, },);
+
+        expect(eligible.entryIds,).toEqual(['Mittens',],);
+        expect(
+          eligible.report
+            .some(function names(line: string,) {
+              return line.includes('Biscuit',)
+                && line.includes('before artifacts recorded which build',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'refuses a digest that is PRESENT and unusable, which is not the '
+        + 'same as one that is absent: absence means old, while a malformed '
+        + 'value means something wrote a field this package owns, and pooling '
+        + 'on it would pool on a value no build ever produced',
+      fn: async () => {
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: TIP_A,
+              digest: 'not-a-digest',
+            },
+          ],
+        },);
+
+        const census = await censusByGeneration({ artifactsDir: dir, },);
+
+        expect(census.total,).toBe(0,);
+        expect(census.untaggedIds,).toEqual(['Mittens',],);
+        expect(census.preDigestIds.length,).toBe(0,);
       },
     },),
 
@@ -169,7 +348,7 @@ await describe({
         + 'run that has settled nothing yet is an ordinary state',
       fn: async () => {
         const dir = await writeArtifacts({ entries: [], },);
-        const census = await censusByTip({ artifactsDir: dir, },);
+        const census = await censusByGeneration({ artifactsDir: dir, },);
 
         expect(census.total,).toBe(0,);
         expect(census.groups.length,).toBe(0,);
@@ -190,17 +369,21 @@ await describe({
           entries: [
             {
               entryId: 'Mittens',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
             {
               entryId: 'Biscuit',
-              tip: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+              tip: TIP_B,
+              digest: DIGEST_B,
             },
           ],
         },);
 
         await expect(
-          selectEligible({ census: await censusByTip({ artifactsDir: dir, },), },),
+          selectEligible({
+            census: await censusByGeneration({ artifactsDir: dir, },),
+          },),
         )
           .rejects
           .toThrow('pipeline generations',);
@@ -216,21 +399,24 @@ await describe({
           entries: [
             {
               entryId: 'Mittens',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
             {
               entryId: 'Pepper',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
           ],
         },);
 
         const eligible = await selectEligible({
-          census: await censusByTip({ artifactsDir: dir, },),
+          census: await censusByGeneration({ artifactsDir: dir, },),
         },);
 
         expect(eligible.entryIds,).toEqual(['Mittens', 'Pepper',],);
         expect(eligible.excludedIds.length,).toBe(0,);
+        expect(eligible.digestByEntry.get('Mittens',),).toBe(DIGEST_A,);
       },
     },),
 
@@ -243,25 +429,67 @@ await describe({
           entries: [
             {
               entryId: 'Mittens',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
             {
               entryId: 'Biscuit',
-              tip: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+              tip: TIP_B,
+              digest: DIGEST_B,
             },
           ],
         },);
 
         const eligible = await selectEligible({
-          census: await censusByTip({ artifactsDir: dir, },),
+          census: await censusByGeneration({ artifactsDir: dir, },),
           pooledDeliberately: true,
         },);
 
         expect(eligible.entryIds.length,).toBe(2,);
+        expect(eligible.selection.kind,).toBe('all-generations',);
         expect(
           eligible.report
             .some(function admits(line: string,) {
               return line.includes('DELIBERATELY',);
+            },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'splits ONE generation by commit when a required commit is named, '
+        + 'because ancestry belongs to commits and a generation can carry '
+        + 'several. Asking it per generation would take the whole group on one '
+        + 'entry\'s verdict, admitting or excluding entries by association',
+      fn: async () => {
+        const [root, head,] = await gitBounds();
+
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: head,
+              digest: DIGEST_A,
+            },
+            {
+              entryId: 'Biscuit',
+              tip: root,
+              digest: DIGEST_A,
+            },
+          ],
+        },);
+
+        const eligible = await selectEligible({
+          census: await censusByGeneration({ artifactsDir: dir, },),
+          requiredCommit: head,
+        },);
+
+        expect(eligible.entryIds,).toEqual(['Mittens',],);
+        expect(eligible.excludedIds,).toEqual(['Biscuit',],);
+        expect(
+          eligible.report
+            .some(function counts(line: string,) {
+              return line.includes('1 ELIGIBLE',);
             },),
         ).toBe(true,);
       },
@@ -274,45 +502,21 @@ await describe({
         + 'rate over zero entries is a denominator shrunk all the way to '
         + 'nothing while the number above it still renders',
       fn: async () => {
-        // Real commits, because tipContains asks git for ancestry and an
-        // invented sha is an UNRESOLVABLE commit rather than an excluded one.
-        // The root commit cannot contain HEAD, so requiring HEAD excludes it.
-        const root = (await spawn(
-          '/usr/bin/git',
-          [
-            '-C',
-            import.meta.dirname,
-            'rev-list',
-            '--max-parents=0',
-            'HEAD',
-          ],
-        )).stdout
-          .trim()
-          .split('\n',)[0] ?? '';
-
-        const head = (await spawn(
-          '/usr/bin/git',
-          [
-            '-C',
-            import.meta.dirname,
-            'rev-parse',
-            'HEAD',
-          ],
-        )).stdout
-          .trim();
+        const [root, head,] = await gitBounds();
 
         const dir = await writeArtifacts({
           entries: [
             {
               entryId: 'Mittens',
               tip: root,
+              digest: DIGEST_A,
             },
           ],
         },);
 
         await expect(
           selectEligible({
-            census: await censusByTip({ artifactsDir: dir, },),
+            census: await censusByGeneration({ artifactsDir: dir, },),
             requiredCommit: head,
           },),
         )
@@ -328,7 +532,9 @@ await describe({
         const dir = await writeArtifacts({ entries: [], },);
 
         await expect(
-          selectEligible({ census: await censusByTip({ artifactsDir: dir, },), },),
+          selectEligible({
+            census: await censusByGeneration({ artifactsDir: dir, },),
+          },),
         )
           .rejects
           .toThrow('nothing to pool',);
@@ -346,7 +552,8 @@ await describe({
           entries: [
             {
               entryId: 'Mittens',
-              tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+              tip: TIP_A,
+              digest: DIGEST_A,
             },
           ],
         },);
@@ -361,12 +568,13 @@ await describe({
           ),
           JSON.stringify({
             id: 'Mittens',
-            tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            tip: TIP_A,
+            pipelineDigest: DIGEST_A,
           },),
           'utf8',
         );
 
-        const census = await censusByTip({ artifactsDir: dir, },);
+        const census = await censusByGeneration({ artifactsDir: dir, },);
 
         expect(census.total,).toBe(1,);
         expect(census.untaggedIds,).toEqual(['Mittens-copy',],);

@@ -261,13 +261,13 @@ async function runCorpusPass(): Promise<void> {
     fileCount,
   } = await digestPipeline({ dir: import.meta.dirname, },);
 
-  // Before anything is settled: a resume reads HEAD again, so if HEAD moved
-  // since the entries already here were written, continuing would stamp a
-  // second commit into one pool and every reader that computes a rate would
+  // Before anything is settled: a resume builds again, so if anything that runs
+  // changed since the entries already here were written, continuing would stamp
+  // a second pipeline into one pool and every reader that computes a rate would
   // then refuse the lot.
   await assertResumableGeneration({
     artifactsDir,
-    tip,
+    digest: pipelineDigest,
   },);
 
   /**
@@ -531,7 +531,7 @@ async function runCorpusPass(): Promise<void> {
     /* oxlint-disable-next-line no-await-in-loop -- per-entry setup, sequential by design */
     const sliceCache = await openSliceCache({
       dir: entryCacheDir,
-      tip,
+      generation: pipelineDigest,
     },);
 
     /**

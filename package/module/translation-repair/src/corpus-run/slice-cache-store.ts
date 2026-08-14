@@ -201,12 +201,12 @@ const GENERATION_MARKER = 'generation.txt';
  *
  * @param dir - per-entry slice-cache directory
  *
- * @returns Recorded commit, or empty when the cache predates stamping or has
- * never been written
+ * @returns Recorded pipeline digest, or empty when the cache predates
+ * stamping or has never been written
  *
  * @example
  * ```ts
- * const cachedTip = await readCacheGeneration({ dir, },);
+ * const cached = await readCacheGeneration({ dir, },);
  * ```
  */
 async function readCacheGeneration(
@@ -244,10 +244,10 @@ async function readCacheGeneration(
  *
  * A cache filled by a different pipeline is DISCARDED rather than resumed.
  * Resuming it is the one generation defect no reader can catch: the settled
- * artifact records a single tip, so an entry built half from cached slices and
- * half from current code looks like ordinary work to every filter downstream,
- * while being internally mixed. Cross-artifact mixing is at least visible in a
- * census; this is not visible anywhere.
+ * artifact records a single digest, so an entry built half from cached slices
+ * and half from current code looks like ordinary work to every filter
+ * downstream, while being internally mixed. Cross-artifact mixing is at least
+ * visible in a census; this is not visible anywhere.
  *
  * An UNSTAMPED cache is discarded for the same reason. It cannot prove which
  * pipeline filled it, and an unprovable cache is exactly the case the stamp
@@ -255,22 +255,22 @@ async function readCacheGeneration(
  *
  * @param dir - per-entry slice-cache directory
  *
- * @param tip - pipeline commit this pass runs under
+ * @param generation - digest of the built pipeline this pass runs
  *
  * @returns Cache resuming finished slices and persisting new ones
  *
  * @example
  * ```ts
- * const sliceCache = await openSliceCache({ dir: entryCacheDir, tip, },);
+ * const sliceCache = await openSliceCache({ dir: entryCacheDir, generation, },);
  * ```
  */
 export async function openSliceCache(
   {
     dir,
-    tip,
+    generation,
   }: {
     readonly dir: string;
-    readonly tip: string;
+    readonly generation: string;
   },
 ): Promise<SliceCache> {
   await mkdir(
@@ -281,17 +281,17 @@ export async function openSliceCache(
   /**
    * Pipeline that filled this cache, empty when it never said.
    */
-  const cachedTip = await readCacheGeneration({ dir, },);
+  const cached = await readCacheGeneration({ dir, },);
 
   /**
    * Slices this entry already finished on earlier runs, kept only when the
    * pipeline that produced them is the one running now.
    */
-  const resumed = (cachedTip === tip)
+  const resumed = (cached === generation)
     ? await loadResumedSlices({ dir, },)
     : new Map<string, ChunkRepairOutcome>();
 
-  if (cachedTip !== tip) {
+  if (cached !== generation) {
     /**
      * Slices about to be thrown away, counted before the directory is cleared.
      */
@@ -299,8 +299,8 @@ export async function openSliceCache(
     if (discarded.size > 0)
       console.log(
         `SLICE discarding ${String(discarded.size,)} cached slices in ${dir}: `
-          + `filled by ${cachedTip === '' ? '(unstamped)' : cachedTip}, `
-          + `running ${tip}`,
+          + `filled by ${cached === '' ? '(unstamped)' : cached}, `
+          + `running ${generation}`,
       );
     await rm(
       dir,
@@ -323,7 +323,7 @@ export async function openSliceCache(
       dir,
       GENERATION_MARKER,
     ),
-    `${tip}\n`,
+    `${generation}\n`,
   );
 
   return {

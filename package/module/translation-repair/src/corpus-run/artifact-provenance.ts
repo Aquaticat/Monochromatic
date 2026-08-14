@@ -23,42 +23,48 @@
 const MIN_ABBREVIATION = 9;
 
 /**
- * Shortens commits just enough that the ones being shown stay distinguishable.
+ * Shortens hex ids just enough that the ones being shown stay distinguishable.
  *
- * A fixed width is a bet that no two commits in a report share a prefix, and
- * the bet has already been lost once here at seven characters. Widening to
- * nine only moved the bet. Two generations rendering as the same string is
- * worse than a long string: a report whose two lines read alike is a report
- * nobody can act on, and this one is read precisely when a pool is suspected of
+ * Takes ids rather than commits because a report names two kinds of them now:
+ * the digest identifying a built pipeline, and the commit the pass that ran it
+ * started under. Both are lowercase hex nobody wants printed in full, and
+ * sizing them together is the point, since what has to stay distinguishable is
+ * whatever appears side by side.
+ *
+ * A fixed width is a bet that no two ids in a report share a prefix, and the
+ * bet has already been lost once here at seven characters. Widening to nine
+ * only moved the bet. Two generations rendering as the same string is worse
+ * than a long string: a report whose two lines read alike is a report nobody
+ * can act on, and this one is read precisely when a pool is suspected of
  * spanning versions.
  *
  * Grows from {@link MIN_ABBREVIATION} until every input is unique, so an
  * ordinary report is short and only an actual collision pays for length.
  *
- * @param tips - every commit that will appear in this report
+ * @param ids - every hex id that will appear in this report
  *
- * @returns Function shortening one commit to the agreed width
+ * @returns Function shortening one id to the agreed width
  *
  * @example
  * ```ts
- * const short = abbreviate({ tips: census.groups.map(toTip), },);
- * console.log(short({ tip, },),);
+ * const short = abbreviate({ ids: census.groups.map(toDigest), },);
+ * console.log(short({ id, },),);
  * ```
  */
 export function abbreviate(
-  { tips, }: { readonly tips: readonly string[]; },
-): (input: { readonly tip: string; }) => string {
+  { ids, }: { readonly ids: readonly string[]; },
+): (input: { readonly id: string; }) => string {
   /**
-   * Longest commit shown, the point past which growing cannot help.
+   * Longest id shown, the point past which growing cannot help.
    */
-  const longest = tips.reduce(
+  const longest = ids.reduce(
     function toLongest(
       soFar,
-      tip,
+      id,
     ): number {
       return Math.max(
         soFar,
-        tip.length,
+        id.length,
       );
     },
     MIN_ABBREVIATION,
@@ -78,21 +84,21 @@ export function abbreviate(
   );
 
   /**
-   * Shortest width at which no two of these commits read alike.
+   * Shortest width at which no two of these ids read alike.
    *
-   * Full length when even that cannot separate them, which means the same
-   * commit was passed twice and no width would have helped.
+   * Full length when even that cannot separate them, which means the same id
+   * was passed twice and no width would have helped.
    */
   const width = candidates.find(function separates(candidate,): boolean {
-    return new Set(tips.map(function toPrefix(tip,): string {
-      return tip.slice(
+    return new Set(ids.map(function toPrefix(id,): string {
+      return id.slice(
         0,
         candidate,
       );
-    },),).size === new Set(tips,).size;
+    },),).size === new Set(ids,).size;
   },) ?? longest;
-  return function short({ tip, }: { readonly tip: string; },): string {
-    return tip.slice(
+  return function short({ id, }: { readonly id: string; },): string {
+    return id.slice(
       0,
       width,
     );
@@ -104,11 +110,11 @@ export function abbreviate(
  *
  * Recorded rather than inferred from the required commit alone, because the
  * three modes are not distinguishable after the fact and they license different
- * claims. Only `single-tip` licenses "produced by pipeline X".
+ * claims. Only `single-generation` licenses "produced by pipeline X".
  *
  * @example
  * ```ts
- * const selection: GenerationSelection = { kind: 'single-tip', tip, };
+ * const selection: GenerationSelection = { kind: 'single-generation', digest, };
  * ```
  */
 export type GenerationSelection =
@@ -129,22 +135,22 @@ export type GenerationSelection =
   }>
   | Readonly<{
     /**
-     * Entries recording exactly one pipeline commit, the only selection that
+     * Entries recording exactly one built pipeline, the only selection that
      * licenses describing a rate as belonging to that pipeline.
      */
-    kind: 'single-tip';
+    kind: 'single-generation';
 
     /**
-     * Commit every pooled entry recorded.
+     * Digest of the built output every pooled entry ran.
      */
-    tip: string;
+    digest: string;
   }>
   | Readonly<{
     /**
      * Every generation present, pooled deliberately. Legitimate for a census,
      * never for a rate.
      */
-    kind: 'all-tips';
+    kind: 'all-generations';
   }>;
 
 /**
@@ -215,8 +221,14 @@ export class ArtifactProvenanceError extends Error {
  * @param expectedTip - pipeline commit the pool recorded for this entry, absent
  * when the pool carried no tip for it
  *
- * @throws ArtifactProvenanceError when the file name, the recorded id, or the
- * recorded tip disagree
+ * @param observedDigest - built pipeline the loaded bytes record, empty when
+ * they record none
+ *
+ * @param expectedDigest - built pipeline the pool recorded for this entry,
+ * absent when the pool carried no digest for it
+ *
+ * @throws ArtifactProvenanceError when the file name, the recorded id, the
+ * recorded tip, or the recorded pipeline disagree
  *
  * @example
  * ```ts
@@ -228,12 +240,16 @@ export function assertArtifactProvenance(
     name,
     observedId,
     observedTip,
+    observedDigest = '',
     expectedTip,
+    expectedDigest,
   }: {
     readonly name: string;
     readonly observedId: string;
     readonly observedTip: string;
+    readonly observedDigest?: string;
     readonly expectedTip?: string;
+    readonly expectedDigest?: string;
   },
 ): void {
   /**
@@ -266,6 +282,22 @@ export function assertArtifactProvenance(
       field: 'tip',
       expected: expectedTip,
       observed: observedTip,
+    },);
+
+  // Checked after the tip and separately from it, because the two disagree for
+  // different reasons and only this one moves the entry out of the pool's
+  // generation. A tip mismatch means the file was rewritten; a digest mismatch
+  // means the file was rewritten BY A DIFFERENT PIPELINE, which is the case the
+  // whole census exists to catch.
+  if (expectedDigest === undefined)
+    return;
+
+  if (observedDigest !== expectedDigest)
+    throw new ArtifactProvenanceError({
+      name,
+      field: 'pipeline digest',
+      expected: expectedDigest,
+      observed: observedDigest,
     },);
 }
 

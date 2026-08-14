@@ -42,6 +42,15 @@ import { gatherAttributionEntries, } from '../../dist/final/node/index.mjs';
 const SHARED_TIP = 'f000000000000000000000000000000000000000';
 
 /**
+ * Built pipeline every fixture artifact carries unless its case sets one.
+ *
+ * Shared for the same reason as {@link SHARED_TIP}, and separate from it
+ * because this is the field the pool actually partitions by: a commit says
+ * where code came from, this says which build ran.
+ */
+const SHARED_GENERATION = 'f'.repeat(64,);
+
+/**
  * Critic used throughout.
  */
 const TABBY = 'hf:openai/gpt-oss-120b';
@@ -85,16 +94,18 @@ async function writeArtifacts(
      * Body as written, with a pipeline commit supplied when the case did not
      * name one.
      *
-     * Every settled artifact carries `tip`, and the readers now refuse a pool
-     * they cannot partition by it. These cases are about PARSING rather than
-     * about generations, so they get one shared commit and stay a
-     * single-generation pool; a case that wants to exercise the generation
-     * guard sets its own. Deliberately not defaulted inside the reader: an
-     * artifact with no commit is exactly what must not be quietly accepted.
+     * Every settled artifact carries `tip` and `pipelineDigest`, and the
+     * readers now refuse a pool they cannot partition by the latter. These
+     * cases are about PARSING rather than about generations, so they get one
+     * shared pair and stay a single-generation pool; a case that wants to
+     * exercise the generation guard sets its own. Deliberately not defaulted
+     * inside the reader: an artifact recording no pipeline is exactly what
+     * must not be quietly accepted.
      */
     const written = (((typeof body) === 'object') && (body !== null))
       ? {
         tip: SHARED_TIP,
+        pipelineDigest: SHARED_GENERATION,
         ...body,
       }
       : body;

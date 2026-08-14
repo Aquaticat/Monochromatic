@@ -136,20 +136,28 @@ export {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 export {
-  censusByTip,
+  censusByGeneration,
   type GenerationCensus,
+  type GenerationGroup,
   tipContains,
-  type TipGroup,
 } from './corpus-run/artifact-generation.ts';
 export {
+  type Placement,
+  readdirArtifacts,
+  readPlacement,
+} from './corpus-run/artifact-placement.ts';
+export {
   type EligibleEntries,
-  EmptyPoolError,
-  MixedGenerationError,
   selectEligible,
 } from './corpus-run/artifact-eligible.ts';
 export {
+  EmptyPoolError,
+  MixedGenerationError,
+} from './corpus-run/artifact-pool-refusal.ts';
+export {
   assertResumableGeneration,
-  TipDriftError,
+  GenerationDriftError,
+  PreDigestDirectoryError,
   UnplaceableArtifactError,
 } from './corpus-run/pass-generation-guard.ts';
 export {

@@ -1,46 +1,21 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   type GenerationCensus,
   tipContains,
 } from './artifact-generation.ts';
 import {
+  censusDigests,
+  COUNT_WIDTH,
+  EmptyPoolError,
+  ENTRY_NOUN_WIDTH,
+  MixedGenerationError,
+  pluralEntries,
+} from './artifact-pool-refusal.ts';
+import {
   abbreviate,
   type GenerationSelection,
 } from './artifact-provenance.ts';
-
-/**
- * Pipeline commit each placed entry recorded, for the whole census.
- *
- * @param census - what the directory holds
- *
- * @returns Lookup from entry id to recorded commit
- *
- * @example
- * ```ts
- * const tipByEntry = mapTips({ census, },);
- * ```
- */
-function mapTips(
-  { census, }: { readonly census: GenerationCensus; },
-): ReadonlyMap<string, string> {
-  return new Map(
-    census.groups
-      .flatMap(function toPairs(group,): readonly (readonly [
-        string,
-        string,
-      ])[] {
-        return group.entryIds
-          .map(function toPair(entryId,): readonly [
-            string,
-            string,
-          ] {
-            return [
-              entryId,
-              group.tip,
-            ];
-          },);
-      },),
-  );
-}
 
 //region Artifact eligibility
 // Turns a generation census into the set of entries one draw may pool, and
@@ -49,32 +24,12 @@ function mapTips(
 // The refusal is the point. The failure this guards against is not a draw that
 // knows it spans versions, it is a draw that does not, so the safe default has
 // to be the loud one. A caller that genuinely wants every generation says so.
-
-/**
- * Every commit a census holds, for sizing an abbreviation that cannot collide.
- *
- * @param census - what the directory holds
- *
- * @returns Commits in group order
- *
- * @example
- * ```ts
- * const short = abbreviate({ tips: censusTips({ census, },), },);
- * ```
- */
-function censusTips(
-  { census, }: { readonly census: GenerationCensus; },
-): readonly string[] {
-  return census.groups
-    .map(function toTip(group,): string {
-      return group.tip;
-    },);
-}
-
-/**
- * Column width for an entry count, so generations line up under each other.
- */
-const COUNT_WIDTH = 3;
+//
+// A generation is a BUILT PIPELINE, keyed by the digest of the output that ran.
+// Ancestry is still asked of commits, because only commits have ancestry, and it
+// is asked per commit rather than per generation: one pipeline can carry several
+// commits when a documentation commit moved the tip without changing a byte that
+// runs.
 
 /**
  * What a draw may read, and what it must say about what it excluded.
@@ -102,7 +57,7 @@ export type EligibleEntries = Readonly<{
   malformedIds: readonly string[];
 
   /**
-   * Pipeline commit recorded by each pooled entry, keyed by entry id.
+   * Repo commit recorded by each pooled entry, keyed by entry id.
    *
    * Structured rather than left implicit in {@link EligibleEntries.report},
    * because a reader cannot build a truthful record of what it sampled out of
@@ -111,6 +66,16 @@ export type EligibleEntries = Readonly<{
    * has no tip and is absent here.
    */
   tipByEntry: ReadonlyMap<string, string>;
+
+  /**
+   * Built pipeline recorded by each pooled entry, keyed by entry id.
+   *
+   * The half of the same check that actually answers "same pipeline". A reader
+   * comparing only tips accepts an artifact rewritten by a different build
+   * under the same commit, which is the substitution this whole module exists
+   * to stop.
+   */
+  digestByEntry: ReadonlyMap<string, string>;
 
   /**
    * How these entries were chosen, so a later reader knows what the pool
@@ -125,183 +90,49 @@ export type EligibleEntries = Readonly<{
 }>;
 
 /**
- * One generation paired with whether it contains the required commit.
+ * Built pipeline each placed entry recorded, for the whole census.
  *
- * Named rather than inferred, because an inferred object literal carries
- * writable properties and every later callback reading this list then takes a
- * mutable parameter it never mutates.
- */
-type GenerationVerdict = Readonly<{
-  /**
-   * Generation being placed.
-   */
-  group: GenerationCensus['groups'][number];
-
-  /**
-   * Whether its pipeline contains the required commit.
-   */
-  contains: boolean;
-}>;
-
-/**
- * Width of the longest noun {@link pluralEntries} returns, so a count and its
- * noun keep a fixed column in a report listing several generations.
- */
-const ENTRY_NOUN_WIDTH = 'entries'.length;
-
-/**
- * Names a count of entries with the matching noun.
+ * @param census - what the directory holds
  *
- * @param count - how many entries
- *
- * @returns Singular noun at one, plural otherwise
+ * @returns Lookup from entry id to recorded digest
  *
  * @example
  * ```ts
- * const noun = pluralEntries({ count: 1, },);
+ * const digestByEntry = mapDigests({ census, },);
  * ```
  */
-function pluralEntries({ count, }: { readonly count: number; },): string {
-  return count === 1 ? 'entry' : 'entries';
+function mapDigests(
+  { census, }: { readonly census: GenerationCensus; },
+): ReadonlyMap<string, string> {
+  return new Map(
+    census.groups
+      .flatMap(function toPairs(group,): readonly (readonly [
+        string,
+        string,
+      ])[] {
+        return group.entryIds
+          .map(function toPair(entryId,): readonly [
+            string,
+            string,
+          ] {
+            return [
+              entryId,
+              group.digest,
+            ];
+          },);
+      },),
+  );
 }
 
 /**
- * Raised when a pool spans pipeline generations and the caller named none.
- */
-export class MixedGenerationError extends Error {
-  /**
-   * Names every generation present and how to proceed.
-   *
-   * @param census - what the pool actually holds
-   *
-   * @example
-   * ```ts
-   * throw new MixedGenerationError({ census, },);
-   * ```
-   */
-  constructor({ census, }: { readonly census: GenerationCensus; },) {
-    /**
-     * Width at which these commits stay distinguishable.
-     */
-    const short = abbreviate({ tips: censusTips({ census, },), },);
-
-    /**
-     * How many distinct pipeline versions the directory holds.
-     */
-    const generationCount = census.groups
-      .length;
-
-    super(
-      [
-        `This artifacts directory holds ${String(census.total,)} settled entries across ${
-          String(generationCount,)
-        } pipeline generations:`,
-        ...census.groups
-          .map(function toLine(group,): string {
-            return `  ${
-              short({ tip: group.tip, },)
-            }  ${
-              String(group.entryIds
-                .length,)
-            } ${
-              pluralEntries({
-                count: group.entryIds
-                  .length,
-              },)
-            }`;
-          },),
-        '',
-        'Pooling them would mix pipeline versions into one rate, and that rate',
-        'would describe no pipeline that ever existed. Name the commit a draw',
-        'requires, and entries whose recorded tip does not contain it are',
-        'excluded and reported. To pool every generation deliberately, ask for',
-        'it explicitly.',
-      ].join('\n',),
-    );
-    this.name = 'MixedGenerationError';
-  }
-}
-
-/**
- * Raised when generation filtering leaves no entry to pool at all.
- */
-export class EmptyPoolError extends Error {
-  /**
-   * Names why the pool came out empty and what would refill it.
-   *
-   * @param census - what the directory actually holds
-   *
-   * @param requiredCommit - commit that was required, absent when none was
-   *
-   * @example
-   * ```ts
-   * throw new EmptyPoolError({ census, requiredCommit, },);
-   * ```
-   */
-  constructor(
-    {
-      census,
-      requiredCommit,
-    }: {
-      readonly census: GenerationCensus;
-      readonly requiredCommit?: string;
-    },
-  ) {
-    /**
-     * Width at which these commits stay distinguishable.
-     */
-    const short = abbreviate({ tips: censusTips({ census, },), },);
-
-    super(
-      [
-        ...(census.total === 0
-          ? ['No entry has settled yet, so there is nothing to pool.',]
-          : [
-            `All ${
-              String(census.total,)
-            } settled entries were excluded by generation filtering.`,
-            ...(requiredCommit === undefined ? [] : [
-              `None of them records a pipeline containing ${
-                short({ tip: requiredCommit, },)
-              }:`,
-            ]),
-            ...census.groups
-              .map(function toLine(group,): string {
-                return `  ${
-                  short({ tip: group.tip, },)
-                }  ${
-                  String(group.entryIds
-                    .length,)
-                } ${
-                  pluralEntries({
-                    count: group.entryIds
-                      .length,
-                  },)
-                }`;
-              },),
-          ]),
-        '',
-        'This THROWS rather than returning an empty pool, because every caller',
-        'of this function goes on to compute a rate. A rate over zero entries',
-        'is this module\'s own failure mode taken to its limit: a denominator',
-        'quietly shrunk, here all the way to nothing, while the number above it',
-        'still renders. Accumulate entries under the required pipeline, or',
-        'require an earlier commit that the settled entries actually contain.',
-      ].join('\n',),
-    );
-    this.name = 'EmptyPoolError';
-  }
-}
-
-/**
- * Renders the line naming artifacts no generation could hold.
+ * Renders the lines naming artifacts no generation could hold.
  *
  * Always rendered when there are any, because an excluded artifact that goes
  * unmentioned is exactly a silently smaller denominator.
  *
  * @param census - what the pool actually holds
  *
- * @returns One line when entries were unplaceable, none otherwise
+ * @returns One line per kind of exclusion that occurred, none otherwise
  *
  * @example
  * ```ts
@@ -312,7 +143,7 @@ function unplaceableLines(
   { census, }: { readonly census: GenerationCensus; },
 ): readonly string[] {
   /**
-   * Artifacts that parsed but recorded no commit, so no generation holds them.
+   * Artifacts that parsed but recorded nothing usable.
    */
   const untagged = census.untaggedIds
     .length;
@@ -323,13 +154,27 @@ function unplaceableLines(
   const malformed = census.malformedIds
     .length;
 
+  /**
+   * Artifacts from before a build was recorded, sound but unidentifiable.
+   */
+  const preDigest = census.preDigestIds
+    .length;
+
   return [
     ...(untagged === 0
       ? []
       : [`POOL   ${String(untagged,)} artifact${
         untagged === 1 ? '' : 's'
-      } EXCLUDED, parsed but recording no pipeline commit: ${
+      } EXCLUDED, parsed but recording no usable pipeline: ${
         census.untaggedIds
+          .join(', ',)
+      }`,]),
+    ...(preDigest === 0
+      ? []
+      : [`POOL   ${String(preDigest,)} artifact${
+        preDigest === 1 ? '' : 's'
+      } EXCLUDED, settled before artifacts recorded which build produced them: ${
+        census.preDigestIds
           .join(', ',)
       }`,]),
     ...(malformed === 0
@@ -344,9 +189,70 @@ function unplaceableLines(
 }
 
 /**
+ * Whether each recorded commit contains the required one.
+ *
+ * Asked per distinct COMMIT rather than per generation, because a generation
+ * can hold several commits, and per commit rather than per entry, because many
+ * entries share one.
+ *
+ * @param census - what the directory holds
+ *
+ * @param requiredCommit - commit an entry's pipeline must contain
+ *
+ * @returns Verdict for every commit the census placed
+ *
+ * @example
+ * ```ts
+ * const verdicts = await verdictsByTip({ census, requiredCommit, },);
+ * ```
+ */
+async function verdictsByTip(
+  {
+    census,
+    requiredCommit,
+  }: {
+    readonly census: GenerationCensus;
+    readonly requiredCommit: string;
+  },
+): Promise<ReadonlyMap<string, boolean>> {
+  /**
+   * Commits the census placed, each asked about once.
+   */
+  const tips = [
+    ...new Set(census.tipByEntry
+      .values(),),
+  ].toSorted();
+
+  /**
+   * Verdict per commit, filled in order.
+   */
+  const verdicts = new Map<string, boolean>();
+
+  // Sequential rather than `Promise.all`, which spawned one git process per
+  // commit with no bound. Commits are few today, but the count comes from a
+  // directory nobody controls, and an unbounded fan-out of processes is the
+  // kind of thing that is fine until the day the directory is messy. Ancestry
+  // is answered once at startup, so serialising it costs nothing worth
+  // measuring.
+  /* oxlint-disable no-await-in-loop -- bounding process fan-out is the point */
+  for (const tip of tips) {
+    verdicts.set(
+      tip,
+      await tipContains({
+        tip,
+        commit: requiredCommit,
+      },),
+    );
+  }
+  /* oxlint-enable no-await-in-loop */
+
+  return verdicts;
+}
+
+/**
  * Selects the entries one draw may pool.
  *
- * @param census - every settled entry, partitioned by pipeline commit
+ * @param census - every settled entry, partitioned by built pipeline
  *
  * @param requiredCommit - commit an entry's pipeline must contain, absent when
  * the caller has not chosen one
@@ -360,6 +266,8 @@ function unplaceableLines(
  *
  * @throws MixedGenerationError when the pool spans generations and neither a
  * required commit nor deliberate pooling was named
+ *
+ * @throws EmptyPoolError when filtering leaves nothing to compute a rate over
  *
  * @example
  * ```ts
@@ -392,6 +300,11 @@ export async function selectEligible(
   const generationCount = census.groups
     .length;
 
+  /**
+   * Built pipeline recorded per entry, the same for every branch below.
+   */
+  const digestByEntry = mapDigests({ census, },);
+
   if (requiredCommit === undefined) {
     if ((generationCount > 1) && (!pooledDeliberately))
       throw new MixedGenerationError({ census, },);
@@ -399,18 +312,23 @@ export async function selectEligible(
     if (everyId.length === 0)
       throw new EmptyPoolError({ census, },);
 
+    /**
+     * The one generation present, when exactly one is.
+     */
+    const [only,] = census.groups;
+
     return {
       entryIds: everyId,
       excludedIds: [],
       malformedIds: census.malformedIds,
-      tipByEntry: mapTips({ census, },),
-      selection: (generationCount === 1) && (census.groups[0] !== undefined)
+      tipByEntry: census.tipByEntry,
+      digestByEntry,
+      selection: (generationCount === 1) && (only !== undefined)
         ? {
-          kind: 'single-tip',
-          tip: census.groups[0]
-            .tip,
+          kind: 'single-generation',
+          digest: only.digest,
         }
-        : { kind: 'all-tips', },
+        : { kind: 'all-generations', },
       report: [
         `POOL ${String(census.total,)} ${
           pluralEntries({ count: census.total, },)
@@ -426,40 +344,28 @@ export async function selectEligible(
   }
 
   /**
-   * Whether each generation contains the required commit, resolved once per
-   * generation rather than once per entry.
+   * Whether each recorded commit contains the required one.
    */
-  // Sequential rather than `Promise.all`, which spawned one git process per
-  // generation with no bound. Generations are few today, but the count comes
-  // from a directory nobody controls, and an unbounded fan-out of processes is
-  // the kind of thing that is fine until the day the directory is messy.
-  // Ancestry is answered once per generation at startup, so serialising it
-  // costs nothing worth measuring.
-  const verdicts: GenerationVerdict[] = [];
-  /* oxlint-disable no-await-in-loop -- bounding process fan-out is the point */
-  for (const group of census.groups) {
-    verdicts.push({
-      group,
-      contains: await tipContains({
-        tip: group.tip,
-        commit: requiredCommit,
-      },),
-    },);
-  }
-  /* oxlint-enable no-await-in-loop */
+  const verdicts = await verdictsByTip({
+    census,
+    requiredCommit,
+  },);
 
   /**
-   * Entries whose pipeline contains the required commit.
+   * Entries whose recorded commit contains the required one.
    */
-  const entryIds = verdicts
-    .filter(function isEligible(verdict,): boolean {
-      return verdict.contains;
-    },)
-    .flatMap(function toIds(verdict,): readonly string[] {
-      return verdict.group
-        .entryIds;
-    },)
-    .toSorted();
+  const entryIds = everyId
+    .filter(function isEligible(entryId,): boolean {
+      // Every placed entry carries a commit by construction, since the census
+      // places an artifact only after reading one. Asserted rather than
+      // defaulted: a missing commit here would mean the census and this filter
+      // disagree about what "placed" means, and silently dropping the entry
+      // would shrink the denominator without a word.
+      return verdicts.get(
+        nonNullishOrThrow(census.tipByEntry
+          .get(entryId,),),
+      ) === true;
+    },);
 
   if (entryIds.length === 0)
     throw new EmptyPoolError({
@@ -468,28 +374,37 @@ export async function selectEligible(
     },);
 
   /**
-   * Width at which every commit this report prints stays distinguishable,
+   * Width at which every id this report prints stays distinguishable,
    * including the required commit, since they appear in one message.
    */
   const short = abbreviate({
-    tips: [
-      ...censusTips({ census, },),
+    ids: [
+      ...censusDigests({ census, },),
       requiredCommit,
     ],
   },);
 
   /**
+   * How many eligible entries each generation contributed, in group order.
+   */
+  const contributions = census.groups
+    .map(function toContribution(group,): number {
+      return group.entryIds
+        .filter(function survived(entryId,): boolean {
+          return entryIds.includes(entryId,);
+        },)
+        .length;
+    },);
+
+  /**
    * Generations that actually contributed entries, which is what the pool
    * spans; a generation excluded by the required commit contributes nothing.
    */
-  const pooledTips = verdicts
-    .filter(function isEligible(verdict,): boolean {
-      return verdict.contains;
+  const pooledCount = contributions
+    .filter(function contributed(count,): boolean {
+      return count > 0;
     },)
-    .map(function toTip(verdict,): string {
-      return verdict.group
-        .tip;
-    },);
+    .length;
 
   return {
     entryIds,
@@ -498,7 +413,8 @@ export async function selectEligible(
       .filter(function wasExcluded(entryId,): boolean {
         return !entryIds.includes(entryId,);
       },),
-    tipByEntry: mapTips({ census, },),
+    tipByEntry: census.tipByEntry,
+    digestByEntry,
     selection: {
       kind: 'required-commit',
       commit: requiredCommit,
@@ -511,38 +427,47 @@ export async function selectEligible(
       // eligible", which invited exactly the reading that a rate over it could
       // be published as X's rate, and did: it was cited that way in a handover
       // note the same evening it was written.
-      `POOL commits CONTAINING ${short({ tip: requiredCommit, },)}: ${String(entryIds.length,)} of ${
+      `POOL commits CONTAINING ${short({ id: requiredCommit, },)}: ${
+        String(entryIds.length,)
+      } of ${
         String(census.total,)
       } settled entries eligible, spanning ${
-        String(pooledTips.length,)
-      } pipeline generation${pooledTips.length === 1 ? '' : 's'}`,
-      ...(pooledTips.length > 1
+        String(pooledCount,)
+      } pipeline generation${pooledCount === 1 ? '' : 's'}`,
+      ...(pooledCount > 1
         ? [
           'POOL   this is a post-baseline COHORT, not one generation: a rate',
           'POOL   over it belongs to no single pipeline version',
         ]
         : []),
       ...unplaceableLines({ census, },),
-      ...verdicts
-        .map(function toLine(verdict,): string {
+      ...census.groups
+        .map(function toLine(
+          group,
+          index,
+        ): string {
           /**
-           * Generation this line describes.
+           * Entries of this generation that survived the required commit.
            */
-          const { group, } = verdict;
+          const eligible = contributions[index] ?? 0;
 
-          return `POOL   ${
-            short({ tip: group.tip, },)
-          }  ${
-            String(group.entryIds
-              .length,)
+          /**
+           * Entries this generation holds in all.
+           */
+          const size = group.entryIds
+            .length;
+
+          return `POOL   ${short({ id: group.digest, },)}  ${
+            String(size,)
               .padStart(COUNT_WIDTH,)
           } ${
-            pluralEntries({
-              count: group.entryIds
-                .length,
-            },)
+            pluralEntries({ count: size, },)
               .padEnd(ENTRY_NOUN_WIDTH,)
-          }  ${verdict.contains ? 'ELIGIBLE' : 'stale, excluded'}`;
+          }  ${
+            eligible === 0
+              ? 'stale, excluded'
+              : `${String(eligible,)} ELIGIBLE`
+          }`;
         },),
     ],
   };

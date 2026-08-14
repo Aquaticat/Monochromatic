@@ -2,7 +2,7 @@ import {
   type EligibleEntries,
   selectEligible,
 } from './artifact-eligible.ts';
-import { censusByTip, } from './artifact-generation.ts';
+import { censusByGeneration, } from './artifact-generation.ts';
 
 //region Artifact pool
 // One call for every reader that turns settled artifacts into a NUMBER.
@@ -92,13 +92,13 @@ export async function resolvePool(
     );
 
   /**
-   * Settled entries partitioned by the commit each recorded.
+   * Settled entries partitioned by the built pipeline each recorded.
    *
    * Given the caller's own listing when it has one, so census and reader
    * classify the same files rather than two views of a directory the
    * accumulation is still writing into.
    */
-  const census = await censusByTip({
+  const census = await censusByGeneration({
     artifactsDir,
     ...((names === undefined) ? {} : { names, }),
   },);

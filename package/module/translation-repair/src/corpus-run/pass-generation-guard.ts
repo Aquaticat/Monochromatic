@@ -1,18 +1,19 @@
-import { censusByTip, } from './artifact-generation.ts';
+import { censusByGeneration, } from './artifact-generation.ts';
 import { abbreviate, } from './artifact-provenance.ts';
 
 //region Pass generation guard
 // Refuses to RESUME an accumulation into a directory whose settled entries were
-// produced by a different pipeline commit.
+// produced by a different build of the pipeline.
 //
-// A pass reads HEAD once and stamps it on every artifact it writes. That is
-// correct for one invocation and wrong across several, because a pass that stops
-// at its soft budget is resumed by a fresh invocation which reads HEAD AGAIN. If
-// anything landed in between, the resume stamps a different commit into the same
-// directory, and the pool now spans generations.
+// A pass identifies its own built output once and stamps that digest on every
+// artifact it writes. That is correct for one invocation and says nothing about
+// the next, because a pass that stops at its soft budget is resumed by a fresh
+// invocation which builds again. If anything changed in between, the resume
+// stamps a different pipeline into the same directory, and the pool now spans
+// generations.
 //
 // That is not hypothetical. It is exactly how one accumulation directory came to
-// hold 22 entries across FOUR tips: not four deliberate decisions, just four
+// hold 22 entries across FOUR pipelines: not four deliberate decisions, just four
 // resumes across an evening of ordinary commits. The readers refuse to compute a
 // rate over that pool, so the whole run bought nothing.
 //
@@ -20,9 +21,9 @@ import { abbreviate, } from './artifact-provenance.ts';
 // the budget is already spent.
 
 /**
- * Environment variable opting into resuming across a moved HEAD.
+ * Environment variable opting into resuming under a different build.
  */
-const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_TIP_DRIFT';
+const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
 
 /**
  * Value that opts in, spelled out so a stray `0` cannot silently disable the
@@ -30,55 +31,53 @@ const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_TIP_DRIFT';
  */
 const ALLOW_DRIFT_VALUE = 'yes';
 
-
-
 /**
- * Raised when a resume would stamp a second pipeline commit into one pool.
+ * Raised when a resume would stamp a second pipeline into one pool.
  */
-export class TipDriftError extends Error {
+export class GenerationDriftError extends Error {
   /**
    * Names what is already there, what would be added, and every way forward.
    *
-   * @param tips - commits the settled entries already record
+   * @param digests - built pipelines the settled entries already record
    *
-   * @param tip - commit this invocation would stamp
+   * @param digest - built pipeline this invocation would stamp
    *
    * @example
    * ```ts
-   * throw new TipDriftError({ tips: ['a6bbeca50',], tip: 'b1c2d3e4f', },);
+   * throw new GenerationDriftError({ digests: ['53b5a4752...',], digest, },);
    * ```
    */
   constructor(
     {
-      tips,
-      tip,
+      digests,
+      digest,
     }: {
-      readonly tips: readonly string[];
-      readonly tip: string;
+      readonly digests: readonly string[];
+      readonly digest: string;
     },
   ) {
     /**
-     * Width at which these commits stay distinguishable.
+     * Width at which these pipelines stay distinguishable.
      */
     const short = abbreviate({
-      tips: [
-        ...tips,
-        tip,
+      ids: [
+        ...digests,
+        digest,
       ],
     },);
 
     super(
       [
-        'This artifacts directory was built by a different pipeline commit.',
+        'This artifacts directory was built by a different pipeline.',
         '',
-        ...tips.map(function toLine(recorded,): string {
-          return `  already settled under  ${
-            short({ tip: recorded, },)
-          }`;
+        ...digests.map(function toLine(recorded,): string {
+          return `  already settled under  ${short({ id: recorded, },)}`;
         },),
-        `  this invocation would stamp  ${
-          short({ tip, },)
-        }`,
+        `  this invocation would stamp  ${short({ id: digest, },)}`,
+        '',
+        'Each of those names the BUILT OUTPUT that ran, so they differ because',
+        'the code differs, whatever the commits say. A documentation commit on',
+        'its own does not reach here; an uncommitted edit does.',
         '',
         'Resuming would put two pipeline versions in one pool, and every reader',
         'that computes a rate refuses such a pool, so the entries this run',
@@ -87,26 +86,64 @@ export class TipDriftError extends Error {
         '  Start a fresh directory, with TRANSLATION_REPAIR_RUNS_DIR. The',
         '  entries already here keep their own generation and stay readable.',
         '',
-        '  Check out the commit they were settled under, and resume honestly.',
-        '  The code that runs then matches the commit being stamped.',
+        '  Restore the code those entries were settled under, and resume',
+        '  honestly. The build that runs then matches the digest being stamped.',
         '',
         `  Set ${ALLOW_DRIFT_VAR}=${ALLOW_DRIFT_VALUE} to resume anyway,`,
         '  accepting that this directory will hold several generations and that',
         '  a rate over it must name a required commit.',
       ].join('\n',),
     );
-    this.name = 'TipDriftError';
+    this.name = 'GenerationDriftError';
   }
 }
 
 /**
- * Raised when an artifact records no pipeline commit that can be read.
+ * Raised when a directory holds artifacts from before builds were recorded.
+ */
+export class PreDigestDirectoryError extends Error {
+  /**
+   * Names the entries that predate generation identity and what to do.
+   *
+   * @param entryIds - entries recording a commit but no build
+   *
+   * @example
+   * ```ts
+   * throw new PreDigestDirectoryError({ entryIds: ['Mittens',], },);
+   * ```
+   */
+  constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
+    super(
+      [
+        `${String(entryIds.length,)} artifact${
+          entryIds.length === 1 ? ' here was' : 's here were'
+        } settled before artifacts recorded which build produced them:`,
+        ...entryIds.map(function toLine(entryId,): string {
+          return `  ${entryId}`;
+        },),
+        '',
+        'They record a commit, which is provenance rather than identity: the',
+        'same commit covers any number of builds, so nothing can say whether',
+        'this invocation is the pipeline that wrote them.',
+        '',
+        'Deleting them is NOT the remedy. They are sound results, and a reader',
+        'that names their commit can still use them. Point this run at a fresh',
+        'directory with TRANSLATION_REPAIR_RUNS_DIR and let this one stand as',
+        'the generation it is.',
+      ].join('\n',),
+    );
+    this.name = 'PreDigestDirectoryError';
+  }
+}
+
+/**
+ * Raised when an artifact records nothing that could identify it.
  */
 export class UnplaceableArtifactError extends Error {
   /**
    * Names every unplaceable artifact and what removing it restores.
    *
-   * @param entryIds - entries whose artifact carries no usable commit
+   * @param entryIds - entries whose artifact carries nothing usable
    *
    * @example
    * ```ts
@@ -118,7 +155,7 @@ export class UnplaceableArtifactError extends Error {
       [
         `${String(entryIds.length,)} artifact${
           entryIds.length === 1 ? '' : 's'
-        } in this directory record no readable pipeline commit:`,
+        } in this directory record no readable pipeline:`,
         ...entryIds.map(function toLine(entryId,): string {
           return `  ${entryId}`;
         },),
@@ -139,48 +176,54 @@ export class UnplaceableArtifactError extends Error {
 }
 
 /**
- * Refuses a resume that would add a second pipeline commit to one pool.
+ * Refuses a resume that would add a second pipeline to one pool.
  *
- * Silent on a fresh directory and on a resume under the same commit, which are
+ * Silent on a fresh directory and on a resume under the same build, which are
  * the two ordinary cases. It reads the settled artifacts rather than trusting a
  * recorded marker, so a directory assembled by hand is judged on what it holds.
  *
  * @param artifactsDir - directory holding one JSON per settled entry
  *
- * @param tip - commit this invocation would stamp on everything it settles
+ * @param digest - built pipeline this invocation would stamp on everything it
+ * settles
  *
- * @throws TipDriftError when settled entries record any other commit and the
- * caller has not opted into drift
+ * @throws UnplaceableArtifactError when an artifact records nothing usable
+ *
+ * @throws PreDigestDirectoryError when artifacts predate generation identity
+ *
+ * @throws GenerationDriftError when settled entries record any other build and
+ * the caller has not opted into drift
  *
  * @example
  * ```ts
- * await assertResumableGeneration({ artifactsDir, tip, },);
+ * await assertResumableGeneration({ artifactsDir, digest, },);
  * ```
  */
 export async function assertResumableGeneration(
   {
     artifactsDir,
-    tip,
+    digest,
   }: {
     readonly artifactsDir: string;
-    readonly tip: string;
+    readonly digest: string;
   },
 ): Promise<void> {
   if (process.env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE)
     return;
 
   /**
-   * Commits the settled entries already record, and the artifacts no commit
-   * could be read from.
+   * Pipelines the settled entries already record, and the artifacts none could
+   * be read from.
    */
   const {
     groups,
     untaggedIds,
     malformedIds,
-  } = await censusByTip({ artifactsDir, },);
+    preDigestIds,
+  } = await censusByGeneration({ artifactsDir, },);
 
-  // An artifact that cannot be placed is WORSE than a foreign tip, and reading
-  // only `groups` missed it entirely: a directory holding nothing but
+  // An artifact that cannot be placed is WORSE than a foreign generation, and
+  // reading only `groups` missed it entirely: a directory holding nothing but
   // unplaceable artifacts produced no groups at all and sailed through.
   //
   // It is worse because the scheduler counts every `.json` name as settled, so
@@ -188,7 +231,7 @@ export async function assertResumableGeneration(
   // absent from every rate. The entry silently ceases to exist, and no count
   // anywhere says so. Deleting the file is the whole remedy.
   /**
-   * Artifacts carrying no usable pipeline commit, whatever the reason.
+   * Artifacts carrying nothing usable, whatever the reason.
    */
   const unplaceable = [
     ...untaggedIds,
@@ -198,23 +241,26 @@ export async function assertResumableGeneration(
   if (unplaceable.length > 0)
     throw new UnplaceableArtifactError({ entryIds: unplaceable, },);
 
+  if (preDigestIds.length > 0)
+    throw new PreDigestDirectoryError({ entryIds: preDigestIds, },);
+
   /**
-   * Recorded commits that are not the one this invocation would stamp.
+   * Recorded pipelines that are not the one this invocation would stamp.
    */
   const foreign = groups
-    .map(function toTip(group,): string {
-      return group.tip;
+    .map(function toDigest(group,): string {
+      return group.digest;
     },)
     .filter(function isForeign(recorded,): boolean {
-      return recorded !== tip;
+      return recorded !== digest;
     },);
 
   if (foreign.length === 0)
     return;
 
-  throw new TipDriftError({
-    tips: foreign,
-    tip,
+  throw new GenerationDriftError({
+    digests: foreign,
+    digest,
   },);
 }
 
