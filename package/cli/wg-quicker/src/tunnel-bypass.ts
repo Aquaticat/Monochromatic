@@ -29,6 +29,7 @@ import {
   stopBypassWatcher,
 } from './tunnel-bypass-watch-service.ts';
 
+export { processArgumentsMatch, } from './linux-process-identity.ts';
 export {
   claimBypassAllocationOperation,
   claimBypassInterfaceOperation,
