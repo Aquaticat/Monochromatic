@@ -542,3 +542,109 @@ It is a genuine open question rather than a recommendation: critics may still be
  wanted to inform the judges, and the transcribed-image class is a reason to keep
  a stage that reasons about the source, since selection alone would have no
  evidence for preferring a translation that carries image-borne content.
+
+## The premise this note was written on does not hold
+
+Written 2026-08-14, after calibrating the coverage measure.
+This section CORRECTS "The options" and "Ranking",
+ which were argued from a corpus that was believed to be widely untranslated.
+
+The block-count gap that opened this note counts a stub and a reformatted
+ paragraph identically.
+Of the 84 block-count gaps, 68 carry a full translation, so the metric was
+ measuring formatting as much as coverage.
+
+Character ratio replaces it, and the corpus supplies its own band rather than
+ taking the assumed zh-to-en range of 1.5 to 2.5, which was wrong: a Chinese
+ character carries roughly an English word.
+Measured over 254 aligned pairs with at least 80 source characters:
+
+```text
+  p2 0.74   p5 1.55   p10 1.83   p25 2.48
+  p50 2.94  p75 3.35  p90 3.76   p98 4.55
+```
+
+### What is actually under-covered
+
+Six pairs of 254, which is 2.4%:
+
+```text
+  shi_Yumiaoya    1203 ->   12   0.01   stub
+  shi_Yumiaoya     988 ->   13   0.01   stub
+  shi_Yumiaoya     695 ->   14   0.02   stub
+  cheonwoomaeng   1137 ->  529   0.47
+  Y1Ran            215 ->  150   0.70
+  shi_Yumiaoya     474 ->  350   0.74
+```
+
+The extreme stubs are one entry, but `cheonwoomaeng` is not, so this is not a
+ single bad page.
+The next four pairs sit at 1.32 to 1.42 and read as ordinary variation.
+
+That leaves a MEASURED GAP between 0.74 and 1.32 with nothing in it, which is
+ what turns the threshold from a tuned number into a described one: a ratio of
+ 1.0 says the translation carries fewer characters than the original, and for a
+ language pair whose median expansion is 2.94 that is a statement about text
+ rather than a knob.
+Half the median, 1.47, would have been the natural line and is the wrong one:
+ it sits above four pairs that are fine.
+
+The expanded tail resolved too.
+Seventeen of the 18 pairs above 4x are in entries with no structure-mismatch
+ finding, several with identical block counts on both sides, so the ">4" bucket
+ was an artifact of the guessed band.
+Five pairs do stand clear and remain unread: `Zha_Ke` 16.8x, `Mio` 10.5x,
+ `shihai4h` 9.8x, `zheermao101` 7.6x, `MizuharaNagisa` 6.6x.
+
+### Revised ranking: A > C > B
+
+The ranking inverts because the thing being served shrank from "most of the
+ corpus" to 2.4% of it, while every option's cost stayed where it was.
+
+**A over C** because A's trigger is arithmetic on two character counts, computed
+ at alignment time before any model call, and C's trigger is the cross-lingual
+ absence question that produced five of round three's eight false positives.
+A costs nothing and cannot be wrong about a section it does not route; C spends
+ a model pass over the whole corpus to find six sections, and a coverage check
+ that misses is invisible, since the section simply stays untranslated.
+A's original con was that its threshold is a number someone has to defend.
+The measured gap answers it: any line between 0.74 and 1.32 routes exactly the
+ same six sections, so the choice inside that interval changes nothing.
+
+**C over B** because C keeps the repair loop and every instrument built around
+ it, while B removes the BEFORE text that the introduced-defect differential
+ needs and stakes the whole corpus on judges preferring good human translation
+ to fluent machine translation, which nothing has measured.
+Retranslating 248 sections that are already translated to serve 6 is the wrong
+ trade at this ratio, and it is the trade B makes by construction.
+
+B keeps one advantage worth naming: it is the only option that answers a section
+ whose translation is present, fluent and WRONG, since detection by ratio and
+ detection by absence both see such a section as covered.
+Nothing in the corpus has been shown to be that, so it is a hazard rather than a
+ finding.
+
+### What A actually is, concretely
+
+-   At alignment time, for each paired section, divide target characters by
+    source characters. Both counts already exist; nothing is called.
+-   Below the line, send the SOURCE section to the translate lane that
+    `translate-probe` already prototyped, and skip the critics for it entirely.
+    A section with no translation has nothing to file a defect against, which is
+    why the omission storms happen.
+-   Above the line, nothing changes. Every measurement built on the repair path
+    stays valid for the 248 sections that keep taking it.
+-   Record the ratio and the routing decision in the artifact, so the boundary
+    can be audited later rather than argued about now.
+
+### What to re-measure before building it
+
+The percentiles were computed under the forced aligner on 2026-08-13, and the
+ aligner has changed since: `#74` corrected its scoring and its handling of
+ asymmetric preambles.
+Section pairing decides which characters are compared, so the band and the six
+ under-covered pairs should be recomputed against the current pipeline before
+ the line is written into code.
+The shape of the finding is unlikely to move, since the stubs are stubs under
+ any pairing, but the four near-line pairs are exactly the ones a pairing change
+ could shift across it.
