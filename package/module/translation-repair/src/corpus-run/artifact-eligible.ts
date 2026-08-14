@@ -2,7 +2,10 @@ import {
   type GenerationCensus,
   tipContains,
 } from './artifact-generation.ts';
-import type { GenerationSelection, } from './artifact-provenance.ts';
+import {
+  abbreviate,
+  type GenerationSelection,
+} from './artifact-provenance.ts';
 
 /**
  * Pipeline commit each placed entry recorded, for the whole census.
@@ -48,12 +51,25 @@ function mapTips(
 // to be the loud one. A caller that genuinely wants every generation says so.
 
 /**
- * Characters of a commit shown in a report.
+ * Every commit a census holds, for sizing an abbreviation that cannot collide.
  *
- * Nine rather than seven: this repository already has commits that collide at
- * seven, and a report whose two lines read alike is a report nobody can act on.
+ * @param census - what the directory holds
+ *
+ * @returns Commits in group order
+ *
+ * @example
+ * ```ts
+ * const short = abbreviate({ tips: censusTips({ census, },), },);
+ * ```
  */
-const SHORT_SHA = 9;
+function censusTips(
+  { census, }: { readonly census: GenerationCensus; },
+): readonly string[] {
+  return census.groups
+    .map(function toTip(group,): string {
+      return group.tip;
+    },);
+}
 
 /**
  * Column width for an entry count, so generations line up under each other.
@@ -165,6 +181,11 @@ export class MixedGenerationError extends Error {
    */
   constructor({ census, }: { readonly census: GenerationCensus; },) {
     /**
+     * Width at which these commits stay distinguishable.
+     */
+    const short = abbreviate({ tips: censusTips({ census, },), },);
+
+    /**
      * How many distinct pipeline versions the directory holds.
      */
     const generationCount = census.groups
@@ -178,11 +199,7 @@ export class MixedGenerationError extends Error {
         ...census.groups
           .map(function toLine(group,): string {
             return `  ${
-              group.tip
-                .slice(
-                  0,
-                  SHORT_SHA,
-                )
+              short({ tip: group.tip, },)
             }  ${
               String(group.entryIds
                 .length,)
@@ -230,6 +247,11 @@ export class EmptyPoolError extends Error {
       readonly requiredCommit?: string;
     },
   ) {
+    /**
+     * Width at which these commits stay distinguishable.
+     */
+    const short = abbreviate({ tips: censusTips({ census, },), },);
+
     super(
       [
         ...(census.total === 0
@@ -240,20 +262,13 @@ export class EmptyPoolError extends Error {
             } settled entries were excluded by generation filtering.`,
             ...(requiredCommit === undefined ? [] : [
               `None of them records a pipeline containing ${
-                requiredCommit.slice(
-                  0,
-                  SHORT_SHA,
-                )
+                short({ tip: requiredCommit, },)
               }:`,
             ]),
             ...census.groups
               .map(function toLine(group,): string {
                 return `  ${
-                  group.tip
-                    .slice(
-                      0,
-                      SHORT_SHA,
-                    )
+                  short({ tip: group.tip, },)
                 }  ${
                   String(group.entryIds
                     .length,)
@@ -453,6 +468,17 @@ export async function selectEligible(
     },);
 
   /**
+   * Width at which every commit this report prints stays distinguishable,
+   * including the required commit, since they appear in one message.
+   */
+  const short = abbreviate({
+    tips: [
+      ...censusTips({ census, },),
+      requiredCommit,
+    ],
+  },);
+
+  /**
    * Generations that actually contributed entries, which is what the pool
    * spans; a generation excluded by the required commit contributes nothing.
    */
@@ -485,10 +511,7 @@ export async function selectEligible(
       // eligible", which invited exactly the reading that a rate over it could
       // be published as X's rate, and did: it was cited that way in a handover
       // note the same evening it was written.
-      `POOL commits CONTAINING ${requiredCommit.slice(
-        0,
-        SHORT_SHA,
-      )}: ${String(entryIds.length,)} of ${
+      `POOL commits CONTAINING ${short({ tip: requiredCommit, },)}: ${String(entryIds.length,)} of ${
         String(census.total,)
       } settled entries eligible, spanning ${
         String(pooledTips.length,)
@@ -508,11 +531,7 @@ export async function selectEligible(
           const { group, } = verdict;
 
           return `POOL   ${
-            group.tip
-              .slice(
-                0,
-                SHORT_SHA,
-              )
+            short({ tip: group.tip, },)
           }  ${
             String(group.entryIds
               .length,)

@@ -1,4 +1,5 @@
 import { censusByTip, } from './artifact-generation.ts';
+import { abbreviate, } from './artifact-provenance.ts';
 
 //region Pass generation guard
 // Refuses to RESUME an accumulation into a directory whose settled entries were
@@ -29,10 +30,7 @@ const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_TIP_DRIFT';
  */
 const ALLOW_DRIFT_VALUE = 'yes';
 
-/**
- * Characters of a commit shown in a message.
- */
-const SHORT_SHA = 9;
+
 
 /**
  * Raised when a resume would stamp a second pipeline commit into one pool.
@@ -59,23 +57,27 @@ export class TipDriftError extends Error {
       readonly tip: string;
     },
   ) {
+    /**
+     * Width at which these commits stay distinguishable.
+     */
+    const short = abbreviate({
+      tips: [
+        ...tips,
+        tip,
+      ],
+    },);
+
     super(
       [
         'This artifacts directory was built by a different pipeline commit.',
         '',
         ...tips.map(function toLine(recorded,): string {
           return `  already settled under  ${
-            recorded.slice(
-              0,
-              SHORT_SHA,
-            )
+            short({ tip: recorded, },)
           }`;
         },),
         `  this invocation would stamp  ${
-          tip.slice(
-            0,
-            SHORT_SHA,
-          )
+          short({ tip, },)
         }`,
         '',
         'Resuming would put two pipeline versions in one pool, and every reader',

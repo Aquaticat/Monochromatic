@@ -15,6 +15,91 @@
 // output.
 
 /**
+ * Fewest characters of a commit ever shown, so short reports stay scannable.
+ *
+ * Nine rather than seven because this repository already has commits colliding
+ * at seven. It is a FLOOR, not the answer: see {@link abbreviate}.
+ */
+const MIN_ABBREVIATION = 9;
+
+/**
+ * Shortens commits just enough that the ones being shown stay distinguishable.
+ *
+ * A fixed width is a bet that no two commits in a report share a prefix, and
+ * the bet has already been lost once here at seven characters. Widening to
+ * nine only moved the bet. Two generations rendering as the same string is
+ * worse than a long string: a report whose two lines read alike is a report
+ * nobody can act on, and this one is read precisely when a pool is suspected of
+ * spanning versions.
+ *
+ * Grows from {@link MIN_ABBREVIATION} until every input is unique, so an
+ * ordinary report is short and only an actual collision pays for length.
+ *
+ * @param tips - every commit that will appear in this report
+ *
+ * @returns Function shortening one commit to the agreed width
+ *
+ * @example
+ * ```ts
+ * const short = abbreviate({ tips: census.groups.map(toTip), },);
+ * console.log(short({ tip, },),);
+ * ```
+ */
+export function abbreviate(
+  { tips, }: { readonly tips: readonly string[]; },
+): (input: { readonly tip: string; }) => string {
+  /**
+   * Longest commit shown, the point past which growing cannot help.
+   */
+  const longest = tips.reduce(
+    function toLongest(
+      soFar,
+      tip,
+    ): number {
+      return Math.max(
+        soFar,
+        tip.length,
+      );
+    },
+    MIN_ABBREVIATION,
+  );
+
+  /**
+   * Every width worth testing, shortest first.
+   */
+  const candidates = Array.from(
+    { length: (longest - MIN_ABBREVIATION) + 1, },
+    function toWidth(
+      _unused,
+      offset,
+    ): number {
+      return MIN_ABBREVIATION + offset;
+    },
+  );
+
+  /**
+   * Shortest width at which no two of these commits read alike.
+   *
+   * Full length when even that cannot separate them, which means the same
+   * commit was passed twice and no width would have helped.
+   */
+  const width = candidates.find(function separates(candidate,): boolean {
+    return new Set(tips.map(function toPrefix(tip,): string {
+      return tip.slice(
+        0,
+        candidate,
+      );
+    },),).size === new Set(tips,).size;
+  },) ?? longest;
+  return function short({ tip, }: { readonly tip: string; },): string {
+    return tip.slice(
+      0,
+      width,
+    );
+  };
+}
+
+/**
  * How a reader chose which pipeline generations it would pool.
  *
  * Recorded rather than inferred from the required commit alone, because the
