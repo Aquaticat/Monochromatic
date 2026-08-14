@@ -1363,6 +1363,13 @@ ATS:
  explicit minimum 48dp layout width + height.
 Never rely on Compose expanding touch beyond bounds where adjacent targets can overlap.
 
+SCF:
+ Screenshot after scripted input:
+ verify intended rendered state first,
+ then capture.
+Input command completion isn't frame completion;
+ recapture stale or transitional frames.
+
 ABR:
  `agent-browser` sessions outlive verification:
  open pages keep animating,
