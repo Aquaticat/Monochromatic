@@ -3016,9 +3016,10 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
     }
     Box(
         modifier = Modifier
-            .widthIn(max = options.maximumWidth)
+            // Reserves Android's minimum target inside layout so neighboring targets never overlap.
+            .widthIn(min = 48.dp, max = options.maximumWidth)
             .width(IntrinsicSize.Max)
-            .height(41.dp)
+            .height(48.dp)
             // Keeps both overflowing feet above neighboring inactive baselines.
             .zIndex(if (options.selected) 1f else 0f)
             .selectable(
@@ -3030,7 +3031,9 @@ private fun chromiumPageTab(options: ChromiumPageTabOptions) {
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
-                .align(Alignment.BottomStart)
+                // Keeps Chromium's 6dp strip inset while the outer box owns a 48dp touch target.
+                .align(Alignment.TopStart)
+                .offset(y = 6.dp)
                 .width(IntrinsicSize.Max)
                 .height(35.dp)
                 .then(stateModifier),

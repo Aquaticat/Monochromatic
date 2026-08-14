@@ -1358,6 +1358,11 @@ VB6:
  Verification must cross artifact-consumer integration boundary;
  "it compiled"/"it installed" alone isn't verification.
 
+ATS:
+ Android custom interactive elements:
+ explicit minimum 48dp layout width + height.
+Never rely on Compose expanding touch beyond bounds where adjacent targets can overlap.
+
 ABR:
  `agent-browser` sessions outlive verification:
  open pages keep animating,
