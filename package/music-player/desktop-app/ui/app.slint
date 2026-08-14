@@ -217,14 +217,15 @@ component SegmentedControls inherits Rectangle {
 }
 
 // A hardware page button adapted from the supplied LED segmented-control master.
-// Each control is a content-width metal island so Slint's wrapping layout never
-// paints unused row width. The 60px plate keeps the source's 8px margin around
-// a 44px cap; inactive plastic reflects ambient light, while selection insets
-// the rigid cap by 2px and switches on purple cap and legend LEDs.
+// Each control is a content-width metal tile so Slint's wrapping layout never
+// paints unused row width. Adjacent tiles overlap by the 8px plate margin,
+// visually forming one backplate while preserving 8px between caps. The 60px
+// plate surrounds a 44px cap; selection leaves the updated 1px CNC seam.
 component LedSegmentButton inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
     callback clicked();
+    private property <bool> light-scene: Palette.color-scheme == ColorScheme.light;
     horizontal-stretch: 0;
     width: min(led-label.preferred-width + 48px, root.max-width);
     height: 60px;
@@ -236,17 +237,17 @@ component LedSegmentButton inherits Rectangle {
         height: parent.height;
         border-radius: 17px;
         clip: true;
-        background: @linear-gradient(
-            135deg,
-            #212121 0%,
-            #141414 30%,
-            #111111 55%,
-            #0d0d0d 100%
-        );
+        background: root.light-scene
+            ? @linear-gradient(135deg, #f0f1f3 0%, #d1d3d6 30%, #c4c6ca 55%, #a9abb0 100%)
+            : @linear-gradient(135deg, #212121 0%, #141414 30%, #111111 55%, #0d0d0d 100%);
         inner-shadow-offset-x: 3px;
         inner-shadow-offset-y: 3px;
         inner-shadow-blur: 6px;
-        inner-shadow-color: #00000057;
+        inner-shadow-color: root.light-scene ? #00000030 : #00000057;
+        drop-shadow-offset-x: root.light-scene ? 1px : 0px;
+        drop-shadow-offset-y: root.light-scene ? 1px : 0px;
+        drop-shadow-blur: root.light-scene ? 2px : 0px;
+        drop-shadow-color: root.light-scene ? #00000057 : transparent;
 
         // Seeded-looking micro highlights suggest a bead-blasted plate without
         // requiring a raster tile that would scale differently across renderers.
@@ -262,20 +263,24 @@ component LedSegmentButton inherits Rectangle {
         width: parent.width - 16px;
         height: 44px;
         border-radius: 10px;
-        background: root.selected ? #030304 : #050506;
+        background: root.light-scene
+            ? (root.selected ? #6e7075 : #85878c)
+            : (root.selected ? #050508 : #050506);
     }
 
     cap-face := Rectangle {
-        x: root.selected ? 10px : 8px;
-        y: root.selected ? 10px : 8px;
-        width: parent.width - (root.selected ? 20px : 16px);
-        height: root.selected ? 40px : 44px;
-        border-radius: root.selected ? 7px : 9px;
+        x: root.selected ? 9px : 8px;
+        y: root.selected ? 9px : 8px;
+        width: parent.width - (root.selected ? 18px : 16px);
+        height: root.selected ? 42px : 44px;
+        border-radius: root.selected ? 8px : 9px;
         background: root.selected ? #a63fd0 : #aaaaaa;
         drop-shadow-offset-x: root.selected ? 0px : 2.5px;
         drop-shadow-offset-y: root.selected ? 0px : 3.5px;
         drop-shadow-blur: root.selected ? 10px : 5px;
-        drop-shadow-color: root.selected ? #c874ea73 : #0000006b;
+        drop-shadow-color: root.selected
+            ? (root.light-scene ? #c874ea29 : #c874ea52)
+            : (root.light-scene ? #00000052 : #0000006b);
         animate x, y, width, height, background, drop-shadow-color {
             duration: 160ms;
             easing: ease;
@@ -315,14 +320,22 @@ component LedSegmentButton inherits Rectangle {
         y: cap-face.y;
         width: cap-face.width;
         height: 4px;
-        background: @linear-gradient(180deg, #00000073 0%, transparent 100%);
+        background: @linear-gradient(
+            180deg,
+            (root.light-scene ? #00000099 : #00000073) 0%,
+            transparent 100%
+        );
     }
     if root.selected: Rectangle {
         x: cap-face.x;
         y: cap-face.y;
         width: 4px;
         height: cap-face.height;
-        background: @linear-gradient(90deg, #00000073 0%, transparent 100%);
+        background: @linear-gradient(
+            90deg,
+            (root.light-scene ? #00000099 : #00000073) 0%,
+            transparent 100%
+        );
     }
 
     if root.selected: Text {
@@ -362,8 +375,8 @@ component LedSegmentButton inherits Rectangle {
 }
 
 // Wrapping LED controls stay content-width and leave every unused row pixel
-// transparent. Independent metal islands preserve whole-control wrapping even
-// though Slint does not expose wrapped-row boundaries for one shared plate.
+// transparent. Metal tiles overlap by their 8px margins, joining the apparent
+// plate while every label-cap pair still wraps as a whole control.
 component LedSegmentControls inherits Rectangle {
     in property <[string]> labels;
     in property <int> selected-page;
@@ -374,8 +387,8 @@ component LedSegmentControls inherits Rectangle {
 
     led-layout := FlexboxLayout {
         width: parent.width;
-        spacing-horizontal: 8px;
-        spacing-vertical: 8px;
+        spacing-horizontal: -8px;
+        spacing-vertical: -8px;
         flex-wrap: wrap;
         alignment: start;
         align-content: start;

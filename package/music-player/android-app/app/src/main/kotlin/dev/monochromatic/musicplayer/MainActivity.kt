@@ -405,6 +405,16 @@ import androidx.compose.foundation.layout.height
 // ```
 import androidx.compose.foundation.layout.padding
 
+// What:     `import androidx.compose.foundation.layout.offset` translates measured content
+//           without changing FlowRow's layout size.
+// Why:      A latched LED legend travels 2dp downward with its rigid cap.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { offset } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.offset
+
 // What:     `import androidx.compose.foundation.layout.size` pulls in the `size` MODIFIER
 //           (fix a composable's width and height).
 // Why:      The loading spinner uses `Modifier.size(20.dp)`.
@@ -3012,14 +3022,31 @@ private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> U
 // function ledPlateModifier(shape: RoundedShape): Modifier { ... }
 // ```
 /** Returns layered bead-blasted-metal styling for one LED button backplate. */
-private fun ledPlateModifier(shape: RoundedCornerShape): Modifier {
-    /** Holds near-black anodized metal under its directional sheen. */
-    val plateColor: Color = Color(0xFF111111)
-    /** Holds key-light, neutral, and away-from-light plate values. */
-    val sheenColors: List<Color> = listOf(Color(0x1FFFFFFF), Color.Transparent, Color(0x24000000))
+private fun ledPlateModifier(shape: RoundedCornerShape, lightScene: Boolean): Modifier {
+    /** Holds silver or near-black anodized metal under its directional sheen. */
+    val plateColor: Color = if (lightScene) Color(0xFFC4C6CA) else Color(0xFF111111)
+    /** Holds scene-paired key-light, neutral, and away-from-light plate values. */
+    val sheenColors: List<Color> = if (lightScene) {
+        listOf(Color(0x66FFFFFF), Color.Transparent, Color(0x1F000000))
+    } else {
+        listOf(Color(0x1FFFFFFF), Color.Transparent, Color(0x24000000))
+    }
     /** Holds broad dark falloff along the plate's bottom-right shoulder. */
-    val plateShadowColor: Color = Color(0x17000000)
-    return Modifier
+    val plateShadowColor: Color = if (lightScene) Color(0x30000000) else Color(0x57000000)
+    /** Holds attached light-scene contact shadow; dark OLED ground cannot show it. */
+    val contactShadow: Modifier = if (lightScene) {
+        Modifier.dropShadow(
+            shape = shape,
+            shadow = HardwareShadow(
+                radius = 1.6.dp,
+                color = Color(0x57000000),
+                offset = DpOffset(x = 1.dp, y = 1.dp),
+            ),
+        )
+    } else {
+        Modifier
+    }
+    return contactShadow
         .clip(shape)
         .background(plateColor)
         .background(
@@ -3044,7 +3071,11 @@ private fun ledPlateModifier(shape: RoundedCornerShape): Modifier {
 // function ledFaceModifier(selected: boolean, shape: RoundedShape): Modifier { ... }
 // ```
 /** Returns rigid translucent-cap styling for one LED page button state. */
-private fun BoxScope.ledFaceModifier(selected: Boolean, shape: RoundedCornerShape): Modifier {
+private fun BoxScope.ledFaceModifier(
+    selected: Boolean,
+    lightScene: Boolean,
+    shape: RoundedCornerShape,
+): Modifier {
     /** Holds purple LED flood or unlit translucent factory pigment. */
     val fill: Color = if (selected) Color(0xFFA63FD0) else Color(0xFFAAAAAA)
     /** Holds radial cap illumination with a steep outer shoulder. */
@@ -3055,23 +3086,27 @@ private fun BoxScope.ledFaceModifier(selected: Boolean, shape: RoundedCornerShap
             listOf(Color(0x36FFFFFF), Color(0xFFAAAAAA), Color(0xFF747474))
         },
     )
-    /** Holds opening-edge occlusion at reduced opacity over transmitted LED light. */
-    val activeOcclusion: Color = Color(0x73000000)
+    /** Holds opening-edge occlusion scaled to ambient share of active-cap light. */
+    val activeOcclusion: Color = if (lightScene) Color(0x99000000) else Color(0x73000000)
     /** Holds deeper unlit shoulder shading on reflective plastic. */
     val inactiveOcclusion: Color = Color(0x3D000000)
     /** Holds LED bloom for selected caps and a physical cast shadow for raised caps. */
     val outerShadow: HardwareShadow = if (selected) {
-        HardwareShadow(radius = 7.dp, spread = 1.dp, color = Color(0x73C874EA))
+        HardwareShadow(
+            radius = 7.dp,
+            spread = 1.dp,
+            color = if (lightScene) Color(0x29C874EA) else Color(0x52C874EA),
+        )
     } else {
         HardwareShadow(
             radius = 2.6.dp,
-            color = Color(0x6B000000),
+            color = if (lightScene) Color(0x52000000) else Color(0x6B000000),
             offset = DpOffset(x = 2.5.dp, y = 3.5.dp),
         )
     }
     return Modifier
         .matchParentSize()
-        .padding(if (selected) 2.dp else 0.dp)
+        .padding(if (selected) 1.dp else 0.dp)
         .dropShadow(shape = shape, shadow = outerShadow)
         .background(color = fill, shape = shape)
         .background(brush = dome, shape = shape)
@@ -3101,12 +3136,18 @@ private fun ledHardwarePageButton(
     maximumWidth: Dp,
     onSelect: () -> Unit,
 ) {
+    /** Records whether hardware is in bright ambient with its silver plate finish. */
+    val lightScene: Boolean = !isSystemInDarkTheme()
     /** Holds concentric plate radius from the supplied 9dp cap plus 8dp margin. */
     val plateShape: RoundedCornerShape = RoundedCornerShape(17.dp)
-    /** Holds rigid cap silhouette. Independent wrapping requires rounded ends on each cap. */
-    val capShape: RoundedCornerShape = RoundedCornerShape(9.dp)
-    /** Holds dark selected moat or raised-cap contact ring. */
-    val openingColor: Color = if (selected) Color(0xFF030304) else Color(0xFF050506)
+    /** Holds cap radius reduced by the selected 1dp CNC clearance. */
+    val capShape: RoundedCornerShape = RoundedCornerShape(if (selected) 8.dp else 9.dp)
+    /** Holds selected seam or raised-cap contact ring for this scene. */
+    val openingColor: Color = if (lightScene) {
+        if (selected) Color(0xFF6E7075) else Color(0xFF85878C)
+    } else {
+        if (selected) Color(0xFF050508) else Color(0xFF050506)
+    }
     /** Holds glowing selected legend or reflective day/night ink. */
     val labelColor: Color = if (selected) Color.White else Color(0xFF3D3F45)
     /** Holds emitted label light behind selected white ink. */
@@ -3116,7 +3157,7 @@ private fun ledHardwarePageButton(
             .widthIn(max = maximumWidth)
             .width(IntrinsicSize.Max)
             .height(60.dp)
-            .then(ledPlateModifier(plateShape))
+            .then(ledPlateModifier(shape = plateShape, lightScene = lightScene))
             .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect)
             .padding(8.dp),
     ) {
@@ -3126,7 +3167,13 @@ private fun ledHardwarePageButton(
                 .fillMaxSize()
                 .background(openingColor, capShape),
         ) {
-            Box(modifier = ledFaceModifier(selected = selected, shape = capShape))
+            Box(
+                modifier = ledFaceModifier(
+                    selected = selected,
+                    lightScene = lightScene,
+                    shape = capShape,
+                ),
+            )
             Text(
                 text = label,
                 color = labelColor,
@@ -3140,7 +3187,9 @@ private fun ledHardwarePageButton(
                         null
                     },
                 ),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = if (selected) 2.dp else 0.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .offset(y = if (selected) 2.dp else 0.dp),
             )
         }
     }
@@ -3160,10 +3209,12 @@ private fun ledPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
     BoxWithConstraints {
         /** Holds available pager width before entering FlowRow's receiver scope. */
         val pageMaximumWidth: Dp = maxWidth
+        /** Overlaps adjacent 8dp plate margins so apparent cap gaps remain exactly 8dp. */
+        val plateOverlap: Dp = (-8).dp
         FlowRow(
             modifier = Modifier.selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(plateOverlap),
+            verticalArrangement = Arrangement.spacedBy(plateOverlap),
         ) {
             state.pageLabels.forEachIndexed { page, label ->
                 ledHardwarePageButton(
