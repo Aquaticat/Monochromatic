@@ -174,7 +174,7 @@ await describe({
          */
         await using scratch = await writeArtifacts({
           artifacts: {
-            'whiskers.json': artifactWith({
+            'Whiskers.json': artifactWith({
               chunkCritics: [{
                 chunkIndex: 3,
                 heardCriticIds: [TABBY,],
@@ -217,7 +217,7 @@ await describe({
          * Artifact written before attribution existed.
          */
         await using scratch = await writeArtifacts({
-          artifacts: { 'mittens.json': { id: 'Mittens', issues: [], }, },
+          artifacts: { 'Mittens.json': { id: 'Mittens', issues: [], }, },
         },);
 
         /**
@@ -244,7 +244,7 @@ await describe({
          */
         await using scratch = await writeArtifacts({
           artifacts: {
-            'whiskers.json': artifactWith({
+            'Whiskers.json': artifactWith({
               chunkCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY,],
@@ -285,7 +285,7 @@ await describe({
            * Artifact whose attribution key is present and unusable.
            */
           await using scratch = await writeArtifacts({
-            artifacts: { 'whiskers.json': artifactWith({ chunkCritics: corrupt, },), },
+            artifacts: { 'Whiskers.json': artifactWith({ chunkCritics: corrupt, },), },
           },);
 
           expect(
@@ -308,7 +308,7 @@ await describe({
            */
           await using scratch = await writeArtifacts({
             artifacts: {
-              'whiskers.json': artifactWith({
+              'Whiskers.json': artifactWith({
                 chunkCritics: [{
                   chunkIndex,
                   heardCriticIds: [TABBY,],
@@ -337,7 +337,7 @@ await describe({
          */
         await using heard = await writeArtifacts({
           artifacts: {
-            'a.json': artifactWith({
+            'Whiskers.json': artifactWith({
               chunkCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY, TABBY,],
@@ -356,7 +356,7 @@ await describe({
          */
         await using chunks = await writeArtifacts({
           artifacts: {
-            'b.json': artifactWith({
+            'Whiskers.json': artifactWith({
               chunkCritics: [
                 { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
                 { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
@@ -374,7 +374,7 @@ await describe({
          */
         await using proposers = await writeArtifacts({
           artifacts: {
-            'c.json': artifactWith({
+            'Whiskers.json': artifactWith({
               chunkCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY,],
@@ -406,7 +406,7 @@ await describe({
          */
         await using scratch = await writeArtifacts({
           artifacts: {
-            'whiskers.json': artifactWith({
+            'Whiskers.json': artifactWith({
               chunkCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY,],

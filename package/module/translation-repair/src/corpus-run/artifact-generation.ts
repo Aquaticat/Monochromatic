@@ -144,6 +144,39 @@ export class ArtifactGenerationError extends Error {
 }
 
 /**
+ * Lists the REGULAR FILES of an artifacts directory.
+ *
+ * Directory entries are checked rather than assumed. A directory named
+ * `backup.json` otherwise reached `readFile` and threw EISDIR out of the whole
+ * census, and a symlink was followed wherever it pointed, which could duplicate
+ * another artifact under a second identity or leave the directory entirely.
+ * Neither is an artifact, and neither should cost more than being skipped.
+ *
+ * @param artifactsDir - directory holding one JSON per settled entry
+ *
+ * @returns Names of regular files only, unsorted
+ *
+ * @example
+ * ```ts
+ * const names = await readdirArtifacts({ artifactsDir, },);
+ * ```
+ */
+async function readdirArtifacts(
+  { artifactsDir, }: { readonly artifactsDir: string; },
+): Promise<readonly string[]> {
+  return (await readdir(
+    artifactsDir,
+    { withFileTypes: true, },
+  ))
+    .filter(function isRegularFile(entry,): boolean {
+      return entry.isFile();
+    },)
+    .map(function toName(entry,): string {
+      return entry.name;
+    },);
+}
+
+/**
  * How one artifact places into a generation.
  */
 type Placement =
@@ -183,14 +216,30 @@ async function readTip(
   },
 ): Promise<Placement> {
   /**
-   * Raw artifact text.
+   * Entry id the pool will key this artifact by, which is its file name.
    */
-  const text = await readFile(
-    `${artifactsDir}/${name}`,
-    'utf8',
+  const keyedId = name.slice(
+    0,
+    -'.json'.length,
   );
 
+  if (keyedId === '')
+    return { kind: 'untagged', };
+
   try {
+    // INSIDE the try, deliberately. It used to sit outside, so a vanished
+    // file, an unreadable one, or a directory named `something.json` threw
+    // out of the whole census instead of costing its own row. That is the
+    // opposite of this module's stated policy, and it aborts a pass at
+    // startup now that the resume guard runs the census.
+    /**
+     * Raw artifact text.
+     */
+    const text = await readFile(
+      `${artifactsDir}/${name}`,
+      'utf8',
+    );
+
     /**
      * Artifact as parsed JSON.
      */
@@ -198,6 +247,20 @@ async function readTip(
 
     if (((typeof parsed) !== 'object') || (parsed === null))
       return { kind: 'untagged', };
+
+    // The file name is what the pool keys on and what the scheduler calls
+    // settled, while every reader downstream uses the id INSIDE. Unequal means
+    // one artifact would be admitted under one identity and read under
+    // another, which is how `Mittens-copy.json` becomes a second settled entry
+    // and `Mittens.json.json` becomes an entry called `Mittens.json`.
+    if (('id' in parsed) && (parsed.id !== keyedId)) {
+      console.log(
+        `POOL ${name} records id ${JSON.stringify(parsed.id,)}, which is not `
+          + 'its file name; treating it as unplaceable',
+      );
+      return { kind: 'untagged', };
+    }
+
     if (!('tip' in parsed))
       return { kind: 'untagged', };
 
@@ -216,8 +279,9 @@ async function readTip(
   }
   catch (error) {
     // A truncated artifact is an ordinary outcome of a pass killed at its hard
-    // cap. Logged rather than swallowed so a systematic write fault is visible
-    // instead of showing up as a quietly smaller pool.
+    // cap, and so, now that the read happens here, is a file that vanished or
+    // could not be opened. Logged rather than swallowed so a systematic write
+    // fault is visible instead of showing up as a quietly smaller pool.
     console.log(
       `POOL malformed ${name}: ${String(error,)}`,
     );
@@ -260,7 +324,7 @@ export async function censusByTip(
    * entering the candidate pool. One listing threaded through closes the gap
    * between the two views this module controls.
    */
-  const names = (listed ?? await readdir(artifactsDir,))
+  const names = (listed ?? await readdirArtifacts({ artifactsDir, },))
     .filter(function isArtifact(name,): boolean {
       return name.endsWith('.json',);
     },)
@@ -285,11 +349,18 @@ export async function censusByTip(
   for (const name of names) {
     /**
      * Entry id, which is the artifact's own file name.
+     *
+     * A file called exactly `.json` has an EMPTY stem, and an empty id in a
+     * report is a blank line nobody can act on, so such a file is carried by
+     * its name instead. It can only ever appear among the unplaceable, since
+     * `readTip` refuses an empty stem before reading anything.
      */
-    const entryId = name.slice(
-      0,
-      -'.json'.length,
-    );
+    const entryId = (name === '.json')
+      ? name
+      : name.slice(
+        0,
+        -'.json'.length,
+      );
 
     /**
      * How this artifact places: its commit, or why it has none.

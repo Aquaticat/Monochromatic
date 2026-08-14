@@ -13,7 +13,11 @@
  * @module
  */
 
-import { mkdtemp, writeFile, } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -328,6 +332,44 @@ await describe({
         )
           .rejects
           .toThrow('nothing to pool',);
+      },
+    },),
+
+    it({
+      name: 'SKIPS directory entries that are not regular files, and refuses '
+        + 'an artifact whose recorded id is not its file name. A directory '
+        + 'called backup.json used to reach readFile and abort the whole '
+        + 'census with EISDIR, and a copied artifact used to become a SECOND '
+        + 'settled entry under a name no reader would ever ask for',
+      fn: async () => {
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: 'aaaaaaaaa',
+            },
+          ],
+        },);
+        await mkdir(join(
+          dir,
+          'backup.json',
+        ),);
+        await writeFile(
+          join(
+            dir,
+            'Mittens-copy.json',
+          ),
+          JSON.stringify({
+            id: 'Mittens',
+            tip: 'aaaaaaaaa',
+          },),
+          'utf8',
+        );
+
+        const census = await censusByTip({ artifactsDir: dir, },);
+
+        expect(census.total,).toBe(1,);
+        expect(census.untaggedIds,).toEqual(['Mittens-copy',],);
       },
     },),
   ],
