@@ -260,7 +260,11 @@ export async function loadTrustedConfig({
     return enrolled;
   throw new TrustedConfigError(
     'config-untrusted',
-    'cli-git configuration is not trusted; run `git cli-git trust` after reviewing it.',
+    [
+      `cli-git configuration at ${candidate.discovered.configPath} is not trusted.`,
+      'Review it, then run `git cli-git trust` in an interactive terminal.',
+      'For explicit noninteractive consent, run `git cli-git trust --yes`.',
+    ].join(' ',),
   );
 }
 
