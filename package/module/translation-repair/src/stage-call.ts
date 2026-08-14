@@ -110,11 +110,18 @@ function lostVoiceCause(
    * in half; iterating code points fixes that and still splits an emoji or a
    * combining mark from its base. The preview is the whole diagnostic here, so
    * it has to survive the cut intact.
+   *
+   * Marked foreign because this is where host-owned mutable state enters: the
+   * segmenter hands back its own records, whose fields the host declares
+   * writable, and nothing here owns or mutates them.
    */
-  const clusters = [...new Intl.Segmenter(
-    undefined,
-    { granularity: 'grapheme', },
-  ).segment(flattened,),];
+  const clusters: ForeignBorrowed<readonly Intl.SegmentData[]> = [
+    ...new Intl.Segmenter(
+      undefined,
+      { granularity: 'grapheme', },
+    )
+      .segment(flattened,),
+  ];
 
   /**
    * Bounded opening of the model text, since a warning is one line.
