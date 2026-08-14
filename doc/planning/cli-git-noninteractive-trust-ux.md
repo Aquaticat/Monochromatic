@@ -11,14 +11,26 @@ At repository commit `044e70ea639e45626aadddd7700bb827558e3c64`,
 a Git operation in an untrusted disposable worktree emitted:
 
 ```json
-{"schemaVersion":1,"sequence":0,"type":"engine-failure","code":"config-untrusted","message":"cli-git configuration is not trusted; run `git cli-git trust` after reviewing it."}
+{
+  "schemaVersion": 1,
+  "sequence": 0,
+  "type": "engine-failure",
+  "code": "config-untrusted",
+  "message": "cli-git configuration is not trusted; run `git cli-git trust` after reviewing it."
+}
 ```
 
 The recommended bare command ran without terminal input.
 Cli-git printed its trust disclosure and then emitted:
 
 ```json
-{"schemaVersion":1,"sequence":0,"type":"engine-failure","code":"trust-failed","message":"Trust declined; no persistent record was installed."}
+{
+  "schemaVersion": 1,
+  "sequence": 0,
+  "type": "engine-failure",
+  "code": "trust-failed",
+  "message": "Trust declined; no persistent record was installed."
+}
 ```
 
 The caller then tried pipes and pseudo-terminals before discovering that the supported command was:
@@ -52,8 +64,8 @@ The product interface should remain usable even when the caller discipline fails
 
 Both trust implementations treat that boolean exactly like a rejected prompt:
 
-- MJS: `package/git-policy/cli/src/trust/explicit-trust.ts:220-223`;
-- TypeScript: `package/git-policy/cli/src/trust/explicit-typescript-trust.ts:283-286`.
+- MJS behavior is at `package/git-policy/cli/src/trust/explicit-trust.ts:220-223`.
+- TypeScript behavior is at `package/git-policy/cli/src/trust/explicit-typescript-trust.ts:283-286`.
 
 No user declined in this path.
 The runtime had no interactive consent channel.
@@ -121,7 +133,13 @@ When consent is unavailable,
 retain exit `2` and emit a stable machine-readable code such as `trust-consent-unavailable`:
 
 ```json
-{"schemaVersion":1,"sequence":0,"type":"engine-failure","code":"trust-consent-unavailable","message":"Interactive trust consent requires terminal stdin and stderr. After reviewing the disclosure, rerun `git cli-git trust --yes` for explicit noninteractive consent; no record was installed."}
+{
+  "schemaVersion": 1,
+  "sequence": 0,
+  "type": "engine-failure",
+  "code": "trust-consent-unavailable",
+  "message": "Interactive consent unavailable. After review, rerun `git cli-git trust --yes`; no record installed."
+}
 ```
 
 Keep `trust-failed` for an actual interactive rejection unless a broader failure-code redesign is separately approved.
@@ -214,9 +232,11 @@ Cons:
 
 Ranking:
 complete correction > message-only correction > implicit approval.
-The complete correction outranks the message-only patch because stable machine classification and successful help prevent recurrence,
+The complete correction outranks the message-only patch because stable machine classification
+and successful help prevent recurrence,
 not just this message.
-The message-only patch outranks implicit approval because preserving explicit authority is more important than removing one flag.
+The message-only patch outranks implicit approval because preserving explicit authority
+is more important than removing one flag.
 
 ## Verification requirements
 
