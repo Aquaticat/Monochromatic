@@ -360,7 +360,7 @@ The published tarball contains five files and 41,198 unpacked bytes.
 Its runtime is one 19,503-byte ESM file plus a 4,871-byte declaration file.
 The CAC source has 960 physical TypeScript lines across six files;
 MRI adds 119 source lines.
-CAC's test source has fifteen test calls,
+CAC's test source has fifteen syntactic registrations that produce seventeen executed cases,
 no fuzz or mutation harness,
 and current CI covers Ubuntu and Windows on Node 22,
 24,
@@ -427,6 +427,28 @@ logging,
 validation,
 and lint requirements make this an upper-bound comparison rather than net line-count proof.
 
+### 2026-08-14 source reproduction checkpoint
+
+The pinned upstream source passed its complete Linux/Node 24 package path in a bounded offline container:
+build,
+typecheck,
+lint,
+and all seventeen Vitest cases.
+The test phase reported seventeen passes and no failures.
+The rebuilt 19,503-byte ESM and 4,871-byte declaration files matched the published npm artifact byte-for-byte.
+Their SHA-256 hashes are
+`01af40eab1e1de3d543e740fa73c0095ce188c752300dd25d90ef0cd32a5d7c9` and
+`25265ad103164bfc85707531963d66c59b84a230e3551cf5bc336166a74ae93c`.
+
+The dependency fetch used the frozen lockfile with all lifecycle scripts disabled.
+The 455,847,337-byte tree remained below its declared 1.5 GiB ceiling.
+The numeric-preservation patch then failed its four exact-value assertions before the change and passed after it.
+The durable diagnosis,
+patch,
+workaround catalog,
+and upstream comment draft are in
+`doc/troubleshooting/cac-option-value-coercion.md`.
+
 ## Open risks
 
 - CAC may fit management subcommands while being unsuitable for transparent Git-argv inspection.
@@ -444,10 +466,10 @@ and lint requirements make this an upper-bound comparison rather than net line-c
 
 ## Next action
 
-Prototype and verify the upstream numeric-preservation fix required by the troubleshooting record,
-then complete source rebuild,
-upstream-suite,
-TypeScript,
-bundle,
-platform,
-and cli-git consumer validation for the surviving management-only shape.
+Build the management-only adapter in the disposable cli-git worktree,
+then verify TypeScript,
+bundle shape,
+maintained package suites,
+platform evidence,
+user-boundary commands,
+and lifecycle latency before scoring.

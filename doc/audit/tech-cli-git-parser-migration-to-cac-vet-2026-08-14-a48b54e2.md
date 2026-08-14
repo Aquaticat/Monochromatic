@@ -536,7 +536,9 @@ Primary evidence accessed 2026-08-14:
 
 - CAC clone has six production TypeScript files and 960 physical source lines;
 - a rough blank-and-comment exclusion leaves 728 lines;
-- CAC has one 211-line test file with fifteen test calls;
+- CAC has one 211-line test file with fifteen syntactic registrations,
+  including one helper invoked three times,
+  which produces seventeen executed cases;
 - no fuzzing or mutation harness is present;
 - coverage is configured through a reusable workflow;
 - the most recent sampled Codecov report on merged PR `#172` reported 66.06 percent line coverage;
@@ -1090,7 +1092,8 @@ Statically discovered root subprocesses:
 - `tsdown` for the ESM and declaration build;
 - `tsgo --noEmit` for type checking;
 - `eslint --cache .` for lint;
-- `vitest` for the fifteen test calls and example subprocess cases.
+- `vitest` for seventeen executed cases,
+  including three helper-registered example subprocess cases.
 
 The pinned development graph includes native build tooling used by tsdown and tsgo.
 It is not part of CAC's published runtime.
@@ -1329,10 +1332,40 @@ lone `-`,
 kebab-case boolean metadata,
 or unknown-token facts.
 
+### Upstream build and Node CI result
+
+The dependency-fetch phase installed the frozen lock graph with lifecycle scripts disabled.
+It scanned 1,771 package-manifest paths and found 111 lifecycle-bearing paths,
+including pnpm-link duplicates.
+No lifecycle ran.
+The only non-`prepare` scripts discovered were esbuild's `postinstall` and simple-git-hooks' `postinstall`;
+both remained disabled.
+The resulting scratch tree used 455,847,337 bytes,
+below its recorded 1.5 GiB ceiling.
+
+The offline Node 24.18.0 phase then passed all four upstream commands:
+
+- `build` produced `dist/index.js` and `dist/index.d.ts` in 85 ms;
+- `typecheck` exited zero;
+- `lint` exited zero;
+- `test` executed seventeen cases,
+  including example subprocess cases,
+  with seventeen passes and no failures in 649 ms.
+
+The source copy still identified commit
+`77f602fcb2d1e75d24f5ecd94d5bf667acaa857a` and had no tracked source diff after validation.
+The rebuilt artifacts matched the published npm files byte-for-byte:
+
+- `dist/index.js` SHA-256:
+  `01af40eab1e1de3d543e740fa73c0095ce188c752300dd25d90ef0cd32a5d7c9`;
+- `dist/index.d.ts` SHA-256:
+  `25265ad103164bfc85707531963d66c59b84a230e3551cf5bc336166a74ae93c`.
+
+This closes source-to-artifact reproducibility and the upstream Linux/Node 24 suite.
+It does not validate cli-git's production integration or its platform matrix.
+
 ### Remaining validation
 
-- rebuild the pinned source and compare its artifact boundary;
-- run or equivalently cover the complete relevant upstream suite;
 - verify the management-only shape under cli-git's TypeScript and bundling boundary;
 - exercise Linux,
   macOS,
@@ -1366,10 +1399,10 @@ Other external parser technologies are out of scope.
 
 The historical Optique timing in repository history is motivation for a latency gate,
 not evidence about CAC.
-Current runtime evidence covers Linux x64 only.
+Current direct runtime evidence covers Linux x64 only.
 The management adapter is a disposable untyped design probe,
 not production code and not an authorized migration.
-No source-level build comparison,
-macOS run,
+The upstream source rebuild and Node 24 suite are complete.
+No macOS run,
 Windows run,
 or cli-git lifecycle benchmark has completed yet.
