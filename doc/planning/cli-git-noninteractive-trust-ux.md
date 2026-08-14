@@ -2,8 +2,16 @@
 
 ## Status
 
-Proposal only.
-No cli-git implementation has been changed.
+Implemented on `main` on 2026-08-13.
+Final package and packed-artifact verification is pending.
+
+Implementation commits:
+
+- `6835b8c4e` classifies unavailable trust consent;
+- `6694f90b9` makes untrusted-config remediation actionable;
+- `34e8aa2a9` adds successful namespace and trust help.
+
+Regression tests landed in the adjacent test commits.
 
 ## Incident
 

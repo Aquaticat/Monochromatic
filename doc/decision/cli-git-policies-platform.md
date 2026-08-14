@@ -320,6 +320,8 @@ and provenance publication belong only to indefinitely deferred issue #358.
 Cli-git intercepts one namespaced Git subcommand:
 
 ```text
+git cli-git --help
+git cli-git trust --help
 git cli-git trust [--yes]
 git cli-git check [--policy <id>]... (--all | -- <pathspec>...)
 git cli-git fix [--policy <id>]... (--all | -- <pathspec>...)
@@ -328,6 +330,12 @@ git cli-git status
 ```
 
 Management parsing uses Optique.
+Namespace and trust help write human-readable stdout and exit `0` before real-Git resolution,
+transaction recovery,
+repository config discovery,
+candidate building,
+or trust-registry access.
+Unknown options remain usage failures with exit `2`.
 `check` and `fix` require exactly one scope source:
 `--all` or one or more pathspecs after `--`.
 A repeated `--policy` filters the enabled set.
@@ -391,8 +399,9 @@ external subcommands,
 future Git commands,
 and ambiguous forms take the config-loading path.
 
-An untrusted or changed config blocks a config-loading command and directs the user to
-`git cli-git trust`.
+An untrusted or changed config blocks a config-loading command.
+An untrusted-config diagnostic names the affected path and gives both recovery commands:
+interactive `git cli-git trust` and explicit noninteractive `git cli-git trust --yes`.
 Cli-git does not continue with built-ins only.
 There is no global config-discovery kill switch.
 
@@ -455,10 +464,17 @@ and behave incorrectly despite transaction safeguards.
 
 Root approval remains in memory until stored-artifact execution and validation succeed.
 Failure leaves no persistent record.
+A completed interactive response other than exact `yes` remains a decline.
+When stdin or stderr is not a terminal,
+cli-git emits `trust-consent-unavailable`,
+recommends `git cli-git trust --yes` after review,
+and installs no record.
 If validated config declares child trust,
 cli-git prints a second disclosure naming the root and descendant authority and requests separate consent.
+A decline at that second stage installs ordinary non-recursive root trust.
+Unavailable terminal consent at that stage installs no record.
 `--yes` prints both applicable disclosures and skips input reads.
-CI uses this explicit form and receives no detected-CI auto-trust.
+Automation uses this explicit form and receives no detected-CI auto-trust.
 
 ## Relaxed exact-path mode
 

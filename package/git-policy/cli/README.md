@@ -297,6 +297,8 @@ whose index installation was interrupted.
 Use the namespaced Optique management commands:
 
 ```sh
+git cli-git --help
+git cli-git trust --help
 git cli-git trust
 git cli-git trust --yes
 git cli-git untrust
@@ -304,6 +306,13 @@ git cli-git status
 git cli-git check --all
 git cli-git check --policy require-root -- path/to/file
 ```
+
+Namespace and trust help exit `0`,
+write help to stdout,
+and return before repository config discovery,
+trust-registry access,
+or transaction recovery.
+Unknown options remain usage failures with exit `2`.
 
 `status` reports whether repository config is absent,
 untrusted,
@@ -340,7 +349,9 @@ Known inspection-only Git commands skip config loading.
 `branch` and `tag` use argument-aware classification;
 unknown or ambiguous commands take the config-loading path and therefore block on untrusted config.
 
-First config-loading use exits `2` without executing repository code and points to `git cli-git trust`.
+First config-loading use exits `2` without executing repository code.
+Its `config-untrusted` event names the affected configuration and points to both consent paths:
+interactive `git cli-git trust` and explicit noninteractive `git cli-git trust --yes`.
 Trust validates UTF-8,
 JavaScript syntax,
 and module edges before consent.
@@ -358,9 +369,14 @@ complete filesystem identity and stability,
 exact snapshot state and byte count,
 retained Node built-ins,
 and arbitrary-code authority.
-`--yes` is explicit noninteractive consent for CI.
+`--yes` is explicit noninteractive consent for automation,
+including CI and agent sessions.
 Without `--yes`,
-noninteractive input declines with exit `2`.
+trust requires terminal stdin and stderr.
+Missing terminal streams emit `trust-consent-unavailable` with exit `2`,
+recommend `git cli-git trust --yes` after review,
+and install no record.
+A completed interactive response other than exact `yes` remains a decline reported as `trust-failed`.
 Trusted code is not sandboxed:
 it runs with full account file,
 process,
