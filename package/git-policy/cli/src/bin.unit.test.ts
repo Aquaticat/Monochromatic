@@ -484,6 +484,19 @@ if (args.includes('rev-parse')) process.exitCode = 1;
       },
     },),
     it({
+      name: 'preserves global version short-circuit before management namespace',
+      fn: async function testGlobalVersionBeforeManagement(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Real-Git version output through wrapper. */
+        const result = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['--version', 'cli-git',],
+        },);
+        expect(result.stdout,).toContain('git version');
+        expect(result.stderr,).toBe('',);
+      },
+    },),
+    it({
       name: 'prints namespace and trust help without loading repository config',
       fn: async function testManagementHelp(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
