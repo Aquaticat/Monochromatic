@@ -216,48 +216,62 @@ component SegmentedControls inherits Rectangle {
     }
 }
 
-// A hardware page button adapted from the supplied LED segmented-control master.
-// Each control is a content-width metal tile so Slint's wrapping layout never
-// paints unused row width. Adjacent tiles overlap by the 8px plate margin,
-// visually forming one backplate while preserving 8px between caps. The 60px
-// plate surrounds a 44px cap; selection leaves the updated 1px CNC seam.
+// A measured hardware page button adapted from the supplied LED master.
+// Overlapping square internal plate edges form one shared 60px machined plate
+// per wrapped row. Exposed plate and cap ends retain source radii. Each 44px
+// cap has 8px plate clearance; selection leaves a 1px CNC seam.
 component LedSegmentButton inherits Rectangle {
     in property <string> text;
+    in property <string> next-text;
     in property <bool> selected;
+    in property <bool> last-control;
     callback clicked();
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
+    private property <bool> starts-row: root.x < 1px;
+    private property <length> next-control-width:
+        min(next-label-measure.preferred-width + 64px, root.max-width);
+    private property <bool> ends-row:
+        root.last-control
+        || root.x + root.width - 8px + root.next-control-width > root.max-width;
     horizontal-stretch: 0;
     width: min(led-label.preferred-width + 64px, root.max-width);
     height: 60px;
     preferred-height: 60px;
     background: transparent;
 
+    // Zero-sized text exposes next label's true width without painting it.
+    next-label-measure := Text {
+        width: 0px;
+        height: 0px;
+        opacity: 0;
+        text: root.next-text;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
     plate := Rectangle {
         width: parent.width;
         height: parent.height;
-        border-radius: 17px;
+        border-top-left-radius: root.starts-row ? 17px : 0px;
+        border-bottom-left-radius: root.starts-row ? 17px : 0px;
+        border-top-right-radius: root.ends-row ? 17px : 0px;
+        border-bottom-right-radius: root.ends-row ? 17px : 0px;
         clip: true;
         background: root.light-scene ? #c4c6ca : #111111;
-        inner-shadow-offset-x: 3px;
-        inner-shadow-offset-y: 3px;
-        inner-shadow-blur: 6px;
-        inner-shadow-color: root.light-scene ? #00000030 : #00000057;
 
+        // Width-independent vertical ramp avoids a repeated seam where plate
+        // tiles overlap, while retaining subtle ambient-dependent treatment.
         Rectangle {
             width: parent.width;
             height: parent.height;
-            border-radius: parent.border-radius;
+            border-top-left-radius: plate.border-top-left-radius;
+            border-bottom-left-radius: plate.border-bottom-left-radius;
+            border-top-right-radius: plate.border-top-right-radius;
+            border-bottom-right-radius: plate.border-bottom-right-radius;
             background: root.light-scene
-                ? @linear-gradient(135deg, #ffffff29 0%, #ffffff0f 30%, transparent 55%, #0000001f 100%)
-                : @linear-gradient(135deg, #ffffff0f 0%, #ffffff06 30%, transparent 55%, #00000024 100%);
+                ? @linear-gradient(180deg, #ffffff29 0%, #ffffff0f 30%, transparent 55%, #0000001f 100%)
+                : @linear-gradient(180deg, #ffffff0f 0%, #ffffff06 30%, transparent 55%, #00000024 100%);
         }
-
-        // Seeded-looking micro highlights suggest a bead-blasted plate without
-        // requiring a raster tile that would scale differently across renderers.
-        Rectangle { x: parent.width * 0.18; y: parent.height * 0.22; width: 1px; height: 1px; background: #ffffff14; }
-        Rectangle { x: parent.width * 0.42; y: parent.height * 0.68; width: 1px; height: 1px; background: #ffffff10; }
-        Rectangle { x: parent.width * 0.71; y: parent.height * 0.28; width: 1px; height: 1px; background: #ffffff18; }
-        Rectangle { x: parent.width * 0.86; y: parent.height * 0.72; width: 1px; height: 1px; background: #ffffff0f; }
     }
 
     opening := Rectangle {
@@ -265,7 +279,10 @@ component LedSegmentButton inherits Rectangle {
         y: 8px;
         width: parent.width - 16px;
         height: 44px;
-        border-radius: 10px;
+        border-top-left-radius: root.starts-row ? 9px : 2px;
+        border-bottom-left-radius: root.starts-row ? 9px : 2px;
+        border-top-right-radius: root.ends-row ? 9px : 2px;
+        border-bottom-right-radius: root.ends-row ? 9px : 2px;
         background: root.light-scene
             ? (root.selected ? #6e7075 : #85878c)
             : (root.selected ? #050508 : #050506);
@@ -276,29 +293,64 @@ component LedSegmentButton inherits Rectangle {
         y: root.selected ? 9px : 8px;
         width: parent.width - (root.selected ? 18px : 16px);
         height: root.selected ? 42px : 44px;
-        border-radius: root.selected ? 8px : 9px;
-        background: root.selected ? #a63fd0 : #aaaaaa;
+        border-top-left-radius: root.starts-row ? (root.selected ? 8px : 9px) : (root.selected ? 1px : 2px);
+        border-bottom-left-radius: cap-face.border-top-left-radius;
+        border-top-right-radius: root.ends-row ? (root.selected ? 8px : 9px) : (root.selected ? 1px : 2px);
+        border-bottom-right-radius: cap-face.border-top-right-radius;
+        background: root.selected ? Palette.accent-background : #aaaaaa;
         drop-shadow-offset-x: root.selected ? 0px : 2.5px;
         drop-shadow-offset-y: root.selected ? 0px : 3.5px;
-        drop-shadow-blur: root.selected ? 10px : 5px;
+        drop-shadow-blur: root.selected ? 7px : 5px;
         drop-shadow-color: root.selected
-            ? (root.light-scene ? #c874ea1a : #c874ea2e)
+            ? Palette.accent-background.with-alpha(root.light-scene ? 0.16 : 0.28)
             : (root.light-scene ? #00000052 : #0000006b);
+        inner-shadow-offset-x: root.selected ? -3px : 3px;
+        inner-shadow-offset-y: root.selected ? -3px : 3px;
+        inner-shadow-blur: 4px;
+        inner-shadow-color: root.selected
+            ? (root.light-scene ? #00000099 : #00000073)
+            : #00000038;
         animate x, y, width, height, background, drop-shadow-color {
             duration: 160ms;
             easing: ease;
         }
     }
 
+    // Near-flat dome keeps highlight subtle until the cap's outer edge.
     Rectangle {
         x: cap-face.x;
         y: cap-face.y;
         width: cap-face.width;
         height: cap-face.height;
-        border-radius: cap-face.border-radius;
-        background: root.selected
-            ? @radial-gradient(circle, #ffffff5c 0%, transparent 100%)
-            : @radial-gradient(circle, #ffffff36 0%, transparent 100%);
+        border-top-left-radius: cap-face.border-top-left-radius;
+        border-bottom-left-radius: cap-face.border-bottom-left-radius;
+        border-top-right-radius: cap-face.border-top-right-radius;
+        border-bottom-right-radius: cap-face.border-bottom-right-radius;
+        background: @radial-gradient(
+            circle,
+            #ffffff08 0%,
+            #ffffff04 55%,
+            transparent 75%,
+            #00000012 86%,
+            #00000021 93%,
+            #00000038 100%
+        );
+    }
+
+    if root.selected: Rectangle {
+        x: cap-face.x;
+        y: cap-face.y;
+        width: cap-face.width;
+        height: cap-face.height;
+        border-top-left-radius: cap-face.border-top-left-radius;
+        border-bottom-left-radius: cap-face.border-bottom-left-radius;
+        border-top-right-radius: cap-face.border-top-right-radius;
+        border-bottom-right-radius: cap-face.border-bottom-right-radius;
+        background: @radial-gradient(
+            circle,
+            Palette.accent-foreground.with-alpha(0.11) 0%,
+            transparent 60%
+        );
     }
 
     Rectangle {
@@ -306,7 +358,10 @@ component LedSegmentButton inherits Rectangle {
         y: cap-face.y;
         width: cap-face.width;
         height: cap-face.height;
-        border-radius: cap-face.border-radius;
+        border-top-left-radius: cap-face.border-top-left-radius;
+        border-bottom-left-radius: cap-face.border-bottom-left-radius;
+        border-top-right-radius: cap-face.border-top-right-radius;
+        border-bottom-right-radius: cap-face.border-bottom-right-radius;
         background: @linear-gradient(
             135deg,
             #ffffff38 0%,
@@ -315,29 +370,6 @@ component LedSegmentButton inherits Rectangle {
             #0000000a 55%,
             #0000002e 75%,
             #00000052 100%
-        );
-    }
-
-    if root.selected: Rectangle {
-        x: cap-face.x;
-        y: cap-face.y;
-        width: cap-face.width;
-        height: 4px;
-        background: @linear-gradient(
-            180deg,
-            (root.light-scene ? #00000099 : #00000073) 0%,
-            transparent 100%
-        );
-    }
-    if root.selected: Rectangle {
-        x: cap-face.x;
-        y: cap-face.y;
-        width: 4px;
-        height: cap-face.height;
-        background: @linear-gradient(
-            90deg,
-            (root.light-scene ? #00000099 : #00000073) 0%,
-            transparent 100%
         );
     }
 
@@ -362,12 +394,12 @@ component LedSegmentButton inherits Rectangle {
         width: parent.width - 62px;
         height: 46px;
         text: root.text;
-        font-size: Typography.body-rem * 1rem + 1px;
+        font-size: 16px;
         font-weight: 600;
         vertical-alignment: center;
         horizontal-alignment: center;
         overflow: elide;
-        color: #f0d4ff80;
+        color: Palette.accent-foreground.with-alpha(0.45);
     }
 
     led-label := Text {
@@ -376,25 +408,29 @@ component LedSegmentButton inherits Rectangle {
         width: parent.width - 64px;
         height: 44px;
         text: root.text;
-        font-size: Typography.body-rem * 1rem;
+        font-size: 15px;
         font-weight: 600;
         vertical-alignment: center;
         horizontal-alignment: center;
         overflow: elide;
-        color: root.selected ? #ffffff : #3d3f45;
+        color: root.selected ? Palette.accent-foreground : #3d3f45;
         animate y, color { duration: 160ms; easing: ease; }
     }
 
+    // Hit bounds own only the visible cap and never overlap the next cap.
     TouchArea {
+        x: 8px;
+        y: 8px;
+        width: parent.width - 16px;
+        height: 44px;
         clicked => {
             root.clicked();
         }
     }
 }
 
-// Wrapping LED controls stay content-width and leave every unused row pixel
-// transparent. Metal tiles overlap by their 8px margins, joining the apparent
-// plate while every label-cap pair still wraps as a whole control.
+// Wrapped rows remain content-width. Neighboring 60px plate tiles overlap by
+// the 8px margin, with square internal ends, to paint one continuous row plate.
 component LedSegmentControls inherits Rectangle {
     in property <[string]> labels;
     in property <int> selected-page;
@@ -406,7 +442,7 @@ component LedSegmentControls inherits Rectangle {
     led-layout := FlexboxLayout {
         width: parent.width;
         spacing-horizontal: -8px;
-        spacing-vertical: -8px;
+        spacing-vertical: 8px;
         flex-wrap: wrap;
         alignment: start;
         align-content: start;
@@ -414,6 +450,8 @@ component LedSegmentControls inherits Rectangle {
         vertical-stretch: 0;
         for label[p] in root.labels: LedSegmentButton {
             text: label;
+            next-text: p + 1 < root.labels.length ? root.labels[p + 1] : "";
+            last-control: p == root.labels.length - 1;
             selected: p == root.selected-page;
             max-width: root.width;
             clicked => {
