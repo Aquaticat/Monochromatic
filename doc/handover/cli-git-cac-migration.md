@@ -449,6 +449,60 @@ workaround catalog,
 and upstream comment draft are in
 `doc/troubleshooting/cac-option-value-coercion.md`.
 
+### 2026-08-14 production integration checkpoint
+
+A typed disposable package integration now matches the incumbent on 52 management cases.
+The expanded set includes exact numeric and dash-led policies,
+repeated booleans,
+lone dashes,
+placeholder collisions,
+unknown joined options,
+and exact post-`--` tokens.
+The first typed adapter refused repeated `--yes` and `--all` because CAC returns repeated booleans as arrays;
+explicit runtime validation fixed that mismatch.
+
+The production shape is not a simplification.
+Its sibling CAC adapter occupies 570 physical lines and 291 measured noncomment code lines.
+It removes 123 physical lines from the incumbent management parser and adds eight delegation lines.
+The custom exact-value scanner remains,
+and now also handles collision-free placeholders,
+lone-dash restoration,
+repeated boolean arrays,
+and CAC's `any`-typed option object.
+
+Type checking,
+build,
+packaging,
+the built trust consumer,
+side-effect-free package import,
+authored help,
+and invalid-usage exit `2` all passed.
+The final MJS grew from 1,029,609 to 1,037,963 bytes,
+a measured 8,354-byte or 0.8114 percent increase.
+The packed manifest declares exact dependency `cac: 7.0.0` and retains one public MJS application artifact.
+
+Candidate and unchanged-baseline oxlint both report zero warnings and the same 96 pre-existing test-import errors.
+The candidate file itself has no remaining finding.
+The full unit run passed the cli-git entry-point and other reported groups,
+then one Git fixture collided on `.git/config` locking;
+the exact failing file passed on isolated retry.
+
+Upstream release-commit Action run `22491031174` passed CAC's Ubuntu and Windows tests on Node 22,
+24,
+and 25 plus Deno.
+The overall workflow was red only because its lint job failed.
+The expired lint log returns HTTP 410,
+so its exact diagnostic is unavailable.
+Combined cli-git adapter behavior remains directly tested only on Linux.
+
+The candidate passed all maintained lifecycle budgets.
+`wide-commit` measured 300.6160 ms median,
+311.0310 ms p95,
+and 316.5200 ms maximum against the 925 ms ceiling across thirty measured runs.
+No-config startup measured 87.5854 ms median and 94.3790 ms maximum against 275 ms.
+The absolute latency gate therefore passes;
+an unchanged-baseline band is still required before attributing incremental cost to CAC.
+
 ## Open risks
 
 - CAC may fit management subcommands while being unsuitable for transparent Git-argv inspection.
@@ -466,10 +520,8 @@ and upstream comment draft are in
 
 ## Next action
 
-Build the management-only adapter in the disposable cli-git worktree,
-then verify TypeScript,
-bundle shape,
-maintained package suites,
-platform evidence,
-user-boundary commands,
-and lifecycle latency before scoring.
+Finish unchanged-baseline latency distributions,
+then close platform evidence,
+score the surviving management-only shape,
+run sensitivity analysis,
+and write the final practicality recommendation.

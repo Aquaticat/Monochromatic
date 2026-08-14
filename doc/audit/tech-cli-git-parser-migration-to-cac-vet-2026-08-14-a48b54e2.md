@@ -118,7 +118,10 @@ A candidate and its proposed integration shape must satisfy every constraint:
 - Linux,
   macOS,
   and Windows support;
-- one self-contained MJS artifact and side-effect-free package import;
+- one public MJS application artifact,
+  private workspace code bundled,
+  every external runtime edge declared in packed dependencies,
+  and side-effect-free package import;
 - exact pathspec and raw argv fidelity until cli-git explicitly owns a transformation;
 - fail-closed guarded Git command classification;
 - complete management grammar,
@@ -546,7 +549,14 @@ Primary evidence accessed 2026-08-14:
 - CAC CI builds and tests Node 22,
   24,
   and 25 on Ubuntu and Windows;
-- Deno receives a separate Ubuntu example run;
+- release-commit run `22491031174` passed all six Ubuntu and Windows matrix jobs for Node 22,
+  24,
+  and 25;
+- the same release-commit run passed its separate Deno job;
+- the run's lint job failed,
+  making the overall workflow red even though all runtime jobs passed;
+- GitHub had expired the failed lint log and returned HTTP 410,
+  so this audit cannot identify that job's exact diagnostic;
 - CAC's own workflow does not run a macOS job.
 
 Outcome:
@@ -1205,13 +1215,15 @@ mise run //package/git-policy/cli:test:built:trust
 
 Additional probes:
 
-- compare the frozen 44-case incumbent catalog with prototype results;
+- compare an expanded 52-case incumbent catalog with prototype results;
 - import the built package root and call its exported authoring API;
 - invoke the packed shadow `git` command for help,
   trust help,
   invalid usage,
   and selected management argument cases;
-- inspect the final MJS for bundled CAC/MRI markers and unresolved imports;
+- inspect the final artifact set for one MJS application file,
+  a declared CAC runtime edge,
+  and no extra chunks;
 - compare package and built-artifact bytes against the unchanged baseline;
 - run lifecycle latency only after establishing unchanged-build timing spread and a positive control.
 
@@ -1259,8 +1271,8 @@ No stress or fan-out benchmark is authorized.
 
 Expected outputs:
  zero exits,
-unchanged diagnostics and 44-case results,
-one self-contained MJS artifact,
+unchanged diagnostics and 52-case results,
+one public MJS application artifact with every runtime edge declared,
 passing package import and CLI consumer commands,
 measured byte deltas,
 and timing distributions.
@@ -1269,7 +1281,7 @@ Failure condition:
  any behavior mismatch,
 type or lint finding,
 test failure,
-externalized CAC runtime import,
+undeclared CAC runtime import or missing packed dependency,
 side-effectful package import,
 undeclared write,
 resource breach,
@@ -1490,14 +1502,121 @@ The rebuilt artifacts matched the published npm files byte-for-byte:
   `25265ad103164bfc85707531963d66c59b84a230e3551cf5bc336166a74ae93c`.
 
 This closes source-to-artifact reproducibility and the upstream Linux/Node 24 suite.
-It does not validate cli-git's production integration or its platform matrix.
+The release-commit Actions evidence additionally closes CAC's Windows runtime matrix for Node 22,
+24,
+and 25,
+but not combined cli-git adapter behavior.
+
+### Production-style cli-git integration checkpoint
+
+The disposable adapter moved CAC behind `parseManagementArgs` while retaining authored help,
+management actions,
+all Git-region parsers,
+and a dedicated exact-value scanner.
+The first typed version exposed a new parity requirement:
+CAC represents repeated boolean flags as arrays.
+Runtime validation initially refused repeated `--yes` and `--all`.
+After the boundary accepted nonempty boolean arrays,
+the expanded catalog matched the incumbent in all 52 cases.
+The added cases cover lone dashes,
+placeholder collisions,
+policy value `--`,
+joined dash values,
+unknown joined options,
+and mixed exact policies and pathspecs.
+
+Evidence:
+
+- parity harness SHA-256:
+  `aa0e9ea2025bc55cea22020a0bd2ecbe20610a5791751dbd974bde024c7da9c2`;
+- parity output SHA-256:
+  `357df839b1ffaa31026fde5eafdb71dc261adb55a2e6c75ef012bc91f145cfac`;
+- result:
+  52 matches and zero mismatches.
+
+The production-shaped CAC module occupies 570 physical lines and 291 measured nonblank,
+noncomment lines.
+It replaces 123 physical lines from `management-parser.ts` while adding eight delegation lines there.
+This is direct evidence that CAC does not simplify the management implementation under current exact-value,
+type,
+TSDoc,
+logging,
+and lint requirements.
+The current scanner remains necessary and gains handling for placeholders,
+lone dashes,
+repeated booleans,
+and CAC's untyped option result.
+
+Validation results so far:
+
+- package TypeScript check passed;
+- final production build passed in 73.40 ms;
+- final application MJS is 1,037,963 bytes,
+  8,354 bytes or 0.8114 percent above the unchanged 1,029,609-byte baseline artifact;
+- declaration output remains byte-identical at 23,078 bytes,
+  SHA-256 `3ef9146c9691ed28b227b18914728898c1c4e30d1a2a9562c6b8a7795059cee2`;
+- packed manifest declares exact runtime dependency `cac: 7.0.0`;
+- tarball contains one `dist/final/node/index.mjs` application artifact and one declaration file;
+- package build,
+  pack,
+  and built trust consumer task passed;
+- side-effect-free package import produced no stderr and exposed `definePolicy` as a function;
+- built management help and trust help matched authored usage and wrote no stderr;
+- built invalid trust usage exited `2`,
+  wrote no stdout,
+  and emitted the authored management usage;
+- complete oxlint reported the same zero warnings and 96 pre-existing test-import errors on the candidate and unchanged
+  baseline;
+- the positive-control candidate run had reported and then cleared every finding in `management-cac-parser.ts`;
+- the full unit run passed the cli-git entry-point group and all other reported groups but hit one transient
+  `.git/config` lock collision in `git-worktree-identity.unit.test.ts`;
+- an isolated rerun of that exact failing file passed.
+
+User-boundary evidence hashes:
+
+- package import:
+  `99f58a2937560ff7888b2027ae1513b28a492d57fae05d693a6de57af9bbdb37`;
+- management help:
+  `32e9929172672fd98a12ba5402c62f207115db3d8e5f5bad0a2c1ba6735a74b6`;
+- trust help:
+  `3c08247bf89efa748037dd55a7ce914337344e023bbc70ef70459e40b7e91976`;
+- invalid usage stderr:
+  `bc2f0468f345f8eaa39cb71b6b6ca5c6d5cd42ead79005136293130be0877e19`;
+- packed tarball:
+  `1d0689e888cbe1962bea831769dc1a6d6fb60400f4e8f9309664cde7932f972a`.
+
+### Candidate lifecycle result
+
+The maintained lifecycle task passed all eleven budgets in its 2 GiB,
+two-CPU,
+tmpfs Node 24 container.
+Each scenario used six warmups and thirty measured runs over 2,048 tracked files.
+
+The hard-gate `wide-commit` result was:
+
+- 300.6160 ms median;
+- 311.0310 ms p95;
+- 316.5200 ms maximum;
+- 4.5437 ms median absolute deviation;
+- 925 ms budget.
+
+The no-config startup result,
+where unconditional package loading most directly exposes CAC's added module edge,
+was 87.5854 ms median,
+91.6632 ms p95,
+and 94.3790 ms maximum against a 275 ms budget.
+No scenario exceeded its contract.
+Candidate evidence SHA-256 is
+`6d2eb6cdb834a3c193fbc1fbeb6a5f57bc1d64f5eb2a47f2fa128a1239304740`.
+
+This passes the absolute latency hard gate.
+It does not establish CAC's incremental cost until the same unchanged baseline runs establish the measurement band.
 
 ### Remaining validation
 
-- verify the management-only shape under cli-git's TypeScript and bundling boundary;
-- exercise Linux,
-  macOS,
-  and Windows consumer behavior;
+- finish unchanged-baseline lifecycle distributions;
+- determine whether existing upstream Windows evidence plus platform-independent adapter source is enough for platform scoring;
+- run a second complete cli-git unit pass if the isolated retry does not sufficiently close the transient fixture failure;
 - measure bundle and lifecycle impact against a positive-control unchanged build;
 - run the maintained cli-git package suites and user-boundary command from a disposable integration branch.
 
@@ -1527,10 +1646,10 @@ Other external parser technologies are out of scope.
 
 The historical Optique timing in repository history is motivation for a latency gate,
 not evidence about CAC.
-Current direct runtime evidence covers Linux x64 only.
-The management adapter is a disposable untyped design probe,
-not production code and not an authorized migration.
-The upstream source rebuild and Node 24 suite are complete.
-No macOS run,
-Windows run,
-or cli-git lifecycle benchmark has completed yet.
+Direct combined cli-git adapter runtime evidence covers Linux x64.
+The expanded typed adapter is disposable evaluation code,
+not an authorized migration.
+Upstream release-commit CAC runtime jobs passed on Windows for all three maintained Node versions,
+but combined cli-git adapter behavior has not run there or on macOS.
+The candidate lifecycle benchmark passes every absolute contract;
+the unchanged-baseline comparison is still running.
