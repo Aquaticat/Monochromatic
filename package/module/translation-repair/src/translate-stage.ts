@@ -339,7 +339,7 @@ export async function runTranslateStage(
    * untranslated passage untranslated is the state the run started in, while
    * shipping text no judge could vet is a new claim about the archive.
    */
-  const keepIncumbent = {
+  const keepIncumbent: Omit<TranslateStageResult, 'decision' | 'findings'> = {
     text: incumbentText,
     origin: 'incumbent',
     producer: {
@@ -353,7 +353,7 @@ export async function runTranslateStage(
       .length,
     candidateCount: built.candidates
       .length,
-  } as const;
+  };
   if (built.candidates
     .length
     === 0) {
