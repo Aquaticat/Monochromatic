@@ -9819,3 +9819,81 @@ The sol review adds what neither the advisor nor I had: after canonicalization,
 guard postcondition, so the SECOND ASSERTION DIRECTION CAN BE RESTORED, which is
 strictly better than where this started.
 Its other four findings are recorded in `#103`.
+
+### The canonicalization landed, and it bought back the assertion
+
+`guardFootnoteAssembly` now withdraws every surviving replacement whose assembly
+reassembles to the archive text, under `assembly-net-zero-canonicalized`, and
+returns no survivors.
+Nobody did anything wrong in that case, so it is canonicalization rather than a
+refusal: each lane still holds every wording it decided in `sliceTexts`, and only
+the document-level claim changes, to the true one.
+
+THE NET-ZERO IS REACHABLE, which was worth establishing before building for it.
+Adjacent paragraph slices separated by exactly a blank line cannot produce one:
+solving `u + "\n\n" + v == a + "\n\n" + b` needs a second `"\n\n"` inside a
+slice, and one paragraph per slice has none.
+But subdivision GROUPS small paragraphs, measured on a fixture of 30 short
+paragraphs: three slices, gaps of exactly `"\n\n"`, and 11, 10 and 6 internal
+blank lines.
+Moving the first paragraph of the later slice into the earlier one then changes
+both slices and no byte of the document.
+The guard test builds exactly that and was shown to fail without the
+canonicalization: `expected [ { chunkIndex: +0 }, ... ] to deeply equal []`,
+with the assembled text already equal to the archive.
+
+Because the guard now guarantees it,
+`(assembledText !== targetText) === (shipped.length > 0)` is a postcondition, so
+`assertDocumentChangeAgrees` CHECKS BOTH DIRECTIONS AGAIN.
+That is strictly better than where this started, and it came from the sol review
+rather than from either of my own readings.
+
+### A contradictory cached slice now costs one slice, not the entry
+
+`resumed-slice.ts` is new.
+Both lanes check `changed === (decidedText !== incumbentText)` where the record
+is ACCEPTED, discard a record that disagrees, and buy that slice again, naming
+each discard in the findings so a recomputed slice is distinguishable from one
+that was never cached.
+Both directions are checked.
+The quieter one is a record DENYING a change it made: only `changed` records
+become replacements, so its wording was previously dropped at assembly with
+nothing said about it.
+
+MEASURED FIRST, over the two surviving repair slice caches re-prepared from the
+pinned corpus at zero quota (`~/temp/agent/changed-invariant-census.mjs`):
+
+```text
+cached repair outcomes             150
+written for an EARLIER slicing      29
+attributable to this preparation   121
+CLAIMS A CHANGE IT DID NOT MAKE      0
+```
+
+The 29 are not a contract violation.
+`repairChunk` returns `selection.winner.text` and the unchanged candidate's text
+IS the slice incumbent (`repair-chunk.ts:361`), so `changed: false` beside
+differing text means the file was written for an earlier slicing, which the cache
+key correctly makes miss.
+The limit on the zero is recorded in `#95`: a stale file whose `changed` is true
+cannot be told from a current one, and staleness can only hide a positive.
+
+### Two extractions, both forced by `max-lines` and both worth doing anyway
+
+`repair-slice-key.ts` holds the repair cache key, its run shape, and the version
+constant with the longest comment in the package.
+It mirrors `translateRunShape` and `translateSliceKey`, and the key is testable
+for the first time.
+`repair-blocked-exit.ts` holds the dominance-blocked result: the one exit that
+never reaches assembly, and so the one that states by hand every fact assembly
+would otherwise have derived.
+
+### The lint debt this session found
+
+The package was carrying 4 lint errors and 13 warnings plus one type error from
+the previous session's commits, none of which the previous verification caught.
+All are fixed, and one was a design rule rather than a style nit:
+`acceptedText: string | null` violated this repo's absence rule, and is now an
+optional property.
+Verification now runs all three of `buildAndTest`, `lint` and `lint:types` and
+reads their exit codes, rather than one of them.
