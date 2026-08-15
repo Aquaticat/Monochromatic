@@ -186,6 +186,16 @@ export function buildLaneSliceTexts(
       },);
   }
 
+  /**
+   * Whether some earlier slice in document order went undecided.
+   *
+   * `not-evaluated` describes ONE shape and no other: a lane that stopped, so
+   * an evaluated prefix followed by an unevaluated suffix. Decisions for slices
+   * 0 and 2 with 1 unexamined is not that shape, and accepting it would let a
+   * dropped slice pass as an early stop.
+   */
+  const stopped = { already: false, };
+
   return slices.map(function toWording(slice,): LaneSliceText {
     /**
      * This slice's global index.
@@ -193,23 +203,46 @@ export function buildLaneSliceTexts(
     const { chunkIndex, } = slice.target;
 
     /**
-     * Wording the lane accepted here, absent when it never reached this slice.
+     * Whether the lane decided this slice at all.
+     *
+     * Asked of the map rather than read off a lookup, because a decision whose
+     * text is missing entirely and one that is present are different facts, and
+     * a lookup returns the same thing for both.
+     */
+    const decidedHere = byIndex.has(chunkIndex,);
+    if (!decidedHere) {
+      if (undecided === 'refuse')
+        throw new LaneSliceCoverageError({
+          message: `lane left prepared slice ${String(chunkIndex,)} undecided`,
+        },);
+      stopped.already = true;
+      return {
+        chunkIndex,
+        incumbentText: slice.target
+          .text,
+      };
+    }
+    if (stopped.already)
+      throw new LaneSliceCoverageError({
+        message: `lane decided slice ${
+          String(chunkIndex,)
+        } after leaving an earlier one unexamined, which no early stop produces`,
+      },);
+
+    /**
+     * Wording the lane accepted here.
      */
     const acceptedText = byIndex.get(chunkIndex,);
-    if ((acceptedText === undefined) && (undecided === 'refuse'))
+    if ((typeof acceptedText) !== 'string')
       throw new LaneSliceCoverageError({
-        message: `lane left prepared slice ${String(chunkIndex,)} undecided`,
+        message: `lane decided slice ${String(chunkIndex,)} with no wording`,
       },);
 
     return {
       chunkIndex,
       incumbentText: slice.target
         .text,
-      // Spread rather than written as `acceptedText: acceptedText`, because
-      // `exactOptionalPropertyTypes` makes a present key holding `undefined` a
-      // different value from an absent key, and only the absent one means the
-      // lane never reached this slice.
-      ...((acceptedText === undefined) ? {} : { acceptedText, }),
+      acceptedText,
     };
   },);
 }

@@ -233,6 +233,31 @@ await describe({
     },),
     it({
       name:
+        'REFUSES a decision that comes AFTER an unexamined slice, since `not-evaluated` describes '
+        + 'one shape and no other: a lane that stopped, so an evaluated prefix and an unevaluated '
+        + 'suffix. Decisions for slices 0 and 2 with 1 unexamined is a slice that was DROPPED, and '
+        + 'accepting it would let that pass as an early stop',
+      fn: async () => {
+        /**
+         * Failure the builder raised.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'not-evaluated',
+            decided: [{ chunkIndex: 1, text: 'The bowl is empty.', },],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(caught,),).toContain('after leaving an earlier one unexamined',);
+      },
+    },),
+    it({
+      name:
         'still REFUSES a decision naming an unknown slice under the not-evaluated policy, because that policy '
         + 'forgives a lane that stopped early and not one that describes another slicing',
       fn: async () => {
