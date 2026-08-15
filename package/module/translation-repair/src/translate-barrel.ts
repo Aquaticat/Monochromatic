@@ -14,6 +14,13 @@ export {
   type TranslateOrigin,
 } from './translate-candidates.ts';
 export {
+  describeSlate,
+  NOT_ON_SLATE,
+  positionOf,
+  rotateCandidates,
+  type TranslateSlateEntry,
+} from './translate-slate.ts';
+export {
   runTranslateStage,
   type TranslateDecision,
   type TranslateStageResult,

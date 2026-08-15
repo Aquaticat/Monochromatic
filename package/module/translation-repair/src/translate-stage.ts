@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import {
   type CandidateProducer,
+  type CandidateWeight,
   describeProducer,
   type SelectionBallot,
   type SelectionTally,
@@ -22,6 +23,13 @@ import {
   type TranslateOrigin,
 } from './translate-candidates.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
+import {
+  describeSlate,
+  NOT_ON_SLATE,
+  positionOf,
+  rotateCandidates,
+  type TranslateSlateEntry,
+} from './translate-slate.ts';
 import {
   buildTranslateMessages,
   isTranslateReportWire,
@@ -134,17 +142,31 @@ export type TranslateStageResult = {
    * scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Candidates in the order the judges saw them, which is what makes a stored
+   * ballot readable: ballots name a position, and the slate is rotated per
+   * slice. Empty when no round ran.
+   */
+  readonly slate: readonly TranslateSlateEntry[];
+
+  /**
+   * Position the judges chose, or {@link NOT_ON_SLATE} when they chose nothing.
+   */
+  readonly selectedIndex: number;
+
+  /**
+   * Position of the text that actually shipped, which differs from the
+   * selection on every fallback and is {@link NOT_ON_SLATE} when the shipped
+   * text was never a candidate, as a blank incumbent never is.
+   */
+  readonly shippedIndex: number;
+
+  /**
+   * What each position drew, so a decline says by how much and against what.
+   */
+  readonly perCandidate: readonly CandidateWeight[];
 };
-
-/**
- * Hex digits of the slice hash that fix candidate order.
- */
-const ROTATION_HEX_DIGITS = 8;
-
-/**
- * Radix of that hash prefix.
- */
-const HEX_RADIX = 16;
 
 /**
  * Tally of a stage that never reached the judges.
@@ -155,65 +177,6 @@ const EMPTY_TALLY: SelectionTally = {
   abstentions: 0,
   selfVotes: 0,
 };
-
-/**
- * Rotates the candidate slate by a hash of the slice, so the incumbent does not
- * sit in the same ballot position on every slice.
- *
- * Judges receive one caller-fixed order, and the incumbent win rate is the
- * measurement this whole lane exists to produce. Pinning the incumbent to
- * position one would confound that rate with whatever position preference the
- * judges have, and the confound would be invisible: every slice would carry it
- * equally.
- *
- * Rotation rather than shuffling, and keyed on the SOURCE rather than on a
- * random draw, because a slice's candidate order has to be identical between a
- * fresh run and a resumed one. A cached slice replayed under a different order
- * would be a different question asked of the judges.
- *
- * @param candidates - slate in assembly order
- *
- * @param sourceText - slice original, the rotation key
- *
- * @returns Same candidates, rotated
- *
- * @example
- * ```ts
- * const ordered = rotateCandidates({ candidates, sourceText, },);
- * ```
- */
-function rotateCandidates<ValueT,>(
-  {
-    candidates,
-    sourceText,
-  }: {
-    readonly candidates: readonly ValueT[];
-    readonly sourceText: string;
-  },
-): readonly ValueT[] {
-  if (candidates.length === 0)
-    return candidates;
-
-  /**
-   * Positions to rotate left by, derived from the slice itself.
-   */
-  const offset = Number.parseInt(
-    hashContent({ content: sourceText, },)
-      .slice(
-        0,
-        ROTATION_HEX_DIGITS,
-      ),
-    HEX_RADIX,
-  ) % candidates.length;
-
-  return [
-    ...candidates.slice(offset,),
-    ...candidates.slice(
-      0,
-      offset,
-    ),
-  ];
-}
 
 /**
  * Translates one slice from its original and returns the text that ships.
@@ -367,13 +330,46 @@ export async function runTranslateStage(
    * untranslated passage untranslated is the state the run started in, while
    * shipping text no judge could vet is a new claim about the archive.
    */
+  const rotated = rotateCandidates({
+    candidates: built.candidates,
+    sourceText,
+  },);
+
+  /**
+   * That slate as a record, so a ballot naming a position can be read later.
+   *
+   * Derived from the SAME array the judges are shown rather than by rotating a
+   * second time. Two rotations agree today because the rotation is a pure
+   * function of the slice; they would stop agreeing the moment either call site
+   * changed, and the failure would be silent, since a ballot index is a valid
+   * index either way.
+   */
+  const slate = describeSlate({ candidates: rotated, },);
+
+  /**
+   * The incumbent as it stands on the ballot, carrying every model that
+   * reproduced it exactly.
+   *
+   * Read off the slate rather than written fresh. Writing `matched: []` here
+   * erased the collapse on precisely the declined rounds where knowing that
+   * three models independently produced the archive's wording is the whole
+   * evidence that keeping it was right.
+   */
+  const incumbentOnSlate = slate.find(function isIncumbent(entry,): boolean {
+    return entry.origin === 'incumbent';
+  },);
+
+  /**
+   * Shipping the slice exactly as it stands, which every failure path returns.
+   */
   const keepIncumbent: Omit<TranslateStageResult, 'decision' | 'findings'> = {
     text: incumbentText,
     origin: 'incumbent',
-    producer: {
-      kind: 'incumbent',
-      matched: [],
-    },
+    producer: incumbentOnSlate?.producer
+      ?? {
+        kind: 'incumbent',
+        matched: [],
+      },
     voteWeight: 0,
     tally: EMPTY_TALLY,
     ballots: [],
@@ -381,6 +377,13 @@ export async function runTranslateStage(
       .length,
     candidateCount: built.candidates
       .length,
+    slate,
+    selectedIndex: NOT_ON_SLATE,
+    shippedIndex: positionOf({
+      slate,
+      text: incumbentText,
+    },),
+    perCandidate: [],
   };
   if (built.candidates
     .length
@@ -437,10 +440,7 @@ export async function runTranslateStage(
    */
   const outcome = await selectBestCandidate<TranslateCandidateValue>({
     client,
-    candidates: rotateCandidates({
-      candidates: built.candidates,
-      sourceText,
-    },),
+    candidates: rotated,
     judgeModelIds,
     task:
       'Each candidate is a complete English translation of the Chinese ORIGINAL below, for a memorial archive.',
@@ -500,6 +500,10 @@ export async function runTranslateStage(
         ...stageFindings,
         ...outcome.findings,
       ],
+      slate,
+      selectedIndex: outcome.selectedIndex,
+      shippedIndex: outcome.selectedIndex,
+      perCandidate: outcome.perCandidate,
     };
   }
 
@@ -514,6 +518,7 @@ export async function runTranslateStage(
     ...keepIncumbent,
     tally: outcome.tally,
     ballots: outcome.ballots,
+    perCandidate: outcome.perCandidate,
     decision: (outcome.disposition === 'indecision')
       ? 'declined-indecision'
       : 'declined-rejection',

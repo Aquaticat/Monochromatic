@@ -22,6 +22,12 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // Spends no quota. Reads the pinned corpus only.
 
 /**
+ * Middle of a stratum, so the draw takes representative slices rather than the
+ * corpus extremes.
+ */
+const HALF = 1 / 2;
+
+/**
  * Characters of a read failure kept when an entry is skipped, enough to name
  * the missing side without printing a stack per entry.
  */
@@ -246,7 +252,13 @@ export async function sampleBenchSlices(
       _unused,
       position,
     ): BenchSlice {
-      return nonNullishOrThrow(ordered[Math.floor(position * stride,)],);
+      // MIDPOINT of each stratum rather than its first member. Taking the
+      // first makes the draw start at the corpus minimum, and the smallest
+      // slice here is a 3-character source against a 226-character
+      // translation, which measures the aligner rather than the judges.
+      return nonNullishOrThrow(
+        ordered[Math.floor((position + HALF) * stride,)],
+      );
     },
   );
 }
