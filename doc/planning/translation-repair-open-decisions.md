@@ -20,6 +20,24 @@ QUESTION 6 arrived last, from a defect rather than a bench: both drivers were
 caching slices an aborted run never bought. That is fixed; what remains is a
 narrower judgement about thin rosters, and it blocks nothing.
 
+WHAT LANDED AFTER THIS DOCUMENT WAS FIRST WRITTEN, so you are not reading
+yesterday's state:
+
+-   Both lanes now run from one driver that arbitrates nothing, and each lane
+    result names the slices it shipped and withdrew rather than only counting
+    them. Decisions 16 and 17, both open to veto.
+-   The bench prices sending and answering separately now. Decision 18.
+-   QUESTION 1'S COST BULLET CHANGED, because the same bench rows were re-read
+    per stage at no new cost and the previous reading was half wrong. Read that
+    bullet again if you answer Question 1 from cost.
+-   ONE FINDING IS RECORDED AND DELIBERATELY NOT FIXED: an empty critic roster
+    settles a document rather than refusing it, so a misconfigured pass would
+    write a directory of vacuous settled artifacts and look like a clean run.
+    Task `#93` carries it. The quiet path is right for OUTAGES and wrong for a
+    deterministic misconfiguration, and the two are indistinguishable
+    downstream. Nothing was built because where the refusal belongs is a design
+    choice; it needs no answer from you unless you want one.
+
 ## Question 1: how wide should the producing rosters be
 
 BLOCKS the roster half of `#91`, and through it the first long run under the
@@ -54,8 +72,11 @@ WHAT ACTUALLY MOVES with width:
     corrects what this bullet said yesterday: the judge round takes 5.4 calls
     per slice at EVERY width from three up, because the judge roster does not
     widen when the producing one does, but its tokens still rise 58% from width
-    2 to width 6, because a ballot prompt carries every candidate. It dominates
-    at both ends, 60% of a slice's tokens at width 2 and 52% at width 6.
+    2 to width 6. Which half of a ballot grows is not knowable from those rows,
+    which carry one total per exchange: the prompt repeats every candidate to
+    every judge, and the answer may carry a verdict per candidate. The judge
+    round dominates at both ends either way, 60% of a slice's tokens at width 2
+    and 52% at width 6.
     So widening buys more candidates at a discount rather than for free, and a
     cheaper decision procedure would save more than a narrower roster.
 -   AGREEMENT. Ballots spread thinner across more candidates, so the leader more
@@ -737,6 +758,8 @@ it again on every attempt while the cause persists.
     resends the SAME prompt and adds one more answer, while a judge pays a
     prompt carrying every candidate, so those three costs scale with width
     differently and a single number prices them the same way. The server's own
-    total is kept beside both halves rather than derived from them, because a
-    provider billing hidden reasoning counts it in the total and in neither
-    half, and deriving would under-price every thinking model in the roster.
+    total is kept beside both halves rather than derived from them, so the
+    headline cost stays what the provider stated; the derived sum is the
+    fallback for servers that report no total at all. Whether any provider here
+    ever states a total that differs from its two halves is unmeasured, and the
+    first bench run under the split answers it.

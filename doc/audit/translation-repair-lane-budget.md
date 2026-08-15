@@ -175,8 +175,13 @@ Three things this says that the totals could not.
 The JUDGE ROUND IS FLAT IN CALLS and NOT flat in tokens.
 Its call count is 5.4 per slice at every width from 3 up, because the judge
 roster does not widen when the producing one does.
-Its token cost rises 58% from width 2 to width 6, because a ballot prompt
-carries every candidate, so widening the producers widens what each judge reads.
+Its token cost rises 58% from width 2 to width 6.
+WHICH HALF of a ballot grows is NOT measured here and cannot be: these rows
+carry one total per exchange.
+The prompt repeats every candidate to every judge, and a ballot may also write a
+verdict per candidate, so both halves have a reason to grow with the slate.
+The first bench run after `95b93ff9b` records the halves separately and settles
+it.
 An earlier reading of this bench said the judge round "is the same size at every
 width", which is true of its calls and false of its tokens; the corrected
 statement is that widening buys more candidates at a discount, not for free.
