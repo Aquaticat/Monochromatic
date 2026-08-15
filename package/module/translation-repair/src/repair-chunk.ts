@@ -24,12 +24,7 @@ import { runCheckerStage, } from './repair-edit-stages.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
 import { runPanelStage, } from './repair-stages.ts';
-import {
-  selectRepairCandidate,
-  UNCHANGED_CANDIDATE_ID,
-  winnerChangedText,
-  UNCHANGED_MEASUREMENTS,
-} from './select-candidate.ts';
+import { settleChunkVerdict, } from './repair-chunk-verdict.ts';
 
 //region Chunk repair
 // One chunk pair through the whole loop: critics, aggregation, panel,
@@ -356,50 +351,31 @@ export async function repairChunk(
     },);
 
   /**
-   * Selection between unchanged and the patched candidate.
-   */
-  const selection = selectRepairCandidate({
-    candidates: [
-      {
-        candidateId: UNCHANGED_CANDIDATE_ID,
-        text: targetText,
-        measurements: UNCHANGED_MEASUREMENTS,
-      },
-      {
-        candidateId: `candidate/chunk-${String(chunkIndex,)}`,
-        text: editor.patch
-          .patchedText,
-        measurements: measurePatchedCandidate({
-          acceptedIssues: creditableIssues,
-          tallies: checker.tallies,
-          resolvedTotal: resolvedIssueIds.length,
-          envelopes,
-          applied: editor.patch
-            .applied,
-          patchedDocument: parseDocument({ text: editor.patch
-            .patchedText, },),
-          targetDocument: documents.target,
-        },),
-      },
-    ],
-  },);
-
-  /**
-   * Whether the repaired candidate demonstrably won.
-   */
-  const patchSelected = selection.winner
-    .candidateId
-    !== UNCHANGED_CANDIDATE_ID;
-
-  /**
-   * Whether the text this slice returns differs from the archive's.
+   * Which candidate won, and whether the returned text moved at all.
    *
-   * Separate from winning selection, because a patch whose envelope operations
-   * cancel can win and write no byte. See `winnerChangedText`.
+   * Two verdicts rather than one: a patch whose envelope operations cancel can
+   * win selection and write no byte. See `settleChunkVerdict`.
    */
-  const changed = winnerChangedText({
-    winner: selection.winner,
+  const {
+    repairedText,
+    patchSelected,
+    changed,
+  } = settleChunkVerdict({
+    chunkIndex,
     incumbentText: targetText,
+    patchedText: editor.patch
+      .patchedText,
+    measurements: measurePatchedCandidate({
+      acceptedIssues: creditableIssues,
+      tallies: checker.tallies,
+      resolvedTotal: resolvedIssueIds.length,
+      envelopes,
+      applied: editor.patch
+        .applied,
+      patchedDocument: parseDocument({ text: editor.patch
+        .patchedText, },),
+      targetDocument: documents.target,
+    },),
   },);
   l.info(
     `chunk ${String(chunkIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
@@ -411,8 +387,7 @@ export async function repairChunk(
 
   return {
     chunkIndex,
-    repairedText: selection.winner
-      .text,
+    repairedText,
     changed,
     issues: deduped.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],

@@ -13,7 +13,7 @@ import {
 // trusted on its chunk index alone, so one claiming a change while carrying the
 // archive's own wording reached the guard as a replacement and landed in the
 // shipped set beside a document nobody changed. Both lanes now refuse that
-// record where they accept it, in `resumed-slice.ts`, and both derive `changed`
+// record where they accept it, in `slice-record-agreement.ts`, and both derive `changed`
 // from their own text rather than from a vote, so no fresh record reaches here
 // contradicting itself either.
 //

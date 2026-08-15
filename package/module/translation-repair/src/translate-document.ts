@@ -8,9 +8,10 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import {
-  resumedSliceAgrees,
+  assertSettledRecordAgrees,
   resumedSliceDiscardFinding,
-} from './resumed-slice.ts';
+  sliceRecordAgrees,
+} from './slice-record-agreement.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
@@ -189,7 +190,7 @@ export async function translateDocument(
       // rather than at assembly, where the same contradiction fails the whole
       // document after every other slice has been bought. Discarded, this slice
       // simply costs what an uncached one costs.
-      if (resumedSliceAgrees({
+      if (sliceRecordAgrees({
         changed: resumed.changed,
         decidedText: resumed.outputText,
         incumbentText: slice.target
@@ -253,6 +254,20 @@ export async function translateDocument(
     // that would record the collapse as finished work, and every later attempt
     // would resume it rather than ask again.
     signal.throwIfAborted();
+
+    // Checked on the way OUT of the stage as well as on the way back in from
+    // the cache, and before the write either way, so nothing contradicting
+    // itself is ever stored. The stage derives `changed` from its own text
+    // today, which makes this vacuous by construction; what it pins is that it
+    // keeps doing so.
+    assertSettledRecordAgrees({
+      lane: 'translate',
+      chunkIndex,
+      changed: record.changed,
+      decidedText: record.outputText,
+      incumbentText: slice.target
+        .text,
+    },);
     if (record.stageResult
       .heardTranslators
       === 0) {

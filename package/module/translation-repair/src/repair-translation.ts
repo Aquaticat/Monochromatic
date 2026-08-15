@@ -22,9 +22,10 @@ import {
   repairSliceKey,
 } from './repair-slice-key.ts';
 import {
-  resumedSliceAgrees,
+  assertSettledRecordAgrees,
   resumedSliceDiscardFinding,
-} from './resumed-slice.ts';
+  sliceRecordAgrees,
+} from './slice-record-agreement.ts';
 import { blockedRepairResult, } from './repair-blocked-exit.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
@@ -263,7 +264,7 @@ export async function repairPreparedDocument(
      * slice has been bought.
      */
     const trustworthy = (cached === undefined)
-      || resumedSliceAgrees({
+      || sliceRecordAgrees({
         changed: cached.changed,
         decidedText: cached.repairedText,
         incumbentText: slice.target
@@ -331,6 +332,21 @@ export async function repairPreparedDocument(
     })();
     if (resumed === undefined) {
       signal.throwIfAborted();
+
+      // Checked on the way OUT of the stage as well as on the way back in from
+      // the cache, and before the write either way, so nothing contradicting
+      // itself is ever stored. `repairChunk` derives `changed` from its own
+      // text today, which makes this vacuous by construction; what it pins is
+      // that it keeps doing so, and that is a derivation no test can otherwise
+      // hold in place.
+      assertSettledRecordAgrees({
+        lane: 'repair',
+        chunkIndex,
+        changed: outcome.changed,
+        decidedText: outcome.repairedText,
+        incumbentText: slice.target
+          .text,
+      },);
       if (outcome.heardCritics === 0) {
         rl.warn(
           `chunk ${String(chunkIndex,)}: no critic was heard, so the slice ships `

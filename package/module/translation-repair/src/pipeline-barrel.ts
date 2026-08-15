@@ -171,10 +171,12 @@ export {
   RosterConfigurationError,
 } from './roster-configuration.ts';
 export {
-  resumedSliceAgrees,
+  assertSettledRecordAgrees,
   resumedSliceDiscardFinding,
-  type ResumedSliceLane,
-} from './resumed-slice.ts';
+  sliceRecordAgrees,
+  SliceRecordContradictionError,
+  type SliceRecordLane,
+} from './slice-record-agreement.ts';
 export {
   repairRunShape,
   repairSliceKey,

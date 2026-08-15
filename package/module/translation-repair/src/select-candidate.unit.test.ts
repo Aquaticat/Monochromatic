@@ -65,7 +65,10 @@ await describe({
           },
         },);
         /** Selection over both. */
-        const { winner, } = selectRepairCandidate({ candidates: [UNCHANGED, fixer,], },);
+        const { winner, } = selectRepairCandidate({
+          candidates: [UNCHANGED, fixer,],
+          incumbentText: UNCHANGED.text,
+        },);
         expect(winner.candidateId,).toBe('candidate/fixer',);
       },
     },),
@@ -85,7 +88,10 @@ await describe({
           },
         },);
         /** Selection over both. */
-        const { winner, } = selectRepairCandidate({ candidates: [churner, UNCHANGED,], },);
+        const { winner, } = selectRepairCandidate({
+          candidates: [churner, UNCHANGED,],
+          incumbentText: UNCHANGED.text,
+        },);
         expect(winner.candidateId,).toBe(UNCHANGED_CANDIDATE_ID,);
       },
     },),
@@ -107,6 +113,7 @@ await describe({
         /** Selection over both. */
         const { winner, ranking, } = selectRepairCandidate({
           candidates: [breaker, UNCHANGED,],
+          incumbentText: UNCHANGED.text,
         },);
         expect(winner.candidateId,).toBe(UNCHANGED_CANDIDATE_ID,);
         expect(ranking.at(-1,)?.candidateId,).toBe('candidate/breaker',);
@@ -157,6 +164,7 @@ await describe({
             UNCHANGED,
             bold,
           ],
+          incumbentText: UNCHANGED.text,
         },);
         expect(ranking.map(function toId(candidate,) {
           return candidate.candidateId;
@@ -178,8 +186,59 @@ await describe({
           measurements: UNCHANGED_MEASUREMENTS,
         },);
         expect(function selectWithoutUnchanged() {
-          selectRepairCandidate({ candidates: [only,], },);
+          selectRepairCandidate({
+            candidates: [only,],
+            incumbentText: UNCHANGED.text,
+          },);
         },).toThrow('always competes',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a slate whose unchanged candidate carries some other wording, since that '
+        + 'identifier is what every later reader means by nothing having needed repair here: one '
+        + 'carrying an edit would win ties on the strength of its name and ship text nobody ranked',
+      fn: async () => {
+        /** Entry claiming to be the archive while carrying an edit. */
+        const impostor: RepairCandidate = {
+          candidateId: UNCHANGED_CANDIDATE_ID,
+          text: 'The cat naps in the warm sun.',
+          measurements: UNCHANGED_MEASUREMENTS,
+        };
+        expect(function selectWithDishonestUnchanged() {
+          selectRepairCandidate({
+            candidates: [impostor,],
+            incumbentText: UNCHANGED.text,
+          },);
+        },).toThrow('wording other than the archive text',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS an unchanged candidate whose measurements say the ARCHIVE fails integrity, '
+        + 'which is not a slate defect: an archive that does not parse is exactly the document '
+        + 'this lane exists to repair, and refusing the slate would refuse the repair with it',
+      fn: async () => {
+        /** Archive measured honestly rather than intact by definition. */
+        const brokenArchive: RepairCandidate = {
+          candidateId: UNCHANGED_CANDIDATE_ID,
+          text: UNCHANGED.text,
+          measurements: {
+            ...UNCHANGED_MEASUREMENTS,
+            integrityOk: false,
+          },
+        };
+        /** Repair that parses, against an archive that does not. */
+        const fixer = repaired({
+          suffix: 'fixer',
+          measurements: UNCHANGED_MEASUREMENTS,
+        },);
+        /** Selection over both. */
+        const { winner, } = selectRepairCandidate({
+          candidates: [brokenArchive, fixer,],
+          incumbentText: UNCHANGED.text,
+        },);
+        expect(winner.candidateId,).toBe('candidate/fixer',);
       },
     },),
   ],
@@ -225,6 +284,23 @@ await describe({
           },
           incumbentText: UNCHANGED.text,
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'reads the TEXT rather than the identifier: a winner labelled unchanged while carrying '
+        + 'other wording is a change, because the document would carry that wording. An earlier '
+        + 'version short-circuited on the identifier, which is the same answer only while the '
+        + 'slate is honest, and answering `no change` over text that moved hides a rewrite from '
+        + 'every index set',
+      fn: async () => {
+        expect(winnerChangedText({
+          winner: {
+            candidateId: UNCHANGED_CANDIDATE_ID,
+            text: 'The cat naps in the warm sun.',
+            measurements: UNCHANGED_MEASUREMENTS,
+          },
+          incumbentText: UNCHANGED.text,
+        },),).toBe(true,);
       },
     },),
   ],

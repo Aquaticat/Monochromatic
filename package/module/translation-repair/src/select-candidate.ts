@@ -205,6 +205,14 @@ export type CandidateSelection = {
  * lane, as it already does on the translate lane. The assembly assertions stay
  * as a backstop for routes nobody has thought of.
  *
+ * THE TEXT IS THE ONLY THING READ, deliberately. An earlier version answered
+ * `false` whenever the unchanged candidate won, which is the same answer only
+ * while that candidate really carries the archive wording. If it ever did not,
+ * this would report no change over text that moved, and the document would ship
+ * a rewrite no index set names. `selectRepairCandidate` refuses that slate
+ * outright, and this reads the text regardless, so neither depends on the
+ * other.
+ *
  * @param winner - candidate selection settled on
  *
  * @param incumbentText - archive wording of this slice
@@ -225,8 +233,7 @@ export function winnerChangedText(
     readonly incumbentText: string;
   },
 ): boolean {
-  return (winner.candidateId !== UNCHANGED_CANDIDATE_ID)
-    && (winner.text !== incumbentText);
+  return winner.text !== incumbentText;
 }
 
 /**
@@ -235,26 +242,55 @@ export function winnerChangedText(
  * selection throws when it is absent because a slate without the original
  * cannot honor the always-competes guarantee.
  *
+ * THE UNCHANGED CANDIDATE MUST ACTUALLY BE UNCHANGED, which is checked rather
+ * than assumed. Its identifier is what every later reader means by "no repair
+ * was needed here", and one carrying some other wording would win ties on the
+ * strength of a name while shipping an edit nobody ranked.
+ *
+ * Its MEASUREMENTS are deliberately not checked. `UNCHANGED_MEASUREMENTS` calls
+ * the archive intact by definition, and an archive that genuinely fails an
+ * integrity check has to stay expressible: refusing that slate would refuse the
+ * document this lane exists to repair.
+ *
  * @param candidates - competing candidates including the unchanged one
+ *
+ * @param incumbentText - archive wording of this slice, which the unchanged
+ * candidate must carry
  *
  * @returns Winner plus full ranking
  *
- * @throws {@link Error} when the unchanged candidate is missing or the slate is empty
+ * @throws {@link Error} when the unchanged candidate is missing, the slate is
+ * empty, or the unchanged candidate carries wording other than the archive's
  *
  * @example
  * ```ts
- * const { winner, } = selectRepairCandidate({ candidates: [unchanged, repaired,], },);
+ * const { winner, } = selectRepairCandidate({ candidates: [unchanged, repaired,], incumbentText, },);
  * ```
  */
 export function selectRepairCandidate(
-  { candidates, }: { readonly candidates: readonly RepairCandidate[]; },
-): CandidateSelection {
-  if (!candidates.some(function isUnchanged(candidate,) {
-    return candidate.candidateId === UNCHANGED_CANDIDATE_ID;
-  },))
   {
+    candidates,
+    incumbentText,
+  }: {
+    readonly candidates: readonly RepairCandidate[];
+    readonly incumbentText: string;
+  },
+): CandidateSelection {
+  /**
+   * Slate entry claiming to be the archive as it stands.
+   */
+  const unchanged = candidates.find(function isUnchanged(candidate,) {
+    return candidate.candidateId === UNCHANGED_CANDIDATE_ID;
+  },);
+  if (unchanged === undefined) {
     throw new Error(
       'candidate slate must include the unchanged translation; it always competes',
+    );
+  }
+  if (unchanged.text !== incumbentText) {
+    throw new Error(
+      'unchanged candidate carries wording other than the archive text, so the '
+        + 'slate cannot say what winning it would mean',
     );
   }
 
