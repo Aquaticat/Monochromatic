@@ -167,15 +167,34 @@ function pickCandidate(
  *
  * @param calls - shared call log the cases assert on
  *
+ * @param controller - abort the script may fire, standing in for the entry
+ * deadline the corpus pass imposes
+ *
+ * @param abortAfterTranslateCalls - translate calls served before the script
+ * aborts; absent means it never does
+ *
+ * @param silentTranslators - whether every translate call fails, standing in for
+ * a provider that is down while the signal stays live
+ *
  * @returns Client honoring the script
  *
  * @example
  * ```ts
- * const client = laneClient({ calls, },);
+ * const client = laneClient({ calls, controller, },);
  * ```
  */
 function laneClient(
-  { calls, }: { readonly calls: CallLog; },
+  {
+    calls,
+    controller,
+    abortAfterTranslateCalls,
+    silentTranslators = false,
+  }: {
+    readonly calls: CallLog;
+    readonly controller: AbortController;
+    readonly abortAfterTranslateCalls?: number;
+    readonly silentTranslators?: boolean;
+  },
 ): SyntheticClient {
   return {
     chatText: async () => {
@@ -199,6 +218,18 @@ function laneClient(
         },)
         .join('\n',);
       if (schema === 'translation_report') {
+        if ((abortAfterTranslateCalls !== undefined)
+          && (calls.translate >= abortAfterTranslateCalls))
+          controller.abort(new Error('entry deadline reached',),);
+        // What the real transport does under an aborted signal: the stream is
+        // torn down and the failure propagates untouched. The gather machinery
+        // turns that into a LOST VOICE rather than a throw, which is exactly
+        // the condition these cases exist to pin.
+        if (request.signal
+          .aborted)
+          throw new Error('exchange torn down by abort',);
+        if (silentTranslators)
+          throw new Error('translator provider is down',);
         calls.translate += 1;
 
         /**
@@ -249,6 +280,15 @@ function laneClient(
  * @param resumed - records a previous run settled, keyed as the driver keys
  * them
  *
+ * @param abortAfterTranslateCalls - translate calls served before the script
+ * aborts the run
+ *
+ * @param silentTranslators - whether every translate call fails while the signal
+ * stays live
+ *
+ * @param persisted - map the run writes settled records into; passed in so a
+ * case that expects a REJECTION can still read what reached the cache
+ *
  * @returns Result, the call log, and everything persisted
  *
  * @example
@@ -261,10 +301,16 @@ async function runDriver(
     sourceText = SOURCE_TEXT,
     targetText = TARGET_TEXT,
     resumed = new Map<string, TranslateSliceRecord>(),
+    abortAfterTranslateCalls,
+    silentTranslators = false,
+    persisted = new Map<string, TranslateSliceRecord>(),
   }: {
     readonly sourceText?: string;
     readonly targetText?: string;
     readonly resumed?: ReadonlyMap<string, TranslateSliceRecord>;
+    readonly abortAfterTranslateCalls?: number;
+    readonly silentTranslators?: boolean;
+    readonly persisted?: Map<string, TranslateSliceRecord>;
   },
 ) {
   /**
@@ -276,21 +322,28 @@ async function runDriver(
   };
 
   /**
-   * Records this run settled, by key.
+   * Run steering, which the script may abort part way through the document.
    */
-  const persisted = new Map<string, TranslateSliceRecord>();
+  const controller = new AbortController();
 
   /**
    * What the lane decided for the whole document.
    */
   const result = await translateDocument({
-    client: laneClient({ calls, },),
+    client: laneClient({
+      calls,
+      controller,
+      ...((abortAfterTranslateCalls === undefined)
+        ? {}
+        : { abortAfterTranslateCalls, }),
+      silentTranslators,
+    },),
     prepared: prepareDocumentPair({
       sourceText,
       targetText,
     },),
     models: MODELS,
-    signal: new AbortController().signal,
+    signal: controller.signal,
     perCallTimeoutMs: 1_000,
     sliceCache: {
       resumed,
@@ -394,6 +447,51 @@ await describe({
         await expect(runDriver({ resumed: misfiled, },),)
           .rejects
           .toThrow('the key derivation and the slicing',);
+      },
+    },),
+
+    it({
+      name: 'THROWS on a caller abort rather than settling the slices it never '
+        + 'bought, and caches none of them. An abort reaches every stage as '
+        + 'silence rather than as a failure, so an unguarded driver ships the '
+        + 'incumbent unjudged for every remaining slice and writes that to the '
+        + 'cache, where the next attempt reads it as finished work',
+      fn: async () => {
+        /**
+         * Records that reached the cache before the abort.
+         */
+        const persisted = new Map<string, TranslateSliceRecord>();
+        await expect(runDriver({
+          abortAfterTranslateCalls: TRANSLATORS.length,
+          persisted,
+        },),)
+          .rejects
+          .toThrow('entry deadline reached',);
+        // The first slice was bought and settled; the second was not, and must
+        // not be sitting in the cache claiming otherwise.
+        expect(persisted.size,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'settles a slice NO translator answered, and deliberately does not '
+        + 'cache it: the incumbent stands for this run, and the next attempt '
+        + 'asks again rather than reading a provider outage as a decision',
+      fn: async () => {
+        /**
+         * Records that reached the cache with every translator down.
+         */
+        const persisted = new Map<string, TranslateSliceRecord>();
+        const { result, } = await runDriver({
+          silentTranslators: true,
+          persisted,
+        },);
+        expect(result.sliceCount,).toBeGreaterThan(1,);
+        expect(result.changedSliceCount,).toBe(0,);
+        expect(persisted.size,).toBe(0,);
+        expect(result.findings.some(function isUnheard(finding,): boolean {
+          return finding.startsWith('translate-heard-no-translator',);
+        },),).toBe(true,);
       },
     },),
 

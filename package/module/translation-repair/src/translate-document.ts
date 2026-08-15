@@ -37,6 +37,14 @@ import { settleTranslateSlice, } from './translate-slice.ts';
 // reporting unvisited slices as unchanged is indistinguishable from a document
 // that needed no translation, and the settled slices are already in the cache
 // for the next attempt.
+//
+// NOTHING BELOW THE DRIVER RAISES THAT ALARM. An abort reaches every exchange
+// as a torn-down stream, `runGatherRound` records each one as a lost voice, and
+// a stage that heard nothing keeps the incumbent and reports an ordinary
+// settled slice. So the abort checks here are not belt-and-braces over a stage
+// that would have thrown: they are the only place the collapse is visible, and
+// without them a spent entry deadline writes "kept, unjudged" into the cache
+// for every slice it never reached.
 
 /**
  * Everything about this run that changes what the models are ASKED, folded into
@@ -155,6 +163,9 @@ export function translateSliceKey(
  * @throws {@link Error} when a cached record names another slice, which means
  * the key derivation and the slicing disagree
  *
+ * @throws Whatever `signal.reason` carries, once the caller aborts with slices
+ * still unbought; nothing settled under that abort is cached
+ *
  * @example
  * ```ts
  * const { translatedText, slices, } = await translateDocument({ client, prepared, models, signal, perCallTimeoutMs, l, },);
@@ -244,27 +255,65 @@ export async function translateDocument(
       continue;
     }
 
+    // Checked here rather than at the top of the iteration, so a document whose
+    // every slice is already cached still finishes: what a stopped run cannot
+    // do is BUY the slices it is missing.
+    signal.throwIfAborted();
+
     /* oxlint-disable no-await-in-loop -- sequential by design: aggregate concurrency beyond one stream per model collapses throughput on this plan, and the stage already fans out per model inside the slice */
     /**
      * Fresh record for this slice, translated and judged.
      */
-    const record = await settleTranslateSlice({
-      client,
-      slice,
-      prepared,
-      models,
-      signal,
-      perCallTimeoutMs,
-      l: tl,
-    },);
-    await sliceCache?.persist({
-      key,
-      serialized: JSON.stringify(
-        record,
-        undefined,
-        2,
-      ),
-    },);
+    const record = await (async function settleUnderSignal(): Promise<TranslateSliceRecord> {
+      try {
+        return await settleTranslateSlice({
+          client,
+          slice,
+          prepared,
+          models,
+          signal,
+          perCallTimeoutMs,
+          l: tl,
+        },);
+      }
+      catch (error) {
+        // An aborted run fails BECAUSE it was aborted; whichever torn-down
+        // exchange happened to surface is a symptom. The caller has to tell a
+        // spent deadline apart from a provider fault by identity alone, and
+        // only one of those is worth retrying the entry over.
+        if (!signal.aborted)
+          throw error;
+        tl.warn(
+          `slice ${String(chunkIndex,)}: abandoned by the caller's abort (${String(error,)})`,
+        );
+        throw signal.reason;
+      }
+    })();
+
+    // A run stopped part way through a slice does NOT fail loudly on its own:
+    // every abandoned exchange reaches the stage as silence, and a stage that
+    // heard nothing keeps the incumbent and reports a settled slice. Caching
+    // that would record the collapse as finished work, and every later attempt
+    // would resume it rather than ask again.
+    signal.throwIfAborted();
+    if (record.stageResult
+      .heardTranslators
+      === 0) {
+      tl.warn(
+        `slice ${String(chunkIndex,)}: no translator was heard, so the incumbent `
+          + 'stands for this run and the slice is NOT cached',
+      );
+    }
+    else {
+      await sliceCache?.persist({
+        key,
+        serialized: JSON.stringify(
+          record,
+          undefined,
+          2,
+        ),
+      },);
+    }
     /* oxlint-enable no-await-in-loop */
     settled.push(record,);
   }
@@ -281,6 +330,16 @@ export async function translateDocument(
    */
   const refused = settled.filter(function wasRefused(record,): boolean {
     return record.disposition === 'refused-alignment';
+  },);
+
+  /**
+   * Slices no translator answered for, which stand on the incumbent and are
+   * deliberately absent from the cache.
+   */
+  const unheard = settled.filter(function heardNobody(record,): boolean {
+    return record.stageResult
+      .heardTranslators
+      === 0;
   },);
   tl.info(
     `translated ${String(settled.length,)} slices (${String(counted.resumed,)} resumed): `
@@ -304,9 +363,16 @@ export async function translateDocument(
     refusedSliceCount: refused.length,
     resumedSliceCount: counted.resumed,
     slices: settled,
-    findings: settled.flatMap(function toFindings(record,): readonly string[] {
-      return record.findings;
-    },),
+    findings: [
+      ...settled.flatMap(function toFindings(record,): readonly string[] {
+        return record.findings;
+      },),
+      ...unheard.map(function toUnheardFinding(record,): string {
+        return `translate-heard-no-translator chunk ${
+          String(record.chunkIndex,)
+        }; incumbent stands, slice not cached`;
+      },),
+    ],
   };
 }
 
