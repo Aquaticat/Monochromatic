@@ -11023,3 +11023,44 @@ straightforward fix is a second field: the model names the SOURCE sentence its
 quote renders, and a verdict keeps only claims whose named source sentence is
 actually in the passage asked about. That is a wire change and a rerun, not a
 redesign.
+
+### Block scale measured too, and it settles what landing four would have done
+
+Twenty-two unpaired blocks, from three entries, six voices each:
+
+    carried    18, most of them unanimous
+    absent      1
+    split       3, all with ZERO votes for absence: every voice believed the
+                translation carried it and some could not quote it exactly
+
+So at paragraph scale, at most one of twenty-two passages the aligner refused is
+a passage nobody translated. Landing four inserts on all of them. Corpus-wide
+that is 95 refusals, and this sample says the great majority already read
+correctly in the archive.
+
+THE SIX I HAD LABELLED BY HAND ALL AGREE with the probe, including the three
+consecutive lines one entry renders as a single English block, the footnote
+whose translation is paired with the following footnote, and the blockquote
+another entry renders as one paragraph.
+
+HOW MUCH OF THIS IS THE MEASUREMENT AND HOW MUCH IS THE CLASS BALANCE, which a
+review asked and is the right question. Within either set alone, a constant
+answer scores well: always CARRIED gets 18 of 22 at block scale, always ABSENT
+gets 10 of 11 at section scale. POOLED ACROSS BOTH, thirty-three candidates
+drawn the same way from the same corpus, no constant answer beats 19 of 33. The
+probe agrees with every label I have, in both directions, which is what a
+constant answer cannot do.
+
+WHAT IS NOT ESTABLISHED, and should not be claimed: eleven of the thirty-three
+sit in two entries and twenty-two in three, so these are not thirty-three
+independent documents. Sixteen of the twenty-two blocks have no hand label at
+all. The labels were made by me, after seeing the aligner's verdicts. A real
+accuracy number needs a preregistered sample, blinded labels and a held-out set,
+and `#106` says so rather than quoting a percentage.
+
+THE VERDICT RULE WAS WRONG AND IS FIXED. It took the majority over voices HEARD,
+so one voice reporting it found nothing decided absence with five models lost
+and quorum unmet, while four fabricated quotes plus two such reports gave only
+split: silence was more dangerous than fabrication. It now needs a majority of
+every model ASKED, an unmet quorum is inconclusive, and partial coverage is its
+own verdict rather than collapsing into carried.
