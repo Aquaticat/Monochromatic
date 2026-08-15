@@ -2,6 +2,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { RootContent, } from 'mdast';
 
+import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import type {
   FootnoteConvention,
   FootnoteDefinitionHit,
@@ -373,6 +374,11 @@ function collectBlockHits(
 
       // Literal [^id] sequences survive parsing only when their definition is
       // missing, so every hit here is an unresolved GFM reference.
+      //
+      // Folded on the way in, because every other identifier in this graph
+      // arrives from an mdast node already folded. An unresolved reference
+      // spelled `[^Note]` and an orphan definition spelled `[^note]:` are one
+      // footnote, and reporting them under two names hides that they are.
       for (const literal of scanGfmReferenceLiterals({ slice: bodyText.slice(
         textStart,
         textEnd,
@@ -380,7 +386,7 @@ function collectBlockHits(
         acc.references
           .push({
           convention: 'gfm',
-          identifier: literal.identifier,
+          identifier: normalizeFootnoteIdentifier({ identifier: literal.identifier, },),
           nodeId,
           offset: bodyOffset + textStart
             + literal.localOffset,

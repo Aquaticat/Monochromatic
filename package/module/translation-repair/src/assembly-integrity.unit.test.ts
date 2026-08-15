@@ -372,6 +372,73 @@ await describe({
     },),
 
     it({
+      name: 'BLAMES THE RIGHT SLICE for a footnote whose label is a WORD, not '
+        + 'a number. Markdown folds `[^Note]` and `[^note]` together and mdast '
+        + 'reports the folded spelling, while a scan of slice text sees what '
+        + 'was written; before those two agreed, this document lost the '
+        + 'innocent repair in another slice as well',
+      fn: async () => {
+        /**
+         * Translation whose footnote is labelled by a word, spelled one way at
+         * the reference and another at the definition. The parser reads them as
+         * one footnote, which is exactly what makes the two spellings a hazard
+         * rather than a broken document.
+         */
+        const wordLabelled = TARGET_TEXT.replace(
+          '[^1].',
+          '[^Note].',
+        )
+          .replace(
+            '[^1]:',
+            '[^note]:',
+          );
+
+        /**
+         * Slices of the fixture pair, prepared against the word-labelled
+         * translation.
+         */
+        const slices = fixtureSlices({ targetText: wordLabelled, },);
+
+        /**
+         * Assembly where one replacement drops the reference and another,
+         * touching no footnote at all, tidies an unrelated slice.
+         */
+        const guarded = guardFootnoteAssembly({
+          targetText: wordLabelled,
+          slices,
+          replacements: [
+            {
+              chunkIndex: sliceCarrying({
+                slices,
+                needle: 'doing the sleeping',
+              },),
+              replacementText: 'The cat naps on the windowsill.',
+            },
+            {
+              chunkIndex: sliceCarrying({
+                slices,
+                needle: 'there is being a bird',
+              },),
+              replacementText: 'A bird sits on the windowsill.',
+            },
+          ],
+        },);
+        expect(guarded.revertedChunkIndices,).toEqual([
+          sliceCarrying({
+            slices,
+            needle: 'doing the sleeping',
+          },),
+        ],);
+        // The point of attributing at all: an edit that broke nothing ships.
+        expect(guarded.assembledText,).toContain('A bird sits on the windowsill.',);
+        expect(guarded.findings
+          .some(function namesBlanketWithdrawal(finding,): boolean {
+            return finding.startsWith('assembly-withdrew-every-replacement',);
+          },),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'reads an unterminated comment and an MDX downgrade as structural '
         + 'regressions, which name no footnote identifier and so can be found '
         + 'no other way',

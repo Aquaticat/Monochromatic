@@ -2,6 +2,7 @@ import {
   scanFullwidthMarkers,
   scanGfmReferenceLiterals,
 } from './footnote-graph.ts';
+import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 
 //region Footnote mentions
 // Attribution input for the assembly guard: how often one text mentions each
@@ -179,8 +180,14 @@ export function footnoteIdentifiers(
       /**
        * Key naming role and convention, since the two conventions number
        * independently and the roles are what a defect is about.
+       *
+       * Identifier folded to the parser's spelling, because a finding this key
+       * is looked up by names the footnote as mdast keys it. Scanning gives the
+       * source spelling, and the two differ on any label carrying a letter.
        */
-      const key = `${role} ${convention} ${hit.identifier}`;
+      const key = `${role} ${convention} ${
+        normalizeFootnoteIdentifier({ identifier: hit.identifier, },)
+      }`;
       counts.set(
         key,
         (counts.get(key,) ?? 0) + 1,
