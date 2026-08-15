@@ -48,13 +48,39 @@ yesterday's state:
     re-confirm rolls back the whole slice. Measured over the 56 settled
     artifacts: 32 resolved-and-refined slices against 32 re-check findings, zero
     violations, with the probe validated first. Nothing to build.
--   ONE FINDING IS RECORDED AND DELIBERATELY NOT FIXED: an empty critic roster
-    settles a document rather than refusing it, so a misconfigured pass would
-    write a directory of vacuous settled artifacts and look like a clean run.
-    Task `#93` carries it. The quiet path is right for OUTAGES and wrong for a
-    deterministic misconfiguration, and the two are indistinguishable
-    downstream. Nothing was built because where the refusal belongs is a design
-    choice; it needs no answer from you unless you want one.
+-   THE EMPTY-ROSTER REFUSAL WAS BUILT for every role except the critics. A lane
+    configured with nobody in a required role now refuses before buying
+    anything, at all three depths a caller can enter at. The quiet path is still
+    right for OUTAGES and is untouched; what is refused is the deterministic
+    case, before any work is done. CRITICS ARE STILL UNGUARDED, and that is
+    Question 3's doing rather than an oversight: if the critic stage survives,
+    an empty critic roster is a misconfiguration and belongs in the same check,
+    and if it does not survive, an empty critic roster is the intended
+    configuration. A second review sharpened the cost of leaving it open: the
+    stage RUNS today, so an empty critic roster today produces exactly the quiet
+    vacuous pass this check exists to refuse. Task `#93` carries the remainder.
+-   THE ASSEMBLY AND SLICE-RECORD CONTRACTS WERE HARDENED AGAIN overnight on the
+    15th, after a second review of the same code. Three of these change numbers
+    you may read, so they are worth knowing before you read any:
+    -   A NATURALNESS REFINEMENT THAT LANDS BACK ON THE ARCHIVE WORDING is now
+        recorded as unchanged, and its slice's resolved-issue credit is dropped.
+        The rewriter is measured against the accuracy text it rewrites, so it
+        can move off that text right back onto the archive's own words; that was
+        being recorded as a change, which would have named the slice in the
+        shipped set and then failed the whole document at assembly.
+    -   A FRESHLY SETTLED SLICE RECORD is now checked against its own text
+        before it is cached, on both lanes, exactly as a resumed one is. Only
+        one direction of that contradiction was ever caught downstream: a record
+        claiming a change it did not make is refused at assembly, while one
+        DENYING a change it made was dropped in silence.
+    -   REFINEMENT NOW HONORS THE ABORT. It had none: a torn-down exchange
+        surfaced as whichever stage happened to fail, and a phase that settled
+        under an abort returned a document that read as a finished run. A fully
+        cached document still finishes, because what a stopped run cannot do is
+        buy what it is missing.
+-   A REPO-WIDE LINT GAP was measured while doing that, and it is a question for
+    you rather than a defect: `doc/planning/unused-import-lint-policy.md`. It
+    blocks nothing.
 
 ## Question 1: how wide should the producing rosters be
 
