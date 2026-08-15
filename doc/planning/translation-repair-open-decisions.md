@@ -1,0 +1,320 @@
+# Decisions waiting on you, 2026-08-15 morning
+
+Written overnight on 2026-08-14 to 15, while the translate lane was built out.
+Each question below is one I could not answer from the code, the corpus, or a
+measurement I could take without spending your quota on a decision you may
+reverse.
+Every one of them names what it blocks, so you can skip the ones that block
+nothing you care about today.
+
+The last section lists decisions I took WITHOUT you, with the reasoning, so you
+can veto any of them cheaply.
+
+## Question 1: how wide should the producing rosters be
+
+BLOCKS `#91`, which is otherwise ready to write, and through it the first long
+run under the new shape.
+
+You ruled "All producing roles to 4" and then "don't hardcode magic numbers like
+4 or 6".
+I tried to derive the four from the roster size and got it wrong twice in one
+day, both times by the same mistake, so I stopped deriving and am asking.
+
+WHAT IS NOT A CONSTRAINT, verified in the code rather than assumed:
+selection imposes no ceiling at all.
+The half-weight discount applies to a judge's ballot for its OWN candidate, so a
+candidate's full-weight judges are everyone who did not write it.
+Four editors judging each other work fine; so would six.
+
+WHAT ACTUALLY MOVES with width:
+
+-   COST, roughly linear in producers for the translate calls, and worse than
+    linear downstream, because every candidate becomes repeated input to every
+    judge in the selection round.
+-   AGREEMENT. Ballots spread thinner across more candidates, so the leader more
+    often falls short of the minimum weight or ties. Both outcomes decline, and
+    a decline keeps the incumbent, so widening can quietly REDUCE how often
+    anything is replaced.
+-   COVERAGE, which is what the widening is for, on your reasoning that these
+    models have different blind spots.
+
+### Measured overnight, so this is no longer a guess
+
+`mise run //package/module/translation-repair:slice-census` reads the pinned
+corpus, slices it exactly as the pipeline does, and spends no quota.
+First run, 92 complete pairs:
+
+    1260 slices
+    slice source chars   p50 101, p90 174, p99 374, max 1313
+    slice target chars   p50 299, p90 486, p99 1512, max 10959
+    slices over 4641 target chars   1 of 1260
+
+COST, which is now arithmetic rather than an adjective. Translate calls are
+slices times producers, so the whole corpus costs:
+
+    3 producers   3780 translate calls
+    4 producers   5040
+    6 producers   7560
+
+Selection is 1260 rounds whatever the producer count, one call per judge, so
+7560 judge calls at the current six-model judge roster.
+What producer count changes there is the SIZE of each judge prompt, since every
+candidate is repeated to every judge: about 101 source characters plus one
+candidate of about 299 per producer, plus the incumbent.
+
+    3 producers   about 1300 characters per judge prompt
+    4 producers   about 1600
+    6 producers   about 2200
+
+So widening from three producers to six doubles the translate calls and adds
+about seventy percent to each judge prompt. Neither is a cliff, and neither is
+free.
+
+THE TAIL IS ONE ENTRY. Exactly one slice of 1260 exceeds 4641 target
+characters, which is the size the translate probe already watched time out at
+six minutes and return schema-invalid output. It is in `shihai4h`, at 10959
+characters, and that entry also owns the largest target-only block count. So
+the oversized-call risk is a single entry rather than a distribution problem,
+and it can be handled without changing the roster at all.
+
+WHAT IS STILL NOT MEASURED, and what I would spend quota on next: whether more
+candidates make the judges converge less. That is the agreement limb, it cannot
+be read off the corpus, and it needs the same slices run at several roster
+widths with the decline and tie rates compared. Say the word and it runs.
+
+### Options
+
+A.  Fixed count in run configuration, named and commented, e.g.
+    `PRODUCERS_PER_ROLE = 4`.
+    Pros: says exactly what it means; one line to change when the provider
+    changes; no false derivation.
+    Cons: it is the literal you told me not to write, and it silently means
+    "all but two" at six models and "half" at eight.
+
+B.  A share of the roster, e.g. two thirds, rounded down.
+    Pros: tracks the provider with nothing edited, which is what you asked for.
+    Cons: the fraction is as arbitrary as the count, and rounding makes it
+    jump at odd sizes.
+
+C.  Every model produces in every role, and the discounts carry the whole load.
+    Pros: no number at all; maximum coverage; the simplest rule to state.
+    Cons: most candidates per slice, so the largest judge prompts and the
+    thinnest ballots; and with every model a producer, self-votes and
+    self-certifications are the norm rather than the exception, which makes
+    the discounts load-bearing in a way nothing has measured.
+
+D.  Keep the current three until `#84` measures judge quality, then widen on
+    evidence.
+    Pros: the only option that spends nothing before the measurement that says
+    whether wider slates help; leaves every other decision intact.
+    Cons: it is what you already overruled, and it delays the coverage you
+    widened for.
+
+RANKING: A > D > B > C.
+
+A over D because you have already decided to widen and a named constant is the
+honest way to write "four" while you decide whether four is right; D would be
+re-litigating a decision you made.
+D over B because a fraction invents precision nobody has: two thirds of six is
+four only by coincidence, and at seven models it silently becomes four again.
+B over C because C makes both discounts load-bearing on every slice at once,
+and the self-preference rate they compensate for is exactly what `#84` has not
+measured yet.
+
+## Question 2: the transcribed-image class
+
+BLOCKS nothing mechanically, and is the largest known quality risk in the new
+shape. Measured overnight at 132 blocks over 39 entries and 44731 characters,
+which is an upper bound that includes ordinary paragraph splits.
+
+Chinese pages hold letters and documents as IMAGES. English pages transcribe
+and translate them. So the English carries text with no counterpart in the
+Chinese markdown at all.
+
+Under the repair shape this was safe: nothing asked a model to produce the
+English from scratch, so the transcription simply survived.
+Under the translate shape it is in danger twice over. A translator working from
+the source has no source for it, so its candidate omits it. A judge comparing
+candidates against the source cannot tell that omission from a correct one, and
+the structural validator cannot either, since the source genuinely has no
+footnote, link or block for that text.
+
+Your standing ruling is that accurate translator additions are kept. Nothing in
+the lane yet makes that happen.
+
+### Measured overnight, and it changes the options
+
+Three measurements, all from the pinned corpus, none spending quota.
+
+THE CLASS IS BIGGER THAN RECORDED. The handover carried "roughly 31 thousand
+characters, 6 entries verified". The aligner's own step kinds report 132 blocks
+the translation carries that no source block partnered, across 39 entries and
+44731 characters. That is an upper bound rather than the class itself, since an
+ordinary paragraph split also produces a target-only block.
+
+THE SPLIT IS LEGIBLE BY SIZE, which is what separates the two:
+
+    target-only block chars   n 132, p50 116, p90 512, p99 3625, max 10737
+
+A median target-only block is 116 characters, which is a sentence a translator
+moved or a paragraph they split. The tail is different in kind: the largest is
+10737 characters in one block, in `shihai4h`, which also owns the largest
+target-only count at 21 blocks and 13321 characters.
+
+THE IMAGE IS NOT IN THE MARKDOWN AT ALL, and this is the finding that changes
+the options. I expected to detect the class by looking for an image beside the
+untranslated text, and measured zero: not one of the 132 target-only blocks
+sits in a section whose source carries Markdown image syntax. Widening the
+search, only 2 of 92 source pages mention `img` in any form, and `shihai4h`,
+the entry this class is most present in, mentions none on either side.
+
+So the picture lives outside `page.md` entirely, in the corpus's own data files
+rather than in the document this pipeline reads. Two consequences:
+
+-   Option B is larger than it looked. Supplying the image means reaching into
+    corpus data the pipeline has never opened, not attaching something already
+    in hand.
+-   Option A cannot key on images, because there are none to key on. It has to
+    protect target-only blocks as such, and then the question is whether it
+    protects all 132 or only the long tail, which is a threshold and therefore
+    the kind of number you have rejected before. Protecting all 132 is the
+    version with no threshold in it, and its cost is mild: a 116-character
+    block that was a paragraph split simply is not retranslated.
+
+### Options
+
+A.  Protect the class deterministically: detect target-only blocks that have no
+    source counterpart, exclude them from translation, and splice them back
+    unchanged.
+    Pros: the transcription cannot be lost by any model decision; cheap; no
+    model has to be told anything.
+    Cons: needs a reliable "no counterpart" test, and the aligner is the
+    component with the worst track record in this pipeline.
+
+B.  Supply the image to the translators and judges, so the text has a source.
+    Pros: the only option where the translation of that text can actually be
+    checked; would also catch a bad existing transcription.
+    Cons: needs image transport and models that read images, which this
+    provider roster may not have; and OCR of handwritten Chinese letters is its
+    own failure surface.
+
+C.  Licence it as evidence: pass the incumbent's target-only blocks to the
+    judges as "verified additions the archive keeps", without asking anyone to
+    reproduce them.
+    Pros: no new machinery; judges stop reading the omission as correct.
+    Cons: tells the judges what to believe rather than letting them check, and
+    the incumbent's additions are exactly what nobody has verified.
+
+RANKING: A > C > B.
+
+A over C because A cannot be talked out of by a model, while C depends on every
+judge weighing an instruction the same way.
+C over B because B needs capabilities the roster may not have, and its OCR
+failure mode replaces a known-good human transcription with a machine guess,
+which is the one outcome worse than losing it.
+
+## Question 3: does the critic stage survive
+
+BLOCKS `#86`, and the answer changes the cost of every entry.
+
+Critics exist to find defects for an editor to repair, and the decided shape
+repairs nothing. Dropping them removes 582 calls per corpus and adds 105,
+making the new shape CHEAPER than the one it replaces. Keeping them gives the
+judges evidence and keeps a stage that reasons about the source, which
+Question 2 argues for.
+
+There is a third answer I did not see until the review: if critics stay, their
+BLOCKING behaviour cannot. `repairChunk` returns the input unchanged when
+non-translation votes stand, and the document-level dominance check can return
+the whole original target, discarding translated slices that already succeeded.
+On a sparse target, which is exactly what the lane exists for, that is the
+common case rather than the rare one.
+
+### Options
+
+A.  Drop critics from the translate path.
+    Pros: cheapest; removes the blocking behaviour by removing the stage;
+    the judges already compare against the source.
+    Cons: loses the only stage that names WHY a passage is wrong, which is what
+    every grading sheet has been built on.
+
+B.  Keep critics as evidence for the judges, with every early return removed.
+    Pros: keeps the diagnosis and the sheets; judges get named defects rather
+    than only two texts.
+    Cons: pays for a stage whose output no longer decides anything, and the
+    numbers that would justify it do not exist until `#83` lands.
+
+C.  Keep critics only where the incumbent is substantial, and skip them where
+    it is thin.
+    Pros: spends the calls where a critic can see something.
+    Cons: "substantial" is a threshold, which is the kind of number you
+    rejected when it was called a coverage ratio.
+
+RANKING: B > A > C.
+
+B over A because the sheets are the instrument every quality claim rests on,
+and losing the critic loses the vocabulary they are written in; the cost is
+recoverable later and the instrument is not.
+A over C because C reintroduces exactly the magic threshold you rejected in the
+pipeline-shape decision, and a threshold that decides whether a passage is
+examined at all is worse than one that decides how it is routed.
+
+## Question 4: what a self-certifying checker's verdict is worth
+
+BLOCKS `#91` alongside Question 1.
+
+You ruled that checkers may certify text they helped write, at lower weight.
+The selection discount is a half, and that number rests on an argument that
+does NOT transfer: in selection a winner needs weight 2, so half-weight
+self-votes cannot carry a candidate. Resolution checking tallies verdicts about
+one claim rather than ranking candidates, so nothing in the arithmetic picks a
+number.
+
+### Options
+
+A.  A half, matching the selection discount.
+    Pros: one number to explain, one to tune; visibly consistent.
+    Cons: consistency is the only argument for it.
+
+B.  Zero weight, meaning a self-certifier's verdict is recorded but not counted.
+    Pros: keeps the record while never letting a model certify itself; closest
+    to the old exclusion without refusing the roster.
+    Cons: with every model producing, a claim could end up with no counted
+    verdict at all, which reads as unproven rather than as unchecked.
+
+C.  Weighted by measured agreement: a checker's verdict on its own work counts
+    at the rate its verdicts agree with disinterested checkers elsewhere.
+    Pros: the only option grounded in evidence.
+    Cons: needs a measurement nobody has taken, and it cannot be taken until
+    the new shape has run.
+
+RANKING: A > B > C.
+
+A over B because B's failure mode is silent: a claim with no counted verdict
+looks identical to one nobody could prove, and this pipeline has been bitten by
+that shape repeatedly.
+B over C because C is right and unavailable: it needs a corpus run under the new
+shape to produce the agreement rates it weighs by, so A or B has to hold the
+seat until then anyway.
+
+## Decisions I took without you, veto cheaply
+
+1.  A revision that still fails validation is NOT taken; the original candidate
+    stands. Reasoning: the model was asked to fix those findings and did not,
+    so nothing says the new text is better, while the original is at least what
+    it produced with the whole sheet in front of it.
+2.  The incumbent never passes through structural validation and can never be
+    dropped by it. Reasoning: it is the fallback, so a check that could drop it
+    could delete the archive.
+3.  A slice's candidate order is rotated by a hash of the source, so the
+    incumbent does not sit in one ballot position. Deterministic, so a resumed
+    slice asks the judges the same question a fresh one did.
+4.  Structural validation compares block structure, footnote markers, link and
+    image destinations, and inline code, and deliberately NOT numbers or names,
+    because 三封信 becomes "three letters" and no digit survives on either side.
+5.  Atoms are compared as a multiset rather than in order, since a translation
+    reorders clauses and a link moving inside a sentence is not damage.
+6.  The source-side slice budget is now derived from the whole document pair
+    rather than from one section, and capped at the target budget. Reasoning in
+    `#90`; the cap encodes that Chinese runs shorter than its English rendering,
+    so a ratio above one is missing translation rather than density.

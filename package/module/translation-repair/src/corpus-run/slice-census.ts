@@ -46,6 +46,7 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
  */
 const PROBE_TIMEOUT_CHARS = 4_641;
 
+
 /**
  * One entry with the largest single slice it produced.
  *
@@ -113,6 +114,20 @@ type EntryCensus = {
    * Characters in those blocks.
    */
   readonly targetOnlyChars: number;
+
+  /**
+   * Size of every target-only block, so a transcription can be told from an
+   * ordinary paragraph split.
+   *
+   * The transcribed-image class is the case where a Chinese page holds a letter
+   * as a picture and the English page transcribes and translates it. MEASURED
+   * 2026-08-15: that picture is nowhere in the markdown this pipeline reads.
+   * Only 2 of 92 source pages mention `img` at all, and the entry with the most
+   * target-only text mentions none, so no image-adjacency test can find the
+   * class. Size is the signal that remains: a transcription runs long and a
+   * split paragraph does not.
+   */
+  readonly targetOnlyBlockChars: readonly number[];
 };
 
 /**
@@ -167,6 +182,11 @@ async function censusEntry(
   };
 
   /**
+   * Size of every target-only block this entry carries.
+   */
+  const targetOnlyBlockChars: number[] = [];
+
+  /**
    * Source characters of every slice.
    */
   const sliceSourceChars: number[] = [];
@@ -200,11 +220,16 @@ async function censusEntry(
       },)) {
         if (step.kind !== 'target-only')
           continue;
-        totals.targetOnlyBlocks += 1;
-        totals.targetOnlyChars += targetNodes[step.targetIndex]
+        /**
+         * Characters this target-only block carries.
+         */
+        const blockChars = targetNodes[step.targetIndex]
           ?.text
           .length
           ?? 0;
+        totals.targetOnlyBlocks += 1;
+        totals.targetOnlyChars += blockChars;
+        targetOnlyBlockChars.push(blockChars,);
       }
     }
     for (
@@ -233,6 +258,7 @@ async function censusEntry(
     onesidedSourceChars: totals.onesidedSourceChars,
     targetOnlyBlocks: totals.targetOnlyBlocks,
     targetOnlyChars: totals.targetOnlyChars,
+    targetOnlyBlockChars,
   };
 }
 
@@ -383,6 +409,12 @@ async function main(): Promise<void> {
       } chars`,
     );
   }
+  console.log(describeSpread({
+    label: 'CENSUS target-only block chars',
+    values: rows.flatMap(function toBlockChars(row,) {
+      return [...row.targetOnlyBlockChars,];
+    },),
+  },),);
 
   /**
    * Entries ordered by their largest slice, since the tail is what a per-call
