@@ -1,12 +1,14 @@
 # cli-git command-line argument parser replacement vet report
 
-- Status: in progress
-- Lifecycle phase: targeted runtime complete; no validated finalist
+- Status: complete; no named alternative recommended
+- Lifecycle phase: terminal no-validated-finalist result
 - Subject: cli-git command-line argument parser replacement
 - Decision scope: evaluate `jackspeak`, `type-flag`, and `argue-cli` as replacements for cli-git's handwritten
   Git argv region parser and management parser; evaluate no unnamed alternative
 - Start date: 2026-08-14
 - Last updated: 2026-08-14
+- Completion repository revision before final report commit:
+  `144f767ce9e659d4591ef0082e06f8953e4b95a9`
 - Governing skill: `.agents/skills/choosing-technology/SKILL.md`
 - Governing skill commit: `a05818ad70a40e5769a36de669697ba109891b31`
 - Governing skill SHA-256: `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`
@@ -318,7 +320,7 @@ or ranked.
 - Claim: discarded per-nonmatch diagnostics caused a measured long-pathspec regression in `@optique/core`
 - Relevance: candidate parsing must not repeat that failure shape
 - Gate: replacement parity and scored performance concern
-- Status: historical evidence, current reproduction pending
+- Status: historical evidence only; not repeated after candidate hard-gate exits
 - Primary source: commit message and diff for `4879a44e6a2460ab3c2531744e24a1f2aef27aeb`, accessed 2026-08-14
 - Counterevidence limit: the recorded 0.89 second result measures the complete wrapper,
   not parser-only cost or current hardware
@@ -397,7 +399,13 @@ or ranked.
 - Primary metadata: <https://registry.npmjs.org/type-flag/4.5.0>, accessed 2026-08-14
 - Artifact integrity: registry and measured integrity
   `sha512-1aLzxcL6u1O9XHieAJBBX9U4QzwzDTWN0ER9M7QQSvS24NBmGM+N8FcghlgHAzOvDlEEpOx4hEml9CVcDnflcw==`
-- Provenance: npm SLSA attestation binds that digest to the exact repository and commit
+- Provenance: decoded npm SLSA statement names subject
+  `pkg:npm/type-flag@4.5.0` with the measured SHA-512 from the artifact-integrity record;
+  it names repository `privatenumber/type-flag`,
+  workflow `.github/workflows/release.yml`,
+  resolved commit `6e0c46911ea64c829459a27bfaf1b45e8e335869`,
+  Actions run `27501307853`,
+  and Rekor log index `1817329468`
 - License and runtime: MIT,
   no runtime dependency,
   and no native,
@@ -416,9 +424,10 @@ or ranked.
 ### Argue source record A1
 
 - Candidate: `argue-cli@3.1.0`, commit `45db68f4acce979d0ba725ae83e320a0e906165a`
-- Claim: Argue scans known options out of process-global mutable argv but does not model option termination,
-  occurrence counts,
-  or ordered unknown-option facts
+- Claim: Argue scans known options out of process-global mutable argv but does not model option termination
+  or return role-tagged unknown-option facts;
+  built-in readers overwrite scalar repeats,
+  while custom readers can express counts and ordered known values
 - Relevance: cli-git calls the shared parser repeatedly as a pure function and must preserve exact token roles
 - Gate: replacement parity,
   process integration,
@@ -436,8 +445,10 @@ or ranked.
   dash-led separated values,
   unknown-token preservation in leftover argv,
   and options after positionals work
-- Outcome: an adapter would need a second token-role scan to separate unknown options from positionals and implement
-  termination and counts
+- Outcome: an adapter would need pre-splitting for termination,
+  original-token inspection for exact prefixes,
+  and a leftover classifier for unknown-option versus positional roles;
+  custom readers can supply counts and ordered known values
 
 ### Argue package and auditability record A2
 
@@ -468,7 +479,8 @@ or ranked.
   no `--` terminator case,
   fuzzing,
   or mutation harness
-- Outcome: source screening pass; reproducible build would be required only if semantic validation survives
+- Outcome: source screening pass;
+  reproducible build was not run after the semantic hard-gate exit
 
 ### Maintenance record M1
 
@@ -771,16 +783,183 @@ and Windows matrix;
 type-flag and Argue passed their Linux release-commit checks.
 No candidate timing is claimed.
 
+The durable behavior diagnosis,
+minimal reproduction,
+workaround record,
+and upstream-filing checks are in
+`doc/troubleshooting/npm-cli-parsers-partial-git-argv.md`.
+
+## Management-only applicability
+
+The closed management grammar is a narrower role than forwarded Git parsing.
+None of the following narrower uses replaces the shared parser:
+
+- Jackspeak can parse strict declared management options and correctly reject missing values,
+  but cli-git still owns command dispatch,
+  authored help,
+  action shaping,
+  and every Git-region parse.
+- Type-flag retains the same dash-led and missing-value behavior for management value options.
+  A policy ID such as `--all` after `--policy` has the same role conflict as the tested `-m -a` case.
+- Argue can express counts and ordered policy values through custom readers,
+  but management use still needs explicit `--` splitting,
+  exact one-dash versus two-dash validation,
+  leftover validation,
+  and process-global state settlement.
+
+A management-only dependency therefore leaves the requested handwritten shared parser in place
+and adds another parse model.
+No management-only shape advances to recommendation.
+
 ## Score arithmetic and sensitivity
 
-Pending finalist validation.
+Not applicable.
+All three candidates failed at least one hard constraint before finalist validation.
+The governing method does not assign soft points to offset a hard failure.
+
+Sensitivity is also not applicable.
+Changing equal-default weights cannot make unknown-option rejection,
+dash-led value loss,
+prefix loss,
+or missing terminator state satisfy the frozen parser contract.
 
 ## Pros and cons
 
-Pending equal-depth validation.
+### argue-cli
+
+Pros:
+
+- smallest measured production source in the named set at 298 code lines across seven files;
+- no runtime dependency;
+- arbitrary aliases and custom readers can express occurrence counts and ordered known values;
+- correctly consumes tested dash-led declared values and fails on tested missing values;
+- leaves unknown input lexemes intact and in order.
+
+Cons:
+
+- one process-global mutable argv array rather than an argument-local pure parser;
+- does not terminate option parsing at `--`;
+- erases one-dash versus two-dash prefix information before custom readers run;
+- mixes unknown options and positionals in one leftover stream;
+- requires handwritten pre-processing,
+  leftover classification,
+  and custom readers to recover the incumbent result;
+- no SLSA attestation or registry `gitHead`,
+  and upstream CI at the release commit covers Linux only.
+
+### type-flag
+
+Pros:
+
+- explicit argv input with an argument-local result;
+- no runtime dependency;
+- returns known flags,
+  unknown flags,
+  positionals,
+  and post-`--` positionals separately;
+- preserves repeated known values and supports options after positionals;
+- SLSA provenance binds the exact npm artifact to the source commit;
+- strongest measured current release activity among the named packages.
+
+Cons:
+
+- mutates the supplied argv array unless the caller passes a copy;
+- reads arbitrary dash-led declared values as new flags;
+- turns missing string values into empty strings;
+- expands every short token as an alias group even where cli-git requires exact generic matching;
+- normalizes unknown option names and separates them from following plain tokens,
+  losing the incumbent ordering and tentative-consumption facts;
+- one-character alias model cannot directly group every exact long abbreviation under one result key;
+- upstream release checks cover Linux only.
+
+### jackspeak
+
+Pros:
+
+- correctly handles the tested known flags,
+  repeated values,
+  option terminator,
+  options after positionals,
+  dash-led declared values,
+  and missing-value errors;
+- typed config and help generation are available for conventional closed CLIs;
+- release commit passed Linux,
+  macOS,
+  and Windows CI on Node 20 and 22;
+- source-to-artifact mapping is present in the published source map.
+
+Cons:
+
+- unconditionally rejects undeclared plain and joined options,
+  which is a direct category mismatch for cli-git's partial Git grammar;
+- catching the error yields no successful token facts;
+- complete audited runtime source includes 1,066 Jackspeak code lines plus 1,014 cliui code lines;
+- adds one same-author runtime dependency;
+- arbitrary long aliases cannot share one config field;
+- publication has no SLSA attestation.
 
 ## Ranking and recommendation
 
-No recommendation yet.
-Recommendation is withheld until every named survivor completes hard gates, source audit, execution validation, scoring,
-and sensitivity analysis.
+Practical proximity ranking:
+
+1. `argue-cli`
+2. `type-flag`
+3. `jackspeak`
+
+Ranking:
+`argue-cli` > `type-flag` > `jackspeak`.
+
+Argue ranks ahead of type-flag because it preserves dash-led values,
+missing-value failure,
+and exact unknown leftovers,
+while type-flag loses those declared-value roles before an adapter can recover them.
+Argue still fails exact prefix and termination requirements and is not recommendable.
+
+Type-flag ranks ahead of Jackspeak because it accepts partial schemas and returns unknown-flag facts,
+whereas Jackspeak terminates every parse on an undeclared option.
+Type-flag still requires an owned arity scan to repair dash-led and missing values and is not recommendable.
+
+Recommendation:
+none of the three named alternatives should replace cli-git's handwritten parser.
+Retain the repository-owned parser.
+It is narrower than Jackspeak's audited runtime graph,
+already models the required partial Git grammar,
+and avoids adapters that reintroduce the same token-role decisions around another API.
+
+This is a recommendation,
+not adoption authority.
+No dependency,
+product code,
+configuration,
+lockfile,
+or decision record changed.
+
+## Confidence and evidence limits
+
+Confidence is high for the terminal result because source traces and the actual stable npm artifacts
+agree on every hard-gate failure.
+The positive controls show that the harness distinguishes ordinary successful parsing from the failing shapes.
+
+The bounded behavior matrix ran on Linux x64 and Node 24.18.0.
+Platform-specific finalist runs were not warranted after platform-independent semantic exits.
+Upstream check runs provide corroborating platform evidence,
+not consumer parity.
+
+Only current stable versions were candidates.
+Type-flag 5.0.0 beta was not rated;
+its negative-number change does not cover arbitrary dash-led strings,
+missing values,
+or exact unknown-token order.
+
+No candidate performance comparison is reported.
+Each candidate exited before a semantically comparable integration existed,
+so a timing result would compare different behavior.
+
+Argue's non-recommendation depends materially on the frozen replacement requirement.
+Under the tested versions and constraints,
+it cannot replace the handwritten parser.
+If the goal changes to delegating only known-option removal while intentionally retaining handwritten prefix,
+terminator,
+and leftover classification logic,
+Argue is the closest named package.
+A later Argue release that exposes raw prefixes and explicit termination would require a fresh evaluation.
