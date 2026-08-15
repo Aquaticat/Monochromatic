@@ -438,7 +438,7 @@ await describe({
           },),
         ).toBe(
           'The cat sleeps.\n\nShe chases butterflies in the garden all afternoon.\n\n'
-          + 'She dozes in the sun. She purrs.',
+          + 'She dozes in the sun.\n\nShe purrs.',
         );
       },
     },),
@@ -479,7 +479,7 @@ await describe({
           },),
         ).toBe(
           'The cat sleeps.\n\nShe chases butterflies in the garden all afternoon.\n\n'
-          + 'She dozes in the sun. Then she stretches. She purrs.',
+          + 'She dozes in the sun.\n\nThen she stretches.\n\nShe purrs.',
         );
       },
     },),
@@ -593,7 +593,7 @@ await describe({
           },),
         ).toBe(
           'The cat sleeps.\n\nShe chases butterflies in the garden all afternoon.\n\n'
-          + 'Then she yawns. She purrs loudly.',
+          + 'Then she yawns.\n\nShe purrs loudly.',
         );
       },
     },),
@@ -619,7 +619,7 @@ await describe({
               },),
             ],
           },),
-        ).toBe(`${TARGET_TEXT}\n\nShe sleeps again.`,);
+        ).toBe(`${TARGET_TEXT}\n\nShe sleeps again.\n`,);
       },
     },),
 

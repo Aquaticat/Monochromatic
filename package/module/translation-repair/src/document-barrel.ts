@@ -22,6 +22,11 @@ export {
   PlacementLayoutError,
 } from './placement-layout.ts';
 export {
+  composeInsertion,
+  documentLineEnding,
+  fragmentBody,
+} from './insertion-separator.ts';
+export {
   buildSliceDelivery,
   SliceDeliveryError,
   type SliceDeliveryRecord,

@@ -3,6 +3,10 @@ import type {
   DocumentChunk,
 } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import {
+  composeInsertion,
+  documentLineEnding,
+} from './insertion-separator.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertSliceIndexing, } from './slice-indexing.ts';
 
@@ -73,6 +77,191 @@ type PlacedReplacement = {
    */
   readonly sourceText: string;
 };
+
+/**
+ * One write assembly performs, which is not one replacement.
+ *
+ * Several anchors can share a boundary, and their separators are decided once
+ * for the whole group rather than by each in turn, so the group is ONE edit.
+ *
+ * @example
+ * ```ts
+ * const edit: SpliceEdit = { kind: 'insertion', startOffset: 12, endOffset: 12, orderIndex: 3, fragments, };
+ * ```
+ */
+type SpliceEdit = {
+  /**
+   * Whether this writes over existing text or into a place where none is.
+   */
+  readonly kind: 'content';
+
+  /**
+   * Where the span being written over starts.
+   */
+  readonly startOffset: number;
+
+  /**
+   * Where it ends, exclusive.
+   */
+  readonly endOffset: number;
+
+  /**
+   * Slice this edit is ordered by, which for a group is its earliest.
+   */
+  readonly orderIndex: number;
+
+  /**
+   * Text to write, exactly as its lane produced it.
+   */
+  readonly text: string;
+} | {
+  /**
+   * Whether this writes over existing text or into a place where none is.
+   */
+  readonly kind: 'insertion';
+
+  /**
+   * Boundary the anchors share.
+   */
+  readonly startOffset: number;
+
+  /**
+   * Same boundary, since an anchor covers nothing.
+   */
+  readonly endOffset: number;
+
+  /**
+   * Earliest slice anchored here, which orders this group against the rest.
+   */
+  readonly orderIndex: number;
+
+  /**
+   * What the lanes produced for those slices, in document order.
+   */
+  readonly fragments: readonly string[];
+};
+
+/**
+ * Plans every write, in the order they can be made without moving each other.
+ *
+ * DESCENDING, so writing one never shifts the offsets of those still pending.
+ * At one boundary the later slice is written first, which leaves the earlier
+ * one ahead of it: document order, and true only because an index IS a
+ * position, which {@link spliceSlices} asserts before this runs.
+ *
+ * @param placed - replacements joined to the spans they name
+ *
+ * @returns Edits in application order
+ *
+ * @throws {@link Error} when a boundary group holds nothing, which grouping
+ * cannot produce
+ *
+ * @example
+ * ```ts
+ * const edits = plannedEdits({ placed, },);
+ * ```
+ */
+function plannedEdits(
+  { placed, }: { readonly placed: readonly PlacedReplacement[]; },
+): readonly SpliceEdit[] {
+  /**
+   * Writes over existing text, one per replacement.
+   */
+  const overText = placed
+    .filter(function coversText(entry,): boolean {
+      return !isInsertionChunk(entry.span,);
+    },)
+    .map(function toContentEdit(entry,): SpliceEdit {
+      return {
+        kind: 'content',
+        startOffset: entry.span
+          .startOffset,
+        endOffset: entry.span
+          .endOffset,
+        orderIndex: entry.replacement
+          .chunkIndex,
+        text: entry.replacement
+          .replacementText,
+      };
+    },);
+
+  /**
+   * Writes into a place, gathered by the boundary they share.
+   */
+  const byBoundary = Map.groupBy(
+    placed.filter(function namesAPlace(entry,): boolean {
+      return isInsertionChunk(entry.span,);
+    },),
+    function toBoundary(entry,): number {
+      return entry.span
+        .startOffset;
+    },
+  );
+
+  /**
+   * One edit per boundary, carrying its fragments in document order.
+   */
+  const intoPlaces = [...byBoundary,].map(function toInsertionEdit(entry,): SpliceEdit {
+    /**
+     * Boundary and the replacements anchored there.
+     */
+    const [offset, group,] = entry;
+
+    /**
+     * Those replacements in document order, which is slice order.
+     */
+    const inOrder = group.toSorted(function byIndex(
+      left,
+      right,
+    ): number {
+      /**
+       * Slice the left replacement names.
+       */
+      const leftIndex = left.replacement
+        .chunkIndex;
+
+      /**
+       * Slice the right one names.
+       */
+      const rightIndex = right.replacement
+        .chunkIndex;
+      return leftIndex - rightIndex;
+    },);
+
+    /**
+     * Earliest of them, which orders the whole group.
+     */
+    const [first,] = inOrder;
+    if (first === undefined)
+      throw new Error('unreachable: grouping produced a boundary with no replacement',);
+    return {
+      kind: 'insertion',
+      startOffset: offset,
+      endOffset: offset,
+      orderIndex: first.replacement
+        .chunkIndex,
+      fragments: inOrder.map(function toText(anchored,): string {
+        return anchored.replacement
+          .replacementText;
+      },),
+    };
+  },);
+  return [
+    ...overText,
+    ...intoPlaces,
+  ].toSorted(function byOffsetDescending(
+    left,
+    right,
+  ): number {
+    /**
+     * Offset gap, which decides every pair of distinct boundaries.
+     */
+    const byOffset = right.startOffset - left.startOffset;
+    if (byOffset !== 0)
+      return byOffset;
+    return right.orderIndex - left.orderIndex;
+  },);
+}
 
 /**
  * Rebuilds the translation with every replacement written in.
@@ -220,77 +409,53 @@ export function spliceSlices(
   }
 
   /**
-   * Replacements in the order they can be written without moving each other.
+   * Every edit this call makes, with the anchors sharing one boundary gathered
+   * into a single one.
+   *
+   * GATHERED RATHER THAN SEQUENCED, because the separators between them are
+   * decided once for the whole group: written one at a time, each would have to
+   * guess what the others had already put there.
    */
-  const ordered = placed.toSorted(function byOffsetDescending(
-    left,
-    right,
-  ): number {
-    /**
-     * Where the left span starts.
-     */
-    const leftOffset = left.span
-      .startOffset;
+  const edits = plannedEdits({ placed, },);
 
-    /**
-     * Where the right one starts.
-     */
-    const rightOffset = right.span
-      .startOffset;
+  /**
+   * Line ending this document separates its blocks with.
+   */
+  const eol = documentLineEnding({ targetText, },);
 
-    /**
-     * Offset gap, which decides every pair of distinct spans.
-     */
-    const byOffset = rightOffset - leftOffset;
-    if (byOffset !== 0)
-      return byOffset;
-
-    /**
-     * Left slice, for the tie.
-     */
-    const leftIndex = left.replacement
-      .chunkIndex;
-
-    /**
-     * Right slice.
-     */
-    const rightIndex = right.replacement
-      .chunkIndex;
-
-    // One offset can carry several anchors and, after them, at most one
-    // content span: the layout rule allows an anchor at a span's start,
-    // meaning before it. Writing the later slice first leaves the earlier one
-    // ahead of it, which is document order, and that holds only because an
-    // index IS a position here.
-    return rightIndex - leftIndex;
-  },);
-
-  return ordered.reduce(
+  return edits.reduce(
     function spliceOne(
       text: string,
-      entry,
+      edit,
     ): string {
       /**
-       * Everything before this span, untouched.
+       * Everything before this edit, which no earlier write has touched: edits
+       * run backwards through the document, so the prefix is still the archive.
        */
       const head = text.slice(
         0,
-        entry.span
-          .startOffset,
+        edit.startOffset,
       );
 
       /**
-       * Text going in, which for a zero-length span is an insertion.
+       * Everything after it, as it will stand: later offsets were written
+       * first, so this is what the edit's text will actually meet.
        */
-      const written = entry.replacement
-        .replacementText;
+      const tail = text.slice(edit.endOffset,);
 
       /**
-       * Everything after it, whose offsets are still valid because writing
-       * runs backwards through the document.
+       * Text going in. A content span carries its lane's text verbatim, which
+       * is what every replacement did before anchors existed. An anchor has no
+       * span to sit between, so assembly composes its separators.
        */
-      const tail = text.slice(entry.span
-        .endOffset,);
+      const written = (edit.kind === 'insertion')
+        ? composeInsertion({
+          fragments: edit.fragments,
+          before: head,
+          after: tail,
+          eol,
+        },)
+        : edit.text;
       return head
         + written
         + tail;
