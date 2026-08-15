@@ -693,3 +693,35 @@ it again on every attempt while the cause persists.
     Nothing settled is affected, because all 209 corpus markers are numeric and
     folding a digit changes nothing; a model writing a word-labelled footnote
     into a replacement triggers it at once.
+16. BOTH LANES NOW RUN FROM ONE DRIVER THAT ARBITRATES NOTHING.
+    `runDocumentLanes` takes one prepared pair, runs repair and then translate
+    over it, and returns both documents with no winner, no preferred lane and no
+    merged text, because choosing between them is Question 5 and a driver that
+    chose would answer it invisibly for every later count. Three sub-choices are
+    open to veto on their own: the lanes run SEQUENTIALLY, since the quota spent
+    is the same and both already serialize their own slices; REPAIR RUNS FIRST,
+    because its naturalness phase settles after the slice loop and nothing
+    persists what that phase produced, while the translate lane caches every
+    slice as it finishes, so a deadline cutting the entry loses less of what was
+    bought; and there is NO ABORT CHECK BETWEEN THE LANES, since both drivers
+    deliberately let a fully cached lane finish after an abort and a gate there
+    would refuse that. Alignment findings are reported once at the top level
+    rather than per lane, because they belong to the preparation both lanes
+    shared and counting them per lane would count one defect in the archive
+    twice.
+17. EACH LANE RESULT NOW NAMES THE SLICES IT SHIPPED AND WITHDREW, read off the
+    assembly guard rather than off the per-slice records. A record says what its
+    own slice CHOSE, and a slice can be withdrawn while carrying no issue of its
+    own, so a comparison built from records would credit a lane with slices the
+    returned document does not carry. Recorded into the settled artifact too, so
+    the withdraw rate is countable over a directory. Artifacts settled before
+    2026-08-15 lack both fields, and a reader must treat their absence as
+    unknown rather than as empty.
+18. THE BENCH NOW PRICES SENDING AND ANSWERING SEPARATELY. One total could not
+    answer the width question the bench exists for: seating one more producer
+    resends the SAME prompt and adds one more answer, while a judge pays a
+    prompt carrying every candidate, so those three costs scale with width
+    differently and a single number prices them the same way. The server's own
+    total is kept beside both halves rather than derived from them, because a
+    provider billing hidden reasoning counts it in the total and in neither
+    half, and deriving would under-price every thinking model in the roster.

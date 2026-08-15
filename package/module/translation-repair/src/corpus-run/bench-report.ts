@@ -2,6 +2,10 @@ import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { writeFileAtomic, } from './atomic-write.ts';
+import type {
+  BenchCall,
+  CallTokens,
+} from './bench-record.ts';
 import { resolveRunsDir, } from './run-config.ts';
 import type { BenchRow, } from './roster-bench.ts';
 
@@ -192,6 +196,46 @@ export async function writeBenchReport(
 }
 
 /**
+ * Token cost of every exchange a set of rows made, both halves kept apart.
+ *
+ * Summed here rather than inside the summary line, because a width comparison
+ * is read one half at a time: seating another producer resends the same prompt
+ * and adds one more answer, and only the split says which of those the wider
+ * roster actually spent.
+ *
+ * @param rows - rows to total
+ *
+ * @returns Sending half, answering half, and reported total across every call
+ *
+ * @example
+ * ```ts
+ * const cost = tokensOfRows({ rows, },);
+ * ```
+ */
+function tokensOfRows(
+  { rows, }: { readonly rows: readonly BenchRow[]; },
+): CallTokens {
+  /**
+   * Every exchange these rows made, flattened so each half is one pass.
+   */
+  const calls = rows.flatMap(function toCalls(row,): readonly BenchCall[] {
+    return row.calls;
+  },);
+
+  return {
+    promptTokens: sumOf({ values: calls.map(function toPrompt(call,): number {
+      return call.promptTokens;
+    },), },),
+    completionTokens: sumOf({ values: calls.map(function toCompletion(call,): number {
+      return call.completionTokens;
+    },), },),
+    tokens: sumOf({ values: calls.map(function toTotal(call,): number {
+      return call.tokens;
+    },), },),
+  };
+}
+
+/**
  * One line describing what a set of rows decided and cost.
  *
  * @param rows - rows to describe, all of one width and pass
@@ -240,14 +284,9 @@ function describeRows(
   },), },);
 
   /**
-   * Tokens those exchanges moved.
+   * Tokens those exchanges moved, sending and answering halves apart.
    */
-  const tokens = sumOf({ values: rows.map(function toTokens(row,): number {
-    return sumOf({ values: row.calls
-      .map(function toCallTokens(call,): number {
-        return call.tokens;
-      },), },);
-  },), },);
+  const cost = tokensOfRows({ rows, },);
 
   /**
    * Wall time this set took.
@@ -269,7 +308,7 @@ function describeRows(
     `kept ${String(kept.length,)}`,
     `self-votes ${String(selfVotes,)}`,
     `calls ${String(calls,)}`,
-    `tokens ${String(tokens,)}`,
+    `tokens ${String(cost.tokens,)} (in ${String(cost.promptTokens,)}, out ${String(cost.completionTokens,)})`,
     `${String(Math.round(ms / rows.length,),)}ms per slice`,
   ].join(', ',);
 }

@@ -46,6 +46,11 @@ export {
   orderBySourceSize,
   pickSpreadSample,
 } from './corpus-run/bench-draw.ts';
+export {
+  type BenchCall,
+  type CallTokens,
+  recordingClient,
+} from './corpus-run/bench-record.ts';
 export { benchWidths, } from './corpus-run/bench-report.ts';
 export {
   lockRunsDir,

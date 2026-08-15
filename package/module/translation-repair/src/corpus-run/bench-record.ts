@@ -32,14 +32,57 @@ import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 const FAILURE_DETAIL_CHARS = 40;
 
 /**
+ * Both halves of one exchange's token cost, kept apart because roster width
+ * does not move them together. Seating one more producer resends the SAME
+ * prompt, so the sending half scales with width alone; what comes back scales
+ * with what each producer actually writes; and a judge pays a prompt carrying
+ * every candidate, so its sending half grows with width while its answering
+ * half does not. A single total prices all three the same way and cannot say
+ * which one a wider roster bought.
+ *
+ * @example
+ * ```ts
+ * const cost: CallTokens = { promptTokens: 900, completionTokens: 120, tokens: 1020, };
+ * ```
+ */
+export type CallTokens = {
+  /**
+   * Tokens spent sending, zero when the server reported no usage at all.
+   */
+  readonly promptTokens: number;
+
+  /**
+   * Tokens spent answering, zero when the server reported no usage at all.
+   */
+  readonly completionTokens: number;
+
+  /**
+   * Total as the server reported it, which MAY EXCEED both halves added: a
+   * server billing hidden reasoning counts it in its own total and in neither
+   * half. Reported separately rather than derived, so the bench's headline cost
+   * stays what the provider would charge.
+   */
+  readonly tokens: number;
+};
+
+/**
+ * Cost of an exchange that raised before any usage came back.
+ */
+const NO_TOKENS: CallTokens = {
+  promptTokens: 0,
+  completionTokens: 0,
+  tokens: 0,
+};
+
+/**
  * One exchange, as the bench records it.
  *
  * @example
  * ```ts
- * const call: BenchCall = { schema: 'translate', modelId: 'hf:x', ms: 4200, tokens: 900, outcome: 'ok', };
+ * const call: BenchCall = { schema: 'translate', modelId: 'hf:x', ms: 4200, promptTokens: 800, completionTokens: 100, tokens: 900, outcome: 'ok', };
  * ```
  */
-export type BenchCall = {
+export type BenchCall = CallTokens & {
   /**
    * Response schema asked for, which names the stage.
    */
@@ -55,11 +98,6 @@ export type BenchCall = {
    * what a width costs.
    */
   readonly ms: number;
-
-  /**
-   * Tokens the server reported, zero when it reported none.
-   */
-  readonly tokens: number;
 
   /**
    * Outcome kind, or a truncated failure when the exchange raised.
@@ -117,36 +155,40 @@ function schemaOf(
  * @param answered - reply or outcome, whichever came back; both carry usage
  * only when the server reported it
  *
- * @returns Total tokens, falling back to the sum of both halves
+ * @returns Both halves, plus whichever total the server stated or their sum
  *
  * @example
  * ```ts
- * const tokens = tokensOf({ answered: outcome, },);
+ * const cost = usageOf({ answered: outcome, },);
  * ```
  */
-function tokensOf(
+function usageOf(
   { answered, }: ForeignBorrowed<{
     readonly answered: { readonly usage?: CompletionUsage; };
   }>,
-): number {
+): CallTokens {
   if (answered.usage === undefined)
-    return 0;
+    return NO_TOKENS;
 
   /**
    * First half the server always reports when it reports anything.
    */
-  const prompt = answered.usage
+  const promptTokens = answered.usage
     .prompt_tokens;
 
   /**
    * Second half of the same report.
    */
-  const completion = answered.usage
+  const completionTokens = answered.usage
     .completion_tokens;
 
-  return answered.usage
-    .total_tokens
-    ?? (prompt + completion);
+  return {
+    promptTokens,
+    completionTokens,
+    tokens: answered.usage
+      .total_tokens
+      ?? (promptTokens + completionTokens),
+  };
 }
 
 /**
@@ -197,7 +239,7 @@ export function recordingClient(
       schema: schemaOf({ request, },),
       modelId: request.modelId,
       ms: performance.now() - began,
-      tokens: tokensOf({ answered: reply, },),
+      ...usageOf({ answered: reply, },),
       outcome: 'text',
     },);
     return reply;
@@ -233,7 +275,7 @@ export function recordingClient(
         schema: schemaOf({ request, },),
         modelId: request.modelId,
         ms: performance.now() - began,
-        tokens: tokensOf({ answered: outcome, },),
+        ...usageOf({ answered: outcome, },),
         outcome: outcome.kind,
       },);
       return outcome;
@@ -254,7 +296,7 @@ export function recordingClient(
         schema: schemaOf({ request, },),
         modelId: request.modelId,
         ms: performance.now() - began,
-        tokens: 0,
+        ...NO_TOKENS,
         outcome: `threw ${detail}`,
       },);
       throw error;
