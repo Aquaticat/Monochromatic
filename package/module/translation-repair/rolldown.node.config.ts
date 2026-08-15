@@ -38,6 +38,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "score-probe": "./src/corpus-run/score-probe.ts",
     "score-verify": "./src/corpus-run/score-verify.ts",
     "sentinel-probe": "./src/corpus-run/sentinel-probe.ts",
+    "slice-census": "./src/corpus-run/slice-census.ts",
     "translate-probe": "./src/corpus-run/translate-probe.ts",
   },
 },);

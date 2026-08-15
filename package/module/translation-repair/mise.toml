@@ -117,3 +117,8 @@ run = "node dist/final/node/model-catalog.mjs"
 description = "Ask whether the resolution checkers can say no: a genuine fix, an untouched text, and a fix that damaged its slice, cat-themed fixtures only"
 depends = ["build"]
 run = "node dist/final/node/checker-sensitivity.mjs"
+
+[tasks."slice-census"]
+description = "Measure the pinned corpus after slicing: slice size spread, sections only one side carries, and blocks only the translation has; spends no quota"
+depends = ["build"]
+run = "node dist/final/node/slice-census.mjs"
