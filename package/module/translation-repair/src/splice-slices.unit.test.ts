@@ -556,6 +556,132 @@ await describe({
         },).toThrow('two replacements name one slice',);
       },
     },),
+
+    it({
+      name: 'writes an anchor BEFORE the content span it shares a start with, which is the shape a '
+        + 'missing paragraph makes at a section that is otherwise translated: the new rendering belongs '
+        + 'ahead of the passage that follows it, not after',
+      fn: async () => {
+        expect(
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES.slice(
+                0,
+                2,
+              ),
+              anchorAt({
+                chunkIndex: 2,
+                offset: FINAL_START,
+              },),
+              chunkAt({
+                chunkIndex: 3,
+                startOffset: FINAL_START,
+                endOffset: TARGET_TEXT.length,
+              },),
+            ],
+            replacements: [
+              write({
+                chunkIndex: 3,
+                replacementText: 'She purrs loudly.',
+              },),
+              write({
+                chunkIndex: 2,
+                replacementText: 'Then she yawns. ',
+              },),
+            ],
+          },),
+        ).toBe(
+          'The cat sleeps.\n\nShe chases butterflies in the garden all afternoon.\n\n'
+          + 'Then she yawns. She purrs loudly.',
+        );
+      },
+    },),
+
+    it({
+      name: 'writes an anchor at the END of the document, which is where a section the translation never '
+        + 'reached belongs: the archive stops early, and the rendering goes after everything that is there',
+      fn: async () => {
+        expect(
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES,
+              anchorAt({
+                chunkIndex: 3,
+                offset: TARGET_TEXT.length,
+              },),
+            ],
+            replacements: [
+              write({
+                chunkIndex: 3,
+                replacementText: '\n\nShe sleeps again.',
+              },),
+            ],
+          },),
+        ).toBe(`${TARGET_TEXT}\n\nShe sleeps again.`,);
+      },
+    },),
+
+    it({
+      name: 'THROWS when slice indices are unique but NOT positions, which is the case that writes '
+        + 'plausible text in the wrong order: two anchors at one boundary are written in descending index '
+        + 'so they land ascending, and that is document order only while an index is a position',
+      fn: async () => {
+        expect(function spliceShuffledIndices() {
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES,
+              anchorAt({
+                chunkIndex: 4,
+                offset: TARGET_TEXT.length,
+              },),
+              anchorAt({
+                chunkIndex: 3,
+                offset: TARGET_TEXT.length,
+              },),
+            ],
+            replacements: [
+              write({
+                chunkIndex: 3,
+                replacementText: 'B',
+              },),
+              write({
+                chunkIndex: 4,
+                replacementText: 'A',
+              },),
+            ],
+          },);
+        },).toThrow('reads that index as the position',);
+      },
+    },),
+
+    it({
+      name: 'THROWS when an anchor is handed blank text for an original that says something. The slice '
+        + 'has no existing translation, so writing nothing leaves the passage missing while every count '
+        + 'reports it delivered',
+      fn: async () => {
+        expect(function spliceBlankInsertion() {
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES,
+              anchorAt({
+                chunkIndex: 3,
+                offset: TARGET_TEXT.length,
+              },),
+            ],
+            replacements: [
+              write({
+                chunkIndex: 3,
+                replacementText: '   \n',
+              },),
+            ],
+          },);
+        },).toThrow('writes none',);
+      },
+    },),
   ],
 },);
 

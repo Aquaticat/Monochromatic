@@ -2,7 +2,9 @@ import type {
   ChunkPair,
   DocumentChunk,
 } from './chunk-document.ts';
+import { isInsertionChunk, } from './chunk-placement.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
+import { assertSliceIndexing, } from './slice-indexing.ts';
 
 //region Slice splicing
 // Rebuilding a whole translation from per-slice results.
@@ -64,6 +66,12 @@ type PlacedReplacement = {
    * Target span it goes into, resolved from the slice list.
    */
   readonly span: DocumentChunk;
+
+  /**
+   * Original this slice renders, which decides whether blank text may be
+   * written into a place that has nothing yet.
+   */
+  readonly sourceText: string;
 };
 
 /**
@@ -111,7 +119,7 @@ export function spliceSlices(
     return [
       slice.target
         .chunkIndex,
-      slice.target,
+      slice,
     ] as const;
   },),);
   if (spans.size !== slices.length) {
@@ -128,6 +136,13 @@ export function spliceSlices(
   // failure. Identity comes first because a list that names one slice twice
   // is a caller disagreeing with the slicer, which explains every offset
   // complaint that would follow it.
+  // POSITIONAL INDICES, which the sort below depends on and this function
+  // cannot otherwise assume. Two anchors at one boundary are written in
+  // descending index order so they land in ascending order, which is document
+  // order only while an index IS a position. A caller handing in slices whose
+  // indices are unique but shuffled gets a document with its insertions
+  // reversed and no complaint from anything else here.
+  assertSliceIndexing({ slices, },);
   assertPlacementLayout({
     slices,
     targetText,
@@ -145,16 +160,53 @@ export function spliceSlices(
     /**
      * Span this replacement names.
      */
-    const span = spans.get(replacement.chunkIndex,);
-    if (span === undefined) {
+    const slice = spans.get(replacement.chunkIndex,);
+    if (slice === undefined) {
       throw new Error(
         `no slice ${String(replacement.chunkIndex,)} to write into: `
         + `the document was sliced into ${String(slices.length,)} slices`,
       );
     }
+
+    /**
+     * Where it goes.
+     */
+    const span = slice.target;
+
+    /**
+     * Whether this is a place rather than existing wording.
+     */
+    const missingTranslation = isInsertionChunk(span,);
+
+    /**
+     * Original this slice renders.
+     */
+    const sourceText = slice.source
+      .text;
+    /**
+     * Whether the text offered for this slice says nothing.
+     */
+    const writesNothing = replacement.replacementText
+      .trim()
+      === '';
+
+    /**
+     * Whether the original says something.
+     */
+    const sourceSaysSomething = sourceText.trim() !== '';
+    if (missingTranslation
+      && writesNothing
+      && sourceSaysSomething) {
+      throw new Error(
+        `slice ${String(replacement.chunkIndex,)} has no translation and writes none: an anchor is `
+          + 'where a rendering belongs, so blank text there leaves the passage missing while the run '
+          + 'reports it delivered',
+      );
+    }
     return {
       replacement,
       span,
+      sourceText,
     };
   },);
   if (new Set(placed.map(function toIndex(entry,): number {
@@ -205,8 +257,11 @@ export function spliceSlices(
     const rightIndex = right.replacement
       .chunkIndex;
 
-    // Same offset means insertions into one empty span. Writing the later
-    // slice first leaves the earlier one before it, which is document order.
+    // One offset can carry several anchors and, after them, at most one
+    // content span: the layout rule allows an anchor at a span's start,
+    // meaning before it. Writing the later slice first leaves the earlier one
+    // ahead of it, which is document order, and that holds only because an
+    // index IS a position here.
     return rightIndex - leftIndex;
   },);
 

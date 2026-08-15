@@ -119,16 +119,6 @@ function assertSpanShape(
       }, which slicing reads as an empty span rather than as the mistake it is`,
     },);
   }
-  if (span.text !== targetText.slice(
-    startOffset,
-    endOffset,
-  )) {
-    throw new PlacementLayoutError({
-      message: `slice at position ${String(position,)} carries text the document does not hold between ${
-        String(startOffset,)
-      } and ${String(endOffset,)}, so these slices were cut from another document`,
-    },);
-  }
   if (isInsertionChunk(span,)) {
     /**
      * How many nodes it claims, which for a place is none.
@@ -137,17 +127,37 @@ function assertSpanShape(
       .length;
 
     /**
+     * How much wording it claims, which for a place is none.
+     */
+    const wordingLength = span.text
+      .length;
+
+    /**
      * Whether it covers a range or wording, either of which contradicts it.
      */
     const covers = (startOffset !== endOffset)
-      || (span.text !== '');
+      || (wordingLength > 0);
     if (covers
       || (nodeCount > 0)) {
       throw new PlacementLayoutError({
-        message: `slice at position ${String(position,)} says it is an insertion and covers text anyway`,
+        message: `slice at position ${String(position,)} says it is an insertion while covering ${
+          String(endOffset - startOffset,)
+        } characters, ${String(wordingLength,)} of wording and ${String(nodeCount,)} nodes; a place `
+          + 'covers none of the three',
       },);
     }
     return;
+  }
+  if (span.text !== targetText.slice(
+    startOffset,
+    endOffset,
+  )) {
+    throw new PlacementLayoutError({
+      message: `slice at position ${String(position,)} carries text the document does not hold between ${
+        String(startOffset,)
+      } and ${String(endOffset,)}: these offsets, this wording and this document do not describe one `
+        + 'passage, whether because the slices are stale, cut from another document, or misplaced',
+    },);
   }
   if (startOffset === endOffset) {
     throw new PlacementLayoutError({

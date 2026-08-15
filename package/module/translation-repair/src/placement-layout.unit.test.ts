@@ -330,7 +330,7 @@ await describe({
             ],
             targetText: TARGET_TEXT,
           },);
-        },).toThrow('covers text anyway',);
+        },).toThrow('a place covers none of the three',);
         expect(function checkFractionalOffset() {
           assertPlacementLayout({
             slices: [
