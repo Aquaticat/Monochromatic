@@ -341,12 +341,18 @@ export async function translateDocument(
           2,
         ),
       },);
+
+      // MEMOIZED EXACTLY WHERE IT IS PERSISTED, which is the point of the
+      // memoization: a warm run can only resume what reached the cache, so an
+      // in-run twin must reuse only what a warm run would have found. Doing it
+      // unconditionally reused a record this driver deliberately refused to
+      // store, and broke the cold-warm agreement it exists to keep.
+      settledByKey.set(
+        key,
+        record,
+      );
     }
     /* oxlint-enable no-await-in-loop */
-    settledByKey.set(
-      key,
-      record,
-    );
     settled.push(record,);
   }
 

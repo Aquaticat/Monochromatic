@@ -1262,6 +1262,85 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
     },),
 
     it({
+      name: 'ASKS AGAIN for a twin of a slice no critic answered. The in-run memo may only hold what a '
+        + 'warm run could resume, and this slice is deliberately not cached, so reusing it would settle '
+        + 'a cold run on a silence a warm run would have re-examined',
+      fn: async () => {
+        /**
+         * Section written twice, so both slices ask one question.
+         */
+        const SECTION = `## 甲
+
+猫猫喜欢在窗台上晒太阳。猫猫也喜欢追蝴蝶。
+`;
+
+        /**
+         * Its archive wording, likewise written twice.
+         */
+        const RENDERED = `## Alpha
+
+The cat loves sunbathing on the windowsill. The cat hates butterflies.
+`;
+
+        /**
+         * Critic calls one slice of it costs, measured rather than assumed:
+         * the roster retries a lost voice, so the count per slice belongs to
+         * the gather rather than to the critic list length.
+         */
+        const single = { critic: 0, };
+        await repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+            controller: new AbortController(),
+            calls: single,
+            silentCritics: true,
+          },),
+          sourceText: SECTION,
+          targetText: RENDERED,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /**
+         * Critic calls the same section twice costs.
+         */
+        const twin = { critic: 0, };
+
+        /**
+         * Slices that reached the cache, which must stay empty.
+         */
+        const store = new Map<string, string>();
+        const result = await repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+            controller: new AbortController(),
+            calls: twin,
+            silentCritics: true,
+          },),
+          sourceText: `${SECTION}\n${SECTION}`,
+          targetText: `${RENDERED}\n${RENDERED}`,
+          models: MODELS,
+          signal: new AbortController().signal,
+          sliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+        expect(result.sliceCount,).toBe(2,);
+        expect(twin.critic,).toBe(single.critic * 2,);
+        expect(store.size,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'settles a slice NO critic answered, and deliberately does not '
         + 'cache it. Nothing inspected that slice, so caching it records an '
         + 'outage as a clean verdict that every later attempt resumes rather '

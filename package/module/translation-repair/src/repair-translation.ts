@@ -373,13 +373,20 @@ export async function repairPreparedDocument(
             2,
           ),
         },);
+
+        // MEMOIZED EXACTLY WHERE IT IS PERSISTED, which is the point of the
+        // memoization: a warm run can only resume what reached the cache, so an
+        // in-run twin must reuse only what a warm run would have found. Doing it
+        // unconditionally reused an outcome this lane deliberately refused to
+        // store, and broke the cold-warm agreement it exists to keep. A RESUMED
+        // outcome needs no entry either: it came from a map that still holds it.
+        settledByKey.set(
+          sliceKey,
+          outcome,
+        );
       }
     }
     /* oxlint-enable no-await-in-loop */
-    settledByKey.set(
-      sliceKey,
-      outcome,
-    );
     outcomes.push(outcome,);
 
     /**

@@ -942,5 +942,54 @@ But we must remember that the cat sleeping on the windowsill has been there `
         expect(refusals[1],).toContain('slice 1',);
       },
     },),
+    it({
+      name: 'ASKS AGAIN for a twin of a slice no translator answered, because the in-run memo may only '
+        + 'hold what a warm run could resume and this slice is deliberately not cached. Reusing it '
+        + 'would make a cold run settle on a silence a warm run would have re-asked',
+      fn: async () => {
+        /** Section written twice, so both slices ask one question. */
+        const SECTION = `## 第一节
+
+猫猫在窗台上打盹。
+`;
+
+        /** Its archive wording, likewise written twice. */
+        const RENDERED = `## Section one
+
+The cat is doing the sleeping on the windowsill.
+`;
+
+        /**
+         * One slice of it, which calibrates what asking once costs.
+         *
+         * Measured rather than assumed: the roster retries a lost voice, so the
+         * count per slice is a property of the gather rather than of the
+         * translator list length.
+         */
+        const single = await runDriver({
+          sourceText: SECTION,
+          targetText: RENDERED,
+          silentTranslators: true,
+        },);
+
+        /**
+         * The same section twice.
+         */
+        const twin = await runDriver({
+          sourceText: `${SECTION}\n${SECTION}`,
+          targetText: `${RENDERED}\n${RENDERED}`,
+          silentTranslators: true,
+        },);
+        expect(single.result
+          .sliceCount,).toBe(1,);
+        expect(twin.result
+          .sliceCount,).toBe(2,);
+        expect(twin.calls
+          .translate,).toBe(single.calls
+          .translate * 2,);
+        expect(twin.persisted
+          .size,).toBe(0,);
+      },
+    },),
   ],
 },);
