@@ -199,6 +199,21 @@ each, and the totals already show width 6 landing under width 5.
 The ballot-token trend is monotone across all five widths, which is why it is
 reported as a trend; no single adjacent pair here resolves anything.
 
+Two more things the same grouping shows.
+
+THE BALLOT ROUND GETS SLOWER PER SLICE AS THE SLATE WIDENS, and it is the
+largest stage by time at every width: summed model seconds per slice run 83.2,
+108.1, 127.1, 136.8 and 142.8 from width 2 to width 6, a 72% rise over a call
+count that does not move.
+These are SUMMED over calls rather than wall time, so they overstate what a
+slice waits when calls overlap; the wall figures are in "What one slice costs".
+The direction agrees with the tokens, which is the point of reporting it.
+
+FAILURES DO NOT SCALE WITH WIDTH. Exactly two exchanges throw at every width
+from three up, and none at width 2, out of 72 to 201 calls per width.
+That is the straggler cut, and it is a per-run constant here rather than a rate,
+so a wider roster does not buy more failures.
+
 ## The selector prompt
 
 362 selection exchanges, largest 12119 tokens, p95 8052.
