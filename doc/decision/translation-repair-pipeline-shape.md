@@ -4,8 +4,14 @@ Decision record for the shape of `@monochromatic-dev/module-translation-repair`.
 Decision:
  every slice is translated afresh,
  the existing translation competes as one candidate,
- and judges select per slice,
- taken on 2026-08-15 by the user.
+ and judges select per slice.
+
+Provenance, stated exactly because it is a derivation rather than a quotation:
+ on 2026-08-15 the user REJECTED the recommended shape and gave two criteria for
+ rejecting it,
+ and those two criteria pick this shape out of the three that were on the table.
+The derivation is set out in "What was proposed and what the user said".
+It was reported to the user for correction when it was taken.
 
 It closes `#70`,
  which `doc/decision/translation-repair-output-goal.md` left open when it decided
