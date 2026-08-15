@@ -10,6 +10,7 @@ import {
   isTranslateRepairWire,
   TRANSLATE_REPAIR_RESPONSE_FORMAT,
 } from './translate-repair-wire.ts';
+import { collapseKey, } from './translate-candidates.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
 
@@ -58,6 +59,8 @@ export type RepairOutcome = {
  *
  * @param sourceText - original slice the candidate renders
  *
+ * @param incumbentText - translation as it stands
+ *
  * @param priorMessages - exact messages that produced the candidate
  *
  * @param signal - caller abort honored by the follow-up exchange
@@ -78,6 +81,7 @@ async function repairOneCandidate(
     client,
     voice,
     sourceText,
+    incumbentText,
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -86,12 +90,27 @@ async function repairOneCandidate(
     readonly client: SyntheticClient;
     readonly voice: HeardVoice<TranslateReportWire>;
     readonly sourceText: string;
+    readonly incumbentText: string;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
   }>,
 ): Promise<RepairOutcome> {
+  // A candidate that reproduced the incumbent is about to COLLAPSE into it, and
+  // the incumbent is never validated, so validating this copy would spend a
+  // follow-up call to repair text that is not going to be on the ballot. Worse,
+  // a revision would break the match and destroy the `translate-matched-incumbent`
+  // signal, on exactly the slices where the incumbent diverges from its source
+  // and the match is most worth knowing about.
+  if (collapseKey({ text: voice.value
+    .translation, },)
+    === collapseKey({ text: incumbentText, },))
+    return {
+      voice,
+      findings: [],
+    };
+
   /**
    * Structural verdict over what this model returned.
    */
@@ -216,6 +235,9 @@ async function repairOneCandidate(
  *
  * @param sourceText - original slice
  *
+ * @param incumbentText - translation as it stands, so a candidate that already
+ * reproduces it is left alone
+ *
  * @param priorMessages - exact messages every translator was given
  *
  * @param signal - caller abort honored by every exchange
@@ -236,6 +258,7 @@ export async function repairInvalidCandidates(
     client,
     voices,
     sourceText,
+    incumbentText,
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -244,6 +267,7 @@ export async function repairInvalidCandidates(
     readonly client: SyntheticClient;
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly sourceText: string;
+    readonly incumbentText: string;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -262,6 +286,7 @@ export async function repairInvalidCandidates(
         client,
         voice,
         sourceText,
+        incumbentText,
         priorMessages,
         signal,
         perCallTimeoutMs,

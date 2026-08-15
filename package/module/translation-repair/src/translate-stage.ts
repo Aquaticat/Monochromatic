@@ -329,6 +329,7 @@ export async function runTranslateStage(
     client,
     voices: gather.voices,
     sourceText,
+    incumbentText,
     priorMessages: plan.messages,
     signal,
     perCallTimeoutMs,

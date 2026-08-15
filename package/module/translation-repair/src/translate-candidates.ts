@@ -126,7 +126,7 @@ function proposesText({ text, }: { readonly text: string; },): boolean {
  * const key = collapseKey({ text, },);
  * ```
  */
-function collapseKey({ text, }: { readonly text: string; },): string {
+export function collapseKey({ text, }: { readonly text: string; },): string {
   return text.trimEnd();
 }
 

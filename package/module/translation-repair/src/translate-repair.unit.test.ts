@@ -139,6 +139,9 @@ function repairClient(
  *
  * @param answer - what it answers when asked about the findings
  *
+ * @param incumbentText - translation already in the document, blank by default
+ * so most cases exercise a slice with none
+ *
  * @returns Final voices, findings, and what the follow-up call saw
  *
  * @example
@@ -150,9 +153,11 @@ async function runRepair(
   {
     translation,
     answer,
+    incumbentText = '',
   }: {
     readonly translation: string;
     readonly answer: unknown;
+    readonly incumbentText?: string;
   },
 ) {
   /**
@@ -178,6 +183,7 @@ async function runRepair(
       },
     ],
     sourceText: SOURCE_TEXT,
+    incumbentText,
     priorMessages: PRIOR_MESSAGES,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
@@ -209,6 +215,47 @@ await describe({
         expect(log.calls,).toBe(0,);
         expect(repaired.findings,).toHaveLength(0,);
         expect(repaired.voices[0]?.value.translation,).toBe(GOOD_TEXT,);
+      },
+    },),
+
+    it({
+      name: 'leaves a candidate that REPRODUCED THE INCUMBENT alone, however '
+        + 'the incumbent scores. That text is about to collapse into the '
+        + 'incumbent, which is never validated, so asking about it would spend '
+        + 'a call on text nobody will ship; and a revision would break the '
+        + 'match, erasing the one signal that says a translation was examined '
+        + 'and kept rather than never looked at',
+      fn: async () => {
+        const { repaired, log, } = await runRepair({
+          translation: MERGED_TEXT,
+          incumbentText: MERGED_TEXT,
+          answer: {
+            resolution: 'revised',
+            translation: GOOD_TEXT,
+            explanation: 'restored the heading',
+          },
+        },);
+        expect(log.calls,).toBe(0,);
+        expect(repaired.findings,).toHaveLength(0,);
+        expect(repaired.voices[0]?.value.translation,).toBe(MERGED_TEXT,);
+      },
+    },),
+
+    it({
+      name: 'still asks about a candidate that only RESEMBLES the incumbent, '
+        + 'since the collapse it would merge into never happens and the '
+        + 'candidate reaches the ballot on its own',
+      fn: async () => {
+        const { log, } = await runRepair({
+          translation: MERGED_TEXT,
+          incumbentText: `${MERGED_TEXT} It naps.`,
+          answer: {
+            resolution: 'unable',
+            translation: '',
+            explanation: 'the heading is not a sentence in English',
+          },
+        },);
+        expect(log.calls,).toBe(1,);
       },
     },),
 
