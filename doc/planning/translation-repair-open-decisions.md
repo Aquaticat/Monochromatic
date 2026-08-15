@@ -516,7 +516,11 @@ C.  Run the lane in report-only mode first: translate everything, record every
     `runDocumentLanes` puts both lanes over one preparation and returns both
     documents without choosing between them, which is exactly a report-only
     pass minus the artifact wiring. It also measures decision 12's withdraw-all
-    rate for free, since the guard runs whether or not anything ships.
+    rate for free, since the guard runs whether or not anything ships. And since
+    each lane result now NAMES the slices it shipped and withdrew, such a pass
+    answers "which slices did each lane change, and how often the same one"
+    without anything further being built; what it still cannot show side by side
+    is the two lanes' TEXT for one slice, which needs both contracts widened.
     Cons: the grading is your time rather than mine, and the corpus ships later
     by however long that reading takes.
 
