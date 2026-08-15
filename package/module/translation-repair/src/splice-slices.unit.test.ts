@@ -1,5 +1,5 @@
 /**
- * Tests for rebuilding a translation from per-slice outcomes.
+ * Tests for rebuilding a translation from per-slice replacements.
  *
  * The function is small and its failure is not: it assembles the text that
  * actually ships. A splice applied in the wrong order silently corrupts every
@@ -18,7 +18,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { spliceSlices, } from '../dist/final/node/index.mjs';
+import {
+  repairReplacements,
+  type SliceReplacement,
+  spliceSlices,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Translation the slices are cut from.
@@ -125,7 +129,42 @@ const SLICES = TARGET_TEXT.split(PARAGRAPH_BREAK,)
   },);
 
 /**
- * Builds one repair outcome for a slice.
+ * Where the final paragraph begins, which is where a slice with no existing
+ * translation would be written in.
+ */
+const FINAL_START = TARGET_TEXT.indexOf('She purrs.',);
+
+/**
+ * Builds one replacement.
+ *
+ * @param chunkIndex - slice to write into
+ *
+ * @param replacementText - text to write there
+ *
+ * @returns Replacement as a lane emits it
+ *
+ * @example
+ * ```ts
+ * const replacement = write({ chunkIndex: 0, replacementText: 'The cat naps.', },);
+ * ```
+ */
+function write(
+  {
+    chunkIndex,
+    replacementText,
+  }: {
+    readonly chunkIndex: number;
+    readonly replacementText: string;
+  },
+): SliceReplacement {
+  return {
+    chunkIndex,
+    replacementText,
+  };
+}
+
+/**
+ * Builds one repair outcome, for the mapping that feeds splicing.
  *
  * @param chunkIndex - slice this outcome is for
  *
@@ -133,7 +172,7 @@ const SLICES = TARGET_TEXT.split(PARAGRAPH_BREAK,)
  *
  * @param changed - whether the repair beat unchanged
  *
- * @returns Outcome carrying only the fields splicing reads
+ * @returns Outcome carrying only the fields the mapping reads
  *
  * @example
  * ```ts
@@ -176,8 +215,8 @@ function outcomeFor(
     resolvedIssueIds: [],
     candidateResolvedIssueIds: [],
     repairRegions: [],
-    // Splicing reads only chunkIndex, repairedText, and changed. The rest are
-    // filled to satisfy the contract, deliberately at their inert values so
+    // The mapping reads only chunkIndex, repairedText, and changed. The rest
+    // are filled to satisfy the contract, deliberately at their inert values so
     // nothing here can look like a repair that happened.
     accuracyPatchSelected: false,
     refined: false,
@@ -195,43 +234,31 @@ await describe({
   name: spliceSlices.name,
   children: [
     it({
-      name: 'returns the translation untouched when nothing changed, so a run '
-        + 'that repaired nothing cannot alter a single byte',
+      name: 'returns the translation untouched when there is nothing to write, '
+        + 'so a run that repaired nothing cannot alter a single byte',
       fn: async () => {
         expect(
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
-            outcomes: [
-              outcomeFor({
-                chunkIndex: 0,
-                repairedText: 'The cat naps.',
-                changed: false,
-              },),
-              outcomeFor({
-                chunkIndex: 2,
-                repairedText: 'She rumbles.',
-                changed: false,
-              },),
-            ],
+            replacements: [],
           },),
         ).toBe(TARGET_TEXT,);
       },
     },),
 
     it({
-      name: 'splices a single changed slice in place, leaving the text on '
-        + 'either side of it byte-identical',
+      name: 'splices a single slice in place, leaving the text on either side '
+        + 'of it byte-identical',
       fn: async () => {
         expect(
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
-            outcomes: [
-              outcomeFor({
+            replacements: [
+              write({
                 chunkIndex: 1,
-                repairedText: 'She chases butterflies all afternoon.',
-                changed: true,
+                replacementText: 'She chases butterflies all afternoon.',
               },),
             ],
           },),
@@ -242,33 +269,30 @@ await describe({
     },),
 
     it({
-      name: 'applies MULTIPLE changed slices correctly even though each '
-        + 'replacement changes the length of the text: this is the case that '
-        + 'breaks if splicing runs in ascending order, because the first '
-        + 'replacement shifts every later offset',
+      name: 'applies MULTIPLE slices correctly even though each replacement '
+        + 'changes the length of the text: this is the case that breaks if '
+        + 'splicing runs in ascending order, because the first replacement '
+        + 'shifts every later offset',
       fn: async () => {
         expect(
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
-            outcomes: [
+            replacements: [
               // A much SHORTER replacement first, so ascending-order splicing
               // would read the third slice's offsets against a text that had
               // already shrunk by 36 characters.
-              outcomeFor({
+              write({
                 chunkIndex: 1,
-                repairedText: 'She chases butterflies.',
-                changed: true,
+                replacementText: 'She chases butterflies.',
               },),
-              outcomeFor({
+              write({
                 chunkIndex: 2,
-                repairedText: 'She purrs loudly and at length.',
-                changed: true,
+                replacementText: 'She purrs loudly and at length.',
               },),
-              outcomeFor({
+              write({
                 chunkIndex: 0,
-                repairedText: 'The cat naps.',
-                changed: true,
+                replacementText: 'The cat naps.',
               },),
             ],
           },),
@@ -279,33 +303,30 @@ await describe({
     },),
 
     it({
-      name: 'ignores outcome order entirely, since the driver hands them back '
-        + 'in completion order rather than document order',
+      name: 'ignores the order replacements arrive in, since a driver hands '
+        + 'them back in completion order rather than document order',
       fn: async () => {
         /**
-         * Outcomes for the first and last slices, built once and spliced twice
-         * in opposite orders.
+         * Replacement for the first slice, spliced twice in opposite orders.
          */
-        const first = outcomeFor({
+        const first = write({
           chunkIndex: 0,
-          repairedText: 'The cat naps.',
-          changed: true,
+          replacementText: 'The cat naps.',
         },);
 
         /**
-         * Outcome for the final slice.
+         * Replacement for the final slice.
          */
-        const last = outcomeFor({
+        const last = write({
           chunkIndex: 2,
-          repairedText: 'She purrs loudly.',
-          changed: true,
+          replacementText: 'She purrs loudly.',
         },);
 
         expect(
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
-            outcomes: [
+            replacements: [
               first,
               last,
             ],
@@ -314,7 +335,7 @@ await describe({
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
-            outcomes: [
+            replacements: [
               last,
               first,
             ],
@@ -324,18 +345,17 @@ await describe({
     },),
 
     it({
-      name: 'keeps a changed slice whose replacement is empty, because deleting '
-        + 'a slice is a legitimate repair and must not read as no-change',
+      name: 'keeps a replacement that is EMPTY, because deleting a slice is a '
+        + 'legitimate result and must not read as no-change',
       fn: async () => {
         expect(
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
-            outcomes: [
-              outcomeFor({
+            replacements: [
+              write({
                 chunkIndex: 2,
-                repairedText: '',
-                changed: true,
+                replacementText: '',
               },),
             ],
           },),
@@ -346,23 +366,167 @@ await describe({
     },),
 
     it({
-      name: 'THROWS when an outcome names a slice that does not exist, rather '
-        + 'than silently dropping the repair: a lost slice means the driver and '
+      name: 'INSERTS into a zero-length span at exactly that offset, which is '
+        + 'the case the translate lane exists for: a passage with no existing '
+        + 'translation has nothing to replace and everything to write',
+      fn: async () => {
+        expect(
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES.slice(
+                0,
+                2,
+              ),
+              chunkAt({
+                chunkIndex: 2,
+                startOffset: FINAL_START,
+                endOffset: FINAL_START,
+              },),
+            ],
+            replacements: [
+              write({
+                chunkIndex: 2,
+                replacementText: 'She dozes in the sun. ',
+              },),
+            ],
+          },),
+        ).toBe(
+          'The cat sleeps.\n\nShe chases butterflies in the garden all afternoon.\n\n'
+          + 'She dozes in the sun. She purrs.',
+        );
+      },
+    },),
+
+    it({
+      name: 'writes SEVERAL insertions sharing one offset in document order '
+        + 'rather than reversed, which is what a section whose translation is '
+        + 'missing entirely looks like once slicing cuts it into several source '
+        + 'slices with one place to put them',
+      fn: async () => {
+        expect(
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES.slice(
+                0,
+                2,
+              ),
+              chunkAt({
+                chunkIndex: 2,
+                startOffset: FINAL_START,
+                endOffset: FINAL_START,
+              },),
+              chunkAt({
+                chunkIndex: 3,
+                startOffset: FINAL_START,
+                endOffset: FINAL_START,
+              },),
+            ],
+            replacements: [
+              write({
+                chunkIndex: 3,
+                replacementText: 'Then she stretches. ',
+              },),
+              write({
+                chunkIndex: 2,
+                replacementText: 'She dozes in the sun. ',
+              },),
+            ],
+          },),
+        ).toBe(
+          'The cat sleeps.\n\nShe chases butterflies in the garden all afternoon.\n\n'
+          + 'She dozes in the sun. Then she stretches. She purrs.',
+        );
+      },
+    },),
+
+    it({
+      name: 'THROWS when a replacement names a slice that does not exist, '
+        + 'rather than silently dropping it: a lost slice means the driver and '
         + 'the slicer disagree, and shipping the remaining splices would hide it',
       fn: async () => {
         expect(function spliceMissingSlice() {
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
-            outcomes: [
-              outcomeFor({
+            replacements: [
+              write({
                 chunkIndex: 9,
-                repairedText: 'The dog barks.',
-                changed: true,
+                replacementText: 'The dog barks.',
               },),
             ],
           },);
-        },).toThrow('repair lost slice 9',);
+        },).toThrow('no slice 9',);
+      },
+    },),
+
+    it({
+      name: 'THROWS when two replacements name ONE slice, since whichever '
+        + 'applied second would overwrite the other and the winner would depend '
+        + 'on sort order. Two lanes writing the same slice is exactly the shape '
+        + 'that produces this, and it must not resolve itself quietly',
+      fn: async () => {
+        expect(function spliceDuplicate() {
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: SLICES,
+            replacements: [
+              write({
+                chunkIndex: 1,
+                replacementText: 'She chases butterflies.',
+              },),
+              write({
+                chunkIndex: 1,
+                replacementText: 'She chases moths.',
+              },),
+            ],
+          },);
+        },).toThrow('two replacements name one slice',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: repairReplacements.name,
+  children: [
+    it({
+      name: 'drops outcomes that changed nothing rather than writing them back '
+        + 'over themselves, since a no-op write still reads as a slice this '
+        + 'lane touched in every later diff and count',
+      fn: async () => {
+        expect(repairReplacements({ outcomes: [
+          outcomeFor({
+            chunkIndex: 0,
+            repairedText: 'The cat naps.',
+            changed: false,
+          },),
+          outcomeFor({
+            chunkIndex: 2,
+            repairedText: 'She rumbles.',
+            changed: true,
+          },),
+        ], },),).toEqual([
+          {
+            chunkIndex: 2,
+            replacementText: 'She rumbles.',
+          },
+        ],);
+      },
+    },),
+
+    it({
+      name: 'carries an EMPTY repair through, because a repair that deletes a '
+        + 'slice is a change and dropping it would ship the text it deleted',
+      fn: async () => {
+        expect(repairReplacements({ outcomes: [
+          outcomeFor({
+            chunkIndex: 1,
+            repairedText: '',
+            changed: true,
+          },),
+        ], },),).toHaveLength(1,);
       },
     },),
   ],

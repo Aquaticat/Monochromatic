@@ -46,6 +46,10 @@ export {
   type RefinePhaseResult,
   runRefinePhase,
 } from './refine-phase.ts';
-export { spliceSlices, } from './splice-slices.ts';
+export { repairReplacements, } from './repair-replacements.ts';
+export {
+  type SliceReplacement,
+  spliceSlices,
+} from './splice-slices.ts';
 
 //endregion Refinement barrel

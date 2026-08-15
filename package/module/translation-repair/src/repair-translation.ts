@@ -20,6 +20,7 @@ import {
   buildIssueRecords,
   type RepairIssueRecord,
 } from './repair-record.ts';
+import { repairReplacements, } from './repair-replacements.ts';
 import { spliceSlices, } from './splice-slices.ts';
 import type {
   ChunkRepairOutcome,
@@ -566,7 +567,7 @@ export async function repairTranslation(
   const repairedText = spliceSlices({
     targetText,
     slices,
-    outcomes: finalOutcomes,
+    replacements: repairReplacements({ outcomes: finalOutcomes, },),
   },);
 
   /**

@@ -16,6 +16,7 @@ import {
   type RepairModels,
 } from './repair-contract.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
+import { repairReplacements, } from './repair-replacements.ts';
 import { spliceSlices, } from './splice-slices.ts';
 
 //region Refinement phase
@@ -124,7 +125,7 @@ export async function runRefinePhase(
       text: spliceSlices({
         targetText,
         slices,
-        outcomes,
+        replacements: repairReplacements({ outcomes, },),
       },),
     },),
   },);
