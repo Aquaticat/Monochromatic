@@ -101,7 +101,7 @@ export class GenerationDriftError extends Error {
 /**
  * Raised when a directory holds artifacts from before builds were recorded.
  */
-export class PreDigestDirectoryError extends Error {
+export class LegacyPipelineError extends Error {
   /**
    * Names the entries that predate generation identity and what to do.
    *
@@ -109,7 +109,7 @@ export class PreDigestDirectoryError extends Error {
    *
    * @example
    * ```ts
-   * throw new PreDigestDirectoryError({ entryIds: ['Mittens',], },);
+   * throw new LegacyPipelineError({ entryIds: ['Mittens',], },);
    * ```
    */
   constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
@@ -117,14 +117,16 @@ export class PreDigestDirectoryError extends Error {
       [
         `${String(entryIds.length,)} artifact${
           entryIds.length === 1 ? ' here was' : 's here were'
-        } settled before artifacts recorded which build produced them:`,
+        } here record a pipeline this build cannot name:`,
         ...entryIds.map(function toLine(entryId,): string {
           return `  ${entryId}`;
         },),
         '',
-        'They record a commit, which is provenance rather than identity: the',
-        'same commit covers any number of builds, so nothing can say whether',
-        'this invocation is the pipeline that wrote them.',
+        'Either they predate generation identity, or they record it in a',
+        'scheme this build does not read. Both leave only a commit, which is',
+        'provenance rather than identity: one commit covers any number of',
+        'builds, so nothing can say whether this invocation is the pipeline',
+        'that wrote them.',
         '',
         'Deleting them is NOT the remedy. They are sound results, and a reader',
         'that names their commit can still use them. Point this run at a fresh',
@@ -132,7 +134,7 @@ export class PreDigestDirectoryError extends Error {
         'the generation it is.',
       ].join('\n',),
     );
-    this.name = 'PreDigestDirectoryError';
+    this.name = 'LegacyPipelineError';
   }
 }
 
@@ -189,7 +191,7 @@ export class UnplaceableArtifactError extends Error {
  *
  * @throws UnplaceableArtifactError when an artifact records nothing usable
  *
- * @throws PreDigestDirectoryError when artifacts predate generation identity
+ * @throws LegacyPipelineError when artifacts predate generation identity
  *
  * @throws GenerationDriftError when settled entries record any other build and
  * the caller has not opted into drift
@@ -231,7 +233,7 @@ export async function assertResumableGeneration(
     groups,
     untaggedIds,
     malformedIds,
-    preDigestIds,
+    legacyIds,
   } = await censusByGeneration({ artifactsDir, },);
 
   // An artifact that cannot be placed is WORSE than a foreign generation, and
@@ -253,8 +255,8 @@ export async function assertResumableGeneration(
   if (unplaceable.length > 0)
     throw new UnplaceableArtifactError({ entryIds: unplaceable, },);
 
-  if (preDigestIds.length > 0)
-    throw new PreDigestDirectoryError({ entryIds: preDigestIds, },);
+  if (legacyIds.length > 0)
+    throw new LegacyPipelineError({ entryIds: legacyIds, },);
 
   /**
    * Recorded pipelines that are not the one this invocation would stamp.

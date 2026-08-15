@@ -48,7 +48,7 @@ const SHARED_TIP = 'f000000000000000000000000000000000000000';
  * because this is the field the pool actually partitions by: a commit says
  * where code came from, this says which build ran.
  */
-const SHARED_GENERATION = 'f'.repeat(64,);
+const SHARED_GENERATION = `sha256-tree-v1:${'f'.repeat(64,)}`;
 
 /**
  * Critic used throughout.

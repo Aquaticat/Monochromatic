@@ -28,17 +28,17 @@ import { assertResumableGeneration, } from '../../dist/final/node/index.mjs';
 /**
  * One built pipeline, as a digest-shaped invention.
  */
-const DIGEST_A = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const DIGEST_A = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
  * A second built pipeline, differing from {@link DIGEST_A} everywhere.
  */
-const DIGEST_B = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const DIGEST_B = `sha256-tree-v1:${'b'.repeat(64,)}`;
 
 /**
  * A third, for the case where a directory is already mixed before this run.
  */
-const DIGEST_C = 'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+const DIGEST_C = `sha256-tree-v1:${'c'.repeat(64,)}`;
 
 /**
  * Commit every fixture artifact records, since these cases turn on the build
@@ -211,9 +211,11 @@ await describe({
           },),
         )
           .rejects
-          // Nine characters: the refusal abbreviates, so asserting the full id would
-          // pass only if the message stopped abbreviating.
-          .toThrow('bbbbbbbbb',);
+          // Sixteen characters, not the full id: every digest opens with the
+          // same scheme name, so the abbreviation grows past its floor to the
+          // first character that differs. Asserting the full id would pass
+          // only if the message stopped abbreviating at all.
+          .toThrow('sha256-tree-v1:b',);
       },
     },),
 

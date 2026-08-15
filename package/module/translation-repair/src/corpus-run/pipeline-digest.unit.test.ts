@@ -196,7 +196,7 @@ await describe({
 
         await expect(digestPipeline({ dir, },),)
           .rejects
-          .toThrow('symbolic link',);
+          .toThrow('neither a regular file nor a directory',);
       },
     },),
 
@@ -237,11 +237,12 @@ await describe({
         + 'by: uppercase is refused because one pipeline spelled two ways would '
         + 'count as two generations',
       fn: async () => {
-        expect(isDigestShaped({ value: 'a'.repeat(64,), },),).toBe(true,);
-        expect(isDigestShaped({ value: 'A'.repeat(64,), },),).toBe(false,);
-        expect(isDigestShaped({ value: 'a'.repeat(63,), },),).toBe(false,);
-        expect(isDigestShaped({ value: 'a'.repeat(65,), },),).toBe(false,);
-        expect(isDigestShaped({ value: 'g'.repeat(64,), },),).toBe(false,);
+        expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(64,)}`, },),).toBe(true,);
+        expect(isDigestShaped({ value: `sha256-tree-v1:${'A'.repeat(64,)}`, },),).toBe(false,);
+        expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(63,)}`, },),).toBe(false,);
+        expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(65,)}`, },),).toBe(false,);
+        expect(isDigestShaped({ value: `sha256-tree-v2:${'a'.repeat(64,)}`, },),).toBe(false,);
+        expect(isDigestShaped({ value: 'a'.repeat(64,), },),).toBe(false,);
         expect(isDigestShaped({ value: '', },),).toBe(false,);
       },
     },),

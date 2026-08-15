@@ -150,8 +150,8 @@ function emptyCensusLines(
       entryIds: census.untaggedIds,
     },
     {
-      reason: 'settled before builds were recorded',
-      entryIds: census.preDigestIds,
+      reason: 'recording a pipeline this build cannot name',
+      entryIds: census.legacyIds,
     },
     {
       reason: 'unreadable',

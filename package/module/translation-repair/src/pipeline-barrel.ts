@@ -157,7 +157,7 @@ export {
 export {
   assertResumableGeneration,
   GenerationDriftError,
-  PreDigestDirectoryError,
+  LegacyPipelineError,
   UnplaceableArtifactError,
 } from './corpus-run/pass-generation-guard.ts';
 export {

@@ -33,6 +33,33 @@ import {
 // unchanged source produced byte-identical output across all 69 emitted files,
 // and a file planted in the output directory was gone after the next build, so
 // the digest is a function of the source rather than of build history.
+//
+// WHAT IT DOES NOT COVER, stated because a digest invites the reading that it
+// covers everything, and every item here can change a result while it stays
+// fixed:
+//
+//   node_modules. The emitted files still import `yaml`, `unified`,
+//   `remark-parse`, `remark-mdx`, `remark-gfm` and `p-limit` as bare
+//   specifiers, measured 2026-08-15, so a dependency upgrade changes markdown
+//   parsing with nothing here moving. Closing that means bundling runtime
+//   dependencies, which is repo-wide build configuration rather than a change
+//   to this package.
+//
+//   The Node binary, and anything it decides: version, flags, locale.
+//
+//   The provider's models. Two runs of one pipeline against `Kimi-K3` are not
+//   two runs of the same system if the provider changed the weights, and
+//   nothing observable from here says whether it did.
+//
+//   The corpus. That is covered separately and exactly, by the pinned commit
+//   each artifact records as `corpusSha`.
+//
+//   Run configuration read from the environment. The slice cache keys on it
+//   separately.
+//
+// So this identifies the first-party bytes that ran. That is the half that
+// moved every day and was invisible; the rest either moves rarely or is
+// recorded elsewhere.
 
 /**
  * Hash behind both the per-file and the combined digest.
@@ -43,6 +70,24 @@ const DIGEST_ALGORITHM = 'sha256';
  * Characters of a sha256 hex digest.
  */
 const DIGEST_LENGTH = 64;
+
+/**
+ * Name of the scheme a recorded digest was produced by.
+ *
+ * Carried in the value itself rather than assumed, so a later scheme is a
+ * DIFFERENT string rather than a same-looking one. Without it, changing what is
+ * hashed or how it is framed would silently make two incomparable values
+ * comparable, which is the failure this whole module exists to prevent, and an
+ * artifact recorded under the old scheme would be read as a foreign generation
+ * rather than as one this build cannot name.
+ */
+const DIGEST_FORMAT = 'sha256-tree-v1';
+
+/**
+ * Character between the scheme name and the hex, chosen because neither side
+ * can contain it.
+ */
+const FORMAT_SEPARATOR = ':';
 
 /**
  * Suffixes of emitted files that cannot execute, so cannot change behaviour.
@@ -197,10 +242,20 @@ export function assertPipelineDigest(
 export function isDigestShaped(
   { value, }: { readonly value: string; },
 ): boolean {
-  if (value.length !== DIGEST_LENGTH)
+  if (!value.startsWith(`${DIGEST_FORMAT}${FORMAT_SEPARATOR}`,))
     return false;
 
-  for (const character of value) {
+  /**
+   * Hex half, once the scheme name is off.
+   */
+  const hex = value.slice(
+    `${DIGEST_FORMAT}${FORMAT_SEPARATOR}`.length,
+  );
+
+  if (hex.length !== DIGEST_LENGTH)
+    return false;
+
+  for (const character of hex) {
     /**
      * Whether it is one of `0` to `9`.
      */
@@ -277,19 +332,31 @@ export async function digestPipeline(
   // both other answers are wrong: following it digests bytes from outside the
   // pipeline, and skipping it silently drops code that will run.
   /**
-   * Links found where the build emits only regular files.
+   * Entries that are neither a regular file nor a directory: links, sockets,
+   * fifos, devices. The build emits none of them, and each fails the same way,
+   * by being something Node may load whose bytes this cannot identify.
    */
-  const links = entries.filter(function isLink(entry,): boolean {
-    return entry.isSymbolicLink();
+  const foreign = entries.filter(function isForeign(entry,): boolean {
+    return (!entry.isFile()) && (!entry.isDirectory());
   },);
 
-  if (links.length > 0)
+  if (foreign.length > 0) {
+    /**
+     * One of them, named so the message points somewhere.
+     */
+    const [first,] = foreign;
+
     throw new PipelineDigestError({
       dir,
-      reason: `it holds ${
-        String(links.length,)
-      } symbolic link${links.length === 1 ? '' : 's'}, which the build never emits`,
+      reason: `it holds ${String(foreign.length,)} entr${
+        foreign.length === 1 ? 'y' : 'ies'
+      } that ${
+        foreign.length === 1 ? 'is' : 'are'
+      } neither a regular file nor a directory, such as ${
+        first?.name ?? ''
+      }, which the build never emits`,
     },);
+  }
 
   /**
    * Emitted files that can actually execute.
@@ -339,11 +406,16 @@ export async function digestPipeline(
   const ordered = lines.toSorted();
 
   /**
-   * Combined digest over the sorted per-file lines.
+   * Combined hash over the sorted per-file lines.
    */
-  const digest = createHash(DIGEST_ALGORITHM,)
+  const hex = createHash(DIGEST_ALGORITHM,)
     .update(ordered.join('',),)
     .digest('hex',);
+
+  /**
+   * Recorded value, naming the scheme that produced it.
+   */
+  const digest = `${DIGEST_FORMAT}${FORMAT_SEPARATOR}${hex}`;
 
   assertPipelineDigest(digest,);
 

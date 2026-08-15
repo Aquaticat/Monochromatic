@@ -157,7 +157,7 @@ function unplaceableLines(
   /**
    * Artifacts from before a build was recorded, sound but unidentifiable.
    */
-  const preDigest = census.preDigestIds
+  const legacyCount = census.legacyIds
     .length;
 
   return [
@@ -169,12 +169,12 @@ function unplaceableLines(
         census.untaggedIds
           .join(', ',)
       }`,]),
-    ...(preDigest === 0
+    ...(legacyCount === 0
       ? []
-      : [`POOL   ${String(preDigest,)} artifact${
-        preDigest === 1 ? '' : 's'
-      } EXCLUDED, settled before artifacts recorded which build produced them: ${
-        census.preDigestIds
+      : [`POOL   ${String(legacyCount,)} artifact${
+        legacyCount === 1 ? '' : 's'
+      } EXCLUDED, recording a pipeline this build cannot name: ${
+        census.legacyIds
           .join(', ',)
       }`,]),
     ...(malformed === 0

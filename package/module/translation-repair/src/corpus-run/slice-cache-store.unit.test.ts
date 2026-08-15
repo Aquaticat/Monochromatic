@@ -45,7 +45,7 @@ import {
  * Every case that resumes a cache has to agree with the marker, since a cache
  * filled by another pipeline is discarded rather than resumed.
  */
-const TEST_GENERATION = 'a'.repeat(64,);
+const TEST_GENERATION = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
  * Throwaway directory removed on scope exit.
@@ -194,7 +194,7 @@ await describe({
          */
         const after = await openSliceCache({
           dir,
-          generation: 'b'.repeat(64,),
+          generation: `sha256-tree-v1:${'b'.repeat(64,)}`,
         },);
 
         expect(after.resumed.size,).toBe(0,);
@@ -205,7 +205,7 @@ await describe({
          */
         const again = await openSliceCache({
           dir,
-          generation: 'b'.repeat(64,),
+          generation: `sha256-tree-v1:${'b'.repeat(64,)}`,
         },);
 
         expect(again.resumed.size,).toBe(0,);

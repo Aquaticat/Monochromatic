@@ -42,12 +42,12 @@ import {
 /**
  * One built pipeline, as a digest-shaped invention.
  */
-const DIGEST_A = 'a'.repeat(64,);
+const DIGEST_A = `sha256-tree-v1:${'a'.repeat(64,)}`;
 
 /**
  * A second built pipeline, differing from {@link DIGEST_A} everywhere.
  */
-const DIGEST_B = 'b'.repeat(64,);
+const DIGEST_B = `sha256-tree-v1:${'b'.repeat(64,)}`;
 
 /**
  * One repo commit, as an object-id-shaped invention.
@@ -303,7 +303,7 @@ await describe({
         const census = await censusByGeneration({ artifactsDir: dir, },);
 
         expect(census.total,).toBe(1,);
-        expect(census.preDigestIds,).toEqual(['Biscuit',],);
+        expect(census.legacyIds,).toEqual(['Biscuit',],);
         expect(census.untaggedIds.length,).toBe(0,);
         expect(census.malformedIds.length,).toBe(0,);
 
@@ -314,17 +314,19 @@ await describe({
           eligible.report
             .some(function names(line: string,) {
               return line.includes('Biscuit',)
-                && line.includes('before artifacts recorded which build',);
+                && line.includes('pipeline this build cannot name',);
             },),
         ).toBe(true,);
       },
     },),
 
     it({
-      name: 'refuses a digest that is PRESENT and unusable, which is not the '
-        + 'same as one that is absent: absence means old, while a malformed '
-        + 'value means something wrote a field this package owns, and pooling '
-        + 'on it would pool on a value no build ever produced',
+      name: 'treats a digest written in a scheme this build cannot read as '
+        + 'LEGACY rather than as garbage. The recorded value names the scheme '
+        + 'that produced it, so a string this build cannot parse is most likely '
+        + 'an older one, and an artifact written by an earlier version of this '
+        + 'package is a sound result whose pipeline can no longer be named. '
+        + 'Calling it unplaceable would tell an operator to delete good work',
       fn: async () => {
         const dir = await writeArtifacts({
           entries: [
@@ -339,8 +341,8 @@ await describe({
         const census = await censusByGeneration({ artifactsDir: dir, },);
 
         expect(census.total,).toBe(0,);
-        expect(census.untaggedIds,).toEqual(['Mittens',],);
-        expect(census.preDigestIds.length,).toBe(0,);
+        expect(census.legacyIds,).toEqual(['Mittens',],);
+        expect(census.untaggedIds.length,).toBe(0,);
       },
     },),
 

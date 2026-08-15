@@ -76,7 +76,7 @@ function isObjectId({ value, }: { readonly value: string; },): boolean {
  *
  * @example
  * ```ts
- * const placement: Placement = { kind: 'pre-digest', tip, };
+ * const placement: Placement = { kind: 'legacy', tip, };
  * ```
  */
 export type Placement =
@@ -98,14 +98,19 @@ export type Placement =
   }>
   | Readonly<{
     /**
-     * Artifact records a usable commit but no digest, so it was settled before
-     * generation identity existed.
+     * Artifact records a usable commit, and a pipeline THIS BUILD CANNOT NAME:
+     * either none at all, from before generation identity existed, or one
+     * written in a digest scheme this build does not read.
      *
      * Kept apart from `untagged` because the remedy differs: an untagged file
-     * is deleted, while these are perfectly good results of a pipeline nobody
-     * can name any more, and the remedy is a fresh directory.
+     * is deleted, while these are perfectly good results whose pipeline can no
+     * longer be named, and the remedy is a fresh directory.
+     *
+     * Kept apart from a foreign generation for the same reason in the other
+     * direction: checking out an old commit does not recreate an identity the
+     * artifact never carried.
      */
-    kind: 'pre-digest';
+    kind: 'legacy';
 
     /**
      * Repo commit its pass started under, all the provenance it has.
@@ -165,7 +170,7 @@ export async function readdirArtifacts(
  * artifact costs its own row and not the whole run. The failure kinds stay
  * distinct because they are handled oppositely: a malformed file belongs to the
  * reader that reports malformed files, an untagged one belongs nowhere, and a
- * pre-digest one is a fine result whose pipeline can no longer be named.
+ * legacy one is a fine result whose pipeline can no longer be named.
  *
  * @param artifactsDir - directory holding the artifact
  *
@@ -257,7 +262,7 @@ export async function readPlacement(
 
     if (!('pipelineDigest' in parsed))
       return {
-        kind: 'pre-digest',
+        kind: 'legacy',
         tip,
       };
 
@@ -266,18 +271,29 @@ export async function readPlacement(
      */
     const { pipelineDigest, } = parsed;
 
-    // A digest that is present and unusable is not the same as one that is
-    // absent. Absent means old; malformed means something wrote a field this
-    // package owns, and pooling on it would pool on a value nothing produced.
-    if (
-      ((typeof pipelineDigest) !== 'string')
-      || (!isDigestShaped({ value: pipelineDigest, },))
-    ) {
+    if ((typeof pipelineDigest) !== 'string') {
       console.log(
-        `POOL ${name} records an unusable pipeline digest; treating it as `
-          + 'unplaceable',
+        `POOL ${name} records a pipeline digest that is not a string; treating `
+          + 'it as unplaceable',
       );
       return { kind: 'untagged', };
+    }
+
+    // A digest this build cannot read is treated as LEGACY rather than as
+    // garbage. The recorded value names the scheme that produced it, so a
+    // string it cannot parse is most likely an older scheme, and an artifact
+    // written by an earlier version of this package is a sound result whose
+    // pipeline can no longer be named. Calling it unplaceable would tell an
+    // operator to delete good work.
+    if (!isDigestShaped({ value: pipelineDigest, },)) {
+      console.log(
+        `POOL ${name} records a pipeline digest this build cannot read `
+          + `(${JSON.stringify(pipelineDigest,)}); treating it as legacy`,
+      );
+      return {
+        kind: 'legacy',
+        tip,
+      };
     }
 
     return {

@@ -200,14 +200,15 @@ export type GenerationCensus = Readonly<{
   untaggedIds: readonly string[];
 
   /**
-   * Entries settled before artifacts recorded which build produced them.
+   * Entries recording a pipeline this build cannot name: settled before the
+   * field existed, or recording it in a digest scheme this build does not read.
    *
    * Also excluded from every pool, and separate from `untaggedIds` because the
    * remedy differs. These are sound results whose pipeline can no longer be
    * named, so deleting them buys nothing; a directory holding them is finished
    * and the next accumulation belongs in a fresh one.
    */
-  preDigestIds: readonly string[];
+  legacyIds: readonly string[];
 }>;
 
 /**
@@ -274,7 +275,7 @@ export async function censusByGeneration(
   /**
    * Entries recording a commit but no build.
    */
-  const preDigestIds: string[] = [];
+  const legacyIds: string[] = [];
 
   /* oxlint-disable no-await-in-loop -- sequential on purpose: one artifact at a time keeps peak memory flat across a directory that reaches hundreds of megabytes */
   for (const name of names) {
@@ -309,8 +310,8 @@ export async function censusByGeneration(
       untaggedIds.push(entryId,);
       continue;
     }
-    if (placement.kind === 'pre-digest') {
-      preDigestIds.push(entryId,);
+    if (placement.kind === 'legacy') {
+      legacyIds.push(entryId,);
       continue;
     }
 
@@ -363,7 +364,7 @@ export async function censusByGeneration(
     tipByEntry,
     malformedIds,
     untaggedIds,
-    preDigestIds,
+    legacyIds,
   };
 }
 

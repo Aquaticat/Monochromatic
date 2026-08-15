@@ -30,7 +30,7 @@ const TIP = 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379';
 /**
  * One built pipeline, as a digest-shaped invention.
  */
-const DIGEST = 'c'.repeat(64,);
+const DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}`;
 
 await describe({
   name: abbreviate.name,
