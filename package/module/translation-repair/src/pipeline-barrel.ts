@@ -168,6 +168,10 @@ export {
 } from './corpus-run/artifact-provenance.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 export {
+  lockRunsDir,
+  RunsDirectoryBusyError,
+} from './corpus-run/runs-lock.ts';
+export {
   assertPipelineDigest,
   digestPipeline,
   isDigestShaped,

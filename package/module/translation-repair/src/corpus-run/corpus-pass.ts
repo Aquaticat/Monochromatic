@@ -31,6 +31,7 @@ import {
   settledEntryIds,
 } from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
+import { lockRunsDir, } from './runs-lock.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
   discardSliceCache,
@@ -201,6 +202,15 @@ async function runCorpusPass(): Promise<void> {
    * Durable, gitignored output root for this run.
    */
   const runsDir = await resolveRunsDir();
+
+  // Taken before anything is read, and held for the whole pass. Two passes
+  // sharing one directory overwrite each other attempt counts, delete each
+  // other cached slices whenever their pipelines differ, and the later write of
+  // any entry replaces the earlier one, all of it looking like ordinary output.
+  /**
+   * Exclusive claim on this runs directory, released when the pass returns.
+   */
+  await using _lock = await lockRunsDir({ runsDir, },);
 
   /**
    * Per-entry artifact directory.
