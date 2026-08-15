@@ -9746,3 +9746,76 @@ no translation, a reply wrapped in prose, a whitespace reply, judges declining,
 and a slate where every translator reproduced the incumbent.
 Judges in those tests are scripted by the TEXT they see rather than by candidate
 number, since pinning index 1 would assert the rotation instead of the decision.
+
+## Session 2026-08-15: a poisoned cache record proved reachable, and #97 refuted
+
+### The sabotage test #95 was missing
+
+The unit tests proved `assertReplacementsChange` throws.
+Nothing proved the LANE routes a poisoned cache record into it, and the cache is
+the only reachable way in: a resumed record is trusted on its slice index alone.
+
+`translate-document.unit.test.ts` now poisons every persisted record to claim its
+change while carrying the wording it claims to have replaced, resumes it, and
+expects the refusal.
+Two things make it a proof rather than a hope.
+It carries a positive control on the poisoning itself, so it cannot pass because
+nothing was sabotaged.
+And it was shown to fail: removing the guard call from `translate-document.ts`,
+rebuilding, and running produced
+`Expected promise to reject, but it resolved` at
+`translate-document.unit.test.ts:522`.
+The poisoned document settles silently without the guard, which is exactly the
+defect.
+Guard restored, suite green at `test_exit=0`.
+
+### `#97` is refuted: a checker DOES run after refinement
+
+The claim was that `resolved` may describe pre-refinement text because no
+checker runs after the naturalness lane.
+One does.
+`refine-phase.ts:199` calls `retainsResolvedIssues` for every refinement that
+changed anything, and that runs a full checker stage over the REFINED text at
+`refine-phase.ts:360`, over exactly the issues `resolvedIssueIds` named.
+Any issue it does not re-confirm rolls back the WHOLE slice at
+`refine-phase.ts:211`, so `refined: true` at `refine-phase.ts:272` is stamped
+only past that gate.
+
+Measured over the 56 settled artifacts with
+`~/temp/agent/refined-resolved-census.mjs`:
+
+```text
+issue records                    4098
+resolved records                 2586
+refined records                   323
+resolved AND refined              181
+distinct resolved+refined slices   32
+refine-recheck-passed findings     32
+prediction violations               0
+```
+
+The prediction was that resolved-and-refined slices can never outnumber the
+re-check findings covering them.
+It holds with EXACT equality, which additionally says no refined slice with
+confirmed issues was withdrawn at assembly in this corpus.
+The probe was validated first: stripping one entry's seven findings on a
+throwaway copy made it report `bothSlices: 7, rechecks: 0`.
+
+### The gap the weakened assertion opened, and the fix for it
+
+Dropping the second direction of `assertDocumentChangeAgrees` was right, and it
+opened a hole worth naming.
+A run whose replacements cancel at a join now returns `shippedChunkIndices`
+non-empty beside a byte-identical document, while both TSDoc blocks say those
+indices name slices the document CARRIES a change for.
+
+Both reviewers independently reached the same fix and the same location:
+canonicalize inside `guardFootnoteAssembly`.
+When the surviving replacements assemble to the incumbent exactly, return no
+survivors, move them all into the withdrawn set under a reason of their own, and
+leave their accepted wording in `sliceTexts` where it still belongs.
+The sol review adds what neither the advisor nor I had: after canonicalization,
+`(assembledText !== targetText) === (replacements.length > 0)` becomes a true
+guard postcondition, so the SECOND ASSERTION DIRECTION CAN BE RESTORED, which is
+strictly better than where this started.
+Its other four findings are recorded in `#103`.
