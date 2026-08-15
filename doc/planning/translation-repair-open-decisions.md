@@ -476,7 +476,11 @@ C.  Run the lane in report-only mode first: translate everything, record every
     NOT cost a second corpus of calls: each lane now owns its cache namespace,
     so a report-only pass's settled slices resume into the shipping pass
     unchanged, same run shape, same texts, same key. Shipping afterwards costs a
-    splice, not a re-translation.
+    splice, not a re-translation. This option now has something concrete to run:
+    `runDocumentLanes` puts both lanes over one preparation and returns both
+    documents without choosing between them, which is exactly a report-only
+    pass minus the artifact wiring. It also measures decision 12's withdraw-all
+    rate for free, since the guard runs whether or not anything ships.
     Cons: the grading is your time rather than mine, and the corpus ships later
     by however long that reading takes.
 

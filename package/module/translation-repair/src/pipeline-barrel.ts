@@ -144,6 +144,10 @@ export {
   type PreparedDocumentPair,
   prepareDocumentPair,
 } from './document-preparation.ts';
+export {
+  type DocumentLanesResult,
+  runDocumentLanes,
+} from './document-lanes.ts';
 export { footnoteIdentifiers, } from './footnote-mentions.ts';
 export {
   guardFootnoteAssembly,

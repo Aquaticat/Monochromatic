@@ -1,4 +1,7 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
@@ -216,6 +219,10 @@ const SLICE_CACHE_VERSION = 25;
  * @param sliceCache - optional cross-run cache; resumes finished slices
  * and persists newly finished ones so a large document survives aborts
  *
+ * @param parentLogger - logger this lane tags under, so a caller running both
+ * lanes over one document can put them under one entry; defaults to the
+ * pipeline root for a standalone call
+ *
  * @returns Repaired candidate plus adjudicated issues and completion status
  *
  * @throws Whatever `signal.reason` carries, once the caller aborts with slices
@@ -240,6 +247,7 @@ export async function repairPreparedDocument(
     signal,
     perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
     sliceCache,
+    parentLogger = l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -248,6 +256,7 @@ export async function repairPreparedDocument(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
+    readonly parentLogger?: Logger;
   }>,
 ): Promise<RepairTranslationResult> {
   /**
@@ -255,7 +264,7 @@ export async function repairPreparedDocument(
    */
   const rl = tagged({
     tag: repairPreparedDocument.name,
-    l,
+    l: parentLogger,
   },);
 
   /**

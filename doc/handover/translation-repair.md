@@ -392,6 +392,36 @@ morning:
     .toLowerCase()`, and its test compares against a real parse rather than
     against a restatement of the rule.
 
+AND THEN BOTH LANES GOT ONE DRIVER, which is the last Question 5 neutral piece
+of `#89`:
+
+-   `runDocumentLanes` (`document-lanes.ts`) takes one prepared pair, runs both
+    lanes over it, and returns both documents. It ARBITRATES NOTHING: no winner,
+    no preferred lane, no merged text, because choosing between them is Question
+    5 and a driver that chose would answer it invisibly for every later count.
+-   SEQUENTIAL, REPAIR FIRST. Concurrency buys nothing: the quota spent is the
+    same and both lanes already serialize their own slices for provider-capacity
+    reasons. Repair goes first because its naturalness phase settles AFTER the
+    slice loop and nothing persists what that phase produced, while the translate
+    lane caches every slice as it finishes; under a deadline that cuts the entry,
+    running the uncheckpointed phase first loses less of what was bought. That
+    reasoning is an external reviewer's and it is recorded in the driver.
+-   NO ABORT CHECK BETWEEN THE LANES, deliberately. Both drivers let a fully
+    cached lane finish after an abort, since resuming buys nothing, and a gate
+    there would refuse that.
+-   ALIGNMENT FINDINGS ONCE, at the top level: they belong to the preparation
+    both lanes shared, so counting them per lane would count one defect in the
+    archive twice. The repair result still repeats them inside its own findings,
+    which is that lane's existing contract and was left alone.
+-   `repairPreparedDocument` NOW TAKES A PARENT LOGGER, defaulting to the
+    pipeline root, so both lanes read as one entry rather than as two runs.
+-   WHAT IT DOES NOT DO, and what the next piece of `#89` needs: neither lane
+    result can say WHICH slices shipped a change. The translate result counts
+    withdrawals without naming them, and the repair result keeps neither its
+    outcomes nor its surviving replacements. A slice-level comparison of the two
+    lanes therefore needs both lane contracts widened first, which is the same
+    work as the `sliceSelections` artifact field.
+
 WHAT THE SAME REVIEWS RAISED AND I DID NOT ACT ON, each with the measurement
 that says why it can wait. None is a judgement call left open; each is real and
 currently unreachable on this corpus, so acting would be building against
