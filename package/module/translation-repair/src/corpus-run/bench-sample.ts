@@ -1,5 +1,3 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 import { alignDocumentSections, } from '../chunk-document.ts';
 import {
   listCorpusPeople,
@@ -8,6 +6,7 @@ import {
 import { isLineStructured, } from '../line-structure.ts';
 import { parseDocument, } from '../parse-document.ts';
 import { subdivideChunkPair, } from '../slice-pair.ts';
+import { pickSpreadSample, } from './bench-draw.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Bench sample
@@ -20,12 +19,6 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // concentrating it wherever the corpus happens to be dense.
 //
 // Spends no quota. Reads the pinned corpus only.
-
-/**
- * Middle of a stratum, so the draw takes representative slices rather than the
- * corpus extremes.
- */
-const HALF = 1 / 2;
 
 /**
  * Characters of a read failure kept when an entry is skipped, enough to name
@@ -197,70 +190,10 @@ export async function sampleBenchSlices(
   if (all.length === 0)
     throw new Error('bench sample found no slices in the pinned corpus',);
 
-  /**
-   * Slices ordered by source size, then by identity so ties never reorder
-   * between runs.
-   */
-  const ordered = all.toSorted(function byLength(
-    left,
-    right,
-  ): number {
-    /**
-     * Source size of one side, which is what orders the sample.
-     */
-    const leftLength = left.sourceText
-      .length;
-
-    /**
-     * Same for the other side of this comparison.
-     */
-    const rightLength = right.sourceText
-      .length;
-
-    /**
-     * Size gap deciding almost every comparison.
-     */
-    const bySize = leftLength - rightLength;
-    if (bySize !== 0)
-      return bySize;
-
-    /**
-     * Entry name, so identical sizes never reorder between runs.
-     */
-    const byEntry = left.entryId
-      .localeCompare(right.entryId,);
-    if (byEntry !== 0)
-      return byEntry;
-
-    return left.index - right.index;
-  },);
-
-  /**
-   * Stride that spreads `count` picks across the whole ordering.
-   */
-  const stride = ordered.length / Math.min(
+  return pickSpreadSample({
+    slices: all,
     count,
-    ordered.length,
-  );
-
-  return Array.from(
-    { length: Math.min(
-      count,
-      ordered.length,
-    ), },
-    function pick(
-      _unused,
-      position,
-    ): BenchSlice {
-      // MIDPOINT of each stratum rather than its first member. Taking the
-      // first makes the draw start at the corpus minimum, and the smallest
-      // slice here is a 3-character source against a 226-character
-      // translation, which measures the aligner rather than the judges.
-      return nonNullishOrThrow(
-        ordered[Math.floor((position + HALF) * stride,)],
-      );
-    },
-  );
+  },);
 }
 
 //endregion Bench sample

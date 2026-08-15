@@ -174,6 +174,12 @@ export {
 } from './corpus-run/artifact-provenance.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 export {
+  type DrawableSlice,
+  orderBySourceSize,
+  pickSpreadSample,
+} from './corpus-run/bench-draw.ts';
+export { benchWidths, } from './corpus-run/bench-report.ts';
+export {
   lockRunsDir,
   RunsDirectoryBusyError,
 } from './corpus-run/runs-lock.ts';
