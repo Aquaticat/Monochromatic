@@ -271,7 +271,9 @@ await describe({
     },),
 
     it({
-      name: 'refuses a roster whose judges cannot outnumber the refiners',
+      name: 'refuses a roster that could never reach the minimum weight, '
+        + 'since two refiners grading only each other can award one vote '
+        + 'between them and every round would decline in silence',
       fn: async () => {
         /** Refinable slice of the fixture. */
         const slice = fixtureSlice();
@@ -285,7 +287,6 @@ await describe({
             judgeModelIds: [
               'hf:zai-org/GLM-5.2',
               'hf:Qwen/Qwen3.6-27B',
-              'hf:moonshotai/Kimi-K3',
             ],
             sourceText: SOURCE_TEXT,
             repairedText: REPAIRED_TEXT,

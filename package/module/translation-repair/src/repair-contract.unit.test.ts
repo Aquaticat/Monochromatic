@@ -1,12 +1,17 @@
 /**
  * Tests for the producer-roster independence guard.
  *
- * `assertJudgeableProducerRoster` is what keeps a slate from being ranked
- * only by the models that wrote it. Selection seats producers as of
- * 2026-08-14, discounting a ballot for the judge's OWN candidate, so this guard
- * no longer decides whether selection can function at all. It decides whether a
- * round has anyone in it with no stake in any candidate, which is a policy the
- * roster has to satisfy rather than an arithmetic necessity.
+ * `assertJudgeableProducerRoster` refuses a roster that could not decide a
+ * round however its judges voted, and NOTHING ELSE. By the user ruling of
+ * 2026-08-14 self-judging is allowed at reduced weight, so a roster where every
+ * model both produces and judges is legal; what is not legal is a roster too
+ * small to reach the minimum selection weight, since one judge contributes at
+ * most one full-weight ballot.
+ *
+ * The cases that used to assert an independence requirement are inverted here
+ * on purpose: they now assert that the same rosters are ACCEPTED. An earlier
+ * version of this file recorded the opposite policy, and reading them side by
+ * side is the clearest statement of what changed.
  *
  * `assertJudgeableEditorRoster` delegates here and is covered through the
  * editor ensemble, so the arithmetic branches already run. What was never
@@ -31,6 +36,7 @@ import {
   assertJudgeableEditorRoster,
   assertJudgeableProducerRoster,
   EditorRosterError,
+  FULL_VOTE_WEIGHT,
   MIN_SELECTION_WEIGHT,
 } from '../dist/final/node/index.mjs';
 
@@ -82,15 +88,69 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a roster one judge short of the minimum, which is the '
-        + 'whole failure: a roster of three judges looks sufficient until '
-        + 'selection removes the two that also produced candidates',
+      name: 'ACCEPTS a roster whose judges are mostly producers, which the '
+        + 'old guard refused. This is the ruling of 2026-08-14 in one case: a '
+        + 'model grading its own work is a discounted opinion, not a '
+        + 'forbidden one, so a provider degraded for the day cannot make a '
+        + 'legal roster illegal',
       fn: async () => {
-        expect(function refuseOneShort() {
+        expect(function acceptMostlyProducers() {
           assertJudgeableProducerRoster({
             producerModelIds: [
               PRODUCER_ONE,
               PRODUCER_TWO,
+            ],
+            judgeModelIds: [
+              PRODUCER_ONE,
+              PRODUCER_TWO,
+              JUDGE_ONE,
+            ],
+            role: 'editor',
+          },);
+        },).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS a roster where EVERY judge produced, once there are '
+        + 'enough of them. Four authors judging each other reach exactly the '
+        + 'minimum weight, which is the widest case the ruling allows and the '
+        + 'one a full-roster bench needs. Nothing here says such a round will '
+        + 'decide anything: if every judge backs its own candidate each draws '
+        + 'half a vote and the incumbent survives, which is the weights doing '
+        + 'the work this guard used to',
+      fn: async () => {
+        expect(function acceptFullOverlap() {
+          assertJudgeableProducerRoster({
+            producerModelIds: [
+              PRODUCER_ONE,
+              PRODUCER_TWO,
+              JUDGE_ONE,
+              JUDGE_TWO,
+            ],
+            judgeModelIds: [
+              PRODUCER_ONE,
+              PRODUCER_TWO,
+              JUDGE_ONE,
+              JUDGE_TWO,
+            ],
+            role: 'editor',
+          },);
+        },).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'REFUSES full overlap one author short, so the previous case is a '
+        + 'floor rather than a licence: three authors judging only each other '
+        + 'can award one and a half votes between them',
+      fn: async () => {
+        expect(function refuseNarrowOverlap() {
+          assertJudgeableProducerRoster({
+            producerModelIds: [
+              PRODUCER_ONE,
+              PRODUCER_TWO,
+              JUDGE_ONE,
             ],
             judgeModelIds: [
               PRODUCER_ONE,
@@ -104,30 +164,10 @@ await describe({
     },),
 
     it({
-      name: 'refuses when every judge also produced, leaving nobody '
-        + 'disinterested at all',
-      fn: async () => {
-        expect(function refuseFullOverlap() {
-          assertJudgeableProducerRoster({
-            producerModelIds: [
-              PRODUCER_ONE,
-              PRODUCER_TWO,
-            ],
-            judgeModelIds: [
-              PRODUCER_ONE,
-              PRODUCER_TWO,
-            ],
-            role: 'editor',
-          },);
-        },).toThrow(EditorRosterError,);
-      },
-    },),
-
-    it({
-      name: 'counts DISTINCT disinterested judges, so one model listed twice '
-        + 'is one voice: a duplicated judge id would otherwise satisfy the '
-        + 'minimum with a single model deciding the stage, which is the exact '
-        + 'outcome this guard exists to prevent',
+      name: 'counts DISTINCT judges, so one model listed twice is one voice: '
+        + 'a duplicated judge id would otherwise reach the minimum weight with '
+        + 'a single model deciding the stage, which is the exact outcome this '
+        + 'guard exists to prevent',
       fn: async () => {
         expect(function refuseDuplicatedJudge() {
           assertJudgeableProducerRoster({
@@ -191,10 +231,7 @@ await describe({
         expect(function refuseRefinerRoster() {
           assertJudgeableProducerRoster({
             producerModelIds: [PRODUCER_ONE,],
-            judgeModelIds: [
-              PRODUCER_ONE,
-              JUDGE_ONE,
-            ],
+            judgeModelIds: [JUDGE_ONE,],
             role: 'refiner',
           },);
         },).toThrow('refiner',);
@@ -208,10 +245,7 @@ await describe({
         expect(function refuseAndReport() {
           assertJudgeableProducerRoster({
             producerModelIds: [PRODUCER_ONE,],
-            judgeModelIds: [
-              PRODUCER_ONE,
-              JUDGE_ONE,
-            ],
+            judgeModelIds: [JUDGE_ONE,],
             role: 'editor',
           },);
         },).toThrow(PRODUCER_ONE,);
@@ -219,20 +253,15 @@ await describe({
     },),
 
     it({
-      name: 'requires two judges with NO STAKE in the set, which is policy '
-        + 'rather than arithmetic now that producers judge: it keeps a whole '
-        + 'slate from being ranked only by the models that wrote it',
+      name: 'seats judges by the MINIMUM WEIGHT rather than by a written '
+        + 'count, and refuses one seat below it. One judge can contribute at '
+        + 'most one full-weight ballot, so a roster below that floor declines '
+        + 'every round while looking like a pipeline that simply found '
+        + 'nothing to change',
       fn: async () => {
         /**
-         * Disinterested judges available to draw from, sliced against the
-         * constant so this case follows the minimum if it ever moves.
-         *
-         * The threshold is a WEIGHT and this slice is a COUNT, which line up
-         * because a ballot from a judge with no stake carries weight one. That
-         * is where the correspondence ends: a producer voting for ANOTHER
-         * model's candidate also carries full weight, so this floor is not the
-         * condition under which selection can succeed. It is a floor somebody
-         * chose.
+         * Judges available to draw from, sliced against the constants so this
+         * case follows the floor if either weight ever moves.
          */
         const pool = [
           JUDGE_ONE,
@@ -240,33 +269,71 @@ await describe({
           JUDGE_THREE,
         ] as const;
 
-        expect(function refuseBelowMinimum() {
+        /**
+         * Seats the weights require, derived exactly as the guard derives them.
+         */
+        const seats = Math.ceil(MIN_SELECTION_WEIGHT / FULL_VOTE_WEIGHT,);
+
+        expect(function refuseBelowSeats() {
           assertJudgeableProducerRoster({
             producerModelIds: [PRODUCER_ONE,],
-            judgeModelIds: [
-              PRODUCER_ONE,
-              ...pool.slice(
-                0,
-                MIN_SELECTION_WEIGHT - 1,
-              ),
-            ],
+            judgeModelIds: pool.slice(
+              0,
+              seats - 1,
+            ),
             role: 'editor',
           },);
         },).toThrow(EditorRosterError,);
 
-        expect(function acceptAtMinimum() {
+        expect(function acceptAtSeats() {
+          assertJudgeableProducerRoster({
+            producerModelIds: [PRODUCER_ONE,],
+            judgeModelIds: pool.slice(
+              0,
+              seats,
+            ),
+            role: 'editor',
+          },);
+        },).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'REFUSES one producer judged by itself and one other model, which '
+        + 'counting seats would have passed. That bench tops out at half a '
+        + 'vote from the author plus one from the other judge, so nothing can '
+        + 'ever reach a minimum of two and every round would decline while '
+        + 'reading as a stage that found nothing worth changing',
+      fn: async () => {
+        expect(function refuseUnwinnableBench() {
           assertJudgeableProducerRoster({
             producerModelIds: [PRODUCER_ONE,],
             judgeModelIds: [
               PRODUCER_ONE,
-              ...pool.slice(
-                0,
-                MIN_SELECTION_WEIGHT,
-              ),
+              JUDGE_ONE,
             ],
             role: 'editor',
           },);
-        },).not.toThrow();
+        },).toThrow(EditorRosterError,);
+      },
+    },),
+
+    it({
+      name: 'names the CAPACITY in that refusal, since the remedy differs by '
+        + 'fault: a roster short of weight needs another judge, while a '
+        + 'repeated id needs one removed, and a message covering both sends '
+        + 'whoever reads it to the wrong configuration',
+      fn: async () => {
+        expect(function refuseAndSayWhy() {
+          assertJudgeableProducerRoster({
+            producerModelIds: [PRODUCER_ONE,],
+            judgeModelIds: [
+              PRODUCER_ONE,
+              JUDGE_ONE,
+            ],
+            role: 'editor',
+          },);
+        },).toThrow('at most 1.5',);
       },
     },),
   ],
@@ -283,10 +350,7 @@ await describe({
         expect(function refuseEditorRoster() {
           assertJudgeableEditorRoster({
             editorModelIds: [PRODUCER_ONE,],
-            judgeModelIds: [
-              PRODUCER_ONE,
-              JUDGE_ONE,
-            ],
+            judgeModelIds: [JUDGE_ONE,],
           },);
         },).toThrow('editor',);
       },

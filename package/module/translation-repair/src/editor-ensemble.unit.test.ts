@@ -380,10 +380,12 @@ await describe({
     },),
 
     it({
-      name: 'refuses a roster leaving fewer disinterested judges than a '
-        + 'decision needs, which would decline every round in silence',
+      name: 'ACCEPTS two editors judged by themselves and one other, which the '
+        + 'old rule refused: two discounted ballots and one full one reach the '
+        + 'minimum weight, so a decision is possible and the ruling of '
+        + '2026-08-14 says a stake discounts an opinion rather than voiding it',
       fn: async () => {
-        expect(function oneJudgeLeft() {
+        expect(function twoEditorsOneOutsider() {
           assertJudgeableEditorRoster({
             editorModelIds: [
               'hf:moonshotai/Kimi-K3',
@@ -395,12 +397,32 @@ await describe({
               'hf:Qwen/Qwen3.6-27B',
             ],
           },);
-        },).toThrow(EditorRosterError,);
+        },).not.toThrow();
+      },
+    },),
 
+    it({
+      name: 'refuses a roster that could never reach the minimum weight, which '
+        + 'would decline every round in silence: one editor grading itself '
+        + 'draws half a vote, and a lone judge cannot decide a stage anyway',
+      fn: async () => {
         expect(function everyJudgeEdits() {
           assertJudgeableEditorRoster({
             editorModelIds: ['hf:moonshotai/Kimi-K3',],
             judgeModelIds: ['hf:moonshotai/Kimi-K3',],
+          },);
+        },).toThrow(EditorRosterError,);
+
+        expect(function twoEditorsJudgingThemselves() {
+          assertJudgeableEditorRoster({
+            editorModelIds: [
+              'hf:moonshotai/Kimi-K3',
+              'hf:zai-org/GLM-5.2',
+            ],
+            judgeModelIds: [
+              'hf:moonshotai/Kimi-K3',
+              'hf:zai-org/GLM-5.2',
+            ],
           },);
         },).toThrow(EditorRosterError,);
       },

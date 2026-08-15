@@ -204,8 +204,9 @@ export function mergeProducers(
   ];
 
   // Incumbency survives the collapse. A model reproducing the incumbent's text
-  // exactly gains a stake in it and must be barred, but the text is still the
-  // one that was already there, and reporting it as that model's work would
+  // exactly gains a stake in it, so its own ballot for it is discounted, but
+  // the text is still the one that was already there, and reporting it as that
+  // model's work would
   // turn "the human translation was kept" into "a model rewrote it identically"
   // on exactly the slices where the two are indistinguishable.
   if ((left.kind === 'incumbent') || (right.kind === 'incumbent'))

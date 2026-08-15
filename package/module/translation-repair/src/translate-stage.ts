@@ -245,7 +245,8 @@ function rotateCandidates<ValueT,>(
  * @returns Shipped text with how it was decided
  *
  * @throws {@link import('./repair-contract.ts').EditorRosterError} when the
- * translator roster leaves too few disinterested judges
+ * roster could not select anything: repeats on either side, no translator, or
+ * judges too few to reach the minimum weight
  *
  * @example
  * ```ts

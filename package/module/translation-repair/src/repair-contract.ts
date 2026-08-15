@@ -1,5 +1,9 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import { MIN_SELECTION_WEIGHT, } from './candidate-select-model.ts';
+import {
+  FULL_VOTE_WEIGHT,
+  MIN_SELECTION_WEIGHT,
+  SELF_VOTE_WEIGHT,
+} from './candidate-select-model.ts';
 import type { ClaimAttribution, } from './critic-attribution.ts';
 import type { IntroducedDefectReport, } from './introduced-defect-probe.ts';
 import type { RepairRegion, } from './repair-region.ts';
@@ -71,8 +75,7 @@ export type RepairModels = {
 };
 
 /**
- * Thrown when every judge also edits, which would leave candidate selection
- * with nobody disinterested to ask.
+ * Thrown when a roster could not decide a round however its judges voted.
  *
  * @example
  * ```ts
@@ -89,49 +92,45 @@ export class EditorRosterError extends Error {
    *
    * @param role - what the producers do, so the message names the real stage
    * rather than always saying editor; defaults to `editor`
+   *
+   * @param fault - what exactly is wrong, since the guard refuses for several
+   * unrelated reasons and a message covering all of them sends whoever reads it
+   * looking in the wrong place
    */
   constructor(
     {
       editorModelIds,
       judgeModelIds,
       role = 'editor',
+      fault,
     }: {
       readonly editorModelIds: readonly SyntheticModelId[];
       readonly judgeModelIds: readonly SyntheticModelId[];
       readonly role?: string;
+      readonly fault: string;
     },
   ) {
     super(
-      `too few judges sit outside the ${role} roster, so selection could not run without a model `
-        + `grading itself: ${role}s [${editorModelIds.join(', ',)}], judges [${
-          judgeModelIds.join(', ',)
-        }]`,
+      `this ${role} roster cannot select anything: ${fault}. ${role}s [${
+        editorModelIds.join(', ',)
+      }], judges [${judgeModelIds.join(', ',)}]`,
     );
     this.name = 'EditorRosterError';
   }
 }
 
 /**
- * Refuses a roster that cannot seat enough disinterested judges.
+ * Refuses an editor roster that could not decide a round.
  *
- * Selection removes producers from the judge roster, so a roster short of
- * judges does not fail loudly on its own: rounds would return
- * `no disinterested judge available` or `winner short of the minimum vote
- * count`, and the ensemble would silently degrade into always shipping its
- * fallback, which looks like a working pipeline in logs and in tests. Refusing
- * at stage entry turns that into a first-chunk crash instead of a wasted
- * corpus run.
- *
- * Duplicate editor ids are refused for the same reason: a repeated id is one
- * model counted twice, which inflates the apparent ensemble without adding an
- * independent voice.
+ * Names the editor role and defers everything else to
+ * `assertJudgeableProducerRoster`, which holds the rule and the reasoning.
  *
  * @param editorModelIds - editors that propose candidates
  *
  * @param judgeModelIds - roster judges are drawn from
  *
- * @throws {@link EditorRosterError} when editors repeat or too few judges sit
- * outside the editors
+ * @throws {@link EditorRosterError} when either side repeats, editors are
+ * empty, or too few judges are seated to reach the minimum weight
  *
  * @example
  * ```ts
@@ -155,20 +154,31 @@ export function assertJudgeableEditorRoster(
 }
 
 /**
- * Refuses a producer roster that cannot seat enough disinterested judges.
+ * Refuses a roster that could not decide a round however it voted.
  *
- * Shared by the editor ensemble and the naturalness lane because the failure is
- * identical in both: selection removes producers from the judge roster, so a
- * roster short of judges declines every round and the stage silently degrades
- * into always shipping its fallback, which reads as a working pipeline in logs
- * and in tests.
+ * WHAT THIS NO LONGER REQUIRES, by the user ruling of 2026-08-14: judges
+ * outside the producer roster. Self-judging is allowed and carries reduced
+ * weight instead, which is `SELF_VOTE_WEIGHT`, so a model grading its own work
+ * is a discounted opinion rather than a forbidden one. Refusing here would have
+ * made that ruling unreachable, since a roster where every model produces has
+ * no disinterested judge at all.
+ *
+ * WHAT REMAINS STRUCTURAL: a judge contributes at most one full-weight ballot,
+ * so a roster with fewer seats than the minimum weight cannot select anything,
+ * and every round would decline into the fallback. That reads as a working
+ * pipeline in logs and in tests, which is why it is refused at stage entry
+ * rather than left to be inferred from a corpus of unchanged documents.
+ *
+ * Repeats are refused on both sides: a repeated id is one model counted twice,
+ * inflating an ensemble without adding an independent voice, and a repeated
+ * judge would reach the minimum weight by itself.
  *
  * @param producerModelIds - models that generate candidates
  *
  * @param judgeModelIds - roster judges are drawn from
  *
- * @throws {@link EditorRosterError} when producers repeat or too few judges sit
- * outside them
+ * @throws {@link EditorRosterError} when either side repeats, producers are
+ * empty, or too few judges are seated to reach the minimum weight
  *
  * @example
  * ```ts
@@ -190,27 +200,69 @@ export function assertJudgeableProducerRoster(
    * Producers keyed for membership tests, also revealing repeats by size.
    */
   const producers = new Set(producerModelIds,);
-  if ((producers.size !== producerModelIds.length) || (producers.size === 0))
+  if (producers.size === 0)
     throw new EditorRosterError({
       editorModelIds: producerModelIds,
       judgeModelIds,
       role,
+      fault: `no ${role} was seated`,
+    },);
+  if (producers.size !== producerModelIds.length)
+    throw new EditorRosterError({
+      editorModelIds: producerModelIds,
+      judgeModelIds,
+      role,
+      fault: `a ${role} is listed more than once, which is one voice pretending to be two`,
     },);
 
   /**
-   * Judges with no stake in any candidate this roster produces.
+   * Judges keyed the same way, since a repeated judge is one opinion counted
+   * twice and would reach the minimum weight on its own.
    */
-  const disinterested = new Set(
-    judgeModelIds.filter(function isDisinterested(modelId,) {
-      return !producers.has(modelId,);
-    },),
+  const judges = new Set(judgeModelIds,);
+  if (judges.size !== judgeModelIds.length)
+    throw new EditorRosterError({
+      editorModelIds: producerModelIds,
+      judgeModelIds,
+      role,
+      fault: 'a judge is listed more than once, which would let one model reach the minimum weight alone',
+    },);
+
+  /**
+   * Most weight a candidate from this roster could ever draw, if every judge
+   * voted for it.
+   *
+   * A judge that produced the candidate contributes the discounted weight and
+   * every other judge the full one, so the worst case is measured by treating
+   * every producer on the bench as a stakeholder in it.
+   *
+   * COUNTING SEATS INSTEAD WOULD PASS A ROSTER THAT CAN NEVER DECIDE: one
+   * producer, judged by itself and one other model, tops out at half a vote
+   * plus a whole one, which never reaches a minimum of two. Every round would
+   * decline and the stage would read as one that found nothing worth changing.
+   *
+   * Derived from the weights rather than written as a number, so tuning any of
+   * them cannot leave this quietly wrong.
+   */
+  const capacity = judgeModelIds.reduce(
+    function addSeat(
+      weight,
+      modelId,
+    ): number {
+      return weight
+        + (producers.has(modelId,) ? SELF_VOTE_WEIGHT : FULL_VOTE_WEIGHT);
+    },
+    0,
   );
-  if (disinterested.size >= MIN_SELECTION_WEIGHT)
+  if (capacity >= MIN_SELECTION_WEIGHT)
     return;
   throw new EditorRosterError({
     editorModelIds: producerModelIds,
     judgeModelIds,
     role,
+    fault: `these judges could award at most ${String(capacity,)} against a minimum of ${
+      String(MIN_SELECTION_WEIGHT,)
+    }, so no candidate could ever be selected`,
   },);
 }
 

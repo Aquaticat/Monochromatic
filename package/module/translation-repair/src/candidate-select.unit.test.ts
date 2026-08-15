@@ -16,6 +16,7 @@ import {
 import {
   applyPatchOperations,
   type Candidate,
+  CANDIDATE_NONE,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type EditableEnvelope,
@@ -195,6 +196,90 @@ async function runSelection({ ballots, }: { readonly ballots: BallotScript; },) 
   };
 }
 
+/**
+ * Runs one round over a COLLAPSED candidate and its only rival.
+ *
+ * The collapsed candidate stands for several models that returned identical
+ * text, which `buildTranslateCandidates` merges into one entry carrying every
+ * contributor. Every contributor then votes for it, and every other judge
+ * abstains, which isolates the question these cases ask: what self votes alone
+ * can carry.
+ *
+ * @param contributors - models the collapsed candidate is credited to
+ *
+ * @returns Outcome of that round
+ *
+ * @example
+ * ```ts
+ * const { outcome, } = await runCollapsedSelection({ contributors, },);
+ * ```
+ */
+async function runCollapsedSelection(
+  { contributors, }: { readonly contributors: readonly SyntheticModelId[]; },
+) {
+  /**
+   * Judge calls the round made.
+   */
+  const counter = { calls: 0, };
+
+  /**
+   * Slate: one merged proposal, one rival nobody votes for.
+   */
+  const candidates: readonly Candidate<string>[] = [
+    {
+      producer: {
+        kind: 'composite',
+        contributors,
+      },
+      value: 'collapsed',
+      rendered: 'The cat naps in the sun.',
+    },
+    {
+      producer: {
+        kind: 'model',
+        modelId: 'hf:openai/gpt-oss-120b',
+      },
+      value: 'rival',
+      rendered: 'The cat is napping in the sunshine.',
+    },
+  ];
+
+  /**
+   * Contributors back their own merged text; everyone else declines.
+   */
+  const ballots: BallotScript = Object.fromEntries(
+    JUDGES.map(function toBallot(modelId,): readonly [string, number,] {
+      return [
+        modelId,
+        contributors.includes(modelId,) ? 1 : CANDIDATE_NONE,
+      ];
+    },),
+  );
+
+  return {
+    outcome: await selectBestCandidate({
+      client: scriptedJudges({
+        ballots,
+        counter,
+      },),
+      candidates,
+      judgeModelIds: JUDGES,
+      task: 'Pick one.',
+      criteria: ['Faithful.',],
+      evidence: [
+        {
+          label: 'ORIGINAL',
+          text: SOURCE_TEXT,
+        },
+      ],
+      signal: new AbortController().signal,
+      perCallTimeoutMs: 1_000,
+      l,
+    },),
+    calls: counter.calls,
+  };
+}
+
 await describe({
   name: selectBestCandidate.name,
   children: [
@@ -236,6 +321,48 @@ await describe({
         expect(outcome.tally.selfVotes,).toBe(2,);
         expect(outcome.findings,).toContain('select-self-vote (hf:zai-org/GLM-5.2)',);
         expect(outcome.findings,).toContain('select-self-vote (hf:Qwen/Qwen3.6-27B)',);
+      },
+    },),
+
+    it({
+      name: 'SHIPS a collapsed candidate backed only by the models that wrote '
+        + 'it, once enough of them wrote it. Four models returning '
+        + 'byte-identical text merge into one candidate, so four ballots for '
+        + 'it are four SELF votes, and four halves reach the minimum with no '
+        + 'disinterested judge involved. That is deliberate: independent '
+        + 'models agreeing to the byte IS the corroboration, and it is the one '
+        + 'case where the weights do not require an outside voice',
+      fn: async () => {
+        const { outcome, } = await runCollapsedSelection({
+          contributors: [
+            'hf:zai-org/GLM-5.2',
+            'hf:Qwen/Qwen3.6-27B',
+            'hf:moonshotai/Kimi-K3',
+            'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+          ],
+        },);
+        expect(outcome.kind,).toBe('selected',);
+        expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('collapsed',);
+        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(2,);
+        expect(outcome.tally.selfVotes,).toBe(4,);
+      },
+    },),
+
+    it({
+      name: 'DECLINES the same shape one contributor short, which is what '
+        + 'keeps the previous case from being a hole: three halves fall below '
+        + 'the minimum, so a candidate three models wrote and nobody else '
+        + 'endorsed does not ship',
+      fn: async () => {
+        const { outcome, } = await runCollapsedSelection({
+          contributors: [
+            'hf:zai-org/GLM-5.2',
+            'hf:Qwen/Qwen3.6-27B',
+            'hf:moonshotai/Kimi-K3',
+          ],
+        },);
+        expect(outcome.kind,).toBe('declined',);
+        expect(outcome.tally.selfVotes,).toBe(3,);
       },
     },),
 

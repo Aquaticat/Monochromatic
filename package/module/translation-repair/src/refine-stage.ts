@@ -92,8 +92,9 @@ export type RefineStageResult = {
  *
  * @returns Shipped text plus what decided it
  *
- * @throws {@link import('./repair-contract.ts').EditorRosterError} when too few
- * judges sit outside the refiner roster
+ * @throws {@link import('./repair-contract.ts').EditorRosterError} when the
+ * roster could not select anything: repeats on either side, no refiner, or
+ * judges too few to reach the minimum weight
  *
  * @example
  * ```ts
