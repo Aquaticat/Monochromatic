@@ -78,6 +78,22 @@ The one 6-minute timeout and one schema-invalid reply recorded in `#92` came
 from an earlier probe on a 4641-character section, and nothing that size appears
 here.
 
+That last sentence is a limit on the evidence, not a reassurance, and
+`mise run //package/module/translation-repair:slice-census` says how big a
+limit.
+Incumbent chars per slice over all 1260:
+ p50 299,
+ p90 486,
+ p99 1512,
+ max 10959.
+The bench's ten slices spanned 94 to 497 incumbent chars, so they sample the
+corpus up to about its 90th percentile and nothing above it.
+One slice of 1260 exceeds the 4641 characters that produced the known timeout,
+and it is more than twice that size:
+ `shihai4h` carries 10959 characters in a single slice.
+So a clean tail here is evidence about ordinary slices, and says nothing about
+the handful that are an order of magnitude larger.
+
 Latency by model, which is what the straggler cut is really measuring:
 
 -   `hf:openai/gpt-oss-120b` p50 4.4 s, p95 8.3 s, max 10.6 s.
@@ -136,7 +152,15 @@ So the selector prompt is nowhere near a context limit on this corpus, and the
 
 ## What the corpus costs
 
-1260 slices over 92 pairs.
+1260 slices over 92 pairs, which is the whole of today's shape rather than a
+part of it.
+The census finds no section that one side lacks entirely, so no population is
+sitting outside these slices waiting for `#90` to bring it in.
+What `#90` governs is inside them:
+ 132 blocks across 39 entries, 44731 characters, that the translation carries
+ and the original does not.
+Those are already inside paired sections and already counted here;
+ `#90` decides how a slice is sized around them, not whether they are paid for.
 Slices per entry:
  p50 8,
  p90 25,
@@ -173,5 +197,10 @@ for, and they resume rather than restart.
 -   Input against completion tokens, since the bench recorded only the total.
 -   Whether a slice's cost scales with its size, which needs the per-slice sizes
     joined to per-slice times over more than ten slices.
+    The sizes are now known (p50 299 incumbent chars, max 10959);
+    what is missing is a timed run over the large end.
+-   What the largest slices do at all, since the bench sampled none above 497
+    incumbent characters and the one slice over 4641 is the size that timed out
+    before.
 -   Anything about the repair lane under the new shape, which is a separate
     budget and is not measured here.
