@@ -24,6 +24,7 @@ import {
   type SelectEvidence,
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { EditorRosterError, } from './repair-contract.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -84,6 +85,10 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * @returns Winner with the ballot weight it drew, or a decline carrying its
  * reason; either way the round's tally and every ballot cast
+ *
+ * @throws {@link import('./repair-contract.ts').EditorRosterError} when a judge
+ * appears twice on the roster, which would let one model reach the minimum
+ * weight by itself
  *
  * @example
  * ```ts
@@ -156,6 +161,37 @@ export async function selectBestCandidate<ValueT,>(
       ballots: [],
       perCandidate: [],
     };
+  }
+
+  /**
+   * Judges keyed for repeat detection.
+   *
+   * A repeated id is one model given two exchanges and two ballots, which is
+   * enough to reach {@link MIN_SELECTION_WEIGHT} alone: exactly the single-model
+   * control the ensemble exists to prevent, arriving as a roster typo rather
+   * than as a policy change.
+   *
+   * Refused HERE as well as in `assertJudgeableProducerRoster`, because that
+   * guard runs at STAGE entry while `selectPerEnvelope` and `selectChunkPatch`
+   * are exported and reachable without one. Thrown rather than deduplicated,
+   * since a caller that passed a repeat believes it has more judges than it
+   * has, and silently collapsing the roster answers a question it did not ask.
+   *
+   * Before the fan-out rather than at the count, so a roster fault costs no
+   * model calls.
+   */
+  const distinctJudges = new Set(judges,);
+  if (distinctJudges.size !== judges.length) {
+    throw new EditorRosterError({
+      editorModelIds: candidates.flatMap(function toStakeholders(
+        candidate,
+      ): readonly SyntheticModelId[] {
+        return producerModelIds(candidate.producer,);
+      },),
+      judgeModelIds: judges,
+      role: 'producer',
+      fault: 'a judge is listed more than once, which would let one model reach the minimum weight alone',
+    },);
   }
 
   /**

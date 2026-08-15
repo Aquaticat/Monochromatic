@@ -29,19 +29,24 @@ export const FULL_VOTE_WEIGHT = 1;
  * what `#84` is for.
  *
  * A half rather than some tuned fraction, and the arithmetic is the argument:
- * a single-model candidate draws at most this much from its own author, and a
- * three-contributor composite at most three halves, both short of
- * {@link MIN_SELECTION_WEIGHT}. So on the rosters in use a candidate cannot be
- * selected by its own authors alone; it needs judges with no stake in it.
+ * one author draws at most this much for its own text and three authors at most
+ * three halves, both short of {@link MIN_SELECTION_WEIGHT}, while FOUR reach it
+ * exactly. So up to three stakeholders a candidate needs a judge with no stake
+ * in it, and at four it does not.
+ *
+ * That four-stakeholder case is reached by COLLAPSE rather than by a wide
+ * producing role: models returning byte-identical text merge into one candidate
+ * carrying every author, so four models writing the same sentence can ship it
+ * between themselves. Kept deliberately, because independent models agreeing to
+ * the byte is itself the corroboration an outside judge would supply. Both it
+ * and the three-author case that falls short are pinned by
+ * `runCollapsedSelection` in `candidate-select.unit.test.ts`, so retuning either
+ * weight fails there rather than moving the bound in silence.
  *
  * STATED PRECISELY, because a looser version of this sentence was written into
  * four documents and was wrong: the discount attaches to a JUDGE AND CANDIDATE
  * PAIR, not to a judge. A producer voting for someone else's candidate carries
- * full weight, which is the whole point of seating it. The property therefore
- * holds while no single candidate has four or more stakeholders, and stops
- * holding at four, where halves sum to the threshold. Nothing in this module
- * enforces that bound; it is a fact about the current rosters, so revisit it
- * before any producing role reaches four models.
+ * full weight, which is the whole point of seating it.
  *
  * Exactly representable in binary floating point, which the tie comparison
  * depends on: two halves sum to one with no residue, so a tie between a

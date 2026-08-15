@@ -239,7 +239,13 @@ export function assertJudgeableProducerRoster(
    * COUNTING SEATS INSTEAD WOULD PASS A ROSTER THAT CAN NEVER DECIDE: one
    * producer, judged by itself and one other model, tops out at half a vote
    * plus a whole one, which never reaches a minimum of two. Every round would
-   * decline and the stage would read as one that found nothing worth changing.
+   * keep its fallback and the stage would read as one that found nothing worth
+   * changing.
+   *
+   * What this bounds is FRESH text specifically. A candidate nobody on the
+   * bench wrote, which in the translate lane is the incumbent translation, can
+   * still draw full weight from every judge; the roster this refuses is one
+   * whose own proposals can never beat what was already there.
    *
    * Derived from the weights rather than written as a number, so tuning any of
    * them cannot leave this quietly wrong.
@@ -260,9 +266,9 @@ export function assertJudgeableProducerRoster(
     editorModelIds: producerModelIds,
     judgeModelIds,
     role,
-    fault: `these judges could award at most ${String(capacity,)} against a minimum of ${
+    fault: `these judges could award at most ${String(capacity,)} to text this roster wrote, against a minimum of ${
       String(MIN_SELECTION_WEIGHT,)
-    }, so no candidate could ever be selected`,
+    }, so nothing it proposes could ever be selected`,
   },);
 }
 

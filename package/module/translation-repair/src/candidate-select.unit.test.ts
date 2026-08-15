@@ -21,6 +21,7 @@ import {
   type ChatJsonRequest,
   type EditableEnvelope,
   type EditorCandidate,
+  EditorRosterError,
   hashContent,
   type PatchOutcome,
   selectBestCandidate,
@@ -155,6 +156,8 @@ const JUDGES: readonly SyntheticModelId[] = [
  *
  * @param ballots - one-based candidate index per judge
  *
+ * @param judgeModelIds - roster to seat; defaults to the fixture roster
+ *
  * @returns Outcome plus how many judge calls it took
  *
  * @example
@@ -162,7 +165,15 @@ const JUDGES: readonly SyntheticModelId[] = [
  * const { outcome, } = await runSelection({ ballots, },);
  * ```
  */
-async function runSelection({ ballots, }: { readonly ballots: BallotScript; },) {
+async function runSelection(
+  {
+    ballots,
+    judgeModelIds = JUDGES,
+  }: {
+    readonly ballots: BallotScript;
+    readonly judgeModelIds?: readonly SyntheticModelId[];
+  },
+) {
   /**
    * Judge calls the round made.
    */
@@ -177,7 +188,7 @@ async function runSelection({ ballots, }: { readonly ballots: BallotScript; },) 
       counter,
     },),
     candidates: STRING_CANDIDATES,
-    judgeModelIds: JUDGES,
+    judgeModelIds,
     task: 'Pick one.',
     criteria: ['Faithful.',],
     evidence: [
@@ -440,6 +451,65 @@ await describe({
         // The out-of-range ballot, plus the two producers left unscripted.
         expect(outcome.tally.abstentions,).toBe(3,);
         expect(outcome.tally.ballots,).toBe(5,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a roster naming one judge twice, before spending a single '
+        + 'call. Two exchanges to one model are two ballots from one opinion, '
+        + 'which reaches the minimum weight alone, and the stage guard cannot '
+        + 'catch it because selectPerEnvelope and selectChunkPatch are '
+        + 'reachable without one',
+      fn: async () => {
+        /**
+         * Calls a refused round is allowed to make.
+         */
+        const counter = { calls: 0, };
+
+        /**
+         * Round over a roster naming one model twice.
+         */
+        const refused = selectBestCandidate({
+          client: scriptedJudges({
+            ballots: { 'hf:moonshotai/Kimi-K3': 1, },
+            counter,
+          },),
+          candidates: STRING_CANDIDATES,
+          judgeModelIds: [
+            'hf:moonshotai/Kimi-K3',
+            'hf:moonshotai/Kimi-K3',
+          ],
+          task: 'Pick one.',
+          criteria: ['Faithful.',],
+          evidence: [
+            {
+              label: 'ORIGINAL',
+              text: SOURCE_TEXT,
+            },
+          ],
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        await expect(refused,).rejects.toBeInstanceOf(EditorRosterError,);
+        expect(counter.calls,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'still seats a producer that judges, which is the arrangement the '
+        + 'repeat check must not break: the same model appearing once as an '
+        + 'author and once as a judge is one voice with a stake, not two voices',
+      fn: async () => {
+        const { outcome, } = await runSelection({
+          ballots: {
+            'hf:zai-org/GLM-5.2': 1,
+            'hf:moonshotai/Kimi-K3': 1,
+            'hf:openai/gpt-oss-120b': 1,
+          },
+        },);
+        expect(outcome.kind,).toBe('selected',);
+        expect(outcome.tally.selfVotes,).toBe(1,);
       },
     },),
   ],
