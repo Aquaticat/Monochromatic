@@ -1095,3 +1095,52 @@ That ordering costs nothing, because C keeps B's denominator.
     tally. It now shows up as `stage-voice-lost (translate model)` with one
     fewer heard translator, which is the same event described honestly. The
     blank filter downstream stays as a backstop and should now never fire.
+28. HOW MUCH SHOULD IT COST TO TELL A MISSING PARAGRAPH FROM A MOVED ONE?
+    THE FINDING: the block aligner can only pair one with one, skip a source
+    block, or skip a target block. It cannot say that two source paragraphs
+    were rendered as one, so a merged pair reports the second paragraph as
+    `source-only`, which is the same step a genuinely untranslated paragraph
+    produces. Landing four turns that step into an insertion, so wired as
+    designed it would render a passage the translation already carries and
+    insert it a second time.
+    MEASURED over the pinned corpus: 2290 paired steps, 95 source-only, in 23
+    of 92 entries, sixty of the ninety-five inside two entries. A hand sample of
+    twelve says the strongest ones are merges (one entry renders four
+    consecutive lines as a single English block) and the weakest ones are
+    MISPAIRINGS (a footnote definition paired with the wrong footnote, a
+    narration line paired with a translation three blocks away). Genuine
+    omission was the minority of what I read.
+    WHY IT IS YOURS TO ANSWER: every path below is correct. They differ in what
+    they spend and in how long the lane stays unable to fill a real gap.
+    A. FIX BLOCK ALIGNMENT FIRST, then revisit anchors. Pros: the mispairing
+    half of the sample is a defect rather than a limit, `#74` already owns the
+    scoring, and every later stage reads better pairs. Cons: it is the largest
+    of the four, it does not by itself separate a merge from an omission, and
+    landing four waits on it.
+    B. ASK A MODEL PER ORPHAN RUN whether the neighbouring translation already
+    carries the passage. Pros: reads meaning, which is the only thing that
+    actually settles it; the answer caches like every other slice; ninety-five
+    orphans corpus-wide is a small bill. Cons: a new stage with its own prompt,
+    schema, roster and failure modes, and it inherits whatever the aligner got
+    wrong about which blocks are neighbours.
+    C. DROP BLOCK-LEVEL ANCHORS, keep only SECTION-level ones. Pros: a source
+    section with no target section at all is far stronger evidence than a single
+    unpaired block, it is landing five and already designed, and it covers the
+    case that motivated the whole thing. Cons: leaves paragraph-scale omissions
+    where they are, folded into a neighbour, which is where they are today.
+    D. ANCHOR ANYWAY AND LET THE LANE DECLINE. Pros: the translate lane already
+    declines and records why, and the judges already read a stated decline
+    consequence; it costs a prompt change rather than a stage. Cons: it asks the
+    judges to notice a duplication they were never shown, since the sheet does
+    not carry the neighbouring translation today, and a wrong decline inserts
+    into the archive.
+    MY RANKING: C > A > B > D.
+    C over A because C ships the motivating case now and A blocks it behind the
+    largest piece of work in the list.
+    A over B because B builds a new stage on top of pairings A would have
+    corrected, and a coverage question about the wrong neighbour is worth
+    little.
+    B over D because B asks the question directly, where D asks the judges to
+    infer it from material they are not given.
+    WHAT I WILL DO IF YOU DO NOT ANSWER: C, since it is already designed and
+    blocked on nothing, and it leaves A, B and D open.
