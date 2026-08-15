@@ -120,6 +120,13 @@ const MODELS: TranslateModels = {
  */
 type CallLog = {
   translate: number;
+
+  /**
+   * Translate calls ATTEMPTED, whether or not one came back. The only counter
+   * that moves when every translator is down, which is what lets a case ask
+   * whether a slice was asked at all rather than whether it was answered.
+   */
+  translateAttempts: number;
   select: number;
 
   /**
@@ -230,6 +237,7 @@ function laneClient(
         },)
         .join('\n',);
       if (schema === 'translation_report') {
+        calls.translateAttempts += 1;
         if ((abortAfterTranslateCalls !== undefined)
           && (calls.translate >= abortAfterTranslateCalls))
           controller.abort(new Error('entry deadline reached',),);
@@ -324,6 +332,7 @@ async function runDriver(
     persisted = new Map<string, TranslateSliceRecord>(),
     calls = {
       translate: 0,
+      translateAttempts: 0,
       select: 0,
       selectAttempts: 0,
     },
@@ -984,9 +993,11 @@ The cat is doing the sleeping on the windowsill.
           .sliceCount,).toBe(1,);
         expect(twin.result
           .sliceCount,).toBe(2,);
+        expect(single.calls
+          .translateAttempts,).toBeGreaterThan(0,);
         expect(twin.calls
-          .translate,).toBe(single.calls
-          .translate * 2,);
+          .translateAttempts,).toBe(single.calls
+          .translateAttempts * 2,);
         expect(twin.persisted
           .size,).toBe(0,);
       },
