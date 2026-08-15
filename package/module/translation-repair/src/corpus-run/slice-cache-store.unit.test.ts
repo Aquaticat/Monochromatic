@@ -141,10 +141,10 @@ await describe({
         const first = await openSliceCache({ dir, generation: TEST_GENERATION, },);
 
         expect(first.resumed.size,).toBe(0,);
-        await first.persist(
-          'slice-hash-aaa',
-          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
-        );
+        await first.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        },);
 
         /**
          * Cache reopened, which is what a resumed run does.
@@ -183,10 +183,10 @@ await describe({
           generation: TEST_GENERATION,
         },);
 
-        await before.persist(
-          'slice-hash-aaa',
-          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
-        );
+        await before.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        },);
 
         /**
          * Same directory reopened by a different build, which is what a resume
@@ -357,10 +357,10 @@ await describe({
           'Mittens',
         );
         const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
-        await cache.persist(
-          'slice-hash-aaa',
-          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
-        );
+        await cache.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        },);
         await writeFile(
           join(
             dir,
@@ -413,10 +413,10 @@ await describe({
           ),
           generation: TEST_GENERATION,
         },);
-        await cache.persist(
-          'slice-hash-aaa',
-          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
-        );
+        await cache.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        },);
 
         expect([...await listResumableEntries({ dir: scratch.path, },),],).toStrictEqual(
           ['Mittens',],
@@ -487,10 +487,10 @@ await describe({
          * Cache holding one finished slice.
          */
         const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
-        await cache.persist(
-          'slice-hash-aaa',
-          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
-        );
+        await cache.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        },);
 
         expect((await listResumableEntries({ dir: scratch.path, },)).size,).toBe(1,);
 

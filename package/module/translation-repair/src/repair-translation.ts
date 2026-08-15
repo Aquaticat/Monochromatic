@@ -21,6 +21,7 @@ import {
   type RepairIssueRecord,
 } from './repair-record.ts';
 import { repairReplacements, } from './repair-replacements.ts';
+import type { SliceCache, } from './slice-cache.ts';
 import { spliceSlices, } from './splice-slices.ts';
 import type {
   ChunkRepairOutcome,
@@ -192,41 +193,6 @@ export type RepairStatus =
   | 'blocked-non-translation';
 
 /**
- * Cross-run slice cache making a large document resumable: completed slice
- * outcomes keyed by a deterministic hash of the slice's index and text, so
- * a run aborted at the hard cap resumes from the last finished slice
- * instead of recomputing from scratch. Injected like the client, so the
- * result stays a function of inputs and the resumed outcomes; `persist` is
- * a write-through side effect that never feeds back into the result.
- *
- * @example
- * ```ts
- * const cache: SliceCache = {
- *   resumed: new Map(),
- *   persist: async (key, outcome,) => writeSliceFile(key, outcome,),
- * };
- * ```
- */
-export type SliceCache = {
-  /**
-   * Outcomes finished on an earlier run, keyed by slice hash; a hit skips
-   * every model call for that slice.
-   */
-  readonly resumed: ReadonlyMap<string, ChunkRepairOutcome>;
-
-  /**
-   * Persists one freshly computed slice's serialized outcome under its hash
-   * key before the next slice starts, so an abort leaves finished slices
-   * recoverable. The pipeline owns the serialization; the driver writes
-   * exactly these bytes and parses them back into {@link resumed} next run.
-   */
-  readonly persist: (
-    key: string,
-    serialized: string,
-  ) => Promise<void>;
-};
-
-/**
  * Output contract of the batch driver.
  *
  * @example
@@ -328,7 +294,7 @@ export async function repairTranslation(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly sliceCharBudget?: number;
-    readonly sliceCache?: SliceCache;
+    readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
   }>,
 ): Promise<RepairTranslationResult> {
   /**
@@ -465,14 +431,14 @@ export async function repairTranslation(
       l: rl,
     },);
     if (resumed === undefined)
-      await sliceCache?.persist(
-        sliceKey,
-        JSON.stringify(
+      await sliceCache?.persist({
+        key: sliceKey,
+        serialized: JSON.stringify(
           outcome,
           undefined,
           2,
         ),
-      );
+      },);
     /* oxlint-enable no-await-in-loop */
     outcomes.push(outcome,);
 

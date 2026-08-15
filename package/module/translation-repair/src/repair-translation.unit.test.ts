@@ -724,10 +724,10 @@ await describe({
           signal: new AbortController().signal,
           sliceCache: {
             resumed: new Map<string, ChunkRepairOutcome>(),
-            persist: async (
+            persist: async ({
               key,
               serialized,
-            ) => {
+            },) => {
               store.set(
                 key,
                 serialized,

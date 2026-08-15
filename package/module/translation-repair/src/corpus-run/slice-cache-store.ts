@@ -9,7 +9,7 @@ import { join, } from 'node:path';
 
 import { isJsonRecord, } from '../json-guard.ts';
 import type { ChunkRepairOutcome, } from '../repair-contract.ts';
-import type { SliceCache, } from '../repair-translation.ts';
+import type { SliceCache, } from '../slice-cache.ts';
 
 //region Slice cache store
 // Disk-backed per-entry slice cache making a large corpus document resumable:
@@ -272,7 +272,7 @@ export async function openSliceCache(
     readonly dir: string;
     readonly generation: string;
   },
-): Promise<SliceCache> {
+): Promise<SliceCache<ChunkRepairOutcome>> {
   await mkdir(
     dir,
     { recursive: true, },
@@ -328,10 +328,10 @@ export async function openSliceCache(
 
   return {
     resumed,
-    persist: async function persistSlice(
+    persist: async function persistSlice({
       key,
       serialized,
-    ) {
+    },): Promise<void> {
       await writeFile(
         join(
           dir,

@@ -209,8 +209,8 @@ export {
   type RepairStatus,
   repairTranslation,
   type RepairTranslationResult,
-  type SliceCache,
 } from './repair-translation.ts';
+export type { SliceCache, } from './slice-cache.ts';
 export {
   buildIssueRecords,
   type RepairDisposition,
