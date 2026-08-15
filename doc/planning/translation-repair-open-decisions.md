@@ -12,8 +12,14 @@ can veto any of them cheaply.
 
 ## Question 1: how wide should the producing rosters be
 
-BLOCKS `#91`, which is otherwise ready to write, and through it the first long
-run under the new shape.
+BLOCKS the roster half of `#91`, and through it the first long run under the
+new shape.
+
+The GUARD half of `#91` no longer waits on you and landed overnight in
+`285af2867`: the code still forbade what you had already ruled, so a roster
+where every model produces threw before any model was asked. Details in the
+"decisions I took without you" section. What is still yours is how many
+producers to seat by default.
 
 You ruled "All producing roles to 4" and then "don't hardcode magic numbers like
 4 or 6".
@@ -77,10 +83,20 @@ characters, and that entry also owns the largest target-only block count. So
 the oversized-call risk is a single entry rather than a distribution problem,
 and it can be handled without changing the roster at all.
 
-WHAT IS STILL NOT MEASURED, and what I would spend quota on next: whether more
-candidates make the judges converge less. That is the agreement limb, it cannot
-be read off the corpus, and it needs the same slices run at several roster
-widths with the decline and tie rates compared. Say the word and it runs.
+THE AGREEMENT LIMB IS BEING MEASURED NOW, and it is the half of this question
+the corpus cannot answer: whether more candidates make the judges converge less.
+`mise run //package/module/translation-repair:roster-bench` runs the same ten
+stratified slices through the translate lane at every width from two to the
+whole roster, interleaved so each width meets the same provider weather, with
+one width run twice for a run-to-run band. Results are folded in below as they
+land.
+
+THE FIRST THING IT SHOWED IS THE BAND ITSELF, and it is wide. On one slice, at
+one width, the two passes disagreed about the outcome: one judged and replaced
+the archive text at weight 4.5, the other declined for indecision and kept it.
+Same slice, same width, same roster, minutes apart. Any difference between
+widths smaller than that is noise, which is exactly why the repeat was built in
+before the sweep rather than after.
 
 ### Options
 
@@ -350,6 +366,28 @@ seat until then anyway.
     because 三封信 becomes "three letters" and no digit survives on either side.
 5.  Atoms are compared as a multiset rather than in order, since a translation
     reorders clauses and a link moving inside a sentence is not damage.
+6.  THE ROSTER GUARD NOW MATCHES YOUR RULING. It required two judges with no
+    stake in any candidate, which is the rule your self-vote discount replaced,
+    and on six models that capped producers at four. It now refuses only
+    rosters that could not decide a round however they voted: repeats on either
+    side, no producer, or too little available weight to reach the minimum.
+    The weight limb catches a case a seat count would have passed, one producer
+    judged by itself and one other model, which tops out at 1.5 against a
+    minimum of 2 and would have declined every round in silence.
+    ONE EXCEPTION worth your veto if you dislike it: four models returning
+    byte-identical text collapse into one candidate, and four self-votes at a
+    half reach the minimum with no outside judge. I kept it, because agreement
+    to the byte between independent models is itself the corroboration, and
+    pinned both it and the three-contributor case that falls short in tests.
+7.  IDENTICAL CANDIDATES NOW MERGE THEIR AUTHORS in the editor and naturalness
+    lanes. They did not, so a model could vote at full weight for its own words
+    whenever another model wrote them first, and the ballot split across
+    identical texts. Found by an external review of the guard change.
+8.  The translate stage now RECORDS THE SLATE the judges were shown, with each
+    position's text, hash, origin and producer. Ballots name a position and the
+    slate is rotated per slice, so a stored ballot could not be joined to any
+    text afterwards. Judges still see anonymous positions; provenance is
+    attached to the record after the round.
 6.  The source-side slice budget is now derived from the whole document pair
     rather than from one section, and capped at the target budget. Reasoning in
     `#90`; the cap encodes that Chinese runs shorter than its English rendering,

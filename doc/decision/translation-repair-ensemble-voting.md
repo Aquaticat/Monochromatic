@@ -251,3 +251,48 @@ than about itself, and a validator that silently dropped that candidate would
 have destroyed the only report of it.
 
 Tracked as `#88`.
+
+## What the code enforced until 2026-08-15, and what it enforces now
+
+The rulings above were recorded before the code matched them.
+`assertJudgeableProducerRoster` still required two judges with no stake in any
+candidate, which is the rule the self-vote discount replaced.
+On the six-model roster that capped producers at four and made the widest cases
+of these rulings unreachable, including the roster-width bench that was supposed
+to measure them.
+
+Landed in `285af2867`.
+The guard now refuses only rosters that could not decide a round however they
+voted:
+
+-   producers non-empty and distinct, judges distinct;
+-   the weight this bench could award ONE candidate, counting a producer seat at
+    the self-vote weight and every other seat at the full one, reaches
+    `MIN_SELECTION_WEIGHT`.
+
+The second limb is the one that matters and a seat count would have missed it.
+One producer judged by itself and one other model tops out at half a vote plus
+one whole one, which never reaches two, so every round would decline while
+reading as a stage that found nothing worth changing.
+That case is now a test.
+
+WHERE SELF-VOTES ALONE CAN CARRY A CANDIDATE, stated because the arithmetic has
+one exception and it should not be discovered in production.
+When several models return byte-identical text their candidates collapse into
+one, and every contributor's ballot for it is a self-vote.
+Four contributors reach the minimum weight with no outside judge at all.
+That is deliberate: agreement to the byte between independent models is itself
+the corroboration.
+Three contributors fall short and the incumbent survives.
+Both are pinned in `candidate-select.unit.test.ts`.
+
+## Provenance had to be fixed before the discount could work
+
+Found by external review of the guard change and landed in the same session.
+Two lanes lost the record of who wrote a candidate exactly when models agreed:
+`selectPerEnvelope` kept only the first proposer of identical replacements, and
+the naturalness lane never deduplicated at all.
+A model could therefore vote at FULL weight for its own words whenever another
+model had written them first, which is the discount silently not applying on
+the slices where the ensemble agreed.
+Identical candidates now merge their producers.

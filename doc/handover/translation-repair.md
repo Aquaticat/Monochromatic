@@ -186,13 +186,44 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Immediate next steps
 
-PICK UP HERE (2026-08-14, after the translate stage landed).
+PICK UP HERE (2026-08-15, after the overnight session).
 
 READ FIRST, if you are the user coming back to this:
 `doc/planning/translation-repair-open-decisions.md`.
 It holds the four questions that need your answer, each with options, pros,
 cons, a ranking and the measurements taken to make the question answerable.
 Everything below is the state those questions sit in.
+
+WHAT CHANGED OVERNIGHT, 2026-08-14 into 15:
+
+-   THE ROSTER GUARD NOW MATCHES YOUR RULING (`285af2867`, `#91` guard limb).
+    It still required two judges outside the producer set, so a roster where
+    every model produces threw before any model was asked, and the bench below
+    could not have run past four producers.
+    It now refuses only rosters that could not decide a round however they
+    voted, measured as available weight rather than as a count of seats.
+-   IDENTICAL CANDIDATES MERGE THEIR AUTHORS (`8709e83aa`). The editor lane kept
+    only the first proposer of identical text and the naturalness lane
+    deduplicated nothing, so a model could vote at FULL weight for its own words
+    whenever another model wrote them first. Found by an external review of the
+    guard change.
+-   SELECTION IS AUDITABLE (`8709e83aa`, `e8e5bdfbc`). Every ballot carries
+    whether it was a self-vote, every candidate carries what it drew, a
+    selection carries the position it won at, and the translate stage records
+    the rotated slate the judges saw. Before this a stored ballot naming
+    candidate 2 could not be joined to any text: the slate is rotated per slice
+    and nothing recorded the order.
+-   THE ROSTER-WIDTH BENCH EXISTS AND IS RUNNING (`6602831ee`).
+    `mise run //package/module/translation-repair:roster-bench -- 10` over ten
+    stratified slices at every width from two to six, width inner so each width
+    meets the same provider weather, one width run twice for a run-to-run band.
+    Rows land incrementally in
+    `~/temp/agent/roster-bench-2026-08-15/roster-bench/rows.json`, log beside it.
+    It already showed the band is wide: the same slice at the same width judged
+    and replaced on one pass and declined for indecision on the next.
+-   TWO MEASUREMENT ERRORS OF MINE WERE STRUCK, both in the questions document:
+    the transcription class is enumerated now rather than estimated, and the
+    claim that no image marker exists in the markdown was a bad search.
 
 STATE: NO PASS IS RUNNING, deliberately.
 `pass16` was stopped on 2026-08-14 with zero artifacts settled, on the user's
