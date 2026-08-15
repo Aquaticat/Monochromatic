@@ -118,6 +118,11 @@ description = "Ask whether the resolution checkers can say no: a genuine fix, an
 depends = ["build"]
 run = "node dist/final/node/checker-sensitivity.mjs"
 
+[tasks."roster-bench"]
+description = "Run the same corpus slices through the translate lane at every producer-roster width, recording decline, tie, self-vote and cost rates; SPENDS QUOTA, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR (pass a slice count after --)"
+depends = ["build"]
+run = "node dist/final/node/roster-bench.mjs"
+
 [tasks."slice-census"]
 description = "Measure the pinned corpus after slicing: slice size spread, sections only one side carries, and blocks only the translation has; spends no quota"
 depends = ["build"]

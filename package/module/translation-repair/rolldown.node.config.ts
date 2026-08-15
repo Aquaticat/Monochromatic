@@ -32,6 +32,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "probe-sensitivity": "./src/corpus-run/probe-sensitivity.ts",
     "probe-verify": "./src/corpus-run/probe-verify.ts",
     "recall-benchmark": "./src/corpus-run/recall-benchmark.ts",
+    "roster-bench": "./src/corpus-run/roster-bench.ts",
     "score-agreement": "./src/corpus-run/score-agreement.ts",
     "score-attribution": "./src/corpus-run/score-attribution.ts",
     "score-crosscheck": "./src/corpus-run/score-crosscheck.ts",
