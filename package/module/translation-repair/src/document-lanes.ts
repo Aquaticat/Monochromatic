@@ -13,6 +13,7 @@ import type {
 } from './repair-contract.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';
 import { repairPreparedDocument, } from './repair-translation.ts';
+import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type {
   TranslateDocumentResult,
@@ -154,6 +155,27 @@ export async function runDocumentLanes(
     readonly l: Logger;
   }>,
 ): Promise<DocumentLanesResult> {
+  // BOTH rosters before EITHER lane starts. Each driver checks its own, which
+  // is what makes the check unbypassable, but repair runs first and would
+  // otherwise spend an entire document before an unconfigured translate roster
+  // was discovered. Neither of these is the enforcement; both are the courtesy.
+  assertRostersConfigured({
+    lane: 'repair',
+    roles: {
+      panelModelIds: repairModels.panelModelIds,
+      editorModelIds: repairModels.editorModelIds,
+      judgeModelIds: repairModels.judgeModelIds,
+      checkerModelIds: repairModels.checkerModelIds,
+    },
+  },);
+  assertRostersConfigured({
+    lane: 'translate',
+    roles: {
+      translatorModelIds: translateModels.translatorModelIds,
+      judgeModelIds: translateModels.judgeModelIds,
+    },
+  },);
+
   /**
    * Logger tagged with this driver, which both lanes then tag under.
    */

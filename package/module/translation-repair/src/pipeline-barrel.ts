@@ -167,6 +167,10 @@ export {
   type LaneSliceText,
 } from './lane-slice-text.ts';
 export {
+  assertRostersConfigured,
+  RosterConfigurationError,
+} from './roster-configuration.ts';
+export {
   resumedSliceAgrees,
   resumedSliceDiscardFinding,
   type ResumedSliceLane,

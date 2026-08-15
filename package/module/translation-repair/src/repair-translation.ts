@@ -27,6 +27,7 @@ import {
 } from './resumed-slice.ts';
 import { blockedRepairResult, } from './repair-blocked-exit.ts';
 import { repairChunk, } from './repair-chunk.ts';
+import { assertRostersConfigured, } from './roster-configuration.ts';
 import {
   buildChunkCriticRecords,
   type ChunkCriticRecord,
@@ -138,6 +139,27 @@ export async function repairPreparedDocument(
     readonly parentLogger?: Logger;
   }>,
 ): Promise<RepairTranslationResult> {
+  // FIRST, before the run shape, before the cache lookup, before any slice
+  // work: a fully cached document must not make an invalid configuration
+  // valid. Placed HERE rather than in `repairTranslation`, because the combined
+  // driver calls this function directly and a check one level up is bypassed.
+  //
+  // CRITICS ARE ABSENT FROM THIS LIST ON PURPOSE. Question 3 may drop the
+  // critic stage from this path outright, which would make an empty critic
+  // roster the INTENDED configuration; guarding it now would refuse a shape the
+  // user may be about to choose. `#93` carries that, and `refinerModelIds` is
+  // absent for a settled reason instead: its empty list is how the naturalness
+  // lane is turned off.
+  assertRostersConfigured({
+    lane: 'repair',
+    roles: {
+      panelModelIds: models.panelModelIds,
+      editorModelIds: models.editorModelIds,
+      judgeModelIds: models.judgeModelIds,
+      checkerModelIds: models.checkerModelIds,
+    },
+  },);
+
   /**
    * Logger pre-tagged with this function's name.
    */

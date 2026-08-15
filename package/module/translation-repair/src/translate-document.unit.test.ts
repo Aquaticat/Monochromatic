@@ -22,6 +22,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   prepareDocumentPair,
+  RosterConfigurationError,
   type SyntheticClient,
   type SyntheticModelId,
   translateDocument,
@@ -395,6 +396,57 @@ await describe({
         expect(result.sliceCount,).toBeGreaterThan(1,);
         for (const record of result.slices)
           expect(record.kind,).toBe('translate-slice',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a roster with nobody in it BEFORE buying anything, which is the whole point: '
+        + 'a stage that can never speak settles exactly like one whose voices all failed, so an '
+        + 'unconfigured pass would spend hours writing settled documents nobody translated and '
+        + 'every later reader would take them for pages that needed no work',
+      fn: async () => {
+        /**
+         * Client that fails any exchange, so the case proves nothing was bought
+         * rather than only that the run refused.
+         */
+        const client: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('no exchange may be attempted under an empty roster',);
+          },
+          chatJson: async () => {
+            throw new Error('no exchange may be attempted under an empty roster',);
+          },
+          quotas: async () => {
+            throw new Error('no exchange may be attempted under an empty roster',);
+          },
+        };
+
+        /**
+         * Failure the driver raised.
+         */
+        let caught: unknown;
+        try {
+          await translateDocument({
+            client,
+            prepared: prepareDocumentPair({
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+            },),
+            models: {
+              translatorModelIds: [],
+              judgeModelIds: [],
+            },
+            signal: new AbortController().signal,
+            perCallTimeoutMs: 1_000,
+            l,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(RosterConfigurationError,);
+        expect(String(caught,),).toContain('translatorModelIds',);
+        expect(String(caught,),).toContain('judgeModelIds',);
       },
     },),
 

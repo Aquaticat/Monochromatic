@@ -30,9 +30,11 @@ export {
 export {
   alignmentRefusals,
   translateDocument,
+} from './translate-document.ts';
+export {
   translateRunShape,
   translateSliceKey,
-} from './translate-document.ts';
+} from './translate-slice-key.ts';
 export {
   type TranslateDisposition,
   type TranslateDocumentResult,
