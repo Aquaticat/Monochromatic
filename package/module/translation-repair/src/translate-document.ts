@@ -15,8 +15,8 @@ import {
 import type { SliceCache, } from './slice-cache.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
-  assertDocumentChangeAgrees,
   assertReplacementsChange,
+  deriveShippedIndices,
   orderedChangeSets,
 } from './assembly-invariant.ts';
 import {
@@ -433,6 +433,20 @@ export async function translateDocument(
   }
 
   /**
+   * Slices the returned document carries a change for, derived from the
+   * surviving replacements and checked against the document's own bytes.
+   *
+   * Derived here rather than mapped by this driver, so the text and the index
+   * set cannot disagree about which slices moved.
+   */
+  const shipped = deriveShippedIndices({
+    incumbentText: prepared.targetText,
+    assembledText: guarded.assembledText,
+    slices: prepared.slices,
+    survivingReplacements: guarded.replacements,
+  },);
+
+  /**
    * Both index sets, checked against each other and put in document order.
    *
    * The guard returns each in the order it worked, and a reader comparing two
@@ -441,19 +455,8 @@ export async function translateDocument(
   const ordered = orderedChangeSets({
     sliceCount: prepared.slices
       .length,
-    shipped: guarded.replacements
-      .map(function toIndex(replacement,): number {
-        return replacement.chunkIndex;
-      },),
+    shipped,
     withdrawn: guarded.revertedChunkIndices,
-  },);
-
-  // The check that covers routes nobody has thought of: a document that moved
-  // must name a changed slice, and one that did not must name none.
-  assertDocumentChangeAgrees({
-    incumbentText: prepared.targetText,
-    assembledText: guarded.assembledText,
-    shippedChunkIndices: ordered.shipped,
   },);
 
   return {

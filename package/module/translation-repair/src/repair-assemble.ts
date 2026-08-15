@@ -2,8 +2,8 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
-  assertDocumentChangeAgrees,
   assertReplacementsChange,
+  deriveShippedIndices,
   orderedChangeSets,
 } from './assembly-invariant.ts';
 import type { ChunkPair, } from './chunk-document.ts';
@@ -120,19 +120,16 @@ export function assembleRepair(
    */
   const ordered = orderedChangeSets({
     sliceCount: slices.length,
-    shipped: guarded.replacements
-      .map(function toIndex(replacement,): number {
-        return replacement.chunkIndex;
-      },),
+    // Derived from the surviving replacements and checked against the
+    // document's own bytes, so the text and the index set cannot disagree
+    // about which slices moved.
+    shipped: deriveShippedIndices({
+      incumbentText: targetText,
+      assembledText: guarded.assembledText,
+      slices,
+      survivingReplacements: guarded.replacements,
+    },),
     withdrawn: guarded.revertedChunkIndices,
-  },);
-
-  // The check that covers routes nobody has thought of: a document that moved
-  // must name a changed slice, and one that did not must name none.
-  assertDocumentChangeAgrees({
-    incumbentText: targetText,
-    assembledText: guarded.assembledText,
-    shippedChunkIndices: ordered.shipped,
   },);
 
   /**

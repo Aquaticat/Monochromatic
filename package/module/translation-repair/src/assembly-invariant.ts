@@ -1,19 +1,31 @@
 import type { ChunkPair, } from './chunk-document.ts';
-import type { SliceReplacement, } from './splice-slices.ts';
+import {
+  type SliceReplacement,
+  spliceSlices,
+} from './splice-slices.ts';
 
 //region Assembly invariant
-// Two checks both lanes run around assembly, because both lanes can otherwise
+// The checks both lanes run around assembly, because both lanes can otherwise
 // report a change the returned document does not carry.
 //
-// The reachable way in is the SLICE CACHE. A cached record is trusted on its
-// chunk index alone, so a record claiming a change while carrying the archive's
-// own wording is offered to the guard as a replacement, survives it, and lands
-// in the shipped index set beside a document nobody changed. A truncated write
-// that still parses, or a slicing that moved while the pipeline digest did not,
-// both produce exactly that record.
+// WHAT THESE DEFEND AGAINST HAS MOVED, and the old answer is worth stating so
+// nobody re-derives it. It used to be the slice cache: a resumed record was
+// trusted on its chunk index alone, so one claiming a change while carrying the
+// archive's own wording reached the guard as a replacement and landed in the
+// shipped set beside a document nobody changed. Both lanes now refuse that
+// record where they accept it, in `resumed-slice.ts`, and both derive `changed`
+// from their own text rather than from a vote, so no fresh record reaches here
+// contradicting itself either.
 //
-// These are ASSERTIONS rather than repairs on purpose: silently dropping the
-// suspect replacement would leave a run reporting counts nobody can reproduce.
+// So these are now a BACKSTOP: for a defect in a stage nobody has changed yet,
+// for a future caller of the exported guard, and for the one relation no single
+// slice can see, which is what the document-level check reads.
+//
+// ASSERTIONS rather than repairs on purpose: silently dropping a suspect
+// replacement would leave a run reporting counts nobody can reproduce. The one
+// place assembly DOES repair rather than refuse is the net-zero canonicalization
+// in `guardFootnoteAssembly`, and it repairs because nobody did anything wrong
+// there.
 
 /**
  * Raised when assembly is handed, or produces, a document and a change set that
@@ -209,63 +221,100 @@ export function orderedChangeSets(
 }
 
 /**
- * Refuses a returned document whose text and change set disagree.
+ * Names the slices a returned document carries a change for, refusing any
+ * document its own surviving replacements do not reconstruct.
  *
- * BOTH DIRECTIONS, but only because the guard was taught to make the second one
- * true. A document that differs from the archive while no slice is named cannot
- * happen on any run: every byte of the difference came from some replacement,
- * and a replacement that survived is a slice that shipped.
+ * DERIVED RATHER THAN ACCEPTED, which is the whole point. Both lanes used to
+ * map the surviving replacements to indices themselves and hand the result here
+ * as an independent argument, so a caller passing a set that named the wrong
+ * slices was checked only for being empty or not. A document changed in slices
+ * 2 and 3 while reporting only slice 1 passed. Taking the replacements instead
+ * makes the two impossible to disagree, and re-splicing them is what proves the
+ * returned text is the one those replacements make.
  *
- * The other direction USED TO BE UNCHECKABLE. Two adjacent slices whose
- * replacements each differ from their own incumbent can concatenate back to the
- * archive text, say by moving a line break across the join: every replacement
- * is a real change, and the document is unchanged. Refusing that would have
- * crashed a run the models got right, so this assertion checked one direction
- * and the contradiction stayed reachable.
- *
- * `guardFootnoteAssembly` now canonicalizes exactly that case, withdrawing
- * every replacement that reassembles to the archive text and saying so in its
- * findings, which makes `(assembledText !== incumbentText) ===
- * (shipped.length > 0)` a guard postcondition rather than a hope. So the second
- * direction is back, and it now catches the case that motivated it: a shipped
- * set naming slices the returned document does not carry.
+ * THE EMPTINESS CHECK SURVIVES THE RE-SPLICE, and is not redundant with it. A
+ * net-zero set genuinely re-splices to the archive text, so exact reconstruction
+ * accepts it; what refuses it is the second direction, which enforces
+ * `guardFootnoteAssembly`'s canonical answer that such a set ships nothing.
+ * That direction was unenforceable until the guard learned to canonicalize:
+ * two adjacent slices whose replacements each differ from their own incumbent
+ * can reassemble to the archive text, and refusing THAT would crash a run the
+ * models got right.
  *
  * @param incumbentText - archive document the lane started from
  *
  * @param assembledText - document the lane is about to return
  *
- * @param shippedChunkIndices - slices it says the returned document carries a
- * change for
+ * @param slices - prepared slices, which place every replacement
  *
- * @throws AssemblyContractError when the document moved and no slice is named,
- * or when it did not move and some slice is
+ * @param survivingReplacements - what the guard let stand, which is the only
+ * admissible source for both the text and the index set
+ *
+ * @returns Slices the returned document carries a change for
+ *
+ * @throws AssemblyContractError when a surviving replacement repeats its own
+ * incumbent, when re-splicing them does not reproduce the returned document,
+ * when that document moved while nothing survived, or when it did not move
+ * while something did
  *
  * @example
  * ```ts
- * assertDocumentChangeAgrees({ incumbentText, assembledText, shippedChunkIndices, },);
+ * const shipped = deriveShippedIndices({ incumbentText, assembledText, slices, survivingReplacements, },);
  * ```
  */
-export function assertDocumentChangeAgrees(
+export function deriveShippedIndices(
   {
     incumbentText,
     assembledText,
-    shippedChunkIndices,
+    slices,
+    survivingReplacements,
   }: {
     readonly incumbentText: string;
     readonly assembledText: string;
-    readonly shippedChunkIndices: readonly number[];
+    readonly slices: readonly ChunkPair[];
+    readonly survivingReplacements: readonly SliceReplacement[];
   },
-): void {
-  if ((assembledText !== incumbentText) && (shippedChunkIndices.length === 0))
+): readonly number[] {
+  // Sound when called on its own, rather than relying on every caller having
+  // run this before the guard. A replacement repeating its incumbent survives
+  // assembly untouched and would otherwise be named as shipped.
+  assertReplacementsChange({
+    slices,
+    replacements: survivingReplacements,
+  },);
+
+  /**
+   * Document those replacements make, computed here rather than trusted.
+   */
+  const reconstructed = spliceSlices({
+    targetText: incumbentText,
+    slices,
+    replacements: survivingReplacements,
+  },);
+  if (reconstructed !== assembledText)
+    throw new AssemblyContractError({
+      message: `returned document is not what its ${
+        String(survivingReplacements.length,)
+      } surviving replacements assemble to`,
+    },);
+
+  /**
+   * Slices those replacements name.
+   */
+  const shipped = survivingReplacements.map(function toIndex(replacement,): number {
+    return replacement.chunkIndex;
+  },);
+  if ((assembledText !== incumbentText) && (shipped.length === 0))
     throw new AssemblyContractError({
       message: 'returned document differs from the archive while no slice is named as changed',
     },);
-  if ((assembledText === incumbentText) && (shippedChunkIndices.length > 0))
+  if ((assembledText === incumbentText) && (shipped.length > 0))
     throw new AssemblyContractError({
       message: `returned document equals the archive while slices ${
-        shippedChunkIndices.join(', ',)
+        shipped.join(', ',)
       } are named as changed`,
     },);
+  return shipped;
 }
 
 //endregion Assembly invariant

@@ -1,10 +1,12 @@
 /**
- * Tests for the two checks both lanes run around assembly.
+ * Tests for the checks both lanes run around assembly.
  *
- * Both exist because a slice CACHE is trusted on its index alone. A record
- * claiming a change while carrying the archive's own wording survives the
- * footnote guard untouched and lands in the shipped index set beside a document
- * nobody changed, which every later rate then reads as a repair that happened.
+ * These began as a defence against the slice CACHE, which was trusted on its
+ * index alone. Both lanes now refuse a contradictory cached record where they
+ * accept it, so what remains here is a backstop: for a defect in a stage nobody
+ * has changed yet, for a future caller of the exported guard, and for the one
+ * relation no single slice can see, which is whether the returned document is
+ * the one its own surviving replacements assemble to.
  *
  * Fixtures are invented. No corpus content appears here.
  *
@@ -18,9 +20,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  assertDocumentChangeAgrees,
   assertReplacementsChange,
   AssemblyContractError,
+  deriveShippedIndices,
   orderedChangeSets,
 } from '../dist/final/node/index.mjs';
 
@@ -115,83 +117,115 @@ await describe({
   ],
 },);
 
+/**
+ * Wording a lane might replace the one slice with.
+ */
+const REWRITTEN_NAP = 'A cat dozes in the window.';
+
 await describe({
-  name: assertDocumentChangeAgrees.name,
+  name: deriveShippedIndices.name,
   children: [
     it({
       name:
-        'accepts both agreeing states: a document that moved and names a changed slice, '
-        + 'and one that did not move and names none',
+        'DERIVES the shipped set from the surviving replacements rather than accepting one, which is '
+        + 'what makes the two impossible to disagree: a document changed in one slice while a caller '
+        + 'named another used to pass, since only emptiness was checked',
       fn: async () => {
-        /**
-         * Failure either agreeing state raised, if any.
-         */
-        let caught: unknown;
-        try {
-          assertDocumentChangeAgrees({
-            incumbentText: ARCHIVE_NAP,
-            assembledText: 'A cat dozes in the window.',
-            shippedChunkIndices: [0,],
-          },);
-          assertDocumentChangeAgrees({
-            incumbentText: ARCHIVE_NAP,
-            assembledText: ARCHIVE_NAP,
-            shippedChunkIndices: [],
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBe(undefined,);
+        expect(deriveShippedIndices({
+          incumbentText: ARCHIVE_NAP,
+          assembledText: REWRITTEN_NAP,
+          slices: CAT_SLICES,
+          survivingReplacements: [{
+            chunkIndex: 0,
+            replacementText: REWRITTEN_NAP,
+          },],
+        },),).toEqual([0,],);
+        expect(deriveShippedIndices({
+          incumbentText: ARCHIVE_NAP,
+          assembledText: ARCHIVE_NAP,
+          slices: CAT_SLICES,
+          survivingReplacements: [],
+        },),).toEqual([],);
       },
     },),
     it({
       name:
-        'REFUSES a document identical to the archive while slices are named as changed. This direction was '
-        + 'unenforceable until the guard was taught to canonicalize: two adjacent replacements can each differ '
-        + 'from their own incumbent and reassemble to the archive text, and refusing THAT would crash a run the '
-        + 'models got right. The guard now withdraws that set, so a shipped index beside an unmoved document is '
-        + 'once again a contradiction rather than a legitimate outcome',
+        'REFUSES a document its own surviving replacements do not reconstruct, which is the check '
+        + 'nothing performed before: the returned text and the reported set came from one list by '
+        + 'convention rather than by construction',
       fn: async () => {
         /**
          * Failure the check raised.
          */
         let caught: unknown;
         try {
-          assertDocumentChangeAgrees({
+          deriveShippedIndices({
             incumbentText: ARCHIVE_NAP,
-            assembledText: ARCHIVE_NAP,
-            shippedChunkIndices: [0,],
+            assembledText: 'Some third wording nobody proposed.',
+            slices: CAT_SLICES,
+            survivingReplacements: [{
+              chunkIndex: 0,
+              replacementText: REWRITTEN_NAP,
+            },],
           },);
         }
         catch (error) {
           caught = error;
         }
         expect(caught,).toBeInstanceOf(AssemblyContractError,);
-        expect(String(caught,),).toContain('equals the archive',);
+        expect(String(caught,),).toContain('surviving replacements assemble to',);
       },
     },),
     it({
       name:
-        'REFUSES a document that moved while no slice is named, which is the same contradiction from the other '
-        + 'side and would hide a rewrite from every per-slice reader',
+        'REFUSES a document that moved while nothing survived, which is the same contradiction from '
+        + 'the other side and would hide a rewrite from every per-slice reader',
       fn: async () => {
         /**
          * Failure the check raised.
          */
         let caught: unknown;
         try {
-          assertDocumentChangeAgrees({
+          deriveShippedIndices({
             incumbentText: ARCHIVE_NAP,
-            assembledText: 'A cat dozes in the window.',
-            shippedChunkIndices: [],
+            assembledText: REWRITTEN_NAP,
+            slices: CAT_SLICES,
+            survivingReplacements: [],
           },);
         }
         catch (error) {
           caught = error;
         }
         expect(caught,).toBeInstanceOf(AssemblyContractError,);
-        expect(String(caught,),).toContain('no slice',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a surviving replacement repeating its own incumbent, so the check is sound when '
+        + 'called on its own rather than relying on every caller having run the per-slice check '
+        + 'before the guard: such a replacement survives assembly untouched and would be named as '
+        + 'shipped',
+      fn: async () => {
+        /**
+         * Failure the check raised.
+         */
+        let caught: unknown;
+        try {
+          deriveShippedIndices({
+            incumbentText: ARCHIVE_NAP,
+            assembledText: ARCHIVE_NAP,
+            slices: CAT_SLICES,
+            survivingReplacements: [{
+              chunkIndex: 0,
+              replacementText: ARCHIVE_NAP,
+            },],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(AssemblyContractError,);
+        expect(String(caught,),).toContain('claims a change and carries the archive wording',);
       },
     },),
   ],

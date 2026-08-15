@@ -150,8 +150,8 @@ export {
 } from './document-lanes.ts';
 export {
   AssemblyContractError,
-  assertDocumentChangeAgrees,
   assertReplacementsChange,
+  deriveShippedIndices,
   type OrderedChangeSets,
   orderedChangeSets,
 } from './assembly-invariant.ts';
