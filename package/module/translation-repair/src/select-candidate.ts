@@ -190,6 +190,46 @@ export type CandidateSelection = {
 };
 
 /**
+ * Whether a winning candidate actually changed the archive text.
+ *
+ * NOT the same question as which candidate won, and the difference is a real
+ * outcome rather than a formality. The patch gate refuses an operation that
+ * rewrites its region to itself, but two operations in adjacent envelopes can
+ * each change their own region and still concatenate back to the archive text,
+ * exactly as two adjacent slices can at the document level. A patch that wins
+ * selection and writes no byte is a slice nothing happened in, and reporting it
+ * as changed would put it in the shipped set beside text nobody touched.
+ *
+ * Read at the outcome rather than asserted against, so
+ * `changed === (repairedText !== incumbentText)` holds by construction on this
+ * lane, as it already does on the translate lane. The assembly assertions stay
+ * as a backstop for routes nobody has thought of.
+ *
+ * @param winner - candidate selection settled on
+ *
+ * @param incumbentText - archive wording of this slice
+ *
+ * @returns Whether the returned text differs from the archive's
+ *
+ * @example
+ * ```ts
+ * const changed = winnerChangedText({ winner: selection.winner, incumbentText, },);
+ * ```
+ */
+export function winnerChangedText(
+  {
+    winner,
+    incumbentText,
+  }: {
+    readonly winner: RepairCandidate;
+    readonly incumbentText: string;
+  },
+): boolean {
+  return (winner.candidateId !== UNCHANGED_CANDIDATE_ID)
+    && (winner.text !== incumbentText);
+}
+
+/**
  * Picks the winning candidate.
  * Callers must include the unchanged translation among the candidates;
  * selection throws when it is absent because a slate without the original

@@ -16,6 +16,7 @@ import {
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,
   UNCHANGED_MEASUREMENTS,
+  winnerChangedText,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -179,6 +180,51 @@ await describe({
         expect(function selectWithoutUnchanged() {
           selectRepairCandidate({ candidates: [only,], },);
         },).toThrow('always competes',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: winnerChangedText.name,
+  children: [
+    it({
+      name: 'reads the unchanged winner as no change, which is the ordinary case',
+      fn: async () => {
+        expect(winnerChangedText({
+          winner: UNCHANGED,
+          incumbentText: UNCHANGED.text,
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'reads a patched winner carrying different wording as a change',
+      fn: async () => {
+        expect(winnerChangedText({
+          winner: {
+            candidateId: 'candidate/chunk-0',
+            text: 'The cat is asleep in the sun.',
+            measurements: UNCHANGED_MEASUREMENTS,
+          },
+          incumbentText: UNCHANGED.text,
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'reads a patched winner whose text equals the archive as NO change, which is the case '
+        + 'the patch gate cannot catch: it refuses an operation that rewrites its own region to '
+        + 'itself, and two operations in adjacent envelopes can each change their own region while '
+        + 'concatenating back to the archive text. A slice nothing happened in must not be counted '
+        + 'as one this lane changed',
+      fn: async () => {
+        expect(winnerChangedText({
+          winner: {
+            candidateId: 'candidate/chunk-0',
+            text: UNCHANGED.text,
+            measurements: UNCHANGED_MEASUREMENTS,
+          },
+          incumbentText: UNCHANGED.text,
+        },),).toBe(false,);
       },
     },),
   ],

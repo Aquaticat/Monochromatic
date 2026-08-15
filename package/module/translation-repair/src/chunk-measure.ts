@@ -178,4 +178,44 @@ export function measurePatchedCandidate(
   };
 }
 
+/**
+ * Accepted issues the checkers confirmed fixed ON THE CANDIDATE, whether or not
+ * that candidate won.
+ *
+ * Kept apart from what a slice REPORTS as resolved, which is gated on the
+ * candidate shipping. A patched candidate that loses selection still produced
+ * checker verdicts, and discarding them would leave every rejected repair
+ * looking like one nobody examined.
+ *
+ * @param acceptedIssues - issues the panel accepted for this slice
+ *
+ * @param tallies - checker verdicts keyed by issue id
+ *
+ * @returns Ids the checkers confirmed, in the order the issues appear
+ *
+ * @example
+ * ```ts
+ * const confirmed = candidateConfirmedIssueIds({ acceptedIssues, tallies, },);
+ * ```
+ */
+export function candidateConfirmedIssueIds(
+  {
+    acceptedIssues,
+    tallies,
+  }: {
+    readonly acceptedIssues: readonly AdjudicatedIssue[];
+    readonly tallies: Readonly<Record<string, IssueResolutionTally>>;
+  },
+): readonly string[] {
+  return acceptedIssues
+    .filter(function confirmedOnCandidate(issue,): boolean {
+      return tallies[issue.issueId]
+        ?.resolved
+        === true;
+    },)
+    .map(function toId(issue,): string {
+      return issue.issueId;
+    },);
+}
+
 //endregion Chunk candidate measurement

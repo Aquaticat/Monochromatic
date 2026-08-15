@@ -262,6 +262,7 @@ export {
   type RepairRegion,
 } from './repair-region.ts';
 export {
+  candidateConfirmedIssueIds,
   measurePatchedCandidate,
   selectCreditableIssues,
 } from './chunk-measure.ts';
@@ -285,6 +286,7 @@ export {
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,
   UNCHANGED_MEASUREMENTS,
+  winnerChangedText,
 } from './select-candidate.ts';
 export {
   type IssueResolutionTally,

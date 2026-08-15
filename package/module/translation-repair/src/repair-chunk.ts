@@ -6,6 +6,7 @@ import { aggregateClaims, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { runChunkCriticPhase, } from './chunk-critic-phase.ts';
 import {
+  candidateConfirmedIssueIds,
   measurePatchedCandidate,
   selectCreditableIssues,
 } from './chunk-measure.ts';
@@ -26,6 +27,7 @@ import { runPanelStage, } from './repair-stages.ts';
 import {
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,
+  winnerChangedText,
   UNCHANGED_MEASUREMENTS,
 } from './select-candidate.ts';
 
@@ -385,9 +387,20 @@ export async function repairChunk(
   /**
    * Whether the repaired candidate demonstrably won.
    */
-  const changed = selection.winner
+  const patchSelected = selection.winner
     .candidateId
     !== UNCHANGED_CANDIDATE_ID;
+
+  /**
+   * Whether the text this slice returns differs from the archive's.
+   *
+   * Separate from winning selection, because a patch whose envelope operations
+   * cancel can win and write no byte. See `winnerChangedText`.
+   */
+  const changed = winnerChangedText({
+    winner: selection.winner,
+    incumbentText: targetText,
+  },);
   l.info(
     `chunk ${String(chunkIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
       String(resolvedIssueIds.length,)
@@ -403,18 +416,13 @@ export async function repairChunk(
     changed,
     issues: deduped.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
-    candidateResolvedIssueIds: acceptedIssues
-      .filter(function confirmedOnCandidate(issue,) {
-        return checker.tallies[issue.issueId]
-          ?.resolved
-          === true;
-      },)
-      .map(function toId(issue,) {
-        return issue.issueId;
-      },),
+    candidateResolvedIssueIds: candidateConfirmedIssueIds({
+      acceptedIssues,
+      tallies: checker.tallies,
+    },),
     repairRegions,
     introducedDefects,
-    accuracyPatchSelected: changed,
+    accuracyPatchSelected: patchSelected,
     refined: false,
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: critic.contradicted,
