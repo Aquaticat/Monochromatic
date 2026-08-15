@@ -339,9 +339,18 @@ AND THEN THE FIRST HALF OF `#92`, the part that needs no quota:
     an external review proposed would be built against nothing. The
     `〔N〕` convention the parser also supports appears nowhere in this corpus
     either; it belongs to the other archive named in `footnote-model.ts`.
+-   BOTH LANES ASSEMBLE THROUGH THE GUARD. In the repair lane the withdrawal
+    also reaches the ISSUE RECORDS: an issue whose slice was taken back is
+    recorded `withdrawn` and unresolved, the same disposition a non-translation
+    block already used. Crediting it would have overstated precision by exactly
+    the repairs no reader saw. Both lane guards were demonstrated by disabling
+    the guard and watching the cases fail.
 -   `repairPreparedDocument` (`b2fba072a`) takes a prepared pair, with
     `repairTranslation` the thin entry point that prepares and delegates. That
     is what a combined driver needs: ONE preparation handed to both lanes.
+    Assembly moved to `repair-assemble.ts` and the result types to
+    `repair-result.ts` at the line budget; `repair-translation.ts` re-exports
+    them, so callers and the barrel are unchanged.
 
 STATE: NO PASS IS RUNNING, deliberately.
 `pass16` was stopped on 2026-08-14 with zero artifacts settled, on the user's
