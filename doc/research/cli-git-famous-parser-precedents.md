@@ -2,8 +2,8 @@
 
 ## Research status
 
-- Status: in progress
-- Started: 2026-08-14
+- Status: targeted adjacency probe pending
+- Started and completed: 2026-08-14
 - Scope: widely adopted TypeScript-authored parser APIs with native ESM runtimes,
   plus one token-stream semantic control
 - Product changes: forbidden by the review request
@@ -276,6 +276,7 @@ Input families:
 - separated dash-led value;
 - missing declared value;
 - unknown plain option with following plain token;
+- unknown separated from a later positional by a declared option and its value;
 - unknown joined option;
 - exact-prefix traps `--a` and `-all` against declared `-a` and `--all`.
 
@@ -299,3 +300,218 @@ remove the scratch candidate directories and probe files.
 
 Authentication prerequisites:
 none.
+
+## Artifact-probe results
+
+The native ESM TypeScript probe ran on Node 24.18.0 in the bounded,
+read-only,
+network-disabled container from the manifest.
+All downloaded tarballs matched the frozen npm SHA-512 values before execution.
+
+Probe SHA-256:
+`fffcd6a17c8565f0593557373ffef2b4557c8bb3cd25c4259967460b27463493`.
+
+Output SHA-256:
+`5bcf3628d449c0d0bc19f89a199294a09cf78253710f5388d571b6d3c2ab69bb`.
+
+### yargs-parser 22.0.0
+
+The closest configuration used:
+
+- aliases `all` to `a` and `message` to `m`;
+- count semantics for `all`;
+- one required argument for `message`;
+- `nargs-eats-options: true`;
+- `unknown-options-as-args: true`;
+- `short-option-groups: false`;
+- `populate--: true`;
+- coercion and naming transformations disabled.
+
+It passed:
+
+- ordinary and repeated known flags and values;
+- options after positionals;
+- bare dash and option termination;
+- joined values;
+- separated dash-led declared values;
+- missing-value error reporting;
+- raw spelling and order for unknown tokens inside `_`.
+
+It failed two contract boundaries:
+
+- declared alias names are prefix-insensitive,
+  so undeclared `--a` counted as declared `-a`,
+  and undeclared `-all` counted as declared `--all`;
+- `_` mixes ordinary positionals with unknown options and their possible values.
+  For `left -q value right -a`,
+  it returned `_ = ['left', '-q', 'value', 'right']` and `all = 1`,
+  with no role evidence separating `left` and `right` from the unknown region.
+
+The detailed API returns values,
+alias metadata,
+configuration,
+and one error.
+It does not return an ordered raw token stream or prefix provenance.
+Recovering those two boundaries requires inspecting raw argv again.
+
+### Clerc parser 1.3.1
+
+Clerc passed:
+
+- ordinary and repeated known flags and values;
+- options after positionals;
+- bare dash and option termination;
+- joined values;
+- separate parameters,
+  unknown values,
+  raw unknown input,
+  and post-terminator input;
+- exact rejection of undeclared `--a` when only short `-a` is declared.
+
+It failed:
+
+- `-m -a` became message `''` plus one `all` occurrence;
+- terminal `-m` became message `''` rather than a refusal;
+- `-all` partly matched known `-a` and also reported unknown `l`;
+- unknown short `-q path` left `path` as a parameter rather than tentatively pairing it with `-q`.
+
+Its `ignore` callback receives raw arguments and a known,
+unknown,
+or parameter classification.
+Repairing the failures still requires a stateful schema-aware fold
+that supersedes the parser's own value and short-group decisions.
+
+### args-tokens 0.28.1
+
+The tokenizer preserved:
+
+- source indices;
+- ordered option,
+  positional,
+  and terminator token kinds;
+- raw long versus short names;
+- joined-value metadata.
+
+Its resolver handled ordinary values,
+repeats,
+positionals,
+termination,
+and missing-value errors.
+
+It failed:
+
+- separated dash-led values because the resolver settled `-m` before `-a`;
+- exact `-all` handling because the tokenizer expanded it to synthetic `-a`,
+  `-l`,
+  `-l` tokens and did not retain the original token spelling in token output;
+- direct unknown-role output because unknown option tokens are not returned as a distinct resolver result.
+
+A custom fold over tokens could repair most behavior,
+but exact short-group recovery still needs the original argv array.
+That is another lexical input alongside the token stream,
+not a complete parser replacement.
+
+## Pros and cons
+
+### yargs-parser
+
+Pros:
+
+- TypeScript-authored,
+  native ESM,
+  and dependency-free;
+- 963,969,688 measured npm downloads in the official last-month window;
+- configurable behavior directly covers dash-led values,
+  missing values,
+  termination,
+  unknown passthrough,
+  repeats,
+  and options after positionals;
+- no process-global parse state.
+
+Cons:
+
+- output does not preserve prefix provenance;
+- unknown options and positionals share `_`;
+- a raw-argv adapter must restore both missing dimensions;
+- key/value normalization is broader than cli-git's exact-token classifier needs.
+
+### Clerc parser
+
+Pros:
+
+- TypeScript-authored native ESM parser and utility packages;
+- explicit `raw`,
+  `rawUnknown`,
+  `parameters`,
+  `doubleDash`,
+  and unknown-result surfaces;
+- distinguishes a long option from a short alias in the `--a` trap;
+- pure argument-local API.
+
+Cons:
+
+- fails arbitrary dash-led declared values;
+- does not report missing string values as failure;
+- always interprets one-dash multi-character tokens as short groups;
+- short unknown arity differs from cli-git's conservative rule;
+- repairing value and group behavior overrides core parser decisions.
+
+### args-tokens
+
+Pros:
+
+- TypeScript-authored native ESM with no dependency;
+- designed specifically around an ordered token stream;
+- exposes indices,
+  token kinds,
+  raw prefixes,
+  terminator state,
+  and joined values;
+- separates tokenization from schema resolution.
+
+Cons:
+
+- only 36,488 measured downloads in the official window,
+  so it does not answer the famous-parser premise;
+- expands exact one-dash multi-character input without retaining the original spelling;
+- resolver refuses rather than consumes arbitrary dash-led declared values;
+- obtaining the incumbent result requires a custom schema fold plus raw argv.
+
+## Practical ranking
+
+Ranking:
+`yargs-parser` > `@clerc/parser` > `args-tokens`.
+
+Yargs-parser ranks ahead of Clerc because its documented configuration directly handles every known-option value,
+repeat,
+position,
+and termination case.
+Its remaining losses concern prefix provenance and mixed unknown roles.
+
+Clerc ranks ahead of args-tokens because it directly returns more of cli-git's target result,
+including raw unknown input and separated positional and terminator regions.
+Args-tokens offers a better low-level seam,
+but using that seam means retaining a custom schema fold and it lacks the measured adoption requested by the question.
+
+## Finding
+
+The premise is partly right:
+yargs-parser is a famous,
+TypeScript-authored,
+native ESM parser that comes much closer than Jackspeak,
+type-flag,
+or Argue.
+It should be the first broader candidate considered if cli-git's contract is reopened.
+
+It does not naturally express the complete frozen contract.
+Its result irreversibly loses one-dash versus two-dash alias provenance
+and the distinction between ordinary positionals and unknown-option regions.
+Restoring those facts requires another pass over raw argv,
+which recreates the ownership boundary the dependency was meant to remove.
+
+The broader search therefore changes the proximity answer but not the current implementation recommendation:
+retain cli-git's narrow parser unless the exact-prefix or unknown-role requirements are deliberately relaxed.
+This research does not establish that no parser anywhere can work.
+It establishes that the prominent TypeScript and native ESM candidates discovered through the frozen search
+do not fully work.
