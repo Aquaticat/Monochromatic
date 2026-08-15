@@ -32,6 +32,25 @@ const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
 const ALLOW_DRIFT_VALUE = 'yes';
 
 /**
+ * Whether this process was started with the drift opt-in.
+ *
+ * Separated from the guard so the environment is read in exactly one place. The
+ * environment is process-wide, so a guard that read it internally could not be
+ * exercised by two callers at once, and its own tests had to mutate a shared
+ * variable to reach either branch.
+ *
+ * @returns Whether the variable carries the exact opt-in
+ *
+ * @example
+ * ```ts
+ * const driftAllowed = readDriftOptIn();
+ * ```
+ */
+export function readDriftOptIn(): boolean {
+  return process.env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE;
+}
+
+/**
  * Raised when a resume would stamp a second pipeline into one pool.
  */
 export class GenerationDriftError extends Error {
@@ -193,6 +212,9 @@ export class UnplaceableArtifactError extends Error {
  * @param digest - built pipeline this invocation would stamp on everything it
  * settles
  *
+ * @param driftAllowed - whether a mixed directory was asked for, defaulting to
+ * this process's opt-in
+ *
  * @throws UnplaceableArtifactError when an artifact records nothing usable
  *
  * @throws LegacyPipelineError when artifacts predate generation identity
@@ -209,9 +231,11 @@ export async function assertResumableGeneration(
   {
     artifactsDir,
     digest,
+    driftAllowed = readDriftOptIn(),
   }: {
     readonly artifactsDir: string;
     readonly digest: string;
+    readonly driftAllowed?: boolean;
   },
 ): Promise<void> {
   // The census runs even when drift is allowed, and the override is applied
@@ -221,13 +245,10 @@ export async function assertResumableGeneration(
   // generation identity, which are different problems with different remedies
   // and neither of which drift is an opinion about.
   //
-  // Read BEFORE the census rather than at the point of use. The environment is
-  // process-wide and the census is an await, so reading it afterwards decides
-  // this call by whatever the environment happens to say later.
-  /**
-   * Whether this invocation opted into resuming under another pipeline.
-   */
-  const driftAllowed = process.env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE;
+  // Decided BEFORE the census rather than at the point of use, which is what
+  // the default parameter buys: the census is an await, so reading the
+  // environment afterwards would decide this call by whatever the environment
+  // happened to say later.
 
   /**
    * Pipelines the settled entries already record, and the artifacts none could

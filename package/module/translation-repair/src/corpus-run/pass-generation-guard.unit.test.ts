@@ -23,7 +23,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { assertResumableGeneration, } from '../../dist/final/node/index.mjs';
+import {
+  assertResumableGeneration,
+  readDriftOptIn,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * One built pipeline, as a digest-shaped invention.
@@ -226,27 +229,26 @@ await describe({
       fn: async () => {
         const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
 
-        using _override = withDriftVar({ value: 'yes', },);
-
         await assertResumableGeneration({
           artifactsDir: dir,
           digest: DIGEST_B,
+          driftAllowed: true,
         },);
       },
     },),
 
     it({
-      name: 'ignores a value that is not the exact opt-in, because a guard a '
-        + 'stray `0` or empty string can disable is not a guard',
+      name: 'refuses when drift was NOT asked for, which is what makes the '
+        + 'permission explicit: the guard stays armed for every caller that '
+        + 'does not name the opt-in',
       fn: async () => {
         const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
-
-        using _override = withDriftVar({ value: '0', },);
 
         await expect(
           assertResumableGeneration({
             artifactsDir: dir,
             digest: DIGEST_B,
+            driftAllowed: false,
           },),
         )
           .rejects
@@ -338,6 +340,36 @@ await describe({
         )
           .rejects
           .toThrow('Biscuit',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readDriftOptIn.name,
+  children: [
+    it({
+      name: 'reads the exact opt-in and NOTHING ELSE, walked in one case '
+        + 'rather than one case per value. The variable is process-wide, so '
+        + 'separate cases would set it while each other read it, and the '
+        + 'suite that first found this was flaky rather than wrong',
+      fn: async () => {
+        using _unset = withDriftVar({ value: 'yes', },);
+        expect(readDriftOptIn(),).toBe(true,);
+
+        for (const value of [
+          '0',
+          '',
+          'YES',
+          'yes ',
+          'true',
+        ]) {
+          process.env[ALLOW_DRIFT_VAR] = value;
+          expect(readDriftOptIn(),).toBe(false,);
+        }
+
+        Reflect.deleteProperty(process.env, ALLOW_DRIFT_VAR,);
+        expect(readDriftOptIn(),).toBe(false,);
       },
     },),
   ],
