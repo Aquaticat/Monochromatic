@@ -66,6 +66,12 @@ a model never judges its own candidate;
 judges vote through the existing `gatherStageVoices` quorum machinery;
 a tie or a failed quorum returns the fallback unchanged.
 
+SUPERSEDED 2026-08-14 on the first of those rules.
+Producers now judge, and a ballot for their own work counts half.
+`doc/decision/translation-repair-ensemble-voting.md` is canonical for that and
+for the removal of the full-roster retry target this document's quorum machinery
+once offered.
+
 For the editor the fallback is the unedited chunk.
 For the refinement lane the fallback is that paragraph's exact `T1` text.
 

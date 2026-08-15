@@ -113,11 +113,27 @@ Roster, ordering, and how selection reports its reasons are implementation
 ## What survives unchanged
 
 Section alignment and slicing,
- the deterministic apply gate,
- the preservation check,
  the naturalness lane,
  run artifacts and their generation identity,
  and every reader that turns artifacts into a number.
+
+CORRECTED 2026-08-14.
+This list also named the deterministic apply gate and the preservation check,
+ and both claims were wrong.
+Every policy in that gate is anchored to an EDIT bounded by an envelope some
+ accepted issue named:
+ offsets, base-text hashes, no-op detection, and a preservation rule that lets
+ quoted defect text disappear and nothing else.
+A whole-slice replacement has no envelope, and faking one that spans the slice
+ fails in both directions:
+ with no licensed quotes the preservation rule rejects nearly every legitimate
+ translation, while licensing the whole envelope makes it vacuous.
+What that gate enforced still has to be enforced, by a validator built for whole
+ candidates rather than for edits, which is `#88`.
+Semantic preservation does not survive in deterministic form at all:
+ whether wording only the existing translation carries is a correct archival
+ addition needs source-aware judging, and the incumbent standing as a candidate
+ is not an enforcement mechanism for it.
 
 The accumulation running under the repair-only shape keeps its value until the
  new one lands:

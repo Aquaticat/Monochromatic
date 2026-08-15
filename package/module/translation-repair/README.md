@@ -42,10 +42,12 @@ const result = await repairTranslation({
   Every editor in `editorModelIds` rewrites the chunk independently,
   each proposal passes the same deterministic apply gate,
   and judges drawn from `judgeModelIds` choose what ships.
-  Selection removes producers from the judge roster per round,
-  so `judgeModelIds` must contain at least one model that never edits;
-  `assertJudgeableEditorRoster` refuses a roster that does not,
-  because an all-editor roster would otherwise degrade silently into
+  Selection seats the WHOLE judge roster, producers included,
+  and counts a judge's ballot for its own work at half weight;
+  a winner needs weight 2, so self-votes can never carry a candidate
+  and two judges with no stake must remain for anything to be selectable.
+  `assertJudgeableEditorRoster` refuses a roster that leaves fewer,
+  because such a roster would otherwise degrade silently into
   always shipping the fallback.
   `checkerModelIds` should likewise exclude every editor,
   so nothing certifies text it wrote.

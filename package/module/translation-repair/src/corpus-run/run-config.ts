@@ -63,14 +63,26 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  * roster of two is satisfied by ONE voice and on a roster of one cannot fail at
  * all. So the two-editor pair could ship a repair written by a single model
  * while reporting a met quorum, and the single refiner could vanish entirely
- * with nothing to report. Both stages now also retry to `full-roster` rather
- * than to quorum, since the flat-rate plan does not meter retries and an
- * independent voice is the whole product of an ensemble.
+ * with nothing to report.
+ *
+ * Both stages retried to `full-roster` from 2026-08-12 until the user removed
+ * that target outright on 2026-08-14: waiting for every voice let one model
+ * degraded for a day spend four deadlines per gather on a voice that was not
+ * coming. Quorum on a roster of three is two, so the ensemble property survives
+ * the removal.
  *
  * GLM-4.7-Flash takes the third editor seat because it is the only model not
- * already checking or editing, and the constraints leave no other choice:
- * checkers must exclude every editor and refiner, judges need two disinterested
- * seats, and the other three models hold the checker roster. It is also the
+ * already checking or editing, and the constraints left no other choice at the
+ * time: checkers must exclude every editor and refiner, judges needed two
+ * disinterested seats, and the other three models hold the checker roster.
+ *
+ * ONE OF THOSE CONSTRAINTS IS GONE. Producers judge as of 2026-08-14, with a
+ * ballot for their own work counted at half weight, so seating a fourth
+ * producer no longer starves selection. What bounds a producing roster now is
+ * the weight arithmetic: a winner needs weight 2 and a self-vote is worth a
+ * half, so two FULL-weight judges must remain, which caps any producing role at
+ * four of these six. Widening editors, refiners or translators to four is
+ * available and unmade; it is question 1 of the handover's next steps. It is also the
  * model that most often loses its voice, which is now an argument FOR seating
  * it here rather than against: a third editor that sometimes drops still leaves
  * two, whereas the same model in the checker set would cost proof.
@@ -98,19 +110,20 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  *
  * The count was TWO until 2026-08-12, and the paragraph that follows is kept as
  * the reasoning for that earlier choice rather than as current policy. Every
- * editor is barred from judging its own chunk, so each added editor costs a
- * judge as well as its own calls: at two editors four judges remain, at three
- * only three, and a plurality gets harder to reach exactly as the candidate set
- * gets wider.
+ * editor was barred from judging its own chunk, so each added editor cost a
+ * judge as well as its own calls: at two editors four judges remained, at three
+ * only three, and a plurality got harder to reach exactly as the candidate set
+ * got wider. Producers judge now, so that arithmetic no longer holds.
  *
  * That cost was accepted on the quorum argument this block opens with: a stage
  * of two is satisfied by a single voice, so a two-editor pair could ship a
  * repair written by one model while reporting a met quorum. Losing a judge is
  * the smaller harm.
  *
- * Judges are the WHOLE roster. Selection removes producers per round, so
- * passing the whole roster lets an editor judge the envelopes it did not
- * propose for, while never judging its own text.
+ * Judges are the WHOLE roster, and since 2026-08-14 selection seats all of it
+ * rather than removing producers per round. An editor judging a set holding its
+ * own text is allowed and counts half for that candidate alone; every other
+ * ballot it casts carries full weight.
  *
  * Checkers deliberately EXCLUDE every editor, so nothing checks its own work.
  * That drops GLM-5.2 from the checker set it held while it was also editing,
