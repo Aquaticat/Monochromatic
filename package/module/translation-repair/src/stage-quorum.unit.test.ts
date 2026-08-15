@@ -373,40 +373,14 @@ await describe({
     },),
 
     it({
-      name: 'keeps retrying past quorum under a full-roster target',
+      name: 'STOPS at quorum instead of chasing a voice that will not come, and '
+        + 'still records the shortfall: waiting for the whole roster let one '
+        + 'model degraded for a day stall every gather that seated it, which '
+        + 'is why the user removed that target on 2026-08-14',
       fn: async () => {
         /** Call log shared with the scripted client. */
         const calls: Record<string, number> = {};
-        /** Gather where two answer at once and one answers on retry. */
-        const gather = await gatherStageVoices({
-          client: flakyClient({
-            failuresByModel: { 'hf:moonshotai/Kimi-K3': 1, },
-            calls,
-          },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
-          messages: [{ role: 'user', content: 'meow', },],
-          signal: new AbortController().signal,
-          exchangeTimeoutMs: 1_000,
-          responseFormat: MEOW_FORMAT,
-          validate: isMeowReply,
-          stage: 'critic',
-          l,
-          retryTarget: 'full-roster',
-        },);
-        expect(gather.voices,).toHaveLength(3,);
-        expect(gather.quorumMet,).toBe(true,);
-        expect(gather.findings,).toHaveLength(0,);
-        // Quorum stood after round zero, yet the lost voice was re-asked.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
-      },
-    },),
-
-    it({
-      name: 'records roster-incomplete when full-roster rounds end short of everyone',
-      fn: async () => {
-        /** Call log shared with the scripted client. */
-        const calls: Record<string, number> = {};
-        /** Gather where one voice never answers despite every round. */
+        /** Gather where one voice never answers at all. */
         const gather = await gatherStageVoices({
           client: flakyClient({
             failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
@@ -420,13 +394,16 @@ await describe({
           validate: isMeowReply,
           stage: 'critic',
           l,
-          retryTarget: 'full-roster',
         },);
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);
+        // The whole point: asked once, never re-asked, so a degraded model
+        // costs one deadline per gather rather than four.
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(1,);
+        // Met quorum reads as healthy everywhere else, so the shortfall is
+        // recorded anyway, both as a ratio and by name.
         expect(gather.findings,).toContain('stage-roster-incomplete (critic 2/3)',);
-        // Initial ask plus every retry round.
-        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(4,);
+        expect(gather.findings,).toContain('stage-voice-lost (critic hf:moonshotai/Kimi-K3)',);
       },
     },),
 

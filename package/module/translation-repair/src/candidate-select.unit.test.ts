@@ -199,24 +199,43 @@ await describe({
   name: selectBestCandidate.name,
   children: [
     it({
-      name: 'never asks a model to judge a set containing its own candidate',
+      name: 'SEATS a model that produced a candidate and counts its ballot for '
+        + 'its own work at half weight, which is the whole trade the user '
+        + 'chose on 2026-08-14: these models have different blind spots, so a '
+        + 'producer reading its own text is a weaker instrument than a '
+        + 'disinterested one rather than a worthless one',
       fn: async () => {
-        // Both producers vote for candidate 1; if either were consulted the
-        // winner would draw more than the three disinterested votes.
+        // Both producers land on their own candidate here because that is the
+        // case under test, not because it is what usually happens: the sheet
+        // is anonymized, so a judge cannot see which candidate is its own and
+        // a self-vote is a mild tilt rather than a decision to back itself.
+        // GLM-5.2 and Kimi take candidate 1, Qwen and the two remaining judges
+        // take candidate 2.
         const { outcome, calls, } = await runSelection({
           ballots: {
             'hf:zai-org/GLM-5.2': 1,
-            'hf:Qwen/Qwen3.6-27B': 1,
-            'hf:moonshotai/Kimi-K3': 2,
+            'hf:moonshotai/Kimi-K3': 1,
+            'hf:Qwen/Qwen3.6-27B': 2,
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 2,
             'hf:openai/gpt-oss-120b': 2,
           },
         },);
-        expect(calls,).toBe(3,);
+        // Every judge on the roster was asked, producers included.
+        expect(calls,).toBe(5,);
+        expect(outcome.tally.judgesAvailable,).toBe(5,);
         expect(outcome.kind,).toBe('selected',);
         expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('second',);
-        expect(outcome.kind === 'selected' ? outcome.votes : 0,).toBe(3,);
-        expect(outcome.tally.judgesAvailable,).toBe(3,);
+        // THE DISCOUNT IS THE ASSERTION. Three ballots named candidate 2, so a
+        // count would read 3; one of the three was its own author's, so the
+        // weight reads 2.5. Candidate 1 sits at 1.5 rather than 2 for the same
+        // reason, which is the margin the discount exists to create.
+        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(2.5,);
+        expect(outcome.tally.abstentions,).toBe(0,);
+        // The self-vote is recorded rather than assumed away, so its rate is
+        // readable from artifacts instead of argued about.
+        expect(outcome.tally.selfVotes,).toBe(2,);
+        expect(outcome.findings,).toContain('select-self-vote (hf:zai-org/GLM-5.2)',);
+        expect(outcome.findings,).toContain('select-self-vote (hf:Qwen/Qwen3.6-27B)',);
       },
     },),
 
@@ -224,22 +243,25 @@ await describe({
       name: 'declines when the leader draws a single vote, so a lone judge '
         + 'cannot decide the stage by itself',
       fn: async () => {
-        // One judge names a candidate, the other two abstain. A plurality of
-        // one is one model in control, which is the thing the ensemble exists
-        // to prevent.
+        // One judge names a candidate and the other four answer that NO
+        // candidate is acceptable, which is what a zero ballot means and what
+        // the judge sheet asks for by name. A plurality of one is one model in
+        // control, which is the thing the ensemble exists to prevent.
         const { outcome, } = await runSelection({
           ballots: {
             'hf:moonshotai/Kimi-K3': 1,
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 0,
             'hf:openai/gpt-oss-120b': 0,
+            'hf:zai-org/GLM-5.2': 0,
+            'hf:Qwen/Qwen3.6-27B': 0,
           },
         },);
         expect(outcome.kind,).toBe('declined',);
         expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe(
-          'winner short of the minimum vote count',
+          'winner short of the minimum vote weight',
         );
         expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
-        expect(outcome.tally.abstentions,).toBe(2,);
+        expect(outcome.tally.abstentions,).toBe(4,);
       },
     },),
 
@@ -288,8 +310,9 @@ await describe({
           },
         },);
         expect(outcome.kind,).toBe('selected',);
-        expect(outcome.tally.abstentions,).toBe(1,);
-        expect(outcome.tally.ballots,).toBe(3,);
+        // The out-of-range ballot, plus the two producers left unscripted.
+        expect(outcome.tally.abstentions,).toBe(3,);
+        expect(outcome.tally.ballots,).toBe(5,);
       },
     },),
   ],

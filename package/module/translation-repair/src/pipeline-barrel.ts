@@ -86,12 +86,15 @@ export {
   type Candidate,
   type CandidateProducer,
   describeProducer,
+  FULL_VOTE_WEIGHT,
   mergeProducers,
-  MIN_SELECTION_VOTES,
+  MIN_SELECTION_WEIGHT,
   producerModelIds,
+  type SelectionBallot,
   type SelectionDisposition,
   type SelectionOutcome,
   type SelectionTally,
+  SELF_VOTE_WEIGHT,
 } from './candidate-select-model.ts';
 export { selectBestCandidate, } from './candidate-select.ts';
 export {

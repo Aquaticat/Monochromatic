@@ -176,8 +176,18 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * being read as a restatement. Measured: removal-corroborated ran 159 across
  * the original 56-entry run and 0 across every run after the reclassification
  * landed, while corroborated held its per-region rate.
+ *
+ * Version 25 is behaviour by way of WHO WAS HEARD and WHO DECIDED, on two user
+ * decisions of 2026-08-14. The editor and refiner stages no longer wait for
+ * their whole roster, so a slice cached under version 24 was settled by a
+ * gather that could spend four deadlines recovering a voice this one stops
+ * asking for once quorum stands. And selection now seats producers, counting a
+ * ballot for the judge's own work at half weight, where version 24 removed them
+ * from the roster outright: the same candidates before the same models can
+ * reach a different winner. Neither change touches a prompt, which is exactly
+ * why the version has to move rather than the structural guard catching it.
  */
-const SLICE_CACHE_VERSION = 24;
+const SLICE_CACHE_VERSION = 25;
 
 /**
  * Completion status of one repair run;

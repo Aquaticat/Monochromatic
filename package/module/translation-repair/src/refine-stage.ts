@@ -5,7 +5,10 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { applyPatchOperations, } from './apply-patch.ts';
-import type { Candidate, } from './candidate-select-model.ts';
+import {
+  type Candidate,
+  producerModelIds,
+} from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { gateParagraphRewrite, } from './inspect-paragraph.ts';
@@ -171,14 +174,10 @@ export async function runRefineStage(
     responseFormat: REFINE_RESPONSE_FORMAT,
     validate: isRefineReportWire,
     stage: 'refiner',
-    // Every voice, not half of them. This stage is an ENSEMBLE, and the
-    // quorum rule computes ceil(rosterSize / 2), which on a small roster is
-    // satisfied by a single model: that is how one provider-side output
-    // change halved the editor pair on 71 of 405 chunks without any run
-    // reporting a fault. Retries cost tokens, which this plan does not
-    // meter, and losing an independent voice costs the property the stage
-    // exists to provide.
-    retryTarget: 'full-roster',
+    // Retries stop at QUORUM, which on this three-refiner roster is two voices.
+    // See the same note in `repair-editor-stage.ts`: waiting for every voice
+    // let one degraded model stall every gather that seated it, and the user
+    // removed the option on 2026-08-14.
     l,
   },);
 
@@ -320,15 +319,13 @@ export async function runRefineStage(
 
   /**
    * Models whose work the winning text carries.
+   *
+   * Read through `producerModelIds` rather than by branching on the kind here,
+   * so a producer variant this lane never emits, the incumbent one the translate
+   * lane needs, cannot break a stage that has no opinion about it.
    */
-  const contributors = outcome.producer
-    .kind
-    === 'model'
-    ? [outcome.producer
-      .modelId,]
-    : [...outcome.producer
-      .contributors,];
-  rl.info(`refinement from ${contributors.join(' + ',)} won ${String(outcome.votes,)} votes`,);
+  const contributors = [...producerModelIds(outcome.producer,),];
+  rl.info(`refinement from ${contributors.join(' + ',)} won weight ${String(outcome.voteWeight,)}`,);
   return {
     refinedText: outcome.value,
     changed: true,
@@ -336,7 +333,7 @@ export async function runRefineStage(
     findings: [
       ...stageFindings,
       ...outcome.findings,
-      `refine-selected (${String(outcome.votes,)} of ${String(outcome.tally
+      `refine-selected (weight ${String(outcome.voteWeight,)} of ${String(outcome.tally
         .ballots,)} ballots)`,
     ],
   };

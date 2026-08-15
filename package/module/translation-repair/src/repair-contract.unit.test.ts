@@ -30,7 +30,7 @@ import {
   assertJudgeableEditorRoster,
   assertJudgeableProducerRoster,
   EditorRosterError,
-  MIN_SELECTION_VOTES,
+  MIN_SELECTION_WEIGHT,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -218,13 +218,19 @@ await describe({
     },),
 
     it({
-      name: 'requires at least MIN_SELECTION_VOTES disinterested judges, the '
-        + 'smallest number that makes a selection an agreement rather than one '
-        + 'model\'s opinion',
+      name: 'requires enough DISINTERESTED judges to reach the minimum vote '
+        + 'weight, since producers now judge at half weight and a candidate '
+        + 'backed only by its own authors can never cross the line however '
+        + 'many of them there are',
       fn: async () => {
         /**
          * Disinterested judges available to draw from, sliced against the
          * constant so this case follows the minimum if it ever moves.
+         *
+         * The threshold is a WEIGHT and this slice is a COUNT, which line up
+         * exactly because a disinterested ballot carries weight one: reaching
+         * weight two takes two of them, and no number of half-weight
+         * self-votes substitutes.
          */
         const pool = [
           JUDGE_ONE,
@@ -239,7 +245,7 @@ await describe({
               PRODUCER_ONE,
               ...pool.slice(
                 0,
-                MIN_SELECTION_VOTES - 1,
+                MIN_SELECTION_WEIGHT - 1,
               ),
             ],
             role: 'editor',
@@ -253,7 +259,7 @@ await describe({
               PRODUCER_ONE,
               ...pool.slice(
                 0,
-                MIN_SELECTION_VOTES,
+                MIN_SELECTION_WEIGHT,
               ),
             ],
             role: 'editor',

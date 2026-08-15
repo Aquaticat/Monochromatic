@@ -7,8 +7,11 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import {
   type Candidate,
   describeProducer,
-  MIN_SELECTION_VOTES,
+  FULL_VOTE_WEIGHT,
+  MIN_SELECTION_WEIGHT,
   producerModelIds,
+  SELF_VOTE_WEIGHT,
+  type SelectionBallot,
   type SelectionOutcome,
   type SelectionTally,
 } from './candidate-select-model.ts';
@@ -25,27 +28,34 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Candidate selection stage
 // Shared by every stage that generates text rather than verdicts: the ensemble
-// editor and the naturalness refinement lane both propose N candidates and need
-// one chosen without the proposer grading itself.
+// editor, the naturalness refinement lane and the translate lane all propose N
+// candidates and need one chosen.
 //
 // Two invariants make the ensemble worth having, and both are enforced here
 // rather than trusted to callers:
 //
-// - A model NEVER judges a candidate set containing its own work. Every model
-//   that contributed to a candidate is removed from the judge roster, which for
-//   a composite means all of its contributors.
+// - A model may judge its own work, and its ballot for its own work counts for
+//   LESS. Producers used to be removed from the roster outright; the user
+//   replaced that with a discount on 2026-08-14, because these models have
+//   different blind spots and dropping three of six judges to keep the rest
+//   disinterested threw away readings nothing else supplies. A producer reading
+//   its own text is a weaker instrument than a disinterested one, not a
+//   worthless one.
 // - A tie or an empty judge roster DECLINES. Declining returns the caller's
 //   fallback, which is text the pipeline already trusts, so the conservative
 //   outcome is the default whenever the ensemble fails to agree.
 //
-// Callers pass their WHOLE roster as `judgeModelIds` and let this function
-// subtract producers. Hand-partitioning a judge list outside is how a caller
-// ends up with an empty roster it cannot see.
+// The discount is sized so it cannot decide anything by itself: see
+// `SELF_VOTE_WEIGHT`. Self-preference is not assumed away, so every self-vote
+// is recorded by name, weighed on the ballot, and counted in the tally.
+//
+// Callers pass their WHOLE roster as `judgeModelIds`. Hand-partitioning a judge
+// list outside is how a caller ends up with an empty roster it cannot see.
 
 /**
- * Runs one selection round: judges that contributed no candidate compare the
- * anonymized set and name a winner, and anything short of a clear plurality
- * declines.
+ * Runs one selection round: judges compare the anonymized set and name a
+ * winner, and anything short of a clear plurality declines. Every judge on the
+ * roster is seated, with a ballot for its own work discounted.
  *
  * Every candidate handed in is judged, including a lone one. A caller that has
  * already deduplicated its set and knows one candidate survived may short
@@ -57,7 +67,7 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * @param candidates - proposals in caller-fixed order
  *
- * @param judgeModelIds - whole roster; producers are removed here
+ * @param judgeModelIds - whole roster, producers included
  *
  * @param task - one sentence naming what candidates attempt
  *
@@ -71,8 +81,8 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * @param l - logger of the calling stage
  *
- * @returns Winner with its vote count, or a decline carrying its reason;
- * either way the round's tally
+ * @returns Winner with the ballot weight it drew, or a decline carrying its
+ * reason; either way the round's tally and every ballot cast
  *
  * @example
  * ```ts
@@ -117,6 +127,7 @@ export async function selectBestCandidate<ValueT,>(
     judgesAvailable: 0,
     ballots: 0,
     abstentions: 0,
+    selfVotes: 0,
   };
   if (candidates.length === 0)
     return {
@@ -125,33 +136,43 @@ export async function selectBestCandidate<ValueT,>(
       disposition: 'rejection',
       tally: emptyTally,
       findings: [],
+      ballots: [],
     };
 
   /**
-   * Models that contributed to any candidate, barred from judging this set.
+   * Judges this round seats: the whole roster, producers included.
    */
-  const producers = new Set(
-    candidates.flatMap(function toProducers(candidate,) {
-      return [...producerModelIds(candidate.producer,),];
-    },),
-  );
-
-  /**
-   * Judges with no stake in the outcome.
-   */
-  const judges = judgeModelIds.filter(function isDisinterested(modelId,) {
-    return !producers.has(modelId,);
-  },);
+  const judges = judgeModelIds;
   if (judges.length === 0) {
-    sl.warn('every judge contributed a candidate; declining rather than letting a model grade itself',);
+    sl.warn('no judge roster was passed; declining rather than selecting unexamined text',);
     return {
       kind: 'declined',
-      reason: 'no disinterested judge available',
+      reason: 'no judge available',
       disposition: 'rejection',
       tally: emptyTally,
       findings: [],
+      ballots: [],
     };
   }
+
+  /**
+   * Models with a stake in each one-based candidate index, for telling a
+   * self-vote from an ordinary one.
+   */
+  const stakesByIndex = new Map(
+    candidates.map(function toStake(
+      candidate,
+      index,
+    ): readonly [
+      number,
+      ReadonlySet<SyntheticModelId>,
+    ] {
+      return [
+        index + 1,
+        new Set(producerModelIds(candidate.producer,),),
+      ];
+    },),
+  );
 
   /**
    * Ballots from the judges that answered.
@@ -176,34 +197,89 @@ export async function selectBestCandidate<ValueT,>(
   },);
 
   /**
-   * Votes per one-based candidate index; out-of-range ballots and explicit
-   * declines are counted as abstentions rather than discarded silently.
+   * Every ballot as cast, weighed, and carried out of this function rather
+   * than left in a log line.
+   *
+   * Self-votes are counted rather than prevented: the reason for seating
+   * producers is that their judgement carries value, and the reason for
+   * weighing and recording is that self-preference is a known failure of
+   * exactly this arrangement. A rate nobody can read is an assumption.
+   */
+  const ballots: readonly SelectionBallot[] = gather.voices
+    .map(function toBallot(voice,): SelectionBallot {
+      /**
+       * This judge's chosen index.
+       */
+      const { best, } = voice.value;
+
+      /**
+       * Whether this judge named text it has a stake in.
+       */
+      const ownWork = stakesByIndex.get(best,)
+        ?.has(voice.modelId,)
+        === true;
+      return {
+        modelId: voice.modelId,
+        best,
+        reason: voice.value
+          .reason,
+        weight: ((best === CANDIDATE_NONE) || (best > candidates.length))
+          ? 0
+          : (ownWork ? SELF_VOTE_WEIGHT : FULL_VOTE_WEIGHT),
+      };
+    },);
+
+  /**
+   * Ballot weight per one-based candidate index; out-of-range ballots and
+   * explicit declines are counted as abstentions rather than discarded
+   * silently.
    */
   const tally = new Map<number, number>();
 
   /**
    * Ballots that named no usable candidate, kept so a selection that failed
-   * for want of agreement is distinguishable from one nobody voted in.
+   * for want of agreement is distinguishable from one nobody voted in, and
+   * ballots a judge cast for its own work.
    */
-  const counters = { abstained: 0, };
-  for (const voice of gather.voices) {
-    /**
-     * This judge's chosen index.
-     */
-    const { best, } = voice.value;
-    if ((best === CANDIDATE_NONE) || (best > candidates.length)) {
+  const counters = {
+    abstained: 0,
+    self: 0,
+  };
+  for (const ballot of ballots) {
+    if (ballot.weight === 0) {
       counters.abstained += 1;
       continue;
     }
+    if (ballot.weight === SELF_VOTE_WEIGHT)
+      counters.self += 1;
     tally.set(
-      best,
-      (tally.get(best,) ?? 0) + 1,
+      ballot.best,
+      (tally.get(ballot.best,) ?? 0) + ballot.weight,
     );
     sl.info(
-      `${voice.modelId} chose candidate ${String(best,)}: ${voice.value
-        .reason}`,
+      `${ballot.modelId} chose candidate ${String(ballot.best,)} at weight ${
+        String(ballot.weight,)
+      }: ${ballot.reason}`,
     );
   }
+
+  /**
+   * Ballots a judge cast for its own work, named so the rate is readable from
+   * findings as well as from the tally.
+   */
+  const selfVotes = ballots.filter(function isSelfVote(ballot,): boolean {
+    return ballot.weight === SELF_VOTE_WEIGHT;
+  },);
+
+  /**
+   * Findings every exit past the fan-out carries.
+   */
+  const roundFindings: readonly string[] = [
+    ...gather.findings,
+    ...selfVotes.map(function toSelfVoteFinding(ballot,): string {
+      return `select-self-vote (${ballot.modelId})`;
+    },),
+  ];
 
   /**
    * What this round counted, reported whichever way it ends.
@@ -213,12 +289,13 @@ export async function selectBestCandidate<ValueT,>(
     ballots: gather.voices
       .length,
     abstentions: counters.abstained,
+    selfVotes: counters.self,
   };
 
   /**
-   * Candidate indexes ordered by votes, most first.
+   * Candidate indexes ordered by drawn weight, most first.
    */
-  const ranked = [...tally.entries(),].toSorted(function byVotes(
+  const ranked = [...tally.entries(),].toSorted(function byWeight(
     a,
     b,
   ) {
@@ -238,38 +315,41 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'every judge declined',
       disposition: 'rejection',
       tally: counted,
-      findings: gather.findings,
+      findings: roundFindings,
+      ballots,
     };
   }
 
   /**
-   * Runner-up's vote count, zero when only one candidate drew votes.
+   * Runner-up's drawn weight, zero when only one candidate drew any.
    */
-  const runnerUpVotes = ranked[1]?.[1] ?? 0;
-  if (leader[1] === runnerUpVotes) {
-    sl.info(`judges tied at ${String(leader[1],)} votes; keeping the fallback`,);
+  const runnerUpWeight = ranked[1]?.[1] ?? 0;
+  if (leader[1] === runnerUpWeight) {
+    sl.info(`judges tied at weight ${String(leader[1],)}; keeping the fallback`,);
     return {
       kind: 'declined',
       reason: 'judges tied',
       disposition: 'indecision',
       tally: counted,
-      findings: gather.findings,
+      findings: roundFindings,
+      ballots,
     };
   }
-  if (leader[1] < MIN_SELECTION_VOTES) {
+  if (leader[1] < MIN_SELECTION_WEIGHT) {
     // A plurality of one is not agreement. Lost voices and abstentions can
     // leave a single judge as the only one who named anything, and letting
     // that judge decide would put one model back in control of the stage.
     sl.info(
-      `winner drew only ${String(leader[1],)} of ${String(counted.ballots,)} ballots `
+      `winner drew only weight ${String(leader[1],)} across ${String(counted.ballots,)} ballots `
       + `(${String(counted.abstentions,)} abstentions); keeping the fallback`,
     );
     return {
       kind: 'declined',
-      reason: 'winner short of the minimum vote count',
+      reason: 'winner short of the minimum vote weight',
       disposition: 'indecision',
       tally: counted,
-      findings: gather.findings,
+      findings: roundFindings,
+      ballots,
     };
   }
 
@@ -283,20 +363,22 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'winning index out of range',
       disposition: 'rejection',
       tally: counted,
-      findings: gather.findings,
+      findings: roundFindings,
+      ballots,
     };
   }
   sl.info(
     `candidate ${String(leader[0],)} from ${describeProducer(winner.producer,)} won `
-    + `${String(leader[1],)} of ${String(counted.ballots,)} ballots`,
+    + `weight ${String(leader[1],)} across ${String(counted.ballots,)} ballots`,
   );
   return {
     kind: 'selected',
     value: winner.value,
     producer: winner.producer,
-    votes: leader[1],
+    voteWeight: leader[1],
     tally: counted,
-    findings: gather.findings,
+    findings: roundFindings,
+    ballots,
   };
 }
 

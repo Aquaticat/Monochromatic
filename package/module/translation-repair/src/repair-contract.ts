@@ -1,5 +1,5 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import { MIN_SELECTION_VOTES, } from './candidate-select-model.ts';
+import { MIN_SELECTION_WEIGHT, } from './candidate-select-model.ts';
 import type { ClaimAttribution, } from './critic-attribution.ts';
 import type { IntroducedDefectReport, } from './introduced-defect-probe.ts';
 import type { RepairRegion, } from './repair-region.ts';
@@ -205,7 +205,7 @@ export function assertJudgeableProducerRoster(
       return !producers.has(modelId,);
     },),
   );
-  if (disinterested.size >= MIN_SELECTION_VOTES)
+  if (disinterested.size >= MIN_SELECTION_WEIGHT)
     return;
   throw new EditorRosterError({
     editorModelIds: producerModelIds,

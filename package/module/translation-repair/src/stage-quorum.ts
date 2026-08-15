@@ -12,27 +12,24 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 //region Stage quorum
 // A stage that loses voices retries exactly the lost ones on fresh
 // deadlines (user directive: quota regenerates faster than runs spend, so
-// forfeiting voices cheaply leaves capacity unused). The retry target
-// depends on what the stage produces: VOTING stages stop at quorum because
-// a majority is a majority, while UNION stages retry to the full roster
-// because their product shrinks with every unheard voice. A roster still
-// short after every round proceeds with what it has and records the
-// degradation as a finding.
+// forfeiting voices cheaply leaves capacity unused). Retries stop at
+// QUORUM, at least half the roster rounded up, for every stage. A roster
+// still short after every round proceeds with what it has and records the
+// degradation as findings.
 //
-// WHICH STAGE IS WHICH is not the obvious split, and this comment stated it
-// wrongly until 2026-08-13. `full-roster` is passed by the EDITOR and
-// REFINER stages only. The CRITIC stage takes the `quorum` default, despite
-// being a union stage whose convergence is low (67 to 84 percent singleton
-// issues across real-corpus artifacts). That is deliberate: full-roster
-// retries for critics were tried and REVERTED by user decision on
-// 2026-07-23, because critics answered 7/7 on the first round nearly
-// always, slicing and panel-judged merging carry the thoroughness burden,
-// and waiting on a complete roster stalls a run when a voice wedges. The
-// reasoning lives at the call site in `repair-stages.ts`.
+// WAITING FOR THE WHOLE ROSTER IS NOT AN OPTION HERE, and used to be. The
+// editor and refiner stages passed `retryTarget: 'full-roster'` from
+// 2026-08-12 until the user removed the option outright on 2026-08-14:
+// waiting on every voice makes one provider-side model degrading for a day
+// block every stage that seats it, spending four deadlines per gather on a
+// voice that will not come. The property full-roster was chosen to protect,
+// no stage decided by a single model, is already held by the quorum
+// arithmetic on the rosters that exist: editors, refiners and checkers all
+// sit at three with a quorum of two.
 //
-// The premise is worth re-checking rather than inheriting: on a SIX-model
-// roster `pass13` finished the critic stage one voice short on 18.6% of
-// invocations, which is not "7/7 nearly always". Recorded in `#75`.
+// Critics never used it either, by a separate user decision on 2026-07-23,
+// for the same reason stated locally: waiting on a complete roster stalls a
+// run when a voice wedges.
 
 /**
  * Retry rounds after the initial fan-out;
@@ -89,12 +86,10 @@ export type StageGather<ValueT,> = {
 };
 
 /**
- * Fans one prompt out to a roster and retries lost voices to the stage's
- * retry target.
+ * Fans one prompt out to a roster and retries lost voices to quorum.
  * Each round re-asks only the still-lost models on fresh deadlines;
- * under `quorum` the loop stops as soon as half the roster, rounded up, is heard,
- * under `full-roster` it keeps re-asking while any voice is missing, and
- * either way it ends when the retry rounds are spent.
+ * the loop stops as soon as half the roster, rounded up, is heard, and
+ * otherwise ends when the retry rounds are spent.
  *
  * @param client - injected model client
  *
@@ -117,10 +112,6 @@ export type StageGather<ValueT,> = {
  * @param maxRetryRounds - rounds after the initial fan-out;
  * defaults to {@link STAGE_RETRY_ROUNDS}
  *
- * @param retryTarget - when retries may stop: `quorum` for voting stages
- * whose majority suffices, `full-roster` for union stages whose product
- * shrinks with every unheard voice; defaults to `quorum`
- *
  * @returns Heard voices plus quorum verdict and degradation findings
  *
  * @example
@@ -140,7 +131,6 @@ export async function gatherStageVoices<ValueT,>(
     stage,
     l,
     maxRetryRounds = STAGE_RETRY_ROUNDS,
-    retryTarget = 'quorum',
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly SyntheticModelId[];
@@ -152,7 +142,6 @@ export async function gatherStageVoices<ValueT,>(
     readonly stage: string;
     readonly l: Logger;
     readonly maxRetryRounds?: number;
-    readonly retryTarget?: 'quorum' | 'full-roster';
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
@@ -186,13 +175,8 @@ export async function gatherStageVoices<ValueT,>(
     for (let round = 0; round <= maxRetryRounds; round += 1) {
       if (pending.length === 0)
         break;
-      if (
-        (round > 0)
-        && (retryTarget === 'quorum')
-          && (collected.length >= quorumNeeded)
-      ) {
+      if ((round > 0) && (collected.length >= quorumNeeded))
         break;
-      }
       if (round > 0) {
         l.warn(
           `${stage}: retry round ${String(round,)} for ${String(pending.length,)} lost voices`,
@@ -297,7 +281,11 @@ export async function gatherStageVoices<ValueT,>(
       ],
     };
   }
-  if ((retryTarget === 'full-roster') && (voices.length < modelIds.length)) {
+  // Emitted whenever the roster ended short, not only when retries were still
+  // chasing it. The ratio is the part per-model loss findings cannot carry, and
+  // a stage that met quorum with a voice missing is exactly the case that reads
+  // as healthy everywhere else.
+  if (voices.length < modelIds.length) {
     return {
       voices,
       quorumMet,

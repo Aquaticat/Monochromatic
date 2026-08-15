@@ -532,7 +532,7 @@ export async function selectChunkPatch(
     };
   }
   cl.info(
-    `chunk patch from ${describeProducer(outcome.producer,)} won ${String(outcome.votes,)} of ${
+    `chunk patch from ${describeProducer(outcome.producer,)} won weight ${String(outcome.voteWeight,)} of ${
       String(outcome.tally
         .ballots,)
     } ballots`,

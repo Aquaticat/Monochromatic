@@ -47,9 +47,36 @@ Rules:
 - Accurate detail the existing translation ADDS, a citation's translator or publisher, a contributor credit, a gloss identifying someone the original assumes known, is kept. It is correct information a reader benefits from, and the ORIGINAL not carrying it is not a reason to drop it.
 - Do not add content the ORIGINAL does not support and the existing translation does not already carry.
 
-${HOUSE_POLICY_BLOCK}
+${HOUSE_POLICY_BLOCK}`;
 
-Reply with ONLY a JSON object of shape {"translation": "..."}. No prose, no code fences, no commentary.`;
+/**
+ * Reply-format instruction, kept LAST in the assembled sheet.
+ *
+ * Split out so a conditional rule can be inserted before it. Wire instructions
+ * that end up above content rules are the ones models drop first.
+ */
+const TRANSLATE_REPLY_RULE =
+  'Reply with ONLY a JSON object of shape {"translation": "..."}. No prose, no code fences, no commentary.';
+
+/**
+ * Instruction added when the enclosing chunk's ORIGINAL is line-structured.
+ *
+ * Written for a translator rather than an editor, which is why it is not
+ * `LINE_STRUCTURE_RULE` from `line-structure-addendum.ts`. That one asks an
+ * editor to leave existing lines where they are; here there may be no existing
+ * lines at all, and the shape has to be built from the original instead.
+ *
+ * The failure it answers is `Toka_ls`, whose verse chunk runs 21 source blocks
+ * at median 22 characters against 18 target blocks at median 101: the existing
+ * translation already merged the lines. A translator shown that translation and
+ * told nothing would keep reproducing the merge, since the only shape in front
+ * of it is the merged one.
+ */
+const TRANSLATE_LINE_STRUCTURE_RULE = 'The ORIGINAL is line-structured: each '
+  + 'original line is a unit. Produce one output line per original line, in the '
+  + 'same order. Never merge two original '
+  + 'lines into one output line, never split one across two, and never invent or '
+  + 'drop a line. Where the EXISTING TRANSLATION has merged lines, unmerge them.';
 
 /**
  * Messages for one translation call.
@@ -75,6 +102,10 @@ export type TranslatePromptPlan = {
  *
  * @param identityContext - declared names and handles, omitted when absent
  *
+ * @param lineStructured - whether the enclosing CHUNK's original is
+ * line-structured, decided by the caller because a slice is too small a unit to
+ * decide it on; see `buildEditorAddendum`
+ *
  * @returns Messages for the call
  *
  * @example
@@ -87,10 +118,12 @@ export function buildTranslateMessages(
     sourceText,
     existingText,
     identityContext = '',
+    lineStructured = false,
   }: {
     readonly sourceText: string;
     readonly existingText: string;
     readonly identityContext?: string;
+    readonly lineStructured?: boolean;
   },
 ): TranslatePromptPlan {
   /**
@@ -105,11 +138,25 @@ export function buildTranslateMessages(
     ],
   },);
 
+  /**
+   * Translator sheet, with the line-structure fact inserted above the reply
+   * instruction when the enclosing chunk's original is verse.
+   */
+  const system = [
+    TRANSLATE_RULES,
+    lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : '',
+    TRANSLATE_REPLY_RULE,
+  ]
+    .filter(function isPresent(part,): boolean {
+      return part !== '';
+    },)
+    .join('\n\n',);
+
   return {
     messages: [
       {
         role: 'system',
-        content: TRANSLATE_RULES,
+        content: system,
       },
       {
         role: 'user',
