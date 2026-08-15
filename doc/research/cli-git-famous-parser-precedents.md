@@ -2,7 +2,7 @@
 
 ## Research status
 
-- Status: targeted adjacency probe pending
+- Status: complete; no full-contract replacement found
 - Started and completed: 2026-08-14
 - Scope: widely adopted TypeScript-authored parser APIs with native ESM runtimes,
   plus one token-stream semantic control
@@ -173,6 +173,11 @@ and its tokenizer may still require raw-argv recovery for exact short tokens or 
   native ESM,
   dependency-free,
   and documents unknown-options-as-args plus configurable short grouping and nargs behavior.
+  Npm `gitHead` `66f0bb2d2c8a2c9689489784cfe2e5128b0abfc2` is tagged
+  `yargs-parser-v22.0.0-deno`,
+  while `yargs-parser-v22.0.0` points to `553c808cb0a8730980cacd23b8b8e3038ab7c61f`.
+  A direct Git diff found identical `lib/` TypeScript and `package.json` content;
+  the npm `gitHead` adds the generated `build/` files present in the tarball.
 - `@clerc/parser@1.3.1` and `@clerc/utils@1.3.1` are TypeScript-authored native ESM packages.
   The parser explicitly returns parameters,
   post-terminator values,
@@ -309,10 +314,10 @@ network-disabled container from the manifest.
 All downloaded tarballs matched the frozen npm SHA-512 values before execution.
 
 Probe SHA-256:
-`fffcd6a17c8565f0593557373ffef2b4557c8bb3cd25c4259967460b27463493`.
+`8a79311932a19621d563e0fa142dfd90c2b06f017c0ec2000160d71979e2c7b9`.
 
 Output SHA-256:
-`5bcf3628d449c0d0bc19f89a199294a09cf78253710f5388d571b6d3c2ab69bb`.
+`f1a3cecf638f6b8d106754e58fd8d11bf6f255909a2af2d6950c43218ad0fd88`.
 
 ### yargs-parser 22.0.0
 
@@ -346,6 +351,10 @@ It failed two contract boundaries:
   For `left -q value right -a`,
   it returned `_ = ['left', '-q', 'value', 'right']` and `all = 1`,
   with no role evidence separating `left` and `right` from the unknown region.
+  More decisively,
+  `-q -m msg right` became `_ = ['-q', 'right']` and `message = 'msg'`.
+  Removing the known option and its value creates false adjacency between `-q` and `right`.
+  No result-only fold can determine that `right` was not the token following `-q`.
 
 The detailed API returns values,
 alias metadata,
@@ -353,6 +362,10 @@ configuration,
 and one error.
 It does not return an ordered raw token stream or prefix provenance.
 Recovering those two boundaries requires inspecting raw argv again.
+
+Scalar-versus-array normalization for one versus repeated `message` values is ordinary result shaping.
+Reading missing-value failure from `detailed.error` is also ordinary result shaping.
+Neither is treated as a hard failure.
 
 ### Clerc parser 1.3.1
 
@@ -496,13 +509,12 @@ but using that seam means retaining a custom schema fold and it lacks the measur
 
 ## Finding
 
-The premise is partly right:
-yargs-parser is a famous,
-TypeScript-authored,
-native ESM parser that comes much closer than Jackspeak,
+The premise is partly right.
+Within this bounded TypeScript-authored native ESM search,
+yargs-parser is the closest famous eligible candidate discovered.
+It comes much closer than Jackspeak,
 type-flag,
-or Argue.
-It should be the first broader candidate considered if cli-git's contract is reopened.
+or Argue and should be the first broader candidate considered if cli-git's contract is reopened.
 
 It does not naturally express the complete frozen contract.
 Its result irreversibly loses one-dash versus two-dash alias provenance
