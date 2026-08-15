@@ -152,6 +152,8 @@ export {
   AssemblyContractError,
   assertDocumentChangeAgrees,
   assertReplacementsChange,
+  type OrderedChangeSets,
+  orderedChangeSets,
 } from './assembly-invariant.ts';
 export {
   compareDocumentLanes,

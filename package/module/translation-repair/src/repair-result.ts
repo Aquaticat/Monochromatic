@@ -61,6 +61,16 @@ export type RepairTranslationResult = {
   readonly chunkCritics: readonly ChunkCriticRecord[];
 
   /**
+   * Slices the preparation produced, which every index below is out of.
+   *
+   * Reported because a consumer holding only this result could not otherwise
+   * range-check the index sets, nor tell a document with one changed slice out
+   * of two from one changed out of two hundred. The translate lane has always
+   * reported it; this side did not.
+   */
+  readonly sliceCount: number;
+
+  /**
    * Slices the returned document CARRIES a repair for, in document order.
    *
    * Named rather than counted, because the question this lane is measured

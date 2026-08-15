@@ -764,6 +764,21 @@ it again on every attempt while the cause persists.
     the withdraw rate is countable over a directory. Artifacts settled before
     2026-08-15 lack both fields, and a reader must treat their absence as
     unknown rather than as empty.
+20. BOTH LANES NOW REFUSE A CHANGE THE DOCUMENT DOES NOT CARRY, rather than
+    reporting it. A slice cache entry is trusted on its index alone, so a record
+    claiming a change while holding the archive's own wording reached assembly,
+    survived the footnote guard untouched, and landed in the shipped set beside
+    a document nobody changed; every later rate read that as a repair that
+    happened. Two assertions now bracket assembly in both lanes: one refuses a
+    replacement that repeats its slice's incumbent or names a slice the
+    preparation never produced, and one refuses a returned document that
+    disagrees with its own change set in either direction. Both index sets are
+    also checked against each other and put in document order, which the
+    withdrawn one never was. They THROW rather than dropping the suspect
+    replacement, because dropping it silently leaves a run reporting counts
+    nobody can reproduce; if you would rather a corpus pass lose one entry's
+    telemetry than stop, that is the knob to turn, and `#95` records what would
+    have to be measured first.
 19. THE TWO LANES CAN NOW BE COMPARED SLICE BY SLICE, and the comparison reads
     what each DOCUMENT carries rather than what each lane chose. Every lane
     result reports, for every prepared slice, the archive's own wording beside

@@ -467,6 +467,7 @@ export async function repairPreparedDocument(
       return {
         repairedText: targetText,
         status: 'blocked-non-translation',
+        sliceCount: slices.length,
         issues: buildIssueRecords({
           outcomes,
           blocked: true,

@@ -21,6 +21,7 @@ import {
   assertDocumentChangeAgrees,
   assertReplacementsChange,
   AssemblyContractError,
+  orderedChangeSets,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -146,11 +147,13 @@ await describe({
     },),
     it({
       name:
-        'REFUSES a document identical to the archive while slices are named as changed, which is the shape '
-        + 'a no-op replacement produces after it survives the footnote guard',
+        'ACCEPTS a document identical to the archive while slices are named as changed, because two adjacent '
+        + 'replacements can each differ from their own incumbent and concatenate back to the archive text, '
+        + 'say by moving a line break across the join: refusing that would crash a run the models got right, '
+        + 'and the defect it would catch is already refused per slice',
       fn: async () => {
         /**
-         * Failure the check raised.
+         * Failure the net-no-op case raised, if any.
          */
         let caught: unknown;
         try {
@@ -163,8 +166,7 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(caught,).toBeInstanceOf(AssemblyContractError,);
-        expect(String(caught,),).toContain('equals the archive',);
+        expect(caught,).toBe(undefined,);
       },
     },),
     it({
@@ -188,6 +190,127 @@ await describe({
         }
         expect(caught,).toBeInstanceOf(AssemblyContractError,);
         expect(String(caught,),).toContain('no slice',);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Runs one change-set case and returns whatever it raised.
+ *
+ * @param sliceCount - prepared slices bounding both sets
+ *
+ * @param shipped - slices said to carry a change
+ *
+ * @param withdrawn - slices said to have had one taken back
+ *
+ * @returns Failure raised, or undefined when the case was accepted
+ *
+ * @example
+ * ```ts
+ * const caught = changeSetFailure({ sliceCount: 2, shipped: [0,], withdrawn: [0,], },);
+ * ```
+ */
+function changeSetFailure(
+  {
+    sliceCount,
+    shipped,
+    withdrawn,
+  }: {
+    readonly sliceCount: number;
+    readonly shipped: readonly number[];
+    readonly withdrawn: readonly number[];
+  },
+): unknown {
+  try {
+    orderedChangeSets({
+      sliceCount,
+      shipped,
+      withdrawn,
+    },);
+  }
+  catch (error) {
+    return error;
+  }
+  return undefined;
+}
+
+await describe({
+  name: orderedChangeSets.name,
+  children: [
+    it({
+      name:
+        'puts BOTH sets in document order, which the withdrawn one never was: the guard returns it in the order '
+        + 'it took slices back, so two lanes compared slice by slice were being read from lists ordered by '
+        + 'different rules',
+      fn: async () => {
+        /**
+         * Sets given in the order a guard would produce them.
+         */
+        const ordered = orderedChangeSets({
+          sliceCount: 6,
+          shipped: [4, 0, 2,],
+          withdrawn: [5, 1,],
+        },);
+        expect(ordered.shipped,).toEqual([0, 2, 4,],);
+        expect(ordered.withdrawn,).toEqual([1, 5,],);
+      },
+    },),
+    it({
+      name: 'REFUSES an index outside the prepared slices, in either direction',
+      fn: async () => {
+        expect(changeSetFailure({
+          sliceCount: 2,
+          shipped: [2,],
+          withdrawn: [],
+        },),).toBeInstanceOf(AssemblyContractError,);
+        expect(changeSetFailure({
+          sliceCount: 2,
+          shipped: [],
+          withdrawn: [-1,],
+        },),).toBeInstanceOf(AssemblyContractError,);
+      },
+    },),
+    it({
+      name: 'REFUSES an index that is not a whole number, which no slice can be',
+      fn: async () => {
+        expect(changeSetFailure({
+          sliceCount: 4,
+          shipped: [1.5,],
+          withdrawn: [],
+        },),).toBeInstanceOf(AssemblyContractError,);
+      },
+    },),
+    it({
+      name: 'REFUSES a repeat within either set, which would double-count one slice in every rate built on it',
+      fn: async () => {
+        expect(changeSetFailure({
+          sliceCount: 4,
+          shipped: [1, 1,],
+          withdrawn: [],
+        },),).toBeInstanceOf(AssemblyContractError,);
+        expect(changeSetFailure({
+          sliceCount: 4,
+          shipped: [],
+          withdrawn: [2, 2,],
+        },),).toBeInstanceOf(AssemblyContractError,);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a slice named as both shipped and withdrawn, which both lane contracts call impossible '
+        + 'by construction and neither checked',
+      fn: async () => {
+        /**
+         * Failure the overlap raised.
+         */
+        const caught = changeSetFailure({
+          sliceCount: 4,
+          shipped: [1, 3,],
+          withdrawn: [3,],
+        },);
+        expect(caught,).toBeInstanceOf(AssemblyContractError,);
+        expect(String(caught,),).toContain('both shipped and withdrawn',);
       },
     },),
   ],

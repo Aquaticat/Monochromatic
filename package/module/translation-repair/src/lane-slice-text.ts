@@ -159,6 +159,22 @@ export function buildLaneSliceTexts(
     return slice.target
       .chunkIndex;
   },),);
+
+  // Both maps above would swallow a repeat: the last entry would win and the
+  // list would still be the right length, so a decision would be silently
+  // reused for one slice and lost for another.
+  if (prepared.size !== slices.length)
+    throw new LaneSliceCoverageError({
+      message: `preparation produced ${
+        String(slices.length,)
+      } slices under ${String(prepared.size,)} distinct indices`,
+    },);
+  if (byIndex.size !== decided.length)
+    throw new LaneSliceCoverageError({
+      message: `lane decided ${String(decided.length,)} times over ${
+        String(byIndex.size,)
+      } distinct slices`,
+    },);
   for (const one of decided) {
     if (!prepared.has(one.chunkIndex,))
       throw new LaneSliceCoverageError({

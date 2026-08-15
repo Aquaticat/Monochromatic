@@ -93,12 +93,12 @@ export type SliceLaneComparison = {
    * wording says nothing about whether anyone looked, and "examined and left
    * alone" is a different fact from "never reached".
    */
-  readonly repairEvaluated: boolean;
+  readonly repairReached: boolean;
 
   /**
    * Whether the translate lane examined this slice at all.
    */
-  readonly translateEvaluated: boolean;
+  readonly translateReached: boolean;
 };
 
 /**
@@ -150,11 +150,21 @@ function carriedText(
     readonly shipped: boolean;
   },
 ): string {
-  // A slice the lane never reached carries the archive wording whatever the
-  // index sets say, and there is no accepted wording to fall back on.
-  return (shipped && (wording.acceptedText !== null))
-    ? wording.acceptedText
-    : wording.incumbentText;
+  if (!shipped)
+    return wording.incumbentText;
+
+  // A slice the lane never reached cannot be one the document carries a change
+  // for. Falling back to the archive wording here would answer the question
+  // with a row reading "the archive stands", which is the one thing a result
+  // this contradictory is not evidence of.
+  if (wording.acceptedText === null)
+    throw new LaneComparisonError({
+      message: `slice ${
+        String(wording.chunkIndex,)
+      } is named as shipped by a lane that never evaluated it`,
+    },);
+
+  return wording.acceptedText;
 }
 
 /**
@@ -252,6 +262,16 @@ export function compareDocumentLanes(
     },),
   );
 
+  // Equal lengths are not equal COVERAGE: repair rows for slices 1 and 1 and
+  // translate rows for 1 and 2 both count two, and the join would then emit two
+  // rows for slice 1 and silently drop slice 2.
+  if (translateByIndex.size !== translate.sliceTexts.length)
+    throw new LaneComparisonError({
+      message: `translate lane reports ${
+        String(translate.sliceTexts.length,)
+      } rows over ${String(translateByIndex.size,)} distinct slices`,
+    },);
+
   /**
    * Slices the repair document carries a change for.
    */
@@ -298,8 +318,8 @@ export function compareDocumentLanes(
       incumbentText: mine.incumbentText,
       repairText,
       translateText,
-      repairEvaluated: mine.acceptedText !== null,
-      translateEvaluated: theirs.acceptedText !== null,
+      repairReached: mine.acceptedText !== null,
+      translateReached: theirs.acceptedText !== null,
       verdict: judgeSlice({
         repairText,
         translateText,

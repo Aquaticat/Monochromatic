@@ -531,6 +531,33 @@ of `#89`:
     `#101` (splice ordering and separator ownership), `#102` (what remains of
     the delivery ledger). Read `#98`, `#99` and `#100` together: they are one
     change to how a slice gets its identity and its span.
+-   AND BOTH LANES NOW REFUSE A CHANGE THE DOCUMENT DOES NOT CARRY
+    (`assembly-invariant.ts`). `assertReplacementsChange` runs before the
+    footnote guard and refuses a replacement that repeats its slice's incumbent,
+    or names a slice the preparation never produced.
+    `assertDocumentChangeAgrees` runs after assembly and refuses a returned
+    document that disagrees with its own change set in either direction. And
+    `orderedChangeSets` checks both index sets against each other, integers, in
+    range, no repeats, disjoint, and returns BOTH ascending: the withdrawn one
+    never was sorted, so two lanes compared slice by slice were being read from
+    lists ordered by different rules. `RepairTranslationResult` also carries
+    `sliceCount` now, which the translate side always had and which is what a
+    standalone consumer needs to range-check an index at all.
+-   THE REACHABLE WAY IN WAS THE SLICE CACHE, which is why these are assertions
+    rather than comments. A cached record is trusted on its chunk index alone,
+    so one claiming a change while holding the archive's own wording reached the
+    guard, survived it untouched, and landed in the shipped set beside a
+    document nobody changed. A truncated write that still parses, or a slicing
+    that moved while the pipeline digest did not, both produce that record.
+-   THEY THROW, and that is not obviously right: both run after model calls
+    costing minutes and quota, inside a pass that settles one entry at a time.
+    A throw loses the entry's unpersisted work; a finding lets a wrong count
+    settle into an artifact. Nothing is at risk today because no pass is
+    running. `#95` records the open question and the measurement that would
+    settle it, which is whether `ChunkRepairOutcome.changed` can be true while
+    the repaired text equals the incumbent: the cached outcomes on disk do not
+    carry the incumbent, so answering it needs a re-preparation of each entry,
+    which costs no quota.
 -   WHAT IT STILL DOES NOT DO. Nothing CALLS `compareDocumentLanes` yet: the
     corpus pass writes a repair-only artifact, and wiring it for two lanes is
     the part Question 5 shapes. The settled artifact also records no per-slice

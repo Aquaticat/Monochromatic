@@ -13,6 +13,7 @@ import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
   assertDocumentChangeAgrees,
   assertReplacementsChange,
+  orderedChangeSets,
 } from './assembly-invariant.ts';
 import {
   alignmentRefusalFinding,
@@ -394,28 +395,27 @@ export async function translateDocument(
   }
 
   /**
-   * Slices the returned document carries a replacement for, in document order.
+   * Both index sets, checked against each other and put in document order.
    *
-   * Sorted because the guard returns them in the order it was given and a
-   * reader comparing lanes wants document order.
+   * The guard returns each in the order it worked, and a reader comparing two
+   * lanes wants document order for both.
    */
-  const shippedChunkIndices = guarded.replacements
-    .map(function toIndex(replacement,): number {
-      return replacement.chunkIndex;
-    },)
-    .toSorted(function ascending(
-      left,
-      right,
-    ): number {
-      return left - right;
-    },);
+  const ordered = orderedChangeSets({
+    sliceCount: prepared.slices
+      .length,
+    shipped: guarded.replacements
+      .map(function toIndex(replacement,): number {
+        return replacement.chunkIndex;
+      },),
+    withdrawn: guarded.revertedChunkIndices,
+  },);
 
   // The check that covers routes nobody has thought of: a document that moved
   // must name a changed slice, and one that did not must name none.
   assertDocumentChangeAgrees({
     incumbentText: prepared.targetText,
     assembledText: guarded.assembledText,
-    shippedChunkIndices,
+    shippedChunkIndices: ordered.shipped,
   },);
 
   return {
@@ -429,9 +429,10 @@ export async function translateDocument(
     refusedSliceCount: refused.length,
     withdrawnSliceCount: guarded.revertedChunkIndices
       .length,
-    // The same surviving replacements the count above is the size of, named.
-    shippedChunkIndices,
-    withdrawnChunkIndices: guarded.revertedChunkIndices,
+    // The same surviving replacements the count above is the size of, named,
+    // and checked against the withdrawn set before either is reported.
+    shippedChunkIndices: ordered.shipped,
+    withdrawnChunkIndices: ordered.withdrawn,
     // Every prepared slice paired with the archive wording it was judged
     // against. Taken from the PREPARATION rather than from the settled records,
     // which are cache values a resumed run may have written under an earlier

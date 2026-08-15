@@ -4,6 +4,7 @@ import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
   assertDocumentChangeAgrees,
   assertReplacementsChange,
+  orderedChangeSets,
 } from './assembly-invariant.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { buildChunkCriticRecords, } from './critic-attribution.ts';
@@ -58,14 +59,6 @@ export function assembleRepair(
   },
 ): RepairTranslationResult {
   /**
-   * Document rebuilt slice by slice, with any replacement withdrawn that would
-   * leave the footnote graph worse than the archive's.
-   *
-   * A footnote is a relation BETWEEN slices, and every stage works inside one,
-   * so this is the only layer that can see it. The per-envelope footnote gate
-   * bounds what one edit does; it cannot see a definition in another slice.
-   */
-  /**
    * What this lane wants written, checked before the guard sees it.
    *
    * A replacement identical to its incumbent survives the footnote guard and
@@ -78,6 +71,14 @@ export function assembleRepair(
     replacements,
   },);
 
+  /**
+   * Document rebuilt slice by slice, with any replacement withdrawn that would
+   * leave the footnote graph worse than the archive's.
+   *
+   * A footnote is a relation BETWEEN slices, and every stage works inside one,
+   * so this is the only layer that can see it. The per-envelope footnote gate
+   * bounds what one edit does; it cannot see a definition in another slice.
+   */
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
@@ -106,28 +107,28 @@ export function assembleRepair(
     .length;
 
   /**
-   * Slices the returned document carries a repair for, in document order.
+   * Both index sets, checked against each other and put in document order.
    *
-   * Sorted because the guard returns them in the order it was given, and a
-   * reader comparing two lanes wants document order.
+   * The guard returns each in the order it worked, and a reader comparing two
+   * lanes wants document order for both. Checking them here is also the only
+   * place that can: it is the one point holding the prepared slice count and
+   * both sets at once.
    */
-  const shippedChunkIndices = guarded.replacements
-    .map(function toIndex(replacement,): number {
-      return replacement.chunkIndex;
-    },)
-    .toSorted(function ascending(
-      left,
-      right,
-    ): number {
-      return left - right;
-    },);
+  const ordered = orderedChangeSets({
+    sliceCount: slices.length,
+    shipped: guarded.replacements
+      .map(function toIndex(replacement,): number {
+        return replacement.chunkIndex;
+      },),
+    withdrawn: guarded.revertedChunkIndices,
+  },);
 
   // The check that covers routes nobody has thought of: a document that moved
   // must name a changed slice, and one that did not must name none.
   assertDocumentChangeAgrees({
     incumbentText: targetText,
     assembledText: guarded.assembledText,
-    shippedChunkIndices,
+    shippedChunkIndices: ordered.shipped,
   },);
 
   /**
@@ -155,11 +156,13 @@ export function assembleRepair(
   return {
     chunkCritics: buildChunkCriticRecords({ outcomes, },),
     repairedText: guarded.assembledText,
+    sliceCount: slices.length,
     status: anyChanged ? 'repaired' : 'unchanged',
     // Read off the guard's surviving replacements, which is the only place that
-    // knows what the document carries.
-    shippedChunkIndices,
-    withdrawnChunkIndices: guarded.revertedChunkIndices,
+    // knows what the document carries, and checked against the withdrawn set
+    // before either is reported.
+    shippedChunkIndices: ordered.shipped,
+    withdrawnChunkIndices: ordered.withdrawn,
     // Every prepared slice, decided or left alone, paired with the archive's
     // own wording. Built from the outcomes rather than from the surviving
     // replacements, because this side of the record is what the lane CHOSE and

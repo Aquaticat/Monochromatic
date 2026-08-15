@@ -100,11 +100,131 @@ export function assertReplacementsChange(
 }
 
 /**
- * Refuses a returned document that disagrees with its own change set.
+ * Orders two slice indices by document position.
  *
- * The one check that covers paths nobody has thought of yet: whatever route a
- * replacement took, a document that differs from the archive must name at least
- * one changed slice, and a document identical to it must name none.
+ * @param left - one index
+ *
+ * @param right - other index
+ *
+ * @returns Negative when left comes first
+ *
+ * @example
+ * ```ts
+ * const ordered = indices.toSorted(ascending,);
+ * ```
+ */
+function ascending(
+  left: number,
+  right: number,
+): number {
+  return left - right;
+}
+
+/**
+ * Both index sets a lane result carries, checked and put in document order.
+ *
+ * @example
+ * ```ts
+ * const { shipped, withdrawn, } = orderedChangeSets({ sliceCount, shipped, withdrawn, },);
+ * ```
+ */
+export type OrderedChangeSets = {
+  /**
+   * Slices the returned document carries a change for, ascending.
+   */
+  readonly shipped: readonly number[];
+
+  /**
+   * Slices whose change was taken back, ascending.
+   */
+  readonly withdrawn: readonly number[];
+};
+
+/**
+ * Checks both index sets and returns them in document order.
+ *
+ * Both lane contracts claim these sets are disjoint, in range and free of
+ * repeats, and until now nothing checked any of it. The shipped set was sorted
+ * at each call site and the withdrawn set was passed through in whatever order
+ * the guard took slices back, so two lanes compared slice by slice were being
+ * read from lists ordered by different rules.
+ *
+ * @param sliceCount - slices the preparation produced, which bounds both sets
+ *
+ * @param shipped - slices the document carries a change for
+ *
+ * @param withdrawn - slices whose change was taken back
+ *
+ * @returns Both sets ascending
+ *
+ * @throws AssemblyContractError when an index is not a whole number, falls
+ * outside the prepared slices, repeats within its set, or appears in both
+ *
+ * @example
+ * ```ts
+ * const ordered = orderedChangeSets({ sliceCount, shipped, withdrawn, },);
+ * ```
+ */
+export function orderedChangeSets(
+  {
+    sliceCount,
+    shipped,
+    withdrawn,
+  }: {
+    readonly sliceCount: number;
+    readonly shipped: readonly number[];
+    readonly withdrawn: readonly number[];
+  },
+): OrderedChangeSets {
+  for (const index of [...shipped, ...withdrawn,]) {
+    if (!Number.isInteger(index,))
+      throw new AssemblyContractError({
+        message: `change set holds ${String(index,)}, which is not a slice index`,
+      },);
+    if ((index < 0) || (index >= sliceCount))
+      throw new AssemblyContractError({
+        message: `change set names slice ${String(index,)} of ${String(sliceCount,)} prepared`,
+      },);
+  }
+  if (new Set(shipped,).size !== shipped.length)
+    throw new AssemblyContractError({ message: 'shipped slices repeat', },);
+  if (new Set(withdrawn,).size !== withdrawn.length)
+    throw new AssemblyContractError({ message: 'withdrawn slices repeat', },);
+
+  /**
+   * Slices claimed by both sets, which no slice can be.
+   */
+  const both = shipped.filter(function isWithdrawnToo(index,): boolean {
+    return withdrawn.includes(index,);
+  },);
+  if (both.length > 0)
+    throw new AssemblyContractError({
+      message: `slices ${both.join(', ',)} are named as both shipped and withdrawn`,
+    },);
+
+  return {
+    shipped: shipped.toSorted(ascending,),
+    withdrawn: withdrawn.toSorted(ascending,),
+  };
+}
+
+/**
+ * Refuses a returned document that changed while naming no changed slice.
+ *
+ * ONE DIRECTION ONLY, and the asymmetry is the point. A document that differs
+ * from the archive while no slice is named cannot happen: every byte of the
+ * difference came from some replacement, and a replacement that survived is a
+ * slice that shipped. So this direction catches a whole class of routing
+ * defects without a single false alarm.
+ *
+ * THE OTHER DIRECTION IS NOT CHECKED HERE, because it can happen on a perfectly
+ * good run. Two adjacent slices whose replacements each differ from their own
+ * incumbent can concatenate back to the archive text, say by moving a line
+ * break across the join: every replacement is a real change, and the document
+ * is unchanged. Refusing that would crash a run the models got right. The
+ * defect it would otherwise have caught, a replacement that changes nothing, is
+ * already refused per slice by {@link assertReplacementsChange}, which is where
+ * it can be told apart from this case.
  *
  * @param incumbentText - archive document the lane started from
  *
@@ -113,8 +233,7 @@ export function assertReplacementsChange(
  * @param shippedChunkIndices - slices it says the returned document carries a
  * change for
  *
- * @throws AssemblyContractError when exactly one of the two says a change
- * happened
+ * @throws AssemblyContractError when the document moved and no slice is named
  *
  * @example
  * ```ts
@@ -132,25 +251,10 @@ export function assertDocumentChangeAgrees(
     readonly shippedChunkIndices: readonly number[];
   },
 ): void {
-  /**
-   * Whether the returned document moved off the archive at all.
-   */
-  const documentMoved = assembledText !== incumbentText;
-
-  /**
-   * Whether the lane says any slice moved.
-   */
-  const anyShipped = shippedChunkIndices.length > 0;
-  if (documentMoved === anyShipped)
-    return;
-
-  throw new AssemblyContractError({
-    message: documentMoved
-      ? 'returned document differs from the archive while no slice is named as changed'
-      : `returned document equals the archive while ${
-        String(shippedChunkIndices.length,)
-      } slices are named as changed`,
-  },);
+  if ((assembledText !== incumbentText) && (shippedChunkIndices.length === 0))
+    throw new AssemblyContractError({
+      message: 'returned document differs from the archive while no slice is named as changed',
+    },);
 }
 
 //endregion Assembly invariant

@@ -219,8 +219,8 @@ await describe({
           translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
         },);
         expect(rows[0]?.verdict,).toBe('archive-stands',);
-        expect(rows[0]?.repairEvaluated,).toBe(false,);
-        expect(rows[0]?.translateEvaluated,).toBe(true,);
+        expect(rows[0]?.repairReached,).toBe(false,);
+        expect(rows[0]?.translateReached,).toBe(true,);
         expect(rows[0]?.repairText,).toBe(ARCHIVE_NAP,);
       },
     },),
