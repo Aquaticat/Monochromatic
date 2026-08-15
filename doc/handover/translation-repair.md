@@ -10321,3 +10321,107 @@ and every index against the run that settled them. A third test in
 repair lane fail with the signal live; it now fails the lane's cache write
 instead, which is a first-lane failure of the same shape and does not depend on
 a rule that no longer exists.
+
+### Every slice now carries a delivery record, and a cache entry proves its own name
+
+`2210fbbf8` builds `slice-delivery.ts`, which is item 2 of `#102`: one record
+per slice naming the source, the archive wording, what the lane decided, what
+actually shipped, and which of the three ways it shipped. The distinction it
+exists for is that a slice can DECIDE a replacement and still ship the archive
+text, because `guardFootnoteAssembly` withdraws replacements for footnote
+damage, for structural regression, and for a set that reassembles to the archive
+text. Reading the document alone, those are indistinguishable from a slice the
+judges left alone. Nothing calls `buildSliceDelivery` yet: the wiring waits on
+Question 5, and items 5 and 6 (assert that the shipped set equals the
+`replacement-shipped` records, and that reassembling the ledger reproduces the
+document) are still owed.
+
+`358efd207` closes the hole the cache-key change opened. A persisted slice is
+named by a hash of its key, and the loader trusted the file name to say which
+question the record answered. With the index in the key that was nearly
+unfalsifiable; without it, a record moved, copied or renamed answers for whatever
+slice asks under that name, and the driver splices its text into a slice it was
+never computed for. Every persisted record now carries an envelope stating the
+key it answers, and the loader refuses a payload whose envelope disagrees.
+
+TWO CORRECTIONS FROM SOL ON THAT ONE, both worth keeping. First, a reader cannot
+know whether the run, a later edit or a truncated write broke a record, so the
+refusal must not blame the run: it names the file and what disagrees. Second, my
+own commit message says the two remaining findings are recorded in `#99`. They
+are in `#95`.
+
+### One question, asked once, whatever the cache holds
+
+`40cf35737`. Taking the index out of the key means two slices with identical
+source, incumbent and governance share an entry. A WARM run resumes one record
+for both, which is right. A COLD run asked the models twice, kept two different
+answers, persisted both under one key and could use either. Same input, two
+documents, depending on whether a cache existed. Both drivers now memoize what
+they settle by key within the run, so the cold path reuses what it just settled
+exactly as the warm path resumes it.
+
+ONE NUANCE RECORDED IN `#95` RATHER THAN DECIDED: the memoization is
+unconditional, including for a record the driver deliberately did not persist
+because no translator was heard. An in-run twin therefore reuses an unheard
+record while a warm run would ask again for both.
+
+### The final name of a slice is stamped where the whole document is in view
+
+`3afb233de`. Subdivision was handed a base index and added its own offset, which
+is right only while every earlier section contributed exactly the slices the base
+counted. `#100` breaks that deliberately: an insertion slice for an untranslated
+section is a slice the base index never saw coming. `prepareDocumentPair` now
+restamps every carved pair through `reindexSlicePair` from where it actually
+landed, then asserts the invariant. That closed `#99` on the minimal
+alternative: assert the property, take the index out of the key, and stamp
+centrally, rather than reshaping three stampings into one type.
+
+### A refusal now names the slice it is actually for
+
+`dba53968e`, found by the advisor rather than by a test. `alignmentRefusalFinding`
+produces a sentence naming a slice by index, and that sentence was STORED inside
+the settled record. Since the key no longer carries the index, one record answers
+for any slice asking the same question and is re-stamped when it does, but the
+stored sentence kept the index it was first settled under. Two identical sections
+therefore reported slice 0 twice and slice 1 never. The sentence is now derived
+in the driver from the record disposition, its alignment measurements and the
+index it carries after stamping.
+
+MEASURED STRUCTURALLY, because both caches had just been invalidated and disk
+measures nothing: this was the ONE index-bearing string stored in a persisted
+record. The repair lane stores none, and every wire finding names a within-prompt
+reference such as an edit region or a claim index, which the key already covers.
+
+THE PROMPT AUDIT THAT THE WHOLE KEY CHANGE RESTS ON is also closed, recorded in
+`#95`. Of every file that builds model messages, only `repair-contract.ts` and
+`assembly-integrity.ts` mention `chunkIndex` at all, and those are a type field
+and a set of map keys. The only index-derived value reaching a prompt is the
+`lineStructured` governance flag, which is in the key, and `identityContext` is
+in the run shape. So identical texts really do mean an identical question.
+
+### Two sol reviews of `#100`, and what they changed
+
+The first read the ten files of the slicing and alignment path and corrected the
+recorded design in ways that reorder the whole task, now rewritten into `#100`:
+`alignHeadingsForced` emits no target cursor, so the "place at the cursor" rule
+was unimplementable; `ambiguous` does not mean untranslated and treating it so can
+DUPLICATE content; a forced gap need not have a unique boundary; therefore "emit
+every source run exactly once" and "never place inside uncertainty" cannot both
+hold, and some source sections must stay unplaced. Deleting `mergeOneSidedRuns`
+alone makes `runToChunk` throw. The landing order is now producers LAST: placement
+model, then assembly, then lane, then paragraph subdivision, then section-level
+insertions.
+
+The second was launched because the first had answered a question about
+`translate-stage.ts` WITHOUT that file in front of it. It confirmed the wrong-
+success state (with both texts blank, `wantsReplacement` is false, the alignment
+guard cannot fire, and a missing translation settles as an ordinary unchanged
+slice) and corrected two claims: structural repair of candidates must NOT be
+skipped in absent mode, since it validates against the ORIGINAL, and blank fresh
+candidates already never reach the slate because `buildTranslateCandidates`
+filters them. It also found that a blank reply still counts toward
+`heardTranslators`, and that the incumbent fallback reports a producer for text
+that does not exist. Both are unmeasured: no artifact under the runs directory
+carries `translate-blank` or `translate-no-candidate`, because the translate lane
+has never run over the corpus. They are recorded in `#100` landing 3 rather than
+fixed speculatively now.
