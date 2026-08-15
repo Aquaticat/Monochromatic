@@ -155,6 +155,28 @@ import type { RepairModels, } from './repair-contract.ts';
  * from the roster outright: the same candidates before the same models can
  * reach a different winner. Neither change touches a prompt, which is exactly
  * why the version has to move rather than the structural guard catching it.
+ *
+ * WHY 2026-08-15 DID NOT MOVE IT, recorded because a version that stays put
+ * needs the same account as one that moves, and this history's own rule says
+ * bumps have been missed exactly by nobody writing one.
+ *
+ * Two changes that day moved what `changed` MEANS. `winnerChangedText` stopped
+ * reading which candidate won and started reading the text, so a patch whose
+ * envelope operations cancel is now recorded as a slice nothing happened in.
+ * And the naturalness lane stopped stamping `changed` from the rewriter's
+ * verdict, which is measured against the accuracy text, and reads the archive
+ * text instead.
+ *
+ * NEITHER NEEDS A BUMP, for different reasons. Refinement outcomes are never
+ * persisted: the cache holds the accuracy outcome, and the lane runs again on
+ * every resume. And a version-25 accuracy record written before the first
+ * change can only be wrong in ONE direction, since the old rule answered
+ * `false` whenever the unchanged candidate won and that candidate carried the
+ * archive text: it can claim a change it did not make, never deny one it did.
+ * That is exactly the contradiction `sliceRecordAgrees` discards on resume, at
+ * a cost of one recomputed slice, and the run says so in its findings. Bumping
+ * would throw away every settled slice in the corpus to fix what the discard
+ * path already fixes one slice at a time.
  */
 export const SLICE_CACHE_VERSION = 25;
 /**

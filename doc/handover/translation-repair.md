@@ -9944,7 +9944,13 @@ one item in the queue where stopping midway costs something, so it wants a run
 of hours rather than the tail of one. `#103` items 6 and 7 belong with it, and
 so does `#94`'s rename.
 
-### Every guard this session added has now been shown to fail without itself
+### Every guard with a reachable failure was shown to fail without itself
+
+READ THE HEADING LITERALLY. It is not a claim that every guard added on
+2026-08-15 turns a test red when removed: three do not, and each is named as
+such where it belongs. The claim is that no guard capable of failing was left
+untested, and that the ones incapable of it were shown to fail NOTHING rather
+than assumed to be covered. That is the finding, not a proof.
 
 Two of the day's guards landed without a removal proof, which is how a test that
 asserts nothing gets mistaken for a test that passes.
@@ -10072,3 +10078,56 @@ document, 14 entries fall under 90%, and two fall under half.
 as a clean unchanged document having examined nothing.
 Nothing behavioural changed, because which denominator is right is a decision;
 `#104` holds it, and only the contracts that misdescribed it were corrected.
+
+### The night's own fixes went back to the same reader, and nine things came back
+
+Reviewing a review's output is not ceremony here: the fixes above were written
+in a few hours and touch the two assertions the whole assembly contract rests
+on. All nine findings were acted on, and `#103` carries each with its commit.
+
+THE ONE WORTH REMEMBERING is a finding added hours earlier, in the same night's
+work. A structural regression withdrawn in a round where a footnote identifier
+took the blame was being recorded as `assembly-structure-reverted`, and the
+round cannot know that. Withdrawing what the footnote named MAY answer the parse
+damage or may not; the next round is what says. It now reads
+`assembly-structure-observed`. The general lesson is worth more than the string:
+a finding written from inside the round that produced it will reach for the past
+tense of an outcome that has not happened yet.
+
+TWO JUDGEMENTS WERE TAKEN RATHER THAN FIXED, both recorded in `#103` with the
+reasoning:
+
+-   The refinement abort rule stays coarse. It fails an entry whose work is
+    finished but was overtaken by an abort, because telling that apart from a
+    torn-down exchange needs the phase to report whether a voice was abandoned,
+    and every stage swallows a failed voice by design. A retry costs one entry;
+    the alternative ships a cut-short document as whole, which costs a corpus.
+    The narrower variant is `#103` item 10.
+-   `selectRepairCandidate` refuses REPEATED unchanged identifiers, and nothing
+    more general. The reviewer asked for unique candidate identifiers across the
+    slate; the slate is always exactly two candidates built by
+    `settleChunkVerdict`, so a general uniqueness check would be one more guard
+    no test could pin. Recorded so it is not re-raised as an oversight.
+
+THE SLICE CACHE WAS NOT BUMPED, and the reasoning is now in the version history
+in `repair-slice-key.ts` rather than only in a session. Two changes moved what
+`changed` MEANS. Refinement outcomes are never persisted, so that half needs
+nothing. And a version-25 accuracy record written before `winnerChangedText`
+started reading the text can only over-claim a change, never deny one, because
+the old rule answered `false` whenever the unchanged candidate won and that
+candidate carries the archive text. Over-claiming is exactly what
+`sliceRecordAgrees` discards on resume, at one recomputed slice. Bumping would
+discard every settled slice in the corpus to fix what the discard path fixes one
+at a time.
+
+WHAT IS STILL OPEN FROM BOTH REVIEWS: `#103` items 8, 9 and 10. Item 8 is the
+same tense problem in the FOOTNOTE findings, which is a scorecard change rather
+than a string change and wants doing with `#102`. Item 9 asks whether the
+archive's own integrity should be measured rather than assumed, which
+`selectRepairCandidate` now makes expressible and nothing yet does. Item 10 is
+the narrow abort rule above.
+
+FOR THE MORNING: the dominance denominator is now Question 7 in
+`doc/planning/translation-repair-open-decisions.md`, with options, a ranking,
+and what I would do if it is delegated. It was tracker-only before, which is not
+where a question the user has to answer belongs.
