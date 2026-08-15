@@ -241,14 +241,22 @@ export function orderedChangeSets(
  * can reassemble to the archive text, and refusing THAT would crash a run the
  * models got right.
  *
+ * PRECONDITION, and the only way a legitimate run reaches a refusal here: the
+ * replacements must be what `guardFootnoteAssembly` LET STAND, not what a lane
+ * proposed. The guard is where a net-zero set becomes no survivors, so calling
+ * this first, on a set that reassembles to the archive text, refuses a run
+ * nobody got wrong. The message says so, because the fix is the call order
+ * rather than anything about the document.
+ *
  * @param incumbentText - archive document the lane started from
  *
  * @param assembledText - document the lane is about to return
  *
  * @param slices - prepared slices, which place every replacement
  *
- * @param survivingReplacements - what the guard let stand, which is the only
- * admissible source for both the text and the index set
+ * @param survivingReplacements - what `guardFootnoteAssembly` let stand, which
+ * is the only admissible source for both the text and the index set; a set that
+ * has not been through the guard can be a legitimate net-zero this refuses
  *
  * @returns Slices the returned document carries a change for
  *
@@ -312,7 +320,9 @@ export function deriveShippedIndices(
     throw new AssemblyContractError({
       message: `returned document equals the archive while slices ${
         shipped.join(', ',)
-      } are named as changed`,
+      } are named as changed: a set that reassembles to the archive is a net-zero `
+        + 'assembly, which `guardFootnoteAssembly` canonicalizes to no survivors, '
+        + 'so pass what the guard let stand rather than what a lane proposed',
     },);
   return shipped;
 }

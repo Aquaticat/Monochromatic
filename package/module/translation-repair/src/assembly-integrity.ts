@@ -1,3 +1,4 @@
+import { assertReplacementsChange, } from './assembly-invariant.ts';
 import { footnoteIdentifiers, } from './footnote-mentions.ts';
 import type { FootnoteGraphFinding, } from './footnote-model.ts';
 import { parseDocument, } from './parse-document.ts';
@@ -169,7 +170,8 @@ const STRUCTURAL_REGRESSION_KINDS: readonly string[] = [
  *
  * @param assembledText - document spliced from the surviving replacements
  *
- * @returns Regression kinds with how many more the assembly carries
+ * @returns Kinds the assembly carries MORE of, each named once; how many more
+ * is deliberately not reported, since one is already enough to withdraw over
  *
  * @example
  * ```ts
@@ -284,8 +286,16 @@ function suspectsFor(
 }
 
 /**
- * Splices replacements into a document and withdraws any that break its
- * footnote graph, repeating until the graph is no worse than the archive's.
+ * Splices replacements into a document and settles what it can carry, repeating
+ * until nothing is left to take back.
+ *
+ * THREE OUTCOMES, and the name only says the first. A replacement that breaks
+ * the footnote graph is withdrawn, blamed by the identifier it moved. A
+ * STRUCTURAL parse regression is withdrawn too, and since it names no
+ * identifier, an unattributable one takes every replacement with it. An
+ * assembly that reassembles to the archive text is CANONICALIZED rather than
+ * withdrawn for fault: nobody did anything wrong, and the document simply says
+ * so. Any reader of `revertedChunkIndices` is reading all three.
  *
  * ITERATES TO A FIXPOINT rather than checking once. Withdrawing a replacement
  * can orphan an identifier a DIFFERENT replacement introduced alongside it:
@@ -313,6 +323,12 @@ function suspectsFor(
  * @throws {@link Error} when the loop cannot settle, which its own bound makes
  * unreachable and which must never be reported as a clean assembly
  *
+ * @throws AssemblyContractError when a replacement names an unknown slice or
+ * repeats its own incumbent, checked HERE rather than left to each caller: a
+ * no-op replacement reassembles to the archive text, so the net-zero
+ * canonicalization would otherwise adopt it as a legitimate outcome and return
+ * an empty surviving set, which nothing downstream can tell from an honest one
+ *
  * @example
  * ```ts
  * const guarded = guardFootnoteAssembly({ targetText, slices, replacements, },);
@@ -329,6 +345,16 @@ export function guardFootnoteAssembly(
     readonly replacements: readonly SliceReplacement[];
   },
 ): GuardedAssembly {
+  // FIRST, before anything is spliced. Every lane already runs this check, and
+  // running it here too is what makes the guard sound for a caller that does
+  // not: a replacement repeating its own incumbent is indistinguishable, once
+  // spliced, from a slice nobody touched, and the net-zero branch below would
+  // canonicalize it into an empty surviving set that reads as an honest run.
+  assertReplacementsChange({
+    slices,
+    replacements,
+  },);
+
   /**
    * Archive text of every slice, keyed by chunk index as a string so the map
    * is JSON-shaped like everything else that crosses this module.
@@ -476,6 +502,17 @@ export function guardFootnoteAssembly(
         findings.push(
           `assembly-footnote-reverted ${finding.kind} ${finding.convention} `
             + `${finding.identifier} (round ${String(round + 1,)})`,
+        );
+      }
+      // Recorded in the SAME round the withdrawal happens, not left to the next
+      // one. A regression the withdrawal happens to fix as well never reaches
+      // another round, so without this the document reports only the footnote
+      // it was blamed for and the parse damage disappears from the findings.
+      // Attribution is by the identifier, so these name no slice: what is
+      // certain is that this round's withdrawal is what answered them.
+      for (const kind of regressions) {
+        findings.push(
+          `assembly-structure-reverted ${kind} (round ${String(round + 1,)})`,
         );
       }
       withdrawn.push(...culprits,);

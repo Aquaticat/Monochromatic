@@ -17,6 +17,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  AssemblyContractError,
   footnoteIdentifiers,
   guardFootnoteAssembly,
   introducedStructuralRegressions,
@@ -643,6 +644,101 @@ On the windowsill there is being a bird.
         },);
         expect(guarded.revertedChunkIndices,).toEqual([],);
         expect(guarded.assembledText,).toContain('The cat naps on the windowsill.',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a replacement that repeats its own slice verbatim, rather '
+        + 'than reading it as a net-zero assembly. Both reassemble to the '
+        + 'archive text, and only one of them is a run where somebody chose '
+        + 'something: canonicalizing a no-op would hand back an empty surviving '
+        + 'set no reader can tell from an honest one. The lanes check this '
+        + 'before calling, so what this covers is every caller that does not',
+      fn: async () => {
+        /**
+         * Slices of the fixture pair.
+         */
+        const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
+
+        /**
+         * Slice whose incumbent the replacement will repeat.
+         */
+        const repeated = slices.find(function isBirdSlice(slice,): boolean {
+          return slice.target
+            .text
+            .includes('there is being a bird',);
+        },);
+        if (repeated === undefined)
+          throw new Error('fixture lost its bird slice',);
+
+        /**
+         * Failure the guard raised.
+         */
+        let caught: unknown;
+        try {
+          guardFootnoteAssembly({
+            targetText: TARGET_TEXT,
+            slices,
+            replacements: [{
+              chunkIndex: repeated.target
+                .chunkIndex,
+              replacementText: repeated.target
+                .text,
+            },],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(AssemblyContractError,);
+        expect(String(caught,),).toContain('carries the archive wording',);
+      },
+    },),
+
+    it({
+      name: 'RECORDS a structural regression the same round it is withdrawn, '
+        + 'even when a footnote took the blame. Withdrawing the slice answers '
+        + 'both defects at once, so no later round sees the regression, and '
+        + 'before this the document reported only the footnote while the parse '
+        + 'damage left no trace at all',
+      fn: async () => {
+        /**
+         * Slices of the fixture pair.
+         */
+        const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
+
+        /**
+         * Assembly whose one replacement drops the footnote reference AND opens
+         * an MDX expression it never closes: the footnote names an identifier
+         * this slice stopped mentioning, so attribution succeeds and the
+         * blanket-withdrawal branch never runs.
+         */
+        const guarded = guardFootnoteAssembly({
+          targetText: TARGET_TEXT,
+          slices,
+          replacements: [{
+            chunkIndex: sliceCarrying({
+              slices,
+              needle: 'doing the sleeping',
+            },),
+            replacementText: 'The cat naps on the windowsill {\'unclosed',
+          },],
+        },);
+        expect(guarded.assembledText,).toBe(TARGET_TEXT,);
+        expect(guarded.findings
+          .some(function namesFootnote(finding,): boolean {
+            return finding.startsWith('assembly-footnote-reverted',);
+          },),).toBe(true,);
+        expect(guarded.findings
+          .some(function namesStructure(finding,): boolean {
+            return finding.startsWith('assembly-structure-reverted mdx-downgraded',);
+          },),).toBe(true,);
+        // Attributed, so the blanket withdrawal never ran: the distinction
+        // matters because that branch already reported structural damage.
+        expect(guarded.findings
+          .some(function namesBlanketWithdrawal(finding,): boolean {
+            return finding.startsWith('assembly-withdrew-every-replacement',);
+          },),).toBe(false,);
       },
     },),
   ],

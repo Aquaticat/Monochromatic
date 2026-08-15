@@ -51,6 +51,53 @@ const CAT_SLICES = [{
   },
 },];
 
+/**
+ * Archive document of the net-zero case: three paragraphs, sliced so that one
+ * paragraph can move ACROSS the join between two slices. That is what makes a
+ * net-zero reachable rather than hypothetical, since the separator between the
+ * slices belongs to neither of them.
+ */
+const ARCHIVE_PARAGRAPHS = 'The cat naps.\n\nThe sill is warm.\n\nThe bird waits.\n';
+
+/**
+ * Two prepared slices over that document: the first carries two paragraphs and
+ * the second carries the last one.
+ */
+const PARAGRAPH_SLICES = [
+  {
+    source: {
+      chunkIndex: 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: 3,
+      text: 'source of the first two',
+    },
+    target: {
+      chunkIndex: 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: 'The cat naps.\n\nThe sill is warm.'.length,
+      text: 'The cat naps.\n\nThe sill is warm.',
+    },
+  },
+  {
+    source: {
+      chunkIndex: 1,
+      nodes: [],
+      startOffset: 3,
+      endOffset: 6,
+      text: 'source of the last',
+    },
+    target: {
+      chunkIndex: 1,
+      nodes: [],
+      startOffset: 'The cat naps.\n\nThe sill is warm.\n\n'.length,
+      endOffset: 'The cat naps.\n\nThe sill is warm.\n\nThe bird waits.'.length,
+      text: 'The bird waits.',
+    },
+  },
+];
+
 await describe({
   name: assertReplacementsChange.name,
   children: [
@@ -226,6 +273,42 @@ await describe({
         }
         expect(caught,).toBeInstanceOf(AssemblyContractError,);
         expect(String(caught,),).toContain('claims a change and carries the archive wording',);
+      },
+    },),
+    it({
+      name:
+        'NAMES THE CALL ORDER when it refuses a net-zero set, because that refusal is the one a '
+        + 'blameless run can reach: these two replacements each differ from their own slice and '
+        + 'reassemble to the archive anyway, which is a legitimate outcome the guard canonicalizes '
+        + 'to no survivors. Reaching this message means the guard has not run yet, and the message '
+        + 'has to say that rather than describe the document',
+      fn: async () => {
+        /**
+         * Failure the check raised.
+         */
+        let caught: unknown;
+        try {
+          deriveShippedIndices({
+            incumbentText: ARCHIVE_PARAGRAPHS,
+            assembledText: ARCHIVE_PARAGRAPHS,
+            slices: PARAGRAPH_SLICES,
+            survivingReplacements: [
+              {
+                chunkIndex: 0,
+                replacementText: 'The cat naps.',
+              },
+              {
+                chunkIndex: 1,
+                replacementText: 'The sill is warm.\n\nThe bird waits.',
+              },
+            ],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(AssemblyContractError,);
+        expect(String(caught,),).toContain('guardFootnoteAssembly',);
       },
     },),
   ],
