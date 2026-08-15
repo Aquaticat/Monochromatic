@@ -195,7 +195,13 @@ export type RepairIssueRecord = {
    * edits the slice as a whole. Kept apart from
    * {@link RepairIssueRecord.introducedDefects}, which audits the accuracy
    * stage against a different baseline: one compares the original translation
-   * with the repaired one, the other the repaired one with what shipped.
+   * with the repaired one, the other the repaired one with the rewrite.
+   *
+   * Carried wherever the lane rewrote the slice, including where nothing then
+   * reached the reader. Both readings audit a STAGE against the text it was
+   * handed, and that comparison stands whatever assembly later did with the
+   * result; suppressing it on a withdrawn slice would hide damage the lane
+   * demonstrably does.
    */
   readonly refinementDefects?: IssueProbeReading;
 
@@ -228,7 +234,8 @@ export type RepairIssueRecord = {
  *
  * @param accuracyPatchSelected - whether the slice's patched candidate won
  *
- * @param blocked - whether the document returned its input unchanged
+ * @param repairReachedReader - whether this slice's replacement is in the
+ * returned document, which several later steps can each answer no to
  *
  * @returns Disposition for this issue
  *
@@ -237,7 +244,7 @@ export type RepairIssueRecord = {
  * const disposition = judgeDisposition({
  *   regions,
  *   accuracyPatchSelected: true,
- *   blocked: false,
+ *   repairReachedReader: true,
  * },);
  * ```
  */
@@ -245,20 +252,20 @@ function judgeDisposition(
   {
     regions,
     accuracyPatchSelected,
-    blocked,
+    repairReachedReader,
   }: {
     readonly regions: readonly RepairRegion[];
     readonly accuracyPatchSelected: boolean;
-    readonly blocked: boolean;
+    readonly repairReachedReader: boolean;
   },
 ): RepairDisposition {
   if (regions.length === 0)
     return 'no-region';
   if (!accuracyPatchSelected)
     return 'not-selected';
-  return blocked
-    ? 'withdrawn'
-    : 'shipped';
+  return repairReachedReader
+    ? 'shipped'
+    : 'withdrawn';
 }
 
 /**
@@ -298,10 +305,19 @@ export function buildIssueRecords(
 
   return outcomes.flatMap(function toRecords(outcome,) {
     /**
-     * Whether this slice's repair reached the document at all, which a blocked
-     * run and a withdrawn slice both answer no to.
+     * Whether this slice's replacement is in the returned document.
+     *
+     * Three separate later steps can answer no, and every one of them leaves
+     * the reader with the archive's wording: dominance blocking the whole
+     * document, the assembly guard taking this slice back, and the slice's own
+     * selection producing no replacement to splice. That last term restates
+     * `repairReplacements`, which emits nothing for an unchanged outcome, so
+     * this record agrees with assembly by construction rather than by two files
+     * happening to hold the same invariant.
      */
-    const reachedNobody = blocked || withdrawn.has(outcome.chunkIndex,);
+    const replacementShipped = (!blocked)
+      && outcome.changed
+      && (!withdrawn.has(outcome.chunkIndex,));
     return outcome.issues
       .map(function toRecord(issue,): RepairIssueRecord {
         /**
@@ -328,14 +344,14 @@ export function buildIssueRecords(
         return {
           chunkIndex: outcome.chunkIndex,
           issue,
-          resolved: (!reachedNobody)
+          resolved: replacementShipped
             && outcome.resolvedIssueIds
             .includes(issue.issueId,),
           repairRegions: regions,
           repairDisposition: judgeDisposition({
             regions,
             accuracyPatchSelected: outcome.accuracyPatchSelected,
-            blocked: reachedNobody,
+            repairReachedReader: replacementShipped,
           },),
           refined: outcome.refined,
           ...(probed.length === 0
@@ -355,7 +371,7 @@ export function buildIssueRecords(
           // document does not carry has a returned wording, but it is the
           // archive's, not this one; writing the rewrite here would state the
           // opposite in the one field a grader reads as what shipped.
-          ...((outcome.refined && (!reachedNobody))
+          ...((outcome.refined && replacementShipped)
             ? { finalSliceText: outcome.repairedText, }
             : {}),
           // Carried unfiltered, unlike introducedDefects above. That one is

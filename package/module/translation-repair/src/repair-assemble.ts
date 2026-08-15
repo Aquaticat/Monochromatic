@@ -77,14 +77,15 @@ export function assembleRepair(
   }
 
   /**
-   * Slices whose repair SHIPPED, which is what the document carries rather than
-   * what any slice's own selection chose.
+   * How many slices the document CARRIES a repair for.
+   *
+   * Read off the guard's surviving replacements rather than recomputed from the
+   * outcomes, because the guard is what decides this. Reconstructing it from
+   * `changed` and the reverted list would agree today and would go on agreeing
+   * silently for exactly as long as those two stay in step.
    */
-  const changedOutcomes = outcomes.filter(function shipped(outcome,) {
-    return outcome.changed
-      && (!guarded.revertedChunkIndices
-        .includes(outcome.chunkIndex,));
-  },);
+  const shippedSliceCount = guarded.replacements
+    .length;
 
   /**
    * Whole-document issue report.
@@ -98,13 +99,13 @@ export function assembleRepair(
   /**
    * Whether any slice shipped a repair.
    */
-  const anyChanged = changedOutcomes.length > 0;
+  const anyChanged = shippedSliceCount > 0;
   // SLICES rather than chunks: both arrays hold slice outcomes, and a section
   // subdivides into several, so reporting them as chunks understates the
   // denominator against every other count in the artifact.
   l.info(
     `repair ${anyChanged ? 'shipped' : 'kept input'}: ${
-      String(changedOutcomes.length,)
+      String(shippedSliceCount,)
     }/${String(outcomes.length,)} slices changed, ${String(issues.length,)} issues`,
   );
 
