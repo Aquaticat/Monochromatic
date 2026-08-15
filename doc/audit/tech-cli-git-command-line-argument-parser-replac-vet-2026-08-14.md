@@ -429,7 +429,8 @@ or ranked.
 - Adjacent excerpt: module initialization copies `process.argv` into one exported array;
   `setArgs` and every reader mutate that shared array;
   the `--` token is merely not an option,
-  so later options continue to parse
+  so later options continue to parse;
+  `removePrefix` strips either one or two leading dashes before a custom reader sees the name
 - Counterevidence: arbitrary aliases,
   joined equals values,
   dash-led separated values,
@@ -591,6 +592,7 @@ option after positional;
 lone dash;
 `--` termination;
 joined equals value;
+exact short-versus-long prefix distinction;
 dash-led declared value;
 missing declared value;
 unknown plain option followed by a plain token;
