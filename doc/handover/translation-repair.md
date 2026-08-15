@@ -514,6 +514,16 @@ nothing:
 -   `PreparedDocumentPair` COULD CARRY THE PARSED INCUMBENT rather than having
     the guard reparse it. A performance note, not a correctness one, and the
     guard reparses per round anyway.
+-   A SLICE KEY COULD IN PRINCIPLE LAND IN ANOTHER LANE'S NAMESPACE.
+    `sliceFileName` writes `${prefix}${key}.json` and `belongsToNamespace`
+    defines the repair lane as everything NOT starting with a claimed prefix, so
+    a repair key beginning `translate.` would be written by one lane and adopted
+    by the other. Measured on what is actually on disk: every slice file in
+    every pass directory is a 64-character hex digest, so no key can carry a dot
+    at all, and the key derivation is what holds it. Recorded rather than
+    guarded for the same reason as the footnote-escape items: the population is
+    empty, and a guard here would be built against nothing. A key scheme that
+    stopped being a hex digest is what makes it real.
 -   AN EMPTY CRITIC ROSTER SETTLES A DOCUMENT INSTEAD OF REFUSING IT, found by
     fault injection while proving the guard tests fail (`#93`). Configuring zero
     critic models runs the repair lane end to end and returns an UNCHANGED
