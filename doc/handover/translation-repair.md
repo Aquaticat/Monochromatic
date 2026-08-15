@@ -3400,6 +3400,14 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   matchers include `toBe`, `toEqual`, `toStrictEqual`, `toContain`, `toHaveLength`, `toThrow`.
 - mise task wrappers swallow findings into inherited stdio:
   capture full output to a scratchpad file and `rg` it; tails alone mislead.
+- **Ghostty windows cannot be launched while the screen is locked**, which is
+  most of the time an overnight session runs. `ghostty -e <command>` starts a
+  live process that never spawns the command: the pty child is created on the
+  first GLArea resize, and a locked compositor never maps the window. There is
+  no error anywhere. Full diagnosis, the positive control that found it, and the
+  source citations: `doc/troubleshooting/ghostty-locked-session-no-command.md`.
+  So an interactive sol review in a visible window is something to launch while
+  the user is AWAKE; overnight, run `pi --print` into a file and read the file.
 - **A background command's exit code reports its LAST stage, not the task's.**
   A verification pipeline ending in `... | rg 'FAIL' || echo 'no failures'`
   exits 0 whether the suite passed or the lint failed, because `rg` finding
