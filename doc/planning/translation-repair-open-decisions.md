@@ -87,6 +87,33 @@ yesterday's state:
 -   A REPO-WIDE LINT GAP was measured while doing that, and it is a question for
     you rather than a defect: `doc/planning/unused-import-lint-policy.md`. It
     blocks nothing.
+-   THE EVENING OF THE 15TH went to the cache-key review and to the first two
+    landings of one-sided slicing. NONE OF IT ADDS A QUESTION, which is why it
+    is a list rather than a section: every choice in it was settled by a review,
+    by your ruling on the cache keys, or by the design already recorded in
+    `#100`. Decisions 23 to 25 carry the reasoning, and what changed is:
+    -   A SLICE'S CACHE KEY NO LONGER NAMES ITS POSITION, on both lanes, which
+        is the change you authorized to land while the window is free. A record
+        is now keyed by what was asked, and the answer to that question does not
+        depend on where in the document it was asked; a resumed record is
+        re-stamped with the index it is resumed under. Both caches were measured
+        empty first, so nothing was discarded.
+    -   A REFUSAL THAT NAMES A SLICE BY NUMBER IS NO LONGER STORED. It was the
+        one thing in a stored record that did depend on position, so it would
+        have survived the key change and reported the wrong slice number after a
+        resume. The number is now derived at the document level, where the
+        positions are known.
+    -   A COLD RUN AND A WARM ONE NOW BUY THE SAME THING. Both lanes memoized
+        every settled slice in process, including ones the cache deliberately
+        refused to persist, so a document with two identical sections bought one
+        of them on a cold run and two on a resumed one, and no count said so.
+    -   A CHUNK CAN NOW NAME A PLACE rather than only cover text, and assembly
+        refuses every placement shape that would move or overwrite existing
+        wording. Nothing produces such an anchor yet, deliberately: `#100` lands
+        the producers last, so by the time a section with no translation is
+        sliced, the assembly it flows into already refuses what it must.
+    -   THE BLANK LINE BETWEEN TWO BLOCKS HAS AN OWNER, which is assembly rather
+        than the prompt. This closes `#101`.
 
 ## Question 1: how wide should the producing rosters be
 
@@ -968,3 +995,61 @@ That ordering costs nothing, because C keeps B's denominator.
     selection fact, which stays true in that case and is a different thing. The
     translate lane already worked this way, so the invariant now holds by
     construction on both.
+23. A CACHE KEY NOW NAMES THE QUESTION AND NOT THE PLACE IT WAS ASKED. You
+    authorized the invalidation; the shape is mine and is open to veto. A key is
+    the run's shape, both slice texts and the governance flag, and the slice
+    index was in it for no reason a reader could defend: the same source and the
+    same incumbent produce the same answer wherever they sit, and one-sided
+    slicing moves indices around by design, so keeping it would have made every
+    slice after an inserted section a miss. A resumed record is RE-STAMPED with
+    the index it is resumed under, rather than trusted to carry its own, since
+    the stored one is now meaningless. What made this safe to do rather than
+    merely right was that nothing had settled under either lane's current
+    version, measured before the change: the translate cache was empty and the
+    repair one held no record under its current version.
+    THE ONE THING THAT DEPENDED ON POSITION was removed rather than kept: a
+    refusal sentence naming `slice 3` was being stored inside the record, so
+    after the key change it would have been resumed at another position and
+    reported the wrong slice number. The stored record now carries the finding
+    without the sentence, and the sentence is composed at the document level
+    where the positions are known.
+24. A CHUNK IS EITHER CONTENT OR A PLACE, and the discriminant is a FIELD rather
+    than emptiness. This is the first landing of `#100` and it changes nothing
+    that runs today, because nothing produces a place yet. Reasoning: a
+    `nodes.length === 0` test would work today and would silently promote any
+    fabricated empty chunk to an insertion tomorrow, while a field says what a
+    value is. An external review argued me out of my first shape, an optional
+    `placement` marker on one broad type, which buys the word without the
+    protection: an insertion would stay assignable everywhere content is
+    expected.
+    ONE RULE REFUSES EVERY BAD PLACEMENT, checked at assembly: each target span
+    starts at or after the previous one ends, walked in slice order. Overlaps, an
+    anchor sitting inside a span, two spans at one offset, backwards ranges and
+    stale text all fall out of it, and the review agreed there is no
+    offset-only counterexample once the per-slice shape checks pass. It also
+    found something I had not: array order is only slice order if the indices ARE
+    positions, which assembly never asserted, so two anchors at one boundary with
+    unique but shuffled indices would have been written in reverse.
+    WHAT IT LEFT OPEN, and I did not decide: whether a MISSING replacement for an
+    anchor should be refused the way a BLANK one now is. A blank one is refused
+    because an anchor is where a rendering belongs, so blank text there leaves
+    the passage missing while the run reports it delivered. A missing one cannot
+    be answered until the absent-incumbent work says whether assembly may ever
+    withdraw an anchor's replacement, since withdrawing one restores nothing.
+25. THE SEPARATOR BETWEEN TWO BLOCKS IS ASSEMBLY'S, NOT THE PROMPT'S. Every
+    replacement until now went into a span that already sat between the right
+    blank lines, so writing model text verbatim preserved them; an anchor has no
+    span, and verbatim text written before a heading produces `...afternoon.##
+    Habits`, which still parses as Markdown and says something else. A prompt
+    asking for correct leading and trailing blank lines is a hope that fails
+    silently, and it cannot be right anyway, since several fragments landing at
+    one boundary would each carry their own and put two between every pair.
+    THE RULES, all add-only: strip only outer blank-line material from a
+    fragment and keep its indentation, because a rendering that begins with
+    spaces is inside a list or a quote; join same-boundary fragments with one
+    blank line; preserve existing whitespace byte for byte and only top it up;
+    write the document's OWN line ending, which a Windows translation needs and a
+    diff would otherwise report as changes to lines nobody touched; and treat the
+    end of a file as termination rather than as separation from nothing. Four
+    existing test expectations changed, each of which had pinned the verbatim
+    write this replaces.
