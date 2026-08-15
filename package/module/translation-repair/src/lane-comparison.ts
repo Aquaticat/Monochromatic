@@ -184,8 +184,8 @@ function carriedText(
  *
  * @returns Same indices, as a set
  *
- * @throws LaneComparisonError when an index names no row, or names a row whose
- * accepted wording is the archive's own
+ * @throws LaneComparisonError when an index repeats, names no row, or names a
+ * row whose accepted wording is the archive's own
  *
  * @example
  * ```ts
@@ -205,8 +205,9 @@ function shippedSet(
 ): ReadonlySet<number> {
   if (new Set(shipped,).size !== shipped.length)
     throw new LaneComparisonError({
-      message: `${lane} lane names a slice as shipped more than once, and every `
-        + 'rate built on that set counts it twice',
+      message: `${lane} lane names a slice as shipped more than once; the `
+        + 'repeat is dropped by the set this becomes, so a count taken from the '
+        + 'list and a count taken from the set would disagree',
     },);
 
   /**
@@ -294,10 +295,15 @@ function judgeSlice(
  *
  * @param translate - translate lane's, over the SAME preparation
  *
- * @returns One row per slice, in document order
+ * @returns One row per slice, in the order the REPAIR lane reported its rows,
+ * which is document order wherever that lane built them from a preparation and
+ * is not re-sorted here
  *
- * @throws LaneComparisonError when the two results describe different
- * preparations, which makes every row a comparison of two different passages
+ * @throws LaneComparisonError when either lane repeats a slice, when a shipped
+ * index repeats or contradicts its own row, when one lane reports a slice the
+ * other does not, or when the two disagree about a slice's archive wording. The
+ * last of those is the only one that PROVES different preparations; the rest
+ * are shapes a single preparation cannot produce
  *
  * @example
  * ```ts

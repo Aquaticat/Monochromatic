@@ -215,6 +215,46 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a slate holding TWO candidates under the unchanged identifier, whichever '
+        + 'order they arrive in. Checking the first one found leaves the second free to carry an '
+        + 'edit, win on its measurements, and be reported as the candidate that changed nothing; '
+        + 'which of the two is checked would depend on slate order alone',
+      fn: async () => {
+        /** Honest archive entry. */
+        const archive: RepairCandidate = {
+          candidateId: UNCHANGED_CANDIDATE_ID,
+          text: UNCHANGED.text,
+          measurements: UNCHANGED_MEASUREMENTS,
+        };
+
+        /** Second entry wearing the same identifier, with an edit and a better case. */
+        const wearingTheName: RepairCandidate = {
+          candidateId: UNCHANGED_CANDIDATE_ID,
+          text: 'The cat naps in the warm sun.',
+          measurements: {
+            integrityOk: true,
+            resolvedHighSeverity: 3,
+            resolvedTotal: 3,
+            regressedKnownIssues: 0,
+            touchedRegionChars: 5,
+          },
+        };
+        expect(function honestFirst() {
+          selectRepairCandidate({
+            candidates: [archive, wearingTheName,],
+            incumbentText: UNCHANGED.text,
+          },);
+        },).toThrow('under the unchanged identifier',);
+        expect(function impostorFirst() {
+          selectRepairCandidate({
+            candidates: [wearingTheName, archive,],
+            incumbentText: UNCHANGED.text,
+          },);
+        },).toThrow('under the unchanged identifier',);
+      },
+    },),
+
+    it({
       name: 'ACCEPTS an unchanged candidate whose measurements say the ARCHIVE fails integrity, '
         + 'which is not a slate defect: an archive that does not parse is exactly the document '
         + 'this lane exists to repair, and refusing the slate would refuse the repair with it',

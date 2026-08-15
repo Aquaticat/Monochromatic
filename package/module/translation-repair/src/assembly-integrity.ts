@@ -504,15 +504,20 @@ export function guardFootnoteAssembly(
             + `${finding.identifier} (round ${String(round + 1,)})`,
         );
       }
-      // Recorded in the SAME round the withdrawal happens, not left to the next
-      // one. A regression the withdrawal happens to fix as well never reaches
-      // another round, so without this the document reports only the footnote
-      // it was blamed for and the parse damage disappears from the findings.
-      // Attribution is by the identifier, so these name no slice: what is
-      // certain is that this round's withdrawal is what answered them.
+      // Recorded in the SAME round it is SEEN, not left to the next one. A
+      // regression this round's withdrawal happens to answer as well never
+      // reaches another round, so without this the document reports only the
+      // footnote that was blamed and the parse damage leaves no trace at all.
+      //
+      // OBSERVED rather than reverted, and the difference is not pedantry.
+      // What this round withdraws is whatever a FOOTNOTE identifier named;
+      // whether that also answers the parse regression is unknown until the
+      // next round splices what is left. A regression that survives is
+      // reported again by the unattributable branch, which is what actually
+      // withdraws for it.
       for (const kind of regressions) {
         findings.push(
-          `assembly-structure-reverted ${kind} (round ${String(round + 1,)})`,
+          `assembly-structure-observed ${kind} (round ${String(round + 1,)})`,
         );
       }
       withdrawn.push(...culprits,);

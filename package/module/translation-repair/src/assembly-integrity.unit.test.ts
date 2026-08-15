@@ -696,11 +696,14 @@ On the windowsill there is being a bird.
     },),
 
     it({
-      name: 'RECORDS a structural regression the same round it is withdrawn, '
-        + 'even when a footnote took the blame. Withdrawing the slice answers '
-        + 'both defects at once, so no later round sees the regression, and '
-        + 'before this the document reported only the footnote while the parse '
-        + 'damage left no trace at all',
+      name: 'RECORDS a structural regression the same round it is SEEN, even '
+        + 'when a footnote took the blame for the withdrawal. Withdrawing that '
+        + 'slice answers both defects at once here, so no later round sees the '
+        + 'regression, and before this the document reported only the footnote '
+        + 'while the parse damage left no trace. The finding says OBSERVED '
+        + 'rather than reverted, because what this round withdraws is what an '
+        + 'identifier named, and whether that answers the regression too is '
+        + 'unknown until the next round',
       fn: async () => {
         /**
          * Slices of the fixture pair.
@@ -731,7 +734,7 @@ On the windowsill there is being a bird.
           },),).toBe(true,);
         expect(guarded.findings
           .some(function namesStructure(finding,): boolean {
-            return finding.startsWith('assembly-structure-reverted mdx-downgraded',);
+            return finding.startsWith('assembly-structure-observed mdx-downgraded',);
           },),).toBe(true,);
         // Attributed, so the blanket withdrawal never ran: the distinction
         // matters because that branch already reported structural damage.

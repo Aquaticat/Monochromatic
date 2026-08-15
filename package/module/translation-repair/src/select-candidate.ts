@@ -248,10 +248,12 @@ export function winnerChangedText(
  * was needed here", and one carrying some other wording would win ties on the
  * strength of a name while shipping an edit nobody ranked.
  *
- * Its MEASUREMENTS are deliberately not checked. `UNCHANGED_MEASUREMENTS` calls
- * the archive intact by definition, and an archive that genuinely fails an
- * integrity check has to stay expressible: refusing that slate would refuse the
- * document this lane exists to repair.
+ * Its MEASUREMENTS are deliberately not checked, so a caller MAY hand in an
+ * archive measured honestly rather than intact by definition. THE REPAIR PATH
+ * DOES NOT: `settleChunkVerdict` always passes `UNCHANGED_MEASUREMENTS`, whose
+ * `integrityOk` is true, so a malformed archive competes today as though it
+ * parsed. Measuring it is a behaviour change rather than a check, and it is
+ * recorded rather than taken here.
  *
  * @param candidates - competing candidates including the unchanged one
  *
@@ -278,16 +280,34 @@ export function selectRepairCandidate(
   },
 ): CandidateSelection {
   /**
-   * Slate entry claiming to be the archive as it stands.
+   * Slate entries claiming to be the archive as it stands.
+   *
+   * Collected rather than found, because finding the first would let a SECOND
+   * entry wear the same identifier: it would be ranked, could win on better
+   * measurements, and would be reported as the candidate that changed nothing
+   * while carrying an edit. Which of the two `find` returned would depend only
+   * on slate order.
    */
-  const unchanged = candidates.find(function isUnchanged(candidate,) {
+  const claimingUnchanged = candidates.filter(function isUnchanged(candidate,) {
     return candidate.candidateId === UNCHANGED_CANDIDATE_ID;
   },);
-  if (unchanged === undefined) {
+  if (claimingUnchanged.length === 0) {
     throw new Error(
       'candidate slate must include the unchanged translation; it always competes',
     );
   }
+  if (claimingUnchanged.length > 1) {
+    throw new Error(
+      `candidate slate holds ${
+        String(claimingUnchanged.length,)
+      } candidates under the unchanged identifier, so winning it would say nothing`,
+    );
+  }
+
+  /**
+   * That one entry.
+   */
+  const unchanged = nonNullishOrThrow(claimingUnchanged[0],);
   if (unchanged.text !== incumbentText) {
     throw new Error(
       'unchanged candidate carries wording other than the archive text, so the '

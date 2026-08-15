@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
 import {
   type RefinePhaseResult,
   runRefinePhase,
@@ -36,6 +37,16 @@ import type {
  * A run whose slices were all resumed and whose lane found nothing to rewrite
  * still finishes under an abort, which is the slice loop's own rule: what a
  * stopped run cannot do is BUY what it is missing.
+ *
+ * THE SECOND RULE IS COARSER THAN THAT DESCRIPTION, and the difference is a
+ * real outcome rather than a caveat. `askedRewriters` says the lane asked
+ * somebody something, not that anything was lost, so a refinement that
+ * COMPLETED and was then overtaken by an abort fails here as well. Telling
+ * those apart needs the phase to report whether an exchange was abandoned,
+ * which it cannot today: every stage swallows a failed voice by design. The
+ * coarse rule errs toward failing an entry whose work is finished, which costs
+ * the entry a retry; the alternative errs toward returning a document that was
+ * cut short as though it were whole, which costs a corpus a wrong artifact.
  *
  * @param client - injected model client
  *
@@ -116,6 +127,47 @@ export async function refineSettledSlices(
   })();
   if (phase.askedRewriters)
     signal.throwIfAborted();
+
+  /**
+   * Archive wording of every prepared slice, so a refined outcome is held to
+   * the same rule its accuracy predecessor was held to before it was cached.
+   */
+  const incumbentByIndex = new Map(slices.map(function toEntry(slice,): [
+    number,
+    string,
+  ] {
+    return [
+      slice.target
+        .chunkIndex,
+      slice.target
+        .text,
+    ];
+  },),);
+
+  // CHECKED HERE TOO, because refinement REPLACES the outcome that was checked
+  // before the cache write. Nothing else looks at these: assembly reads only
+  // the changed ones, so a refined outcome denying a change it made drops its
+  // own wording in silence, which is the direction no later check can see.
+  for (const outcome of phase.outcomes) {
+    /**
+     * Archive wording of this outcome's slice.
+     */
+    const incumbentText = incumbentByIndex.get(outcome.chunkIndex,);
+    if (incumbentText === undefined) {
+      throw new Error(
+        `refinement returned slice ${
+          String(outcome.chunkIndex,)
+        }, which this preparation never produced`,
+      );
+    }
+    assertSettledRecordAgrees({
+      lane: 'repair',
+      chunkIndex: outcome.chunkIndex,
+      changed: outcome.changed,
+      decidedText: outcome.repairedText,
+      incumbentText,
+    },);
+  }
   return phase;
 }
 
