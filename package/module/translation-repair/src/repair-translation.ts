@@ -25,11 +25,17 @@ import {
 } from './repair-record.ts';
 import { repairReplacements, } from './repair-replacements.ts';
 import type { SliceCache, } from './slice-cache.ts';
-import { spliceSlices, } from './splice-slices.ts';
+import { assembleRepair, } from './repair-assemble.ts';
+import type { RepairTranslationResult, } from './repair-result.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
 } from './repair-contract.ts';
+
+export {
+  type RepairStatus,
+  type RepairTranslationResult,
+} from './repair-result.ts';
 
 //region Repair translation
 // The batch driver over the whole loop: parse, align into chunk pairs, run
@@ -180,61 +186,6 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * why the version has to move rather than the structural guard catching it.
  */
 const SLICE_CACHE_VERSION = 25;
-
-/**
- * Completion status of one repair run;
- * never an unqualified "corrected translation".
- *
- * @example
- * ```ts
- * const status: RepairStatus = 'repaired';
- * ```
- */
-export type RepairStatus =
-  | 'repaired'
-  | 'unchanged'
-  | 'blocked-non-translation';
-
-/**
- * Output contract of the batch driver.
- *
- * @example
- * ```ts
- * const { repairedText, status, issues, } = await repairTranslation({ ... },);
- * ```
- */
-export type RepairTranslationResult = {
-  /**
-   * Best translation the run can justify;
-   * equals the input when nothing demonstrably beat it.
-   */
-  readonly repairedText: string;
-
-  /**
-   * How the run ended.
-   */
-  readonly status: RepairStatus;
-
-  /**
-   * Every adjudicated issue with its chunk and resolution fate.
-   */
-  readonly issues: readonly RepairIssueRecord[];
-
-  /**
-   * Alignment and stage findings in scorecard-stable wording.
-   */
-  readonly findings: readonly string[];
-
-  /**
-   * Per-chunk critic calibration: who answered, and who raised each claim.
-   *
-   * Separate from {@link RepairTranslationResult.issues} because a chunk whose
-   * critics raised nothing produces no issue record, and that chunk is exactly
-   * the one a rate needs: it is the difference between a critic that was asked
-   * and stayed quiet and a critic that was never asked.
-   */
-  readonly chunkCritics: readonly ChunkCriticRecord[];
-};
 
 /**
  * Repairs one ALREADY PREPARED document pair.
@@ -551,66 +502,19 @@ export async function repairPreparedDocument(
    */
   const finalOutcomes = phase.outcomes;
 
-  /**
-   * Slices whose shipped text differs from the input.
-   */
-  const changedOutcomes = finalOutcomes.filter(function isChanged(outcome,) {
-    return outcome.changed;
-  },);
-
-  /**
-   * Translation rebuilt slice by slice.
-   */
-  const repairedText = spliceSlices({
+  return assembleRepair({
     targetText,
     slices,
-    replacements: repairReplacements({ outcomes: finalOutcomes, },),
-  },);
-
-  /**
-   * Whole-document issue report.
-   */
-  const issues = buildIssueRecords({
     outcomes: finalOutcomes,
-    blocked: false,
+    findings: [
+      ...alignmentFindings,
+      ...finalOutcomes.flatMap(function toFindings(outcome,) {
+        return outcome.findings;
+      },),
+      ...phase.findings,
+    ],
+    l: rl,
   },);
-
-  /**
-   * Findings across alignment and every chunk.
-   */
-  const findings = [
-    ...alignmentFindings,
-    ...finalOutcomes.flatMap(function toFindings(outcome,) {
-      return outcome.findings;
-    },),
-    ...phase.findings,
-  ];
-
-  /**
-   * Whether any slice shipped a repair.
-   */
-  const anyChanged = changedOutcomes.length > 0;
-  // SLICES rather than chunks: both arrays hold slice outcomes, and a section
-  // subdivides into several, so reporting them as chunks understates the
-  // denominator against every other count in the artifact.
-  rl.info(
-    `repair ${anyChanged ? 'shipped' : 'kept input'}: ${
-      String(changedOutcomes.length,)
-    }/${String(finalOutcomes.length,)} slices changed, ${String(issues.length,)} issues`,
-  );
-
-  /**
-   * Per-chunk critic calibration for the artifact.
-   */
-  const chunkCritics = buildChunkCriticRecords({ outcomes: finalOutcomes, },);
-
-  return {
-    chunkCritics,
-    repairedText,
-    status: anyChanged ? 'repaired' : 'unchanged',
-    issues,
-    findings,
-  };
 }
 
 /**

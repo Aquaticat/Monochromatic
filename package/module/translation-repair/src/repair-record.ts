@@ -43,9 +43,13 @@ export type RepairDisposition =
    */
   | 'not-selected'
   /**
-   * A replaced region served this issue and its slice was repaired, but the
-   * document was blocked for non-translation and returned its input, which
-   * withdraws every slice repair at once.
+   * A replaced region served this issue and its slice was repaired, and the
+   * document took that repair back: either it was blocked for non-translation
+   * and returned its input, which withdraws every slice at once, or the
+   * assembly guard withdrew this slice to keep a footnote relation whole.
+   *
+   * Either way the repair reached no reader, which is what a measurement over
+   * these records has to see.
    */
   | 'withdrawn'
   /**
@@ -246,6 +250,10 @@ function judgeDisposition(
  * @param blocked - whether the run returned its input for non-translation, in
  * which case no slice repair reached the reader whatever its slice decided
  *
+ * @param withdrawnChunkIndices - slices whose repair the assembly guard took
+ * back, whose issues reached no reader for the same reason a blocked document's
+ * did; absent means none were
+ *
  * @returns One record per adjudicated issue, in slice then issue order
  *
  * @example
@@ -257,12 +265,24 @@ export function buildIssueRecords(
   {
     outcomes,
     blocked,
+    withdrawnChunkIndices = [],
   }: {
     readonly outcomes: readonly ChunkRepairOutcome[];
     readonly blocked: boolean;
+    readonly withdrawnChunkIndices?: readonly number[];
   },
 ): readonly RepairIssueRecord[] {
+  /**
+   * Slices the assembly guard took back, for membership tests.
+   */
+  const withdrawn = new Set(withdrawnChunkIndices,);
+
   return outcomes.flatMap(function toRecords(outcome,) {
+    /**
+     * Whether this slice's repair reached the document at all, which a blocked
+     * run and a withdrawn slice both answer no to.
+     */
+    const reachedNobody = blocked || withdrawn.has(outcome.chunkIndex,);
     return outcome.issues
       .map(function toRecord(issue,): RepairIssueRecord {
         /**
@@ -289,14 +309,14 @@ export function buildIssueRecords(
         return {
           chunkIndex: outcome.chunkIndex,
           issue,
-          resolved: (!blocked)
+          resolved: (!reachedNobody)
             && outcome.resolvedIssueIds
             .includes(issue.issueId,),
           repairRegions: regions,
           repairDisposition: judgeDisposition({
             regions,
             accuracyPatchSelected: outcome.accuracyPatchSelected,
-            blocked,
+            blocked: reachedNobody,
           },),
           refined: outcome.refined,
           ...(probed.length === 0

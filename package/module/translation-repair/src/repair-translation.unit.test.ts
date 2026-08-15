@@ -984,6 +984,74 @@ Meow meow meow meow.
     },),
 
     it({
+      name: 'WITHDRAWS a repair that would break a footnote spanning two '
+        + 'slices, and records its issue as withdrawn rather than shipped. The '
+        + 'per-envelope footnote gate cannot see this: the definition lives in '
+        + 'a slice the editor was never shown',
+      fn: async () => {
+        /**
+         * Original whose first section carries a marker and whose last carries
+         * the note it points at.
+         */
+        const sourceWithNote = `## 甲
+
+猫猫喜欢在窗台上晒太阳。猫猫也喜欢追蝴蝶〔1〕。
+
+## 注
+
+〔1〕：那是它最喜欢的活动。
+`;
+
+        /**
+         * Translation with the same footnote pair, split the same way.
+         */
+        const targetWithNote = `## Alpha
+
+The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
+
+## Notes
+
+[^1]: That is its favourite activity.
+`;
+
+        /**
+         * Issue whose quote CONTAINS the marker, so the envelope cut for it
+         * covers the marker and the editor's replacement drops it.
+         */
+        const markerBearingIssue = {
+          category: 'accuracy/mistranslation',
+          severity: 'major',
+          summary: 'Chasing butterflies is rendered as hating them.',
+          sourceQuote: '猫猫也喜欢追蝴蝶〔1〕。',
+          targetQuote: 'The cat hates butterflies[^1].',
+        };
+
+        /**
+         * Run whose only accepted repair would orphan the definition.
+         */
+        const result = await repairTranslation({
+          client: scriptedClient({ criticIssues: [markerBearingIssue,], },),
+          sourceText: sourceWithNote,
+          targetText: targetWithNote,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        // The document keeps the archive's text, marker and all.
+        expect(result.repairedText,).toContain('The cat hates butterflies[^1].',);
+        expect(result.status,).toBe('unchanged',);
+        expect(result.findings
+          .some(function namesWithdrawal(finding,) {
+            return finding.startsWith('assembly-footnote-',);
+          },),).toBe(true,);
+        // The issue may not be credited: no reader ever saw that repair.
+        for (const record of result.issues) {
+          expect(record.repairDisposition,).toBe('withdrawn',);
+          expect(record.resolved,).toBe(false,);
+        }
+      },
+    },),
+
+    it({
       name: 'THROWS on a caller abort part way through a document, and caches '
         + 'nothing for the slices it never bought. Every abandoned exchange '
         + 'reaches the stages as silence, so an unguarded driver files "no '
