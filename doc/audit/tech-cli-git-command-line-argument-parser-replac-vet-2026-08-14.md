@@ -1,7 +1,7 @@
 # cli-git command-line argument parser replacement vet report
 
 - Status: in progress
-- Lifecycle phase: discovered
+- Lifecycle phase: serious alternatives screened; targeted runtime confirmation pending
 - Subject: cli-git command-line argument parser replacement
 - Decision scope: evaluate `jackspeak`, `type-flag`, and `argue-cli` as replacements for cli-git's handwritten
   Git argv region parser and management parser; evaluate no unnamed alternative
@@ -13,13 +13,14 @@
 - Compatibility fingerprint: `a184aef37ab9cd54b2c0c28a9c662b6957497ef1c031852a589555c05b0bd8bb`
 - Active audit owner: Pi process `298127`
 - Prior compatible report: none found under `doc/audit/`
+- Related incompatible report: `doc/audit/tech-cli-git-parser-migration-to-cac-vet-2026-08-14-a48b54e2.md`
 
 ## Context
 
 Cli-git is a published ESM package targeting Node `^22.18.0 || >=24.11.0`.
-Its PATH-shadowing `git` executable parses partially declared Git option surfaces before policy decisions that can block or
-transform destructive operations (`package/git-policy/cli/package.json:1-45` and
-`package/git-policy/cli/README.md:1-22`).
+Its PATH-shadowing `git` executable parses partially declared Git option surfaces
+before policy decisions that can block or transform destructive operations
+(`package/git-policy/cli/package.json:1-45` and `package/git-policy/cli/README.md:1-22`).
 
 The incumbent `parseArgv` implementation has eight production consumer modules and eleven production call sites,
 measured with repository-wide import and call searches on 2026-08-14.
@@ -50,6 +51,11 @@ The replacement reduced that complete wrapper case to 0.89 seconds.
 This historical measurement is recorded in commit `4879a44e6a2460ab3c2531744e24a1f2aef27aeb`.
 It is not yet a current candidate benchmark.
 
+The related CAC-only audit is incompatible with this report's candidate set and is not reopened or ranked here.
+Its incumbent inventory corroborates that the closed management grammar and partially declared forwarded-Git regions are
+different parser roles.
+No CAC evidence is applied to a named candidate.
+
 Keeping the incumbent is a parity baseline required by the replacement overlay.
 It is not added to the user-limited alternative set and will not be scored as a named alternative.
 
@@ -74,7 +80,8 @@ finds such a boundary.
 - ESM works on Node `^22.18.0 || >=24.11.0` without native, Wasm, or prebuilt runtime code.
 - Supplied argv parsing does not mutate ambient environment or require ambient `process.argv`.
 - Replacement removes the incumbent token scan rather than recreating an equivalent handwritten scan in an adapter.
-- Declared value options accept separated dash-led values and joined equals values, and expose missing values as failure.
+- Declared value options accept separated dash-led values and joined equals values,
+  and expose missing values as failure.
 - Parsing accepts declared options after positionals and preserves repeated flag counts and option-value order.
 - Parsing preserves exact `--` termination and bare `-` positional behavior.
 - Partial Git schemas retain unknown plain and joined options without rejecting valid forwarded Git syntax or treating a
@@ -132,7 +139,8 @@ Pagination: exact records have no cursor.
 - exact release tag and source revision for each package;
 - repository metadata, releases, security policy, workflows, and default branch;
 - issues created or updated from 2025-08-14 through 2026-08-14;
-- ten most recently updated pull requests when at least ten exist, otherwise every available pull request in that period;
+- ten most recently updated pull requests when at least ten exist,
+  otherwise every available pull request in that period;
 - maintenance publication path from tag to npm artifact.
 
 Filters: exact repository and access-date window.
@@ -170,6 +178,88 @@ The expansion round is frozen; later vocabulary will not add searches.
 Filters: `package/git-policy/cli` plus repository documentation.
 Sort and pagination: not applicable to repository text and history searches.
 
+## Query ledger and saturation
+
+### Package registry and ecosystem index
+
+The three exact npmx pages each resolved one user-named package and its stable version.
+No page added a candidate because the user fixed the set.
+Exact npm registry records then resolved source repositories,
+license identifiers,
+runtime metadata,
+published tarball integrity,
+and package signatures.
+
+- `jackspeak@4.2.3` identifies source commit
+  `a58b42f39e2fb04b28b8169005a5ddbc3302730e` and a seventeen-file tarball.
+- `type-flag@4.5.0` identifies source commit
+  `6e0c46911ea64c829459a27bfaf1b45e8e335869`, a seven-file tarball,
+  trusted GitHub publisher,
+  and SLSA provenance.
+- `argue-cli@3.1.0` identifies a nineteen-file tarball but publishes neither `gitHead` nor a provenance attestation.
+
+Each exact registry record is exhausted without pagination.
+The downloaded tarballs match their registry SHA-512 integrity values.
+
+### Repository host
+
+All three exact repositories were cloned at the stable-version source revision.
+Source,
+tests,
+workflows,
+release metadata,
+security-policy presence,
+twelve-month issue activity,
+twelve-month commit activity,
+and the required pull-request sample were inspected.
+
+Maintenance samples:
+
+- Jackspeak had two issues and two pull requests updated in the twelve-month window,
+  so all were inspected.
+- Type-flag had four issues and fifty-three pull requests updated in the window;
+  every issue and the ten most recently updated pull requests were inspected.
+- Argue had one issue and thirty-nine pull requests updated in the window;
+  that issue and the ten most recently updated pull requests were inspected.
+
+Exact release-commit check runs were inspected for each candidate.
+No repository contains a security policy,
+fuzz harness,
+or mutation harness.
+The broader source and test searches completed without a negative filter.
+
+### Broader web evidence
+
+Each of the seven frozen searches returned ten results through the configured provider.
+The results consistently led back to official npm metadata,
+source repositories,
+release pages,
+and exact source files.
+The three-way comparison query produced no direct comparison of all named candidates.
+Several Argue results referred to a different repository with the same ordinary word;
+those were category mismatches and were not evaluated.
+The provider exposes no page cursor through this harness.
+Exact registry and repository enumeration independently completed the named-candidate evidence class.
+
+### This repository
+
+Uncapped source and history searches found eight production consumer modules and eleven production call sites for the
+shared parser.
+They also found the completed CAC-only report and handover.
+Those incompatible-scope documents added incumbent parity evidence but no candidate.
+No current manifest or lockfile declares any of the three named alternatives for cli-git.
+
+### Terminal discovery result
+
+Discovery is saturated with the three user-named candidates.
+All three pass initial category,
+license,
+source-availability,
+and runtime-platform screening and advance to targeted semantic evidence.
+No unnamed technology was discovered,
+screened,
+or ranked.
+
 ## Candidate ledger
 
 ### jackspeak
@@ -181,7 +271,8 @@ Sort and pagination: not applicable to repository text and history searches.
 - Overlays: replacement, high-trust, human-auditability, multi-platform
 - Clone: `~/temp/agent/jackspeak-2026-08-14`
 - Pinned revision: `a58b42f39e2fb04b28b8169005a5ddbc3302730e`, tag `v4.2.3`
-- Screening state: discovered; hard-gate evidence pending
+- Screening state: serious alternative; initial license, source, runtime, and provenance gates pass;
+  partial-Git semantic risk awaits runtime confirmation
 
 ### type-flag
 
@@ -192,7 +283,8 @@ Sort and pagination: not applicable to repository text and history searches.
 - Overlays: replacement, high-trust, human-auditability, multi-platform
 - Clone: `~/temp/agent/type-flag-2026-08-14`
 - Pinned revision: `6e0c46911ea64c829459a27bfaf1b45e8e335869`, tag `v4.5.0`
-- Screening state: discovered; hard-gate evidence pending
+- Screening state: serious alternative; initial license, source, runtime, and provenance gates pass;
+  partial-Git semantic risk awaits runtime confirmation
 
 ### argue-cli
 
@@ -203,7 +295,8 @@ Sort and pagination: not applicable to repository text and history searches.
 - Overlays: replacement, high-trust, human-auditability, multi-platform
 - Clone: `~/temp/agent/argue-cli-2026-08-14`
 - Pinned revision: `45db68f4acce979d0ba725ae83e320a0e906165a`, tag `v3.1.0`
-- Screening state: discovered; hard-gate evidence pending
+- Screening state: serious alternative; license, source-map-to-tag mapping, and runtime gates pass;
+  build provenance and partial-Git semantics await targeted confirmation
 
 ## Evidence records
 
@@ -229,19 +322,314 @@ Sort and pagination: not applicable to repository text and history searches.
 - Gate: replacement parity and scored performance concern
 - Status: historical evidence, current reproduction pending
 - Primary source: commit message and diff for `4879a44e6a2460ab3c2531744e24a1f2aef27aeb`, accessed 2026-08-14
-- Counterevidence limit: the recorded 0.89 second result measures the complete wrapper, not parser-only cost or current hardware
+- Counterevidence limit: the recorded 0.89 second result measures the complete wrapper,
+  not parser-only cost or current hardware
 - Outcome: benchmark shape retained; historical timings will not be used as candidate scores
+
+### Jackspeak source record J1
+
+- Candidate: `jackspeak@4.2.3`, commit `a58b42f39e2fb04b28b8169005a5ddbc3302730e`
+- Claim: Jackspeak is a closed-schema parser that rejects every undeclared option even though it invokes
+  `util.parseArgs` with `strict: false`
+- Relevance: cli-git intentionally declares only guard-relevant subsets of Git's evolving grammar
+- Gate: replacement parity and high-trust semantic fit
+- Status: potential hard failure pending published-artifact confirmation
+- Primary source: clone `~/temp/agent/jackspeak-2026-08-14`,
+  `src/index.ts:701-816`, accessed 2026-08-14
+- Adjacent excerpt: `parseRaw` iterates option tokens and throws `Unknown option` whenever no config field owns the name
+- Counterevidence: required-value failure,
+  repeat collection,
+  options after positionals,
+  and `--` handling are implemented by Node's parser
+- Outcome: retaining valid unknown Git options would require declaring the complete Git grammar or reparsing raw argv
+
+### Jackspeak package and auditability record J2
+
+- Candidate: `jackspeak@4.2.3`
+- Claim: runtime is inspectable and platform-compatible but has the largest audited surface in this set
+- Gate: license, provenance, dependency surface, human auditability, and multi-platform
+- Status: pass for screening; scored concern if semantics survive
+- Primary metadata: <https://registry.npmjs.org/jackspeak/4.2.3>, accessed 2026-08-14
+- Artifact integrity: registry and measured integrity
+  `sha512-ykkVRwrYvFm1nb2AJfKKYPr0emF6IiXDYUaFx4Zn9ZuIH7MrzEZ3sD5RlqGXNRpHtvUHJyOnCEFxOlNDtGo7wg==`
+- Source mapping: published ESM source map contains byte-identical `src/index.ts`
+- License: BlueOak-1.0.0; distribution must retain license text or link
+- Runtime graph: one same-author dependency,
+  `@isaacs/cliui@9.0.0`, with no further runtime dependencies and no native,
+  Wasm,
+  downloaded,
+  filesystem,
+  network,
+  or process-execution boundary
+- Measured production source: 1,066 code lines in Jackspeak plus 1,014 code lines in eight cliui files
+- Platform evidence: release commit passed Node 20 and 22 on Ubuntu,
+  macOS,
+  and Windows under Bash and PowerShell
+- Test evidence: strict TypeScript and direct parsing tests; no fuzzing or mutation harness
+- Outcome: screening pass
+
+### Type-flag source record T1
+
+- Candidate: `type-flag@4.5.0`, commit `6e0c46911ea64c829459a27bfaf1b45e8e335869`
+- Claim: stable type-flag does not implement cli-git's declared-value or unknown-option token roles
+- Relevance: dash-led values and unknown option arity directly affect policy facts
+- Gate: replacement parity and high-trust semantic fit
+- Status: potential hard failure pending published-artifact confirmation
+- Primary source: clone `~/temp/agent/type-flag-2026-08-14`,
+  `src/argv-iterator.ts:46-122` and `src/type-flag.ts:40-140`, accessed 2026-08-14
+- Adjacent excerpt: seeing a new flag first invokes any pending value callback with `undefined`;
+  string parsing then applies the parser to `''`
+- Counterevidence: `--` termination,
+  options after positionals,
+  short groups,
+  joined values,
+  repeated typed values,
+  and an unknown-flags result are implemented
+- Outcome: `-m -a` cannot preserve `-a` as the declared message value,
+  and `--message` at end cannot be distinguished from explicit empty value;
+  unknown plain options and following positionals are returned in separate normalized collections
+  rather than one ordered token sequence
+
+### Type-flag package and auditability record T2
+
+- Candidate: `type-flag@4.5.0`
+- Claim: package has the strongest publication provenance and no runtime dependency
+- Gate: license, provenance, dependency surface, human auditability, and multi-platform
+- Status: pass for screening
+- Primary metadata: <https://registry.npmjs.org/type-flag/4.5.0>, accessed 2026-08-14
+- Artifact integrity: registry and measured integrity
+  `sha512-1aLzxcL6u1O9XHieAJBBX9U4QzwzDTWN0ER9M7QQSvS24NBmGM+N8FcghlgHAzOvDlEEpOx4hEml9CVcDnflcw==`
+- Provenance: npm SLSA attestation binds that digest to the exact repository and commit
+- License and runtime: MIT,
+  no runtime dependency,
+  and no native,
+  Wasm,
+  downloaded,
+  filesystem,
+  network,
+  or process-execution boundary
+- Measured production source: 626 code lines in eight files
+- Platform evidence: release commit passed its Ubuntu workflow on the repository Node version and Node 18;
+  no upstream macOS or Windows job exists
+- Test evidence: extensive parsing and type tests plus an upstream benchmark;
+  no fuzzing or mutation harness
+- Outcome: screening pass
+
+### Argue source record A1
+
+- Candidate: `argue-cli@3.1.0`, commit `45db68f4acce979d0ba725ae83e320a0e906165a`
+- Claim: Argue scans known options out of process-global mutable argv but does not model option termination,
+  occurrence counts,
+  or ordered unknown-option facts
+- Relevance: cli-git calls the shared parser repeatedly as a pure function and must preserve exact token roles
+- Gate: replacement parity,
+  process integration,
+  and high-trust semantic fit
+- Status: potential hard failure pending published-artifact confirmation
+- Primary source: clone `~/temp/agent/argue-cli-2026-08-14`,
+  `src/argv.ts:1-24` and `src/options.ts:1-109`, accessed 2026-08-14
+- Adjacent excerpt: module initialization copies `process.argv` into one exported array;
+  `setArgs` and every reader mutate that shared array;
+  the `--` token is merely not an option,
+  so later options continue to parse
+- Counterevidence: arbitrary aliases,
+  joined equals values,
+  dash-led separated values,
+  unknown-token preservation in leftover argv,
+  and options after positionals work
+- Outcome: an adapter would need a second token-role scan to separate unknown options from positionals and implement
+  termination and counts
+
+### Argue package and auditability record A2
+
+- Candidate: `argue-cli@3.1.0`
+- Claim: package has the smallest source surface but weaker release provenance and platform coverage
+- Gate: license, provenance, dependency surface, human auditability, and multi-platform
+- Status: pass for source mapping; build provenance remains lower confidence
+- Primary metadata: <https://registry.npmjs.org/argue-cli/3.1.0>, accessed 2026-08-14
+- Artifact integrity: registry and measured integrity
+  `sha512-DhBpBfXL4SS2uC0N922MMajKR3CdrTG0u2or1PNYgXMsrSzViJrbtvT0nCLlLGUI0plam/ZZCs7aAauHtW9thw==`
+- Source mapping: published source map embeds byte-identical copies of all five runtime implementation files from the
+  release tag
+- Provenance limit: registry metadata has no `gitHead` and no SLSA attestation;
+  release workflow uses a mutable `@latest` action
+- License and runtime: MIT,
+  Node `>=22`,
+  no runtime dependency,
+  and no native,
+  Wasm,
+  downloaded,
+  filesystem,
+  network,
+  or process-execution boundary
+- Measured production source: 298 code lines in seven files
+- Platform evidence: release commit passed type and unit jobs on Ubuntu and Node 24;
+  no upstream macOS or Windows job exists
+- Test evidence: direct unit and type tests with reported 98.34 percent line coverage;
+  no `--` terminator case,
+  fuzzing,
+  or mutation harness
+- Outcome: source screening pass; reproducible build would be required only if semantic validation survives
+
+### Maintenance record M1
+
+- Candidates: all three stable releases, activity window 2025-08-14 through 2026-08-14
+- Gate: maintenance and release confidence
+- Status: scored concern, not a hard gate
+- Primary evidence: GitHub issue,
+  pull-request,
+  review,
+  event,
+  commit,
+  release,
+  and check-run APIs, accessed 2026-08-14
+- Jackspeak: eleven commits,
+  all maintainer-authored during 2026-02-05 to 2026-02-07;
+  two sampled issues received one maintainer comment total;
+  two sampled pull requests received three maintainer comments and neither merged
+- Type-flag: fifty-four commits,
+  thirty-two maintainer-authored,
+  twenty-one Renovate-authored,
+  and one externally authored;
+  sampled issues received three maintainer comments during the window plus closure and release-label actions;
+  eight of ten sampled pull requests were maintainer-authored and self-merged in 1,259 to 217,650 seconds with no review
+- Argue: twenty-two commits,
+  twenty maintainer-authored and two automation-authored;
+  the only sampled issue was Renovate's dashboard;
+  the ten most recently updated pull requests were all open Renovate updates with no maintainer comment,
+  review,
+  or merge
+- Release context: Jackspeak published 4.2.3 in February 2026;
+  type-flag published multiple stable releases through 4.5.0 and continued 5.0 prereleases;
+  Argue published 3.0.0 and 3.1.0 in July 2026 after its previous 2022 release
+- Security evidence: exact GitHub Advisory Database queries returned no advisory affecting any exact package version;
+  no candidate repository publishes a security policy
+- Outcome: type-flag has the strongest current release activity,
+  but every candidate has single-maintainer concentration
 
 ## Execution manifests
 
-No candidate code has been installed or executed.
-Source clones were created for static inspection only.
-Execution manifests will be added after lifecycle scripts, test commands, generated commands, and subprocess boundaries are
-inspected.
+### Published-artifact semantic matrix
+
+Candidates and pinned artifacts:
+
+- `jackspeak@4.2.3`, measured tarball SHA-512 from record J2;
+- `type-flag@4.5.0`, measured tarball SHA-512 from record T2;
+- `argue-cli@3.1.0`, measured tarball SHA-512 from record A2.
+
+Top-level command:
+
+```text
+podman run \
+  --memory=2g \
+  --cpus=2 \
+  --pids-limit=128 \
+  --ulimit nofile=1024:1024 \
+  --rm \
+  --network none \
+  --read-only \
+  ... \
+  node /probe/parser-probe.mjs
+```
+
+Reachable candidate command tree:
+
+- import Jackspeak's documented self-contained ESM `min` artifact and call `jack`,
+  field-definition methods,
+  and `parseRaw`;
+- import type-flag's ESM artifact and call `typeFlag` with a copied explicit argv;
+- import Argue's ESM artifact and call `setArgs`,
+  custom or built-in option readers,
+  `readOptions`,
+  and `rest`.
+
+Static source inspection found no candidate filesystem,
+network,
+subprocess,
+plugin,
+native,
+Wasm,
+or downloaded-code path.
+Jackspeak's min artifact statically bundles the inspected cliui source.
+The harness imports no lifecycle,
+build,
+test,
+or release command.
+
+Expected reads:
+read-only Node image,
+read-only extracted package artifacts,
+and read-only probe.
+
+Expected writes:
+bounded anonymous container state only,
+with a 64 MiB `/tmp` tmpfs.
+
+Subprocesses:
+Podman runtime and one Node process.
+Candidate code spawns none.
+
+Network:
+disabled.
+
+Image:
+local `docker.io/library/node:24-slim`,
+Node 24 on Linux x64,
+image ID `2f35c3d18013b7d65e31c40f0602e4c0a65a18efc65c16e2b98497f13f4da921`,
+digest `sha256:d45d78e7929b46875bbd4e29bea672d5bc48186c6c3588306521c815e78352d6`.
+
+Credentials and environment:
+no home mount,
+no repository mount,
+no ambient credential environment,
+and no network.
+Jackspeak uses `parseRaw` and no `envPrefix`,
+so its optional environment read-write path is not reached.
+
+Cases:
+positive control for an ordinary flag and string value;
+repeated flags and values;
+option after positional;
+lone dash;
+`--` termination;
+joined equals value;
+dash-led declared value;
+missing declared value;
+unknown plain option followed by a plain token;
+unknown joined option;
+and exact leftover or error evidence.
+
+Success condition:
+process exits zero,
+every catalog case yields a captured result or captured error,
+and positive controls distinguish parsed values from positionals.
+Semantic parity is an observed result,
+not a command success condition.
+
+Failure condition:
+import failure,
+uncaptured throw,
+missing case,
+unexpected effect,
+resource breach,
+or nonzero process exit.
+
+Stop condition:
+any undeclared read,
+write,
+subprocess,
+network,
+native,
+Wasm,
+or generated-code boundary requires manifest revision before continuing.
+
+No candidate package has been installed and no candidate code has run yet.
+Source clones and extracted tarballs have received static inspection only.
 
 ## Hard-gate outcomes
 
-Pending source, provenance, license, platform, and semantic inspection.
+Targeted source evidence identifies a potential semantic hard failure for each candidate.
+The bounded published-artifact matrix will confirm or refute those source readings before any exit is final.
 
 ## Validation results
 
