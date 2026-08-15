@@ -9972,3 +9972,103 @@ The only thing that catches that regression is `assertReplacementsChange` at
 assembly, which converts it from a red suite into a rare abort on a legitimate
 run.
 Building the harness is the fix, and it is recorded in `#103`.
+
+## Night of 2026-08-15: a whole-day review, twelve findings, and one nobody found
+
+The day's code went to a second reader in full, and the answer named twelve
+things.
+Ten were real and are fixed; one was a duplicate of what `#103` already held;
+one is held open by Question 3 rather than by doubt.
+`#103` carries the disposition of each with its commit.
+
+FIRST, THE ONE NO REVIEW FOUND, because it is the one that would have cost a
+document. The naturalness lane stamped `changed: true` from the REWRITER's
+verdict, and a rewriter is measured against the accuracy text it rewrites rather
+than against the archive.
+A refinement that lands back on the archive's own words is a slice nothing
+happened in, and it was being recorded as a change.
+That names the slice in the shipped set carrying the archive wording, which
+`assertReplacementsChange` refuses, so a run the models got right would have
+aborted the whole document at assembly.
+It now reads the archive text, and drops that slice's resolved-issue credit on
+the same rule the accuracy stage already applies: nothing it returns can have
+resolved anything.
+
+REFINEMENT ALSO HAD NO ABORT PROTECTION AT ALL.
+A torn-down exchange surfaced as whichever stage happened to fail, so a caller
+could not tell a spent deadline from a provider fault, and a phase that settled
+under an abort returned a document that read as a finished run.
+Both rules now live in `repair-refine-step.ts`.
+The second one is CONDITIONAL on the lane having asked somebody something, and
+that condition is load-bearing: the slice loop deliberately lets a fully cached
+document finish under an abort, because what a stopped run cannot do is BUY what
+it is missing, and an unconditional check broke that rule in the probe.
+
+WHAT ELSE LANDED, in one line each:
+
+-   `guardFootnoteAssembly` checks its own replacements, so a direct caller
+    cannot hand it a no-op and have the net-zero branch adopt it as an honest
+    empty result.
+-   `deriveShippedIndices` states the call order as a precondition and names it
+    in the message. That refusal is the one a blameless run can reach, and only
+    by calling it before the guard.
+-   A structural regression withdrawn in the same round a footnote took the
+    blame is now recorded. It used to vanish, because a regression the
+    withdrawal also fixed never reached another round.
+-   Both lanes check a freshly settled record against its own text before
+    caching it, not only when resuming one. Only one direction of that
+    contradiction was ever caught downstream: a record DENYING a change it made
+    is dropped in silence, since only changed records become replacements.
+-   `winnerChangedText` reads the text alone, and `selectRepairCandidate`
+    refuses a slate whose unchanged candidate carries anything else. Its
+    measurements stay unchecked on purpose, so an archive that genuinely fails
+    an integrity check is still expressible.
+-   The comparison refuses repeated rows on the repair side too, and refuses a
+    repeated shipped index rather than folding it into a set.
+-   `runDocumentLanes` preflights both lanes in one call, with lane-prefixed
+    role names: both lanes have a `judgeModelIds` and one object cannot hold
+    that key twice.
+
+### A harness fact worth knowing before you read any removal proof
+
+`await describe(...)` runs at module scope, so a FAILING suite stops every later
+suite in the same file.
+A probe that breaks an early suite hides whatever the later ones would have
+said.
+This was found the honest way: a probe reverted two guards in
+`select-candidate.ts` and only one test failed, which looked like the second
+guard being unpinned.
+Reverting them one at a time showed both were load-bearing.
+Read a probe's failure list as a floor rather than a total.
+
+### Two guards this night added are pinned by no test, on purpose
+
+`assertSettledRecordAgrees`'s CALLS in both lanes are vacuous by construction:
+neither lane can produce a contradictory fresh record now that both derive
+`changed` from their own text, so removing the calls turns nothing red.
+The function itself is tested.
+This is the same shape as the blocked exit's vacuous check, and it is here for
+what it costs rather than for what it catches.
+
+`winnerChangedText`'s wiring is still unpinned for the reason recorded above.
+
+### Two measurements taken while fixing, both zero quota
+
+IMPORTS NOTHING USES. The finding was six left behind in one file by an earlier
+extraction, on a lint run reporting zero warnings and zero errors.
+`eslint/no-unused-vars` is off across this workspace by a decision documented in
+place, and its reasons are all about local variables.
+A census over 3459 TypeScript sources finds 93 names used nowhere but their own
+import line; 19 were in this package and are gone.
+The policy question is `doc/planning/unused-import-lint-policy.md`, ranked
+A > B > C, and it blocks nothing.
+
+THE DOMINANCE DENOMINATOR IS THE SLICED FRACTION, not the document.
+`assessNonTranslationDominance` sums slice characters on both sides of its
+ratio, so an unpaired or unsliced section is in neither term.
+Measured over the 92 pinned pairs: slices cover 92.5% of an average English
+document, 14 entries fall under 90%, and two fall under half.
+`XIEPT2` produces ZERO slices from 17 alignment refusals, so the lane settles it
+as a clean unchanged document having examined nothing.
+Nothing behavioural changed, because which denominator is right is a decision;
+`#104` holds it, and only the contracts that misdescribed it were corrected.
