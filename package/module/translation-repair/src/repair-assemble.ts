@@ -87,11 +87,15 @@ export function assembleRepair(
   if (guarded.revertedChunkIndices
     .length
     > 0) {
+    // Deliberately does not name a cause. The guard withdraws for footnote
+    // damage, for structural regressions, and for a set that reassembles to the
+    // archive text; only its findings say which, and a warning that guessed
+    // would send a reader looking for a footnote that is not there.
     l.warn(
       `withdrew ${
         String(guarded.revertedChunkIndices
           .length,)
-      } slice repairs at assembly to keep the footnote graph whole`,
+      } slice repairs at assembly; the findings say why`,
     );
   }
 

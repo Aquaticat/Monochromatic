@@ -168,8 +168,13 @@ export type TranslateDocumentResult = {
   readonly refusedSliceCount: number;
 
   /**
-   * Slices whose replacement was withdrawn at assembly to keep the footnote
-   * graph no worse than the archive's.
+   * Slices whose replacement was withdrawn at assembly.
+   *
+   * Three causes, and the findings are what tell them apart: a footnote the
+   * assembly would have left worse than the archive's, a structural regression
+   * no identifier names, and a surviving set that reassembles to the archive
+   * text exactly. The last one withdraws replacements nothing is wrong with,
+   * because a document identical to the archive carries no change to name.
    */
   readonly withdrawnSliceCount: number;
 
@@ -185,10 +190,11 @@ export type TranslateDocumentResult = {
   readonly shippedChunkIndices: readonly number[];
 
   /**
-   * Slices whose replacement the assembly guard took back, in the order it took
-   * them.
+   * Slices whose replacement the assembly guard took back, in document order.
    *
-   * Disjoint from {@link TranslateDocumentResult.shippedChunkIndices} by
+   * Ordered by `orderedChangeSets` rather than left in the order the guard
+   * worked, so a reader joining two lanes slice by slice reads both sets by one
+   * rule. Disjoint from {@link TranslateDocumentResult.shippedChunkIndices} by
    * construction, and the same fact
    * {@link TranslateDocumentResult.withdrawnSliceCount} counts.
    */

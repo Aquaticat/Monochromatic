@@ -217,7 +217,14 @@ await describe({
         },);
         expect(wordings,).toHaveLength(2,);
         expect(wordings[0]?.acceptedText,).toBe('The cat is asleep on the windowsill.',);
-        expect(wordings[1]?.acceptedText,).toBe(null,);
+        expect(wordings[1]?.acceptedText,).toBe(undefined,);
+        // ABSENT rather than present-and-undefined, which is a different value
+        // under exactOptionalPropertyTypes and the only one that survives a
+        // round trip through the cache as "nobody looked".
+        expect(Object.hasOwn(
+          wordings[1] ?? {},
+          'acceptedText',
+        ),).toBe(false,);
 
         // The archive wording is still reported for the unexamined slice, since
         // that is what the returned document carries there.

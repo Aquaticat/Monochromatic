@@ -81,10 +81,11 @@ export type RepairTranslationResult = {
   readonly shippedChunkIndices: readonly number[];
 
   /**
-   * Slices whose repair the assembly guard took back, in the order it took
-   * them.
+   * Slices whose repair the assembly guard took back, in document order.
    *
-   * Disjoint from {@link RepairTranslationResult.shippedChunkIndices} by
+   * Ordered by `orderedChangeSets` rather than left in the order the guard
+   * worked, so a reader joining two lanes slice by slice reads both sets by one
+   * rule. Disjoint from {@link RepairTranslationResult.shippedChunkIndices} by
    * construction. Kept apart from the issue records because a withdrawal is a
    * fact about the DOCUMENT, and a slice can be withdrawn while carrying no
    * adjudicated issue of its own.

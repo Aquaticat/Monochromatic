@@ -353,14 +353,6 @@ export async function translateDocument(
   );
 
   /**
-   * Assembly with any replacement withdrawn that would leave the footnote graph
-   * worse than the archive's.
-   *
-   * Runs here rather than inside a slice because a footnote is a relation
-   * BETWEEN slices: the reference and the definition are settled separately, so
-   * a candidate that drops or renumbers a marker validates perfectly on its own.
-   */
-  /**
    * What this lane wants written, checked before the guard sees it.
    *
    * A RESUMED record is trusted on its slice index alone, so one claiming a
@@ -378,6 +370,15 @@ export async function translateDocument(
     replacements,
   },);
 
+  /**
+   * Assembly with any replacement withdrawn that the whole document refuses.
+   *
+   * Runs here rather than inside a slice because everything it checks is a
+   * relation BETWEEN slices: a footnote's reference and definition are settled
+   * separately, so a candidate that drops or renumbers a marker validates
+   * perfectly on its own, and a set that reassembles to the archive text is a
+   * fact no single slice can see.
+   */
   const guarded = guardFootnoteAssembly({
     targetText: prepared.targetText,
     slices: prepared.slices,
@@ -386,11 +387,15 @@ export async function translateDocument(
   if (guarded.revertedChunkIndices
     .length
     > 0) {
+    // Deliberately does not name a cause. The guard withdraws for footnote
+    // damage, for structural regressions, and for a set that reassembles to the
+    // archive text; only its findings say which, and a warning that guessed
+    // would send a reader looking for a footnote that is not there.
     tl.warn(
       `withdrew ${
         String(guarded.revertedChunkIndices
           .length,)
-      } replacements at assembly to keep the footnote graph whole`,
+      } replacements at assembly; the findings say why`,
     );
   }
 

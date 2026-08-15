@@ -147,13 +147,14 @@ await describe({
     },),
     it({
       name:
-        'ACCEPTS a document identical to the archive while slices are named as changed, because two adjacent '
-        + 'replacements can each differ from their own incumbent and concatenate back to the archive text, '
-        + 'say by moving a line break across the join: refusing that would crash a run the models got right, '
-        + 'and the defect it would catch is already refused per slice',
+        'REFUSES a document identical to the archive while slices are named as changed. This direction was '
+        + 'unenforceable until the guard was taught to canonicalize: two adjacent replacements can each differ '
+        + 'from their own incumbent and reassemble to the archive text, and refusing THAT would crash a run the '
+        + 'models got right. The guard now withdraws that set, so a shipped index beside an unmoved document is '
+        + 'once again a contradiction rather than a legitimate outcome',
       fn: async () => {
         /**
-         * Failure the net-no-op case raised, if any.
+         * Failure the check raised.
          */
         let caught: unknown;
         try {
@@ -166,7 +167,8 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(caught,).toBe(undefined,);
+        expect(caught,).toBeInstanceOf(AssemblyContractError,);
+        expect(String(caught,),).toContain('equals the archive',);
       },
     },),
     it({

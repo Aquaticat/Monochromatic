@@ -759,6 +759,11 @@ await describe({
             findings: [],
             chunkCritics: [],
 
+            // One slice, since this stub does not slice at all: the count is
+            // what every index set below is out of, and a benchmark reading a
+            // rate needs the denominator as much as the numerator.
+            sliceCount: 1,
+
             // The stub rewrites the document whole rather than by slice, so it
             // names the one slice that stands for it. A changed document with
             // no shipped slice would state a thing the contract cannot mean,

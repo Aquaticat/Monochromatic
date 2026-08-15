@@ -41,12 +41,13 @@ export type LaneSliceText = {
    * Equals {@link LaneSliceText.incumbentText} when the lane left the slice
    * alone, which is a decision rather than an absence and is recorded as one.
    *
-   * NULL means the lane never reached this slice, which the repair lane's
+   * ABSENT means the lane never reached this slice, which the repair lane's
    * whole-document block produces: it stops at the earliest crossing, so the
    * slices after it were never examined. Supplying the archive wording there
-   * would state a decision nobody took.
+   * would state a decision nobody took, and an empty string would say the lane
+   * chose to delete the passage.
    */
-  readonly acceptedText: string | null;
+  readonly acceptedText?: string;
 };
 
 /**
@@ -144,7 +145,10 @@ export function buildLaneSliceTexts(
   /**
    * Wording decided for each slice index.
    */
-  const byIndex = new Map(decided.map(function toEntry(one,): [number, string,] {
+  const byIndex = new Map(decided.map(function toEntry(one,): [
+    number,
+    string,
+  ] {
     return [
       one.chunkIndex,
       one.text,
@@ -201,7 +205,11 @@ export function buildLaneSliceTexts(
       chunkIndex,
       incumbentText: slice.target
         .text,
-      acceptedText: acceptedText ?? null,
+      // Spread rather than written as `acceptedText: acceptedText`, because
+      // `exactOptionalPropertyTypes` makes a present key holding `undefined` a
+      // different value from an absent key, and only the absent one means the
+      // lane never reached this slice.
+      ...((acceptedText === undefined) ? {} : { acceptedText, }),
     };
   },);
 }

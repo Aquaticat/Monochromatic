@@ -209,10 +209,12 @@ await describe({
          */
         const rows = compareDocumentLanes({
           repair: {
+            // No `acceptedText` key at all, which is how a lane says it never
+            // reached the slice: an empty string would say it chose to delete
+            // the passage.
             sliceTexts: [{
               chunkIndex: 0,
               incumbentText: ARCHIVE_NAP,
-              acceptedText: null,
             },],
             shippedChunkIndices: [],
           },

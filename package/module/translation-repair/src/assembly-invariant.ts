@@ -73,7 +73,10 @@ export function assertReplacementsChange(
   /**
    * Archive wording of each prepared slice.
    */
-  const incumbentByIndex = new Map(slices.map(function toEntry(slice,): [number, string,] {
+  const incumbentByIndex = new Map(slices.map(function toEntry(slice,): [
+    number,
+    string,
+  ] {
     return [
       slice.target
         .chunkIndex,
@@ -97,27 +100,6 @@ export function assertReplacementsChange(
         message: `slice ${String(replacement.chunkIndex,)} claims a change and carries the archive wording`,
       },);
   }
-}
-
-/**
- * Orders two slice indices by document position.
- *
- * @param left - one index
- *
- * @param right - other index
- *
- * @returns Negative when left comes first
- *
- * @example
- * ```ts
- * const ordered = indices.toSorted(ascending,);
- * ```
- */
-function ascending(
-  left: number,
-  right: number,
-): number {
-  return left - right;
 }
 
 /**
@@ -176,7 +158,15 @@ export function orderedChangeSets(
     readonly withdrawn: readonly number[];
   },
 ): OrderedChangeSets {
-  for (const index of [...shipped, ...withdrawn,]) {
+  /**
+   * Every index either set names, since the range and integrality rules are
+   * the same for both.
+   */
+  const named = [
+    ...shipped,
+    ...withdrawn,
+  ];
+  for (const index of named) {
     if (!Number.isInteger(index,))
       throw new AssemblyContractError({
         message: `change set holds ${String(index,)}, which is not a slice index`,
@@ -203,28 +193,42 @@ export function orderedChangeSets(
     },);
 
   return {
-    shipped: shipped.toSorted(ascending,),
-    withdrawn: withdrawn.toSorted(ascending,),
+    shipped: shipped.toSorted(function ascending(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },),
+    withdrawn: withdrawn.toSorted(function ascending(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },),
   };
 }
 
 /**
- * Refuses a returned document that changed while naming no changed slice.
+ * Refuses a returned document whose text and change set disagree.
  *
- * ONE DIRECTION ONLY, and the asymmetry is the point. A document that differs
- * from the archive while no slice is named cannot happen: every byte of the
- * difference came from some replacement, and a replacement that survived is a
- * slice that shipped. So this direction catches a whole class of routing
- * defects without a single false alarm.
+ * BOTH DIRECTIONS, but only because the guard was taught to make the second one
+ * true. A document that differs from the archive while no slice is named cannot
+ * happen on any run: every byte of the difference came from some replacement,
+ * and a replacement that survived is a slice that shipped.
  *
- * THE OTHER DIRECTION IS NOT CHECKED HERE, because it can happen on a perfectly
- * good run. Two adjacent slices whose replacements each differ from their own
- * incumbent can concatenate back to the archive text, say by moving a line
- * break across the join: every replacement is a real change, and the document
- * is unchanged. Refusing that would crash a run the models got right. The
- * defect it would otherwise have caught, a replacement that changes nothing, is
- * already refused per slice by {@link assertReplacementsChange}, which is where
- * it can be told apart from this case.
+ * The other direction USED TO BE UNCHECKABLE. Two adjacent slices whose
+ * replacements each differ from their own incumbent can concatenate back to the
+ * archive text, say by moving a line break across the join: every replacement
+ * is a real change, and the document is unchanged. Refusing that would have
+ * crashed a run the models got right, so this assertion checked one direction
+ * and the contradiction stayed reachable.
+ *
+ * `guardFootnoteAssembly` now canonicalizes exactly that case, withdrawing
+ * every replacement that reassembles to the archive text and saying so in its
+ * findings, which makes `(assembledText !== incumbentText) ===
+ * (shipped.length > 0)` a guard postcondition rather than a hope. So the second
+ * direction is back, and it now catches the case that motivated it: a shipped
+ * set naming slices the returned document does not carry.
  *
  * @param incumbentText - archive document the lane started from
  *
@@ -233,7 +237,8 @@ export function orderedChangeSets(
  * @param shippedChunkIndices - slices it says the returned document carries a
  * change for
  *
- * @throws AssemblyContractError when the document moved and no slice is named
+ * @throws AssemblyContractError when the document moved and no slice is named,
+ * or when it did not move and some slice is
  *
  * @example
  * ```ts
@@ -254,6 +259,12 @@ export function assertDocumentChangeAgrees(
   if ((assembledText !== incumbentText) && (shippedChunkIndices.length === 0))
     throw new AssemblyContractError({
       message: 'returned document differs from the archive while no slice is named as changed',
+    },);
+  if ((assembledText === incumbentText) && (shippedChunkIndices.length > 0))
+    throw new AssemblyContractError({
+      message: `returned document equals the archive while slices ${
+        shippedChunkIndices.join(', ',)
+      } are named as changed`,
     },);
 }
 

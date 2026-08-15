@@ -157,7 +157,7 @@ function carriedText(
   // for. Falling back to the archive wording here would answer the question
   // with a row reading "the archive stands", which is the one thing a result
   // this contradictory is not evidence of.
-  if (wording.acceptedText === null)
+  if (wording.acceptedText === undefined)
     throw new LaneComparisonError({
       message: `slice ${
         String(wording.chunkIndex,)
@@ -244,31 +244,44 @@ export function compareDocumentLanes(
     };
   },
 ): readonly SliceLaneComparison[] {
-  if (repair.sliceTexts.length !== translate.sliceTexts.length)
+  /**
+   * Rows each lane reports, which must agree before anything is joined.
+   */
+  const counted = {
+    repair: repair.sliceTexts
+      .length,
+    translate: translate.sliceTexts
+      .length,
+  };
+  if (counted.repair !== counted.translate)
     throw new LaneComparisonError({
-      message: `lanes report ${String(repair.sliceTexts.length,)} and `
-        + `${String(translate.sliceTexts.length,)} slices, so they ran over different preparations`,
+      message: `lanes report ${String(counted.repair,)} and `
+        + `${String(counted.translate,)} slices, so they ran over different preparations`,
     },);
 
   /**
    * Translate wording for each slice index.
    */
   const translateByIndex = new Map(
-    translate.sliceTexts.map(function toEntry(wording,): [number, LaneSliceText,] {
-      return [
-        wording.chunkIndex,
-        wording,
-      ];
-    },),
+    translate.sliceTexts
+      .map(function toEntry(wording,): [
+        number,
+        LaneSliceText,
+      ] {
+        return [
+          wording.chunkIndex,
+          wording,
+        ];
+      },),
   );
 
   // Equal lengths are not equal COVERAGE: repair rows for slices 1 and 1 and
   // translate rows for 1 and 2 both count two, and the join would then emit two
   // rows for slice 1 and silently drop slice 2.
-  if (translateByIndex.size !== translate.sliceTexts.length)
+  if (translateByIndex.size !== counted.translate)
     throw new LaneComparisonError({
       message: `translate lane reports ${
-        String(translate.sliceTexts.length,)
+        String(counted.translate,)
       } rows over ${String(translateByIndex.size,)} distinct slices`,
     },);
 
@@ -282,51 +295,52 @@ export function compareDocumentLanes(
    */
   const translateShipped = new Set(translate.shippedChunkIndices,);
 
-  return repair.sliceTexts.map(function toRow(mine,): SliceLaneComparison {
-    /**
-     * Same slice as the other lane left it.
-     */
-    const theirs = translateByIndex.get(mine.chunkIndex,);
-    if (theirs === undefined)
-      throw new LaneComparisonError({
-        message: `slice ${String(mine.chunkIndex,)} is missing from the translate lane`,
+  return repair.sliceTexts
+    .map(function toRow(mine,): SliceLaneComparison {
+      /**
+       * Same slice as the other lane left it.
+       */
+      const theirs = translateByIndex.get(mine.chunkIndex,);
+      if (theirs === undefined)
+        throw new LaneComparisonError({
+          message: `slice ${String(mine.chunkIndex,)} is missing from the translate lane`,
+        },);
+      if (theirs.incumbentText !== mine.incumbentText)
+        throw new LaneComparisonError({
+          message: `slice ${String(mine.chunkIndex,)} carries a different incumbent in each lane, `
+            + 'so the two results describe different preparations',
+        },);
+
+      /**
+       * Wording the repair document carries here.
+       */
+      const repairText = carriedText({
+        wording: mine,
+        shipped: repairShipped.has(mine.chunkIndex,),
       },);
-    if (theirs.incumbentText !== mine.incumbentText)
-      throw new LaneComparisonError({
-        message: `slice ${String(mine.chunkIndex,)} carries a different incumbent in each lane, `
-          + 'so the two results describe different preparations',
+
+      /**
+       * Wording the translate document carries here.
+       */
+      const translateText = carriedText({
+        wording: theirs,
+        shipped: translateShipped.has(theirs.chunkIndex,),
       },);
 
-    /**
-     * Wording the repair document carries here.
-     */
-    const repairText = carriedText({
-      wording: mine,
-      shipped: repairShipped.has(mine.chunkIndex,),
-    },);
-
-    /**
-     * Wording the translate document carries here.
-     */
-    const translateText = carriedText({
-      wording: theirs,
-      shipped: translateShipped.has(theirs.chunkIndex,),
-    },);
-
-    return {
-      chunkIndex: mine.chunkIndex,
-      incumbentText: mine.incumbentText,
-      repairText,
-      translateText,
-      repairReached: mine.acceptedText !== null,
-      translateReached: theirs.acceptedText !== null,
-      verdict: judgeSlice({
+      return {
+        chunkIndex: mine.chunkIndex,
+        incumbentText: mine.incumbentText,
         repairText,
         translateText,
-        incumbentText: mine.incumbentText,
-      },),
-    };
-  },);
+        repairReached: mine.acceptedText !== undefined,
+        translateReached: theirs.acceptedText !== undefined,
+        verdict: judgeSlice({
+          repairText,
+          translateText,
+          incumbentText: mine.incumbentText,
+        },),
+      };
+    },);
 }
 
 //endregion Lane comparison

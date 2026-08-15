@@ -379,6 +379,31 @@ export function guardFootnoteAssembly(
         replacements: standing,
       },);
 
+      // A NET NO-OP, which is a real outcome rather than a contradiction. Every
+      // standing replacement differs from its own incumbent, and together they
+      // reassemble to the archive text anyway: moving a line break across a
+      // join is enough. Left alone, this round would return the archive text
+      // beside a non-empty surviving set, and every caller would name those
+      // slices as ones the document carries a change for while carrying none.
+      //
+      // Canonicalized rather than asserted against, because nobody did anything
+      // wrong. The decisions survive in each lane's per-slice wordings; what
+      // changes is only the document-level claim, which becomes the true one.
+      if ((standing.length > 0) && (assembledText === targetText)) {
+        findings.push(
+          `assembly-net-zero-canonicalized (${
+            String(standing.length,)
+          } slices), since their replacements reassemble to the archive text`,
+        );
+        withdrawn.push(...standing.map(function toIndex(replacement,): number {
+          return replacement.chunkIndex;
+        },),);
+        return {
+          assembledText: targetText,
+          surviving: [],
+        };
+      }
+
       /**
        * Footnote defects this assembly introduced.
        */

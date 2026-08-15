@@ -171,6 +171,151 @@ await describe({
     },),
 
     it({
+      name: 'CANONICALIZES a set of replacements that reassemble to the archive '
+        + 'text. Moving a paragraph across a slice join changes both slices and '
+        + 'no byte of the document, so every later reader would be told the '
+        + 'document carries changes it does not carry. Withdrawing them is the '
+        + 'true document-level claim, and each lane still holds what it decided',
+      fn: async () => {
+        // Paragraphs small enough that subdivision groups several into one
+        // slice, which is what puts a movable join between two of them. One
+        // paragraph per slice leaves only the blank line between them, and
+        // nothing can move across that without changing a byte.
+        const targetText = `${
+          Array.from(
+            { length: 30, },
+            function toParagraph(
+              _unused,
+              index,
+            ): string {
+              return `Whisker note ${String(index,)}: the cat naps on the sill.`;
+            },
+          )
+            .join('\n\n',)
+        }\n`;
+
+        /**
+         * Original the same shape, since preparation pairs them by structure.
+         */
+        const sourceText = `${
+          Array.from(
+            { length: 30, },
+            function toParagraph(
+              _unused,
+              index,
+            ): string {
+              return `第${String(index,)}条：猫猫在窗台上打盹。`;
+            },
+          )
+            .join('\n\n',)
+        }\n`;
+
+        /**
+         * Slices of a document long enough to subdivide.
+         */
+        const { slices, } = prepareDocumentPair({
+          sourceText,
+          targetText,
+        },);
+
+        const [first, second,] = slices;
+        if ((first === undefined) || (second === undefined))
+          throw new Error('fixture produced fewer than two slices',);
+
+        // Positive control on the FIXTURE, not on the guard: the join is only
+        // movable when the two slices are separated by exactly a blank line and
+        // the later one holds more than one paragraph. Both are properties of
+        // the subdivision, and a change to its budget would quietly turn this
+        // case into a test of nothing.
+        expect(targetText.slice(
+          first.target
+            .endOffset,
+          second.target
+            .startOffset,
+        ),).toBe('\n\n',);
+
+        /**
+         * Paragraphs of the later slice, whose first one moves back.
+         */
+        const [moved, ...kept] = second.target
+          .text
+          .split('\n\n',);
+        expect(kept.length,).toBeGreaterThan(0,);
+
+        /**
+         * Both slices rewritten, each differing from its own incumbent, with
+         * one paragraph reassigned from the later to the earlier.
+         */
+        const replacements = [
+          {
+            chunkIndex: first.target
+              .chunkIndex,
+            replacementText: `${
+              first.target
+                .text
+            }\n\n${String(moved,)}`,
+          },
+          {
+            chunkIndex: second.target
+              .chunkIndex,
+            replacementText: kept.join('\n\n',),
+          },
+        ];
+        for (const replacement of replacements) {
+          /**
+           * Slice this replacement rewrites.
+           */
+          const slice = slices.find(function names(candidate,): boolean {
+            return candidate.target
+              .chunkIndex === replacement.chunkIndex;
+          },);
+          expect(replacement.replacementText,).not
+            .toBe(slice?.target.text,);
+        }
+
+        const guarded = guardFootnoteAssembly({
+          targetText,
+          slices,
+          replacements,
+        },);
+        // The document the replacements would have produced IS the archive, so
+        // there is nothing to ship and nothing to blame anyone for.
+        expect(guarded.assembledText,).toBe(targetText,);
+        expect(guarded.replacements,).toEqual([],);
+        expect(byIndex({ indices: guarded.revertedChunkIndices, },),).toEqual([
+          first.target
+            .chunkIndex,
+          second.target
+            .chunkIndex,
+        ],);
+        expect(guarded.findings
+          .some(function isCanonicalized(finding,): boolean {
+            return finding.startsWith('assembly-net-zero-canonicalized',);
+          },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'leaves an EMPTY replacement list alone rather than canonicalizing '
+        + 'it, since a document nobody changed is the ordinary unchanged run '
+        + 'and must not acquire a finding saying something was withdrawn',
+      fn: async () => {
+        /**
+         * Slices of the fixture pair.
+         */
+        const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
+        const guarded = guardFootnoteAssembly({
+          targetText: TARGET_TEXT,
+          slices,
+          replacements: [],
+        },);
+        expect(guarded.assembledText,).toBe(TARGET_TEXT,);
+        expect(guarded.revertedChunkIndices,).toEqual([],);
+        expect(guarded.findings,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'keeps every replacement when the footnote graph survives, which '
         + 'is the ordinary case and the one a guard must not tax',
       fn: async () => {

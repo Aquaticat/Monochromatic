@@ -492,13 +492,13 @@ export async function repairPreparedDocument(
           // Recording the archive wording as their decision would state a
           // choice nobody made.
           undecided: 'not-evaluated',
-          decided: outcomes.map(function toDecision(outcome,): {
+          decided: outcomes.map(function toDecision(settled,): {
             readonly chunkIndex: number;
             readonly text: string;
           } {
             return {
-              chunkIndex: outcome.chunkIndex,
-              text: outcome.repairedText,
+              chunkIndex: settled.chunkIndex,
+              text: settled.repairedText,
             };
           },),
         },),
