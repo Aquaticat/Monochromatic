@@ -28,13 +28,18 @@ import {
 // answer to question 28 rests on a measurement rather than on an expectation.
 //
 // IT DECIDES NOTHING. No slicing, no artifact and no lane reads its output. It
-// writes one JSON file and prints a summary.
+// prints its rows as JSON on standard output and writes nothing, so a caller
+// redirects them wherever the measurement is being kept.
 
 /**
  * How many candidates one invocation asks about by default.
  *
  * Small on purpose: the first run of anything that spends quota should be
  * readable in full before a larger one is bought.
+ *
+ * COUNTED IN ATTEMPTS RATHER THAN IN ROWS, because a cap on successes lets a
+ * failing roster spend without bound and hides the failures from the count a
+ * reader checks.
  */
 const DEFAULT_CANDIDATE_CAP = 12;
 
@@ -195,7 +200,9 @@ function readArguments(): {
 /**
  * Asks the roster about every unpaired passage it is given, up to the cap.
  *
- * @throws {@link Error} when the corpus clone cannot be read
+ * READS THAT FAIL ARE SKIPPED AND LOGGED rather than thrown, since an entry
+ * with only one side is an ordinary state of this corpus. That also swallows an
+ * unreadable clone, which shows up as every entry skipping.
  *
  * @example
  * ```ts
@@ -227,7 +234,9 @@ async function main(): Promise<void> {
   const controller = new AbortController();
 
   /**
-   * Rows accumulated across candidates.
+   * Rows accumulated across candidates, one per ATTEMPT: a candidate whose call
+   * failed keeps a row saying so, since a measurement that drops its failures
+   * reports a success rate of one.
    */
   const rows: ProbeRow[] = [];
 
@@ -350,6 +359,23 @@ async function main(): Promise<void> {
       catch (error) {
         // Reported rather than fatal, the same way the translate probe learned
         // to be: one slow call must not cost every later candidate.
+        rows.push({
+          entryId,
+          scale: candidate.scale,
+          where,
+          sourceChars: candidate.sourceText
+            .length,
+          kind: 'failed',
+          anchoredFull: 0,
+          anchoredPartial: 0,
+          absent: 0,
+          unanchored: 0,
+          heard: 0,
+          asked: RUN_ROSTER.length,
+          evidence: [],
+          unanchoredQuotes: [],
+          findings: [String(error,),],
+        },);
         log.info(`${entryId} ${where}: FAILED ${String(error,)}`,);
       }
     }
