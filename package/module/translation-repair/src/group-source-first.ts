@@ -3,7 +3,17 @@ import {
   type AlignmentStep,
 } from './align-blocks-walk.ts';
 import type { DocumentNode, } from './document-node.ts';
-import { groupNodes, } from './slice-pair.ts';
+import { groupNodes, } from './group-nodes.ts';
+import { reflowOrphans, } from './reflow-orphans.ts';
+import type {
+  SourceFirstUnit,
+  TargetBoundary,
+} from './source-first-unit.ts';
+
+export type {
+  SourceFirstUnit,
+  TargetBoundary,
+} from './source-first-unit.ts';
 
 //region Source-first grouping
 // Grouping that keeps every source block, including the ones the translation
@@ -25,62 +35,95 @@ import { groupNodes, } from './slice-pair.ts';
 // replaced at assembly by a decision that never saw it; `span-contiguity.ts`
 // refuses that shape, and this is what keeps it from arising.
 //
-// A TARGET-ONLY RUN JOINS A NEIGHBOUR rather than becoming a gap nothing
-// covers. It is text the archive has and the original does not, so no slice
-// NEEDS it; leaving it uncovered would still be safe for assembly, since
-// nothing writes there, and it would drop the block out of review entirely. It
-// joins the paired unit before it where one exists and the one after it
-// otherwise, which is where today's grouping puts it too.
+// A TARGET-ONLY RUN JOINS A NEIGHBOUR IN ITS OWN REGION rather than becoming a
+// gap nothing covers, and `reflow-orphans.ts` states the rule and why an anchor
+// bounds it.
 //
-// MANY-TO-ONE CANNOT ARISE HERE, which is worth stating because the design this
-// implements guards against it. Every step of `alignBlocks` consumes at most one
-// index per side, so no target block is paired with two source blocks and no
-// interval can be claimed twice.
+// AN ANCHORED UNIT DOES NOT PROVE THE PASSAGE IS UNTRANSLATED, which is the
+// limit this grouping cannot lift by itself and the reason nothing wires it up
+// yet. `alignBlocks` has exactly three moves: pair one with one, skip a source
+// block, skip a target block. It CANNOT say that two source paragraphs were
+// rendered as one, so when a translation merges a pair, the aligner spends its
+// only available move and reports the second paragraph as source-only. This
+// grouping then anchors it, and a lane reading that anchor would render a
+// passage the translation already carries, inserting it twice. Measured on
+// three source paragraphs whose translation merges the first two: the aligner
+// emits `source-only` for the merged one and the walk anchors it. Telling
+// omission from merging needs evidence the aligner does not produce, so `#106`
+// holds the wiring until there is some.
 
 /**
- * One slice's worth of blocks, either paired with existing text or anchored at
- * the boundary where its translation belongs.
+ * Thrown when alignment steps name a block their sequence does not hold.
  *
  * @example
  * ```ts
- * const unit: SourceFirstUnit = { kind: 'anchored', sourceRun, boundaryIndex: 4, };
+ * throw new AlignedIndexError({ message: 'source index 4 of 3 blocks', },);
  * ```
  */
-export type SourceFirstUnit = {
+export class AlignedIndexError extends Error {
   /**
-   * Both sides carry blocks, and the target side is a contiguous interval.
-   */
-  readonly kind: 'paired';
-
-  /**
-   * Original-side blocks, in document order.
-   */
-  readonly sourceRun: readonly DocumentNode[];
-
-  /**
-   * Translation-side blocks, contiguous in the whole target sequence.
-   */
-  readonly targetRun: readonly DocumentNode[];
-} | {
-  /**
-   * Original-side blocks the translation never rendered.
-   */
-  readonly kind: 'anchored';
-
-  /**
-   * Original-side blocks, in document order.
-   */
-  readonly sourceRun: readonly DocumentNode[];
-
-  /**
-   * Index of the target block this unit's translation belongs BEFORE.
+   * Builds failure naming the position and the sequence it missed.
    *
-   * Equal to the target block count when it belongs after everything, which is
-   * what a trailing untranslated passage looks like. The caller turns this into
-   * an offset, since only it knows where the enclosing section ends.
+   * @param message - what was named and what was there
+   *
+   * @example
+   * ```ts
+   * throw new AlignedIndexError({ message: 'target index -1', },);
+   * ```
    */
-  readonly boundaryIndex: number;
-};
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'AlignedIndexError';
+  }
+}
+
+/**
+ * Reads the block one position names.
+ *
+ * REFUSES RATHER THAN FALLING BACK. A step naming a block that is not there is
+ * a malformed alignment, and every silent answer to it is worse than a
+ * diagnostic: dropping the index shortens a run that then covers a span it does
+ * not carry, and treating it as the end of the sequence anchors a passage at a
+ * place nothing chose.
+ *
+ * @param index - position in the sequence
+ *
+ * @param nodes - whole block sequence
+ *
+ * @param side - which side, for the message
+ *
+ * @returns Block at that position
+ *
+ * @throws {@link AlignedIndexError} when the sequence has no such position
+ *
+ * @example
+ * ```ts
+ * const node = nodeAt({ index: step.targetIndex, nodes: targetNodes, side: 'target', },);
+ * ```
+ */
+function nodeAt(
+  {
+    index,
+    nodes,
+    side,
+  }: {
+    readonly index: number;
+    readonly nodes: readonly DocumentNode[];
+    readonly side: string;
+  },
+): DocumentNode {
+  /**
+   * Block at that position, absent when the alignment named one the sequence
+   * does not hold.
+   */
+  const node = nodes[index];
+  if (node === undefined) {
+    throw new AlignedIndexError({
+      message: `alignment names ${side} block ${String(index,)} of ${String(nodes.length,)}`,
+    },);
+  }
+  return node;
+}
 
 /**
  * Character span of one block.
@@ -99,76 +142,41 @@ function nodeChars(node: DocumentNode,): number {
 }
 
 /**
- * Reads the blocks a list of indices names, dropping any the sequence lacks.
+ * Reads the blocks a list of indices names.
  *
  * @param indices - positions in document order
  *
  * @param nodes - whole block sequence they index into
  *
+ * @param side - which side, for the message
+ *
  * @returns Blocks at those positions, in the order given
+ *
+ * @throws {@link AlignedIndexError} when any position is not in the sequence
  *
  * @example
  * ```ts
- * const run = nodesAt({ indices: group.sourceIndices, nodes: sourceNodes, },);
+ * const run = nodesAt({ indices: group.sourceIndices, nodes: sourceNodes, side: 'source', },);
  * ```
  */
 function nodesAt(
   {
     indices,
     nodes,
+    side,
   }: {
     readonly indices: readonly number[];
     readonly nodes: readonly DocumentNode[];
+    readonly side: string;
   },
 ): readonly DocumentNode[] {
-  /**
-   * Blocks gathered so far.
-   */
-  const run: DocumentNode[] = [];
-  for (const index of indices) {
-    /**
-     * Block at this position, absent when the caller named one the sequence
-     * does not hold.
-     */
-    const node = nodes[index];
-    if (node === undefined)
-      continue;
-    run.push(node,);
-  }
-  return run;
-}
-
-/**
- * Character span of the block at one position, or none when there is none.
- *
- * @param index - position in the sequence
- *
- * @param nodes - whole block sequence
- *
- * @returns Span length in characters, zero where the sequence is shorter
- *
- * @example
- * ```ts
- * const chars = charsAt({ index: step.sourceIndex, nodes: sourceNodes, },);
- * ```
- */
-function charsAt(
-  {
-    index,
-    nodes,
-  }: {
-    readonly index: number;
-    readonly nodes: readonly DocumentNode[];
-  },
-): number {
-  /**
-   * Block at that position, absent when the caller named one the sequence does
-   * not hold.
-   */
-  const node = nodes[index];
-  if (node === undefined)
-    return 0;
-  return nodeChars(node,);
+  return indices.map(function toNode(index,): DocumentNode {
+    return nodeAt({
+      index,
+      nodes,
+      side,
+    },);
+  },);
 }
 
 /**
@@ -213,89 +221,6 @@ function emptyGroup(): OpenGroup {
     highIndex: 0,
     supported: false,
   };
-}
-
-/**
- * Attaches target blocks no source block accounts for to a neighbour.
- *
- * A group can close with translation blocks and no original ones: a target-only
- * run following an untranslated passage starts a fresh group, and nothing pairs
- * with it. Such a group cannot be a slice, since every stage compares an
- * original against a translation, so its blocks join the paired unit BEFORE it
- * where one exists and the one after it otherwise.
- *
- * CONTIGUITY SURVIVES because groups partition the target indices into
- * consecutive ranges: every index is consumed by exactly one step, in order, so
- * an orphan run sits immediately after the previous unit's interval and
- * immediately before the next one's.
- *
- * @param units - units as grouped, possibly including source-less ones
- *
- * @returns Units that all carry original blocks
- *
- * @example
- * ```ts
- * const usable = reflowOrphans({ units, },);
- * ```
- */
-function reflowOrphans(
-  { units, }: { readonly units: readonly SourceFirstUnit[]; },
-): readonly SourceFirstUnit[] {
-  /**
-   * Units that carry original blocks, rebuilt as orphans are attached.
-   */
-  const kept: SourceFirstUnit[] = [];
-
-  /**
-   * Translation blocks waiting for a unit to belong to.
-   */
-  const held: DocumentNode[] = [];
-  for (const unit of units) {
-    if (unit.kind === 'anchored') {
-      kept.push(unit,);
-      continue;
-    }
-    if (unit.sourceRun
-      .length
-      === 0) {
-      held.push(...unit.targetRun,);
-      continue;
-    }
-    kept.push({
-      kind: 'paired',
-      sourceRun: unit.sourceRun,
-      targetRun: [
-        ...held.splice(0,),
-        ...unit.targetRun,
-      ],
-    },);
-  }
-  if (held.length === 0)
-    return kept;
-
-  /**
-   * Position of the last unit able to carry what is still held.
-   */
-  const tailIndex = kept.findLastIndex(function isPaired(unit,): boolean {
-    return unit.kind === 'paired';
-  },);
-  return kept.map(function toAttached(
-    unit,
-    position,
-  ): SourceFirstUnit {
-    if (position !== tailIndex)
-      return unit;
-    if (unit.kind !== 'paired')
-      return unit;
-    return {
-      kind: 'paired',
-      sourceRun: unit.sourceRun,
-      targetRun: [
-        ...unit.targetRun,
-        ...held,
-      ],
-    };
-  },);
 }
 
 /**
@@ -375,6 +300,7 @@ export function groupAlignedSteps(
       indices: state.group
         .sourceIndices,
       nodes: sourceNodes,
+      side: 'source',
     },);
 
     /**
@@ -419,20 +345,21 @@ export function groupAlignedSteps(
    * sharing a boundary in slice order, so the split costs nothing in the
    * document.
    *
-   * @param boundaryIndex - target block their translation belongs before
+   * @param boundary - place on the target side their translation belongs at
    *
    * @example
    * ```ts
-   * flushPending({ boundaryIndex: step.targetIndex, },);
+   * flushPending({ boundary: { kind: 'after-section', }, },);
    * ```
    */
-  function flushPending({ boundaryIndex, }: { readonly boundaryIndex: number; },): void {
+  function flushPending({ boundary, }: { readonly boundary: TargetBoundary; },): void {
     /**
      * Blocks the waiting indices name.
      */
     const waiting = nodesAt({
       indices: state.pendingSource,
       nodes: sourceNodes,
+      side: 'source',
     },);
     state.pendingSource = [];
     for (const run of groupNodes({
@@ -442,7 +369,7 @@ export function groupAlignedSteps(
       units.push({
         kind: 'anchored',
         sourceRun: run,
-        boundaryIndex,
+        boundary,
       },);
     }
   }
@@ -465,22 +392,33 @@ export function groupAlignedSteps(
     const { targetIndex, } = step;
     // The waiting blocks belong before the first target block that follows
     // them, which is this one.
-    flushPending({ boundaryIndex: targetIndex, },);
+    flushPending({
+      boundary: {
+        kind: 'before-block',
+        block: nodeAt({
+          index: targetIndex,
+          nodes: targetNodes,
+          side: 'target',
+        },),
+      },
+    },);
 
     /**
      * Characters this step adds on either side.
      */
     const added = {
       source: (step.kind === 'paired')
-        ? charsAt({
+        ? nodeChars(nodeAt({
           index: step.sourceIndex,
           nodes: sourceNodes,
-        },)
+          side: 'source',
+        },),)
         : 0,
-      target: charsAt({
+      target: nodeChars(nodeAt({
         index: targetIndex,
         nodes: targetNodes,
-      },),
+        side: 'target',
+      },),),
     };
 
     /**
@@ -534,9 +472,9 @@ export function groupAlignedSteps(
     state.targetChars += added.target;
   }
   flushGroup();
-  // TRAILING UNTRANSLATED BLOCKS belong after everything, which the block count
-  // names: there is no target block for them to precede.
-  flushPending({ boundaryIndex: targetNodes.length, },);
+  // TRAILING UNTRANSLATED BLOCKS belong after everything: there is no target
+  // block for them to precede, and only the caller knows where the section ends.
+  flushPending({ boundary: { kind: 'after-section', }, },);
 
   return reflowOrphans({ units, },);
 }

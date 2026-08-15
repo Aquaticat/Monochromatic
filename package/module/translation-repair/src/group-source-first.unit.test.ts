@@ -18,6 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  AlignedIndexError,
   type AlignmentStep,
   groupAlignedSteps,
   groupSourceFirst,
@@ -159,12 +160,18 @@ await describe({
           .length,).toBe(1,);
         // Anchored BEFORE the second translated block, which is where the
         // missing rendering belongs in document order.
-        expect(anchored.boundaryIndex,).toBe(1,);
+        expect(anchored.boundary
+          .kind,).toBe('before-block',);
+        if (anchored.boundary
+          .kind !== 'before-block')
+          throw new Error('expected a block boundary',);
+        expect(anchored.boundary
+          .block,).toBe(targetNodes[1],);
       },
     },),
     it({
-      name: 'anchors a TRAILING untranslated passage after everything, which the block count names: '
-        + 'there is no later block for it to precede',
+      name: 'anchors a TRAILING untranslated passage AFTER THE SECTION, since there is no later block '
+        + 'for it to precede and only the caller knows where the section ends',
       fn: async () => {
         const units = groupAlignedSteps({
           steps: [
@@ -188,12 +195,13 @@ await describe({
         const last = units.at(-1,);
         if ((last === undefined) || (last.kind !== 'anchored'))
           throw new Error('expected a trailing anchored unit',);
-        expect(last.boundaryIndex,).toBe(1,);
+        expect(last.boundary
+          .kind,).toBe('after-section',);
       },
     },),
     it({
-      name: 'anchors EVERY block of a section the translation never touched at its start, which is what '
-        + 'a section present in one document and absent from the other looks like',
+      name: 'anchors EVERY block of a section the translation never touched, at the one boundary such a '
+        + 'section has, which is what a section present in one document and absent from the other looks like',
       fn: async () => {
         const units = groupSourceFirst({
           sourceNodes: blocksOf({ text: '猫猫在窗台上睡觉。\n\n她在看鸟。\n', },),
@@ -209,7 +217,11 @@ await describe({
           throw new Error('expected one anchored unit',);
         expect(only.sourceRun
           .length,).toBe(2,);
-        expect(only.boundaryIndex,).toBe(0,);
+        // NOT "before block zero", which is what a count-shaped boundary said
+        // and what no empty section has: the caller resolves where a section
+        // with no translation blocks starts.
+        expect(only.boundary
+          .kind,).toBe('after-section',);
       },
     },),
     it({
@@ -279,8 +291,172 @@ await describe({
           return unit.kind === 'anchored';
         },),).toBe(true,);
         expect(units.every(function sharesBoundary(unit,): boolean {
-          return (unit.kind === 'anchored') && (unit.boundaryIndex === 0);
+          return (unit.kind === 'anchored')
+            && (unit.boundary
+              .kind
+              === 'after-section');
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'leaves a target-only run UNCOVERED rather than attaching it across an anchor: the unit it '
+        + 'would join covers a span, the anchor names a boundary inside that span, and a preparation '
+        + 'holding both is one assembly refuses',
+      fn: async () => {
+        /** Two source paragraphs, the second never translated. */
+        const sourceNodes = blocksOf({ text: '猫猫在窗台上睡觉。\n\n猫猫也喜欢晒太阳。\n', },);
+
+        /** Translation of the first, plus a note of its own after it. */
+        const targetNodes = blocksOf({
+          text: 'The cat sleeps on the windowsill.\n\nEditor`s note: the sill is warm.\n',
+        },);
+        const units = groupAlignedSteps({
+          steps: [
+            {
+              kind: 'paired',
+              sourceIndex: 0,
+              targetIndex: 0,
+            },
+            {
+              kind: 'source-only',
+              sourceIndex: 1,
+            },
+            {
+              kind: 'target-only',
+              targetIndex: 1,
+            },
+          ],
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+        },);
+        expect(kindsOf({ units, },),).toEqual([
+          'paired',
+          'anchored',
+        ],);
+
+        /** Every target block the units carry. */
+        const carried = units.flatMap(function toNodes(unit,) {
+          return (unit.kind === 'paired') ? unit.targetRun : [];
+        },);
+        // The note stays in the document and out of every slice: covering it
+        // here would run the first unit's span past the anchor that follows it.
+        expect(carried.length,).toBe(1,);
+        expect(carried[0],).toBe(targetNodes[0],);
+      },
+    },),
+    it({
+      name: 'attaches a target-only run BACKWARD to the paired unit it follows when an anchor comes '
+        + 'after it, since forward would cross that anchor',
+      fn: async () => {
+        /** Three source paragraphs, the middle one never translated. */
+        const sourceNodes = blocksOf({
+          text: '猫猫在窗台上睡觉。\n\n猫猫也喜欢晒太阳。\n\n她在看鸟。\n',
+        },);
+
+        /** Translation with a note of its own between the two it renders. */
+        const targetNodes = blocksOf({
+          text: 'The cat sleeps on the windowsill.\n\nEditor`s note: the sill is warm.\n\nShe watches the birds.\n',
+        },);
+        const units = groupAlignedSteps({
+          steps: [
+            {
+              kind: 'paired',
+              sourceIndex: 0,
+              targetIndex: 0,
+            },
+            {
+              kind: 'target-only',
+              targetIndex: 1,
+            },
+            {
+              kind: 'source-only',
+              sourceIndex: 1,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 2,
+              targetIndex: 2,
+            },
+          ],
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+        },);
+        expect(kindsOf({ units, },),).toEqual([
+          'paired',
+          'anchored',
+          'paired',
+        ],);
+
+        /** First unit, which the note belongs to. */
+        const [opening,] = units;
+        if ((opening === undefined) || (opening.kind !== 'paired'))
+          throw new Error('expected a paired opening unit',);
+        expect(opening.targetRun
+          .length,).toBe(2,);
+        expect(opening.targetRun[1],).toBe(targetNodes[1],);
+      },
+    },),
+    it({
+      name: 'anchors a paragraph the translation MERGED into its neighbour, which is the limit that '
+        + 'holds this grouping out of the pipeline: the aligner cannot say two source blocks became '
+        + 'one, so a merge and an omission reach here as the same step',
+      fn: async () => {
+        /** Three source paragraphs. */
+        const sourceNodes = blocksOf({
+          text: '小猫早上在窗台上晒太阳。\n\n小猫中午在垫子上打盹。\n\n小猫晚上在院子里追蝴蝶。\n',
+        },);
+
+        /** Translation rendering the first two AS ONE paragraph. */
+        const targetNodes = blocksOf({
+          text: 'The kitten suns on the windowsill each morning and naps on its cushion at noon.\n\n'
+            + 'The kitten chases butterflies in the yard at night.\n',
+        },);
+        const units = groupSourceFirst({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+        },);
+
+        /** Units naming a place rather than covering text. */
+        const anchored = units.filter(function isAnchored(unit,): boolean {
+          return unit.kind === 'anchored';
+        },);
+        // ONE anchor, for a passage the translation already carries. Wiring
+        // this to a lane would render it a second time, so `#106` has to
+        // separate merging from omission before anything reads these units.
+        expect(anchored.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'REFUSES an alignment naming a block that is not there, rather than dropping the index or '
+        + 'reading it as the end of the section: both answers place text somewhere nobody chose',
+      fn: async () => {
+        /** Steps naming a second source block a one-block section lacks. */
+        const steps: readonly AlignmentStep[] = [
+          {
+            kind: 'paired',
+            sourceIndex: 0,
+            targetIndex: 0,
+          },
+          {
+            kind: 'source-only',
+            sourceIndex: 1,
+          },
+        ];
+        expect(function grouping() {
+          return groupAlignedSteps({
+            steps,
+            sourceNodes: blocksOf({ text: '猫猫在窗台上睡觉。\n', },),
+            targetNodes: blocksOf({ text: 'The cat sleeps on the windowsill.\n', },),
+            sourceBudget: WIDE_BUDGET,
+            targetBudget: WIDE_BUDGET,
+          },);
+        },).toThrow(AlignedIndexError,);
       },
     },),
   ],
