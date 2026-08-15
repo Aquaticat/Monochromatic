@@ -10540,3 +10540,101 @@ replacement for an anchor should be refused the way a blank one now is. It
 cannot be answered until the absent-incumbent work says whether assembly may
 ever withdraw an anchor's replacement, since withdrawing one restores nothing
 where a translation belongs.
+
+### A ledger now has to agree with the document it describes
+
+`2920df105`. `buildSliceDelivery` joins three reports from one lane, and every
+check it made was INSIDE that join: a row cannot say shipped and undecided at
+once, and a shipped row's text is its accepted text by construction. What no row
+could check is whether the join describes the document the lane returned, since
+the document is not one of its inputs.
+
+TWO CLAIMS, both needing the document in hand: the rows marked shipped are the
+slices the result names, and writing those rows over the archive reproduces the
+returned text. The second is the one that earns its keep. It crosses from what
+the lane DECIDED, which is where a row's text comes from, to what the document
+CARRIES, which the assembly guard decided; those are two derivations that agree
+today by construction and never said so.
+
+THROUGH THE SAME ASSEMBLY rather than by concatenation, which is what keeps the
+comparison true once anchors exist: the blank lines around an inserted rendering
+are composed and belong to no slice, so a row's shipped text is NOT a substring
+of the document, and a check that searched for one would refuse a document
+nothing is wrong with. There is a test for exactly that case.
+
+`runDocumentLanes` returns a ledger per lane now, each checked. Derived rather
+than decided: each describes its own lane's document and neither mentions the
+other, so which document ships is still Question 5. Writing one into an artifact
+stays there too, since the settled schema carries one lane (`#96`).
+
+### The lane can be handed a passage the archive never translated
+
+`a5091af5e` and `0ba633b62`, the third landing of `#100`. Nothing produces such
+a slice yet; landings four and five are the producers.
+
+THE WRONG-SUCCESS STATE REMOVED: every fallback in the translate stage ships the
+wording already in the archive. That is right for a slice that HAS one, since
+leaving a passage as it stands is the state the run began in, and shipping text
+no judge vetted is a new claim about the archive. For a slice with none, the
+same fallback shipped the empty string and reported a settled slice, so the run
+read as having delivered a translation it never produced.
+
+ABSENCE IS A MODE, NOT AN INFERENCE. `incumbentKind` is decided from the target
+chunk being an insertion anchor, never from the text being blank: a content span
+holding only whitespace is the archive's own wording, thin as it is, and the two
+ask different questions. That is also why it is in the CACHE KEY rather than
+only in the record: both carry identical texts, so a key over texts alone would
+hand one the other's answer. Schema version 3, and the bump discarded nothing,
+measured first.
+
+NOT STORED ON THE RECORD, against the review's suggestion, because the prepared
+slice is the source of truth and cannot go stale, while a copy inside a cache
+record could be resumed against a slice of the other kind.
+
+AN ERROR RATHER THAN A RESULT at the stage boundary, because there is no honest
+result to build: the stage returns the text that ships plus who produced it, and
+here nothing ships and nobody produced it, so every field would be invented.
+
+WHERE I DEPARTED FROM THE REVIEW, recorded as decision 26 for veto: it wanted
+the lane to throw and leave the entry unsettled. The driver instead catches the
+refusal per slice, records the passage as unfilled with the stage's findings,
+caches nothing, and lets the rest of the document settle. The document keeps the
+gap the archive already had, which states nothing false; a decline depends on
+which judges answered, so throwing discards every other slice's work over
+something that varies between runs; and `unfilledChunkIndices` names those
+slices, so a missing passage cannot be read as one the judges kept.
+
+THIS ANSWERS WHAT `#101` LEFT OPEN, and the answer is in the lane rather than in
+assembly: a MISSING replacement for an anchor is legitimate and writes nothing,
+because that is exactly what an unfilled slice produces, while a BLANK
+replacement for an anchor whose source says something is still refused, because
+that is a lane claiming delivery. The two were never the same case.
+
+A BLANK TRANSLATOR REPLY IS NOW A LOST VOICE. `{"translation": ""}` satisfies
+the schema, so it arrived as a heard voice, was dropped further down as an
+unusable candidate, and its model counted as answered and was never re-asked.
+The wire guard refuses it, so the roster asks again. Decision 27 records what
+that changes in a count.
+
+THE REPAIR LANE SAYS THE QUESTION DOES NOT APPLY. Its critics compare a
+translation with its original, its editor rewrites the regions their defects
+name, its checkers confirm they are gone; handed an anchor, every stage is asked
+about text that does not exist. `notApplicableRepair` states that, with no
+exchange spent, and the outcome list stays position-aligned with the slice list,
+which is what a skip would have broken. Measured rather than asserted: the same
+preparation with and without an anchor spends 14 exchanges, against 17 when the
+branch is neutered.
+
+TWO FILES WERE SPLIT AT THEIR LINE BUDGET rather than raised.
+`translate-stage-result.ts` holds what a round DECIDED, which is the record every
+later reader joins to, and `translate-slice-attempt.ts` holds one slice's two
+honest endings. The second split was forced by a rule worth knowing about:
+`no-nullish-union` refuses `TranslateSliceRecord | undefined` as a return type,
+so the two endings had to be named rather than one of them spelled as absence.
+
+FOUR PROBES, each shown to fail before being trusted: the absent-mode
+no-candidate refusal removed (only the no-candidate case fails), the absent-mode
+decline refusal removed (only the two decline cases fail), the wire guard's
+blank rejection reverted (the re-ask case fails on the heard count, 3 against
+2), and the repair lane's anchor branch removed (the exchange count moves from
+14 to 17).
