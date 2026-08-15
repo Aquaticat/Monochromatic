@@ -1,6 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
+import {
+  assertDocumentChangeAgrees,
+  assertReplacementsChange,
+} from './assembly-invariant.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { buildChunkCriticRecords, } from './critic-attribution.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
@@ -61,10 +65,23 @@ export function assembleRepair(
    * so this is the only layer that can see it. The per-envelope footnote gate
    * bounds what one edit does; it cannot see a definition in another slice.
    */
+  /**
+   * What this lane wants written, checked before the guard sees it.
+   *
+   * A replacement identical to its incumbent survives the footnote guard and
+   * lands in the shipped set beside a document nobody changed, so it is refused
+   * here rather than counted there.
+   */
+  const replacements = repairReplacements({ outcomes, },);
+  assertReplacementsChange({
+    slices,
+    replacements,
+  },);
+
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: repairReplacements({ outcomes, },),
+    replacements,
   },);
   if (guarded.revertedChunkIndices
     .length
@@ -87,6 +104,31 @@ export function assembleRepair(
    */
   const shippedSliceCount = guarded.replacements
     .length;
+
+  /**
+   * Slices the returned document carries a repair for, in document order.
+   *
+   * Sorted because the guard returns them in the order it was given, and a
+   * reader comparing two lanes wants document order.
+   */
+  const shippedChunkIndices = guarded.replacements
+    .map(function toIndex(replacement,): number {
+      return replacement.chunkIndex;
+    },)
+    .toSorted(function ascending(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },);
+
+  // The check that covers routes nobody has thought of: a document that moved
+  // must name a changed slice, and one that did not must name none.
+  assertDocumentChangeAgrees({
+    incumbentText: targetText,
+    assembledText: guarded.assembledText,
+    shippedChunkIndices,
+  },);
 
   /**
    * Whole-document issue report.
@@ -115,19 +157,8 @@ export function assembleRepair(
     repairedText: guarded.assembledText,
     status: anyChanged ? 'repaired' : 'unchanged',
     // Read off the guard's surviving replacements, which is the only place that
-    // knows what the document carries. Sorted, because the guard returns them
-    // in the order they were given and a reader comparing two lanes wants
-    // document order.
-    shippedChunkIndices: guarded.replacements
-      .map(function toIndex(replacement,): number {
-        return replacement.chunkIndex;
-      },)
-      .toSorted(function ascending(
-        left,
-        right,
-      ): number {
-        return left - right;
-      },),
+    // knows what the document carries.
+    shippedChunkIndices,
     withdrawnChunkIndices: guarded.revertedChunkIndices,
     // Every prepared slice, decided or left alone, paired with the archive's
     // own wording. Built from the outcomes rather than from the surviving

@@ -11,6 +11,10 @@ import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
+  assertDocumentChangeAgrees,
+  assertReplacementsChange,
+} from './assembly-invariant.ts';
+import {
   alignmentRefusalFinding,
   MAX_INCUMBENT_TO_SOURCE_RATIO,
   MIN_PROTECTED_INCUMBENT,
@@ -355,15 +359,28 @@ export async function translateDocument(
    * BETWEEN slices: the reference and the definition are settled separately, so
    * a candidate that drops or renumbers a marker validates perfectly on its own.
    */
+  /**
+   * What this lane wants written, checked before the guard sees it.
+   *
+   * A RESUMED record is trusted on its slice index alone, so one claiming a
+   * change while carrying the archive wording would survive the guard and land
+   * in the shipped set beside a document nobody changed. Refused here instead.
+   */
+  const replacements = changed.map(function toReplacement(record,) {
+    return {
+      chunkIndex: record.chunkIndex,
+      replacementText: record.outputText,
+    };
+  },);
+  assertReplacementsChange({
+    slices: prepared.slices,
+    replacements,
+  },);
+
   const guarded = guardFootnoteAssembly({
     targetText: prepared.targetText,
     slices: prepared.slices,
-    replacements: changed.map(function toReplacement(record,) {
-      return {
-        chunkIndex: record.chunkIndex,
-        replacementText: record.outputText,
-      };
-    },),
+    replacements,
   },);
   if (guarded.revertedChunkIndices
     .length
@@ -375,6 +392,31 @@ export async function translateDocument(
       } replacements at assembly to keep the footnote graph whole`,
     );
   }
+
+  /**
+   * Slices the returned document carries a replacement for, in document order.
+   *
+   * Sorted because the guard returns them in the order it was given and a
+   * reader comparing lanes wants document order.
+   */
+  const shippedChunkIndices = guarded.replacements
+    .map(function toIndex(replacement,): number {
+      return replacement.chunkIndex;
+    },)
+    .toSorted(function ascending(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },);
+
+  // The check that covers routes nobody has thought of: a document that moved
+  // must name a changed slice, and one that did not must name none.
+  assertDocumentChangeAgrees({
+    incumbentText: prepared.targetText,
+    assembledText: guarded.assembledText,
+    shippedChunkIndices,
+  },);
 
   return {
     translatedText: guarded.assembledText,
@@ -388,18 +430,7 @@ export async function translateDocument(
     withdrawnSliceCount: guarded.revertedChunkIndices
       .length,
     // The same surviving replacements the count above is the size of, named.
-    // Sorted because the guard returns them in the order it was given and a
-    // reader comparing lanes wants document order.
-    shippedChunkIndices: guarded.replacements
-      .map(function toIndex(replacement,): number {
-        return replacement.chunkIndex;
-      },)
-      .toSorted(function ascending(
-        left,
-        right,
-      ): number {
-        return left - right;
-      },),
+    shippedChunkIndices,
     withdrawnChunkIndices: guarded.revertedChunkIndices,
     // Every prepared slice paired with the archive wording it was judged
     // against. Taken from the PREPARATION rather than from the settled records,

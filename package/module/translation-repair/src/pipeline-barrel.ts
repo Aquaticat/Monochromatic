@@ -149,6 +149,11 @@ export {
   runDocumentLanes,
 } from './document-lanes.ts';
 export {
+  AssemblyContractError,
+  assertDocumentChangeAgrees,
+  assertReplacementsChange,
+} from './assembly-invariant.ts';
+export {
   compareDocumentLanes,
   LaneComparisonError,
   type SliceLaneComparison,
