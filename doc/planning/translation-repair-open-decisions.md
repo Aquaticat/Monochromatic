@@ -97,6 +97,14 @@ So widening from three producers to six doubles the translate calls and adds
 about seventy percent to each judge prompt. Neither is a cliff, and neither is
 free.
 
+THAT SEVENTY PERCENT WAS AN OVER-ESTIMATE, and the bench now says by how much.
+Measured per stage on 2026-08-15: a ballot costs 2794 tokens at width 3 and 3861
+at width 6, which is 38% rather than 69%. The character arithmetic counted only
+the part of the prompt that grows, and a ballot also carries the policy, the
+source and the incumbent, none of which widen with the roster. Use 38% when
+pricing a width, and keep the arithmetic for the shape of the effect rather than
+its size.
+
 THE TAIL IS ONE ENTRY. Exactly one slice of 1260 exceeds 4641 target
 characters, which is the size the translate probe already watched time out at
 six minutes and return schema-invalid output. It is in `shihai4h`, at 10959
