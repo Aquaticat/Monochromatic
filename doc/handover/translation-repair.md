@@ -10904,3 +10904,42 @@ the same census from 11 unpaired source sections in 2 entries to 35 in 7.
 So the refusals are the scorer's own judgement rather than numerical noise,
 which strengthens rather than weakens what `#106` concluded. The scorer was left
 alone; quantizing it can wait until something inserts on its verdicts.
+
+### Body-token evidence for handle-free headings: measured, and it makes things worse
+
+`#98` says the fast path can only be gated once heading scoring has a signal for
+headings that share no Latin, which is most of this corpus. The obvious
+candidate is the section BODY: a memorial page carries names, handles, links and
+dates that survive translation, and a token appearing in exactly one section of
+its own side identifies that section.
+
+THE SIGNAL IS REALLY THERE. Scoring each source section's distinctive body
+tokens against each target section's pairs 其二：铃语 with Lingyu and 其四：无常
+with Ann at 1.00, which heading Latin alone cannot do, and it leaves the two
+sections the English never carried without a match.
+
+AND FEEDING IT TO THE MATCHER MAKES ALIGNMENT WORSE. Measured without changing
+the library, since the matcher scores Latin runs in whatever label it is handed:
+appending each section's distinctive body tokens to its heading changes seven
+entries and raises unpaired source sections from 11 to 18. Two entries lose
+correct pairings outright, one of them turning a correctly paired section into a
+refusal on both sides.
+
+WHY, and this is the part worth keeping: with no Latin anywhere, every pairing
+scores zero, the scorer has no preference, and the lexicographic gap-count
+component pairs by position, which is right. Body tokens give many pairings a
+small non-zero score, some of them spurious, and a spurious strict row-and-column
+maximum becomes a TRUSTED ANCHOR, which outranks gap count and drags the rest of
+the alignment into gaps around it. Evidence that is weak and plentiful is worse
+than none, because the top of this scorer's order is designed to trust evidence.
+
+WHAT WOULD HAVE TO BE TRUE for a second attempt: body evidence entering BELOW
+gap count, as a tie-break among otherwise equal optima rather than as an anchor.
+That is a fourth lexicographic component and a real change to the scorer, and it
+would fix at most one of the eight false refusals in `XIEPT2`, whose sections
+share no body tokens with their translations either. It is not worth it.
+
+SO THE DETERMINISTIC PATHS ARE EXHAUSTED for this corpus: heading Latin, section
+length, and body tokens have all now been measured, and none of them can tell a
+translated section from an absent one when the two sides share no characters.
+What is left is semantic, which is question 28's option A.
