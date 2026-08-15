@@ -1,3 +1,4 @@
+import { SETTLED_ARTIFACT_SCHEMA_VERSION, } from '../artifact-schema-version.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 
@@ -82,6 +83,7 @@ export function buildSettledArtifact(
       readonly findings: readonly unknown[];
       readonly chunkCritics: unknown;
       readonly repairedText: string;
+      readonly sliceCount: number;
       readonly shippedChunkIndices: readonly number[];
       readonly withdrawnChunkIndices: readonly number[];
     };
@@ -91,6 +93,13 @@ export function buildSettledArtifact(
 ): Readonly<Record<string, unknown>> {
   return {
     id: entryId,
+
+    // WHICH GENERATION THIS IS, stated rather than left to be guessed. Three
+    // shapes preceded this field and every reader told them apart by which
+    // fields happened to be present, which works only until two generations
+    // differ in something other than presence.
+    artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+
     tip,
 
     // What actually ran, beside where it came from. Artifacts settled before
@@ -128,12 +137,19 @@ export function buildSettledArtifact(
     chunkCritics: result.chunkCritics,
     repairedText: result.repairedText,
 
+    // Slices the preparation produced, which both index sets below are out of.
+    // Without it a reader holding an artifact can range-check neither, and
+    // cannot tell one changed slice of two from one of two hundred.
+    sliceCount: result.sliceCount,
+
     // Which slices the returned document carries a repair for, and which the
     // assembly guard took back. Recorded because both are facts about the
     // DOCUMENT that no other field states: an issue record says what its slice
     // decided, and a slice can be withdrawn while carrying no issue of its own.
     // Absent from artifacts settled before 2026-08-15, so a reader must treat
-    // their absence as unknown rather than as empty.
+    // their absence as unknown rather than as empty. `readArtifactChangeSets`
+    // is that reader, and the schema version above is what tells it which rule
+    // to apply.
     shippedChunkIndices: result.shippedChunkIndices,
     withdrawnChunkIndices: result.withdrawnChunkIndices,
   };

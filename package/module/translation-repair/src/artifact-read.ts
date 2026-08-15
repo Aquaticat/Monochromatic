@@ -4,6 +4,10 @@ import {
   requireRecord,
   requireString,
 } from './artifact-guard.ts';
+import {
+  type ArtifactChangeSets,
+  readArtifactChangeSets,
+} from './artifact-change-sets.ts';
 import { parseRecordRepair, } from './artifact-repair-read.ts';
 import type {
   GradableClaim,
@@ -211,6 +215,7 @@ export type ParsedAcceptedIssue = {
  *   id: 'MushroomGuuuu',
  *   status: 'repaired',
  *   acceptedIssues: [],
+ *   changeSets: { kind: 'unrecorded', },
  * };
  * ```
  */
@@ -229,6 +234,16 @@ export type ParsedArtifact = {
    * Every accepted issue, the precision denominator for this entry.
    */
   readonly acceptedIssues: readonly ParsedAcceptedIssue[];
+
+  /**
+   * Which slices the settled document changed, with its generation named.
+   *
+   * A DOCUMENT fact rather than an issue one, which is why it rides here beside
+   * the issues rather than inside them: a slice can be withdrawn while carrying
+   * no accepted issue of its own, and a run that recorded nothing is not a run
+   * that changed nothing.
+   */
+  readonly changeSets: ArtifactChangeSets;
 };
 
 /**
@@ -239,10 +254,14 @@ export type ParsedArtifact = {
  *
  * @param value - the artifact JSON, freshly parsed and still untyped
  *
- * @returns The entry id, status, and accepted issues
+ * @returns Entry id, status, accepted issues, and which slices the document
+ * changed
  *
  * @throws {@link ArtifactParseError} when the artifact or an accepted issue is
- * structurally malformed
+ * structurally malformed, or when it carries one index set without the other
+ *
+ * @throws AssemblyContractError when the recorded index sets break a rule the
+ * writing lane's own contract claims they cannot
  *
  * @example
  * ```ts
@@ -342,6 +361,10 @@ export function parseSettledArtifact(
     id,
     status,
     acceptedIssues,
+    changeSets: readArtifactChangeSets({
+      artifact,
+      path: id,
+    },),
   };
 }
 

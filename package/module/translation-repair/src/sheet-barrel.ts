@@ -24,6 +24,15 @@ export {
   type RecordRepairReading,
 } from './artifact-repair-read.ts';
 export {
+  type ArtifactChangeSets,
+  readArtifactChangeSets,
+} from './artifact-change-sets.ts';
+export {
+  type ArtifactSchemaReading,
+  readArtifactSchemaVersion,
+  SETTLED_ARTIFACT_SCHEMA_VERSION,
+} from './artifact-schema-version.ts';
+export {
   type ParsedAcceptedIssue,
   type ParsedArtifact,
   parseSettledArtifact,

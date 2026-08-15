@@ -135,7 +135,92 @@ export type OrderedChangeSets = {
 };
 
 /**
- * Checks both index sets and returns them in document order.
+ * Checks everything about both index sets that needs no slice count, and
+ * returns them in document order.
+ *
+ * SPLIT OUT OF {@link orderedChangeSets} rather than duplicated, for the one
+ * reader that has the sets without their denominator: a settled artifact
+ * written before `sliceCount` was recorded carries both index arrays and no way
+ * to bound them. Every OTHER rule still applies to it, and a reader that
+ * skipped them all for want of a count would accept a repeat or an overlap it
+ * can plainly see.
+ *
+ * @param shipped - slices the document carries a change for
+ *
+ * @param withdrawn - slices whose change was taken back
+ *
+ * @returns Both sets ascending
+ *
+ * @throws AssemblyContractError when an index is not a whole number, is
+ * negative, repeats within its set, or appears in both
+ *
+ * @example
+ * ```ts
+ * const checked = checkedChangeSets({ shipped, withdrawn, },);
+ * ```
+ */
+export function checkedChangeSets(
+  {
+    shipped,
+    withdrawn,
+  }: {
+    readonly shipped: readonly number[];
+    readonly withdrawn: readonly number[];
+  },
+): OrderedChangeSets {
+  /**
+   * Every index either set names, since the integrality and sign rules are the
+   * same for both.
+   */
+  const named = [
+    ...shipped,
+    ...withdrawn,
+  ];
+  for (const index of named) {
+    if (!Number.isInteger(index,))
+      throw new AssemblyContractError({
+        message: `change set holds ${String(index,)}, which is not a slice index`,
+      },);
+    if (index < 0)
+      throw new AssemblyContractError({
+        message: `change set names slice ${String(index,)}, and no slice is before the first`,
+      },);
+  }
+  if (new Set(shipped,).size !== shipped.length)
+    throw new AssemblyContractError({ message: 'shipped slices repeat', },);
+  if (new Set(withdrawn,).size !== withdrawn.length)
+    throw new AssemblyContractError({ message: 'withdrawn slices repeat', },);
+
+  /**
+   * Slices claimed by both sets, which no slice can be.
+   */
+  const both = shipped.filter(function isWithdrawnToo(index,): boolean {
+    return withdrawn.includes(index,);
+  },);
+  if (both.length > 0)
+    throw new AssemblyContractError({
+      message: `slices ${both.join(', ',)} are named as both shipped and withdrawn`,
+    },);
+
+  return {
+    shipped: shipped.toSorted(function ascending(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },),
+    withdrawn: withdrawn.toSorted(function ascending(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },),
+  };
+}
+
+/**
+ * Checks both index sets against the slices they are out of, and returns them
+ * in document order.
  *
  * Both lane contracts claim these sets are disjoint, in range and free of
  * repeats, and until now nothing checked any of it. The shipped set was sorted
@@ -171,53 +256,24 @@ export function orderedChangeSets(
   },
 ): OrderedChangeSets {
   /**
-   * Every index either set names, since the range and integrality rules are
-   * the same for both.
+   * Both sets under every rule a count is not needed for, already ascending.
    */
-  const named = [
-    ...shipped,
-    ...withdrawn,
-  ];
-  for (const index of named) {
-    if (!Number.isInteger(index,))
-      throw new AssemblyContractError({
-        message: `change set holds ${String(index,)}, which is not a slice index`,
-      },);
-    if ((index < 0) || (index >= sliceCount))
+  const checked = checkedChangeSets({
+    shipped,
+    withdrawn,
+  },);
+  for (
+    const index of [
+      ...checked.shipped,
+      ...checked.withdrawn,
+    ]
+  ) {
+    if (index >= sliceCount)
       throw new AssemblyContractError({
         message: `change set names slice ${String(index,)} of ${String(sliceCount,)} prepared`,
       },);
   }
-  if (new Set(shipped,).size !== shipped.length)
-    throw new AssemblyContractError({ message: 'shipped slices repeat', },);
-  if (new Set(withdrawn,).size !== withdrawn.length)
-    throw new AssemblyContractError({ message: 'withdrawn slices repeat', },);
-
-  /**
-   * Slices claimed by both sets, which no slice can be.
-   */
-  const both = shipped.filter(function isWithdrawnToo(index,): boolean {
-    return withdrawn.includes(index,);
-  },);
-  if (both.length > 0)
-    throw new AssemblyContractError({
-      message: `slices ${both.join(', ',)} are named as both shipped and withdrawn`,
-    },);
-
-  return {
-    shipped: shipped.toSorted(function ascending(
-      left,
-      right,
-    ): number {
-      return left - right;
-    },),
-    withdrawn: withdrawn.toSorted(function ascending(
-      left,
-      right,
-    ): number {
-      return left - right;
-    },),
-  };
+  return checked;
 }
 
 /**
