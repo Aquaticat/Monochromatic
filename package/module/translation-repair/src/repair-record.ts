@@ -82,6 +82,20 @@ export const REPAIR_DISPOSITIONS: readonly RepairDisposition[] = [
 ];
 
 /**
+ * Disposition of a repair the returned document carries.
+ *
+ * Exported because three separate readers ask this same question of a record,
+ * and each answering it with its own spelling of the word is how a reader comes
+ * to disagree with the writer about which records are gradable.
+ *
+ * @example
+ * ```ts
+ * const gradable = record.repairDisposition === SHIPPED_DISPOSITION;
+ * ```
+ */
+export const SHIPPED_DISPOSITION: RepairDisposition = 'shipped';
+
+/**
  * Probe result as one issue's record carries it.
  *
  * @example
@@ -186,18 +200,23 @@ export type RepairIssueRecord = {
   readonly refinementDefects?: IssueProbeReading;
 
   /**
-   * Final text of this issue's slice, carried ONLY when
-   * {@link RepairIssueRecord.refined} is set.
+   * Final text of this issue's slice, carried ONLY where
+   * {@link RepairIssueRecord.refined} is set AND the returned document carries
+   * that rewrite.
    *
-   * Present exactly where a SHIPPED replacement stopped being the returned
+   * Present exactly where a shipped replacement stopped being the returned
    * wording, so a grader judging a shipped repair always judges what shipped.
-   * Absent otherwise, for two different reasons that both make it needless.
-   * Under {@link RepairDisposition} `shipped` with no refinement, `spliceSlices`
+   * Absent otherwise, for three reasons that each make it needless. Under
+   * {@link RepairDisposition} `shipped` with no refinement, `spliceSlices`
    * splices the patched slice verbatim, so the replacement IS the returned
    * wording and copying the slice onto every one of its issues would multiply a
    * large document's text by its accepted-issue count for no added fact. Under
-   * every other disposition the replacement reached no reader at all, so there
-   * is no shipped wording to compare it against and the sheet grades nothing.
+   * `not-selected` or `no-region` with no refinement the slice comes back as the
+   * archive wrote it, so there is nothing a grader could compare. And where the
+   * run returned its input, or the assembly guard took the slice back to keep a
+   * footnote relation whole, the REWRITE reached no reader either: the document
+   * carries the archive's wording, and naming the rewrite as the final text
+   * would be exactly the lie this field exists to prevent.
    */
   readonly finalSliceText?: string;
 };
@@ -332,7 +351,11 @@ export function buildIssueRecords(
                 regions: probed,
               },
             }),
-          ...(outcome.refined
+          // Gated on reach as well as on refinement. A rewritten slice the
+          // document does not carry has a returned wording, but it is the
+          // archive's, not this one; writing the rewrite here would state the
+          // opposite in the one field a grader reads as what shipped.
+          ...((outcome.refined && (!reachedNobody))
             ? { finalSliceText: outcome.repairedText, }
             : {}),
           // Carried unfiltered, unlike introducedDefects above. That one is

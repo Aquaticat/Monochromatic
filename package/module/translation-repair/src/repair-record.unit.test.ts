@@ -308,6 +308,48 @@ await describe({
     },),
 
     it({
+      name: 'DROPS the final slice text when the document does not carry the '
+        + 'rewritten slice, which a withdrawn slice and a blocked run both '
+        + 'mean. The field names what shipped, so a refined slice nobody read '
+        + 'must not name its rewrite as the shipped wording',
+      fn: async () => {
+        /**
+         * Refined slice the assembly guard took back to keep a footnote whole.
+         */
+        const withdrawn = buildIssueRecords({
+          outcomes: [
+            catOutcome({
+              issues: [catIssue({ issueId: 'adjudicated/nap', },),],
+              repairRegions: [catRegion({ issueIds: ['adjudicated/nap',], },),],
+              refined: true,
+            },),
+          ],
+          blocked: false,
+          withdrawnChunkIndices: [3,],
+        },);
+        expect(withdrawn[0]?.repairDisposition,).toBe('withdrawn',);
+        // Still true, and still worth disclosing: the lane did rewrite this
+        // slice, which is why `editorAfter` is stale wording either way.
+        expect(withdrawn[0]?.refined,).toBe(true,);
+        expect(withdrawn[0]?.finalSliceText,).toBeUndefined();
+
+        /** Same slice under a run that returned its input for non-translation. */
+        const blocked = buildIssueRecords({
+          outcomes: [
+            catOutcome({
+              issues: [catIssue({ issueId: 'adjudicated/nap', },),],
+              repairRegions: [catRegion({ issueIds: ['adjudicated/nap',], },),],
+              refined: true,
+            },),
+          ],
+          blocked: true,
+        },);
+        expect(blocked[0]?.repairDisposition,).toBe('withdrawn',);
+        expect(blocked[0]?.finalSliceText,).toBeUndefined();
+      },
+    },),
+
+    it({
       name: 'gives every issue of a shared envelope the same region, each '
         + 'still naming the others',
       fn: async () => {

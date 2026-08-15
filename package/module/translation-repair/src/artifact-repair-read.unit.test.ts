@@ -152,6 +152,72 @@ await describe({
     },),
 
     it({
+      name: 'reads a refined WITHDRAWN record that states no final wording, '
+        + 'since a slice the document took back came back as the archive wrote '
+        + 'it. Requiring the wording here would make every artifact carrying '
+        + 'one unreadable, which is the whole measurement lost to a field that '
+        + 'has nothing to say',
+      fn: async () => {
+        const reading = parseRecordRepair({
+          record: catRecord({
+            repairDisposition: 'withdrawn',
+            refined: true,
+          },),
+          path: 'Kitten issues[0]',
+        },);
+        if (reading.kind !== 'recorded')
+          throw new Error('expected a recorded reading',);
+        expect(reading.repair.refined,).toBe(true,);
+        expect(reading.repair.finalSliceText,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'still reads a final wording recorded under a disposition that '
+        + 'shipped no targeted repair, because the naturalness lane runs '
+        + 'whatever the accuracy selection decided and its rewrite does reach '
+        + 'the reader',
+      fn: async () => {
+        const reading = parseRecordRepair({
+          record: catRecord({
+            repairDisposition: 'not-selected',
+            refined: true,
+            finalSliceText: 'The cat naps in the sun.',
+          },),
+          path: 'Kitten issues[0]',
+        },);
+        if (reading.kind !== 'recorded')
+          throw new Error('expected a recorded reading',);
+        expect(reading.repair.finalSliceText,).toBe('The cat naps in the sun.',);
+      },
+    },),
+
+    it({
+      name: 'throws on a final wording that is PRESENT but malformed even '
+        + 'where none was required, since a field written as something other '
+        + 'than text means writer and reader disagree wherever it appears',
+      fn: async () => {
+        /** Failure raised by the non-string final wording. */
+        let caught: unknown;
+        try {
+          parseRecordRepair({
+            record: catRecord({
+              repairDisposition: 'withdrawn',
+              refined: true,
+              finalSliceText: null,
+            },),
+            path: 'Kitten issues[0]',
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(ArtifactParseError,);
+        expect((caught as Error).message,).toContain('finalSliceText',);
+      },
+    },),
+
+    it({
       name: 'throws on a malformed region rather than dropping it, because a '
         + 'silently short repair record biases what it measures',
       fn: async () => {

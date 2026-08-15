@@ -1,4 +1,5 @@
 import { fenceForMarkdown, } from './markdown-fence.ts';
+import { SHIPPED_DISPOSITION, } from './repair-record.ts';
 import type {
   GradableRepair,
   GradableRepairRegion,
@@ -27,11 +28,6 @@ import type {
 // repairs in the round-two artifacts, so revealing that would anchor the human
 // toward agreement on precisely the population the human is there to audit.
 
-/**
- * Disposition meaning a repair reached the returned document, which is the only
- * one that carries a grade box.
- */
-const SHIPPED_DISPOSITION = 'shipped';
 
 /**
  * Plain-language reading of each disposition, so a grader is told why an item
@@ -176,19 +172,29 @@ function renderRepair(
     // it does so whether or not that stage's patch was selected. So a rewrite
     // can reach the reader for an issue whose targeted repair did not, and
     // saying only "nothing reached the reader" would be true of the repair and
-    // false of the text. The final wording is shown either way; only the grade
-    // box depends on whether a targeted repair shipped.
+    // false of the text. The final wording is shown wherever the document
+    // carries it; only the grade box depends on whether a targeted repair
+    // shipped.
+    //
+    // Keyed on the wording being RECORDED rather than on refinement alone. A
+    // rewritten slice can still be taken back whole, by the assembly guard
+    // keeping a footnote relation intact or by a run returning its input, and
+    // the record then carries no final wording because the document carries the
+    // archive's. Showing an empty fence there would tell a grader the slice came
+    // back blank.
     ...(repair.refined
-      ? [
-        gradable
-          ? '- NOTE: a later naturalness pass rewrote this slice, so the wording above is not final.'
-          : '- NOTE: no targeted repair shipped, but a later naturalness pass rewrote this slice anyway, so the returned text is not the original either.',
-        '- the slice as actually returned:',
-        fenceForMarkdown({ text: repair.finalSliceText ?? '', },),
-        ...(gradable
-          ? ['- grade the RETURNED wording, using the edit above only to see what was attempted.',]
-          : []),
-      ]
+      ? (repair.finalSliceText === undefined
+        ? ['- NOTE: a later naturalness pass rewrote this slice, but that rewrite was taken back before the document was returned, so the text above is what the reader saw.',]
+        : [
+          gradable
+            ? '- NOTE: a later naturalness pass rewrote this slice, so the wording above is not final.'
+            : '- NOTE: no targeted repair shipped, but a later naturalness pass rewrote this slice anyway, so the returned text is not the original either.',
+          '- the slice as actually returned:',
+          fenceForMarkdown({ text: repair.finalSliceText, },),
+          ...(gradable
+            ? ['- grade the RETURNED wording, using the edit above only to see what was attempted.',]
+            : []),
+        ])
       : []),
     ...(gradable
       ? ['- repair grade: [ ]  (Y = fully fixes this defect and breaks nothing nearby · N = it does not)',]

@@ -11,6 +11,7 @@ import type { TelemetryProbeReading, } from './probe-attribution.ts';
 import {
   REPAIR_DISPOSITIONS,
   type RepairDisposition,
+  SHIPPED_DISPOSITION,
 } from './repair-record.ts';
 
 //region Artifact probe reading
@@ -29,11 +30,6 @@ import {
 // including candidates selection later rejected, and the human repair sheet
 // grades only what shipped. Reading the rest would put regions nobody judged
 // into a rate about judged ones.
-
-/**
- * Disposition whose repair reached the reader, and the only one graded.
- */
-const SHIPPED_DISPOSITION = 'shipped';
 
 /**
  * Reads a record's disposition, refusing a value the pipeline never writes.

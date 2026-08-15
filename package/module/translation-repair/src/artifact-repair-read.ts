@@ -5,6 +5,7 @@ import {
   requireRecord,
   requireString,
 } from './artifact-guard.ts';
+import { SHIPPED_DISPOSITION, } from './repair-record.ts';
 import type {
   GradableRepair,
   GradableRepairRegion,
@@ -176,11 +177,35 @@ export function parseRecordRepair(
   },);
 
   /**
-   * Final slice text, required exactly when refinement made the recorded
-   * replacement stale and absent otherwise; a record claiming refinement
-   * without it cannot be graded against what shipped.
+   * What became of this issue's repair, read before the final wording because
+   * it decides whether that wording has to be there.
    */
-  const finalSliceText = refined
+  const disposition = requireString({
+    value: record[DISPOSITION_FIELD],
+    path: `${path}.${DISPOSITION_FIELD}`,
+  },);
+
+  /**
+   * Whether a final wording has to be stated: refinement made the recorded
+   * replacement stale in a repair the document CARRIES, and that is the record
+   * a sheet grades. It cannot be graded against wording nothing states.
+   *
+   * Not required under any other disposition, because a slice the run took
+   * back, whether by non-translation dominance or by the assembly guard keeping
+   * a footnote relation whole, comes back as the archive wrote it and has no
+   * rewritten wording to state.
+   */
+  const finalWordingRequired = refined
+    && (disposition === SHIPPED_DISPOSITION);
+
+  /**
+   * Final slice text, read wherever it was written rather than only where it
+   * was required: a rewrite reaches the reader on a slice whose targeted repair
+   * did not, and that returned wording is worth showing even where nothing is
+   * graded. A present value is parsed strictly either way, so a field written
+   * as null or as a number is a malformed measurement wherever it appears.
+   */
+  const finalSliceText = (finalWordingRequired || ('finalSliceText' in record))
     ? requireString({
       value: record.finalSliceText,
       path: `${path}.finalSliceText`,
@@ -190,10 +215,7 @@ export function parseRecordRepair(
   return {
     kind: 'recorded',
     repair: {
-      disposition: requireString({
-        value: record[DISPOSITION_FIELD],
-        path: `${path}.${DISPOSITION_FIELD}`,
-      },),
+      disposition,
       regions: requireArray({
         value: record.repairRegions,
         path: `${path}.repairRegions`,

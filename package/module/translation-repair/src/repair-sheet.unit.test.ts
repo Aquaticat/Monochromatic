@@ -70,6 +70,9 @@ function catCandidate(
  *
  * @param refined - whether the naturalness lane rewrote the slice
  *
+ * @param rewriteReachedReader - whether the returned document carries that
+ * rewrite, which is what decides whether a final wording was recorded at all
+ *
  * @returns Provenance the repair sheet renders
  *
  * @example
@@ -82,10 +85,12 @@ function catRepair(
     disposition,
     issueIds = ['adjudicated/nap',],
     refined = false,
+    rewriteReachedReader = true,
   }: {
     readonly disposition: string;
     readonly issueIds?: readonly string[];
     readonly refined?: boolean;
+    readonly rewriteReachedReader?: boolean;
   },
 ): GradableRepair {
   return {
@@ -98,7 +103,7 @@ function catRepair(
       },
     ],
     refined,
-    ...(refined
+    ...((refined && rewriteReachedReader)
       ? { finalSliceText: 'The cat sleeps on the windowsill all afternoon.', }
       : {}),
   };
@@ -360,6 +365,34 @@ await describe({
         expect(sheet.includes('The cat sleeps on the windowsill all afternoon.',))
           .toBe(true,);
         expect(sheet.includes('rewrote this slice anyway',),).toBe(true,);
+        expect(sheet.includes('- repair grade: [ ]',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'says the rewrite was TAKEN BACK, and shows no returned slice, for '
+        + 'a refined item whose wording the document never carried. Rendering '
+        + 'the fence anyway would put an empty block under "the slice as '
+        + 'actually returned", which reads as a slice that came back blank',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({
+              repair: catRepair({
+                disposition: 'withdrawn',
+                refined: true,
+                rewriteReachedReader: false,
+              },),
+            },),
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
+        },);
+        expect(sheet.includes('taken back before the document was returned',))
+          .toBe(true,);
+        expect(sheet.includes('the slice as actually returned',),).toBe(false,);
+        expect(sheet.includes('rewrote this slice anyway',),).toBe(false,);
         expect(sheet.includes('- repair grade: [ ]',),).toBe(false,);
       },
     },),
