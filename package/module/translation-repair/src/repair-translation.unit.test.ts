@@ -16,6 +16,8 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkRepairOutcome,
+  makeInsertionChunk,
+  notApplicableFinding,
   prepareDocumentPair,
   repairPreparedDocument,
   type RepairModels,
@@ -1005,6 +1007,124 @@ Meow meow meow meow.
           .length,).toBe(fromTexts.issues
           .length,);
         expect(fromPrepared.findings,).toEqual(fromTexts.findings,);
+      },
+    },),
+
+    it({
+      name: 'says NOTHING about a slice the archive never translated, and spends nothing discovering '
+        + 'that: every stage of this lane reads existing wording, so an anchor would have critics '
+        + 'filing complaints about a blank at full roster cost',
+      fn: async () => {
+        /**
+         * Preparation both lanes would share.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+        },);
+
+        /**
+         * Index the appended anchor holds.
+         */
+        const anchorIndex = prepared.slices
+          .length;
+
+        /**
+         * Same preparation with one section the archive never translated,
+         * anchored at the end of the document.
+         */
+        const withAnchor = {
+          ...prepared,
+          slices: [
+            ...prepared.slices,
+            {
+              source: {
+                chunkIndex: anchorIndex,
+                nodes: [],
+                startOffset: 0,
+                endOffset: 0,
+                text: '## 丙\n\n猫猫也喜欢晒太阳。',
+              },
+              target: makeInsertionChunk({
+                chunkIndex: anchorIndex,
+                offset: TARGET_TWO_SECTIONS.length,
+              },),
+            },
+          ],
+        };
+
+        /**
+         * Exchanges each run made, so the anchor's cost is measured rather than
+         * assumed.
+         */
+        const spent = {
+          plain: 0,
+          anchored: 0,
+        };
+
+        /**
+         * Client counting every exchange it serves into one of those tallies.
+         *
+         * @param key - which run this client serves
+         *
+         * @returns Counting client over the scripted one
+         *
+         * @example
+         * ```ts
+         * const client = countingClient({ key: 'plain', },);
+         * ```
+         */
+        function countingClient(
+          { key, }: { readonly key: 'plain' | 'anchored'; },
+        ): SyntheticClient {
+          /**
+           * Scripted client this one delegates to.
+           */
+          const inner = scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },);
+          return {
+            chatText: inner.chatText,
+            chatJson: async <ValueT,>(
+              request: ChatJsonRequest<ValueT>,
+            ): Promise<ChatJsonOutcome<ValueT>> => {
+              spent[key] += 1;
+              return await inner.chatJson(request,);
+            },
+            quotas: inner.quotas,
+          };
+        }
+
+        /**
+         * Repair over the preparation as it stands.
+         */
+        const plain = await repairPreparedDocument({
+          client: countingClient({ key: 'plain', },),
+          prepared,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /**
+         * Repair over the same preparation plus the anchor.
+         */
+        const anchored = await repairPreparedDocument({
+          client: countingClient({ key: 'anchored', },),
+          prepared: withAnchor,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        // NOT ONE MORE EXCHANGE for the extra slice, which is the whole point:
+        // an anchor is answered rather than asked about.
+        expect(spent.anchored,).toBe(spent.plain,);
+        expect(anchored.findings,).toContain(notApplicableFinding({ chunkIndex: anchorIndex, },),);
+        // The document is what it would have been without the anchor: this lane
+        // fills nothing, and the passage stays missing until the other one does.
+        expect(anchored.repairedText,).toBe(plain.repairedText,);
+        // Still one row per prepared slice, so a reader joining the two lanes
+        // slice by slice does not see a shorter document here.
+        expect(anchored.sliceTexts
+          .length,).toBe(withAnchor.slices
+          .length,);
+        expect(anchored.shippedChunkIndices,).not.toContain(anchorIndex,);
       },
     },),
 

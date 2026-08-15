@@ -6,6 +6,8 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { isInsertionChunk, } from './chunk-placement.ts';
+import { notApplicableRepair, } from './repair-not-applicable.ts';
 import {
   type PreparedDocumentPair,
   prepareDocumentPair,
@@ -233,6 +235,23 @@ export async function repairPreparedDocument(
      * stages are asked, and where a slice sits is not part of that question.
      */
     const { chunkIndex, } = slice.target;
+    if (isInsertionChunk(slice.target,)) {
+      // NOTHING TO REPAIR, and nothing bought to discover that. Every stage of
+      // this lane reads existing wording, so an anchor would have critics
+      // filing complaints about a blank at full roster cost.
+      //
+      // The dominance check below is skipped with it, which is sound rather
+      // than convenient: the tally reads `outcomes` by position, and this
+      // outcome contributes zero target characters, no standing vote and no
+      // anchoring evidence, which is exactly what a missing entry contributes.
+      // The verdict would be the one the previous slice already produced.
+      rl.info(
+        `chunk ${String(chunkIndex,)}: no translation to repair; `
+          + 'the translate lane owns this passage',
+      );
+      outcomes.push(notApplicableRepair({ chunkIndex, },),);
+      continue;
+    }
 
     /**
      * Cross-run key for this slice.
