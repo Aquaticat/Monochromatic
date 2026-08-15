@@ -10705,3 +10705,59 @@ memoized nowhere. That is the cold-warm agreement rule rather than an oversight.
 A warm run finds nothing cached for an unfilled slice and buys it again, so an
 in-run memo would make a cold run cheaper than a warm one over the same
 document, which is the divergence that memo exists to prevent.
+
+### Landing four has its guard and its grouper, and is not wired
+
+Two commits, both inert: `40d335504` adds the check the landing needs before its
+producer changes, and `70f46b590` adds the grouper beside the existing one. The
+slicing every run uses is untouched, so this can be proven before it decides a
+corpus.
+
+THE GUARD FIRST, because it is the one correction on the landing's list with
+nothing behind it. A content span's offsets come from the first and last node of
+its run and its text is sliced from those offsets, so a block lying between two
+members of the run but missing from it is INSIDE the range, agrees with the
+document byte for byte, and passes every check there was. Assembly then writes
+over the range, replacing a block no lane ever read. `assertSpanContiguity` runs
+at preparation, where the document's whole node sequence is in hand, and checks
+by identity rather than by count: a slice carrying one block from outside its
+range and one fewer from inside would count correctly and describe two different
+passages. Every slice produced today passes it, which is expected, since
+consecutive grouping cannot skip a block. A run built by FILTERING can, and that
+is what the new grouper would have done naively.
+
+THE GROUPER, in `group-source-first.ts`. A source run with no counterpart
+becomes its own unit carrying the BOUNDARY its translation belongs at, rather
+than being folded into a neighbour that already covers text and has nowhere to
+put a rendering. A paired unit never spans such a gap. Target intervals are
+taken as a slice of the whole target sequence between the first and last
+supported index, so a target-only block inside the interval belongs to the unit
+rather than falling out of its run; a target-only run that pairs with nothing
+joins the unit before it, or the one after it when there is none, rather than
+becoming a block no slice covers and nobody reviews.
+
+SPLIT FROM THE ALIGNING on purpose, which is also why the tests read the way
+they do. `groupAlignedSteps` takes the steps; `groupSourceFirst` is the wrapper
+that computes them. Which block pairs with which is the aligner's judgement from
+similarity, and the first draft of these tests asserted an anchor's boundary
+after feeding Chinese and English through the real aligner: it failed, because
+the aligner had paired the blocks differently and the test was measuring that
+rather than the grouping. The structural cases now write their steps out.
+
+WHAT THE WIRING STILL OWES, which is the rest of landing four:
+
+-   `subdivideChunkPair` calls `groupSourceFirst` instead of `groupNodesAligned`,
+    turns a paired unit into a `ChunkPair` as it does now, and turns an anchored
+    unit into a pair whose target side is `makeInsertionChunk` at the boundary.
+    The boundary is a target NODE INDEX; the offset is that node's start, or the
+    section's end when the index is the block count.
+-   `mergeOneSidedRuns` and the unreachable proportional branch come out with it.
+-   Several existing fixtures will break, and correctly: any that assert a
+    one-sided run folded into a neighbour are asserting the behaviour this
+    replaces.
+-   `alignmentPairCount` stops meaning what it says once insertions enter the
+    pairs, per `#100`.
+
+WHAT IT WILL COST IN CACHE TERMS: nothing measurable. Re-slicing changes slice
+texts, which changes both lanes' keys, and the runs directory holds no record
+under either lane's current version.
