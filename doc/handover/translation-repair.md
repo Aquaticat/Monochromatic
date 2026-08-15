@@ -10865,3 +10865,42 @@ THE MEASUREMENTS ARE REPEATABLE: `scratchpad/merge-census.mjs` for blocks and
 `scratchpad/section-census.mjs` for sections, both reading the pinned corpus and
 spending no quota. Neither prints corpus text into anything durable; the hand
 samples were read in the terminal only.
+
+### Four findings from the section review, three fixed and one refuted
+
+The review that blocked landing five also found defects in code that is already
+running, and they are independent of the decision it blocked.
+
+THE CONTIGUITY CHECK COULD NOT SEE A CUT BLOCK. It counted document nodes wholly
+inside a span's range, so a range stopping partway through a paragraph hid in
+the gap between two facts: the straddled block is not inside, so it was not
+counted, and a span carrying nothing across half a paragraph agreed with itself.
+It now reads every node the range touches and refuses a partial one by name.
+
+THE SAME CHECK SKIPPED INSERTIONS ENTIRELY, and the layout check cannot cover
+them either: an empty span starts where it ends, so it never overlaps a
+neighbour however wrong its offset is. An anchor strictly inside a block would
+have had assembly split that block around the inserted text. Refused now, and
+both guards were shown to fail against the previous version.
+
+THE FRAGMENT TRIM WAS DESCRIBED WRONGLY RATHER THAN WRITTEN WRONGLY. Its comment
+said it cut blank-line material and nothing else, and the trailing side cuts
+spaces too, including the two that make a Markdown hard break. Every caller
+reaches it through `composeInsertion`, which joins fragments with a blank line,
+and a hard break before a blank line breaks nothing, so the behaviour is right
+and the claim was not. The comment now names the condition that makes it safe
+and a test pins both ends, so a join that ever put two fragments on consecutive
+lines fails there.
+
+THE FLOATING-POINT CONCERN DOES NOT BITE, and this is the one worth recording
+because it was a plausible cause of a real symptom. Lexicographic scores are
+compared with strict equality while forward and backward path sums recombine the
+same affinities in different orders, so a genuinely optimal edge could fail the
+comparison and manufacture an ambiguous refusal. Measured: comparing with a
+tolerance of 1e-9 leaves all eleven unpaired source sections exactly as they
+were, and so does a tolerance of 0.05. THE PROBE CAN SHOW A DIFFERENCE, which is
+what makes those nulls worth anything: making every comparison return true moves
+the same census from 11 unpaired source sections in 2 entries to 35 in 7.
+So the refusals are the scorer's own judgement rather than numerical noise,
+which strengthens rather than weakens what `#106` concluded. The scorer was left
+alone; quantizing it can wait until something inserts on its verdicts.
