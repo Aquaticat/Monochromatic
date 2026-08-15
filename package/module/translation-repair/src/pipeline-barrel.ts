@@ -144,6 +144,12 @@ export {
   type PreparedDocumentPair,
   prepareDocumentPair,
 } from './document-preparation.ts';
+export {
+  footnoteIdentifiers,
+  guardFootnoteAssembly,
+  type GuardedAssembly,
+  introducedFootnoteFindings,
+} from './assembly-integrity.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,
