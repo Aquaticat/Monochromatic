@@ -1,31 +1,32 @@
-import {
-  mkdir,
-  readdir,
-  readFile,
-  rm,
-  writeFile,
-} from 'node:fs/promises';
+import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { isJsonRecord, } from '../json-guard.ts';
 import type { ChunkRepairOutcome, } from '../repair-contract.ts';
 import type { SliceCache, } from '../slice-cache.ts';
+import {
+  TRANSLATE_SLICE_CACHE_VERSION,
+  type TranslateSliceRecord,
+} from '../translate-document-contract.ts';
+import {
+  belongsToNamespace,
+  openNamespacedCache,
+  readDirectoryNames,
+  REPAIR_SLICE_NAMESPACE,
+  TRANSLATE_SLICE_NAMESPACE,
+} from './slice-cache-namespace.ts';
 
 //region Slice cache store
 // Disk-backed per-entry slice cache making a large corpus document resumable:
-// every finished slice is one JSON file named by its hash, so a run aborted at
-// the hard cap resumes from the last finished slice on the next attempt. A
-// settled entry drops its whole directory. The cache stores repairChunk
-// OUTCOMES, so a pipeline change invalidates it -- wipe this directory whenever
-// artifacts are wiped for a restart.
+// every settled slice is one JSON file named by its hash, so a run aborted at
+// the hard cap resumes from the last settled slice on the next attempt.
+//
+// TWO LANES SHARE ONE ENTRY DIRECTORY, each owning a file prefix and its own
+// generation marker: see `slice-cache-namespace.ts`. This file holds what each
+// lane stores and how a settled entry is dropped.
 
 /**
- * File suffix of one persisted slice outcome.
- */
-const JSON_SUFFIX = '.json';
-
-/**
- * Whether a parsed cache file is a usable slice outcome. A half-written or
+ * Whether a parsed cache file is a usable repair outcome. A half-written or
  * stale file that misses these fields is treated as absent and recomputed.
  *
  * @param value - parsed JSON of a cache file
@@ -55,79 +56,45 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
 }
 
 /**
- * Loads an entry's finished slice outcomes into a resume map keyed by slice
- * hash, tolerating a missing directory and half-written files.
+ * Whether a parsed cache file is a usable translate record.
  *
- * @param dir - per-entry slice-cache directory
+ * Checks the LANE and the SCHEMA before anything else. A repair outcome carries
+ * neither, so it can never be resumed as a translation however the file is
+ * named, and a record written under an older schema is recomputed rather than
+ * read with fields that have since changed meaning.
  *
- * @returns Map of slice hash to finished outcome, empty when none exist
+ * @param value - parsed JSON of a cache file
+ *
+ * @returns True when the value is this schema's translate record
  *
  * @example
  * ```ts
- * const resumed = await loadResumedSlices({ dir: entryCacheDir, },);
+ * if (isTranslateSliceRecord(parsed,)) resumed.set(key, parsed,);
  * ```
  */
-async function loadResumedSlices(
-  { dir, }: { readonly dir: string; },
-): Promise<Map<string, ChunkRepairOutcome>> {
-  /**
-   * Finished slice outcomes keyed by hash.
-   */
-  const resumed = new Map<string, ChunkRepairOutcome>();
-
-  /**
-   * Cache file names present under the directory.
-   */
-  let names: readonly string[] = [];
-  try {
-    names = await readdir(dir,);
-  }
-  catch (error) {
-    // An absent directory (ENOENT) means no prior progress; anything else
-    // is a real fault and must surface.
-    if (!(Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT')))
-      throw error;
-  }
-
-  for (const name of names) {
-    if (!name.endsWith(JSON_SUFFIX,))
-      continue;
-    try {
-      /**
-       * Parsed JSON of this cache file, checked before it is trusted.
-       */
-      /* oxlint-disable-next-line no-await-in-loop -- small per-entry cache read sequentially at setup */
-      const parsed: unknown = JSON.parse(await readFile(
-        join(
-          dir,
-          name,
-        ),
-        'utf8',
-      ),);
-      if (isChunkRepairOutcome(parsed,))
-        resumed.set(
-          name.slice(
-            0,
-            -JSON_SUFFIX.length,
-          ),
-          parsed,
-        );
-    }
-    catch (error) {
-      // A half-written file (SyntaxError) is recomputed; other faults surface.
-      if (!(error instanceof SyntaxError))
-        throw error;
-    }
-  }
-  return resumed;
+function isTranslateSliceRecord(
+  value: unknown,
+): value is TranslateSliceRecord {
+  return isJsonRecord(value,)
+    && (value.kind === 'translate-slice')
+    && (value.schemaVersion === TRANSLATE_SLICE_CACHE_VERSION)
+    && ((typeof value.chunkIndex) === 'number')
+    && ((typeof value.outputText) === 'string')
+    && ((typeof value.changed) === 'boolean')
+    && ((value.disposition === 'stage-result')
+      || (value.disposition === 'refused-alignment'))
+    && isJsonRecord(value.stageResult,)
+    && isJsonRecord(value.alignment,)
+    && Array.isArray(value.findings,);
 }
 
 /**
- * Lists entries under the slice-cache root that carry at least one finished
- * slice, so the pass can resume an in-flight document to completion before
- * starting fresh ones. A settled entry (directory discarded) or one that
- * aborted before finishing any slice (empty directory) contributes nothing.
+ * Lists entries under the slice-cache root that carry at least one settled
+ * slice in EITHER lane, so the pass can resume an in-flight document to
+ * completion before starting fresh ones.
+ *
+ * A settled entry (directory discarded) or one that aborted before settling
+ * anything (empty directory) contributes nothing.
  *
  * @param dir - slice-cache root holding one subdirectory per entry
  *
@@ -142,46 +109,41 @@ export async function listResumableEntries(
   { dir, }: { readonly dir: string; },
 ): Promise<Set<string>> {
   /**
-   * Entry ids with one or more finished slices on disk.
+   * Entry ids with one or more settled slices on disk.
    */
   const resumable = new Set<string>();
 
   /**
    * Per-entry subdirectory names under the cache root.
    */
-  let ids: readonly string[] = [];
-  try {
-    ids = await readdir(dir,);
-  }
-  catch (error) {
-    // An absent cache root (ENOENT) means no in-flight documents; anything
-    // else is a real fault and must surface.
-    if (!(Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT')))
-      throw error;
-    return resumable;
-  }
-
+  const ids = await readDirectoryNames({ dir, },);
   for (const id of ids) {
     try {
       /**
        * File names inside this entry's cache directory.
        */
       /* oxlint-disable-next-line no-await-in-loop -- small one-time setup scan over per-entry dirs */
-      const names = await readdir(join(
+      const names = await readDirectoryNames({ dir: join(
         dir,
         id,
-      ),);
-      if (names.some(function isSliceFile(name,) {
-        return name.endsWith(JSON_SUFFIX,);
+      ), },);
+      if (names.some(function isSliceFile(name,): boolean {
+        return belongsToNamespace({
+          name,
+          namespace: REPAIR_SLICE_NAMESPACE,
+        },)
+          || belongsToNamespace({
+            name,
+            namespace: TRANSLATE_SLICE_NAMESPACE,
+          },);
       },))
         resumable.add(id,);
     }
     catch (error) {
-      // A non-directory child (ENOTDIR) or one removed mid-scan (ENOENT)
-      // simply carries no resumable slices; other faults are real.
+      // A non-directory child (ENOTDIR) simply carries no resumable slices;
+      // other faults are real.
       if (!(Error.isError(error,) && ('code' in error)
-        && ((error.code === 'ENOENT') || (error.code === 'ENOTDIR'))))
+        && (error.code === 'ENOTDIR')))
         throw error;
     }
   }
@@ -189,75 +151,13 @@ export async function listResumableEntries(
 }
 
 /**
- * File recording which pipeline produced the slices in a cache directory.
- *
- * Deliberately not a `.json` slice name, so {@link loadResumedSlices} cannot
- * mistake it for a finished slice.
- */
-const GENERATION_MARKER = 'generation.txt';
-
-/**
- * Reads the pipeline a cache directory was filled by.
- *
- * @param dir - per-entry slice-cache directory
- *
- * @returns Recorded pipeline digest, or empty when the cache predates
- * stamping or has never been written
- *
- * @example
- * ```ts
- * const cached = await readCacheGeneration({ dir, },);
- * ```
- */
-async function readCacheGeneration(
-  { dir, }: { readonly dir: string; },
-): Promise<string> {
-  try {
-    /**
-     * Raw marker text, including its trailing newline.
-     */
-    const text = await readFile(
-      join(
-        dir,
-        GENERATION_MARKER,
-      ),
-      'utf8',
-    );
-    return text.trim();
-  }
-  catch (error) {
-    // Absent is the ordinary state for a cache written before stamping
-    // existed, and for a directory that has never been used. Logged rather
-    // than swallowed so a permission fault is visible instead of reading as a
-    // routine miss.
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return '';
-    console.log(`SLICE cache generation unreadable in ${dir}: ${String(error,)}`,);
-    return '';
-  }
-}
-
-/**
- * Opens an entry's slice cache: ensures its directory exists, loads any
- * finished slices produced by THIS pipeline, and returns a write-through cache.
- *
- * A cache filled by a different pipeline is DISCARDED rather than resumed.
- * Resuming it is the one generation defect no reader can catch: the settled
- * artifact records a single digest, so an entry built half from cached slices
- * and half from current code looks like ordinary work to every filter
- * downstream, while being internally mixed. Cross-artifact mixing is at least
- * visible in a census; this is not visible anywhere.
- *
- * An UNSTAMPED cache is discarded for the same reason. It cannot prove which
- * pipeline filled it, and an unprovable cache is exactly the case the stamp
- * exists to remove.
+ * Opens an entry's REPAIR slice cache.
  *
  * @param dir - per-entry slice-cache directory
  *
  * @param generation - digest of the built pipeline this pass runs
  *
- * @returns Cache resuming finished slices and persisting new ones
+ * @returns Cache resuming settled repair slices and persisting new ones
  *
  * @example
  * ```ts
@@ -273,79 +173,52 @@ export async function openSliceCache(
     readonly generation: string;
   },
 ): Promise<SliceCache<ChunkRepairOutcome>> {
-  await mkdir(
+  return await openNamespacedCache({
     dir,
-    { recursive: true, },
-  );
-
-  /**
-   * Pipeline that filled this cache, empty when it never said.
-   */
-  const cached = await readCacheGeneration({ dir, },);
-
-  /**
-   * Slices this entry already finished on earlier runs, kept only when the
-   * pipeline that produced them is the one running now.
-   */
-  const resumed = (cached === generation)
-    ? await loadResumedSlices({ dir, },)
-    : new Map<string, ChunkRepairOutcome>();
-
-  if (cached !== generation) {
-    /**
-     * Slices about to be thrown away, counted before the directory is cleared.
-     */
-    const discarded = await loadResumedSlices({ dir, },);
-    if (discarded.size > 0)
-      console.log(
-        `SLICE discarding ${String(discarded.size,)} cached slices in ${dir}: `
-          + `filled by ${cached === '' ? '(unstamped)' : cached}, `
-          + `running ${generation}`,
-      );
-    await rm(
-      dir,
-      {
-        recursive: true,
-        force: true,
-      },
-    );
-    await mkdir(
-      dir,
-      { recursive: true, },
-    );
-  }
-
-  // Written after any discard, so the marker always describes what the
-  // directory now holds. A torn write reads as a mismatch on the next open,
-  // which discards rather than resumes, so the failure direction is safe.
-  await writeFile(
-    join(
-      dir,
-      GENERATION_MARKER,
-    ),
-    `${generation}\n`,
-  );
-
-  return {
-    resumed,
-    persist: async function persistSlice({
-      key,
-      serialized,
-    },): Promise<void> {
-      await writeFile(
-        join(
-          dir,
-          `${key}${JSON_SUFFIX}`,
-        ),
-        `${serialized}\n`,
-      );
-    },
-  };
+    generation,
+    namespace: REPAIR_SLICE_NAMESPACE,
+    isValue: isChunkRepairOutcome,
+  },);
 }
 
 /**
- * Discards a settled entry's slice cache, bounding the cache directory to
+ * Opens an entry's TRANSLATE slice cache, beside the repair one.
+ *
+ * @param dir - per-entry slice-cache directory
+ *
+ * @param generation - digest of the built pipeline this pass runs
+ *
+ * @returns Cache resuming settled translate slices and persisting new ones
+ *
+ * @example
+ * ```ts
+ * const translateCache = await openTranslateSliceCache({ dir: entryCacheDir, generation, },);
+ * ```
+ */
+export async function openTranslateSliceCache(
+  {
+    dir,
+    generation,
+  }: {
+    readonly dir: string;
+    readonly generation: string;
+  },
+): Promise<SliceCache<TranslateSliceRecord>> {
+  return await openNamespacedCache({
+    dir,
+    generation,
+    namespace: TRANSLATE_SLICE_NAMESPACE,
+    isValue: isTranslateSliceRecord,
+  },);
+}
+
+/**
+ * Discards a settled entry's whole slice cache, bounding the cache directory to
  * documents still in flight.
+ *
+ * Takes the DIRECTORY rather than one lane, because it runs when the entry is
+ * finished: every lane is done with it, and leaving one lane's files behind
+ * would keep the entry listed as resumable forever.
  *
  * @param dir - per-entry slice-cache directory
  *

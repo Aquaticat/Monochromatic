@@ -37,6 +37,8 @@ import {
   discardSliceCache,
   listResumableEntries,
   openSliceCache,
+  openTranslateSliceCache,
+  TRANSLATE_SLICE_CACHE_VERSION,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -112,6 +114,46 @@ function catOutcome({ chunkIndex, }: { readonly chunkIndex: number; },) {
     heardCritics: 6,
     heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:zai-org/GLM-5.2',],
     claimAttributions: [],
+    findings: [],
+  };
+}
+
+/**
+ * A complete translate record, carrying every field its loader checks.
+ *
+ * @param chunkIndex - slice position this record belongs to
+ *
+ * @returns Record shaped as the translate driver writes it
+ *
+ * @example
+ * ```ts
+ * const record = catTranslateRecord({ chunkIndex: 0, },);
+ * ```
+ */
+function catTranslateRecord({ chunkIndex, }: { readonly chunkIndex: number; },) {
+  return {
+    kind: 'translate-slice',
+    schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
+    chunkIndex,
+    stageResult: {
+      text: 'The cat naps on the windowsill.',
+      origin: 'fresh',
+      decision: 'judged',
+      findings: [],
+      slate: [],
+      ballots: [],
+      perCandidate: [],
+    },
+    outputText: 'The cat naps on the windowsill.',
+    changed: true,
+    disposition: 'stage-result',
+    alignment: {
+      kind: 'within-limit',
+      sourceCodePoints: 9,
+      incumbentCodePoints: 31,
+      minProtectedIncumbent: 128,
+      maxRatio: 16,
+    },
     findings: [],
   };
 }
@@ -515,6 +557,194 @@ await describe({
         },);
 
         expect((await listResumableEntries({ dir: scratch.path, },)).size,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: openTranslateSliceCache.name,
+  children: [
+    it({
+      name: 'ROUND-TRIPS a translate record, the same property the repair '
+        + 'cache rests on: a persist and a loader that disagreed about file '
+        + 'names would silently recompute every slice forever',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry directory both lanes share.
+         */
+        const dir = join(
+          scratch.path,
+          'whiskers',
+        );
+
+        /**
+         * Cache this run writes into.
+         */
+        const first = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        await first.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catTranslateRecord({ chunkIndex: 0, },),),
+        },);
+
+        /**
+         * Same cache reopened, as the next attempt does.
+         */
+        const second = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        expect(second.resumed.get('slice-hash-aaa',)
+          ?.chunkIndex,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'NEVER resumes a repair outcome as a translation, however the file '
+        + 'is named. The two lanes share one directory, and a repair outcome '
+        + 'carries neither the lane discriminator nor the schema, so the guard '
+        + 'refuses it rather than reading fields that mean something else',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry directory both lanes share.
+         */
+        const dir = join(
+          scratch.path,
+          'whiskers',
+        );
+        await mkdir(
+          dir,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            dir,
+            'translate.slice-hash-aaa.json',
+          ),
+          JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        );
+        await writeFile(
+          join(
+            dir,
+            'translate-generation.txt',
+          ),
+          `${TEST_GENERATION}\n`,
+        );
+
+        /**
+         * Cache opened over that misfiled outcome.
+         */
+        const cache = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        expect(cache.resumed.size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE OTHER LANE\'S SLICES when its own generation moves. One '
+        + 'shared marker and a directory-wide delete, which is what this '
+        + 'replaced, means a translate change throws away every settled repair '
+        + 'slice in the corpus and nothing reports the loss',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry directory both lanes share.
+         */
+        const dir = join(
+          scratch.path,
+          'whiskers',
+        );
+
+        /**
+         * Repair slice settled under the current pipeline.
+         */
+        const repair = await openSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        await repair.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        },);
+
+        /**
+         * Translate slice settled under the same one.
+         */
+        const translate = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        await translate.persist({
+          key: 'slice-hash-bbb',
+          serialized: JSON.stringify(catTranslateRecord({ chunkIndex: 0, },),),
+        },);
+
+        // The translate lane's pipeline moves and the repair lane's does not,
+        // which is the ordinary shape of a change to one lane.
+        const moved = await openTranslateSliceCache({
+          dir,
+          generation: `sha256-tree-v1:${'b'.repeat(64,)}`,
+        },);
+        expect(moved.resumed.size,).toBe(0,);
+
+        /**
+         * Repair cache reopened after that discard.
+         */
+        const survived = await openSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        expect(survived.resumed.get('slice-hash-aaa',)
+          ?.chunkIndex,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'does not adopt the other lane\'s files as its own: the repair '
+        + 'lane owns unprefixed names and must not read a translate record, '
+        + 'which would resume a translation as a repair outcome',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry directory both lanes share.
+         */
+        const dir = join(
+          scratch.path,
+          'whiskers',
+        );
+
+        /**
+         * Translate slice settled first.
+         */
+        const translate = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        await translate.persist({
+          key: 'slice-hash-bbb',
+          serialized: JSON.stringify(catTranslateRecord({ chunkIndex: 0, },),),
+        },);
+
+        /**
+         * Repair cache opened over the same directory.
+         */
+        const repair = await openSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        expect(repair.resumed.size,).toBe(0,);
+        expect((await listResumableEntries({ dir: scratch.path, },)).size,).toBe(1,);
       },
     },),
   ],

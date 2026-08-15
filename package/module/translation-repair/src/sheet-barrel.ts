@@ -102,6 +102,7 @@ export {
   discardSliceCache,
   listResumableEntries,
   openSliceCache,
+  openTranslateSliceCache,
 } from './corpus-run/slice-cache-store.ts';
 export { indexReadingsByIssue, } from './probe-issue-index.ts';
 export {
