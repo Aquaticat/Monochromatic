@@ -1095,52 +1095,72 @@ That ordering costs nothing, because C keeps B's denominator.
     tally. It now shows up as `stage-voice-lost (translate model)` with one
     fewer heard translator, which is the same event described honestly. The
     blank filter downstream stays as a backstop and should now never fire.
-28. HOW MUCH SHOULD IT COST TO TELL A MISSING PARAGRAPH FROM A MOVED ONE?
-    THE FINDING: the block aligner can only pair one with one, skip a source
-    block, or skip a target block. It cannot say that two source paragraphs
-    were rendered as one, so a merged pair reports the second paragraph as
-    `source-only`, which is the same step a genuinely untranslated paragraph
-    produces. Landing four turns that step into an insertion, so wired as
-    designed it would render a passage the translation already carries and
-    insert it a second time.
-    MEASURED over the pinned corpus: 2290 paired steps, 95 source-only, in 23
-    of 92 entries, sixty of the ninety-five inside two entries. A hand sample of
-    twelve says the strongest ones are merges (one entry renders four
-    consecutive lines as a single English block) and the weakest ones are
-    MISPAIRINGS (a footnote definition paired with the wrong footnote, a
-    narration line paired with a translation three blocks away). Genuine
-    omission was the minority of what I read.
-    WHY IT IS YOURS TO ANSWER: every path below is correct. They differ in what
-    they spend and in how long the lane stays unable to fill a real gap.
-    A. FIX BLOCK ALIGNMENT FIRST, then revisit anchors. Pros: the mispairing
-    half of the sample is a defect rather than a limit, `#74` already owns the
-    scoring, and every later stage reads better pairs. Cons: it is the largest
-    of the four, it does not by itself separate a merge from an omission, and
-    landing four waits on it.
-    B. ASK A MODEL PER ORPHAN RUN whether the neighbouring translation already
-    carries the passage. Pros: reads meaning, which is the only thing that
-    actually settles it; the answer caches like every other slice; ninety-five
-    orphans corpus-wide is a small bill. Cons: a new stage with its own prompt,
-    schema, roster and failure modes, and it inherits whatever the aligner got
-    wrong about which blocks are neighbours.
-    C. DROP BLOCK-LEVEL ANCHORS, keep only SECTION-level ones. Pros: a source
-    section with no target section at all is far stronger evidence than a single
-    unpaired block, it is landing five and already designed, and it covers the
-    case that motivated the whole thing. Cons: leaves paragraph-scale omissions
-    where they are, folded into a neighbour, which is where they are today.
-    D. ANCHOR ANYWAY AND LET THE LANE DECLINE. Pros: the translate lane already
-    declines and records why, and the judges already read a stated decline
-    consequence; it costs a prompt change rather than a stage. Cons: it asks the
-    judges to notice a duplication they were never shown, since the sheet does
-    not carry the neighbouring translation today, and a wrong decline inserts
-    into the archive.
-    MY RANKING: C > A > B > D.
-    C over A because C ships the motivating case now and A blocks it behind the
-    largest piece of work in the list.
-    A over B because B builds a new stage on top of pairings A would have
-    corrected, and a coverage question about the wrong neighbour is worth
-    little.
-    B over D because B asks the question directly, where D asks the judges to
-    infer it from material they are not given.
-    WHAT I WILL DO IF YOU DO NOT ANSWER: C, since it is already designed and
-    blocked on nothing, and it leaves A, B and D open.
+28. WHAT COUNTS AS PROOF THAT A PASSAGE WAS NEVER TRANSLATED?
+    THE PIPELINE IS ABOUT TO ACT ON AN ANSWER IT DOES NOT HAVE. Both halves of
+    the one-sided slicing work insert text where an aligner reports no
+    counterpart: at paragraph scale (landing four) and at section scale
+    (landing five). I measured what those reports are actually made of, and
+    they are not evidence of a missing translation.
+    AT PARAGRAPH SCALE: the block aligner can pair one with one, skip a source
+    block, or skip a target block, and nothing else. It cannot say two source
+    paragraphs were rendered as one, so a merged pair reports the second as
+    unpaired, identically to an omission. Corpus: 2290 paired steps, 95
+    unpaired source blocks, in 23 of 92 entries, sixty of them inside two
+    entries. A hand sample of twelve found the strongest signals were merges
+    (one entry renders four consecutive lines as a single English block) and
+    the weakest were MISPAIRINGS (a footnote definition paired with the wrong
+    footnote; a narration line paired with a translation three blocks away).
+    AT SECTION SCALE IT IS WORSE, which is the opposite of what I expected and
+    the reason this question replaced an earlier draft. Eighty-five of the 92
+    entries never reach the section matcher at all, because equal heading
+    counts short circuit it (`#98`). Of the seven that do, two produce unpaired
+    source sections, eleven in total. EIGHT OF THE ELEVEN ARE FALSE: one entry
+    has every one of its sections translated under an English heading that
+    plainly corresponds, and the matcher refused them all with reason
+    "ambiguous". Inserting on those eleven would add about seven thousand
+    characters of duplicate translation to a document that is already complete,
+    and the refusal reason is the same word on the true ones, so there is no
+    field to filter by.
+    THE THREE GENUINE ONES are the tail sections of the entry `#71` is about,
+    which the English never carried.
+    WHY IT IS YOURS TO ANSWER: the paths differ in expense and in how long the
+    lane stays unable to fill a real gap. None of them is wrong.
+    A. ASK A MODEL WHETHER THE TARGET DOCUMENT CARRIES THIS PASSAGE AT ALL,
+    scoped to the whole translation rather than to the neighbours the aligner
+    picked. Pros: it is the only option immune to the pairing quality this
+    measurement just impeached, since it never consults the pairing; about a
+    hundred and six questions corpus-wide is a small bill; it caches like every
+    other slice; and it answers both scales with one mechanism. Cons: a new
+    stage with its own prompt, schema, roster and failure modes, and a long
+    document makes a long question.
+    B. FIX ALIGNMENT FIRST, then revisit insertion. Pros: the mispairings and
+    the ambiguous refusals are defects rather than limits, `#74` and `#98`
+    already own them, and every stage reads better pairs, not just this one.
+    Cons: the largest item here, it does not by itself separate a merge from an
+    omission, and both landings wait on it.
+    C. INSERT ONLY WHERE THE EVIDENCE IS ALREADY OVERWHELMING, meaning a source
+    section whose absence is corroborated by more than the matcher's refusal:
+    no target heading resembles it, and the target document is shorter than the
+    source by about that section's size. Pros: no new stage, no model call, and
+    it would have admitted the three true ones and refused the eight false ones
+    in this corpus. Cons: a threshold tuned on two entries is a threshold tuned
+    on nothing, and it silently does nothing on the 85 entries that skip the
+    matcher.
+    D. DO NOT INSERT AT ALL for now. Keep both landings parked, ship the
+    translate lane over slices that HAVE incumbent text, and revisit when
+    alignment is trustworthy. Pros: no corpus risk whatever; every invariant
+    built for insertion stays and stays tested. Cons: the archive's genuinely
+    missing sections stay missing, which is the thing the second lane exists
+    for.
+    MY RANKING: A > B > D > C.
+    A over B because A unblocks the lane now and B is a prerequisite for
+    nothing else in the list: a coverage question asked of the whole document
+    does not care whether the aligner paired the sections correctly.
+    B over D because B is work that pays off in every stage, where D is a
+    holding position.
+    D over C because C's threshold would be fitted to two entries, and a
+    confident wrong insertion is the failure this whole question exists to
+    avoid.
+    WHAT I WILL DO IF YOU DO NOT ANSWER: A, prototyped behind the same
+    zero-quota plan mode the other stages have, so nothing reaches the corpus
+    until you have seen it measured.

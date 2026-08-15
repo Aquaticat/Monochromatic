@@ -10826,3 +10826,42 @@ doc, because they differ in expense rather than in correctness.
 WHAT IS STILL TRUE AND UNBLOCKED: the guard (`40d335504`), the grouper and its
 tests, the reflow rule, the boundary value, and every invariant landed earlier.
 Nothing calls the grouper, so none of it decides a corpus yet.
+
+### The section-level census, which refuted the plan it was run to support
+
+Landing five looked unblocked: a source section with no target section is
+stronger evidence than a single unpaired block, so it could ship while landing
+four waited. That belief lasted until it was measured, and the measurement is
+the reason nothing was built on it.
+
+WHAT THE CORPUS HOLDS: 92 entries, of which 85 never reach the section matcher
+at all, because equal heading counts short circuit it (`#98`). Of the seven that
+do, two produce unpaired source sections, eleven in total.
+
+EIGHT OF THE ELEVEN ARE FALSE. One entry carries eight Chinese sections whose
+English counterparts are plainly there under corresponding headings, and the
+matcher refused every one of them with reason `ambiguous`. Its target side
+carries a preamble chunk the source lacks, which is `#74`'s asymmetric-preamble
+finding arriving one level up. Inserting on those eleven would have added about
+seven thousand characters of duplicate translation to a document that is already
+complete. The three true ones are the tail sections of the entry `#71` is about.
+
+THE REFUSAL REASON DOES NOT SEPARATE THEM: all eleven say `ambiguous`, so there
+is no field a filter could read. The matcher distinguishes PAIRED from UNPAIRED
+and nothing else, and an insertion needs a third verdict it never produces.
+
+SO BOTH LANDINGS REST ON THE SAME MISSING THING, and it is not a slicing
+problem. Question 28 in the decisions doc puts the four ways out, and its
+ranking changed because of this census: the option that asks a model whether the
+translation carries a passage AT ALL is the only one that does not consult the
+pairing this measurement impeached.
+
+WHAT THIS DOES NOT CHANGE: everything landed so far stays. The guards, the
+grouper, the reflow rule, the boundary value, the delivery ledger and the
+absent-incumbent lane are all correct and tested, and none of them decides a
+corpus until something wires the grouper up.
+
+THE MEASUREMENTS ARE REPEATABLE: `scratchpad/merge-census.mjs` for blocks and
+`scratchpad/section-census.mjs` for sections, both reading the pinned corpus and
+spending no quota. Neither prints corpus text into anything durable; the hand
+samples were read in the terminal only.
