@@ -409,13 +409,64 @@ await describe({
           .translatedText,).toContain(FRESH,);
         expect(lanes.translate
           .translatedText,).not.toBe(TARGET_TEXT,);
-        // Nothing merged the two, and nothing named a winner.
+        // Nothing merged the two, and nothing named a winner. The two ledgers
+        // are per lane and DESCRIBE rather than decide: each says what its own
+        // lane's document carries, and neither mentions the other lane, so the
+        // question of which document ships is still unanswered here.
         expect(Object.keys(lanes,)
           .toSorted(),).toEqual([
           'alignmentFindings',
           'repair',
+          'repairDelivery',
           'translate',
+          'translateDelivery',
         ],);
+      },
+    },),
+
+    it({
+      name: 'hands back one delivery row per prepared slice FOR EACH LANE, and each ledger describes '
+        + 'its own lane`s document: the rows a lane ships are the slices that lane`s result names, and '
+        + 'writing them over the archive reproduces exactly that lane`s text',
+      fn: async () => {
+        /**
+         * Schemas the run served, in order.
+         */
+        const served: SchemaLog = [];
+
+        const lanes = await runLanes({ served, },);
+        expect(lanes.repairDelivery
+          .length,).toBe(lanes.repair
+          .sliceCount,);
+        expect(lanes.translateDelivery
+          .length,).toBe(lanes.translate
+          .sliceCount,);
+
+        /**
+         * Slices the translate lane's document carries a change for, read off
+         * its ledger rather than off its index set.
+         */
+        const translateShipped = lanes.translateDelivery
+          .filter(function carriesAChange(record,): boolean {
+            return record.shipment
+              .kind === 'replacement-shipped';
+          },)
+          .map(function toIndex(record,): number {
+            return record.chunkIndex;
+          },);
+        expect(translateShipped,).toEqual(lanes.translate
+          .shippedChunkIndices,);
+
+        /**
+         * Whether any repair row claims the document carries a change, which
+         * this fixture's repair lane found nothing to make.
+         */
+        const repairShipped = lanes.repairDelivery
+          .some(function carriesAChange(record,): boolean {
+            return record.shipment
+              .kind === 'replacement-shipped';
+          },);
+        expect(repairShipped,).toBe(false,);
       },
     },),
 

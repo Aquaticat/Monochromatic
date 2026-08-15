@@ -6,7 +6,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { ChunkPair, } from './chunk-document.ts';
+import { assertDeliveryAgreesWithDocument, } from './delivery-invariants.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import type { LaneSliceText, } from './lane-slice-text.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
@@ -15,6 +18,10 @@ import type { RepairTranslationResult, } from './repair-result.ts';
 import { repairPreparedDocument, } from './repair-translation.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import {
+  buildSliceDelivery,
+  type SliceDeliveryRecord,
+} from './slice-delivery.ts';
 import type {
   TranslateDocumentResult,
   TranslateModels,
@@ -73,7 +80,94 @@ export type DocumentLanesResult = {
    * What the translate lane returned, exactly as it returned it.
    */
   readonly translate: TranslateDocumentResult;
+
+  /**
+   * Every prepared slice as the repair lane delivered it.
+   *
+   * DERIVED, not decided: one row per slice saying what was translated, what
+   * the archive had, what the lane chose and what its document carries. Adding
+   * it answers no question about which lane wins, since each ledger describes
+   * its own lane's document and neither mentions the other.
+   */
+  readonly repairDelivery: readonly SliceDeliveryRecord[];
+
+  /**
+   * Every prepared slice as the translate lane delivered it.
+   */
+  readonly translateDelivery: readonly SliceDeliveryRecord[];
 };
+
+/**
+ * Builds one lane's ledger and checks it against that lane's own document.
+ *
+ * CHECKED HERE rather than trusted, because the ledger joins what the lane
+ * DECIDED to what its index sets say the document CARRIES, and those are two
+ * derivations. They agree by construction today; a driver holding the document
+ * is the first place able to say so rather than assume it.
+ *
+ * @param slices - preparation both lanes ran over
+ *
+ * @param incumbentText - archive's own translation, which both lanes wrote into
+ *
+ * @param documentText - text this lane returned
+ *
+ * @param wordings - what this lane decided per slice
+ *
+ * @param shippedChunkIndices - slices this lane's document carries a change for
+ *
+ * @param withdrawnChunkIndices - slices whose change assembly took back
+ *
+ * @param blocked - whether this lane refused the whole document before assembly
+ *
+ * @returns One row per prepared slice, in document order
+ *
+ * @throws {@link SliceDeliveryError} when the lane's own reports cannot
+ * describe one delivery, and {@link DeliveryInvariantError} when the rows do
+ * not describe the returned document
+ *
+ * @example
+ * ```ts
+ * const ledger = laneDelivery({ slices, incumbentText, documentText, wordings, ... },);
+ * ```
+ */
+function laneDelivery(
+  {
+    slices,
+    incumbentText,
+    documentText,
+    wordings,
+    shippedChunkIndices,
+    withdrawnChunkIndices,
+    blocked,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly incumbentText: string;
+    readonly documentText: string;
+    readonly wordings: readonly LaneSliceText[];
+    readonly shippedChunkIndices: readonly number[];
+    readonly withdrawnChunkIndices: readonly number[];
+    readonly blocked: boolean;
+  },
+): readonly SliceDeliveryRecord[] {
+  /**
+   * Rows joining this lane's three reports, one per prepared slice.
+   */
+  const ledger = buildSliceDelivery({
+    slices,
+    wordings,
+    shippedChunkIndices,
+    withdrawnChunkIndices,
+    blocked,
+  },);
+  assertDeliveryAgreesWithDocument({
+    ledger,
+    slices,
+    incumbentText,
+    documentText,
+    shippedChunkIndices,
+  },);
+  return ledger;
+}
 
 /**
  * Runs both lanes over one prepared pair and returns both outputs.
@@ -237,6 +331,32 @@ export async function runDocumentLanes(
     alignmentFindings: prepared.alignmentFindings,
     repair,
     translate,
+    repairDelivery: laneDelivery({
+      slices: prepared.slices,
+      incumbentText: prepared.targetText,
+      documentText: repair.repairedText,
+      wordings: repair.sliceTexts,
+      shippedChunkIndices: repair.shippedChunkIndices,
+      withdrawnChunkIndices: repair.withdrawnChunkIndices,
+      // The dominance refusal, which returns the archive untouched however many
+      // slices had decided a repair by the time it fired. Without this the
+      // rows for those slices would read as a contradiction rather than as
+      // what they are: decisions the document was refused before it could
+      // carry.
+      blocked: repair.status === 'blocked-non-translation',
+    },),
+    translateDelivery: laneDelivery({
+      slices: prepared.slices,
+      incumbentText: prepared.targetText,
+      documentText: translate.translatedText,
+      wordings: translate.sliceTexts,
+      shippedChunkIndices: translate.shippedChunkIndices,
+      withdrawnChunkIndices: translate.withdrawnChunkIndices,
+      // The translate lane has no whole-document refusal: it assembles what
+      // its slices decided, and the only thing that takes a decision back is
+      // the assembly guard, which the withdrawn set already names.
+      blocked: false,
+    },),
   };
 }
 

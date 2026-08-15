@@ -32,5 +32,9 @@ export {
   type SliceDeliveryRecord,
   type SliceShipment,
 } from './slice-delivery.ts';
+export {
+  assertDeliveryAgreesWithDocument,
+  DeliveryInvariantError,
+} from './delivery-invariants.ts';
 
 //endregion Document barrel
