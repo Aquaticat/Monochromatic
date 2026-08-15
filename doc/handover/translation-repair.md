@@ -190,10 +190,24 @@ PICK UP HERE (2026-08-15, after the overnight session).
 
 READ FIRST, if you are the user coming back to this:
 `doc/planning/translation-repair-open-decisions.md`.
-It holds the five questions that need your answer, each with options, pros,
+It holds the six questions that need your answer, each with options, pros,
 cons, a ranking and the measurements taken to make the question answerable.
 Question 5 was raised by the bench itself and is the one that blocks wiring.
 Everything below is the state those questions sit in.
+
+THE SHORT VERSION OF THE NIGHT, if you read one paragraph:
+ both lanes now run over one preparation and neither is chosen over the other,
+ which is the last thing that could be built without your answer to Question 5;
+ the reassembled document is checked for broken footnotes in both lanes and a
+ replacement that breaks one is withdrawn;
+ an aborted run can no longer cache slices nobody examined;
+ and the lane's budget is measured from calls already bought, with the audit
+ saying plainly which slices the bench never sampled.
+Three defects found by review were fixed and are listed under decisions 14 and
+15 and in the census correction below;
+ one of them, a footnote label folded differently by the parser and by our own
+ scan, would have silently thrown away every repair in any document a model
+ wrote a word-labelled footnote into.
 
 WHAT CHANGED OVERNIGHT, 2026-08-14 into 15:
 
@@ -424,8 +438,16 @@ of `#89`:
     which the driver refuses with nothing aborted anywhere. Demonstrated by
     swallowing the repair failure in a scratch build: that case fails at exactly
     the assertion that encodes the contract, and the abort case passes.
--   WHAT IT DOES NOT DO, and what the next piece of `#89` needs: neither lane
-    result can say WHICH slices shipped a change. The translate result counts
+-   BOTH LANE RESULTS NOW NAME THEIR SLICES, not just count them:
+    `shippedChunkIndices` and `withdrawnChunkIndices` on each. Read off the
+    guard's own surviving replacements, because a per-slice record says what
+    that slice CHOSE and the document may carry something else; a comparison
+    built from the records would credit a lane with slices it did not change.
+    The repair artifact records both, so the withdraw rate is countable over a
+    settled directory. Artifacts from before 2026-08-15 lack the fields, and a
+    reader must treat that as unknown rather than as empty.
+-   WHAT IT STILL DOES NOT DO, and what the next piece of `#89` needs: neither
+    lane result carries the per-slice TEXT pairing, accepted against shipped. The translate result counts
     withdrawals without naming them, and the repair result keeps neither its
     outcomes nor its surviving replacements. A slice-level comparison of the two
     lanes therefore needs both lane contracts widened first, which is the same

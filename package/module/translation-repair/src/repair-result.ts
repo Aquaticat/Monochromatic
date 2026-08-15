@@ -58,6 +58,27 @@ export type RepairTranslationResult = {
    * and stayed quiet and a critic that was never asked.
    */
   readonly chunkCritics: readonly ChunkCriticRecord[];
+
+  /**
+   * Slices the returned document CARRIES a repair for, in document order.
+   *
+   * Named rather than counted, because the question this lane is measured
+   * against is per slice: which slices did this lane change, and did the other
+   * lane change the same ones. A count answers neither. Empty on a blocked run,
+   * which returns its input whatever each slice decided.
+   */
+  readonly shippedChunkIndices: readonly number[];
+
+  /**
+   * Slices whose repair the assembly guard took back, in the order it took
+   * them.
+   *
+   * Disjoint from {@link RepairTranslationResult.shippedChunkIndices} by
+   * construction. Kept apart from the issue records because a withdrawal is a
+   * fact about the DOCUMENT, and a slice can be withdrawn while carrying no
+   * adjudicated issue of its own.
+   */
+  readonly withdrawnChunkIndices: readonly number[];
 };
 
 //endregion Repair result

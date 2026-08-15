@@ -173,6 +173,27 @@ export type TranslateDocumentResult = {
   readonly withdrawnSliceCount: number;
 
   /**
+   * Slices the returned document CARRIES a replacement for, in document order.
+   *
+   * Named rather than counted, because what this lane is measured against is
+   * per slice: which slices it replaced, and whether the repair lane touched
+   * the same ones. A count answers neither, and re-deriving the set from the
+   * records would re-derive it WRONG, since a record says what the slice chose
+   * rather than what the document carries.
+   */
+  readonly shippedChunkIndices: readonly number[];
+
+  /**
+   * Slices whose replacement the assembly guard took back, in the order it took
+   * them.
+   *
+   * Disjoint from {@link TranslateDocumentResult.shippedChunkIndices} by
+   * construction, and the same fact
+   * {@link TranslateDocumentResult.withdrawnSliceCount} counts.
+   */
+  readonly withdrawnChunkIndices: readonly number[];
+
+  /**
    * Slices resumed from the cache rather than translated this run, so a cheap
    * run is distinguishable from a lane that found nothing to do.
    */

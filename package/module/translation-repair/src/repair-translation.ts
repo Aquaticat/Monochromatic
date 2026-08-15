@@ -471,6 +471,12 @@ export async function repairPreparedDocument(
           blocked: true,
         },),
         chunkCritics: buildChunkCriticRecords({ outcomes, },),
+        // Nothing shipped and nothing was taken back at assembly: this exit
+        // never reaches assembly. A blocked run returns its input, so no slice
+        // carries a repair, and the withdrawal that says so belongs to the
+        // issue records rather than to a guard that did not run.
+        shippedChunkIndices: [],
+        withdrawnChunkIndices: [],
         findings: [
           ...alignmentFindings,
           ...outcomes.flatMap(function toFindings(done,) {

@@ -601,6 +601,24 @@ On the windowsill there is being a bird.
           .some(function chose(record,): boolean {
             return record.changed;
           },),).toBe(true,);
+        // And the NAMED sets follow the document rather than the records, which
+        // is the whole reason they exist: a reader joining two lanes by slice
+        // must not credit this lane with a slice it did not change.
+        expect(result.withdrawnChunkIndices
+          .length,).toBe(result.withdrawnSliceCount,);
+        expect(result.shippedChunkIndices
+          .length,).toBe(result.changedSliceCount,);
+        for (const chunkIndex of result.withdrawnChunkIndices) {
+          expect(result.shippedChunkIndices
+            .includes(chunkIndex,),).toBe(false,);
+        }
+        expect(result.shippedChunkIndices
+          .toSorted(function ascending(
+            left,
+            right,
+          ): number {
+            return left - right;
+          },),).toEqual(result.shippedChunkIndices,);
       },
     },),
 

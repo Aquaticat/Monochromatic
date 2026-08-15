@@ -113,6 +113,21 @@ export function assembleRepair(
     chunkCritics: buildChunkCriticRecords({ outcomes, },),
     repairedText: guarded.assembledText,
     status: anyChanged ? 'repaired' : 'unchanged',
+    // Read off the guard's surviving replacements, which is the only place that
+    // knows what the document carries. Sorted, because the guard returns them
+    // in the order they were given and a reader comparing two lanes wants
+    // document order.
+    shippedChunkIndices: guarded.replacements
+      .map(function toIndex(replacement,): number {
+        return replacement.chunkIndex;
+      },)
+      .toSorted(function ascending(
+        left,
+        right,
+      ): number {
+        return left - right;
+      },),
+    withdrawnChunkIndices: guarded.revertedChunkIndices,
     issues,
     findings: [
       ...findings,

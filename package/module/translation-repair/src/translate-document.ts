@@ -386,6 +386,20 @@ export async function translateDocument(
     refusedSliceCount: refused.length,
     withdrawnSliceCount: guarded.revertedChunkIndices
       .length,
+    // The same surviving replacements the count above is the size of, named.
+    // Sorted because the guard returns them in the order it was given and a
+    // reader comparing lanes wants document order.
+    shippedChunkIndices: guarded.replacements
+      .map(function toIndex(replacement,): number {
+        return replacement.chunkIndex;
+      },)
+      .toSorted(function ascending(
+        left,
+        right,
+      ): number {
+        return left - right;
+      },),
+    withdrawnChunkIndices: guarded.revertedChunkIndices,
     resumedSliceCount: counted.resumed,
     slices: settled,
     findings: [

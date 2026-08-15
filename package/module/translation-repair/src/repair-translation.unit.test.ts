@@ -1048,6 +1048,15 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           expect(record.repairDisposition,).toBe('withdrawn',);
           expect(record.resolved,).toBe(false,);
         }
+        // The document-level sets say the same thing at slice granularity,
+        // which is what a comparison between the two lanes joins on.
+        expect(result.withdrawnChunkIndices
+          .length,).toBeGreaterThan(0,);
+        expect(result.shippedChunkIndices,).toEqual([],);
+        for (const chunkIndex of result.withdrawnChunkIndices) {
+          expect(result.shippedChunkIndices
+            .includes(chunkIndex,),).toBe(false,);
+        }
       },
     },),
 

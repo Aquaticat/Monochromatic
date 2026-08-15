@@ -125,6 +125,15 @@ export function buildSettledArtifact(
     issues: result.issues,
     chunkCritics: result.chunkCritics,
     repairedText: result.repairedText,
+
+    // Which slices the returned document carries a repair for, and which the
+    // assembly guard took back. Recorded because both are facts about the
+    // DOCUMENT that no other field states: an issue record says what its slice
+    // decided, and a slice can be withdrawn while carrying no issue of its own.
+    // Absent from artifacts settled before 2026-08-15, so a reader must treat
+    // their absence as unknown rather than as empty.
+    shippedChunkIndices: result.shippedChunkIndices,
+    withdrawnChunkIndices: result.withdrawnChunkIndices,
   };
 }
 
