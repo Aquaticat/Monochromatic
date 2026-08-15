@@ -30,6 +30,24 @@ yesterday's state:
 -   QUESTION 1'S COST BULLET CHANGED, because the same bench rows were re-read
     per stage at no new cost and the previous reading was half wrong. Read that
     bullet again if you answer Question 1 from cost.
+-   THE ASSEMBLY CONTRACT WAS REBUILT, in decisions 20, 21 and 22. Three things
+    changed that a reader of a count needs to know. A contradictory cached slice
+    is now discarded and recomputed rather than reaching assembly, so one bad
+    file costs one slice. An assembly that changes no byte now ships nothing,
+    whatever its slices decided. And the shipped set is DERIVED from the
+    surviving replacements and checked against the document's own bytes rather
+    than accepted as a separate list.
+-   WHAT `withdrawn` MEANS IS WIDER THAN IT WAS. It used to be an integrity veto
+    and nothing else. It now says the document does not carry that slice's
+    change, for any of three reasons, and only the findings say which. If you
+    were going to read `withdrawnSliceCount` as footnote damage, do not; it
+    would over-count.
+-   ONE SUSPECTED DEFECT WAS REFUTED RATHER THAN FIXED, `#97`. The claim was
+    that a checker verdict recorded as `resolved` might describe pre-refinement
+    text. A checker DOES run after refinement, and any issue it fails to
+    re-confirm rolls back the whole slice. Measured over the 56 settled
+    artifacts: 32 resolved-and-refined slices against 32 re-check findings, zero
+    violations, with the probe validated first. Nothing to build.
 -   ONE FINDING IS RECORDED AND DELIBERATELY NOT FIXED: an empty critic roster
     settles a document rather than refusing it, so a misconfigured pass would
     write a directory of vacuous settled artifacts and look like a clean run.
