@@ -48,6 +48,17 @@ export type RefinePhaseResult = {
    * Phase telemetry in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Whether any rewriter was asked anything.
+   *
+   * Refinement is the one phase a fully cached document still has to BUY, and
+   * the driver reads this to apply the rule the slice loop already follows: a
+   * run whose work was all resumed finishes under a caller's abort, and a run
+   * that had to ask somebody does not. False when the lane is off, and false
+   * when every slice turned out to have nothing eligible to rewrite.
+   */
+  readonly askedRewriters: boolean;
 };
 
 /**
@@ -109,6 +120,7 @@ export async function runRefinePhase(
     return {
       outcomes,
       findings: [],
+      askedRewriters: false,
     };
   assertCheckerIndependence({
     editorModelIds: models.editorModelIds,
@@ -140,14 +152,43 @@ export async function runRefinePhase(
     outcomes: [],
     findings: [],
   };
+
+  /**
+   * Whether any slice reached a rewriter, which decides whether an aborted run
+   * may still call itself finished.
+   */
+  const asked = { any: false, };
   for (const outcome of outcomes) {
+    /**
+     * Prepared slice this outcome belongs to, which carries both the anchor
+     * this lane rewrites against and the archive wording it must not claim to
+     * have changed when it lands back on it.
+     */
+    const prepared = slices[outcome.chunkIndex];
+
     /**
      * Source text of this slice, the faithfulness anchor.
      */
-    const sourceText = slices[outcome.chunkIndex]
-      ?.source
+    const sourceText = prepared?.source
       .text
       ?? '';
+
+    /**
+     * Archive wording of this slice.
+     *
+     * A refinement is measured against the ACCURACY text it rewrites, so
+     * `refined.changed` says only that the rewriter moved off that text. It can
+     * move back onto the archive's own words, which is a slice nothing happened
+     * in: recording it as changed would name it in the shipped set beside text
+     * nobody touched, and assembly refuses a replacement carrying the archive
+     * wording, so the whole document would fail for a run the models got right.
+     *
+     * With no prepared slice to read, the rewriter's own verdict stands, which
+     * is what this lane did for every outcome before.
+     */
+    const incumbentText = prepared?.target
+      .text
+      ?? outcome.repairedText;
 
     // A slice the critics ruled non-translation shipped deliberately
     // untouched; rewriting it for fluency would undo that decision.
@@ -163,6 +204,10 @@ export async function runRefinePhase(
     const slice = deriveRefinableEnvelopes({
       document: parseDocument({ text: outcome.repairedText, },),
     },);
+    if (slice.envelopes
+      .length
+      > 0)
+      asked.any = true;
 
     /* oxlint-disable no-await-in-loop -- slices run sequentially by the same rule as the accuracy pass: aggregate concurrency beyond one stream per model collapses throughput on this plan */
     /**
@@ -261,11 +306,21 @@ export async function runRefinePhase(
     collected.findings
       .push(...refinementDefects.findings,);
 
+    /**
+     * Whether the text this slice now returns differs from the archive's,
+     * which is a different question from whether the rewriter changed
+     * anything.
+     */
+    const changed = refined.refinedText !== incumbentText;
     collected.outcomes
       .push({
         ...outcome,
         repairedText: refined.refinedText,
-        changed: true,
+        changed,
+        // Dropped when the refinement landed back on the archive wording, by
+        // the same rule the accuracy stage applies: a resolution credited to
+        // text the document does not carry is a repair no reader saw.
+        resolvedIssueIds: changed ? outcome.resolvedIssueIds : [],
         // Marks every recorded repair in this slice as pre-refinement text, so
         // a grading sheet can say so instead of presenting an editor
         // replacement as the words that shipped.
@@ -277,6 +332,7 @@ export async function runRefinePhase(
   return {
     outcomes: collected.outcomes,
     findings: collected.findings,
+    askedRewriters: asked.any,
   };
 }
 

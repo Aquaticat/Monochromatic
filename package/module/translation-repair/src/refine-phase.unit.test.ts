@@ -406,5 +406,67 @@ await describe({
         expect(phase.findings.length,).toBe(0,);
       },
     },),
+
+    it({
+      name: 'reports a refinement that lands back on the ARCHIVE wording as '
+        + 'unchanged, since the rewriter is measured against the accuracy text '
+        + 'and can move off it right back onto the words the archive already '
+        + 'had. Stamped changed, that slice enters the shipped set carrying the '
+        + 'archive wording, which assembly refuses, so a run the models got '
+        + 'right would fail the whole document',
+      fn: async () => {
+        /**
+         * Slices whose archive wording is the SMOOTH text, so the accuracy
+         * stage moved off it and the refinement lands back on it.
+         */
+        const archiveSlices: readonly ChunkPair[] = [
+          {
+            source: {
+              chunkIndex: 0,
+              text: SOURCE_TEXT,
+              startOffset: 0,
+              endOffset: SOURCE_TEXT.length,
+              nodes: [],
+            },
+            target: {
+              chunkIndex: 0,
+              text: SMOOTH_TEXT,
+              startOffset: 0,
+              endOffset: SMOOTH_TEXT.length,
+              nodes: [],
+            },
+          },
+        ];
+
+        /**
+         * Accuracy outcome that changed the archive wording and had an issue
+         * confirmed resolved in the text it produced.
+         */
+        const accuracy: ChunkRepairOutcome = {
+          ...settledOutcome({ resolvedIssueIds: ['issue-1',], },),
+          changed: true,
+        };
+
+        /**
+         * Phase over that outcome, whose rewriter returns the archive wording.
+         */
+        const phase = await runRefinePhase({
+          client: scriptedPhase({ checkerVerdict: 'fixed', },),
+          targetText: SMOOTH_TEXT,
+          slices: archiveSlices,
+          outcomes: [accuracy,],
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(phase.outcomes[0]?.changed,).toBe(false,);
+        // Nothing this slice returns differs from the archive, so nothing it
+        // returns can have resolved anything: crediting the issue here would
+        // count a repair no reader saw.
+        expect(phase.outcomes[0]?.resolvedIssueIds,).toEqual([],);
+      },
+    },),
   ],
 },);

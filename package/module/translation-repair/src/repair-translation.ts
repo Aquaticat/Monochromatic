@@ -16,7 +16,7 @@ import {
 } from './non-translation-evidence.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
-import { runRefinePhase, } from './refine-phase.ts';
+import { refineSettledSlices, } from './repair-refine-step.ts';
 import {
   repairRunShape,
   repairSliceKey,
@@ -405,7 +405,7 @@ export async function repairPreparedDocument(
    * `changedOutcomes` and `anyChanged` because those are computed from these
    * final outcomes rather than from the accuracy ones.
    */
-  const phase = await runRefinePhase({
+  const phase = await refineSettledSlices({
     client,
     targetText,
     slices,

@@ -246,12 +246,14 @@ function steeringClient(
     controller,
     calls,
     abortAfterCriticCalls,
+    abortOnStage,
     silentCritics = false,
   }: {
     readonly base: SyntheticClient;
     readonly controller: AbortController;
     readonly calls: { critic: number; };
     readonly abortAfterCriticCalls?: number;
+    readonly abortOnStage?: string;
     readonly silentCritics?: boolean;
   },
 ): SyntheticClient {
@@ -260,6 +262,12 @@ function steeringClient(
     chatJson: async <ValueT,>(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
+      if ((abortOnStage !== undefined)
+        && (request.responseFormat
+            ?.json_schema
+            .name
+          === abortOnStage))
+        controller.abort(new Error('entry deadline reached',),);
       if (request.responseFormat
         ?.json_schema
         .name
@@ -302,6 +310,23 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 ## Beta
 
 The cat has a long tail.
+`;
+
+/**
+ * Original whose one section is long enough for the naturalness lane to look
+ * at, since that lane ignores any paragraph under its length floor.
+ */
+const SOURCE_LONG_SECTION = `## 午后
+
+猫猫每天下午都在窗台上晒太阳，等阳光慢慢移到地板上的时候，它会不慌不忙地跟着光走，一直走到房间的另一头去。
+`;
+
+/**
+ * Translation of {@link SOURCE_LONG_SECTION}, one paragraph over that floor.
+ */
+const TARGET_LONG_SECTION = `## Afternoon
+
+The cat is doing the sunbathing on the windowsill in every afternoon, and when the light is moving across the floor she is following it without any hurry at all, until she reaches the other side of the room.
 `;
 
 /**
@@ -1109,6 +1134,130 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           .rejects
           .toThrow('entry deadline reached',);
         expect(store.size,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'THROWS on an abort that lands during REFINEMENT, which the slice '
+        + 'loop cannot see. Refinement runs after every slice settled, and its '
+        + 'abandoned exchanges reach the stage as silence exactly like the '
+        + 'accuracy ones, so an unguarded driver keeps the accuracy text and '
+        + 'returns a document that reads as a finished run',
+      fn: async () => {
+        /**
+         * Critic calls attempted across the run, which this case never steers
+         * by count.
+         */
+        const calls = { critic: 0, };
+
+        /**
+         * Run steering the client aborts on the first rewrite request.
+         */
+        const controller = new AbortController();
+
+        /**
+         * Roster with the naturalness lane ON, since an off lane returns before
+         * spending anything and there would be no refinement to abort.
+         */
+        const refining: RepairModels = {
+          ...MODELS,
+          refinerModelIds: ['hf:zai-org/GLM-5.2',],
+        };
+        await expect(repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [], },),
+            controller,
+            calls,
+            abortOnStage: 'refine_report',
+          },),
+          // Long enough for the lane to have something to rewrite, and clean
+          // enough that nothing else is in the way of reaching it.
+          sourceText: SOURCE_LONG_SECTION,
+          targetText: TARGET_LONG_SECTION,
+          models: refining,
+          signal: controller.signal,
+        },),)
+          .rejects
+          .toThrow('entry deadline reached',);
+      },
+    },),
+
+    it({
+      name: 'still FINISHES a fully cached document under an already aborted '
+        + 'signal, which is the other half of the same rule: what a stopped run '
+        + 'cannot do is BUY what it is missing, and a run that asks nobody '
+        + 'anything is missing nothing',
+      fn: async () => {
+        /**
+         * Serialized slice outcomes the first run persists, keyed by hash.
+         */
+        const store = new Map<string, string>();
+
+        /**
+         * First run, which buys and persists every slice.
+         */
+        const first = await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+          sliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+
+        /**
+         * Resume map parsed from the persisted slices, as the driver does.
+         */
+        const resumed = new Map<string, ChunkRepairOutcome>(
+          [...store.entries(),].map(([key, serialized,],) =>
+            [key, JSON.parse(serialized,) as ChunkRepairOutcome,] as const),
+        );
+
+        /**
+         * Caller that gave up before the second run started.
+         */
+        const spent = new AbortController();
+        spent.abort(new Error('entry deadline reached',),);
+
+        /**
+         * Second run, resuming everything under that spent deadline.
+         */
+        const second = await repairTranslation({
+          client: {
+            chatText: async () => {
+              throw new Error('a fully cached run must not ask anybody anything',);
+            },
+            chatJson: async () => {
+              throw new Error('a fully cached run must not ask anybody anything',);
+            },
+            quotas: async () => {
+              throw new Error('quotas unused by the repair pipeline',);
+            },
+          },
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: spent.signal,
+          sliceCache: {
+            resumed,
+            persist: async () => {
+              throw new Error('a fully cached run must not persist',);
+            },
+          },
+        },);
+        expect(second.repairedText,).toBe(first.repairedText,);
+        expect(second.status,).toBe(first.status,);
       },
     },),
 
