@@ -1,5 +1,6 @@
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import type { TranslateAbsenceReason, } from './translate-absence.ts';
 import type { SliceAlignmentAssessment, } from './translate-alignment.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
@@ -143,6 +144,36 @@ export type TranslateSliceRecord = {
 };
 
 /**
+ * One passage this run left missing, with why and what it heard.
+ *
+ * @example
+ * ```ts
+ * const unfilled: UnfilledSlice = { chunkIndex: 4, reason: 'no-candidate', findings, };
+ * ```
+ */
+export type UnfilledSlice = {
+  /**
+   * Slice the archive has no translation for.
+   */
+  readonly chunkIndex: number;
+
+  /**
+   * Why this run produced none either.
+   */
+  readonly reason: TranslateAbsenceReason;
+
+  /**
+   * What the stage gathered before it gave up: which translators were heard,
+   * what collapsed, what the judges counted.
+   *
+   * ALSO IN {@link TranslateDocumentResult.findings}, deliberately. The flat
+   * list is what a corpus-wide count reads, and this is what says which passage
+   * each finding belongs to; neither answers the other's question.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
  * Result of translating one whole document.
  *
  * Has no partial variant. A lane that ran out of time throws, leaving its
@@ -221,17 +252,33 @@ export type TranslateDocumentResult = {
   readonly resumedSliceCount: number;
 
   /**
+   * Whether this document is a whole translation.
+   *
+   * READ THIS BEFORE {@link TranslateDocumentResult.translatedText}. A result
+   * whose status is `unfilled` carries a document with passages the archive
+   * never translated and this run could not either, so publishing it or
+   * comparing it against a complete one measures something else. The field
+   * exists because the gaps were nameable and still missable: a consumer
+   * reading only the old fields would have seen an ordinary success.
+   */
+  readonly status: 'complete' | 'unfilled';
+
+  /**
    * Slices with NO translation in the archive that this run could not fill, in
-   * document order.
+   * document order, each with the reason and the evidence.
    *
    * A different thing from every other set here, and the reason it is its own
    * field. A slice that is unshipped, unwithdrawn and unchanged elsewhere in
    * this result means the judges looked and kept the archive's wording; these
    * slices have no archive wording to keep, so the document carries the gap it
    * came with. They settle no record and cache nothing, so the next run asks
-   * again, and their findings say why this one could not.
+   * again.
+   *
+   * STRUCTURED RATHER THAN A LIST OF INDICES, because the evidence has to have
+   * an owner: several unfilled slices flatten their stage findings into one
+   * document-level list, where nothing says which passage each belongs to.
    */
-  readonly unfilledChunkIndices: readonly number[];
+  readonly unfilled: readonly UnfilledSlice[];
 
   /**
    * One settled record per slice, in document order.

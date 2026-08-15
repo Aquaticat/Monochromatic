@@ -35,6 +35,7 @@ import type {
   TranslateDocumentResult,
   TranslateModels,
   TranslateSliceRecord,
+  UnfilledSlice,
 } from './translate-document-contract.ts';
 
 //region Translate document
@@ -52,6 +53,12 @@ import type {
 // reporting unvisited slices as unchanged is indistinguishable from a document
 // that needed no translation, and the settled slices are already in the cache
 // for the next attempt.
+//
+// ONE EXCEPTION, and it is not an unvisited slice: a passage the archive never
+// translated that this run could not translate either. Nothing was skipped
+// there and nothing is claimed; the document keeps the gap it came with, the
+// result says `unfilled` and names the passage, and the entry still settles so
+// the rest of its slices keep what they cost.
 //
 // NOTHING BELOW THE DRIVER RAISES THAT ALARM. An abort reaches every exchange
 // as a torn-down stream, `runGatherRound` records each one as a lost voice, and
@@ -113,7 +120,8 @@ export function alignmentRefusals(
  *
  * @param l - pipeline logger
  *
- * @returns Reassembled translation with one settled record per slice
+ * @returns Reassembled translation, its `status`, one settled record per
+ * FILLED slice, and every passage this run left missing
  *
  * @throws {@link Error} when the roster cannot seat a stage, or when the caller
  * aborts while this lane is buying
@@ -212,16 +220,16 @@ export async function translateDocument(
    * know WHICH passages are still missing: the document ships with the gap the
    * archive already had, and nothing else in the result says so.
    */
-  const unfilled: number[] = [];
+  const unfilled: UnfilledSlice[] = [];
 
   /**
    * What those slices reported before giving up, plus one sentence per slice
    * naming it and why.
    *
-   * The stage's own findings travel with the refusal rather than being lost
-   * with the exception: which translators were heard and what the judges
-   * counted is the evidence saying whether the passage is hard or the roster
-   * was unlucky.
+   * FLAT, and kept beside the structured entries rather than instead of them.
+   * A corpus-wide count of voice loss reads this list; a reader asking which
+   * passage a finding belongs to reads the entry. Neither answers the other's
+   * question, and deriving one from the other would lose that.
    */
   const unfilledFindings: string[] = [];
   for (const slice of prepared.slices) {
@@ -339,7 +347,11 @@ export async function translateDocument(
           attempt.reason
         }); the passage stays missing and the slice is NOT cached`,
       );
-      unfilled.push(chunkIndex,);
+      unfilled.push({
+        chunkIndex,
+        reason: attempt.reason,
+        findings: attempt.findings,
+      },);
       unfilledFindings.push(
         ...attempt.findings,
         `${absenceFinding({ reason: attempt.reason, },)} chunk ${String(chunkIndex,)}`,
@@ -527,7 +539,9 @@ export async function translateDocument(
       // Except these, which the lane REACHED and could not fill: they have no
       // wording because there is none to have, neither the archive's nor one
       // this run produced. Named one by one, so every other gap still fails.
-      unfilledChunkIndices: unfilled,
+      unfilledChunkIndices: unfilled.map(function toIndex(passage,): number {
+        return passage.chunkIndex;
+      },),
       decided: settled.map(function toDecision(record,): {
         readonly chunkIndex: number;
         readonly text: string;
@@ -543,7 +557,8 @@ export async function translateDocument(
     // The document carries the gap they name, so a reader counting coverage
     // has to subtract them rather than read every unshipped slice as a slice
     // the judges left alone.
-    unfilledChunkIndices: unfilled,
+    status: (unfilled.length === 0) ? 'complete' : 'unfilled',
+    unfilled,
     slices: settled,
     findings: [
       ...refusedCacheFindings,

@@ -1093,7 +1093,20 @@ The cat is doing the sleeping on the windowsill.
         // The entry SETTLED: one refused passage does not cost the document.
         expect(result.sliceCount,).toBe(prepared.slices
           .length,);
-        expect(result.unfilledChunkIndices,).toEqual([anchorIndex,],);
+        expect(result.status,).toBe('unfilled',);
+        expect(result.unfilled
+          .map(function toIndex(passage,): number {
+            return passage.chunkIndex;
+          },),).toEqual([anchorIndex,],);
+        expect(result.unfilled[0]
+          ?.reason,).toBe('no-candidate',);
+        // The evidence has an owner rather than being flattened into one list
+        // where nothing says which passage it belongs to.
+        expect(result.unfilled[0]
+          ?.findings
+          .some(function namesTheSlate(finding: string,): boolean {
+            return finding.startsWith('translate-candidates',);
+          },),).toBe(true,);
         expect(result.findings,).toContain(
           `${absenceFinding({ reason: 'no-candidate', },)} chunk ${String(anchorIndex,)}`,
         );
