@@ -84,5 +84,21 @@ export {
   type TranslatePromptPlan,
   type TranslateReportWire,
 } from './translate-wire.ts';
+export {
+  type CoverageAnswer,
+  runCoverageStage,
+} from './coverage-stage.ts';
+export {
+  type CoverageVerdict,
+  judgeCoverage,
+} from './coverage-verdict.ts';
+export {
+  buildCoverageMessages,
+  COVERAGE_RESPONSE_FORMAT,
+  type CoverageDegree,
+  type CoveragePromptPlan,
+  type CoverageReportWire,
+  isCoverageReportWire,
+} from './coverage-wire.ts';
 
 //endregion Translate barrel

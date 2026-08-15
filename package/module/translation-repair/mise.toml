@@ -80,6 +80,11 @@ description = "Ask whether the introduced-defect probe can detect damage at all:
 depends = ["build"]
 run = "node dist/final/node/probe-sensitivity.mjs"
 
+[tasks."coverage-probe"]
+description = "PROTOTYPE for question 28: ask a roster whether the translation already carries each passage the aligners refuse to pair, at both scales; SPENDS QUOTA (pass --only ids and --cap n after --)"
+depends = ["build"]
+run = "node dist/final/node/coverage-probe.mjs"
+
 [tasks."translate-probe"]
 description = "PROTOTYPE for #70: ask a translator ensemble to render the corpus section with the worst coverage gap, which the repair loop cannot express"
 depends = ["build"]
