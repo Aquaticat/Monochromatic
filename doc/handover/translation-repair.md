@@ -190,8 +190,9 @@ PICK UP HERE (2026-08-15, after the overnight session).
 
 READ FIRST, if you are the user coming back to this:
 `doc/planning/translation-repair-open-decisions.md`.
-It holds the four questions that need your answer, each with options, pros,
+It holds the five questions that need your answer, each with options, pros,
 cons, a ranking and the measurements taken to make the question answerable.
+Question 5 was raised by the bench itself and is the one that blocks wiring.
 Everything below is the state those questions sit in.
 
 WHAT CHANGED OVERNIGHT, 2026-08-14 into 15:
@@ -259,13 +260,69 @@ CONTINUED THROUGH THE NIGHT, 2026-08-15 early hours:
 -   THE BENCH DRAW AND WIDTH SWEEP ARE TESTED (`bench-draw.ts`). Both decide
     what a width comparison measures and both failed silently before.
 
+THEN THE LANE GOT ITS DRIVER, 2026-08-15 pre-dawn:
+
+-   ASSEMBLY REFUSES TWO SLICES CARRYING ONE INDEX (`e66a18749`), which is a
+    wrong-text failure rather than an error.
+-   THE ALIGNMENT GUARD LANDED, CALIBRATED (`c5e781956`, `d319f329e`). A
+    replacement is refused when the incumbent is at least 128 code points and
+    more than 16 times its source. Translation still runs and the judges'
+    evidence is kept, so the record distinguishes "the judges kept the
+    incumbent" from "the judges wanted a replacement and the guard refused".
+    Calibrated over all 1260 two-sided corpus slices; it refuses 16, and every
+    one of those 16 was read.
+-   THE SLICE CACHE IS GENERIC OVER ITS LANE'S VALUE (`003e09f9d`) AND EACH LANE
+    OWNS A NAMESPACE (`108329dc2`): a file prefix plus its own generation
+    marker. One shared marker with a directory-wide delete, which is what this
+    replaced, meant a translate change threw away every settled repair slice in
+    the corpus and nothing reported the loss.
+-   THE TRANSLATE DOCUMENT DRIVER EXISTS (`e2deabf4d`). One prepared pair in,
+    every slice visited unconditionally, one settled record per slice, the
+    document reassembled from per-slice decisions, its own schema version and
+    its own cache namespace.
+-   THE BENCH FINISHED AND RAISED QUESTION 5 (`7fe82a159`). Width does not
+    measurably change agreement at n=10, but the lane replaced the archive's
+    English in 44 of 60 rounds, and that is a decision rather than a finding.
+
+AND THEN THE CACHE TURNED OUT TO BE POISONABLE, which is why no pass should
+start before these landed:
+
+-   AN ABORTED RUN WAS CACHING SLICES IT NEVER BOUGHT (`1918c67a1`,
+    `d89550076`). An abort reaches every exchange as a torn-down stream, the
+    round records each as a LOST VOICE by design, and a stage that heard nothing
+    keeps the incumbent and returns an ordinary settled record. Both drivers
+    wrote that to the cache, so an entry stopped at its deadline recorded its
+    unexamined tail as decided, and every later attempt RESUMED it. Both drivers
+    now check the signal before buying a slice and again before persisting one,
+    and report the abort by the caller's own reason rather than by whichever
+    exchange happened to surface.
+-   A SLICE NOBODY EXAMINED IS NO LONGER CACHED (same commits). Zero translators
+    heard, or zero critics heard, settles in memory for this run and is left out
+    of the cache, so the next attempt asks again instead of resuming an outage
+    as a verdict.
+-   A ROUND NOW RAISES A CALLER ABORT THAT LANDS AFTER QUORUM (`182280185`),
+    which its own comment already promised. Measured on the driver test: an
+    abort inside the second slice previously let the whole judge roster fan out
+    afterwards, 12 judge calls attempted where 6 were owed.
+-   THE REPAIR DRIVER NOW REFUSES A CACHED OUTCOME NAMING ANOTHER SLICE
+    (`d89550076`), which the translate driver already did.
+-   MEASURED, NOT ASSUMED: the 150 repair slices currently cached carry
+    `heardCritics` 3, 4, 5 and 6 (1, 3, 92 and 54 slices), so NONE of them is
+    poisoned and nothing has to be invalidated. A cache written before these
+    fixes could only be resumed under its own pipeline digest anyway, and that
+    digest has since moved.
+
 STATE: NO PASS IS RUNNING, deliberately.
 `pass16` was stopped on 2026-08-14 with zero artifacts settled, on the user's
 ruling that there is no cost to stopping a to-be-discarded entry mid-flight:
 the pipeline shape is decided and anything accumulating under the repair-only
 shape is output the new shape replaces.
-Do not restart accumulation until `#89` drives the translate lane, or the same
-budget buys the same discardable entries again.
+The driver EXISTS and is tested; nothing calls it from the corpus pass.
+A long run is blocked on two things rather than one: Question 5, which decides
+what the pass does with a replacement, and the wiring itself, which is shaped
+differently under each of that question's answers.
+Do not restart accumulation before both, or the same budget buys the same
+discardable entries again.
 The stopped pass left its `pass.lock` behind in
 `node_modules/.monochromatic/translation-repair-runs-pass16`;
 the next pass takes it over as stale and says so with a `LOCK taking over` line,
@@ -275,12 +332,17 @@ WHAT LANDED, and what it does not yet do:
 `runTranslateStage` (`8e27504f1`, tests `9411e833d`) renders one slice from its
 original through several translators, stands the archive's own translation among
 them as one candidate, and lets judges choose.
-NOTHING CALLS IT.
-It cannot simply replace `runEditorStage` at that call site, because `repairChunk`
-returns before reaching the editor on exactly the slices translation is meant to
-recover: non-translation votes standing, critics raising no claims, the panel
-cutting no envelopes.
-`#89` owns the sequence that fixes this.
+`translateDocument` (`e2deabf4d`) now drives it over a whole prepared pair, and
+that is the part `#89` was blocked on.
+It could never simply replace `runEditorStage` at the old call site, because
+`repairChunk` returns before reaching the editor on exactly the slices
+translation is meant to recover: non-translation votes standing, critics raising
+no claims, the panel cutting no envelopes. The driver visits every slice instead.
+WHAT REMAINS OF `#89`: `repairTranslation` still owns its own preparation rather
+than taking a prepared pair; there is no combined driver running both lanes over
+one preparation; and `corpus-pass.ts` opens no translate cache, writes no
+translate fields into the artifact, and has no deadline accounting that keeps a
+capped run from writing a settled artifact.
 
 WHAT NEEDS YOU, in the order it blocks work:
 
