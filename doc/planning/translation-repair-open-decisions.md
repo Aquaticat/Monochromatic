@@ -44,9 +44,13 @@ Four editors judging each other work fine; so would six.
 
 WHAT ACTUALLY MOVES with width:
 
--   COST, roughly linear in producers for the translate calls, and worse than
-    linear downstream, because every candidate becomes repeated input to every
-    judge in the selection round.
+-   COST, now measured rather than reasoned about, in
+    `doc/audit/translation-repair-lane-budget.md`. Per slice: width 2 costs 7.2
+    calls and 22118 tokens, width 4 costs 10.2 calls and 34567 tokens, width 6
+    costs 12.4 calls and 40294 tokens. Over the whole corpus that is 27.9M,
+    43.6M and 50.8M tokens for one pass. So the widest roster costs about 1.8
+    times the narrowest, not six times: the judge round dominates and it is the
+    same size at every width.
 -   AGREEMENT. Ballots spread thinner across more candidates, so the leader more
     often falls short of the minimum weight or ties. Both outcomes decline, and
     a decline keeps the incumbent, so widening can quietly REDUCE how often

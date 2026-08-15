@@ -332,6 +332,13 @@ AND THEN THE FIRST HALF OF `#92`, the part that needs no quota:
     opener masks markers document-wide, since masking runs over the whole body
     before parsing, and no slice's own mention count moves. The archive text is
     the one thing certain to parse as it did before.
+-   THE LANE'S BUDGET IS MEASURED, from calls the bench had already bought, in
+    `doc/audit/translation-repair-lane-budget.md`. Headline: 594 of 602
+    exchanges returned ok and the only failures were the straggler cut, both on
+    the GLM models; a slice costs 10.2 calls and 34567 tokens at width 4; one
+    corpus pass is 43.6M tokens at that width; and against the three-hour entry
+    cap every entry fits at the median slice time, with the two largest falling
+    out at p90. So the cap is not the binding constraint it was for repair.
 -   MEASURED, over all 184 corpus documents at the pinned commit: 209 GFM
     footnote markers across 45 files, and ZERO reference-style link definitions,
     ZERO reference-style link uses, ZERO heading-anchor links. So footnotes are
