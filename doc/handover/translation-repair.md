@@ -9943,3 +9943,32 @@ state there breaks resumability rather than merely being unfinished. That is the
 one item in the queue where stopping midway costs something, so it wants a run
 of hours rather than the tail of one. `#103` items 6 and 7 belong with it, and
 so does `#94`'s rename.
+
+### Every guard this session added has now been shown to fail without itself
+
+Two of the day's guards landed without a removal proof, which is how a test that
+asserts nothing gets mistaken for a test that passes.
+Both were proven afterwards, by removing the guard, rebuilding, running the
+suite, and restoring from `git checkout`.
+The guards were already committed, so restoring could not lose work.
+
+Removing `resumedSliceAgrees` from `translateDocument` fails the poisoned-cache
+test, and the failure arrives from one layer down as
+`AssemblyContractError: slice 0 claims a change and carries the archive wording`.
+That is the whole argument for the discard in one line: without it, a single bad
+cache file aborts the document after every other slice has been paid for.
+
+Removing `assertRostersConfigured` from `translateDocument` fails the
+empty-roster test.
+Without the check the throwing client's failures become lost voices, the run
+settles, and nothing raises, which is the exact silence `#93` exists to refuse.
+
+ONE GUARD FROM THIS SESSION IS PINNED BY NOTHING, on purpose, and this is the
+record so the next reader does not mistake it for coverage.
+`winnerChangedText`'s wiring in `repair-chunk.ts` has no test:
+there is no repair-chunk harness, so reverting `changed` to the selection fact
+turns no test red.
+The only thing that catches that regression is `assertReplacementsChange` at
+assembly, which converts it from a red suite into a rare abort on a legitimate
+run.
+Building the harness is the fix, and it is recorded in `#103`.
