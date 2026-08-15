@@ -40,7 +40,9 @@ export type CoverageAnswer = {
   readonly verdict: CoverageVerdict;
 
   /**
-   * Degradation findings from the roster, empty when quorum was met.
+   * Roster findings: lost voices and incomplete rosters, which arrive whether
+   * or not quorum was met, so this being empty means nothing went wrong rather
+   * than that enough models answered.
    */
   readonly findings: readonly string[];
 };
@@ -62,7 +64,7 @@ export type CoverageAnswer = {
  *
  * @param l - logger of the calling driver
  *
- * @returns Verdict plus any degradation findings
+ * @returns Verdict plus any roster findings
  *
  * @example
  * ```ts
@@ -114,6 +116,8 @@ export async function runCoverageStage(
     verdict: judgeCoverage({
       voices: gather.voices,
       document: translation,
+      asked: modelIds.length,
+      quorumMet: gather.quorumMet,
     },),
     findings: gather.findings,
   };

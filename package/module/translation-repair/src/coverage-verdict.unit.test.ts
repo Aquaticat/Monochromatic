@@ -99,17 +99,25 @@ await describe({
             },),
             voiceOf({
               modelId: 'hf:cat/Cat-C' as SyntheticModelId,
-              coverage: 'none',
-              quote: '',
+              coverage: 'full',
+              quote: 'She watches the birds outside.',
+            },),
+            voiceOf({
+              modelId: 'hf:cat/Cat-D' as SyntheticModelId,
+              coverage: 'full',
+              quote: 'The cat sleeps on the windowsill each morning and naps on its cushion at noon.',
             },),
           ],
           document: TARGET,
+          asked: 4,
+          quorumMet: true,
         },);
         expect(verdict.kind,).toBe('carried',);
-        expect(verdict.anchored,).toBe(2,);
-        expect(verdict.absent,).toBe(1,);
+        expect(verdict.anchoredFull,).toBe(3,);
+        expect(verdict.anchoredPartial,).toBe(1,);
+        expect(verdict.absent,).toBe(0,);
         expect(verdict.evidence
-          .length,).toBe(2,);
+          .length,).toBe(4,);
       },
     },),
     it({
@@ -135,10 +143,14 @@ await describe({
             },),
           ],
           document: TARGET,
+          asked: 6,
+          quorumMet: true,
         },);
-        expect(verdict.kind,).toBe('absent',);
+        // NOT absent: two of six asked is not a majority of the roster, however
+        // large a share of the voices heard it is.
+        expect(verdict.kind,).toBe('split',);
         expect(verdict.absent,).toBe(2,);
-        expect(verdict.anchored,).toBe(1,);
+        expect(verdict.anchoredFull,).toBe(1,);
       },
     },),
     it({
@@ -165,9 +177,13 @@ await describe({
             },),
           ],
           document: TARGET,
+          asked: 6,
+          quorumMet: true,
         },);
         expect(verdict.unanchored,).toBe(2,);
-        expect(verdict.anchored,).toBe(0,);
+        expect(verdict.anchoredFull,).toBe(0,);
+        expect(verdict.unanchoredQuotes
+          .length,).toBe(2,);
         expect(verdict.absent,).toBe(1,);
         // NOT absent, though the only usable voice said so: one voice of three
         // is not a majority, and two unusable answers do not make it one.
@@ -192,6 +208,8 @@ await describe({
             },),
           ],
           document: TARGET,
+          asked: 6,
+          quorumMet: true,
         },);
         expect(verdict.kind,).toBe('split',);
       },
@@ -214,14 +232,89 @@ await describe({
             text: curlyText,
             nodes: parseDocument({ text: curlyText, },).nodes,
           },
+          asked: 1,
+          quorumMet: true,
         },);
-        expect(verdict.anchored,).toBe(1,);
+        expect(verdict.anchoredFull,).toBe(1,);
         expect(verdict.kind,).toBe('carried',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES to decide when quorum was not met, however the answers fell: a roster that mostly '
+        + 'went silent has not examined the translation, and a verdict from what is left reads as an '
+        + 'examination that happened',
+      fn: async () => {
+        const verdict = judgeCoverage({
+          voices: [
+            voiceOf({
+              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              coverage: 'none',
+              quote: '',
+            },),
+          ],
+          document: TARGET,
+          asked: 6,
+          quorumMet: false,
+        },);
+        expect(verdict.kind,).toBe('inconclusive',);
+        expect(verdict.heard,).toBe(1,);
+        expect(verdict.asked,).toBe(6,);
+      },
+    },),
+    it({
+      name: 'keeps PARTLY-CARRIED apart from carried, since a section with one rendered fact and the '
+        + 'rest missing must not be inserted whole and must not be recorded as translated either',
+      fn: async () => {
+        const verdict = judgeCoverage({
+          voices: [
+            voiceOf({
+              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              coverage: 'partial',
+              quote: 'She watches the birds outside.',
+            },),
+            voiceOf({
+              modelId: 'hf:cat/Cat-B' as SyntheticModelId,
+              coverage: 'partial',
+              quote: 'naps on its cushion at noon',
+            },),
+            voiceOf({
+              modelId: 'hf:cat/Cat-C' as SyntheticModelId,
+              coverage: 'none',
+              quote: '',
+            },),
+          ],
+          document: TARGET,
+          asked: 3,
+          quorumMet: true,
+        },);
+        expect(verdict.kind,).toBe('partly-carried',);
+        expect(verdict.anchoredPartial,).toBe(2,);
+        expect(verdict.anchoredFull,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'counts a majority of the ROSTER rather than of the voices heard, so silence cannot lower '
+        + 'the bar: one voice reporting nothing, with five models lost, used to decide absence',
+      fn: async () => {
+        const verdict = judgeCoverage({
+          voices: [
+            voiceOf({
+              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              coverage: 'none',
+              quote: '',
+            },),
+          ],
+          document: TARGET,
+          asked: 6,
+          quorumMet: true,
+        },);
+        expect(verdict.kind,).toBe('split',);
+        expect(verdict.absent,).toBe(1,);
       },
     },),
   ],
 },);
-
 await describe({
   name: isCoverageReportWire.name,
   children: [

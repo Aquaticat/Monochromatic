@@ -93,9 +93,14 @@ type ProbeRow = {
   readonly kind: string;
 
   /**
-   * Voices that anchored coverage in the document.
+   * Voices that anchored full coverage in the document.
    */
-  readonly anchored: number;
+  readonly anchoredFull: number;
+
+  /**
+   * Voices that anchored partial coverage.
+   */
+  readonly anchoredPartial: number;
 
   /**
    * Voices reporting nothing renders it.
@@ -111,6 +116,17 @@ type ProbeRow = {
    * Voices heard at all.
    */
   readonly heard: number;
+
+  /**
+   * Models asked, which the verdict threshold is taken over.
+   */
+  readonly asked: number;
+
+  /**
+   * Quotes claimed and not found, kept because a near miss and an invention are
+   * different failures that the counts alone cannot tell apart.
+   */
+  readonly unanchoredQuotes: readonly string[];
 
   /**
    * Anchored quotes, so a reader can check the verdict against the archive.
@@ -302,27 +318,33 @@ async function main(): Promise<void> {
             .length,
           kind: answer.verdict
             .kind,
-          anchored: answer.verdict
-            .anchored,
+          anchoredFull: answer.verdict
+            .anchoredFull,
+          anchoredPartial: answer.verdict
+            .anchoredPartial,
           absent: answer.verdict
             .absent,
           unanchored: answer.verdict
             .unanchored,
           heard: answer.verdict
             .heard,
+          asked: answer.verdict
+            .asked,
+          unanchoredQuotes: answer.verdict
+            .unanchoredQuotes,
           evidence: answer.verdict
             .evidence,
           findings: answer.findings,
         },);
+        /**
+         * Verdict of this candidate, read once for the progress line.
+         */
+        const { verdict, } = answer;
         log.info(
-          `${entryId} ${where}: ${answer.verdict
-            .kind} `
-            + `(anchored ${String(answer.verdict
-              .anchored,)}, absent ${String(answer.verdict
-                .absent,)}, `
-            + `unanchored ${String(answer.verdict
-              .unanchored,)}, heard ${String(answer.verdict
-                .heard,)})`,
+          `${entryId} ${where}: ${verdict.kind} (full ${String(verdict.anchoredFull,)}, `
+            + `partial ${String(verdict.anchoredPartial,)}, absent ${String(verdict.absent,)}, `
+            + `unanchored ${String(verdict.unanchored,)}, `
+            + `heard ${String(verdict.heard,)} of ${String(verdict.asked,)})`,
         );
       }
       catch (error) {
