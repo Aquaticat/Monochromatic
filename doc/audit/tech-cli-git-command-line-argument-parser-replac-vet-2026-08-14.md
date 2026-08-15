@@ -664,8 +664,13 @@ The result normalizes unknown spelling and order.
 A caller can clone the supplied array to contain type-flag's documented mutation,
 but restoring dash-led values and distinguishing missing from explicit empty input
 requires reading declared option arity before type-flag does.
-That is the token scan this evaluation is meant to replace.
+The package's `getFlag` API uses the same `argvIterator`,
+so extracting one option at a time does not change these results.
+A fixed-point pass that first discovers unknowns and then redeclares them
+would add repeated reinterpretation rather than remove parser ownership.
 
+Type-flag also expands `-all` as short group `-a -l -l`,
+setting the declared `all` flag even though cli-git's generic exact-name parser treats the complete token as unknown.
 Type-flag passes the tested positive,
 repetition,
 option-after-positional,
@@ -685,11 +690,18 @@ without enough role information to produce cli-git's `unknownOptions` and `posit
 Its built-in readers also overwrite repeated scalar results;
 the probe used public custom readers to prove counts and ordered values are expressible.
 
+Argue strips one or two leading dashes before a reader sees an option.
+The probe therefore accepted both undeclared `--a` and undeclared `-all` as declared aliases for `-a` and `--all`.
+A custom reader cannot restore that distinction because the raw prefix is already gone.
+
 Splitting at `--` can repair termination.
-Separating an arbitrary leftover stream into unknown options,
-unknown consumed values,
-and positionals requires another arity-aware token scan.
-Argue therefore supplies known-option removal but does not replace the incumbent parser contract.
+A linear leftover classifier can implement cli-git's current unknown-consumption heuristic without an arity table.
+Exact prefix handling still requires inspecting the original token stream before Argue normalizes it.
+That pre-scan,
+the leftover classifier,
+and custom count or collection readers leave cli-git owning the distinctive token-role logic.
+Argue therefore comes closest to parity but fails the frozen requirement that the dependency replace that logic rather
+than surround it with another handwritten parse layer.
 
 Argue passes the tested positive,
 repetition with custom readers,
@@ -733,9 +745,9 @@ and positionals before the divergent cases.
 Evidence:
 
 - probe: `~/temp/agent/cli-git-parser-candidate-probe-2026-08-14.mjs`;
-- probe SHA-256: `ddf77dc34a659de1267a2422c06ae9c7f08bb83fb21f414e5f68d28e23881933`;
+- probe SHA-256: `553f70d7a13202a6506e9d3b767a94d164c805368f49ca4e70e9a533ccbab89b`;
 - output: `~/temp/agent/cli-git-parser-candidate-probe-output-2026-08-14.json`;
-- output SHA-256: `cbd3135a1aec51036cc5740b00ca9331b86b1ebdf9e537fb1a0c87543faa4d6b`.
+- output SHA-256: `64c1c61440ff1490beb6bd367b1400542e44f1a899a5b28cce97a1cc5a4c7889`.
 
 The exact observed failures are recorded under each hard-gate outcome.
 They confirm the source traces rather than relying on API documentation.
