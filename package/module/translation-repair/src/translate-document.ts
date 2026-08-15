@@ -321,9 +321,10 @@ export async function translateDocument(
   /**
    * What this lane wants written, checked before the guard sees it.
    *
-   * A RESUMED record is trusted on its slice index alone, so one claiming a
-   * change while carrying the archive wording would survive the guard and land
-   * in the shipped set beside a document nobody changed. Refused here instead.
+   * A BACKSTOP rather than the defence it used to be. Every record reaching
+   * here has already been checked against its own text, whether it came from
+   * the stage or from the cache, so a contradiction at this point means a
+   * defect between those checks and this line rather than a bad cache file.
    */
   const replacements = changed.map(function toReplacement(record,) {
     return {

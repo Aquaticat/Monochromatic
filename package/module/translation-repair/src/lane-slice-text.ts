@@ -73,12 +73,18 @@ export type UndecidedSlicePolicy =
 
 /**
  * Raised when a lane reports a decision for a slice its preparation never
- * produced, or leaves a prepared slice undecided.
+ * produced, when it leaves a prepared slice undecided under `refuse`, or when
+ * it decides a slice AFTER an undecided one under `not-evaluated`.
  *
- * Both directions mean the decision list and the slice list were built from
+ * The first two mean the decision list and the slice list were built from
  * different preparations, which no later reader could detect: a comparison
  * would silently join one lane's slice 4 against the other's slice 4 while the
  * two name different passages.
+ *
+ * The third is a different defect with the same remedy. `not-evaluated` exists
+ * for a lane that stopped early by design, so its undecided slices are a
+ * SUFFIX; a decision after a gap means a slice was dropped from the middle,
+ * which an early stop cannot produce.
  *
  * @example
  * ```ts

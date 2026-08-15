@@ -117,10 +117,11 @@ export const UNCHANGED_MEASUREMENTS: CandidateMeasurements = {
  * Compares two candidates under the settled lexicographic order.
  * Negative means left ranks better.
  * Order: integrity, high-severity resolution (more is better), regressions
- * (fewer is better), total resolution (more is better), preservation
- * (fewer changed characters is better); the unchanged candidate wins any
- * remaining tie, and candidate id breaks ties between equals otherwise so
- * selection stays deterministic.
+ * (fewer is better), total resolution (more is better), preservation (a smaller
+ * `touchedRegionChars` is better, which measures envelope size rather than
+ * counting differing characters); the unchanged candidate wins any remaining
+ * tie, and candidate id breaks ties between equals otherwise so selection stays
+ * deterministic.
  *
  * @param left - one candidate
  *

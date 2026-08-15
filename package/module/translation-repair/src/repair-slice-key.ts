@@ -68,6 +68,18 @@ import type { RepairModels, } from './repair-contract.ts';
  * accepted issue quoted. A slice resumed from version 11 carries text an edit
  * the gate would now refuse already changed, so the two cannot be mixed.
  *
+ * Versions 13 through 16 were bumped without a paragraph here, which the note
+ * above says must never happen; recovered from the commits that moved the
+ * constant rather than reconstructed, so each is what its own change says it
+ * is. Version 13 (`4a4a8b6bc`) pairs sections only when the aligner is forced
+ * to, and never blocks on a refusal, so a slice resumed from 12 was paired by a
+ * different rule. Version 14 (`d1d1d874e`) stops the editor composing poetry
+ * over verse. Version 15 (`2193b5877`) computes line structure instead of
+ * asking the editor to notice it. Version 16 (`a14ea4f94`) records WHY the
+ * apply gate refused an operation, which is the findings payload rather than
+ * the text. The first three change what ships and the last changes the record,
+ * and all four are the kinds this note already names.
+ *
  * Version 17 is behaviour by way of WHO WAS HEARD. The channel-marker stripper
  * now matches the shape of a truncated `<|word|>` tail rather than the single
  * exact string `|>`, so replies that reached version 16 as lost voices now
