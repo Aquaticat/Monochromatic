@@ -1,4 +1,5 @@
 import { hashContent, } from './document-node.ts';
+import type { IncumbentKind, } from './translate-absence.ts';
 import {
   MAX_INCUMBENT_TO_SOURCE_RATIO,
   MIN_PROTECTED_INCUMBENT,
@@ -88,13 +89,15 @@ export function translateRunShape(
  *
  * @param incumbentText - translation already there
  *
+ * @param incumbentKind - whether there is a translation to fall back on
+ *
  * @param lineStructured - whether the enclosing chunk is line-structured
  *
  * @returns Hash keying this slice's record
  *
  * @example
  * ```ts
- * const key = translateSliceKey({ runShape, sourceText, incumbentText, lineStructured, },);
+ * const key = translateSliceKey({ runShape, sourceText, incumbentText, incumbentKind, lineStructured, },);
  * ```
  */
 export function translateSliceKey(
@@ -102,11 +105,13 @@ export function translateSliceKey(
     runShape,
     sourceText,
     incumbentText,
+    incumbentKind,
     lineStructured,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
     readonly incumbentText: string;
+    readonly incumbentKind: IncumbentKind;
     readonly lineStructured: boolean;
   },
 ): string {
@@ -117,6 +122,12 @@ export function translateSliceKey(
       runShape,
       sourceText,
       incumbentText,
+      // NOT DERIVABLE FROM THE TEXT ABOVE, which is why it is here rather than
+      // left implicit. An anchor and a whitespace-only content span both carry a
+      // blank incumbent and ask different questions: one may settle on the
+      // archive's own blank wording, the other refuses rather than ship nothing.
+      // Keyed by texts alone, one would resume the other's answer.
+      incumbentKind,
       // Two slices can carry identical text and still be governed differently,
       // because the verdict belongs to the enclosing chunk.
       lineStructured,

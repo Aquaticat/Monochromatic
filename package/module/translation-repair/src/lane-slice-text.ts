@@ -124,10 +124,15 @@ export class LaneSliceCoverageError extends Error {
  * `refuse` wherever the lane visits every slice, `not-evaluated` only where it
  * stops early by design
  *
+ * @param unfilledChunkIndices - slices the lane REACHED and could not decide a
+ * wording for, which is neither an early stop nor a dropped slice; named one by
+ * one rather than by policy, so every other gap is still refused
+ *
  * @returns One entry per prepared slice, in document order
  *
  * @throws LaneSliceCoverageError when a decision names a slice preparation
- * never produced, or a prepared slice has no decision under `refuse`
+ * never produced, a prepared slice has no decision under `refuse` without being
+ * named unfilled, or a slice is named unfilled and decided at once
  *
  * @example
  * ```ts
@@ -139,6 +144,7 @@ export function buildLaneSliceTexts(
     slices,
     decided,
     undecided,
+    unfilledChunkIndices = [],
   }: {
     readonly slices: readonly ChunkPair[];
     readonly decided: readonly {
@@ -146,6 +152,7 @@ export function buildLaneSliceTexts(
       readonly text: string;
     }[];
     readonly undecided: UndecidedSlicePolicy;
+    readonly unfilledChunkIndices?: readonly number[];
   },
 ): readonly LaneSliceText[] {
   /**
@@ -193,6 +200,25 @@ export function buildLaneSliceTexts(
   }
 
   /**
+   * Slices the lane reached and left without a wording on purpose.
+   */
+  const unfilled = new Set(unfilledChunkIndices,);
+  for (const chunkIndex of unfilled) {
+    if (!prepared.has(chunkIndex,))
+      throw new LaneSliceCoverageError({
+        message: `lane reports slice ${
+          String(chunkIndex,)
+        } unfilled, which this preparation never produced`,
+      },);
+    if (byIndex.has(chunkIndex,))
+      throw new LaneSliceCoverageError({
+        message: `lane reports slice ${
+          String(chunkIndex,)
+        } as unfilled and decided at once, so what it accepted there is unstated`,
+      },);
+  }
+
+  /**
    * Whether some earlier slice in document order went undecided.
    *
    * `not-evaluated` describes ONE shape and no other: a lane that stopped, so
@@ -217,6 +243,19 @@ export function buildLaneSliceTexts(
      */
     const decidedHere = byIndex.has(chunkIndex,);
     if (!decidedHere) {
+      // NAMED RATHER THAN INFERRED, and checked before the policy, because a
+      // slice the lane examined and could not fill is neither of the two shapes
+      // the policy describes: refusing it would fail a run that did nothing
+      // wrong, and treating it as an early stop would let every later slice
+      // pass unexamined. The lane says which slices these are; every other gap
+      // still meets the policy.
+      if (unfilled.has(chunkIndex,)) {
+        return {
+          chunkIndex,
+          incumbentText: slice.target
+            .text,
+        };
+      }
       if (undecided === 'refuse')
         throw new LaneSliceCoverageError({
           message: `lane left prepared slice ${String(chunkIndex,)} undecided`,

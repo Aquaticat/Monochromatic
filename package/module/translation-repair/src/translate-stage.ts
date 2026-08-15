@@ -4,22 +4,20 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import {
-  type CandidateProducer,
-  type CandidateWeight,
-  describeProducer,
-  type SelectionBallot,
-  type SelectionTally,
-} from './candidate-select-model.ts';
+import { describeProducer, } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import {
+  blankAgainst,
+  type IncumbentKind,
+  TranslateAbsenceError,
+} from './translate-absence.ts';
+import {
   buildTranslateCandidates,
   type TranslateCandidateValue,
-  type TranslateOrigin,
 } from './translate-candidates.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import {
@@ -27,8 +25,11 @@ import {
   NOT_ON_SLATE,
   positionOf,
   rotateCandidates,
-  type TranslateSlateEntry,
 } from './translate-slate.ts';
+import {
+  EMPTY_TALLY,
+  type TranslateStageResult,
+} from './translate-stage-result.ts';
 import {
   buildTranslateMessages,
   isTranslateReportWire,
@@ -58,130 +59,6 @@ import {
 // identity block parsed rather than passed through, and check anything that
 // crosses a slice boundary, which is `#92`.
 
-/**
- * How a slice's shipped text was decided.
- *
- * Kept apart from the origin because "the incumbent shipped" and "the judges
- * chose the incumbent" are different facts, and only the second is evidence
- * about the incumbent. A tie, a lost round or an empty slate all ship the
- * incumbent too, and counting those as wins would report the archive as
- * vindicated by exactly the rounds that examined nothing.
- *
- * @example
- * ```ts
- * const decision: TranslateDecision = 'judged';
- * ```
- */
-export type TranslateDecision =
-  | 'judged'
-  | 'sole-candidate'
-  | 'declined-indecision'
-  | 'declined-rejection'
-  | 'no-candidate';
-
-/**
- * Everything the translate stage decided for one slice.
- *
- * @example
- * ```ts
- * const { text, origin, decision, } = await runTranslateStage({ ... },);
- * ```
- */
-export type TranslateStageResult = {
-  /**
-   * Text that ships for this slice.
-   */
-  readonly text: string;
-
-  /**
-   * Whether that text was already there.
-   */
-  readonly origin: TranslateOrigin;
-
-  /**
-   * Who produced it.
-   */
-  readonly producer: CandidateProducer;
-
-  /**
-   * How it was decided.
-   */
-  readonly decision: TranslateDecision;
-
-  /**
-   * Ballot weight the winner drew, zero when no round decided it. A weight
-   * rather than a count because a judge voting for its own work counts for
-   * less; see `SELF_VOTE_WEIGHT`.
-   */
-  readonly voteWeight: number;
-
-  /**
-   * What the judging round counted; zeros when none ran.
-   */
-  readonly tally: SelectionTally;
-
-  /**
-   * Every ballot cast, so a replaced human translation carries the reasons it
-   * was replaced for rather than leaving them in a log.
-   */
-  readonly ballots: readonly SelectionBallot[];
-
-  /**
-   * Translators whose reply arrived and validated.
-   */
-  readonly heardTranslators: number;
-
-  /**
-   * Distinct proposals the judges saw, incumbent included.
-   */
-  readonly candidateCount: number;
-
-  /**
-   * Voice loss, blank replies, incumbent matches and fallbacks, in
-   * scorecard-stable wording.
-   */
-  readonly findings: readonly string[];
-
-  /**
-   * Candidates in the order the judges saw them, which is what makes a stored
-   * ballot readable: ballots name a position, and the slate is rotated per
-   * slice.
-   *
-   * The ASSEMBLED rotated order, whether or not judges were called. A slice
-   * with one distinct proposal ships it without a round and still records the
-   * slate, because what was on the ballot is the same question either way and
-   * `decision` already says whether anyone voted. Empty only when the slice had
-   * no candidates at all.
-   */
-  readonly slate: readonly TranslateSlateEntry[];
-
-  /**
-   * Position the judges chose, or {@link NOT_ON_SLATE} when they chose nothing.
-   */
-  readonly selectedIndex: number;
-
-  /**
-   * Position of the text that actually shipped, which differs from the
-   * selection on every fallback and is {@link NOT_ON_SLATE} when the shipped
-   * text was never a candidate, as a blank incumbent never is.
-   */
-  readonly shippedIndex: number;
-
-  /**
-   * What each position drew, so a decline says by how much and against what.
-   */
-  readonly perCandidate: readonly CandidateWeight[];
-};
-
-/**
- * Tally of a stage that never reached the judges.
- */
-const EMPTY_TALLY: SelectionTally = {
-  judgesAvailable: 0,
-  ballots: 0,
-  abstentions: 0,
-  selfVotes: 0,
-};
 
 /**
  * Translates one slice from its original and returns the text that ships.
@@ -197,6 +74,11 @@ const EMPTY_TALLY: SelectionTally = {
  *
  * @param incumbentText - translation as it stands, blank where this slice has
  * none
+ *
+ * @param incumbentKind - whether there is a translation to fall back on,
+ * decided by the caller from the target chunk rather than from the text being
+ * blank: a content span holding only whitespace is the archive's own wording,
+ * and an anchor is a place where a rendering belongs and none exists
  *
  * @param identityContext - declared names from both sides' front matter,
  * omitted when neither declares anything
@@ -216,6 +98,10 @@ const EMPTY_TALLY: SelectionTally = {
  * roster could not select anything: repeats on either side, no translator, or
  * judges too few to reach the minimum weight
  *
+ * @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
+ * nothing to write, which every fallback here would otherwise report as a
+ * settled slice carrying the archive's own wording, of which there is none
+ *
  * @example
  * ```ts
  * const translated = await runTranslateStage({ ... },);
@@ -228,6 +114,7 @@ export async function runTranslateStage(
     judgeModelIds,
     sourceText,
     incumbentText,
+    incumbentKind,
     identityContext,
     lineStructured,
     signal,
@@ -239,6 +126,7 @@ export async function runTranslateStage(
     readonly judgeModelIds: readonly SyntheticModelId[];
     readonly sourceText: string;
     readonly incumbentText: string;
+    readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
@@ -370,6 +258,14 @@ export async function runTranslateStage(
   const keepIncumbent: Omit<TranslateStageResult, 'decision' | 'findings'> = {
     text: incumbentText,
     origin: 'incumbent',
+    // THE FALLBACK IS NOT A PHANTOM, and what it means is worth stating because
+    // it reads like one. An incumbent that says something is always on the
+    // slate, so the fallback is reached only where the incumbent says nothing
+    // and could not be offered as a candidate. In `present` mode that is a
+    // content span holding only whitespace, and the archive's own wording there
+    // IS the blank: it stands, and no model matched it. In `absent` mode this
+    // object is never returned at all, since every exit that would reach it
+    // refuses instead.
     producer: incumbentOnSlate?.producer
       ?? {
         kind: 'incumbent',
@@ -393,14 +289,29 @@ export async function runTranslateStage(
   if (built.candidates
     .length
     === 0) {
-    tl.warn('translate stage: nothing proposed and no incumbent; slice unchanged',);
+    /**
+     * Findings this exit reports either way, so the refusal carries the same
+     * evidence the returned result would have.
+     */
+    const noCandidateFindings = [
+      ...stageFindings,
+      'translate-no-candidate',
+    ];
+    // NOTHING TO KEEP. With a translation in the archive, silence means it
+    // stands and the slice is genuinely settled. With none, the same fallback
+    // ships the empty string and reports a settled slice, so the run claims a
+    // rendering it never produced for a passage that still has none.
+    if (incumbentKind === 'absent') {
+      throw new TranslateAbsenceError({
+        reason: 'no-candidate',
+        findings: noCandidateFindings,
+      },);
+    }
+    tl.warn('translate stage: nothing proposed; slice unchanged',);
     return {
       ...keepIncumbent,
       decision: 'no-candidate',
-      findings: [
-        ...stageFindings,
-        'translate-no-candidate',
-      ],
+      findings: noCandidateFindings,
     };
   }
 
@@ -482,6 +393,24 @@ export async function runTranslateStage(
     l: tl,
   },);
   if (outcome.kind === 'selected') {
+    // UNREACHABLE while the slate is built the way it is, and here because the
+    // day it becomes reachable is the day a slice ships a deletion. Blank
+    // proposals never become candidates and a blank incumbent never joins the
+    // slate, so a winner always says something; this states that dependency
+    // rather than relying on a reader of `candidate-select.ts` noticing it.
+    if (blankAgainst({
+      winner: outcome.value
+        .text,
+      sourceText,
+    },)) {
+      throw new TranslateAbsenceError({
+        reason: 'blank-selection',
+        findings: [
+          ...stageFindings,
+          ...outcome.findings,
+        ],
+      },);
+    }
     tl.info(
       `translate stage: ${describeProducer(outcome.producer,)} won weight ${
         String(outcome.voteWeight,)
@@ -518,20 +447,39 @@ export async function runTranslateStage(
   // dropping them would have lost recall. Here the candidates are whole
   // translations of a passage nobody filed a complaint about, so replacing the
   // archive's own wording needs judges who agreed, not judges who could not.
+  /**
+   * Findings the decline reports, whichever way this exit goes.
+   */
+  const declineFindings = [
+    ...stageFindings,
+    ...outcome.findings,
+    `translate-declined (${outcome.disposition})`,
+  ];
+
+  /**
+   * Which decline this was, in the vocabulary both exits use.
+   */
+  const declined = (outcome.disposition === 'indecision')
+    ? 'declined-indecision'
+    : 'declined-rejection';
+  // A DECLINE IS NOT A KEEP when there is nothing to keep. Judges who could not
+  // agree have said nothing about the archive's wording, which is why keeping it
+  // is right; where the archive has no wording, the same silence would ship the
+  // empty string as though the judges had chosen it.
+  if (incumbentKind === 'absent') {
+    throw new TranslateAbsenceError({
+      reason: declined,
+      findings: declineFindings,
+    },);
+  }
   tl.info(`translate stage: ${outcome.reason}; keeping the incumbent`,);
   return {
     ...keepIncumbent,
     tally: outcome.tally,
     ballots: outcome.ballots,
     perCandidate: outcome.perCandidate,
-    decision: (outcome.disposition === 'indecision')
-      ? 'declined-indecision'
-      : 'declined-rejection',
-    findings: [
-      ...stageFindings,
-      ...outcome.findings,
-      `translate-declined (${outcome.disposition})`,
-    ],
+    decision: declined,
+    findings: declineFindings,
   };
 }
 

@@ -1,7 +1,7 @@
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import type { SliceAlignmentAssessment, } from './translate-alignment.ts';
-import type { TranslateStageResult, } from './translate-stage.ts';
+import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 //region Translate document contract
 // What the translate lane stores per slice, and what it returns per document.
@@ -30,8 +30,17 @@ import type { TranslateStageResult, } from './translate-stage.ts';
  * shifts everything below it. The index is now stamped onto a resumed record by
  * whoever asked for it, and `translateSliceKey` carries the measurement saying
  * identical-text slices inside one document do not occur in this corpus.
+ *
+ * VERSION 3, the same day, puts the INCUMBENT KIND into the key. A blank
+ * incumbent used to mean one thing; it now means two, and they ask different
+ * questions. An anchor is a boundary where a rendering belongs and none exists,
+ * so a run that produces nothing for it refuses rather than settling; a content
+ * span holding only whitespace is the archive's own wording, which may stand.
+ * Both carry the same texts, so a key over texts alone would hand one the
+ * other's answer. The bump itself discards nothing: measured before the change,
+ * no record had been settled under version 2 at all.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 2;
+export const TRANSLATE_SLICE_CACHE_VERSION = 3;
 
 /**
  * Models the translate lane seats.
@@ -215,7 +224,24 @@ export type TranslateDocumentResult = {
   readonly resumedSliceCount: number;
 
   /**
+   * Slices with NO translation in the archive that this run could not fill, in
+   * document order.
+   *
+   * A different thing from every other set here, and the reason it is its own
+   * field. A slice that is unshipped, unwithdrawn and unchanged elsewhere in
+   * this result means the judges looked and kept the archive's wording; these
+   * slices have no archive wording to keep, so the document carries the gap it
+   * came with. They settle no record and cache nothing, so the next run asks
+   * again, and their findings say why this one could not.
+   */
+  readonly unfilledChunkIndices: readonly number[];
+
+  /**
    * One settled record per slice, in document order.
+   *
+   * SHORTER THAN THE SLICE COUNT when
+   * {@link TranslateDocumentResult.unfilledChunkIndices} names any slice, since
+   * a slice that produced nothing settles no record.
    */
   readonly slices: readonly TranslateSliceRecord[];
 

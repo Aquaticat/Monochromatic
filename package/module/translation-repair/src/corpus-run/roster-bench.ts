@@ -207,6 +207,10 @@ async function runOne(
     judgeModelIds: RUN_ROSTER,
     sourceText: slice.sourceText,
     incumbentText: slice.incumbentText,
+    // Every benched slice is drawn from a pair the archive HAS translated, so
+    // there is always something to fall back on. A bench over anchored slices
+    // would say `absent` and have to be ready for the stage to refuse.
+    incumbentKind: 'present',
     lineStructured: slice.lineStructured,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,

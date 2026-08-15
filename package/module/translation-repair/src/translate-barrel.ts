@@ -44,10 +44,17 @@ export {
 } from './translate-document-contract.ts';
 export { settleTranslateSlice, } from './translate-slice.ts';
 export {
-  runTranslateStage,
+  absenceFinding,
+  blankAgainst,
+  type IncumbentKind,
+  TranslateAbsenceError,
+  type TranslateAbsenceReason,
+} from './translate-absence.ts';
+export { runTranslateStage, } from './translate-stage.ts';
+export {
   type TranslateDecision,
   type TranslateStageResult,
-} from './translate-stage.ts';
+} from './translate-stage-result.ts';
 export {
   type RepairOutcome,
   repairInvalidCandidates,

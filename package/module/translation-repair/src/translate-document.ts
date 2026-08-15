@@ -5,8 +5,14 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
+import {
+  absenceFinding,
+  type IncumbentKind,
+} from './translate-absence.ts';
+import { attemptTranslateSlice, } from './translate-slice-attempt.ts';
 import {
   assertSettledRecordAgrees,
   resumedSliceDiscardFinding,
@@ -30,7 +36,6 @@ import type {
   TranslateModels,
   TranslateSliceRecord,
 } from './translate-document-contract.ts';
-import { settleTranslateSlice, } from './translate-slice.ts';
 
 //region Translate document
 // The lane's document driver: every prepared slice is translated, judged, and
@@ -199,11 +204,39 @@ export async function translateDocument(
    * keeps the two paths agreeing when one does.
    */
   const settledByKey = new Map<string, TranslateSliceRecord>();
+
+  /**
+   * Slices with no translation in the archive that this run could not fill.
+   *
+   * Kept as a list rather than counted, because every later reader needs to
+   * know WHICH passages are still missing: the document ships with the gap the
+   * archive already had, and nothing else in the result says so.
+   */
+  const unfilled: number[] = [];
+
+  /**
+   * What those slices reported before giving up, plus one sentence per slice
+   * naming it and why.
+   *
+   * The stage's own findings travel with the refusal rather than being lost
+   * with the exception: which translators were heard and what the judges
+   * counted is the evidence saying whether the passage is hard or the roster
+   * was unlucky.
+   */
+  const unfilledFindings: string[] = [];
   for (const slice of prepared.slices) {
     /**
      * Global index of this slice, which every record and replacement names.
      */
     const { chunkIndex, } = slice.target;
+
+    /**
+     * Whether the archive holds a translation for this slice at all, which
+     * decides both what its key answers and what a fruitless round means.
+     */
+    const incumbentKind: IncumbentKind = isInsertionChunk(slice.target,)
+      ? 'absent'
+      : 'present';
 
     /**
      * Cross-run key for it.
@@ -214,6 +247,7 @@ export async function translateDocument(
         .text,
       incumbentText: slice.target
         .text,
+      incumbentKind,
       lineStructured: prepared.lineStructuredSliceIndices
         .has(chunkIndex,),
     },);
@@ -278,31 +312,15 @@ export async function translateDocument(
     /**
      * Fresh record for this slice, translated and judged.
      */
-    const record = await (async function settleUnderSignal(): Promise<TranslateSliceRecord> {
-      try {
-        return await settleTranslateSlice({
-          client,
-          slice,
-          prepared,
-          models,
-          signal,
-          perCallTimeoutMs,
-          l: tl,
-        },);
-      }
-      catch (error) {
-        // An aborted run fails BECAUSE it was aborted; whichever torn-down
-        // exchange happened to surface is a symptom. The caller has to tell a
-        // spent deadline apart from a provider fault by identity alone, and
-        // only one of those is worth retrying the entry over.
-        if (!signal.aborted)
-          throw error;
-        tl.warn(
-          `slice ${String(chunkIndex,)}: abandoned by the caller's abort (${String(error,)})`,
-        );
-        throw signal.reason;
-      }
-    })();
+    const attempt = await attemptTranslateSlice({
+      client,
+      slice,
+      prepared,
+      models,
+      signal,
+      perCallTimeoutMs,
+      l: tl,
+    },);
 
     // A run stopped part way through a slice does NOT fail loudly on its own:
     // every abandoned exchange reaches the stage as silence, and a stage that
@@ -310,6 +328,29 @@ export async function translateDocument(
     // that would record the collapse as finished work, and every later attempt
     // would resume it rather than ask again.
     signal.throwIfAborted();
+    if (attempt.kind === 'unfilled') {
+      // ONE SLICE RATHER THAN THE ENTRY. The archive has no wording here, so
+      // there is nothing to fall back on and nothing to write; what the
+      // document keeps is the gap it already had. Every other slice is still
+      // worth what it cost, and the next run asks again, because nothing is
+      // cached for a slice that produced nothing.
+      tl.warn(
+        `slice ${String(chunkIndex,)}: no translation in the archive and none produced (${
+          attempt.reason
+        }); the passage stays missing and the slice is NOT cached`,
+      );
+      unfilled.push(chunkIndex,);
+      unfilledFindings.push(
+        ...attempt.findings,
+        `${absenceFinding({ reason: attempt.reason, },)} chunk ${String(chunkIndex,)}`,
+      );
+      continue;
+    }
+
+    /**
+     * Record this round settled.
+     */
+    const { record, } = attempt;
 
     // Checked on the way OUT of the stage as well as on the way back in from
     // the cache, and before the write either way, so nothing contradicting
@@ -483,6 +524,10 @@ export async function translateDocument(
       // This lane visits every slice by contract and throws rather than
       // returning a partial document, so a gap is a defect.
       undecided: 'refuse',
+      // Except these, which the lane REACHED and could not fill: they have no
+      // wording because there is none to have, neither the archive's nor one
+      // this run produced. Named one by one, so every other gap still fails.
+      unfilledChunkIndices: unfilled,
       decided: settled.map(function toDecision(record,): {
         readonly chunkIndex: number;
         readonly text: string;
@@ -494,9 +539,15 @@ export async function translateDocument(
       },),
     },),
     resumedSliceCount: counted.resumed,
+    // Passages the archive has not translated and this run could not either.
+    // The document carries the gap they name, so a reader counting coverage
+    // has to subtract them rather than read every unshipped slice as a slice
+    // the judges left alone.
+    unfilledChunkIndices: unfilled,
     slices: settled,
     findings: [
       ...refusedCacheFindings,
+      ...unfilledFindings,
       ...settled.flatMap(function toFindings(record,): readonly string[] {
         return record.findings;
       },),

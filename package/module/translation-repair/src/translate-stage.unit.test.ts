@@ -29,9 +29,11 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type IncumbentKind,
   runTranslateStage,
   type SyntheticClient,
   type SyntheticModelId,
+  TranslateAbsenceError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -192,8 +194,17 @@ function laneClient(
          * Wire reply carrying it.
          */
         const value: unknown = { translation: scripted, };
-        if (!request.validate(value,))
-          throw new Error('scripted translation failed the wire guard',);
+        // EXACTLY WHAT THE REAL CLIENT DOES with a reply that fails the
+        // caller's guard, rather than throwing at the script: a model is free
+        // to answer with a blank translation, and what the lane must do about
+        // it is the thing under test.
+        if (!request.validate(value,)) {
+          return {
+            kind: 'schema-mismatch',
+            rawText: JSON.stringify(value,),
+            detail: 'reply failed the wire guard',
+          };
+        }
         return {
           kind: 'ok',
           value,
@@ -256,10 +267,12 @@ async function runLane(
     translations,
     needle,
     incumbentText,
+    incumbentKind = 'present',
   }: {
     readonly translations: TranslateScript;
     readonly needle: string;
     readonly incumbentText: string;
+    readonly incumbentKind?: IncumbentKind;
   },
 ) {
   /**
@@ -283,6 +296,7 @@ async function runLane(
     judgeModelIds: JUDGES,
     sourceText: SOURCE_TEXT,
     incumbentText,
+    incumbentKind,
     lineStructured: false,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
@@ -372,9 +386,9 @@ await describe({
     },),
 
     it({
-      name: 'keeps a translator that answered with EMPTY text off the ballot '
-        + 'and says so, because a blank candidate reads to a judge as a real '
-        + 'option to render nothing',
+      name: 'RE-ASKS a translator that answered with EMPTY text rather than counting it as heard, since '
+        + 'a reply saying nothing is not a reply: the roster gets another round out of that model, and '
+        + 'the loss is named if it stays blank',
       fn: async () => {
         const { result, } = await runLane({
           translations: {
@@ -385,10 +399,13 @@ await describe({
           needle: 'naps on the sill',
           incumbentText: INCUMBENT_TEXT,
         },);
-        // Heard, and still not offered: the voice arrived, it simply proposed
-        // nothing to ship.
-        expect(result.heardTranslators,).toBe(3,);
-        expect(result.findings,).toContain('translate-blank (hf:moonshotai/Kimi-K3)',);
+        // NOT heard, which is the change: the blank used to arrive as a voice
+        // and be filtered off the ballot afterwards, so the model was recorded
+        // as having answered and never re-asked.
+        expect(result.heardTranslators,).toBe(2,);
+        expect(result.findings,).toContain(
+          'stage-voice-lost (translate hf:moonshotai/Kimi-K3)',
+        );
         expect(result.candidateCount,).toBe(3,);
       },
     },),
@@ -440,6 +457,98 @@ await describe({
         expect(result.findings,).toContain(
           'translate-matched-incumbent (hf:moonshotai/Kimi-K3)',
         );
+      },
+    },),
+
+    it({
+      name: 'FILLS a slice the archive never translated, which is the ordinary absent-mode round: the '
+        + 'incumbent is not on the ballot because there is none, and the judges choose among the '
+        + 'renderings alone',
+      fn: async () => {
+        const { result, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },);
+        expect(result.origin,).toBe('fresh',);
+        expect(result.decision,).toBe('judged',);
+        expect(result.candidateCount,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES rather than settling when a slice with no translation gets nothing usable: every '
+        + 'fallback here ships the wording already in the archive, and where there is none the same '
+        + 'fallback ships the empty string while the record reads as a slice that settled',
+      fn: async () => {
+        await expect(runLane({
+          // Nobody is scripted, so every reply arrives wrapped in prose and
+          // fails the wire guard: no voice, no candidate, and no incumbent to
+          // stand in for them.
+          translations: {},
+          needle: 'dozes',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },),).rejects.toThrow(TranslateAbsenceError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a DECLINE for the same slice, which the ordinary path answers by keeping the '
+        + 'archive`s wording. Judges who could not agree have said nothing about a translation that '
+        + 'does not exist, so there is nothing their silence can protect',
+      fn: async () => {
+        await expect(runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: '',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },),).rejects.toThrow(TranslateAbsenceError,);
+      },
+    },),
+
+    it({
+      name: 'carries the evidence into the refusal rather than losing it with the exception, so a run '
+        + 'reporting a passage it could not fill can say which translators were heard and what the '
+        + 'judges counted',
+      fn: async () => {
+        /** Refusal the declined round raised. */
+        const raised = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: '',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },)
+          .then(
+            function settled(): unknown {
+              return undefined;
+            },
+            function refused(error: unknown,): unknown {
+              return error;
+            },
+          );
+        expect(raised instanceof TranslateAbsenceError,).toBe(true,);
+        if (!(raised instanceof TranslateAbsenceError))
+          throw new Error('expected the absent-mode refusal',);
+        expect(raised.reason,).toBe('declined-rejection',);
+        expect(raised.findings,).toContain('translate-declined (rejection)',);
+        expect(raised.findings
+          .some(function namesTheSlate(finding: string,): boolean {
+            return finding.startsWith('translate-candidates',);
+          },),).toBe(true,);
       },
     },),
   ],

@@ -3,7 +3,9 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import type { IncumbentKind, } from './translate-absence.ts';
 import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
   type TranslateModels,
@@ -41,6 +43,11 @@ import { runTranslateStage, } from './translate-stage.ts';
  * @param l - driver logger
  *
  * @returns Settled record, whether the stage's text was accepted or refused
+ *
+ * @throws {@link import('./translate-absence.ts').TranslateAbsenceError} when
+ * this slice has no translation in the archive and the stage produced none, so
+ * there is no record to settle: the driver above records the slice as unfilled
+ * and leaves the gap the archive already had
  *
  * @example
  * ```ts
@@ -84,6 +91,19 @@ export async function settleTranslateSlice(
     .text;
 
   /**
+   * Whether the archive holds a translation for this slice at all.
+   *
+   * DECIDED HERE AND ONCE, from what the target side IS rather than from what
+   * its text happens to be. An anchor names a boundary where a rendering
+   * belongs and none exists; a content span holding only whitespace is the
+   * archive's own wording, thin as it is. Both carry a blank `text`, and every
+   * fallback in the stage means something different for each.
+   */
+  const incumbentKind: IncumbentKind = isInsertionChunk(slice.target,)
+    ? 'absent'
+    : 'present';
+
+  /**
    * What the translators wrote and the judges decided.
    */
   const stageResult = await runTranslateStage({
@@ -92,6 +112,7 @@ export async function settleTranslateSlice(
     judgeModelIds: models.judgeModelIds,
     sourceText,
     incumbentText,
+    incumbentKind,
     ...((prepared.identityContext === undefined)
       ? {}
       : { identityContext: prepared.identityContext, }),

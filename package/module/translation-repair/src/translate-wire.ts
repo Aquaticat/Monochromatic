@@ -194,9 +194,20 @@ export type TranslateReportWire = {
 /**
  * Guards a translator reply.
  *
+ * A REPLY THAT SAYS NOTHING IS NOT A REPLY. The structured-output schema is
+ * satisfied by `{"translation": ""}`, which used to arrive as a heard voice
+ * proposing to render the passage as nothing and was then dropped further down
+ * while the model that sent it was recorded as answered. Refusing it here makes
+ * it a lost voice instead, so the roster re-asks that model in the next round
+ * and the loss is reported as one; a slice with no translation in the archive
+ * has nothing else to fall back on, which is where the difference is felt.
+ *
+ * Every source slice says something, so no legitimate reply is blank: an empty
+ * run cannot become a slice at all.
+ *
  * @param value - parsed model JSON
  *
- * @returns Whether value carries a translation string
+ * @returns Whether value carries a translation that says something
  *
  * @example
  * ```ts
@@ -206,8 +217,12 @@ export type TranslateReportWire = {
 export function isTranslateReportWire(value: unknown,): value is TranslateReportWire {
   if (!isJsonRecord(value,))
     return false;
+  if ((typeof value.translation) !== 'string')
+    return false;
 
-  return (typeof value.translation) === 'string';
+  return value.translation
+    .trim()
+    !== '';
 }
 
 /**
