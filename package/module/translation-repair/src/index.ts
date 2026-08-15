@@ -221,6 +221,7 @@ export {
   validateIssueClaim,
 } from './validate-issue.ts';
 
+export * from './corpus-barrel.ts';
 export * from './pipeline-barrel.ts';
 export * from './probe-barrel.ts';
 export * from './recall-barrel.ts';

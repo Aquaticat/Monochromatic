@@ -141,56 +141,9 @@ export {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 export {
-  censusByGeneration,
-  type GenerationCensus,
-  type GenerationGroup,
-  tipContains,
-} from './corpus-run/artifact-generation.ts';
-export {
-  type Placement,
-  readdirArtifacts,
-  readPlacement,
-} from './corpus-run/artifact-placement.ts';
-export {
-  type EligibleEntries,
-  selectEligible,
-} from './corpus-run/artifact-eligible.ts';
-export {
-  EmptyPoolError,
-  MixedGenerationError,
-} from './corpus-run/artifact-pool-refusal.ts';
-export {
-  assertResumableGeneration,
-  GenerationDriftError,
-  LegacyPipelineError,
-  readDriftOptIn,
-  UnplaceableArtifactError,
-} from './corpus-run/pass-generation-guard.ts';
-export {
-  abbreviate,
-  ArtifactProvenanceError,
-  assertArtifactProvenance,
-  type GenerationSelection,
-} from './corpus-run/artifact-provenance.ts';
-export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
-export {
-  type DrawableSlice,
-  orderBySourceSize,
-  pickSpreadSample,
-} from './corpus-run/bench-draw.ts';
-export { benchWidths, } from './corpus-run/bench-report.ts';
-export {
-  lockRunsDir,
-  RunsDirectoryBusyError,
-} from './corpus-run/runs-lock.ts';
-export {
-  assertPipelineDigest,
-  digestPipeline,
-  isDigestShaped,
-  type PipelineDigest,
-  PipelineDigestError,
-  type PipelineStamp,
-} from './corpus-run/pipeline-digest.ts';
+  type PreparedDocumentPair,
+  prepareDocumentPair,
+} from './document-preparation.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,

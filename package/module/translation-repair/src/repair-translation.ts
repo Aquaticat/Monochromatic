@@ -3,26 +3,13 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import {
-  alignDocumentSections,
-  type ChunkPair,
-} from './chunk-document.ts';
 import { hashContent, } from './document-node.ts';
-import { collectIdentityLines, } from './identity-context.ts';
-import {
-  type ChunkGovernance,
-  type ChunkSlice,
-  governedSliceIndices,
-} from './line-structure-inherit.ts';
+import { prepareDocumentPair, } from './document-preparation.ts';
 import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
-import { parseDocument, } from './parse-document.ts';
-import {
-  SLICE_CHAR_BUDGET,
-  subdivideChunkPair,
-} from './slice-pair.ts';
+import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
 import { runRefinePhase, } from './refine-phase.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import {
@@ -352,105 +339,46 @@ export async function repairTranslation(
   },);
 
   /**
-   * Whole original document, parsed once and reused for both alignment and
-   * the identity block chunk text cannot supply.
+   * Everything both lanes see the same way: slices, governance, declared names
+   * and alignment findings.
+   *
+   * Shared with the translate lane rather than derived here, because two lanes
+   * slicing separately would drift the moment either changed a budget, and each
+   * would still report slices that look right on their own.
    */
-  const sourceDocument = parseDocument({ text: sourceText, },);
-
-  /**
-   * Whole translation document, parsed once for the same two uses.
-   */
-  const targetDocument = parseDocument({ text: targetText, },);
-
-  /**
-   * Declared names and handles from both sides' front matter. Front matter is
-   * document-level while critics see chunk text, so this is the only path by
-   * which a declared correspondence reaches them. Empty when neither side
-   * declares anything.
-   */
-  const identityLines = collectIdentityLines({
-    sourceData: sourceDocument.frontMatter
-      ?.data,
-    targetData: targetDocument.frontMatter
-      ?.data,
+  const prepared = prepareDocumentPair({
+    sourceText,
+    targetText,
+    sliceCharBudget,
   },);
 
   /**
    * Identity block spread into the chunk call, omitted entirely when nothing
    * is declared so the prompt never carries an empty heading.
    */
-  const identityFragment = identityLines.length === 0
+  const identityFragment = prepared.identityContext === undefined
     ? {}
-    : { identityContext: identityLines.join('\n',), };
-
-  /**
-   * Aligned chunk pairs covering both documents totally.
-   */
-  const alignment = alignDocumentSections({
-    source: sourceDocument,
-    target: targetDocument,
-  },);
+    : { identityContext: prepared.identityContext, };
 
   /**
    * Alignment findings in scorecard-stable wording.
    */
-  const alignmentFindings = alignment.findings
-    .map(function toText(finding,) {
-    return `alignment ${finding.kind} (pair ${String(finding.pairIndex,)}: ${finding.detail})`;
-  },);
-  /**
-   * Paragraph-bound slice pairs across every aligned section, indexed
-   * globally in document order.
-   */
-  const slices: ChunkPair[] = [];
+  const { alignmentFindings, } = prepared;
 
   /**
-   * Slices whose enclosing CHUNK's original is line-structured.
-   *
-   * Decided on the chunk and inherited by its slices, because the predicate
-   * needs at least five blocks and subdivision routinely leaves fewer. Measured
-   * on `Toka_ls`: the verse chunk trips at 21 blocks, median 22, then
-   * subdivides into seven slices of which one still trips, while four more sit
-   * at medians 20, 22, 23 and 29 and fail only for want of a fifth block.
-   * Deciding per slice therefore dropped the instruction on most of the verse
-   * it exists for.
+   * Paragraph-bound slice pairs across every aligned section, indexed globally
+   * in document order.
    */
-  const governance: ChunkGovernance[] = [];
-  for (const pair of alignment.pairs) {
-    /**
-     * Slices carved from this chunk.
-     */
-    const carved = subdivideChunkPair({
-      pair,
-      sourceText,
-      targetText,
-      baseIndex: slices.length,
-      budget: sliceCharBudget,
-    },);
-    governance.push({
-      sourceText: pair.source
-        .text,
-      slices: carved.map(function toSlice(carvedSlice,): ChunkSlice {
-        return {
-          index: carvedSlice.target
-            .chunkIndex,
-          sourceText: carvedSlice.source
-            .text,
-        };
-      },),
-    },);
-    slices.push(...carved,);
-  }
+  const { slices, } = prepared;
 
   /**
    * Slices the line-structure rule governs, inherited from their chunk.
    */
-  const lineStructuredSlices = governedSliceIndices({ chunks: governance, },);
+  const lineStructuredSlices = prepared.lineStructuredSliceIndices;
   rl.info(
-    `${String(alignment.pairs
-      .length,)} chunk pairs, ${String(slices.length,)} slices, ${
-      String(alignmentFindings.length,)
-    } alignment findings`,
+    `${String(prepared.alignmentPairCount,)} chunk pairs, ${
+      String(slices.length,)
+    } slices, ${String(alignmentFindings.length,)} alignment findings`,
   );
 
   /**
