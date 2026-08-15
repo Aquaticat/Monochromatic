@@ -115,6 +115,12 @@ const MODELS: TranslateModels = {
 type CallLog = {
   translate: number;
   select: number;
+
+  /**
+   * Judge calls ATTEMPTED, whether or not one came back. A stage that keeps
+   * fanning out after the run was stopped shows up here and nowhere else.
+   */
+  selectAttempts: number;
 };
 
 /**
@@ -244,6 +250,10 @@ function laneClient(
           rawText: JSON.stringify(value,),
         };
       }
+      calls.selectAttempts += 1;
+      if (request.signal
+        .aborted)
+        throw new Error('exchange torn down by abort',);
       calls.select += 1;
 
       /**
@@ -289,6 +299,8 @@ function laneClient(
  * @param persisted - map the run writes settled records into; passed in so a
  * case that expects a REJECTION can still read what reached the cache
  *
+ * @param calls - log the run counts into, passed in for the same reason
+ *
  * @returns Result, the call log, and everything persisted
  *
  * @example
@@ -304,6 +316,11 @@ async function runDriver(
     abortAfterTranslateCalls,
     silentTranslators = false,
     persisted = new Map<string, TranslateSliceRecord>(),
+    calls = {
+      translate: 0,
+      select: 0,
+      selectAttempts: 0,
+    },
   }: {
     readonly sourceText?: string;
     readonly targetText?: string;
@@ -311,16 +328,9 @@ async function runDriver(
     readonly abortAfterTranslateCalls?: number;
     readonly silentTranslators?: boolean;
     readonly persisted?: Map<string, TranslateSliceRecord>;
+    readonly calls?: CallLog;
   },
 ) {
-  /**
-   * Calls each stage made.
-   */
-  const calls: CallLog = {
-    translate: 0,
-    select: 0,
-  };
-
   /**
    * Run steering, which the script may abort part way through the document.
    */
@@ -470,6 +480,49 @@ await describe({
         // The first slice was bought and settled; the second was not, and must
         // not be sitting in the cache claiming otherwise.
         expect(persisted.size,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'throws on an abort that arrives AFTER a stage reached quorum, '
+        + 'which is the window where nothing else notices: the voices that beat '
+        + 'the abort are enough to decide, every ask it tore down is discarded '
+        + 'by the round rather than raised, and the slice settles on a roster '
+        + 'the abort chose',
+      fn: async () => {
+        /**
+         * Records that reached the cache before the abort.
+         */
+        const persisted = new Map<string, TranslateSliceRecord>();
+
+        /**
+         * Voices a three-model roster needs, which the second slice hears
+         * before the abort lands on its last translator.
+         */
+        const quorum = Math.ceil(TRANSLATORS.length / 2,);
+
+        /**
+         * Calls the run made, which say where it stopped.
+         */
+        const calls: CallLog = {
+          translate: 0,
+          select: 0,
+          selectAttempts: 0,
+        };
+        await expect(runDriver({
+          abortAfterTranslateCalls: TRANSLATORS.length + quorum,
+          persisted,
+          calls,
+        },),)
+          .rejects
+          .toThrow('entry deadline reached',);
+        expect(persisted.size,).toBe(1,);
+        // The abort landed inside the second slice's translate round, so the
+        // only judging this run may have paid for is the first slice's. A round
+        // that returned its surviving voices instead of raising the abort would
+        // have sent the whole judge roster out on a run already over.
+        expect(calls.selectAttempts,).toBe(MODELS.judgeModelIds
+          .length,);
       },
     },),
 
