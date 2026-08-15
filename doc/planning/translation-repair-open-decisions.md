@@ -765,20 +765,32 @@ it again on every attempt while the cause persists.
     2026-08-15 lack both fields, and a reader must treat their absence as
     unknown rather than as empty.
 20. BOTH LANES NOW REFUSE A CHANGE THE DOCUMENT DOES NOT CARRY, rather than
-    reporting it. A slice cache entry is trusted on its index alone, so a record
+    reporting it, AND THE PLACE THEY REFUSE IT MOVED ON 2026-08-15. The way in
+    was the slice cache: a resumed record was trusted on its index alone, so one
     claiming a change while holding the archive's own wording reached assembly,
     survived the footnote guard untouched, and landed in the shipped set beside
-    a document nobody changed; every later rate read that as a repair that
-    happened. Two assertions now bracket assembly in both lanes: one refuses a
-    replacement that repeats its slice's incumbent or names a slice the
-    preparation never produced, and one refuses a returned document that
-    disagrees with its own change set in either direction. Both index sets are
-    also checked against each other and put in document order, which the
-    withdrawn one never was. They THROW rather than dropping the suspect
-    replacement, because dropping it silently leaves a run reporting counts
-    nobody can reproduce; if you would rather a corpus pass lose one entry's
-    telemetry than stop, that is the knob to turn, and `#95` records what would
-    have to be measured first.
+    a document nobody changed. Both lanes now check that a resumed record's
+    changed flag agrees with its own text WHERE THEY ACCEPT IT, in both
+    directions, and discard a record that disagrees so that slice is simply
+    bought again. One bad cache file costs one slice rather than the entry, and
+    each discard is named in the findings, because a recomputed slice is
+    otherwise indistinguishable from one that was never cached. The quieter
+    direction is the one nothing caught: only changed records become
+    replacements, so a record DENYING a change it made had its wording dropped
+    at assembly with nothing said.
+    THE ASSEMBLY CHECKS REMAIN, as a backstop rather than the first line: one
+    refuses a replacement that repeats its slice's incumbent or names a slice
+    the preparation never produced, and one derives the shipped set from the
+    surviving replacements, re-splices them, and refuses any returned document
+    they do not reconstruct. Both index sets are also checked against each other
+    and put in document order, which the withdrawn one never was.
+    THEY STILL THROW, and that is now the only place the throw-versus-finding
+    question is live. Dropping a suspect replacement silently would leave a run
+    reporting counts nobody can reproduce, but throwing loses an entry's
+    unpersisted work. The shape the review recommends is a typed error caught at
+    the corpus-entry boundary, so the pass continues and the entry stays
+    unsettled with its cached slices reusable, and that boundary is part of the
+    wiring Question 5 shapes. `#95` records the rest.
 19. THE TWO LANES CAN NOW BE COMPARED SLICE BY SLICE, and the comparison reads
     what each DOCUMENT carries rather than what each lane chose. Every lane
     result reports, for every prepared slice, the archive's own wording beside
@@ -801,3 +813,32 @@ it again on every attempt while the cause persists.
     fallback for servers that report no total at all. Whether any provider here
     ever states a total that differs from its two halves is unmeasured, and the
     first bench run under the split answers it.
+21. AN ASSEMBLY THAT CHANGES NO BYTE NOW SHIPS NOTHING, whatever its slices
+    decided. Two adjacent slices whose replacements each differ from their own
+    incumbent can reassemble to the archive text: moving a paragraph across the
+    join does it, and subdivision groups small paragraphs into slices where that
+    join exists, so this is reachable rather than hypothetical. The lane used to
+    return a non-empty shipped set beside a byte-identical document, while both
+    contracts said those indices name slices the document CARRIES a change for.
+    The guard now withdraws that whole set under its own reason and returns no
+    survivors. CANONICALIZATION RATHER THAN REFUSAL, because nobody did anything
+    wrong: each lane still holds every wording it decided, and only the
+    document-level claim changes, to the true one. It also bought something
+    back, which is why it is worth the code: with the guard guaranteeing it, the
+    check that a document equal to the archive names no changed slice became
+    enforceable again, and it had been dropped as unenforceable a day earlier.
+    THIS BROADENS WHAT `withdrawn` MEANS. It is no longer only an integrity veto:
+    a withdrawal now says the document does not carry that slice's change, for
+    any of three reasons, and only the findings say which. A reader counting
+    footnote damage from `withdrawnSliceCount` alone would now over-count.
+22. A REPAIRED SLICE IS ONE WHOSE TEXT MOVED, not one whose patch won. The
+    repair lane derived `changed` from which candidate selection chose, which is
+    a different question: the patch gate refuses an operation that rewrites its
+    region to itself, but two operations in adjacent envelopes can each change
+    their own region and concatenate back to the archive text, the same shape as
+    decision 21 one level down. Such a patch could win and write no byte, and
+    the per-slice assertion would then throw on a run nobody did anything wrong
+    in. `changed` now reads the text; `accuracyPatchSelected` keeps the
+    selection fact, which stays true in that case and is a different thing. The
+    translate lane already worked this way, so the invariant now holds by
+    construction on both.
