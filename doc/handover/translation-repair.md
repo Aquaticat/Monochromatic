@@ -312,6 +312,37 @@ start before these landed:
     fixes could only be resumed under its own pipeline digest anyway, and that
     digest has since moved.
 
+AND THEN THE FIRST HALF OF `#92`, the part that needs no quota:
+
+-   THE REASSEMBLED DOCUMENT IS NOW CHECKED (`b77cff67b`, `48e20c20d`). A
+    footnote is a relation BETWEEN slices, and selection settles each slice
+    alone, so a candidate that drops or renumbers a marker validates perfectly
+    inside its own slice and breaks the document. The lane now splices, parses
+    the result, and diffs its footnote findings against the archive's, so a
+    defect the archive already carried is neither blamed on the lane nor
+    repaired by it. Replacements that broke the graph are WITHDRAWN.
+-   IT ITERATES rather than checking once, and the case is pinned: one slice
+    renumbers `[^1]` to `[^2]` while another supplies the `[^2]` definition, so
+    withdrawing the first is what orphans the second. Demonstrated by capping
+    the loop at one round and watching that case fail.
+-   ATTRIBUTION IS BY ROLE, after an external review found the first key too
+    coarse: a slice that turns `[^1]: the note` into prose saying `see[^1]`
+    mentions the identifier exactly as often as before.
+-   A DEFECT NOBODY CAN BE BLAMED FOR WITHDRAWS EVERYTHING. A stray comment
+    opener masks markers document-wide, since masking runs over the whole body
+    before parsing, and no slice's own mention count moves. The archive text is
+    the one thing certain to parse as it did before.
+-   MEASURED, over all 184 corpus documents at the pinned commit: 209 GFM
+    footnote markers across 45 files, and ZERO reference-style link definitions,
+    ZERO reference-style link uses, ZERO heading-anchor links. So footnotes are
+    the only cross-slice relation this corpus actually has, and the other graphs
+    an external review proposed would be built against nothing. The
+    `〔N〕` convention the parser also supports appears nowhere in this corpus
+    either; it belongs to the other archive named in `footnote-model.ts`.
+-   `repairPreparedDocument` (`b2fba072a`) takes a prepared pair, with
+    `repairTranslation` the thin entry point that prepares and delegates. That
+    is what a combined driver needs: ONE preparation handed to both lanes.
+
 STATE: NO PASS IS RUNNING, deliberately.
 `pass16` was stopped on 2026-08-14 with zero artifacts settled, on the user's
 ruling that there is no cost to stopping a to-be-discarded entry mid-flight:

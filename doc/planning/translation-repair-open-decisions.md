@@ -622,3 +622,24 @@ it again on every attempt while the cause persists.
     bought two exchanges from one model, which is two ballots and enough to
     reach the minimum weight alone. Refused rather than silently deduplicated,
     since a caller that passed a repeat believes it has more judges than it has.
+11. A REPLACEMENT THAT BREAKS A FOOTNOTE IS WITHDRAWN AT ASSEMBLY, rather than
+    reported and shipped. Reasoning: it is the same species of guard as the
+    alignment refusal you already have, and a dangling `[^1]` is not a judgement
+    call. The judges are not wrong here either: each slice validated on its own,
+    and the marker that went missing belongs to a line in a slice they never
+    saw. The per-slice record still says a replacement was chosen, so the record
+    and the document disagree ON PURPOSE: one says what was chosen, the other
+    says what the document could carry, and the shipped counts follow the
+    document.
+12. WHEN NO SLICE CAN BE BLAMED, EVERY replacement is withdrawn and the archive
+    text ships. Reasoning: that shape comes from how replacements MEET, a stray
+    comment opener masking markers document-wide above all, so picking a slice
+    to withdraw would be a guess and shipping a document the lane knowingly
+    broke is worse. Rare by construction, loud when it happens.
+13. NO OTHER CROSS-SLICE GRAPH WAS BUILT, though an external review listed
+    several. Measured over all 184 corpus documents: 209 GFM footnote markers in
+    45 files, and zero reference-style link definitions, zero reference-style
+    link uses, and zero heading-anchor links. Footnotes are the only cross-slice
+    relation this corpus has. Structural parse regressions are read alongside
+    them, because an unterminated comment and an MDX downgrade name no
+    identifier and nothing else would notice.
