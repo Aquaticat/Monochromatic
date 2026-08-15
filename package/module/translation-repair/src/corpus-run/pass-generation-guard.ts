@@ -168,9 +168,13 @@ export class UnplaceableArtifactError extends Error {
         'absent from every rate. Nothing else reports the gap.',
         '',
         'Deleting the file is the whole remedy: the next pass re-runs that',
-        'entry from scratch. A truncated artifact is the ordinary trace of a',
-        'pass killed at its hard cap, so this is expected maintenance rather',
-        'than evidence of a defect.',
+        'entry from scratch.',
+        '',
+        'It is no longer ROUTINE maintenance, and it used to be. Artifacts are',
+        'written to a temporary name and renamed once the entry completes, so a',
+        'pass killed at its hard cap leaves a .partial rather than half a',
+        '.json. Reaching here now means a legacy artifact from before that, a',
+        'concurrent writer, a permission fault, or storage trouble.',
       ].join('\n',),
     );
     this.name = 'UnplaceableArtifactError';

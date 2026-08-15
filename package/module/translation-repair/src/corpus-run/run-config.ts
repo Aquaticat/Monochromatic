@@ -15,6 +15,7 @@ import {
 } from '../stream-idle-guard.ts';
 import type { SyntheticModelId, } from '../synthetic-catalog.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
+import { resolveGit, } from './git-command.ts';
 
 //region Corpus-run configuration
 // Shared roster, budgets, corpus pin, and location resolvers for the corpus-run
@@ -28,12 +29,6 @@ import { createSyntheticClient, } from '../synthetic-client.ts';
  * Directory of this source file, for locating the worktree via git.
  */
 const HERE = import.meta.dirname;
-
-/**
- * Real git binary; the repo PATH shim's staging guards are irrelevant to
- * read-only calls.
- */
-const GIT_BINARY = '/usr/bin/git';
 
 /**
  * Every model on the flat-rate Synthetic plan.
@@ -301,7 +296,7 @@ async function resolveWorktreeRoot(): Promise<string> {
    * Captured git stdout: the worktree top-level path.
    */
   const { stdout, } = await spawn(
-    GIT_BINARY,
+    await resolveGit(),
     [
       '-C',
       HERE,
@@ -328,7 +323,7 @@ export async function readHeadSha(): Promise<string> {
    * Captured git stdout: the HEAD sha.
    */
   const { stdout, } = await spawn(
-    GIT_BINARY,
+    await resolveGit(),
     [
       '-C',
       HERE,

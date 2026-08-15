@@ -303,10 +303,19 @@ export async function readPlacement(
     };
   }
   catch (error) {
-    // A truncated artifact is an ordinary outcome of a pass killed at its hard
-    // cap, and so, now that the read happens here, is a file that vanished or
-    // could not be opened. Logged rather than swallowed so a systematic write
-    // fault is visible instead of showing up as a quietly smaller pool.
+    // Logged rather than swallowed so a systematic write fault is visible
+    // instead of showing up as a quietly smaller pool. A file that vanished or
+    // could not be opened lands here too, now that the read happens inside the
+    // try.
+    //
+    // A truncated artifact is NO LONGER the ordinary trace of a pass killed at
+    // its hard cap, which is what this comment used to say. The final artifact
+    // is written after the entry completes, and it is written to a temporary
+    // name and renamed, so a kill mid-write leaves a `.partial` rather than a
+    // half-written `.json`. Reaching this now means something else: a legacy
+    // artifact from before atomic writes, a concurrent writer, a permission
+    // fault, or storage failure. Treating it as routine would normalise every
+    // one of those.
     console.log(
       `POOL malformed ${name}: ${String(error,)}`,
     );

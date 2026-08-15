@@ -1,11 +1,10 @@
-import { access, } from 'node:fs/promises';
-
 import spawn from 'nano-spawn';
 
 import {
   readdirArtifacts,
   readPlacement,
 } from './artifact-placement.ts';
+import { resolveGit, } from './git-command.ts';
 
 //region Artifact generation
 // Which PIPELINE VERSION produced each settled artifact, and which ones a draw
@@ -30,88 +29,6 @@ import {
 // NOTHING HERE IS A THRESHOLD. The artifact carries an exact digest and an exact
 // commit, and git answers ancestry exactly, so eligibility is computed rather
 // than estimated.
-
-/**
- * Real git binary, preferred over the PATH entry.
- *
- * `git` on this repository's PATH resolves to `node_modules/.bin/git`, a shim
- * carrying staging guards. Those guards are irrelevant to read-only calls, but
- * resolving through a shim makes ancestry depend on a wrapper that exists for
- * an unrelated reason, so the real binary is asked for by name.
- */
-const SYSTEM_GIT = '/usr/bin/git';
-
-/**
- * One in-flight or settled probe for the git command, keyed by the path
- * probed.
- *
- * A Map rather than a module-root `let`, which the lint rule forbids and
- * which this does not need: the entry is written once. Holding a PROMISE
- * rather than a value keeps resolution on first use rather than on import,
- * so loading this module never touches the filesystem, and concurrent
- * callers share one probe instead of racing several.
- */
-const gitProbe = new Map<string, Promise<string>>();
-
-/**
- * Finds a git to spawn, preferring the real binary over the PATH entry.
- *
- * @returns Command name or absolute path
- *
- * @example
- * ```ts
- * const git = await detectGit();
- * ```
- */
-async function detectGit(): Promise<string> {
-  try {
-    await access(SYSTEM_GIT,);
-    return SYSTEM_GIT;
-  }
-  catch (error) {
-    // Absent is ordinary anywhere that is not this machine. Logged rather
-    // than swallowed, because falling back to PATH means ancestry is
-    // answered by whatever git the shell resolves, including a shim, and
-    // that is worth seeing in a report which turns on ancestry.
-    console.log(
-      `POOL ${SYSTEM_GIT} not present (${String(error,)}); using git from PATH`,
-    );
-    return 'git';
-  }
-}
-
-/**
- * Git command to spawn, resolved once per process.
- *
- * Not itself async: it hands back the memoised promise, so concurrent
- * callers share one probe rather than racing several.
- *
- * @returns Promise of the command to spawn
- *
- * @example
- * ```ts
- * const git = await resolveGit();
- * ```
- */
-function resolveGit(): Promise<string> {
-  /**
-   * Probe already started for this path, when one has been.
-   */
-  const started = gitProbe.get(SYSTEM_GIT,);
-  if (started !== undefined)
-    return started;
-
-  /**
-   * Probe this call starts, stored before it settles so a second caller
-   * joins it rather than spawning its own.
-   */
-  const probe = detectGit();
-  gitProbe.set(
-    SYSTEM_GIT,
-    probe,
-  );
-  return probe;
-}
 
 /**
  * Directory of this source file, for locating the worktree via git.

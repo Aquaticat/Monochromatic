@@ -125,6 +125,53 @@ function mapDigests(
 }
 
 /**
+ * Narrows a per-entry lookup to the entries a pool actually admitted.
+ *
+ * The census answers for every PLACED entry, including ones a required commit
+ * later excluded. Handing that whole map to a reader contradicts what
+ * {@link EligibleEntries.tipByEntry} promises, and it does so in the unsafe
+ * direction: a reader that loaded an excluded artifact would find a value here
+ * and check against it, rather than meeting the refusal an unadmitted entry is
+ * supposed to meet.
+ *
+ * @param entryIds - entries the pool admitted
+ *
+ * @param byEntry - census-wide lookup
+ *
+ * @returns Lookup carrying only admitted entries
+ *
+ * @example
+ * ```ts
+ * const tipByEntry = keepAdmitted({ entryIds, byEntry: census.tipByEntry, },);
+ * ```
+ */
+function keepAdmitted(
+  {
+    entryIds,
+    byEntry,
+  }: {
+    readonly entryIds: readonly string[];
+    readonly byEntry: ReadonlyMap<string, string>;
+  },
+): ReadonlyMap<string, string> {
+  return new Map(
+    entryIds
+      .filter(function placed(entryId,): boolean {
+        return byEntry.has(entryId,);
+      },)
+      .map(function toPair(entryId,): readonly [
+        string,
+        string,
+      ] {
+        return [
+          entryId,
+          byEntry.get(entryId,) ?? '',
+        ];
+      },),
+  );
+}
+
+/**
  * Renders the lines naming artifacts no generation could hold.
  *
  * Always rendered when there are any, because an excluded artifact that goes
@@ -321,7 +368,10 @@ export async function selectEligible(
       entryIds: everyId,
       excludedIds: [],
       malformedIds: census.malformedIds,
-      tipByEntry: census.tipByEntry,
+      tipByEntry: keepAdmitted({
+        entryIds: everyId,
+        byEntry: census.tipByEntry,
+      },),
       digestByEntry,
       selection: (generationCount === 1) && (only !== undefined)
         ? {
@@ -413,7 +463,10 @@ export async function selectEligible(
       .filter(function wasExcluded(entryId,): boolean {
         return !entryIds.includes(entryId,);
       },),
-    tipByEntry: census.tipByEntry,
+    tipByEntry: keepAdmitted({
+      entryIds,
+      byEntry: census.tipByEntry,
+    },),
     digestByEntry,
     selection: {
       kind: 'required-commit',
