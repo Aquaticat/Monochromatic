@@ -5,7 +5,10 @@ import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import type { IncumbentKind, } from './translate-absence.ts';
+import {
+  BlankSelectionError,
+  type IncumbentKind,
+} from './translate-absence.ts';
 import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
   type TranslateModels,
@@ -142,8 +145,16 @@ export async function settleTranslateSlice(
    * Only a REPLACEMENT can be refused. A slice the judges left alone needs no
    * permission to stay as it is, and refusing it would report a protection that
    * protected nothing.
+   *
+   * AND ONLY WHERE THERE IS SOMETHING TO PROTECT. The guard exists to stop a
+   * short source replacing a long translation the source cannot account for; at
+   * an anchor there is no translation to lose, so a refusal there would put the
+   * empty string back over a rendering the judges chose and settle the slice as
+   * an ordinary unchanged one, which is the exact wrong-success state absent
+   * mode exists to remove.
    */
-  const refused = wantsReplacement
+  const refused = (incumbentKind === 'present')
+    && wantsReplacement
     && (alignment.kind === 'incumbent-dominates-source');
   if (refused) {
     l.warn(
@@ -170,6 +181,18 @@ export async function settleTranslateSlice(
       // actually stamped with.
       findings: stageResult.findings,
     };
+  }
+
+  // WHAT AN ABSENT SLICE MAY SETTLE ON, stated where the record is built rather
+  // than trusted to the paths above. Every way of producing nothing has already
+  // thrown by here, so this is unreachable; what it pins is that a record for a
+  // passage the archive never translated always carries a translation, since
+  // such a record is cached and read back as finished work.
+  if ((incumbentKind === 'absent')
+    && (stageResult.text
+      .trim()
+      === '')) {
+    throw new BlankSelectionError({ findings: stageResult.findings, },);
   }
 
   return {

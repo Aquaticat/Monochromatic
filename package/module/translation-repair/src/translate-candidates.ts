@@ -91,10 +91,13 @@ export type TranslateCandidateSet = {
 /**
  * Whether a candidate proposes any text at all.
  *
- * A reply of `{"translation": ""}` passes the wire guard, so it arrives as a
- * heard voice proposing to delete the slice. Judges cannot be shown an empty
- * candidate: it reads as a legitimate option to render nothing, and a slice
- * whose incumbent is also empty would then have a whole ballot of nothing.
+ * A BACKSTOP SINCE THE WIRE GUARD TIGHTENED. A reply of `{"translation": ""}`
+ * used to satisfy the guard and arrive as a heard voice proposing to delete the
+ * slice; it is now refused there and the model is re-asked, so nothing blank
+ * reaches this filter through the ordinary path. It stays because judges cannot
+ * be shown an empty candidate whatever the route: it reads as a legitimate
+ * option to render nothing, and a slice whose incumbent is also empty would
+ * then have a whole ballot of nothing.
  *
  * @param text - candidate text as the model returned it
  *

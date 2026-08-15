@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
+import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import {
   TranslateAbsenceError,
@@ -141,6 +142,14 @@ export async function attemptTranslateSlice(
       throw signal.reason;
     }
     if (error instanceof TranslateAbsenceError) {
+      // SECOND BACKSTOP, and deliberately not trusting the error alone. Only a
+      // slice with nothing in the archive can be unfilled; a content slice
+      // reported that way would record a passage the archive DOES translate as
+      // one it never did, and every count of missing passages would inherit it.
+      // The stage decides absence from this same chunk, so disagreement here
+      // means the two were handed different slices.
+      if (!isInsertionChunk(slice.target,))
+        throw error;
       return {
         kind: 'unfilled',
         reason: error.reason,

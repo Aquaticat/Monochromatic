@@ -21,6 +21,7 @@ import {
 import {
   buildLaneSliceTexts,
   LaneSliceCoverageError,
+  makeInsertionChunk,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -97,6 +98,31 @@ const CAT_SLICES = [
     source: 'source of the bowl',
     target: 'The bowl is full.',
   },),
+];
+
+/**
+ * The same pair with the second slice a place rather than existing text, which
+ * is the only kind of slice a lane may report as unfilled.
+ */
+const ANCHORED_SLICES = [
+  CAT_SLICES[0] ?? pairOf({
+    index: 0,
+    source: 'source of the nap',
+    target: 'The cat sleeps on the sill.',
+  },),
+  {
+    source: {
+      chunkIndex: 1,
+      nodes: [],
+      startOffset: 0,
+      endOffset: 0,
+      text: 'source of the bowl',
+    },
+    target: makeInsertionChunk({
+      chunkIndex: 1,
+      offset: 0,
+    },),
+  },
 ];
 
 await describe({
@@ -290,14 +316,14 @@ await describe({
          * the second.
          */
         const wordings = buildLaneSliceTexts({
-          slices: CAT_SLICES,
+          slices: ANCHORED_SLICES,
           undecided: 'refuse',
           decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
           unfilledChunkIndices: [1,],
         },);
         expect(wordings,).toHaveLength(2,);
         expect(wordings[1]?.acceptedText,).toBe(undefined,);
-        expect(wordings[1]?.incumbentText,).toBe('The bowl is full.',);
+        expect(wordings[1]?.incumbentText,).toBe('',);
 
         /**
          * Failure the same gap raises when nothing names it.
@@ -305,7 +331,7 @@ await describe({
         let caught: unknown;
         try {
           buildLaneSliceTexts({
-            slices: CAT_SLICES,
+            slices: ANCHORED_SLICES,
             undecided: 'refuse',
             decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
           },);
@@ -328,11 +354,11 @@ await describe({
         let both: unknown;
         try {
           buildLaneSliceTexts({
-            slices: CAT_SLICES,
+            slices: ANCHORED_SLICES,
             undecided: 'refuse',
             decided: [
               { chunkIndex: 0, text: 'The cat naps on the sill.', },
-              { chunkIndex: 1, text: 'The bowl is full.', },
+              { chunkIndex: 1, text: '', },
             ],
             unfilledChunkIndices: [1,],
           },);
@@ -348,11 +374,11 @@ await describe({
         let foreign: unknown;
         try {
           buildLaneSliceTexts({
-            slices: CAT_SLICES,
+            slices: ANCHORED_SLICES,
             undecided: 'refuse',
             decided: [
               { chunkIndex: 0, text: 'The cat naps on the sill.', },
-              { chunkIndex: 1, text: 'The bowl is full.', },
+              { chunkIndex: 1, text: '', },
             ],
             unfilledChunkIndices: [7,],
           },);

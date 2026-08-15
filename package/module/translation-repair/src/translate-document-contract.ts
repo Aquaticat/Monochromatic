@@ -31,13 +31,10 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  * whoever asked for it, and `translateSliceKey` carries the measurement saying
  * identical-text slices inside one document do not occur in this corpus.
  *
- * VERSION 3, the same day, puts the INCUMBENT KIND into the key. A blank
- * incumbent used to mean one thing; it now means two, and they ask different
- * questions. An anchor is a boundary where a rendering belongs and none exists,
- * so a run that produces nothing for it refuses rather than settling; a content
- * span holding only whitespace is the archive's own wording, which may stand.
- * Both carry the same texts, so a key over texts alone would hand one the
- * other's answer. The bump itself discards nothing: measured before the change,
+ * VERSION 3, the same day, puts the INCUMBENT KIND into the key, because what a
+ * run ASKS about a slice with no translation is a different question: it must
+ * be filled or left as the gap it is, while a slice that has one may settle on
+ * what is already there. The bump discards nothing, measured before the change:
  * no record had been settled under version 2 at all.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 3;

@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { isInsertionChunk, } from './chunk-placement.ts';
 
 //region Lane slice text
 // What one lane DECIDED for each slice, beside what the archive already said.
@@ -203,6 +204,12 @@ export function buildLaneSliceTexts(
    * Slices the lane reached and left without a wording on purpose.
    */
   const unfilled = new Set(unfilledChunkIndices,);
+  if (unfilled.size !== unfilledChunkIndices.length)
+    throw new LaneSliceCoverageError({
+      message: `lane reports ${
+        String(unfilledChunkIndices.length,)
+      } unfilled slices under ${String(unfilled.size,)} distinct indices`,
+    },);
   for (const chunkIndex of unfilled) {
     if (!prepared.has(chunkIndex,))
       throw new LaneSliceCoverageError({
@@ -216,6 +223,26 @@ export function buildLaneSliceTexts(
           String(chunkIndex,)
         } as unfilled and decided at once, so what it accepted there is unstated`,
       },);
+
+    /**
+     * Pair this index names, which the membership check above proves exists.
+     */
+    const named = slices.find(function isNamed(slice,): boolean {
+      return slice.target
+        .chunkIndex
+        === chunkIndex;
+    },);
+    // ONLY A SLICE WITH NOTHING IN THE ARCHIVE may be unfilled. A content slice
+    // exempted this way would be a passage the archive DOES translate reported
+    // as one it never did, and this is the check that stops an exemption list
+    // from becoming a way around the coverage rule.
+    if ((named !== undefined) && (!isInsertionChunk(named.target,))) {
+      throw new LaneSliceCoverageError({
+        message: `lane reports slice ${
+          String(chunkIndex,)
+        } unfilled, and the archive holds wording for it: only a slice with none can be unfilled`,
+      },);
+    }
   }
 
   /**

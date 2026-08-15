@@ -12,6 +12,7 @@ import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import {
   blankAgainst,
+  BlankSelectionError,
   type IncumbentKind,
   TranslateAbsenceError,
 } from './translate-absence.ts';
@@ -101,6 +102,10 @@ import {
  * @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
  * nothing to write, which every fallback here would otherwise report as a
  * settled slice carrying the archive's own wording, of which there is none
+ *
+ * @throws {@link BlankSelectionError} when selection chose text that says
+ * nothing for a source that says something, in EITHER mode, since that is a
+ * deletion rather than an outcome
  *
  * @example
  * ```ts
@@ -219,9 +224,11 @@ export async function runTranslateStage(
   /**
    * Shipping the slice exactly as it stands, which every failure path returns.
    *
-   * Not an error even when the slice has no translation at all: leaving an
-   * untranslated passage untranslated is the state the run started in, while
-   * shipping text no judge could vet is a new claim about the archive.
+   * Not an error while the archive HAS a translation here: leaving one as it
+   * stands is the state the run started in, while shipping text no judge could
+   * vet is a new claim about the archive. Where the archive has none, every
+   * path that would return this object refuses instead, since keeping nothing
+   * is not keeping anything.
    */
   const rotated = rotateCandidates({
     candidates: built.candidates,
@@ -403,8 +410,12 @@ export async function runTranslateStage(
         .text,
       sourceText,
     },)) {
-      throw new TranslateAbsenceError({
-        reason: 'blank-selection',
+      // ITS OWN FAULT, not an absence. A slice whose archive wording exists is
+      // not unfilled just because selection returned a deletion, and reporting
+      // it as one would record a translated passage as one nobody ever
+      // translated. This is a defect in the slate rather than an outcome, in
+      // either mode.
+      throw new BlankSelectionError({
         findings: [
           ...stageFindings,
           ...outcome.findings,

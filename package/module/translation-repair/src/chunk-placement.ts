@@ -103,10 +103,17 @@ export type ContentChunk = ChunkPosition & {
 /**
  * A boundary where a translation belongs and none exists.
  *
- * Carries no nodes and no text BY TYPE rather than by convention, so a value
- * claiming to be an insertion cannot also claim to cover text. What it does
- * carry is a place: an insertion at offset `p` covers `[p, p)`, and its text is
- * written between everything ending at `p` and everything starting there.
+ * What it carries is a place: an insertion at offset `p` covers `[p, p)`, and
+ * its text is written between everything ending at `p` and everything starting
+ * there.
+ *
+ * EMPTINESS IS A CONSTRUCTOR PROMISE, not a type one. `no-optional-escape`
+ * refuses the empty tuple and empty-string literal that would state it in the
+ * type, so `nodes` and `text` stay wide and {@link makeInsertionChunk} is what
+ * keeps them empty. A hand-built insertion carrying nodes or text is therefore
+ * expressible; `assertPlacementLayout` refuses it at assembly, which is the
+ * last point before anything is written, and every lane above trusts the
+ * discriminant rather than re-deriving it.
  *
  * @example
  * ```ts

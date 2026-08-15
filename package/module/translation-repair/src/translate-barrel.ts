@@ -46,6 +46,7 @@ export { settleTranslateSlice, } from './translate-slice.ts';
 export {
   absenceFinding,
   blankAgainst,
+  BlankSelectionError,
   type IncumbentKind,
   TranslateAbsenceError,
   type TranslateAbsenceReason,

@@ -62,11 +62,52 @@ export type TranslateAbsenceReason =
   /**
    * Judges rejected every candidate they were shown.
    */
-  | 'declined-rejection'
+  | 'declined-rejection';
+
+/**
+ * Raised when selection returned text that says nothing for a source that does.
+ *
+ * A DIFFERENT FAULT FROM ABSENCE, and separate because the two have opposite
+ * remedies. An unfilled passage is a slice the run could not translate, which
+ * costs that slice and leaves the archive's gap; a blank winner means selection
+ * chose a deletion, which is a defect in this code rather than an outcome, and
+ * a caller that treated it as an unfilled passage would record a slice the
+ * archive DOES translate as one it never did.
+ *
+ * Unreachable today, since blank proposals never become candidates and a blank
+ * incumbent never joins the slate. It exists so the day that changes is a loud
+ * failure rather than a deletion.
+ *
+ * @example
+ * ```ts
+ * throw new BlankSelectionError({ findings, },);
+ * ```
+ */
+export class BlankSelectionError extends Error {
   /**
-   * Selection returned text that says nothing, for a source that does.
+   * What the stage had gathered before the winner came back blank.
    */
-  | 'blank-selection';
+  public readonly findings: readonly string[];
+
+  /**
+   * Builds the failure with the evidence the round produced.
+   *
+   * @param findings - stage findings up to this point
+   *
+   * @example
+   * ```ts
+   * throw new BlankSelectionError({ findings, },);
+   * ```
+   */
+  public constructor({ findings, }: { readonly findings: readonly string[]; },) {
+    super(
+      'selection chose text that says nothing for a source that says something, '
+        + 'so shipping it would delete the passage',
+    );
+    this.name = 'BlankSelectionError';
+    this.findings = findings;
+  }
+}
 
 /**
  * Raised when a slice with no incumbent produced no translation to write.

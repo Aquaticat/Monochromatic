@@ -122,11 +122,18 @@ export function translateSliceKey(
       runShape,
       sourceText,
       incumbentText,
-      // NOT DERIVABLE FROM THE TEXT ABOVE, which is why it is here rather than
-      // left implicit. An anchor and a whitespace-only content span both carry a
-      // blank incumbent and ask different questions: one may settle on the
-      // archive's own blank wording, the other refuses rather than ship nothing.
-      // Keyed by texts alone, one would resume the other's answer.
+      // THE QUESTION, not just its inputs. What a run asks about a slice with
+      // no translation differs from what it asks about one that has any: the
+      // first must be filled or left as a gap, the second may settle on what is
+      // already there. Keying the mode makes the two separate questions rather
+      // than one question with two answers.
+      //
+      // NOT A COLLISION FIX, which an earlier note here claimed. A whitespace-
+      // only content span carries its whitespace rather than the empty string,
+      // and a content chunk covering nothing is refused by the layout guard, so
+      // no two currently valid slices carry identical texts and different
+      // modes. This is explicit domain separation, and it holds if either of
+      // those facts ever stops being true.
       incumbentKind,
       // Two slices can carry identical text and still be governed differently,
       // because the verdict belongs to the enclosing chunk.

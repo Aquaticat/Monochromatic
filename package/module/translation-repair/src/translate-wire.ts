@@ -6,7 +6,9 @@ import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Translate wire
-// PROTOTYPE for the re-design proposal in `#70`. Nothing calls this yet.
+// The translator sheet and the guard on what comes back, both of which
+// `runTranslateStage` uses on every slice. Written as a prototype for the
+// re-design proposal in `#70`, and in production since the lane was built.
 //
 // `doc/decision/translation-repair-output-goal.md` decides that the pipeline
 // yields a good translation of the ORIGINAL even where the translation fed in
