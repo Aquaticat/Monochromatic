@@ -10943,3 +10943,45 @@ SO THE DETERMINISTIC PATHS ARE EXHAUSTED for this corpus: heading Latin, section
 length, and body tokens have all now been measured, and none of them can tell a
 translated section from an absent one when the two sides share no characters.
 What is left is semantic, which is question 28's option A.
+
+### The coverage probe corrected me, which is the strongest thing it could have done
+
+`#106` says nothing produces a positive verdict that a passage is untranslated,
+and question 28 asks what should. Its stated default was to ask a model whether
+the translation carries the passage AT ALL, scoped to the whole translation
+rather than to the neighbours an aligner chose. That is built, in
+`coverage-wire.ts`, `coverage-verdict.ts`, `coverage-stage.ts`,
+`coverage-candidates.ts` and the `coverage-probe` task, and nothing calls any of
+it: no slicing, no artifact and no lane reads a word of its output.
+
+THE SHEET SEARCHES RATHER THAN TRANSLATES, and every claim of coverage must
+quote the English carrying the passage, copied from what the model was shown. A
+claim whose quote is not in the document is DROPPED, and is not counted for
+absence either: a bad quote is a voice that answered unusably, and reading it as
+agreement with "nothing carries this" would turn an invented quote into a reason
+to insert text.
+
+WHAT IT FOUND, and it is not what I expected. Asked about the eight unpaired
+sections of `XIEPT2`, six models answered `absent` on all eight, near
+unanimously. I had labelled all eight CARRIED in the census, because their
+English headings plainly correspond: 经历 with Experience, 遇见 with Meeting,
+and so on. I checked after the probe disagreed with me.
+
+THE ENGLISH DOCUMENT IS 1,218 CHARACTERS AGAINST 7,365 CHINESE. Every section of
+it except the last is a HEADING WITH NO BODY, one block long, seven to thirteen
+characters. The headings correspond and the translations do not exist. My label
+inferred body coverage from heading correspondence, which is exactly the
+reasoning this project keeps catching elsewhere, and the probe caught it in me.
+
+WHAT THAT CHANGES: the section matcher's refusals were RIGHT IN OUTCOME on that
+entry, though for a reason it cannot state, and the count of genuine insertion
+candidates at section scale is higher than the corrected census said, not lower.
+Question 28's ranking moved with it.
+
+AND IT EXPOSED A DESIGN DEFECT no amount of reading would have: when a source
+section's counterpart is a heading with no body, the body belongs UNDER THAT
+HEADING, not inserted as a fresh section. Landing five as designed inserts the
+whole source section, heading included, at a boundary, so on this entry it would
+have produced eight duplicated headings. The insertion unit has to be the
+section BODY, anchored after the existing target heading, whenever a
+corresponding heading is present.

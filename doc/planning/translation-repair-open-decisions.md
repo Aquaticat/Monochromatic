@@ -1110,19 +1110,25 @@ That ordering costs nothing, because C keeps B's denominator.
     (one entry renders four consecutive lines as a single English block) and
     the weakest were MISPAIRINGS (a footnote definition paired with the wrong
     footnote; a narration line paired with a translation three blocks away).
-    AT SECTION SCALE IT IS WORSE, which is the opposite of what I expected and
-    the reason this question replaced an earlier draft. Eighty-five of the 92
-    entries never reach the section matcher at all, because equal heading
-    counts short circuit it (`#98`). Of the seven that do, two produce unpaired
-    source sections, eleven in total. EIGHT OF THE ELEVEN ARE FALSE: one entry
-    has every one of its sections translated under an English heading that
-    plainly corresponds, and the matcher refused them all with reason
-    "ambiguous". Inserting on those eleven would add about seven thousand
-    characters of duplicate translation to a document that is already complete,
-    and the refusal reason is the same word on the true ones, so there is no
-    field to filter by.
-    THE THREE GENUINE ONES are the tail sections of the entry `#71` is about,
-    which the English never carried.
+    AT SECTION SCALE the numbers are smaller and I READ THEM WRONG THE FIRST
+    TIME, which is worth your attention because the correction is what the
+    prototype below was able to make. Eighty-five of the 92 entries never reach
+    the section matcher at all, because equal heading counts short circuit it
+    (`#98`). Of the seven that do, two produce unpaired source sections, eleven
+    in total.
+    WHAT I FIRST CONCLUDED, and recorded here in an earlier draft: eight of the
+    eleven were false, because one entry's sections carry English headings that
+    plainly correspond, 经历 with Experience, 遇见 with Meeting, and so on
+    through eight of them.
+    WHAT IS ACTUALLY TRUE: that entry's English document is 1,218 characters
+    against 7,365 Chinese, and every section of it except the last is a HEADING
+    WITH NO BODY. The headings correspond and the translations do not exist. I
+    had inferred body coverage from heading correspondence, which is the same
+    reasoning error I have been refusing elsewhere, and the six-model coverage
+    probe reported all eight as uncarried before I checked.
+    SO THE MATCHER'S REFUSALS WERE RIGHT IN OUTCOME on that entry, for a reason
+    it could not state, and the count of genuine candidates at section scale is
+    higher than the earlier draft said rather than lower.
     WHY IT IS YOURS TO ANSWER: the paths differ in expense and in how long the
     lane stays unable to fill a real gap. None of them is wrong.
     A. ASK A MODEL WHETHER THE TARGET DOCUMENT CARRIES THIS PASSAGE AT ALL,
@@ -1152,15 +1158,23 @@ That ordering costs nothing, because C keeps B's denominator.
     built for insertion stays and stays tested. Cons: the archive's genuinely
     missing sections stay missing, which is the thing the second lane exists
     for.
-    MY RANKING: A > B > D > C.
-    A over B because A unblocks the lane now and B is a prerequisite for
-    nothing else in the list: a coverage question asked of the whole document
-    does not care whether the aligner paired the sections correctly.
+    MY RANKING: A > C > B > D.
+    A over C because A answers the question for both scales with one mechanism
+    and does not depend on the aligner being right, where C still rests on
+    refusals whose reasons do not distinguish the cases.
+    C over B because C can ship a genuinely missing section now and B is the
+    largest item here, and because the correction above raised how many section
+    candidates are genuine rather than lowering it.
     B over D because B is work that pays off in every stage, where D is a
     holding position.
-    D over C because C's threshold would be fitted to two entries, and a
-    confident wrong insertion is the failure this whole question exists to
-    avoid.
-    WHAT I WILL DO IF YOU DO NOT ANSWER: A, prototyped behind the same
-    zero-quota plan mode the other stages have, so nothing reaches the corpus
-    until you have seen it measured.
+    WHAT I DID RATHER THAN WAIT: built A and measured it, since it was the
+    stated default and the prototype touches no corpus state. It is four files
+    and a probe task, nothing calls them, and no slicing or artifact reads them.
+    Results are in the handover; the short version is that it corrected my own
+    hand label on the eleven section candidates, with six voices quoting the
+    English they found or reporting that they found none.
+    ONE DESIGN DEFECT IT EXPOSED, which matters whichever option you choose: a
+    source section whose translation is a HEADING WITH NO BODY must have its
+    body inserted UNDER that heading, not inserted as a whole new section, or
+    the document gains a duplicate heading. Landing five as designed would have
+    made that mistake on eight sections of one entry.
