@@ -764,6 +764,18 @@ it again on every attempt while the cause persists.
     the withdraw rate is countable over a directory. Artifacts settled before
     2026-08-15 lack both fields, and a reader must treat their absence as
     unknown rather than as empty.
+19. THE TWO LANES CAN NOW BE COMPARED SLICE BY SLICE, and the comparison reads
+    what each DOCUMENT carries rather than what each lane chose. Every lane
+    result reports, for every prepared slice, the archive's own wording beside
+    the wording that lane decided on. A separate pure function joins two results
+    on the slice index and names each slice: the archive stands in both, one
+    lane moved, both moved to the same wording, or both moved apart. That last
+    one is the case a human has to read, and it is the reason the two-lane shape
+    exists. Deliberately NOT on the per-slice records: whether a slice shipped
+    is decided by an assembly guard reading the whole document and can differ
+    between two runs of the same slice, so it stays on the document-level index
+    sets and the comparison derives the rest. Nothing calls the comparison yet;
+    wiring it into a pass is shaped by Question 5.
 18. THE BENCH NOW PRICES SENDING AND ANSWERING SEPARATELY. One total could not
     answer the width question the bench exists for: seating one more producer
     resends the SAME prompt and adds one more answer, while a judge pays a

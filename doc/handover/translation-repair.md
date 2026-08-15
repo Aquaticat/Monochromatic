@@ -473,12 +473,71 @@ of `#89`:
     now read as open. Keeping the stated total needs no such claim anyway:
     report what the provider billed rather than a derivation, and fall back to
     the sum only for servers that state no total.
--   WHAT IT STILL DOES NOT DO, and what the next piece of `#89` needs: neither
-    lane result carries the per-slice TEXT pairing, accepted against shipped. The translate result counts
-    withdrawals without naming them, and the repair result keeps neither its
-    outcomes nor its surviving replacements. A slice-level comparison of the two
-    lanes therefore needs both lane contracts widened first, which is the same
-    work as the `sliceSelections` artifact field.
+-   BOTH LANES NOW REPORT WHAT THEY DECIDED FOR EVERY SLICE, beside the
+    archive's own wording, and a pure function compares the two documents slice
+    by slice. `LaneSliceText` (`lane-slice-text.ts`) is one entry per PREPARED
+    slice: index, incumbent, accepted. `compareDocumentLanes`
+    (`lane-comparison.ts`) joins two lane results on the index and names each
+    slice `archive-stands`, `repair-only`, `translate-only`, `both-agree` or
+    `both-differ`.
+-   THE SHIPPED FLAG IS DELIBERATELY NOT ON THE SLICE RECORD, which is the whole
+    design. Whether a slice shipped is decided by an assembly guard reading the
+    WHOLE document, and the same slice can ship in one run and be withdrawn in
+    the next when a neighbouring replacement changes. Membership in
+    `shippedChunkIndices` is that fact. Putting it on a per-slice record would
+    put a per-run verdict on a cacheable record, which is the defect class the
+    last three days were spent removing; the translate lane's slice records are
+    literally its cache values, so a resumed slice would have served a stale
+    verdict. The comparison reads the index sets and derives what each document
+    carries: accepted where it shipped, incumbent where it did not.
+-   AND FOR THE SAME REASON THE WORDINGS ARE BUILT AT THE DOCUMENT LEVEL, from
+    `prepared.slices`, rather than stored per slice. An incumbent belongs to a
+    PREPARATION; a slice resumed from an earlier run would otherwise report the
+    wording that preparation had then. Neither lane's cache schema changed, so
+    the 150 settled repair slices on disk survive this.
+-   COVERAGE IS CHECKED RATHER THAN ASSUMED. `buildLaneSliceTexts` throws
+    `LaneSliceCoverageError` when a lane leaves a prepared slice undecided or
+    names a slice the preparation never produced, and `compareDocumentLanes`
+    throws `LaneComparisonError` on differing slice counts, a missing slice, or
+    two lanes disagreeing about one slice's incumbent. All three mean the two
+    sides came from different preparations, which no later reader could detect:
+    the rows would line up and describe different passages.
+-   THE BLOCKED REPAIR EXIT NOW CARRIES WORDINGS TOO, which closes a consumer
+    trap a review had flagged: that exit returns both index sets empty while
+    every issue record reads `withdrawn`. Read with the wordings it now states
+    "this lane had repairs and the document carries none of them", which two
+    empty sets alone could not say.
+-   AND THE FIRST VERSION OF IT WAS WRONG, caught by an external review before
+    it was committed. `repairPreparedDocument` runs the dominance check INSIDE
+    the slice loop and returns at the earliest crossing, so the blocked exit
+    holds FEWER outcomes than prepared slices. A builder that demanded a
+    decision per slice threw there, which would have turned a documented
+    blocked result into a crash. `acceptedText` is now `string | null`, null
+    meaning the lane never reached that slice, and the builder takes an
+    explicit policy: `refuse` where the lane visits everything, `not-evaluated`
+    only where it stops early by design. The tests did not catch it because no
+    test drives the blocked exit with a partial outcome list, which is itself
+    worth fixing.
+-   THREE SOL REVIEWS LANDED ON 2026-08-15 MORNING and their findings are
+    recorded as tasks rather than left in the transcript: `#93` (empty-roster
+    placement, now answered: the check belongs in `repairPreparedDocument`
+    because `runDocumentLanes` bypasses `repairTranslation` entirely), `#94`
+    (index contracts claim sortedness, uniqueness, disjointness and range and
+    enforce none), `#95` (a cached slice can claim a change it did not make),
+    `#96` (the artifact is repair-only, unversioned, and cannot express
+    unknown), `#97` (a checker verdict may describe pre-refinement text), `#98`
+    (equal section counts skip the aligner entirely), `#99` (`chunkIndex` means
+    three different things), `#100` (one-sided slicing: the design answers),
+    `#101` (splice ordering and separator ownership), `#102` (what remains of
+    the delivery ledger). Read `#98`, `#99` and `#100` together: they are one
+    change to how a slice gets its identity and its span.
+-   WHAT IT STILL DOES NOT DO. Nothing CALLS `compareDocumentLanes` yet: the
+    corpus pass writes a repair-only artifact, and wiring it for two lanes is
+    the part Question 5 shapes. The settled artifact also records no per-slice
+    wording, so a grader reading a settled directory still cannot see what a
+    lane decided for a slice it did not ship. That is the remaining `#89` item
+    and the same work as the `sliceSelections` artifact field; the contract it
+    needed now exists.
 
 WHAT THE SAME REVIEWS RAISED AND I DID NOT ACT ON, each with the measurement
 that says why it can wait. None is a judgement call left open; each is real and
