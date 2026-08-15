@@ -10497,3 +10497,46 @@ an adjacency that had no separator. It also asks whether a MISSING replacement
 for an anchor should be refused the way a blank one now is, which cannot be
 answered until the absent-incumbent lane work says whether assembly may ever
 withdraw an anchor's replacement.
+
+### The blank line between two blocks now has an owner
+
+`e2c624fa9` finishes landing two of `#100` and closes `#101`. Every replacement
+until now went into a span that already sat between the right separators, so
+writing model text verbatim preserved them and nothing had to decide anything.
+An anchor has no span: written verbatim before a heading it produces
+`...afternoon.## Habits`, which still parses as Markdown and says something
+else.
+
+ASSEMBLY DECIDES, not the prompt. A prompt asking for correct leading and
+trailing blank lines is a hope that fails silently, and it cannot be right
+anyway: several fragments landing at one boundary, each carrying its own blank
+lines, put two between every pair. Only assembly knows what is on both sides of
+the boundary, how many fragments share it, and what the document separates
+blocks with.
+
+THE RULES, from the review and unchanged by implementing them: strip only outer
+blank-line material from a fragment and keep its indentation, since a rendering
+that begins with spaces is inside a list or a quote; join same-anchor fragments
+with one blank line; preserve existing whitespace byte for byte and only top it
+up; use the document's own line ending, which a Windows translation needs and a
+diff would otherwise report as changes to lines nobody touched; and treat the
+end of the file as termination rather than as separation from nothing.
+
+WHAT CHANGED SHAPE: anchors sharing a boundary are now ONE edit rather than
+several writes in sequence, because the separators between them are decided
+once for the group. Content replacements still go in verbatim, so nothing in
+production moves: no producer emits an anchor yet.
+
+FOUR SPLICE EXPECTATIONS CHANGED, which is the point rather than a regression.
+Each asserted the verbatim write this replaces, and two of them had an insertion
+running into the paragraph after it. A test that pins the old behaviour of the
+thing you are fixing is not a regression test; it is the defect, written down.
+
+PROBE: composition replaced by joining the fragments, which is exactly the old
+behaviour. Five cases fail, including the heading case this exists for.
+
+WHAT THE REVIEW LEFT OPEN, recorded in `#101` and `#100`: whether a MISSING
+replacement for an anchor should be refused the way a blank one now is. It
+cannot be answered until the absent-incumbent work says whether assembly may
+ever withdraw an anchor's replacement, since withdrawing one restores nothing
+where a translation belongs.
