@@ -114,6 +114,13 @@ yesterday's state:
         sliced, the assembly it flows into already refuses what it must.
     -   THE BLANK LINE BETWEEN TWO BLOCKS HAS AN OWNER, which is assembly rather
         than the prompt. This closes `#101`.
+    -   THE LANES CAN NOW BE HANDED A SLICE THE ARCHIVE NEVER TRANSLATED, which
+        is the third landing of `#100`. The translate lane refuses to settle one
+        it could not fill rather than reporting a settled slice carrying the
+        empty string, and the repair lane says the question does not apply
+        rather than sending critics to complain about a blank. Decisions 26 and
+        27 carry the two choices in it that are yours to veto; nothing produces
+        such a slice yet, so no run changes today.
 
 ## Question 1: how wide should the producing rosters be
 
@@ -1053,3 +1060,38 @@ That ordering costs nothing, because C keeps B's denominator.
     end of a file as termination rather than as separation from nothing. Four
     existing test expectations changed, each of which had pinned the verbatim
     write this replaces.
+26. A PASSAGE THE RUN COULD NOT TRANSLATE COSTS ITS OWN SLICE, NOT THE ENTRY.
+    This is the one place I departed from a review's recorded shape, so it is
+    the decision in tonight's work most worth your veto.
+    THE PROBLEM IT SOLVES either way: every fallback in the translate stage
+    ships the wording already in the archive, which is right for a slice that
+    HAS one, since leaving a passage as it stands is the state the run began in.
+    For a slice with none, the same fallback shipped the empty string and
+    reported a settled slice, so the run read as having delivered a translation
+    it never produced.
+    THE REVIEW'S SHAPE was for the lane to throw and leave the whole entry
+    unsettled, its cached slices reusable by the next attempt.
+    WHAT I BUILT INSTEAD: the stage raises a typed refusal, the driver catches
+    it per slice, and the document settles with that passage still missing and
+    named in a new `unfilledChunkIndices` field, with the findings saying which
+    translators were heard and what the judges counted. Nothing is cached for
+    such a slice, so the next run asks again.
+    REASONING: the document keeps the gap the archive already had, which states
+    nothing false; a decline depends on which judges answered, so it varies
+    between runs, and throwing the entry away discards every other slice's work
+    over that; and the missing passage is now nameable, which is what stops it
+    being read as a slice the judges kept.
+    WHAT WOULD CHANGE IF YOU PREFER THE REVIEW'S SHAPE: one branch in the
+    driver, plus the entry-level catch that Question 5's wiring needs anyway.
+27. A TRANSLATOR REPLY THAT SAYS NOTHING IS NO LONGER A REPLY. `{"translation":
+    ""}` satisfies the structured-output schema, so it arrived as a heard voice,
+    was dropped further down as an unusable candidate, and the model that sent
+    it counted as having answered and was never asked again. The wire guard now
+    refuses it, which makes it a lost voice: the roster re-asks that model in
+    the next round, and if it stays blank the loss is named like any other.
+    Every source slice says something, so no legitimate reply is blank.
+    WHAT THIS CHANGES IN A COUNT you may already be reading: a blank reply used
+    to show up as `translate-blank (model)` beside a full `heardTranslators`
+    tally. It now shows up as `stage-voice-lost (translate model)` with one
+    fewer heard translator, which is the same event described honestly. The
+    blank filter downstream stays as a backstop and should now never fire.
