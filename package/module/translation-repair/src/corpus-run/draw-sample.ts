@@ -1,30 +1,19 @@
-import {
-  readdir,
-  readFile,
-  writeFile,
-} from 'node:fs/promises';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { parseSettledArtifact, } from '../artifact-read.ts';
-import { readCorpusFile, } from '../corpus-source.ts';
 import { formatGradingSheet, } from '../grading-sheet.ts';
-import { isJsonRecord, } from '../json-guard.ts';
 import { formatRepairSheet, } from '../repair-sheet.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
 import { buildSampleManifest, } from '../sample-manifest.ts';
 import {
   assertRepairMeasurable,
-  classifyBand,
   countUnrecordedRepairs,
   DEFAULT_PRECISION_BAR,
   DEFAULT_SAMPLE_SEED,
   DEFAULT_SAMPLE_SIZE,
-  extractGradingCandidate,
-  type GradingCandidate,
   SIZE_BANDS,
-  type SizeBand,
 } from '../sample-grading.ts';
 import { trackDrawOutputs, } from './draw-outputs.ts';
 import {

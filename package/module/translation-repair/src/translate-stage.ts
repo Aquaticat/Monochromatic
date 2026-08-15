@@ -13,7 +13,6 @@ import {
 } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { hashContent, } from './document-node.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';

@@ -1,6 +1,5 @@
 import { createHash, } from 'node:crypto';
 import {
-  readdir,
   writeFile,
 } from 'node:fs/promises';
 

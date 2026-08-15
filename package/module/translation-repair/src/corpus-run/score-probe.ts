@@ -1,7 +1,4 @@
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { readArtifactProbe, } from '../artifact-probe-read.ts';
@@ -14,16 +11,11 @@ import {
   type GatheredProbe,
   reportProbeTelemetry,
 } from './probe-telemetry-report.ts';
-import {
-  type StageRosterCoverage,
-  summarizeStageRoster,
-} from '../stage-roster.ts';
-import { summarizeProbeTelemetry, } from '../probe-telemetry.ts';
+import { summarizeStageRoster, } from '../stage-roster.ts';
 import {
   parseGradedRepairSheet,
   readSheetIdentity,
 } from '../repair-grade-read.ts';
-import type { TelemetryProbeReading, } from '../probe-attribution.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
 import {
   assertSheetMatchesManifest,
