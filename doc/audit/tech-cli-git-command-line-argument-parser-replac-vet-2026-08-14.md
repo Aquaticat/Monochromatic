@@ -1,7 +1,7 @@
 # cli-git command-line argument parser replacement vet report
 
 - Status: in progress
-- Lifecycle phase: serious alternatives screened; targeted runtime confirmation pending
+- Lifecycle phase: targeted runtime complete; no validated finalist
 - Subject: cli-git command-line argument parser replacement
 - Decision scope: evaluate `jackspeak`, `type-flag`, and `argue-cli` as replacements for cli-git's handwritten
   Git argv region parser and management parser; evaluate no unnamed alternative
@@ -271,8 +271,7 @@ or ranked.
 - Overlays: replacement, high-trust, human-auditability, multi-platform
 - Clone: `~/temp/agent/jackspeak-2026-08-14`
 - Pinned revision: `a58b42f39e2fb04b28b8169005a5ddbc3302730e`, tag `v4.2.3`
-- Screening state: serious alternative; initial license, source, runtime, and provenance gates pass;
-  partial-Git semantic risk awaits runtime confirmation
+- Screening state: hard-gate exit after published-artifact semantic confirmation
 
 ### type-flag
 
@@ -283,8 +282,7 @@ or ranked.
 - Overlays: replacement, high-trust, human-auditability, multi-platform
 - Clone: `~/temp/agent/type-flag-2026-08-14`
 - Pinned revision: `6e0c46911ea64c829459a27bfaf1b45e8e335869`, tag `v4.5.0`
-- Screening state: serious alternative; initial license, source, runtime, and provenance gates pass;
-  partial-Git semantic risk awaits runtime confirmation
+- Screening state: hard-gate exit after published-artifact semantic confirmation
 
 ### argue-cli
 
@@ -295,8 +293,8 @@ or ranked.
 - Overlays: replacement, high-trust, human-auditability, multi-platform
 - Clone: `~/temp/agent/argue-cli-2026-08-14`
 - Pinned revision: `45db68f4acce979d0ba725ae83e320a0e906165a`, tag `v3.1.0`
-- Screening state: serious alternative; license, source-map-to-tag mapping, and runtime gates pass;
-  build provenance and partial-Git semantics await targeted confirmation
+- Screening state: hard-gate exit after published-artifact semantic confirmation;
+  reproducible build is no longer decision-relevant
 
 ## Evidence records
 
@@ -333,7 +331,7 @@ or ranked.
   `util.parseArgs` with `strict: false`
 - Relevance: cli-git intentionally declares only guard-relevant subsets of Git's evolving grammar
 - Gate: replacement parity and high-trust semantic fit
-- Status: potential hard failure pending published-artifact confirmation
+- Status: hard-gate fail, confirmed by published artifact
 - Primary source: clone `~/temp/agent/jackspeak-2026-08-14`,
   `src/index.ts:701-816`, accessed 2026-08-14
 - Adjacent excerpt: `parseRaw` iterates option tokens and throws `Unknown option` whenever no config field owns the name
@@ -374,7 +372,7 @@ or ranked.
 - Claim: stable type-flag does not implement cli-git's declared-value or unknown-option token roles
 - Relevance: dash-led values and unknown option arity directly affect policy facts
 - Gate: replacement parity and high-trust semantic fit
-- Status: potential hard failure pending published-artifact confirmation
+- Status: hard-gate fail, confirmed by published artifact
 - Primary source: clone `~/temp/agent/type-flag-2026-08-14`,
   `src/argv-iterator.ts:46-122` and `src/type-flag.ts:40-140`, accessed 2026-08-14
 - Adjacent excerpt: seeing a new flag first invokes any pending value callback with `undefined`;
@@ -425,7 +423,7 @@ or ranked.
 - Gate: replacement parity,
   process integration,
   and high-trust semantic fit
-- Status: potential hard failure pending published-artifact confirmation
+- Status: hard-gate fail, confirmed by published artifact
 - Primary source: clone `~/temp/agent/argue-cli-2026-08-14`,
   `src/argv.ts:1-24` and `src/options.ts:1-109`, accessed 2026-08-14
 - Adjacent excerpt: module initialization copies `process.argv` into one exported array;
@@ -623,17 +621,141 @@ native,
 Wasm,
 or generated-code boundary requires manifest revision before continuing.
 
-No candidate package has been installed and no candidate code has run yet.
-Source clones and extracted tarballs have received static inspection only.
+No candidate package was installed.
+The recorded published artifacts ran only through this manifest.
+No undeclared effect or command boundary appeared.
 
 ## Hard-gate outcomes
 
-Targeted source evidence identifies a potential semantic hard failure for each candidate.
-The bounded published-artifact matrix will confirm or refute those source readings before any exit is final.
+### jackspeak
+
+Outcome: fail.
+
+The published parser throws on both `-q path` and `--unknown=value path`.
+Those are ordinary partial-schema cases for cli-git because real Git accepts many options
+not declared by a particular policy parser.
+Declaring the complete Git grammar would abandon the current subset design,
+while rescanning raw argv would retain the parser responsibility the dependency was meant to replace.
+
+Jackspeak passes the tested positive,
+repetition,
+option-after-positional,
+lone-dash,
+terminator,
+joined-value,
+dash-led-value,
+and missing-value cases.
+Its failure is specifically the required partial-Git unknown-option contract.
+
+### type-flag
+
+Outcome: fail.
+
+The published parser reads `-m -a` as message `''` plus flag `-a`,
+rather than message value `-a`.
+It also accepts terminal `-m` as message `''` rather than exposing a missing required value.
+For `-q path`,
+it returns unknown flag `q` separately from positional `path` instead of retaining the current tentative unknown-option
+pair.
+The result normalizes unknown spelling and order.
+
+A caller can clone the supplied array to contain type-flag's documented mutation,
+but restoring dash-led values and distinguishing missing from explicit empty input
+requires reading declared option arity before type-flag does.
+That is the token scan this evaluation is meant to replace.
+
+Type-flag passes the tested positive,
+repetition,
+option-after-positional,
+lone-dash,
+terminator,
+joined-value,
+and unknown-joined recognition cases.
+
+### argue-cli
+
+Outcome: fail.
+
+The published parser continues parsing after `--`:
+`['--', '-a']` produces count one and leaves only the separator.
+It retains unknown options and positionals together in mutable global leftovers,
+without enough role information to produce cli-git's `unknownOptions` and `positionals` collections.
+Its built-in readers also overwrite repeated scalar results;
+the probe used public custom readers to prove counts and ordered values are expressible.
+
+Splitting at `--` can repair termination.
+Separating an arbitrary leftover stream into unknown options,
+unknown consumed values,
+and positionals requires another arity-aware token scan.
+Argue therefore supplies known-option removal but does not replace the incumbent parser contract.
+
+Argue passes the tested positive,
+repetition with custom readers,
+option-after-positional,
+lone-dash,
+joined-value,
+dash-led-value,
+missing-value,
+and exact unknown-leftover cases.
+Its process-global mutable argv is an additional integration concern,
+not the hard-gate reason.
 
 ## Validation results
 
-Pending.
+### Published-artifact semantic matrix
+
+Command:
+the Podman invocation recorded in the execution manifest.
+
+Environment:
+Node 24.18.0 on Linux x64,
+network disabled,
+read-only root and candidate mounts,
+2 GiB memory,
+2 CPUs,
+128-process limit,
+and 1,024-file-descriptor limit.
+
+Exit:
+zero.
+
+Positive controls:
+all candidates parsed one ordinary boolean flag,
+one string option,
+and one positional;
+all also preserved repeated known values when configured through their available APIs.
+The controls prove the harness could distinguish values,
+counts,
+and positionals before the divergent cases.
+
+Evidence:
+
+- probe: `~/temp/agent/cli-git-parser-candidate-probe-2026-08-14.mjs`;
+- probe SHA-256: `ddf77dc34a659de1267a2422c06ae9c7f08bb83fb21f414e5f68d28e23881933`;
+- output: `~/temp/agent/cli-git-parser-candidate-probe-output-2026-08-14.json`;
+- output SHA-256: `cbd3135a1aec51036cc5740b00ca9331b86b1ebdf9e537fb1a0c87543faa4d6b`.
+
+The exact observed failures are recorded under each hard-gate outcome.
+They confirm the source traces rather than relying on API documentation.
+
+### Omitted finalist execution
+
+No candidate became a finalist.
+Upstream installs,
+builds,
+default test commands,
+macOS and Windows consumer probes,
+cli-git integration worktrees,
+and performance benchmarks were therefore not run.
+Those operations cannot repair the observed stable-artifact semantic failures,
+and the governing workflow excludes hard-failed candidates before finalist execution.
+
+Repository check-run evidence remains relevant only as screening corroboration:
+Jackspeak's release commit passed its Linux,
+macOS,
+and Windows matrix;
+type-flag and Argue passed their Linux release-commit checks.
+No candidate timing is claimed.
 
 ## Score arithmetic and sensitivity
 
