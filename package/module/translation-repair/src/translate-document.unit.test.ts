@@ -753,6 +753,7 @@ await describe({
          */
         const calls: CallLog = {
           translate: 0,
+          translateAttempts: 0,
           select: 0,
           selectAttempts: 0,
         };
