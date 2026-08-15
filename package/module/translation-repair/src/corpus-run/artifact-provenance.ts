@@ -276,9 +276,21 @@ export function assertArtifactProvenance(
 
   // Absent rather than empty means the pool never placed this entry, which is
   // how a malformed artifact reaches its reporting reader. That is a state the
-  // pool defines, not a disagreement.
-  if (expectedTip === undefined)
+  // pool defines, and the check it needs is the OPPOSITE one: the pool said
+  // these bytes could not be placed, so bytes that place perfectly well mean
+  // the file changed between the two reads. Reading it as "nothing to compare"
+  // let exactly the race this module exists to close through, since a
+  // half-written artifact is classified malformed and is valid moments later.
+  if (expectedTip === undefined) {
+    if ((observedTip !== '') && (observedDigest !== ''))
+      throw new ArtifactProvenanceError({
+        name,
+        field: 'admission',
+        expected: 'unplaceable, as the pool classified it',
+        observed: `tip ${observedTip}, pipeline ${observedDigest}`,
+      },);
     return;
+  }
 
   if (observedTip !== expectedTip)
     throw new ArtifactProvenanceError({

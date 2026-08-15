@@ -208,8 +208,20 @@ export async function assertResumableGeneration(
     readonly digest: string;
   },
 ): Promise<void> {
-  if (process.env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE)
-    return;
+  // The census runs even when drift is allowed, and the override is applied
+  // further down, against the foreign-generation check ALONE. Returning here
+  // was a hole: opting into a mixed directory also disarmed the refusals for
+  // artifacts that record nothing readable and for artifacts that predate
+  // generation identity, which are different problems with different remedies
+  // and neither of which drift is an opinion about.
+  //
+  // Read BEFORE the census rather than at the point of use. The environment is
+  // process-wide and the census is an await, so reading it afterwards decides
+  // this call by whatever the environment happens to say later.
+  /**
+   * Whether this invocation opted into resuming under another pipeline.
+   */
+  const driftAllowed = process.env[ALLOW_DRIFT_VAR] === ALLOW_DRIFT_VALUE;
 
   /**
    * Pipelines the settled entries already record, and the artifacts none could
@@ -257,6 +269,17 @@ export async function assertResumableGeneration(
 
   if (foreign.length === 0)
     return;
+
+  if (driftAllowed) {
+    console.log(
+      `POOL resuming across ${
+        String(foreign.length,)
+      } foreign pipeline${foreign.length === 1 ? '' : 's'} because ${
+        ALLOW_DRIFT_VAR
+      }=${ALLOW_DRIFT_VALUE}; a rate over this directory must name a required commit`,
+    );
+    return;
+  }
 
   throw new GenerationDriftError({
     digests: foreign,

@@ -120,6 +120,7 @@ async function writeArtifacts(
             `${entryId}.json`,
           ),
           JSON.stringify({
+            id: entryId,
             tip: FIXED_TIP,
             pipelineDigest: digest,
             status: 'repaired',
@@ -265,6 +266,7 @@ await describe({
             'Mittens.json',
           ),
           JSON.stringify({
+            id: 'Mittens',
             tip: FIXED_TIP,
             status: 'repaired',
           },),

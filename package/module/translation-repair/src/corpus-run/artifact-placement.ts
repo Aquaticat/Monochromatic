@@ -225,10 +225,21 @@ export async function readPlacement(
     // one artifact would be admitted under one identity and read under
     // another, which is how `Mittens-copy.json` becomes a second settled entry
     // and `Mittens.json.json` becomes an entry called `Mittens.json`.
-    if (('id' in parsed) && (parsed.id !== keyedId)) {
+    // Presence is required, not merely agreement. Guarding the comparison with
+    // `'id' in parsed` meant an artifact carrying no id at all skipped the
+    // check entirely and was placed on its file name alone, which is the one
+    // reading the check exists to refuse: the pool would admit it under a name
+    // the bytes never claimed.
+    /**
+     * Entry id these bytes claim, absent when they claim none.
+     */
+    const recordedId: unknown = ('id' in parsed) ? parsed.id : undefined;
+
+    if (recordedId !== keyedId) {
       console.log(
-        `POOL ${name} records id ${JSON.stringify(parsed.id,)}, which is not `
-          + 'its file name; treating it as unplaceable',
+        `POOL ${name} records id ${
+          recordedId === undefined ? '(absent)' : JSON.stringify(recordedId,)
+        }, which is not its file name; treating it as unplaceable`,
       );
       return { kind: 'untagged', };
     }

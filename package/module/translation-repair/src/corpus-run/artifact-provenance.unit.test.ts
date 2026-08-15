@@ -198,16 +198,36 @@ await describe({
     },),
 
     it({
-      name: 'accepts bytes the pool never placed, because absence is a state '
-        + 'the pool defines rather than a disagreement: that is how a malformed '
-        + 'artifact reaches the reader whose job is to report it',
+      name: 'accepts bytes the pool never placed while they are still '
+        + 'unplaceable, because that is how a malformed artifact reaches the '
+        + 'reader whose job is to report it',
       fn: async () => {
         assertArtifactProvenance({
           name: 'Mittens.json',
           observedId: 'Mittens',
-          observedTip: TIP,
-          observedDigest: DIGEST,
+          observedTip: '',
+          observedDigest: '',
         },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES bytes the pool called unplaceable that now read perfectly '
+        + 'well. Absence is not "nothing to compare": the census said these '
+        + 'bytes could not be placed, so bytes that place mean the file changed '
+        + 'between the two reads, which is the race this check exists for. A '
+        + 'half-written artifact is classified malformed and is valid moments '
+        + 'later, and the reader would then count it having faced no generation '
+        + 'check at all',
+      fn: async () => {
+        expect(function checks() {
+          assertArtifactProvenance({
+            name: 'Mittens.json',
+            observedId: 'Mittens',
+            observedTip: TIP,
+            observedDigest: DIGEST,
+          },);
+        },).toThrow('admission',);
       },
     },),
 

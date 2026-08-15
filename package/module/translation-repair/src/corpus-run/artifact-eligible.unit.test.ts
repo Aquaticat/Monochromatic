@@ -150,6 +150,7 @@ async function writeArtifacts(
        * Artifact body, carrying each identity only when one was given.
        */
       const body = {
+        id: entry.entryId,
         status: 'repaired',
         ...('tip' in entry ? { tip: entry.tip, } : {}),
         ...('digest' in entry ? { pipelineDigest: entry.digest, } : {}),
@@ -340,6 +341,35 @@ await describe({
         expect(census.total,).toBe(0,);
         expect(census.untaggedIds,).toEqual(['Mittens',],);
         expect(census.preDigestIds.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES an artifact that records no id of its own. Presence is '
+        + 'required rather than merely agreement: guarding the comparison on '
+        + 'the field being there meant an artifact claiming no identity was '
+        + 'placed on its file name alone, which is exactly the reading the '
+        + 'check exists to refuse, since the pool would then admit it under a '
+        + 'name the bytes never claimed',
+      fn: async () => {
+        const dir = await writeArtifacts({ entries: [], },);
+        await writeFile(
+          join(
+            dir,
+            'Mittens.json',
+          ),
+          JSON.stringify({
+            tip: TIP_A,
+            pipelineDigest: DIGEST_A,
+            status: 'repaired',
+          },),
+          'utf8',
+        );
+
+        const census = await censusByGeneration({ artifactsDir: dir, },);
+
+        expect(census.total,).toBe(0,);
+        expect(census.untaggedIds,).toEqual(['Mittens',],);
       },
     },),
 

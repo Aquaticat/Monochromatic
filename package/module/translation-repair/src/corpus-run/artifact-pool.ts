@@ -2,7 +2,10 @@ import {
   type EligibleEntries,
   selectEligible,
 } from './artifact-eligible.ts';
-import { censusByGeneration, } from './artifact-generation.ts';
+import {
+  censusByGeneration,
+  resolveCommit,
+} from './artifact-generation.ts';
 
 //region Artifact pool
 // One call for every reader that turns settled artifacts into a NUMBER.
@@ -103,12 +106,28 @@ export async function resolvePool(
     ...((names === undefined) ? {} : { names, }),
   },);
 
+  // Resolved once, here, rather than passed through as whatever the shell said.
+  // Used raw it accepted `HEAD` and branch names, which resolve against the
+  // READER's checkout at read time: two readers filtering the same directory
+  // could cover different entries while both reporting the same requirement,
+  // and a branch that moves changes a rate's population with nothing recording
+  // that it did. Artifact tips are already held to canonical ids.
+  /**
+   * Required commit as a full object id, empty when none was set.
+   */
+  const commit = (required === '')
+    ? ''
+    : await resolveCommit({ revision: required, },);
+
+  if ((commit !== '') && (commit !== required))
+    console.log(`POOL required commit ${required} resolves to ${commit}`,);
+
   /**
    * Entries this reader may pool.
    */
   const eligible = await selectEligible({
     census,
-    ...((required === '') ? {} : { requiredCommit: required, }),
+    ...((commit === '') ? {} : { requiredCommit: commit, }),
     pooledDeliberately: poolAll === POOL_ALL_VALUE,
   },);
 

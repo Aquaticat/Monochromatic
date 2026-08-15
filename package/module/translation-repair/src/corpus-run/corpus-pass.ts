@@ -26,6 +26,10 @@ import { buildSettledArtifact, } from './artifact-build.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import { readOnlyIds, } from './entry-filter.ts';
 import { assertResumableGeneration, } from './pass-generation-guard.ts';
+import {
+  countSettled,
+  settledEntryIds,
+} from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
@@ -181,22 +185,6 @@ type CorpusPair = {
 };
 
 /**
- * Whether a directory entry name is one of our artifact files.
- *
- * @param name - directory entry name
- *
- * @returns True for `*.json` artifacts
- *
- * @example
- * ```ts
- * const artifacts = names.filter(isArtifactFile,);
- * ```
- */
-function isArtifactFile(name: string,): boolean {
-  return name.endsWith('.json',);
-}
-
-/**
  * Runs one accumulation pass over the corpus, writing artifacts and TALLY lines.
  * Reads config and the API key from the environment; performs model calls unless
  * `--plan` is passed, which verifies setup at zero quota and returns.
@@ -273,16 +261,7 @@ async function runCorpusPass(): Promise<void> {
   /**
    * Entry ids already carrying an artifact this pass.
    */
-  const done = new Set(
-    (await readdir(artifactsDir,))
-      .filter(isArtifactFile,)
-      .map(function toId(name,) {
-        return name.slice(
-          0,
-          -'.json'.length,
-        );
-      },),
-  );
+  const done = await settledEntryIds({ artifactsDir, },);
 
   /**
    * Attempt counts from prior runs, or empty on the first.
@@ -654,8 +633,7 @@ async function runCorpusPass(): Promise<void> {
   /**
    * Artifacts present after this run, against the pair target.
    */
-  const total = (await readdir(artifactsDir,)).filter(isArtifactFile,)
-    .length;
+  const total = await countSettled({ artifactsDir, },);
 
   /**
    * New artifacts written this run: every settled entry adds one, and only

@@ -368,6 +368,61 @@ export async function censusByGeneration(
 }
 
 /**
+ * Resolves whatever the invoker named into a full commit object id.
+ *
+ * A required commit arrives from the environment and was used raw, so `HEAD`
+ * and `main` were accepted and meant whatever the READER's checkout said at
+ * read time. Two readers then filtered the same directory differently while
+ * both reported the same requirement, and a branch that moves silently changes
+ * which entries a rate covers.
+ *
+ * Artifact tips are already held to canonical object ids. This holds the
+ * requirement to the same standard, at the one place it enters.
+ *
+ * @param revision - whatever the invoker named: an id, an abbreviation, a
+ * branch, or a revision expression
+ *
+ * @returns Full object id of the commit it names
+ *
+ * @throws When it names nothing this repository knows, or names an object that
+ * is not a commit
+ *
+ * @example
+ * ```ts
+ * const commit = await resolveCommit({ revision: 'ce130535d', },);
+ * ```
+ */
+export async function resolveCommit(
+  { revision, }: { readonly revision: string; },
+): Promise<string> {
+  try {
+    /**
+     * Git's own answer: the full object id, one line.
+     */
+    const { stdout, } = await spawn(
+      await resolveGit(),
+      [
+        '-C',
+        HERE,
+        'rev-parse',
+        '--verify',
+        `${revision}^{commit}`,
+      ],
+    );
+    return stdout.trim();
+  }
+  catch (error) {
+    throw new Error(
+      `Cannot resolve ${JSON.stringify(revision,)} to a commit in this `
+        + 'repository.\nA required commit is the definition of which entries a '
+        + 'rate covers, so an unresolvable one must stop the reader rather than '
+        + 'quietly filtering nothing. Name a commit this repository knows.',
+      { cause: error, },
+    );
+  }
+}
+
+/**
  * Whether the repository answering ancestry has a truncated history.
  *
  * Asked of the same checkout ancestry is resolved against, since that is the
