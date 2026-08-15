@@ -1,11 +1,13 @@
 //region Heading affinity
-// PROTOTYPE for `#71`. Nothing in the pipeline calls this yet.
+// Written as a prototype for `#71`, and WIRED SINCE: `align-headings-grid.ts`
+// calls it for every candidate pairing, and `alignHeadingsForced` decides on
+// the grid that builds.
 //
 // Scores how much two section headings look like each other across the language
 // boundary, so sections can be paired by EVIDENCE rather than by position.
 //
 // The case it is built from: `XingZ60` carries fourteen headings against the
-// translation's twelve, and the aligner falls back to distributing them
+// translation's twelve, and the aligner USED TO fall back to distributing them
 // proportionally by character fraction. That slid every section by two, so
 // 其六：Mikä was paired with a section headed Ann while a section headed Mikä
 // sat two places away. The names were sitting in both headings the whole time.

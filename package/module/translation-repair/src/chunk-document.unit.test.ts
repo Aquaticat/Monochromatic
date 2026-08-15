@@ -1,7 +1,7 @@
 /**
- * Tests for section chunking and total automatic alignment:
- * heading-bounded partition, preamble handling, exact offsets, mirrored
- * index pairing, and proportional merging over mismatched structures.
+ * Tests for section chunking and PARTIAL automatic alignment:
+ * heading-bounded partition, preamble handling, exact offsets, equal-shape
+ * index pairing, and refusal of sections the headings cannot pair.
  * Fixtures are cat-themed invention only.
  *
  * @module

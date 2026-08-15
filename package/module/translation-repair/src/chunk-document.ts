@@ -8,12 +8,17 @@ import type { RepairDocument, } from './parse-document.ts';
 // sections bound each call's blast radius. Memorial pages open blocks with
 // `##` headings on both sides; a chunk is one heading plus every node until
 // the next heading, and nodes before the first heading form a preamble
-// chunk. Alignment is total and automatic: mirrored structures pair by
-// index, and any mismatch degrades to proportional monotone merging
-// (Gale-Church style, over cumulative character fractions) so every chunk
-// lands in exactly one pair. Mismatches surface as findings, never as
-// refusals; the pipeline must handle malformed and mismatched texts on its
-// own.
+// chunk. Alignment is automatic and PARTIAL: sides of equal shape pair by
+// index, and anything else goes to the forced heading aligner, which pairs
+// what the headings support and REFUSES the rest. A refused section has no
+// pair, and is named in a finding.
+//
+// IT USED TO BE TOTAL, by degrading to proportional monotone merging over
+// cumulative character fractions, and that is exactly why it is not any
+// more: merging produced a confident WRONG pairing that slid a whole
+// document by two sections, so every critic call read the wrong original and
+// every issue filed on that entry was noise. Leaving a section unpaired
+// cannot damage it; guessing its pair damages text that was correct.
 
 /**
  * One contiguous run of nodes forming a critic-sized unit of work.
@@ -59,8 +64,10 @@ export type DocumentChunk = {
 };
 
 /**
- * One source chunk paired with its translation chunk;
- * either side may span several original sections after automatic merging.
+ * One source chunk paired with its translation chunk.
+ *
+ * Each side is exactly one chunk. Merging several sections into one side was
+ * the proportional fallback's doing, and that fallback is gone.
  *
  * @example
  * ```ts
@@ -85,22 +92,32 @@ export type ChunkPair = {
  * @example
  * ```ts
  * const finding: AlignmentFinding = {
- *   kind: 'sections-merged',
+ *   kind: 'structure-mismatch',
  *   pairIndex: 2,
- *   detail: 'target sections 2 through 3 merged against source section 2',
+ *   detail: 'source-only (no target heading scored above the floor); has no translation to repair',
  * };
  * ```
  */
 export type AlignmentFinding = {
   /**
-   * Observation class:
-   * whole-document structure mismatch, or one pair built by merging.
+   * Observation class, and there is one: the sides do not correspond.
+   *
+   * A `sections-merged` kind existed while the proportional fallback did, and
+   * went with it. Artifacts settled before 2026-08-15 carry the string in their
+   * findings, which is prose to every reader here; nothing in this package
+   * matches on it.
    */
-  readonly kind: 'structure-mismatch' | 'sections-merged';
+  readonly kind: 'structure-mismatch';
 
   /**
-   * Pair the observation attaches to;
-   * whole-document observations attach to pair zero.
+   * Index the observation attaches to, WHICH IS NOT ALWAYS A PAIR INDEX.
+   *
+   * Whole-document observations use zero. A refusal uses the index of the
+   * unpaired chunk on its OWN side, which is the only index it has, and that
+   * side's numbering need not line up with the pairs a run produced. The name
+   * is kept for now because the scorecard renders it into a finding string that
+   * 56 settled artifacts share, so renaming it is a comparability change rather
+   * than a rename. It moves with `#99`, where what an index means is settled.
    */
   readonly pairIndex: number;
 
@@ -111,9 +128,12 @@ export type AlignmentFinding = {
 };
 
 /**
- * Total alignment outcome:
- * pairs always cover every chunk on both sides,
- * and findings describe any degradation from mirrored pairing.
+ * PARTIAL alignment outcome: the pairs the aligner committed to, and what it
+ * refused.
+ *
+ * NOT A COVER. A refused chunk appears in no pair, on either side, which is the
+ * whole point of refusing it. A consumer counting coverage has to compare the
+ * pairs against the chunk counts rather than assume them equal.
  *
  * @example
  * ```ts
@@ -122,14 +142,19 @@ export type AlignmentFinding = {
  */
 export type SectionAlignment = {
   /**
-   * Monotone chunk pairs in document order;
-   * merged sides span several original sections.
+   * Monotone chunk pairs in document order, one chunk per side.
    */
   readonly pairs: readonly ChunkPair[];
 
   /**
-   * Degradation observations;
-   * empty when both sides mirrored exactly.
+   * Sections the aligner refused, and whole-document observations.
+   *
+   * EMPTY DOES NOT MEAN VERIFIED. Two sides of equal shape pair by index
+   * without the aligner being consulted at all, so a document that dropped one
+   * section and gained an unrelated one later has equal counts, pairs straight
+   * through, and reports nothing. `#98` holds that, and it waits on an aligner
+   * that can score headings across languages: today, refusing those pairings
+   * would discard real repair coverage to catch a case nothing can detect.
    */
   readonly findings: readonly AlignmentFinding[];
 };
@@ -197,278 +222,6 @@ export function chunkByHeadings(
 }
 
 /**
- * Merges one consecutive chunk run into a single spanning chunk.
- *
- * @param chunks - consecutive chunks of one document, in order
- *
- * @param documentText - owning document's text for the spanning slice
- *
- * @param chunkIndex - pair index the merged chunk represents
- *
- * @returns Chunk spanning the run's nodes and offsets
- *
- * @example
- * ```ts
- * const merged = mergeChunkRun({ chunks: run, documentText, chunkIndex: 2, },);
- * ```
- */
-function mergeChunkRun(
-  {
-    chunks,
-    documentText,
-    chunkIndex,
-  }: {
-    readonly chunks: readonly DocumentChunk[];
-    readonly documentText: string;
-    readonly chunkIndex: number;
-  },
-): DocumentChunk {
-  /**
-   * First chunk of the run, guaranteed by callers.
-   */
-  const [first,] = chunks;
-  /**
-   * Last chunk of the run, guaranteed by callers.
-   */
-  const last = chunks.at(-1,);
-  if ((first === undefined) || (last === undefined))
-    throw new Error('unreachable: merge runs always carry at least one chunk',);
-  return {
-    chunkIndex,
-    nodes: chunks.flatMap(function toNodes(chunk,) {
-      return chunk.nodes;
-    },),
-    startOffset: first.startOffset,
-    endOffset: last.endOffset,
-    text: documentText.slice(
-      first.startOffset,
-      last.endOffset,
-    ),
-  };
-}
-
-/**
- * Sums the text lengths of chunks for proportional pacing.
- *
- * @param chunks - chunks whose lengths accumulate
- *
- * @returns Total characters across the chunks
- *
- * @example
- * ```ts
- * const total = totalChunkChars({ chunks, },);
- * ```
- */
-function totalChunkChars(
-  { chunks, }: { readonly chunks: readonly DocumentChunk[]; },
-): number {
-  return chunks.reduce(
-    function addLength(
-      sum,
-      chunk,
-    ) {
-      return sum
-        + chunk.text
-        .length;
-    },
-    0,
-  );
-}
-
-/**
- * Aligns mismatched chunk lists by proportional monotone merging.
- * The side with fewer chunks frames the pairs;
- * the wider side's chunks merge greedily until their cumulative character
- * fraction catches up with the frame's, while always leaving at least one
- * chunk for every remaining pair.
- * Every chunk on both sides lands in exactly one pair.
- *
- * @param source - parsed original document
- *
- * @param target - parsed translation document
- *
- * @param sourceChunks - original-side chunks, non-empty
- *
- * @param targetChunks - translation-side chunks, non-empty
- *
- * @returns Total alignment with degradation findings
- *
- * @example
- * ```ts
- * const alignment = alignProportionally({ source, target, sourceChunks, targetChunks, },);
- * ```
- */
-function alignProportionally(
-  {
-    source,
-    target,
-    sourceChunks,
-    targetChunks,
-  }: {
-    readonly source: RepairDocument;
-    readonly target: RepairDocument;
-    readonly sourceChunks: readonly DocumentChunk[];
-    readonly targetChunks: readonly DocumentChunk[];
-  },
-): SectionAlignment {
-  /**
-   * Whether the source side frames the pairs (has fewer or equal chunks).
-   */
-  const sourceIsFrame = sourceChunks.length <= targetChunks.length;
-
-  /**
-   * Framing side: one chunk per pair.
-   */
-  const frame = sourceIsFrame
-    ? sourceChunks
-    : targetChunks;
-
-  /**
-   * Wider side whose chunks merge to keep pace with the frame.
-   */
-  const wide = sourceIsFrame
-    ? targetChunks
-    : sourceChunks;
-
-  /**
-   * Document text of the wider side for merged spanning slices.
-   */
-  const wideText = sourceIsFrame
-    ? target.text
-    : source.text;
-
-  /**
-   * Total characters of the framing side.
-   */
-  const frameTotal = totalChunkChars({ chunks: frame, },);
-
-  /**
-   * Total characters of the wider side.
-   */
-  const wideTotal = totalChunkChars({ chunks: wide, },);
-
-  /**
-   * Pairs accumulated in document order.
-   */
-  const pairs: ChunkPair[] = [];
-
-  /**
-   * Findings accumulated alongside, opening with the structure mismatch.
-   */
-  const findings: AlignmentFinding[] = [{
-    kind: 'structure-mismatch',
-    pairIndex: 0,
-    detail: `section structures differ (source ${String(sourceChunks.length,)} chunks, target ${
-      String(targetChunks.length,)
-    } chunks); aligned proportionally by character fraction`,
-  },];
-
-  /**
-   * Characters of the frame consumed so far.
-   */
-  let frameConsumed = 0;
-
-  /**
-   * Characters of the wide side consumed so far.
-   */
-  let wideConsumed = 0;
-
-  /**
-   * Next unconsumed wide chunk.
-   */
-  let cursor = 0;
-
-  for (const [pairIndex, frameChunk,] of frame.entries()) {
-    frameConsumed += frameChunk.text
-      .length;
-
-    /**
-     * Fraction of the frame consumed through this pair.
-     */
-    const frameFraction = frameConsumed / frameTotal;
-
-    /**
-     * Start of this pair's wide run.
-     */
-    const runStart = cursor;
-
-    // Every pair takes at least one wide chunk.
-    wideConsumed += wide[cursor]
-      ?.text
-      .length
-      ?? 0;
-    cursor += 1;
-    while (
-      // Leave at least one wide chunk for every remaining pair.
-      ((wide.length - cursor) > (frame.length - pairIndex
-        - 1))
-      // Keep merging while behind the frame's fraction;
-      // the final pair absorbs everything left.
-      && ((pairIndex === (frame.length - 1))
-        || ((wideConsumed / wideTotal) < frameFraction))
-    ) {
-      wideConsumed += wide[cursor]
-        ?.text
-        .length
-        ?? 0;
-      cursor += 1;
-    }
-
-    /**
-     * Wide chunks consumed by this pair.
-     */
-    const run = wide.slice(
-      runStart,
-      cursor,
-    );
-
-    /**
-     * Wide side of the pair, merged when the run spans several sections.
-     */
-    const wideSide = mergeChunkRun({
-      chunks: run,
-      documentText: wideText,
-      chunkIndex: pairIndex,
-    },);
-
-    if (run.length > 1) {
-      findings.push({
-        kind: 'sections-merged',
-        pairIndex,
-        detail: `${
-          sourceIsFrame
-            ? 'target'
-            : 'source'
-        } sections ${String(runStart,)} through ${String(cursor - 1,)} merged into pair ${
-          String(pairIndex,)
-        }`,
-      },);
-    }
-
-    pairs.push(
-      sourceIsFrame
-        ? {
-          source: frameChunk,
-          target: wideSide,
-        }
-        : {
-          source: wideSide,
-          target: frameChunk,
-        },
-    );
-  }
-
-  /**
-   * Total alignment of both sides.
-   */
-  const alignment: SectionAlignment = {
-    pairs,
-    findings,
-  };
-  return alignment;
-}
-
-/**
  * Reads the label the aligner reasons over for one chunk.
  *
  * A heading chunk carries its heading text; a preamble chunk carries an EMPTY
@@ -495,19 +248,29 @@ function chunkLabel(chunk: DocumentChunk,): string {
 }
 
 /**
- * Aligns two parsed documents into critic-sized section pairs, totally and
- * automatically.
- * Mirrored structures (equal chunk counts, matching leading node kinds)
- * pair by index with no findings;
- * everything else degrades to proportional monotone merging with findings.
- * When one side has no content at all, no pairs exist and the finding says
- * so; the pipeline decides what a content-free side means.
+ * Aligns two parsed documents into critic-sized section pairs, automatically
+ * and PARTIALLY.
+ *
+ * TWO PATHS. Sides of equal shape, meaning equal chunk counts with matching
+ * leading node kinds, pair by index and report nothing. Everything else goes to
+ * the forced heading aligner, and only what it pairs becomes a pair: a section
+ * it refuses is named in a finding and has no pair at all. When one side has no
+ * content, there are no pairs and the finding says so; the pipeline decides
+ * what a content-free side means.
+ *
+ * WHAT EQUAL SHAPE DOES NOT PROVE. For a document of ordinary heading sections
+ * every leading kind is `heading`, so that half of the test holds by
+ * construction and the path reduces to "the counts match". A document that
+ * dropped one section and gained an unrelated one later has matching counts and
+ * pairs straight through with no finding. `#98` holds it; it waits on heading
+ * scoring that works across languages, since refusing every equal-count pairing
+ * would discard real repair coverage to catch a case nothing here can detect.
  *
  * @param source - parsed original document
  *
  * @param target - parsed translation document
  *
- * @returns Pairs covering every chunk of both sides, plus findings
+ * @returns Pairs the aligner committed to, plus what it refused
  *
  * @example
  * ```ts
@@ -556,10 +319,13 @@ export function alignDocumentSections(
   }
 
   /**
-   * Whether both sides mirror exactly:
-   * equal counts and matching leading node kinds per index.
+   * Whether both sides have equal SHAPE: equal counts, and matching leading
+   * node kinds per index.
+   *
+   * Not "mirrored", which is what this was called and what it cannot check. It
+   * says nothing about whether section 3 on one side is section 3 on the other.
    */
-  const mirrored = (sourceChunks.length === targetChunks.length)
+  const equalShape = (sourceChunks.length === targetChunks.length)
     && sourceChunks.every(function leadingKindMatches(
       chunk,
       index,
@@ -571,7 +337,7 @@ export function alignDocumentSections(
         ?.kind;
     },);
 
-  if (mirrored) {
+  if (equalShape) {
     return {
       pairs: sourceChunks.map(function toPair(
         sourceChunk,
@@ -601,10 +367,16 @@ export function alignDocumentSections(
   },);
 
   // ONLY forced pairings become pairs, and a refusal is never a block. The
-  // section passes through unrepaired and the document still settles with its
-  // text, per `doc/decision/translation-repair-always-yields-output.md`.
-  // Leaving text alone cannot damage it; a guessed pairing feeds critics the
-  // wrong original and the repairs that follow damage text that was correct.
+  // document still settles with its own text, per
+  // `doc/decision/translation-repair-always-yields-output.md`. Leaving text
+  // alone cannot damage it; a guessed pairing feeds critics the wrong original
+  // and the repairs that follow damage text that was correct.
+  //
+  // THE TWO REFUSALS ARE NOT THE SAME EVENT, and the detail says which. A
+  // target-only section is English nobody will look at, so it passes through
+  // unrepaired. A source-only section is Chinese with NO English to pass
+  // through: the translation is missing that section entirely, and this lane
+  // repairs rather than writes, so there is nothing here to do about it.
   return {
     pairs: steps.flatMap(function toPair(step,): readonly ChunkPair[] {
       if (step.kind !== 'paired')
@@ -634,7 +406,9 @@ export function alignDocumentSections(
       return [{
         kind: 'structure-mismatch',
         pairIndex: (step.kind === 'source-only') ? step.sourceIndex : step.targetIndex,
-        detail: `${step.kind} (${step.reason}); passes through unrepaired`,
+        detail: `${step.kind} (${step.reason}); ${
+          (step.kind === 'source-only') ? 'has no translation to repair' : 'passes through unrepaired'
+        }`,
       },];
     },),
   };
