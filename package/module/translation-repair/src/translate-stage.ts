@@ -6,6 +6,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { describeProducer, } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
+import {
+  KEEPS_TRUSTED_TEXT,
+  LEAVES_PASSAGE_UNTRANSLATED,
+} from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
@@ -365,6 +369,14 @@ export async function runTranslateStage(
     client,
     candidates: rotated,
     judgeModelIds,
+    // WHAT A DECLINE ACTUALLY COSTS HERE, which is not what the shared sheet
+    // says by default. Judges are told declining is safe because the caller
+    // keeps text it already trusts; at an anchor there is no such text, so that
+    // sentence asks for caution by promising a fallback that does not exist and
+    // buys a missing passage with it.
+    declineConsequence: (incumbentKind === 'absent')
+      ? LEAVES_PASSAGE_UNTRANSLATED
+      : KEEPS_TRUSTED_TEXT,
     task:
       'Each candidate is a complete English translation of the Chinese ORIGINAL below, for a memorial archive.',
     criteria: [

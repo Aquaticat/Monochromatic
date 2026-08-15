@@ -77,6 +77,9 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * @param evidence - source and baseline material judges compare against
  *
+ * @param declineConsequence - what this caller does when every judge declines,
+ * omitted where the default holds
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -103,6 +106,7 @@ export async function selectBestCandidate<ValueT,>(
     task,
     criteria,
     evidence,
+    declineConsequence,
     signal,
     perCallTimeoutMs,
     l,
@@ -113,6 +117,7 @@ export async function selectBestCandidate<ValueT,>(
     readonly task: string;
     readonly criteria: readonly string[];
     readonly evidence: readonly SelectEvidence[];
+    readonly declineConsequence?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -226,6 +231,7 @@ export async function selectBestCandidate<ValueT,>(
       rendered: candidates.map(function toRendered(candidate,) {
         return candidate.rendered;
       },),
+      ...((declineConsequence === undefined) ? {} : { declineConsequence, }),
     },),
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,

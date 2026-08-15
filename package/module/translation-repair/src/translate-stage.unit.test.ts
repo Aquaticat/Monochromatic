@@ -143,6 +143,10 @@ function pickCandidate(
  *
  * @param calls - shared call log the cases assert on
  *
+ * @param judgeSheets - every judge sheet this run produced, so a case can read
+ * what judges were actually told rather than what the prompt builder is
+ * believed to say
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -155,10 +159,12 @@ function laneClient(
     translations,
     needle,
     calls,
+    judgeSheets,
   }: {
     readonly translations: TranslateScript;
     readonly needle: string;
     readonly calls: CallLog;
+    readonly judgeSheets: string[];
   },
 ): SyntheticClient {
   return {
@@ -221,6 +227,8 @@ function laneClient(
           return message.content;
         },)
         .join('\n',);
+
+      judgeSheets.push(content,);
 
       /**
        * Ballot naming the candidate carrying the needle.
@@ -286,11 +294,17 @@ async function runLane(
   /**
    * What the lane decided for this slice.
    */
+  /**
+   * Judge sheets this round produced, so a case can read what judges were told.
+   */
+  const judgeSheets: string[] = [];
+
   const result = await runTranslateStage({
     client: laneClient({
       translations,
       needle,
       calls,
+      judgeSheets,
     },),
     translatorModelIds: TRANSLATORS,
     judgeModelIds: JUDGES,
@@ -305,6 +319,7 @@ async function runLane(
   return {
     result,
     calls,
+    judgeSheets,
   };
 }
 
@@ -457,6 +472,52 @@ await describe({
         expect(result.findings,).toContain(
           'translate-matched-incumbent (hf:moonshotai/Kimi-K3)',
         );
+      },
+    },),
+
+    it({
+      name: 'TELLS THE JUDGES what declining actually costs, which differs by slice: the shared sheet '
+        + 'promises that the caller keeps text it already trusts, and at a slice with no translation '
+        + 'that promise is false and buys a missing passage with the caution it asks for',
+      fn: async () => {
+        /** Round over a slice the archive HAS translated. */
+        const present = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: INCUMBENT_TEXT,
+        },);
+
+        /** Round over one it has not. */
+        const absent = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },);
+        expect(present.judgeSheets
+          .length,).toBeGreaterThan(0,);
+        expect(absent.judgeSheets
+          .length,).toBeGreaterThan(0,);
+        expect(present.judgeSheets
+          .every(function keepsTrustedText(sheet: string,): boolean {
+            return sheet.includes('keeps text it already trusts',);
+          },),).toBe(true,);
+        expect(absent.judgeSheets
+          .every(function saysUntranslated(sheet: string,): boolean {
+            return sheet.includes('leaves it untranslated',);
+          },),).toBe(true,);
+        expect(absent.judgeSheets
+          .some(function keepsTrustedText(sheet: string,): boolean {
+            return sheet.includes('keeps text it already trusts',);
+          },),).toBe(false,);
       },
     },),
 
