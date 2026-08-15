@@ -4,7 +4,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
-import { prepareDocumentPair, } from './document-preparation.ts';
+import {
+  type PreparedDocumentPair,
+  prepareDocumentPair,
+} from './document-preparation.ts';
 import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
@@ -234,18 +237,22 @@ export type RepairTranslationResult = {
 };
 
 /**
- * Repairs one translation against its original.
+ * Repairs one ALREADY PREPARED document pair.
  * Stages are pure `(state, responses) -> newState`; this driver is the
  * imperative shell that owns model calls, chunk order, and reassembly.
  * Chunks run sequentially because aggregate concurrency beyond one stream
  * per model collapses throughput on this plan, and each stage already fans
  * out one call per model inside the chunk.
  *
+ * Takes the preparation rather than the two texts, so a caller running both
+ * lanes over one document prepares ONCE and hands the same slices to each. Two
+ * lanes preparing separately would drift the moment either changed a budget,
+ * and each would still report slices that look right on their own.
+ *
  * @param client - injected model client
  *
- * @param sourceText - original document, front matter included
- *
- * @param targetText - translation under repair, front matter included
+ * @param prepared - slices, governance, declared names and alignment findings,
+ * from `prepareDocumentPair`
  *
  * @param models - role roster
  *
@@ -255,45 +262,40 @@ export type RepairTranslationResult = {
  *
  * @param perCallTimeoutMs - deadline per exchange
  *
- * @param sliceCharBudget - target-side characters one paragraph-bound
- * slice aims for; defaults to {@link SLICE_CHAR_BUDGET}
- *
  * @param sliceCache - optional cross-run cache; resumes finished slices
  * and persists newly finished ones so a large document survives aborts
  *
  * @returns Repaired candidate plus adjudicated issues and completion status
  *
+ * @throws Whatever `signal.reason` carries, once the caller aborts with slices
+ * still unbought; nothing settled under that abort is cached
+ *
  * @example
  * ```ts
- * const result = await repairTranslation({
+ * const result = await repairPreparedDocument({
  *   client,
- *   sourceText,
- *   targetText,
+ *   prepared,
  *   models,
  *   signal,
  * },);
  * ```
  */
-export async function repairTranslation(
+export async function repairPreparedDocument(
   {
     client,
-    sourceText,
-    targetText,
+    prepared,
     models,
     adjudicationConfig,
     signal,
     perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
-    sliceCharBudget = SLICE_CHAR_BUDGET,
     sliceCache,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly sourceText: string;
-    readonly targetText: string;
+    readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
-    readonly sliceCharBudget?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
   }>,
 ): Promise<RepairTranslationResult> {
@@ -301,23 +303,15 @@ export async function repairTranslation(
    * Logger pre-tagged with this function's name.
    */
   const rl = tagged({
-    tag: repairTranslation.name,
+    tag: repairPreparedDocument.name,
     l,
   },);
 
   /**
-   * Everything both lanes see the same way: slices, governance, declared names
-   * and alignment findings.
-   *
-   * Shared with the translate lane rather than derived here, because two lanes
-   * slicing separately would drift the moment either changed a budget, and each
-   * would still report slices that look right on their own.
+   * Translation under repair, which every unchanged path returns and which
+   * assembly splices into.
    */
-  const prepared = prepareDocumentPair({
-    sourceText,
-    targetText,
-    sliceCharBudget,
-  },);
+  const { targetText, } = prepared;
 
   /**
    * Identity block spread into the chunk call, omitted entirely when nothing
@@ -617,6 +611,84 @@ export async function repairTranslation(
     issues,
     findings,
   };
+}
+
+/**
+ * Repairs one translation against its original, preparing the pair first.
+ *
+ * The entry point for a caller running the repair lane ALONE. A caller running
+ * both lanes prepares once and calls {@link repairPreparedDocument} directly,
+ * so the two lanes cannot disagree about what a slice is.
+ *
+ * @param client - injected model client
+ *
+ * @param sourceText - original document, front matter included
+ *
+ * @param targetText - translation under repair, front matter included
+ *
+ * @param models - role roster
+ *
+ * @param adjudicationConfig - tally thresholds and weights
+ *
+ * @param signal - caller abort honored by every exchange
+ *
+ * @param perCallTimeoutMs - deadline per exchange
+ *
+ * @param sliceCharBudget - target-side characters one paragraph-bound
+ * slice aims for; defaults to {@link SLICE_CHAR_BUDGET}
+ *
+ * @param sliceCache - optional cross-run cache; resumes finished slices
+ * and persists newly finished ones so a large document survives aborts
+ *
+ * @returns Repaired candidate plus adjudicated issues and completion status
+ *
+ * @example
+ * ```ts
+ * const result = await repairTranslation({
+ *   client,
+ *   sourceText,
+ *   targetText,
+ *   models,
+ *   signal,
+ * },);
+ * ```
+ */
+export async function repairTranslation(
+  {
+    client,
+    sourceText,
+    targetText,
+    models,
+    adjudicationConfig,
+    signal,
+    perCallTimeoutMs,
+    sliceCharBudget = SLICE_CHAR_BUDGET,
+    sliceCache,
+  }: ForeignBorrowed<{
+    readonly client: SyntheticClient;
+    readonly sourceText: string;
+    readonly targetText: string;
+    readonly models: RepairModels;
+    readonly adjudicationConfig?: AdjudicationConfig;
+    readonly signal: AbortSignal;
+    readonly perCallTimeoutMs?: number;
+    readonly sliceCharBudget?: number;
+    readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
+  }>,
+): Promise<RepairTranslationResult> {
+  return await repairPreparedDocument({
+    client,
+    prepared: prepareDocumentPair({
+      sourceText,
+      targetText,
+      sliceCharBudget,
+    },),
+    models,
+    ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
+    signal,
+    ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
+    ...(sliceCache === undefined ? {} : { sliceCache, }),
+  },);
 }
 
 //endregion Repair translation

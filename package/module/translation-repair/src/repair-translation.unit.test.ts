@@ -16,6 +16,8 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkRepairOutcome,
+  prepareDocumentPair,
+  repairPreparedDocument,
   type RepairModels,
   repairTranslation,
   type SyntheticClient,
@@ -934,6 +936,50 @@ Meow meow meow meow.
           .some(function mentionsStanding(finding,) {
             return finding.includes('non-translation votes stand',);
           },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'repairs a pair PREPARED BY THE CALLER, and reaches the same result '
+        + 'as preparing it itself. This is what lets both lanes run over one '
+        + 'preparation: two lanes slicing separately would drift the moment '
+        + 'either changed a budget, and each would still report slices that '
+        + 'look right on their own',
+      fn: async () => {
+        /**
+         * Preparation the caller owns, shared with any other lane.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+        },);
+
+        /**
+         * Repair driven from that preparation.
+         */
+        const fromPrepared = await repairPreparedDocument({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          prepared,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /**
+         * Repair driven from the two texts, which prepares internally.
+         */
+        const fromTexts = await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        expect(fromPrepared.status,).toBe('repaired',);
+        expect(fromPrepared.repairedText,).toBe(fromTexts.repairedText,);
+        expect(fromPrepared.issues
+          .length,).toBe(fromTexts.issues
+          .length,);
+        expect(fromPrepared.findings,).toEqual(fromTexts.findings,);
       },
     },),
 

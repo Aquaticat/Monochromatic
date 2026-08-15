@@ -206,6 +206,7 @@ export {
   subdivideChunkPair,
 } from './slice-pair.ts';
 export {
+  repairPreparedDocument,
   type RepairStatus,
   repairTranslation,
   type RepairTranslationResult,
