@@ -22,9 +22,11 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type ChunkRepairOutcome,
   prepareDocumentPair,
   type RepairModels,
   runDocumentLanes,
+  type SliceCache,
   type SyntheticClient,
   type SyntheticModelId,
   type TranslateModels,
@@ -348,9 +350,11 @@ async function runLanes(
   {
     served,
     abortAfterCriticCalls,
+    repairSliceCache,
   }: {
     readonly served: SchemaLog;
     readonly abortAfterCriticCalls?: number;
+    readonly repairSliceCache?: SliceCache<ChunkRepairOutcome>;
   },
 ) {
   /**
@@ -373,6 +377,9 @@ async function runLanes(
     translateModels: TRANSLATE_MODELS,
     signal: controller.signal,
     perCallTimeoutMs: CALL_TIMEOUT_MS,
+    ...((repairSliceCache === undefined)
+      ? {}
+      : { repairSliceCache, }),
     l,
   },);
 }
@@ -460,6 +467,86 @@ await describe({
 
         const lanes = await runLanes({ served, },);
         expect(lanes.alignmentFindings,).toEqual(prepared.alignmentFindings,);
+      },
+    },),
+
+    it({
+      name: 'STOPS at a first-lane failure the signal knows nothing about, and '
+        + 'buys nothing for the second. This is the case an abort cannot pin: '
+        + 'an aborted second lane refuses on its own, so a driver that swallowed '
+        + 'the first lane`s failure would still look right. Here the signal '
+        + 'stays live, and only the driver`s own stopping keeps the translate '
+        + 'lane from spending a whole document',
+      fn: async () => {
+        /**
+         * Schemas the run served, read after the rejection.
+         */
+        const served: SchemaLog = [];
+
+        /**
+         * Repair slices a first run settles, so the second run can be handed a
+         * cache under the keys this pipeline really derives.
+         */
+        const store = new Map<string, string>();
+        await runLanes({
+          served: [],
+          repairSliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+        expect(store.size,).toBeGreaterThan(0,);
+
+        /**
+         * The same outcomes under the same keys, each claiming another slice.
+         * The repair driver refuses that rather than splicing one slice's work
+         * over another, which is a failure with nothing aborted anywhere.
+         */
+        const misfiled = new Map(
+          [...store.entries(),].map(function toMisfiled([key, serialized,],) {
+            /**
+             * Outcome as the cache stored it.
+             */
+            const outcome = JSON.parse(serialized,) as ChunkRepairOutcome;
+            return [
+              key,
+              {
+                ...outcome,
+                chunkIndex: outcome.chunkIndex + 1,
+              },
+            ] as const;
+          },),
+        );
+
+        /**
+         * Failure the run raised.
+         */
+        let caught: unknown;
+        try {
+          await runLanes({
+            served,
+            repairSliceCache: {
+              resumed: misfiled,
+              persist: async () => {
+                // A run that should refuse its cache must not write to it.
+              },
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(Error,);
+        expect(served.includes('translation_report',),).toBe(false,);
+        expect(served.includes('candidate_ballot',),).toBe(false,);
       },
     },),
 

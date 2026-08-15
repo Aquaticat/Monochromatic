@@ -415,6 +415,15 @@ of `#89`:
     which is that lane's existing contract and was left alone.
 -   `repairPreparedDocument` NOW TAKES A PARENT LOGGER, defaulting to the
     pipeline root, so both lanes read as one entry rather than as two runs.
+-   THE ABORT CASE COULD NOT PIN THE CONTRACT, and finding that out is the
+    reason there are two failure cases rather than one. A driver that caught the
+    repair lane's failure and ran translate anyway still passes an ABORT test,
+    because the translate lane refuses on its own once the signal is aborted:
+    two different mechanisms produce the same observation. The case that pins it
+    hands the repair lane a cache whose resumed outcomes name other slices,
+    which the driver refuses with nothing aborted anywhere. Demonstrated by
+    swallowing the repair failure in a scratch build: that case fails at exactly
+    the assertion that encodes the contract, and the abort case passes.
 -   WHAT IT DOES NOT DO, and what the next piece of `#89` needs: neither lane
     result can say WHICH slices shipped a change. The translate result counts
     withdrawals without naming them, and the repair result keeps neither its
