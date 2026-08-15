@@ -62,7 +62,11 @@ export {
   alignDocumentSections,
   type ChunkPair,
   chunkByHeadings,
+  type ContentChunk,
   type DocumentChunk,
+  type InsertionChunk,
+  isInsertionChunk,
+  makeInsertionChunk,
   type SectionAlignment,
 } from './chunk-document.ts';
 export {

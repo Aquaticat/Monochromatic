@@ -1,4 +1,8 @@
 import { alignHeadingsForced, } from './align-headings-forced.ts';
+import type {
+  ContentChunk,
+  DocumentChunk,
+} from './chunk-placement.ts';
 import type { DocumentNode, } from './document-node.ts';
 import type { RepairDocument, } from './parse-document.ts';
 
@@ -20,48 +24,19 @@ import type { RepairDocument, } from './parse-document.ts';
 // every issue filed on that entry was noise. Leaving a section unpaired
 // cannot damage it; guessing its pair damages text that was correct.
 
-/**
- * One contiguous run of nodes forming a critic-sized unit of work.
- *
- * @example
- * ```ts
- * const chunk: DocumentChunk = {
- *   chunkIndex: 0,
- *   nodes,
- *   startOffset: 0,
- *   endOffset: 120,
- *   text: '## 简介\n\n猫猫喜欢晒太阳。\n',
- * };
- * ```
- */
-export type DocumentChunk = {
-  /**
-   * Position of this chunk within its document, from zero.
-   */
-  readonly chunkIndex: number;
-
-  /**
-   * Nodes of this chunk in source order;
-   * every document node belongs to exactly one chunk.
-   */
-  readonly nodes: readonly DocumentNode[];
-
-  /**
-   * Absolute offset of the chunk's first node in the document text.
-   */
-  readonly startOffset: number;
-
-  /**
-   * Absolute exclusive end of the chunk's last node.
-   */
-  readonly endOffset: number;
-
-  /**
-   * Chunk text sliced from the document text;
-   * inter-node blank lines within the chunk are preserved.
-   */
-  readonly text: string;
-};
+// Re-exported rather than defined here, so every consumer that already reads a
+// chunk from this file keeps its import while the shapes themselves live in
+// `chunk-placement.ts`. A contiguous run of nodes is what this file BUILDS; a
+// place where nodes are missing is not, and that distinction is the whole
+// reason the two kinds are declared apart from the carving that produces one
+// of them.
+export {
+  type ContentChunk,
+  type DocumentChunk,
+  type InsertionChunk,
+  isInsertionChunk,
+  makeInsertionChunk,
+} from './chunk-placement.ts';
 
 /**
  * One source chunk paired with its translation chunk.
@@ -76,12 +51,14 @@ export type DocumentChunk = {
  */
 export type ChunkPair = {
   /**
-   * Original-side chunk.
+   * Original-side chunk, which is always existing text: a pair exists
+   * because a source section exists.
    */
-  readonly source: DocumentChunk;
+  readonly source: ContentChunk;
 
   /**
-   * Translation-side chunk.
+   * Translation-side chunk, which is content when this section is
+   * translated and an insertion anchor when it is not.
    */
   readonly target: DocumentChunk;
 };
@@ -175,7 +152,7 @@ export type SectionAlignment = {
  */
 export function chunkByHeadings(
   { document, }: { readonly document: RepairDocument; },
-): readonly DocumentChunk[] {
+): readonly ContentChunk[] {
   /**
    * Node groups partitioned at heading boundaries;
    * built by appending in one pass so grouping stays linear.
@@ -196,7 +173,7 @@ export function chunkByHeadings(
   return groups.map(function toChunk(
     nodes: readonly DocumentNode[],
     chunkIndex,
-  ): DocumentChunk {
+  ): ContentChunk {
     /**
      * First node of the group, guaranteed by construction.
      */
@@ -239,7 +216,7 @@ export function chunkByHeadings(
  * const label = chunkLabel(chunk,);
  * ```
  */
-function chunkLabel(chunk: DocumentChunk,): string {
+function chunkLabel(chunk: ContentChunk,): string {
   /**
    * Leading node, which is the heading when the chunk has one.
    */

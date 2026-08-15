@@ -1,6 +1,6 @@
 import type {
   ChunkPair,
-  DocumentChunk,
+  ContentChunk,
 } from './chunk-document.ts';
 import type { DocumentNode, } from './document-node.ts';
 import { groupNodesAligned, } from './group-aligned.ts';
@@ -107,7 +107,7 @@ function runToChunk(
     readonly documentText: string;
     readonly chunkIndex: number;
   },
-): DocumentChunk {
+): ContentChunk {
   /**
    * First node of the run, guaranteed by construction.
    */
