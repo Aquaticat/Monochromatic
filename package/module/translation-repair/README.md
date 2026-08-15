@@ -43,12 +43,14 @@ const result = await repairTranslation({
   each proposal passes the same deterministic apply gate,
   and judges drawn from `judgeModelIds` choose what ships.
   Selection seats the WHOLE judge roster, producers included,
-  and counts a judge's ballot for its own work at half weight;
-  a winner needs weight 2, so self-votes can never carry a candidate
-  and two judges with no stake must remain for anything to be selectable.
-  `assertJudgeableEditorRoster` refuses a roster that leaves fewer,
-  because such a roster would otherwise degrade silently into
-  always shipping the fallback.
+  and counts a judge's ballot for its OWN candidate at half weight;
+  every other ballot it casts carries full weight, including one for
+  another producer's candidate.
+  A winner needs weight 2, so on these rosters no candidate is selected
+  by its own authors alone.
+  `assertJudgeableEditorRoster` still requires two judges with no stake
+  in the set, which is now a policy rather than an arithmetic necessity:
+  it keeps a whole slate from being ranked only by the models that wrote it.
   `checkerModelIds` should likewise exclude every editor,
   so nothing certifies text it wrote.
 - Judging runs at two granularities.

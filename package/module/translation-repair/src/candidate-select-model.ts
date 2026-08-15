@@ -28,12 +28,20 @@ export const FULL_VOTE_WEIGHT = 1;
  * would overcorrect a bias nobody has measured on this roster yet, which is
  * what `#84` is for.
  *
- * A half rather than some tuned fraction, and the arithmetic is the argument: a
- * single-model candidate can draw at most this much from its own author, and
- * three contributors to a composite at most three halves, so a self-vote can
- * never reach {@link MIN_SELECTION_WEIGHT} by itself however the roster grows.
- * A model still cannot select its own work; it can only add to a case
- * disinterested judges already made.
+ * A half rather than some tuned fraction, and the arithmetic is the argument:
+ * a single-model candidate draws at most this much from its own author, and a
+ * three-contributor composite at most three halves, both short of
+ * {@link MIN_SELECTION_WEIGHT}. So on the rosters in use a candidate cannot be
+ * selected by its own authors alone; it needs judges with no stake in it.
+ *
+ * STATED PRECISELY, because a looser version of this sentence was written into
+ * four documents and was wrong: the discount attaches to a JUDGE AND CANDIDATE
+ * PAIR, not to a judge. A producer voting for someone else's candidate carries
+ * full weight, which is the whole point of seating it. The property therefore
+ * holds while no single candidate has four or more stakeholders, and stops
+ * holding at four, where halves sum to the threshold. Nothing in this module
+ * enforces that bound; it is a fact about the current rosters, so revisit it
+ * before any producing role reaches four models.
  *
  * Exactly representable in binary floating point, which the tie comparison
  * depends on: two halves sum to one with no residue, so a tie between a

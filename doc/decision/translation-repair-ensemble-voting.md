@@ -62,17 +62,26 @@ The readings thrown away were not replaced by anything.
 The user's ruling:
 "Self-judge and self-vote should always be allowed, just given less weight."
 
-The arithmetic preserves the property the old exclusion protected.
-A single-model candidate can draw at most one half from its own author, and a
-composite with three contributors at most three halves, so no candidate reaches
-2 on self-votes alone however the roster grows.
-A producer can add to a case that disinterested judges already made, and can
-never make one.
+The arithmetic preserves the property the old exclusion protected, on the
+rosters in use.
+A single-model candidate draws at most one half from its own author and a
+three-contributor composite at most three halves, both short of 2, so no
+candidate is selected by its own authors alone.
 
-The same arithmetic sets a ceiling nobody chose deliberately and everyone
-inherits:
-selection can only ever succeed while two FULL-weight judges remain, so a
-producing role can hold at most four of the six models the provider serves.
+STATED PRECISELY, because the first version of this document got it wrong and
+so did three other files: the discount attaches to a JUDGE AND CANDIDATE PAIR,
+not to a judge.
+A producer voting for another model's candidate carries FULL weight, which is
+the entire point of seating it.
+Two consequences follow, and the first version denied both:
+
+-   Selection imposes no ceiling on roster width. Four editors judging each
+    other's work select perfectly well, with or without a model that edits
+    nothing.
+-   The self-votes-alone property holds while no single candidate has four or
+    more stakeholders, and fails at four, where halves sum to the threshold. A
+    four-contributor composite is the reachable case. Nothing enforces the
+    bound; it is a fact about rosters of three.
 
 A half is not a measured figure and is not presented as one.
 What the discount corrects is a TILT rather than a preference:
@@ -117,5 +126,14 @@ without them, and they identify nobody.
 Roster width.
 Editors and refiners sit at three because producers could not judge, and that
 reason is gone.
-Widening either, or the translator roster, to four is available under the weight
-ceiling and is not decided here.
+What still bounds them is not selection but CHECKER DISJOINTNESS: checkers
+exclude every editor and refiner, so a fourth editor leaves two checkers at a
+quorum of one, which is the single-voice failure the 2026-08-12 roster change
+closed.
+Beside it sit the two-disinterested-judge floor, now a policy rather than a
+necessity, and judge quality, which `#84` has not measured.
+
+One consequence to expect rather than discover: seating producers grew the
+full-weight panel for any given candidate from three judges to five, so tie and
+decline rates will move even where nothing else changed.
+`#84` inherits that too.

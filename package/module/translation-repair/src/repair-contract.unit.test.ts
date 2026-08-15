@@ -1,11 +1,12 @@
 /**
  * Tests for the producer-roster independence guard.
  *
- * `assertJudgeableProducerRoster` is what stops a model grading text it helped
- * write. Selection removes producers from the judge roster, so a roster that
- * looks large enough can leave too few disinterested judges once that removal
- * happens, and the stage would then be decided by a model with a stake in the
- * outcome.
+ * `assertJudgeableProducerRoster` is what keeps a slate from being ranked
+ * only by the models that wrote it. Selection seats producers as of
+ * 2026-08-14, discounting a ballot for the judge's OWN candidate, so this guard
+ * no longer decides whether selection can function at all. It decides whether a
+ * round has anyone in it with no stake in any candidate, which is a policy the
+ * roster has to satisfy rather than an arithmetic necessity.
  *
  * `assertJudgeableEditorRoster` delegates here and is covered through the
  * editor ensemble, so the arithmetic branches already run. What was never
@@ -218,19 +219,20 @@ await describe({
     },),
 
     it({
-      name: 'requires enough DISINTERESTED judges to reach the minimum vote '
-        + 'weight, since producers now judge at half weight and a candidate '
-        + 'backed only by its own authors can never cross the line however '
-        + 'many of them there are',
+      name: 'requires two judges with NO STAKE in the set, which is policy '
+        + 'rather than arithmetic now that producers judge: it keeps a whole '
+        + 'slate from being ranked only by the models that wrote it',
       fn: async () => {
         /**
          * Disinterested judges available to draw from, sliced against the
          * constant so this case follows the minimum if it ever moves.
          *
          * The threshold is a WEIGHT and this slice is a COUNT, which line up
-         * exactly because a disinterested ballot carries weight one: reaching
-         * weight two takes two of them, and no number of half-weight
-         * self-votes substitutes.
+         * because a ballot from a judge with no stake carries weight one. That
+         * is where the correspondence ends: a producer voting for ANOTHER
+         * model's candidate also carries full weight, so this floor is not the
+         * condition under which selection can succeed. It is a floor somebody
+         * chose.
          */
         const pool = [
           JUDGE_ONE,

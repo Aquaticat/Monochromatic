@@ -77,12 +77,18 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  * disinterested seats, and the other three models hold the checker roster.
  *
  * ONE OF THOSE CONSTRAINTS IS GONE. Producers judge as of 2026-08-14, with a
- * ballot for their own work counted at half weight, so seating a fourth
- * producer no longer starves selection. What bounds a producing roster now is
- * the weight arithmetic: a winner needs weight 2 and a self-vote is worth a
- * half, so two FULL-weight judges must remain, which caps any producing role at
- * four of these six. Widening editors, refiners or translators to four is
- * available and unmade; it is question 1 of the handover's next steps. It is also the
+ * ballot for their own work counted at half weight, so seating another producer
+ * no longer starves selection: the discount applies to a judge's ballot for its
+ * OWN candidate only, and every producer votes on every other candidate at full
+ * weight.
+ *
+ * What still bounds a producing roster is not that arithmetic. It is checker
+ * disjointness, which is the binding one: checkers exclude every editor and
+ * refiner, so a fourth editor would leave two checkers at a quorum of one, the
+ * exact single-voice failure the 2026-08-12 roster change closed. Next to it
+ * sit `assertJudgeableProducerRoster`'s two-disinterested-judge floor, now a
+ * policy rather than an arithmetic necessity, and judge quality, which `#84`
+ * has not measured. Widening is question 1 of the handover's next steps. It is also the
  * model that most often loses its voice, which is now an argument FOR seating
  * it here rather than against: a third editor that sometimes drops still leaves
  * two, whereas the same model in the checker set would cost proof.

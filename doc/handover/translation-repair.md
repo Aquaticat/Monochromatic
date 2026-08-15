@@ -217,10 +217,12 @@ WHAT NEEDS YOU, in the order it blocks work:
     Three models translate and three refine, out of six the provider offers,
     and the reason was that producers could not judge: seating more of them
     left too few disinterested judges.
-    That reason is gone as of 2026-08-14.
-    What replaces it is arithmetic: a self-vote is worth half, the minimum
-    selection weight is 2, so a candidate needs two FULL-weight ballots, which
-    caps any producing roster at four of the six.
+    That reason is gone as of 2026-08-14, and selection imposes no replacement
+    ceiling: the half-weight discount applies to a judge's ballot for its OWN
+    candidate only, so four editors judging each other's work select fine.
+    What actually bounds widening is CHECKER DISJOINTNESS, since checkers
+    exclude every editor and refiner and a fourth editor would leave two
+    checkers at a quorum of one.
 2.   A policy answer for the TRANSCRIBED-IMAGE class, unchanged and now urgent.
     Chinese pages hold letters as images; English pages transcribe and translate
     them. Roughly 31 thousand characters corpus-wide, 6 entries verified.
