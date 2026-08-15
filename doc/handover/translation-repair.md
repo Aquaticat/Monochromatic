@@ -10192,3 +10192,33 @@ index sets are checked and ordered at every return of both lanes and the blocked
 exit, `sliceCount` is on the repair result and in the artifact, and what remains
 in `#94` is only the rename from `chunk` to `slice`, which is held with `#99`
 because renaming before slice identity is settled means renaming twice.
+
+#### And that work went to the same reader, which found six more things
+
+All six were taken, in `edf269a67`. Two are worth carrying forward as lessons
+rather than as changelog:
+
+THE REFUSAL I HAD NOT THOUGHT OF is an artifact that carries `sliceCount` with
+no version. No writer ever produced it, which is exactly why it slipped past:
+the shape that produces it is a CURRENT artifact whose version field was lost to
+an edit or a merge, and reading that as a generation predating the count throws
+away a denominator the run recorded. The general lesson is that a version field
+makes absence meaningful in BOTH directions, and only one of them is obvious.
+
+I WAS WRONG ABOUT WHO TO BLAME. I had let `AssemblyContractError` escape the
+reader on purpose, on the reasoning that a repeat or an overlap is a broken lane
+contract wherever it is found. The reader cannot know that: a run, an edit, a
+truncation and a merge all look identical from inside a file. It now reports
+what the artifact contains and where, naming the entry, and carries the contract
+message through without asserting how it got there. Worth remembering when the
+next reader is tempted to describe its input's history.
+
+THE REST, in one line each. `KNOWN_ARTIFACT_SCHEMA_VERSIONS` is separate from
+the constant the pass writes, so a later bump cannot orphan the generation
+before it. Which failure a multiply-invalid set reports is now stated and pinned
+rather than falling out of the split. `requireCount` refuses whole numbers past
+what JSON carries exactly, since `Number.isInteger` says yes well beyond the
+point where round trips stop being exact. And a round-trip test drives the real
+writer through JSON into the parser, because every other test in that file
+hand-builds the record and would keep passing with the writer misspelling every
+field it writes.
