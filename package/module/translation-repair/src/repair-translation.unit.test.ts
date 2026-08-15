@@ -212,6 +212,97 @@ function scriptedClient(
 }
 
 /**
+ * Wraps a scripted client with the two failures a long run actually meets: a
+ * caller abort part way through a document, and a critic roster that answers
+ * nothing while the run is still live.
+ *
+ * Modelled on the real transport, which propagates the torn-down stream
+ * untouched under an aborted signal rather than returning an outcome.
+ *
+ * @param base - scripted client serving every stage
+ *
+ * @param controller - run steering the wrapper may abort
+ *
+ * @param calls - critic calls attempted, shared with the case
+ *
+ * @param abortAfterCriticCalls - critic calls served before the wrapper aborts;
+ * absent means it never does
+ *
+ * @param silentCritics - whether every critic call fails while the signal stays
+ * live
+ *
+ * @returns Client honoring the steering
+ *
+ * @example
+ * ```ts
+ * const client = steeringClient({ base, controller, calls, silentCritics: true, },);
+ * ```
+ */
+function steeringClient(
+  {
+    base,
+    controller,
+    calls,
+    abortAfterCriticCalls,
+    silentCritics = false,
+  }: {
+    readonly base: SyntheticClient;
+    readonly controller: AbortController;
+    readonly calls: { critic: number; };
+    readonly abortAfterCriticCalls?: number;
+    readonly silentCritics?: boolean;
+  },
+): SyntheticClient {
+  return {
+    chatText: base.chatText,
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      if (request.responseFormat
+        ?.json_schema
+        .name
+        === 'critic_report') {
+        calls.critic += 1;
+        if ((abortAfterCriticCalls !== undefined)
+          && (calls.critic > abortAfterCriticCalls))
+          controller.abort(new Error('entry deadline reached',),);
+        if (silentCritics)
+          throw new Error('critic provider is down',);
+      }
+      if (request.signal
+        .aborted)
+        throw new Error('exchange torn down by abort',);
+      return await base.chatJson(request,);
+    },
+    quotas: base.quotas,
+  };
+}
+
+/**
+ * Original with two sections, so a case can stop a run between them.
+ */
+const SOURCE_TWO_SECTIONS = `## 甲
+
+猫猫喜欢在窗台上晒太阳。猫猫也喜欢追蝴蝶。
+
+## 乙
+
+猫猫的尾巴很长。
+`;
+
+/**
+ * Translation of {@link SOURCE_TWO_SECTIONS}.
+ */
+const TARGET_TWO_SECTIONS = `## Alpha
+
+The cat loves sunbathing on the windowsill. The cat hates butterflies.
+
+## Beta
+
+The cat has a long tail.
+`;
+
+/**
  * Wire issue for the planted mistranslation, quoting exact fixture bytes.
  */
 const MISTRANSLATION_ISSUE = {
@@ -843,6 +934,170 @@ Meow meow meow meow.
           .some(function mentionsStanding(finding,) {
             return finding.includes('non-translation votes stand',);
           },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'THROWS on a caller abort part way through a document, and caches '
+        + 'nothing for the slices it never bought. Every abandoned exchange '
+        + 'reaches the stages as silence, so an unguarded driver files "no '
+        + 'validated claims, unchanged" for each remaining slice and writes '
+        + 'that to the cache, where the next attempt reads it as a clean slice',
+      fn: async () => {
+        /**
+         * Critic calls attempted across the run.
+         */
+        const calls = { critic: 0, };
+
+        /**
+         * Run steering the client aborts inside the second slice.
+         */
+        const controller = new AbortController();
+
+        /**
+         * Slices that reached the cache before the abort.
+         */
+        const store = new Map<string, string>();
+        await expect(repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+            controller,
+            calls,
+            abortAfterCriticCalls: MODELS.criticModelIds
+              .length,
+          },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: controller.signal,
+          sliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },),)
+          .rejects
+          .toThrow('entry deadline reached',);
+        expect(store.size,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'settles a slice NO critic answered, and deliberately does not '
+        + 'cache it. Nothing inspected that slice, so caching it records an '
+        + 'outage as a clean verdict that every later attempt resumes rather '
+        + 'than re-examines',
+      fn: async () => {
+        /**
+         * Critic calls attempted across the run.
+         */
+        const calls = { critic: 0, };
+
+        /**
+         * Slices that reached the cache.
+         */
+        const store = new Map<string, string>();
+        const result = await repairTranslation({
+          client: steeringClient({
+            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+            controller: new AbortController(),
+            calls,
+            silentCritics: true,
+          },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+          sliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+        // The document still ships: an unexamined slice keeps its translation.
+        expect(result.repairedText,).toBe(TARGET_TWO_SECTIONS,);
+        expect(calls.critic,).toBeGreaterThan(0,);
+        expect(store.size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a cached outcome that names another slice, the same '
+        + 'invariant the translate driver holds: a key derivation and a slicing '
+        + 'that disagree would splice one slice\'s repair over another',
+      fn: async () => {
+        /**
+         * Slices the first run persists.
+         */
+        const store = new Map<string, string>();
+        await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+          sliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+        expect(store.size,).toBeGreaterThan(0,);
+
+        /**
+         * Same outcomes under the same keys, each claiming the wrong slice.
+         */
+        const misfiled = new Map(
+          [...store.entries(),].map(function toMisfiled([key, serialized,],) {
+            /**
+             * Outcome as the cache stored it.
+             */
+            const outcome = JSON.parse(serialized,) as ChunkRepairOutcome;
+            return [
+              key,
+              {
+                ...outcome,
+                chunkIndex: outcome.chunkIndex + 1,
+              },
+            ] as const;
+          },),
+        );
+        await expect(repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+          sliceCache: {
+            resumed: misfiled,
+            persist: async () => {
+              throw new Error('a fully cached run must not persist',);
+            },
+          },
+        },),)
+          .rejects
+          .toThrow('the key derivation and the slicing',);
       },
     },),
   ],

@@ -377,6 +377,11 @@ export async function repairTranslation(
   const outcomes: ChunkRepairOutcome[] = [];
   for (const slice of slices) {
     /**
+     * Global index of this slice, which every key and every outcome names.
+     */
+    const { chunkIndex, } = slice.target;
+
+    /**
      * Cross-run key for this slice: the schema version, its index, and both
      * texts, so a slicing change, a content change, or an outcome-shape change
      * misses the cache and recomputes.
@@ -385,8 +390,7 @@ export async function repairTranslation(
       content: JSON.stringify([
         SLICE_CACHE_VERSION,
         runShape,
-        slice.target
-          .chunkIndex,
+        chunkIndex,
         slice.source
           .text,
         slice.target
@@ -394,10 +398,7 @@ export async function repairTranslation(
         // Two slices can carry identical text and still be governed
         // differently, because the verdict belongs to the enclosing chunk. It
         // has to sit in the key rather than ride on the version alone.
-        lineStructuredSlices.has(
-          slice.target
-            .chunkIndex,
-        ),
+        lineStructuredSlices.has(chunkIndex,),
       ],),
     },);
 
@@ -406,39 +407,75 @@ export async function repairTranslation(
      */
     const resumed = sliceCache?.resumed
       .get(sliceKey,);
+    if ((resumed !== undefined) && (resumed.chunkIndex !== chunkIndex)) {
+      throw new Error(
+        `cached repair slice ${String(resumed.chunkIndex,)} was loaded for slice `
+          + `${String(chunkIndex,)}: the key derivation and the slicing `
+          + 'disagree, so every resumed outcome is suspect',
+      );
+    }
+
+    // A stopped run cannot BUY the slices it is missing, and every abandoned
+    // exchange reaches the stages as silence rather than as a failure: a critic
+    // phase that heard nothing files no claims, which reads exactly like a
+    // clean slice. Checked here rather than at the top, so a document whose
+    // every slice is already cached still finishes.
+    if (resumed === undefined)
+      signal.throwIfAborted();
 
     /* oxlint-disable no-await-in-loop -- sequential by design: aggregate concurrency beyond one stream per model collapses throughput on this plan, and each stage already fans out per model inside the chunk */
     /**
      * Repair outcome of this slice pair, recomputed only when not resumed.
      */
-    const outcome = resumed ?? await repairChunk({
-      client,
-      chunkIndex: slice.target
-        .chunkIndex,
-      sourceText: slice.source
-        .text,
-      targetText: slice.target
-        .text,
-      lineStructured: lineStructuredSlices.has(
-        slice.target
-          .chunkIndex,
-      ),
-      models,
-      ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
-      ...identityFragment,
-      signal,
-      perCallTimeoutMs,
-      l: rl,
-    },);
-    if (resumed === undefined)
-      await sliceCache?.persist({
-        key: sliceKey,
-        serialized: JSON.stringify(
-          outcome,
-          undefined,
-          2,
-        ),
-      },);
+    const outcome = resumed ?? await (async function repairUnderSignal(): Promise<ChunkRepairOutcome> {
+      try {
+        return await repairChunk({
+          client,
+          chunkIndex,
+          sourceText: slice.source
+            .text,
+          targetText: slice.target
+            .text,
+          lineStructured: lineStructuredSlices.has(chunkIndex,),
+          models,
+          ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
+          ...identityFragment,
+          signal,
+          perCallTimeoutMs,
+          l: rl,
+        },);
+      }
+      catch (error) {
+        // An aborted run fails BECAUSE it was aborted; whichever torn-down
+        // exchange happened to surface is a symptom. A spent deadline and a
+        // provider fault deserve different responses from the caller.
+        if (!signal.aborted)
+          throw error;
+        rl.warn(
+          `chunk ${String(chunkIndex,)}: abandoned by the caller's abort (${String(error,)})`,
+        );
+        throw signal.reason;
+      }
+    })();
+    if (resumed === undefined) {
+      signal.throwIfAborted();
+      if (outcome.heardCritics === 0) {
+        rl.warn(
+          `chunk ${String(chunkIndex,)}: no critic was heard, so the slice ships `
+            + 'unchanged and is NOT cached',
+        );
+      }
+      else {
+        await sliceCache?.persist({
+          key: sliceKey,
+          serialized: JSON.stringify(
+            outcome,
+            undefined,
+            2,
+          ),
+        },);
+      }
+    }
     /* oxlint-enable no-await-in-loop */
     outcomes.push(outcome,);
 
