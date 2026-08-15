@@ -152,6 +152,20 @@ export async function translateDocument(
    * a recomputed slice is distinguishable from one that was never cached.
    */
   const refusedCacheFindings: string[] = [];
+
+  /**
+   * Records this run settled, by the key they answer.
+   *
+   * WITHIN one run, for the same reason the cache holds them across runs: two
+   * slices carrying identical source, incumbent and governance ask one
+   * question, and since version 2 the key says so. Without this, a COLD run
+   * would ask the models twice, keep two different answers and persist both
+   * under one key, while the next WARM run resumed a single record for both
+   * slices, so the same document settled differently depending on whether a
+   * cache existed. No such pair occurs in the 92 pinned documents; this is what
+   * keeps the two paths agreeing when one does.
+   */
+  const settledByKey = new Map<string, TranslateSliceRecord>();
   for (const slice of prepared.slices) {
     /**
      * Global index of this slice, which every record and replacement names.
@@ -172,10 +186,19 @@ export async function translateDocument(
     },);
 
     /**
-     * Record settled on an earlier run, when this slice is cached.
+     * Record an earlier RUN settled for this question, which is what the
+     * resumed count reports.
      */
-    const resumed = sliceCache?.resumed
+    const cached = sliceCache?.resumed
       .get(key,);
+
+    /**
+     * Record already settled for this exact question, whether by an earlier run
+     * or earlier in this one. An in-run repeat is deliberately not counted as
+     * resumed: nothing was recovered from disk, and reporting it as a cache hit
+     * would overstate what resumption is buying.
+     */
+    const resumed = cached ?? settledByKey.get(key,);
     if (resumed !== undefined) {
       // A record whose flag and text contradict each other is refused HERE
       // rather than at assembly, where the same contradiction fails the whole
@@ -187,7 +210,8 @@ export async function translateDocument(
         incumbentText: slice.target
           .text,
       },)) {
-        counted.resumed += 1;
+        if (cached !== undefined)
+          counted.resumed += 1;
         // RE-STAMPED with the index this run asked under, rather than trusting
         // the one the record was computed with. Since version 2 the key is the
         // texts and the run shape, so an identical slice sitting elsewhere in
@@ -286,6 +310,10 @@ export async function translateDocument(
       },);
     }
     /* oxlint-enable no-await-in-loop */
+    settledByKey.set(
+      key,
+      record,
+    );
     settled.push(record,);
   }
 

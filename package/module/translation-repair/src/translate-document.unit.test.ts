@@ -531,6 +531,55 @@ await describe({
     },),
 
     it({
+      name: 'ASKS ONCE for two slices carrying identical text, and settles both from that one answer. '
+        + 'Since version 2 the key is the texts and the run shape, so both slices ask one question: a '
+        + 'run that answered it twice would keep two different answers, persist both under one key, '
+        + 'and settle differently from the resumed run that reads one record back for both',
+      fn: async () => {
+        /** Two byte-identical sections on both sides. */
+        const twinSource = '## 第一节\n\n猫猫在窗台上打盹。\n\n## 第一节\n\n猫猫在窗台上打盹。\n';
+
+        /** Their translation, identical for the same reason. */
+        const twinTarget = '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n\n'
+          + '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n';
+
+        /** Run over the twin document. */
+        const twins = await runDriver({
+          sourceText: twinSource,
+          targetText: twinTarget,
+        },);
+
+        /** Run over one of those sections alone, for the call count of one question. */
+        const single = await runDriver({
+          sourceText: '## 第一节\n\n猫猫在窗台上打盹。\n',
+          targetText: '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n',
+        },);
+        expect(twins.result
+          .sliceCount,).toBe(2,);
+        expect(single.result
+          .sliceCount,).toBe(1,);
+        expect(twins.calls
+          .translate,).toBe(single.calls
+          .translate,);
+        expect(twins.persisted
+          .size,).toBe(1,);
+        expect(twins.result
+          .slices[0]
+          ?.outputText,).toBe(twins.result
+          .slices[1]
+          ?.outputText,);
+        expect(twins.result
+          .slices
+          .map(function toIndex(record,): number {
+            return record.chunkIndex;
+          },),).toEqual([
+          0,
+          1,
+        ],);
+      },
+    },),
+
+    it({
       name: 'DISCARDS a cached record that contradicts its own text and buys '
         + 'that slice again, in BOTH directions. A resumed record is trusted on '
         + 'its slice index alone, so a truncated write that still parses, or a '

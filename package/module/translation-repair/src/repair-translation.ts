@@ -214,6 +214,18 @@ export async function repairPreparedDocument(
    * so a recomputed slice is distinguishable from one that was never cached.
    */
   const refusedCacheFindings: string[] = [];
+
+  /**
+   * Outcomes this run settled, by the key they answer.
+   *
+   * WITHIN one run, for the same reason the cache holds them across runs: two
+   * slices carrying identical source, target and governance ask one question,
+   * and since version 26 the key says so. Without this a COLD run would ask the
+   * models twice, keep two different answers and persist both under one key,
+   * while the next WARM run resumed a single outcome for both slices, so the
+   * same document settled differently depending on whether a cache existed.
+   */
+  const settledByKey = new Map<string, ChunkRepairOutcome>();
   for (const slice of slices) {
     /**
      * Global index of this slice, which every outcome and every replacement
@@ -235,10 +247,12 @@ export async function repairPreparedDocument(
     },);
 
     /**
-     * Outcome a previous run settled under this key, exactly as it was stored.
+     * Outcome already settled for this exact question, exactly as it was
+     * stored, whether by a previous run or earlier in this one.
      */
     const stored = sliceCache?.resumed
-      .get(sliceKey,);
+      .get(sliceKey,)
+      ?? settledByKey.get(sliceKey,);
 
     /**
      * That outcome RE-STAMPED with the index this run asked under.
@@ -362,6 +376,10 @@ export async function repairPreparedDocument(
       }
     }
     /* oxlint-enable no-await-in-loop */
+    settledByKey.set(
+      sliceKey,
+      outcome,
+    );
     outcomes.push(outcome,);
 
     /**
