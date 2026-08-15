@@ -31,6 +31,15 @@ await describe({
         expect(fragmentBody({ fragment: 'The cat naps.', },),).toBe('The cat naps.',);
         expect(fragmentBody({ fragment: '   \n\nThe cat naps.', },),).toBe('The cat naps.',);
         expect(fragmentBody({ fragment: '\n\n\n', },),).toBe('',);
+        // TRAILING SPACES GO, including the two that make a Markdown hard
+        // break. Safe only because composition joins fragments with a blank
+        // line, where a hard break breaks nothing; a join that ever put two
+        // fragments on consecutive lines would make this case wrong.
+        expect(fragmentBody({ fragment: 'The cat naps.  \n', },),).toBe('The cat naps.',);
+        // Inside the fragment the same two spaces survive, since only the ends
+        // are touched.
+        expect(fragmentBody({ fragment: 'The cat naps.  \nShe purrs.\n', },),)
+          .toBe('The cat naps.  \nShe purrs.',);
       },
     },),
     it({

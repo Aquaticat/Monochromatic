@@ -129,12 +129,20 @@ function leadingLineEndings(
 }
 
 /**
- * Strips the blank-line material around one fragment, and nothing else.
+ * Strips the blank-line material around one fragment, and its trailing spaces.
  *
- * INDENTATION SURVIVES. A fragment beginning with spaces on its first content
- * line is inside a list or a block quote, and cutting that would move it out of
- * the structure it belongs to. What is cut is whitespace ending in a line
- * ending, which is blank lines rather than indentation.
+ * INDENTATION SURVIVES, which is the asymmetry between the two ends and why the
+ * leading side is not a plain trim. A fragment beginning with spaces on its
+ * first content line is inside a list or a block quote, and cutting that would
+ * move it out of the structure it belongs to. What is cut there is whitespace
+ * ending in a line ending, which is blank lines rather than indentation.
+ *
+ * THE TRAILING SIDE TAKES SPACES TOO, including the two that would make a
+ * Markdown hard break. That is safe HERE and only here: every caller reaches
+ * this through {@link composeInsertion}, which joins fragments with a blank
+ * line, and a hard break before a blank line breaks nothing. A join that ever
+ * put two fragments on consecutive lines would make those spaces meaningful
+ * again, and this would have to narrow to blank lines alone.
  *
  * @param fragment - text a lane produced for one slice
  *
