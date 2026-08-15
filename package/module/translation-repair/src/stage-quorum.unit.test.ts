@@ -1,12 +1,20 @@
 /**
- * Tests for stage voice gathering under both retry targets:
- * voting stages stop at quorum, union stages retry to the full roster,
- * and roster shortfalls surface as distinct findings.
+ * Tests for stage voice gathering: retries stop at quorum, a straggler is
+ * abandoned a bounded grace after quorum rather than waited out, and roster
+ * shortfalls surface as findings.
+ *
+ * The grace cases are the user's standing rule of 2026-08-14 made testable:
+ * the failure of any one model for the day must not delay the pipeline. Both
+ * directions are covered, because only the pair distinguishes a grace from a
+ * cut: a voice arriving inside the window is still heard, and one that never
+ * arrives costs the window rather than its whole deadline.
+ *
  * Fixtures are cat-themed invention mirroring corpus structure only.
  *
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -101,6 +109,114 @@ function flakyClient(
         kind: 'ok',
         value: scripted,
         rawText: JSON.stringify(scripted,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused',);
+    },
+  };
+}
+
+/**
+ * Resolves when a signal aborts, and never otherwise.
+ *
+ * Deliberately has NO timer of its own. A stub that also gave up after some
+ * duration would pass the abandonment case whether or not the cut ever reached
+ * the call, which is the one thing that case exists to prove.
+ *
+ * @param signal - call signal the round owns
+ *
+ * @returns Nothing, once the call is cut
+ *
+ * @example
+ * ```ts
+ * await untilAborted({ signal, },);
+ * ```
+ */
+async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
+  if (signal.aborted)
+    return;
+
+  /**
+   * Capability resolved by the abort listener.
+   */
+  const {
+    promise,
+    resolve,
+  } = Promise.withResolvers<undefined>();
+  signal.addEventListener(
+    'abort',
+    function onAbort(): void {
+      resolve(undefined,);
+    },
+    { once: true, },
+  );
+  await promise;
+}
+
+/**
+ * Client where every model answers at once except one, which either answers
+ * late or not at all.
+ *
+ * @param hangingModelId - model that does not answer with the others
+ *
+ * @param cut - flag the hung call sets when its abort arrives
+ *
+ * @param lateMs - delay after which it answers anyway; omitted means it never
+ * answers on its own and waits to be abandoned
+ *
+ * @returns Client honoring that script
+ *
+ * @example
+ * ```ts
+ * const client = hangingClient({ hangingModelId, cut, },);
+ * ```
+ */
+function hangingClient(
+  {
+    hangingModelId,
+    cut,
+    lateMs,
+  }: {
+    readonly hangingModelId: SyntheticModelId;
+    readonly cut: { aborted: boolean; };
+    readonly lateMs?: number;
+  },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      /**
+       * Scripted payload every answering model returns.
+       */
+      const scripted: unknown = { meow: request.modelId, };
+      if (!request.validate(scripted,))
+        throw new Error('scripted payload failed the guard',);
+
+      /**
+       * Answer shared by every model that speaks.
+       */
+      const answer: ChatJsonOutcome<ValueT> = {
+        kind: 'ok',
+        value: scripted,
+        rawText: JSON.stringify(scripted,),
+      };
+      if (request.modelId !== hangingModelId)
+        return answer;
+      if (lateMs !== undefined) {
+        await wait(lateMs,);
+        return answer;
+      }
+      await untilAborted({ signal: request.signal, },);
+      cut.aborted = true;
+      return {
+        kind: 'schema-mismatch',
+        rawText: '',
+        detail: 'abandoned before answering',
       };
     },
     quotas: async () => {
@@ -430,6 +546,80 @@ await describe({
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(true,);
         expect(calls['hf:zai-org/GLM-5.2'],).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'ABANDONS a voice that has not answered a grace period after '
+        + 'quorum, so one model degraded for the day costs a stage that '
+        + 'window rather than its whole per-call deadline. The stub answers '
+        + 'only when aborted, so this passes only if the cut actually reached '
+        + 'the call',
+      fn: async () => {
+        /** Whether the hung call saw its abort. */
+        const cut = { aborted: false, };
+
+        /** When the gather returned, for the delay this rule is about. */
+        const started = performance.now();
+
+        /** Gather where one model never answers on its own. */
+        const gather = await gatherStageVoices({
+          client: hangingClient({
+            hangingModelId: 'hf:moonshotai/Kimi-K3',
+            cut,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          // Far longer than the grace, so a gather that waited for the call
+          // rather than for the window would be visible in the elapsed time.
+          exchangeTimeoutMs: 60_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+          graceMs: 50,
+        },);
+
+        /** Wall time the gather took. */
+        const elapsed = performance.now() - started;
+        expect(gather.voices,).toHaveLength(2,);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(cut.aborted,).toBe(true,);
+        expect(elapsed < 5_000,).toBe(true,);
+        expect(gather.findings,).toContain('stage-voice-lost (critic hf:moonshotai/Kimi-K3)',);
+      },
+    },),
+
+    it({
+      name: 'still hears a voice that arrives INSIDE the grace, which is what '
+        + 'makes this a grace rather than a cut: quorum on a roster of three '
+        + 'is two, so cutting there would discard a healthy third voice on '
+        + 'nearly every gather',
+      fn: async () => {
+        /** Unused here; the late model answers on its own. */
+        const cut = { aborted: false, };
+
+        /** Gather where the third voice is late but well inside the window. */
+        const gather = await gatherStageVoices({
+          client: hangingClient({
+            hangingModelId: 'hf:moonshotai/Kimi-K3',
+            cut,
+            lateMs: 20,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 60_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+          graceMs: 2_000,
+        },);
+        expect(gather.voices,).toHaveLength(3,);
+        expect(gather.findings,).toHaveLength(0,);
+        expect(cut.aborted,).toBe(false,);
       },
     },),
   ],

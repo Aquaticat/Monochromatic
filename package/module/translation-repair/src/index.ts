@@ -226,6 +226,7 @@ export * from './probe-barrel.ts';
 export * from './recall-barrel.ts';
 export * from './refine-barrel.ts';
 export * from './sheet-barrel.ts';
+export * from './stage-barrel.ts';
 export * from './translate-barrel.ts';
 
 //endregion Public barrel

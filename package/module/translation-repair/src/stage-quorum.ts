@@ -6,7 +6,7 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
-import { attemptStageCall, } from './stage-call.ts';
+import { runGatherRound, } from './stage-round.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Stage quorum
@@ -112,6 +112,10 @@ export type StageGather<ValueT,> = {
  * @param maxRetryRounds - rounds after the initial fan-out;
  * defaults to {@link STAGE_RETRY_ROUNDS}
  *
+ * @param graceMs - window a straggler gets after quorum before the round
+ * abandons it; defaults to `STRAGGLER_GRACE_MS` and exists so a test can bound
+ * its own wall time
+ *
  * @returns Heard voices plus quorum verdict and degradation findings
  *
  * @example
@@ -131,6 +135,7 @@ export async function gatherStageVoices<ValueT,>(
     stage,
     l,
     maxRetryRounds = STAGE_RETRY_ROUNDS,
+    graceMs,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly SyntheticModelId[];
@@ -142,6 +147,7 @@ export async function gatherStageVoices<ValueT,>(
     readonly stage: string;
     readonly l: Logger;
     readonly maxRetryRounds?: number;
+    readonly graceMs?: number;
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
@@ -185,24 +191,22 @@ export async function gatherStageVoices<ValueT,>(
 
       /* oxlint-disable no-await-in-loop -- rounds are sequential by design: each round re-asks only the voices the previous round lost */
       /**
-       * This round's outcomes, one per still-pending model.
+       * This round's outcomes, one per still-pending model, with anything still
+       * in flight a grace period after quorum abandoned rather than waited on.
        */
-      const outcomes = await Promise.all(pending.map(async function askOnce(modelId,) {
-        return {
-          modelId,
-          voice: await attemptStageCall({
-            client,
-            modelId,
-            messages,
-            signal,
-            exchangeTimeoutMs,
-            responseFormat,
-            validate,
-            stage,
-            l,
-          },),
-        };
-      },),);
+      const outcomes = await runGatherRound<ValueT>({
+        client,
+        modelIds: pending,
+        messages,
+        signal,
+        exchangeTimeoutMs,
+        responseFormat,
+        validate,
+        stage,
+        l,
+        heardNeeded: quorumNeeded - collected.length,
+        ...((graceMs === undefined) ? {} : { graceMs, }),
+      },);
       /* oxlint-enable no-await-in-loop */
 
       /**
