@@ -258,10 +258,8 @@ export type ParsedArtifact = {
  * changed
  *
  * @throws {@link ArtifactParseError} when the artifact or an accepted issue is
- * structurally malformed, or when it carries one index set without the other
- *
- * @throws AssemblyContractError when the recorded index sets break a rule the
- * writing lane's own contract claims they cannot
+ * structurally malformed, when it carries one index set without the other, or
+ * when the two sets break a rule the writing lanes hold them to
  *
  * @example
  * ```ts

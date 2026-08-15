@@ -1,5 +1,7 @@
 import {
+  AssemblyContractError,
   checkedChangeSets,
+  type OrderedChangeSets,
   orderedChangeSets,
 } from './assembly-invariant.ts';
 import {
@@ -118,6 +120,86 @@ function readIndexArray(
 }
 
 /**
+ * Reads both index arrays and applies the lane's own index rules to them.
+ *
+ * REPORTED AS AN ARTIFACT DEFECT rather than passed through as the assembly
+ * contract error it arrives as. A repeat, an overlap or an out-of-range index
+ * is a broken contract wherever it is found, but a reader holding a file cannot
+ * know WHO broke it: the run that wrote it, an edit, a truncation, or a merge
+ * all look identical from here. So it reports what the artifact contains and
+ * where, and says nothing about how it got that way. The contract error's own
+ * message is carried through, since it states the violation better than a
+ * rewording would, and the entry it belongs to is added, which the assembly
+ * message has no way to know.
+ *
+ * @param artifact - artifact record, freshly parsed
+ *
+ * @param path - dotted path for error messages, usually the entry id
+ *
+ * @param sliceCount - slices the preparation produced, when the artifact
+ * recorded it; omitted for a generation that did not, which drops the range
+ * rule and keeps every other one
+ *
+ * @returns Both sets ascending
+ *
+ * @throws {@link ArtifactParseError} when either array is malformed or the two
+ * break a rule the lanes hold them to
+ *
+ * @example
+ * ```ts
+ * const sets = readCheckedSets({ artifact, path, sliceCount, },);
+ * ```
+ */
+function readCheckedSets(
+  {
+    artifact,
+    path,
+    sliceCount,
+  }: {
+    readonly artifact: Readonly<Record<string, unknown>>;
+    readonly path: string;
+    readonly sliceCount?: number;
+  },
+): OrderedChangeSets {
+  /**
+   * Slices the artifact says its document carries a change for.
+   */
+  const shipped = readIndexArray({
+    value: artifact.shippedChunkIndices,
+    path: `${path}.shippedChunkIndices`,
+  },);
+
+  /**
+   * Slices the artifact says the guard took back.
+   */
+  const withdrawn = readIndexArray({
+    value: artifact.withdrawnChunkIndices,
+    path: `${path}.withdrawnChunkIndices`,
+  },);
+  try {
+    if (sliceCount === undefined) {
+      return checkedChangeSets({
+        shipped,
+        withdrawn,
+      },);
+    }
+    return orderedChangeSets({
+      sliceCount,
+      shipped,
+      withdrawn,
+    },);
+  }
+  catch (error) {
+    if (!(error instanceof AssemblyContractError))
+      throw error;
+    throw new ArtifactParseError({
+      path: `${path} index sets`,
+      reason: `sets one document could carry (${error.message})`,
+    },);
+  }
+}
+
+/**
  * Reads both index sets out of a settled artifact.
  *
  * DISPATCHES ON THE VERSION, then on presence, and refuses the shapes no writer
@@ -130,13 +212,10 @@ function readIndexArray(
  * That is what the version buys: presence stops being a question, so a missing
  * field is a defect rather than a generation.
  *
- * THE VALIDATION FAILURES ARRIVE AS `AssemblyContractError`, not as
- * {@link ArtifactParseError}, and that is deliberate rather than an oversight.
- * A repeat, an overlap or an out-of-range index is a broken CONTRACT that the
- * writing lane was supposed to have upheld, and it reads identically whether it
- * was found at assembly or in a file afterwards. Re-wrapping it here would tell
- * a reader the file is malformed when what is malformed is the run that wrote
- * it.
+ * AND THE COUNT WITHOUT A VERSION IS REFUSED, which reads like pedantry until
+ * you ask what produces it. No writer ever did. What does is a CURRENT artifact
+ * that lost its version field to an edit or a merge, and accepting it as an
+ * older generation would discard a denominator the run actually recorded.
  *
  * @param artifact - artifact record, freshly parsed
  *
@@ -145,11 +224,10 @@ function readIndexArray(
  * @returns Both sets with their generation named
  *
  * @throws {@link ArtifactParseError} when one index array is present without
- * the other, when a versioned artifact omits either of them or `sliceCount`, or
- * when an index is not a non-negative whole number
- *
- * @throws AssemblyContractError when the recorded sets repeat an index, name a
- * slice as both shipped and withdrawn, or fall outside the recorded slice count
+ * the other, when a versioned artifact omits either of them or `sliceCount`,
+ * when an unversioned one carries `sliceCount`, when an index is not a
+ * non-negative whole number, or when the two sets break a rule the writing
+ * lanes hold them to
  *
  * @example
  * ```ts
@@ -197,19 +275,29 @@ export function readArtifactChangeSets(
     },);
 
   if (reading.kind === 'unversioned') {
+    // THE COUNT ARRIVED WITH THE VERSION, so an artifact carrying one without
+    // the other is a shape no writer produced. The case that matters is not a
+    // hand-written file: it is a CURRENT artifact whose version field was lost
+    // to an edit or a merge, which would otherwise read as a generation that
+    // predates the count and throw away a denominator the run recorded.
+    if (
+      Object.hasOwn(
+        artifact,
+        'sliceCount',
+      )
+    ) {
+      throw new ArtifactParseError({
+        path: `${path}.artifactSchemaVersion`,
+        reason: 'a schema version, since this artifact records the slice count that arrived with one',
+      },);
+    }
     if (!hasShipped)
       return { kind: 'unrecorded', };
     return {
       kind: 'uncounted',
-      ...checkedChangeSets({
-        shipped: readIndexArray({
-          value: artifact.shippedChunkIndices,
-          path: `${path}.shippedChunkIndices`,
-        },),
-        withdrawn: readIndexArray({
-          value: artifact.withdrawnChunkIndices,
-          path: `${path}.withdrawnChunkIndices`,
-        },),
+      ...readCheckedSets({
+        artifact,
+        path,
       },),
     };
   }
@@ -231,16 +319,10 @@ export function readArtifactChangeSets(
   return {
     kind: 'counted',
     sliceCount,
-    ...orderedChangeSets({
+    ...readCheckedSets({
+      artifact,
+      path,
       sliceCount,
-      shipped: readIndexArray({
-        value: artifact.shippedChunkIndices,
-        path: `${path}.shippedChunkIndices`,
-      },),
-      withdrawn: readIndexArray({
-        value: artifact.withdrawnChunkIndices,
-        path: `${path}.withdrawnChunkIndices`,
-      },),
     },),
   };
 }

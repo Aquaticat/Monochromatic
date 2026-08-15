@@ -290,6 +290,25 @@ await describe({
     },),
 
     it({
+      name: 'refuses a whole number too large for JSON to carry exactly. Above '
+        + 'two to the fifty-third, round trips and arithmetic stop being exact, '
+        + 'so a value that size is not a tally or an index anybody wrote, however '
+        + 'integral it looks to a check that only asks whether it is whole',
+      fn: async () => {
+        expect(function readUnsafeCount() {
+          requireCount({
+            value: Number.MAX_SAFE_INTEGER + 2,
+            path: PATH,
+          },);
+        },).toThrow('no larger than JSON carries exactly',);
+        expect(requireCount({
+          value: Number.MAX_SAFE_INTEGER,
+          path: PATH,
+        },),).toBe(Number.MAX_SAFE_INTEGER,);
+      },
+    },),
+
+    it({
       name: 'refuses a fraction, which is the shape that would mean the writer '
         + 'and reader disagree about what the field holds; every count here '
         + 'tallies votes or regions and cannot be partial',

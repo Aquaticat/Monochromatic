@@ -417,6 +417,34 @@ await describe({
     },),
     it({
       name:
+        'reports the REPEAT before the range when a set breaks both, and names an out-of-range index in '
+        + 'document order rather than in the order it was listed. Nothing depends on which failure comes '
+        + 'first, which is exactly why it is pinned: the checks that need no slice count run first, and '
+        + 'the range check reads the sets once they are ascending',
+      fn: async () => {
+        /**
+         * Failure a set breaking both the repeat rule and the range rule raised.
+         */
+        const bothBroken = changeSetFailure({
+          sliceCount: 2,
+          shipped: [2, 2,],
+          withdrawn: [],
+        },);
+        expect(String(bothBroken,),).toContain('shipped slices repeat',);
+
+        /**
+         * Failure two out-of-range indices raised, listed high to low.
+         */
+        const outOfOrder = changeSetFailure({
+          sliceCount: 2,
+          shipped: [9, 5,],
+          withdrawn: [],
+        },);
+        expect(String(outOfOrder,),).toContain('slice 5 of 2 prepared',);
+      },
+    },),
+    it({
+      name:
         'REFUSES a slice named as both shipped and withdrawn, which both lane contracts call impossible '
         + 'by construction and neither checked',
       fn: async () => {

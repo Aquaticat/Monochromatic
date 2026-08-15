@@ -196,6 +196,11 @@ export function requireArray(
  * writer and the reader disagree about what the field holds, and coercing it
  * here would carry that disagreement into a measurement unnoticed.
  *
+ * SAFE integers rather than whole ones, which is a narrower rule than it looks:
+ * `Number.isInteger` answers true above 2 to the 53rd, where JSON round trips
+ * and arithmetic stop being exact, so a value that large is not a count anybody
+ * wrote. No tally or slice index this layer reads can legitimately reach it.
+ *
  * @param value - value to check
  *
  * @param path - dotted path for error message
@@ -223,10 +228,10 @@ export function requireCount(
       path,
       reason: 'a number',
     },);
-  if ((!Number.isInteger(value,)) || (value < 0))
+  if ((!Number.isSafeInteger(value,)) || (value < 0))
     throw new ArtifactParseError({
       path,
-      reason: 'a non-negative integer',
+      reason: 'a non-negative integer no larger than JSON carries exactly',
     },);
   return value;
 }

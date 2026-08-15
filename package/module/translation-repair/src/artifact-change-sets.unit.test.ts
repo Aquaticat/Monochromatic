@@ -11,8 +11,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  AssemblyContractError,
+  ArtifactParseError,
+  buildSettledArtifact,
   parseSettledArtifact,
+  type PipelineDigest,
   readArtifactChangeSets,
   readArtifactSchemaVersion,
   SETTLED_ARTIFACT_SCHEMA_VERSION,
@@ -93,11 +95,25 @@ await describe({
             artifact: { artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION + 1, },
             path: 'Mittens',
           },);
-        },).toThrow('newest this reader knows',);
+        },).toThrow('this reader knows',);
       },
     },),
     it({
-      name: 'REFUSES a version that is not a count at all, before comparing it to anything',
+      name: 'REFUSES version zero as firmly as a future one. Zero is what a reader that defaulted an '
+        + 'absent field would have invented, so accepting it would let the invention back in through '
+        + 'the field itself',
+      fn: async () => {
+        expect(function readZeroVersion() {
+          readArtifactSchemaVersion({
+            artifact: { artifactSchemaVersion: 0, },
+            path: 'Mittens',
+          },);
+        },).toThrow('this reader knows',);
+      },
+    },),
+    it({
+      name: 'REFUSES a version that is not a count at all, before comparing it to anything: a string, a '
+        + 'fraction and a negative each mean the writer and this reader disagree about the field',
       fn: async () => {
         expect(function readStringVersion() {
           readArtifactSchemaVersion({
@@ -105,6 +121,18 @@ await describe({
             path: 'Mittens',
           },);
         },).toThrow('a number',);
+        expect(function readFractionalVersion() {
+          readArtifactSchemaVersion({
+            artifact: { artifactSchemaVersion: 1.5, },
+            path: 'Mittens',
+          },);
+        },).toThrow('a non-negative integer',);
+        expect(function readNegativeVersion() {
+          readArtifactSchemaVersion({
+            artifact: { artifactSchemaVersion: -1, },
+            path: 'Mittens',
+          },);
+        },).toThrow('a non-negative integer',);
       },
     },),
   ],
@@ -114,7 +142,7 @@ await describe({
   name: readArtifactChangeSets.name,
   children: [
     it({
-      name: 'reads an artifact that recorded neither set as UNRECORDED, and carries no arrays at all: a run '
+      name: 'reads an artifact that recorded neither set as UNRECORDED, carrying neither array: a run '
         + 'nobody wrote index sets for must never read as a run that changed nothing, and an empty array '
         + 'is exactly how those two become indistinguishable',
       fn: async () => {
@@ -126,8 +154,9 @@ await describe({
           },
           path: 'Mittens',
         },);
-        expect(sets.kind,).toBe('unrecorded',);
+        expect(sets,).toEqual({ kind: 'unrecorded', },);
         expect(Object.hasOwn(sets, 'shipped',),).toBe(false,);
+        expect(Object.hasOwn(sets, 'withdrawn',),).toBe(false,);
       },
     },),
     it({
@@ -148,12 +177,44 @@ await describe({
       },
     },),
     it({
-      name: 'reads an artifact that recorded both sets WITHOUT a slice count as uncounted, keeping every rule '
-        + 'a count is not needed for: the 2026-08-15 generation wrote the arrays before anything wrote their '
-        + 'denominator, and skipping all of its checks for want of one would accept a repeat it can see',
+      name: 'reads two EMPTY recorded sets as a run that genuinely changed nothing, whether or not it '
+        + 'was versioned. This is the reading the unknown must never be folded into, so it has to be '
+        + 'reachable in its own right',
       fn: async () => {
-        /** Reading over the generation that has arrays and no count. */
-        const sets = readArtifactChangeSets({
+        expect(readArtifactChangeSets({
+          artifact: {
+            artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+            sliceCount: 3,
+            shippedChunkIndices: [],
+            withdrawnChunkIndices: [],
+          },
+          path: 'Mittens',
+        },),).toEqual({
+          kind: 'counted',
+          sliceCount: 3,
+          shipped: [],
+          withdrawn: [],
+        },);
+        expect(readArtifactChangeSets({
+          artifact: {
+            shippedChunkIndices: [],
+            withdrawnChunkIndices: [],
+          },
+          path: 'Mittens',
+        },),).toEqual({
+          kind: 'uncounted',
+          shipped: [],
+          withdrawn: [],
+        },);
+      },
+    },),
+    it({
+      name: 'reads an artifact that recorded both sets WITHOUT a slice count as uncounted, keeping every '
+        + 'rule a count is not needed for on BOTH sets: the 2026-08-15 generation wrote the arrays before '
+        + 'anything wrote their denominator, and skipping all of its checks for want of one would accept '
+        + 'a repeat or an overlap it can plainly see',
+      fn: async () => {
+        expect(readArtifactChangeSets({
           artifact: {
             shippedChunkIndices: [
               9,
@@ -162,8 +223,7 @@ await describe({
             withdrawnChunkIndices: [],
           },
           path: 'Mittens',
-        },);
-        expect(sets,).toEqual({
+        },),).toEqual({
           kind: 'uncounted',
           shipped: [
             2,
@@ -171,21 +231,36 @@ await describe({
           ],
           withdrawn: [],
         },);
-        expect(changeSetFailure({
-          artifact: {
-            shippedChunkIndices: [
-              2,
-              2,
-            ],
-            withdrawnChunkIndices: [],
-          },
-        },),).toBeInstanceOf(AssemblyContractError,);
+        expect(function repeatedShipped() {
+          readArtifactChangeSets({
+            artifact: {
+              shippedChunkIndices: [
+                2,
+                2,
+              ],
+              withdrawnChunkIndices: [],
+            },
+            path: 'Mittens',
+          },);
+        },).toThrow('shipped slices repeat',);
+        expect(function repeatedWithdrawn() {
+          readArtifactChangeSets({
+            artifact: {
+              shippedChunkIndices: [],
+              withdrawnChunkIndices: [
+                4,
+                4,
+              ],
+            },
+            path: 'Mittens',
+          },);
+        },).toThrow('withdrawn slices repeat',);
       },
     },),
     it({
-      name: 'REFUSES one index set without the other, whichever half is missing: every generation wrote both '
-        + 'or neither, so one alone means the record was edited or truncated, and reading it would report a '
-        + 'shipped set with no withdrawals as though a run had said so',
+      name: 'REFUSES one index set without the other, whichever half is missing: every generation wrote '
+        + 'both or neither, so one alone means the record was edited or truncated, and reading it would '
+        + 'report a shipped set with no withdrawals as though a run had said so',
       fn: async () => {
         expect(function shippedAlone() {
           readArtifactChangeSets({
@@ -199,6 +274,23 @@ await describe({
             path: 'Mittens',
           },);
         },).toThrow('both index sets or neither',);
+      },
+    },),
+    it({
+      name: 'REFUSES an unversioned artifact that records a slice count, which no writer ever produced. '
+        + 'What produces it is a CURRENT artifact whose version field was lost to an edit or a merge, and '
+        + 'reading that as an older generation would throw away a denominator the run recorded',
+      fn: async () => {
+        expect(function countWithoutVersion() {
+          readArtifactChangeSets({
+            artifact: {
+              sliceCount: 2,
+              shippedChunkIndices: [],
+              withdrawnChunkIndices: [],
+            },
+            path: 'Mittens',
+          },);
+        },).toThrow('records the slice count that arrived with one',);
       },
     },),
     it({
@@ -242,9 +334,12 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES an index outside the slices a versioned artifact says it prepared',
+      name: 'REFUSES an index outside the slices a versioned artifact says it prepared, on either side, '
+        + 'and reports it as a defect of the ARTIFACT naming the entry. A reader holding a file cannot '
+        + 'know whether the run, an edit or a truncation put it there, so it says what the file contains '
+        + 'rather than who broke the contract',
       fn: async () => {
-        /** Failure the out-of-range index raised. */
+        /** Failure the out-of-range shipped index raised. */
         const caught = changeSetFailure({
           artifact: {
             artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
@@ -253,32 +348,45 @@ await describe({
             withdrawnChunkIndices: [],
           },
         },);
-        expect(caught,).toBeInstanceOf(AssemblyContractError,);
+        expect(caught,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(caught,),).toContain('Mittens index sets',);
         expect(String(caught,),).toContain('of 2 prepared',);
+        expect(function withdrawnOutOfRange() {
+          readArtifactChangeSets({
+            artifact: {
+              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+              sliceCount: 2,
+              shippedChunkIndices: [],
+              withdrawnChunkIndices: [7,],
+            },
+            path: 'Mittens',
+          },);
+        },).toThrow('of 2 prepared',);
       },
     },),
     it({
-      name: 'REFUSES a slice recorded as both shipped and withdrawn, which the writing lane\'s own contract '
-        + 'calls impossible: found in a file afterwards it means the same thing it means at assembly',
+      name: 'REFUSES a slice recorded as both shipped and withdrawn, which the writing lanes call '
+        + 'impossible by construction: found in a file afterwards it describes the same contradiction',
       fn: async () => {
-        /** Failure the overlap raised. */
-        const caught = changeSetFailure({
-          artifact: {
-            artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
-            sliceCount: 4,
-            shippedChunkIndices: [
-              1,
-              3,
-            ],
-            withdrawnChunkIndices: [3,],
-          },
-        },);
-        expect(caught,).toBeInstanceOf(AssemblyContractError,);
-        expect(String(caught,),).toContain('both shipped and withdrawn',);
+        expect(function overlapping() {
+          readArtifactChangeSets({
+            artifact: {
+              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+              sliceCount: 4,
+              shippedChunkIndices: [
+                1,
+                3,
+              ],
+              withdrawnChunkIndices: [3,],
+            },
+            path: 'Mittens',
+          },);
+        },).toThrow('both shipped and withdrawn',);
       },
     },),
     it({
-      name: 'REFUSES an entry that is not a slice index, naming the position it sits at',
+      name: 'REFUSES an entry that is not a slice index, naming the position it sits at, and refuses one '
+        + 'too large for JSON to carry exactly however whole it looks',
       fn: async () => {
         expect(function fractionalIndex() {
           readArtifactChangeSets({
@@ -292,6 +400,15 @@ await describe({
             path: 'Mittens',
           },);
         },).toThrow('shippedChunkIndices[1]',);
+        expect(function unsafeIndex() {
+          readArtifactChangeSets({
+            artifact: {
+              shippedChunkIndices: [Number.MAX_SAFE_INTEGER + 2,],
+              withdrawnChunkIndices: [],
+            },
+            path: 'Mittens',
+          },);
+        },).toThrow('no larger than JSON carries exactly',);
       },
     },),
   ],
@@ -332,6 +449,61 @@ await describe({
             3,
           ],
           withdrawn: [4,],
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a generation from the future through the parser too, since a consumer scanning a '
+        + 'directory meets artifacts a newer pass wrote there rather than hand-built records',
+      fn: async () => {
+        expect(function parseFutureArtifact() {
+          parseSettledArtifact({
+            value: {
+              ...VERSIONED_ARTIFACT,
+              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION + 1,
+              id: 'Mittens',
+              status: 'repaired',
+              issues: [],
+            },
+          },);
+        },).toThrow('this reader knows',);
+      },
+    },),
+    it({
+      name: 'ROUND-TRIPS what the pass actually writes, through JSON, into what the parser reads. Every '
+        + 'other test here hand-builds the record, so removing or misspelling a field in the writer would '
+        + 'leave all of them passing while no real artifact carried it',
+      fn: async () => {
+        /** Artifact the writer produces for a two-slice document. */
+        const artifact = buildSettledArtifact({
+          entryId: 'Mittens',
+          tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          pipelineDigest: 'sha256-tree-v1:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' as PipelineDigest,
+          corpusSha: 'cccccccccccccccccccccccccccccccccccccccc',
+          callConfig: { perCallTimeoutMs: 1_000, },
+          status: 'repaired',
+          durationMs: 12,
+          sourceText: '猫在晒太阳。',
+          targetText: 'The cat naps in the sun.',
+          result: {
+            issues: [],
+            findings: [],
+            chunkCritics: [],
+            repairedText: 'The cat naps in the warm sun.',
+            sliceCount: 2,
+            shippedChunkIndices: [0,],
+            withdrawnChunkIndices: [1,],
+          },
+          acceptedCount: 0,
+          resolvedCount: 0,
+        },);
+        /** What lands on disk, which is where a later reader meets it. */
+        const onDisk = JSON.stringify(artifact,);
+        expect(parseSettledArtifact({ value: JSON.parse(onDisk,), },).changeSets,).toEqual({
+          kind: 'counted',
+          sliceCount: 2,
+          shipped: [0,],
+          withdrawn: [1,],
         },);
       },
     },),

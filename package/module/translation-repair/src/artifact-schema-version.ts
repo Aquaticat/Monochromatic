@@ -44,6 +44,27 @@ import {
 export const SETTLED_ARTIFACT_SCHEMA_VERSION = 1;
 
 /**
+ * Generations a reader still understands.
+ *
+ * SEPARATE FROM WHAT THE PASS WRITES, and separate on purpose. The two are the
+ * same list today and will stop being so the moment a second version exists:
+ * reading the writer's constant to decide what is READABLE means that bumping
+ * it turns every artifact of the previous generation into a refusal, which is
+ * the opposite of what a version is for.
+ *
+ * EVERY BUMP DECIDES THIS EXPLICITLY. Add the outgoing version here when a
+ * reader still understands it, and leave it out when it genuinely cannot. Once
+ * this holds more than one entry, whatever reads a versioned field has to
+ * dispatch per version rather than assume the newest shape.
+ *
+ * @example
+ * ```ts
+ * const readable = KNOWN_ARTIFACT_SCHEMA_VERSIONS.includes(version,);
+ * ```
+ */
+export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [SETTLED_ARTIFACT_SCHEMA_VERSION,];
+
+/**
  * What an artifact says about which generation it belongs to.
  *
  * A UNION RATHER THAN AN OPTIONAL NUMBER, deliberately. Absence is the whole
@@ -121,10 +142,12 @@ export function readArtifactSchemaVersion(
     value: artifact.artifactSchemaVersion,
     path: `${path}.artifactSchemaVersion`,
   },);
-  if (version !== SETTLED_ARTIFACT_SCHEMA_VERSION)
+  if (!KNOWN_ARTIFACT_SCHEMA_VERSIONS.includes(version,))
     throw new ArtifactParseError({
       path: `${path}.artifactSchemaVersion`,
-      reason: `schema version ${String(SETTLED_ARTIFACT_SCHEMA_VERSION,)}, which is the newest this reader knows`,
+      reason: `one of schema versions ${
+        KNOWN_ARTIFACT_SCHEMA_VERSIONS.join(', ',)
+      }, which are the ones this reader knows`,
     },);
 
   return {

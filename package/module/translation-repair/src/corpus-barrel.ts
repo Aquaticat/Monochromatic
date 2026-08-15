@@ -8,6 +8,7 @@
 // a run over the corpus, and none of them is reachable from the per-document
 // pipeline.
 
+export { buildSettledArtifact, } from './corpus-run/artifact-build.ts';
 export {
   censusByGeneration,
   type GenerationCensus,

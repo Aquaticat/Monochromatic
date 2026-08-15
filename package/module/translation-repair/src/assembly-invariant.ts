@@ -228,6 +228,15 @@ export function checkedChangeSets(
  * the guard took slices back, so two lanes compared slice by slice were being
  * read from lists ordered by different rules.
  *
+ * WHICH FAILURE A CALLER SEES when a set breaks more than one rule is settled
+ * here rather than left to fall out of the code: everything a slice count is
+ * not needed for is checked FIRST, and the range check reads the sets after
+ * they are ascending. So `[2, 2]` against two prepared slices reports the
+ * repeat rather than the range, and an out-of-range index is named in document
+ * order rather than in the order the caller listed it. Nothing depends on the
+ * choice; it is pinned so that changing it is a decision rather than a side
+ * effect.
+ *
  * @param sliceCount - slices the preparation produced, which bounds both sets
  *
  * @param shipped - slices the document carries a change for
