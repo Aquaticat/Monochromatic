@@ -10255,3 +10255,30 @@ handle carried across pairs its sections. What it cannot score is two headings
 with no shared Latin at all, which is the common case here. So running the
 aligner over the 85 fast-path entries would change no pairing, and doing it
 would look like a fix while altering nothing.
+
+### `#99`'s first step, and a guard proof that argued against its own guard
+
+`d1fd32853` adds `assertSliceIndexing`, which states the property every cache
+key, splice and cross-lane join rests on: both sides of a prepared slice agree
+about its index, and that index is the slice's position. `prepareDocumentPair`
+runs it, since that is the only place holding every slice of a document at once.
+It changes no index, so no cache moves, and it gives `#99`'s reshape of how
+indices are assigned something that fails if the reshape breaks the invariant.
+
+THE PROOF IS THE INTERESTING PART, because it did not say what I expected.
+Mis-stamping the base index with the assertion REMOVED fails 16 tests: an
+existing `prepareDocumentPair` test already covers global document-order
+stamping, and 11 `repairTranslation` children fail with `AssemblyContractError`
+from the assembly invariants. So this defect class was already caught, three
+stages downstream, as a complaint about a replacement rather than about the
+stamping.
+
+That makes the new guard a diagnosis improvement and a floor under the reshape,
+NOT the only thing between a mis-stamp and a shipped document, and it is
+recorded that way in `#99`. Worth doing the probe even when a guard is obviously
+correct: what it measures is not whether the guard works but what the codebase
+already knew, and the honest answer here was "more than I assumed".
+
+The barrel it exports through is new. `pipeline-barrel.ts` sat exactly at its
+line budget, so one document PAIR, from the shared preparation to the driver
+that runs both lanes over it, became `document-barrel.ts`.
