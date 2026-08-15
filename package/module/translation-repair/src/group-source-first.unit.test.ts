@@ -347,18 +347,22 @@ await describe({
       },
     },),
     it({
-      name: 'attaches a target-only run BACKWARD to the paired unit it follows when an anchor comes '
-        + 'after it, since forward would cross that anchor',
+      name: 'attaches a target-only run BACKWARD, to the unit whose text it follows in the document, '
+        + 'rather than forward to the one after it: both are legal where no anchor separates them, and '
+        + 'the earlier unit is the one the run reads as a continuation of',
       fn: async () => {
-        /** Three source paragraphs, the middle one never translated. */
-        const sourceNodes = blocksOf({
-          text: '猫猫在窗台上睡觉。\n\n猫猫也喜欢晒太阳。\n\n她在看鸟。\n',
-        },);
+        /** Two source paragraphs, both translated. */
+        const sourceNodes = blocksOf({ text: '猫猫在窗台上睡觉。\n\n她在看鸟。\n', },);
 
-        /** Translation with a note of its own between the two it renders. */
+        /** Translation carrying a note of its own between them. */
         const targetNodes = blocksOf({
           text: 'The cat sleeps on the windowsill.\n\nEditor`s note: the sill is warm.\n\nShe watches the birds.\n',
         },);
+
+        /**
+         * Budget narrow enough that every block closes the group before it,
+         * which is what leaves the note in a group of its own.
+         */
         const units = groupAlignedSteps({
           steps: [
             {
@@ -371,33 +375,31 @@ await describe({
               targetIndex: 1,
             },
             {
-              kind: 'source-only',
-              sourceIndex: 1,
-            },
-            {
               kind: 'paired',
-              sourceIndex: 2,
+              sourceIndex: 1,
               targetIndex: 2,
             },
           ],
           sourceNodes,
           targetNodes,
-          sourceBudget: WIDE_BUDGET,
-          targetBudget: WIDE_BUDGET,
+          sourceBudget: 1,
+          targetBudget: 1,
         },);
         expect(kindsOf({ units, },),).toEqual([
           'paired',
-          'anchored',
           'paired',
         ],);
 
-        /** First unit, which the note belongs to. */
-        const [opening,] = units;
+        /** First unit, which the note follows in the document. */
+        const [opening, following,] = units;
         if ((opening === undefined) || (opening.kind !== 'paired'))
           throw new Error('expected a paired opening unit',);
+        if ((following === undefined) || (following.kind !== 'paired'))
+          throw new Error('expected a paired second unit',);
         expect(opening.targetRun
           .length,).toBe(2,);
         expect(opening.targetRun[1],).toBe(targetNodes[1],);
+        expect(following.targetRun,).toEqual([targetNodes[2],],);
       },
     },),
     it({
