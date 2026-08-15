@@ -13,6 +13,7 @@ import {
 import {
   assertSliceIndexing,
   prepareDocumentPair,
+  reindexSlicePair,
   SliceIndexingError,
 } from '../dist/final/node/index.mjs';
 
@@ -172,6 +173,34 @@ await describe({
       fn: async () => {
         expect(function checkEmpty() {
           assertSliceIndexing({ slices: [], },);
+        },).not.toThrow();
+      },
+    },),
+    it({
+      name: 'accepts what `reindexSlicePair` produces from sides that disagreed, which is how the '
+        + 'preparation stops depending on the base index it handed to subdivision: the final name is '
+        + 'stamped once, onto both sides, from where the slice actually landed',
+      fn: async () => {
+        /** Slice whose two sides were stamped by different producers. */
+        const disagreeing = sliceAt({
+          sourceIndex: 4,
+          targetIndex: 1,
+        },);
+
+        /** Same slice, renamed by its position. */
+        const stamped = reindexSlicePair({
+          slice: disagreeing,
+          sliceIndex: 0,
+        },);
+        expect(stamped.source
+          .chunkIndex,).toBe(0,);
+        expect(stamped.target
+          .chunkIndex,).toBe(0,);
+        expect(stamped.target
+          .text,).toBe(disagreeing.target
+          .text,);
+        expect(function checkStamped() {
+          assertSliceIndexing({ slices: [stamped,], },);
         },).not.toThrow();
       },
     },),

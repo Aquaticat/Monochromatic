@@ -9,7 +9,10 @@ import {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 import { parseDocument, } from './parse-document.ts';
-import { assertSliceIndexing, } from './slice-indexing.ts';
+import {
+  assertSliceIndexing,
+  reindexSlicePair,
+} from './slice-indexing.ts';
 import {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
@@ -182,26 +185,46 @@ export function prepareDocumentPair(
       baseIndex: slices.length,
       budget: sliceCharBudget,
     },);
+
+    /**
+     * Those slices renamed by where they actually landed.
+     *
+     * Subdivision was handed a base index and added its own offset, which is
+     * the same answer this produces today. It stops being the same answer the
+     * moment a section contributes a slice the base index did not count, which
+     * is exactly what `#100`'s insertions do, so the preparation stamps the
+     * final name itself rather than trusting arithmetic it handed out.
+     */
+    const stamped = carved.map(function toStamped(
+      carvedSlice,
+      offset,
+    ): ChunkPair {
+      return reindexSlicePair({
+        slice: carvedSlice,
+        sliceIndex: slices.length + offset,
+      },);
+    },);
     governance.push({
       sourceText: pair.source
         .text,
-      slices: carved.map(function toSlice(carvedSlice,): ChunkSlice {
+      slices: stamped.map(function toSlice(stampedSlice,): ChunkSlice {
         return {
-          index: carvedSlice.target
+          index: stampedSlice.target
             .chunkIndex,
-          sourceText: carvedSlice.source
+          sourceText: stampedSlice.source
             .text,
         };
       },),
     },);
-    slices.push(...carved,);
+    slices.push(...stamped,);
   }
 
-  // CHECKED HERE because this is the only place that holds every slice of a
-  // document at once. Each subdivision is stamped from a base index it is
-  // handed, so no call can tell whether the sequence it contributed to came out
-  // whole; the lanes that read these indices are further from the stamping
-  // still, and the cache carries them across runs.
+  // BELT OVER BRACES, and worth the line. The restamp above already makes this
+  // true from this path, so it can only fail if that restamp is changed or
+  // removed. What it pins is the property everything downstream reads: the
+  // lanes, the assembly and the cross-lane comparison are all further from the
+  // stamping than this, and none of them could tell a mis-stamped preparation
+  // from a strange document.
   assertSliceIndexing({ slices, },);
 
   return {

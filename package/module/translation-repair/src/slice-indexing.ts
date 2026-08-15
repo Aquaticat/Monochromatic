@@ -39,6 +39,50 @@ export class SliceIndexingError extends Error {
 }
 
 /**
+ * Stamps one slice pair with the index it holds in the finished preparation.
+ *
+ * THE LAST WORD ON WHAT A SLICE IS CALLED. Subdivision is handed a base index
+ * and adds its own offset, which is right only while every earlier section
+ * contributed exactly the slices the base counted. That is true today and
+ * `#100` breaks it deliberately: an insertion slice for an untranslated section
+ * is a slice the base index never saw coming. Restamping here means the
+ * preparation never has to trust the arithmetic it handed out, and both sides
+ * of a pair are stamped from one value rather than twice from the same
+ * expression.
+ *
+ * @param slice - pair as subdivision produced it
+ *
+ * @param sliceIndex - position this pair holds in the whole preparation
+ *
+ * @returns Same pair with both sides carrying that index
+ *
+ * @example
+ * ```ts
+ * const stamped = reindexSlicePair({ slice, sliceIndex: 4, },);
+ * ```
+ */
+export function reindexSlicePair(
+  {
+    slice,
+    sliceIndex,
+  }: {
+    readonly slice: ChunkPair;
+    readonly sliceIndex: number;
+  },
+): ChunkPair {
+  return {
+    source: {
+      ...slice.source,
+      chunkIndex: sliceIndex,
+    },
+    target: {
+      ...slice.target,
+      chunkIndex: sliceIndex,
+    },
+  };
+}
+
+/**
  * Refuses a slice list whose indices are not their own positions.
  *
  * THREE THINGS ARE CHECKED, and each is assumed somewhere that cannot check it
@@ -58,11 +102,12 @@ export class SliceIndexingError extends Error {
  *     what lets a reader compare two lanes slice by slice without carrying
  *     offsets around.
  *
- * WHY AN ASSERTION RATHER THAN A CONSTRUCTION. The construction is already
- * right: `prepareDocumentPair` passes a running count as the base index and
- * `subdivideChunkPair` stamps both sides from it. What is missing is anything
- * that FAILS if that stops being true, and the whole of `#99` is a change to how
- * these indices are assigned.
+ * AN ASSERTION BESIDE A CONSTRUCTION, since `prepareDocumentPair` now restamps
+ * every slice with {@link reindexSlicePair} rather than trusting the base index
+ * it handed to subdivision. From that path this cannot fail, which is the
+ * point: it fails if the restamp is changed or removed, and it is the only
+ * check any OTHER producer of slice pairs has. The probes, the benches and the
+ * census each subdivide with a base index of their own.
  *
  * @param slices - prepared slice pairs in document order
  *

@@ -14,6 +14,7 @@ export {
 } from './document-lanes.ts';
 export {
   assertSliceIndexing,
+  reindexSlicePair,
   SliceIndexingError,
 } from './slice-indexing.ts';
 export {
