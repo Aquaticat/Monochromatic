@@ -81,16 +81,23 @@ export type RepairModels = {
 /**
  * Thrown when a roster could not decide a round however its judges voted.
  *
+ * NAMED FOR THE ROLE IT ACTUALLY GUARDS. It was `EditorRosterError` while the
+ * editor ensemble was the only stage that produced candidates; the translate
+ * lane and the naturalness lane throw it too, and both were passing their own
+ * producers into a field called `editorModelIds`. The `role` parameter has
+ * always said which stage the message names, so the type was the last place
+ * still claiming editors.
+ *
  * @example
  * ```ts
- * throw new EditorRosterError({ editorModelIds, judgeModelIds, },);
+ * throw new ProducerRosterError({ producerModelIds, judgeModelIds, fault, },);
  * ```
  */
-export class EditorRosterError extends Error {
+export class ProducerRosterError extends Error {
   /**
    * Builds the report from the two colliding rosters.
    *
-   * @param editorModelIds - producers that propose candidates
+   * @param producerModelIds - models that propose candidates in this stage
    *
    * @param judgeModelIds - roster judges are drawn from
    *
@@ -103,12 +110,12 @@ export class EditorRosterError extends Error {
    */
   constructor(
     {
-      editorModelIds,
+      producerModelIds,
       judgeModelIds,
       role = 'editor',
       fault,
     }: {
-      readonly editorModelIds: readonly SyntheticModelId[];
+      readonly producerModelIds: readonly SyntheticModelId[];
       readonly judgeModelIds: readonly SyntheticModelId[];
       readonly role?: string;
       readonly fault: string;
@@ -116,10 +123,10 @@ export class EditorRosterError extends Error {
   ) {
     super(
       `this ${role} roster cannot select anything: ${fault}. ${role}s [${
-        editorModelIds.join(', ',)
+        producerModelIds.join(', ',)
       }], judges [${judgeModelIds.join(', ',)}]`,
     );
-    this.name = 'EditorRosterError';
+    this.name = 'ProducerRosterError';
   }
 }
 
@@ -133,7 +140,7 @@ export class EditorRosterError extends Error {
  *
  * @param judgeModelIds - roster judges are drawn from
  *
- * @throws {@link EditorRosterError} when either side repeats, editors are
+ * @throws {@link ProducerRosterError} when either side repeats, editors are
  * empty, or too few judges are seated to reach the minimum weight
  *
  * @example
@@ -181,7 +188,7 @@ export function assertJudgeableEditorRoster(
  *
  * @param judgeModelIds - roster judges are drawn from
  *
- * @throws {@link EditorRosterError} when either side repeats, producers are
+ * @throws {@link ProducerRosterError} when either side repeats, producers are
  * empty, or too few judges are seated to reach the minimum weight
  *
  * @example
@@ -205,15 +212,15 @@ export function assertJudgeableProducerRoster(
    */
   const producers = new Set(producerModelIds,);
   if (producers.size === 0)
-    throw new EditorRosterError({
-      editorModelIds: producerModelIds,
+    throw new ProducerRosterError({
+      producerModelIds,
       judgeModelIds,
       role,
       fault: `no ${role} was seated`,
     },);
   if (producers.size !== producerModelIds.length)
-    throw new EditorRosterError({
-      editorModelIds: producerModelIds,
+    throw new ProducerRosterError({
+      producerModelIds,
       judgeModelIds,
       role,
       fault: `a ${role} is listed more than once, which is one voice pretending to be two`,
@@ -225,8 +232,8 @@ export function assertJudgeableProducerRoster(
    */
   const judges = new Set(judgeModelIds,);
   if (judges.size !== judgeModelIds.length)
-    throw new EditorRosterError({
-      editorModelIds: producerModelIds,
+    throw new ProducerRosterError({
+      producerModelIds,
       judgeModelIds,
       role,
       fault: 'a judge is listed more than once, which would let one model reach the minimum weight alone',
@@ -279,8 +286,8 @@ export function assertJudgeableProducerRoster(
     : (FULL_VOTE_WEIGHT * (judgeModelIds.length - 1)) + SELF_VOTE_WEIGHT;
   if (capacity >= MIN_SELECTION_WEIGHT)
     return;
-  throw new EditorRosterError({
-    editorModelIds: producerModelIds,
+  throw new ProducerRosterError({
+    producerModelIds,
     judgeModelIds,
     role,
     fault: `these judges could award at most ${String(capacity,)} to text this roster wrote, against a minimum of ${

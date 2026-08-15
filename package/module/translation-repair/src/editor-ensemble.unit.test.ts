@@ -22,7 +22,7 @@ import {
   describeProducer,
   type EditableEnvelope,
   type EditorCandidate,
-  EditorRosterError,
+  ProducerRosterError,
   hashContent,
   mergeProducers,
   type PatchOutcome,
@@ -411,7 +411,7 @@ await describe({
             editorModelIds: ['hf:moonshotai/Kimi-K3',],
             judgeModelIds: ['hf:moonshotai/Kimi-K3',],
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
 
         expect(function twoEditorsJudgingThemselves() {
           assertJudgeableEditorRoster({
@@ -424,7 +424,7 @@ await describe({
               'hf:zai-org/GLM-5.2',
             ],
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
       },
     },),
 
@@ -443,7 +443,7 @@ await describe({
               'hf:Qwen/Qwen3.6-27B',
             ],
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
 
         expect(function noEditor() {
           assertJudgeableEditorRoster({
@@ -453,7 +453,7 @@ await describe({
               'hf:Qwen/Qwen3.6-27B',
             ],
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
       },
     },),
   ],

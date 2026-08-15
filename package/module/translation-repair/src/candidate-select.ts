@@ -24,7 +24,7 @@ import {
   type SelectEvidence,
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { EditorRosterError, } from './repair-contract.ts';
+import { ProducerRosterError, } from './repair-contract.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -86,7 +86,7 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  * @returns Winner with the ballot weight it drew, or a decline carrying its
  * reason; either way the round's tally and every ballot cast
  *
- * @throws {@link import('./repair-contract.ts').EditorRosterError} when a judge
+ * @throws {@link import('./repair-contract.ts').ProducerRosterError} when a judge
  * appears twice on the roster, which would let one model reach the minimum
  * weight by itself
  *
@@ -182,8 +182,8 @@ export async function selectBestCandidate<ValueT,>(
    */
   const distinctJudges = new Set(judges,);
   if (distinctJudges.size !== judges.length) {
-    throw new EditorRosterError({
-      editorModelIds: candidates.flatMap(function toStakeholders(
+    throw new ProducerRosterError({
+      producerModelIds: candidates.flatMap(function toStakeholders(
         candidate,
       ): readonly SyntheticModelId[] {
         return producerModelIds(candidate.producer,);

@@ -212,7 +212,7 @@ const EMPTY_TALLY: SelectionTally = {
  *
  * @returns Shipped text with how it was decided
  *
- * @throws {@link import('./repair-contract.ts').EditorRosterError} when the
+ * @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
  * roster could not select anything: repeats on either side, no translator, or
  * judges too few to reach the minimum weight
  *

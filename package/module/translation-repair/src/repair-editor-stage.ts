@@ -90,7 +90,7 @@ export type EditorStageResult = {
  *
  * @returns Winning patch plus findings
  *
- * @throws {@link import('./repair-contract.ts').EditorRosterError} when every
+ * @throws {@link import('./repair-contract.ts').ProducerRosterError} when every
  * judge also edits
  *
  * @example

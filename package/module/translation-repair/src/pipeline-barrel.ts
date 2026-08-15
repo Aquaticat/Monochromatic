@@ -71,7 +71,7 @@ export {
   assertJudgeableProducerRoster,
   CheckerIndependenceError,
   type ChunkRepairOutcome,
-  EditorRosterError,
+  ProducerRosterError,
   type RepairModels,
 } from './repair-contract.ts';
 export {

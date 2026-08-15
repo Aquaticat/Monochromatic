@@ -28,7 +28,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type EditableEnvelope,
-  EditorRosterError,
+  ProducerRosterError,
   hashContent,
   runEditorStage,
   type SyntheticClient,
@@ -185,7 +185,7 @@ await describe({
             perCallTimeoutMs: 1_000,
             l,
           },),
-        ).rejects.toThrow(EditorRosterError,);
+        ).rejects.toThrow(ProducerRosterError,);
       },
     },),
 

@@ -35,7 +35,7 @@ import {
 import {
   assertJudgeableEditorRoster,
   assertJudgeableProducerRoster,
-  EditorRosterError,
+  ProducerRosterError,
   FULL_VOTE_WEIGHT,
   MIN_SELECTION_WEIGHT,
 } from '../dist/final/node/index.mjs';
@@ -182,7 +182,7 @@ await describe({
             ],
             role: 'editor',
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
       },
     },),
 
@@ -202,7 +202,7 @@ await describe({
             ],
             role: 'editor',
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
       },
     },),
 
@@ -223,7 +223,7 @@ await describe({
             ],
             role: 'editor',
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
       },
     },),
 
@@ -242,7 +242,7 @@ await describe({
             ],
             role: 'editor',
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
       },
     },),
 
@@ -306,7 +306,7 @@ await describe({
             ),
             role: 'editor',
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
 
         expect(function acceptAtSeats() {
           assertJudgeableProducerRoster({
@@ -337,7 +337,7 @@ await describe({
             ],
             role: 'editor',
           },);
-        },).toThrow(EditorRosterError,);
+        },).toThrow(ProducerRosterError,);
       },
     },),
 

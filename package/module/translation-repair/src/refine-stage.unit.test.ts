@@ -15,7 +15,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   deriveRefinableEnvelopes,
-  EditorRosterError,
+  ProducerRosterError,
   parseDocument,
   runRefineStage,
   type SyntheticClient,
@@ -296,7 +296,7 @@ await describe({
             perCallTimeoutMs: 1_000,
             l,
           },),
-        ).rejects.toThrow(EditorRosterError,);
+        ).rejects.toThrow(ProducerRosterError,);
       },
     },),
   ],

@@ -21,7 +21,7 @@ import {
   type ChatJsonRequest,
   type EditableEnvelope,
   type EditorCandidate,
-  EditorRosterError,
+  ProducerRosterError,
   hashContent,
   type PatchOutcome,
   selectBestCandidate,
@@ -491,7 +491,7 @@ await describe({
           perCallTimeoutMs: 1_000,
           l,
         },);
-        await expect(refused,).rejects.toBeInstanceOf(EditorRosterError,);
+        await expect(refused,).rejects.toBeInstanceOf(ProducerRosterError,);
         expect(counter.calls,).toBe(0,);
       },
     },),
