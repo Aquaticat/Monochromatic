@@ -135,7 +135,11 @@ export type GenerationCensus = Readonly<{
  *
  * @param names - directory listing the CALLER already took, so census and
  * caller classify the same set; omitted only by callers that have not listed
- * the directory themselves
+ * the directory themselves. It must come from {@link readdirArtifacts}, which
+ * is what keeps a directory or a symbolic link called `Mittens.json` out of
+ * both views at once. This cannot re-filter the names without taking a second
+ * view of a directory the accumulation is still writing to, which is the gap
+ * the shared listing exists to close
  *
  * @returns Census grouped by built pipeline, largest group first
  *

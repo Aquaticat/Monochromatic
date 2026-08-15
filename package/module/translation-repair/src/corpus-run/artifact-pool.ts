@@ -6,6 +6,7 @@ import {
   censusByGeneration,
   resolveCommit,
 } from './artifact-generation.ts';
+import { digestPipeline, } from './pipeline-digest.ts';
 
 //region Artifact pool
 // One call for every reader that turns settled artifacts into a NUMBER.
@@ -130,6 +131,18 @@ export async function resolvePool(
     ...((commit === '') ? {} : { requiredCommit: commit, }),
     pooledDeliberately: poolAll === POOL_ALL_VALUE,
   },);
+
+  // The reader's OWN identity, which the artifacts cannot carry. Every artifact
+  // records the pipeline that produced it, and a rate is a function of the
+  // reader as well: change how a report counts and the number moves with no
+  // artifact touched. Printed beside the pool rather than stored, because it
+  // describes this invocation rather than the entries.
+  /**
+   * Built pipeline this reader is running.
+   */
+  const reader = await digestPipeline({ dir: import.meta.dirname, },);
+
+  console.log(`POOL read by pipeline ${reader.digest}`,);
 
   for (const line of eligible.report)
     console.log(line,);

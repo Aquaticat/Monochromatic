@@ -36,6 +36,7 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
+import { readdirArtifacts, } from './artifact-placement.ts';
 import {
   type EntryContribution,
   loadEntry,
@@ -124,7 +125,7 @@ async function drawGradingSample(): Promise<void> {
    * artifact arriving between the two would join the census while never
    * entering the candidate pool.
    */
-  const listed = (await readdir(artifactsDir,))
+  const listed = (await readdirArtifacts({ artifactsDir, },))
     .filter(function isArtifact(name,) {
       return name.endsWith('.json',);
     },)
