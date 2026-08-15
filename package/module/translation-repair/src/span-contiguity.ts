@@ -49,11 +49,13 @@ export class SpanContiguityError extends Error {
 }
 
 /**
- * Counts the document nodes lying inside one half-open range.
+ * Reads the document nodes one half-open range touches at all.
  *
- * WHOLLY INSIDE, since a node straddling a boundary is a different fault: the
- * ranges here come from node offsets, so a straddle means the slicing cut a
- * block in half, and the count would hide it either way it were rounded.
+ * TOUCHES RATHER THAN CONTAINS, which is the difference between this and what
+ * it replaced. Counting only whole nodes made a range cutting through one
+ * invisible: the straddled block is not inside, so it is not counted, and a
+ * span carrying nothing across a range covering half a paragraph agreed with
+ * itself. Assembly still writes over that half.
  *
  * @param nodes - every node of the document, in order
  *
@@ -61,14 +63,14 @@ export class SpanContiguityError extends Error {
  *
  * @param endOffset - absolute exclusive end
  *
- * @returns Nodes the range contains
+ * @returns Nodes sharing any character with the range
  *
  * @example
  * ```ts
- * const covered = nodesInside({ nodes, startOffset, endOffset, },);
+ * const touched = nodesTouching({ nodes, startOffset, endOffset, },);
  * ```
  */
-function nodesInside(
+function nodesTouching(
   {
     nodes,
     startOffset,
@@ -79,10 +81,51 @@ function nodesInside(
     readonly endOffset: number;
   },
 ): readonly DocumentNode[] {
-  return nodes.filter(function isInside(node,): boolean {
-    return (node.startOffset >= startOffset)
-      && (node.endOffset <= endOffset);
+  return nodes.filter(function isTouching(node,): boolean {
+    return (node.startOffset < endOffset)
+      && (node.endOffset > startOffset);
   },);
+}
+
+/**
+ * Refuses an anchor sitting strictly inside a block.
+ *
+ * An insertion names a place between two blocks, and every legal such place is
+ * a block boundary. An offset in the middle of one is a place assembly will
+ * happily write to, splitting a paragraph around text nobody asked to have
+ * split, and the layout check cannot see it: an empty span starts where it ends
+ * and so never overlaps a neighbour.
+ *
+ * @param anchor - insertion chunk to place
+ *
+ * @param nodes - every block-level node of the translation, in order
+ *
+ * @throws {@link SpanContiguityError} when the offset is inside a block
+ *
+ * @example
+ * ```ts
+ * assertAnchorBetweenBlocks({ anchor, nodes, },);
+ * ```
+ */
+function assertAnchorBetweenBlocks(
+  {
+    anchor,
+    nodes,
+  }: {
+    readonly anchor: ChunkPair['target'];
+    readonly nodes: readonly DocumentNode[];
+  },
+): void {
+  for (const node of nodes) {
+    if ((node.startOffset < anchor.startOffset)
+      && (anchor.startOffset < node.endOffset)) {
+      throw new SpanContiguityError({
+        message: `slice ${String(anchor.chunkIndex,)} anchors at ${
+          String(anchor.startOffset,)
+        }, inside block ${node.id}, so assembly would split that block around the inserted text`,
+      },);
+    }
+  }
 }
 
 /**
@@ -118,17 +161,32 @@ export function assertSpanContiguity(
      * Target side of this pair, which is the side assembly writes over.
      */
     const span = slice.target;
-    if (isInsertionChunk(span,))
+    if (isInsertionChunk(span,)) {
+      assertAnchorBetweenBlocks({
+        anchor: span,
+        nodes: targetNodes,
+      },);
       continue;
+    }
 
     /**
-     * Blocks the document holds inside this span's range.
+     * Blocks the document shares any character of this span's range with.
      */
-    const covered = nodesInside({
+    const covered = nodesTouching({
       nodes: targetNodes,
       startOffset: span.startOffset,
       endOffset: span.endOffset,
     },);
+    for (const node of covered) {
+      if ((node.startOffset < span.startOffset)
+        || (node.endOffset > span.endOffset)) {
+        throw new SpanContiguityError({
+          message: `slice ${String(span.chunkIndex,)} cuts through block ${node.id}, covering part of `
+            + 'it: assembly replaces exactly the range, so the rest of that block would be left beside '
+            + 'a replacement written without it',
+        },);
+      }
+    }
 
     /**
      * Blocks this slice says it carries.

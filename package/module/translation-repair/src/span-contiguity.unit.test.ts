@@ -202,5 +202,108 @@ await describe({
         },).not.toThrow();
       },
     },),
+    it({
+      name: 'REFUSES a span whose range cuts through a block, which counting whole blocks alone could '
+        + 'not see: the straddled block is not inside the range, so it was not counted, and a span '
+        + 'carrying nothing across half a paragraph agreed with itself',
+      fn: async () => {
+        /** Second block, whose middle the range will stop in. */
+        const [, middle,] = TARGET_NODES;
+        if (middle === undefined)
+          throw new Error('fixture parsed too few blocks',);
+
+        /** Offset partway through it, which no node boundary sits at. */
+        const cut = middle.startOffset + 4;
+        expect(function checkCutRange(): void {
+          assertSpanContiguity({
+            slices: [
+              spanOf({
+                nodes: [],
+                startOffset: middle.startOffset,
+                endOffset: cut,
+              },),
+            ],
+            targetNodes: TARGET_NODES,
+          },);
+        },).toThrow(SpanContiguityError,);
+      },
+    },),
+    it({
+      name: 'REFUSES an anchor strictly inside a block, since every legal place for one is a boundary '
+        + 'between blocks and the layout check cannot see this: an empty span starts where it ends, so '
+        + 'it never overlaps a neighbour however wrong its offset',
+      fn: async () => {
+        /** First block, whose middle the anchor will name. */
+        const [first,] = TARGET_NODES;
+        if (first === undefined)
+          throw new Error('fixture parsed no blocks',);
+        expect(function checkAnchorInsideBlock(): void {
+          assertSpanContiguity({
+            slices: [
+              {
+                source: {
+                  chunkIndex: 0,
+                  nodes: [],
+                  startOffset: 0,
+                  endOffset: 0,
+                  text: '猫猫在窗台上睡觉。',
+                },
+                target: makeInsertionChunk({
+                  chunkIndex: 0,
+                  offset: first.startOffset + 4,
+                },),
+              },
+            ],
+            targetNodes: TARGET_NODES,
+          },);
+        },).toThrow(SpanContiguityError,);
+      },
+    },),
+    it({
+      name: 'accepts an anchor at a block boundary, which is where every insertion the slicing builds '
+        + 'sits: the start of the block it precedes, or the end of the last one',
+      fn: async () => {
+        /** Second block, whose start is an ordinary insertion point. */
+        const [, middle,] = TARGET_NODES;
+
+        /** Last block, whose end is where a trailing insertion goes. */
+        const last = TARGET_NODES.at(-1,);
+        if ((middle === undefined) || (last === undefined))
+          throw new Error('fixture parsed too few blocks',);
+        expect(function checkBoundaryAnchors(): void {
+          assertSpanContiguity({
+            slices: [
+              {
+                source: {
+                  chunkIndex: 0,
+                  nodes: [],
+                  startOffset: 0,
+                  endOffset: 0,
+                  text: '猫猫在窗台上睡觉。',
+                },
+                target: makeInsertionChunk({
+                  chunkIndex: 0,
+                  offset: middle.startOffset,
+                },),
+              },
+              {
+                source: {
+                  chunkIndex: 1,
+                  nodes: [],
+                  startOffset: 0,
+                  endOffset: 0,
+                  text: '她在看鸟。',
+                },
+                target: makeInsertionChunk({
+                  chunkIndex: 1,
+                  offset: last.endOffset,
+                },),
+              },
+            ],
+            targetNodes: TARGET_NODES,
+          },);
+        },).not.toThrow();
+      },
+    },),
   ],
 },);
