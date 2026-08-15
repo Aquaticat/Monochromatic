@@ -7,6 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
@@ -400,6 +401,25 @@ export async function translateDocument(
         return left - right;
       },),
     withdrawnChunkIndices: guarded.revertedChunkIndices,
+    // Every prepared slice paired with the archive wording it was judged
+    // against. Taken from the PREPARATION rather than from the settled records,
+    // which are cache values a resumed run may have written under an earlier
+    // preparation of the same entry.
+    sliceTexts: buildLaneSliceTexts({
+      slices: prepared.slices,
+      // This lane visits every slice by contract and throws rather than
+      // returning a partial document, so a gap is a defect.
+      undecided: 'refuse',
+      decided: settled.map(function toDecision(record,): {
+        readonly chunkIndex: number;
+        readonly text: string;
+      } {
+        return {
+          chunkIndex: record.chunkIndex,
+          text: record.outputText,
+        };
+      },),
+    },),
     resumedSliceCount: counted.resumed,
     slices: settled,
     findings: [

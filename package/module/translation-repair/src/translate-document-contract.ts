@@ -1,3 +1,4 @@
+import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import type { SliceAlignmentAssessment, } from './translate-alignment.ts';
 import type { TranslateStageResult, } from './translate-stage.ts';
@@ -203,6 +204,20 @@ export type TranslateDocumentResult = {
    * One settled record per slice, in document order.
    */
   readonly slices: readonly TranslateSliceRecord[];
+
+  /**
+   * What this lane DECIDED for every prepared slice, beside the archive's own
+   * wording, in document order.
+   *
+   * Built at the document level rather than stored on
+   * {@link TranslateDocumentResult.slices}, which are CACHE records: an
+   * incumbent belongs to a preparation, and a slice resumed from an earlier run
+   * would otherwise serve the wording that preparation had then. Carries no
+   * shipped flag for the same reason, since whether a slice shipped is decided
+   * by an assembly guard reading the whole document and can differ between two
+   * runs of the same slice.
+   */
+  readonly sliceTexts: readonly LaneSliceText[];
 
   /**
    * Every slice's findings, flattened for the artifact.

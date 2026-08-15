@@ -748,9 +748,12 @@ await describe({
       name: 'grades a scripted restoring repair through the seam',
       fn: async () => {
         /** Scripted repair that restores the butterfly sentence. */
-        const restoringRepair: typeof repairTranslation = async ({ targetText, },) => (
-          {
-            repairedText: `${targetText} The cat also chases crimson butterflies across the meadow.`,
+        const restoringRepair: typeof repairTranslation = async ({ targetText, },) => {
+          /** Document as this stub returns it. */
+          const repairedText = `${targetText} The cat also chases crimson butterflies across the meadow.`;
+
+          return {
+            repairedText,
             status: 'repaired',
             issues: [],
             findings: [],
@@ -758,11 +761,17 @@ await describe({
 
             // The stub rewrites the document whole rather than by slice, so it
             // names the one slice that stands for it. A changed document with
-            // no shipped slice would state a thing the contract cannot mean.
+            // no shipped slice would state a thing the contract cannot mean,
+            // and the wording pair below is that slice as both sides saw it.
             shippedChunkIndices: [0,],
             withdrawnChunkIndices: [],
-          }
-        );
+            sliceTexts: [{
+              chunkIndex: 0,
+              incumbentText: targetText,
+              acceptedText: repairedText,
+            },],
+          };
+        };
         /** Benchmark over one entry. */
         const { records, scorecard, } = await runRepairBenchmark({
           client: UNUSED_CLIENT,

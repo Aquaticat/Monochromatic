@@ -148,6 +148,17 @@ export {
   type DocumentLanesResult,
   runDocumentLanes,
 } from './document-lanes.ts';
+export {
+  compareDocumentLanes,
+  LaneComparisonError,
+  type SliceLaneComparison,
+  type SliceLaneVerdict,
+} from './lane-comparison.ts';
+export {
+  buildLaneSliceTexts,
+  LaneSliceCoverageError,
+  type LaneSliceText,
+} from './lane-slice-text.ts';
 export { footnoteIdentifiers, } from './footnote-mentions.ts';
 export {
   guardFootnoteAssembly,

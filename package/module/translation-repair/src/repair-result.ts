@@ -1,4 +1,5 @@
 import type { ChunkCriticRecord, } from './critic-attribution.ts';
+import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { RepairIssueRecord, } from './repair-record.ts';
 
 //region Repair result
@@ -79,6 +80,17 @@ export type RepairTranslationResult = {
    * adjudicated issue of its own.
    */
   readonly withdrawnChunkIndices: readonly number[];
+
+  /**
+   * What this lane DECIDED for every prepared slice, beside the archive's own
+   * wording, in document order.
+   *
+   * One entry per slice whether or not anything changed, because a rate needs
+   * its denominator and "this lane looked and left it alone" is a decision.
+   * Carries no shipped flag: {@link RepairTranslationResult.shippedChunkIndices}
+   * is that fact, and repeating it per slice would let the two disagree.
+   */
+  readonly sliceTexts: readonly LaneSliceText[];
 };
 
 //endregion Repair result

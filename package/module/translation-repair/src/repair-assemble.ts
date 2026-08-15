@@ -3,6 +3,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { buildChunkCriticRecords, } from './critic-attribution.ts';
+import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import { buildIssueRecords, } from './repair-record.ts';
 import { repairReplacements, } from './repair-replacements.ts';
@@ -128,6 +129,25 @@ export function assembleRepair(
         return left - right;
       },),
     withdrawnChunkIndices: guarded.revertedChunkIndices,
+    // Every prepared slice, decided or left alone, paired with the archive's
+    // own wording. Built from the outcomes rather than from the surviving
+    // replacements, because this side of the record is what the lane CHOSE and
+    // the index sets above are what the document carries.
+    sliceTexts: buildLaneSliceTexts({
+      slices,
+      // Every slice was visited to reach assembly at all, so a gap here is a
+      // defect rather than an early stop.
+      undecided: 'refuse',
+      decided: outcomes.map(function toDecision(outcome,): {
+        readonly chunkIndex: number;
+        readonly text: string;
+      } {
+        return {
+          chunkIndex: outcome.chunkIndex,
+          text: outcome.repairedText,
+        };
+      },),
+    },),
     issues,
     findings: [
       ...findings,

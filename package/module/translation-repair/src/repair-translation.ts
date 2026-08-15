@@ -15,6 +15,7 @@ import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
+import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
 import { runRefinePhase, } from './refine-phase.ts';
 import { repairChunk, } from './repair-chunk.ts';
@@ -475,8 +476,31 @@ export async function repairPreparedDocument(
         // never reaches assembly. A blocked run returns its input, so no slice
         // carries a repair, and the withdrawal that says so belongs to the
         // issue records rather than to a guard that did not run.
+        //
+        // The per-slice wordings are what keep that readable rather than
+        // trapping a consumer. Every slice still reports what it DECIDED, and
+        // the empty shipped set says none of it reached the document; read
+        // together they state "this lane had repairs and the document carries
+        // none of them", which two empty index sets alone cannot.
         shippedChunkIndices: [],
         withdrawnChunkIndices: [],
+        sliceTexts: buildLaneSliceTexts({
+          slices,
+          // This exit fires from INSIDE the slice loop, at the earliest
+          // dominance crossing, so the slices after it were never examined.
+          // Recording the archive wording as their decision would state a
+          // choice nobody made.
+          undecided: 'not-evaluated',
+          decided: outcomes.map(function toDecision(outcome,): {
+            readonly chunkIndex: number;
+            readonly text: string;
+          } {
+            return {
+              chunkIndex: outcome.chunkIndex,
+              text: outcome.repairedText,
+            };
+          },),
+        },),
         findings: [
           ...alignmentFindings,
           ...outcomes.flatMap(function toFindings(done,) {
