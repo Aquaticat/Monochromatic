@@ -197,5 +197,80 @@ She purrs.
 `,);
       },
     },),
+    it({
+      name: 'separates an anchor from the span it sits at the END of, even though that span is itself '
+        + 'replaced: composition reads the document as it stands when the anchor is written, and the '
+        + 'replacement lands afterwards',
+      fn: async () => {
+        /** Archive whose first paragraph is rewritten and followed by an insertion. */
+        const targetText = `## Intro
+
+The cat sleeps.
+
+## Habits
+
+She purrs.
+`;
+
+        /** Where the paragraph being replaced begins. */
+        const startOffset = targetText.indexOf('The cat sleeps.',);
+
+        /** Where it ends, which is also the boundary the anchor names. */
+        const endOffset = startOffset + 'The cat sleeps.'.length;
+        expect(spliceSlices({
+          targetText,
+          slices: [
+            {
+              source: {
+                chunkIndex: 0,
+                nodes: [],
+                startOffset: 0,
+                endOffset: 0,
+                text: '猫猫睡着了。',
+              },
+              target: {
+                chunkIndex: 0,
+                nodes: [],
+                startOffset,
+                endOffset,
+                text: 'The cat sleeps.',
+              },
+            },
+            {
+              source: {
+                chunkIndex: 1,
+                nodes: [],
+                startOffset: 0,
+                endOffset: 0,
+                text: '她伸了个懒腰。',
+              },
+              target: makeInsertionChunk({
+                chunkIndex: 1,
+                offset: endOffset,
+              },),
+            },
+          ],
+          replacements: [
+            {
+              chunkIndex: 0,
+              replacementText: 'The cat dozes.',
+            },
+            {
+              chunkIndex: 1,
+              replacementText: 'She stretches.',
+            },
+          ],
+        },),).toBe(`## Intro
+
+The cat dozes.
+
+She stretches.
+
+## Habits
+
+She purrs.
+`,);
+      },
+    },),
   ],
 },);

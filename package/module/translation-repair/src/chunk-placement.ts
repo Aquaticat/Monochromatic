@@ -58,10 +58,16 @@ type ChunkPosition = {
 };
 
 /**
- * Existing document text, backed by at least one node.
+ * Existing document text, named by the range it covers.
  *
  * `text` is the owning document sliced from `startOffset` to `endOffset`, so
  * inter-node blank lines inside the chunk are preserved.
+ *
+ * WHAT ASSEMBLY READS is that range and that text; the constructors here emit
+ * at least one node per chunk, but nothing downstream requires it, and the
+ * layout guard in `placement-layout.ts` accepts an empty `nodes` on a content
+ * chunk whose offsets and text agree. A test fixture naming a span directly is
+ * a legitimate value of this type rather than a malformed one.
  *
  * THE DISCRIMINANT IS OPTIONAL HERE and required on {@link InsertionChunk},
  * which is what lets every existing construction site stay as it is while an

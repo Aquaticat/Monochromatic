@@ -68,14 +68,13 @@ type PlacedReplacement = {
 
   /**
    * Target span it goes into, resolved from the slice list.
+   *
+   * NO SOURCE TEXT BESIDE IT. The original decides whether blank text may be
+   * written into a place that has nothing yet, and that question is answered
+   * where the pair is still in hand; carrying the answer's input forward would
+   * be a field nothing reads.
    */
   readonly span: DocumentChunk;
-
-  /**
-   * Original this slice renders, which decides whether blank text may be
-   * written into a place that has nothing yet.
-   */
-  readonly sourceText: string;
 };
 
 /**
@@ -266,11 +265,11 @@ function plannedEdits(
 /**
  * Rebuilds the translation with every replacement written in.
  *
- * Replacements apply in DESCENDING document order, so writing one never shifts
- * the offsets of those still pending. Replacements sharing one offset, which is
- * what several insertions into the same empty span look like, apply in
- * descending slice order for the same reason: each is written before the one
- * that precedes it, leaving them in document order.
+ * Edits apply in DESCENDING document order, so writing one never shifts the
+ * offsets of those still pending. An edit is not a replacement: every anchor
+ * sharing one boundary becomes a SINGLE edit whose fragments are joined in
+ * slice order, because the separators between them are decided once for the
+ * whole group rather than guessed at by each write in turn.
  *
  * @param targetText - translation the slices were cut from
  *
@@ -395,7 +394,6 @@ export function spliceSlices(
     return {
       replacement,
       span,
-      sourceText,
     };
   },);
   if (new Set(placed.map(function toIndex(entry,): number {
