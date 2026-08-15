@@ -279,5 +279,90 @@ await describe({
         expect(String(caught,),).toContain('9',);
       },
     },),
+    it({
+      name:
+        'accepts a NAMED unfilled slice under `refuse` and still refuses every other gap, which is the '
+        + 'difference between a lane that examined a passage and could not fill it and a lane that lost '
+        + 'one: the first can say which slices, the second cannot',
+      fn: async () => {
+        /**
+         * Wordings where the lane decided the first slice and could not fill
+         * the second.
+         */
+        const wordings = buildLaneSliceTexts({
+          slices: CAT_SLICES,
+          undecided: 'refuse',
+          decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+          unfilledChunkIndices: [1,],
+        },);
+        expect(wordings,).toHaveLength(2,);
+        expect(wordings[1]?.acceptedText,).toBe(undefined,);
+        expect(wordings[1]?.incumbentText,).toBe('The bowl is full.',);
+
+        /**
+         * Failure the same gap raises when nothing names it.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'refuse',
+            decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a slice reported as unfilled AND decided, since what the lane accepted there would be '
+        + 'unstated, and refuses one this preparation never produced, the same way it refuses a '
+        + 'decision naming a foreign slice',
+      fn: async () => {
+        /**
+         * Failure raised by a slice claimed twice.
+         */
+        let both: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'refuse',
+            decided: [
+              { chunkIndex: 0, text: 'The cat naps on the sill.', },
+              { chunkIndex: 1, text: 'The bowl is full.', },
+            ],
+            unfilledChunkIndices: [1,],
+          },);
+        }
+        catch (error) {
+          both = error;
+        }
+        expect(both,).toBeInstanceOf(LaneSliceCoverageError,);
+
+        /**
+         * Failure raised by an unfilled index from another slicing.
+         */
+        let foreign: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'refuse',
+            decided: [
+              { chunkIndex: 0, text: 'The cat naps on the sill.', },
+              { chunkIndex: 1, text: 'The bowl is full.', },
+            ],
+            unfilledChunkIndices: [7,],
+          },);
+        }
+        catch (error) {
+          foreign = error;
+        }
+        expect(foreign,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(foreign,),).toContain('7',);
+      },
+    },),
   ],
 },);

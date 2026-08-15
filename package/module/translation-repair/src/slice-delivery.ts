@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { isInsertionChunk, } from './chunk-placement.ts';
 import type { LaneSliceText, } from './lane-slice-text.ts';
 
 //region Slice delivery
@@ -58,6 +59,20 @@ export type SliceShipment = {
    * archive wording stands by default rather than by choice.
    */
   readonly kind: 'not-evaluated';
+} | {
+  /**
+   * Passage is MISSING from the document, and no lane decision could have put
+   * it there: the slice is an anchor, so the archive holds no wording for it,
+   * and this lane wrote none.
+   *
+   * A DISTINCT KIND rather than either neighbour, because both would read
+   * falsely. `incumbent-shipped` says the document carries the archive's own
+   * wording, and here there is none to carry; `not-evaluated` says the lane
+   * never reached the slice, which is a different fact with a different
+   * remedy, and is what a grader would count as unexamined rather than as
+   * still missing.
+   */
+  readonly kind: 'unfilled';
 };
 
 /**
@@ -151,6 +166,10 @@ export class SliceDeliveryError extends Error {
  *
  * @param blocked - whether the whole run refused before assembly
  *
+ * @param anchored - whether this slice names a place rather than covering
+ * existing text, which decides whether an undecided or unchanged slice leaves
+ * the archive's wording standing or leaves a passage missing
+ *
  * @returns Shipment naming why the shipped wording is what it is
  *
  * @throws {@link SliceDeliveryError} when the reports contradict each other
@@ -167,12 +186,14 @@ function decideShipment(
     shipped,
     withdrawn,
     blocked,
+    anchored,
   }: {
     readonly chunkIndex: number;
     readonly wording: LaneSliceText;
     readonly shipped: boolean;
     readonly withdrawn: boolean;
     readonly blocked: boolean;
+    readonly anchored: boolean;
   },
 ): SliceShipment {
   if (wording.acceptedText === undefined) {
@@ -183,7 +204,12 @@ function decideShipment(
         } and reports no decision, so the lane both did and did not reach it`,
       },);
     }
-    return { kind: 'not-evaluated', };
+    // An anchor with no decision is not an unexamined slice: there is nothing
+    // to examine and nothing to fall back on, so what the document carries
+    // there is a gap either way.
+    return anchored
+      ? { kind: 'unfilled', }
+      : { kind: 'not-evaluated', };
   }
 
   /**
@@ -204,8 +230,14 @@ function decideShipment(
       kind: 'replacement-withdrawn',
       reason: 'assembly-integrity',
     };
-  if (!decided)
-    return { kind: 'incumbent-shipped', };
+  if (!decided) {
+    // The archive's own wording stands, except where the archive has none:
+    // agreeing with a blank incumbent at an anchor leaves the passage missing,
+    // which `incumbent-shipped` would report as the archive being carried.
+    return anchored
+      ? { kind: 'unfilled', }
+      : { kind: 'incumbent-shipped', };
+  }
   if (blocked)
     return {
       kind: 'replacement-withdrawn',
@@ -360,6 +392,11 @@ export function buildSliceDelivery(
 
     /**
      * Why this slice's text is what the document carries.
+     *
+     * READS THE CHUNK for whether the archive holds any wording here, rather
+     * than taking a caller's word for it or testing the text for emptiness: the
+     * prepared pair is in hand, and it is the only place that distinguishes an
+     * anchor from a content span that happens to be blank.
      */
     const shipment = decideShipment({
       chunkIndex,
@@ -367,6 +404,7 @@ export function buildSliceDelivery(
       shipped: shipped.has(chunkIndex,),
       withdrawn: withdrawn.has(chunkIndex,),
       blocked,
+      anchored: isInsertionChunk(slice.target,),
     },);
 
     return {

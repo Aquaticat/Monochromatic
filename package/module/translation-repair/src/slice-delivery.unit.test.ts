@@ -12,6 +12,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   buildSliceDelivery,
+  type ChunkPair,
+  type LaneSliceText,
+  makeInsertionChunk,
   SliceDeliveryError,
 } from '../dist/final/node/index.mjs';
 
@@ -137,9 +140,107 @@ function everySliceUnchanged(): ReadonlyMap<number, string> {
   },),);
 }
 
+/**
+ * Fixture slices whose middle one is a place rather than existing text.
+ *
+ * @returns Prepared pairs with an anchor at index one
+ *
+ * @example
+ * ```ts
+ * const slices = anchoredSlices();
+ * ```
+ */
+function anchoredSlices(): readonly ChunkPair[] {
+  return preparedSlices().map(function toAnchored(
+    slice,
+    chunkIndex,
+  ): ChunkPair {
+    return (chunkIndex === 1)
+      ? {
+        source: slice.source,
+        target: makeInsertionChunk({
+          chunkIndex,
+          offset: 0,
+        },),
+      }
+      : slice;
+  },);
+}
+
+/**
+ * Lane wordings for {@link anchoredSlices}, whose anchor holds no archive
+ * wording to agree with.
+ *
+ * @param anchorDecided - whether the lane decided anything for the anchor
+ *
+ * @returns Wordings in document order
+ *
+ * @example
+ * ```ts
+ * const wordings = anchoredWordings({ anchorDecided: false, },);
+ * ```
+ */
+function anchoredWordings(
+  { anchorDecided, }: { readonly anchorDecided: boolean; },
+): readonly LaneSliceText[] {
+  return [
+    {
+      chunkIndex: 0,
+      incumbentText: INCUMBENTS[0],
+      acceptedText: INCUMBENTS[0],
+    },
+    {
+      chunkIndex: 1,
+      incumbentText: '',
+      // Deciding the blank is what a lane does when it agrees with an
+      // incumbent, and at an anchor the incumbent is nothing at all.
+      ...(anchorDecided ? { acceptedText: '', } : {}),
+    },
+    {
+      chunkIndex: 2,
+      incumbentText: INCUMBENTS[2],
+      acceptedText: INCUMBENTS[2],
+    },
+  ];
+}
+
 await describe({
   name: buildSliceDelivery.name,
   children: [
+    it({
+      name: 'reads a slice the archive never translated as UNFILLED rather than as the archive standing '
+        + 'or as unexamined. Both neighbours read falsely there: one says the document carries the '
+        + 'archive`s own wording, of which there is none, and the other says nobody looked',
+      fn: async () => {
+        /** Ledger over an anchor the lane reached and could not fill. */
+        const undecided = buildSliceDelivery({
+          slices: anchoredSlices(),
+          wordings: anchoredWordings({ anchorDecided: false, },),
+          shippedChunkIndices: [],
+          withdrawnChunkIndices: [],
+          blocked: false,
+        },);
+        expect(undecided[1]?.shipment
+          .kind,).toBe('unfilled',);
+
+        /** Same anchor, with the lane agreeing with the blank it found. */
+        const agreed = buildSliceDelivery({
+          slices: anchoredSlices(),
+          wordings: anchoredWordings({ anchorDecided: true, },),
+          shippedChunkIndices: [],
+          withdrawnChunkIndices: [],
+          blocked: false,
+        },);
+        expect(agreed[1]?.shipment
+          .kind,).toBe('unfilled',);
+        // Every content slice still reads exactly as it did: this changes what
+        // an ANCHOR means and nothing else.
+        expect(agreed[0]?.shipment
+          .kind,).toBe('incumbent-shipped',);
+        expect(agreed[2]?.shipment
+          .kind,).toBe('incumbent-shipped',);
+      },
+    },),
     it({
       name: 'names every fate a slice can meet in one pass: a shipped replacement, one the assembly '
         + 'guard took back, a slice the lane examined and left alone, and the source beside each, which '

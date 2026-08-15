@@ -19,8 +19,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  absenceFinding,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  makeInsertionChunk,
   prepareDocumentPair,
   RosterConfigurationError,
   type SyntheticClient,
@@ -64,6 +66,21 @@ On the windowsill there is being a bird.
  * collapses to one fresh candidate and the judges have a clear winner.
  */
 const FRESH = 'The cat naps on the windowsill.';
+
+/**
+ * Original the anchored case leaves untranslated, and the section it belongs
+ * to.
+ */
+const MISSING_SOURCE = '## 第三节\n\n猫猫也喜欢晒太阳。';
+
+/**
+ * Stand-in for "no slice is silenced", which every case but the anchored one
+ * uses.
+ *
+ * A NEEDLE NO PROMPT CARRIES rather than an empty string, since every prompt
+ * contains an empty string and every translator would fall silent.
+ */
+const SILENT_FOR_NOTHING = 'a passage no fixture contains';
 
 /**
  * Renders one slice the way a translator that respected block structure would.
@@ -195,6 +212,10 @@ function pickCandidate(
  * @param silentTranslators - whether every translate call fails, standing in for
  * a provider that is down while the signal stays live
  *
+ * @param silentForSource - original whose slice every translator fails on,
+ * absent when none does; this is how one slice is made unfillable while the
+ * rest of the document translates normally
+ *
  * @returns Client honoring the script
  *
  * @example
@@ -208,11 +229,13 @@ function laneClient(
     controller,
     abortAfterTranslateCalls,
     silentTranslators = false,
+    silentForSource = SILENT_FOR_NOTHING,
   }: {
     readonly calls: CallLog;
     readonly controller: AbortController;
     readonly abortAfterTranslateCalls?: number;
     readonly silentTranslators?: boolean;
+    readonly silentForSource?: string;
   },
 ): SyntheticClient {
   return {
@@ -250,6 +273,11 @@ function laneClient(
           throw new Error('exchange torn down by abort',);
         if (silentTranslators)
           throw new Error('translator provider is down',);
+        // ONE SLICE rather than the roster: every translator fails on this
+        // original and answers normally on every other, which is what makes a
+        // single passage unfillable while the document around it settles.
+        if (content.includes(silentForSource,))
+          throw new Error('translator lost its voice on this passage',);
         calls.translate += 1;
 
         /**
@@ -329,6 +357,8 @@ async function runDriver(
     resumed = new Map<string, TranslateSliceRecord>(),
     abortAfterTranslateCalls,
     silentTranslators = false,
+    silentForSource = SILENT_FOR_NOTHING,
+    anchorSource,
     persisted = new Map<string, TranslateSliceRecord>(),
     calls = {
       translate: 0,
@@ -342,6 +372,8 @@ async function runDriver(
     readonly resumed?: ReadonlyMap<string, TranslateSliceRecord>;
     readonly abortAfterTranslateCalls?: number;
     readonly silentTranslators?: boolean;
+    readonly silentForSource?: string;
+    readonly anchorSource?: string;
     readonly persisted?: Map<string, TranslateSliceRecord>;
     readonly calls?: CallLog;
   },
@@ -350,6 +382,44 @@ async function runDriver(
    * Run steering, which the script may abort part way through the document.
    */
   const controller = new AbortController();
+
+  /**
+   * Preparation as the slicer produces it today, with only content slices.
+   */
+  const sliced = prepareDocumentPair({
+    sourceText,
+    targetText,
+  },);
+
+  /**
+   * That preparation, with one source section the archive never translated
+   * appended as an anchor at the end of the document.
+   *
+   * BUILT BY HAND because nothing produces an anchor yet: landings four and
+   * five of `#100` are the producers, and this driver has to refuse the wrong
+   * answers before they arrive.
+   */
+  const prepared = (anchorSource === undefined) ? sliced : {
+    ...sliced,
+    slices: [
+      ...sliced.slices,
+      {
+        source: {
+          chunkIndex: sliced.slices
+            .length,
+          nodes: [],
+          startOffset: 0,
+          endOffset: 0,
+          text: anchorSource,
+        },
+        target: makeInsertionChunk({
+          chunkIndex: sliced.slices
+            .length,
+          offset: targetText.length,
+        },),
+      },
+    ],
+  };
 
   /**
    * What the lane decided for the whole document.
@@ -362,11 +432,9 @@ async function runDriver(
         ? {}
         : { abortAfterTranslateCalls, }),
       silentTranslators,
+      silentForSource,
     },),
-    prepared: prepareDocumentPair({
-      sourceText,
-      targetText,
-    },),
+    prepared,
     models: MODELS,
     signal: controller.signal,
     perCallTimeoutMs: 1_000,
@@ -388,6 +456,7 @@ async function runDriver(
     result,
     calls,
     persisted,
+    prepared,
   };
 }
 
@@ -1001,6 +1070,53 @@ The cat is doing the sleeping on the windowsill.
           .translateAttempts * 2,);
         expect(twin.persisted
           .size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'SETTLES A DOCUMENT whose one unfillable passage has no translation in the archive, names '
+        + 'that passage rather than reporting it as a slice the judges left alone, and caches nothing '
+        + 'for it, so the next run asks again while every other slice keeps what it cost',
+      fn: async () => {
+        const {
+          result,
+          persisted,
+          prepared,
+        } = await runDriver({
+          anchorSource: MISSING_SOURCE,
+          silentForSource: MISSING_SOURCE,
+        },);
+
+        /** Index the appended anchor holds. */
+        const anchorIndex = prepared.slices
+          .length - 1;
+        // The entry SETTLED: one refused passage does not cost the document.
+        expect(result.sliceCount,).toBe(prepared.slices
+          .length,);
+        expect(result.unfilledChunkIndices,).toEqual([anchorIndex,],);
+        expect(result.findings,).toContain(
+          `${absenceFinding({ reason: 'no-candidate', },)} chunk ${String(anchorIndex,)}`,
+        );
+        // No record for a slice that produced nothing, and one row per prepared
+        // slice all the same, so a reader joining the lanes sees the whole
+        // document rather than a shorter one.
+        expect(result.slices
+          .length,).toBe(prepared.slices
+          .length - 1,);
+        expect(result.sliceTexts
+          .length,).toBe(prepared.slices
+          .length,);
+        expect(result.sliceTexts[anchorIndex]
+          ?.acceptedText,).toBe(undefined,);
+        // NOTHING CACHED for it, which is what makes the next run ask again;
+        // every other slice was heard and persisted.
+        expect(persisted.size,).toBe(result.slices
+          .length,);
+        // The document carries the gap the archive came with: the anchor ships
+        // nothing, and the slices around it are unaffected.
+        expect(result.shippedChunkIndices,).not.toContain(anchorIndex,);
+        expect(result.translatedText,).toContain(FRESH,);
+        expect(result.translatedText,).not.toContain('晒太阳',);
       },
     },),
   ],

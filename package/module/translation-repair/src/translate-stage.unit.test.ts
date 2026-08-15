@@ -522,24 +522,22 @@ await describe({
         + 'judges counted',
       fn: async () => {
         /** Refusal the declined round raised. */
-        const raised = await runLane({
-          translations: {
-            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
-          },
-          needle: '',
-          incumbentText: '',
-          incumbentKind: 'absent',
-        },)
-          .then(
-            function settled(): unknown {
-              return undefined;
+        let raised: unknown;
+        try {
+          await runLane({
+            translations: {
+              'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+              'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+              'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
             },
-            function refused(error: unknown,): unknown {
-              return error;
-            },
-          );
+            needle: '',
+            incumbentText: '',
+            incumbentKind: 'absent',
+          },);
+        }
+        catch (error) {
+          raised = error;
+        }
         expect(raised instanceof TranslateAbsenceError,).toBe(true,);
         if (!(raised instanceof TranslateAbsenceError))
           throw new Error('expected the absent-mode refusal',);
