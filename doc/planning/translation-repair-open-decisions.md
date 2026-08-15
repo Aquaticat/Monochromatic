@@ -98,6 +98,34 @@ Same slice, same width, same roster, minutes apart. Any difference between
 widths smaller than that is noise, which is exactly why the repeat was built in
 before the sweep rather than after.
 
+AT 22 ROWS OF 60 THE BAND HAS NOT NARROWED. Four slices are finished, and the
+width-four repeat flipped the outcome on two of them and moved the winning
+weight on a third:
+
+    Mio#5            pass 1 replaced at 4.5   pass 2 declined, kept
+    aiyysk#39        pass 1 replaced at 3.5   pass 2 declined, kept
+    zhangyubaka#23   pass 1 replaced at 5.5   pass 2 replaced at 2.5
+    noname#9         pass 1 replaced at 3.0   pass 2 replaced at 5.5
+
+That is the same slice, the same width and the same roster each time. I expect
+this to decide the shape of the answer more than the width sweep does: if the
+sweep lands inside this band, the honest reading is that width does not
+measurably change agreement on ten slices, not that some width won.
+
+ONE EARLY TENDENCY, on four slices and so not yet a rate: the lane replaced the
+archive translation in 17 of those 22 rows, at every width including two. If
+that holds across the sample it matters more than the width question, because it
+says the judges prefer fresh text over the human translation most of the time,
+and `#84` is what would tell us whether they are right to.
+
+WHAT THIS BENCH DOES NOT MEASURE: every slice it drew already has a translation,
+94 to 302 characters so far. The numbers therefore describe preserve-or-replace
+only. Filling a GAP, a slice whose incumbent is blank, is the case the new shape
+exists for, and no row here covers it: the draw is stratified by source size over
+slices the aligner paired, and one-sided sections are not sliced at all, which is
+`#90`. Nothing in this question needs a redraw to answer, but no answer here
+transfers to the gap case.
+
 ### Options
 
 A.  Fixed count in run configuration, named and commented, e.g.
@@ -379,6 +407,13 @@ seat until then anyway.
     half reach the minimum with no outside judge. I kept it, because agreement
     to the byte between independent models is itself the corroboration, and
     pinned both it and the three-contributor case that falls short in tests.
+    THE ALTERNATIVE, which an external reviewer proposed and I did not take:
+    require at least one FULL-weight ballot on the winner, which would refuse
+    that four-way agreement outright. I left it for you because it is a new rule
+    on top of the weighting you chose rather than an implementation of it, and
+    because it would also block the case where four models agree and the two
+    remaining judges simply went quiet. Say the word and it is a three-line
+    change plus its tests.
 7.  IDENTICAL CANDIDATES NOW MERGE THEIR AUTHORS in the editor and naturalness
     lanes. They did not, so a model could vote at full weight for its own words
     whenever another model wrote them first, and the ballot split across
@@ -388,7 +423,13 @@ seat until then anyway.
     slate is rotated per slice, so a stored ballot could not be joined to any
     text afterwards. Judges still see anonymous positions; provenance is
     attached to the record after the round.
-6.  The source-side slice budget is now derived from the whole document pair
+9.  The source-side slice budget is now derived from the whole document pair
     rather than from one section, and capped at the target budget. Reasoning in
     `#90`; the cap encodes that Chinese runs shorter than its English rendering,
     so a ratio above one is missing translation rather than density.
+10. A SELECTION ROUND NOW REFUSES A ROSTER NAMING ONE MODEL TWICE, before it
+    spends a call. The stage guard already refused that, but two of the
+    selection entry points are reachable without the stage, and a repeat there
+    bought two exchanges from one model, which is two ballots and enough to
+    reach the minimum weight alone. Refused rather than silently deduplicated,
+    since a caller that passed a repeat believes it has more judges than it has.
