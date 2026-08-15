@@ -188,6 +188,12 @@ consumers and deployment are deliberately out of scope for now.
 
 PICK UP HERE (2026-08-14, after the translate stage landed).
 
+READ FIRST, if you are the user coming back to this:
+`doc/planning/translation-repair-open-decisions.md`.
+It holds the four questions that need your answer, each with options, pros,
+cons, a ranking and the measurements taken to make the question answerable.
+Everything below is the state those questions sit in.
+
 STATE: NO PASS IS RUNNING, deliberately.
 `pass16` was stopped on 2026-08-14 with zero artifacts settled, on the user's
 ruling that there is no cost to stopping a to-be-discarded entry mid-flight:
@@ -225,7 +231,16 @@ WHAT NEEDS YOU, in the order it blocks work:
     to come from you or from a measurement nobody has taken.
 2.   A policy answer for the TRANSCRIBED-IMAGE class, unchanged and now urgent.
     Chinese pages hold letters as images; English pages transcribe and translate
-    them. Roughly 31 thousand characters corpus-wide, 6 entries verified.
+    them.
+    The class is now ENUMERATED, replacing the older "roughly 31 thousand
+    characters, 6 entries verified", which reproduces from no measurement I can
+    take: 8 target-only blockquotes over 1000 characters, across 6 entries,
+    15299 characters, sitting inside a wider target-only population of 132
+    blocks and 44731 characters that also holds translator apparatus and
+    alignment slop.
+    Exactly one transcription is invisible to that structural test, `shihai4h`
+    at 102 source characters against 1665, because it was transcribed INTO a
+    quote the Chinese also carries.
     A source-only translator has no source for that text and a source-only judge
     cannot tell dropping it from correctly omitting it.
     Your standing ruling, keep accurate translator additions, says it must

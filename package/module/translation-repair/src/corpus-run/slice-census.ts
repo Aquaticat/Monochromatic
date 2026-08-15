@@ -97,6 +97,13 @@ type EntryCensus = {
 
   /**
    * Sections subdivision returned whole because one side carried no blocks.
+   *
+   * Measured against the CURRENT aligner, which pairs every section it is
+   * given, including by character fraction when structure disagrees. A zero
+   * here therefore says nothing about the aligner `#74` is building, whose
+   * whole purpose is to leave a section unpaired rather than pair it wrongly.
+   * The unsliced path this counts is latent, not absent, and goes live the day
+   * that aligner lands.
    */
   readonly onesidedSections: number;
 

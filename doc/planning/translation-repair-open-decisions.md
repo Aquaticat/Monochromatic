@@ -124,8 +124,19 @@ measured yet.
 ## Question 2: the transcribed-image class
 
 BLOCKS nothing mechanically, and is the largest known quality risk in the new
-shape. Measured overnight at 132 blocks over 39 entries and 44731 characters,
-which is an upper bound that includes ordinary paragraph splits.
+shape. The class is now enumerated rather than estimated: 8 blockquotes over 6
+entries, 15299 characters, sitting inside a wider target-only population of 132
+blocks and 44731 characters that also holds translator apparatus and alignment
+slop.
+
+WHICH NUMBER COUNTS WHAT, since three have been in circulation and they are not
+the same population. 44731 is every block the translation carries that no
+source block partnered, apparatus and slop included. 16249 is the blockquote
+part of it. 15299 is the 8 blockquotes over 1000 characters, which is the
+transcription class itself. The handover's older "roughly 31 thousand
+characters, 6 entries verified" reproduces from none of these, so it should not
+be carried forward: it appears to have counted whole English blockquotes in the
+named entries rather than the part with no Chinese counterpart.
 
 Chinese pages hold letters and documents as IMAGES. English pages transcribe
 and translate them. So the English carries text with no counterpart in the
@@ -144,56 +155,75 @@ the lane yet makes that happen.
 
 ### Measured overnight, and it changes the options
 
-Three measurements, all from the pinned corpus, none spending quota.
+Four measurements, all from the pinned corpus, none spending quota.
 
-THE CLASS IS BIGGER THAN RECORDED. The handover carried "roughly 31 thousand
-characters, 6 entries verified". The aligner's own step kinds report 132 blocks
-the translation carries that no source block partnered, across 39 entries and
-44731 characters. That is an upper bound rather than the class itself, since an
-ordinary paragraph split also produces a target-only block.
+A CORRECTION FIRST. An earlier draft of this section said the image is not in
+the markdown at all, and drew conclusions from it. That was wrong, and it was
+wrong because the search was: it looked for Markdown image syntax and for the
+string `img`. The corpus writes images as an MDX component instead, and
+`<PhotoScroll ...>` appears in 50 of 92 entries, matching on both sides in 49
+of them. The one exception is `shi_Yumiaoya`, whose Chinese page carries a
+photo block the English page does not. Everything the earlier draft concluded
+from the absence is struck.
 
-THE SPLIT IS LEGIBLE BY SIZE, which is what separates the two:
+WHAT THE 132 TARGET-ONLY BLOCKS ARE MADE OF. This is the measurement the
+options actually turn on, and no earlier draft had it:
 
-    target-only block chars   n 132, p50 116, p90 512, p99 3625, max 10737
+    blockquote            17 blocks   16249 chars
+    paragraph             87 blocks   14370 chars
+    mdxFlowExpression      7 blocks   11179 chars
+    footnoteDefinition    16 blocks    2746 chars
+    list                   1 block       160 chars
+    heading                2 blocks       21 chars
+    thematicBreak          2 blocks        6 chars
 
-A median target-only block is 116 characters, which is a sentence a translator
-moved or a paragraph they split. The tail is different in kind: the largest is
-10737 characters in one block, in `shihai4h`, which also owns the largest
-target-only count at 21 blocks and 13321 characters.
+Three populations, not one. The blockquotes are the transcriptions. The
+`mdxFlowExpression` blocks are translator apparatus: the largest single
+target-only block in the corpus, 10737 characters in `shihai4h`, is a
+commented-out block of localization notes, and the footnote definitions are the
+citation apparatus the translator added to go with them. The 87 paragraphs are
+mostly ordinary alignment slop, a sentence moved or a paragraph split, at 165
+characters each on average.
 
-THE IMAGE IS NOT IN THE MARKDOWN AT ALL, and this is the finding that changes
-the options. I expected to detect the class by looking for an image beside the
-untranslated text, and measured zero: not one of the 132 target-only blocks
-sits in a section whose source carries Markdown image syntax. Widening the
-search, only 2 of 92 source pages mention `img` in any form, and `shihai4h`,
-the entry this class is most present in, mentions none on either side.
+THE TRANSCRIPTIONS ARE EXACTLY THE BIG TARGET-ONLY BLOCKQUOTES, and they match
+the entries `doc/planning/translation-pipeline-redesign.md` named by hand:
 
-So the picture lives outside `page.md` entirely, in the corpus's own data files
-rather than in the document this pipeline reads. Two consequences:
+    Zha_Ke          3625     zheermao101   2115 + 1071
+    Mio      2052 + 1882     MizuharaNagisa      1969
+    dogesir_        1487     wangzihao980        1098
 
--   Option B is larger than it looked. Supplying the image means reaching into
-    corpus data the pipeline has never opened, not attaching something already
-    in hand.
--   Option A cannot key on images, because there are none to key on. It has to
-    protect target-only blocks as such, and then the question is whether it
-    protects all 132 or only the long tail, which is a threshold and therefore
-    the kind of number you have rejected before. Protecting all 132 is the
-    version with no threshold in it, and its cost is mild: a 116-character
-    block that was a paragraph split simply is not retranslated.
+That is 8 blocks over 6 entries, and it answers the question the earlier draft
+could not: the class does land in the target-only population, so a structural
+rule can reach it.
+
+ONE TRANSCRIPTION IS NOT TARGET-ONLY, and it is the reason a size test alone is
+not enough. Across the corpus there are 210 aligned blockquote pairs, and their
+growth band is narrow: p50 2.71, p90 3.68. Exactly one pair sits outside it,
+`shihai4h` at 102 characters against 1665, a ratio of 16.3. That is a letter
+transcribed INTO a quote the Chinese also has, so it is aligned as an ordinary
+pair and no target-only rule will ever see it. It is one block in one entry,
+and the ratio band says a paired quote over five times its source is the test
+that finds it without catching ordinary growth.
 
 ### Options
 
-A.  Protect the class deterministically: detect target-only blocks that have no
-    source counterpart, exclude them from translation, and splice them back
-    unchanged.
+A.  Protect the class structurally: keep every target-only block out of
+    translation and splice it back unchanged, and add the paired-quote ratio
+    guard for the one merged case.
     Pros: the transcription cannot be lost by any model decision; cheap; no
-    model has to be told anything.
-    Cons: needs a reliable "no counterpart" test, and the aligner is the
-    component with the worst track record in this pipeline.
+    model has to be told anything; now measurable rather than hypothetical,
+    since the population it protects is enumerated above.
+    Cons: rests on the aligner, the component with the worst track record in
+    this pipeline, and the aligner is being rebuilt under `#74`. It also
+    protects the 87 alignment-slop paragraphs, which simply are not
+    retranslated; at 165 characters each that is a small amount of text left
+    exactly as it stands.
 
 B.  Supply the image to the translators and judges, so the text has a source.
-    Pros: the only option where the translation of that text can actually be
-    checked; would also catch a bad existing transcription.
+    Pros: the only option where the translation of that text can be CHECKED
+    rather than preserved; would also catch a bad existing transcription; and
+    the component naming the image file is right there in the markdown, so
+    finding the asset is a path resolution rather than a new corpus reader.
     Cons: needs image transport and models that read images, which this
     provider roster may not have; and OCR of handwritten Chinese letters is its
     own failure surface.
@@ -205,13 +235,19 @@ C.  Licence it as evidence: pass the incumbent's target-only blocks to the
     Cons: tells the judges what to believe rather than letting them check, and
     the incumbent's additions are exactly what nobody has verified.
 
-RANKING: A > C > B.
+RANKING: A > C > B, unchanged by the measurements, though A is now a smaller
+and better-specified piece of work than when it was ranked.
 
 A over C because A cannot be talked out of by a model, while C depends on every
 judge weighing an instruction the same way.
 C over B because B needs capabilities the roster may not have, and its OCR
 failure mode replaces a known-good human transcription with a machine guess,
 which is the one outcome worse than losing it.
+
+WHAT I WOULD DO WITHOUT AN ANSWER: build A for target-only blocks, since it is
+structural and needs no decision from you, and leave the paired-quote guard
+alone until you have ruled, because that one is a threshold and thresholds are
+yours to set.
 
 ## Question 3: does the critic stage survive
 
