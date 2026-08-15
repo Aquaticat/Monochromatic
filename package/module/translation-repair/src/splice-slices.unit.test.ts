@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  makeInsertionChunk,
   repairReplacements,
   type SliceReplacement,
   spliceSlices,
@@ -97,6 +98,51 @@ function chunkAt(
   return {
     source: side,
     target: side,
+  };
+}
+
+
+/**
+ * Builds one pair whose target side is an INSERTION ANCHOR at an offset.
+ *
+ * Zero-length spans used to be written as ordinary chunks covering nothing,
+ * which is exactly the ambiguity `chunk-placement.ts` removes: a span covering
+ * no text and a place where text is missing look identical from their offsets
+ * alone, and only one of them may be written into.
+ *
+ * @param chunkIndex - position of this slice
+ *
+ * @param offset - boundary in {@link TARGET_TEXT} new text is written at
+ *
+ * @returns Pair whose target names that boundary
+ *
+ * @example
+ * ```ts
+ * const pair = anchorAt({ chunkIndex: 2, offset: FINAL_START, },);
+ * ```
+ */
+function anchorAt(
+  {
+    chunkIndex,
+    offset,
+  }: {
+    readonly chunkIndex: number;
+    readonly offset: number;
+  },
+) {
+  return {
+    // Never read by splicing, which writes into the target side only.
+    source: {
+      chunkIndex,
+      nodes: [],
+      startOffset: 0,
+      endOffset: 0,
+      text: '猫',
+    },
+    target: makeInsertionChunk({
+      chunkIndex,
+      offset,
+    },),
   };
 }
 
@@ -378,10 +424,9 @@ await describe({
                 0,
                 2,
               ),
-              chunkAt({
+              anchorAt({
                 chunkIndex: 2,
-                startOffset: FINAL_START,
-                endOffset: FINAL_START,
+                offset: FINAL_START,
               },),
             ],
             replacements: [
@@ -412,15 +457,13 @@ await describe({
                 0,
                 2,
               ),
-              chunkAt({
+              anchorAt({
                 chunkIndex: 2,
-                startOffset: FINAL_START,
-                endOffset: FINAL_START,
+                offset: FINAL_START,
               },),
-              chunkAt({
+              anchorAt({
                 chunkIndex: 3,
-                startOffset: FINAL_START,
-                endOffset: FINAL_START,
+                offset: FINAL_START,
               },),
             ],
             replacements: [
@@ -473,10 +516,9 @@ await describe({
             targetText: TARGET_TEXT,
             slices: [
               ...SLICES,
-              chunkAt({
+              anchorAt({
                 chunkIndex: 0,
-                startOffset: FINAL_START,
-                endOffset: FINAL_START,
+                offset: FINAL_START,
               },),
             ],
             replacements: [

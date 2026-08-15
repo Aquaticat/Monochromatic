@@ -9,6 +9,7 @@ import {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 import { parseDocument, } from './parse-document.ts';
+import { assertPlacementLayout, } from './placement-layout.ts';
 import {
   assertSliceIndexing,
   reindexSlicePair,
@@ -226,6 +227,14 @@ export function prepareDocumentPair(
   // stamping than this, and none of them could tell a mis-stamped preparation
   // from a strange document.
   assertSliceIndexing({ slices, },);
+
+  // AND WHERE THEY POINT, which indexing says nothing about. Every span here
+  // comes from a disjoint run of nodes, so this holds by construction today and
+  // stops doing so the moment `#100` adds a slice that covers no nodes at all.
+  assertPlacementLayout({
+    slices,
+    targetText,
+  },);
 
   return {
     sourceText,

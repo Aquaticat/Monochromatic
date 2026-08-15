@@ -2,6 +2,7 @@ import type {
   ChunkPair,
   DocumentChunk,
 } from './chunk-document.ts';
+import { assertPlacementLayout, } from './placement-layout.ts';
 
 //region Slice splicing
 // Rebuilding a whole translation from per-slice results.
@@ -120,6 +121,17 @@ export function spliceSlices(
         + 'on the other',
     );
   }
+
+  // AFTER identity, BEFORE any offset is read. Assembly is where a malformed
+  // span does its damage, because slicing a string clamps: a span running
+  // past the end, or backwards, produces plausible text rather than a
+  // failure. Identity comes first because a list that names one slice twice
+  // is a caller disagreeing with the slicer, which explains every offset
+  // complaint that would follow it.
+  assertPlacementLayout({
+    slices,
+    targetText,
+  },);
 
   /**
    * Replacements paired with the span each names, refusing anything that

@@ -18,6 +18,10 @@ export {
   SliceIndexingError,
 } from './slice-indexing.ts';
 export {
+  assertPlacementLayout,
+  PlacementLayoutError,
+} from './placement-layout.ts';
+export {
   buildSliceDelivery,
   SliceDeliveryError,
   type SliceDeliveryRecord,
