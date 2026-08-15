@@ -6,6 +6,44 @@ Each one reverses or narrows an earlier choice recorded in
 `doc/handover/translation-repair.md`, so this document is canonical for all
 three and the older passages are history.
 
+## The standing rule: one model's bad day must not delay the pipeline
+
+User, 2026-08-14:
+"The failure of any one model for the day must not delay the pipeline."
+
+This is the principle the rest of this document applies, and it is wider than
+any one mechanism.
+A model that answers nothing, or answers very slowly, is an ordinary operating
+condition on this provider rather than an incident, and the pipeline is expected
+to keep its throughput through one.
+
+Two mechanisms are measured against it here, and they land differently:
+
+-   RETRY TARGET, addressed: waiting for a whole roster spent four deadlines per
+    gather on a voice that was not coming, which is delay in its purest form.
+    Removed.
+-   ROUND COMPLETION, addressed the same day: a round awaited every call
+    together, so a stage finished no sooner than its SLOWEST voice even once
+    quorum stood, and one model hanging until its deadline delayed every stage
+    that seated it by up to 360 seconds.
+    A round now abandons whatever is still in flight sixty seconds after quorum,
+    `STRAGGLER_GRACE_MS` in `stage-round.ts`.
+
+Cutting AT quorum was offered as the alternative and rejected by the user in
+favour of the grace window.
+The reason is arithmetic rather than caution: quorum on a roster of three is
+two, so cutting there would discard the third voice on nearly every gather,
+healthy or not, and shrink every ensemble to its minimum permanently.
+A window separates the two cases, because a working third model answers within
+seconds of the second and a hung one never answers at all.
+Sixty seconds is the user's figure and is not derived from the latency
+distribution; run 013 measured time-to-first-byte at p50 45_837 ms and p90
+163_296 ms, so it should be re-read against a measured one.
+
+The round assembles its result from what ARRIVED rather than by awaiting the
+calls it abandoned, so a client that ignored an abort would cost a voice rather
+than hang the stage.
+
 ## No stage waits for its whole roster
 
 `gatherStageVoices` retries lost voices and stops at QUORUM, at least half the
@@ -121,19 +159,95 @@ without them, and they identify nobody.
     Reasons reached a log line and nothing durable before, and one lost pipe on
     2026-08-13 erased twenty minutes of them.
 
-## What is still open
+## Every producing role widens, and self-certification is weighed too
 
-Roster width.
-Editors and refiners sit at three because producers could not judge, and that
-reason is gone.
-What still bounds them is not selection but CHECKER DISJOINTNESS: checkers
-exclude every editor and refiner, so a fourth editor leaves two checkers at a
-quorum of one, which is the single-voice failure the 2026-08-12 roster change
-closed.
-Beside it sit the two-disinterested-judge floor, now a policy rather than a
-necessity, and judge quality, which `#84` has not measured.
+User ruling, 2026-08-14, asked as a choice between holding the producing roles
+where they were and widening them:
+"All producing roles to 4, just assign lower weights to self-certification."
+
+Followed by the constraint that decides how it is written:
+"The provider updates their offerings frequently. Don't hardcode magic numbers
+like 4 or 6."
+
+### What the widening is NOT bounded by
+
+A first version of this section derived the four as "roster size minus the
+full-weight judges a selection needs", on the claim that models had to stay
+outside a producing role for full-weight ballots to exist at all.
+That claim is FALSE, and it is the second time the same error was written down
+in one day, so it is recorded here rather than quietly deleted.
+
+The discount attaches to a JUDGE AND CANDIDATE PAIR.
+A candidate's full-weight judges are everyone who did not write THAT candidate,
+which is nearly the whole roster however many models produce.
+Seat every model as an editor and a candidate by one of them still draws
+full-weight ballots from every other one; only its own author is discounted.
+Nothing about selection breaks, and nothing about it sets a ceiling.
+
+### What actually moves with roster width
+
+-   COST. Each added producer is another call per slice, and each candidate it
+    adds becomes repeated input to every judge in the selection round. The
+    growth is worse than linear in producers for that reason.
+-   AGREEMENT. Ballots spread thinner across more distinct candidates, so the
+    leader more often falls short of `MIN_SELECTION_WEIGHT` or ties. Both
+    outcomes decline, and a decline keeps the incumbent, so widening the
+    producers can quietly REDUCE how often anything is replaced.
+-   COVERAGE. More independent renderings of the same slice is the thing the
+    widening is for, on the user's own reasoning that these models have
+    different blind spots.
+
+None of those is a bound the code can compute. What the roster size expresses is
+a tradeoff, and the number therefore belongs in run configuration with its
+reasoning beside it, not in a derivation that pretends to necessity.
+
+### What is decided
+
+Checkers stop excluding producers.
+That WAS a real bound: checkers excluded every editor and refiner, so widening
+a producing role starved the checker roster, and the checkers left behind would
+have sat at a quorum of one, the single-voice failure the 2026-08-12 roster
+change closed.
+The ruling answers it by extending the selection discount to certification: a
+checker may certify text it helped write, and that verdict counts for less than
+a disinterested checker's.
+`assertCheckerIndependence` stops being a refusal and becomes a weighting,
+tracked as `#91`.
+
+What this does NOT decide, and what the implementation must not assume: the
+certification weight.
+`SELF_VOTE_WEIGHT` is a half by an argument about selection arithmetic that does
+not transfer, because resolution checking tallies verdicts about one claim
+rather than ranking candidates against each other.
+`#91` owns picking that number and saying what it rests on.
 
 One consequence to expect rather than discover: seating producers grew the
-full-weight panel for any given candidate from three judges to five, so tie and
-decline rates will move even where nothing else changed.
-`#84` inherits that too.
+full-weight panel for any given candidate, and widening the producing roles
+moves it again.
+Tie and decline rates will shift where nothing else changed, and `#84` inherits
+that too.
+
+## An invalid candidate is sent back to its author, not dropped
+
+User ruling, 2026-08-14, on what a whole-slice validator should do with a
+translation whose structure does not match the source.
+Three options were offered, to drop it, to show judges everything, or to drop
+only on reference damage, and all three were rejected:
+
+"The pipeline should try fixing it by giving the findings to the original model
+in the same chat, and the original model can say it can fix it, it can't fix it,
+or for whatever reason the broken candidate it produced is the best possible
+version for the information it has."
+
+So validation is a CONVERSATION rather than a filter.
+A candidate that fails carries its findings back to the model that wrote it, in
+the same exchange, and that model answers with a revision, an inability, or a
+defence of what it already produced.
+
+The third answer is the one no filter could ever have collected.
+A model that dropped a footnote marker because the definition it points at is
+not in this slice is telling the pipeline something about the SLICING rather
+than about itself, and a validator that silently dropped that candidate would
+have destroyed the only report of it.
+
+Tracked as `#88`.

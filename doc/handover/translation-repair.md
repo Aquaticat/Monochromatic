@@ -213,16 +213,16 @@ cutting no envelopes.
 
 WHAT NEEDS YOU, in the order it blocks work:
 
-1.   ROSTER WIDTH under the new voting rule.
-    Three models translate and three refine, out of six the provider offers,
-    and the reason was that producers could not judge: seating more of them
-    left too few disinterested judges.
-    That reason is gone as of 2026-08-14, and selection imposes no replacement
-    ceiling: the half-weight discount applies to a judge's ballot for its OWN
-    candidate only, so four editors judging each other's work select fine.
-    What actually bounds widening is CHECKER DISJOINTNESS, since checkers
-    exclude every editor and refiner and a fourth editor would leave two
-    checkers at a quorum of one.
+1.   HOW WIDE the producing roles should be, and how to WRITE that width.
+    You decided to widen them and separately ruled that provider counts must
+    not be hardcoded, since the offering changes often.
+    No structural bound survives to derive a number from: selection works with
+    every model producing, because the discount applies to a judge's ballot for
+    its OWN candidate only, and checker disjointness is being replaced by a
+    weighting under `#91`.
+    What moves with width is cost, ballot dilution and coverage, which is a
+    tradeoff rather than an arithmetic the code can settle, so the number needs
+    to come from you or from a measurement nobody has taken.
 2.   A policy answer for the TRANSCRIBED-IMAGE class, unchanged and now urgent.
     Chinese pages hold letters as images; English pages transcribe and translate
     them. Roughly 31 thousand characters corpus-wide, 6 entries verified.
