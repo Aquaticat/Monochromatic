@@ -80,9 +80,62 @@ tail):
         assert(priv.core_surface == null);
 ```
 
-`CoreSurface` owns the termio and therefore the pty and the child process, so no
-realize plus resize means no core surface, which means no `fork`/`exec` of the
-`-e` command at all.
+`CoreSurface` owns the termio and therefore the pty and the child process.
+The field is declared on the core surface (`src/Surface.zig:119`):
+
+```zig
+/// The terminal IO handler.
+io: termio.Termio,
+io_thread: termio.Thread,
+```
+
+`Surface.init` is the only place it is initialized, with the exec backend
+(`src/Surface.zig:654`):
+
+```zig
+        try termio.Termio.init(&self.io, alloc, .{
+            .size = size,
+            .full_config = config,
+            .config = try termio.Termio.DerivedConfig.init(alloc, config),
+            .backend = .{ .exec = io_exec },
+```
+
+and the same function spawns the thread that runs it (`src/Surface.zig:712`):
+
+```zig
+    self.io_thr = try std.Thread.spawn(
+        .{},
+        termio.Thread.threadMain,
+        .{ &self.io_thread, &self.io },
+    );
+```
+
+The child process is spawned from that thread and nowhere else
+(`src/termio/Exec.zig:84`, whose `threadEnter` runs on entry to the IO thread):
+
+```zig
+pub fn threadEnter(
+    self: *Exec,
+    alloc: Allocator,
+    io: *termio.Termio,
+    td: *termio.Termio.ThreadData,
+) !void {
+    // Start our subprocess
+    const pty_fds = self.subprocess.start(alloc) catch |err| {
+```
+
+`Subprocess.start` is what opens the pty and forks (`src/termio/Exec.zig:884`):
+
+```zig
+    pub fn start(self: *Subprocess, alloc: Allocator) !struct {
+        read: Pty.Fd,
+        write: Pty.Fd,
+    } {
+        assert(self.pty == null and self.process == null);
+```
+
+So no realize plus resize means no core surface, no `Surface.init`, no termio, no
+IO thread, and therefore no `fork`/`exec` of the `-e` command at all.
 That is consistent with every measurement above: GTK and the GL context are up,
 which is why the DRM render node is open, and nothing downstream of the surface
 exists.
@@ -147,6 +200,15 @@ WORKS, with the screen locker inactive:
 -   `ghostty -e hx <file>`
 -   a 91606-byte single argument built by `"$(cat prompt-file)"`
 -   several instances launched together with `--gtk-single-instance=false`
+
+STRENGTH OF THIS HALF OF THE CATALOG: the failing half was measured against a
+`GetActive` reading of `true` taken at the same moment.
+The working half was not; it is a timing correlation, since those runs happened
+while the user was at the machine and the screen was demonstrably in use.
+The reading is almost certainly `false` there, but nobody captured it.
+CLOSING THIS COSTS ONE HARNESS RUN: while the session is unlocked, run the block
+above and record the `GetActive` line beside the `RAN` marker.
+Do that before treating the correlation as measured.
 
 STALLS, with the screen locker active, all of them silently and identically:
 
