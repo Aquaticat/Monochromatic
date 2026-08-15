@@ -184,7 +184,9 @@ import type { RepairModels, } from './repair-contract.ts';
  * slices invalidated every slice after the change however untouched its text,
  * and `#100` renumbers by design, inserting a slice wherever a section has no
  * translation. Paying it here means that change, and every slicing change after
- * it, costs nothing. What a translator or an editor is asked is the source
+ * it, costs nothing IN RENUMBERING ALONE: moving a slice boundary, editing
+ * either text or changing its governance still misses, because each changes
+ * what the stages are asked. What a translator or an editor is asked is the source
  * text, the incumbent, the governance flag and the run shape; where the slice
  * sits is not part of the question, so it is not part of the key.
  */

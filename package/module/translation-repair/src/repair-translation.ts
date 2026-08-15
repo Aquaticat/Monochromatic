@@ -216,7 +216,9 @@ export async function repairPreparedDocument(
   const refusedCacheFindings: string[] = [];
   for (const slice of slices) {
     /**
-     * Global index of this slice, which every key and every outcome names.
+     * Global index of this slice, which every outcome and every replacement
+     * names. NOT part of the cache key since version 26: a key says what the
+     * stages are asked, and where a slice sits is not part of that question.
      */
     const { chunkIndex, } = slice.target;
 

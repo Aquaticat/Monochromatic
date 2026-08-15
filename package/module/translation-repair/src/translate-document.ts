@@ -77,8 +77,8 @@ import { settleTranslateSlice, } from './translate-slice.ts';
  *
  * @returns Reassembled translation with one settled record per slice
  *
- * @throws {@link Error} when a cached record names another slice, which means
- * the key derivation and the slicing disagree
+ * @throws {@link Error} when the roster cannot seat a stage, or when the caller
+ * aborts while this lane is buying
  *
  * @throws Whatever `signal.reason` carries, once the caller aborts with slices
  * still unbought; nothing settled under that abort is cached

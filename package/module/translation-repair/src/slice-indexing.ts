@@ -1,7 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
 
 //region Slice indexing
-// The one property every cache key, every splice and every cross-lane
+// The one property every splice, every lane result and every cross-lane
 // comparison rests on: a prepared slice's index is its position in the
 // preparation, and both of its sides agree about it.
 //
@@ -48,10 +48,12 @@ export class SliceIndexingError extends Error {
  *     `spliceSlices` keys on it alone, so a source side carrying some other
  *     number is unchecked everywhere it is used. Section pairing can produce
  *     exactly that, since a forced pair joins section 4 to section 6.
- * -   INDICES ARE POSITIONS. The cache key carries the index, the lane results
- *     name slices by it, and assembly maps replacements back through it. A
- *     duplicate would let one cached slice answer for another; a gap would make
- *     a range check pass while naming a slice that does not exist.
+ * -   INDICES ARE POSITIONS. The lane results name slices by the index, and
+ *     assembly maps replacements back through it, so a duplicate would let one
+ *     slice's text be spliced over another's span while a gap would make a
+ *     range check pass while naming a slice that does not exist. The cache key
+ *     no longer carries it, since version 26 and translate version 2, which is
+ *     why a resumed record is stamped with the index it was asked under.
  * -   ORDER IS DOCUMENT ORDER, which is the same statement read forwards: it is
  *     what lets a reader compare two lanes slice by slice without carrying
  *     offsets around.
@@ -99,7 +101,7 @@ export function assertSliceIndexing(
       throw new SliceIndexingError({
         message: `slice at position ${String(position,)} is indexed ${
           String(targetIndex,)
-        }, and every cache key, splice and lane comparison reads that index as the position`,
+        }, and every splice, lane result and comparison reads that index as the position`,
       },);
     }
   }
