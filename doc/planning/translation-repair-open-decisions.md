@@ -10,6 +10,11 @@ nothing you care about today.
 The last section lists decisions I took WITHOUT you, with the reasoning, so you
 can veto any of them cheaply.
 
+READ QUESTION 5 FIRST if you read only one. It was not on the list last night;
+the bench put it there. The lane replaces the archive's English on roughly three
+of every four slices, and that is a decision about what this project is, not a
+tuning question.
+
 ## Question 1: how wide should the producing rosters be
 
 BLOCKS the roster half of `#91`, and through it the first long run under the
@@ -98,25 +103,36 @@ Same slice, same width, same roster, minutes apart. Any difference between
 widths smaller than that is noise, which is exactly why the repeat was built in
 before the sweep rather than after.
 
-AT 22 ROWS OF 60 THE BAND HAS NOT NARROWED. Four slices are finished, and the
-width-four repeat flipped the outcome on two of them and moved the winning
-weight on a third:
+THE SWEEP IS FINISHED, 60 rows, and it lands inside that band. Per width, over
+the same ten slices:
 
-    Mio#5            pass 1 replaced at 4.5   pass 2 declined, kept
-    aiyysk#39        pass 1 replaced at 3.5   pass 2 declined, kept
-    zhangyubaka#23   pass 1 replaced at 5.5   pass 2 replaced at 2.5
-    noname#9         pass 1 replaced at 3.0   pass 2 replaced at 5.5
+    width 2   kept 3   declined 0   72 calls    221k tokens    70s per slice
+    width 3   kept 2   declined 1   90 calls    300k tokens    91s
+    width 4   kept 3   declined 2  102 calls    344k tokens    88s
+    width 4   kept 4   declined 3  101 calls    347k tokens    97s   (repeat)
+    width 5   kept 2   declined 1  113 calls    417k tokens   111s
+    width 6   kept 2   declined 1  124 calls    403k tokens    93s
 
-That is the same slice, the same width and the same roster each time. I expect
-this to decide the shape of the answer more than the width sweep does: if the
-sweep lands inside this band, the honest reading is that width does not
-measurably change agreement on ten slices, not that some width won.
+THE TWO WIDTH-FOUR PASSES DIFFER BY AS MUCH AS THE WIDTHS DO. They disagree
+about the outcome on three of the ten slices, and their kept counts, 3 and 4,
+span the whole range every other width falls in. So the honest reading is that
+WIDTH DOES NOT MEASURABLY CHANGE AGREEMENT on ten slices, not that some width
+won. Ten slices cannot resolve a difference smaller than the noise, and this
+noise is large.
 
-ONE EARLY TENDENCY, on four slices and so not yet a rate: the lane replaced the
-archive translation in 17 of those 22 rows, at every width including two. If
-that holds across the sample it matters more than the width question, because it
-says the judges prefer fresh text over the human translation most of the time,
-and `#84` is what would tell us whether they are right to.
+The agreement worry that motivated the question is not supported either: the
+widest roster declined once, the narrowest declined never, and nothing in
+between trends. Ballots spreading thinner across more candidates did not produce
+more declines here.
+
+WHAT THE SWEEP DOES SETTLE IS COST, which now has numbers rather than an
+estimate: going from two producers to six multiplies calls by 1.7 and tokens by
+1.8, and the whole bench spent 602 calls, 2.03 million tokens and 1.5 hours of
+wall time on ten slices.
+
+So this question is now a coverage-versus-cost decision and not an agreement
+decision. Nothing measured says a wider roster decides worse; what it costs is
+`1.8x` at six.
 
 WHAT THIS BENCH DOES NOT MEASURE: every slice it drew already has a translation,
 94 to 302 characters so far. The numbers therefore describe preserve-or-replace
@@ -376,6 +392,92 @@ that shape repeatedly.
 B over C because C is right and unavailable: it needs a corpus run under the new
 shape to produce the agreement rates it weighs by, so A or B has to hold the
 seat until then anyway.
+
+## Question 5: the lane replaces most of the archive's English
+
+BLOCKS the first long run. Not on last night's list; the bench put it here.
+
+MEASURED, on ten stratified slices run at six roster widths, 60 rounds in all:
+THE JUDGES CHOSE A FRESH TRANSLATION OVER THE ARCHIVE'S OWN IN 44 OF 60 ROUNDS,
+73 percent. The archive text survived on 16, and only ONE slice of the ten kept
+it at every width:
+
+    slice                    w2 w3 w4 w4 w5 w6   source/incumbent chars
+    Mio#5                     K  .  .  D  D  .    20/94
+    zhangyubaka#23            .  .  .  .  .  .    47/180
+    noname#9                  .  .  .  .  .  .    69/213
+    aiyysk#39                 .  .  .  D  .  .    85/302
+    xixi_yuexi#3              .  .  .  .  .  .    96/143
+    aiyysk#74                 K  .  .  .  .  D   107/336
+    XingZ60#81                .  D  D  D  .  .   117/401
+    MeowBot233#2              .  .  .  .  .  .   130/371
+    Chinatsu_Suzuki#7         .  .  D  .  .  .   151/497
+    yuki418330012#6           K  K  K  K  K  K   229/229
+
+`K` kept the archive text, `.` replaced it, `D` declined and therefore kept it.
+
+WHAT THIS IS NOT. It is not the judges being broken: they are choosing between
+anonymized candidates on stated criteria, and the archive's English is often
+genuinely awkward, which is why this project exists. It is also not the
+mispairing case, which now has its own guard: none of these ten slices trips it.
+
+WHAT IT MEANS IN PRACTICE. Run over the corpus, this shape rewrites roughly
+three of every four slices of a memorial archive's English, replacing text
+volunteers wrote about people who died with text six models agreed on. That may
+be exactly what you decided when you re-scoped the pipeline from repair to
+translation. It may also be more than you meant, and it is not a decision I can
+take for you.
+
+WHAT WOULD MAKE IT SAFER TO ACCEPT, in the order it becomes available:
+`#84` measures whether the judges are RIGHT when they replace, on a graded
+sample, and `#85` rebuilds the damage instrument for output that has no before
+text. Neither exists yet, so today the replacement rate is a fact without a
+quality reading beside it.
+
+### Options
+
+A.  Ship the lane as it stands: the judges decide, and the archive text wins
+    only when it wins on the criteria.
+    Pros: it is what the ensemble is for, and the incumbent is on the ballot
+    anonymously so nothing is stacked against it; the archive is in git, so
+    every replacement is reversible.
+    Cons: a 73 percent rewrite of a memorial archive is a large action taken on
+    an ensemble's aesthetic judgement, before `#84` says whether that judgement
+    is any good.
+
+B.  Require MORE than a plurality to replace the archive text: the incumbent
+    keeps its slice unless a fresh candidate clears a higher bar than it takes
+    to beat another fresh candidate.
+    Pros: encodes that replacing human work is a bigger step than choosing
+    between two machine renderings, which is a value judgement rather than a
+    measurement, and it is yours to make.
+    Cons: another number to pick, and it would slow the lane's ability to fix
+    genuinely bad translations, which is what you asked for.
+
+C.  Run the lane in report-only mode first: translate everything, record every
+    decision, ship nothing, and grade a sample of what it WOULD have replaced.
+    Pros: buys the `#84` measurement with the same calls the real run would
+    spend, and nothing in the archive changes until you have read it.
+    Cons: doubles the elapsed time to a shipped corpus, and the grading is your
+    time rather than mine.
+
+D.  Restrict replacement to slices that carry evidence of a defect, which is the
+    repair lane's rule, and translate only where the English is missing.
+    Pros: the most conservative reading of "improve the translation".
+    Cons: it is the shape you deliberately moved away from, and the graded
+    sheets showed the critics miss most of what is wrong.
+
+RANKING: C > A > B > D.
+
+C over A because the whole disagreement is about whether the judges are right,
+and C answers that with the calls the run would spend anyway; A spends the same
+quota and commits the result before anyone has read it.
+A over B because B invents a threshold to express a preference you have not
+stated, and if you do want the archive favoured, saying so is better than
+tuning a number until it looks right.
+B over D because D is the shape you already rejected on evidence: the critics
+miss most of what is wrong, so gating replacement on a filed defect keeps the
+worst translations exactly as they are.
 
 ## Decisions I took without you, veto cheaply
 
