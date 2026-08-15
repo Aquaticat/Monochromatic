@@ -580,5 +580,57 @@ await describe({
         expect(served.includes('candidate_ballot',),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'names EVERY empty role across BOTH lanes in one refusal, rather '
+        + 'than stopping at the repair lane. An operator with a role empty in '
+        + 'each lane would otherwise pay a preflight per lane to learn that, '
+        + 'which is the cost this check exists to spare them',
+      fn: async () => {
+        /**
+         * Failure the driver raised before either lane started.
+         */
+        let caught: unknown;
+        try {
+          await runDocumentLanes({
+            client: {
+              chatText: async () => {
+                throw new Error('an unconfigured run must ask nobody anything',);
+              },
+              chatJson: async () => {
+                throw new Error('an unconfigured run must ask nobody anything',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused by either lane',);
+              },
+            },
+            prepared: prepareDocumentPair({
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+            },),
+            repairModels: {
+              ...REPAIR_MODELS,
+              panelModelIds: [],
+            },
+            translateModels: {
+              ...TRANSLATE_MODELS,
+              translatorModelIds: [],
+            },
+            signal: new AbortController().signal,
+            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            l,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(Error,);
+        // Both lanes, in one message, each role named with the lane it belongs
+        // to: the two lanes share a `judgeModelIds`, so an unprefixed name
+        // would say nothing about which one is empty.
+        expect(String(caught,),).toContain('repair.panelModelIds',);
+        expect(String(caught,),).toContain('translate.translatorModelIds',);
+      },
+    },),
   ],
 },);

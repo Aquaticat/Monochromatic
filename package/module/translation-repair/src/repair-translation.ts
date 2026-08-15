@@ -14,7 +14,6 @@ import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
-import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
 import { refineSettledSlices, } from './repair-refine-step.ts';
 import {
@@ -29,15 +28,6 @@ import {
 import { blockedRepairResult, } from './repair-blocked-exit.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
-import {
-  buildChunkCriticRecords,
-  type ChunkCriticRecord,
-} from './critic-attribution.ts';
-import {
-  buildIssueRecords,
-  type RepairIssueRecord,
-} from './repair-record.ts';
-import { repairReplacements, } from './repair-replacements.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { assembleRepair, } from './repair-assemble.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';

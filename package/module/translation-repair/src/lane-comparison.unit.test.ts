@@ -280,6 +280,90 @@ await describe({
       },
     },),
     it({
+      name:
+        'REFUSES a lane whose rows REPEAT a slice, on either side. Equal lengths are not equal '
+        + 'coverage: repair rows for slices 0 and 0 against translate rows for 0 and 1 both count '
+        + 'two, and the join then emits two rows for slice 0 and drops slice 1 without a word',
+      fn: async () => {
+        /**
+         * Failure the comparison raised for a repeated repair row.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: {
+              sliceTexts: [
+                {
+                  chunkIndex: 0,
+                  incumbentText: ARCHIVE_NAP,
+                  acceptedText: ARCHIVE_NAP,
+                },
+                {
+                  chunkIndex: 0,
+                  incumbentText: ARCHIVE_NAP,
+                  acceptedText: ARCHIVE_NAP,
+                },
+              ],
+              shippedChunkIndices: [],
+            },
+            translate: {
+              sliceTexts: [
+                {
+                  chunkIndex: 0,
+                  incumbentText: ARCHIVE_NAP,
+                  acceptedText: ARCHIVE_NAP,
+                },
+                {
+                  chunkIndex: 1,
+                  incumbentText: 'The sill is warm.',
+                  acceptedText: 'The sill is warm.',
+                },
+              ],
+              shippedChunkIndices: [],
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('distinct slices',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a shipped index REPEATED within one lane, rather than folding it into a set: '
+        + 'the repeat is the lane saying something twice about one slice, and every rate built '
+        + 'on that list counts it twice',
+      fn: async () => {
+        /**
+         * Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: {
+              sliceTexts: [{
+                chunkIndex: 0,
+                incumbentText: ARCHIVE_NAP,
+                acceptedText: 'The cat is asleep on the windowsill.',
+              },],
+              shippedChunkIndices: [
+                0,
+                0,
+              ],
+            },
+            translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('more than once',);
+      },
+    },),
+    it({
       name: 'REFUSES a slice the other lane does not report at all, even when both lists are the same length',
       fn: async () => {
         /**

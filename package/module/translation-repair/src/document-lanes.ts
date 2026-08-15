@@ -155,24 +155,28 @@ export async function runDocumentLanes(
     readonly l: Logger;
   }>,
 ): Promise<DocumentLanesResult> {
-  // BOTH rosters before EITHER lane starts. Each driver checks its own, which
-  // is what makes the check unbypassable, but repair runs first and would
-  // otherwise spend an entire document before an unconfigured translate roster
-  // was discovered. Neither of these is the enforcement; both are the courtesy.
+  // BOTH rosters before EITHER lane starts, in ONE check. Each driver checks
+  // its own, which is what makes the check unbypassable, but repair runs first
+  // and would otherwise spend an entire document before an unconfigured
+  // translate roster was discovered. Neither of these is the enforcement; both
+  // are the courtesy.
+  //
+  // ONE call rather than two, because two stop at the repair lane: an operator
+  // with a role empty in EACH lane would pay a preflight per lane to learn
+  // that, which is the cost this check exists to spare them.
+  //
+  // The role names carry their lane, and that is required rather than tidy.
+  // Both lanes have a `judgeModelIds`, one object cannot hold that key twice,
+  // and an unprefixed map would quietly report on one lane's judges only.
   assertRostersConfigured({
-    lane: 'repair',
+    lane: 'repair and translate',
     roles: {
-      panelModelIds: repairModels.panelModelIds,
-      editorModelIds: repairModels.editorModelIds,
-      judgeModelIds: repairModels.judgeModelIds,
-      checkerModelIds: repairModels.checkerModelIds,
-    },
-  },);
-  assertRostersConfigured({
-    lane: 'translate',
-    roles: {
-      translatorModelIds: translateModels.translatorModelIds,
-      judgeModelIds: translateModels.judgeModelIds,
+      'repair.panelModelIds': repairModels.panelModelIds,
+      'repair.editorModelIds': repairModels.editorModelIds,
+      'repair.judgeModelIds': repairModels.judgeModelIds,
+      'repair.checkerModelIds': repairModels.checkerModelIds,
+      'translate.translatorModelIds': translateModels.translatorModelIds,
+      'translate.judgeModelIds': translateModels.judgeModelIds,
     },
   },);
 

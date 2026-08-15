@@ -203,6 +203,12 @@ function shippedSet(
     readonly wordings: readonly LaneSliceText[];
   },
 ): ReadonlySet<number> {
+  if (new Set(shipped,).size !== shipped.length)
+    throw new LaneComparisonError({
+      message: `${lane} lane names a slice as shipped more than once, and every `
+        + 'rate built on that set counts it twice',
+    },);
+
   /**
    * Rows this lane reported, by slice index.
    */
@@ -346,12 +352,28 @@ export function compareDocumentLanes(
 
   // Equal lengths are not equal COVERAGE: repair rows for slices 1 and 1 and
   // translate rows for 1 and 2 both count two, and the join would then emit two
-  // rows for slice 1 and silently drop slice 2.
+  // rows for slice 1 and silently drop slice 2. BOTH lanes are checked, because
+  // the join walks the repair rows and looks the translate ones up, so a repeat
+  // on either side produces that same wrong answer from the other end.
   if (translateByIndex.size !== counted.translate)
     throw new LaneComparisonError({
       message: `translate lane reports ${
         String(counted.translate,)
       } rows over ${String(translateByIndex.size,)} distinct slices`,
+    },);
+
+  /**
+   * Distinct slices the repair rows name.
+   */
+  const repairDistinct = new Set(repair.sliceTexts
+    .map(function toIndex(wording,): number {
+      return wording.chunkIndex;
+    },),).size;
+  if (repairDistinct !== counted.repair)
+    throw new LaneComparisonError({
+      message: `repair lane reports ${
+        String(counted.repair,)
+      } rows over ${String(repairDistinct,)} distinct slices`,
     },);
 
   /**
