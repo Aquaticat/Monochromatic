@@ -49,8 +49,15 @@ WHAT ACTUALLY MOVES with width:
     calls and 22118 tokens, width 4 costs 10.2 calls and 34567 tokens, width 6
     costs 12.4 calls and 40294 tokens. Over the whole corpus that is 27.9M,
     43.6M and 50.8M tokens for one pass. So the widest roster costs about 1.8
-    times the narrowest, not six times: the judge round dominates and it is the
-    same size at every width.
+    times the narrowest, not six times, and the reason is where those tokens go.
+    MEASURED PER STAGE on 2026-08-15 from the same rows, at no new cost, and it
+    corrects what this bullet said yesterday: the judge round takes 5.4 calls
+    per slice at EVERY width from three up, because the judge roster does not
+    widen when the producing one does, but its tokens still rise 58% from width
+    2 to width 6, because a ballot prompt carries every candidate. It dominates
+    at both ends, 60% of a slice's tokens at width 2 and 52% at width 6.
+    So widening buys more candidates at a discount rather than for free, and a
+    cheaper decision procedure would save more than a narrower roster.
 -   AGREEMENT. Ballots spread thinner across more candidates, so the leader more
     often falls short of the minimum weight or ties. Both outcomes decline, and
     a decline keeps the incumbent, so widening can quietly REDUCE how often

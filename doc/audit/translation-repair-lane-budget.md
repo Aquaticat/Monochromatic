@@ -143,6 +143,57 @@ Per slice, by producing-roster width:
 Width 6 costing less than width 5 on both wall time and tokens is the
 run-to-run band showing itself, not an economy of scale.
 
+## Where a width's tokens go
+
+Added 2026-08-15, computed from the same rows by grouping each exchange by the
+response schema it asked for, so it costs nothing new.
+Per slice, tokens then calls:
+
+-   width 2:
+    ballots 13200 over 4.8 calls,
+    producers 7341 over 2.0,
+    repair-of-a-candidate 1578 over 0.4.
+-   width 3:
+    ballots 15089 over 5.4 calls,
+    producers 12542 over 3.0,
+    repair-of-a-candidate 2374 over 0.6.
+-   width 4:
+    ballots 18703 over 5.4 calls,
+    producers 12990 over 4.0,
+    repair-of-a-candidate 2874 over 0.75.
+-   width 5:
+    ballots 20102 over 5.4 calls,
+    producers 17021 over 5.0,
+    repair-of-a-candidate 4611 over 0.9.
+-   width 6:
+    ballots 20848 over 5.4 calls,
+    producers 16446 over 6.0,
+    repair-of-a-candidate 3000 over 1.0.
+
+Three things this says that the totals could not.
+
+The JUDGE ROUND IS FLAT IN CALLS and NOT flat in tokens.
+Its call count is 5.4 per slice at every width from 3 up, because the judge
+roster does not widen when the producing one does.
+Its token cost rises 58% from width 2 to width 6, because a ballot prompt
+carries every candidate, so widening the producers widens what each judge reads.
+An earlier reading of this bench said the judge round "is the same size at every
+width", which is true of its calls and false of its tokens; the corrected
+statement is that widening buys more candidates at a discount, not for free.
+
+THE JUDGE ROUND STILL DOMINATES, at 60% of a slice's tokens at width 2 and 52%
+at width 6, so a cheaper decision procedure is worth more than a narrower
+producing roster.
+
+PRODUCER CALLS TRACK WIDTH EXACTLY, 2.0 through 6.0 per slice, which is the one
+place the bench behaves exactly as designed and is worth stating because it
+means no retries dominate that stage.
+
+READ THE ADJACENT PAIRS WITH THE BAND IN MIND: ten slices per width, one run
+each, and the totals already show width 6 landing under width 5.
+The ballot-token trend is monotone across all five widths, which is why it is
+reported as a trend; no single adjacent pair here resolves anything.
+
 ## The selector prompt
 
 362 selection exchanges, largest 12119 tokens, p95 8052.
