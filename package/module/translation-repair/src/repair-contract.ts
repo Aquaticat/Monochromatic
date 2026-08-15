@@ -47,9 +47,13 @@ export type RepairModels = {
   readonly editorModelIds: readonly SyntheticModelId[];
 
   /**
-   * Whole roster candidate selection draws judges from. Producers are removed
-   * per selection round, so this must contain at least one model that never
-   * edits: see {@link assertJudgeableEditorRoster}.
+   * Whole roster candidate selection draws judges from, editors included.
+   *
+   * Producers used to be removed per round, which is why this once required a
+   * model that never edits. Since the ruling of 2026-08-14 they are seated and
+   * a ballot for their own work is discounted instead, so the only requirement
+   * left is that some candidate could reach the minimum weight: see
+   * {@link assertJudgeableEditorRoster}.
    */
   readonly judgeModelIds: readonly SyntheticModelId[];
 
@@ -229,12 +233,32 @@ export function assertJudgeableProducerRoster(
     },);
 
   /**
-   * Most weight a candidate from this roster could ever draw, if every judge
-   * voted for it.
+   * Whether some producer sits outside the judge roster, in which case a
+   * candidate exists that every judge can back at full weight.
+   */
+  const hasOutsideProducer = producerModelIds.some(function isOutside(
+    modelId,
+  ): boolean {
+    return !judges.has(modelId,);
+  },);
+
+  /**
+   * Most weight ANY candidate this roster could write is able to draw.
    *
-   * A judge that produced the candidate contributes the discounted weight and
-   * every other judge the full one, so the worst case is measured by treating
-   * every producer on the bench as a stakeholder in it.
+   * Measured over the most favourable candidate, which is one written by
+   * exactly ONE producer: every other judge is disinterested in it and votes at
+   * full weight, and only its author is discounted. That is the right question
+   * for a guard whose stated job is refusing rosters that could not decide a
+   * round HOWEVER they voted.
+   *
+   * NOT THE COLLAPSE CASE, which an earlier version of this measured instead by
+   * treating every producer as a stakeholder in one candidate. That refused
+   * three authors judging only each other, and that roster decides comfortably:
+   * a candidate by one of them draws half a vote from its author and a full one
+   * from each of the other two. Rounds where those three write identical text
+   * and each back it do decline, at three halves against a minimum of two, and
+   * that is the weights doing their work rather than a broken roster. The same
+   * arithmetic ships four byte-identical authors and stops three.
    *
    * COUNTING SEATS INSTEAD WOULD PASS A ROSTER THAT CAN NEVER DECIDE: one
    * producer, judged by itself and one other model, tops out at half a vote
@@ -250,16 +274,9 @@ export function assertJudgeableProducerRoster(
    * Derived from the weights rather than written as a number, so tuning any of
    * them cannot leave this quietly wrong.
    */
-  const capacity = judgeModelIds.reduce(
-    function addSeat(
-      weight,
-      modelId,
-    ): number {
-      return weight
-        + (producers.has(modelId,) ? SELF_VOTE_WEIGHT : FULL_VOTE_WEIGHT);
-    },
-    0,
-  );
+  const capacity = hasOutsideProducer
+    ? FULL_VOTE_WEIGHT * judgeModelIds.length
+    : (FULL_VOTE_WEIGHT * (judgeModelIds.length - 1)) + SELF_VOTE_WEIGHT;
   if (capacity >= MIN_SELECTION_WEIGHT)
     return;
   throw new EditorRosterError({

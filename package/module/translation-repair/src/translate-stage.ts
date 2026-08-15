@@ -146,7 +146,13 @@ export type TranslateStageResult = {
   /**
    * Candidates in the order the judges saw them, which is what makes a stored
    * ballot readable: ballots name a position, and the slate is rotated per
-   * slice. Empty when no round ran.
+   * slice.
+   *
+   * The ASSEMBLED rotated order, whether or not judges were called. A slice
+   * with one distinct proposal ships it without a round and still records the
+   * slate, because what was on the ballot is the same question either way and
+   * `decision` already says whether anyone voted. Empty only when the slice had
+   * no candidates at all.
    */
   readonly slate: readonly TranslateSlateEntry[];
 
@@ -278,7 +284,7 @@ export async function runTranslateStage(
     responseFormat: TRANSLATE_RESPONSE_FORMAT,
     validate: isTranslateReportWire,
     stage: 'translate',
-    l,
+    l: tl,
   },);
 
   /**
@@ -474,7 +480,7 @@ export async function runTranslateStage(
     ],
     signal,
     perCallTimeoutMs,
-    l,
+    l: tl,
   },);
   if (outcome.kind === 'selected') {
     tl.info(

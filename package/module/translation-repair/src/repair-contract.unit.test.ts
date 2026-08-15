@@ -112,13 +112,11 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS a roster where EVERY judge produced, once there are '
-        + 'enough of them. Four authors judging each other reach exactly the '
-        + 'minimum weight, which is the widest case the ruling allows and the '
-        + 'one a full-roster bench needs. Nothing here says such a round will '
-        + 'decide anything: if every judge backs its own candidate each draws '
-        + 'half a vote and the incumbent survives, which is the weights doing '
-        + 'the work this guard used to',
+      name: 'ACCEPTS a roster where EVERY judge produced, which is the widest '
+        + 'case the ruling allows and the one a full-roster bench needs. '
+        + 'Nothing here says such a round will decide anything: if every judge '
+        + 'backs its own candidate each draws half a vote and the incumbent '
+        + 'survives, which is the weights doing the work this guard used to',
       fn: async () => {
         expect(function acceptFullOverlap() {
           assertJudgeableProducerRoster({
@@ -141,11 +139,14 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES full overlap one author short, so the previous case is a '
-        + 'floor rather than a licence: three authors judging only each other '
-        + 'can award one and a half votes between them',
+      name: 'accepts THREE authors judging only each other, because a candidate '
+        + 'one of them wrote draws half a vote from its author and a full one '
+        + 'from each of the other two. An earlier version of this guard measured '
+        + 'the collapse case instead, treating all three as stakeholders in one '
+        + 'candidate, and refused a bench that decides comfortably whenever they '
+        + 'disagree',
       fn: async () => {
-        expect(function refuseNarrowOverlap() {
+        expect(function acceptThreeAuthors() {
           assertJudgeableProducerRoster({
             producerModelIds: [
               PRODUCER_ONE,
@@ -156,6 +157,28 @@ await describe({
               PRODUCER_ONE,
               PRODUCER_TWO,
               JUDGE_ONE,
+            ],
+            role: 'editor',
+          },);
+        },).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'REFUSES two authors judging only each other, which is where full '
+        + 'overlap actually stops working: whichever of them wrote a candidate '
+        + 'is discounted on it, so the best any candidate can draw is one and a '
+        + 'half votes and no round can ever reach the minimum',
+      fn: async () => {
+        expect(function refuseTwoAuthors() {
+          assertJudgeableProducerRoster({
+            producerModelIds: [
+              PRODUCER_ONE,
+              PRODUCER_TWO,
+            ],
+            judgeModelIds: [
+              PRODUCER_ONE,
+              PRODUCER_TWO,
             ],
             role: 'editor',
           },);

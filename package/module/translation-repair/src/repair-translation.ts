@@ -661,13 +661,16 @@ export async function repairTranslation(
   ];
 
   /**
-   * Whether any chunk shipped a repair.
+   * Whether any slice shipped a repair.
    */
   const anyChanged = changedOutcomes.length > 0;
+  // SLICES rather than chunks: both arrays hold slice outcomes, and a section
+  // subdivides into several, so reporting them as chunks understates the
+  // denominator against every other count in the artifact.
   rl.info(
     `repair ${anyChanged ? 'shipped' : 'kept input'}: ${
       String(changedOutcomes.length,)
-    }/${String(finalOutcomes.length,)} chunks changed, ${String(issues.length,)} issues`,
+    }/${String(finalOutcomes.length,)} slices changed, ${String(issues.length,)} issues`,
   );
 
   /**
