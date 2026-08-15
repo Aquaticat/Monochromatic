@@ -466,13 +466,14 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a cached record that claims a change while carrying the '
-        + 'archive\'s own wording. A resumed record is trusted on its slice '
-        + 'index alone, so a truncated write that still parses, or a slicing '
-        + 'that moved while the key did not, lands a replacement that changes '
-        + 'nothing in the shipped set beside a document nobody changed: the run '
-        + 'settles, the artifact records it, and the count is wrong wherever it '
-        + 'is read afterwards',
+      name: 'DISCARDS a cached record that contradicts its own text and buys '
+        + 'that slice again, in BOTH directions. A resumed record is trusted on '
+        + 'its slice index alone, so a truncated write that still parses, or a '
+        + 'slicing that moved while the key did not, otherwise reaches assembly '
+        + 'and fails the whole document after every other slice has been paid '
+        + 'for. One bad cache file costs one slice instead, and says so in the '
+        + 'findings, since a recomputed slice is otherwise indistinguishable '
+        + 'from one that was never cached',
       fn: async () => {
         const { persisted, } = await runDriver({},);
 
@@ -498,7 +499,7 @@ await describe({
          * Same records under the same keys, each claiming its change while
          * carrying the wording it claims to have replaced.
          */
-        const poisoned = new Map(
+        const overClaiming = new Map(
           [...persisted.entries(),].map(function toPoisoned([key, record,],) {
             return [
               key,
@@ -511,17 +512,75 @@ await describe({
           },),
         );
 
-        // Positive control for the poisoning itself: every poisoned record has
-        // to differ from what the run settled, or the case would pass because
-        // nothing was actually sabotaged.
-        expect([...poisoned.values(),].some(function wasPoisoned(record,): boolean {
-          return record.changed
-            && (record.outputText === incumbentByIndex.get(record.chunkIndex,));
-        },),).toBe(true,);
+        /**
+         * Records the poisoning actually put in a contradictory state.
+         *
+         * Not every record reaches one: rewriting the wording of a record that
+         * already claimed no change leaves it consistent. Counted rather than
+         * assumed, so the case says exactly how many slices should be bought
+         * again instead of asserting a number the fixture happens to produce.
+         */
+        const overClaimingPoisoned = [...overClaiming.values(),]
+          .filter(function wasPoisoned(record,): boolean {
+            return record.changed
+              && (record.outputText === incumbentByIndex.get(record.chunkIndex,));
+          },)
+          .length;
+        expect(overClaimingPoisoned,).toBeGreaterThan(0,);
 
-        await expect(runDriver({ resumed: poisoned, },),)
-          .rejects
-          .toThrow('claims a change and carries the archive wording',);
+        /**
+         * Run resuming the over-claiming records.
+         */
+        const overClaimed = await runDriver({ resumed: overClaiming, },);
+        expect(overClaimed.result
+          .sliceCount - overClaimed.result
+          .resumedSliceCount,).toBe(overClaimingPoisoned,);
+        expect(overClaimed.calls
+          .translate,).toBeGreaterThan(0,);
+        expect(overClaimed.result
+          .findings
+          .filter(function namesDiscard(finding,): boolean {
+            return finding.startsWith('translate-discarded-contradictory-slice',);
+          },)
+          .length,).toBe(overClaimingPoisoned,);
+
+        /**
+         * The QUIETER direction: records denying a change they did make. Only
+         * `changed` records become replacements, so this one used to have its
+         * wording dropped at assembly with nothing said.
+         */
+        const underClaiming = new Map(
+          [...persisted.entries(),].map(function toPoisoned([key, record,],) {
+            return [
+              key,
+              {
+                ...record,
+                changed: false,
+              },
+            ] as const;
+          },),
+        );
+
+        /**
+         * Records that direction puts in a contradictory state.
+         */
+        const underClaimingPoisoned = [...underClaiming.values(),]
+          .filter(function wasPoisoned(record,): boolean {
+            return record.outputText !== incumbentByIndex.get(record.chunkIndex,);
+          },)
+          .length;
+        expect(underClaimingPoisoned,).toBeGreaterThan(0,);
+
+        const underClaimed = await runDriver({ resumed: underClaiming, },);
+        expect(underClaimed.result
+          .sliceCount - underClaimed.result
+          .resumedSliceCount,).toBe(underClaimingPoisoned,);
+        expect(underClaimed.result
+          .findings
+          .filter(function namesDiscard(finding,): boolean {
+            return finding.startsWith('translate-discarded-contradictory-slice',);
+          },)
+          .length,).toBe(underClaimingPoisoned,);
       },
     },),
 

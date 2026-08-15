@@ -8,6 +8,10 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
+import {
+  resumedSliceAgrees,
+  resumedSliceDiscardFinding,
+} from './resumed-slice.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
@@ -223,6 +227,12 @@ export async function translateDocument(
    * Slices this run did not have to buy.
    */
   const counted = { resumed: 0, };
+
+  /**
+   * Cached records refused for contradicting themselves, named in the result so
+   * a recomputed slice is distinguishable from one that was never cached.
+   */
+  const refusedCacheFindings: string[] = [];
   for (const slice of prepared.slices) {
     /**
      * Global index of this slice, which every record and replacement names.
@@ -256,9 +266,32 @@ export async function translateDocument(
             + 'disagree, so every resumed record is suspect',
         );
       }
-      counted.resumed += 1;
-      settled.push(resumed,);
-      continue;
+
+      // A record whose flag and text contradict each other is refused HERE
+      // rather than at assembly, where the same contradiction fails the whole
+      // document after every other slice has been bought. Discarded, this slice
+      // simply costs what an uncached one costs.
+      if (resumedSliceAgrees({
+        changed: resumed.changed,
+        decidedText: resumed.outputText,
+        incumbentText: slice.target
+          .text,
+      },)) {
+        counted.resumed += 1;
+        settled.push(resumed,);
+        continue;
+      }
+
+      /**
+       * Why this slice was recomputed, which a cache miss would not explain.
+       */
+      const discarded = resumedSliceDiscardFinding({
+        lane: 'translate',
+        chunkIndex,
+        changed: resumed.changed,
+      },);
+      tl.warn(discarded,);
+      refusedCacheFindings.push(discarded,);
     }
 
     // Checked here rather than at the top of the iteration, so a document whose
@@ -460,6 +493,7 @@ export async function translateDocument(
     resumedSliceCount: counted.resumed,
     slices: settled,
     findings: [
+      ...refusedCacheFindings,
       ...settled.flatMap(function toFindings(record,): readonly string[] {
         return record.findings;
       },),

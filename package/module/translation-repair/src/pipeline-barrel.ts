@@ -166,6 +166,16 @@ export {
   LaneSliceCoverageError,
   type LaneSliceText,
 } from './lane-slice-text.ts';
+export {
+  resumedSliceAgrees,
+  resumedSliceDiscardFinding,
+  type ResumedSliceLane,
+} from './resumed-slice.ts';
+export {
+  repairRunShape,
+  repairSliceKey,
+  SLICE_CACHE_VERSION,
+} from './repair-slice-key.ts';
 export { footnoteIdentifiers, } from './footnote-mentions.ts';
 export {
   guardFootnoteAssembly,
