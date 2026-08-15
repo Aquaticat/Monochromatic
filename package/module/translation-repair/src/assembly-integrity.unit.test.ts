@@ -19,6 +19,7 @@ import {
 import {
   footnoteIdentifiers,
   guardFootnoteAssembly,
+  introducedStructuralRegressions,
   prepareDocumentPair,
 } from '../dist/final/node/index.mjs';
 
@@ -154,13 +155,18 @@ await describe({
           ...footnoteIdentifiers({ text: 'A nap[^1] and a bird[^2].', },)
             .entries(),
         ],).toEqual([
-          ['gfm 1', 1,],
-          ['gfm 2', 1,],
+          ['reference gfm 1', 1,],
+          ['reference gfm 2', 1,],
         ],);
+        // The role is what a bare identifier cannot say: turning a definition
+        // into prose that refers to it leaves the identifier counted once
+        // either way.
         expect(footnoteIdentifiers({ text: '[^1]: That is its spot.', },)
-          .get('gfm 1',),).toBe(1,);
+          .get('definition gfm 1',),).toBe(1,);
         expect(footnoteIdentifiers({ text: '猫猫打盹〔1〕。', },)
-          .get('fullwidth-bracket 1',),).toBe(1,);
+          .get('reference fullwidth-bracket 1',),).toBe(1,);
+        expect(footnoteIdentifiers({ text: '〔1〕：那是它的位置。', },)
+          .get('definition fullwidth-bracket 1',),).toBe(1,);
       },
     },),
 
@@ -324,6 +330,60 @@ await describe({
         },);
         expect(guarded.revertedChunkIndices,).toEqual([],);
         expect(guarded.assembledText,).toContain('[^2]: A sparrow',);
+      },
+    },),
+
+    it({
+      name: 'WITHDRAWS EVERY REPLACEMENT when the defect belongs to no slice. '
+        + 'A stray comment opener masks markers document-wide, so the slice '
+        + 'that wrote it never changed its own mention of anything; choosing a '
+        + 'slice to blame would be a guess, and shipping a document the lane '
+        + 'knowingly broke is worse than shipping the archive',
+      fn: async () => {
+        /**
+         * Slices of the fixture pair.
+         */
+        const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
+
+        /**
+         * Assembly whose prose opens a comment it never closes, hiding the
+         * definition that follows it in another slice.
+         */
+        const guarded = guardFootnoteAssembly({
+          targetText: TARGET_TEXT,
+          slices,
+          replacements: [
+            {
+              chunkIndex: sliceCarrying({
+                slices,
+                needle: 'there is being a bird',
+              },),
+              replacementText: 'A bird sits on the windowsill. <!-- a note',
+            },
+          ],
+        },);
+        expect(guarded.assembledText,).toBe(TARGET_TEXT,);
+        expect(guarded.replacements,).toEqual([],);
+        expect(guarded.findings
+          .some(function namesWithdrawal(finding,): boolean {
+            return finding.startsWith('assembly-withdrew-every-replacement',);
+          },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'reads an unterminated comment and an MDX downgrade as structural '
+        + 'regressions, which name no footnote identifier and so can be found '
+        + 'no other way',
+      fn: async () => {
+        expect(introducedStructuralRegressions({
+          incumbentText: 'A settled paragraph.\n',
+          assembledText: 'A settled paragraph. <!-- never closed\n',
+        },),).toContain('unterminated-html-comment',);
+        expect(introducedStructuralRegressions({
+          incumbentText: 'A settled paragraph.\n',
+          assembledText: 'A settled paragraph.\n',
+        },),).toEqual([],);
       },
     },),
 

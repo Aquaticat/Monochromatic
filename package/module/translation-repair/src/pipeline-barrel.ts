@@ -144,11 +144,12 @@ export {
   type PreparedDocumentPair,
   prepareDocumentPair,
 } from './document-preparation.ts';
+export { footnoteIdentifiers, } from './footnote-mentions.ts';
 export {
-  footnoteIdentifiers,
   guardFootnoteAssembly,
   type GuardedAssembly,
   introducedFootnoteFindings,
+  introducedStructuralRegressions,
 } from './assembly-integrity.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {

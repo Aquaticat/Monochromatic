@@ -1,7 +1,4 @@
-import {
-  scanFullwidthMarkers,
-  scanGfmReferenceLiterals,
-} from './footnote-graph.ts';
+import { footnoteIdentifiers, } from './footnote-mentions.ts';
 import type { FootnoteGraphFinding, } from './footnote-model.ts';
 import { parseDocument, } from './parse-document.ts';
 import type { ChunkPair, } from './chunk-document.ts';
@@ -17,30 +14,13 @@ import {
 // renames or invents a marker validates perfectly inside its slice and breaks
 // the document.
 //
-// TWO DIFFERENT READINGS, deliberately:
-//
 // The ASSEMBLED DOCUMENT is the authority on what is broken. It is parsed the
 // same way any document is, and its footnote findings are diffed against the
 // incumbent's, so a defect the archive already carried is never blamed on the
 // lane and never repaired by it either.
 //
-// The PER-SLICE IDENTIFIER COUNT is attribution only, and is role-blind on
-// purpose: a definition line mentions its own label, so counting mentions in
-// either role answers "which slice changed its relationship to this
-// identifier" without needing the fragment to parse as a document. A fragment
-// does not reliably parse as one: a slice opening on a thematic break reads as
-// front matter, and an HTML comment spanning a slice boundary masks
-// differently at fragment scale.
-
-/**
- * How many identifiers a scan may report before the text is refused as
- * pathological rather than counted.
- *
- * A slice is a paragraph or two of prose. Thousands of markers in one means
- * generated or adversarial text, and the guard exists to keep such text OUT of
- * the document rather than to attribute it.
- */
-const MAX_SLICE_IDENTIFIERS = 4_096;
+// Attribution, which decides WHICH replacement to withdraw, is a different
+// reading and lives in `footnote-mentions.ts`.
 
 /**
  * What the guard settled on for one document.
@@ -71,62 +51,6 @@ export type GuardedAssembly = {
    */
   readonly findings: readonly string[];
 };
-
-/**
- * Counts every footnote identifier a text mentions, in either role.
- *
- * Role-blind by design: a definition line mentions its own label, and a slice
- * that stops mentioning an identifier is a suspect however it mentioned it.
- *
- * @param text - slice text or whole document
- *
- * @returns Mentions keyed as `convention identifier`
- *
- * @throws {@link Error} when a text mentions more identifiers than
- * {@link MAX_SLICE_IDENTIFIERS}, which no prose slice does
- *
- * @example
- * ```ts
- * const counts = footnoteIdentifiers({ text: 'A nap[^1].', },);
- * ```
- */
-export function footnoteIdentifiers(
-  { text, }: { readonly text: string; },
-): ReadonlyMap<string, number> {
-  /**
-   * Mentions accumulated across both conventions.
-   */
-  const counts = new Map<string, number>();
-  for (const [convention, hits,] of [
-    [
-      'gfm',
-      scanGfmReferenceLiterals({ slice: text, },),
-    ],
-    [
-      'fullwidth-bracket',
-      scanFullwidthMarkers({ slice: text, },),
-    ],
-  ] as const) {
-    if (hits.length > MAX_SLICE_IDENTIFIERS) {
-      throw new Error(
-        `${String(hits.length,)} ${convention} footnote markers in one text, `
-          + `over the ${String(MAX_SLICE_IDENTIFIERS,)} this guard counts`,
-      );
-    }
-    for (const hit of hits) {
-      /**
-       * Key naming the convention this identifier belongs to, since the two
-       * conventions number independently.
-       */
-      const key = `${convention} ${hit.identifier}`;
-      counts.set(
-        key,
-        (counts.get(key,) ?? 0) + 1,
-      );
-    }
-  }
-  return counts;
-}
 
 /**
  * Key identifying a footnote defect across two documents.
@@ -222,6 +146,88 @@ export function introducedFootnoteFindings(
 }
 
 /**
+ * Parse tolerances that mean the document became LESS parseable, rather than
+ * that the parser worked around something ordinary.
+ *
+ * A masked comment and a blanked invisible line are ordinary. An unterminated
+ * comment swallows everything after it, and an MDX downgrade means the strict
+ * parser refused the document and the loose one accepted it as plain markdown.
+ * Both are whole-document effects that a per-slice check cannot see: masking
+ * runs over the whole body before parsing, so one slice's stray `<!--` hides
+ * markers in slices nobody touched.
+ */
+const STRUCTURAL_REGRESSION_KINDS: readonly string[] = [
+  'unterminated-html-comment',
+  'mdx-downgraded',
+];
+
+/**
+ * Structural parse regressions an assembled document carries beyond its
+ * incumbent's.
+ *
+ * @param incumbentText - translation as it stands
+ *
+ * @param assembledText - document spliced from the surviving replacements
+ *
+ * @returns Regression kinds with how many more the assembly carries
+ *
+ * @example
+ * ```ts
+ * const worse = introducedStructuralRegressions({ incumbentText, assembledText, },);
+ * ```
+ */
+export function introducedStructuralRegressions(
+  {
+    incumbentText,
+    assembledText,
+  }: {
+    readonly incumbentText: string;
+    readonly assembledText: string;
+  },
+): readonly string[] {
+  return STRUCTURAL_REGRESSION_KINDS.filter(function worsened(kind,): boolean {
+    return countParseFindings({
+      text: assembledText,
+      kind,
+    },) > countParseFindings({
+      text: incumbentText,
+      kind,
+    },);
+  },);
+}
+
+/**
+ * Counts one parse-finding kind in a document.
+ *
+ * @param text - document to parse
+ *
+ * @param kind - finding kind to count
+ *
+ * @returns How many the parser reported
+ *
+ * @example
+ * ```ts
+ * const count = countParseFindings({ text, kind: 'mdx-downgraded', },);
+ * ```
+ */
+function countParseFindings(
+  {
+    text,
+    kind,
+  }: {
+    readonly text: string;
+    readonly kind: string;
+  },
+): number {
+  return parseDocument({ text, },)
+    .parseFindings
+    .filter(function isKind(finding,): boolean {
+      return finding.kind === kind;
+    },)
+    .length;
+}
+
+/**
  * Replacements whose slice changed how often it mentions an identifier.
  *
  * @param identifierKey - `convention identifier` at fault
@@ -263,8 +269,14 @@ function suspectsFor(
       const afterCounts = footnoteIdentifiers({
         text: replacement.replacementText,
       },);
-      return (beforeCounts.get(identifierKey,) ?? 0)
-        !== (afterCounts.get(identifierKey,) ?? 0);
+      // EITHER role: a defect names an identifier, and both the reference that
+      // points at it and the definition that answers it can be what moved.
+      return [
+        `reference ${identifierKey}`,
+        `definition ${identifierKey}`,
+      ].some(function moved(key,): boolean {
+        return (beforeCounts.get(key,) ?? 0) !== (afterCounts.get(key,) ?? 0);
+      },);
     },)
     .map(function toIndex(replacement,): number {
       return replacement.chunkIndex;
@@ -374,7 +386,17 @@ export function guardFootnoteAssembly(
         incumbentText: targetText,
         assembledText,
       },);
-      if (introduced.length === 0) {
+
+      /**
+       * Parse regressions this assembly introduced, which no identifier names:
+       * a stray comment opener masks markers document-wide, and a downgrade
+       * means the strict parser refused what the archive accepted.
+       */
+      const regressions = introducedStructuralRegressions({
+        incumbentText: targetText,
+        assembledText,
+      },);
+      if ((introduced.length === 0) && (regressions.length === 0)) {
         return {
           assembledText,
           surviving: standing,
@@ -392,19 +414,37 @@ export function guardFootnoteAssembly(
         },);
       },),);
       if (culprits.size === 0) {
-        // Nothing changed its mention of the identifier at fault, so the defect
-        // came from how the replacements MEET rather than from what any of them
-        // says: a replacement whose tail runs into the next block can stop an
-        // untouched definition line being read as one. Withdrawing an
-        // unattributable slice would be a guess, so this ships and says so
-        // loudly rather than quietly.
-        findings.push(...introduced.map(function toFinding(finding,): string {
-          return `assembly-footnote-unattributable ${finding.kind} `
-            + `${finding.convention} ${finding.identifier}`;
+        // Nothing changed its mention of the identifier at fault, or the defect
+        // names no identifier at all: it came from how the replacements MEET
+        // rather than from what any one of them says. A slice's stray comment
+        // opener masks markers document-wide, and a replacement whose tail runs
+        // into the next block can stop an untouched definition line being read
+        // as one.
+        //
+        // Choosing a slice to withdraw here would be a guess, and shipping a
+        // document the lane knowingly broke is worse. So every replacement is
+        // withdrawn: the archive's own text is the one thing certain to parse
+        // as it did before, and the per-slice records still hold every decision
+        // the judges made.
+        for (const finding of introduced) {
+          findings.push(
+            `assembly-footnote-unattributable ${finding.kind} `
+              + `${finding.convention} ${finding.identifier}`,
+          );
+        }
+        for (const kind of regressions)
+          findings.push(`assembly-structure-unattributable ${kind}`,);
+        findings.push(
+          `assembly-withdrew-every-replacement (${
+            String(standing.length,)
+          } slices), since no slice could be blamed for the defect`,
+        );
+        withdrawn.push(...standing.map(function toIndex(replacement,): number {
+          return replacement.chunkIndex;
         },),);
         return {
-          assembledText,
-          surviving: standing,
+          assembledText: targetText,
+          surviving: [],
         };
       }
       for (const finding of introduced) {
