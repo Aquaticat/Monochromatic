@@ -10638,3 +10638,70 @@ decline refusal removed (only the two decline cases fail), the wire guard's
 blank rejection reverted (the re-ask case fails on the heard count, 3 against
 2), and the repair lane's anchor branch removed (the exchange count moves from
 14 to 17).
+
+### What the review of that landing found, and what is still open
+
+A source-bearing external review of the absent-incumbent work, run over the
+whole lane, the selector and the assembly path. Four defects were real and are
+fixed; three items are recorded rather than built, and one claim it made is
+answered by a measurement rather than by code.
+
+WHAT COULD HAVE RECORDED A TRANSLATED PASSAGE AS A MISSING ONE, which is the
+class that mattered. A blank winner raised the ABSENCE error, so a deletion for
+a slice the archive does translate would have been caught by the driver and
+written into the unfilled list. It now raises its own error, in either mode,
+since a deletion is a defect rather than an outcome. Two more layers refuse the
+same shape: the attempt layer accepts an unfilled result only for an anchor, and
+the wording builder refuses an unfilled index naming a slice with archive
+wording. None of the three was reachable through the normal path; all three are
+one regression away from being reachable, and the failure is silent.
+
+THE ALIGNMENT REFUSAL WAS NOT GATED BY MODE. It restores the incumbent, which at
+an anchor is nothing, so a selected rendering could have been turned into a
+settled blank anchor: the exact wrong-success state this work removes, arriving
+by the back door. Gated to a present incumbent, with a check that a record for an
+absent slice carries a translation before it is built.
+
+A DOCUMENT WITH HOLES NOW SAYS SO. `status` is `complete` or `unfilled`, and the
+gaps are entries carrying their reason and the stage findings rather than a list
+of indices. The old shape was nameable and still missable: a consumer reading
+the text and the counts saw an ordinary success, and several unfilled slices
+flattened their evidence into one list where nothing said which passage each
+belonged to.
+
+THE JUDGE SHEET WAS PROMISING A FALLBACK THAT DOES NOT EXIST. Every judge is told
+declining is safe because the caller keeps text it already trusts; at an anchor
+there is none, so the sentence bought a missing passage with the caution it
+asked for. The consequence is now the caller's to state, defaulted to the old
+sentence so no other caller changes, and the test reads the sheets the judges
+received rather than trusting the builder.
+
+ONE CLAIM ANSWERED BY MEASUREMENT rather than by code: the review doubted that
+the repair lane spends nothing on an anchor, since the not-applicable outcome
+still reaches refinement. It does reach it, and costs nothing, because
+refinement derives its envelopes from the outcome text and an empty text yields
+none. The test measures the exchange count with and without an anchor: 14 both
+ways, against 17 when the branch is neutered.
+
+ONE CORRECTION TO MY OWN REASONING, worth keeping because the rationale was
+wrong while the change was right. The cache key carries the incumbent kind, and
+I justified it with a collision between an anchor and a whitespace-only content
+span. There is no such collision: the whitespace span carries its whitespace
+rather than the empty string, and a content chunk covering nothing is refused by
+the layout guard. The field stays because the QUESTION differs, which is a
+better reason and holds even if those two facts change.
+
+WHAT IS RECORDED RATHER THAN BUILT, all in `#100` and `#102`: a machine-readable
+disposition on the repair not-applicable outcome, which is prose-only today; a
+structured attempt ledger with an explicit retry policy, which the review ranks
+above both the current always-retry behaviour and an expiring negative cache,
+and which needs the decline rate measured first; and the settled-record list
+still holding only filled slices rather than a full-length union, which the
+status field and the unfilled entries make legible but do not make positional.
+
+ONE THING DELIBERATELY LEFT AS IS, since the review flagged it as a cost: two
+identical anchors in one document are both bought, because an unfilled slice is
+memoized nowhere. That is the cold-warm agreement rule rather than an oversight.
+A warm run finds nothing cached for an unfilled slice and buys it again, so an
+in-run memo would make a cold run cheaper than a warm one over the same
+document, which is the divergence that memo exists to prevent.
