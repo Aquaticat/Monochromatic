@@ -558,6 +558,21 @@ of `#89`:
     the repaired text equals the incumbent: the cached outcomes on disk do not
     carry the incumbent, so answering it needs a re-preparation of each entry,
     which costs no quota.
+-   AND THE FIRST OF THE REVIEW FINDINGS WAS MEASURED RATHER THAN QUEUED. `#98`
+    says the aligner's mirrored fast path skips alignment whenever the section
+    counts match, which is `#71`'s defect arriving by an uncovered path. Over
+    the pinned corpus: 85 of 92 pairs take that fast path, and the forced
+    aligner would pair NONE of them differently. The positive control ran first
+    and shows the probe can see the defect, on invented headings with one
+    section dropped and one added. But the same control also shows the forced
+    aligner pairing three WHOLLY UNRELATED headings by position without a single
+    refusal, and on this corpus every source heading is Chinese against an
+    English target, so it has no signal to work from and degrades to exactly the
+    positional pairing the fast path already does. THE ZERO IS NOT EVIDENCE THE
+    85 PAIRINGS ARE RIGHT; it says running the aligner on them would change
+    nothing, because the aligner is blind here. That is the same blindness `#71`
+    named and the instrument weakness `#74` is about, so `#98` alone would land
+    a change that provably alters no pairing while looking like a fix.
 -   WHAT IT STILL DOES NOT DO. Nothing CALLS `compareDocumentLanes` yet: the
     corpus pass writes a repair-only artifact, and wiring it for two lanes is
     the part Question 5 shapes. The settled artifact also records no per-slice
