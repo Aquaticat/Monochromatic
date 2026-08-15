@@ -28,6 +28,20 @@ export {
   type TranslateSlateEntry,
 } from './translate-slate.ts';
 export {
+  alignmentRefusals,
+  translateDocument,
+  translateRunShape,
+  translateSliceKey,
+} from './translate-document.ts';
+export {
+  type TranslateDisposition,
+  type TranslateDocumentResult,
+  type TranslateModels,
+  TRANSLATE_SLICE_CACHE_VERSION,
+  type TranslateSliceRecord,
+} from './translate-document-contract.ts';
+export { settleTranslateSlice, } from './translate-slice.ts';
+export {
   runTranslateStage,
   type TranslateDecision,
   type TranslateStageResult,

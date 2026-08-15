@@ -39,6 +39,20 @@ import {
  */
 export type PreparedDocumentPair = {
   /**
+   * Original document this preparation was made from.
+   */
+  readonly sourceText: string;
+
+  /**
+   * Translation the target spans and offsets index into.
+   *
+   * Carried so a lane assembles against the document it was prepared from. A
+   * driver handed a preparation and an unrelated translation would splice at
+   * offsets that mean nothing there, and produce plausible-looking text.
+   */
+  readonly targetText: string;
+
+  /**
    * Paragraph-bound slice pairs across every aligned section, indexed globally
    * in document order.
    */
@@ -183,6 +197,8 @@ export function prepareDocumentPair(
   }
 
   return {
+    sourceText,
+    targetText,
     slices,
     lineStructuredSliceIndices: governedSliceIndices({ chunks: governance, },),
     // Omitted rather than empty, so spreading this into a prompt cannot emit a
