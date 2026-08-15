@@ -1,20 +1,16 @@
-import { alignBlocks, } from '../align-blocks-walk.ts';
-import { alignDocumentSections, } from '../chunk-document.ts';
 import {
   CorpusReadError,
   listCorpusPeople,
-  readCorpusFile,
 } from '../corpus-source.ts';
-import { parseDocument, } from '../parse-document.ts';
-import {
-  SLICE_CHAR_BUDGET,
-  subdivideChunkPair,
-} from '../slice-pair.ts';
 import {
   describeSpread,
   REPORTED_PERCENTILES,
 } from './census-spread.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
+import {
+  censusEntry,
+  type EntryCensus,
+} from './slice-census-entry.ts';
 
 //region Slice census
 // What the corpus looks like AFTER slicing, measured rather than assumed, and
@@ -46,6 +42,12 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
  */
 const PROBE_TIMEOUT_CHARS = 4_641;
 
+/**
+ * How many entries the unpaired-section list names, which is enough to show
+ * whether that text is one outlier or spread across the corpus.
+ */
+const UNPAIRED_ENTRIES_LISTED = 5;
+
 
 /**
  * One entry with the largest single slice it produced.
@@ -70,204 +72,6 @@ type WidestSlice = Readonly<{
    */
   largest: number;
 }>;
-
-/**
- * One entry's measured shape.
- *
- * @example
- * ```ts
- * const row: EntryCensus = { entryId, sliceCount: 12, ... };
- * ```
- */
-type EntryCensus = {
-  /**
-   * Corpus id.
-   */
-  readonly entryId: string;
-
-  /**
-   * Source characters of every slice, in document order.
-   */
-  readonly sliceSourceChars: readonly number[];
-
-  /**
-   * Target characters of every slice.
-   */
-  readonly sliceTargetChars: readonly number[];
-
-  /**
-   * Sections subdivision returned whole because one side carried no blocks.
-   *
-   * Measured against the CURRENT aligner, which pairs every section it is
-   * given, including by character fraction when structure disagrees. A zero
-   * here therefore says nothing about the aligner `#74` is building, whose
-   * whole purpose is to leave a section unpaired rather than pair it wrongly.
-   * The unsliced path this counts is latent, not absent, and goes live the day
-   * that aligner lands.
-   */
-  readonly onesidedSections: number;
-
-  /**
-   * Characters of source in those sections, which is what one call would carry.
-   */
-  readonly onesidedSourceChars: number;
-
-  /**
-   * Blocks the translation carries that no source block partnered.
-   */
-  readonly targetOnlyBlocks: number;
-
-  /**
-   * Characters in those blocks.
-   */
-  readonly targetOnlyChars: number;
-
-  /**
-   * Size of every target-only block, so a transcription can be told from an
-   * ordinary paragraph split.
-   *
-   * The transcribed-image class is the case where a Chinese page holds a letter
-   * as a picture and the English page transcribes and translates it. MEASURED
-   * 2026-08-15: that picture is nowhere in the markdown this pipeline reads.
-   * Only 2 of 92 source pages mention `img` at all, and the entry with the most
-   * target-only text mentions none, so no image-adjacency test can find the
-   * class. Size is the signal that remains: a transcription runs long and a
-   * split paragraph does not.
-   */
-  readonly targetOnlyBlockChars: readonly number[];
-};
-
-/**
- * Measures one corpus entry.
- *
- * @param entryId - corpus id
- *
- * @returns That entry's shape after slicing
- *
- * @throws {@link CorpusReadError} when either side is absent
- *
- * @example
- * ```ts
- * const row = await censusEntry({ entryId: 'Toka_ls', },);
- * ```
- */
-async function censusEntry(
-  { entryId, }: { readonly entryId: string; },
-): Promise<EntryCensus> {
-  /**
-   * Original document at the pin.
-   */
-  const sourceText = await readCorpusFile({
-    pin: RUN_CORPUS_PIN,
-    relPath: `people/${entryId}/page.md`,
-  },);
-
-  /**
-   * Translation at the same commit.
-   */
-  const targetText = await readCorpusFile({
-    pin: RUN_CORPUS_PIN,
-    relPath: `people/${entryId}/page.en.md`,
-  },);
-
-  /**
-   * Aligned section pairs, exactly as the pipeline cuts them.
-   */
-  const alignment = alignDocumentSections({
-    source: parseDocument({ text: sourceText, },),
-    target: parseDocument({ text: targetText, },),
-  },);
-
-  /**
-   * Counters accumulated across this entry's sections.
-   */
-  const totals = {
-    onesidedSections: 0,
-    onesidedSourceChars: 0,
-    targetOnlyBlocks: 0,
-    targetOnlyChars: 0,
-  };
-
-  /**
-   * Size of every target-only block this entry carries.
-   */
-  const targetOnlyBlockChars: number[] = [];
-
-  /**
-   * Source characters of every slice.
-   */
-  const sliceSourceChars: number[] = [];
-
-  /**
-   * Target characters of every slice.
-   */
-  const sliceTargetChars: number[] = [];
-  for (const pair of alignment.pairs) {
-    /**
-     * Blocks each side carries.
-     */
-    const sourceNodes = pair.source
-      .nodes;
-
-    /**
-     * Translation blocks, which may be none.
-     */
-    const targetNodes = pair.target
-      .nodes;
-    if ((sourceNodes.length === 0) || (targetNodes.length === 0)) {
-      totals.onesidedSections += 1;
-      totals.onesidedSourceChars += pair.source
-        .text
-        .length;
-    }
-    else {
-      for (const step of alignBlocks({
-        sourceNodes,
-        targetNodes,
-      },)) {
-        if (step.kind !== 'target-only')
-          continue;
-        /**
-         * Characters this target-only block carries.
-         */
-        const blockChars = targetNodes[step.targetIndex]
-          ?.text
-          .length
-          ?? 0;
-        totals.targetOnlyBlocks += 1;
-        totals.targetOnlyChars += blockChars;
-        targetOnlyBlockChars.push(blockChars,);
-      }
-    }
-    for (
-      const slice of subdivideChunkPair({
-        pair,
-        sourceText,
-        targetText,
-        baseIndex: sliceSourceChars.length,
-        budget: SLICE_CHAR_BUDGET,
-      },)
-    ) {
-      sliceSourceChars.push(slice.source
-        .text
-        .length,);
-      sliceTargetChars.push(slice.target
-        .text
-        .length,);
-    }
-  }
-
-  return {
-    entryId,
-    sliceSourceChars,
-    sliceTargetChars,
-    onesidedSections: totals.onesidedSections,
-    onesidedSourceChars: totals.onesidedSourceChars,
-    targetOnlyBlocks: totals.targetOnlyBlocks,
-    targetOnlyChars: totals.targetOnlyChars,
-    targetOnlyBlockChars,
-  };
-}
 
 /**
  * Measures every complete pair at the pin and prints the census.
@@ -334,41 +138,76 @@ async function main(): Promise<void> {
   },),);
 
   /**
-   * Entries carrying a section subdivision returns whole.
+   * Entries carrying a section the aligner would not pair, on either side.
    */
-  const onesided = rows.filter(function hasOnesided(row,) {
-    return row.onesidedSections > 0;
+  const unpaired = rows.filter(function hasUnpaired(row,) {
+    return (row.unpairedSourceSections > 0)
+      || (row.unpairedTargetSections > 0);
   },);
   console.log(
-    `CENSUS one-sided sections: ${
-      String(onesided.reduce(
-        function addSections(
+    `CENSUS unpaired sections: ${
+      String(unpaired.reduce(
+        function addSourceSections(
         sum,
         row,
       ) {
-        return sum + row.onesidedSections;
+        return sum + row.unpairedSourceSections;
       },
         0,
       ),)
-    } across ${String(onesided.length,)} entries, ${
-      String(onesided.reduce(
-        function addChars(
+    } source and ${
+      String(unpaired.reduce(
+        function addTargetSections(
         sum,
         row,
       ) {
-        return sum + row.onesidedSourceChars;
+        return sum + row.unpairedTargetSections;
       },
         0,
       ),)
-    } source chars, largest single section ${
-      String(Math.max(
+    } target, across ${String(unpaired.length,)} entries, ${
+      String(unpaired.reduce(
+        function addSourceChars(
+        sum,
+        row,
+      ) {
+        return sum + row.unpairedSourceChars;
+      },
         0,
-        ...onesided.map(function toChars(row,) {
-          return row.onesidedSourceChars;
-        },),
       ),)
-    }`,
+    } source chars and ${
+      String(unpaired.reduce(
+        function addTargetChars(
+        sum,
+        row,
+      ) {
+        return sum + row.unpairedTargetChars;
+      },
+        0,
+      ),)
+    } target chars, reaching no slice`,
   );
+  for (
+    const row of unpaired
+      .toSorted(function byUnpairedChars(
+        left,
+        right,
+      ): number {
+        return right.unpairedSourceChars - left.unpairedSourceChars;
+      },)
+      .slice(
+        0,
+        UNPAIRED_ENTRIES_LISTED,
+      )
+  ) {
+    console.log(
+      `CENSUS   ${row.entryId}: ${
+        String(row.unpairedSourceSections,)
+      } source sections (${String(row.unpairedSourceChars,)} chars), ${
+        String(row.unpairedTargetSections,)
+      } target sections (${String(row.unpairedTargetChars,)} chars)`,
+    );
+  }
 
   /**
    * Entries carrying blocks only the translation has.

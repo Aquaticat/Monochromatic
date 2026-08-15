@@ -152,15 +152,31 @@ So the selector prompt is nowhere near a context limit on this corpus, and the
 
 ## What the corpus costs
 
-1260 slices over 92 pairs, which is the whole of today's shape rather than a
-part of it.
-The census finds no section that one side lacks entirely, so no population is
-sitting outside these slices waiting for `#90` to bring it in.
-What `#90` governs is inside them:
+1260 slices over 92 pairs, which is what today's shape costs.
+It is not the whole corpus.
+
+Two entries carry sections the aligner refuses to pair, and a refused section
+becomes no pair and therefore no slice:
+ 11 source sections and 10 target sections across `XIEPT2` and `XingZ60`,
+ holding 13147 source characters and 1297 target characters that no lane sees.
+Sliced at the corpus median source size of 101 characters, that source text
+would add on the order of 130 slices, about a tenth of a pass on top of the
+figures here.
+So `#90` landing raises the cost rather than redistributing it.
+
+A separate asymmetry sits INSIDE the paired sections and is already paid for
+here:
  132 blocks across 39 entries, 44731 characters, that the translation carries
  and the original does not.
-Those are already inside paired sections and already counted here;
- `#90` decides how a slice is sized around them, not whether they are paid for.
+`#90` decides how a slice is sized around those, not whether they are bought.
+
+An earlier version of this section said no population sat outside the slices,
+reading a census counter that walked the pairs.
+Only a forced pairing becomes a pair, so a refused section is absent from the
+pairs rather than present with an empty side, and that counter could only ever
+report zero.
+The census now counts sections against pairs instead
+(`mise run //package/module/translation-repair:slice-census`).
 Slices per entry:
  p50 8,
  p90 25,
