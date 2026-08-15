@@ -10282,3 +10282,42 @@ already knew, and the honest answer here was "more than I assumed".
 The barrel it exports through is new. `pipeline-barrel.ts` sat exactly at its
 line budget, so one document PAIR, from the shared preparation to the driver
 that runs both lanes over it, became `document-barrel.ts`.
+
+### A slice is now keyed by what it asks, not by where it sits
+
+`5577324f5`, and it is the change that makes the rest of `#99` and `#100`
+affordable. Both lane caches hashed the slice index beside the run shape and
+both texts. That meant any renumbering discarded every slice below the change,
+however untouched its text, and one-sided slicing renumbers BY DESIGN: it
+inserts a slice wherever a section has no translation. Without this, `#100`
+would have rebought the corpus on its first run and again on every slicing
+change after it.
+
+WHAT A KEY IS FOR, stated the way that settles the question: two runs' slices
+are the same slice when the models would be asked the same thing. That is the
+source text, the incumbent, the governance flag and the run shape. Where the
+slice sits is not part of the question, so it is not part of the key.
+
+WHAT IT COSTS, measured rather than assumed. Two slices carrying identical
+source text, identical incumbent and identical governance inside one document
+now share a cache entry. Their models would decide identically, so the shared
+record is right rather than merely cheap. Across the 92 pinned documents and
+1260 slices there is no such pair; the probe was validated first on an invented
+document with two identical sections, where it finds the pair. Both drivers now
+stamp a resumed record with the index they asked under, because the index the
+record was computed with would otherwise name the wrong slice in every issue
+record and replacement built from it.
+
+The repair cache moves to 26 and the translate cache to 2, which discards what
+is on disk. The user authorized that explicitly, and the version histories in
+both files say why it was spent here rather than later.
+
+TWO TESTS CHANGED MEANING RATHER THAN WORDING, which is worth noticing: both
+lanes used to REFUSE a cached record whose index disagreed, and that refusal was
+the very thing this change makes wrong. They now assert the re-stamping, by
+resuming from records whose indices are all off by one and checking the document
+and every index against the run that settled them. A third test in
+`document-lanes.unit.test.ts` had used the old refusal as its way to make the
+repair lane fail with the signal live; it now fails the lane's cache write
+instead, which is a first-lane failure of the same shape and does not depend on
+a rule that no longer exists.
