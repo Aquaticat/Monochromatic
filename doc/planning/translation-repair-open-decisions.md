@@ -1170,9 +1170,25 @@ That ordering costs nothing, because C keeps B's denominator.
     WHAT I DID RATHER THAN WAIT: built A and measured it, since it was the
     stated default and the prototype touches no corpus state. It is four files
     and a probe task, nothing calls them, and no slicing or artifact reads them.
-    Results are in the handover; the short version is that it corrected my own
-    hand label on the eleven section candidates, with six voices quoting the
-    English they found or reporting that they found none.
+    WHAT IT MEASURED, thirty-three candidates, six voices each, about a hundred
+    and ninety calls and under ten minutes:
+    ELEVEN SECTIONS: ten absent, one carried. Every verdict agrees with what the
+    documents contain, and NINE of my eleven hand labels were wrong. It found
+    that one entry's English side is headings without bodies, and that a source
+    heading meaning "blank" is rendered by an English heading spelled `__`,
+    which the matcher cannot score because it holds no letters.
+    TWENTY-TWO BLOCKS: eighteen carried, most unanimously, one absent, and three
+    split with NO votes for absence at all. So at paragraph scale at most one of
+    twenty-two passages the aligner refuses is one nobody translated, and
+    landing four would insert on all twenty-two.
+    WHAT THAT IS NOT: an accuracy number. The candidates come from five entries,
+    most blocks carry no hand label, and I made the labels after seeing the
+    aligner. What the class balance cannot explain is that pooled across both
+    scales no constant answer beats nineteen of thirty-three, while the probe
+    agrees with every label I have in both directions.
+    WHAT IT COSTS: about six calls per candidate, roughly a hundred and six
+    candidates corpus-wide, so one pass over every unpaired passage in the
+    corpus is around six hundred and forty calls and a quarter of an hour.
     ONE DESIGN DEFECT IT EXPOSED, which matters whichever option you choose: a
     source section whose translation is a HEADING WITH NO BODY must have its
     body inserted UNDER that heading, not inserted as a whole new section, or
