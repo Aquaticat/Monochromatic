@@ -83,8 +83,8 @@ type PlacedReplacement = {
  * @returns Translation with every replacement applied
  *
  * @throws {@link Error} when a replacement names a slice that does not exist,
- * or when two name the same slice: both mean the caller and the slicing
- * disagree, and either silently drops text
+ * when two name the same slice, or when two slices carry one index: each means
+ * the caller and the slicing disagree, and each silently drops text
  *
  * @example
  * ```ts
@@ -113,6 +113,13 @@ export function spliceSlices(
       slice.target,
     ] as const;
   },),);
+  if (spans.size !== slices.length) {
+    throw new Error(
+      'two slices carry one index: a map keyed by index keeps only the last of '
+        + 'them, so one slice becomes unreachable while its replacement lands '
+        + 'on the other',
+    );
+  }
 
   /**
    * Replacements paired with the span each names, refusing anything that

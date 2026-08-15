@@ -462,6 +462,35 @@ await describe({
     },),
 
     it({
+      name: 'THROWS when two SLICES carry one index, which has happened: a '
+        + 'section only one side carried came back holding its section index '
+        + 'while every other path stamped the global one. Keyed by index, the '
+        + 'second slice would replace the first and one of them would become '
+        + 'unreachable while its replacement landed on the other',
+      fn: async () => {
+        expect(function spliceCollidingSlices() {
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES,
+              chunkAt({
+                chunkIndex: 0,
+                startOffset: FINAL_START,
+                endOffset: FINAL_START,
+              },),
+            ],
+            replacements: [
+              write({
+                chunkIndex: 0,
+                replacementText: 'The cat naps.',
+              },),
+            ],
+          },);
+        },).toThrow('two slices carry one index',);
+      },
+    },),
+
+    it({
       name: 'THROWS when two replacements name ONE slice, since whichever '
         + 'applied second would overwrite the other and the winner would depend '
         + 'on sort order. Two lanes writing the same slice is exactly the shape '
