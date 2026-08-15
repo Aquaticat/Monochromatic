@@ -466,6 +466,66 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a cached record that claims a change while carrying the '
+        + 'archive\'s own wording. A resumed record is trusted on its slice '
+        + 'index alone, so a truncated write that still parses, or a slicing '
+        + 'that moved while the key did not, lands a replacement that changes '
+        + 'nothing in the shipped set beside a document nobody changed: the run '
+        + 'settles, the artifact records it, and the count is wrong wherever it '
+        + 'is read afterwards',
+      fn: async () => {
+        const { persisted, } = await runDriver({},);
+
+        /**
+         * Archive wording of each prepared slice, read from the same
+         * preparation the driver builds rather than assumed from the fixture.
+         */
+        const incumbentByIndex = new Map(
+          prepareDocumentPair({
+            sourceText: SOURCE_TEXT,
+            targetText: TARGET_TEXT,
+          },)
+            .slices
+            .map(function toEntry(slice,): readonly [number, string,] {
+              return [
+                slice.target.chunkIndex,
+                slice.target.text,
+              ] as const;
+            },),
+        );
+
+        /**
+         * Same records under the same keys, each claiming its change while
+         * carrying the wording it claims to have replaced.
+         */
+        const poisoned = new Map(
+          [...persisted.entries(),].map(function toPoisoned([key, record,],) {
+            return [
+              key,
+              {
+                ...record,
+                outputText: incumbentByIndex.get(record.chunkIndex,)
+                  ?? record.outputText,
+              },
+            ] as const;
+          },),
+        );
+
+        // Positive control for the poisoning itself: every poisoned record has
+        // to differ from what the run settled, or the case would pass because
+        // nothing was actually sabotaged.
+        expect([...poisoned.values(),].some(function wasPoisoned(record,): boolean {
+          return record.changed
+            && (record.outputText === incumbentByIndex.get(record.chunkIndex,));
+        },),).toBe(true,);
+
+        await expect(runDriver({ resumed: poisoned, },),)
+          .rejects
+          .toThrow('claims a change and carries the archive wording',);
+      },
+    },),
+
+    it({
       name: 'THROWS on a caller abort rather than settling the slices it never '
         + 'bought, and caches none of them. An abort reaches every stage as '
         + 'silence rather than as a failure, so an unguarded driver ships the '
