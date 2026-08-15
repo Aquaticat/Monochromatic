@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { deriveShippedIndices, } from './assembly-invariant.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import { buildChunkCriticRecords, } from './critic-attribution.ts';
 import { buildIssueRecords, } from './repair-record.ts';
@@ -57,6 +58,18 @@ export function blockedRepairResult(
     readonly totalChars: number;
   },
 ): RepairTranslationResult {
+  // VACUOUS TODAY, and here for what it costs rather than for what it catches.
+  // This exit returns its input and ships nothing, so the check passes by
+  // inspection; what it pins is that any later edit letting a blocked run carry
+  // some repair has to say which slices, in the same terms assembly uses. An
+  // exit that states every fact by hand is exactly where those two drift apart.
+  deriveShippedIndices({
+    incumbentText: targetText,
+    assembledText: targetText,
+    slices,
+    survivingReplacements: [],
+  },);
+
   return {
     repairedText: targetText,
     status: 'blocked-non-translation',

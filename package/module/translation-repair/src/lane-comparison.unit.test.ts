@@ -227,6 +227,59 @@ await describe({
       },
     },),
     it({
+      name:
+        'REFUSES a shipped index naming a slice the lane reports no wording for. That set and those '
+        + 'rows are the two halves of one claim, and an index matching no row used to be accepted '
+        + 'and then quietly match nothing, so every row below it was wrong one row at a time',
+      fn: async () => {
+        /**
+         * Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: {
+              sliceTexts: [{
+                chunkIndex: 0,
+                incumbentText: ARCHIVE_NAP,
+                acceptedText: 'The cat is asleep on the windowsill.',
+              },],
+              shippedChunkIndices: [4,],
+            },
+            translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('reports no wording for it',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a shipped index whose own row carries the archive`s wording, which is the same '
+        + 'contradiction the assembly checks refuse one layer up and would read here as a rewrite '
+        + 'nobody made',
+      fn: async () => {
+        /**
+         * Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: true, },),
+            translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('archive',);
+      },
+    },),
+    it({
       name: 'REFUSES a slice the other lane does not report at all, even when both lists are the same length',
       fn: async () => {
         /**

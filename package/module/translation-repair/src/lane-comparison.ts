@@ -168,6 +168,75 @@ function carriedText(
 }
 
 /**
+ * Shipped indices as a set, refusing any that the lane's own rows contradict.
+ *
+ * The comparison used to build these sets and look slices up in them, so an
+ * index naming a slice the lane never reported was accepted and then quietly
+ * matched nothing. That is the shape a result built from two different
+ * preparations has, and it is exactly what every row below would then be wrong
+ * about, one row at a time and without a symptom.
+ *
+ * @param lane - which side these indices came from, for the message
+ *
+ * @param shipped - slices that lane says its document carries a change for
+ *
+ * @param wordings - that lane's per-slice rows, which the indices must name
+ *
+ * @returns Same indices, as a set
+ *
+ * @throws LaneComparisonError when an index names no row, or names a row whose
+ * accepted wording is the archive's own
+ *
+ * @example
+ * ```ts
+ * const shippedSlices = shippedSet({ lane: 'repair', shipped, wordings, },);
+ * ```
+ */
+function shippedSet(
+  {
+    lane,
+    shipped,
+    wordings,
+  }: {
+    readonly lane: string;
+    readonly shipped: readonly number[];
+    readonly wordings: readonly LaneSliceText[];
+  },
+): ReadonlySet<number> {
+  /**
+   * Rows this lane reported, by slice index.
+   */
+  const rows = new Map(wordings.map(function toEntry(wording,): [
+    number,
+    LaneSliceText,
+  ] {
+    return [
+      wording.chunkIndex,
+      wording,
+    ];
+  },),);
+  for (const chunkIndex of shipped) {
+    /**
+     * Row this index claims to name.
+     */
+    const row = rows.get(chunkIndex,);
+    if (row === undefined)
+      throw new LaneComparisonError({
+        message: `${lane} lane names slice ${
+          String(chunkIndex,)
+        } as shipped and reports no wording for it`,
+      },);
+    if (row.acceptedText === row.incumbentText)
+      throw new LaneComparisonError({
+        message: `${lane} lane names slice ${
+          String(chunkIndex,)
+        } as shipped and reports the archive's own wording for it`,
+      },);
+  }
+  return new Set(shipped,);
+}
+
+/**
  * Names how one slice's two carried wordings relate.
  *
  * @param repairText - wording the repair document carries
@@ -288,12 +357,20 @@ export function compareDocumentLanes(
   /**
    * Slices the repair document carries a change for.
    */
-  const repairShipped = new Set(repair.shippedChunkIndices,);
+  const repairShipped = shippedSet({
+    lane: 'repair',
+    shipped: repair.shippedChunkIndices,
+    wordings: repair.sliceTexts,
+  },);
 
   /**
    * Slices the translate document carries a replacement for.
    */
-  const translateShipped = new Set(translate.shippedChunkIndices,);
+  const translateShipped = shippedSet({
+    lane: 'translate',
+    shipped: translate.shippedChunkIndices,
+    wordings: translate.sliceTexts,
+  },);
 
   return repair.sliceTexts
     .map(function toRow(mine,): SliceLaneComparison {
