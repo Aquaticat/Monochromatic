@@ -328,6 +328,13 @@ export type NonTranslationDominance = {
 
   /**
    * Target characters across every slice considered so far.
+   *
+   * THE SLICED FRACTION, not the translation. A section the aligner refused to
+   * pair produces no slice, and slicing leaves one-sided sections out
+   * altogether, so both this and `standingChars` are sums over what was
+   * EXAMINED. Measured over the pinned corpus, slices cover 92.5% of an average
+   * English document, and two entries fall under half. Which denominator the
+   * block should read is `#104`, and it is a decision rather than a defect.
    */
   readonly totalChars: number;
 };

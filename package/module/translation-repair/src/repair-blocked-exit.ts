@@ -32,7 +32,9 @@ import type { RepairTranslationResult, } from './repair-result.ts';
  * @param standingChars - archive characters under standing non-translation
  * votes
  *
- * @param totalChars - archive characters in total, which the ratio is out of
+ * @param totalChars - archive characters across every prepared slice, which is
+ * what the ratio is out of; the SLICED fraction rather than the document, since
+ * an unpaired or unsliced section appears in neither term (`#104`)
  *
  * @returns Result naming the block, with every decision the run did reach
  *
