@@ -640,11 +640,29 @@ it again on every attempt while the cause persists.
     recorded `withdrawn` and unresolved, the same disposition a non-translation
     block already used, because both mean the repair reached no reader.
     Crediting it would overstate the precision measurement directly.
+    WHAT THIS GUARD IS NOT, so you do not read more into it than it does: it
+    checks INTEGRITY, not preservation. It compares the footnote graph the
+    document comes out with against the graph it went in with, and withdraws a
+    replacement that made that graph worse. A candidate that drops a footnote
+    pair WHOLE, marker and definition together, leaves a graph with one fewer
+    footnote and nothing dangling, so it ships with no finding. So does one that
+    renames both halves consistently. Both are losses of content rather than
+    breaks in structure, and the instrument for those is `#85`, which is where
+    the damage question belongs.
 12. WHEN NO SLICE CAN BE BLAMED, EVERY replacement is withdrawn and the archive
     text ships. Reasoning: that shape comes from how replacements MEET, a stray
     comment opener masking markers document-wide above all, so picking a slice
     to withdraw would be a guess and shipping a document the lane knowingly
     broke is worse. Rare by construction, loud when it happens.
+    A STRUCTURAL REGRESSION ALWAYS TAKES THIS BRANCH, even where one replacement
+    visibly contains the `<!--` that caused it. Attribution asks which slice
+    changed its mention of an IDENTIFIER, and an unterminated comment or an MDX
+    downgrade names none, so there is nothing to match it against. Worth knowing
+    because the branch is expensive: one bad slice costs the document every
+    other repair in it.
+    HOW OFTEN THIS FIRES IS FREE TO MEASURE under Question 5's report-only
+    option, since a pass that writes nothing still runs the guard and records
+    what it withdrew. If you pick that option, the rate arrives with it.
 13. NO OTHER CROSS-SLICE GRAPH WAS BUILT, though an external review listed
     several. Measured over all 184 corpus documents: 209 GFM footnote markers in
     45 files, and zero reference-style link definitions, zero reference-style
@@ -652,3 +670,22 @@ it again on every attempt while the cause persists.
     relation this corpus has. Structural parse regressions are read alongside
     them, because an unterminated comment and an MDX downgrade name no
     identifier and nothing else would notice.
+14. A GRADING SHEET NO LONGER SHOWS A REWRITE THE DOCUMENT DID NOT CARRY as the
+    wording that shipped. The record's final-wording field was written whenever
+    the naturalness lane rewrote a slice, which was right until decision 11 let
+    assembly take a rewritten slice back. It is now written only where the
+    document carries the rewrite, so a withdrawn slice states no final wording
+    and the sheet says the rewrite was taken back rather than fencing an empty
+    block under "the slice as actually returned". Found by an external review of
+    tonight's guard change; the artifact reader was taught the same rule in the
+    same commit, because it required that field of every rewritten slice and
+    would otherwise have refused to read the run.
+15. FOOTNOTE LABELS ARE FOLDED THE WAY THE PARSER FOLDS THEM before anything
+    compares them. Markdown reads `[^Note]` and `[^note]` as one footnote and
+    mdast hands back one spelling, while the raw scans this guard attributes
+    with see what was written. Measured on a fixture before the fix: the guard
+    looked for a finding about `note` in mentions keyed `Note`, could blame no
+    slice, and withdrew BOTH replacements including one that touched no footnote.
+    Nothing settled is affected, because all 209 corpus markers are numeric and
+    folding a digit changes nothing; a model writing a word-labelled footnote
+    into a replacement triggers it at once.
