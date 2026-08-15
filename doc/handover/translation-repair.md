@@ -487,6 +487,21 @@ nothing:
 -   `PreparedDocumentPair` COULD CARRY THE PARSED INCUMBENT rather than having
     the guard reparse it. A performance note, not a correctness one, and the
     guard reparses per round anyway.
+-   AN EMPTY CRITIC ROSTER SETTLES A DOCUMENT INSTEAD OF REFUSING IT, found by
+    fault injection while proving the guard tests fail (`#93`). Configuring zero
+    critic models runs the repair lane end to end and returns an UNCHANGED
+    document with `status` settled and zero exchanges bought: no throw, no
+    finding, nothing a later reader can tell apart from a page that needed no
+    repair. The quiet path is deliberate for OUTAGES, where a stage with no
+    usable voices must settle rather than poison the slice cache with an answer
+    it did not get. A deterministic empty roster is a CONFIGURATION error, and
+    the two are indistinguishable downstream. A corpus pass under that
+    misconfiguration writes a directory of vacuous settled artifacts and looks
+    like a clean run. NOT BUILT ON PURPOSE: where the refusal belongs is a
+    design choice (lane entry, `runDocumentLanes`, or the corpus-pass boundary
+    that builds the roster), and so is whether an empty ADJUDICATOR, EDITOR,
+    CHECKER or REFINER roster deserves the same treatment, since silence means
+    different things at those stages. `#93` carries the probe as evidence.
 
 STATE: NO PASS IS RUNNING, deliberately.
 `pass16` was stopped on 2026-08-14 with zero artifacts settled, on the user's
@@ -514,10 +529,10 @@ It could never simply replace `runEditorStage` at the old call site, because
 `repairChunk` returns before reaching the editor on exactly the slices
 translation is meant to recover: non-translation votes standing, critics raising
 no claims, the panel cutting no envelopes. The driver visits every slice instead.
-WHAT REMAINS OF `#89`: there is no combined driver running both lanes over one
-preparation, and `corpus-pass.ts` opens no translate cache, writes no translate
-fields into the artifact, and has no deadline accounting that keeps a capped run
-from writing a settled artifact.
+WHAT REMAINS OF `#89` (updated 2026-08-15, the combined driver now exists as
+`runDocumentLanes`): `corpus-pass.ts` opens no translate cache, writes no
+translate fields into the artifact, and has no deadline accounting that keeps a
+capped run from writing a settled artifact.
 The preparation half is done: `repairPreparedDocument` takes a prepared pair,
 which is what a combined driver needs from this side.
 The combined driver is Question 5 neutral only if it returns both lanes' outputs
@@ -3289,6 +3304,17 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   matchers include `toBe`, `toEqual`, `toStrictEqual`, `toContain`, `toHaveLength`, `toThrow`.
 - mise task wrappers swallow findings into inherited stdio:
   capture full output to a scratchpad file and `rg` it; tails alone mislead.
+- **A background command's exit code reports its LAST stage, not the task's.**
+  A verification pipeline ending in `... | rg 'FAIL' || echo 'no failures'`
+  exits 0 whether the suite passed or the lint failed, because `rg` finding
+  nothing and `echo` succeeding are what the shell reports.
+  Measured rather than suspected: commit `e7f635e0d` was made on exactly that
+  reading and carried THREE type errors
+  (`artifact-build.ts` reading two fields its own parameter type did not
+  declare, and a benchmark test stub missing them), found the next morning by
+  opening the captured output instead of the notification.
+  Read the captured file for the `Found N warnings and N errors` line and the
+  suite's own FAIL count; never accept the wrapper's exit code as the verdict.
 - **`test:unit` alone tests the PREVIOUS BUILD, and `lint:types` reads it too.**
   Every `*.unit.test.ts` here imports `../dist/final/node/index.mjs`, the built
   bundle, not the source beside it.

@@ -755,6 +755,12 @@ await describe({
             issues: [],
             findings: [],
             chunkCritics: [],
+
+            // The stub rewrites the document whole rather than by slice, so it
+            // names the one slice that stands for it. A changed document with
+            // no shipped slice would state a thing the contract cannot mean.
+            shippedChunkIndices: [0,],
+            withdrawnChunkIndices: [],
           }
         );
         /** Benchmark over one entry. */

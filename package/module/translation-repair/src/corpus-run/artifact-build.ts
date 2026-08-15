@@ -82,6 +82,8 @@ export function buildSettledArtifact(
       readonly findings: readonly unknown[];
       readonly chunkCritics: unknown;
       readonly repairedText: string;
+      readonly shippedChunkIndices: readonly number[];
+      readonly withdrawnChunkIndices: readonly number[];
     };
     readonly acceptedCount: number;
     readonly resolvedCount: number;
