@@ -10425,3 +10425,75 @@ that does not exist. Both are unmeasured: no artifact under the runs directory
 carries `translate-blank` or `translate-no-candidate`, because the translate lane
 has never run over the corpus. They are recorded in `#100` landing 3 rather than
 fixed speculatively now.
+
+### A chunk can now name a place, and a span has to prove it can be written back
+
+`26267a148`, `faaa83ed8` and `f51c65549`, which are landings one and two of
+`#100` in the order the review set: nothing produces an insertion yet, and by
+the time something does, assembly will already refuse the shapes it must.
+
+THE PLACEMENT MODEL, in `chunk-placement.ts`. A chunk is either CONTENT, which
+covers existing text, or an INSERTION, which names a boundary where a
+translation belongs and none exists. The discriminant is a field rather than
+emptiness: no constructor here produces an empty content chunk, but the
+exported type is structural, so any caller can build one and a
+`nodes.length === 0` test would silently promote that fabrication to an
+insertion.
+
+SOL ARGUED AGAINST MY FIRST SHAPE and was right. I was going to hang an optional
+`placement` field on the one broad chunk type; that buys the word discriminator
+without the protection, since an insertion stays assignable to everything that
+wants content. The union it proposed, with the discriminant optional on content
+and required on an insertion, changes no existing construction site and still
+stops an anchor reaching a content-only parameter. Exactly two places had to be
+told they mean content, both in `slice-pair.ts`, because production makes
+nothing else.
+
+THE LINTER ARGUED WITH SOL AND WON A SMALLER POINT. The review wanted an
+insertion typed with an empty tuple for its nodes and an empty string literal
+for its text. `no-optional-escape` refuses both: a zero-length container is
+absence spelled as a value, and the rule asks for a distinct non-empty domain
+value instead. The `kind` field is that value, and the constructor keeps the
+other two empty.
+
+ONE RULE COVERS THE WHOLE REFUSAL LIST, in `placement-layout.ts`: every target
+span starts at or after the previous span ends, walked in slice order. From that
+follow no overlap, no anchor inside a span, no two spans starting at one offset,
+no anchor after a span it starts with, and no backward placement, while every
+legal shape stays legal. Sol checked the equivalence claim against the code and
+agreed there is no offset-only counterexample once the per-slice shape checks
+pass.
+
+WHAT IT FOUND THAT I HAD NOT: array order is only slice order if the indices are
+positions, and `spliceSlices` never said so. Its counterexample is two anchors
+at one boundary carrying unique but shuffled indices, where the descending-index
+sort writes BA for slices that say AB. The splice now asserts slice indexing
+itself. It also refuses blank text written into an anchor whose original says
+something, which needed the index map to carry the whole pair rather than the
+target side alone.
+
+THE TEXT-AGREEMENT CHECK IS MINE rather than the review's: a span's text must be
+what the document holds between its offsets. Sol kept it, on the ground that no
+offset rule can catch stale or foreign slices whose ranges are valid and
+ordered, and corrected the message, since a mismatch means stale text, wrong
+offsets or another document rather than only another document.
+
+FIVE PROBES, each shown to fail before being trusted: the discriminant read as
+emptiness (an empty content chunk becomes an insertion), the ordering rule
+removed (a backward placement passes), the text agreement removed (foreign
+slices pass), the indexing assert removed (shuffled indices pass), and the blank
+refusal removed (an anchor ships nothing). One earlier probe was rebuilt after
+the first attempt failed for the wrong reason, a missing import rather than the
+guard: a probe that fails on a `ReferenceError` proves nothing about the
+assertion it was meant to test.
+
+WHAT LANDING TWO STILL OWES, recorded in `#101`: separator ownership. Assembly
+writes model text verbatim, so an anchor before a heading concatenates with that
+heading and one at end of file concatenates with the previous paragraph. The
+review's rule is to strip only outer blank-line material from a fragment, join
+same-anchor fragments with one canonical blank line, preserve existing
+whitespace byte for byte, and add one blank line only where an insertion creates
+an adjacency that had no separator. It also asks whether a MISSING replacement
+for an anchor should be refused the way a blank one now is, which cannot be
+answered until the absent-incumbent lane work says whether assembly may ever
+withdraw an anchor's replacement.
