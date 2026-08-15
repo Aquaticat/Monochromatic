@@ -371,6 +371,13 @@ the whole original target, discarding translated slices that already succeeded.
 On a sparse target, which is exactly what the lane exists for, that is the
 common case rather than the rare one.
 
+THIS QUESTION ALSO DECIDES WHETHER `#93` IS A DEFECT. An empty critic roster
+today settles a document rather than refusing it, which is wrong when the roster
+is empty by MISCONFIGURATION and right when critics were dropped on purpose.
+Answer A makes an empty critic roster the intended configuration, so any guard
+`#93` grows has to refuse a MISSING STAGE rather than an empty list, or be
+placed where the stage is requested rather than where its roster is read.
+
 ### Options
 
 A.  Drop critics from the translate path.
