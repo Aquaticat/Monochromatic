@@ -225,6 +225,40 @@ WHAT CHANGED OVERNIGHT, 2026-08-14 into 15:
     the transcription class is enumerated now rather than estimated, and the
     claim that no image marker exists in the markdown was a bad search.
 
+CONTINUED THROUGH THE NIGHT, 2026-08-15 early hours:
+
+-   THE ROSTER GUARD WAS CORRECTED A SECOND TIME (`9e43d5afc`). My first weight
+    rule measured what a candidate would draw if EVERY producer had a stake in
+    it, and refused three authors judging only each other. That bench decides
+    comfortably: a candidate one of them wrote draws half a vote from its author
+    and a full one from each of the other two. Capacity is now measured over the
+    most favourable candidate, which is the question a guard refusing rosters
+    that could not decide HOWEVER they voted has to ask. The narrow case it was
+    built for, one producer judged by itself and one other model at 1.5, still
+    refuses. Found by an external review.
+-   A SELECTION ROUND REFUSES A REPEATED JUDGE before spending a call
+    (`c5444423b`). The stage guard already refused that, but `selectPerEnvelope`
+    and `selectChunkPatch` are reachable without the stage, and two exchanges to
+    one model are two ballots from one opinion, which reaches the minimum weight
+    alone.
+-   DOCUMENT PREPARATION IS SHARED (`610ea11b9` splice, preparation commit
+    before it). Parsing, identity, alignment, subdivision and governance now
+    live in `prepareDocumentPair`, taking no client, roster, config, signal or
+    cache. Two lanes slicing separately would drift the moment either changed a
+    budget, and each would still report slices that looked right on its own.
+-   SPLICING IS LANE-NEUTRAL AND CAN FILL A GAP (`610ea11b9`). It consumes
+    replacements rather than repair outcomes, inserts into zero-length spans,
+    resolves indexes before sorting, refuses duplicates, and orders several
+    insertions at one offset by slice index. Three defects went with it, each of
+    which produced wrong text rather than an error.
+-   THE MISMATCH THRESHOLD IS CALIBRATED (`#90`). Over all 1260 two-sided corpus
+    slices the incumbent-to-source character ratio runs p50 2.95, p90 4.10, p95
+    5.36, p99 23.78, max 521.9. So 3:1 is normal and a cut around 10 flags 25
+    slices, including every known damage case. The bench case that started this,
+    `windward0032#10` at 3 characters against 226, sits in the worst six.
+-   THE BENCH DRAW AND WIDTH SWEEP ARE TESTED (`bench-draw.ts`). Both decide
+    what a width comparison measures and both failed silently before.
+
 STATE: NO PASS IS RUNNING, deliberately.
 `pass16` was stopped on 2026-08-14 with zero artifacts settled, on the user's
 ruling that there is no cost to stopping a to-be-discarded entry mid-flight:

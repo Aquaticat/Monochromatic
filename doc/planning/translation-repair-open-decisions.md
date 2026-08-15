@@ -402,6 +402,14 @@ seat until then anyway.
     The weight limb catches a case a seat count would have passed, one producer
     judged by itself and one other model, which tops out at 1.5 against a
     minimum of 2 and would have declined every round in silence.
+    CORRECTED LATER THE SAME NIGHT, in `9e43d5afc`, after a second review: my
+    first weight limb measured what a candidate would draw if EVERY producer
+    had a stake in it, and on that reading it refused three authors judging only
+    each other. That bench decides comfortably, because a candidate one of them
+    wrote draws half a vote from its author and a full one from each of the
+    other two. It now measures the most favourable candidate instead, which is
+    the question a guard refusing rosters that could not decide HOWEVER they
+    voted has to ask. The case above still refuses.
     ONE EXCEPTION worth your veto if you dislike it: four models returning
     byte-identical text collapse into one candidate, and four self-votes at a
     half reach the minimum with no outside judge. I kept it, because agreement

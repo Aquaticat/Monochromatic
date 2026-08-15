@@ -351,7 +351,7 @@ export async function selectBestCandidate<ValueT,>(
   const ranked = [...tally.entries(),].toSorted(function byWeight(
     a,
     b,
-  ) {
+  ): number {
     return b[1] - a[1];
   },);
 
