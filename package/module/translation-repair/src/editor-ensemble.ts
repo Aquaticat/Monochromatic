@@ -16,6 +16,7 @@ import {
   producerModelIds,
 } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
+import { collectEnvelopeProposals, } from './editor-proposals.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
@@ -265,36 +266,13 @@ export async function selectPerEnvelope(
   };
   for (const envelope of envelopes) {
     /**
-     * Every distinct APPLIED proposal for this envelope, first proposer
-     * winning ties on identical text so the set stays deduplicated.
+     * Every distinct APPLIED proposal for this envelope, each credited to
+     * every model that wrote it.
      */
-    const proposals: Candidate<PatchOperation>[] = [];
-    for (const candidate of candidates) {
-      /**
-       * This model's applied operation for this envelope, when it has one.
-       */
-      const operation = candidate.patch
-        .applied
-        .find(function forEnvelope(op,) {
-          return op.envelopeId === envelope.envelopeId;
-        },);
-      if (operation === undefined)
-        continue;
-      if (proposals.some(function sameText(existing,) {
-        return existing.value
-          .newText
-          === operation.newText;
-      },))
-        continue;
-      proposals.push({
-        producer: {
-          kind: 'model',
-          modelId: candidate.modelId,
-        },
-        value: operation,
-        rendered: operation.newText,
-      },);
-    }
+    const proposals = collectEnvelopeProposals({
+      candidates,
+      envelope,
+    },);
 
     if (proposals.length === 0)
       continue;

@@ -15,6 +15,7 @@ import {
   type SelectionOutcome,
   type SelectionTally,
 } from './candidate-select-model.ts';
+import { countCandidateWeights, } from './candidate-weights.ts';
 import {
   buildCandidateSelectMessages,
   CANDIDATE_NONE,
@@ -137,6 +138,7 @@ export async function selectBestCandidate<ValueT,>(
       tally: emptyTally,
       findings: [],
       ballots: [],
+      perCandidate: [],
     };
 
   /**
@@ -152,6 +154,7 @@ export async function selectBestCandidate<ValueT,>(
       tally: emptyTally,
       findings: [],
       ballots: [],
+      perCandidate: [],
     };
   }
 
@@ -218,16 +221,30 @@ export async function selectBestCandidate<ValueT,>(
       const ownWork = stakesByIndex.get(best,)
         ?.has(voice.modelId,)
         === true;
+      /**
+       * Whether this ballot names a candidate at all.
+       */
+      const usable = (best !== CANDIDATE_NONE) && (best <= candidates.length);
       return {
         modelId: voice.modelId,
         best,
         reason: voice.value
           .reason,
-        weight: ((best === CANDIDATE_NONE) || (best > candidates.length))
-          ? 0
-          : (ownWork ? SELF_VOTE_WEIGHT : FULL_VOTE_WEIGHT),
+        weight: usable
+          ? (ownWork ? SELF_VOTE_WEIGHT : FULL_VOTE_WEIGHT)
+          : 0,
+        selfVote: usable && ownWork,
       };
     },);
+
+  /**
+   * What each candidate drew, kept per index so a decline says by how much the
+   * leader fell short and against what.
+   */
+  const perCandidate = countCandidateWeights({
+    ballots,
+    candidateCount: candidates.length,
+  },);
 
   /**
    * Ballot weight per one-based candidate index; out-of-range ballots and
@@ -317,6 +334,7 @@ export async function selectBestCandidate<ValueT,>(
       tally: counted,
       findings: roundFindings,
       ballots,
+      perCandidate,
     };
   }
 
@@ -333,6 +351,7 @@ export async function selectBestCandidate<ValueT,>(
       tally: counted,
       findings: roundFindings,
       ballots,
+      perCandidate,
     };
   }
   if (leader[1] < MIN_SELECTION_WEIGHT) {
@@ -350,6 +369,7 @@ export async function selectBestCandidate<ValueT,>(
       tally: counted,
       findings: roundFindings,
       ballots,
+      perCandidate,
     };
   }
 
@@ -365,6 +385,7 @@ export async function selectBestCandidate<ValueT,>(
       tally: counted,
       findings: roundFindings,
       ballots,
+      perCandidate,
     };
   }
   sl.info(
@@ -376,9 +397,11 @@ export async function selectBestCandidate<ValueT,>(
     value: winner.value,
     producer: winner.producer,
     voteWeight: leader[1],
+    selectedIndex: leader[0],
     tally: counted,
     findings: roundFindings,
     ballots,
+    perCandidate,
   };
 }
 

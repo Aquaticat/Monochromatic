@@ -10,6 +10,7 @@ import {
   producerModelIds,
 } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
+import { mergeIdenticalCandidates, } from './candidate-merge.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { gateParagraphRewrite, } from './inspect-paragraph.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -183,9 +184,10 @@ export async function runRefineStage(
   },);
 
   /**
-   * One gated candidate per rewriter that proposed anything surviving.
+   * One gated candidate per rewriter that proposed anything surviving, before
+   * identical rewrites are merged.
    */
-  const candidates = gather.voices
+  const proposed = gather.voices
     .flatMap(function toCandidate(voice,) {
       /**
        * Operations bound to real paragraphs.
@@ -255,6 +257,17 @@ export async function runRefineStage(
         } satisfies Candidate<string>,
       ];
     },);
+
+  /**
+   * Distinct rewrites, each credited to every rewriter that produced it.
+   *
+   * Merging matters for the same reason it does in the editor lane: selection
+   * discounts a judge's ballot for text that judge produced, and it reads that
+   * off the candidate's producer. Leaving three identical rewrites as three
+   * candidates also split the ballot three ways, so text every rewriter agreed
+   * on could lose to a lone dissenter.
+   */
+  const candidates = mergeIdenticalCandidates({ candidates: proposed, },);
 
   /**
    * Telemetry every exit after the fan-out carries.

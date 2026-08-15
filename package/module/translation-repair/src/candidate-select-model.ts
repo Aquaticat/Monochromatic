@@ -341,6 +341,55 @@ export type SelectionBallot = {
    * for an abstention.
    */
   readonly weight: number;
+
+  /**
+   * Whether this judge named text it produced.
+   *
+   * Recorded rather than derived from the weight, because deriving it would
+   * make every self-preference measurement depend on the two weights staying
+   * different from each other. Those are tuning knobs; this is a fact about
+   * the ballot.
+   */
+  readonly selfVote: boolean;
+};
+
+/**
+ * What one candidate drew, so a decline is as auditable as a win.
+ *
+ * A round tally says the leader was short of the minimum without saying by how
+ * much or against what, and a short leader is the commonest outcome of a judged
+ * round. This is the per-candidate half of that account.
+ *
+ * @example
+ * ```ts
+ * const drawn: CandidateWeight = { index: 2, ballots: 3, fullVotes: 2, selfVotes: 1, weight: 2.5, };
+ * ```
+ */
+export type CandidateWeight = {
+  /**
+   * One-based candidate index, as the judges saw it.
+   */
+  readonly index: number;
+
+  /**
+   * Ballots naming this candidate, self-votes included.
+   */
+  readonly ballots: number;
+
+  /**
+   * Ballots from judges with no stake in it.
+   */
+  readonly fullVotes: number;
+
+  /**
+   * Ballots from judges that helped write it.
+   */
+  readonly selfVotes: number;
+
+  /**
+   * Summed weight, which is what the minimum is compared against.
+   */
+  readonly weight: number;
 };
 
 /**
@@ -395,6 +444,16 @@ export type SelectionOutcome<ValueT,> =
     readonly voteWeight: number;
 
     /**
+     * One-based index of the winner in the slate the judges were shown.
+     *
+     * Without it a ballot saying `best: 2` cannot be joined to any text later:
+     * the caller may rotate the slate before showing it, so the position is the
+     * only thing a ballot and a candidate have in common, and nothing recorded
+     * which position won.
+     */
+    readonly selectedIndex: number;
+
+    /**
      * What the round counted.
      */
     readonly tally: SelectionTally;
@@ -415,6 +474,11 @@ export type SelectionOutcome<ValueT,> =
      * Every ballot cast, in the order judges answered.
      */
     readonly ballots: readonly SelectionBallot[];
+
+    /**
+     * What every candidate drew, whether or not it won.
+     */
+    readonly perCandidate: readonly CandidateWeight[];
   }
   | {
     readonly kind: 'declined';
@@ -444,6 +508,11 @@ export type SelectionOutcome<ValueT,> =
      * {@inheritDoc SelectionOutcome.ballots}
      */
     readonly ballots: readonly SelectionBallot[];
+
+    /**
+     * What every candidate drew, whether or not it won.
+     */
+    readonly perCandidate: readonly CandidateWeight[];
   };
 
 //endregion Candidate selection model

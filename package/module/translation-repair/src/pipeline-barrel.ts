@@ -96,6 +96,8 @@ export {
   type SelectionTally,
   SELF_VOTE_WEIGHT,
 } from './candidate-select-model.ts';
+export { mergeIdenticalCandidates, } from './candidate-merge.ts';
+export { collectEnvelopeProposals, } from './editor-proposals.ts';
 export { selectBestCandidate, } from './candidate-select.ts';
 export {
   buildCandidateSelectMessages,
