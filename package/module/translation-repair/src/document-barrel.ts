@@ -22,6 +22,10 @@ export {
   PlacementLayoutError,
 } from './placement-layout.ts';
 export {
+  assertSpanContiguity,
+  SpanContiguityError,
+} from './span-contiguity.ts';
+export {
   composeInsertion,
   documentLineEnding,
   fragmentBody,

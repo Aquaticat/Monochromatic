@@ -10,6 +10,7 @@ import {
 } from './line-structure-inherit.ts';
 import { parseDocument, } from './parse-document.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
+import { assertSpanContiguity, } from './span-contiguity.ts';
 import {
   assertSliceIndexing,
   reindexSlicePair,
@@ -234,6 +235,17 @@ export function prepareDocumentPair(
   assertPlacementLayout({
     slices,
     targetText,
+  },);
+
+  // AND WHAT THEY COVER, which the layout says nothing about either. A span's
+  // text is sliced from its own offsets, so a block lying between two of its
+  // nodes but missing from the run is inside the range, agrees with the text
+  // byte for byte, and is replaced at assembly by a decision that never saw it.
+  // Only the document's whole node sequence can see that, and this is the last
+  // place holding it.
+  assertSpanContiguity({
+    slices,
+    targetNodes: targetDocument.nodes,
   },);
 
   return {
