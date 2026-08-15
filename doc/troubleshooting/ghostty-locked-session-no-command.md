@@ -1,4 +1,4 @@
-# Ghostty 1.3.1 starts but never runs its `-e` command while the KDE screen locker is active, because the child is spawned on first GLArea resize
+# Ghostty 1.3.1 never runs its `-e` command while the KDE screen locker holds the session, because the pty child waits on a GLArea resize
 
 ## Symptom
 
