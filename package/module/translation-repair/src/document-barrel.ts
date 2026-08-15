@@ -25,6 +25,13 @@ export {
   assertSpanContiguity,
   SpanContiguityError,
 } from './span-contiguity.ts';
+export { groupNodes, } from './slice-pair.ts';
+export {
+  groupAlignedSteps,
+  groupSourceFirst,
+  type SourceFirstUnit,
+  unitSourceChars,
+} from './group-source-first.ts';
 export {
   composeInsertion,
   documentLineEnding,

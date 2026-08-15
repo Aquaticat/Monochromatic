@@ -42,7 +42,7 @@ export const SLICE_CHAR_BUDGET = 400;
  * const runs = groupNodes({ nodes: chunk.nodes, budget: 400, },);
  * ```
  */
-function groupNodes(
+export function groupNodes(
   {
     nodes,
     budget,
