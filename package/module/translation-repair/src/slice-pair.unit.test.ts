@@ -342,5 +342,40 @@ await describe({
         }
       },
     },),
+
+    it({
+      name: 'stamps the base index on a section only ONE side carries, which is the path that returned the pair untouched. It arrived holding its SECTION index while every other path stamps the global one, so once any earlier section subdivided two slices of one document shared an index, and slice identity is what the cache key and the splice both rest on',
+      fn: async () => {
+        /**
+         * Original whose section has prose against a translation whose
+         * matching section is a bare heading, so one side groups into no runs.
+         */
+        const onlySource = '## 猫的一天\n\n小猫早晨在窗台晒太阳。\n';
+
+        /**
+         * Translation carrying the heading and nothing under it.
+         */
+        const emptyTarget = '## A cat\'s day\n';
+
+        /**
+         * Slices of a section pair one side left empty.
+         */
+        const slices = subdivideChunkPair({
+          pair: alignedPair({
+            source: onlySource,
+            target: emptyTarget,
+          },),
+          sourceText: onlySource,
+          targetText: emptyTarget,
+          baseIndex: 7,
+        },);
+        for (const slice of slices) {
+          expect(slice.source
+            .chunkIndex,).toBe(7,);
+          expect(slice.target
+            .chunkIndex,).toBe(7,);
+        }
+      },
+    },),
   ],
 },);

@@ -219,24 +219,37 @@ export function subdivideChunkPair(
   },
 ): readonly ChunkPair[] {
   /**
-   * Source-side budget scaled by its character share, so a denser
-   * original (zh runs shorter than en) slices at matching granularity
-   * instead of collapsing the pairing back to section scale.
+   * How much shorter the original runs than its translation, measured over
+   * the WHOLE documents rather than over this section.
+   *
+   * Was measured per section, and that is the defect: the ratio is a fact
+   * about the language pair, while a section-level estimate is driven by how
+   * much of THIS section was translated. On 4000 source characters against 20
+   * target characters it returned 200, so the source budget became 80_000 and
+   * the section stopped being sliced at all. The worse the incumbent coverage,
+   * the larger the translation call, which is exactly backwards for a lane
+   * that exists to translate what nobody translated.
+   *
+   * Capped at one for the same reason it is computed at all: Chinese runs
+   * SHORTER than its English rendering, so a ratio above one is never density.
+   * It is missing translation, and the cap says so rather than acting on it.
+   */
+  const densityRatio = Math.min(
+    1,
+    sourceText.length / Math.max(
+      1,
+      targetText.length,
+    ),
+  );
+
+  /**
+   * Source-side budget at that density, so a denser original slices at
+   * matching granularity instead of collapsing the pairing back to section
+   * scale.
    */
   const sourceBudget = Math.max(
     1,
-    Math.round(
-      budget
-        * (pair.source
-          .text
-          .length
-          / Math.max(
-            1,
-            pair.target
-              .text
-              .length,
-          )),
-    ),
+    Math.round(budget * densityRatio,),
   );
   if (
     (pair.source
@@ -292,8 +305,30 @@ export function subdivideChunkPair(
       .nodes,
     budget,
   },);
-  if ((sourceRuns.length === 0) || (targetRuns.length === 0))
-    return [pair,];
+  if ((sourceRuns.length === 0) || (targetRuns.length === 0)) {
+    // RE-INDEXED, because the pair arrived carrying its SECTION index and
+    // every other path stamps the global one. Returning it untouched let two
+    // slices of one document share an index once any earlier section
+    // subdivided, and slice identity is what the cache key and the splice both
+    // rest on.
+    //
+    // Still not SLICED, which is `#89`s work rather than an oversight: a
+    // section whose target side is empty has one zero-length span to splice
+    // every slice of it back into, so slicing it needs the driver that knows
+    // how to insert rather than replace.
+    return [
+      {
+        source: {
+          ...pair.source,
+          chunkIndex: baseIndex,
+        },
+        target: {
+          ...pair.target,
+          chunkIndex: baseIndex,
+        },
+      },
+    ];
+  }
 
   /**
    * Whether the source side frames the pairing (fewer or equal runs).
