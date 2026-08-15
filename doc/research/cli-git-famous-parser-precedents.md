@@ -73,8 +73,12 @@ The TypeScript and ESM source-screening pool is bounded to current packages foun
 
 - `yargs-parser@22.0.0`,
   963,969,688 npm downloads in the last-month window;
+- `cac@7.0.0`,
+  176,248,671 downloads;
 - `citty@0.2.2`,
   111,665,083 downloads;
+- `@oclif/core@4.13.5`,
+  38,706,824 downloads;
 - `clipanion@4.0.0-rc.4`,
   18,970,325 downloads;
 - `cleye@2.6.0`,
@@ -100,9 +104,15 @@ or token-stream parsing.
 `@optique/core` is retained only as incumbent-history evidence.
 cli-git already replaced it after a measured unmatched-token diagnostic regression,
 so it is not a new candidate.
+CAC 7 has its own completed audit at
+`doc/audit/tech-cli-git-parser-migration-to-cac-vet-2026-08-14-a48b54e2.md`.
+Its parser core inlines JavaScript-authored MRI,
+so the new technology gate excludes it without reopening that audit.
 
 ## Primary-source leads
 
+- CAC completed audit:
+  `doc/audit/tech-cli-git-parser-migration-to-cac-vet-2026-08-14-a48b54e2.md`
 - yargs-parser documentation and source:
   <https://github.com/yargs/yargs-parser/tree/66f0bb2d2c8a2c9689489784cfe2e5128b0abfc2>
 - Citty documentation and source:
@@ -155,33 +165,74 @@ Expected concern:
 it is not widely adopted,
 and its tokenizer may still require raw-argv recovery for exact short tokens or unknown arity.
 
+## Source-screening outcomes
+
+### Advanced to artifact probes
+
+- `yargs-parser@22.0.0` is TypeScript-authored,
+  native ESM,
+  dependency-free,
+  and documents unknown-options-as-args plus configurable short grouping and nargs behavior.
+- `@clerc/parser@1.3.1` and `@clerc/utils@1.3.1` are TypeScript-authored native ESM packages.
+  The parser explicitly returns parameters,
+  post-terminator values,
+  normalized unknowns,
+  and raw unknown argv.
+- `args-tokens@0.28.1` is a dependency-free TypeScript-authored native ESM token parser.
+  It advances only as the semantic control because its measured adoption is lower than the famous candidates.
+
+### Exited before artifact probes
+
+- CAC 7 inlines JavaScript-authored MRI in its parser core and fails the technology gate.
+- Citty 0.2.2 is TypeScript-authored ESM,
+  but `src/_parser.ts` delegates token interpretation to Node `util.parseArgs` and returns no token stream.
+  The implementation therefore fails the parser-core TypeScript gate and cannot preserve unknown roles.
+- `@oclif/core@4.13.5` publishes a CommonJS runtime and fails native ESM.
+- Clipanion exposes parse tokens,
+  but ordinary unknown options lead to its unsupported-option error.
+  `Option.Proxy` accepts passthrough only by permanently stopping option parsing after proxy mode begins.
+- Cleye directly delegates parsing to the already-rejected type-flag iterator and inherits its dash-led value behavior.
+- cmd-ts builds ESM from TypeScript,
+  but its public parser returns unknown AST nodes as an `Unknown arguments` error.
+  The useful tokenizer and AST functions are internal,
+  and its parser imports the CommonJS `debug` runtime.
+- Gunshi exposes raw argv and args-tokens output to handlers,
+  but its parser hardcodes grouped short-option resolution.
+  Recovering cli-git's exact generic spelling requires a handler to reclassify raw argv.
+
 ## Execution manifest
 
 ### Published-artifact semantic probe
 
 Candidates and exact artifacts:
 
-- every discovery-pool package that passes TypeScript,
-  native ESM,
-  parser-core dependency,
-  Node-runtime,
-  and partial-grammar source screening.
-
-Exact versions and registry SHA-512 values will be frozen in this section before execution.
+- `yargs-parser@22.0.0`,
+  registry integrity
+  `sha512-rwu/ClNdSMpkSrUb+d6BRsSkLUq1fmfsY6TOpYzTwvwkg1/NRG85KBy3kq++A8LKQwX6lsu+aWad+2khvuXrqw==`;
+- `@clerc/parser@1.3.1`,
+  registry integrity
+  `sha512-e1rb82ENJNfZYjkf5tR7OcsmwNShINJumxfy7fS9SYypSZNRbQmzHj7k7miQ3u+Mfc08fpBtvpAGqeBWQKQxRQ==`;
+- `@clerc/utils@1.3.1`,
+  registry integrity
+  `sha512-wkK6daYkmTQKnhSADMkunfDhNJI6rRCn2R++7cI2EoEBmOZWYqn7frkk5ac7zsxBi0Mc3UnMVaJiNFU+t6PPWQ==`;
+- `args-tokens@0.28.1`,
+  registry integrity
+  `sha512-2L4pJA8XcdRCqkNb5budSdbifzFP0iXexM1rF27kKLp8tWYfzGDV6BaAeBmrU6YLKct3Gt6Kn0njlAogJAdI6w==`.
 
 Top-level command:
 
 ```text
-podman run [bounded read-only options] docker.io/library/node:24-slim node /probe/probe.mjs
+podman run [bounded read-only options] docker.io/library/node:24-slim node /probe/probe.ts
 ```
 
 Subordinate command tree:
 
 ```text
-node /probe/probe.mjs
+node /probe/probe.ts
 ```
 
-The module imports each extracted published artifact and runs the same argv catalog.
+The native ESM TypeScript module imports each extracted published artifact and runs the same argv catalog.
+Node executes it through built-in type stripping.
 No package lifecycle script or candidate subprocess runs.
 
 Working directory:
