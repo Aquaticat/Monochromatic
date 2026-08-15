@@ -9,6 +9,7 @@ import {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 import { parseDocument, } from './parse-document.ts';
+import { assertSliceIndexing, } from './slice-indexing.ts';
 import {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
@@ -195,6 +196,13 @@ export function prepareDocumentPair(
     },);
     slices.push(...carved,);
   }
+
+  // CHECKED HERE because this is the only place that holds every slice of a
+  // document at once. Each subdivision is stamped from a base index it is
+  // handed, so no call can tell whether the sequence it contributed to came out
+  // whole; the lanes that read these indices are further from the stamping
+  // still, and the cache carries them across runs.
+  assertSliceIndexing({ slices, },);
 
   return {
     sourceText,

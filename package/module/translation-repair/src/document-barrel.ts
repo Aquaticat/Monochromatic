@@ -1,0 +1,20 @@
+//region Document barrel
+// One document PAIR, from the preparation both lanes share to the driver that
+// runs them over it. Split from the pipeline barrel, which had reached its line
+// budget: these symbols are about a whole pair rather than about a stage, and a
+// reader wiring a run over one document needs exactly this set.
+
+export {
+  type PreparedDocumentPair,
+  prepareDocumentPair,
+} from './document-preparation.ts';
+export {
+  type DocumentLanesResult,
+  runDocumentLanes,
+} from './document-lanes.ts';
+export {
+  assertSliceIndexing,
+  SliceIndexingError,
+} from './slice-indexing.ts';
+
+//endregion Document barrel

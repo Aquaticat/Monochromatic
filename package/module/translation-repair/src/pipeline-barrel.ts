@@ -141,14 +141,6 @@ export {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 export {
-  type PreparedDocumentPair,
-  prepareDocumentPair,
-} from './document-preparation.ts';
-export {
-  type DocumentLanesResult,
-  runDocumentLanes,
-} from './document-lanes.ts';
-export {
   AssemblyContractError,
   assertReplacementsChange,
   deriveShippedIndices,
