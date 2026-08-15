@@ -9897,3 +9897,49 @@ All are fixed, and one was a design rule rather than a style nit:
 optional property.
 Verification now runs all three of `buildAndTest`, `lint` and `lint:types` and
 reads their exit codes, rather than one of them.
+
+### Session close, 2026-08-15: what landed after the invariants work
+
+Everything below is committed and pushed on `translation-repair-rebased`.
+Final verification: `test_exit=0` with 272 PASS lines and zero FAIL,
+`lint_exit=0` at "Found 0 warnings and 0 errors", `types_exit=0`.
+All three were run, and all three exit codes read, on every commit after the
+first: the previous session's "all green" was stale, and the package was
+carrying 4 lint errors, 13 warnings and a type error nobody had seen.
+
+WHAT THE ASSEMBLY CONTRACT LOOKS LIKE NOW, since it changed in four steps and
+the intermediate states are not worth reconstructing:
+
+-   A resumed record is checked where it is ACCEPTED, both directions, and
+    discarded if it contradicts its own text. One bad cache file costs one
+    slice.
+-   A fresh record cannot contradict itself on either lane: translate always
+    derived `changed` from its own text, and repair now does too.
+-   An assembly that changes no byte ships nothing, whatever its slices decided.
+-   The shipped set is DERIVED from the surviving replacements, and the returned
+    document is re-spliced from those same replacements and compared. The two
+    can no longer disagree.
+-   The comparison validates each lane's shipped set against that lane's own
+    rows before joining anything.
+
+WHAT `withdrawn` MEANS NOW, worth repeating because a count reader will get it
+wrong otherwise: three causes rather than one, and only the findings say which.
+Reading `withdrawnSliceCount` as footnote damage over-counts.
+
+ALSO LANDED, unrelated to the invariants:
+
+-   `#93`'s guard for every role except critics. A lane configured with nobody
+    in a required role refuses before buying anything, at all three depths a
+    caller can enter at. Critics stay unguarded because Question 3 may make an
+    empty critic roster the intended configuration.
+-   `#97` refuted, with the measurement.
+-   The repair cache key is pinned by a golden hash. It had no other witness:
+    persist and resume both call one function, so a change to the derivation
+    fails nothing and only shows up as quota.
+
+WHAT IS QUEUED AND WHY IT WAS NOT STARTED. `#99` and `#100` force a translate
+cache version bump and rewire slice identity across five files, and a half-done
+state there breaks resumability rather than merely being unfinished. That is the
+one item in the queue where stopping midway costs something, so it wants a run
+of hours rather than the tail of one. `#103` items 6 and 7 belong with it, and
+so does `#94`'s rename.
