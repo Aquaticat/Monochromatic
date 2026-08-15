@@ -8,6 +8,13 @@
 // repair one.
 
 export {
+  alignmentRefusalFinding,
+  assessSliceAlignment,
+  MAX_INCUMBENT_TO_SOURCE_RATIO,
+  MIN_PROTECTED_INCUMBENT,
+  type SliceAlignmentAssessment,
+} from './translate-alignment.ts';
+export {
   buildTranslateCandidates,
   type TranslateCandidateSet,
   type TranslateCandidateValue,
