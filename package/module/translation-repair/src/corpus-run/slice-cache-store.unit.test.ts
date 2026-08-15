@@ -201,6 +201,56 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a payload sitting under the wrong name, which is the check that replaced the '
+        + 'slice-index one. A file name is what the loader derives a key from, so a record stored '
+        + 'under some other key is otherwise resumed as though it answered this one, and the driver '
+        + 'splices text into a slice it was never computed for',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry cache directory.
+         */
+        const dir = join(
+          scratch.path,
+          'Mittens',
+        );
+
+        /**
+         * Cache that stamps this pipeline's marker on a fresh directory.
+         */
+        const opened = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+        await opened.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ chunkIndex: 0, },),),
+        },);
+
+        /**
+         * That very file, rewritten so its envelope answers a different key
+         * while its name still claims this one.
+         */
+        const foreign = JSON.stringify({
+          cacheKey: 'slice-hash-bbb',
+          record: catOutcome({ chunkIndex: 0, },),
+        },);
+        await writeFile(
+          join(
+            dir,
+            'slice-hash-aaa.json',
+          ),
+          `${foreign}\n`,
+        );
+
+        /**
+         * Cache reopened, which is what a resumed run does.
+         */
+        const reopened = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+        expect(reopened.resumed
+          .size,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'DISCARDS slices filled by another pipeline instead of resuming '
         + 'them. This is the one generation defect no reader can catch: the '
         + 'settled artifact records a single digest, so an entry built half '

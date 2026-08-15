@@ -165,6 +165,78 @@ export function sliceFileName(
 }
 
 /**
+ * Wraps one settled slice with the key it was stored under.
+ *
+ * WHY THE KEY IS INSIDE THE FILE as well as in its name. The name is what a
+ * loader derives the key from, so a payload sitting under the wrong name is
+ * resumed as though it belonged there, and the driver splices it into a slice
+ * it was never computed for. That used to be caught downstream, by both lanes
+ * refusing a record whose slice index disagreed with the one they asked for;
+ * taking the index out of the cache key made that check wrong, since a record
+ * now legitimately answers for any slice carrying the same texts. This is the
+ * check that replaces it, and it tests the thing that actually matters: not
+ * where the record sat, but what question it answered.
+ *
+ * @param key - key this slice is being stored under
+ *
+ * @param serialized - record as its lane serialized it
+ *
+ * @returns Envelope text to write
+ *
+ * @example
+ * ```ts
+ * const text = envelopedSlice({ key, serialized, },);
+ * ```
+ */
+function envelopedSlice(
+  {
+    key,
+    serialized,
+  }: {
+    readonly key: string;
+    readonly serialized: string;
+  },
+): string {
+  return JSON.stringify({
+    cacheKey: key,
+    record: JSON.parse(serialized,) as unknown,
+  },);
+}
+
+/**
+ * Reads one cache file's envelope, when it is one this loader wrote.
+ *
+ * @param parsed - parsed file contents
+ *
+ * @param key - key the file's NAME says it answers
+ *
+ * @returns Record inside, or nothing when the file is not an envelope or
+ * answers a different key
+ *
+ * @example
+ * ```ts
+ * const record = recordOfEnvelope({ parsed, key, },);
+ * ```
+ */
+function recordOfEnvelope(
+  {
+    parsed,
+    key,
+  }: {
+    readonly parsed: unknown;
+    readonly key: string;
+  },
+): unknown {
+  if (((typeof parsed) !== 'object') || (parsed === null))
+    return undefined;
+  if ((!('cacheKey' in parsed)) || (!('record' in parsed)))
+    return undefined;
+  if (parsed.cacheKey !== key)
+    return undefined;
+  return parsed.record;
+}
+
+/**
  * Loads one lane's settled slices, tolerating a missing directory and
  * half-written files.
  *
@@ -220,13 +292,29 @@ export async function loadNamespacedSlices<ValueT,>(
         ),
         'utf8',
       ),);
-      if (isValue(parsed,))
+
+      /**
+       * Key this file's NAME says it answers.
+       */
+      const key = keyOfSliceFile({
+        name,
+        namespace,
+      },);
+
+      /**
+       * Record inside, absent when the file is not an envelope this loader
+       * wrote or when it answers some other key. Both are treated as absent
+       * rather than as failures: a slice nobody can vouch for simply costs what
+       * an uncached one costs.
+       */
+      const record = recordOfEnvelope({
+        parsed,
+        key,
+      },);
+      if (isValue(record,))
         resumed.set(
-          keyOfSliceFile({
-            name,
-            namespace,
-          },),
-          parsed,
+          key,
+          record,
         );
     }
     catch (error) {
@@ -412,7 +500,12 @@ export async function openNamespacedCache<ValueT,>(
             namespace,
           },),
         ),
-        `${serialized}\n`,
+        `${
+          envelopedSlice({
+            key,
+            serialized,
+          },)
+        }\n`,
       );
     },
   };
