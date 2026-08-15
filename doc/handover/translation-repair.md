@@ -10985,3 +10985,41 @@ whole source section, heading included, at a boundary, so on this entry it would
 have produced eight duplicated headings. The insertion unit has to be the
 section BODY, anchored after the existing target heading, whenever a
 corresponding heading is present.
+
+### What the coverage probe measured, and the one thing anchoring does not prove
+
+Eleven section candidates, six voices each, about two minutes and sixty-six
+calls in total. Verdicts against what the documents actually contain:
+
+-   `XIEPT2`, eight sections: ABSENT on all eight, near unanimously. Correct.
+    That entry's English is a set of headings with no bodies.
+-   `XingZ60` section 12: CARRIED, four anchored and none absent. Correct, and I
+    had it labelled missing. The source heading is 其九：空白, meaning blank, and
+    the English heading is `### __`, which is the rendering. The matcher could
+    not pair them because `__` carries no Latin run to score, and the bodies
+    correspond underneath.
+-   `XingZ60` sections 13 and 14: ABSENT. Correct; the English ends at the
+    section that pairs with 12.
+
+SO ELEVEN OF ELEVEN, and my hand labels were wrong on nine of them. That is the
+result worth acting on: the probe is not merely cheaper than reading, it was
+RIGHT where careful reading was wrong, twice in opposite directions.
+
+WHAT ANCHORING DOES NOT PROVE, measured on the same run: on section 14 two of
+six voices claimed coverage and their quote WAS in the document, a sentence
+about helping people in marginalised groups that belongs to the introduction
+rather than to the passage asked about. An anchored quote proves the English
+exists. It does not prove the English renders THIS passage, and the verdict
+treats the two as the same thing. Both voices agreed on the same irrelevant
+sentence, so agreement between voices does not separate them either.
+The majority rule absorbed it here, four to two. It would not have on a roster
+of three, and it will not when the irrelevant sentence is the one most voices
+reach for.
+
+WHAT THAT COSTS AND WHAT WOULD FIX IT: the failure direction is a false CARRIED,
+which suppresses an insertion rather than causing one, so it is the cheap
+direction to be wrong in and nothing is at risk while nothing is wired. The
+straightforward fix is a second field: the model names the SOURCE sentence its
+quote renders, and a verdict keeps only claims whose named source sentence is
+actually in the passage asked about. That is a wire change and a rerun, not a
+redesign.
