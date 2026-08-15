@@ -4,10 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import {
-  alignmentRefusalFinding,
-  assessSliceAlignment,
-} from './translate-alignment.ts';
+import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
   type TranslateModels,
   type TranslateSliceRecord,
@@ -142,13 +139,15 @@ export async function settleTranslateSlice(
       changed: false,
       disposition: 'refused-alignment',
       alignment,
-      findings: [
-        ...stageResult.findings,
-        alignmentRefusalFinding({
-          chunkIndex,
-          assessment: alignment,
-        },),
-      ],
+      // NOT the refusal sentence, which names a slice by its index. This record
+      // is STORED, and since translate version 2 its key no longer carries the
+      // index, so the same record can be resumed at a different position and is
+      // re-stamped when it is. A stored sentence saying `slice 7` would survive
+      // that re-stamping and contradict the record carrying it. Nothing is lost
+      // by leaving it out: `disposition` and `alignment` are both here, so the
+      // driver derives the sentence from them and from the index the record was
+      // actually stamped with.
+      findings: stageResult.findings,
     };
   }
 

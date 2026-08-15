@@ -57,6 +57,39 @@ import { settleTranslateSlice, } from './translate-slice.ts';
 // for every slice it never reached.
 
 /**
+ * Names what the alignment guard measured, for callers building a report.
+ *
+ * DERIVED RATHER THAN STORED. The sentence names a slice by its index, and a
+ * settled record is keyed by what the models were asked, which since translate
+ * version 2 excludes the index. The same record can therefore be resumed at a
+ * different position, so the only trustworthy index is the one the record
+ * carries after the driver stamps it, which is the one this reads.
+ *
+ * @param records - settled slice records
+ *
+ * @returns Refusal findings in the order the slices appear
+ *
+ * @example
+ * ```ts
+ * const refusals = alignmentRefusals({ records: result.slices, },);
+ * ```
+ */
+export function alignmentRefusals(
+  { records, }: { readonly records: readonly TranslateSliceRecord[]; },
+): readonly string[] {
+  return records
+    .filter(function wasRefused(record,): boolean {
+      return record.disposition === 'refused-alignment';
+    },)
+    .map(function toFinding(record,): string {
+      return alignmentRefusalFinding({
+        chunkIndex: record.chunkIndex,
+        assessment: record.alignment,
+      },);
+    },);
+}
+
+/**
  * Translates every slice of a prepared document pair and reassembles it.
  *
  * @param client - injected model client
@@ -461,6 +494,11 @@ export async function translateDocument(
       ...settled.flatMap(function toFindings(record,): readonly string[] {
         return record.findings;
       },),
+      // Derived here rather than read out of the records, because the sentence
+      // names a slice and a stored sentence would name whichever slice the
+      // record was FIRST settled for. Every refusal still reaches this list;
+      // only where the sentence is built moved.
+      ...alignmentRefusals({ records: settled, },),
       ...guarded.findings,
       ...unheard.map(function toUnheardFinding(record,): string {
         return `translate-heard-no-translator chunk ${
@@ -469,33 +507,6 @@ export async function translateDocument(
       },),
     ],
   };
-}
-
-/**
- * Names what the alignment guard measured, for callers building a report.
- *
- * @param records - settled slice records
- *
- * @returns Refusal findings in the order the slices appear
- *
- * @example
- * ```ts
- * const refusals = alignmentRefusals({ records: result.slices, },);
- * ```
- */
-export function alignmentRefusals(
-  { records, }: { readonly records: readonly TranslateSliceRecord[]; },
-): readonly string[] {
-  return records
-    .filter(function wasRefused(record,): boolean {
-      return record.disposition === 'refused-alignment';
-    },)
-    .map(function toFinding(record,): string {
-      return alignmentRefusalFinding({
-        chunkIndex: record.chunkIndex,
-        assessment: record.alignment,
-      },);
-    },);
 }
 
 //endregion Translate document

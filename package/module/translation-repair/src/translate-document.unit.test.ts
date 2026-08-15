@@ -903,5 +903,44 @@ On the windowsill there is being a bird.
         },),).toBe(true,);
       },
     },),
+    it({
+      name: 'names the slice each refusal is FOR, even when two slices share one '
+        + 'settled record. Identical sections ask one question, so the second '
+        + 'resumes the first\'s record and is stamped with its own index; a '
+        + 'refusal sentence stored inside that record would name the first slice '
+        + 'twice and the second never',
+      fn: async () => {
+        /** Section the guard refuses, written twice with nothing to tell the two apart. */
+        const SECTION = `## 第一节
+
+其一：
+`;
+
+        /** Its archive text, long enough that the source cannot account for it. */
+        const RENDERED = `## Section one
+
+But we must remember that the cat sleeping on the windowsill has been there `
+          + `since the spring, and the household has arranged itself around that `
+          + `habit rather than against it, which is the sort of thing nobody `
+          + `writes down until it is gone.
+`;
+        const { result, } = await runDriver({
+          sourceText: `${SECTION}\n${SECTION}`,
+          targetText: `${RENDERED}\n${RENDERED}`,
+        },);
+        expect(result.refusedSliceCount,).toBe(2,);
+
+        /**
+         * Refusal sentences the document reports.
+         */
+        const refusals = result.findings
+          .filter(function isRefusal(finding,): boolean {
+            return finding.startsWith('translate-refused-alignment',);
+          },);
+        expect(refusals.length,).toBe(2,);
+        expect(refusals[0],).toContain('slice 0',);
+        expect(refusals[1],).toContain('slice 1',);
+      },
+    },),
   ],
 },);
