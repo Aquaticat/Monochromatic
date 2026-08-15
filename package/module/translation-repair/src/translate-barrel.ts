@@ -19,6 +19,27 @@ export {
   type TranslateStageResult,
 } from './translate-stage.ts';
 export {
+  type RepairOutcome,
+  repairInvalidCandidates,
+} from './translate-repair.ts';
+export {
+  buildTranslateRepairMessages,
+  isTranslateRepairWire,
+  type RepairResolution,
+  TRANSLATE_REPAIR_RESPONSE_FORMAT,
+  type TranslateRepairWire,
+} from './translate-repair-wire.ts';
+export {
+  type BlockShape,
+  readSliceSkeleton,
+  type SkeletonRead,
+  type SliceSkeleton,
+} from './translate-skeleton.ts';
+export {
+  type SliceValidation,
+  validateTranslatedSlice,
+} from './translate-validate.ts';
+export {
   buildTranslateMessages,
   isTranslateReportWire,
   TRANSLATE_RESPONSE_FORMAT,

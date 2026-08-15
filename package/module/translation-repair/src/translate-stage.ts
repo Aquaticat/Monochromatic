@@ -21,6 +21,7 @@ import {
   type TranslateCandidateValue,
   type TranslateOrigin,
 } from './translate-candidates.ts';
+import { repairInvalidCandidates, } from './translate-repair.ts';
 import {
   buildTranslateMessages,
   isTranslateReportWire,
@@ -38,11 +39,17 @@ import {
 // was never translated and cannot see a slice that is present, fluent and
 // mediocre. This asks "render this passage", which reaches both.
 //
-// WHAT THIS STAGE DOES NOT DO, so a reader does not assume it: it does not
-// validate a candidate's Markdown structure, footnote markers or declared names,
-// and the deterministic apply gate that enforced those on edits does not apply
-// to a whole-slice replacement, which has no envelope to bound. That validator
-// is separate work and this stage will call it when it exists.
+// A fresh candidate whose Markdown structure, footnote markers, links or
+// inline code do not match the ORIGINAL is not dropped: it goes back to the
+// model that wrote it with the findings, and that model revises, declines, or
+// says the finding is a fact about the passage rather than about its work. See
+// `translate-repair.ts`. The apply gate cannot serve here at all, since every
+// policy in it is anchored to an edit bounded by an envelope some accepted
+// issue named, and a whole-slice replacement has none.
+//
+// WHAT THIS STAGE STILL DOES NOT DO: check declared names, which needs the
+// identity block parsed rather than passed through, and check anything that
+// crosses a slice boundary, which is `#92`.
 
 /**
  * How a slice's shipped text was decided.
@@ -311,10 +318,28 @@ export async function runTranslateStage(
   },);
 
   /**
+   * Candidates after structural validation, with anything that failed handed
+   * back to its own author.
+   *
+   * The INCUMBENT is not among these and is never validated into or out of
+   * the slate. It is the fallback and the text being defended, so a check
+   * that could drop it would be a check that could delete the archive.
+   */
+  const repaired = await repairInvalidCandidates({
+    client,
+    voices: gather.voices,
+    sourceText,
+    priorMessages: plan.messages,
+    signal,
+    perCallTimeoutMs,
+    l: tl,
+  },);
+
+  /**
    * Slate of distinct proposals with the incumbent among them.
    */
   const built = buildTranslateCandidates({
-    voices: gather.voices,
+    voices: repaired.voices,
     translatorModelIds,
     incumbentText,
   },);
@@ -324,6 +349,7 @@ export async function runTranslateStage(
    */
   const stageFindings = [
     ...gather.findings,
+    ...repaired.findings,
     ...built.findings,
     `translate-candidates (${String(gather.voices
       .length,)}/${String(translatorModelIds.length,)} heard, ${
