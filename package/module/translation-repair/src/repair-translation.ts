@@ -225,7 +225,6 @@ export async function repairPreparedDocument(
      */
     const sliceKey = repairSliceKey({
       runShape,
-      chunkIndex,
       sourceText: slice.source
         .text,
       targetText: slice.target
@@ -234,17 +233,23 @@ export async function repairPreparedDocument(
     },);
 
     /**
-     * Outcome finished on an earlier run, when this slice is cached.
+     * Outcome a previous run settled under this key, exactly as it was stored.
      */
-    const cached = sliceCache?.resumed
+    const stored = sliceCache?.resumed
       .get(sliceKey,);
-    if ((cached !== undefined) && (cached.chunkIndex !== chunkIndex)) {
-      throw new Error(
-        `cached repair slice ${String(cached.chunkIndex,)} was loaded for slice `
-          + `${String(chunkIndex,)}: the key derivation and the slicing `
-          + 'disagree, so every resumed outcome is suspect',
-      );
-    }
+
+    /**
+     * That outcome RE-STAMPED with the index this run asked under.
+     *
+     * Since version 26 the key is the texts and the run shape, so an identical
+     * slice elsewhere in the document legitimately answers here, and the index
+     * it was computed with would name the wrong slice in every issue record and
+     * replacement built from it.
+     */
+    const cached = (stored === undefined) ? undefined : {
+      ...stored,
+      chunkIndex,
+    };
 
     /**
      * Whether that outcome's changed flag agrees with its own text, which is

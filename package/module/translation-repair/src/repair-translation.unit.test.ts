@@ -1308,15 +1308,20 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
     },),
 
     it({
-      name: 'REFUSES a cached outcome that names another slice, the same '
-        + 'invariant the translate driver holds: a key derivation and a slicing '
-        + 'that disagree would splice one slice\'s repair over another',
+      name: 'STAMPS a resumed outcome with the index it was ASKED under rather than the one it was '
+        + 'computed under, which is what taking the slice index out of the key buys. A record now '
+        + 'answers for any slice carrying the same texts, and the index it happens to carry would '
+        + 'name the wrong slice in every issue record and replacement built from it',
       fn: async () => {
         /**
          * Slices the first run persists.
          */
         const store = new Map<string, string>();
-        await repairTranslation({
+
+        /**
+         * What the first run settled on, which the resumed run must reproduce.
+         */
+        const first = await repairTranslation({
           client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
           sourceText: SOURCE_TWO_SECTIONS,
           targetText: TARGET_TWO_SECTIONS,
@@ -1338,7 +1343,9 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         expect(store.size,).toBeGreaterThan(0,);
 
         /**
-         * Same outcomes under the same keys, each claiming the wrong slice.
+         * Same outcomes under the same keys, each carrying an index that names
+         * some other slice, which is what a record computed elsewhere looks
+         * like once the key stops carrying the index.
          */
         const misfiled = new Map(
           [...store.entries(),].map(function toMisfiled([key, serialized,],) {
@@ -1355,7 +1362,11 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
             ] as const;
           },),
         );
-        await expect(repairTranslation({
+
+        /**
+         * Run that resumes every slice from those records.
+         */
+        const resumedRun = await repairTranslation({
           client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
           sourceText: SOURCE_TWO_SECTIONS,
           targetText: TARGET_TWO_SECTIONS,
@@ -1367,9 +1378,16 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
               throw new Error('a fully cached run must not persist',);
             },
           },
-        },),)
-          .rejects
-          .toThrow('the key derivation and the slicing',);
+        },);
+        expect(resumedRun.repairedText,).toBe(first.repairedText,);
+        expect(resumedRun.shippedChunkIndices,).toEqual(first.shippedChunkIndices,);
+        expect(resumedRun.issues
+          .map(function toChunk(record,): number {
+            return record.chunkIndex;
+          },),).toEqual(first.issues
+          .map(function toChunk(record,): number {
+            return record.chunkIndex;
+          },),);
       },
     },),
   ],

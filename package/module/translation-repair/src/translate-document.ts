@@ -163,7 +163,6 @@ export async function translateDocument(
      */
     const key = translateSliceKey({
       runShape,
-      chunkIndex,
       sourceText: slice.source
         .text,
       incumbentText: slice.target
@@ -178,14 +177,6 @@ export async function translateDocument(
     const resumed = sliceCache?.resumed
       .get(key,);
     if (resumed !== undefined) {
-      if (resumed.chunkIndex !== chunkIndex) {
-        throw new Error(
-          `cached translate slice ${String(resumed.chunkIndex,)} was loaded for `
-            + `slice ${String(chunkIndex,)}: the key derivation and the slicing `
-            + 'disagree, so every resumed record is suspect',
-        );
-      }
-
       // A record whose flag and text contradict each other is refused HERE
       // rather than at assembly, where the same contradiction fails the whole
       // document after every other slice has been bought. Discarded, this slice
@@ -197,7 +188,15 @@ export async function translateDocument(
           .text,
       },)) {
         counted.resumed += 1;
-        settled.push(resumed,);
+        // RE-STAMPED with the index this run asked under, rather than trusting
+        // the one the record was computed with. Since version 2 the key is the
+        // texts and the run shape, so an identical slice sitting elsewhere in
+        // the document legitimately answers here, and its own index would name
+        // the wrong slice in every replacement and issue record built from it.
+        settled.push({
+          ...resumed,
+          chunkIndex,
+        },);
         continue;
       }
 

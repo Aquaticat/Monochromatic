@@ -63,9 +63,26 @@ export function translateRunShape(
 /**
  * Cross-run key for one slice under the translate lane.
  *
- * @param runShape - what this run asks, from {@link translateRunShape}
+ * THE SLICE INDEX IS NOT IN IT, since version 2, and that is the whole design.
+ * A key is what makes two runs' slices the same slice, and what a translator is
+ * asked is the source text, the incumbent, the governance flag and the run
+ * shape. Where the slice happens to sit changes none of it.
  *
- * @param chunkIndex - global slice index
+ * WHAT KEEPING IT COST. Any renumbering invalidated every slice after the
+ * change however untouched its text: inserting one slice at the top of a
+ * document discarded the whole document's settled work, and `#100` inserts
+ * slices for every untranslated section. The corpus would have been rebought on
+ * that change and on every slicing change after it.
+ *
+ * WHAT DROPPING IT COSTS, measured rather than assumed: two slices carrying
+ * identical source text, identical incumbent and identical governance inside
+ * one document now share an entry. Their models would decide identically, so
+ * the shared record is right rather than merely cheap, and the caller stamps
+ * the index it asked under onto what it resumes. Across the 92 pinned documents
+ * and 1260 slices there is not one such pair; the probe was validated first on
+ * an invented document with two identical sections, where it finds the pair.
+ *
+ * @param runShape - what this run asks, from {@link translateRunShape}
  *
  * @param sourceText - slice original
  *
@@ -77,19 +94,17 @@ export function translateRunShape(
  *
  * @example
  * ```ts
- * const key = translateSliceKey({ runShape, chunkIndex, sourceText, incumbentText, lineStructured, },);
+ * const key = translateSliceKey({ runShape, sourceText, incumbentText, lineStructured, },);
  * ```
  */
 export function translateSliceKey(
   {
     runShape,
-    chunkIndex,
     sourceText,
     incumbentText,
     lineStructured,
   }: {
     readonly runShape: string;
-    readonly chunkIndex: number;
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly lineStructured: boolean;
@@ -100,7 +115,6 @@ export function translateSliceKey(
       'translate',
       TRANSLATE_SLICE_CACHE_VERSION,
       runShape,
-      chunkIndex,
       sourceText,
       incumbentText,
       // Two slices can carry identical text and still be governed differently,

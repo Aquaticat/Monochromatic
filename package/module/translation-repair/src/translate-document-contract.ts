@@ -22,8 +22,16 @@ import type { TranslateStageResult, } from './translate-stage.ts';
  *
  * Bump for any change to what a record means: the record shape, the decision
  * kinds, the alignment predicate, or what the lane asks the models.
+ *
+ * VERSION 2, on 2026-08-15, takes the SLICE INDEX out of the key. No record
+ * changed; what changed is which slices count as the same slice. Keeping the
+ * index meant any renumbering discarded every slice after it, and `#100`
+ * renumbers by design, since inserting a slice for an untranslated section
+ * shifts everything below it. The index is now stamped onto a resumed record by
+ * whoever asked for it, and `translateSliceKey` carries the measurement saying
+ * identical-text slices inside one document do not occur in this corpus.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 1;
+export const TRANSLATE_SLICE_CACHE_VERSION = 2;
 
 /**
  * Models the translate lane seats.

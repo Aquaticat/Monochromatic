@@ -177,8 +177,18 @@ import type { RepairModels, } from './repair-contract.ts';
  * a cost of one recomputed slice, and the run says so in its findings. Bumping
  * would throw away every settled slice in the corpus to fix what the discard
  * path already fixes one slice at a time.
+ *
+ * Version 26 takes the SLICE INDEX out of the key, on 2026-08-15, and this one
+ * does discard the corpus: every settled slice was keyed with its index in it.
+ * It is spent deliberately and once. Keeping the index meant that renumbering
+ * slices invalidated every slice after the change however untouched its text,
+ * and `#100` renumbers by design, inserting a slice wherever a section has no
+ * translation. Paying it here means that change, and every slicing change after
+ * it, costs nothing. What a translator or an editor is asked is the source
+ * text, the incumbent, the governance flag and the run shape; where the slice
+ * sits is not part of the question, so it is not part of the key.
  */
-export const SLICE_CACHE_VERSION = 25;
+export const SLICE_CACHE_VERSION = 26;
 /**
  * Everything about a repair run that changes what the models are ASKED, folded
  * into every cache key.
@@ -230,13 +240,17 @@ export function repairRunShape(
 /**
  * Cross-run key for one slice under the repair lane.
  *
- * The schema version, this run's shape, the slice index and both texts, so a
- * slicing change, a content change, a roster change or an outcome-shape change
- * all miss the cache and recompute.
+ * The schema version, this run's shape and both texts, so a content change, a
+ * roster change or an outcome-shape change all miss the cache and recompute.
+ *
+ * THE SLICE INDEX IS NOT IN IT, since version 26. Where a slice sits is not
+ * part of what the stages are asked, and keeping it there meant a renumbering
+ * discarded every slice below the change however untouched its text. A resumed
+ * record is stamped with the index it was asked under, and the mirror of this
+ * reasoning is in `translateSliceKey`, including the corpus measurement that
+ * says two slices carrying identical text within one document do not occur.
  *
  * @param runShape - what this run asks, from {@link repairRunShape}
- *
- * @param chunkIndex - global slice index
  *
  * @param sourceText - slice original
  *
@@ -248,19 +262,17 @@ export function repairRunShape(
  *
  * @example
  * ```ts
- * const key = repairSliceKey({ runShape, chunkIndex, sourceText, targetText, lineStructured, },);
+ * const key = repairSliceKey({ runShape, sourceText, targetText, lineStructured, },);
  * ```
  */
 export function repairSliceKey(
   {
     runShape,
-    chunkIndex,
     sourceText,
     targetText,
     lineStructured,
   }: {
     readonly runShape: string;
-    readonly chunkIndex: number;
     readonly sourceText: string;
     readonly targetText: string;
     readonly lineStructured: boolean;
@@ -270,7 +282,6 @@ export function repairSliceKey(
     content: JSON.stringify([
       SLICE_CACHE_VERSION,
       runShape,
-      chunkIndex,
       sourceText,
       targetText,
       // Two slices can carry identical text and still be governed differently,

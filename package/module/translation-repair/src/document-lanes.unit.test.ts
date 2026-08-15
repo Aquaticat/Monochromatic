@@ -484,59 +484,21 @@ await describe({
         const served: SchemaLog = [];
 
         /**
-         * Repair slices a first run settles, so the second run can be handed a
-         * cache under the keys this pipeline really derives.
-         */
-        const store = new Map<string, string>();
-        await runLanes({
-          served: [],
-          repairSliceCache: {
-            resumed: new Map<string, ChunkRepairOutcome>(),
-            persist: async ({
-              key,
-              serialized,
-            },) => {
-              store.set(
-                key,
-                serialized,
-              );
-            },
-          },
-        },);
-        expect(store.size,).toBeGreaterThan(0,);
-
-        /**
-         * The same outcomes under the same keys, each claiming another slice.
-         * The repair driver refuses that rather than splicing one slice's work
-         * over another, which is a failure with nothing aborted anywhere.
-         */
-        const misfiled = new Map(
-          [...store.entries(),].map(function toMisfiled([key, serialized,],) {
-            /**
-             * Outcome as the cache stored it.
-             */
-            const outcome = JSON.parse(serialized,) as ChunkRepairOutcome;
-            return [
-              key,
-              {
-                ...outcome,
-                chunkIndex: outcome.chunkIndex + 1,
-              },
-            ] as const;
-          },),
-        );
-
-        /**
          * Failure the run raised.
+         *
+         * The repair lane's own cache store fails on the first settled slice,
+         * which is a failure inside the first lane with nothing aborted
+         * anywhere: the signal stays live throughout, so only the driver's own
+         * stopping can keep the translate lane from spending a whole document.
          */
         let caught: unknown;
         try {
           await runLanes({
             served,
             repairSliceCache: {
-              resumed: misfiled,
+              resumed: new Map<string, ChunkRepairOutcome>(),
               persist: async () => {
-                // A run that should refuse its cache must not write to it.
+                throw new Error('scripted cache write failure',);
               },
             },
           },);
@@ -544,7 +506,7 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(caught,).toBeInstanceOf(Error,);
+        expect(String(caught,),).toContain('scripted cache write failure',);
         expect(served.includes('translation_report',),).toBe(false,);
         expect(served.includes('candidate_ballot',),).toBe(false,);
       },

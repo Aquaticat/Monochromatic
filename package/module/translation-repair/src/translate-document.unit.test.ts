@@ -486,19 +486,20 @@ await describe({
     },),
 
     it({
-      name: 'RESUMES a settled slice without spending a call, and refuses a '
-        + 'cached record that names another slice: a key derivation and a '
-        + 'slicing that disagree would otherwise splice one slice\'s text over '
-        + 'another and produce plausible prose',
+      name: 'RESUMES a settled slice without spending a call, and STAMPS what it resumes with the '
+        + 'index it asked under rather than the one the record carries. Since version 2 the key is '
+        + 'the texts and the run shape, so a record legitimately answers for any slice with the same '
+        + 'texts, and trusting its own index would splice one slice\'s text over another',
       fn: async () => {
-        const { persisted, } = await runDriver({},);
+        const { persisted, result: firstRun, } = await runDriver({},);
         const { calls, result, } = await runDriver({ resumed: persisted, },);
         expect(calls.translate,).toBe(0,);
         expect(calls.select,).toBe(0,);
         expect(result.resumedSliceCount,).toBe(result.sliceCount,);
 
         /**
-         * Same records under the same keys, each claiming the wrong slice.
+         * Same records under the same keys, each carrying an index that names
+         * some other slice.
          */
         const misfiled = new Map(
           [...persisted.entries(),].map(function toMisfiled([key, record,],) {
@@ -511,9 +512,21 @@ await describe({
             ] as const;
           },),
         );
-        await expect(runDriver({ resumed: misfiled, },),)
-          .rejects
-          .toThrow('the key derivation and the slicing',);
+
+        /**
+         * Run resuming every slice from those records.
+         */
+        const restamped = await runDriver({ resumed: misfiled, },);
+        expect(restamped.result
+          .translatedText,).toBe(firstRun.translatedText,);
+        expect(restamped.result
+          .slices
+          .map(function toIndex(record,): number {
+            return record.chunkIndex;
+          },),).toEqual(firstRun.slices
+          .map(function toIndex(record,): number {
+            return record.chunkIndex;
+          },),);
       },
     },),
 
