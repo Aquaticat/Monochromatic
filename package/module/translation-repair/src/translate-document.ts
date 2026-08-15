@@ -8,7 +8,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import type { SliceCache, } from './slice-cache.ts';
-import { spliceSlices, } from './splice-slices.ts';
+import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
   alignmentRefusalFinding,
   MAX_INCUMBENT_TO_SOURCE_RATIO,
@@ -346,27 +346,53 @@ export async function translateDocument(
     + `${String(changed.length,)} changed, ${String(refused.length,)} refused on alignment`,
   );
 
-  return {
-    translatedText: spliceSlices({
-      targetText: prepared.targetText,
-      slices: prepared.slices,
-      replacements: changed.map(function toReplacement(record,) {
-        return {
-          chunkIndex: record.chunkIndex,
-          replacementText: record.outputText,
-        };
-      },),
+  /**
+   * Assembly with any replacement withdrawn that would leave the footnote graph
+   * worse than the archive's.
+   *
+   * Runs here rather than inside a slice because a footnote is a relation
+   * BETWEEN slices: the reference and the definition are settled separately, so
+   * a candidate that drops or renumbers a marker validates perfectly on its own.
+   */
+  const guarded = guardFootnoteAssembly({
+    targetText: prepared.targetText,
+    slices: prepared.slices,
+    replacements: changed.map(function toReplacement(record,) {
+      return {
+        chunkIndex: record.chunkIndex,
+        replacementText: record.outputText,
+      };
     },),
+  },);
+  if (guarded.revertedChunkIndices
+    .length
+    > 0) {
+    tl.warn(
+      `withdrew ${
+        String(guarded.revertedChunkIndices
+          .length,)
+      } replacements at assembly to keep the footnote graph whole`,
+    );
+  }
+
+  return {
+    translatedText: guarded.assembledText,
     sliceCount: prepared.slices
       .length,
-    changedSliceCount: changed.length,
+    // What SHIPPED, which is not what the judges chose whenever the guard
+    // withdrew one of their choices.
+    changedSliceCount: guarded.replacements
+      .length,
     refusedSliceCount: refused.length,
+    withdrawnSliceCount: guarded.revertedChunkIndices
+      .length,
     resumedSliceCount: counted.resumed,
     slices: settled,
     findings: [
       ...settled.flatMap(function toFindings(record,): readonly string[] {
         return record.findings;
       },),
+      ...guarded.findings,
       ...unheard.map(function toUnheardFinding(record,): string {
         return `translate-heard-no-translator chunk ${
           String(record.chunkIndex,)

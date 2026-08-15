@@ -152,14 +152,25 @@ export type TranslateDocumentResult = {
   readonly sliceCount: number;
 
   /**
-   * Slices whose accepted text differs from the incumbent.
+   * Slices whose accepted text SHIPPED, which is what the document carries.
+   *
+   * Counted after assembly rather than from the records, because the footnote
+   * guard can withdraw a replacement the judges chose: a record saying it
+   * changed and a document carrying the archive's text are both true, and this
+   * count belongs to the document.
    */
   readonly changedSliceCount: number;
 
   /**
-   * Slices where the guard refused a replacement the judges chose.
+   * Slices where the alignment guard refused a replacement the judges chose.
    */
   readonly refusedSliceCount: number;
+
+  /**
+   * Slices whose replacement was withdrawn at assembly to keep the footnote
+   * graph no worse than the archive's.
+   */
+  readonly withdrawnSliceCount: number;
 
   /**
    * Slices resumed from the cache rather than translated this run, so a cheap

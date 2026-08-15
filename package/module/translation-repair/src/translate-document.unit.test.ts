@@ -80,6 +80,11 @@ const FRESH = 'The cat naps on the windowsill.';
  * ```
  */
 function renderingFor({ content, }: { readonly content: string; },): string {
+  // A notes section is rendered faithfully, marker and all, which is what makes
+  // the footnote case about the REFERENCE that went missing rather than about a
+  // pair that vanished together.
+  if (content.includes('〔1〕：',))
+    return '## Notes\n\n[^1]: The spot it likes best.';
   if (content.includes('第一节',))
     return `## Section one\n\n${FRESH}`;
   if (content.includes('第二节',))
@@ -545,6 +550,57 @@ await describe({
         expect(result.findings.some(function isUnheard(finding,): boolean {
           return finding.startsWith('translate-heard-no-translator',);
         },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'WITHDRAWS a replacement that would break a footnote spanning two '
+        + 'slices, and counts what SHIPPED rather than what the judges chose. '
+        + 'Each slice validated on its own: the sentence reads well, and the '
+        + 'marker it lost belongs to a line the judges never saw',
+      fn: async () => {
+        const { result, } = await runDriver({
+          sourceText: `## 第一节
+
+猫猫在窗台上打盹〔1〕。
+
+## 第二节
+
+窗台上有一只鸟。
+
+## 注
+
+〔1〕：那是它最喜欢的位置。
+`,
+          targetText: `## Section one
+
+The cat is doing the sleeping on the windowsill[^1].
+
+## Section two
+
+On the windowsill there is being a bird.
+
+## Notes
+
+[^1]: That is its favourite spot.
+`,
+        },);
+        // The scripted translators render the first section WITHOUT its marker,
+        // so shipping their text would leave the definition orphaned.
+        expect(result.withdrawnSliceCount,).toBeGreaterThan(0,);
+        expect(result.translatedText,).toContain(
+          'The cat is doing the sleeping on the windowsill[^1].',
+        );
+        expect(result.findings
+          .some(function namesWithdrawal(finding,): boolean {
+            return finding.startsWith('assembly-footnote-',);
+          },),).toBe(true,);
+        // The record still says the judges chose a replacement; the document
+        // says what it could carry. Both are true and they disagree.
+        expect(result.slices
+          .some(function chose(record,): boolean {
+            return record.changed;
+          },),).toBe(true,);
       },
     },),
 
