@@ -125,9 +125,9 @@ await describe({
   children: [
     it({
       name:
-        'records both halves of a free-text exchange and keeps the server`s own total, '
-        + 'which may exceed their sum: a server billing hidden reasoning counts it in the total and in neither half, '
-        + 'and a bench deriving the total would under-price every thinking model in the roster',
+        'records both halves of a free-text exchange and keeps the server`s own total rather than recomputing it, '
+        + 'so a server stating a total its two halves do not add up to is priced as it billed '
+        + 'rather than as the bench would have derived',
       fn: async () => {
         /**
          * Wrapper over a server reporting a total larger than both halves.

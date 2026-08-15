@@ -32,13 +32,12 @@ import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 const FAILURE_DETAIL_CHARS = 40;
 
 /**
- * Both halves of one exchange's token cost, kept apart because roster width
- * does not move them together. Seating one more producer resends the SAME
- * prompt, so the sending half scales with width alone; what comes back scales
- * with what each producer actually writes; and a judge pays a prompt carrying
- * every candidate, so its sending half grows with width while its answering
- * half does not. A single total prices all three the same way and cannot say
- * which one a wider roster bought.
+ * Both halves of one exchange's token cost, kept apart because a single total
+ * cannot say which half a wider roster bought. Measured on the totals alone,
+ * a ballot costs 38% more at width 6 than at width 3 while its call count does
+ * not move; whether that growth is in the PROMPT, which repeats every candidate
+ * to every judge, or in the ANSWER, if a verdict is written per candidate, is
+ * exactly what the totals cannot distinguish and what this split is for.
  *
  * @example
  * ```ts
@@ -57,10 +56,10 @@ export type CallTokens = {
   readonly completionTokens: number;
 
   /**
-   * Total as the server reported it, which MAY EXCEED both halves added: a
-   * server billing hidden reasoning counts it in its own total and in neither
-   * half. Reported separately rather than derived, so the bench's headline cost
-   * stays what the provider would charge.
+   * Total as the server reported it, kept rather than derived so the bench's
+   * headline cost stays what the provider stated. Whether any provider here
+   * ever reports a total DIFFERING from both halves added is unmeasured; the
+   * fallback covers the servers that report no total at all.
    */
   readonly tokens: number;
 };
