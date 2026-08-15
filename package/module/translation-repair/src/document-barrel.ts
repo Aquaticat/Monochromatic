@@ -16,5 +16,11 @@ export {
   assertSliceIndexing,
   SliceIndexingError,
 } from './slice-indexing.ts';
+export {
+  buildSliceDelivery,
+  SliceDeliveryError,
+  type SliceDeliveryRecord,
+  type SliceShipment,
+} from './slice-delivery.ts';
 
 //endregion Document barrel
