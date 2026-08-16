@@ -2,10 +2,17 @@
 // and the dispatch sentinel that distinguishes "no reply" from a real outbound message.
 
 import type {
+  CacheHint,
+  ServerCapabilities,
+} from './protocol.ts';
+
+import type {
+  ToolAnnotations,
   ToolDefinition,
   ToolHandler,
   ToolInputSchema,
-} from './protocol.ts';
+  ToolOutputSchema,
+} from './protocol-tool.ts';
 
 import type {
   JsonRpcInbound,
@@ -46,8 +53,11 @@ export type DispatchResult = JsonRpcOutbound | typeof NO_RESPONSE;
  */
 export type ToolEntry = {
   readonly name: string;
+  readonly title?: string;
   readonly description: string;
   readonly inputSchema?: ToolInputSchema;
+  readonly outputSchema?: ToolOutputSchema;
+  readonly annotations?: ToolAnnotations;
   readonly handler: ToolHandler;
 };
 
@@ -74,19 +84,31 @@ export type RegisteredTool = {
 
 //endregion
 
-//region Server configuration: identity passed during initialization
+//region Server configuration: identity and discovery payload
 
 /**
  * Configuration for creating an MCP server.
+ * `instructions` reaches the model as natural-language guidance about this server,
+ * so it should explain what tool descriptions cannot rather than repeat them.
+ * Both cache hints default to {@link DEFAULT_CACHE_HINT}.
  *
  * @example
  * ```ts
- * const config: McpServerConfig = { name: 'my-server', version: '1.0.0' };
+ * const config: McpServerConfig = {
+ *   name: 'my-server',
+ *   version: '1.0.0',
+ *   instructions: 'Prefer list_vms before acting on a VM by name.',
+ * };
  * ```
  */
 export type McpServerConfig = {
   readonly name: string;
   readonly version: string;
+  readonly title?: string;
+  readonly instructions?: string;
+  readonly capabilities?: ServerCapabilities;
+  readonly discoverCache?: CacheHint;
+  readonly toolsCache?: CacheHint;
 };
 
 //endregion
@@ -99,7 +121,7 @@ export type McpServerConfig = {
  *
  * @example
  * ```ts
- * const server: McpServerHandle = createMcpServer(config, tools);
+ * const server: McpServerHandle = createMcpServer({ config, tools });
  * const response = await server.handleMessage(inboundMessage);
  * ```
  */

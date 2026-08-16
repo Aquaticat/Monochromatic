@@ -118,6 +118,12 @@ export type JsonRpcInbound = JsonRpcRequest | JsonRpcNotification;
 //region Standard JSON-RPC error codes: used for protocol-level failures
 
 /**
+ * Message parsed as JSON but is not a valid JSON-RPC request or notification object.
+ * Distinct from {@link JSON_RPC_PARSE_ERROR}, which covers text that is not JSON at all.
+ */
+export const JSON_RPC_INVALID_REQUEST = -32_600;
+
+/**
  * Method does not exist or is not available.
  */
 export const JSON_RPC_METHOD_NOT_FOUND = -32_601;
@@ -137,36 +143,61 @@ export const JSON_RPC_INTERNAL_ERROR = -32_603;
  */
 export const JSON_RPC_PARSE_ERROR = -32_700;
 
+/**
+ * Request declared a protocol revision this server does not implement.
+ * MCP-specific code from spec revision 2026-07-28; its `data` names the revisions
+ * the server does support so the client can retry on one of them.
+ */
+export const JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION = -32_022;
+
 //endregion
 
 //region Message validation: type guard for untrusted JSON parsed from stdin
 
 /**
- * Validates that a parsed JSON value has the minimum shape of a {@link JsonRpcInbound} message.
- * Checks for `jsonrpc: '2.0'` and a string `method` field.
+ * Reports whether a value is a plain object rather than `null`, an array, or a primitive.
+ *
+ * @param value - Untrusted value from parsed JSON.
+ *
+ * @returns `true` when the value can carry string-keyed members.
+ *
+ * @example
+ * ```ts
+ * isPlainObject({ a: 1 });
+ * // true
+ * ```
+ */
+function isPlainObject(value: unknown,): value is Record<string, unknown> {
+  return ((typeof value) === 'object') && (value !== null) && (!Array.isArray(value,));
+}
+
+/**
+ * Validates that a parsed JSON value has the shape of a {@link JsonRpcInbound} message.
+ * Requires `jsonrpc: '2.0'` and a string `method`, and rejects an `id` or `params` whose
+ * type contradicts the declared wire types: an unsound guard would let a request with a
+ * `null`, boolean, or object `id` reach dispatch and be echoed into a response.
  *
  * @param value - Untrusted parsed JSON from stdin.
  *
- * @returns `true` if value conforms to the minimum {@link JsonRpcInbound} shape.
+ * @returns `true` if value conforms to the {@link JsonRpcInbound} shape.
  *
  * @example
  * ```ts
  * const parsed: unknown = JSON.parse(line);
  * if (!isJsonRpcMessage(parsed)) {
- *   // send parse error response
+ *   // send invalid-request response
  * }
  * ```
  */
 export function isJsonRpcMessage(value: unknown,): value is JsonRpcInbound {
-  if (((typeof value) !== 'object') || (value === null))
+  if (!isPlainObject(value,))
     return false;
-  /**
-   * Narrowed view of `value` so the `jsonrpc` and `method` keys can be probed without further casts.
-   */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to object above
-  const candidate = value as Record<string, unknown>;
-  return (candidate.jsonrpc
-    === '2.0') && ((typeof candidate.method) === 'string');
+  if ((value.jsonrpc !== '2.0') || ((typeof value.method) !== 'string'))
+    return false;
+  // An absent `id` marks a notification; a present one must be a number or string.
+  if (('id' in value) && ((typeof value.id) !== 'number') && ((typeof value.id) !== 'string'))
+    return false;
+  return (value.params === undefined) || isPlainObject(value.params,);
 }
 
 //endregion

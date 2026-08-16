@@ -1,8 +1,13 @@
 // Stdio transport: reads JSON-RPC from stdin, dispatches through server handle, writes responses to stdout.
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   isJsonRpcMessage,
+  JSON_RPC_INTERNAL_ERROR,
+  JSON_RPC_INVALID_REQUEST,
   JSON_RPC_PARSE_ERROR,
+  type JsonRpcId,
   type JsonRpcOutbound,
 } from './json-rpc.ts';
 import { readLines, } from './line-reader.ts';
@@ -153,14 +158,18 @@ export async function serve(
         parsed,
       );
       /**
-       * Shape-error response when the message parsed but lacks `jsonrpc` or `method`.
+       * Shape-error response when the message parsed as JSON but is not a JSON-RPC message.
+       * Uses invalid-request rather than parse-error: the text was valid JSON, so `JSON.parse`
+       * never failed and reporting a parse failure would misdirect the client.
        */
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
         error: {
-          code: JSON_RPC_PARSE_ERROR,
-          message: 'Invalid JSON-RPC message: missing jsonrpc or method field',
+          code: JSON_RPC_INVALID_REQUEST,
+          message:
+            'Invalid JSON-RPC message: requires jsonrpc "2.0", a string method, '
+            + 'a number or string id when present, and object params when present',
         },
       };
       await writeSerializedMessage({
@@ -185,13 +194,73 @@ export async function serve(
     /**
      * Serialized response reused for diagnostic output and wire write.
      */
-    const serializedResponse = JSON.stringify(response,);
+    const serializedResponse = serializeResponse({
+      response,
+      id: ('id' in parsed) ? parsed.id : null,
+    },);
     console.error(`[mcp-stdio] -> ${serializedResponse}`,);
     await writeSerializedMessage({
       writer: output,
       encoder,
       serialized: serializedResponse,
     },);
+  }
+}
+
+//endregion
+
+//region Response serialization: keeps an unserializable payload from killing the process
+
+/**
+ * Serializes an outbound response, falling back to an internal-error frame when the
+ * payload cannot become JSON. A tool returning a cyclic object or a `bigint` would
+ * otherwise throw inside the read loop and close the connection mid-session, which a
+ * client sees as an unexplained disconnect instead of a failed call.
+ *
+ * @param response - Dispatch outcome awaiting transmission.
+ *
+ * @param id - Request id echoed by the fallback frame so the client can settle its call.
+ *
+ * @returns JSON text ready for framing.
+ *
+ * @example
+ * ```ts
+ * serializeResponse({ response: { jsonrpc: '2.0', id: 1, result: {} }, id: 1 });
+ * // '{"jsonrpc":"2.0","id":1,"result":{}}'
+ * ```
+ */
+function serializeResponse(
+  {
+    response,
+    id,
+  }: {
+    readonly response: JsonRpcOutbound;
+    // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- JSON-RPC 2.0 section 5 mandates the literal wire value `null` for `id` when the request id cannot be determined; this `null` is the external protocol's required output, not an internal absence sentinel.
+    readonly id: JsonRpcId | null;
+  },
+): string {
+  // Deliberate catch-and-return: serialization failure must reach the client as a frame,
+  // not as a closed connection.
+  try {
+    return JSON.stringify(response,);
+  }
+  catch (error: unknown) {
+    console.error(
+      '[mcp-stdio] failed to serialize response:',
+      error,
+    );
+    /**
+     * Replacement frame reporting that a well-formed result could not be encoded.
+     */
+    const errorResponse: JsonRpcOutbound = {
+      jsonrpc: '2.0',
+      id,
+      error: {
+        code: JSON_RPC_INTERNAL_ERROR,
+        message: `Failed to serialize response: ${caughtValueText(error,)}`,
+      },
+    };
+    return JSON.stringify(errorResponse,);
   }
 }
 

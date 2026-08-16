@@ -1,30 +1,39 @@
-// JSON-RPC response builders and notification handler.
+// JSON-RPC response builders, protocol-version error responses, and the notification handler.
 
-import type {
-  JsonRpcErrorResponse,
-  JsonRpcNotification,
-  JsonRpcRequest,
-  JsonRpcResponse,
+import {
+  JSON_RPC_INVALID_PARAMS,
+  JSON_RPC_METHOD_NOT_FOUND,
+  JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
+  type JsonRpcErrorResponse,
+  type JsonRpcNotification,
+  type JsonRpcRequest,
+  type JsonRpcResponse,
 } from './json-rpc.ts';
+
+import { SUPPORTED_PROTOCOL_VERSIONS, } from './protocol.ts';
 
 import {
   type DispatchResult,
   NO_RESPONSE,
 } from './server-types.ts';
 
+import type { UnsupportedProtocolVersionError, } from './server-protocol-error.ts';
+
+//region Generic builders: success and error envelopes
+
 /**
  * Constructs a JSON-RPC success response.
  *
  * @param id - Request id to echo back.
  *
- * @param result - Payload for the `result` field.
+ * @param result - Payload for `result` field, already carrying its protocol envelope.
  *
  * @returns Formatted JSON-RPC response.
  *
  * @example
  * ```ts
- * respondSuccess({ id: 1, result: { tools: [] } });
- * // { jsonrpc: '2.0', id: 1, result: { tools: [] } }
+ * respondSuccess({ id: 1, result: { resultType: 'complete', tools: [] } });
+ * // { jsonrpc: '2.0', id: 1, result: { resultType: 'complete', tools: [] } }
  * ```
  */
 export function respondSuccess(
@@ -48,9 +57,11 @@ export function respondSuccess(
  *
  * @param id - Request id to echo back.
  *
- * @param code - Standard JSON-RPC error code.
+ * @param code - JSON-RPC or MCP error code.
  *
  * @param message - Human-readable error description.
+ *
+ * @param data - Structured detail the client can act on, omitted when absent.
  *
  * @returns Formatted JSON-RPC error response.
  *
@@ -65,10 +76,12 @@ export function respondError(
     id,
     code,
     message,
+    data,
   }: {
     readonly id: JsonRpcRequest['id'];
     readonly code: number;
     readonly message: string;
+    readonly data?: unknown;
   },
 ): JsonRpcErrorResponse {
   return {
@@ -77,9 +90,122 @@ export function respondError(
     error: {
       code,
       message,
+      ...((data === undefined) ? {} : { data, }),
     },
   };
 }
+
+//endregion
+
+//region Protocol-version errors: the two ways request validation refuses to serve
+
+/**
+ * Builds the `UnsupportedProtocolVersionError` response defined by MCP revision 2026-07-28.
+ * Its `data` names every revision on offer so the client can retry on one of them.
+ *
+ * @param id - Request id to echo back.
+ *
+ * @param error - Validation failure carrying refused and supported revisions.
+ *
+ * @returns Error response with code -32022 and its mandated `data` payload.
+ *
+ * @example
+ * ```ts
+ * respondUnsupportedProtocolVersion({
+ *   id: 1,
+ *   error: new UnsupportedProtocolVersionError({ requested: '2025-06-18' }),
+ * });
+ * ```
+ */
+export function respondUnsupportedProtocolVersion(
+  {
+    id,
+    error,
+  }: {
+    readonly id: JsonRpcRequest['id'];
+    readonly error: UnsupportedProtocolVersionError;
+  },
+): JsonRpcErrorResponse {
+  return respondError({
+    id,
+    code: JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
+    message: 'Unsupported protocol version',
+    data: {
+      supported: error.supported,
+      requested: error.requested,
+    },
+  },);
+}
+
+/**
+ * Builds the response for a request whose `_meta` omitted the mandatory revision key.
+ * Invalid params rather than an unsupported version: nothing was requested to refuse.
+ *
+ * @param id - Request id to echo back.
+ *
+ * @param message - Description naming both missing key and available revisions.
+ *
+ * @returns Error response with code -32602 listing supported revisions.
+ *
+ * @example
+ * ```ts
+ * respondMissingProtocolVersion({ id: 1, message: 'Request is missing ...' });
+ * ```
+ */
+export function respondMissingProtocolVersion(
+  {
+    id,
+    message,
+  }: {
+    readonly id: JsonRpcRequest['id'];
+    readonly message: string;
+  },
+): JsonRpcErrorResponse {
+  return respondError({
+    id,
+    code: JSON_RPC_INVALID_PARAMS,
+    message,
+    data: { supported: SUPPORTED_PROTOCOL_VERSIONS, },
+  },);
+}
+
+/**
+ * Builds the response for the removed `initialize` handshake.
+ * A handshake-era client cannot fall forward, so this message is the only diagnostic it can
+ * show its user; the spec asks a modern-only server to name its revisions here.
+ *
+ * @param id - Request id to echo back.
+ *
+ * @returns Error response explaining that discovery replaced the handshake.
+ *
+ * @example
+ * ```ts
+ * respondInitializeRemoved({ id: 1 });
+ * ```
+ */
+export function respondInitializeRemoved(
+  { id, }: { readonly id: JsonRpcRequest['id']; },
+): JsonRpcErrorResponse {
+  return respondError({
+    id,
+    code: JSON_RPC_METHOD_NOT_FOUND,
+    message:
+      `Method not found: initialize. This server implements MCP revision `
+      + `${SUPPORTED_PROTOCOL_VERSIONS.join(', ',)}, which removed the initialize handshake: `
+      + `call server/discover and declare the revision in each request's params._meta instead`,
+    data: { supported: SUPPORTED_PROTOCOL_VERSIONS, },
+  },);
+}
+
+//endregion
+
+//region Notifications: consumed, never answered
+
+/**
+ * Method name of the cancellation notification a client may send for an in-flight request.
+ * Handlers here run to completion, so the notification is accepted and dropped without a reply.
+ */
+const CANCELLED_NOTIFICATION = 'notifications/cancelled';
 
 /**
  * Processes notifications. Logs unexpected notification methods for protocol debugging.
@@ -90,13 +216,14 @@ export function respondError(
  *
  * @example
  * ```ts
- * handleNotification({ jsonrpc: '2.0', method: 'notifications/initialized' });
+ * handleNotification({ jsonrpc: '2.0', method: 'notifications/cancelled' });
  * // NO_RESPONSE
  * ```
  */
 export function handleNotification(notification: JsonRpcNotification,): DispatchResult {
-  if (notification.method
-    !== 'notifications/initialized')
+  if (notification.method !== CANCELLED_NOTIFICATION)
     console.error(`[mcp-stdio] unexpected notification method: ${notification.method}`,);
   return NO_RESPONSE;
 }
+
+//endregion

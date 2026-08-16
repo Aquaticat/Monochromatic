@@ -1,4 +1,4 @@
-// MCP server: immutable tool registry and JSON-RPC dispatch.
+// MCP server: immutable tool registry and JSON-RPC dispatch for spec revision 2026-07-28.
 
 import {
   JSON_RPC_METHOD_NOT_FOUND,
@@ -7,25 +7,36 @@ import {
   type JsonRpcRequest,
 } from './json-rpc.ts';
 
+import { DEFAULT_CACHE_HINT, } from './protocol.ts';
+
+import type { Implementation, } from './protocol-meta.ts';
+
 import {
-  type InitializeResult,
-  PROTOCOL_VERSION,
-  type ToolDefinition,
-} from './protocol.ts';
+  buildDiscoverResult,
+  buildListToolsResult,
+} from './server-result.ts';
 
 import {
   handleNotification,
   respondError,
+  respondInitializeRemoved,
+  respondMissingProtocolVersion,
   respondSuccess,
+  respondUnsupportedProtocolVersion,
 } from './server-response.ts';
 import { handleToolCall, } from './server-tool-call.ts';
+import { registerTools, } from './server-tool-registry.ts';
 import type {
   DispatchResult,
   McpServerConfig,
   McpServerHandle,
-  RegisteredTool,
   ToolEntry,
 } from './server-types.ts';
+import { requireProtocolVersion, } from './server-request-version.ts';
+import {
+  MissingProtocolVersionError,
+  UnsupportedProtocolVersionError,
+} from './server-protocol-error.ts';
 
 //region createMcpServer: builds an immutable server from config and tool entries
 
@@ -33,7 +44,7 @@ import type {
  * Creates an immutable MCP server that dispatches JSON-RPC messages.
  * Tools are registered at creation time; no mutation after construction.
  *
- * @param config - Server identity used in initialization responses.
+ * @param config - Server identity and discovery payload.
  *
  * @param tools - Tool entries to register, typically created via {@link defineTool}.
  *
@@ -72,73 +83,28 @@ export function createMcpServer(
   /**
    * Immutable lookup of registered tools keyed by name; built once at construction so
    * later dispatch is O(1) without exposing a mutation surface.
-   *
-   * MCP clients (including Factory Droid) require `inputSchema` on every tool, even
-   * when the tool accepts no arguments; entries without one fall back to `{ type: 'object' }`.
    */
-  const toolMap: ReadonlyMap<string, RegisteredTool> = new Map(
-    tools.map(function buildRegisteredTool(entry,) {
-      return [
-        entry.name,
-        {
-          definition: {
-            name: entry.name,
-            description: entry.description,
-            inputSchema: entry.inputSchema
-              ?? { type: 'object', },
-          },
-          handler: entry.handler,
-        },
-      ] as const;
-    },),
-  );
-
-  //region Protocol payloads: initialization and tool listing
+  const toolMap = registerTools({ tools, },);
 
   /**
-   * Builds the `InitializeResult` payload for the initialization handshake.
-   *
-   * @returns Server identity and capabilities.
+   * Identity stamped into the `_meta` of every result this server sends.
    */
-  function buildInitializeResult(): InitializeResult {
-    return {
-      protocolVersion: PROTOCOL_VERSION,
-      capabilities: { tools: {}, },
-      serverInfo: {
-        name: config.name,
-        version: config.version,
-      },
-    };
-  }
-
-  /**
-   * Builds the response payload for `tools/list`.
-   *
-   * @returns Object containing array of tool definitions.
-   */
-  function buildToolsList(): { tools: readonly ToolDefinition[]; } {
-    return {
-      tools: [...toolMap.values(),].map(function getDefinition(registered,) {
-        return registered.definition;
-      },),
-    };
-  }
-
-  //endregion
+  const serverInfo: Implementation = {
+    name: config.name,
+    version: config.version,
+    ...((config.title === undefined) ? {} : { title: config.title, }),
+  };
 
   //region Request dispatch: routes JSON-RPC methods to handlers
 
   /**
-   * Routes a JSON-RPC request to the matching method handler.
-   * Only the `tools/call` branch is async (awaits the tool handler);
-   * all other branches return synchronously but the signature must be
-   * async to unify with {@link handleToolCall}.
+   * Routes a version-checked request to the matching method handler.
    *
-   * @param request - Inbound request with an `id` that must be echoed in the response.
+   * @param request - Inbound request whose declared revision this server implements.
    *
    * @returns JSON-RPC success or error response.
    */
-  function handleRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
+  function routeRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
     /**
      * Request `id` is echoed in the response; `method` selects the branch below.
      */
@@ -147,28 +113,34 @@ export function createMcpServer(
       method,
     } = request;
 
-    if (method === 'initialize') {
+    if (method === 'server/discover') {
       return Promise.resolve(respondSuccess({
         id,
-        result: buildInitializeResult(),
-      },),);
-    }
-    if (method === 'ping') {
-      return Promise.resolve(respondSuccess({
-        id,
-        result: {},
+        result: buildDiscoverResult({
+          serverInfo,
+          capabilities: config.capabilities ?? { tools: {}, },
+          cache: config.discoverCache ?? DEFAULT_CACHE_HINT,
+          ...((config.instructions === undefined) ? {} : { instructions: config.instructions, }),
+        },),
       },),);
     }
     if (method === 'tools/list') {
       return Promise.resolve(respondSuccess({
         id,
-        result: buildToolsList(),
+        result: buildListToolsResult({
+          tools: [...toolMap.values(),].map(function getDefinition(registered,) {
+            return registered.definition;
+          },),
+          serverInfo,
+          cache: config.toolsCache ?? DEFAULT_CACHE_HINT,
+        },),
       },),);
     }
     if (method === 'tools/call') {
       return handleToolCall({
         toolMap,
         request,
+        serverInfo,
       },);
     }
     return Promise.resolve(
@@ -178,6 +150,41 @@ export function createMcpServer(
         message: `Method not found: ${method}`,
       },),
     );
+  }
+
+  /**
+   * Validates the request's declared protocol revision, then routes it.
+   * `initialize` short-circuits ahead of validation: a handshake-era client never sends
+   * the `_meta` this revision requires, and its error message is its only diagnostic.
+   *
+   * @param request - Inbound request with an `id` that must be echoed in the response.
+   *
+   * @returns JSON-RPC success or error response.
+   */
+  function handleRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
+    if (request.method === 'initialize')
+      return Promise.resolve(respondInitializeRemoved({ id: request.id, },),);
+
+    // Deliberate catch-and-return: version validation reports refusal to the client as a
+    // JSON-RPC error response rather than crashing the server process.
+    try {
+      requireProtocolVersion({ request, },);
+    }
+    catch (error: unknown) {
+      if (error instanceof UnsupportedProtocolVersionError) {
+        console.error(`[mcp-stdio] refused request: ${error.message}`,);
+        return Promise.resolve(respondUnsupportedProtocolVersion({ id: request.id, error, },),);
+      }
+      if (error instanceof MissingProtocolVersionError) {
+        console.error(`[mcp-stdio] refused request: ${error.message}`,);
+        return Promise.resolve(
+          respondMissingProtocolVersion({ id: request.id, message: error.message, },),
+        );
+      }
+      throw error;
+    }
+
+    return routeRequest(request,);
   }
 
   //endregion
@@ -203,3 +210,5 @@ export function createMcpServer(
 
   //endregion
 }
+
+//endregion

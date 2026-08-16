@@ -58,6 +58,11 @@ export async function* readLines(
     }
   }
 
+  // Flush the decoder itself: without a final zero-length decode, a multi-byte UTF-8
+  // sequence split across the stream's last chunk boundary stays buffered inside the
+  // decoder and never reaches the caller.
+  buffer += decoder.decode();
+
   // Flush remaining data after stream closes without a trailing newline.
   // Not expected in normal MCP usage (clients send newline-terminated messages),
   // but logged so protocol issues are visible during debugging.
