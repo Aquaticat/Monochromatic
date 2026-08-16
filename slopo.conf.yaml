@@ -5,6 +5,8 @@ source_dir: .
 # Paths to exclude from indexing, as a YAML list of .gitignore-style patterns
 source_dir_exclude:
 - '**/test/**'
+# TODO: The plural spelling shouldn't exist anyway.
+- '**/tests/**'
 - '**/test-fixture/**'
 - '*.test.ts'
 - '*_test.rs'
