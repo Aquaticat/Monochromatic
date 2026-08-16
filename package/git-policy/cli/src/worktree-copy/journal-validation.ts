@@ -18,17 +18,13 @@ import type {
   InstalledWorktreePath,
   WorktreeCopyJournal,
 } from './model.ts';
+import { assertPrivateWorktreeCopyPath, } from './private-path.ts';
 import { STAGE_PREFIX, } from './snapshot.ts';
 
 /**
  * Git-file prefix introducing linked-worktree administrative path.
  */
 const GITDIR_PREFIX = 'gitdir: ';
-
-/**
- * Group and other permission bits forbidden on private stage directories.
- */
-const NON_PRIVATE_MODE_BITS = 0o077;
 
 /**
  * Filesystem path is absent.
@@ -317,37 +313,6 @@ async function lstatOrAbsent(path: string,): Promise<Readonly<Stats> | typeof PA
 }
 
 /**
- * Asserts one private stage directory is canonical, owned, and inaccessible to peers.
- *
- * @param path - exact stage directory
- *
- * @throws {@link WorktreeCopyError} when stage identity is unsafe
- *
- * @example
- * ```ts
- * await assertPrivateDirectory('/worktrees/.cli-git-worktree-copy-id');
- * ```
- */
-async function assertPrivateDirectory(path: string,): Promise<void> {
-  /**
-   * No-follow private-directory metadata.
-   */
-  const stats = await lstat(path,);
-  /**
-   * Effective account owner when platform exposes POSIX identity.
-   */
-  const effectiveUserId = process.geteuid?.();
-  if ((!stats.isDirectory())
-    || ((stats.mode & NON_PRIVATE_MODE_BITS) !== 0)
-    || ((effectiveUserId !== undefined) && (stats.uid !== effectiveUserId))
-    || ((await realpath(path,)) !== path)) {
-    throw new WorktreeCopyError(
-      `cli-git: worktree-copy private stage is unsafe: ${JSON.stringify(path,)}.`,
-    );
-  }
-}
-
-/**
  * Asserts journal destination remains registered under expected common directory.
  *
  * @param commonDir - canonical common Git directory
@@ -447,7 +412,10 @@ export async function validateJournalFilesystem({
         `cli-git: incomplete worktree-copy stage is missing: ${JSON.stringify(record.stageContainer,)}.`,
       );
     }
-    await assertPrivateDirectory(record.stageContainer,);
+    await assertPrivateWorktreeCopyPath({
+      path: record.stageContainer,
+      role: 'private stage',
+    },);
     /**
      * Private payload metadata or partial completed cleanup absence.
      */
@@ -459,7 +427,10 @@ export async function validateJournalFilesystem({
         `cli-git: incomplete worktree-copy payload is missing: ${JSON.stringify(record.stageRoot,)}.`,
       );
     }
-    await assertPrivateDirectory(record.stageRoot,);
+    await assertPrivateWorktreeCopyPath({
+      path: record.stageRoot,
+      role: 'private stage',
+    },);
   }
   catch (error: unknown) {
     if (error instanceof WorktreeCopyError)
