@@ -148,6 +148,27 @@ The version 2 parser contract is written up in the planning doc under
 "What the version 2 parser must require, and what it may tolerate".
 Read that before writing the parser rather than re-deriving it.
 
+## The version 2 artifact landed
+
+Three files under `src/corpus-run/`:
+`artifact-v2-contract.ts` (the shape), `artifact-v2-vocabulary.ts` (the frozen dispatch unions),
+and `artifact-v2-build.ts` (the builder), with six tests.
+
+Both lanes nest and neither is at the top level.
+The builder takes only what cannot be computed from the run:
+the identity comes off the preparation and the whole comparison off the two ledgers,
+so neither can be supplied wrong.
+`laneSelection` states `pending-human-decision` rather than leaving the winner absent.
+
+The frozen unions are worth knowing about:
+they are copies of the live ones, and the copying is deliberate.
+The builder assigns live values into them, so a live union that gains a member the snapshot does not list
+STOPS COMPILING there, and the next person meets the version question as a build error
+rather than as an artifact that quietly means something new.
+
+`ArtifactJsonValue` deliberately excludes JSON's `null`:
+it is absence spelled as a value, which is what this whole generation exists to stop recording.
+
 ## Next actions, in order
 
 1.  The artifact at schema version 2. The identity it needs is DONE and exported.
