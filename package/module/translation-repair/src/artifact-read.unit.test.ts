@@ -105,6 +105,60 @@ await describe({
     },),
 
     it({
+      name:
+        'hands back the repair READING rather than an absent field, so a caller can tell an artifact '
+        + 'written before repair recording from a run that recorded one. This used to collapse into an '
+        + 'optional property, which handed the caller back the question the reading had just answered',
+      fn: async () => {
+        /**
+         * An artifact from before repair recording existed, whose records carry
+         * no repair fields at all.
+         */
+        const older = parseSettledArtifact({
+          value: catArtifact({ issues: [catAcceptedRecord(),], },),
+        },);
+        expect(older.acceptedIssues[0]?.repair
+          .kind,).toBe('unrecorded',);
+
+        /**
+         * The same issue in a run that recorded what it shipped.
+         */
+        const recorded = parseSettledArtifact({
+          value: catArtifact({
+            issues: [
+              {
+                ...(catAcceptedRecord() as Record<string, unknown>),
+                resolved: true,
+                repairDisposition: 'shipped',
+                refined: false,
+                repairRegions: [
+                  {
+                    envelopeId: 'envelope/purr',
+                    issueIds: ['adjudicated/purr',],
+                    before: 'The cat greets you.',
+                    editorAfter: 'The cat greets you with a purr.',
+                  },
+                ],
+              },
+            ],
+          },),
+        },);
+
+        /**
+         * What that run recorded about the one accepted issue.
+         */
+        const reading = recorded.acceptedIssues[0]?.repair;
+        if (reading?.kind !== 'recorded')
+          throw new Error('expected a recorded reading',);
+
+        expect(reading.repair
+          .disposition,).toBe('shipped',);
+        expect(reading.repair
+          .regions[0]?.editorAfter,).toBe('The cat greets you with a purr.',);
+      },
+    },),
+
+    it({
       name: 'excludes rejected and needs-human issues from the denominator',
       fn: async () => {
         const parsed = parseSettledArtifact({

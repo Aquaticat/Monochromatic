@@ -8,11 +8,13 @@ import {
   type ArtifactChangeSets,
   readArtifactChangeSets,
 } from './artifact-change-sets.ts';
-import { parseRecordRepair, } from './artifact-repair-read.ts';
+import {
+  parseRecordRepair,
+  type RecordRepairReading,
+} from './artifact-repair-read.ts';
 import type {
   GradableClaim,
   GradableIssue,
-  GradableRepair,
   GradableSpan,
 } from './sample-grading.ts';
 
@@ -191,7 +193,7 @@ function parseAcceptedIssue(
  *
  * @example
  * ```ts
- * const accepted: ParsedAcceptedIssue = { issue, };
+ * const accepted: ParsedAcceptedIssue = { issue, repair: { kind: 'unrecorded', }, };
  * ```
  */
 export type ParsedAcceptedIssue = {
@@ -201,10 +203,19 @@ export type ParsedAcceptedIssue = {
   readonly issue: GradableIssue;
 
   /**
-   * What became of its repair; absent for artifacts written before repair
-   * recording existed, which is not the same as no repair having happened.
+   * What became of its repair, carried as the READING rather than as an
+   * optional field.
+   *
+   * The reading already distinguishes an artifact written before repair
+   * recording existed from one recording a repair, and `parseRecordRepair`
+   * names that distinction for the stated reason that an absent field is the
+   * one thing a caller can forget to check. This used to hold
+   * `repair?: GradableRepair`, which threw the distinction away one call after
+   * it was drawn: a caller then met `undefined` and had to decide for itself
+   * whether that meant an older artifact or a run that repaired nothing, which
+   * is the question the reading answers.
    */
-  readonly repair?: GradableRepair;
+  readonly repair: RecordRepairReading;
 };
 
 /**
@@ -349,9 +360,11 @@ export function parseSettledArtifact(
             issue,
             path: `${id}.issues[${String(recordIndex,)}].issue`,
           },),
-          ...(reading.kind === 'unrecorded'
-            ? {}
-            : { repair: reading.repair, }),
+
+          // The reading ITSELF, rather than its repair spread in when there is
+          // one. Collapsing it here handed the caller an absent field and the
+          // question the reading had just answered.
+          repair: reading,
         },
       ];
     },);

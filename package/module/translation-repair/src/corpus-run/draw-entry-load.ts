@@ -207,13 +207,25 @@ export async function loadEntry(
     band,
     candidates: parsed.acceptedIssues
       .map(function toCandidate(accepted,) {
+        /**
+         * What the artifact recorded about this issue's repair, which is a
+         * named absence on an artifact written before repair recording.
+         */
+        const reading = accepted.repair;
+
         return extractGradingCandidate({
           issue: accepted.issue,
           entryId: parsed.id,
           band,
-          ...(accepted.repair === undefined
+
+          // THE ONE PLACE the named absence becomes an absent field, and it
+          // stays here because this is where a candidate is built for the
+          // SAMPLE FILE. That file's shape is on disk in draws a human is
+          // grading, so widening it is a change to a persisted format rather
+          // than to a reader, and it belongs to whoever decides to make it.
+          ...(reading.kind === 'unrecorded'
             ? {}
-            : { repair: accepted.repair, }),
+            : { repair: reading.repair, }),
         },);
       },),
   };

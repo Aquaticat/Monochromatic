@@ -230,13 +230,18 @@ function throughArtifact(
 
   return parsed.acceptedIssues
     .map(function toCandidate(accepted,) {
+      /**
+       * What the artifact recorded about this issue's repair.
+       */
+      const reading = accepted.repair;
+
       return extractGradingCandidate({
         issue: accepted.issue,
         entryId: parsed.id,
         band: bandAt(2_000,),
-        ...(accepted.repair === undefined
+        ...(reading.kind === 'unrecorded'
           ? {}
-          : { repair: accepted.repair, }),
+          : { repair: reading.repair, }),
       });
     },);
 }
