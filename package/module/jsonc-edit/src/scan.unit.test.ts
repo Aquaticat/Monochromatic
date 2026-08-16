@@ -19,7 +19,7 @@ import {
   scanLineComment,
   scanNumber,
   scanString,
-} from './scan.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'scan',

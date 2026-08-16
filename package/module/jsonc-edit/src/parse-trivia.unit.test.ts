@@ -17,8 +17,8 @@ import {
   captureTrailing,
   prependComments,
   skipTrivia,
-} from './parse-trivia.ts';
-import type { JsoncValue, } from './value.ts';
+} from '../dist/final/neutral/index.mjs';
+import type { JsoncValue, } from '../dist/final/neutral/index.mjs';
 
 const nul = (): JsoncValue => ({ kind: 'null', });
 

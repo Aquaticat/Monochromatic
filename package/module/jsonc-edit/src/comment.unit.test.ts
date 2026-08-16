@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
+import type { StringJsonc, } from '../dist/final/neutral/index.mjs';
 import {
   COMMENT_ABSENT,
   jsoncGetComment,
@@ -21,7 +21,7 @@ import {
   jsoncSetKeyComment,
   mergeComments,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 

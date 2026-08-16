@@ -16,11 +16,11 @@ import {
   isSingleLineComment,
   leadingComment,
   trailingComment,
-} from './emit-comment.ts';
+} from '../dist/final/neutral/index.mjs';
 import {
   emitPlainJson,
   emitScalar,
-} from './emit-value.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'emit',

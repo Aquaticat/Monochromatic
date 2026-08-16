@@ -12,7 +12,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseScalar, } from './parse-scalar.ts';
+import { parseScalar, } from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: parseScalar.name,

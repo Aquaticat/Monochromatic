@@ -15,11 +15,11 @@ import {
 import {
   closeArray,
   closeRecord,
-} from './parse-close.ts';
+} from '../dist/final/neutral/index.mjs';
 import type {
   JsoncRecordEntry,
   JsoncValue,
-} from './value.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const num = (value: number,): JsoncValue => ({ kind: 'number', value, });
 

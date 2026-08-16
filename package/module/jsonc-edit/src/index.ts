@@ -47,6 +47,37 @@ export {
 export { mergeComments, } from './merge-comments.ts';
 //endregion Comment-as-data API
 
+//region Internal artifact-test surface
+export {
+  isJsonWhitespace,
+  matchKeyword,
+  scanBlockComment,
+  scanLineComment,
+  scanNumber,
+  scanString,
+} from './scan.ts';
+export {
+  appendComments,
+  captureTrailing,
+  prependComments,
+  skipTrivia,
+} from './parse-trivia.ts';
+export { parseScalar, } from './parse-scalar.ts';
+export {
+  isSingleLineComment,
+  leadingComment,
+  trailingComment,
+} from './emit-comment.ts';
+export {
+  emitPlainJson,
+  emitScalar,
+} from './emit-value.ts';
+export {
+  closeArray,
+  closeRecord,
+} from './parse-close.ts';
+//endregion Internal artifact-test surface
+
 //region Errors
 export {
   JsoncParseError,
