@@ -111,6 +111,9 @@ The workflow:
 Maven Central versions are immutable.
 Change `gradle.properties` to a version that has never been published.
 Changing another line in that file without changing `version` does not publish.
+If GitHub cannot read the pre-push version,
+the workflow skips automatic publication and emits a warning;
+use a manual non-dry run after confirming the intended version.
 
 Use the `kotlin-linter-publish` workflow's **Run workflow** control for manual operation.
 Its `dry-run` input defaults to `true`,
@@ -131,9 +134,8 @@ The repository's GitHub Actions secrets are:
 The matching public key has fingerprint
 `5BB5 727B E92B 6283 BBD7 DA85 5E8E 6D8D 791B 1B45`
 and is published on `keyserver.ubuntu.com`.
-The local recovery copy lives under
-`$HOME/.local/share/monochromatic/maven-central-signing/`.
-Keep that directory private because it contains the key and passphrase backups.
+A local recovery copy is held outside the repository.
+Its passphrase is stored separately in the desktop secret service.
 
 Sonatype's current requirements and API contract are documented in:
 

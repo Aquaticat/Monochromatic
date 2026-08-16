@@ -43,7 +43,14 @@ writeFileSync(join(consumerRoot, 'settings.gradle'), "rootProject.name = 'public
 writeFileSync(join(consumerRoot, 'build.gradle'), `
 plugins { id 'java' }
 repositories {
-    maven { url = uri(System.getenv('PUBLICATION_REPOSITORY')) }
+    exclusiveContent {
+        forRepository {
+            maven { url = uri(System.getenv('PUBLICATION_REPOSITORY')) }
+        }
+        filter {
+            includeGroup 'cat.aquati.monochromatic'
+        }
+    }
     mavenCentral()
 }
 dependencies {
@@ -66,7 +73,11 @@ execFileSync(
   ['--project-dir', consumerRoot, 'resolvePublication', '--no-daemon', '--console=plain'],
   {
     cwd: packageRoot,
-    env: { ...process.env, PUBLICATION_REPOSITORY: pathToFileURL(repositoryRoot).href },
+    env: {
+      ...process.env,
+      GRADLE_USER_HOME: join(consumerRoot, 'gradle-user-home'),
+      PUBLICATION_REPOSITORY: pathToFileURL(repositoryRoot).href,
+    },
     stdio: 'inherit',
   },
 )

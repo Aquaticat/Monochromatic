@@ -29,7 +29,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
-        fetch-depth: 2
+        fetch-depth: 0
 
     - name: Detect version change
       id: detect
@@ -58,6 +58,7 @@ jobs:
 
         const currentVersion = readVersion(readFileSync(VERSION_FILE, 'utf8'))
         let previousVersion = ''
+        let previousVersionAvailable = false
         const beforeSha = process.env.BEFORE_SHA ?? ''
         const eventName = process.env.EVENT_NAME ?? ''
 
@@ -69,13 +70,16 @@ jobs:
               { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
             )
             previousVersion = readVersion(previousContent)
+            previousVersionAvailable = true
           } catch (error) {
-            console.error(`Could not read the previous version: ${String(error)}`)
+            console.error(`::warning::Could not read the previous version; automatic publication is disabled. ${String(error)}`)
           }
         }
 
-        const shouldPublish = eventName === 'workflow_dispatch' || previousVersion !== currentVersion
-        console.log(`previous=${previousVersion || '<unavailable>'}`)
+        const manual = eventName === 'workflow_dispatch'
+        const changedOnPush = eventName === 'push' && previousVersionAvailable && previousVersion !== currentVersion
+        const shouldPublish = manual || changedOnPush
+        console.log(`previous=${previousVersionAvailable ? previousVersion : '<unavailable>'}`)
         console.log(`current=${currentVersion}`)
         console.log(`should-publish=${shouldPublish}`)
 
