@@ -13,7 +13,11 @@
 /// ```ts
 /// // Duration ~ a ms count.
 /// ```
-use std::{ffi::OsStr, process::Command, time::Duration};
+use std::{
+    ffi::OsStr,
+    process::Command,
+    time::{Duration, Instant},
+};
 
 /// What:     Grouped `use` of the calloop timer types and loop handle.
 /// Why:      `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
@@ -58,6 +62,9 @@ use crate::{state::Compositor, systemd::Isolation};
 /// const POLL_INTERVAL_MS = 200;
 /// ```
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
+
+/// Grace period between compositor close request and forced child termination.
+const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
 
 /// Applies child-only Wayland and optional private session-bus environment.
 fn configure_child_environment(
@@ -141,6 +148,29 @@ pub fn spawn_child(
     return Ok(());
 }
 
+/// Requests graceful xdg-toplevel close and schedules force-stop fallback.
+pub fn request_hosted_client_shutdown(state: &mut Compositor) {
+    let toplevels = state
+        .space
+        .elements()
+        .filter_map(|window| return window.toplevel().cloned())
+        .collect::<Vec<_>>();
+    state.shutdown_deadline = Some(Instant::now() + SHUTDOWN_GRACE);
+    if toplevels.is_empty() {
+        warn!("no hosted toplevel available for graceful close; scheduling forced shutdown");
+        return;
+    }
+    for toplevel in toplevels {
+        toplevel.send_close();
+    }
+    info!("requested graceful close from hosted client");
+}
+
+/// Returns whether pending graceful shutdown passed its fallback deadline.
+fn shutdown_expired(deadline: Option<Instant>, now: Instant) -> bool {
+    return deadline.is_some_and(|value| return now >= value);
+}
+
 /// Register the periodic child-exit poll on the event loop.
 ///
 /// What:     `pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>)`. Borrows
@@ -183,6 +213,8 @@ pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>) {
 /// function pollChild(state) { ... }
 /// ```
 fn poll_child(state: &mut Compositor) {
+    let force_shutdown = shutdown_expired(state.shutdown_deadline, Instant::now());
+
     // What:     `let Some(child) = state.child.as_mut() else { return; };`. `as_mut()`
     //           borrows the `Option<Child>` as `Option<&mut Child>`; the `let ... else`
     //           binds the child mutably when present or returns when it is already gone.
@@ -211,6 +243,7 @@ fn poll_child(state: &mut Compositor) {
             // What:     `state.child_exit_code = Some(code);`. Record it for `main`.
             // Why:      `run` returns this as the program's exit code.
             state.child_exit_code = Some(code);
+            state.shutdown_deadline = None;
 
             // What:     `state.child = None;`. Clear the handle so we stop polling.
             // Why:      The child is reaped; nothing left to wait on.
@@ -221,8 +254,13 @@ fn poll_child(state: &mut Compositor) {
             state.loop_signal.stop();
         }
         Ok(None) => {
-            // What:     Empty arm: the child is still running.
-            // Why:      Keep waiting; the timer will poll again.
+            if force_shutdown {
+                warn!("hosted client ignored close request; forcing shutdown");
+                if let Err(error) = child.kill() {
+                    warn!(%error, "failed to force-stop hosted client");
+                }
+                state.shutdown_deadline = None;
+            }
         }
         Err(err) => {
             // What:     `warn!(...)`. Log the wait error.
@@ -232,6 +270,7 @@ fn poll_child(state: &mut Compositor) {
             // What:     `state.child = None;`. Stop polling a child we cannot wait on.
             // Why:      Avoid looping on a permanent error.
             state.child = None;
+            state.shutdown_deadline = None;
 
             // What:     `state.loop_signal.stop();`. End the loop; without a hostable
             //           child there is nothing to do.

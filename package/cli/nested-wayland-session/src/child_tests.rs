@@ -12,6 +12,15 @@ fn environment_change(command: &Command, key: &str) -> Option<Option<OsString>> 
         .map(|(_key, value)| return value.map(OsStr::to_os_string));
 }
 
+/// Confirms graceful-shutdown deadline distinguishes pending and expired states.
+#[test]
+fn shutdown_deadline_expires_only_at_or_after_deadline() {
+    let now = Instant::now();
+    assert!(!shutdown_expired(None, now));
+    assert!(!shutdown_expired(Some(now + Duration::from_secs(1)), now));
+    assert!(shutdown_expired(Some(now), now));
+}
+
 /// Confirms nested socket and private bus replace inherited override variables.
 #[test]
 fn child_environment_isolates_wayland_and_private_bus() {

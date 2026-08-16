@@ -205,6 +205,9 @@ pub struct Compositor {
     ///           exits, propagating the app's exit code.
     pub child: Option<Child>,
 
+    /// Deadline for force-stopping client that ignores compositor close request.
+    pub shutdown_deadline: Option<std::time::Instant>,
+
     /// The hosted app's exit code once it has exited, else `None`.
     ///
     /// What:     `pub child_exit_code: Option<i32>`. Signed 32-bit, matching a process
@@ -431,6 +434,7 @@ impl Compositor {
             _dmabuf_global: pieces.dmabuf_global,
             _dmabuf_feedback: pieces.dmabuf_feedback,
             child: None,
+            shutdown_deadline: None,
             child_exit_code: None,
             recorder: None,
             loop_handle,

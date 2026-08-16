@@ -259,6 +259,9 @@ For common issues:
 - **Mise inline Node task receives no declared usage arguments?
   ** →
   [Parse mise's `usage_args` value](mise-usage-args-inline-node.md)
+- **Nested Wayland quit makes hosted winit client report broken pipes?
+  ** →
+  [Close the client before stopping the compositor](nested-wayland-client-shutdown-order.md)
 
 ## Contributing
 

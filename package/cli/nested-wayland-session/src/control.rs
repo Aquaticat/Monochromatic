@@ -49,7 +49,7 @@ use tracing::{info, warn};
 /// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
 /// ```
 use crate::{
-    dnd, encoder, input, keymap,
+    child, dnd, encoder, input, keymap,
     protocol::{format_response, parse_command, Command, Response},
     recorder, screenshot,
     state::Compositor,
@@ -393,9 +393,8 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             }
         }
         Command::Quit => {
-            // What:     `state.loop_signal.stop();`. Stop the event loop.
-            // Why:      The `quit` command ends the fixture.
-            state.loop_signal.stop();
+            // Ask hosted client to close before tearing down its Wayland connection.
+            child::request_hosted_client_shutdown(state);
             Response::Ok
         }
     }
