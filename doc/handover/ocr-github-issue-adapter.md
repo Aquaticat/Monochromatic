@@ -28,12 +28,8 @@ The adapter must:
 - accept a JSONL file stored by OCR;
 - implement the previously selected local-adapter architecture.
 
-The exact meaning of "copypaste of OCR's output" is not settled.
-It may mean OCR's human-readable terminal output,
-the complete `--format json` object,
-a JSON comment array,
-or JSONL session records.
-Resolve this during grilling rather than guessing.
+Copied and pasted input means structured JSON entered through the interactive terminal paste flow.
+Human-readable terminal output and piped standard input are excluded.
 
 ## Settled grilling decisions
 
@@ -42,9 +38,7 @@ Resolve this during grilling rather than guessing.
 The user chose an ingest-only adapter.
 It must not invoke OCR.
 Users run OCR separately,
-then provide its output through paste,
-standard input,
-or a supported file.
+then provide its structured output through interactive paste or a supported named file.
 
 This removes OCR argument forwarding,
 process signaling,
@@ -82,13 +76,19 @@ the adapter is non-interactive and must never prompt,
 regardless of TTY detection.
 A missing required non-interactive input or decision is an error rather than an invitation to prompt.
 
-Interactive mode must reject piped standard input.
-It accepts input from a named file or from a terminal paste flow,
-so the prompt library retains normal terminal input.
-The implementation must not reopen `/dev/tty`,
+No mode may consume piped standard input.
+The user explicitly rejected pipes for this adapter.
+Input uses one optional positional file path with conventional CLI defaults,
+modified by the no-pipe rule:
+
+- a positional path reads that named file in either mode;
+- no path with `-i` opens the terminal paste flow;
+- no path without `-i` is an error;
+- `-` must not mean standard input.
+
+The implementation must not read redirected stdin as input or reopen `/dev/tty`,
 `CONIN$`,
 or another controlling-terminal device.
-Non-interactive mode may consume piped standard input.
 
 ## Settled prior findings
 
@@ -230,10 +230,14 @@ in dependency order:
    Accepted shapes are the complete review or scan result object,
    `ocr session comments --json` comment array,
    and raw OCR session JSONL transcript.
-   Interactive mode cannot consume piped standard input;
-   it receives a named file or terminal paste.
-   Non-interactive mode may consume a named file or piped standard input.
-   CLI source syntax,
+   No mode may consume piped standard input.
+   Non-interactive mode requires a named file.
+   Interactive mode receives a named file or terminal paste.
+   Source syntax is one optional positional file path.
+   With no path,
+   `-i` opens paste and non-interactive mode errors.
+   `-` never means standard input.
+   Detection of redirected stdin,
    paste framing,
    encoding,
    and malformed-input behavior remain open.
@@ -285,9 +289,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about CLI syntax for selecting a named file,
-piped standard input,
-or interactive paste.
+Ask whether non-TTY standard input must cause an immediate error even when a named input file is present,
+or whether the adapter merely never reads standard input.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -312,5 +315,13 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   recorded explicit `--interactive` or `-i` mode selection and non-interactive default behavior.
 - 2026-08-16:
   excluded piped standard input from interactive mode and controlling-terminal reopening from implementation.
+- 2026-08-16:
+  expanded the pipe exclusion to every mode at the user's direction.
+  Non-interactive ingestion now requires a named file.
+- 2026-08-16:
+  recorded positional file input,
+  interactive no-path paste,
+  non-interactive no-path failure,
+  and rejection of `-` as a standard-input sentinel.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
