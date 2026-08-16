@@ -24,6 +24,7 @@ export {
   toArtifactOutcomeV2,
   toArtifactRowV2,
 } from './corpus-run/artifact-v2-project.ts';
+export { settledTallyLine, } from './corpus-run/settled-tally.ts';
 export {
   ArtifactPreparationMismatchError,
   assertFindingsDescribePreparation,
