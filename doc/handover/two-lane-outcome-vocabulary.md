@@ -346,9 +346,34 @@ outside can make them disagree. Its accept and refuse paths are both covered dir
     the relations (ledger against result, index sets, blocked compatibility,
     recorded comparison against derived), a top-level orchestrator,
     and a separate corpus verifier taking a supplied `PreparedDocumentPair`.
-    The frozen comparison it needs already exists as `artifact-v2-comparison.ts`.
+    The frozen comparison it needs already exists as `artifact-v2-comparison.ts`,
+    with `artifact-v2-row-equality.ts` for the recorded-versus-derived check.
     Do NOT return `SettledArtifactV2`: its raw results are typed by live pipeline shapes,
     which is exactly what a historical reader must not depend on.
+
+    BUILD ORDER, each step committed with its own tests, lint and types green before the next:
+
+    1.  `artifact-exact-guard.ts`: `requireExactKeys`, the `callConfig` JSON value guard that
+        refuses `null` recursively, and the open raw-result guard that ACCEPTS it.
+        A sibling rather than more of `artifact-guard.ts`, which is already at 239 lines.
+    2.  `artifact-v2-read-contract.ts`: the parsed types and the frozen evidence core.
+        Core per `sliceTexts` row is `chunkIndex`, `incumbentKind`, `incumbentText`,
+        `outcome.kind`, and `acceptedText` where decided.
+        Lane evidence adds the counts and index sets each result already reports:
+        repair carries `status`, `sliceCount`, `shippedChunkIndices`, `withdrawnChunkIndices`,
+        `findings`; translate adds `changedSliceCount`, `refusedSliceCount`,
+        `withdrawnSliceCount`, and its `status` of `complete` or `unfilled`.
+    3.  `artifact-v2-read-vocabulary.ts`: exact parsers for outcome, delivery,
+        decision comparison, ledger row, comparison row.
+    4.  One tolerant evidence parser per lane, in its own file.
+    5.  `artifact-v2-read-relations.ts`: evidence against ledger BY POSITION, index sets against
+        the rows that would produce them, blocked compatibility, per-row `assertWordingCoherent`
+        and `assertDeliveryCoherent`, recorded comparison against `compareLanesV2`.
+    6.  `artifact-v2-read.ts`: top-level exact parse and orchestration.
+    7.  Dispatch: version 1 parsing out of `artifact-read.ts` into `artifact-v1-read.ts`,
+        `artifact-read.ts` left holding the four-case dispatch and returning the
+        generation-discriminated reading.
+    8.  `artifact-v2-corpus-verify.ts`, taking a supplied `PreparedDocumentPair`.
 2.  **The mixed-generation trap**, which the wiring created and nothing guards:
     `settledEntryIds` reads FILENAMES only (`pass-settled.ts`), so a pass resumed into
     a directory holding version 1 artifacts skips those entries and produces a corpus
