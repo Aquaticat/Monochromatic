@@ -552,5 +552,24 @@ await describe({
         },).toThrow('no replacement for assembly to take back',);
       },
     },),
+
+    it({
+      name: 'REFUSES a shipped slice on a BLOCKED run, because that exit returns the archive document '
+        + 'whatever any slice decided: a shipped index there names a replacement no reader can have '
+        + 'seen, and the ledger would report the run delivering work it explicitly refused to deliver',
+      fn: async () => {
+        expect(function shippedWhileBlocked() {
+          buildSliceDelivery({
+            slices: preparedSlices(),
+            wordings: laneWordings({
+              decided: new Map([[0, 'The cat is asleep.',],],),
+            },),
+            shippedChunkIndices: [0,],
+            withdrawnChunkIndices: [],
+            blocked: true,
+          },);
+        },).toThrow('shipped by a blocked run',);
+      },
+    },),
   ],
 },);

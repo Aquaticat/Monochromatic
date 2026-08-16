@@ -431,5 +431,75 @@ await describe({
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
       },
     },),
+    it({
+      name:
+        'reports a passage NEITHER lane filled as a gap that still remains rather than as the archive '
+        + 'standing, since the archive has never translated it: the older verdict told a grader a '
+        + 'translation was being kept where none has ever existed',
+      fn: async () => {
+        /**
+         * One lane's side of an anchor both lanes reached and neither filled.
+         */
+        const unfilledAnchor = {
+          sliceTexts: [{
+            chunkIndex: 0,
+            incumbentKind: 'absent',
+            incumbentText: '',
+            outcome: { kind: 'unfilled', },
+          },],
+          shippedChunkIndices: [],
+        } satisfies {
+          readonly sliceTexts: readonly LaneSliceText[];
+          readonly shippedChunkIndices: readonly number[];
+        };
+
+        /**
+         * Comparison over that one anchor.
+         */
+        const rows = compareDocumentLanes({
+          repair: unfilledAnchor,
+          translate: unfilledAnchor,
+        },);
+        expect(rows[0]?.verdict,).toBe('gap-remains',);
+        expect(rows[0]?.incumbentKind,).toBe('absent',);
+        // Neither lane decided anything, so there is nothing to compare either.
+        expect(rows[0]?.decisionComparison
+          .kind,).toBe('not-comparable',);
+      },
+    },),
+    it({
+      name:
+        'compares what the two lanes DECIDED beside what the two documents carry, because both lanes '
+        + 'choosing the same wording where only one shipped it is agreement between the lanes and a '
+        + 'difference between the documents, and one verdict cannot state both',
+      fn: async () => {
+        /**
+         * Both lanes chose the same replacement; the guard withdrew translate`s.
+         */
+        const agreed = compareDocumentLanes({
+          repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
+          translate: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: false, },),
+        },);
+        // The DOCUMENTS differ, since only one carries the replacement.
+        expect(agreed[0]?.verdict,).toBe('repair-only',);
+        // The LANES agree, which the delivery verdict cannot say.
+        expect(agreed[0]?.decisionComparison,).toEqual({
+          kind: 'comparable',
+          verdict: 'same',
+        },);
+
+        /**
+         * Both lanes chose differently, and both shipped.
+         */
+        const apart = compareDocumentLanes({
+          repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
+          translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
+        },);
+        expect(apart[0]?.decisionComparison,).toEqual({
+          kind: 'comparable',
+          verdict: 'different',
+        },);
+      },
+    },),
   ],
 },);
