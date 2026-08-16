@@ -12044,10 +12044,18 @@ THE SPEC, so the next session does not re-derive it:
     is needed.
 4.  Tally the replacement rate PER CLASS PER ARM.
 
-WHAT THE CACHE DOES TO THIS, and it has to be checked before the run rather than
-after: the two arms send different sheets for the same slice, so they must not
-collide in the slice cache. `translate-slice-key.ts` decides that key, and
-whether the window is part of it is the first thing to read.
+THE CACHE QUESTION IS ANSWERED, and it was a real defect rather than a worry.
+The key covered models, identity context, source, incumbent, mode and the
+governance flag, and NOT the window, so the two arms would have shared a key.
+The wide arm would have read what the narrow arm cached, and the comparison
+would have reported a window change as having made no difference, after fifteen
+hundred calls. Found by reading the key before the run rather than after it.
+
+The window is now part of the key, APPENDED ONLY WHEN PRESENT so a key computed
+without one is byte-identical to what it always was and no settled slice in the
+corpus is discarded. Verified by hash: absent, undefined and empty all give
+`0522d446...`, and a supplied window `09bc539a...`. That file had no tests at
+all; it now has four.
 
 BUDGET: roughly 80 flagged slices, two arms, three translators and six judges per
 arm. Call it 1500 exchanges. Every one is a real call, so run it detached and let
