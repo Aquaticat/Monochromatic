@@ -55,6 +55,11 @@ export {
   TRANSLATE_SELECTION_CRITERIA,
   TRANSLATE_SELECTION_TASK,
 } from './translate-selection-sheet.ts';
+export { judgeTranslateSlate, } from './translate-judge.ts';
+export {
+  type ProducedSlate,
+  produceTranslateSlate,
+} from './translate-produce.ts';
 export { runTranslateStage, } from './translate-stage.ts';
 export {
   type TranslateDecision,
