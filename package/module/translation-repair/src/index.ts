@@ -84,6 +84,12 @@ export { maskInvisibleLines, } from './mask-invisible-lines.ts';
 export { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
 export { restoreTypography, } from './restore-typography.ts';
 export {
+  type SelectionRound,
+  type SelfPreference,
+  type SelfPreferenceCounts,
+  selfPreference,
+} from './self-preference.ts';
+export {
   MdxParseError,
   parseMarkdownBody,
   parseMdxBody,
