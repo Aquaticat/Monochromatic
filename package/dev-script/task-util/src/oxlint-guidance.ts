@@ -50,6 +50,14 @@ export const RULE_GUIDANCE: Record<string, RuleGuidance> = {
     ]
       .join(' ',),
   },
+  'no-non-null-assertion': {
+    guidance: [
+      'Repository policy: preserve fail-loud semantics.',
+      'Replace `value!` with `nonNullishOrThrow(value,)` from `@monochromatic-dev/module-or-throw/ts`.',
+      'Do not use optional chaining unless a missing value is intentionally accepted.',
+    ]
+      .join(' ',),
+  },
   'no-array-callback-reference': {
     guidance: [
       'Direct callback references let array iterator methods pass value, index, and source collection into functions that may not expect them.',
