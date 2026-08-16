@@ -1,5 +1,9 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { deriveOmissionSeeds, } from './derive-seeds.ts';
+import {
+  sharedNumber,
+  unsupportedVariant,
+} from './fidelity-alteration.ts';
 import { spliceOutSentence, } from './fidelity-splice.ts';
 import { applySeededErrors, } from './seeded-error.ts';
 
@@ -21,6 +25,12 @@ import { applySeededErrors, } from './seeded-error.ts';
 // the judges. The correct answer becomes the SHORTER candidate, so a roster that
 // passes both fixtures cannot be reading length.
 //
+// NEITHER OF THOSE SHOWS THE ORIGINAL WAS READ. A judge that never looks at the
+// Chinese and simply prefers whichever English reads better passes both, since a
+// deletion leaves a gap and a borrowed sentence is a non-sequitur. The third
+// fixture, an ALTERATION, changes a number the original also states: same
+// length, same fluency, and decidable only against the source.
+//
 // WHAT THE INSERTION STILL CANNOT PROMISE: the borrowed sentence states
 // something the document says elsewhere, and a fact repeated across slices could
 // be supported by this slice's original after all. The donor is taken as far
@@ -36,7 +46,7 @@ import { applySeededErrors, } from './seeded-error.ts';
  * const damageKind: FidelityDamageKind = 'insertion';
  * ```
  */
-export type FidelityDamageKind = 'deletion' | 'insertion';
+export type FidelityDamageKind = 'deletion' | 'insertion' | 'alteration';
 
 /**
  * One damaged twin, or the fact that this slice admits none.
@@ -330,6 +340,80 @@ export function donorTextsFor(
     .map(function toText(candidate,): string {
       return candidate.text;
     },);
+}
+
+/**
+ * Changes a number the original also states, which is the fixture no amount of
+ * reading the English can decide.
+ *
+ * @param cleanText - archive English for this slice
+ *
+ * @param sourceText - Chinese original for the same slice
+ *
+ * @returns Damaged twin and what it cost, or why none could be built
+ *
+ * @example
+ * ```ts
+ * const attempt = alterSharedNumber({ cleanText, sourceText, },);
+ * ```
+ */
+export function alterSharedNumber(
+  {
+    cleanText,
+    sourceText,
+  }: {
+    readonly cleanText: string;
+    readonly sourceText: string;
+  },
+): DamageAttempt {
+  /**
+   * Number both sides carry, which the English states exactly once.
+   */
+  const original = sharedNumber({
+    cleanText,
+    sourceText,
+  },);
+  if (original === '')
+    return {
+      kind: 'undamageable',
+      reason: 'no number long enough that both the original and this slice state exactly once',
+    };
+
+  /**
+   * Same-shape number NEITHER side supports, so the damaged text asserts
+   * something no reading of the original can back.
+   */
+  const variant = unsupportedVariant({
+    original,
+    cleanText,
+    sourceText,
+  },);
+  if (variant === '')
+    return {
+      kind: 'undamageable',
+      reason: 'every same-shape number already appears on one side or the other',
+    };
+
+  /**
+   * Where the number sits, which is unique by construction.
+   */
+  const at = cleanText.indexOf(original,);
+
+  /**
+   * Slice stating the wrong number and nothing else changed.
+   */
+  const damagedText = cleanText.slice(
+    0,
+    at,
+  )
+    + variant
+    + cleanText.slice(at + original.length,);
+  return {
+    kind: 'damaged',
+    damageKind: 'alteration',
+    damagedText,
+    changedChars: original.length,
+  };
 }
 
 //endregion Fidelity damage

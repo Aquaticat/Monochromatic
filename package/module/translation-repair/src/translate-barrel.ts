@@ -93,12 +93,18 @@ export {
   runCoverageStage,
 } from './coverage-stage.ts';
 export {
+  alterSharedNumber,
   type DamageAttempt,
   deleteOneSentence,
   donorTextsFor,
   type FidelityDamageKind,
   insertBorrowedSentence,
 } from './fidelity-damage.ts';
+export {
+  digitRuns,
+  sharedNumber,
+  unsupportedVariant,
+} from './fidelity-alteration.ts';
 export {
   type FidelityBallotRead,
   type FidelityDirection,

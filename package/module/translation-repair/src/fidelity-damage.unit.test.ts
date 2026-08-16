@@ -17,6 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  alterSharedNumber,
   deleteOneSentence,
   donorTextsFor,
   insertBorrowedSentence,
@@ -291,6 +292,82 @@ await describe({
           sliceIndex: 0,
         },);
         expect(donors,).toEqual([DONOR_TEXT,],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: alterSharedNumber.name,
+  children: [
+    it({
+      name: 'changes a number the ORIGINAL also states, leaving a candidate of the same length that '
+        + 'reads exactly as well, so nothing but the original can decide it',
+      fn: async () => {
+        /** Chinese carrying the same digits the English renders. */
+        const sourceText = '小猫于2004年9月1日出生，来自江西宜春。她有3只玩具老鼠。';
+        const cleanText = 'Marmalade was born on 1 September 2004 in Yichun, Jiangxi. She owns 3 toy mice.';
+        const attempt = alterSharedNumber({
+          cleanText,
+          sourceText,
+        },);
+        if (attempt.kind !== 'damaged')
+          throw new Error(`expected damage, got ${attempt.reason}`,);
+        expect(attempt.damageKind,).toBe('alteration',);
+        // SAME LENGTH, which is what takes both length and fluency off the
+        // table and leaves only the original.
+        expect(attempt.damagedText
+          .length,).toBe(cleanText.length,);
+        expect(attempt.damagedText,).not
+          .toBe(cleanText,);
+        // The year the source states is gone, and what replaced it is stated
+        // nowhere on either side.
+        expect(attempt.damagedText
+          .includes('2004',),).toBe(false,);
+        /** Where the year sits in the damaged text. */
+        const yearAt = attempt.damagedText
+          .indexOf('September ',) + 'September '.length;
+
+        /** Year the damaged text now states. */
+        const statedYear = attempt.damagedText
+          .slice(
+            yearAt,
+            yearAt + '2004'.length,
+          );
+        expect(sourceText.includes(statedYear,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES a slice whose numbers the original does not state, since altering one would '
+        + 'damage a claim the source never made and the trial could not call either text right',
+      fn: async () => {
+        const attempt = alterSharedNumber({
+          cleanText: 'Marmalade was born in 2004 and owns 3 toy mice.',
+          sourceText: '小猫出生于春天，她有几只玩具老鼠。',
+        },);
+        expect(attempt.kind,).toBe('undamageable',);
+      },
+    },),
+    it({
+      name: 'REFUSES a number the translation states TWICE, because the fixture would then change '
+        + 'one mention and leave the other, which is a self-contradiction rather than an error',
+      fn: async () => {
+        const attempt = alterSharedNumber({
+          cleanText: 'She joined in 2004. Everything changed in 2004.',
+          sourceText: '她在2004年加入。2004年一切都变了。',
+        },);
+        expect(attempt.kind,).toBe('undamageable',);
+      },
+    },),
+    it({
+      name: 'ignores a lone digit, which collides with list markers and with digits inside longer '
+        + 'numbers on both sides',
+      fn: async () => {
+        const attempt = alterSharedNumber({
+          cleanText: 'She owns 3 toy mice and nothing else worth counting here.',
+          sourceText: '她有3只玩具老鼠。',
+        },);
+        expect(attempt.kind,).toBe('undamageable',);
       },
     },),
   ],

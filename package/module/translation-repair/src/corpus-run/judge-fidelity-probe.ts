@@ -6,6 +6,7 @@ import {
 } from '../corpus-source.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import {
+  alterSharedNumber,
   type DamageAttempt,
   deleteOneSentence,
   donorTextsFor,
@@ -79,6 +80,7 @@ const PAIRS_PER_ENTRY = 1;
 const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
   'deletion',
   'insertion',
+  'alteration',
 ];
 
 /**
@@ -94,6 +96,7 @@ const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = 
   '': DAMAGE_KINDS,
   deletion: ['deletion',],
   insertion: ['insertion',],
+  alteration: ['alteration',],
 };
 
 /**
@@ -267,7 +270,7 @@ function readArguments(): {
    */
   const damageKinds = DAMAGE_BY_NAME[damageText];
   if (damageKinds === undefined)
-    throw new Error(`--damage takes deletion or insertion, not ${damageText}`,);
+    throw new Error(`--damage takes deletion, insertion or alteration, not ${damageText}`,);
   return {
     damageKinds,
     onlyIds: (onlyAt === (-1))
@@ -400,6 +403,13 @@ async function main(): Promise<void> {
         .map(function toAttempt(damageKind,): DamageAttempt {
           if (damageKind === 'deletion')
             return deleteOneSentence({ cleanText, },);
+          if (damageKind === 'alteration') {
+            return alterSharedNumber({
+              cleanText,
+              sourceText: slice.source
+                .text,
+            },);
+          }
           return insertBorrowedSentence({
             cleanText,
             donorTexts: donorTextsFor({
