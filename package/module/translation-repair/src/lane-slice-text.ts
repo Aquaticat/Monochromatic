@@ -1,5 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import { LaneSliceCoverageError, } from './lane-slice-coverage-error.ts';
+import { validateNamedSets, } from './lane-slice-sets.ts';
 
 //region Lane slice text
 // What one lane DECIDED for each slice, beside what the archive already said.
@@ -78,6 +80,23 @@ export type LaneSliceOutcome = {
    * judges.
    */
   readonly kind: 'incumbent-fallback';
+} | {
+  /**
+   * Lane reached the slice and the work it does has no input here at all.
+   *
+   * The repair lane at a passage the archive never translated is this and
+   * nothing else: it mends existing English, and there is none, so it never had
+   * an opinion to record. It reported `decided` with the empty string until
+   * 2026-08-16, which made a lane comparison state that the two lanes chose
+   * DIFFERENT wordings wherever the translate lane filled the passage.
+   *
+   * SEPARATE FROM `unfilled` on purpose, though both leave the passage missing.
+   * `unfilled` is a lane that tried and produced nothing, which is a rate worth
+   * measuring; folding this into it would make the repair lane's decline rate
+   * equal the count of gaps in the archive, a constant of the document that
+   * measures nothing about the lane.
+   */
+  readonly kind: 'not-applicable';
 };
 
 /**
@@ -180,12 +199,14 @@ function outcomeOf(
     byIndex,
     unfilledHere,
     unheardHere,
+    notApplicableHere,
     undecided,
   }: {
     readonly chunkIndex: number;
     readonly byIndex: ReadonlyMap<number, string>;
     readonly unfilledHere: boolean;
     readonly unheardHere: boolean;
+    readonly notApplicableHere: boolean;
     readonly undecided: UndecidedSlicePolicy;
   },
 ): LaneSliceOutcome {
@@ -213,6 +234,8 @@ function outcomeOf(
     return { kind: 'unfilled', };
   if (unheardHere)
     return { kind: 'incumbent-fallback', };
+  if (notApplicableHere)
+    return { kind: 'not-applicable', };
   if (undecided === 'refuse')
     throw new LaneSliceCoverageError({
       message: `lane left prepared slice ${String(chunkIndex,)} undecided`,
@@ -220,42 +243,10 @@ function outcomeOf(
   return { kind: 'not-evaluated', };
 }
 
-/**
- * Raised when a lane reports a decision for a slice its preparation never
- * produced, when it leaves a prepared slice undecided under `refuse`, or when
- * it decides a slice AFTER an undecided one under `not-evaluated`.
- *
- * The first two mean the decision list and the slice list were built from
- * different preparations, which no later reader could detect: a comparison
- * would silently join one lane's slice 4 against the other's slice 4 while the
- * two name different passages.
- *
- * The third is a different defect with the same remedy. `not-evaluated` exists
- * for a lane that stopped early by design, so its undecided slices are a
- * SUFFIX; a decision after a gap means a slice was dropped from the middle,
- * which an early stop cannot produce.
- *
- * @example
- * ```ts
- * throw new LaneSliceCoverageError({ message: 'slice 4 has no decision', },);
- * ```
- */
-export class LaneSliceCoverageError extends Error {
-  /**
-   * Builds the error with a message naming the slice.
-   *
-   * @param message - what is missing, naming the slice index
-   *
-   * @example
-   * ```ts
-   * throw new LaneSliceCoverageError({ message: 'slice 4 has no decision', },);
-   * ```
-   */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
-    this.name = 'LaneSliceCoverageError';
-  }
-}
+// Declared in a file of its own since the per-list checks moved to
+// `lane-slice-sets.ts`, and re-exported here because every caller of this
+// builder catches it by this name.
+export { LaneSliceCoverageError, } from './lane-slice-coverage-error.ts';
 
 /**
  * Pairs each prepared slice with the wording a lane decided for it.
@@ -295,6 +286,7 @@ export function buildLaneSliceTexts(
     undecided,
     unfilledChunkIndices = [],
     unheardChunkIndices = [],
+    notApplicableChunkIndices = [],
   }: {
     readonly slices: readonly ChunkPair[];
     readonly decided: readonly {
@@ -304,6 +296,7 @@ export function buildLaneSliceTexts(
     readonly undecided: UndecidedSlicePolicy;
     readonly unfilledChunkIndices?: readonly number[];
     readonly unheardChunkIndices?: readonly number[];
+    readonly notApplicableChunkIndices?: readonly number[];
   },
 ): readonly LaneSliceText[] {
   /**
@@ -351,101 +344,41 @@ export function buildLaneSliceTexts(
   }
 
   /**
-   * Slices the lane reached and left without a wording on purpose.
+   * Every list the lane named, validated once against the preparation and
+   * against each other, then read back in the order the sets were given.
    */
-  const unfilled = new Set(unfilledChunkIndices,);
-  if (unfilled.size !== unfilledChunkIndices.length)
-    throw new LaneSliceCoverageError({
-      message: `lane reports ${
-        String(unfilledChunkIndices.length,)
-      } unfilled slices under ${String(unfilled.size,)} distinct indices`,
-    },);
-  for (const chunkIndex of unfilled) {
-    if (!prepared.has(chunkIndex,))
-      throw new LaneSliceCoverageError({
-        message: `lane reports slice ${
-          String(chunkIndex,)
-        } unfilled, which this preparation never produced`,
-      },);
-    if (byIndex.has(chunkIndex,))
-      throw new LaneSliceCoverageError({
-        message: `lane reports slice ${
-          String(chunkIndex,)
-        } as unfilled and decided at once, so what it accepted there is unstated`,
-      },);
-
-    /**
-     * Pair this index names, which the membership check above proves exists.
-     */
-    const named = slices.find(function isNamed(slice,): boolean {
-      return slice.target
-        .chunkIndex
-        === chunkIndex;
-    },);
-    // ONLY A SLICE WITH NOTHING IN THE ARCHIVE may be unfilled. A content slice
-    // exempted this way would be a passage the archive DOES translate reported
-    // as one it never did, and this is the check that stops an exemption list
-    // from becoming a way around the coverage rule.
-    if ((named !== undefined) && (!isInsertionChunk(named.target,))) {
-      throw new LaneSliceCoverageError({
-        message: `lane reports slice ${
-          String(chunkIndex,)
-        } unfilled, and the archive holds wording for it: only a slice with none can be unfilled`,
-      },);
-    }
-  }
-
-  /**
-   * Slices the lane reached where no voice was heard, so the archive's own
-   * wording stands by default.
-   */
-  const unheard = new Set(unheardChunkIndices,);
-  if (unheard.size !== unheardChunkIndices.length)
-    throw new LaneSliceCoverageError({
-      message: `lane reports ${
-        String(unheardChunkIndices.length,)
-      } unheard slices under ${String(unheard.size,)} distinct indices`,
-    },);
-  for (const chunkIndex of unheard) {
-    if (!prepared.has(chunkIndex,))
-      throw new LaneSliceCoverageError({
-        message: `lane reports slice ${
-          String(chunkIndex,)
-        } unheard, which this preparation never produced`,
-      },);
-    if (byIndex.has(chunkIndex,))
-      throw new LaneSliceCoverageError({
-        message: `lane reports slice ${
-          String(chunkIndex,)
-        } as unheard and decided at once, so whether anyone answered for it is unstated`,
-      },);
-    if (unfilled.has(chunkIndex,))
-      throw new LaneSliceCoverageError({
-        message: `lane reports slice ${
-          String(chunkIndex,)
-        } as unheard and unfilled at once, and only one of those has an incumbent to stand on`,
-      },);
-
-    /**
-     * Pair this index names, which the membership check above proves exists.
-     */
-    const named = slices.find(function isNamed(slice,): boolean {
-      return slice.target
-        .chunkIndex
-        === chunkIndex;
-    },);
-    // THE MIRROR OF THE UNFILLED RULE. `incumbent-fallback` says the archive's
-    // wording stands here, so a slice with no archive wording cannot be one:
-    // that slice is unfilled, and calling it a fallback would report a passage
-    // as covered by wording that does not exist.
-    if ((named !== undefined) && isInsertionChunk(named.target,)) {
-      throw new LaneSliceCoverageError({
-        message: `lane reports slice ${
-          String(chunkIndex,)
-        } unheard, and the archive holds no wording for it to fall back on`,
-      },);
-    }
-  }
+  const [
+    unfilled = new Set<number>(),
+    unheard = new Set<number>(),
+    notApplicable = new Set<number>(),
+  ] = validateNamedSets({
+    slices,
+    decidedIndices: new Set(byIndex.keys(),),
+    sets: [
+      {
+        label: 'unfilled',
+        indices: unfilledChunkIndices,
+        decidedClause: 'so what it accepted there is unstated',
+        incumbent: 'absent',
+        incumbentClause: 'and the archive holds wording for it: '
+          + 'only a slice with none can be unfilled',
+      },
+      {
+        label: 'unheard',
+        indices: unheardChunkIndices,
+        decidedClause: 'so whether anyone answered for it is unstated',
+        incumbent: 'present',
+        incumbentClause: 'and the archive holds no wording for it to fall back on',
+      },
+      {
+        label: 'not-applicable',
+        indices: notApplicableChunkIndices,
+        decidedClause: 'so whether this lane had anything to do there is unstated',
+        incumbent: 'absent',
+        incumbentClause: 'and the archive holds wording for it, which is exactly what this lane works on',
+      },
+    ],
+  },);
 
   /**
    * Whether some earlier slice in document order went undecided.
@@ -472,6 +405,7 @@ export function buildLaneSliceTexts(
       byIndex,
       unfilledHere: unfilled.has(chunkIndex,),
       unheardHere: unheard.has(chunkIndex,),
+      notApplicableHere: notApplicable.has(chunkIndex,),
       undecided,
     },);
 

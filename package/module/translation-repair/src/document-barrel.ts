@@ -52,5 +52,9 @@ export {
   assertDeliveryAgreesWithDocument,
   DeliveryInvariantError,
 } from './delivery-invariants.ts';
+export {
+  assertWordingCoherent,
+  WordingCoherenceError,
+} from './wording-coherence.ts';
 
 //endregion Document barrel

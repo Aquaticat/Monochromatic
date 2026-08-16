@@ -4,6 +4,7 @@ import type {
   LaneSliceOutcome,
   LaneSliceText,
 } from './lane-slice-text.ts';
+import { assertWordingCoherent, } from './wording-coherence.ts';
 
 //region Slice delivery
 // What became of every slice, in one row: the original, the archive's English,
@@ -255,6 +256,17 @@ function decideDelivery(
     return { kind: 'replacement-shipped', };
   }
   if (withdrawn) {
+    // ASSEMBLY NEVER RAN. The blocked exit returns the archive before anything
+    // is assembled, so nothing there can have been taken back BY assembly, and
+    // the two withdrawals are the events a reader counting integrity damage has
+    // to tell apart. Naming both files a refusal under the guard's name.
+    if (blocked) {
+      throw new SliceDeliveryError({
+        message: `slice ${String(chunkIndex,)} is named as withdrawn by assembly on a blocked run, `
+          + 'which returns the archive without assembling anything',
+      },);
+    }
+
     // A WITHDRAWAL NEEDS SOMETHING TO WITHDRAW. Naming a slice whose decision
     // is the archive's own wording says assembly took back a replacement that
     // was never written, which reads downstream as a lane that tried and was
@@ -530,6 +542,13 @@ export function buildSliceDelivery(
         } of archive wording by its lane record and the other way by its prepared chunk`,
       },);
     }
+
+    // THE TWO AXES AGAINST EACH OTHER, which the checks above do not cover:
+    // they compare the lane record against the preparation, and this compares
+    // the record against itself. `buildLaneSliceTexts` refuses all three of
+    // these while building, and a wording reaching here need not have come from
+    // it.
+    assertWordingCoherent({ wording, },);
 
     /**
      * What the document carries here, and by which route.

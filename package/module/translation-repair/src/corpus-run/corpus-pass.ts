@@ -364,10 +364,16 @@ async function runCorpusPass(): Promise<void> {
    * Ids with cached slices from an earlier aborted run. These resume first so
    * an in-flight large document finishes before a fresh entry starts, rather
    * than every large entry taking one partial attempt while none settles.
-   * `repairChunk` degrades-and-persists (no throw on a lost quorum) and a
-   * cap-abort always completes at least one new slice, so resume-first cannot
-   * livelock on a stuck slice; a deterministic slice throw would surface as a
-   * repeated same-entry ERROR across runs and is handled by inspection.
+   *
+   * NO PROGRESS GUARANTEE IS CLAIMED HERE, and one used to be: this said a
+   * cap-abort always completes at least one new slice, which is false. An abort
+   * can land before the first persistence, and the slices a lane deliberately
+   * leaves uncached, the unfilled and the unheard, produce no cache entry
+   * however long they took. What actually bounds it is that a stuck entry
+   * surfaces: `repairChunk` degrades and persists rather than throwing on a
+   * lost quorum, the translate lane's refusal counter bounds its retries within
+   * a slice, and an entry that keeps failing writes a repeated same-entry ERROR
+   * line across runs, which is read by inspection.
    */
   const resumableIds = await listResumableEntries({ dir: sliceCacheDir, },);
 

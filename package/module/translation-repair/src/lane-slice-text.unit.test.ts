@@ -491,7 +491,8 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
-        expect(String(caught,),).toContain('unheard and unfilled at once',);
+        expect(String(caught,),).toContain('unfilled and unheard at once',);
+        expect(String(caught,),).toContain('stated twice and differently',);
       },
     },),
     it({

@@ -293,9 +293,8 @@ export type TranslateDocumentResult = {
   /**
    * One settled record per slice, in document order.
    *
-   * SHORTER THAN THE SLICE COUNT when
-   * {@link TranslateDocumentResult.unfilledChunkIndices} names any slice, since
-   * a slice that produced nothing settles no record.
+   * SHORTER THAN THE SLICE COUNT when {@link TranslateDocumentResult.unfilled}
+   * names any slice, since a slice that produced nothing settles no record.
    */
   readonly slices: readonly TranslateSliceRecord[];
 

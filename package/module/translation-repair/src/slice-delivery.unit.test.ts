@@ -173,17 +173,18 @@ function anchoredSlices(): readonly ChunkPair[] {
  * Lane wordings for {@link anchoredSlices}, whose anchor holds no archive
  * wording to agree with.
  *
- * @param anchorDecided - whether the lane decided anything for the anchor
+ * @param anchorNotApplicable - whether the lane had no work to do at the anchor,
+ * as against having tried there and produced nothing
  *
  * @returns Wordings in document order
  *
  * @example
  * ```ts
- * const wordings = anchoredWordings({ anchorDecided: false, },);
+ * const wordings = anchoredWordings({ anchorNotApplicable: false, },);
  * ```
  */
 function anchoredWordings(
-  { anchorDecided, }: { readonly anchorDecided: boolean; },
+  { anchorNotApplicable, }: { readonly anchorNotApplicable: boolean; },
 ): readonly LaneSliceText[] {
   return [
     {
@@ -199,15 +200,12 @@ function anchoredWordings(
       chunkIndex: 1,
       incumbentKind: 'absent',
       incumbentText: '',
-      // Deciding the blank is what a lane does when it agrees with an
-      // incumbent, and at an anchor the incumbent is nothing at all; the
-      // alternative is the lane reporting it reached the slice and could not
-      // fill it.
-      outcome: anchorDecided
-        ? {
-          kind: 'decided',
-          acceptedText: '',
-        }
+      // The two honest things a lane can say about a passage the archive never
+      // translated: it tried and produced nothing, or its work does not apply
+      // here at all. Deciding the blank was a third, and it said the lane chose
+      // the wording it found, which at an anchor is no wording.
+      outcome: anchorNotApplicable
+        ? { kind: 'not-applicable', }
         : { kind: 'unfilled', },
     },
     {
@@ -226,14 +224,15 @@ await describe({
   name: buildSliceDelivery.name,
   children: [
     it({
-      name: 'reads a slice the archive never translated as UNFILLED rather than as the archive standing '
-        + 'or as unexamined. Both neighbours read falsely there: one says the document carries the '
-        + 'archive`s own wording, of which there is none, and the other says nobody looked',
+      name: 'reads a slice the archive never translated as a GAP THAT REMAINS, whether the lane tried '
+        + 'and could not fill it or had no work to do there at all. Both neighbours read falsely: one says '
+        + 'the document carries the archive`s own wording, of which there is none, and the other says '
+        + 'nobody looked',
       fn: async () => {
         /** Ledger over an anchor the lane reached and could not fill. */
         const undecided = buildSliceDelivery({
           slices: anchoredSlices(),
-          wordings: anchoredWordings({ anchorDecided: false, },),
+          wordings: anchoredWordings({ anchorNotApplicable: false, },),
           shippedChunkIndices: [],
           withdrawnChunkIndices: [],
           blocked: false,
@@ -241,10 +240,10 @@ await describe({
         expect(undecided[1]?.delivery
           .kind,).toBe('gap-remains',);
 
-        /** Same anchor, with the lane agreeing with the blank it found. */
+        /** Same anchor, where this lane had nothing to work on at all. */
         const agreed = buildSliceDelivery({
           slices: anchoredSlices(),
-          wordings: anchoredWordings({ anchorDecided: true, },),
+          wordings: anchoredWordings({ anchorNotApplicable: true, },),
           shippedChunkIndices: [],
           withdrawnChunkIndices: [],
           blocked: false,

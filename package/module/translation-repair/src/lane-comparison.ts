@@ -2,6 +2,7 @@ import type {
   LaneSliceOutcome,
   LaneSliceText,
 } from './lane-slice-text.ts';
+import { assertWordingCoherent, } from './wording-coherence.ts';
 
 //region Lane comparison
 // What the two lanes did to the SAME slice, which is the question running both
@@ -91,9 +92,14 @@ export type DecisionComparison = {
   readonly kind: 'not-comparable';
 
   /**
-   * Which lane, and what it did instead.
+   * Lanes that decided nothing, in lane order, and BOTH of them when neither
+   * did.
+   *
+   * A single free-text reason named only the first lane checked, so a slice
+   * neither lane decided read as the repair lane's fault alone. What each lane
+   * did instead is stated on the row itself.
    */
-  readonly reason: string;
+  readonly undecidedLanes: readonly ('repair' | 'translate')[];
 };
 
 /**
@@ -353,15 +359,18 @@ function compareDecisions(
     readonly translate: LaneSliceOutcome;
   },
 ): DecisionComparison {
-  if (repair.kind !== 'decided')
+  /**
+   * Lanes with no wording to compare, collected rather than returned at the
+   * first one found: a slice neither lane decided is a fact about both.
+   */
+  const undecidedLanes = [
+    ...(repair.kind === 'decided') ? [] : ['repair',] as const,
+    ...(translate.kind === 'decided') ? [] : ['translate',] as const,
+  ];
+  if ((repair.kind !== 'decided') || (translate.kind !== 'decided'))
     return {
       kind: 'not-comparable',
-      reason: `repair ${repair.kind}`,
-    };
-  if (translate.kind !== 'decided')
-    return {
-      kind: 'not-comparable',
-      reason: `translate ${translate.kind}`,
+      undecidedLanes,
     };
   return {
     kind: 'comparable',
@@ -551,6 +560,21 @@ export function compareDocumentLanes(
           message: `slice ${String(mine.chunkIndex,)} carries a different incumbent in each lane, `
             + 'so the two results describe different preparations',
         },);
+
+      // TEXT IS NOT ENOUGH. A blank content slice and a place the archive never
+      // translated both carry the empty string, so equal text leaves exactly
+      // the pair this comparison must not confuse still equal. Every row's kind
+      // was taken from the repair lane, which decided the gap verdict for both.
+      if (theirs.incumbentKind !== mine.incumbentKind)
+        throw new LaneComparisonError({
+          message: `slice ${String(mine.chunkIndex,)} is ${
+            mine.incumbentKind
+          } of archive wording to the repair lane and ${
+            theirs.incumbentKind
+          } to the translate lane, so the two disagree about whether the archive translates it`,
+        },);
+      assertWordingCoherent({ wording: mine, },);
+      assertWordingCoherent({ wording: theirs, },);
 
       /**
        * Wording the repair document carries here.

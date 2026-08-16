@@ -1,6 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { deriveShippedIndices, } from './assembly-invariant.ts';
-import { buildLaneSliceTexts, } from './lane-slice-text.ts';
+import { repairLaneWordings, } from './repair-lane-wordings.ts';
 import { buildChunkCriticRecords, } from './critic-attribution.ts';
 import { buildIssueRecords, } from './repair-record.ts';
 import { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
@@ -94,21 +94,13 @@ export function blockedRepairResult(
     // which two empty index sets alone cannot.
     shippedChunkIndices: [],
     withdrawnChunkIndices: [],
-    sliceTexts: buildLaneSliceTexts({
+    sliceTexts: repairLaneWordings({
       slices,
+      outcomes,
       // This exit fires at the earliest dominance crossing, so the slices after
       // it were never examined. Recording the archive wording as their decision
       // would state a choice nobody made.
       undecided: 'not-evaluated',
-      decided: outcomes.map(function toDecision(settled,): {
-        readonly chunkIndex: number;
-        readonly text: string;
-      } {
-        return {
-          chunkIndex: settled.chunkIndex,
-          text: settled.repairedText,
-        };
-      },),
     },),
     findings: [
       ...findings,
