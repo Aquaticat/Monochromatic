@@ -1,20 +1,26 @@
 import { join, } from 'node:path';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
-import { repairTranslation, } from '../repair-translation.ts';
-import { buildSettledArtifact, } from './artifact-build.ts';
+import { runDocumentLanes, } from '../document-lanes.ts';
+import { prepareDocumentPair, } from '../document-preparation.ts';
+import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
+import { settledTallyLine, } from './settled-tally.ts';
 import {
   discardSliceCache,
   openSliceCache,
+  openTranslateSliceCache,
 } from './slice-cache-store.ts';
 import {
   RUN_CALL_CONFIG,
   RUN_CORPUS_PIN,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
+  RUN_TRANSLATE_MODELS,
 } from './run-config.ts';
 
 //region Pass entry
@@ -173,58 +179,79 @@ async function runEntryPipeline(
     },);
 
     /**
-     * Repair result for this entry.
+     * Translate lane's own cache, in its own namespace under the same
+     * directory, so one entry's caches are retired together and neither lane
+     * can resume the other's slices.
      */
-    const result = await repairTranslation({
-      client,
-      sourceText: entry.sourceText,
-      targetText: entry.targetText,
-      models: RUN_MODELS,
-      signal: deadline.callSignal,
-      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-      sliceCache,
+    const translateSliceCache = await openTranslateSliceCache({
+      dir: entryCacheDir,
+      generation: pipelineDigest,
     },);
 
     /**
-     * Wall time this entry took.
+     * Slicing BOTH lanes run over, prepared once here rather than inside
+     * either.
+     *
+     * That is the entire reason the driver exists: one slicing, one alignment
+     * and one identity block mean a difference between the two documents is a
+     * difference between the LANES rather than between two runs of the aligner.
+     *
+     * No slice budget is passed, and that is checked rather than assumed:
+     * `prepareDocumentPair` defaults to the same `SLICE_CHAR_BUDGET` that
+     * `repairTranslation` passed down when it did this itself, so entries
+     * settled before and after this change were sliced the same way.
+     */
+    const prepared = prepareDocumentPair({
+      sourceText: entry.sourceText,
+      targetText: entry.targetText,
+    },);
+
+    /**
+     * What both lanes made of that slicing, with neither preferred.
+     */
+    const lanes = await runDocumentLanes({
+      client,
+      prepared,
+      repairModels: RUN_MODELS,
+      translateModels: RUN_TRANSLATE_MODELS,
+      signal: deadline.callSignal,
+      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      repairSliceCache: sliceCache,
+      translateSliceCache,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    // AFTER the lanes return and BEFORE anything is written, which is the only
+    // place this check belongs. Both drivers deliberately let a fully cached
+    // lane finish after an abort, so a gate BETWEEN the lanes would discard
+    // work already bought; and an entry whose ceiling fired mid-document has a
+    // half-run to report, not an artifact.
+    deadline.callSignal
+      .throwIfAborted();
+
+    /**
+     * Wall time this entry took, both lanes included.
      */
     const durationMs = Date.now() - t0;
 
     /**
-     * Accepted issues among all adjudicated, for the TALLY line only.
-     *
-     * The ARTIFACT counts these itself. Passing a count in beside the result it
-     * was counted from is what let the two disagree, and a log line that
-     * disagrees with an artifact is a nuisance while an artifact that disagrees
-     * with itself is a wrong measurement.
-     */
-    const accepted = result.issues
-      .filter(function isAccepted(record,) {
-        return record.issue
-          .status
-          === 'accepted';
-      },);
-
-    /**
-     * Accepted issues the checkers confirmed fixed.
-     */
-    const resolved = accepted.filter(function isResolved(record,) {
-      return record.resolved;
-    },);
-
-    /**
      * Rich artifact for later grading; corpus-derived, hence gitignored.
+     *
+     * Everything derivable is derived inside the builder, so what goes in is
+     * the preparation and the driver's own result rather than counts taken off
+     * them here. It refuses a run whose ledgers do not describe that
+     * preparation, which is why no artifact can name a slicing the lanes never
+     * ran over.
      */
-    const artifact = buildSettledArtifact({
+    const artifact = buildSettledArtifactV2({
       entryId: entry.id,
       tip,
       pipelineDigest,
       corpusSha: RUN_CORPUS_PIN.commitSha,
       callConfig: RUN_CALL_CONFIG,
       durationMs,
-      sourceText: entry.sourceText,
-      targetText: entry.targetText,
-      result,
+      prepared,
+      lanes,
     },);
     await writeFileAtomic({
       path: join(
@@ -237,11 +264,7 @@ async function runEntryPipeline(
         2,
       )}\n`,
     },);
-    console.log(
-      `TALLY ${entry.id} status=${result.status} issues=${String(result.issues
-        .length,)} accepted=${String(accepted.length,)} resolved=${String(resolved.length,)} findings=${String(result.findings
-          .length,)} ms=${String(durationMs,)}`,
-    );
+    console.log(settledTallyLine({ artifact, },),);
     return { kind: 'settled', };
   }
   catch (error) {
