@@ -378,9 +378,18 @@ What exists now:
 -   `artifact-v2-read-evidence.ts`: both lanes' tolerant evidence parsing, in ONE file rather than one
     each as the sketch had it, because they differ by three fields and share the index-list reading.
 -   `artifact-v2-read-row-relations.ts`, `artifact-v2-read-set-relations.ts`,
-    `artifact-v2-read-comparison.ts`: evidence against ledger BY POSITION, index sets against the rows
-    that produce them, blocked COMPATIBILITY, per-row `assertWordingCoherent` and
-    `assertDeliveryCoherent`, and the recorded comparison against `compareLanesV2`.
+    `artifact-v2-read-comparison.ts`: evidence against ledger BY POSITION, slice indices DISTINCT
+    within a ledger, index sets against the rows that produce them, blocked COMPATIBILITY, per-row
+    `assertWordingCoherent` and `assertDeliveryCoherent`, and the recorded comparison against
+    `compareLanesV2`.
+
+`assertSlicesDistinct` was added after the eight steps, from the adversarial list the task carried:
+a ledger naming one slice twice passed every other relation, because all of them join BY POSITION.
+Two rows both naming slice 5 agree with their own evidence, agree with the other lane, and still
+match the prepared slice count, so the file described a document with one slice reported twice and
+another missing and nothing said so.
+It checks DISTINCT rather than ascending or contiguous: the writer renumbers slices by design
+(`#100`), so a reader assuming `0` to `length - 1` would refuse a valid future artifact.
 -   `artifact-v2-read.ts`: the orchestrator, `parseSettledArtifactV2`.
 -   `artifact-read.ts`: dispatch only, returning a generation-discriminated reading;
     version 1 parsing moved to `artifact-v1-read.ts` keeping every exported name.
@@ -440,14 +449,30 @@ Two facts fell out of the work and are now pinned by tests:
         `artifact-read.ts` left holding the four-case dispatch and returning the
         generation-discriminated reading.
     8.  `artifact-v2-corpus-verify.ts`, taking a supplied `PreparedDocumentPair`.
-2.  **The mixed-generation trap**, which the wiring created and nothing guards:
-    `settledEntryIds` reads FILENAMES only (`pass-settled.ts`), so a pass resumed into
-    a directory holding version 1 artifacts skips those entries and produces a corpus
-    that is half one generation, invisibly.
-    A fresh artifacts directory avoids it, which is the practice, and practice is not a guard.
-    Cheapest honest fix: refuse to start when the directory holds a version this pipeline
-    does not write, naming the count and the two ways forward.
-    Not done here because re-running skipped entries costs real money and that is the user's call.
+2.  **The mixed-generation trap**, whose premise was WRONG as first written here and is corrected
+    below; read this version rather than the note it replaces.
+    `settledEntryIds` does read FILENAMES only (`pass-settled.ts`), so the scheduler
+    skips an entry settled by any generation.
+    What the note missed is that `corpus-pass.ts:232` already calls `assertResumableGeneration`
+    (`pass-generation-guard.ts`) before anything is settled, and that guard refuses a directory
+    whose artifacts record any pipeline digest but this build's.
+    A build that writes version 1 cannot share a digest with one that writes version 2,
+    since the digest is over BUILT OUTPUT, so the realistic trap is already refused
+    with `GenerationDriftError` and a three-way remedy.
+    What is genuinely uncovered is narrower:
+    `TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT=yes` disarms the foreign-digest refusal,
+    and its message promises that a rate over the pool stays usable if it names a required commit,
+    which is true of build drift and false of SCHEMA drift, where half the files cannot answer
+    the two-lane questions at all.
+    Hand-assembled directories reach the same place without the opt-in.
+    The precedent for the fix is in that guard's own comment:
+    drift is applied to the foreign-digest check ALONE because unplaceable and legacy artifacts
+    are different problems with different remedies "neither of which drift is an opinion about".
+    Schema version is a third such problem.
+    Re-running skipped entries still costs real money, so the guard REFUSES and names the ways
+    forward rather than deciding anything.
+    Found while checking that guard: `SETTLED_ARTIFACT_SCHEMA_VERSION` is documented as
+    "Schema generation the pass writes today" and is 1, while `pass-entry.ts:249` writes 2.
 3.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
     optional property, which discards what its own parser established.
 
