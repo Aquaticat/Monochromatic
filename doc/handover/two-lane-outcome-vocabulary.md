@@ -77,24 +77,32 @@ Mechanics, agreed by both reviewers and implemented:
     The blocked exit therefore intersects anchors with the outcomes prefix:
     an anchor before the crossing is `not-applicable`, one after it stays `not-evaluated`.
 
+## Also landed since
+
+-   The consequence tests both reviewers asked for, and the blocked-exit intersection
+    (an anchor before the crossing is `not-applicable`, one after it is `not-evaluated`).
+    GFP run: reverting the classification fails both adapter tests, and restoring clears them.
+-   What hearing nobody has to mean, which three readers already assumed and nothing checked:
+    the record's text must be the archive's and it must claim no change,
+    the resumed branch now discards an unheard cached record rather than trusting it,
+    and the predicate is named once instead of spelled out in each reader.
+    GFP run on that guard too.
+-   The translate driver crossed the line cap on the way, so its assembly tail moved to
+    `translate-assemble.ts` and the refusal sentences to `translate-alignment-refusals.ts`,
+    mirroring the repair lane's split on the same seam. The cap was never raised.
+
 ## Next actions, in order
 
-1.  GFP the new guards: strip the `not-applicable` classification in `repair-lane-wordings.ts`
-    (feed anchors back through `decided`), rebuild, show the delivery and comparison tests fail, restore.
-2.  Add the consequence test both reviewers asked for:
-    anchor slice, translate `decided` with a real fill, repair `not-applicable`,
-    assert `decisionComparison` is `not-comparable` with `undecidedLanes: ['repair']` and verdict `translate-only`.
-3.  Add the blocked-exit test: one anchor before the crossing, one after, assert
-    `not-applicable` and `not-evaluated` respectively.
-4.  Then the artifact at schema version 2, with the preparation identity folded into the same bump.
-    The design for both is in the planning doc.
-
-## Still queued behind that
-
-Sol's finding that `translate-document.ts` does not enforce
-"no translator heard implies `outputText === incumbentText` and `changed === false`",
-and that the resumed branch would accept an unheard cached record written by an older build.
-Same defect family, cheap, and it belongs in the commit after the vocabulary one.
+1.  The artifact at schema version 2, with the preparation identity folded into the SAME bump.
+    Both designs are written out in the planning doc under
+    "The artifact at version 2, as designed";
+    start there rather than re-deriving them.
+2.  `settleEntry` calling `prepareDocumentPair` and `runDocumentLanes`,
+    one deadline for both lanes, and `throwIfAborted()` between the driver returning
+    and the artifact being built. Not a gate BETWEEN the lanes.
+3.  Tests for `settleEntry` once it has its final shape.
+4.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
+    optional property, which discards what its own parser established.
 
 ## The launch gate has not moved
 
