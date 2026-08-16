@@ -174,6 +174,18 @@ export function sharedNumber(
   },
 ): string {
   /**
+   * Numbers the ORIGINAL states in its own right.
+   *
+   * WHOLE RUNS RATHER THAN SUBSTRINGS, which decides whether the fixture has
+   * ground truth at all. `sourceText.includes('2004')` is true of a Chinese
+   * carrying `120045`, a QQ number or a phone number, and this corpus carries
+   * plenty; altering a year on that evidence damages a claim the original never
+   * made, so neither candidate would be source-supported and a judge that
+   * refused to choose would be scored wrong for being right.
+   */
+  const statedNumbers = digitRuns({ text: sourceText, },);
+
+  /**
    * Numbers in the English that the Chinese also carries and that appear once.
    */
   const shared = digitRuns({ text: cleanText, },)
@@ -181,7 +193,7 @@ export function sharedNumber(
       return run.length >= MIN_DIGITS;
     },)
     .filter(function statedInSource(run,) {
-      return sourceText.includes(run,);
+      return statedNumbers.includes(run,);
     },)
     .filter(function unique(run,) {
       return occursOnce({

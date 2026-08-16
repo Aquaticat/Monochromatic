@@ -360,6 +360,20 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a number the original carries only INSIDE a longer one, since a Chinese QQ or '
+        + 'phone number containing the digits does not state the year, and altering it would leave '
+        + 'neither candidate supported',
+      fn: async () => {
+        const attempt = alterSharedNumber({
+          cleanText: 'Marmalade was born in 2004 and still answers to nobody at all.',
+          // The source states 120045, a handle, and no year: `includes` would
+          // read 2004 out of it and license the alteration.
+          sourceText: '小猫的编号是120045，她谁也不理。',
+        },);
+        expect(attempt.kind,).toBe('undamageable',);
+      },
+    },),
+    it({
       name: 'ignores a lone digit, which collides with list markers and with digits inside longer '
         + 'numbers on both sides',
       fn: async () => {
