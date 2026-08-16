@@ -628,6 +628,15 @@ const { execFileSync } = await import('node:child_process')
 try { execFileSync('mise', ['run', process.env.usage_task], { stdio: 'inherit' }) } catch { /* tolerated */ }
 """
 
+[tasks."slopo:index"]
+run = "slopo index"
+
+[tasks."slopo:embed"]
+run = "slopo embed"
+
+[tasks."slopo:analyze"]
+run = "slopo analyze"
+
 [tasks."lock:mise"]
 description = "Regenerate mise.lock from active tool declarations"
 run = "mise lock"
@@ -1212,9 +1221,7 @@ _.path = [
   "package/pi-plugin/thinking-default/node_modules/.bin",
   "package/pi-shared/model-review/node_modules/.bin",
   "package/pi-shared/model-selection/node_modules/.bin",
-  "package/shim/proper-lockfile/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
-  "package/stub/throwing/node_modules/.bin",
   "package/typeface/aquaticat/node_modules/.bin",
   "package/webapp-productivity/done-postcss/node_modules/.bin",
   "package/webapp-productivity/wc/node_modules/.bin",
