@@ -436,17 +436,30 @@ await describe({
 
         const lanes = await runLanes({ served, },);
         expect(lanes.repairDelivery
+          .records
           .length,).toBe(lanes.repair
           .sliceCount,);
         expect(lanes.translateDelivery
+          .records
           .length,).toBe(lanes.translate
           .sliceCount,);
+
+        // Each ledger carries the slicing it was built over, and both lanes ran
+        // over one preparation, so the two names agree. A consumer holding two
+        // ledgers cannot establish that for itself, which is why they travel
+        // named rather than being stamped where they are read.
+        expect(lanes.repairDelivery
+          .preparationIdentity,).toBe(lanes.translateDelivery
+          .preparationIdentity,);
+        expect(lanes.repairDelivery
+          .preparationIdentity,).toMatch('sha256-preparation-v1:',);
 
         /**
          * Slices the translate lane's document carries a change for, read off
          * its ledger rather than off its index set.
          */
         const translateShipped = lanes.translateDelivery
+          .records
           .filter(function carriesAChange(record,): boolean {
             return record.delivery
               .kind === 'replacement-shipped';
@@ -462,6 +475,7 @@ await describe({
          * this fixture's repair lane found nothing to make.
          */
         const repairShipped = lanes.repairDelivery
+          .records
           .some(function carriesAChange(record,): boolean {
             return record.delivery
               .kind === 'replacement-shipped';

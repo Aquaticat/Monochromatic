@@ -27,6 +27,8 @@ import {
   type DocumentLanesResult,
   makeInsertionChunk,
   type PipelineDigest,
+  type PreparationIdentity,
+  preparationIdentity,
   type PreparedDocumentPair,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
@@ -114,6 +116,21 @@ function catPreparation(): PreparedDocumentPair {
     alignmentFindings: [],
     alignmentPairCount: 2,
   } as unknown as PreparedDocumentPair;
+}
+
+/**
+ * Name the cat preparation gives itself, which the driver stamps on both
+ * ledgers it builds.
+ *
+ * @returns Identity of {@link catPreparation}'s slicing
+ *
+ * @example
+ * ```ts
+ * const identity = catIdentity();
+ * ```
+ */
+function catIdentity(): PreparationIdentity {
+  return preparationIdentity({ prepared: catPreparation(), },);
 }
 
 /**
@@ -214,8 +231,8 @@ function catLanes(): DocumentLanesResult {
       status: 'complete',
       sliceCount: 2,
     },
-    repairDelivery: repairLedger(),
-    translateDelivery: translateLedger(),
+    repairDelivery: { preparationIdentity: catIdentity(), records: repairLedger(), },
+    translateDelivery: { preparationIdentity: catIdentity(), records: translateLedger(), },
   } as unknown as DocumentLanesResult;
 }
 
@@ -370,11 +387,179 @@ await describe({
             prepared: catPreparation(),
             lanes: {
               ...catLanes(),
-              // One row where the other ledger has two.
-              translateDelivery: translateLedger().slice(0, 1,),
+              // One row where the preparation has two slices.
+              translateDelivery: {
+                preparationIdentity: catIdentity(),
+                records: translateLedger().slice(0, 1,),
+              },
             },
           },);
-        },).toThrow('different preparations',);
+        },).toThrow('1 rows for a preparation of 2 slices',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a preparation the ledgers were not built over, which nothing else can catch: the '
+        + 'comparison proves the two ledgers agree with EACH OTHER, and two ledgers from some other '
+        + 'preparation agree with each other perfectly',
+      fn: async () => {
+        /**
+         * Preparation whose first slice renders a different original, which is
+         * a whole other pair of documents wearing the same slice count.
+         */
+        const foreign = {
+          ...catPreparation(),
+          slices: catSlices()
+            .map(function retranslate(pair, position,) {
+              return (position === 0)
+                ? {
+                  ...pair,
+                  source: {
+                    ...pair.source,
+                    text: '猫猫在椅子上睡觉。',
+                  },
+                }
+                : pair;
+            },),
+        } as unknown as PreparedDocumentPair;
+
+        expect(function ledgersDescribeAnotherPreparation() {
+          buildSettledArtifactV2({
+            entryId: 'CatEntry1',
+            tip: 'a'.repeat(40,),
+            pipelineDigest: DIGEST,
+            corpusSha: 'b'.repeat(40,),
+            callConfig: {},
+            durationMs: 1,
+            prepared: foreign,
+            lanes: catLanes(),
+          },);
+        },).toThrow('was built over',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a ledger whose rows contradict the preparation even when its NAME agrees, since an '
+        + 'equal identity is a hash claim and the per-slice facts are what every row is filed under',
+      fn: async () => {
+        /**
+         * Ledger wearing the right name over a row naming a slice the
+         * preparation does not have at that position.
+         */
+        const misfiled = {
+          preparationIdentity: catIdentity(),
+          records: repairLedger()
+            .map(function renumber(record, position,): SliceDeliveryRecord {
+              return (position === 1)
+                ? {
+                  ...record,
+                  chunkIndex: 7,
+                }
+                : record;
+            },),
+        };
+
+        expect(function rowsContradictTheName() {
+          buildSettledArtifactV2({
+            entryId: 'CatEntry1',
+            tip: 'a'.repeat(40,),
+            pipelineDigest: DIGEST,
+            corpusSha: 'b'.repeat(40,),
+            callConfig: {},
+            durationMs: 1,
+            prepared: catPreparation(),
+            lanes: {
+              ...catLanes(),
+              repairDelivery: misfiled,
+            },
+          },);
+        },).toThrow('names slice 7 at position 1',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a lane result counting slices the preparation does not have, which the ledger checks '
+        + 'cannot see: a driver result carrying one lane`s rows beside another lane`s result is '
+        + 'structurally valid and describes two different runs',
+      fn: async () => {
+        expect(function resultCountsAnotherRun() {
+          buildSettledArtifactV2({
+            entryId: 'CatEntry1',
+            tip: 'a'.repeat(40,),
+            pipelineDigest: DIGEST,
+            corpusSha: 'b'.repeat(40,),
+            callConfig: {},
+            durationMs: 1,
+            prepared: catPreparation(),
+            lanes: {
+              ...catLanes(),
+              translate: {
+                ...catLanes().translate,
+                sliceCount: 9,
+              },
+            } as unknown as DocumentLanesResult,
+          },);
+        },).toThrow('counts 9 slices',);
+      },
+    },),
+    it({
+      name:
+        'writes only the fields version 2 names, dropping anything a live record has grown since: '
+        + 'assignment into the frozen types accepts extra properties, JSON.stringify then serializes '
+        + 'them, and the version 2 parser rejects keys the schema does not describe',
+      fn: async () => {
+        /**
+         * Lanes whose rows, outcomes and deliveries each carry a field no
+         * version 2 reader has heard of, standing in for what a live record
+         * looks like one commit after it grows.
+         */
+        const overgrown = {
+          ...catLanes(),
+          repairDelivery: {
+            preparationIdentity: catIdentity(),
+            records: repairLedger()
+              .map(function grow(record,): SliceDeliveryRecord {
+                return {
+                  ...record,
+                  purrLoudness: 11,
+                  outcome: {
+                    ...record.outcome,
+                    whiskerCount: 24,
+                  },
+                  delivery: {
+                    ...record.delivery,
+                    napQuality: 'excellent',
+                  },
+                } as unknown as SliceDeliveryRecord;
+              },),
+          },
+        } as unknown as DocumentLanesResult;
+
+        /**
+         * Exactly what would be written to disk.
+         */
+        const written = JSON.stringify(buildSettledArtifactV2({
+          entryId: 'CatEntry1',
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          corpusSha: 'b'.repeat(40,),
+          callConfig: {},
+          durationMs: 1,
+          prepared: catPreparation(),
+          lanes: overgrown,
+        },),);
+
+        for (const invented of [
+          'purrLoudness',
+          'whiskerCount',
+          'napQuality',
+        ]) {
+          expect(written.includes(invented,),).toBe(false,);
+        }
+
+        // And the rows are still there, so the check above is not passing by
+        // writing nothing at all.
+        expect(written.includes('replacement-shipped',),).toBe(true,);
       },
     },),
   ],

@@ -9,7 +9,9 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { assertDeliveryAgreesWithDocument, } from './delivery-invariants.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import type { IdentifiedDeliveryLedger, } from './lane-comparison.ts';
 import type { LaneSliceText, } from './lane-slice-text.ts';
+import { preparationIdentity, } from './preparation-identity.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
@@ -88,13 +90,19 @@ export type DocumentLanesResult = {
    * the archive had, what the lane chose and what its document carries. Adding
    * it answers no question about which lane wins, since each ledger describes
    * its own lane's document and neither mentions the other.
+   *
+   * CARRIES THE SLICING IT WAS BUILT OVER, stamped here rather than by whoever
+   * reads it later. This driver is the only place that holds the preparation
+   * and the rows at once; a name applied downstream is the applier's claim
+   * about the rows, and a consumer that stamps both ledgers itself makes every
+   * later identity check agree with itself by construction.
    */
-  readonly repairDelivery: readonly SliceDeliveryRecord[];
+  readonly repairDelivery: IdentifiedDeliveryLedger;
 
   /**
    * Every prepared slice as the translate lane delivered it.
    */
-  readonly translateDelivery: readonly SliceDeliveryRecord[];
+  readonly translateDelivery: IdentifiedDeliveryLedger;
 };
 
 /**
@@ -328,36 +336,53 @@ export async function runDocumentLanes(
       .length,)} slices; neither was chosen over the other`,
   );
 
+  /**
+   * Name the slicing both lanes ran over gives itself, computed once and
+   * stamped onto both ledgers.
+   *
+   * ONE COMPUTATION FOR TWO LEDGERS is exactly right here and would be wrong
+   * anywhere else: both were built from `prepared` in this function, so one
+   * name is a fact rather than an assumption. A later consumer holding two
+   * ledgers cannot say that, which is why the name travels with them.
+   */
+  const slicing = preparationIdentity({ prepared, },);
+
   return {
     alignmentFindings: prepared.alignmentFindings,
     repair,
     translate,
-    repairDelivery: laneDelivery({
-      slices: prepared.slices,
-      incumbentText: prepared.targetText,
-      documentText: repair.repairedText,
-      wordings: repair.sliceTexts,
-      shippedChunkIndices: repair.shippedChunkIndices,
-      withdrawnChunkIndices: repair.withdrawnChunkIndices,
-      // The dominance refusal, which returns the archive untouched however many
-      // slices had decided a repair by the time it fired. Without this the
-      // rows for those slices would read as a contradiction rather than as
-      // what they are: decisions the document was refused before it could
-      // carry.
-      blocked: repair.status === 'blocked-non-translation',
-    },),
-    translateDelivery: laneDelivery({
-      slices: prepared.slices,
-      incumbentText: prepared.targetText,
-      documentText: translate.translatedText,
-      wordings: translate.sliceTexts,
-      shippedChunkIndices: translate.shippedChunkIndices,
-      withdrawnChunkIndices: translate.withdrawnChunkIndices,
-      // The translate lane has no whole-document refusal: it assembles what
-      // its slices decided, and the only thing that takes a decision back is
-      // the assembly guard, which the withdrawn set already names.
-      blocked: false,
-    },),
+    repairDelivery: {
+      preparationIdentity: slicing,
+      records: laneDelivery({
+        slices: prepared.slices,
+        incumbentText: prepared.targetText,
+        documentText: repair.repairedText,
+        wordings: repair.sliceTexts,
+        shippedChunkIndices: repair.shippedChunkIndices,
+        withdrawnChunkIndices: repair.withdrawnChunkIndices,
+        // The dominance refusal, which returns the archive untouched however
+        // many slices had decided a repair by the time it fired. Without this
+        // the rows for those slices would read as a contradiction rather than
+        // as what they are: decisions the document was refused before it could
+        // carry.
+        blocked: repair.status === 'blocked-non-translation',
+      },),
+    },
+    translateDelivery: {
+      preparationIdentity: slicing,
+      records: laneDelivery({
+        slices: prepared.slices,
+        incumbentText: prepared.targetText,
+        documentText: translate.translatedText,
+        wordings: translate.sliceTexts,
+        shippedChunkIndices: translate.shippedChunkIndices,
+        withdrawnChunkIndices: translate.withdrawnChunkIndices,
+        // The translate lane has no whole-document refusal: it assembles what
+        // its slices decided, and the only thing that takes a decision back is
+        // the assembly guard, which the withdrawn set already names.
+        blocked: false,
+      },),
+    },
   };
 }
 

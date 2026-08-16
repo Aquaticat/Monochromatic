@@ -8,7 +8,17 @@ import {
   type ArtifactJsonValue,
   type SettledArtifactV2,
 } from './artifact-v2-contract.ts';
+import {
+  toArtifactComparisonRowV2,
+  toArtifactRowV2,
+} from './artifact-v2-project.ts';
+import {
+  assertFindingsDescribePreparation,
+  assertLedgerDescribesPreparation,
+  assertResultCountsPreparation,
+} from './artifact-v2-verify.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
+import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
 
 //region Artifact version 2 build
 // The one place a two-lane artifact is assembled.
@@ -51,6 +61,9 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  * which is a defect in the run rather than in this artifact: an entry whose
  * lanes disagree about their own preparation has nothing worth writing
  *
+ * @throws {@link ArtifactPreparationMismatchError} when either ledger, or the
+ * run's alignment findings, describe a preparation other than the one passed
+ *
  * @example
  * ```ts
  * const artifact = buildSettledArtifactV2({ entryId, tip, pipelineDigest, ... },);
@@ -84,6 +97,51 @@ export function buildSettledArtifactV2(
    */
   const identity = preparationIdentity({ prepared, },);
 
+  // BOTH LEDGERS AGAINST THE PREPARATION, before anything is derived from
+  // either, and INDEPENDENTLY of the name they carry. Each was stamped by the
+  // driver that built it; this recomputes what the name should be and refuses a
+  // ledger whose own name disagrees. Re-stamping them here instead would make
+  // the comparison's unequal-identity refusal unfireable, since two ledgers
+  // wearing one applied name always agree, including two from some other
+  // preparation entirely.
+  assertLedgerDescribesPreparation({
+    prepared,
+    expected: identity,
+    ledger: lanes.repairDelivery,
+    lane: 'repair',
+  },);
+  assertLedgerDescribesPreparation({
+    prepared,
+    expected: identity,
+    ledger: lanes.translateDelivery,
+    lane: 'translate',
+  },);
+
+  // The raw results are recorded beside those ledgers and are not checked by
+  // them: a structurally valid driver result could carry one lane's result and
+  // the other's rows. The slice count is what each result says about its own
+  // preparation, and is cheap enough to check on the way past.
+  assertResultCountsPreparation({
+    prepared,
+    sliceCount: lanes.repair
+      .sliceCount,
+    lane: 'repair',
+  },);
+  assertResultCountsPreparation({
+    prepared,
+    sliceCount: lanes.translate
+      .sliceCount,
+    lane: 'translate',
+  },);
+
+  // And the one fact the preparation and the driver BOTH report, checked here
+  // rather than resolved by preferring a source: recording either silently is
+  // picking a winner between two claims nobody compared.
+  assertFindingsDescribePreparation({
+    prepared,
+    reported: lanes.alignmentFindings,
+  },);
+
   /**
    * The two lanes compared, derived here rather than accepted as a parameter.
    *
@@ -91,17 +149,36 @@ export function buildSettledArtifactV2(
    * them, and a reader has no way to tell which of the two to believe. Derived,
    * there is only one answer, and a reader that recomputes it is checking this
    * code rather than adjudicating between two stored claims.
+   *
+   * The ledgers go in AS THEY CAME, names included, so the comparison's own
+   * refusal is doing work rather than reading back what this function wrote.
    */
   const comparison = compareDocumentLanes({
-    repair: {
-      preparationIdentity: identity,
-      records: lanes.repairDelivery,
-    },
-    translate: {
-      preparationIdentity: identity,
-      records: lanes.translateDelivery,
-    },
+    repair: lanes.repairDelivery,
+    translate: lanes.translateDelivery,
   },);
+
+  /**
+   * Both ledgers rebuilt as version 2 rows.
+   *
+   * PROJECTED rather than assigned, because assignment freezes only half of
+   * what the frozen vocabulary claims: a live union that gains a MEMBER fails
+   * to assign, and a live row that gains a FIELD assigns cleanly and then gets
+   * serialized, into artifacts the version 2 parser refuses for carrying keys
+   * the schema does not name.
+   */
+  const delivery: Readonly<Record<'repair' | 'translate', readonly ArtifactDeliveryRowV2[]>> = {
+    repair: lanes.repairDelivery
+      .records
+      .map(function projectRepair(record,): ArtifactDeliveryRowV2 {
+        return toArtifactRowV2({ record, },);
+      },),
+    translate: lanes.translateDelivery
+      .records
+      .map(function projectTranslate(record,): ArtifactDeliveryRowV2 {
+        return toArtifactRowV2({ record, },);
+      },),
+  };
   return {
     artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
     id: entryId,
@@ -130,23 +207,26 @@ export function buildSettledArtifactV2(
       sourceBytes: sourceBytesOf({ text: prepared.sourceText, },),
       alignmentPairCount: prepared.alignmentPairCount,
 
-      // Read off the LANES rather than off the preparation, because that is
-      // where a caller would see them: the driver reports the preparation's
-      // findings once, and taking them from anywhere else would let the two
-      // copies drift.
-      alignmentFindings: lanes.alignmentFindings,
+      // Read off the PREPARATION, which this artifact says these describe. The
+      // driver reports the same list, and picking one of two claims is what
+      // `assertFindingsDescribePreparation` above exists to stop: with the two
+      // checked equal, this reads from the side the field is filed under.
+      alignmentFindings: [...prepared.alignmentFindings,],
     },
     lanes: {
       repair: {
         result: lanes.repair,
-        delivery: lanes.repairDelivery,
+        delivery: delivery.repair,
       },
       translate: {
         result: lanes.translate,
-        delivery: lanes.translateDelivery,
+        delivery: delivery.translate,
       },
     },
-    comparison: comparison.slices,
+    comparison: comparison.slices
+      .map(function projectRow(row,) {
+        return toArtifactComparisonRowV2({ row, },);
+      },),
 
     // NOBODY HAS PICKED ONE, said out loud. Which lane ships is the user's
     // question, and an artifact that left the field out would make "not decided

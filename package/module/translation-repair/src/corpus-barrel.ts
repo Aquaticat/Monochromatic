@@ -17,6 +17,19 @@ export {
   type SettledLaneV2,
   type SettledPreparationV2,
 } from './corpus-run/artifact-v2-contract.ts';
+export {
+  toArtifactComparisonRowV2,
+  toArtifactDecisionsV2,
+  toArtifactDeliveryV2,
+  toArtifactOutcomeV2,
+  toArtifactRowV2,
+} from './corpus-run/artifact-v2-project.ts';
+export {
+  ArtifactPreparationMismatchError,
+  assertFindingsDescribePreparation,
+  assertLedgerDescribesPreparation,
+  assertResultCountsPreparation,
+} from './corpus-run/artifact-v2-verify.ts';
 export type {
   ArtifactComparisonRowV2,
   ArtifactDecisionComparisonV2,

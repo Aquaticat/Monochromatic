@@ -16,10 +16,27 @@
 // not describe, the artifact becomes version 3.
 //
 // THE COMPILER ENFORCES THAT, which is why the copies are worth having rather
-// than merely well intentioned. The builder assigns live values into these
-// types, so a live union that gains a member this file does not list stops
-// compiling there. The next person meets the version question as a build error
-// rather than as an artifact that quietly means something new.
+// than merely well intentioned. It takes two mechanisms, and knowing which does
+// what matters, because assuming one covers both is how a schema drifts:
+//
+//  -   MEMBER GROWTH is caught by `artifact-v2-project.ts`, which ends each
+//      projection on a `never` binding. A live union that gains a member leaves
+//      that member unhandled, the binding stops being `never`, and the file
+//      stops compiling. Plain assignment catches this too; the projection makes
+//      it deliberate rather than incidental.
+//  -   FIELD GROWTH is NOT caught, by either mechanism, and saying otherwise is
+//      how a schema drifts. Excess property checking applies to object
+//      LITERALS, so a live record that gains a field assigns into these types
+//      cleanly; the projection does not fail on it either, it simply leaves the
+//      new field out. What the projection buys is that the new field cannot
+//      reach the written bytes, so version 2 artifacts keep meaning what this
+//      file says and the version 2 parser keeps accepting them.
+//
+// So a live union that grows meets the version question as a build error, and a
+// live record that grows keeps writing valid version 2 until somebody decides
+// the new field belongs on disk. An exact-shape type test would turn the second
+// into a build error too; it is not here, and that is the gap to close if a
+// silently omitted field ever turns out to have mattered.
 //
 // DELIBERATELY NOT the whole artifact. The two raw lane results are recorded as
 // EVIDENCE and typed by their live shapes, because they are large, they grow
