@@ -180,6 +180,22 @@ reconcile an ambiguous creation result,
 and decide whether to start another command.
 It must not claim control over undocumented lower-level transport behavior.
 
+GitHub CLI's command options also supply no timeout to that client.
+[`pkg/cmd/api/api.go:390-405`][gh-api-client]
+constructs `HTTPClientOptions` without one,
+while [`cli/go-gh/pkg/api/client_options.go:59-61`][go-gh-timeout]
+documents the resulting default:
+
+```go
+// Timeout specifies a time limit for each API request.
+// Default is no timeout.
+Timeout time.Duration
+```
+
+GitHub CLI 2.97.0 exposes no `gh api` timeout flag.
+The adapter must therefore bound the subprocess lifetime itself
+if it promises a request timeout or a finite graceful-interrupt wait.
+
 ## Verification
 
 ### Versions and sources
@@ -264,6 +280,7 @@ The selected adapter design follows both provider instructions:
 11. Parse returned status,
     headers,
     and JSON before deciding whether another `gh api` invocation is allowed.
+12. Apply an adapter-owned subprocess deadline because `gh api` 2.97.0 has no request timeout by default.
 
 This is verified against GitHub's published concurrency and mutation-pacing contract
 and the GitHub CLI 2.97.0 request path.
@@ -342,9 +359,11 @@ There is nothing additive to file or comment upstream.
 
 [github-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [github-create-issue]: https://docs.github.com/en/rest/issues/issues#create-an-issue
+[gh-api-client]: https://github.com/cli/cli/blob/v2.97.0/pkg/cmd/api/api.go#L390-L405
 [gh-api-do]: https://github.com/cli/cli/blob/55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55/pkg/cmd/api/http.go#L83
 [gh-api-headers]: https://github.com/cli/cli/blob/55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55/pkg/cmd/api/api.go#L474-L478
 [gh-api-input]: https://github.com/cli/cli/blob/55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55/pkg/cmd/api/api.go#L369-L381
+[go-gh-timeout]: https://github.com/cli/go-gh/blob/v2.13.0/pkg/api/client_options.go#L59-L61
 [go-gh-transport]: https://github.com/cli/go-gh/blob/v2.13.0/pkg/api/http_client.go#L59-L69
 [p-limit-clear-source]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.js#L77-L89
 [p-limit-clear-type]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.d.ts#L17-L27

@@ -404,6 +404,9 @@ The adapter would never use either option's `-` standard-input form.
 Source inspection of `pkg/cmd/api/api.go` and `pkg/cmd/api/http.go`
 found one `client.Do` path per non-paginated invocation and no API-command retry loop.
 The underlying `cli/go-gh` 2.13.0 client uses the Go default transport rather than a retry transport.
+Its client options document no timeout as the default,
+and `gh api` 2.97.0 supplies no timeout value or timeout flag.
+A separate adapter-level child-process deadline is therefore required for the settled bounded-request behavior.
 The workspace already invokes `gh api` from active packages and has no direct Octokit dependency.
 The user selected this boundary instead of a GitHub client library or direct authenticated HTTP.
 
@@ -678,8 +681,7 @@ in dependency order:
 
 ## Immediate next action
 
-Determine the current `gh api` timeout boundary,
-then ask what timeout the adapter applies to each GitHub CLI invocation.
+Ask what timeout the adapter applies to each GitHub CLI invocation.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
