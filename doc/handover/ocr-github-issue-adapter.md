@@ -141,13 +141,16 @@ or another controlling-terminal device.
 
 ### Repository selection
 
-An explicit `--repo OWNER/NAME` selects the destination in either mode.
+An explicit `--repo https://github.com/OWNER/NAME` selects the destination in either mode.
+The flag accepts only that canonical HTTPS GitHub repository URL shape,
+not `OWNER/NAME` shorthand.
 Without that flag,
 the adapter infers the repository only when the process working directory is exactly the Git worktree root.
 When run from a subdirectory inside a worktree,
-it errors and instructs the user to rerun at the root or pass `--repo OWNER/NAME`.
+it errors and instructs the user to rerun at the root
+or pass `--repo https://github.com/OWNER/NAME`.
 Outside a Git worktree,
-it errors and requires `--repo OWNER/NAME`.
+it errors and requires `--repo https://github.com/OWNER/NAME`.
 A repository that cannot be identified unambiguously also errors and suggests the explicit flag.
 These cases print diagnostics and exit rather than opening another prompt.
 
@@ -470,9 +473,17 @@ in dependency order:
    Diagnostics use standard error.
    Applied-run output and remaining exit codes remain open.
    Issue creation is serial with at least one second between mutative requests.
+   Rate-limit rejections,
+   network failures,
+   timeouts,
+   and `5xx` responses are retryable.
+   Retrying an ambiguous failure can create a duplicate issue,
+   and the tool must state that risk in relevant help,
+   previews,
+   and result diagnostics.
    After a failure exhausts its allowed retries,
    no later issue is attempted.
-   Retry eligibility and limits remain open.
+   Retry attempt limits and backoff remain open.
 5. Security disclosure and quarantine:
    security-gated findings use a separate red and text-marked interactive picker.
    Each selected security finding requires an explicit confirmation with no default.
@@ -488,13 +499,15 @@ in dependency order:
    Output reports only their count and input record ordinals or JSONL line numbers;
    users inspect the original OCR input.
 6. Repository selection:
-   explicit `--repo OWNER/NAME` overrides repository inference.
+   explicit `--repo https://github.com/OWNER/NAME` overrides repository inference.
+   The shorthand `OWNER/NAME` is invalid.
    Without `--repo`,
    the adapter infers the destination only when the process working directory is exactly a Git worktree root.
    From a subdirectory inside a worktree,
-   it errors and instructs the user to rerun at the root or pass `--repo OWNER/NAME`.
+   it errors and instructs the user to rerun at the root
+   or pass `--repo https://github.com/OWNER/NAME`.
    Outside a Git worktree,
-   it errors and requires `--repo OWNER/NAME`.
+   it errors and requires `--repo https://github.com/OWNER/NAME`.
    These are diagnostics followed by exit,
    not prompts;
    non-interactive mode never prompts.
@@ -565,8 +578,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about which Issue-creation failures are safe to retry
-without risking duplicate issues.
+Ask the next dependent design question about retry attempt limits and backoff
+for rate-limit and ambiguous Issue-creation failures.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -650,7 +663,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   rejected separate persistence for withheld security findings;
   only counts and input positions are reported.
 - 2026-08-16:
-  settled root-only Git repository inference with explicit `--repo OWNER/NAME` override;
+  settled root-only Git repository inference with explicit
+  `--repo https://github.com/OWNER/NAME` override;
   subdirectories and non-repository directories error with rerun instructions when the flag is absent.
 - 2026-08-16:
   settled deterministic issue titles using normalized category,
@@ -693,6 +707,13 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   selected serial Issue creation with at least one second between mutations;
   the adapter will not add or use `p-limit`.
+- 2026-08-16:
+  limited explicit repository syntax to canonical `https://github.com/OWNER/NAME` URLs.
+- 2026-08-16:
+  made rate-limit,
+  network,
+  timeout,
+  and `5xx` Issue-creation failures retryable despite acknowledged duplicate risk.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api

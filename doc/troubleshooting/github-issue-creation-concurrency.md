@@ -87,6 +87,23 @@ clearQueue: () => void;
 A failure observed under concurrency five could leave other Issue creations already in flight.
 Clearing pending work would not provide strict stop-at-first-failure behavior.
 
+### Issue creation has no documented idempotency mechanism
+
+[GitHub's best-practices document][github-best-practices]
+says conditional requests for unsafe methods such as `POST` are unsupported
+unless an endpoint documents otherwise.
+The [Create an issue endpoint][github-create-issue] documents its request fields and responses
+but no idempotency key or conditional-create contract.
+
+A network failure,
+timeout,
+or `5xx` response can therefore leave the client unable to prove whether the Issue was created.
+Retrying that request can create a duplicate.
+The adapter design deliberately accepts that risk to retry ambiguous transient failures,
+and its help,
+preview,
+and result diagnostics must disclose it.
+
 ## Verification
 
 ### Versions and sources
@@ -124,6 +141,7 @@ rg --line-number \
 - Honor `retry-after` before another request.
 - Wait for `x-ratelimit-reset` when `x-ratelimit-remaining` is zero.
 - Stop after a bounded number of exponentially delayed secondary-rate-limit retries.
+- Treat ambiguous create retries as carrying duplicate-Issue risk.
 
 ### Conflicting behavior catalog
 
@@ -141,7 +159,8 @@ The selected adapter design follows both provider instructions:
 1. Create one Issue at a time.
 2. Wait at least one second before starting the next Issue-creation request.
 3. Do not add `p-limit` to the adapter package for Issue creation.
-4. Stop scheduling new Issues after a retry-exhausted failure.
+4. Retry the user-approved failure classes under a bounded policy.
+5. Stop scheduling new Issues after a retry-exhausted failure.
 
 This is verified against GitHub's published concurrency and mutation-pacing contract.
 Runtime verification remains part of adapter implementation because no production adapter exists yet.
@@ -151,6 +170,7 @@ Tradeoffs:
 - Publication takes longer than a concurrent queue.
 - Strict serialization makes stop-at-first-terminal-failure exact for requests not yet started.
 - Provider-compliant pacing reduces secondary-rate-limit exposure but cannot eliminate network or service failures.
+- Retrying ambiguous Issue-creation failures can create duplicates.
 
 ## What does not work
 
@@ -170,6 +190,13 @@ It therefore continues to conflict with GitHub's separate serial-request recomme
 `clearQueue()` discards pending functions only.
 It cannot cancel requests already running,
 so concurrency five cannot promise that no later Issue is created after the first terminal failure.
+
+### Assuming a retry is duplicate-safe
+
+The Issue-creation endpoint has no documented idempotency key.
+An ambiguous failed response is not proof that GitHub created nothing.
+The adapter may retry by explicit design choice,
+but it must not claim that the retry is duplicate-safe.
 
 ## Upstream filing decision
 
@@ -209,6 +236,7 @@ The filing constraints resolve as follows:
 There is nothing additive to file or comment upstream.
 
 [github-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
+[github-create-issue]: https://docs.github.com/en/rest/issues/issues#create-an-issue
 [p-limit-clear-source]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.js#L77-L89
 [p-limit-clear-type]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.d.ts#L17-L27
 [p-limit-immediate]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.js#L59-L63
