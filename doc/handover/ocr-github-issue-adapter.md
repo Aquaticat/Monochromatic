@@ -193,6 +193,10 @@ links,
 or mentions.
 Documentation and publication previews must state that OCR content retains active GitHub Markdown behavior,
 including notifications caused by mentions.
+In interactive mode,
+the normal picker and final batch summary show normal issue titles rather than full bodies.
+Before confirming each selected security finding,
+the adapter displays its complete generated title and Markdown body.
 Fallbacks and title length handling remain to be settled.
 
 ## Settled prior findings
@@ -476,8 +480,11 @@ in dependency order:
    HTML,
    links,
    and mentions.
+   Interactive normal candidates and the final batch summary show titles only.
+   Each selected security candidate shows its complete generated title and body
+   before its individual disclosure confirmation.
    Safe rendering of the adapter-owned code sections,
-   publication preview detail,
+   non-interactive preview detail,
    and title fallback and length behavior remain open.
 8. Identity and lifecycle:
    settled as create-only.
@@ -508,8 +515,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about how much of each unchanged Markdown issue body
-is shown before publication.
+Ask the next dependent design question about which findings are initially selected in the interactive pickers.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -617,5 +623,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   HTML,
   links,
   or mentions.
+- 2026-08-16:
+  limited complete interactive body previews to selected security findings before their individual confirmations.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
