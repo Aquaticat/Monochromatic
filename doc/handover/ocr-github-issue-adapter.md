@@ -272,7 +272,15 @@ Title length handling remains to be settled.
 GitHub's current REST documentation and OpenAPI schema publish no title-length maximum or counting unit;
 see
 [`doc/troubleshooting/github-issue-title-length.md`][github-issue-title-length].
-Any selected limit must therefore be described as an adapter-owned contract,
+The adapter owns a conservative 256-byte UTF-8 cap on the final title,
+including a `[needs-triage] ` fallback prefix when present.
+A title within the cap remains unchanged.
+For an overlength title,
+it retains the longest valid UTF-8 prefix fitting within 253 bytes,
+trims trailing whitespace,
+and appends the three-byte `…` character.
+The complete finding remains in the body.
+This is an adapter contract,
 not a documented GitHub limit.
 
 ## Settled prior findings
@@ -689,8 +697,13 @@ in dependency order:
    Interactive normal candidates and the final batch summary show titles only.
    Each selected security candidate shows its complete generated title and body
    before its individual disclosure confirmation.
-   Safe rendering of the adapter-owned code sections
-   and title fallback and length behavior remain open.
+   The final title,
+   including a fallback `[needs-triage] ` prefix,
+   has an adapter-owned 256-byte UTF-8 cap.
+   Overlength titles retain the longest valid prefix within 253 bytes,
+   trim trailing whitespace,
+   and append `…`.
+   Safe rendering of the adapter-owned code sections remains open.
 8. Identity and lifecycle:
    settled as create-only.
    The adapter has no persistent synthetic identity,
@@ -742,7 +755,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask what adapter-owned title cap and overlength behavior apply to the final title.
+Ask how adapter-owned Existing code and Suggested code sections safely delimit arbitrary OCR code.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -913,6 +926,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   existing code,
   and suggested code all lack a meaningful line;
   one such record atomically rejects the input.
+- 2026-08-16:
+  capped final titles at 256 UTF-8 bytes
+  and selected deterministic end truncation with a trailing ellipsis.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-issue-title-length]: ../troubleshooting/github-issue-title-length.md

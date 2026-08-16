@@ -125,11 +125,18 @@ and retain the complete finding in the Issue body.
 This makes previews and create requests identical
 and avoids depending on an undocumented server-side truncation behavior.
 
-The exact fallback,
-cap,
-and truncation unit remain product decisions for the OCR adapter.
-Whatever values are selected must be covered by boundary tests
-and must not be described as GitHub's documented limit.
+The OCR adapter selected a 256-byte UTF-8 cap on the complete final title.
+It leaves titles within that cap unchanged.
+For an overlength title,
+it retains the longest valid UTF-8 prefix fitting within 253 bytes,
+trims trailing whitespace,
+and appends the three-byte `…` character.
+The cap includes the `[needs-triage] ` fallback prefix when present.
+Boundary tests must cover ASCII,
+multibyte code points,
+whitespace trimming,
+and exact-limit inputs.
+The package must not describe this local cap as GitHub's documented limit.
 
 Tradeoffs:
 
