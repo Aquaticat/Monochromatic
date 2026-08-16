@@ -107,10 +107,22 @@ export {
 } from './fidelity-alteration.ts';
 export { neighbouringSource, } from './fidelity-window.ts';
 export {
+  type ClassifiedSlice,
+  classifyDisplacement,
   type DocumentDisplacement,
+  type RelocationCandidate,
+  type SliceClass,
+} from './displacement-class.ts';
+export {
+  CORPUS_REFERENCE_EXPANSION,
+  documentBaseline,
   median,
-  readDisplacement,
+  MIN_RATIO_SOURCE_CHARS,
+  PLAUSIBLE_BASELINE_MAX,
+  PLAUSIBLE_BASELINE_MIN,
   type SliceRatio,
+  sliceRatios,
+  type SliceSize,
 } from './displacement-ratio.ts';
 export {
   type FidelityBallotRead,

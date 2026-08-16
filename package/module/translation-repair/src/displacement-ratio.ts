@@ -1,67 +1,75 @@
 //region Displacement ratio
-// Whether a translation MOVED material across a section boundary, read from
-// sizes alone and without asking a model anything.
+// Size primitives the displacement classifier reads: per-slice ratios, a
+// document's own expansion, and the corpus expansion to fall back on.
 //
-// WHY IT IS WORTH READING. Every judge in the translate lane sees one slice pair
-// and nothing else. Where a translator carried a passage into a neighbouring
-// section, the archive looks like it invented content on one slice and dropped
-// content on the next, and a per-slice roster condemns it at both ends while
-// preferring a fresh rendering that says only what its own slice's original
-// says. Found on `Dethelly/0` by `#84`'s alteration arm and confirmed by hand:
-// the English `Description` carries four sentences whose Chinese sits in the
-// NEXT slice.
+// WHY SIZE IS WORTH READING AT ALL. Every judge in the translate lane sees one
+// slice pair and nothing else. Where a translator carried a passage into a
+// neighbouring section, the archive looks like it invented content on one slice
+// and dropped content on the next, and a per-slice roster condemns it at both
+// ends while preferring a fresh rendering that says only what its own slice's
+// original says. Found on `Dethelly/0` by `#84`'s alteration arm and confirmed
+// by hand: the English `Description` carries four sentences whose Chinese sits
+// in the NEXT slice.
 //
-// WHAT THE SIGNAL IS. Chinese-to-English expansion is roughly threefold and
-// remarkably steady WITHIN one document, because one translator worked at one
-// density. A slice far above its own document's median has taken on text from
-// somewhere, and a neighbour below it has given text up. The pair is the
-// evidence: one anomaly alone is a slice that paraphrases loosely or a heading
-// that carries a long English gloss, while a HIGH beside a LOW is a passage that
-// moved.
-//
-// WHY THE DOCUMENT'S OWN MEDIAN RATHER THAN A CONSTANT. Density varies by
-// register: a memorial page carrying long quoted messages expands differently
-// from one carrying dates and places. Comparing a document to itself removes
-// that, and it is what makes a single threshold usable across the corpus.
-//
-// WHAT IT CANNOT SAY. It sees SIZE, so a slice that swapped a long passage for
-// an equally long one reads as ordinary, and a translator who expanded one
-// section for reasons of their own reads as displacement. It is a screen that
-// says where to look, not a verdict.
+// WHY A DOCUMENT'S OWN MEDIAN IS NOT THE STATISTIC, which the first version of
+// this file got wrong. Density does vary by register, so comparing a document
+// to itself is the right instinct. But a median over slices is CONTAMINATED BY
+// THE THING IT IS MEANT TO DETECT: `shi_Yumiaoya` carries three untranslated
+// sections whose near-zero ratios pull its median to 0.76, which drops the
+// threshold to 1.51, which then flags two perfectly ordinary translations. A
+// document aggregate over slices that are plausibly translated at all does not
+// have that failure, and it has a second property the median lacks: relocation
+// moves text BETWEEN slices without changing either document total, so the
+// aggregate is invariant under exactly the phenomenon being detected.
 
 /**
- * How far above its document's median a slice must sit to be called high.
+ * Expansion the corpus works at, used when a document cannot speak for itself.
  *
- * TWO, which flagged `Dethelly/0` at 3.5 times its document's median while
- * leaving every ordinary slice of that document alone. Loose enough that
- * ordinary variation in paraphrase does not trip it, tight enough that a whole
- * relocated paragraph does.
+ * MEASURED, not assumed. Over the 91 complete pairs at the pinned commit, the
+ * median of per-document aggregates is 2.86, with a p10 to p90 span of 1.95 to
+ * 3.47. An earlier draft of this instrument said "roughly threefold" from
+ * recall; the measurement moved it.
  */
-const HIGH_FACTOR = 2;
+export const CORPUS_REFERENCE_EXPANSION = 2.86;
 
 /**
- * Shortest source slice worth a ratio.
+ * Lowest document aggregate still worth believing as a baseline.
  *
- * A very short section makes the ratio jump on one added clause, so below this
- * the number says more about arithmetic than about translation. Kept low
- * because a one-sentence introduction is exactly where displacement lands.
+ * Below this a document is not translating at a plausible density: it is
+ * partly untranslated, or mostly markup, or carries long verbatim blocks. Set
+ * just under the measured p10 of 1.95 so an ordinary low-density document keeps
+ * its own baseline and a contaminated one does not.
  */
-const MIN_SOURCE_CHARS = 20;
+export const PLAUSIBLE_BASELINE_MIN = 1.9;
+
+/**
+ * Highest document aggregate still worth believing as a baseline.
+ *
+ * Above this the translation carries substantially more than the original says,
+ * which is a document-scale version of the source-absent class rather than a
+ * density. Measured p90 is 3.47, so this leaves generous room before refusing.
+ */
+export const PLAUSIBLE_BASELINE_MAX = 4.5;
+
+/**
+ * Shortest original worth a ratio.
+ *
+ * RAISED FROM TWENTY, which was far too low: `noname3031`'s flagged slice was
+ * TWENTY-THREE original characters, one over the old floor, and its ratio was
+ * arithmetic rather than evidence. At eighty a slice has to carry a sentence or
+ * two before its ratio is read at all.
+ */
+export const MIN_RATIO_SOURCE_CHARS = 80;
 
 /**
  * One slice's size reading.
  *
  * @example
  * ```ts
- * const reading: SliceRatio = { sliceIndex: 0, sourceChars: 35, targetChars: 403, ratio: 11.51, };
+ * const size: SliceSize = { sourceChars: 129, targetChars: 268, };
  * ```
  */
-export type SliceRatio = {
-  /**
-   * Slice this describes.
-   */
-  readonly sliceIndex: number;
-
+export type SliceSize = {
   /**
    * Characters of original.
    */
@@ -71,6 +79,21 @@ export type SliceRatio = {
    * Characters of translation.
    */
   readonly targetChars: number;
+};
+
+/**
+ * One slice's size reading with the ratio it implies.
+ *
+ * @example
+ * ```ts
+ * const reading: SliceRatio = { sliceIndex: 0, sourceChars: 35, targetChars: 403, ratio: 11.51, };
+ * ```
+ */
+export type SliceRatio = SliceSize & {
+  /**
+   * Slice this describes.
+   */
+  readonly sliceIndex: number;
 
   /**
    * Translation characters per original character.
@@ -79,52 +102,17 @@ export type SliceRatio = {
 };
 
 /**
- * One document's reading, with the slices that stand out.
+ * Middle value of a list of numbers, taking the LOW side on an even count.
  *
- * @example
- * ```ts
- * const reading: DocumentDisplacement = { median: 3.31, ratios, highIndices: [0,], movedPairs: [{ high: 0, low: 1, },], };
- * ```
- */
-export type DocumentDisplacement = {
-  /**
-   * Median ratio over the slices this document offered.
-   */
-  readonly median: number;
-
-  /**
-   * Every slice long enough to read.
-   */
-  readonly ratios: readonly SliceRatio[];
-
-  /**
-   * Slices at or above {@link HIGH_FACTOR} times the median.
-   */
-  readonly highIndices: readonly number[];
-
-  /**
-   * High slices with a below-median neighbour, which is the shape a moved
-   * passage leaves: one slice took text on and the one beside it gave text up.
-   */
-  readonly movedPairs: readonly {
-    /**
-     * Slice that took text on.
-     */
-    readonly high: number;
-
-    /**
-     * Neighbour that gave it up.
-     */
-    readonly low: number;
-  }[];
-};
-
-/**
- * Middle value of a list of numbers.
+ * THE LOW SIDE IS DELIBERATE AND WAS PREVIOUSLY WRONG. This function documented
+ * the low side and returned the high one, so `median([1, 2, 9, 10,])` answered
+ * nine rather than two. On a threshold derived from a multiple of the median
+ * that bias runs the wrong way: it raises the bar and hides the anomalies the
+ * caller is looking for.
  *
  * @param values - numbers to summarize
  *
- * @returns Median, or zero for an empty list
+ * @returns Middle value, or zero for an empty list
  *
  * @example
  * ```ts
@@ -148,118 +136,136 @@ export function median({ values, }: { readonly values: readonly number[]; },): n
   /**
    * Middle position, low side on an even count.
    */
-  const middle = Math.floor(sorted.length / 2,);
+  const middle = Math.floor((sorted.length - 1) / 2,);
   return sorted[middle] ?? 0;
 }
 
 /**
- * Reads one document pair's slice sizes for the shape a moved passage leaves.
+ * Reads each slice's ratio, in slice order and without dropping any.
+ *
+ * NOTHING IS FILTERED HERE. The old version discarded every slice under a
+ * source-character floor before anything else ran, which threw away the
+ * strongest evidence there is: `Zha_Ke`'s slice 1 carries 41 original
+ * characters against 3652 translated, a ratio of 89, and a floor on the
+ * ORIGINAL side deleted it. Classification decides what a short slice means;
+ * this function only measures.
  *
  * @param slices - prepared slice pairs, each with both sides' character counts
  *
- * @returns Median ratio, every readable slice, and the high slices with a
- * below-median neighbour
+ * @returns Ratio per slice, one entry per input in the same order
  *
  * @example
  * ```ts
- * const reading = readDisplacement({ slices, },);
+ * const readings = sliceRatios({ slices, },);
  * ```
  */
-export function readDisplacement(
-  {
-    slices,
-  }: {
-    readonly slices: readonly {
-      readonly sourceChars: number;
-      readonly targetChars: number;
-    }[];
-  },
-): DocumentDisplacement {
-  /**
-   * Slices long enough for a ratio to mean anything.
-   */
-  const ratios: readonly SliceRatio[] = slices
-    .map(function toRatio(
-      slice,
-      sliceIndex,
-    ): SliceRatio {
+export function sliceRatios(
+  { slices, }: { readonly slices: readonly SliceSize[]; },
+): readonly SliceRatio[] {
+  return slices.map(function toRatio(
+    slice,
+    sliceIndex,
+  ): SliceRatio {
+    // A SOURCE OF ZERO IS A REAL STATE, not an input to sanitize: a slice can be
+    // an insertion anchor with no original at all. Its ratio is the translated
+    // length itself, which classification reads as target-only rather than as a
+    // density.
+    if (slice.sourceChars <= 0) {
       return {
         sliceIndex,
         sourceChars: slice.sourceChars,
         targetChars: slice.targetChars,
-        ratio: slice.targetChars / Math.max(
-          1,
-          slice.sourceChars,
-        ),
+        ratio: slice.targetChars,
       };
-    },)
-    .filter(function longEnough(reading,) {
-      return reading.sourceChars >= MIN_SOURCE_CHARS;
-    },);
-
-  /**
-   * This document's own expansion, which every slice is read against.
-   */
-  const documentMedian = median({
-    values: ratios.map(function toValue(reading,) {
-      return reading.ratio;
-    },),
+    }
+    return {
+      sliceIndex,
+      sourceChars: slice.sourceChars,
+      targetChars: slice.targetChars,
+      ratio: slice.targetChars / slice.sourceChars,
+    };
   },);
+}
+
+/**
+ * Expansion to read a document's slices against.
+ *
+ * THE AGGREGATE RATHER THAN THE MEDIAN, over slices the caller has already
+ * decided are plausibly translated. Two properties matter. It weights by
+ * length, so a 1300-character section counts for more than an 80-character one,
+ * which a median does not. And it is INVARIANT UNDER RELOCATION: moving text
+ * from one slice to its neighbour leaves both document totals unchanged, so the
+ * baseline does not absorb the thing being measured.
+ *
+ * @param slices - slices believed to be translated
+ *
+ * @returns Document's own expansion when believable, and the corpus reference
+ * otherwise, with which one was used
+ *
+ * @example
+ * ```ts
+ * const baseline = documentBaseline({ slices: translated, },);
+ * ```
+ */
+export function documentBaseline(
+  { slices, }: { readonly slices: readonly SliceSize[]; },
+): {
+  readonly expansion: number;
+  readonly from: 'document' | 'corpus-reference';
+} {
+  /**
+   * Original characters across those slices.
+   */
+  const sourceChars = slices.reduce(
+    function addSource(
+      total,
+      slice,
+    ) {
+      return total + Math.max(
+        0,
+        slice.sourceChars,
+      );
+    },
+    0,
+  );
 
   /**
-   * Slices that took on more text than this translator's own habit explains.
+   * Translated characters across those slices.
    */
-  const highIndices = ratios
-    .filter(function isHigh(reading,) {
-      return reading.ratio >= (documentMedian * HIGH_FACTOR);
-    },)
-    .map(function toIndex(reading,) {
-      return reading.sliceIndex;
-    },);
+  const targetChars = slices.reduce(
+    function addTarget(
+      total,
+      slice,
+    ) {
+      return total + Math.max(
+        0,
+        slice.targetChars,
+      );
+    },
+    0,
+  );
 
   /**
-   * Ratio per slice index, for asking about a neighbour.
+   * Corpus expansion, named once so both refusal paths read alike.
    */
-  const byIndex = new Map(ratios.map(function toEntry(reading,): readonly [
-    number,
-    number,
-  ] {
-    return [
-      reading.sliceIndex,
-      reading.ratio,
-    ];
-  },),);
+  const fallback = {
+    expansion: CORPUS_REFERENCE_EXPANSION,
+    from: 'corpus-reference',
+  } as const;
+  if (sourceChars <= 0)
+    return fallback;
 
   /**
-   * High slices whose neighbour sits below the median, which is displacement
-   * seen from both ends rather than one slice being unusual by itself.
+   * This document's own expansion over the slices it offered.
    */
-  const movedPairs = highIndices.flatMap(function toPairs(high,) {
-    return [
-      high - 1,
-      high + 1,
-    ]
-      .filter(function isBelowMedian(neighbour,) {
-        /**
-         * That neighbour's ratio, absent when it was too short to read.
-         */
-        const ratio = byIndex.get(neighbour,);
-        if (ratio === undefined)
-          return false;
-        return ratio < documentMedian;
-      },)
-      .map(function toPair(low,) {
-        return {
-          high,
-          low,
-        };
-      },);
-  },);
+  const expansion = targetChars / sourceChars;
+  if (expansion < PLAUSIBLE_BASELINE_MIN)
+    return fallback;
+  if (expansion > PLAUSIBLE_BASELINE_MAX)
+    return fallback;
   return {
-    median: documentMedian,
-    ratios,
-    highIndices,
-    movedPairs,
+    expansion,
+    from: 'document',
   };
 }
 
