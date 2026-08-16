@@ -81,3 +81,9 @@ export {
   type Transitions,
   TRIAL_ARMS,
 } from './corpus-run/window-trial-report.ts';
+export {
+  CONTROL_CLASS,
+  controlSlices,
+  flaggedSlices,
+  type TrialSlice,
+} from './corpus-run/window-trial-draw.ts';
