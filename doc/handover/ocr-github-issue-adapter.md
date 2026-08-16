@@ -233,6 +233,11 @@ and package document.
 Interactive mode places security-gated findings in a separate picker from other findings.
 The normal picker initially selects every finding.
 The security picker initially selects no finding.
+After both picker stages,
+the combined selection must contain at least one finding.
+An empty combined selection keeps the selection flow active until the user selects a finding or cancels explicitly.
+Either individual picker may be empty,
+so security-only publication remains possible.
 That picker must use red styling when color is available and an explicit textual `SECURITY` marker
 so color is never the only signal.
 Every security-gated finding selected for publication requires its own explicit safe-to-disclose confirmation.
@@ -500,9 +505,11 @@ in dependency order:
 9. Interactive mechanics:
    the normal picker initially selects all findings.
    The separate security picker initially selects none.
+   The combined result must select at least one issue;
+   otherwise selection remains active until a finding is selected or the user cancels.
+   Either individual picker may be empty.
    pnpm's prompt library and interaction model,
    terminal capabilities,
-   empty-selection behavior,
    cancellation,
    multi-select behavior,
    and accessibility otherwise remain open.
@@ -520,7 +527,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about what submitting an empty interactive selection does.
+Ask the next dependent design question about the exit status for explicit interactive cancellation.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -632,5 +639,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   limited complete interactive body previews to selected security findings before their individual confirmations.
 - 2026-08-16:
   preselected all normal findings and left all security findings unselected in their separate interactive pickers.
+- 2026-08-16:
+  required at least one combined interactive selection while allowing either individual picker to be empty.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
