@@ -189,7 +189,9 @@ and `--all` adds exactly that category to otherwise eligible publication.
 The explicit OCR category `other` is an ordinary publishable candidate.
 Interactive lists and previews must visibly mark it as `OTHER`,
 but it receives no additional confirmation or non-interactive authority gate.
-Handling missing category metadata remains a separate decision.
+A structurally valid finding with missing category metadata is also an ordinary publishable candidate.
+Interactive lists and previews must visibly mark it as `UNCATEGORIZED`.
+Missing metadata does not add a confirmation or non-interactive authority gate.
 
 The publication boundary also requires that:
 
@@ -355,9 +357,9 @@ in dependency order:
    `other`,
    and missing category metadata do not enter that gate.
    Explicit category `other` is an ordinary candidate visibly marked `OTHER`.
-   The publication policy for missing metadata,
-   where findings withheld from publication live,
-   and how users inspect them remain open.
+   Missing category metadata is an ordinary candidate visibly marked `UNCATEGORIZED`.
+   Neither receives an additional authority gate.
+   Where findings withheld from publication live and how users inspect them remain open.
 6. Repository selection:
    explicit `--repo`,
    Git remote inference,
@@ -398,8 +400,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about publication treatment for a structurally valid finding
-with missing category metadata.
+Ask the next dependent design question about whether findings withheld by the security gate
+are persisted separately or remain only in the source input.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -477,5 +479,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   and classification uncertainty do not enter it.
 - 2026-08-16:
   made explicit OCR category `other` an ordinary candidate with a visible `OTHER` marker.
+- 2026-08-16:
+  made missing category metadata an ordinary candidate with a visible `UNCATEGORIZED` marker.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
