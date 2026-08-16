@@ -229,7 +229,8 @@ The upstream rule's test catalog accepts:
 - `x.y;`
 - `x?.y;`
 - `x?.y?.z;`
-- `!x;`, which is boolean negation rather than a TypeScript non-null assertion
+- `!x;`,
+  which is boolean negation rather than a TypeScript non-null assertion
 
 The repository-safe replacement also avoids the rule:
 
@@ -343,33 +344,33 @@ not a duplicate bug report.
 
 The filing constraints resolve as follows:
 
-1. **Is it really upstream's fault?**
-   No.
-   Upstream gives generic guidance and explicitly states the semantic difference.
-   The actionable defect is that Monochromatic's existing guidance registry lacks its repository-specific replacement.
-2. **Can upstream fix it?**
-   Upstream can revise generic wording,
-   but it cannot direct users to `@monochromatic-dev/module-or-throw/ts`.
-   It cannot complete this repository's fix.
-3. **Are they supporting this use case?**
-   Oxlint supports detecting non-null assertions.
-   Its rule documentation treats optional chaining as one valid general alternative.
-   It does not claim to encode consumer-specific invariant policies or helper libraries.
-4. **Would the repo welcome our contribution?**
-   Yes, subject to review and disclosure.
-   Upstream `CONTRIBUTING.md:10-21` welcomes contributions and requires disclosure,
-   understanding,
-   and validation of AI-assisted work.
-5. **Will they likely fix it?**
-   There is no matching tracker decision.
-   Current main still contains the same help text,
-   and PR 21616 deliberately added the parent-sensitive branch and snapshot coverage.
-   This does not indicate an upstream defect that maintainers are expected to reverse.
-6. **Have we prototyped a minimal fix compatible with their architecture?**
-   No upstream prototype is warranted because the first and third constraints fail.
-   A consumer-side prototype at Monochromatic's existing wrapper boundary passed focused tests,
-   type lint,
-   and the built-wrapper diagnostic probe.
+1.  Is it really upstream's fault?
+    No.
+    Upstream gives generic guidance and explicitly states the semantic difference.
+    The actionable defect is that Monochromatic's existing guidance registry lacks its repository-specific replacement.
+2.  Can upstream fix it?
+    Upstream can revise generic wording,
+    but it cannot direct users to `@monochromatic-dev/module-or-throw/ts`.
+    It cannot complete this repository's fix.
+3.  Are they supporting this use case?
+    Oxlint supports detecting non-null assertions.
+    Its rule documentation treats optional chaining as one valid general alternative.
+    It does not claim to encode consumer-specific invariant policies or helper libraries.
+4.  Would the repo welcome our contribution?
+    Yes, subject to review and disclosure.
+    Upstream `CONTRIBUTING.md:10-21` welcomes contributions and requires disclosure,
+    understanding,
+    and validation of AI-assisted work.
+5.  Will they likely fix it?
+    There is no matching tracker decision.
+    Current main still contains the same help text,
+    and PR 21616 deliberately added the parent-sensitive branch and snapshot coverage.
+    This does not indicate an upstream defect that maintainers are expected to reverse.
+6.  Have we prototyped a minimal fix compatible with their architecture?
+    No upstream prototype is warranted because the first and third constraints fail.
+    A consumer-side prototype at Monochromatic's existing wrapper boundary passed focused tests,
+    type lint,
+    and the built-wrapper diagnostic probe.
 
 The decision is not to file upstream.
 Fix the consumer guidance registry.
