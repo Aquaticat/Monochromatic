@@ -119,6 +119,12 @@ export {
   UnplaceableArtifactError,
 } from './corpus-run/pass-generation-guard.ts';
 export {
+  assertResumableSchemaGeneration,
+  censusBySchema,
+  type SchemaCensus,
+  SchemaGenerationError,
+} from './corpus-run/pass-schema-guard.ts';
+export {
   abbreviate,
   ArtifactProvenanceError,
   assertArtifactProvenance,

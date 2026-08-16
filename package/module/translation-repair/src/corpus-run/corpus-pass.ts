@@ -25,6 +25,7 @@ import {
   settleEntry,
 } from './pass-entry.ts';
 import { assertResumableGeneration, } from './pass-generation-guard.ts';
+import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
 import {
   countSettled,
   settledEntryIds,
@@ -233,6 +234,15 @@ async function runCorpusPass(): Promise<void> {
     artifactsDir,
     digest: pipelineDigest,
   },);
+
+  // And the same question about the artifact SHAPE, which the guard above does
+  // not answer: its drift opt-in exists because a mixed-build pool stays
+  // readable once a rate names a required commit, and that promise does not
+  // hold across schema generations, where the files cannot answer the questions
+  // at all. Ordinarily the digest already refuses such a directory, since a
+  // build writing one generation cannot share a digest with one writing
+  // another; this covers the opt-in and the hand-assembled directory.
+  await assertResumableSchemaGeneration({ artifactsDir, },);
 
   /**
    * Entry ids already carrying an artifact this pass.
