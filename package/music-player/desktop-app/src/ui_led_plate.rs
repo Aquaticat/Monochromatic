@@ -226,7 +226,7 @@ pub(crate) fn apply(app: &AppWindow) {
             return begin_state.borrow().generation;
         };
         let generation = begin_state.borrow_mut().begin(count);
-        if let Some(app) = begin_weak.upgrade() {
+        if count == 0 && let Some(app) = begin_weak.upgrade() {
             update_global(&app.global::<LedPlateGeometry>(), None);
         }
         generation

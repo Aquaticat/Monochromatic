@@ -455,13 +455,17 @@ component LedSegmentControls inherits Rectangle {
     private property <bool> geometry-adapter-ready: LedPlateGeometry.adapter-ready;
     private property <int> geometry-generation: 0;
     private property <int> geometry-layout-tick: 0;
+    private property <int> geometry-report-pass: 0;
     callback refresh-geometry();
     geometry-report-timer := Timer {
-        interval: 1ms;
+        interval: root.geometry-report-pass == 0 ? 1ms : 16ms;
         running: false;
         triggered => {
-            self.stop();
             root.geometry-layout-tick += 1;
+            root.geometry-report-pass += 1;
+            if root.geometry-report-pass >= 3 {
+                self.stop();
+            }
         }
     }
     init => {
@@ -479,6 +483,8 @@ component LedSegmentControls inherits Rectangle {
     refresh-geometry => {
         if root.geometry-adapter-ready {
             root.geometry-generation = LedPlateGeometry.begin(root.labels.length, root.width);
+            root.geometry-report-pass = 0;
+            geometry-report-timer.start();
             geometry-report-timer.restart();
         }
     }

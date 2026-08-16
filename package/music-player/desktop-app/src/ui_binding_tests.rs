@@ -143,11 +143,11 @@ fn volume_thumb_follows_engine_after_user_input() {
 }
 
 
-// What:     `led_plate_exists_on_first_led_layout` drives first measured LED layout.
-// Why:      Layout-managed coordinates do not reliably dispatch `changed x` or `changed y`;
-//           one deferred report tick must still build wrapped plate before visible capture.
+// What:     `led_plate_tracks_deferred_layout_and_resize` drives measured LED layouts.
+// Why:      Deferred report bursts must build first wrapped plate and retain completed paint
+//           while a resize generation replaces it with current one-row geometry.
 #[test]
-fn led_plate_exists_on_first_led_layout() {
+fn led_plate_tracks_deferred_layout_and_resize() {
     setup();
     let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
     crate::ui_led_plate::apply(&app);
@@ -163,16 +163,44 @@ fn led_plate_exists_on_first_led_layout() {
     app.show().expect("first frame lays out under testing backend");
     let caps = ElementHandle::find_by_element_type_name(&app, "LedSegmentButton").collect::<Vec<_>>();
     assert_eq!(caps.len(), 6, "first layout instantiates every LED cap");
-    mock_elapsed_time(std::time::Duration::from_millis(1));
+    for delay_ms in [1, 16, 16] {
+        mock_elapsed_time(std::time::Duration::from_millis(delay_ms));
+    }
+
     let geometry = app.global::<crate::LedPlateGeometry>();
-    assert!(!geometry.get_path().is_empty(), "first LED frame must contain one backplate path");
-    let starts = geometry.get_starts();
-    let row_start_count = (0..starts.row_count())
-        .filter(|index| starts.row_data(*index) == Some(true))
+    let wrapped_path = geometry.get_path();
+    assert!(!wrapped_path.is_empty(), "deferred LED reports must publish one backplate path");
+    let wrapped_starts = geometry.get_starts();
+    let wrapped_row_count = (0..wrapped_starts.row_count())
+        .filter(|index| wrapped_starts.row_data(*index) == Some(true))
         .count();
-    let cap_positions = caps.iter().map(ElementHandle::absolute_position).collect::<Vec<_>>();
+    let wrapped_positions = caps.iter().map(ElementHandle::absolute_position).collect::<Vec<_>>();
     assert!(
-        row_start_count >= 2,
-        "fixture must wrap and report measured row starts; starts={row_start_count}, caps={cap_positions:?}"
+        wrapped_row_count >= 2,
+        "fixture must wrap after deferred reports; rows={wrapped_row_count}, caps={wrapped_positions:?}"
     );
+
+    app.window().set_size(slint::LogicalSize::new(800.0, 600.0));
+    let resized_positions =
+        ElementHandle::find_by_element_type_name(&app, "LedSegmentButton")
+            .map(|cap| cap.absolute_position())
+            .collect::<Vec<_>>();
+    mock_elapsed_time(std::time::Duration::ZERO);
+    assert!(
+        !geometry.get_path().is_empty(),
+        "new generation must retain completed plate until replacement reports finish"
+    );
+    for delay_ms in [1, 16, 16] {
+        mock_elapsed_time(std::time::Duration::from_millis(delay_ms));
+    }
+
+    let resized_starts = geometry.get_starts();
+    let resized_row_count = (0..resized_starts.row_count())
+        .filter(|index| resized_starts.row_data(*index) == Some(true))
+        .count();
+    assert_eq!(
+        resized_row_count, 1,
+        "800px fixture must repack to one row; rows={resized_row_count}, caps={resized_positions:?}"
+    );
+    assert_ne!(geometry.get_path(), wrapped_path, "resize must replace wrapped plate outline");
 }
