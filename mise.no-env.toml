@@ -627,6 +627,15 @@ const { execFileSync } = await import('node:child_process')
 try { execFileSync('mise', ['run', process.env.usage_task], { stdio: 'inherit' }) } catch { /* tolerated */ }
 """
 
+[tasks."slopo:index"]
+run = "slopo index"
+
+[tasks."slopo:embed"]
+run = "slopo embed"
+
+[tasks."slopo:analyze"]
+run = "slopo analyze"
+
 [tasks."lock:mise"]
 description = "Regenerate mise.lock from active tool declarations"
 run = "mise lock"
