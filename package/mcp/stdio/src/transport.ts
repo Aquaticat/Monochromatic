@@ -21,9 +21,11 @@ import {
 
 /**
  * Minimal writer interface for stdout output.
- * Accepts any object with a `write(Uint8Array)` method, including
- * `Bun.stdout.writer()`, `WritableStreamDefaultWriter`, and the
- * {@link processStdoutWriter} helper.
+ * Accepts any object whose `write(Uint8Array)` reports a byte count, which covers
+ * `Bun.stdout.writer()` and the {@link processStdoutWriter} helper.
+ *
+ * A `WritableStreamDefaultWriter` does not satisfy this: its `write` resolves to `void`,
+ * so wrap one in an adapter that returns the byte count rather than passing it directly.
  *
  * @example
  * ```ts

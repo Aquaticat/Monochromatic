@@ -10,8 +10,9 @@ developer tooling,
 ## Highlights
 
 **Minimal MCP server**:
-[`mcp-stdio`](package/mcp/stdio/) implements the Model Context Protocol
-in 800 lines with zero runtime dependencies.
+[`mcp-stdio`](package/mcp/stdio/) implements Model Context Protocol
+revision 2026-07-28 over stdio,
+with one workspace dependency and nothing from outside the repo.
 The official `@modelcontextprotocol/sdk` pulls 5.8 MB and 17 dependencies
 (Express,
  Hono,
@@ -20,10 +21,9 @@ The official `@modelcontextprotocol/sdk` pulls 5.8 MB and 17 dependencies
  rate limiting,
  SSE);
 this package implements only JSON-RPC 2.0,
- initialization handshake,
+ `server/discover`,
 `tools/list`,
- `tools/call`,
- and `ping`.
+ and `tools/call`.
 
 **Inference canary**:
 [`inference-canary`](package-paused/dev-script/inference-canary/) runs five
