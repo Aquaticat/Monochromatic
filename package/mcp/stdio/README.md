@@ -141,10 +141,23 @@ HTTP/SSE transport,
 Tool registries here are fixed at construction,
 so `tools/list` always returns one complete page.
 
-Requests are served one at a time,
- so a tool that runs long blocks the read loop and
-`notifications/cancelled` cannot be observed while it runs
-([#433](https://github.com/Aquaticat/Monochromatic/issues/433)).
+Tool handlers run one at a time,
+ in the order their requests arrived,
+ so two handlers can never interleave against a shared backend.
+Reading is not blocked by that:
+ the stdin loop only enqueues,
+ so a `notifications/cancelled` sent during a long-running tool is read and applied
+immediately rather than waiting for the tool it cancels.
+
+A cancelled request that has not started yet is dropped without ever being dispatched.
+One already running is allowed to finish and its reply is withheld,
+ since abandoning a half-finished side effect is usually worse than completing it.
+A cancellation naming an unknown or already-answered request is ignored,
+ which revision 2026-07-28 requires:
+ it states one "MAY arrive after the request has already finished".
+
+Independent calls gain no parallelism from this.
+A `tools/list` issued during a long tool call waits behind it.
 
 ## Error handling
 

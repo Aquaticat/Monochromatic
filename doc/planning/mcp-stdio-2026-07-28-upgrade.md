@@ -157,20 +157,24 @@ The remaining two are tracked as issues rather than left here,
      audio,
      resource link,
      and embedded resource.
+-   A long `run_in_vm` blocked the read loop,
+     so `notifications/cancelled` could not be observed while it ran.
+    Fixed in the commit closing
+    [#433](https://github.com/Aquaticat/Monochromatic/issues/433):
+     the read loop only enqueues,
+     and `package/mcp/stdio/src/transport-queue.ts` runs entries one at a time.
+    Execution stayed serial deliberately,
+     so the mvm races that concurrent handlers would have opened do not arise.
+    Guards were each proven to fail without the fix.
 
 ### Open
 
--   Requests are served one at a time,
-     so a long `run_in_vm` blocks the read loop and `notifications/cancelled`
-    cannot be observed while it runs.
-    Tracked as [#433](https://github.com/Aquaticat/Monochromatic/issues/433);
-     the chosen shape is concurrent dispatch without `AbortSignal`.
 -   Advertised `inputSchema` is not validated against incoming arguments before dispatch,
      so a missing required field still fails inside the handler.
     Tracked as [#434](https://github.com/Aquaticat/Monochromatic/issues/434);
      the chosen tool is valibot,
      already a workspace dependency.
+    Not built.
 
-Neither open item is built.
-`doc/handover/mcp-stdio-2026-07-28.md` gates both on a pending review that had not
-returned when this section was written.
+The review that once gated this work never returned;
+ `doc/handover/mcp-stdio-2026-07-28.md` records that it stalled and exited on its timeout.
