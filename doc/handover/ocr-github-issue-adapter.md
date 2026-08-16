@@ -120,9 +120,18 @@ created Issue numbers and URLs with source input positions,
 withheld-security positions,
 and any stopping failure with its input position.
 It does not repeat finding titles or bodies.
-A partial or failed publication returns nonzero;
+A partial or failed publication returns status one;
 a complete publication returns zero.
-An external kill may prevent the final result from being emitted.
+Invalid command-line syntax,
+flags,
+or arguments return status two.
+Validation,
+preflight,
+authentication,
+GitHub operations,
+and other handled runtime failures return status one.
+The first handled post-publication Ctrl+C also returns status one.
+A forced second Ctrl+C returns status 130 and may prevent final output.
 `--non-interactive --apply` explicitly authorizes creation only when no security-gated finding is present.
 If one is present,
 bare `--apply` errors without creating any issue.
@@ -545,9 +554,21 @@ in dependency order:
    withheld-security positions,
    and a positioned stopping failure without repeating titles or bodies.
    Interactive applied runs use human-readable progress and finish with created Issue URLs.
-   Complete publication returns zero;
-   partial or failed publication returns nonzero.
-   Remaining exact exit codes remain open.
+   Successful preview,
+   successful publication,
+   help,
+   and pre-publication cancellation return status zero.
+   Invalid command-line syntax,
+   flags,
+   or arguments return status two.
+   Validation,
+   preflight,
+   authentication,
+   GitHub operations,
+   handled post-publication interruption,
+   partial publication,
+   and other runtime failures return status one.
+   A forced second Ctrl+C returns status 130.
    Issue creation is serial with at least one second between mutative requests.
    Rate-limit rejections,
    network failures,
@@ -686,11 +707,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask which exact exit statuses distinguish usage,
-validation,
-preflight,
-publication,
-and forced-interrupt outcomes.
+Verify GitHub's current Issue-title limit,
+then ask how empty summaries and overlong generated titles are handled.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -845,6 +863,12 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   applied a fixed one-minute child-process deadline to every `gh api` invocation,
   with no user override.
+- 2026-08-16:
+  selected compact exit statuses:
+  zero for success and clean cancellation,
+  one for runtime and handled publication failures,
+  two for invocation misuse,
+  and 130 for forced second interrupt.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
