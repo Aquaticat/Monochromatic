@@ -742,8 +742,8 @@ private fun ledCapShape(options: LedTargetOptions): RoundedCornerShape {
 
 /** Returns scene-specific one-piece metal plate styling. */
 private fun ledPlateModifier(options: LedPlateOptions): Modifier {
-    /** Selects silver or near-black anodized base. */
-    val plateColor: Color = if (options.lightScene) Color(0xFFC4C6CA) else Color(0xFF111111)
+    /** Selects brighter-than-ground silver or near-black anodized base. */
+    val plateColor: Color = if (options.lightScene) Color(0xFFF7F8FA) else Color(0xFF111111)
     /** Selects subtle key-light-to-away-side metal sheen. */
     val sheen: Brush = Brush.linearGradient(
         colorStops = arrayOf(
