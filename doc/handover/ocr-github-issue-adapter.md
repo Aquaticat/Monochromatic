@@ -52,12 +52,14 @@ security disclosure gating,
 quarantine,
 and GitHub issue creation.
 It is create-only.
-It must not synthesize finding identities,
-search for matching issues,
-suppress duplicates,
+It must not synthesize persistent finding identities,
+search older issues for cross-run deduplication,
+suppress repeated-run duplicates,
 update issues,
 or reopen issues.
 Repeated ingestion may create duplicate issues.
+The only matching query is attempt reconciliation after an ambiguous create failure,
+limited to new repository Issue or pull request numbers above a pre-request high-water mark.
 
 ### Pasted input
 
@@ -477,13 +479,25 @@ in dependency order:
    network failures,
    timeouts,
    and `5xx` responses are retryable.
-   Retrying an ambiguous failure can create a duplicate issue,
-   and the tool must state that risk in relevant help,
-   previews,
-   and result diagnostics.
-   After a failure exhausts its allowed retries,
+   Every retryable failure permits at most three retries after the initial request.
+   Rate limits honor `retry-after` or `x-ratelimit-reset`;
+   without either,
+   delays start at sixty seconds and double.
+   Network,
+   timeout,
+   and `5xx` delays start at one second and double.
+   Before each initial create request,
+   the adapter queries the greatest repository Issue or pull request number as a high-water mark.
+   After an ambiguous failure,
+   it queries every newer number and compares the exact generated title and body before retrying.
+   One exact match proves the request result for adapter purposes and suppresses the retry.
+   No match permits the next retry.
+   A failed reconciliation query stops processing rather than risking a blind retry.
+   Retrying after a successful no-match reconciliation can still create a duplicate
+   because GitHub documents no read-after-write consistency guarantee;
+   the tool must state that residual risk.
+   After a failure exhausts its retries,
    no later issue is attempted.
-   Retry attempt limits and backoff remain open.
 5. Security disclosure and quarantine:
    security-gated findings use a separate red and text-marked interactive picker.
    Each selected security finding requires an explicit confirmation with no default.
@@ -546,13 +560,16 @@ in dependency order:
    and title fallback and length behavior remain open.
 8. Identity and lifecycle:
    settled as create-only.
-   The adapter has no synthetic identity,
-   existing-issue lookup,
-   duplicate suppression,
+   The adapter has no persistent synthetic identity,
+   cross-run existing-issue lookup,
+   repeated-run duplicate suppression,
    update,
    reopen,
    or automatic closure behavior.
    Repeated ingestion may create duplicates.
+   Attempt reconciliation is the sole lookup exception:
+   it scans only Issue or pull request numbers above a pre-request high-water mark
+   after an ambiguous create failure and compares exact generated title and body.
 9. Interactive mechanics:
    the normal picker initially selects all findings.
    The separate security picker initially selects none.
@@ -578,8 +595,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about retry attempt limits and backoff
-for rate-limit and ambiguous Issue-creation failures.
+Ask the next dependent design question about what to do if attempt reconciliation finds
+more than one exact matching Issue above the pre-request high-water mark.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -714,6 +731,11 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   network,
   timeout,
   and `5xx` Issue-creation failures retryable despite acknowledged duplicate risk.
+- 2026-08-16:
+  allowed three retries per retryable failure with provider-aware exponential delays.
+- 2026-08-16:
+  added high-water Issue-number reconciliation before ambiguous retries,
+  using exact generated title and body matches only among newly numbered items.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api

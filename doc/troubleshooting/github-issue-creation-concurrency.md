@@ -99,10 +99,20 @@ A network failure,
 timeout,
 or `5xx` response can therefore leave the client unable to prove whether the Issue was created.
 Retrying that request can create a duplicate.
-The adapter design deliberately accepts that risk to retry ambiguous transient failures,
-and its help,
+The adapter design retries ambiguous transient failures only after repository-number reconciliation.
+Before each initial request,
+it captures the greatest Issue or pull request number.
+After an ambiguous failure,
+it queries newer numbers and compares exact generated title and body.
+A match suppresses the retry;
+a failed reconciliation query stops processing.
+
+GitHub's current Issue documentation does not state a read-after-write consistency guarantee.
+A successful query that finds no match therefore reduces duplicate risk.
+It cannot prove that a retry is duplicate-safe.
+Help,
 preview,
-and result diagnostics must disclose it.
+and result diagnostics must disclose that residual risk.
 
 ## Verification
 
@@ -124,6 +134,14 @@ No live GitHub Issue was created for this investigation.
 The deciding GitHub behavior is an explicit provider instruction,
 and exercising the rejected schedule would mutate external state without proving that GitHub permits it.
 The `p-limit` scheduler and cancellation boundaries were verified from source and type declarations.
+
+A read-only probe of `GET /repos/Aquaticat/Monochromatic/issues`
+with `state=all`,
+`sort=created`,
+`direction=desc`,
+and `per_page=5` returned descending integer numbers and included a pull request entry.
+This verifies the high-water query surface against the destination repository.
+It does not establish an undocumented read-after-write guarantee.
 
 A local source check is reproducible with:
 
@@ -159,8 +177,15 @@ The selected adapter design follows both provider instructions:
 1. Create one Issue at a time.
 2. Wait at least one second before starting the next Issue-creation request.
 3. Do not add `p-limit` to the adapter package for Issue creation.
-4. Retry the user-approved failure classes under a bounded policy.
-5. Stop scheduling new Issues after a retry-exhausted failure.
+4. Permit at most three retries after an initial retryable failure.
+5. Honor GitHub rate-limit headers;
+   otherwise use exponential delays starting at sixty seconds for rate limits
+   and one second for network,
+   timeout,
+   or `5xx` failures.
+6. Reconcile ambiguous failures against Issue or pull request numbers above a pre-request high-water mark.
+7. Stop instead of retrying if the reconciliation query fails.
+8. Stop scheduling new Issues after a retry-exhausted failure.
 
 This is verified against GitHub's published concurrency and mutation-pacing contract.
 Runtime verification remains part of adapter implementation because no production adapter exists yet.
@@ -195,6 +220,7 @@ so concurrency five cannot promise that no later Issue is created after the firs
 
 The Issue-creation endpoint has no documented idempotency key.
 An ambiguous failed response is not proof that GitHub created nothing.
+A no-match reconciliation query is also not documented as a consistency guarantee.
 The adapter may retry by explicit design choice,
 but it must not claim that the retry is duplicate-safe.
 
