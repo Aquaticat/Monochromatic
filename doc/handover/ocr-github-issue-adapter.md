@@ -81,6 +81,10 @@ A malformed or unsupported interactive paste reports its validation error and ex
 The adapter must not keep the prompt open for correction or request another paste.
 If any record inside an otherwise recognized input has invalid types or structure,
 the adapter must reject the entire input before performing any GitHub operation.
+A finding is also invalid when OCR `content`,
+`existing_code`,
+and `suggestion_code` all lack a non-whitespace line.
+That sparse record rejects the complete input under the same atomic rule.
 It must not quarantine or skip malformed records and continue processing.
 A structurally valid finding with absent classification metadata is not malformed under this rule;
 the security policy still quarantines it.
@@ -215,7 +219,8 @@ These fallbacks can expose existing or proposed source code or secrets in the Is
 help,
 previews,
 and publication confirmations must warn about that behavior.
-The fallback when all three fields lack a meaningful line remains unsettled.
+When all three fields lack a non-whitespace line,
+the finding is invalid and rejects the complete input before GitHub operations.
 Issue bodies include both OCR `existing_code` and `suggestion_code` in separate,
 clearly labeled code sections when those fields are present.
 Model `thinking` remains excluded.
@@ -263,7 +268,7 @@ In interactive mode,
 the normal picker and final batch summary show normal issue titles rather than full bodies.
 Before confirming each selected security finding,
 the adapter displays its complete generated title and Markdown body.
-Fallbacks and title length handling remain to be settled.
+Title length handling remains to be settled.
 GitHub's current REST documentation and OpenAPI schema publish no title-length maximum or counting unit;
 see
 [`doc/troubleshooting/github-issue-title-length.md`][github-issue-title-length].
@@ -658,7 +663,8 @@ in dependency order:
    When neither has one,
    the first non-whitespace `suggestion_code` line becomes the summary under the same trimming rule.
    Interfaces warn that these fallbacks can expose existing or proposed code or secrets in titles and notifications.
-   Behavior when all three fields lack a meaningful line remains open.
+   A finding for which all three fields lack a non-whitespace line is invalid
+   and atomically rejects the complete input.
    Bodies include separate existing-code and suggested-code sections when OCR supplies those fields.
    Model `thinking` is always omitted.
    Source references always show path and line range.
@@ -736,9 +742,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask what title summary is used when OCR content,
-`existing_code`,
-and `suggestion_code` all lack a meaningful line.
+Ask what adapter-owned title cap and overlength behavior apply to the final title.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -904,6 +908,11 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   when OCR content has no meaningful line.
 - 2026-08-16:
   selected the first meaningful `suggestion_code` line as the next title-summary fallback.
+- 2026-08-16:
+  made a finding invalid when content,
+  existing code,
+  and suggested code all lack a meaningful line;
+  one such record atomically rejects the input.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-issue-title-length]: ../troubleshooting/github-issue-title-length.md
