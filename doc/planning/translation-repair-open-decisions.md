@@ -1194,3 +1194,21 @@ That ordering costs nothing, because C keeps B's denominator.
     body inserted UNDER that heading, not inserted as a whole new section, or
     the document gains a duplicate heading. Landing five as designed would have
     made that mistake on eight sections of one entry.
+    RERUN AFTER THE REVIEW CHANGES LANDED, because the numbers above are what
+    this question rests on and three things moved underneath them: the sheet was
+    rewritten, the threshold became a majority of the roster rather than of the
+    voices heard, and the quote locator learned to see through a soft line wrap.
+    Nine of the eleven section verdicts are identical. XingZ60's section 12 reads
+    `partly-carried` where it read `carried`, which is not the models changing
+    their minds: the tallies are zero full and five partial, and the old verdict
+    counted any claim of coverage as one vote, so those same five votes used to
+    print as carried. XIEPT2's section 7 reads `split` where it read `absent`,
+    and that one I CANNOT attribute: the votes themselves moved, and votes of
+    that shape read as split under either threshold, so the cause is the new
+    sheet or ordinary variance between two samples of six stochastic models, and
+    one run cannot separate those.
+    WHAT DID NOT MOVE IS THE ANSWER TO YOUR QUESTION. No candidate in either run
+    reports full coverage. Nine of eleven are absent by a majority of the whole
+    roster with every model heard, and both verdicts that moved moved AWAY from
+    coverage rather than toward it. The sections I had labelled as plainly
+    translated are still reported as carrying nothing.
