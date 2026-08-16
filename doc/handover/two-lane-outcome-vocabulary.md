@@ -270,14 +270,58 @@ are the same row.
 Full detail, including the policy question about whether such an entry should settle at all,
 is in `#112`.
 
+## The parser contract was corrected before the parser was written
+
+A review of the CONTRACT itself, not of code, found five clauses wrong.
+All five are corrected in the planning doc under
+"What the version 2 parser must require, and what it may tolerate",
+each saying what it replaces.
+The short version:
+
+-   "Every field is REQUIRED" contradicted the writer, which keeps raw lane results LIVE and additive
+    on purpose. Version 2 needs a FROZEN EVIDENCE CORE naming the few raw fields a reader verifies,
+    or the version means whatever today's TypeScript says.
+-   Exactness follows SCHEMA OWNERSHIP, not nesting, which the old wording left to be inferred
+    from a lane object holding a strict ledger and a tolerant raw result side by side.
+-   The blocked status is NOT recomputable: a blocked run and an unblocked one produce the same ledger
+    when no slice decided differently. The reader checks a compatibility matrix instead.
+-   A standalone reader cannot re-prepare the texts, because the artifact stores none of the identity's
+    inputs. Verification TAKES a preparation rather than claiming to build one.
+-   Generic dispatch accepts an explicit version 1 rather than refusing a version it can read,
+    and `readArtifactChangeSets` refuses version 2 explicitly, since it answers with one singular
+    change set per artifact and version 2 has two lanes and no singular anything.
+
+## The comparison rules are frozen now, which they were not
+
+The sixth finding was a defect in shipped code, and it is fixed:
+the vocabulary froze the WORDS a comparison row may use, and the RULES deciding a row
+were still the live comparator's, which the builder called and projected.
+A later change to how a verdict is decided would have reinterpreted every artifact on disk
+under an unchanged version number.
+
+`artifact-v2-comparison.ts` derives the persisted comparison from version 2 ROWS,
+which is what a reader holding only the file can run.
+The live comparator keeps refusing ledger pairs that cannot be compared at all.
+The builder runs BOTH and refuses a disagreement,
+so the day the live rules move, a corpus pass stops rather than writing artifacts
+that quietly mean something new.
+
 ## Next actions, in order
 
 1.  **The version 2 parser**, which nothing has written yet and which the writer now
     depends on: `settleEntry` writes version 2 and `artifact-read.ts` still reads version 1.
-    The contract is written out in the planning doc under
-    "What the version 2 parser must require, and what it may tolerate".
-    Read that rather than re-deriving it, and note the writer's own rule:
-    schema-owned records reject unknown keys, raw lane results and `callConfig` tolerate them.
+    Read the CORRECTED contract in the planning doc rather than re-deriving it,
+    and start from the file seams the review proposed:
+    generic dispatch stays in `artifact-read.ts` and returns a generation-discriminated reading;
+    version 1 parsing moves to its own file;
+    version 2 gets a read contract (parsed types plus the frozen evidence core),
+    exact parsers for the vocabulary, one tolerant parser per raw lane result,
+    the relations (ledger against result, index sets, blocked compatibility,
+    recorded comparison against derived), a top-level orchestrator,
+    and a separate corpus verifier taking a supplied `PreparedDocumentPair`.
+    The frozen comparison it needs already exists as `artifact-v2-comparison.ts`.
+    Do NOT return `SettledArtifactV2`: its raw results are typed by live pipeline shapes,
+    which is exactly what a historical reader must not depend on.
 2.  **The mixed-generation trap**, which the wiring created and nothing guards:
     `settledEntryIds` reads FILENAMES only (`pass-settled.ts`), so a pass resumed into
     a directory holding version 1 artifacts skips those entries and produces a corpus
