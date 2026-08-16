@@ -153,7 +153,10 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_me
 ## Verified workarounds
 
 None restore the CLI health check.
-Both options below are about what the server chooses to serve.
+Both options below are about what the server chooses to serve,
+ and the first is the one this repo chose:
+ the user was shown the cost and elected to stay modern-only rather than add a legacy
+fallback or patch the client.
 
 **Accept it and verify elsewhere.**
 Drive the built binary over stdio in tests,

@@ -62,6 +62,21 @@ so the library serves 2026-07-28 and nothing else rather than becoming dual-era.
 which is the diagnostic the spec asks a modern-only server to provide,
 since a handshake-era client has no way to fall forward.
 
+#### Re-affirmed once the cost was known
+
+The scope was first chosen while Claude Code appeared to probe `server/discover` first.
+It does so only while a remote feature gate is on
+(`doc/troubleshooting/claude-code-mcp-protocol-negotiation.md`),
+ and with that gate off the server is unreachable from Claude Code entirely,
+ not merely mis-reported by `claude mcp list`.
+
+Presented with that cost and the alternatives,
+ the user chose to stay modern-only and accept the unreachability.
+Adding a legacy fallback and patching the client were both considered,
+ and both declined.
+So this is now a decision made with the price known,
+ rather than one resting on the earlier reading.
+
 ## Measured client behavior: Claude Code 2.1.233 is dual-era
 
 Probed with a throwaway stdio server registered at local scope in a scratch directory,
