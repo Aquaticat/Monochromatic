@@ -186,6 +186,9 @@ and owns the explicit scheduling,
 rate-limit delay,
 ambiguous-failure reconciliation,
 and bounded-retry policy.
+Every `gh api` child receives a fixed one-minute deadline with no user override.
+A timed-out creation is ambiguous and enters the settled reconciliation path;
+a timed-out read-only operation fails its owning preflight or reconciliation step.
 Temporary request files must be inaccessible to other users and removed after each invocation.
 
 ### Issue rendering
@@ -406,7 +409,8 @@ found one `client.Do` path per non-paginated invocation and no API-command retry
 The underlying `cli/go-gh` 2.13.0 client uses the Go default transport rather than a retry transport.
 Its client options document no timeout as the default,
 and `gh api` 2.97.0 supplies no timeout value or timeout flag.
-A separate adapter-level child-process deadline is therefore required for the settled bounded-request behavior.
+The adapter therefore applies a fixed one-minute child-process deadline to every GitHub CLI invocation,
+with no timeout flag or configuration override.
 The workspace already invokes `gh api` from active packages and has no direct Octokit dependency.
 The user selected this boundary instead of a GitHub client library or direct authenticated HTTP.
 
@@ -664,6 +668,7 @@ in dependency order:
     Direct authenticated HTTP,
     GitHub client libraries,
     and `gh issue create` are excluded.
+    Every GitHub CLI invocation has a fixed one-minute child-process deadline with no user override.
     After publication starts,
     the first Ctrl+C stops future creation while allowing an active bounded creation to settle;
     a second Ctrl+C terminates immediately.
@@ -681,7 +686,11 @@ in dependency order:
 
 ## Immediate next action
 
-Ask what timeout the adapter applies to each GitHub CLI invocation.
+Ask which exact exit statuses distinguish usage,
+validation,
+preflight,
+publication,
+and forced-interrupt outcomes.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -833,6 +842,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   made the first post-publication Ctrl+C stop after an active bounded creation settles,
   while a second Ctrl+C terminates immediately.
+- 2026-08-16:
+  applied a fixed one-minute child-process deadline to every `gh api` invocation,
+  with no user override.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api

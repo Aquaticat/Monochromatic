@@ -280,7 +280,8 @@ The selected adapter design follows both provider instructions:
 11. Parse returned status,
     headers,
     and JSON before deciding whether another `gh api` invocation is allowed.
-12. Apply an adapter-owned subprocess deadline because `gh api` 2.97.0 has no request timeout by default.
+12. Apply a fixed one-minute adapter-owned subprocess deadline
+    because `gh api` 2.97.0 has no request timeout by default.
 
 This is verified against GitHub's published concurrency and mutation-pacing contract
 and the GitHub CLI 2.97.0 request path.
