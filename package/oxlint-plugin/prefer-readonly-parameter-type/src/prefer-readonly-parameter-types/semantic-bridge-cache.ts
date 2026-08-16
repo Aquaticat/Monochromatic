@@ -15,17 +15,24 @@ import { ancestorDirectories, } from './ancestor-directories.ts';
 /**
  * Bounded semantic bridge cache counts for lifecycle verification.
  *
+ * `projectDiscoveryCount` counts how often the bridge had to ask TypeScript which project owns a
+ * source, which is what a root that never matches costs. Every other count stays put under such a
+ * miss, so this is the one number that tells a served cache from a bypassed one, and it is the
+ * evidence a host with its own path spelling can fail on.
+ *
  * @example
  * ```ts
  * const stats: SemanticBridgeCacheStats = {
  *   overlayCount: 1,
  *   projectRootCount: 1,
+ *   projectDiscoveryCount: 1,
  * };
  * ```
  */
 export type SemanticBridgeCacheStats = {
   readonly overlayCount: number;
   readonly projectRootCount: number;
+  readonly projectDiscoveryCount: number;
 };
 
 /**

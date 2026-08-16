@@ -74,6 +74,7 @@ const bridgeState: {
   readonly overlays: Map<string, string>;
   readonly projectByRoot: Map<string, string>;
   activeFileName: string | typeof NO_ACTIVE_FILE;
+  projectDiscoveryCount: number;
   beforeExitHookRegistered: boolean;
 } = {
   api: NO_API,
@@ -81,6 +82,7 @@ const bridgeState: {
   overlays: new Map(),
   projectByRoot: new Map(),
   activeFileName: NO_ACTIVE_FILE,
+  projectDiscoveryCount: 0,
   beforeExitHookRegistered: false,
 };
 
@@ -354,6 +356,7 @@ export function openSemanticFile({
   };
   if ((discoveredProject.configFileName === undefined)
     && (discoverySnapshot !== NO_SNAPSHOT)) {
+    bridgeState.projectDiscoveryCount += 1;
     discoveredProject.configFileName = discoverySnapshot
       .getDefaultProjectForFile(normalizedFileName,)
       ?.configFileName;
@@ -388,6 +391,11 @@ export function openSemanticFile({
       configFileName,
     );
 
+  /* This update follows the discovery one, so it describes a service that has already processed
+   * whatever discovery reported. The source is held by now either way: discovery announced it, or
+   * it was never absent. So it is changed here, never created, and the deletions discovery already
+   * carried are not replayed. Sampling the announcement once and sending it twice would describe
+   * the service as it was before the first update rather than as it is before this one. */
   /**
    * New immutable project view reading current overlay outside LSP open-file cache.
    */
@@ -399,9 +407,9 @@ export function openSemanticFile({
       }
       : {},
     fileChanges: {
-      changed: serviceHoldsSource ? [normalizedFileName,] : [],
-      created: serviceHoldsSource ? [] : [normalizedFileName,],
-      deleted: deletedFiles,
+      changed: [normalizedFileName,],
+      created: [],
+      deleted: needsDiscovery ? [] : deletedFiles,
     },
   },);
   if (bridgeState.snapshot !== NO_SNAPSHOT)
@@ -463,6 +471,7 @@ export function semanticBridgeCacheStats(): SemanticBridgeCacheStats {
       .size,
     projectRootCount: bridgeState.projectByRoot
       .size,
+    projectDiscoveryCount: bridgeState.projectDiscoveryCount,
   };
 }
 
@@ -504,5 +513,6 @@ export function closeSemanticBridge(): void {
     .projectByRoot
     .clear();
   bridgeState.activeFileName = NO_ACTIVE_FILE;
+  bridgeState.projectDiscoveryCount = 0;
   rl.debug('closed TypeScript synchronous API',);
 }

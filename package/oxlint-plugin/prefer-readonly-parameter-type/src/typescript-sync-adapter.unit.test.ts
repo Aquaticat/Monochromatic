@@ -294,6 +294,12 @@ await describe({
             if (type === undefined)
               throw new Error('Expected renamed source type.',);
             expect(session.checker.typeToString(type,),).toBe('number',);
+            /* The type above proves the created half. This proves the deleted half, which nothing
+             * asserted while both halves rode on one flag. */
+            expect(
+              session.project.program
+                .getSourceFile(originalPath,),
+            ).toBe(undefined,);
           },
         },),
         it({
@@ -432,6 +438,7 @@ await describe({
             expect(semanticBridgeCacheStats(),).toEqual({
               overlayCount: 1,
               projectRootCount: 1,
+              projectDiscoveryCount: 1,
             },);
             /* A second, different source of the same project. Reopening the same path twice
              * cannot tell retention from clearing, which is what the earlier form of this
@@ -444,9 +451,14 @@ await describe({
             /* Two overlays, not one. The bridge no longer clears down to the active source,
              * because clearing left the native server holding text for a source the overlay had
              * stopped claiming, and nothing ever reported that source as changed. */
+            /* One discovery, not two. The sibling belongs to a project this bridge has already
+             * discovered, and it reaches that answer through the root cache rather than by asking
+             * TypeScript again. A root key spelled the way the host spells paths, rather than the
+             * way this bridge normalizes them, misses here and asks twice. */
             expect(semanticBridgeCacheStats(),).toEqual({
               overlayCount: 2,
               projectRootCount: 1,
+              projectDiscoveryCount: 1,
             },);
           },
         },),
