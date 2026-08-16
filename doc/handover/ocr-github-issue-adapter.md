@@ -75,6 +75,9 @@ the adapter must reject the entire input before performing any GitHub operation.
 It must not quarantine or skip malformed records and continue processing.
 A structurally valid finding with absent classification metadata is not malformed under this rule;
 the security policy still quarantines it.
+Named files must be strict UTF-8 without a byte-order mark.
+Malformed UTF-8 and a leading UTF-8 or UTF-16 byte-order mark reject the entire input before any GitHub operation.
+The adapter must not perform lossy decoding or encoding auto-detection.
 
 It must auto-detect among only these validated schemas.
 It must not search arbitrary nested JSON for comment-like objects or accept individual comment fragments by accident.
@@ -278,7 +281,8 @@ in dependency order:
    An invalid interactive paste reports the error and exits nonzero without retrying.
    A malformed record rejects the entire input before any GitHub operation.
    Structurally valid findings with missing classification metadata remain security-quarantined.
-   Encoding remains open.
+   Named files require strict UTF-8 without any byte-order mark;
+   malformed bytes or a byte-order mark reject the input before GitHub operations.
 4. Non-interactive authority:
    mode selection is settled as non-interactive by default,
    with interactive behavior enabled only by `--interactive` or `-i`.
@@ -327,7 +331,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about the accepted text encoding for named input files.
+Ask the next dependent design question about whether issue selection directly publishes or needs another confirmation.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -371,5 +375,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   recorded that invalid interactive paste reports its error and exits nonzero without retrying.
 - 2026-08-16:
   recorded atomic rejection before GitHub operations when any input record is malformed.
+- 2026-08-16:
+  recorded strict UTF-8 named files without byte-order-mark support or encoding auto-detection.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
