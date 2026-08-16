@@ -21,7 +21,7 @@ import {
 import {
   assertEvidenceMatchesLedger,
   assertRowsCoherent,
-  assertSlicesDistinct,
+  assertSlicesOrdered,
 } from './artifact-v2-read-row-relations.ts';
 import { parseDeliveryRowV2, } from './artifact-v2-read-rows.ts';
 import {
@@ -242,14 +242,14 @@ export function parseLanesV2(
     path: `${path}.translate`,
   },);
   // BEFORE ANYTHING COMPARES ROWS, because every comparison here joins by
-  // POSITION and two rows naming one slice agree with each other position for
-  // position. Left to later, a duplicate passes the evidence join, passes the
-  // cross-lane comparison, and passes the count check above.
-  assertSlicesDistinct({
+  // POSITION and a permuted ledger agrees with its own permuted evidence, with
+  // the other lane under the same permutation, and with the count check above.
+  // This is the only check that anchors a row to the slice it claims.
+  assertSlicesOrdered({
     ledger: repairEnvelope.delivery,
     path: `${path}.repair`,
   },);
-  assertSlicesDistinct({
+  assertSlicesOrdered({
     ledger: translateEnvelope.delivery,
     path: `${path}.translate`,
   },);

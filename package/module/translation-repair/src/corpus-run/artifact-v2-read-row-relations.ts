@@ -119,33 +119,39 @@ export function assertEvidenceMatchesLedger(
 }
 
 /**
- * Refuses a ledger that names one slice twice.
+ * Refuses a ledger whose rows are not in document order.
  *
- * NOT COVERED BY ANY OTHER CHECK HERE, which is why it is its own: the evidence
- * is compared to the ledger by position and agrees when both repeat the same
- * index, the two lanes are compared to each other by position and agree for the
- * same reason, and the row count still matches the preparation. A ledger of two
- * rows both naming slice 5 passes every one of those and describes a document
- * with one slice reported twice and another missing.
+ * NOT COVERED BY ANY OTHER CHECK HERE, and the reason is the same one that
+ * makes every check here cheap: they all join BY POSITION. Two ledgers carrying
+ * the same permutation agree with each other, permuted evidence agrees with its
+ * permuted ledger, the row count still matches the preparation, and the index
+ * sets are sets. A ledger of rows naming slices 20 then 10 passes all of that
+ * and hands a consumer zipping it against the preparation the wrong slice's
+ * wording, at every row.
  *
- * DISTINCT, not ordered or contiguous. The writer stamps indices from the
- * preparation and renumbers them by design, so a reader assuming `0` to
- * `length - 1` would refuse a valid future artifact; what the writer does
- * guarantee is that no two slices share an index.
+ * STRICTLY INCREASING, which is the property the writer actually has and the
+ * weakest one that anchors a positional read. A first version of this checked
+ * DISTINCTNESS only, on the reasoning that the writer renumbers slices by
+ * design (`#100`) so a reader must not assume `0` to `length - 1`. That
+ * reasoning is sound and does not reach this far: renumbering produces GAPS,
+ * and gaps are still increasing. Distinct-but-permuted was accepted, which is
+ * the defect this replaces. Measured before choosing: `prepareDocumentPair`
+ * stamps strictly increasing target indices on every fixture tried, at three
+ * slice budgets, including a one-sided pair.
  *
  * @param ledger - rows to check
  *
  * @param path - dotted path of the lane, for error messages
  *
- * @throws {@link ArtifactParseError} when two rows name one slice, reporting
- * both counts
+ * @throws {@link ArtifactParseError} at the first row that does not advance,
+ * naming both slices and the position
  *
  * @example
  * ```ts
- * assertSlicesDistinct({ ledger, path: 'lanes.repair', },);
+ * assertSlicesOrdered({ ledger, path: 'lanes.repair', },);
  * ```
  */
-export function assertSlicesDistinct(
+export function assertSlicesOrdered(
   {
     ledger,
     path,
@@ -154,21 +160,30 @@ export function assertSlicesDistinct(
     readonly path: string;
   },
 ): void {
-  /**
-   * Slices the ledger names, which is smaller than the row count exactly when
-   * one is named twice.
-   */
-  const named = new Set(ledger.map(function toIndex(row,): number {
-    return row.chunkIndex;
-  },),);
-  if (named.size !== ledger.length) {
-    throw new ArtifactParseError({
-      path: `${path}.delivery`,
-      reason: `one row per slice, and these ${
-        String(ledger.length,)
-      } rows name ${String(named.size,)} distinct slices, so one slice is reported twice and another `
-        + 'not at all',
-    },);
+  for (const [
+    position,
+    row,
+  ] of ledger.entries()) {
+    /**
+     * Row before this one, absent at the first position.
+     */
+    const previous = ledger[position - 1];
+    if (previous === undefined)
+      continue;
+
+    if (row.chunkIndex <= previous.chunkIndex) {
+      throw new ArtifactParseError({
+        path: `${path}.delivery[${String(position,)}].chunkIndex`,
+        reason: `a slice after ${
+          String(previous.chunkIndex,)
+        }, which the row before this one names, since a ledger is stated in document order and every `
+          + `check here joins by position; this row names ${
+            String(row.chunkIndex,)
+          }, so the rows are ${
+            (row.chunkIndex === previous.chunkIndex) ? 'a repeat' : 'out of order'
+          }`,
+      },);
+    }
   }
 }
 

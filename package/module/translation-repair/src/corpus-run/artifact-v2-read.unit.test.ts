@@ -640,7 +640,64 @@ await describe({
               },
             },),
           },);
-        },).toThrow('2 rows name 1 distinct slices',);
+        },).toThrow('this row names 0, so the rows are a repeat',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a ledger whose rows are PERMUTED rather than repeated, which the first version of this '
+        + 'check let through: distinctness was the rule, and a ledger naming slice 1 then slice 0 is '
+        + 'perfectly distinct while every positional join in this reader reads each row against the '
+        + 'wrong slice of the preparation',
+      fn: async () => {
+        // Both ledgers reversed, so each lane still agrees with itself and with
+        // the other, and only the anchor to document order is broken.
+        /**
+         * Repair ledger in the wrong order.
+         */
+        const flippedRepair = repairLedger()
+          .toReversed();
+
+        /**
+         * Translate ledger flipped the same way.
+         */
+        const flippedTranslate = translateLedger()
+          .toReversed();
+
+        // POSITIVE CONTROL: the frozen comparison reads the two flipped ledgers
+        // as a matching pair, so nothing outside this check was going to notice.
+        expect(
+          compareLanesV2({
+            repair: flippedRepair,
+            translate: flippedTranslate,
+          },).length,
+        ).toBe(2,);
+
+        /**
+         * Repair raw result with its slice rows flipped to match.
+         */
+        const repairRaw = repairResult();
+
+        /**
+         * Translate raw result on the same footing.
+         */
+        const translateRaw = translateResult();
+        expect(function slicesPermuted() {
+          parseSettledArtifactV2({
+            value: artifactWith({
+              repairDelivery: flippedRepair,
+              translateDelivery: flippedTranslate,
+              repairRaw: {
+                ...repairRaw,
+                sliceTexts: (repairRaw.sliceTexts as readonly Record<string, unknown>[]).toReversed(),
+              },
+              translateRaw: {
+                ...translateRaw,
+                sliceTexts: (translateRaw.sliceTexts as readonly Record<string, unknown>[]).toReversed(),
+              },
+            },),
+          },);
+        },).toThrow('this row names 0, so the rows are out of order',);
       },
     },),
     it({
