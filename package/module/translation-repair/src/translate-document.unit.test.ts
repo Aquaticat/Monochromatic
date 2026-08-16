@@ -555,6 +555,59 @@ await describe({
     },),
 
     it({
+      name:
+        'DISCARDS a cached record that heard NO translator and buys that slice again, which closes '
+        + 'the other end of the no-caching rule: this driver never writes such a record, so one in a '
+        + 'cache came from another build, and resuming it would settle the archive standing by default '
+        + 'without anybody having been asked in this run',
+      fn: async () => {
+        const { persisted, } = await runDriver({},);
+
+        /**
+         * The same records under the same keys, each with its voices taken
+         * away and nothing else touched, so whatever the run recomputes it
+         * recomputes for having heard nobody rather than for any other fault.
+         */
+        const unheard = new Map(
+          [...persisted.entries(),].map(function toUnheard([
+            key,
+            record,
+          ],) {
+            return [
+              key,
+              {
+                ...record,
+                stageResult: {
+                  ...record.stageResult,
+                  heardTranslators: 0,
+                },
+              },
+            ] as const;
+          },),
+        );
+        expect(unheard.size,).toBeGreaterThan(0,);
+
+        /**
+         * Run offered nothing but unheard records.
+         */
+        const asked = await runDriver({ resumed: unheard, },);
+        expect(asked.result
+          .resumedSliceCount,).toBe(0,);
+        expect(asked.calls
+          .translate,).toBeGreaterThan(0,);
+        expect(
+          asked.result
+            .findings
+            .filter(function namesRefusal(finding,): boolean {
+              return finding.startsWith('translate-discarded-unheard-slice',);
+            },)
+            .length,
+        ).toBe(asked.result
+          .sliceCount,);
+      },
+    },),
+
+    it({
       name: 'PERSISTS every settled slice as it goes, so a run killed at its '
         + 'cap leaves everything it already bought rather than starting over',
       fn: async () => {

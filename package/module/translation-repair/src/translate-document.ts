@@ -40,6 +40,7 @@ import type {
 import {
   assertUnheardKeptIncumbent,
   heardNobody,
+  unheardCacheDiscardFinding,
 } from './translate-unheard.ts';
 
 //region Translate document
@@ -258,8 +259,7 @@ export async function translateDocument(
         /**
          * Why this slice is being asked again rather than resumed.
          */
-        const unheard = `translate slice ${String(chunkIndex,)}: cached record heard no translator, `
-          + 'which this driver never caches; asking again';
+        const unheard = unheardCacheDiscardFinding({ chunkIndex, },);
         tl.warn(unheard,);
         refusedCacheFindings.push(unheard,);
       }

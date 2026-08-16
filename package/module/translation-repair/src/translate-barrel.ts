@@ -35,6 +35,7 @@ export {
   assertUnheardKeptIncumbent,
   heardNobody,
   TranslateUnheardError,
+  unheardCacheDiscardFinding,
 } from './translate-unheard.ts';
 export {
   translateRunShape,

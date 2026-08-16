@@ -42,6 +42,33 @@ export function heardNobody(
 }
 
 /**
+ * Names a cached record refused for having heard nobody.
+ *
+ * TAGGED LIKE ITS SIBLINGS (`translate-heard-no-translator`,
+ * `translate-discarded-contradictory-slice`) rather than written as a sentence,
+ * because findings are read in bulk: an untagged one cannot be counted across a
+ * corpus, so a build that started refusing every cached slice would look like a
+ * run that simply had no cache.
+ *
+ * @param chunkIndex - slice being asked again
+ *
+ * @returns Finding naming the slice and why it was recomputed
+ *
+ * @example
+ * ```ts
+ * findings.push(unheardCacheDiscardFinding({ chunkIndex, },),);
+ * ```
+ */
+export function unheardCacheDiscardFinding(
+  { chunkIndex, }: { readonly chunkIndex: number; },
+): string {
+  return `translate-discarded-unheard-slice chunk ${
+    String(chunkIndex,)
+  }; cached record heard no translator, which this driver never caches, so it was written by another `
+    + 'build and the slice was asked again rather than settled on a wording nobody produced';
+}
+
+/**
  * Raised when a stage that heard nobody reports having produced something.
  *
  * @example
