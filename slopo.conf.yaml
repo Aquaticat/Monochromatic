@@ -42,7 +42,7 @@ source_dir_exclude:
 # Embedding model in LiteLLM format, e.g. "voyage/voyage-code-3"
 # For all supported providers see
 # https://docs.litellm.ai/docs/embedding/supported_embedding
-embedding_model: voyage/voyage-code-3
+embedding_model: voyage/voyage-code-4
 
 # Output dimensions of the embedding model.
 embedding_dimensions: 1024
