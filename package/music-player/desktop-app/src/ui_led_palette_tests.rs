@@ -38,22 +38,24 @@ fn bright_accent_produces_contrasting_selected_fill() {
     let selected_fill = mix_with_neutral(OklchNeutralMix {
         color: Color::from_rgb_u8(255, 255, 255),
         neutral_lightness: 0.0,
-        fraction: 0.6,
+        lightness_fraction: 0.5,
+        chroma_fraction: 0.1,
     });
     let contrast_ratio = (1.0 + CONTRAST_OFFSET) /
         (relative_luminance(selected_fill) + CONTRAST_OFFSET);
     assert!(contrast_ratio >= MINIMUM_TEXT_CONTRAST);
 }
 
-/// Confirms neutral mixing retains source hue while changing OKLCH lightness and chroma.
+/// Confirms contrast darkening retains source hue and most accent chroma.
 #[test]
-fn black_mix_retains_runtime_accent_hue() {
+fn black_mix_retains_vibrant_runtime_accent_chroma() {
     let source = Color::from_rgb_u8(103, 80, 164);
     let source_oklch = source.to_oklch();
     let mixed = mix_with_neutral(OklchNeutralMix {
         color: source,
         neutral_lightness: 0.0,
-        fraction: 0.5,
+        lightness_fraction: 0.5,
+        chroma_fraction: 0.1,
     });
     let mixed_oklch = mixed.to_oklch();
     assert!(
@@ -61,7 +63,7 @@ fn black_mix_retains_runtime_accent_hue() {
         "source={source_oklch:?}, mixed={mixed_oklch:?}"
     );
     assert!((mixed_oklch.lightness - source_oklch.lightness * 0.5).abs() <= COORDINATE_TOLERANCE);
-    assert!((mixed_oklch.chroma - source_oklch.chroma * 0.5).abs() <= COORDINATE_TOLERANCE);
+    assert!((mixed_oklch.chroma - source_oklch.chroma * 0.9).abs() <= COORDINATE_TOLERANCE);
 }
 
 /// Confirms alpha replacement preserves all OKLCH pigment coordinates.
@@ -84,12 +86,14 @@ fn fractions_clamp_to_neutral_endpoints() {
     let black = mix_with_neutral(OklchNeutralMix {
         color: source,
         neutral_lightness: 0.0,
-        fraction: 2.0,
+        lightness_fraction: 2.0,
+        chroma_fraction: 2.0,
     });
     let white = mix_with_neutral(OklchNeutralMix {
         color: source,
         neutral_lightness: 1.0,
-        fraction: 2.0,
+        lightness_fraction: 2.0,
+        chroma_fraction: 2.0,
     });
     assert_eq!(black, Color::from_rgb_u8(0, 0, 0));
     assert_eq!(white, Color::from_rgb_u8(255, 255, 255));

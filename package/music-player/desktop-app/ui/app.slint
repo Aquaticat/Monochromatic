@@ -50,7 +50,7 @@ global Typography {
 // Rust converts runtime pigments to OKLCH, mixes them toward an achromatic
 // endpoint there, then converts back for display. Slint has no OKLCH color API.
 export global LedPaletteAdapter {
-    pure callback mix-neutral(color, float, float) -> color;
+    pure callback mix-neutral(color, float, float, float) -> color;
     pure callback set-alpha(color, float) -> color;
 }
 
@@ -257,7 +257,8 @@ component LedSegmentButton inherits Rectangle {
     private property <color> selected-fill: LedPaletteAdapter.mix-neutral(
         Palette.accent-background,
         0,
-        0.6,
+        0.5,
+        0.1,
     );
     private property <bool> starts-row:
         LedRowGeometry.starts.length > root.control-index

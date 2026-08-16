@@ -373,17 +373,29 @@ private val ledInnerRadius: Dp = 2.dp
 /** Stores shared plate radius concentric with cap end plus margin. */
 private val ledPlateRadius: Dp = 17.dp
 
-/** Stores OKLCH black mix that guarantees deep selected fill behind white legend ink. */
-private const val LED_ACCENT_BODY_BLACK_MIX: Float = 0.60f
+/** Stores OKLCH black-lightness mix that keeps selected fill readable behind white ink. */
+private const val LED_ACCENT_BODY_LIGHTNESS_BLACK_MIX: Float = 0.50f
 
-/** Stores composed OKLCH black mix for selected cap edge. */
-private const val LED_ACCENT_EDGE_BLACK_MIX: Float = 0.712f
+/** Stores smaller black-chroma mix that makes selected fill more vibrant. */
+private const val LED_ACCENT_BODY_CHROMA_BLACK_MIX: Float = 0.10f
 
-/** Stores composed OKLCH black mix for selected hot layer. */
-private const val LED_ACCENT_HOT_BLACK_MIX: Float = 0.468f
+/** Stores OKLCH black-lightness mix for selected cap edge. */
+private const val LED_ACCENT_EDGE_LIGHTNESS_BLACK_MIX: Float = 0.65f
 
-/** Stores OKLCH white mix for selected legend emission. */
-private const val LED_ACCENT_INK_GLOW_WHITE_MIX: Float = 0.72f
+/** Stores OKLCH black-chroma mix for selected cap edge. */
+private const val LED_ACCENT_EDGE_CHROMA_BLACK_MIX: Float = 0.25f
+
+/** Stores OKLCH black-lightness mix for selected hot layer. */
+private const val LED_ACCENT_HOT_LIGHTNESS_BLACK_MIX: Float = 0.35f
+
+/** Stores OKLCH black-chroma mix for selected hot layer. */
+private const val LED_ACCENT_HOT_CHROMA_BLACK_MIX: Float = 0.05f
+
+/** Stores OKLCH white-lightness mix for selected legend emission. */
+private const val LED_ACCENT_INK_GLOW_LIGHTNESS_WHITE_MIX: Float = 0.72f
+
+/** Stores OKLCH white-chroma mix for selected legend emission. */
+private const val LED_ACCENT_INK_GLOW_CHROMA_WHITE_MIX: Float = 0.35f
 
 /** Stores dome center highlight alpha. */
 private const val LED_DOME_CENTER_ALPHA: Float = 0.03f
@@ -695,7 +707,8 @@ internal fun ledSelectedFill(accent: Color): Color = mixOklchWithNeutral(
     OklchNeutralMix(
         color = accent,
         neutralLightness = OKLCH_BLACK_LIGHTNESS,
-        fraction = LED_ACCENT_BODY_BLACK_MIX,
+        lightnessFraction = LED_ACCENT_BODY_LIGHTNESS_BLACK_MIX,
+        chromaFraction = LED_ACCENT_BODY_CHROMA_BLACK_MIX,
     ),
 )
 
@@ -710,14 +723,16 @@ private fun ledPalette(): LedPalette {
             OklchNeutralMix(
                 color = accent,
                 neutralLightness = OKLCH_BLACK_LIGHTNESS,
-                fraction = LED_ACCENT_EDGE_BLACK_MIX,
+                lightnessFraction = LED_ACCENT_EDGE_LIGHTNESS_BLACK_MIX,
+                chromaFraction = LED_ACCENT_EDGE_CHROMA_BLACK_MIX,
             ),
         ),
         selectedHot = mixOklchWithNeutral(
             OklchNeutralMix(
                 color = accent,
                 neutralLightness = OKLCH_BLACK_LIGHTNESS,
-                fraction = LED_ACCENT_HOT_BLACK_MIX,
+                lightnessFraction = LED_ACCENT_HOT_LIGHTNESS_BLACK_MIX,
+                chromaFraction = LED_ACCENT_HOT_CHROMA_BLACK_MIX,
             ),
         ),
         selectedGlow = accent,
@@ -726,7 +741,8 @@ private fun ledPalette(): LedPalette {
             OklchNeutralMix(
                 color = accent,
                 neutralLightness = OKLCH_WHITE_LIGHTNESS,
-                fraction = LED_ACCENT_INK_GLOW_WHITE_MIX,
+                lightnessFraction = LED_ACCENT_INK_GLOW_LIGHTNESS_WHITE_MIX,
+                chromaFraction = LED_ACCENT_INK_GLOW_CHROMA_WHITE_MIX,
             ),
         ),
     )

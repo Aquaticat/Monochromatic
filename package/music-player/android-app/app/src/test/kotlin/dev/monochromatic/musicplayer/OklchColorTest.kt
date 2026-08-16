@@ -2,6 +2,8 @@ package dev.monochromatic.musicplayer
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import kotlin.math.sqrt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -26,13 +28,25 @@ class OklchColorTest {
             OklchNeutralMix(
                 color = source,
                 neutralLightness = OKLCH_BLACK_LIGHTNESS,
-                fraction = 0f,
+                lightnessFraction = 0f,
+                chromaFraction = 0f,
             ),
         )
 
         assertEquals(source.red, mixed.red, CHANNEL_TOLERANCE)
         assertEquals(source.green, mixed.green, CHANNEL_TOLERANCE)
         assertEquals(source.blue, mixed.blue, CHANNEL_TOLERANCE)
+    }
+
+    /** Confirms selected background retains most runtime-accent chroma after contrast darkening. */
+    @Test
+    fun selectedFillRetainsVibrantAccentChroma() {
+        val source: Color = Color(0xFF6750A4).convert(ColorSpaces.Oklab)
+        val selected: Color = ledSelectedFill(Color(0xFF6750A4)).convert(ColorSpaces.Oklab)
+        val sourceChroma: Float = sqrt(source.green * source.green + source.blue * source.blue)
+        val selectedChroma: Float = sqrt(selected.green * selected.green + selected.blue * selected.blue)
+
+        assertTrue(selectedChroma >= sourceChroma * MINIMUM_CHROMA_RETENTION)
     }
 
     /** Confirms alpha replacement round-trips pigment through unchanged OKLCH coordinates. */
@@ -55,14 +69,16 @@ class OklchColorTest {
             OklchNeutralMix(
                 color = source,
                 neutralLightness = OKLCH_BLACK_LIGHTNESS,
-                fraction = 1f,
+                lightnessFraction = 1f,
+                chromaFraction = 1f,
             ),
         )
         val white: Color = mixOklchWithNeutral(
             OklchNeutralMix(
                 color = source,
                 neutralLightness = OKLCH_WHITE_LIGHTNESS,
-                fraction = 1f,
+                lightnessFraction = 1f,
+                chromaFraction = 1f,
             ),
         )
 
@@ -83,5 +99,8 @@ class OklchColorTest {
 
         /** Stores accepted round-trip channel quantization error. */
         const val CHANNEL_TOLERANCE: Float = 0.002f
+
+        /** Stores minimum retained chroma for vibrant selected backgrounds. */
+        const val MINIMUM_CHROMA_RETENTION: Float = 0.80f
     }
 }

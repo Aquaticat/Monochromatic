@@ -22,16 +22,18 @@ private data class OklchCoordinates(
 )
 
 /**
- * Groups one source pigment with an achromatic OKLCH endpoint and interpolation fraction.
+ * Groups one source pigment with achromatic OKLCH endpoint and independent coordinate fractions.
  *
  * @property color Runtime pigment whose hue is retained.
  * @property neutralLightness OKLCH lightness for black (`0`) or white (`1`).
- * @property fraction Proportion of neutral endpoint mixed into source pigment.
+ * @property lightnessFraction Proportion of neutral lightness mixed into source pigment.
+ * @property chromaFraction Proportion of zero chroma mixed into source pigment.
  */
 internal data class OklchNeutralMix(
     val color: Color,
     val neutralLightness: Float,
-    val fraction: Float,
+    val lightnessFraction: Float,
+    val chromaFraction: Float,
 )
 
 /** Converts display color to cylindrical OKLCH coordinates. */
@@ -62,17 +64,20 @@ private fun OklchCoordinates.toSrgbColor(): Color = Color(
  *
  * Chroma approaches zero while source hue remains stable.
  *
- * @param options Source pigment, neutral lightness, and interpolation fraction.
+ * @param options Source pigment, neutral lightness, and coordinate fractions.
  * @return sRGB display color produced from interpolated OKLCH coordinates.
  */
 internal fun mixOklchWithNeutral(options: OklchNeutralMix): Color {
-    /** Clamps caller fraction to valid interpolation bounds. */
-    val fraction: Float = options.fraction.coerceIn(0f, 1f)
+    /** Clamps caller lightness fraction to valid interpolation bounds. */
+    val lightnessFraction: Float = options.lightnessFraction.coerceIn(0f, 1f)
+    /** Clamps caller chroma fraction independently so dark pigments can remain vibrant. */
+    val chromaFraction: Float = options.chromaFraction.coerceIn(0f, 1f)
     /** Converts source pigment before manipulating any color coordinate. */
     val source: OklchCoordinates = options.color.toOklchCoordinates()
     return OklchCoordinates(
-        lightness = source.lightness + (options.neutralLightness - source.lightness) * fraction,
-        chroma = source.chroma * (1f - fraction),
+        lightness = source.lightness +
+            (options.neutralLightness - source.lightness) * lightnessFraction,
+        chroma = source.chroma * (1f - chromaFraction),
         hue = source.hue,
         alpha = source.alpha,
     ).toSrgbColor()
