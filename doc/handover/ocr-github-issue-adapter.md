@@ -68,6 +68,8 @@ The adapter accepts exactly these OCR-native structured shapes:
 Interactive paste accepts a single-line JSON result object or comment array.
 It has no multiline handling,
 so users must provide JSONL transcripts and pretty-printed JSON through a named file.
+A malformed or unsupported interactive paste reports its validation error and exits nonzero immediately.
+The adapter must not keep the prompt open for correction or request another paste.
 
 It must auto-detect among only these validated schemas.
 It must not search arbitrary nested JSON for comment-like objects or accept individual comment fragments by accident.
@@ -268,7 +270,8 @@ in dependency order:
    interactive terminal prompts may read TTY standard input.
    Paste framing is settled as one line with no multiline handling.
    Users needing multiline input write a file and pass its path.
-   Encoding and malformed-input behavior remain open.
+   An invalid interactive paste reports the error and exits nonzero without retrying.
+   Encoding and handling malformed records inside an otherwise accepted input remain open.
 4. Non-interactive authority:
    mode selection is settled as non-interactive by default,
    with interactive behavior enabled only by `--interactive` or `-i`.
@@ -317,7 +320,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about how interactive mode handles an invalid single-line paste.
+Ask the next dependent design question about malformed finding records inside an otherwise accepted input.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -357,5 +360,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   recorded single-line interactive paste with no multiline handling;
   multiline JSON and JSONL require a named file.
+- 2026-08-16:
+  recorded that invalid interactive paste reports its error and exits nonzero without retrying.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
