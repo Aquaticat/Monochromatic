@@ -56,7 +56,23 @@ including the ones a reviewer raised that turned out to be wrong.
     the cache opened outside the `try`, so one unreadable cache directory ended the whole pass,
     and the deadline was armed after that open, so a resumed entry ran against a slightly different ceiling from a fresh one.
 
-### Confirmed and still open
+### Confirmed and fixed, second round
+
+Landed as `306fad00e`, which closes every item in this section and the one below it.
+
+`LaneSliceText` now states an `outcome` of `decided`, `not-evaluated`, `unfilled` or `incumbent-fallback`,
+beside an `incumbentKind` saying whether the archive holds any wording at the slice at all.
+`SliceDeliveryRecord` carries that outcome and a separate `delivery` naming what the document ends up with
+(`replacement-shipped`, `replacement-withdrawn`, `incumbent-retained`, `gap-remains`),
+so the `anchored` inference is gone from the decision and survives only as the fact it can actually answer.
+`compareDocumentLanes` reports both lane outcomes and a `decisionComparison` beside the delivery verdict,
+and its verdict vocabulary gained `gap-remains`.
+`buildSliceDelivery` also refuses a shipped replacement on a blocked run,
+and checks index sets against the prepared indices rather than against a numeric range.
+
+The delivery ledger's three index contracts landed earlier, as `0c17123bf`, with guards shown to fail first.
+
+### The state each item was in when it was found
 
 -   **`LaneSliceText` collapses two different states into one absence.**
     `acceptedText` absent is documented as "the lane never reached this slice",
@@ -197,10 +213,16 @@ Recorded so a later session does not re-derive them.
 
 ## Still to build
 
-1.  The `reach` discriminant and the verdict split, before either reaches a persisted field.
-2.  `buildSettledArtifact` taking one `DocumentLanesResult` and DERIVING its counts,
-    rather than accepting a status and two counts beside a result that can contradict them.
-3.  `RUN_CALL_CONFIG` recording both rosters, without which the artifact cannot say what produced the translate lane.
+1.  The artifact at a bumped schema version, nesting both lanes,
+    with rosters recorded per lane.
+    `RUN_CALL_CONFIG` is call TIMING and rosters do not belong in it,
+    so this is one change rather than the two it was first written as.
+2.  ~~`buildSettledArtifact` deriving its counts~~, landed as `e4f857c83`:
+    it takes the result and reads the status and both counts off it,
+    where all three used to arrive as parameters beside it and could contradict it.
+3.  The preparation identity the comparison needs before it is persisted.
+    Equal slice counts, equal indices and equal incumbent text do not prove one preparation,
+    and every insertion incumbent is blank, so two different slicings can be joined silently.
 4.  `settleEntry` calling `prepareDocumentPair` and `runDocumentLanes`,
     with `sliceCharBudget` passed explicitly since calling the preparation directly bypasses the default `repairTranslation` supplied.
 5.  One deadline for the whole two-lane computation, and `throwIfAborted()` between the driver returning and the artifact being built.
