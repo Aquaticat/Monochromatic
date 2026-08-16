@@ -356,6 +356,13 @@ export async function runFidelityTrial(
       .text;
     return carried === trial.cleanText;
   },);
+  // A MISS WOULD READ AS `CANDIDATE_NONE`, since `findIndex` answers minus one
+  // and the position is one-based, so every ballot would then be scored against
+  // the decline value and the whole trial would report the damaged text winning.
+  // `buildSlate` always puts the clean text on the slate, which is exactly why
+  // reaching this means the slate and the trial disagree about what they hold.
+  if (cleanPosition === CANDIDATE_NONE)
+    throw new Error(`${trial.trialId}: the clean text is not on the slate it was built from`,);
 
   /**
    * Judges' verdict over the constructed pair, asked exactly what production

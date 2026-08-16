@@ -325,6 +325,9 @@ await describe({
         expect(outcome.verdict,).toBe('clean',);
         expect(outcome.correct,).toBe(true,);
         expect(outcome.cleanFirst,).toBe(false,);
+        // Carried through so a row says which question it answers: a deletion
+        // result and an insertion result mean different things.
+        expect(outcome.damageKind,).toBe('deletion',);
         expect(outcome.ballots
           .every(function backedClean(ballot,) {
             return ballot.picked === 'clean';
@@ -373,6 +376,9 @@ await describe({
         expect(outcome.verdict,).toBe('declined',);
         expect(outcome.correct,).toBe(false,);
         expect(outcome.declineReason,).toBe('every judge declined',);
+        // The declining exit is a separate return, so it carries the fixture
+        // identity separately too.
+        expect(outcome.damageKind,).toBe('deletion',);
         expect(outcome.ballots
           .every(function abstained(ballot,) {
             return ballot.picked === 'declined';
