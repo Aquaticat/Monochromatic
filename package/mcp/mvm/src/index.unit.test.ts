@@ -4,6 +4,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
+  PROTOCOL_VERSION,
+} from '@monochromatic-dev/mcp-stdio/ts';
 import spawn, { type SubprocessError, } from 'nano-spawn';
 
 /** Mise monorepo root for spawn cwd, so the built bin path is invariant to the task's launch directory. */
@@ -33,6 +37,61 @@ async function runWithClosedStdin(): Promise<number> {
   }
 }
 
+/**
+ * Drives the built bin over stdio with newline-delimited JSON-RPC and returns its replies.
+ * Exercises the real artifact across the transport boundary, the way a client reaches it.
+ *
+ * @param requests - Messages written to the subprocess stdin, in order.
+ *
+ * @returns Parsed replies read from subprocess stdout.
+ *
+ * @example
+ * ```ts
+ * const replies = await exchange({ requests: [{ jsonrpc: '2.0', id: 1, method: 'server/discover' }] });
+ * ```
+ */
+async function exchange(
+  { requests, }: { readonly requests: readonly Readonly<Record<string, unknown>>[]; },
+): Promise<readonly Record<string, unknown>[]> {
+  /**
+   * Subprocess output, collected after stdin closes and the transport loop drains.
+   */
+  const { stdout, } = await spawn(
+    'node',
+    [BIN_PATH,],
+    {
+      cwd: REPO_ROOT,
+      stdin: {
+        string: `${
+          requests
+            .map(function serializeRequest(request,) {
+              return JSON.stringify(request,);
+            },)
+            .join('\n',)
+        }\n`,
+      },
+    },
+  );
+  return stdout
+    .split('\n',)
+    .filter(function isPopulated(line,) {
+      return line.trim().length > 0;
+    },)
+    .map(function parseReply(line,) {
+      return JSON.parse(line,) as Record<string, unknown>;
+    },);
+}
+
+/**
+ * Request `_meta` declaring the protocol revision the built server implements.
+ */
+const REQUEST_META = {
+  _meta: {
+    'io.modelcontextprotocol/protocolVersion': PROTOCOL_VERSION,
+    'io.modelcontextprotocol/clientCapabilities': {},
+  },
+};
+
 await describe({
   name: 'mvm-mcp bin (built artifact smoke test)',
   children: [
@@ -50,5 +109,104 @@ await describe({
     },),
 
     //endregion Clean startup
+
+    //region Protocol boundary: drive the built bin the way a client does.
+    // Only discovery and listing are exercised; every mvm tool would mutate VM state,
+    // so no tools/call fires and no VM is ever provisioned.
+
+    it({
+      name: 'answers server/discover with the revision it implements',
+      fn: async () => {
+        /** Replies to a lone discovery request. */
+        const replies = await exchange({
+          requests: [{
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'server/discover',
+            params: REQUEST_META,
+          },],
+        },);
+        expect(replies,).toHaveLength(1,);
+        const result = replies[0]?.result as {
+          resultType: string;
+          supportedVersions: readonly string[];
+          capabilities: unknown;
+          instructions: string;
+          ttlMs: number;
+          cacheScope: string;
+        };
+        expect(result.resultType,).toBe('complete',);
+        expect(result.supportedVersions,).toEqual([PROTOCOL_VERSION,],);
+        expect(result.capabilities,).toEqual({ tools: {}, },);
+        expect(result.instructions,).toContain('backend',);
+        expect((typeof result.ttlMs),).toBe('number',);
+        expect(result.cacheScope,).toBe('private',);
+      },
+    },),
+
+    it({
+      name: 'lists every registered tool with a result envelope',
+      fn: async () => {
+        /** Replies to a lone listing request. */
+        const replies = await exchange({
+          requests: [{
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'tools/list',
+            params: REQUEST_META,
+          },],
+        },);
+        const result = replies[0]?.result as {
+          resultType: string;
+          tools: readonly { name: string; }[];
+        };
+        expect(result.resultType,).toBe('complete',);
+        expect(
+          result.tools.map(function getName(tool,) {
+            return tool.name;
+          },),
+        ).toEqual([
+          'list_vms',
+          'create_vm',
+          'destroy_vm',
+          'exec_in_vm',
+          'run_in_vm',
+          'update_templates',
+          'push_to_vm',
+          'pull_from_vm',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'refuses a request declaring a revision it does not implement',
+      fn: async () => {
+        /** Replies to a request naming a handshake-era revision. */
+        const replies = await exchange({
+          requests: [{
+            jsonrpc: '2.0',
+            id: 3,
+            method: 'tools/list',
+            params: {
+              _meta: {
+                'io.modelcontextprotocol/protocolVersion': '2025-06-18',
+                'io.modelcontextprotocol/clientCapabilities': {},
+              },
+            },
+          },],
+        },);
+        const error = replies[0]?.error as {
+          code: number;
+          data: { supported: readonly string[]; requested: string; };
+        };
+        expect(error.code,).toBe(JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,);
+        expect(error.data,).toEqual({
+          supported: [PROTOCOL_VERSION,],
+          requested: '2025-06-18',
+        },);
+      },
+    },),
+
+    //endregion Protocol boundary
   ],
 },);
