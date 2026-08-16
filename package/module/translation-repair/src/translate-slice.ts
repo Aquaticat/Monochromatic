@@ -39,6 +39,12 @@ import { runTranslateStage, } from './translate-stage.ts';
  *
  * @param models - translator and judge rosters
  *
+ * @param neighbouringSourceText - original of the sections either side, shown to
+ * the judges as context they are not asked to render. Absent by default, so the
+ * lane behaves exactly as it did; `#108` supplies it on the slices `#107`'s
+ * screen flags, to read whether the replacement rate falls when a judge can see
+ * that the archive put this slice's content next door
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -63,6 +69,7 @@ export async function settleTranslateSlice(
     slice,
     prepared,
     models,
+    neighbouringSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -71,6 +78,7 @@ export async function settleTranslateSlice(
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
+    readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -119,6 +127,9 @@ export async function settleTranslateSlice(
     ...((prepared.identityContext === undefined)
       ? {}
       : { identityContext: prepared.identityContext, }),
+    ...((neighbouringSourceText === undefined)
+      ? {}
+      : { neighbouringSourceText, }),
     lineStructured: prepared.lineStructuredSliceIndices
       .has(chunkIndex,),
     signal,
