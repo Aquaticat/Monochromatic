@@ -1,4 +1,4 @@
-# Slint 1.17.0 reports repeater geometry before final FlexboxLayout placement, producing a stale shared path
+# Slint 1.17.0 init geometry precedes final FlexboxLayout placement and can stale derived row state
 
 Tool:
 Slint 1.17.0 from crates.io.
@@ -44,6 +44,10 @@ The testing backend exposed the cap positions after `show()` as:
 ```
 
 The stale report therefore produced one row start while the visible fixture had two rows.
+
+The final product design no longer derives plate extent from row reports.
+One rounded backplate always fills the available width and combined row height.
+Deferred geometry remains only for first and last cap corner ownership within each measured row.
 
 ## Root cause
 
@@ -126,13 +130,13 @@ It observed valid geometry at the wrong lifecycle boundary.
 ## Verification
 
 The executable regression is
-`package/music-player/desktop-app/src/ui_binding_tests.rs:150-176`.
+`package/music-player/desktop-app/src/ui_binding_tests.rs:150-214`.
 It creates the generated `AppWindow`,
-installs the real Rust plate adapter,
+installs the Rust row-membership adapter,
 selects LED controls,
 loads six labels,
 shows the window,
-and confirms the fixture actually wraps.
+and confirms both wrapped-row membership and full-width plate size before and after resize.
 
 Run it through the package task:
 
@@ -148,8 +152,8 @@ fixture must wrap and report measured row starts; starts=1,
 caps=[(12,232), (111,232), (201,232), (12,284), (148,284), (310,284)]
 ```
 
-After the workaround,
-the same task ran 91 tests and reported 91 passed.
+After the final full-width redesign,
+the same task ran 86 tests and reported 86 passed.
 
 The testing backend's mock-time helper is a faithful seam for this consumer timer.
 `internal/backends/testing/testing_backend.rs:42-58` advances animations,
@@ -175,7 +179,8 @@ pub fn mock_elapsed_time(time_in_ms: u64) {
 
 - Fixed geometry read after the component has reached its final width.
 - Repeated cap geometry reported by a finite post-instantiation timer burst.
-- Absolute cap positions normalized against the plate component origin.
+- Absolute cap positions normalized against the control-group origin.
+- Plate width bound directly to complete available control width.
 - A generation token plus measured row membership,
   so stale reports cannot mix with a newer label model.
 
@@ -188,9 +193,9 @@ pub fn mock_elapsed_time(time_in_ms: u64) {
 
 ## Verified workaround
 
-`package/music-player/desktop-app/ui/app.slint:259-291` centralizes each cap report.
-It sends the cap's absolute position minus the plate component's absolute origin.
-This preserves local plate coordinates even when the control group itself starts away from `(0,0)`.
+`package/music-player/desktop-app/ui/app.slint` centralizes each cap report.
+It sends the cap's absolute position minus the control-group origin.
+This preserves local row coordinates even when the control group itself starts away from `(0,0)`.
 
 `package/music-player/desktop-app/ui/app.slint:460-488` adds one stopped `Timer` to the parent control group.
 Every geometry generation resets and starts a finite report burst.
@@ -201,10 +206,11 @@ and every repeated cap reports its current measured rectangle.
 The timer stops after the third pass,
 so it does not keep the render loop active.
 
-`package/music-player/desktop-app/src/ui_led_plate.rs` retains the last completed path while a nonempty replacement
-generation is gathering reports.
-An empty generation still clears the global geometry.
-This prevents resize flicker without mixing reports across generation tokens.
+`package/music-player/desktop-app/src/ui_led_rows.rs` groups complete reports and publishes only first and last row
+membership.
+The Slint plate does not wait for this adapter:
+it is a rounded rectangle whose width and height bind directly to the complete LED control bounds.
+This removes plate flicker and stale path geometry while retaining measured 9-unit exposed cap corners.
 
 Slint's Timer API supports explicit stopped state plus start and restart.
 `internal/compiler/builtins.slint:2695-2739` defines the relevant surface:
@@ -227,7 +233,7 @@ Tradeoffs:
 
 - Geometry correction starts after `1ms` and finishes its bounded settling burst after two `16ms` intervals.
 - Each geometry generation can invoke three reports per cap.
-- A resizing generation temporarily keeps the last complete path rather than clearing paint.
+- Plate paint has no geometry-report delay because full-width bounds are direct Slint bindings.
 - The workaround remains consumer-owned and does not expose a general Slint post-layout event.
 
 ## What does not work
@@ -280,7 +286,7 @@ There is nothing additive to post on the closed issue.
    The related eager-instantiation problem was already fixed by PR #11397.
 6. **Have we prototyped a minimal upstream fix?**
    Not applicable.
-   The verified minimal change is the consumer-side finite report burst and last-complete-path retention.
+   The verified minimal change is a direct full-width plate binding plus a finite row-membership report burst.
 
 Decision:
 do not file a new issue and do not comment on issue #7402.
