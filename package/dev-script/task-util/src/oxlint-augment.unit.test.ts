@@ -407,6 +407,50 @@ await describe({
           },
         },),
         it({
+          name: 'appends repository-safe guidance to non-null assertion help',
+          fn: async () => {
+            const helpText = 'Consider using the optional chain operator `?.` instead.';
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-non-null-assertion',
+                plugin: 'typescript',
+                message: 'Forbidden non-null assertion.',
+                file: 'src/corpus-run/artifact-v2-read.unit.test.ts',
+                helpText,
+              },),
+              '',
+            ]
+              .join('\n',);
+            const guidance = getRuleGuidance('no-non-null-assertion',);
+
+            const result = augmentOxlintOutput(input,);
+
+            expect(guidance,).toContain('nonNullishOrThrow',);
+            expect(guidance,).toContain('Do not use optional chaining',);
+            expect(result,).toContain(`  help: ${helpText} ${guidance}`,);
+          },
+        },),
+        it({
+          name: 'injects repository-safe guidance for standalone non-null assertions',
+          fn: async () => {
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-non-null-assertion',
+                plugin: 'typescript',
+                message: 'Forbidden non-null assertion.',
+                file: 'src/index.ts',
+              },),
+              '',
+            ]
+              .join('\n',);
+            const guidance = getRuleGuidance('no-non-null-assertion',);
+
+            const result = augmentOxlintOutput(input,);
+
+            expect(result,).toContain(`  help: ${guidance}\n`,);
+          },
+        },),
+        it({
           name: 'injects guidance for no-array-callback-reference after help line',
           fn: async () => {
             const input = [
