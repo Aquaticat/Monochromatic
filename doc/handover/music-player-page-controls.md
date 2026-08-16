@@ -428,7 +428,7 @@ Sampled selected-fill pixels include dark-scene `#206789` and light-scene `#2033
 Both scenes ran through `package/cli/nested-wayland-session --color-scheme` on a private session bus.
 The host remained `VaporBlack` with look-and-feel package `com.valve.vapor.desktop` before and after capture.
 Graceful nested shutdown produced client exit code zero without winit broken-pipe or event-loop errors.
-Requester visual approval remains pending.
+The requester approved the final Android and isolated desktop visuals on 2026-08-16.
 
 ## Working-tree and process state
 
@@ -464,7 +464,7 @@ No build or application process is currently running.
 
 ## Remaining work
 
-Obtain requester visual approval for the final Android and isolated desktop captures.
+No page-control implementation or verification work remains.
 
 ## Risks and guardrails
 
@@ -598,5 +598,4 @@ Obtain requester visual approval for the final Android and isolated desktop capt
   Captured final vibrant Android and isolated desktop dark/light scenes.
   The Pixel release is installed only on `1C171FDF600KWW` and the device is restored to night mode.
   The desktop host remained `VaporBlack` throughout isolated captures.
-  Next action:
-  obtain requester visual approval.
+  The requester approved all final visuals.
