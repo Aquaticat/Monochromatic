@@ -407,6 +407,17 @@ the evidence core against the ledger row at the same position, each raw index se
 that would produce it, the translate lane's counts against its own lists,
 and the whole comparison against the persisted copy.
 
+**Per-row coherence has to be assigned, and was not.**
+The live comparator asserts `assertWordingCoherent` and `assertDeliveryCoherent` on every row it reads
+(`lane-comparison.ts:515`), and the frozen comparison does not, so a reader running only the frozen
+module would accept a row saying `replacement-shipped` beside an outcome of `not-applicable`
+as long as each union parses on its own. Exact parsing checks the WORDS; these check the pair.
+
+>   The reader runs both assertions on every parsed ledger row, in `artifact-v2-read-relations.ts`,
+>   and translates their errors into `ArtifactParseError` naming the lane and the row position.
+>   The version 2 row fields are structurally what those functions already accept,
+>   so this is a call site rather than a second implementation.
+
 #### What a file alone cannot establish
 
 **Corrected.** The old clause said a corpus-aware reader "re-prepares the texts at the recorded corpus commit".
@@ -423,9 +434,9 @@ The same limit applies to the preparation's measurements, to `tip` and `pipeline
 and to whether a raw result and the ledger beside it came from one run:
 `assertResultCountsPreparation` already says the slice count is a cheap check and not a proof.
 
-#### The comparison algorithm has to be frozen too, and is not yet
+#### The comparison algorithm has to be frozen too (landed)
 
-**New, and it is a defect in code already shipped.**
+**New, and it was a defect in code already shipped.**
 `buildSettledArtifactV2` derives the persisted comparison by calling the LIVE `compareDocumentLanes`
 and projecting the result. The frozen vocabulary catches a union that grows;
 nothing catches the comparator's SEMANTICS changing.
@@ -435,6 +446,14 @@ while both disagreed with what the artifact meant when it was written.
 
 >   The version 2 comparison derivation belongs in an artifact-owned module over `ArtifactDeliveryRowV2`,
 >   used by BOTH the writer and the reader, and frozen with the rest of version 2.
+
+Landed as `artifact-v2-comparison.ts`, and the writer refuses a disagreement between the two derivations
+before it writes anything. Two corrections landed on top of it:
+row equality is FIELD BY FIELD in `artifact-v2-row-equality.ts`, since the first version compared
+serialized bytes while claiming key order did not matter, which would have trapped the reader
+comparing rows parsed off disk; and the frozen module now refuses two ledgers that disagree about a
+slice's ORIGINAL, which the live comparator already refused. The reader runs only the frozen module,
+so any refusal missing from it is a refusal the reader does not have.
 
 #### Version dispatch
 
@@ -474,7 +493,9 @@ because the shape several of them took differs from the shape they were planned 
     The cleanup failure turned out to be injectable by making the entry's cache directory read-only,
     since removal unlinks the entries inside a directory and needs write permission on the directory.
 7.  ~~The translate lane's unheard stage~~, landed as `translate-unheard.ts`.
-    The repair lane has the SAME defect and it is still open: `#112`.
+    ~~The repair lane has the SAME defect~~, closed as `#112` and landed as `repair-unheard.ts`:
+    a repair slice no critic was heard about now reads `incumbent-fallback` rather than `decided`,
+    measured before and after on a fixture where all 48 critic calls fail and quorum comes out 0 of 6.
 
 Still open:
 

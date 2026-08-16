@@ -554,9 +554,9 @@ await describe({
     },),
     it({
       name:
-        'SETTLES an entry whose critic stage lost every voice, which is worth pinning because it is '
-        + 'surprising: the lane records the archive as kept and the artifact reads like a clean run, '
-        + 'with the lost voices visible only in findings (`#112` covers what that misrecords)',
+        'SETTLES an entry whose critic stage lost every voice, and says so in the OUTCOMES rather than '
+        + 'only in the findings: a slice nobody was heard about falls back to the archive, so a reader '
+        + 'joining on outcomes sees the silence instead of a lane that looks like it decided',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -590,8 +590,7 @@ await describe({
           'utf8',
         ),);
 
-        // Every critic was attempted and every one was lost, and the findings
-        // are the only place that says so.
+        // Every critic was attempted and every one was lost.
         expect(served.filter(function isCritic(schema,): boolean {
           return schema === 'critic_report';
         },).length,).toBeGreaterThan(0,);
@@ -601,6 +600,23 @@ await describe({
           .findings
           .some(function unmet(finding,): boolean {
             return finding.includes('stage-quorum-unmet',);
+          },),).toBe(true,);
+
+        // AND THE LEDGER SAYS IT TOO, which is the half that was missing: every
+        // repair slice reads as falling back to the archive rather than as a
+        // decision, so nothing downstream can read this run as the lane having
+        // examined the wording and chosen to keep it.
+        expect((artifact as {
+          lanes: { repair: { delivery: readonly { outcome: { kind: string; }; }[]; }; };
+        }).lanes
+          .repair
+          .delivery
+          .map(function toKind(row,): string {
+            return row.outcome
+              .kind;
+          },)
+          .every(function fellBack(kind,): boolean {
+            return kind === 'incumbent-fallback';
           },),).toBe(true,);
       },
     },),

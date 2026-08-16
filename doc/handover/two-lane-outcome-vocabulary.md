@@ -253,22 +253,29 @@ collects whatever else was logging.
 GFP: collapsing the `CLEANUP` line back into a `TALLY` fails it.
 Full suite green after all of it.
 
-## Found while testing it: the repair lane's unheard critics (`#112`)
+## Found while testing it, and FIXED: the repair lane's unheard critics (`#112`)
 
 Measured, with every one of 48 critic calls failing on a two-slice fixture:
 the entry SETTLES, `repairStatus=unchanged`, `repairIssues=0`,
-and the repair ledger reports **`decided` at every slice**
-while the findings carry `stage-quorum-unmet (critic 0/6)` for each.
+and the repair ledger reported **`decided` at every slice**
+while the findings carried `stage-quorum-unmet (critic 0/6)` for each.
 
 That is this session's defect class in the lane nobody audited for it.
 `decided` means the lane produced a wording;
 here no critic was ever heard, so the archive stands by default,
 which is what `incumbent-fallback` exists to say.
 As recorded, "critics examined this and found nothing" and "no critic answered"
-are the same row.
-`translate-unheard.ts` is the model for the fix.
-Full detail, including the policy question about whether such an entry should settle at all,
-is in `#112`.
+were the same row.
+
+Fixed in `repair-unheard.ts`, modelled on `translate-unheard.ts`:
+`heardNobodyAbout` reads the pre-existing `heardCriticIds` and `refined` signals,
+`assertUnheardKeptArchive` refuses a silent slice whose wording moved anyway,
+and `repair-lane-wordings.ts` splits the unheard indices out before recording decisions.
+Re-measured on the same fixture: every repair outcome now reads `incumbent-fallback`
+and the decision comparison reads `not-comparable`, naming the repair lane.
+The `pass-entry` lost-voices case asserts the outcomes, not just the findings.
+The policy question of whether such an entry should settle AT ALL is still open in `#112`'s notes;
+the misrecording is closed.
 
 ## The parser contract was corrected before the parser was written
 
@@ -306,6 +313,26 @@ The builder runs BOTH and refuses a disagreement,
 so the day the live rules move, a corpus pass stops rather than writing artifacts
 that quietly mean something new.
 
+Two corrections landed on that module afterwards, both defects in code shipped the same day:
+
+-   Row equality compared `JSON.stringify` on both sides while its own comment said key order
+    did not matter. It passed only because both sides came from literals written in one order.
+    The reader compares rows parsed OFF DISK, where the order is whatever the file has,
+    so the exported function was a trap aimed at the parser that has to reuse it.
+    Equality is now field by field over all eleven fields and into the unions,
+    in `artifact-v2-row-equality.ts`, shared by writer and reader so the two cannot disagree
+    about what agreement means. The key-order case carries a positive control:
+    it asserts the reordered row's bytes actually differ, so it would fail against the old reading.
+-   `compareLanesV2` did not cross-check `sourceText`, which the live comparator does refuse on.
+    Harmless in the writer, where the live comparator runs first, but the READER runs only the
+    frozen module, so a refusal missing there is a refusal the reader does not have.
+
+`assertDerivationsAgree` is the one guard here with no strip demonstration, and it cannot have one:
+both derivations live inside the builder, so no fixture reaching `buildSettledArtifactV2` from
+outside can make them disagree. Its accept and refuse paths are both covered directly in
+`artifact-v2-comparison.unit.test.ts`. Recorded rather than left unremarked, the same way the
+`CLEANUP` capture's limits were.
+
 ## Next actions, in order
 
 1.  **The version 2 parser**, which nothing has written yet and which the writer now
@@ -330,8 +357,7 @@ that quietly mean something new.
     Cheapest honest fix: refuse to start when the directory holds a version this pipeline
     does not write, naming the count and the two ways forward.
     Not done here because re-running skipped entries costs real money and that is the user's call.
-3.  `#112`, the repair lane's unheard critics.
-4.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
+3.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
     optional property, which discards what its own parser established.
 
 `buildSettledArtifact` (version 1) has lost its last production caller and stays:
