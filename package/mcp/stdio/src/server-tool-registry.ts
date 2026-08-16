@@ -22,9 +22,14 @@ import { toolInputSchema, } from './tool-schema.ts';
  * @example
  * ```ts
  * buildToolDefinition({
- *   entry: { name: 'ping', description: 'Returns pong.', handler: () => ({ content: [] }) },
+ *   entry: {
+ *     name: 'ping',
+ *     description: 'Returns pong.',
+ *     schema: v.strictObject({}),
+ *     handler: () => ({ content: [] }),
+ *   },
  * });
- * // { name: 'ping', description: 'Returns pong.', inputSchema: { type: 'object' } }
+ * // inputSchema is derived from the schema, never authored alongside it
  * ```
  */
 function buildToolDefinition(
@@ -58,7 +63,12 @@ function buildToolDefinition(
  * @example
  * ```ts
  * const registry = registerTools({
- *   tools: [{ name: 'ping', description: 'Returns pong.', handler: () => ({ content: [] }) }],
+ *   tools: [{
+ *     name: 'ping',
+ *     description: 'Returns pong.',
+ *     schema: v.strictObject({}),
+ *     handler: () => ({ content: [] }),
+ *   }],
  * });
  * registry.get('ping')?.definition.name;
  * // 'ping'

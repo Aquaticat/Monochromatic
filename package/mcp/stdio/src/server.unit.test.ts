@@ -181,6 +181,36 @@ await describe({
           },
         },),
         it({
+          name: 'throws at construction when a schema cannot be advertised',
+          fn: async () => {
+            // errorMode 'throw' exists so an unconvertible schema fails here rather than
+            // being advertised in a degraded form that no longer matches what is enforced.
+            expect(() => registerTools({
+              tools: [{
+                name: 'unconvertible',
+                description: 'Declares a schema JSON Schema cannot express.',
+                schema: v.custom(() => true,),
+                handler: () => ({ content: [], }),
+              },],
+            },),).toThrow('unconvertible',);
+          },
+        },),
+        it({
+          name: 'throws at construction when a schema declares a non-object root',
+          fn: async () => {
+            // Revision 2026-07-28: "Tool arguments are always JSON objects, so
+            // `type: \"object\"` is required at the root."
+            expect(() => registerTools({
+              tools: [{
+                name: 'scalar',
+                description: 'Declares a string where an object belongs.',
+                schema: v.string(),
+                handler: () => ({ content: [], }),
+              },],
+            },),).toThrow('object root',);
+          },
+        },),
+        it({
           name: 'throws when two entries share a name',
           fn: async () => {
             expect(() => registerTools({

@@ -61,6 +61,7 @@ import {
  *       name: 'greet',
  *       entry: {
  *         description: 'Greets by name.',
+ *         schema: v.strictObject({ name: v.string() }),
  *         handler: async (args) => ({
  *           content: [{ type: 'text', text: `Hello, ${args.name}!` }],
  *         }),

@@ -48,6 +48,7 @@ export type DispatchResult = JsonRpcOutbound | typeof NO_RESPONSE;
  * const entry: ToolEntry = {
  *   name: 'ping',
  *   description: 'Returns pong.',
+ *   schema: v.strictObject({}),
  *   handler: async () => ({ content: [{ type: 'text', text: 'pong' }] }),
  * };
  * ```
@@ -75,6 +76,7 @@ export type ToolEntry = {
  * const tool: RegisteredTool = {
  *   definition: { name: 'ping', description: 'Returns pong.', inputSchema: { type: 'object' } },
  *   handler: async () => ({ content: [{ type: 'text', text: 'pong' }] }),
+ *   schema: v.strictObject({}),
  * };
  * ```
  */

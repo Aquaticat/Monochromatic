@@ -20,6 +20,7 @@ import type { ToolEntry, } from './server-types.ts';
  *   name: 'get_time',
  *   entry: {
  *     description: 'Returns current UTC time.',
+ *     schema: v.strictObject({}),
  *     handler: async () => ({
  *       content: [{ type: 'text', text: new Date().toISOString() }],
  *     }),
