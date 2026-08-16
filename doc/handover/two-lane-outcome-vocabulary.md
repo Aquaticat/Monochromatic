@@ -25,23 +25,14 @@ All three were shown to fail without their guards before being trusted (GFP), by
 guard, rebuilding, running, and restoring with `git checkout --`.
 The strip scripts are in the scratchpad as `unheard.mjs` and `ungap.mjs`.
 
-## Mid-flight, UNCOMMITTED, and the suite is red on purpose
+## The vocabulary change landed
 
-Two tests fail right now and both are expected;
-neither is a regression.
-Do not "fix" them by weakening a rule.
+`c2779c737`, the whole thing as one commit,
+because the coherence rule cannot land without the repair-exit fix:
+`buildSliceDelivery` asserts coherence, and the repair lane would otherwise throw at every anchor.
+Full suite green, lint clean, types clean.
 
-1.  `buildLaneSliceTexts` / "REFUSES a slice reported as unheard AND unfilled".
-    The shared set validation now reports pairwise contradictions with one message,
-    `as unheard and unfilled at once, so what it did there is stated twice and differently`,
-    and the test still expects the older clause `and only one of those has an incumbent to stand on`.
-    Fix the test, not the message.
-2.  `buildSliceDelivery` / "reads a slice the archive never translated as UNFILLED".
-    Its `anchorDecided: true` fixture builds `decided ''` at an anchor,
-    which is exactly the state the coherence rule now refuses and the repair lane no longer produces.
-    Rewrite that half of the fixture as `not-applicable` and assert `gap-remains`.
-
-New files, none committed yet:
+New files it added:
 
 -   `src/wording-coherence.ts`, the cross-axis rule, plus `src/wording-coherence.unit.test.ts`.
 -   `src/lane-slice-sets.ts`, the five checks every named index list has to pass, shared by all three lists.
@@ -49,10 +40,9 @@ New files, none committed yet:
     without importing each other.
 -   `src/repair-lane-wordings.ts`, the repair lane's adapter, mirroring `translate-lane-wordings.ts`.
 
-Modified, none committed yet:
-`lane-slice-text.ts`, `lane-comparison.ts`, `slice-delivery.ts`, `repair-assemble.ts`,
-`repair-blocked-exit.ts`, `document-barrel.ts`, `corpus-run/corpus-pass.ts`,
-`translate-document-contract.ts`.
+Two existing tests moved with it, and neither was weakened:
+the pairwise contradiction message is now one message for any two lists,
+and the delivery fixture's anchor became `not-applicable` where it used to be `decided ''`.
 
 ## The decision taken while the user was away
 
@@ -89,18 +79,14 @@ Mechanics, agreed by both reviewers and implemented:
 
 ## Next actions, in order
 
-1.  Fix the two tests named above. Rebuild, run the suite, expect zero failures.
-2.  Commit the whole vocabulary change as ONE commit:
-    the coherence rule cannot land without the repair-exit fix,
-    since `buildSliceDelivery` asserts coherence and the repair lane would throw at every anchor.
-3.  GFP the new guards: strip the `not-applicable` classification in `repair-lane-wordings.ts`
+1.  GFP the new guards: strip the `not-applicable` classification in `repair-lane-wordings.ts`
     (feed anchors back through `decided`), rebuild, show the delivery and comparison tests fail, restore.
-4.  Add the consequence test both reviewers asked for:
+2.  Add the consequence test both reviewers asked for:
     anchor slice, translate `decided` with a real fill, repair `not-applicable`,
     assert `decisionComparison` is `not-comparable` with `undecidedLanes: ['repair']` and verdict `translate-only`.
-5.  Add the blocked-exit test: one anchor before the crossing, one after, assert
+3.  Add the blocked-exit test: one anchor before the crossing, one after, assert
     `not-applicable` and `not-evaluated` respectively.
-6.  Then the artifact at schema version 2, with the preparation identity folded into the same bump.
+4.  Then the artifact at schema version 2, with the preparation identity folded into the same bump.
     The design for both is in the planning doc.
 
 ## Still queued behind that
