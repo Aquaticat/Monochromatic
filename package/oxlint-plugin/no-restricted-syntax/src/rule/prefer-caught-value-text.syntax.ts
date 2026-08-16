@@ -269,13 +269,21 @@ export function isDuplicateFallback(
      * Dynamic template expressions inspected for typeof categorization.
      */
     const { expressions, } = expression;
-    return expressions.some(
-      function isTypeofDetectorInput(templateExpression,): boolean {
-        return (templateExpression.type === 'UnaryExpression')
-          && (templateExpression.operator === 'typeof')
-          && (identifierName({ expression: templateExpression.argument, },) === identifier);
-      },
-    );
+    // Element binding rather than a callback parameter: provenance from the
+    // ForeignBorrowed boundary on `expression` reaches `for...of` bindings but is
+    // lost through callback parameters of a method invoked on a marked value, so
+    // the callback form makes this parameter read as an unowned inferred type.
+    // Tracked upstream of this package as #427.
+    for (const templateExpression of expressions) {
+      if (
+        (templateExpression.type === 'UnaryExpression')
+        && (templateExpression.operator === 'typeof')
+          && (identifierName({ expression: templateExpression.argument, },) === identifier)
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
   if (expression.type !== 'CallExpression')
     return false;
