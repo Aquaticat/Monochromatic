@@ -11172,3 +11172,43 @@ quorum needs `ceil(n / 2)` and a majority needs `floor(n / 2) + 1`, so reaching 
 majority ALWAYS implies quorum. The gate can therefore only ever convert a
 `split` into `inconclusive`, which is the case the failing test pins, and it can
 never overturn a decided side.
+
+### The block set rerun, which is where the wrap fix was diagnosed and where it shows
+
+The section rerun could not speak to the line-wrap fix, so `mikaela_khara` was
+run again: the same sixteen candidates that produced the three splits, under the
+same roster.
+
+ALL THREE SPLITS ARE NOW CARRIED.
+
+    pair 1 block 3   split (3 anchored, 3 unanchored)  ->  carried (4 full, 2 partial, 0 unanchored)
+    pair 1 block 4   split (3 anchored, 3 unanchored)  ->  carried (5 full, 0 partial, 1 unanchored)
+    pair 2 block 16  split (2 anchored, 4 unanchored)  ->  carried (5 full, 0 partial, 1 unanchored)
+
+Unanchored quotes across the sixteen fell from 12 to 5. That number alone does
+not attribute, because the sheet also changed and its copy-exactly rule pushes
+the same direction, and the replies are fresh samples either way.
+
+WHAT DOES ATTRIBUTE IS INTERNAL TO THE NEW RUN, and it is the check worth
+keeping: of the five quotes still unanchored, ZERO are wrap-collapsible, against
+10 of 11 before the fix. Four are English the model composed rather than copied,
+which is precisely what the anchoring check exists to refuse, and one is the
+single word `September`, which occurs twice in that document and is refused as
+`ambiguous-quote (target)`. Verified by locating it directly rather than assumed
+from the classification. So the wrap class is not merely smaller, it is empty,
+and the remaining refusals are the two failure modes that SHOULD refuse.
+
+ONE VERDICT MOVED THE OTHER WAY, `pair 1 block 5` from carried to
+`partly-carried` at 3 full and 3 partial, which is the same partial-from-full
+separation that moved XingZ60's section 12 and not a change of votes.
+
+WHAT THIS DOES TO ITEM 28's BLOCK-SCALE FINDING is strengthen it. Across both
+runs of this entry, ninety-six voice answers, NOT ONE VOTE FOR ABSENCE was cast.
+Sixteen passages the block aligner refuses to pair, and the roster says every one
+of them is already carried by the translation. Landing four would have inserted
+sixteen renderings of text that is already there.
+
+THE SINGLE-WORD QUOTE IS ALSO EVIDENCE FOR A REVIEW FINDING nobody has acted on:
+the wire guard accepts any non-empty quote, so `September` was admissible
+evidence and only the locator's ambiguity check stopped it. `#106` records the
+identifying-evidence constraint as open.
