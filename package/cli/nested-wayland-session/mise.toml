@@ -143,7 +143,6 @@ arg "[args]" var=#true help="Compositor arguments, then the client command to ho
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
-const { execFileSync } = await import('node:child_process')
 runCargo(['build', '--release'])
 const args = process.argv.slice(1)
 execFileSync('./target/release/monochromatic-nested-wayland-session', args, { stdio: 'inherit' })

@@ -253,6 +253,9 @@ For common issues:
 - **Slint nested Wayland client still inherits host dark or light preference?
   ** →
   [Serve a private XDG Settings portal](slint-nested-color-scheme-portal.md)
+- **Mise inline TypeScript task reports an already-declared imported binding?
+  ** →
+  [Keep interpolated imports in one scope owner](mise-inline-task-import-collision.md)
 
 ## Contributing
 
