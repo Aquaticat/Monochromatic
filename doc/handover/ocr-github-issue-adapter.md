@@ -45,12 +45,18 @@ then provide its structured output through interactive paste or a supported name
 This removes OCR argument forwarding,
 process signaling,
 and OCR exit-code propagation from the adapter's scope.
-The adapter still owns parsing,
+The adapter owns parsing,
 validation,
 interactive triage,
 security quarantine,
-and GitHub issue operations.
-Whether it also owns synthetic identity and deduplication is open after the user's issue-update clarification.
+and GitHub issue creation.
+It is create-only.
+It must not synthesize finding identities,
+search for matching issues,
+suppress duplicates,
+update issues,
+or reopen issues.
+Repeated ingestion may create duplicate issues.
 
 ### Pasted input
 
@@ -263,9 +269,9 @@ in dependency order:
    interactive mode shows one final summary after selection,
    then requires an explicit yes or no before GitHub mutations.
    Empty input has no default and reprompts.
-   The summary names the destination repository and each selected operation and title.
+   The summary names the destination repository and each selected issue title.
+   Every selected operation is creation.
    It reports quarantined findings only as a count and never displays their sensitive content.
-   Whether selected operations can include updates remains open under identity and lifecycle.
 3. Input contracts:
    pasted input is settled as structured JSON only,
    with no human-readable terminal parser.
@@ -314,11 +320,14 @@ in dependency order:
    omission of model reasoning,
    and handling of code excerpts.
 8. Identity and lifecycle:
-   fingerprint source,
-   exact-marker lookup,
-   update or reopen behavior,
-   duplicate human issues,
-   and no automatic closure.
+   settled as create-only.
+   The adapter has no synthetic identity,
+   existing-issue lookup,
+   duplicate suppression,
+   update,
+   reopen,
+   or automatic closure behavior.
+   Repeated ingestion may create duplicates.
 9. Interactive mechanics:
    pnpm's prompt library and interaction model,
    terminal capabilities,
@@ -339,9 +348,8 @@ in dependency order:
 
 ## Immediate next action
 
-Clarify that OCR supplies no GitHub issue identity and ask whether the adapter should create only,
-create synthetic identities for updates,
-or suppress synthetic duplicates without updating.
+Ask the next dependent design question about whether non-interactive mode previews by default
+and requires an explicit apply flag before creating public issues.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -394,5 +402,12 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   neither or both mode flags is an error.
 - 2026-08-16:
   reopened adapter-owned identity and deduplication after the user clarified that OCR supplies no issue identity.
+- 2026-08-16:
+  settled create-only publication with no synthetic identity,
+  existing-issue lookup,
+  duplicate suppression,
+  updates,
+  reopens,
+  or automatic closure.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
