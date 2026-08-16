@@ -217,6 +217,7 @@ async function runScripted(
     trial: {
       trialId: 'cat/0',
       direction,
+      damageKind: 'deletion',
       sourceText: SOURCE_TEXT,
       cleanText: CLEAN_TEXT,
       damagedText: DAMAGED_TEXT,

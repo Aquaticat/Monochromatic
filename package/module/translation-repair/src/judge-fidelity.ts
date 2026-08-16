@@ -11,6 +11,7 @@ import type {
 import { CANDIDATE_NONE, } from './candidate-select-wire.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { FidelityDamageKind, } from './fidelity-damage.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import {
   TRANSLATE_SELECTION_CRITERIA,
@@ -27,12 +28,17 @@ import {
 // how often they replaced the archive, never how often they were right to. The
 // trial supplies the missing half by constructing the answer.
 //
-// THE FIXTURE IS A DELETION, applied by `applySeededErrors` to a real slice of
-// the archive, so one candidate states everything the other does MINUS one whole
-// sentence. The damaged text is otherwise word for word the clean text, which is
-// what makes it the right adversary: it cannot lose on fluency, register, or
-// house style, only on coverage, which is the first criterion the sheet names.
-// A judge that picks it has ranked something above saying what the original says.
+// THE FIXTURES ARE BUILT BY `fidelity-damage.ts` from a real slice of the
+// archive, and the damaged text is otherwise word for word the clean text. That
+// is what makes either one the right adversary: it cannot lose on fluency,
+// register or house style, only on saying what the original says, which is the
+// first criterion the sheet names.
+//
+// TWO DEFECTS, BECAUSE ONE CANNOT SEPARATE READING FROM LENGTH. A deletion makes
+// the complete candidate the longer one in every arrangement, so a roster that
+// simply prefers more text scores perfectly on it. An insertion splices a
+// sentence borrowed from elsewhere in the same document, so the correct answer
+// is the SHORTER candidate. A roster that passes both is not reading length.
 //
 // BOTH DIRECTIONS ARE RUN over the same pair, because one direction alone cannot
 // tell a judge that reads from a judge that simply keeps what it is given.
@@ -41,8 +47,8 @@ import {
 //
 // WHAT IT DOES NOT MEASURE: self-preference, since neither candidate is written
 // by a model on the roster, and fluency-versus-faithfulness in the hard case,
-// since a deletion is a coverage defect rather than a fluent paraphrase that
-// quietly drops a qualifier. Both are recorded in `#84`.
+// since both fixtures move a whole sentence rather than quietly dropping a
+// qualifier inside one. Both are recorded in `#84`.
 
 /**
  * Which side of the ballot holds the clean text.
@@ -57,7 +63,7 @@ export type FidelityDirection = 'preserve' | 'replace';
  *
  * @example
  * ```ts
- * const trial: FidelityTrial = { trialId, direction: 'preserve', sourceText, cleanText, damagedText, cleanFirst: true, };
+ * const trial: FidelityTrial = { trialId, direction: 'preserve', damageKind: 'deletion', sourceText, cleanText, damagedText, cleanFirst: true, };
  * ```
  */
 export type FidelityTrial = {
@@ -72,17 +78,26 @@ export type FidelityTrial = {
   readonly direction: FidelityDirection;
 
   /**
+   * Which constructed defect the damaged text carries, so a result says which
+   * question it answers. A deletion cannot separate reading from a preference
+   * for length; an insertion can.
+   */
+  readonly damageKind: FidelityDamageKind;
+
+  /**
    * Chinese original both candidates claim to render.
    */
   readonly sourceText: string;
 
   /**
-   * Archive English as it stands, which states everything.
+   * Archive English as it stands, which states everything the original does and
+   * nothing it does not.
    */
   readonly cleanText: string;
 
   /**
-   * Same English with one whole sentence deleted.
+   * Same English carrying the constructed defect: one whole sentence gone, or
+   * one borrowed sentence spliced in.
    */
   readonly damagedText: string;
 
@@ -110,15 +125,16 @@ export type FidelityBallotRead = {
   /**
    * Which text it chose, or that it named no candidate.
    *
-   * A JUDGE THAT DECLINES HAS NOT PICKED THE DELETION, which reading a ballot
-   * as "clean or otherwise" would record. `CANDIDATE_NONE` is zero and the
-   * ballot index is one-based, so the two are only distinguishable by asking.
+   * A JUDGE THAT DECLINES HAS NOT PICKED THE DAMAGED TEXT, which reading a
+   * ballot as "clean or otherwise" would record. `CANDIDATE_NONE` is zero and
+   * the ballot index is one-based, so the two are only distinguishable by
+   * asking.
    */
   readonly picked: 'clean' | 'damaged' | 'declined';
 
   /**
    * Its stated reason, kept because a judge that names coverage and still picks
-   * the deletion is a different failure from one that never mentions coverage.
+   * the damaged text is a different failure from one that never mentions it.
    */
   readonly reason: string;
 
@@ -148,6 +164,11 @@ export type FidelityOutcome = {
   readonly direction: FidelityDirection;
 
   /**
+   * Defect the damaged candidate carried.
+   */
+  readonly damageKind: FidelityDamageKind;
+
+  /**
    * Whether the clean text was listed first.
    */
   readonly cleanFirst: boolean;
@@ -160,9 +181,9 @@ export type FidelityOutcome = {
   /**
    * Whether that is the right answer, which only `clean` ever is. A DECLINE IS
    * NOT COUNTED CORRECT even in the `preserve` direction, where it happens to
-   * leave the clean text in place: the judges did not identify the deletion,
-   * they abstained, and scoring an abstention as a hit is how a silent panel
-   * comes to look like a reliable one.
+   * leave the clean text in place: the judges did not identify the defect, they
+   * abstained, and scoring an abstention as a hit is how a silent panel comes to
+   * look like a reliable one.
    */
   readonly correct: boolean;
 
@@ -386,6 +407,7 @@ export async function runFidelityTrial(
     return {
       trialId: trial.trialId,
       direction: trial.direction,
+      damageKind: trial.damageKind,
       cleanFirst: trial.cleanFirst,
       verdict: 'declined',
       correct: false,
@@ -402,6 +424,7 @@ export async function runFidelityTrial(
   return {
     trialId: trial.trialId,
     direction: trial.direction,
+    damageKind: trial.damageKind,
     cleanFirst: trial.cleanFirst,
     verdict,
     correct: verdict === 'clean',

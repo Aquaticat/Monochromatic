@@ -93,6 +93,12 @@ export {
   runCoverageStage,
 } from './coverage-stage.ts';
 export {
+  type DamageAttempt,
+  deleteOneSentence,
+  type FidelityDamageKind,
+  insertBorrowedSentence,
+} from './fidelity-damage.ts';
+export {
   type FidelityBallotRead,
   type FidelityDirection,
   type FidelityOutcome,

@@ -4,14 +4,19 @@ import {
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
-import { deriveOmissionSeeds, } from '../derive-seeds.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
+import {
+  type DamageAttempt,
+  deleteOneSentence,
+  donorTextFor,
+  type FidelityDamageKind,
+  insertBorrowedSentence,
+} from '../fidelity-damage.ts';
 import {
   type FidelityDirection,
   type FidelityTrial,
   runFidelityTrial,
 } from '../judge-fidelity.ts';
-import { applySeededErrors, } from '../seeded-error.ts';
 import {
   createRunClient,
   RUN_CORPUS_PIN,
@@ -66,6 +71,32 @@ const MIN_SLICE_CHARS = 400;
 const PAIRS_PER_ENTRY = 1;
 
 /**
+ * Defects built for every pair when the caller names none.
+ *
+ * DELETION FIRST, since it is the reading already recorded and the one an
+ * insertion result is compared against.
+ */
+const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
+  'deletion',
+  'insertion',
+];
+
+/**
+ * Defects each `--damage` spelling asks for.
+ *
+ * BOTH BY DEFAULT, because either fixture alone leaves a habit unmeasured: the
+ * deletion cannot separate reading from preferring length, and the insertion
+ * alone would not say the roster sees an omission at all. An unlisted spelling
+ * reads as absent and the caller is told, rather than silently running
+ * something it did not ask for.
+ */
+const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = {
+  '': DAMAGE_KINDS,
+  deletion: ['deletion',],
+  insertion: ['insertion',],
+};
+
+/**
  * Ballot arrangements every pair is run through.
  */
 const ARRANGEMENTS: readonly {
@@ -116,33 +147,6 @@ type PairRead = {
 };
 
 /**
- * One English slice with a sentence removed, or the fact that none can be.
- */
-type DamageAttempt = {
-  /**
-   * A sentence came out.
-   */
-  readonly kind: 'damaged';
-
-  /**
-   * Slice text after the deletion.
-   */
-  readonly damagedText: string;
-
-  /**
-   * Characters the deletion removed.
-   */
-  readonly deletedChars: number;
-} | {
-  /**
-   * Every sentence of this slice is too short or occurs more than once, so no
-   * deletion can be applied unambiguously. An ordinary property of a slice
-   * rather than a failure.
-   */
-  readonly kind: 'undamageable';
-};
-
-/**
  * One trial and what came back.
  */
 type FidelityRow = {
@@ -160,6 +164,11 @@ type FidelityRow = {
    * Which side held the clean text.
    */
   readonly direction: FidelityDirection;
+
+  /**
+   * Which constructed defect the damaged candidate carried.
+   */
+  readonly damageKind: FidelityDamageKind;
 
   /**
    * Whether the clean text was listed first.
@@ -182,35 +191,38 @@ type FidelityRow = {
   readonly forClean: number;
 
   /**
-   * Judges that picked the deletion.
+   * Judges that picked the damaged text.
    */
   readonly forDamaged: number;
 
   /**
-   * Characters the deletion removed.
+   * Characters the edit removed or added.
    */
-  readonly deletedChars: number;
+  readonly changedChars: number;
 
   /**
    * Reasons in roster order, kept because a judge that names coverage and still
-   * picks the deletion is a different failure from one that never mentions it.
+   * picks the damaged text is a different failure from one that never mentions
+   * it.
    */
   readonly reasons: readonly string[];
 };
 
 /**
- * Reads `--only` and `--cap` from the command line.
+ * Reads `--only`, `--cap` and `--damage` from the command line.
  *
- * @returns Entry ids to trial, empty for every entry, and the trial cap
+ * @returns Entry ids to trial, empty for every entry, the trial cap, and which
+ * defects to build
  *
  * @example
  * ```ts
- * const { onlyIds, cap, } = readArguments();
+ * const { onlyIds, cap, damageKinds, } = readArguments();
  * ```
  */
 function readArguments(): {
   readonly onlyIds: readonly string[];
   readonly cap: number;
+  readonly damageKinds: readonly FidelityDamageKind[];
 } {
   /**
    * Arguments after the script path.
@@ -239,7 +251,25 @@ function readArguments(): {
   const cap = (capText === '')
     ? Number.NaN
     : Math.trunc(Number(capText,),);
+
+  /**
+   * Defect named after `--damage`, absent for both.
+   */
+  const damageAt = args.indexOf('--damage',);
+
+  /**
+   * Defect as written, when one was named.
+   */
+  const damageText = (damageAt === (-1)) ? '' : (args[damageAt + 1] ?? '');
+
+  /**
+   * Defects that spelling asks for, absent when it names none this probe builds.
+   */
+  const damageKinds = DAMAGE_BY_NAME[damageText];
+  if (damageKinds === undefined)
+    throw new Error(`--damage takes deletion or insertion, not ${damageText}`,);
   return {
+    damageKinds,
     onlyIds: (onlyAt === (-1))
       ? []
       : (args[onlyAt + 1] ?? '')
@@ -248,54 +278,6 @@ function readArguments(): {
           return id !== '';
         },),
     cap: Number.isNaN(cap,) ? DEFAULT_TRIAL_CAP : cap,
-  };
-}
-
-/**
- * Builds the damaged twin of one English slice.
- *
- * @param cleanText - slice English as the archive holds it
- *
- * @returns Damaged text and what was removed, or that no sentence of this slice
- * can be deleted unambiguously
- *
- * @example
- * ```ts
- * const damaged = damageSlice({ cleanText, },);
- * ```
- */
-function damageSlice(
-  { cleanText, }: { readonly cleanText: string; },
-): DamageAttempt {
-  /**
-   * Deletion seeds this slice admits, longest sentence first.
-   */
-  const seeds = deriveOmissionSeeds({
-    text: cleanText,
-    maxSeeds: 1,
-  },);
-
-  /**
-   * Seed to apply, absent when every sentence is ambiguous or too short.
-   */
-  const seed = seeds.at(0,);
-  if (seed === undefined)
-    return { kind: 'undamageable', };
-
-  /**
-   * Slice with that sentence removed.
-   */
-  const seeded = applySeededErrors({
-    text: cleanText,
-    specs: [seed,],
-  },);
-  if (seeded.seededText === cleanText)
-    return { kind: 'undamageable', };
-  return {
-    kind: 'damaged',
-    damagedText: seeded.seededText,
-    deletedChars: seed.needle
-      .length,
   };
 }
 
@@ -322,6 +304,7 @@ async function main(): Promise<void> {
   const {
     onlyIds,
     cap,
+    damageKinds,
   } = readArguments();
 
   /**
@@ -406,67 +389,92 @@ async function main(): Promise<void> {
         continue;
 
       /**
-       * Damaged twin, or the fact that no sentence can be deleted unambiguously.
+       * Every defect this slice admits, in the order the caller asked for.
+       *
+       * A slice that admits neither is skipped without counting against the
+       * per-entry pair budget, so an entry whose first long slice cannot be
+       * damaged is still sampled further down.
        */
-      const damaged = damageSlice({ cleanText, },);
-      if (damaged.kind === 'undamageable')
+      const attempts = damageKinds
+        .map(function toAttempt(damageKind,): DamageAttempt {
+          if (damageKind === 'deletion')
+            return deleteOneSentence({ cleanText, },);
+          return insertBorrowedSentence({
+            cleanText,
+            donorText: donorTextFor({
+              slices: prepared.slices,
+              sliceIndex,
+            },),
+          },);
+        },)
+        .filter(function wasBuilt(attempt,): attempt is Extract<DamageAttempt, { kind: 'damaged'; }> {
+          if (attempt.kind === 'damaged')
+            return true;
+          log.info(`${entryId}/${String(sliceIndex,)}: ${attempt.reason}`,);
+          return false;
+        },);
+      if (attempts.length === 0)
         continue;
       pairsHere += 1;
 
-      for (const arrangement of ARRANGEMENTS) {
-        if (rows.length >= cap)
-          break;
+      for (const damaged of attempts) {
+        for (const arrangement of ARRANGEMENTS) {
+          if (rows.length >= cap)
+            break;
 
-        /**
-         * Comparison with a known right answer.
-         */
-        const trial: FidelityTrial = {
-          trialId: `${entryId}/${String(sliceIndex,)}`,
-          direction: arrangement.direction,
-          sourceText: slice.source
-            .text,
-          cleanText,
-          damagedText: damaged.damagedText,
-          cleanFirst: arrangement.cleanFirst,
-        };
-        try {
           /**
-           * What the judges made of it.
+           * Comparison with a known right answer.
            */
-          const outcome = await runFidelityTrial({
-            client,
-            trial,
-            judgeModelIds: RUN_ROSTER,
-            signal: controller.signal,
-            perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-            l: log,
-          },);
-          rows.push({
-            entryId,
-            sliceIndex,
-            direction: outcome.direction,
-            cleanFirst: outcome.cleanFirst,
-            verdict: outcome.verdict,
-            correct: outcome.correct,
-            forClean: outcome.ballots
-              .filter(function pickedClean(ballot,) {
-                return ballot.picked === 'clean';
-              },)
-              .length,
-            forDamaged: outcome.ballots
-              .filter(function pickedDamaged(ballot,) {
-                return ballot.picked === 'damaged';
-              },)
-              .length,
-            deletedChars: damaged.deletedChars,
-            reasons: outcome.ballots
-              .map(function toReason(ballot,) {
-                return `${ballot.modelId}: ${ballot.picked} ${ballot.reason}`;
-              },),
-          },);
-        }
-        catch (error) {
-          log.info(`${trial.trialId} (${arrangement.direction}): failed, ${String(error,)}`,);
+          const trial: FidelityTrial = {
+            trialId: `${entryId}/${String(sliceIndex,)}/${damaged.damageKind}`,
+            direction: arrangement.direction,
+            damageKind: damaged.damageKind,
+            sourceText: slice.source
+              .text,
+            cleanText,
+            damagedText: damaged.damagedText,
+            cleanFirst: arrangement.cleanFirst,
+          };
+          try {
+            /**
+             * What the judges made of it.
+             */
+            const outcome = await runFidelityTrial({
+              client,
+              trial,
+              judgeModelIds: RUN_ROSTER,
+              signal: controller.signal,
+              perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+              l: log,
+            },);
+            rows.push({
+              entryId,
+              sliceIndex,
+              direction: outcome.direction,
+              damageKind: outcome.damageKind,
+              cleanFirst: outcome.cleanFirst,
+              verdict: outcome.verdict,
+              correct: outcome.correct,
+              forClean: outcome.ballots
+                .filter(function pickedClean(ballot,) {
+                  return ballot.picked === 'clean';
+                },)
+                .length,
+              forDamaged: outcome.ballots
+                .filter(function pickedDamaged(ballot,) {
+                  return ballot.picked === 'damaged';
+                },)
+                .length,
+              changedChars: damaged.changedChars,
+              reasons: outcome.ballots
+                .map(function toReason(ballot,) {
+                  return `${ballot.modelId}: ${ballot.picked} ${ballot.reason}`;
+                },),
+            },);
+          }
+          catch (error) {
+            log.info(`${trial.trialId} (${arrangement.direction}): failed, ${String(error,)}`,);
+          }
         }
       }
     }
@@ -482,6 +490,30 @@ async function main(): Promise<void> {
   log.info(
     `fidelity: ${String(correct.length,)} of ${String(rows.length,)} trials chose the complete text`,
   );
+  // PER DEFECT AS WELL AS OVERALL, because the two answer different questions
+  // and a combined figure hides the one that matters: a roster reading length
+  // scores every deletion trial and no insertion trial.
+  for (const damageKind of DAMAGE_KINDS) {
+    /**
+     * Trials built with this defect.
+     */
+    const ofKind = rows.filter(function isKind(row,) {
+      return row.damageKind === damageKind;
+    },);
+    if (ofKind.length === 0)
+      continue;
+    /**
+     * Trials of this defect the roster got right.
+     */
+    const rightOfKind = ofKind.filter(function wasRight(row,) {
+      return row.correct;
+    },);
+    log.info(
+      `fidelity ${damageKind}: ${String(rightOfKind.length,)} of ${
+        String(ofKind.length,)
+      } chose the complete text`,
+    );
+  }
   process.stdout
     .write(`${
       JSON.stringify(
