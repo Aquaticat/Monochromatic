@@ -12263,3 +12263,36 @@ created here rather than referenced. Anything else numbered in this document
 belongs to the task tracker and must not be commented onto GitHub. Before
 posting to a GitHub issue from this work, read its title back and confirm it
 matches the subject.
+
+### State the next session inherits, verified rather than assumed
+
+MEASURED AT COMMIT `f44f82b60`, not carried forward from earlier in the night:
+
+-   `mise run //package/module/translation-repair:test:unit` exits 0. The whole
+    unit suite, not a selection: 1104 lines of output, zero `[error]` lines,
+    zero assertion failures.
+-   `mise run //package/module/translation-repair:lint` reports 0 warnings and
+    0 errors.
+-   Working tree is clean except four generated artifacts, described below.
+-   `HEAD` equals `origin/translation-repair-rebased`; auto-push is doing its
+    job and nothing is stranded locally.
+
+FOUR FILES ARE DIRTY AND ARE NOT MINE. Running `mise run file-enforcer` to
+regenerate `CLAUDE.md` also rebuilt three plugin bundles and one jar:
+
+    package/claude-code-plugin/bash-output-filter/bundle/node/index.mjs
+    package/claude-code-plugin/guardrail/bundle/node/index.mjs
+    package/claude-code-plugin/terminal-title/bundle/node/index.mjs
+    package/intellij-plugin/islands-black/islands-black.jar
+
+The change is real code rather than a timestamp: a bundled shell lexer's
+`if (lineEnd === -1 && ...)` became `if ((lineEnd === -1 || lineEnd > len) && ...)`,
+a bounds fix that arrived with a dependency. It is unrelated to this task, so it
+was left uncommitted rather than folded into a translation-repair commit or
+reverted. Someone should decide whether that dependency bump is wanted.
+
+TWO `sol` REVIEWS ARE STILL ALIVE AND STILL EMPTY: `bt8g6brhj` at 5 hours 18
+minutes and `b64uex7px` at 3 hours 43 minutes, each with 00:00:00 of CPU. Their
+siblings the same night finished in minutes. Treat both as stalled, do not kill
+them without being asked, and re-check any eventual output against current
+source before acting: both prompts predate tonight's changes.
