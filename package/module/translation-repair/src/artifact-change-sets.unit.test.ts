@@ -11,8 +11,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  ARTIFACT_SCHEMA_VERSION_V2,
   ArtifactParseError,
   buildSettledArtifact,
+  KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   parseSettledArtifact,
   type PipelineDigest,
   readArtifactChangeSets,
@@ -92,10 +94,43 @@ await describe({
       fn: async () => {
         expect(function readFutureVersion() {
           readArtifactSchemaVersion({
-            artifact: { artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION + 1, },
+            // One past the newest version this reader knows, taken from the
+            // list rather than written as a literal, so it stays a FUTURE
+            // version as versions are added.
+            artifact: { artifactSchemaVersion: Math.max(...KNOWN_ARTIFACT_SCHEMA_VERSIONS,) + 1, },
             path: 'Mittens',
           },);
         },).toThrow('this reader knows',);
+      },
+    },),
+    it({
+      name: 'ACCEPTS version 2 as a generation it KNOWS, which is what separates dispatching from '
+        + 'reading: naming the generation is this function`s whole job, and whether a given reader can '
+        + 'answer for that generation is the reader`s to say',
+      fn: async () => {
+        expect(readArtifactSchemaVersion({
+          artifact: { artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2, },
+          path: 'Mittens',
+        },),).toEqual({
+          kind: 'versioned',
+          version: ARTIFACT_SCHEMA_VERSION_V2,
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a version 2 artifact rather than answering with one change set, because a two-lane '
+        + 'artifact records a ledger PER LANE and has no singular anything to answer with: reading its '
+        + 'absent top-level sets as unrecorded would report a run that changed nothing',
+      fn: async () => {
+        expect(function readTwoLaneArtifact() {
+          readArtifactChangeSets({
+            artifact: {
+              artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
+              id: 'Mittens',
+            },
+            path: 'Mittens',
+          },);
+        },).toThrow('one change set',);
       },
     },),
     it({
@@ -460,13 +495,31 @@ await describe({
           parseSettledArtifact({
             value: {
               ...VERSIONED_ARTIFACT,
-              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION + 1,
+              artifactSchemaVersion: Math.max(...KNOWN_ARTIFACT_SCHEMA_VERSIONS,) + 1,
               id: 'Mittens',
               status: 'repaired',
               issues: [],
             },
           },);
         },).toThrow('this reader knows',);
+      },
+    },),
+    it({
+      name: 'REFUSES a VERSION 2 artifact through the parser rather than reading its version 1 fields, '
+        + 'which is the difference between a version this reader knows and one it can answer for: the '
+        + 'top-level status and issues a version 2 artifact does not have would come back as absences',
+      fn: async () => {
+        expect(function parseTwoLaneArtifact() {
+          parseSettledArtifact({
+            value: {
+              ...VERSIONED_ARTIFACT,
+              artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
+              id: 'Mittens',
+              status: 'repaired',
+              issues: [],
+            },
+          },);
+        },).toThrow('one change set',);
       },
     },),
     it({

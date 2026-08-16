@@ -29,6 +29,7 @@ export {
 } from './artifact-change-sets.ts';
 export {
   type ArtifactSchemaReading,
+  KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   readArtifactSchemaVersion,
   SETTLED_ARTIFACT_SCHEMA_VERSION,
 } from './artifact-schema-version.ts';

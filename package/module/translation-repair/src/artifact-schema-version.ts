@@ -2,6 +2,7 @@ import {
   ArtifactParseError,
   requireCount,
 } from './artifact-guard.ts';
+import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.ts';
 
 //region Artifact schema version
 // What generation a settled artifact belongs to, stated by the writer instead
@@ -57,12 +58,25 @@ export const SETTLED_ARTIFACT_SCHEMA_VERSION = 1;
  * this holds more than one entry, whatever reads a versioned field has to
  * dispatch per version rather than assume the newest shape.
  *
+ * THAT MOMENT HAS ARRIVED: version 2 is here and its shape shares almost
+ * nothing with version 1, which recorded one lane at the top level. Version 1
+ * stays readable, because refusing a generation a reader still understands is
+ * the opposite of what a version is for, and the empty population on disk is a
+ * fact about this corpus rather than about the format. What changes is that
+ * every reader of a versioned field now has to say which versions it handles:
+ * `readArtifactChangeSets` answers with ONE singular change set per artifact
+ * and refuses version 2 outright, since a two-lane artifact has no singular
+ * anything for it to answer with.
+ *
  * @example
  * ```ts
  * const readable = KNOWN_ARTIFACT_SCHEMA_VERSIONS.includes(version,);
  * ```
  */
-export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [SETTLED_ARTIFACT_SCHEMA_VERSION,];
+export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
+  SETTLED_ARTIFACT_SCHEMA_VERSION,
+  ARTIFACT_SCHEMA_VERSION_V2,
+];
 
 /**
  * What an artifact says about which generation it belongs to.

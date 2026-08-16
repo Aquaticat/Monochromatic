@@ -9,7 +9,10 @@ import {
   requireArray,
   requireCount,
 } from './artifact-guard.ts';
-import { readArtifactSchemaVersion, } from './artifact-schema-version.ts';
+import {
+  readArtifactSchemaVersion,
+  SETTLED_ARTIFACT_SCHEMA_VERSION,
+} from './artifact-schema-version.ts';
 
 //region Artifact change sets
 // Which slices a settled run's document carried a change for, read back out of
@@ -300,6 +303,23 @@ export function readArtifactChangeSets(
         path,
       },),
     };
+  }
+
+  // VERSION 2 IS REFUSED HERE rather than read, and refused by this reader
+  // rather than by the version dispatcher: the dispatcher's job is to say which
+  // generation an artifact belongs to, and this function's job is to answer
+  // with ONE change set. A two-lane artifact has two ledgers and no singular
+  // anything, so there is no answer to give and the honest move is to say so.
+  // Reading its absent top-level sets as `unrecorded` would report a run that
+  // changed nothing.
+  if (reading.version !== SETTLED_ARTIFACT_SCHEMA_VERSION) {
+    throw new ArtifactParseError({
+      path: `${path}.artifactSchemaVersion`,
+      reason: `schema version ${
+        String(SETTLED_ARTIFACT_SCHEMA_VERSION,)
+      } or an unversioned artifact, since this reading answers with one change set `
+        + 'and a later generation records one per lane',
+    },);
   }
 
   if (!hasShipped)
