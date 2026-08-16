@@ -1,0 +1,315 @@
+name: kotlin-linter-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Build and validate the signed bundle without uploading it'
+        type: boolean
+        default: true
+  push:
+    branches: ['main']
+    paths:
+    - 'package/linter/kotlin/gradle.properties'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kotlin-linter-publish
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.detect.outputs.should_publish }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 2
+
+    - name: Detect version change
+      id: detect
+      shell: node {0}
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+      run: |
+        const { appendFileSync, readFileSync } = require('node:fs')
+        const { execFileSync } = require('node:child_process')
+
+        const VERSION_FILE = 'package/linter/kotlin/gradle.properties'
+        const ZERO_SHA = '0000000000000000000000000000000000000000'
+
+        const readVersion = content => {
+          const line = content.split('\n').find(candidate => candidate.startsWith('version='))
+          if (line === undefined) {
+            throw new Error(`No version entry found in ${VERSION_FILE}`)
+          }
+          const version = line.slice('version='.length).trim()
+          if (version.length === 0) {
+            throw new Error(`Empty version entry found in ${VERSION_FILE}`)
+          }
+          return version
+        }
+
+        const currentVersion = readVersion(readFileSync(VERSION_FILE, 'utf8'))
+        let previousVersion = ''
+        const beforeSha = process.env.BEFORE_SHA ?? ''
+        const eventName = process.env.EVENT_NAME ?? ''
+
+        if (eventName === 'push' && beforeSha.length > 0 && beforeSha !== ZERO_SHA) {
+          try {
+            const previousContent = execFileSync(
+              'git',
+              ['show', `${beforeSha}:${VERSION_FILE}`],
+              { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+            )
+            previousVersion = readVersion(previousContent)
+          } catch (error) {
+            console.error(`Could not read the previous version: ${String(error)}`)
+          }
+        }
+
+        const shouldPublish = eventName === 'workflow_dispatch' || previousVersion !== currentVersion
+        console.log(`previous=${previousVersion || '<unavailable>'}`)
+        console.log(`current=${currentVersion}`)
+        console.log(`should-publish=${shouldPublish}`)
+
+        const outputPath = process.env.GITHUB_OUTPUT
+        if (outputPath === undefined) {
+          throw new Error('GITHUB_OUTPUT is not set')
+        }
+        appendFileSync(outputPath, `should_publish=${shouldPublish}\nversion=${currentVersion}\n`)
+
+  publish:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Set up mise
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+        cache: true
+
+    - name: Install Java
+      run: mise install java
+
+    - name: Build signed Central bundle
+      env:
+        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.MAVEN_SIGNING_KEY }}
+        ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
+      run: mise run //package/linter/kotlin:publish:bundle
+
+    - name: Validate Central bundle
+      shell: node {0}
+      env:
+        VERSION: ${{ needs.detect.outputs.version }}
+      run: |
+        const { createHash } = require('node:crypto')
+        const { readFileSync } = require('node:fs')
+        const { join } = require('node:path')
+        const { execFileSync } = require('node:child_process')
+
+        const version = process.env.VERSION
+        if (version === undefined || version.length === 0) {
+          throw new Error('VERSION is not set')
+        }
+
+        const buildDirectory = join('package', 'linter', 'kotlin', 'build')
+        const artifactDirectory = join(
+          buildDirectory,
+          'central-staging',
+          'cat',
+          'aquati',
+          'monochromatic',
+          'detekt-rules',
+          version,
+        )
+        const bundlePath = join(
+          buildDirectory,
+          'central-bundle',
+          `detekt-rules-${version}-central-bundle.zip`,
+        )
+        const coordinatePath = `cat/aquati/monochromatic/detekt-rules/${version}`
+        const artifactNames = [
+          `detekt-rules-${version}.jar`,
+          `detekt-rules-${version}-sources.jar`,
+          `detekt-rules-${version}-javadoc.jar`,
+          `detekt-rules-${version}.module`,
+          `detekt-rules-${version}.pom`,
+        ]
+        const checksumAlgorithms = ['md5', 'sha1', 'sha256', 'sha512']
+        const entries = execFileSync('jar', ['--list', '--file', bundlePath], { encoding: 'utf8' })
+          .split('\n')
+          .filter(entry => entry.length > 0)
+
+        for (const artifactName of artifactNames) {
+          const artifactPath = join(artifactDirectory, artifactName)
+          const artifactBytes = readFileSync(artifactPath)
+          const bundleEntry = `${coordinatePath}/${artifactName}`
+          if (!entries.includes(bundleEntry) || !entries.includes(`${bundleEntry}.asc`)) {
+            throw new Error(`Bundle is missing artifact or signature: ${bundleEntry}`)
+          }
+          for (const algorithm of checksumAlgorithms) {
+            const expected = readFileSync(`${artifactPath}.${algorithm}`, 'utf8').trim()
+            const actual = createHash(algorithm).update(artifactBytes).digest('hex')
+            if (expected !== actual || !entries.includes(`${bundleEntry}.${algorithm}`)) {
+              throw new Error(`Invalid or missing ${algorithm} checksum: ${bundleEntry}`)
+            }
+          }
+        }
+
+        if (entries.some(entry => entry.includes('maven-metadata'))) {
+          throw new Error('Bundle contains repository maven-metadata files')
+        }
+        if (entries.some(entry => entry.includes('.asc.'))) {
+          throw new Error('Bundle contains unnecessary signature checksum files')
+        }
+
+        const documentationJar = join(artifactDirectory, `detekt-rules-${version}-javadoc.jar`)
+        const documentationEntries = execFileSync(
+          'jar',
+          ['--list', '--file', documentationJar],
+          { encoding: 'utf8' },
+        )
+        if (!documentationEntries.split('\n').includes('README.md')) {
+          throw new Error('Documentation JAR does not contain README.md')
+        }
+
+        const pom = readFileSync(join(artifactDirectory, `detekt-rules-${version}.pom`), 'utf8')
+        const requiredPomValues = [
+          '<groupId>cat.aquati.monochromatic</groupId>',
+          '<artifactId>detekt-rules</artifactId>',
+          `<version>${version}</version>`,
+          '<name>Monochromatic detekt rules</name>',
+          '<licenses>',
+          '<developers>',
+          '<scm>',
+        ]
+        for (const requiredValue of requiredPomValues) {
+          if (!pom.includes(requiredValue)) {
+            throw new Error(`POM is missing ${requiredValue}`)
+          }
+        }
+
+        console.log(`Validated ${bundlePath}`)
+
+    - name: Upload and publish through Sonatype
+      if: ${{ github.event_name == 'push' || !inputs['dry-run'] }}
+      shell: node {0}
+      env:
+        MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+        MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        VERSION: ${{ needs.detect.outputs.version }}
+      run: |
+        const { appendFile, readFile } = require('node:fs/promises')
+        const { basename, join } = require('node:path')
+        const { setTimeout: wait } = require('node:timers/promises')
+
+        const requireEnvironment = name => {
+          const value = process.env[name]
+          if (value === undefined || value.length === 0) {
+            throw new Error(`${name} is not set`)
+          }
+          return value
+        }
+
+        const requestJson = async ({ url, authorization }) => {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { Authorization: authorization },
+          })
+          const responseText = await response.text()
+          if (!response.ok) {
+            throw new Error(`Sonatype status request failed (${response.status}): ${responseText}`)
+          }
+          return JSON.parse(responseText)
+        }
+
+        const main = async () => {
+          const username = requireEnvironment('MAVEN_CENTRAL_USERNAME')
+          const password = requireEnvironment('MAVEN_CENTRAL_PASSWORD')
+          const version = requireEnvironment('VERSION')
+          const authorization = `Bearer ${Buffer.from(`${username}:${password}`, 'utf8').toString('base64')}`
+          const bundlePath = join(
+            'package',
+            'linter',
+            'kotlin',
+            'build',
+            'central-bundle',
+            `detekt-rules-${version}-central-bundle.zip`,
+          )
+          const bundleBytes = await readFile(bundlePath)
+          const form = new FormData()
+          form.append(
+            'bundle',
+            new Blob([bundleBytes], { type: 'application/octet-stream' }),
+            basename(bundlePath),
+          )
+
+          const uploadUrl = new URL('https://central.sonatype.com/api/v1/publisher/upload')
+          uploadUrl.searchParams.set('name', `cat.aquati.monochromatic:detekt-rules:${version}`)
+          uploadUrl.searchParams.set('publishingType', 'AUTOMATIC')
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: { Authorization: authorization },
+            body: form,
+          })
+          const deploymentId = (await uploadResponse.text()).trim()
+          if (!uploadResponse.ok) {
+            throw new Error(`Sonatype upload failed (${uploadResponse.status}): ${deploymentId}`)
+          }
+          if (deploymentId.length === 0) {
+            throw new Error('Sonatype upload returned an empty deployment ID')
+          }
+          console.log(`Uploaded deployment ${deploymentId}`)
+
+          const STATUS_INTERVAL_MILLISECONDS = 10_000
+          const MAXIMUM_STATUS_ATTEMPTS = 180
+          let lastState = ''
+          let published = false
+
+          for (let attempt = 0; attempt < MAXIMUM_STATUS_ATTEMPTS; attempt += 1) {
+            const statusUrl = new URL('https://central.sonatype.com/api/v1/publisher/status')
+            statusUrl.searchParams.set('id', deploymentId)
+            const status = await requestJson({ url: statusUrl, authorization })
+            const state = String(status.deploymentState ?? '')
+            if (state !== lastState) {
+              console.log(`Deployment ${deploymentId}: ${state}`)
+              lastState = state
+            }
+            if (state === 'PUBLISHED') {
+              published = true
+              break
+            }
+            if (state === 'FAILED') {
+              throw new Error(`Sonatype deployment failed: ${JSON.stringify(status.errors ?? status)}`)
+            }
+            await wait(STATUS_INTERVAL_MILLISECONDS)
+          }
+
+          if (!published) {
+            throw new Error(`Sonatype deployment ${deploymentId} did not publish before the workflow deadline`)
+          }
+
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY
+          if (summaryPath !== undefined) {
+            await appendFile(
+              summaryPath,
+              `Published cat.aquati.monochromatic:detekt-rules:${version} as deployment ${deploymentId}.\n`,
+            )
+          }
+        }
+
+        main()
