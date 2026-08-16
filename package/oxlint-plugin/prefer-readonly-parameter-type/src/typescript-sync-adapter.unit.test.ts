@@ -439,6 +439,62 @@ await describe({
           },
         },),
         it({
+          name: 'releases the snapshot it replaced when discovery fails',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Configured source opened before discovery fails for another one. */
+            const heldPath = join(directory.path, 'held.ts',);
+            /** Text of source held before failure. */
+            const heldSource = 'export const heldValue: string = \'held\';\n';
+            writeFileSync(heldPath, heldSource,);
+            /** Session reading through snapshot that failure replaces. */
+            const before = openSemanticFile({
+              fileName: heldPath,
+              sourceText: heldSource,
+              hasBOM: false,
+            },);
+            /** Disposable source outside every configured project. */
+            const unconfiguredRoot = mkdtempSync(join(tmpdir(), 'semantic-unconfigured-',),);
+            using unconfigured: SemanticFixtureDirectory = {
+              path: unconfiguredRoot,
+              [Symbol.dispose]: function removeUnconfiguredFixture(): void {
+                rmSync(unconfiguredRoot, { recursive: true, force: true, },);
+              },
+            };
+            /** Unconfigured source path. */
+            const outsidePath = join(unconfigured.path, 'input.ts',);
+            /** Unconfigured source text. */
+            const outsideSource = 'export const value: string = \'outside\';\n';
+            writeFileSync(outsidePath, outsideSource,);
+            let refused: unknown;
+            try {
+              openSemanticFile({
+                fileName: outsidePath,
+                sourceText: outsideSource,
+                hasBOM: false,
+              },);
+            }
+            catch (error) {
+              refused = error;
+            }
+            expect((refused as Error).message,).toContain('no configured project',);
+            /* Keeping the newer snapshot is one half; letting go of the one it replaced is the
+             * other, and nothing asks a snapshot whether it was disposed. Reading through the
+             * replaced one does ask, because the native service no longer has it. */
+            let caughtUse: unknown;
+            try {
+              before.project.program
+                .getSourceFile(heldPath,);
+            }
+            catch (error) {
+              caughtUse = error;
+            }
+            expect(caughtUse,).toBeInstanceOf(Error,);
+            expect((caughtUse as Error).message,).toContain('snapshot',);
+          },
+        },),
+        it({
           name: 'refuses to leave refused text where an importer can reach it',
           fn: async () => {
             closeSemanticBridge();
