@@ -4,11 +4,24 @@ import type { ChunkPair, } from './chunk-document.ts';
 // How much of the ORIGINAL a judge is shown, which `#107` turned into a
 // measurable question rather than a design assumption.
 //
-// WHAT `#107` MEASURED. 6.4 percent of corpus slices sit in a pair where the
-// translator carried a passage across a section boundary. A judge shown one
-// slice pair sees the archive inventing content there and dropping it next
-// door, and refuses both candidates; that accounts for every miss the
-// alteration arm of `#84` recorded, on `Dethelly/0`.
+// WHAT `#107` MEASURED, at the strength the screen actually supports. The screen
+// names CANDIDATES rather than verdicts: 22 adjacent pairs whose sizes are
+// consistent with a passage having been carried across a section boundary, two
+// of which a transcription explains equally well. Hand verification has
+// confirmed two relocations and two transcriptions, which is four slices rather
+// than twenty-two.
+//
+// AN EARLIER VERSION OF THIS COMMENT read "6.4 percent of corpus slices sit in a
+// pair where the translator carried a passage across a section boundary", and
+// both halves of that were wrong. The figure is 80 of 1260, 6.3 percent, and it
+// is the union of FOUR classes of which relocation is one. Nothing measured says
+// that 6.4 percent of slices were carried anywhere.
+//
+// WHAT IS SOLID is the mechanism, on one hand-verified case. A judge shown one
+// slice pair of `Dethelly/0` sees the archive inventing content there and
+// dropping it next door, and refuses both candidates. Every miss the alteration
+// arm of `#84` recorded fell on that entry, and widening the window turned three
+// of those four into correct choices.
 //
 // SO THE WINDOW IS A VARIABLE. Running the same trial narrow and wide, with the
 // ground truth unchanged, separates "the roster judged badly" from "the roster
