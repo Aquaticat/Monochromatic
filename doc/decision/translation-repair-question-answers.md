@@ -117,32 +117,41 @@ becomes reachable and is applied. Weighing has to replace forbidding in one chan
 WHAT THE HALF STILL BUYS BY BEING DECIDED NOW: whoever relaxes the assertion does not also have to pick a
 number, and the self-preference measurement below says the number is about right.
 
-### Measured after the fact, and it supports the half
+### Measured after the fact, twice, and it supports the half at a smaller size than first reported
 
-Run 2026-08-16 on the roster bench, four slices at six roster widths, 24 rounds, using the paired
-comparison in `src/self-preference.ts`: each candidate scored against itself, its producer's own ballot
-against the rate among judges holding no stake in that same text.
+Run 2026-08-16 on the roster bench using the paired comparison in `src/self-preference.ts`: each candidate
+scored against itself, its producer's own ballot against the rate among judges holding no stake in that same
+text. Two draws were taken, and they share no slices, so they are independent replications rather than one
+sample.
 
-    pooled       own 39 of 93 (0.42)   others 82 of 376 (0.22)   excess 0.20
+    4 slices,  24 rounds   own 39 of 93   (0.42)   others 82 of 376   (0.22)   excess 0.20
+    14 slices, 84 rounds   own 109 of 310 (0.35)   others 300 of 1361 (0.22)   excess 0.13
 
-Producers named their own candidate roughly 1.9 times as often as judges with no stake in it named the same
-text. The half-weight discount divides a self-vote by 2. Those are not the same operation, since one scales a
-weight and the other describes a rate, but the discount is close to the size of the effect it is correcting,
-which is a better position than the consistency argument it was chosen on.
+    pooled, 18 slices      own 148 of 403 (0.367)  others 382 of 1737 (0.220)  excess 0.147
 
-EVERY WIDTH IS POSITIVE, and no trend with width is claimable:
+THE SIGN REPLICATED AND THE SIZE FELL. Take 0.147 as the estimate: producers name their own candidate about
+1.67 times as often as judges with no stake in it name the same text. The first figure reported, 0.20 from
+four slices, was a small-sample reading and is superseded. Note which half moved: the disinterested rate is
+identical across both draws at 0.22, and the own rate fell from 0.42 to 0.35.
 
-    width 2 pass 1   0.19        width 4 pass 2   0.23
-    width 3 pass 1   0.21        width 5 pass 1   0.13
-    width 4 pass 1   0.10        width 6 pass 1   0.33
+WHAT THAT SAYS ABOUT THE HALF. The discount divides a self-vote by 2 against a measured lift of 1.67, so it
+is the right order and somewhat MORE aggressive than the effect it corrects. Scaling a weight and describing
+a rate are still different operations, so this does not derive the number; it bounds it. Nothing here argues
+for changing it, and anything that later does should beat a 2x correction of a 1.67x effect on better
+evidence than a bench.
 
-The bench runs one width twice on purpose, and width 4 came back 0.10 then 0.23. That 0.13 spread is the
-run-to-run band, and most of the width-to-width variation sits inside it. The consistent SIGN across six runs
-is what this measures; the ordering is not.
+STILL NO TREND WITH WIDTH, on the wider draw either:
 
-READ IT AS A BENCH RATHER THAN A CENSUS. Four distinct slices were run at six widths, so the 93 opportunities
-are repeated measures over four texts, not 93 independent trials. Widening the sample is cheap now that the
-instrument exists.
+    width 2 pass 1   0.123       width 4 pass 2   0.182
+    width 3 pass 1   0.241       width 5 pass 1   0.125
+    width 4 pass 1   0.083       width 6 pass 1   0.093
+
+The bench runs one width twice on purpose, and width 4 came back 0.083 then 0.182. That 0.099 spread is the
+run-to-run band, the variation between widths is not monotone, and most of it sits inside the band. Six runs
+agree on the sign; they say nothing about the ordering.
+
+WHAT THIS IS NOT: a census. Eighteen slices at six widths means the opportunities are repeated measures over
+eighteen texts. The instrument is cheap to run wider, and the second draw already showed why that matters.
 
 ## Replacement rate: widen the judged window and re-read it
 

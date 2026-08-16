@@ -12302,10 +12302,13 @@ source before acting: both prompts predate tonight's changes.
 TWO OF `#84`'s REMAINING ITEMS WERE TAKEN, 2026-08-16, and only one produced a
 number. Both matter to answers the owner has now given.
 
-SELF-PREFERENCE IS REAL AND THE HALF IS ABOUT RIGHT. Over four slices at six
-roster widths, 24 rounds, producers named their own candidate 39 of 93 times
-against 82 of 376 among judges holding no stake in the same texts: 0.42 against
-0.22, an excess of 0.20 and a lift of roughly 1.9 times. The half-weight discount
+SELF-PREFERENCE IS REAL, REPLICATED, AND SMALLER THAN FIRST REPORTED. Two draws
+sharing no slices: four slices gave an excess of 0.20, fourteen gave 0.13, and
+pooled over all eighteen it is 0.147, with producers naming their own candidate
+148 of 403 times (0.367) against 382 of 1737 (0.220) among judges holding no
+stake in the same texts. That is a lift of 1.67. THE 0.20 FIGURE IS SUPERSEDED;
+it was four slices. The disinterested rate is identical across both draws at
+0.22, and it is the own rate that fell, from 0.42 to 0.35. The half-weight discount
 divides a self-vote by 2. Those are different operations, one scaling a weight
 and the other describing a rate, so this is not a derivation of the half; it is
 the first evidence that the half is the right ORDER, where question 4 previously
