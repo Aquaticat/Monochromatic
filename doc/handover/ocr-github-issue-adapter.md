@@ -488,6 +488,14 @@ enables vim keybindings,
 and catches Inquirer's `ExitPromptError` as a clean cancellation.
 No dependency decision has been made from this evidence.
 
+CLI packages under `package/cli/<name>` use package names shaped
+`@monochromatic-dev/cli-<name>` and usually expose an unscoped `<name>` binary.
+No repository text or executable on the current `PATH` uses
+`ocr-github-issue`,
+`ocr-issue`,
+or `open-code-review-issue`.
+No package naming decision has been made from this evidence yet.
+
 ## Repository state and commits
 
 The capability investigation and troubleshooting document landed in:
@@ -774,8 +782,7 @@ in dependency order:
 
 ## Immediate next action
 
-Inspect workspace CLI package naming precedents,
-then ask for the package location,
+Ask for the package location,
 package name,
 and binary name.
 Ask one question only,
