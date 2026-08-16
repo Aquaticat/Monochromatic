@@ -30,6 +30,28 @@ export {
   runIntroducedDefectProbe,
 } from './introduced-defect-probe.ts';
 export {
+  buildRenderingAuditMessages,
+  CANDIDATE_ONLY_CATEGORIES,
+  isRenderingAuditReportWire,
+  PAIRED_CATEGORIES,
+  RENDERING_AUDIT_CATEGORIES,
+  RENDERING_AUDIT_RESPONSE_FORMAT,
+  RENDERING_AUDIT_VERDICTS,
+  type RenderingAuditCategory,
+  type RenderingAuditFindingWire,
+  type RenderingAuditReportWire,
+  type RenderingAuditSubject,
+  type RenderingAuditVerdict,
+  SOURCE_ONLY_CATEGORIES,
+} from './rendering-audit-wire.ts';
+export {
+  anchorQuote,
+  type QuoteAnchor,
+  screenRenderingAudit,
+  type ScreenedFinding,
+  type ScreenedReport,
+} from './rendering-audit-screen.ts';
+export {
   longestFenceRun,
   selectFence,
 } from './prompt-fence.ts';
