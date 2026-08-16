@@ -331,42 +331,127 @@ while resuming the same manifest under a different commit, cache state or roster
 
 ### What the version 2 parser must require, and what it may tolerate
 
-Every field is REQUIRED, including empty arrays, zero counts, both lanes, both ledgers,
-the recorded comparison and the lane selection.
-Within the discriminated unions, a member's fields are required only for that member
-(`acceptedText` only when decided, `reason` only on an assembly withdrawal,
-`verdict` only on a comparable decision, `undecidedLanes` only on a non-comparable one),
-and a field belonging to an inactive member is refused rather than ignored.
+REVISED 2026-08-16 after a review of the contract itself, before any parser code was written.
+Five clauses were wrong and are corrected below;
+each correction says what it replaces, because the old wording is what a later reader would otherwise re-derive.
 
-Unknown keys are refused in schema-owned records:
-an addition is a version 3, not a tolerated extra.
-The deliberate tolerances are the inside of `callConfig`,
-the free-text category and finding strings the domain already allows,
-and anything a leaf contract explicitly defines as opaque evidence.
-A version 2 object carrying a legacy top-level alias
-(`status`, `issues`, `repairedText`, `shippedChunkIndices`)
-is refused rather than read.
+#### What is required, and what version 2 actually owns
 
-The reader RECOMPUTES rather than trusts, and refuses on disagreement:
-each lane's slice count against the preparation's,
-each ledger's length against both,
-each `sliceTexts` row against the ledger row at its index,
-each raw index set against the ledger rows that would produce it,
-the translate lane's changed, withdrawn and refused counts against their own lists,
-its `unfilled` status against whether anything is unfilled,
-the repair lane's blocked status against the deliveries it allows,
-and the whole comparison, field by field, against the persisted copy.
+**Corrected.** The old clause read "Every field is REQUIRED".
+That contradicts the writer: `SettledLaneV2.result` is typed by the LIVE lane shapes on purpose,
+because raw results are evidence, they are large, and they grow by addition.
+Requiring every field of them would make each later additive field a retroactive version 2 requirement,
+and would leave version 2's meaning defined by whatever the TypeScript types happen to say today
+rather than by this document.
 
-A standalone reader can only check the SYNTAX of the recorded identity;
-it cannot recompute it, because version 2 stores measurements rather than the canonical manifest.
-A corpus-aware reader re-prepares the texts at the recorded corpus commit,
-recomputes the identity, and refuses a mismatch.
-That asymmetry is stated here so nobody later reads a syntax check as a verification.
+The rule instead:
 
-Version dispatch has three cases and no fallback:
-a missing version is LEGACY, version 2 is version 2, and anything else is refused.
-An explicit version 1 is refused rather than treated as legacy,
-however empty its population happens to be.
+>   Every field OWNED BY THE VERSION 2 SCHEMA is required, including every field of the frozen
+>   raw-evidence core. Fields added later to the live raw-result types are tolerated and never
+>   become version 2 requirements.
+
+So version 2 needs a FROZEN EVIDENCE CORE: the few raw fields a reader verifies against the ledger,
+named under version 2's own types rather than borrowed from the pipeline.
+Per `sliceTexts` row that is `chunkIndex`, `incumbentKind`, `incumbentText`, `outcome.kind`,
+and `outcome.acceptedText` where the outcome is decided.
+The reader PROJECTS that core out of each raw row and compares the projection,
+rather than deep-comparing a raw row against a strict ledger row.
+
+Rows are compared BY POSITION, `chunkIndex` included, and never joined by `chunkIndex` alone:
+a join accepts evidence in the wrong order, which is one of the things this check exists to catch.
+
+#### Where exactness stops
+
+**Corrected.** The old clause said unknown keys are refused in schema-owned records
+and left the boundary to be inferred, which does not survive contact with a lane object
+holding a strict ledger and a tolerant raw result side by side.
+
+>   Exactness follows SCHEMA OWNERSHIP, not nesting.
+>   The artifact, the preparation, the `lanes` record, each lane envelope, the delivery rows,
+>   the comparison rows and every version 2 vocabulary union have exact keys.
+>   `callConfig` and `lanes.<lane>.result` are open boundaries, and unknown keys are tolerated
+>   recursively past either one, while the known evidence-core fields inside them stay required.
+
+Consequences worth stating because each is a test:
+
+-   `lanes` accepts exactly `repair` and `translate`; each lane accepts exactly `result` and `delivery`.
+-   An extra key on a lane ENVELOPE is refused; the same key inside that lane's `result` is accepted.
+-   An unknown outcome discriminator inside a raw result is REFUSED even there,
+    because version 2 cannot project it into its frozen vocabulary.
+-   A member-specific field on the wrong member (`acceptedText` on `not-evaluated`) stays a contradiction.
+-   `null` is accepted inside an unknown raw-result addition and refused inside `callConfig`,
+    which `ArtifactJsonValue` already forbids.
+
+The old sentence "Within the discriminated unions ..." is scoped to SCHEMA-OWNED unions
+and to the reserved fields of the evidence core, not to raw results at large.
+
+#### Recomputed, checked, and merely syntactic
+
+**Corrected on two items.**
+
+The blocked status CANNOT be recomputed. A blocked run and an unblocked one produce the same ledger
+whenever no slice decided anything different, so the derivation is not invertible.
+What the reader checks is COMPATIBILITY:
+
+-   a blocked repair result carries no `replacement-shipped` and no `assembly-integrity` withdrawal,
+    and its differing decisions may be withdrawn as `blocked-non-translation`;
+-   a non-blocked result carries no `blocked-non-translation` withdrawal at all.
+
+"Its `unfilled` status against whether anything is unfilled" needs its subject named:
+unfilled means a raw `sliceTexts` outcome of kind `unfilled`,
+NOT a `gap-remains` delivery, which also arises after a `not-evaluated` or any other non-decision.
+
+Everything else in the old recompute list stands:
+slice counts against the preparation, ledger lengths against both,
+the evidence core against the ledger row at the same position, each raw index set against the rows
+that would produce it, the translate lane's counts against its own lists,
+and the whole comparison against the persisted copy.
+
+#### What a file alone cannot establish
+
+**Corrected.** The old clause said a corpus-aware reader "re-prepares the texts at the recorded corpus commit".
+It cannot, from the file: `preparationIdentity` hashes both whole documents, every slice's placement and offsets,
+the line-structure flag and the identity context, and the artifact stores none of those inputs.
+`id` and `corpusSha` can recover the documents; nothing in the file fixes the preparation code or its budget.
+
+>   The standalone reader checks the identity's SYNTAX and nothing more.
+>   Verification against a preparation is a separate entry point that ACCEPTS one:
+>   `verifyArtifactV2AgainstPreparation({ artifact, prepared, })`.
+>   Whoever obtains the corpus checkout and the matching pipeline builds that preparation and passes it in.
+
+The same limit applies to the preparation's measurements, to `tip` and `pipelineDigest`,
+and to whether a raw result and the ledger beside it came from one run:
+`assertResultCountsPreparation` already says the slice count is a cheap check and not a proof.
+
+#### The comparison algorithm has to be frozen too, and is not yet
+
+**New, and it is a defect in code already shipped.**
+`buildSettledArtifactV2` derives the persisted comparison by calling the LIVE `compareDocumentLanes`
+and projecting the result. The frozen vocabulary catches a union that grows;
+nothing catches the comparator's SEMANTICS changing.
+A later change to how a verdict is decided would silently reinterpret every artifact already on disk,
+and a version 2 reader that recomputed with the same live comparator would agree with itself
+while both disagreed with what the artifact meant when it was written.
+
+>   The version 2 comparison derivation belongs in an artifact-owned module over `ArtifactDeliveryRowV2`,
+>   used by BOTH the writer and the reader, and frozen with the rest of version 2.
+
+#### Version dispatch
+
+**Corrected.** The old clause refused an explicit version 1.
+A reader that understands a version should not refuse it, and `artifact-schema-version.ts`
+states version 1 is readable; the empty population on disk is a fact about this corpus, not about the format.
+
+>   Generic dispatch has four cases: a missing `artifactSchemaVersion` is LEGACY, `1` is version 1,
+>   `2` is version 2, anything else is refused.
+>   Only the function NAMED as the version 2 parser refuses version 1, and it refuses it because
+>   dispatch has already happened by the time it is called.
+
+A present-but-wrong version (`null`, `'2'`, `undefined`) is not the same as a missing one and is refused.
+
+`readArtifactChangeSets` must REFUSE version 2 explicitly rather than be taught to read it:
+it answers with one singular change set per artifact, and version 2 has two lanes and no singular anything.
+It stays a legacy and version 1 adapter.
 
 ## Still to build
 
