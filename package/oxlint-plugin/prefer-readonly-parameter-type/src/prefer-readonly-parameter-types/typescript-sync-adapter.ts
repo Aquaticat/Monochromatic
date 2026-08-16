@@ -5,7 +5,6 @@
  */
 
 import { existsSync, } from 'node:fs';
-import { dirname, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { version as typescriptVersion, } from 'typescript';
@@ -24,7 +23,12 @@ import {
   semanticFileSession,
   type SemanticFileSession,
 } from './semantic-file-session.ts';
-import { normalizeSemanticFileName, } from './semantic-file-name.ts';
+import {
+  normalizeSemanticFileName,
+  semanticProjectRootKey,
+} from './semantic-file-name.ts';
+import { overlayFileSystem, } from './semantic-overlay-filesystem.ts';
+import { snapshotHoldsSource, } from './semantic-snapshot-presence.ts';
 import {
   assertTypeScriptSeven,
   configureNativeApiChildShutdown,
@@ -80,58 +84,6 @@ const bridgeState: {
   beforeExitHookRegistered: false,
 };
 
-/* oxlint-disable no-restricted-syntax/no-nullish-union -- TypeScript FileSystem callbacks require undefined fallback sentinels. */
-/**
- * Overlay file text or TypeScript's real-filesystem delegation sentinel.
- */
-type OverlayFileTextOrRealFileSystemFallback = string | undefined;
-
-/**
- * Positive overlay presence or TypeScript's real-filesystem delegation sentinel.
- */
-type OverlayPresenceOrRealFileSystemFallback = true | undefined;
-
-/**
- * Reads virtual current-file content or delegates to TypeScript real filesystem.
- *
- * @param fileName - Path requested by native TypeScript process.
- *
- * @returns overlay content or undefined for real-filesystem fallback.
- *
- * @example
- * ```ts
- * readFileFromOverlayOrDelegate('/repo/src/index.ts');
- * ```
- */
-function readFileFromOverlayOrDelegate(
-  fileName: string,
-): OverlayFileTextOrRealFileSystemFallback {
-  return bridgeState
-    .overlays
-    .get(normalizeSemanticFileName(fileName,),);
-}
-
-/**
- * Reports positive overlay presence or delegates unknown paths to real filesystem.
- *
- * @param fileName - Path requested by native TypeScript process.
- *
- * @returns true for overlay file or delegation sentinel for every other path.
- *
- * @example
- * ```ts
- * reportOverlayPresenceOrDelegate('/repo/src/index.ts');
- * ```
- */
-function reportOverlayPresenceOrDelegate(
-  fileName: string,
-): OverlayPresenceOrRealFileSystemFallback {
-  return bridgeState
-    .overlays
-    .has(normalizeSemanticFileName(fileName,),) ? true : undefined;
-}
-/* oxlint-enable no-restricted-syntax/no-nullish-union */
-
 /**
  * Starts native synchronous API once and registers process cleanup.
  *
@@ -157,10 +109,7 @@ function getApi(): API {
      */
     const api = new API({
       cwd: process.cwd(),
-      fs: {
-        readFile: readFileFromOverlayOrDelegate,
-        fileExists: reportOverlayPresenceOrDelegate,
-      },
+      fs: overlayFileSystem({ overlays: bridgeState.overlays, },),
     },);
     /**
      * Native child whose TypeScript-owned cleanup signal must remain quiet.
@@ -352,17 +301,34 @@ export function openSemanticFile({
    * ever changes is the active file's overlay, and it reports that file through `fileChanges`
    * below, so retention excludes it and it alone is refetched.
    *
-   * The one text the server is not told about is the previously active file, whose overlay is
-   * dropped by `overlays.clear()` above and whose content therefore reverts to disk. Oxlint reads
-   * from disk and hands us what it read, so the two agree and nothing stale can be served. An
-   * editor integration handing an unsaved buffer would break that agreement, and would break it
-   * with or without this call, since clearing the client store only refetches the same text the
-   * server still holds. Fixing that case means reporting the outgoing file as changed, not
-   * emptying a cache. */
+   * Every text this bridge hands over is kept, so the server's view of a source is always the text
+   * it was given, and the file it is about to reread is named through `fileChanges`. */
   /**
-   * Whether active snapshot already contains current source path.
+   * Whether current source is reusable from project this bridge selected for it.
    */
   const sourcePreviouslyKnown = snapshotSourceFile !== undefined;
+  /**
+   * Snapshot the native service is currently answering from, absent before first update.
+   */
+  const currentSnapshot = bridgeState.snapshot;
+  /* Announcing a source is a different question from reusing one, and deriving the first from the
+   * second is how an overlay came to be ignored. A source is created only where the service holds
+   * no copy of it at all; where any materialized project holds one, it is changed, and saying
+   * created instead leaves the service on the text it read first.
+   *
+   * The two answers part company whenever the project cache is silent about a source the service
+   * already read: a nearer configured project the walk refuses to look past, a source pulled in by
+   * an importer under another project, or, before the root key joined one identity, every single
+   * lookup on Windows. A cache miss then cost correctness rather than one discovery. */
+  /**
+   * Whether native service already holds this source under any materialized project.
+   */
+  const serviceHoldsSource = sourcePreviouslyKnown
+    || ((currentSnapshot !== NO_SNAPSHOT)
+      && snapshotHoldsSource({
+        snapshot: currentSnapshot,
+        fileName: normalizedFileName,
+      },));
   /**
    * Whether current source requires open-file project association.
    */
@@ -374,8 +340,8 @@ export function openSemanticFile({
     ? api.updateSnapshot({
       openFiles: [normalizedFileName,],
       fileChanges: {
-        created: sourcePreviouslyKnown ? [] : [normalizedFileName,],
-        changed: sourcePreviouslyKnown ? [normalizedFileName,] : [],
+        created: serviceHoldsSource ? [] : [normalizedFileName,],
+        changed: serviceHoldsSource ? [normalizedFileName,] : [],
         deleted: deletedFiles,
       },
     },)
@@ -418,7 +384,7 @@ export function openSemanticFile({
   bridgeState
     .projectByRoot
     .set(
-      dirname(configFileName,),
+      semanticProjectRootKey(configFileName,),
       configFileName,
     );
 
@@ -433,8 +399,8 @@ export function openSemanticFile({
       }
       : {},
     fileChanges: {
-      changed: sourcePreviouslyKnown ? [normalizedFileName,] : [],
-      created: sourcePreviouslyKnown ? [] : [normalizedFileName,],
+      changed: serviceHoldsSource ? [normalizedFileName,] : [],
+      created: serviceHoldsSource ? [] : [normalizedFileName,],
       deleted: deletedFiles,
     },
   },);

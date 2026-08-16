@@ -176,6 +176,54 @@ await describe({
           },
         },),
         it({
+          name: 'refreshes overlay for source an outer project already holds',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Nested project source the fixture project also contains. */
+            const nestedPath = join(directory.path, 'input.ts',);
+            /** Nested source text retained on disk. */
+            const diskSource = 'export function read(value: { readonly before: string; },): void { void value; }\n';
+            /** Nested source text supplied only through overlay. */
+            const overlaidSource = 'export function read(value: { readonly after: number; },): void { void value; }\n';
+            /* Both files exist before any snapshot, so the fixture project reads the nested source
+             * from disk and the service holds it before the nested project is ever discovered. */
+            writeFileSync(
+              join(directory.path, 'tsconfig.json',),
+              `${JSON.stringify({
+                compilerOptions: { strict: true, },
+                include: ['input.ts',],
+              },)}\n`,
+            );
+            writeFileSync(nestedPath, diskSource,);
+            /** Fixture session whose program pulls in nested source from disk. */
+            const outer = openSemanticFile({
+              fileName: FIXTURE_PATH,
+              sourceText: SOURCE,
+              hasBOM: false,
+            },);
+            /* Positive control. Without this the assertion below passes for the wrong reason,
+             * since a service that never read the nested source has nothing stale to serve. */
+            expect(
+              outer.project.program
+                .getSourceFile(nestedPath,)
+                ?.text,
+            ).toBe(diskSource,);
+            /** Nested session whose project the walk refuses to answer from cache. */
+            const session = openSemanticFile({
+              fileName: nestedPath,
+              sourceText: overlaidSource,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(overlaidSource.indexOf('value:',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected nested overlay parameter type.',);
+            expect(session.checker.typeToString(type,),).toBe('{ readonly after: number; }',);
+            expect(readFileSync(nestedPath, 'utf8',),).toBe(diskSource,);
+          },
+        },),
+        it({
           name: 'fails closed when offset is outside source tree',
           fn: async () => {
             const session = openSemanticFile({
