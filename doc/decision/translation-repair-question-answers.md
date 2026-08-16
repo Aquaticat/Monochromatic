@@ -96,9 +96,26 @@ picks a number. The choice is made on consistency with that understood.
 
 What it means concretely:
 
--   `#91` takes a half for self-certification.
+-   `#91` takes a half for self-certification WHEN there is any self-certification to weigh, which today
+    there is not. See the dependency below before writing code for this.
 -   The number was a stated preference rather than a derived one when it was chosen. It has since been
     measured, below.
+
+### The half cannot take effect yet, and that is not a defect
+
+Checked in the source 2026-08-16, after this decision was recorded as though it were immediately
+implementable. It is not, and writing the weight now would be unreachable code.
+
+`assertCheckerIndependence` in `repair-contract.ts` THROWS when any checker id also appears among the editors
+or refiners. A roster where a model could certify its own text is refused before any work happens, so no
+checker is ever a self-certifier and a half-weight branch would never run.
+
+Relaxing that assertion is the "widen the producing roles" half of `#91`, and question 1 answer D blocks
+roster widening until `#84` reports. So the ordering is forced: `#84`, then the roles widen, then the half
+becomes reachable and is applied. Weighing has to replace forbidding in one change, not before it.
+
+WHAT THE HALF STILL BUYS BY BEING DECIDED NOW: whoever relaxes the assertion does not also have to pick a
+number, and the self-preference measurement below says the number is about right.
 
 ### Measured after the fact, and it supports the half
 
