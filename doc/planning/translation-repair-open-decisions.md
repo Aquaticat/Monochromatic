@@ -1212,3 +1212,12 @@ That ordering costs nothing, because C keeps B's denominator.
     roster with every model heard, and both verdicts that moved moved AWAY from
     coverage rather than toward it. The sections I had labelled as plainly
     translated are still reported as carrying nothing.
+    THE BLOCK SET WAS RERUN TOO, on `mikaela_khara`, the entry that produced the
+    three splits. All three are now carried, and of the quotes still unanchored
+    none is a soft line wrap where ten of eleven were before, so the refusals
+    that remain are English a model composed rather than copied, plus one
+    single-word quote refused for occurring twice. Across both runs of that entry,
+    ninety-six answers from six models, NOT ONE VOTE FOR ABSENCE was cast on
+    sixteen passages the block aligner refuses to pair. If anything, the paragraph
+    scale reads worse for landing four than it did: at most one of twenty-two, and
+    plausibly none.
