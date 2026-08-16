@@ -11093,3 +11093,82 @@ space, so nothing can be joined across a boundary the document keeps. The
 diagnostic is deleted, because nothing can emit it now, and the two tests that
 pinned the refusal now pin the location and the ambiguity. Shown to fail with
 the pass disabled, then restored; the whole package suite is green.
+
+### The eleven sections rerun under all three changes, and what the rerun can and cannot attribute
+
+The section set was measured once before the v2 sheet, the roster threshold and
+the line-wrap pass landed, and once after. Nine of the eleven verdicts are
+identical. Two moved, and only one of the two can be attributed.
+
+    XIEPT2 sections 0 to 6   absent, both runs
+    XIEPT2 section 7         absent  ->  split
+    XingZ60 section 12       carried ->  partly-carried
+    XingZ60 sections 13, 14  absent, both runs
+
+WHAT `#106` RESTS ON IS UNCHANGED, and it is worth saying plainly because the
+rerun was run to try to break it: NO CANDIDATE IN EITHER RUN REPORTS FULL
+COVERAGE. Nine of eleven are absent by a majority of the entire roster with all
+six models heard, and the two that moved both moved AWAY from coverage, not
+toward it. The sections I had labelled as plainly translated are still reported
+as carrying nothing.
+
+SECTION 12 IS ATTRIBUTABLE, AND IT IS NOT THE MODELS CHANGING THEIR MINDS. The
+v2 tallies are 0 full and 5 partial. The verdict shape before this landing
+counted any claim of coverage as one anchored vote, so those same five votes
+printed as `carried (anchored 5)`. The move is the partial-from-full separation
+arriving, which is exactly what a review said it would do to this candidate, and
+`partly-carried` forbids inserting the passage whole just as `carried` did.
+
+SECTION 7 IS NOT ATTRIBUTABLE, and claiming otherwise would be the failure this
+document exists to prevent. The VOTES moved, 5 absent and 1 anchored in the
+first run against 3 absent and 2 partial in the second, and votes of that shape
+read as `split` under either threshold rule. So the cause is either the rewritten
+sheet or ordinary run-to-run variance between two samples of six stochastic
+models, and ONE RUN CANNOT SEPARATE THEM: the run-to-run band for this stage has
+never been measured, so a single move smaller than an unmeasured band is not
+evidence of anything.
+
+THE LINE-WRAP FIX DID NOT SHOW UP HERE, AND WAS NOT EXPECTED TO. Unanchored
+quotes across the section set went from 4 to 6, the wrong direction for a fix
+that makes anchoring strictly easier. That is not a contradiction: the two runs
+quote different sentences from different replies, so the comparison is
+uncontrolled, and the wrap diagnosis was made on the BLOCK set, where 10 of 11
+unanchored quotes were soft wraps. The controlled test is a rerun of
+`mikaela_khara`, whose three v1 splits carried 3, 3 and 4 unanchored quotes with
+ZERO absent votes, which is the wrap signature exactly.
+
+### The locator fix invalidated the repair cache, and nothing would have reported it
+
+Found by a reviewer reading the landing rather than by anything in the code.
+`locateQuote` gained the collapsing pass, and `critic-wire.ts` DROPS a claim it
+cannot anchor. So a critic quote copied out of a wrapped paragraph now survives
+where it used to be discarded, the surviving issue set for a slice changes, and
+with it the patch and the settled text.
+
+WHAT MAKES IT INVISIBLE is that the cache key holds the slice texts, the
+governance flag and the run shape, and the fix changes NONE of them. The same
+key answers differently before and after, so a resumed corpus pass would mix
+records from both generations and report nothing.
+
+IT IS NOT THE CASE THAT LET VERSION 25 STAND. That record could only overclaim a
+change, and `sliceRecordAgrees` catches an overclaim on resume at the cost of one
+recomputed slice. This one can differ either way and leaves no contradiction
+behind: a slice settled before the fix with a dropped wrapped quote reads exactly
+like a slice where the critic found nothing. `SLICE_CACHE_VERSION` is 27, and the
+pinned key hash moved with it. `TRANSLATE_SLICE_CACHE_VERSION` deliberately did
+not: anchoring reaches the repair lane through `repair-stages.ts` alone, and the
+translate lane never asks a critic to quote anything.
+
+### Both verdict guards shown to fail, which they had not been
+
+The roster threshold and the quorum gate arrived together with a signature
+change, so the old behaviour was unreachable and neither guard had ever been
+watched to fail. One probe covers both: compute the majority over `voices.length`
+and drop the `quorumMet` gate. Four tests fail, three on the threshold and one on
+the gate, `'absent'` where `'inconclusive'` is required. Restored, rebuilt, green.
+
+WORTH RECORDING ABOUT THE GATE'S REACH, since it is not obvious from reading it:
+quorum needs `ceil(n / 2)` and a majority needs `floor(n / 2) + 1`, so reaching a
+majority ALWAYS implies quorum. The gate can therefore only ever convert a
+`split` into `inconclusive`, which is the case the failing test pins, and it can
+never overturn a decided side.
