@@ -7,7 +7,10 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  join,
+  relative,
+} from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
 import {
@@ -303,6 +306,51 @@ await describe({
           },
         },),
         it({
+          name: 'invalidates a deleted source while reopening one already held',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Source deleted while another source of same project is reopened. */
+            const goingPath = join(directory.path, 'going.ts',);
+            /** Source already held by project when deletion is reported. */
+            const stayingPath = join(directory.path, 'staying.ts',);
+            /** Text of source that disappears. */
+            const goingSource = 'export const goingValue: string = \'going\';\n';
+            /** Text of source that remains. */
+            const stayingSource = 'export const stayingValue: number = 1;\n';
+            writeFileSync(goingPath, goingSource,);
+            writeFileSync(stayingPath, stayingSource,);
+            /* Open the staying source first so the project holds it, then the going one so it is
+             * the active source. Reopening the staying source now takes the reuse-free path with no
+             * discovery, which is the branch that carries the deletion in the second update. */
+            openSemanticFile({
+              fileName: stayingPath,
+              sourceText: stayingSource,
+              hasBOM: false,
+            },);
+            openSemanticFile({
+              fileName: goingPath,
+              sourceText: goingSource,
+              hasBOM: false,
+            },);
+            rmSync(goingPath,);
+            const session = openSemanticFile({
+              fileName: stayingPath,
+              sourceText: stayingSource,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(stayingSource.indexOf('stayingValue',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected staying source type.',);
+            expect(session.checker.typeToString(type,),).toBe('number',);
+            expect(
+              session.project.program
+                .getSourceFile(goingPath,),
+            ).toBe(undefined,);
+          },
+        },),
+        it({
           name: 'opens configured source through symbolic link path',
           fn: async () => {
             closeSemanticBridge();
@@ -388,6 +436,66 @@ await describe({
             expect(recovered.project.configFileName,).toContain(
               'package/test-fixture/oxlint-no-restricted-syntax/tsconfig.json',
             );
+          },
+        },),
+        it({
+          name: 'refuses to leave refused text where an importer can reach it',
+          fn: async () => {
+            closeSemanticBridge();
+            /** Disposable dependency directory outside every configured project. */
+            const dependencyRoot = mkdtempSync(join(tmpdir(), 'semantic-refused-',),);
+            using dependencyDirectory: SemanticFixtureDirectory = {
+              path: dependencyRoot,
+              [Symbol.dispose]: function removeRefusedFixture(): void {
+                rmSync(dependencyRoot, { recursive: true, force: true, },);
+              },
+            };
+            using directory = createSemanticFixtureDirectory();
+            /** Dependency path this bridge refuses before any importer names it. */
+            const dependencyPath = join(dependencyDirectory.path, 'outside.ts',);
+            /** Dependency text retained on disk. */
+            const diskSource = 'export type Value = { readonly fromDisk: string; };\n';
+            writeFileSync(dependencyPath, diskSource,);
+            let caught: unknown;
+            try {
+              openSemanticFile({
+                fileName: dependencyPath,
+                sourceText: 'export type Value = { readonly fromOverlay: number; };\n',
+                hasBOM: false,
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect((caught as Error).message,).toContain('no configured project',);
+            /* The refusal is not the end of that text. Discovery handed it to the service, and the
+             * service keeps it until told otherwise, so a configured source importing this path
+             * gets typed against text this bridge refused and disk never had. */
+            const importerPath = join(directory.path, 'importer.ts',);
+            /** Import specifier reaching the refused dependency from configured project. */
+            const specifier = relative(directory.path, dependencyPath,)
+              .replaceAll('\\', '/',);
+            /** Configured importer naming refused dependency. */
+            const importerSource =
+              `import type { Value } from '${specifier}';\nexport function read(value: Value,): Value { return value; }\n`;
+            writeFileSync(importerPath, importerSource,);
+            const session = openSemanticFile({
+              fileName: importerPath,
+              sourceText: importerSource,
+              hasBOM: false,
+            },);
+            const type = session.checker.getTypeAtLocation(
+              session.nodeAtOffset(importerSource.indexOf('value:',),),
+            );
+            if (type === undefined)
+              throw new Error('Expected imported dependency type.',);
+            expect(
+              session.checker
+                .getPropertiesOfType(type,)
+                .map(function propertyName(property,): string {
+                  return property.name;
+                },),
+            ).toEqual(['fromDisk',],);
           },
         },),
         it({

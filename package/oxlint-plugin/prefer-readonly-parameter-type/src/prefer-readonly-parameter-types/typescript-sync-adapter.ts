@@ -29,6 +29,7 @@ import {
 } from './semantic-file-name.ts';
 import { overlayFileSystem, } from './semantic-overlay-filesystem.ts';
 import { snapshotHoldsSource, } from './semantic-snapshot-presence.ts';
+import { sourceWithBOM, } from './semantic-source-text.ts';
 import {
   assertTypeScriptSeven,
   configureNativeApiChildShutdown,
@@ -54,11 +55,6 @@ const NO_SNAPSHOT: unique symbol = Symbol('TypeScript semantic snapshot not crea
  * Sentinel before bridge tracks current source for rename invalidation.
  */
 const NO_ACTIVE_FILE: unique symbol = Symbol('TypeScript semantic bridge has no active source',);
-
-/**
- * UTF-16 byte-order mark restored when Oxlint strips it from source text.
- */
-const BYTE_ORDER_MARK = '\uFEFF';
 
 /**
  * TypeScript project-service identity for source outside configured projects.
@@ -153,25 +149,6 @@ function getApi(): API {
  */
 export function initializeSemanticBridge(): void {
   getApi();
-}
-
-/**
- * Restores source text exactly as TypeScript sees it.
- *
- * @param sourceText - Oxlint source text.
- *
- * @param hasBOM - Whether Oxlint removed leading byte-order mark.
- *
- * @returns source text with leading mark restored when necessary.
- */
-function sourceWithBOM({
-  sourceText,
-  hasBOM,
-}: {
-  readonly sourceText: string;
-  readonly hasBOM: boolean;
-},): string {
-  return hasBOM ? `${BYTE_ORDER_MARK}${sourceText}` : sourceText;
 }
 
 /**
@@ -367,11 +344,23 @@ export function openSemanticFile({
   const { configFileName, } = discoveredProject;
   if ((configFileName === undefined)
     || (configFileName === INFERRED_PROJECT_CONFIG)) {
+    /* Drop the refused text before the update that rereads it, not after. Discovery already handed
+     * this text to the service, so the service holds it whatever this map says next. Nothing else
+     * would ever tell it otherwise: this bridge never reopens a path it refused, and the next
+     * source to reach that path reaches it as an import, not as an open. Typing a configured source
+     * against text this bridge refused, and that exists nowhere on disk, is the result. */
+    bridgeState.overlays
+      .delete(normalizedFileName,);
     /**
      * Snapshot closing temporary open-file association after failed discovery.
      */
     const releaseSnapshot = api.updateSnapshot({
       closeFiles: [normalizedFileName,],
+      fileChanges: {
+        changed: [normalizedFileName,],
+        created: [],
+        deleted: [],
+      },
     },);
     /* This failure advanced the service twice, and one of those updates may have reported the
      * previously active source as deleted. Keeping the snapshot from before them would leave the
@@ -387,10 +376,6 @@ export function openSemanticFile({
     if (discoverySnapshot !== NO_SNAPSHOT)
       discoverySnapshot.dispose();
     bridgeState.activeFileName = NO_ACTIVE_FILE;
-    /* Only this source's text goes. Every other one is text the service still holds and still
-     * reads through this map, and dropping those reverts them to disk behind their own snapshot. */
-    bridgeState.overlays
-      .delete(normalizedFileName,);
     throw new SemanticBridgeError({
       reason: 'project-not-found',
       message: `TypeScript found no configured project for ${normalizedFileName}.`,
@@ -468,9 +453,9 @@ export type { SemanticBridgeCacheStats, } from './semantic-bridge-cache.ts';
 export type { SemanticFileSession, } from './semantic-file-session.ts';
 
 /**
- * Reads bounded cache counts without exposing mutable bridge storage.
+ * Reads cache evidence without exposing mutable bridge storage.
  *
- * @returns current overlay and configured-project root counts.
+ * @returns current overlay and configured-project root counts, plus project discoveries so far.
  *
  * @example
  * ```ts

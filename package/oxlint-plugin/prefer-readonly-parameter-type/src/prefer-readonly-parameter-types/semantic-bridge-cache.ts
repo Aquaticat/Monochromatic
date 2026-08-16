@@ -13,12 +13,14 @@ import {
 import { ancestorDirectories, } from './ancestor-directories.ts';
 
 /**
- * Bounded semantic bridge cache counts for lifecycle verification.
+ * Semantic bridge cache evidence for lifecycle verification.
  *
- * `projectDiscoveryCount` counts how often the bridge had to ask TypeScript which project owns a
- * source, which is what a root that never matches costs. Every other count stays put under such a
- * miss, so this is the one number that tells a served cache from a bypassed one, and it is the
- * evidence a host with its own path spelling can fail on.
+ * `overlayCount` and `projectRootCount` are bounded sizes, one entry per source and per configured
+ * root a process reaches. `projectDiscoveryCount` is not a size but a running total, counting how
+ * often the bridge had to ask TypeScript which project owns a source, and it resets only with
+ * `closeSemanticBridge`. That total is what a root that never matches costs. Every other count
+ * stays put under such a miss, so it is the one number that tells a served cache from a bypassed
+ * one, and the evidence a host with its own path spelling can fail on.
  *
  * @example
  * ```ts
