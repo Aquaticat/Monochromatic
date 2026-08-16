@@ -132,12 +132,13 @@ OUT {"jsonrpc":"2.0","id":0,"result":{"resultType":"complete","tools":[...8 tool
 
 ## Known gaps
 
-Two of the four gaps recorded when this plan was written are now closed,
- both in commit `107bd707a`.
-The remaining two are tracked as issues rather than left here,
- so this section stays accurate as they land.
+All four gaps recorded when this plan was written are now closed.
+Two went in commit `107bd707a`;
+ the other two were filed as issues first,
+ decided with the user,
+ then built.
 
-### Closed
+### Closed in `107bd707a`
 
 -   `process.stdout.write` backpressure was ignored,
      so large tool output buffered in memory.
@@ -167,14 +168,18 @@ The remaining two are tracked as issues rather than left here,
      so the mvm races that concurrent handlers would have opened do not arise.
     Guards were each proven to fail without the fix.
 
-### Open
+### Closed later the same day
 
--   Advertised `inputSchema` is not validated against incoming arguments before dispatch,
-     so a missing required field still fails inside the handler.
-    Tracked as [#434](https://github.com/Aquaticat/Monochromatic/issues/434);
-     the chosen tool is valibot,
-     already a workspace dependency.
-    Not built.
+-   Advertised `inputSchema` was not validated against incoming arguments before dispatch,
+     so a missing required field failed inside the handler.
+    Fixed in the commit closing
+    [#434](https://github.com/Aquaticat/Monochromatic/issues/434):
+     a tool declares its arguments once in valibot,
+     `package/mcp/stdio/src/tool-schema.ts` converts that into the advertised JSON Schema,
+     and the same declaration gates every call.
+    Conversion targets draft-2020-12 and restores the object root the spec requires,
+     since a union converts to a bare `anyOf`.
 
-The review that once gated this work never returned;
+Every gap recorded when this plan was written is now closed.
+The review that once gated the last two never returned;
  `doc/handover/mcp-stdio-2026-07-28.md` records that it stalled and exited on its timeout.

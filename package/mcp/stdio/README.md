@@ -31,6 +31,7 @@ import {
   defineTool,
   serve,
 } from '@monochromatic-dev/mcp-stdio';
+import * as v from 'valibot';
 
 const server = createMcpServer({
   config: {
@@ -43,11 +44,11 @@ const server = createMcpServer({
       name: 'greet',
       entry: {
         description: 'Greets by name.',
-        inputSchema: {
-          type: 'object',
-          properties: { name: { type: 'string', }, },
-          required: ['name',],
-        },
+        // Declared once: this becomes the JSON Schema clients see in `tools/list`, and
+        // gates every call, so the advertised contract cannot drift from the enforced one.
+        schema: v.strictObject({
+          name: v.pipe(v.string(), v.description('Who to greet',),),
+        },),
         handler: async args => ({
           content: [{ type: 'text', text: `Hello, ${args.name}!`, },],
         }),
@@ -100,14 +101,13 @@ Implemented:
    audio,
    resource links,
    and embedded resources
-- `tools/call` arguments checked for shape only:
-   a non-object `arguments` is rejected with `-32602`,
-   while conformance to the tool's declared `inputSchema` is not checked
-   before dispatch
+- `tools/call` arguments validated against the schema the tool advertises,
+   answering `-32602` before dispatch when they do not match
 - `resultType` on every result,
    plus `ttlMs` and `cacheScope` on the two cacheable results
 - `io.modelcontextprotocol/serverInfo` stamped into the `_meta` of every result
-- `notifications/cancelled` accepted and dropped
+- `notifications/cancelled` read while a tool is running,
+   and applied
 - JSON-RPC error codes for parse errors,
    invalid requests,
    unknown methods,
@@ -191,7 +191,9 @@ src/
   server-tool-call.ts        tools/call dispatch to registered handlers
   server-tool-registry.ts    Tool entry normalization and duplicate-name rejection
   server-types.ts            Server configuration, tool entry, and handle types
+  tool-schema.ts             Valibot schema conversion to JSON Schema, and call validation
   transport.ts               Connects server handle to stdin/stdout
+  transport-queue.ts         Serial execution queue, cancellation, and single write path
   line-reader.ts             Async iterator yielding newline-delimited lines from a byte stream
   index.ts                   Public API re-exports
 ```
