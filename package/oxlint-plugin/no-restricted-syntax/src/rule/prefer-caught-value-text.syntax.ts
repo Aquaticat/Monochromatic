@@ -270,7 +270,7 @@ export function isDuplicateFallback(
      */
     const { expressions, } = expression;
     return expressions.some(
-      function isTypeofDetectorInput(templateExpression,): boolean {
+      function isTypeofDetectorInput(templateExpression: ForeignBorrowed<ESTree.Expression>,): boolean {
         return (templateExpression.type === 'UnaryExpression')
           && (templateExpression.operator === 'typeof')
           && (identifierName({ expression: templateExpression.argument, },) === identifier);
