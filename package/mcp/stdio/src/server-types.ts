@@ -10,9 +10,10 @@ import type {
   ToolAnnotations,
   ToolDefinition,
   ToolHandler,
-  ToolInputSchema,
   ToolOutputSchema,
 } from './protocol-tool.ts';
+
+import type { ToolArgumentsSchema, } from './tool-schema.ts';
 
 import type {
   JsonRpcInbound,
@@ -55,7 +56,7 @@ export type ToolEntry = {
   readonly name: string;
   readonly title?: string;
   readonly description: string;
-  readonly inputSchema?: ToolInputSchema;
+  readonly schema: ToolArgumentsSchema;
   readonly outputSchema?: ToolOutputSchema;
   readonly annotations?: ToolAnnotations;
   readonly handler: ToolHandler;
@@ -80,6 +81,12 @@ export type ToolEntry = {
 export type RegisteredTool = {
   readonly definition: ToolDefinition;
   readonly handler: ToolHandler;
+
+  /**
+   * Schema the definition was derived from, reused to gate each call against exactly what
+   * was advertised.
+   */
+  readonly schema: ToolArgumentsSchema;
 };
 
 //endregion

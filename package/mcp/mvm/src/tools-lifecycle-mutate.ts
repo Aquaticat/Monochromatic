@@ -7,10 +7,16 @@ import {
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
+import * as v from 'valibot';
+
 import {
-  BACKEND_PROPERTY,
+  BACKEND_ARGUMENT,
   backendFromArgs,
 } from './backend.ts';
+import {
+  optionalString,
+  requiredString,
+} from './tool-arguments.ts';
 import {
   errorResponse,
   invalidArgumentsResponse,
@@ -29,35 +35,22 @@ export const createTool: ToolEntry = defineTool({
   entry: {
     description:
       'Creates and starts a new VM on the selected backend. libvirt supports ubuntu (default), fedora, alpine, windows, or a custom template name; hetzner supports ubuntu/debian/fedora/rocky/centos/alma or a literal Hetzner image slug. Windows libvirt VMs take 15-30 minutes on first creation. When `from` is provided, clones from that existing VM instead. `server_type` and `location` apply to the hetzner backend only.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'VM name (alphanumeric, hyphens, underscores; hetzner additionally forbids underscores)',
-        },
-        from: {
-          type: 'string',
-          description: 'Clone from this existing VM instead of creating fresh',
-        },
-        image: {
-          type: 'string',
-          description:
-            'Image to use (backend-specific): e.g. ubuntu (default), fedora, alpine, windows, or a custom/literal image name',
-        },
-        server_type: {
-          type: 'string',
-          description: 'Hetzner server type (e.g. cx23); defaults to the cheapest non-deprecated type; ignored by the libvirt backend',
-        },
-        location: {
-          type: 'string',
-          description:
-            'Hetzner location or comma-separated fallback series (e.g. fsn1,nbg1); ignored by the libvirt backend',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      required: ['name',],
-    },
+    schema: v.strictObject({
+      name: requiredString(
+        'VM name (alphanumeric, hyphens, underscores; hetzner additionally forbids underscores)',
+      ),
+      from: optionalString('Clone from this existing VM instead of creating fresh',),
+      image: optionalString(
+        'Image to use (backend-specific): e.g. ubuntu (default), fedora, alpine, windows, or a custom/literal image name',
+      ),
+      server_type: optionalString(
+        'Hetzner server type (e.g. cx23); defaults to the cheapest non-deprecated type; ignored by the libvirt backend',
+      ),
+      location: optionalString(
+        'Hetzner location or comma-separated fallback series (e.g. fsn1,nbg1); ignored by the libvirt backend',
+      ),
+      backend: BACKEND_ARGUMENT,
+    },),
     handler: async function handleCreateVm(args,) {
       /**
        * New VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
@@ -122,33 +115,27 @@ export const destroyTool: ToolEntry = defineTool({
   entry: {
     description:
       'Force-stops and deletes a VM by name, or all managed VMs when `all` is true. Provide exactly one of `name` or `all`. Operates on the selected backend only.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'VM name to destroy (mutually exclusive with all)',
-        },
-        all: {
-          type: 'boolean',
-          description: 'Destroy every managed VM (mutually exclusive with name)',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      // Encodes the exactly-one rule the description states, so a client can reject an
-      // ambiguous call before it reaches this server at all.
-      oneOf: [
-        {
-          required: ['name',],
-          not: { required: ['all',], },
-        },
-        {
-          required: ['all',],
-          properties: { all: { const: true, }, },
-          not: { required: ['name',], },
-        },
+    // Exactly-one-target is expressed here rather than left to the handler, so a client can
+    // reject an ambiguous call before it reaches this server. Each branch is strict, which is
+    // what makes the union exclusive: `{ name, all: true }` carries a property neither branch
+    // admits and so matches neither. The message is the one a caller sees on refusal, so it
+    // states the rule rather than reporting a union mismatch.
+    schema: v.union(
+      [
+        v.strictObject({
+          name: requiredString('VM name to destroy (mutually exclusive with all)',),
+          backend: BACKEND_ARGUMENT,
+        },),
+        v.strictObject({
+          all: v.pipe(
+            v.literal(true,),
+            v.description('Destroy every managed VM (mutually exclusive with name)',),
+          ),
+          backend: BACKEND_ARGUMENT,
+        },),
       ],
-    },
+      'Provide either `name` or `all: true`, not both, and not neither.',
+    ),
     handler: async function handleDestroyVm(args,) {
       /**
        * Optional single-VM target; mutually exclusive with `all` and validated below.

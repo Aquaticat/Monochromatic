@@ -65,6 +65,13 @@ export {
   UnsupportedProtocolVersionError,
 } from './server-protocol-error.ts';
 export { isPlainObject, } from './plain-object.ts';
+export {
+  TOOL_ARGUMENTS_VALID,
+  type ToolArgumentsSchema,
+  ToolSchemaError,
+  toolInputSchema,
+  validateToolArguments,
+} from './tool-schema.ts';
 export { requireProtocolVersion, } from './server-request-version.ts';
 export {
   buildDiscoverResult,

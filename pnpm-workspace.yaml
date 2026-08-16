@@ -58,6 +58,7 @@ catalog:
   '@types/sinon-chai': '>=4.0.0'
   '@types/three': '>=0.182.0'
   '@types/unist': '>=3.0.3'
+  '@valibot/to-json-schema': '>=1.7.1'
   'aws4fetch': '>=1.0.20'
   'better-auth': '>=1.6.9'
   'browserslist': '>=4.28.8'

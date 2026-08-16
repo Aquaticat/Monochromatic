@@ -7,10 +7,13 @@ import {
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
+import * as v from 'valibot';
+
 import {
-  BACKEND_PROPERTY,
+  BACKEND_ARGUMENT,
   backendFromArgs,
 } from './backend.ts';
+import { requiredString, } from './tool-arguments.ts';
 import {
   errorResponse,
   textResponse,
@@ -28,29 +31,12 @@ export const pushTool: ToolEntry = defineTool({
   entry: {
     description:
       'Pushes a file from the host filesystem into a running VM. libvirt writes via the virtiofs shared mount; hetzner copies to the given absolute remote path over SCP.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'VM name to push to',
-        },
-        hostPath: {
-          type: 'string',
-          description: 'Absolute or relative path on the host to read from',
-        },
-        guestPath: {
-          type: 'string',
-          description: 'Absolute path inside the guest to write to',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      required: [
-        'name',
-        'hostPath',
-        'guestPath',
-      ],
-    },
+    schema: v.strictObject({
+      name: requiredString('VM name to push to',),
+      hostPath: requiredString('Absolute or relative path on the host to read from',),
+      guestPath: requiredString('Absolute path inside the guest to write to',),
+      backend: BACKEND_ARGUMENT,
+    },),
     handler: async function handlePushToVm(args,) {
       /**
        * Target VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
@@ -95,29 +81,12 @@ export const pullTool: ToolEntry = defineTool({
   entry: {
     description:
       'Pulls a file from a running VM to the host filesystem. libvirt reads via the virtiofs shared mount; hetzner copies from the given absolute remote path over SCP.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'VM name to pull from',
-        },
-        guestPath: {
-          type: 'string',
-          description: 'Absolute path inside the guest to read from',
-        },
-        hostPath: {
-          type: 'string',
-          description: 'Absolute or relative path on the host to write to',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      required: [
-        'name',
-        'guestPath',
-        'hostPath',
-      ],
-    },
+    schema: v.strictObject({
+      name: requiredString('VM name to pull from',),
+      guestPath: requiredString('Absolute path inside the guest to read from',),
+      hostPath: requiredString('Absolute or relative path on the host to write to',),
+      backend: BACKEND_ARGUMENT,
+    },),
     handler: async function handlePullFromVm(args,) {
       /**
        * Source VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.

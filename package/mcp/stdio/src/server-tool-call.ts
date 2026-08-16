@@ -18,6 +18,10 @@ import {
   respondSuccess,
 } from './server-response.ts';
 import type { RegisteredTool, } from './server-types.ts';
+import {
+  TOOL_ARGUMENTS_VALID,
+  validateToolArguments,
+} from './tool-schema.ts';
 
 /**
  * Dispatches a `tools/call` request to the registered handler.
@@ -105,6 +109,23 @@ export async function handleToolCall(
       id,
       code: JSON_RPC_INVALID_PARAMS,
       message: `Unknown tool: ${toolName}`,
+    },);
+  }
+
+  /**
+   * Verdict from the same schema advertised for this tool.
+   */
+  const validation = validateToolArguments({
+    schema: registered.schema,
+    args: toolArgs,
+  },);
+  // Arguments contradicting the advertised schema are a caller error, so they answer with
+  // invalid-params rather than reaching the handler and failing partway through its work.
+  if (validation !== TOOL_ARGUMENTS_VALID) {
+    return respondError({
+      id,
+      code: JSON_RPC_INVALID_PARAMS,
+      message: `Invalid arguments for tool "${toolName}": ${validation}`,
     },);
   }
 

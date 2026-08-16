@@ -7,8 +7,10 @@ import {
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
+import * as v from 'valibot';
+
 import {
-  BACKEND_PROPERTY,
+  BACKEND_ARGUMENT,
   backendFromArgs,
 } from './backend.ts';
 import {
@@ -27,12 +29,7 @@ export const listTool: ToolEntry = defineTool({
   entry: {
     description:
       'Lists all managed VMs on the selected backend with their current state (running, shut off, etc.).',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        backend: BACKEND_PROPERTY,
-      },
-    },
+    schema: v.strictObject({ backend: BACKEND_ARGUMENT, },),
     handler: async function handleListVms(args,) {
       try {
         /**
@@ -73,12 +70,7 @@ export const updateTool: ToolEntry = defineTool({
   entry: {
     description:
       'Refreshes provider-managed images. libvirt re-downloads base images and rebuilds all templates (Windows rebuild takes 15-30 minutes); hetzner validates the token and reports available system images (nothing is built locally).',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        backend: BACKEND_PROPERTY,
-      },
-    },
+    schema: v.strictObject({ backend: BACKEND_ARGUMENT, },),
     handler: async function handleUpdateTemplates(args,) {
       try {
         /**

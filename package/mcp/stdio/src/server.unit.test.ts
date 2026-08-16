@@ -24,12 +24,33 @@ import {
   type ToolContent,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio';
+import * as v from 'valibot';
+
+/**
+ * Permissive argument schema for tools whose cases exercise dispatch rather than validation.
+ *
+ * `object` ignores unknown keys where `strictObject` would reject them, so adding it to an
+ * existing case changes nothing about what that case asserts.
+ */
+const ANY_ARGUMENTS = v.object({},);
+
+/**
+ * Envelope every derived `inputSchema` carries regardless of a tool's arguments.
+ *
+ * `$schema` names 2020-12 because that is the draft revision 2026-07-28 expects; the
+ * converter would otherwise default to draft-07.
+ */
+const DERIVED_ROOT = {
+  type: 'object',
+  required: [],
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+} as const;
 
 /** Reusable test tool that echoes arguments back as text content. */
 const echoTool: ToolEntry = {
   name: 'echo',
   description: 'Echoes arguments.',
-  inputSchema: { type: 'object', properties: { text: { type: 'string', }, }, },
+  schema: v.object({ text: v.optional(v.string(),), },),
   handler: (args: Readonly<Record<string, unknown>>,) => ({
     content: [{ type: 'text', text: JSON.stringify(args,), },],
   }),
@@ -86,6 +107,7 @@ await describe({
               name: 'greet',
               entry: {
                 description: 'Greets by name.',
+                schema: ANY_ARGUMENTS,
                 handler: () => ({ content: [{ type: 'text', text: 'hello', },], }),
               },
             },);
@@ -94,32 +116,20 @@ await describe({
           },
         },),
         it({
-          name: 'preserves inputSchema when provided',
+          name: 'carries the declared schema through unchanged',
           fn: async () => {
-            const schema = { type: 'object' as const,
-              properties: { name: { type: 'string', }, }, required: ['name',] as const, };
+            const schema = v.strictObject({ name: v.string(), },);
             const entry = defineTool({
               name: 'test',
               entry: {
                 description: 'Test tool.',
-                inputSchema: schema,
+                schema,
                 handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
               },
             },);
-            expect(entry.inputSchema,).toEqual(schema,);
-          },
-        },),
-        it({
-          name: 'leaves inputSchema undefined when not provided',
-          fn: async () => {
-            const entry = defineTool({
-              name: 'test',
-              entry: {
-                description: 'Test tool.',
-                handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
-              },
-            },);
-            expect(entry.inputSchema,).toBeUndefined();
+            // The entry keeps the valibot schema itself; conversion to the advertised JSON
+            // Schema happens at registration, so one declaration drives both.
+            expect(entry.schema,).toBe(schema,);
           },
         },),
       ],
@@ -142,13 +152,14 @@ await describe({
                 description: 'Declares every optional field.',
                 outputSchema: { type: 'object', },
                 annotations: { readOnlyHint: true, },
+                schema: ANY_ARGUMENTS,
                 handler: () => ({ content: [], }),
               },],
             },);
             expect(registry.get('rich',)?.definition,).toEqual({
               name: 'rich',
               description: 'Declares every optional field.',
-              inputSchema: { type: 'object', },
+              inputSchema: { ...DERIVED_ROOT, properties: {}, },
               title: 'Rich Tool',
               outputSchema: { type: 'object', },
               annotations: { readOnlyHint: true, },
@@ -162,7 +173,10 @@ await describe({
             expect(registry.get('echo',)?.definition,).toEqual({
               name: 'echo',
               description: 'Echoes arguments.',
-              inputSchema: { type: 'object', properties: { text: { type: 'string', }, }, },
+              inputSchema: {
+                ...DERIVED_ROOT,
+                properties: { text: { type: 'string', }, },
+              },
             },);
           },
         },),
@@ -444,18 +458,21 @@ await describe({
                   {
                     name: 'echo',
                     description: 'Echoes arguments.',
-                    inputSchema: { type: 'object',
-                      properties: { text: { type: 'string', }, }, },
+                    inputSchema: {
+                      ...DERIVED_ROOT,
+                      properties: { text: { type: 'string', }, },
+                    },
                   },
                 ],);
               },
             },),
             it({
-              name: 'defaults inputSchema to empty object schema when not provided',
+              name: 'derives an empty object schema for a tool taking no arguments',
               fn: async () => {
                 const tool: ToolEntry = {
                   name: 'no-schema',
                   description: 'No explicit schema.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
                 };
                 const server = createMcpServer({
@@ -468,7 +485,7 @@ await describe({
                 const { tools, } = response.result as {
                   tools: readonly { inputSchema: unknown; }[];
                 };
-                expect(tools[0]?.inputSchema,).toEqual({ type: 'object', },);
+                expect(tools[0]?.inputSchema,).toEqual({ ...DERIVED_ROOT, properties: {}, },);
               },
             },),
             it({
@@ -477,11 +494,13 @@ await describe({
                 const toolA: ToolEntry = {
                   name: 'alpha',
                   description: 'First tool.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => ({ content: [{ type: 'text', text: 'a', },], }),
                 };
                 const toolB: ToolEntry = {
                   name: 'beta',
                   description: 'Second tool.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => ({ content: [{ type: 'text', text: 'b', },], }),
                 };
                 const server = createMcpServer({
@@ -556,6 +575,7 @@ await describe({
                   name: 'structured',
                   description: 'Returns structured output.',
                   outputSchema: { type: 'object', },
+                  schema: ANY_ARGUMENTS,
                   handler: () => ({
                     content: [{ type: 'text', text: '{"exitCode":0}', },],
                     structuredContent: { exitCode: 0, },
@@ -599,6 +619,7 @@ await describe({
                 const everyBlockTool: ToolEntry = {
                   name: 'every-block',
                   description: 'Returns one of each content block.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => ({ content: blocks, }),
                 };
                 const server = createMcpServer({
@@ -621,6 +642,7 @@ await describe({
                 const annotatedTool: ToolEntry = {
                   name: 'annotated',
                   description: 'Returns annotated content.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => ({
                     content: [{
                       type: 'text',
@@ -748,11 +770,104 @@ await describe({
               },
             },),
             it({
+              name: 'refuses a call omitting a required argument before reaching the handler',
+              fn: async () => {
+                /** Records whether the handler ran, proving the refusal happened earlier. */
+                const dispatched: string[] = [];
+                const strictTool: ToolEntry = {
+                  name: 'strict',
+                  description: 'Needs a name.',
+                  schema: v.strictObject({ name: v.string(), },),
+                  handler: () => {
+                    dispatched.push('ran',);
+                    return { content: [], };
+                  },
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [strictTool,],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 24,
+                    method: 'tools/call',
+                    params: { name: 'strict', arguments: {}, },
+                  },),
+                ) as JsonRpcErrorResponse;
+
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+                // Naming the argument is the point: a bare "invalid arguments" leaves the
+                // caller guessing which of several it got wrong.
+                expect(response.error.message.includes('name',),).toBe(true,);
+                expect(dispatched,).toEqual([],);
+              },
+            },),
+            it({
+              name: 'refuses an argument the declared schema does not admit',
+              fn: async () => {
+                const strictTool: ToolEntry = {
+                  name: 'strict',
+                  description: 'Admits nothing.',
+                  schema: v.strictObject({},),
+                  handler: () => ({ content: [], }),
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [strictTool,],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 25,
+                    method: 'tools/call',
+                    params: { name: 'strict', arguments: { typo: 1, }, },
+                  },),
+                ) as JsonRpcErrorResponse;
+
+                // A misspelled argument is louder as a refusal than as a silent omission,
+                // which would run the tool as though the caller had asked for the default.
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+                expect(response.error.message.includes('typo',),).toBe(true,);
+              },
+            },),
+            it({
+              name: 'hands the handler the arguments as sent, not a schema-stripped copy',
+              fn: async () => {
+                /** Argument bag the handler actually received. */
+                const seen: Record<string, unknown>[] = [];
+                const looseTool: ToolEntry = {
+                  name: 'loose',
+                  description: 'Ignores extras.',
+                  schema: v.object({ text: v.optional(v.string(),), },),
+                  handler: (args: Readonly<Record<string, unknown>>,) => {
+                    seen.push({ ...args, },);
+                    return { content: [], };
+                  },
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [looseTool,],
+                },);
+                await server.handleMessage(
+                  modernRequest({
+                    id: 26,
+                    method: 'tools/call',
+                    params: { name: 'loose', arguments: { text: 'hi', extra: 7, }, },
+                  },),
+                );
+
+                // Validation is a gate, not a transform: valibot's object schemas drop keys
+                // they do not declare, so passing its output would silently change what every
+                // handler receives.
+                expect(seen,).toEqual([{ text: 'hi', extra: 7, },],);
+              },
+            },),
+            it({
               name: 'reports a thrown handler failure as an isError result, not a protocol error',
               fn: async () => {
                 const failingTool: ToolEntry = {
                   name: 'fail',
                   description: 'Always fails.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => {
                     throw new Error('deliberate failure',);
                   },
@@ -784,6 +899,7 @@ await describe({
                 const throwStringTool: ToolEntry = {
                   name: 'throw-string',
                   description: 'Throws a string.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => {
                     // oxlint-disable-next-line eslint/no-throw-literal, typescript/only-throw-error -- testing non-Error throw
                     throw 'string-error';
@@ -814,6 +930,7 @@ await describe({
                 const reportingTool: ToolEntry = {
                   name: 'reports',
                   description: 'Reports its own failure.',
+                  schema: ANY_ARGUMENTS,
                   handler: () => ({
                     content: [{ type: 'text', text: 'exit code 1', },],
                     isError: true,

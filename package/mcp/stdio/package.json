@@ -15,7 +15,9 @@
     "./ts/*": "./src/*"
   },
   "dependencies": {
-    "@monochromatic-dev/module-caught-value": "workspace:*"
+    "@monochromatic-dev/module-caught-value": "workspace:*",
+    "@valibot/to-json-schema": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",

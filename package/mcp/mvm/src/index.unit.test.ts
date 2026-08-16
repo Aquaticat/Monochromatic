@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 import {
+  JSON_RPC_INVALID_PARAMS,
   JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
   PROTOCOL_VERSION,
 } from '@monochromatic-dev/mcp-stdio/ts';
@@ -241,13 +242,14 @@ await describe({
             },
           },],
         },);
-        const result = replies[0]?.result as {
-          isError: boolean;
-          content: readonly { text: string; }[];
-        };
-        expect(result.isError,).toBe(true,);
-        expect(result.content[0]?.text,).toContain('not both',);
-        expect(result.content[0]?.text,).toContain('web-01',);
+        // The exclusivity rule lives in the advertised schema now, so an ambiguous call is
+        // refused as invalid params before dispatch rather than as an isError result from
+        // inside the handler. The wording a caller reads is preserved through the union's
+        // own message, since a bare union mismatch would not say what to do instead.
+        const { error, } = replies[0] as { error: { code: number; message: string; }; };
+        expect(error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+        expect(error.message,).toContain('not both',);
+        expect(replies[0]?.result,).toBeUndefined();
       },
     },),
 
@@ -267,12 +269,10 @@ await describe({
             },
           },],
         },);
-        const result = replies[0]?.result as {
-          isError: boolean;
-          content: readonly { text: string; }[];
-        };
-        expect(result.isError,).toBe(true,);
-        expect(result.content[0]?.text,).toContain('all: true',);
+        const { error, } = replies[0] as { error: { code: number; message: string; }; };
+        expect(error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+        expect(error.message,).toContain('all: true',);
+        expect(replies[0]?.result,).toBeUndefined();
       },
     },),
 

@@ -6,6 +6,7 @@ import type {
 } from './server-types.ts';
 
 import type { ToolDefinition, } from './protocol-tool.ts';
+import { toolInputSchema, } from './tool-schema.ts';
 
 //region Registration: turns declared entries into wire definitions plus handlers
 
@@ -32,8 +33,13 @@ function buildToolDefinition(
   return {
     name: entry.name,
     description: entry.description,
-    // MCP clients require `inputSchema` on every tool, even one taking no arguments.
-    inputSchema: entry.inputSchema ?? { type: 'object', },
+    // Derived from the same schema that gates the call, so what is advertised and what is
+    // enforced cannot disagree. MCP requires `inputSchema` on every tool, including one
+    // taking no arguments, whose schema converts to an empty object.
+    inputSchema: toolInputSchema({
+      schema: entry.schema,
+      toolName: entry.name,
+    },),
     ...((entry.title === undefined) ? {} : { title: entry.title, }),
     ...((entry.outputSchema === undefined) ? {} : { outputSchema: entry.outputSchema, }),
     ...((entry.annotations === undefined) ? {} : { annotations: entry.annotations, }),
@@ -71,6 +77,7 @@ export function registerTools(
         {
           definition: buildToolDefinition({ entry, },),
           handler: entry.handler,
+          schema: entry.schema,
         },
       ] as const;
     },),
