@@ -459,6 +459,13 @@ or counting unit.
 A community web-interface report mentions 256 characters,
 but no authorized disposable API mutation verified that undocumented boundary.
 
+The published GitHub Flavored Markdown specification is version 0.29-gfm.
+Its indented-code-block rule removes four leading spaces from each non-blank line
+and treats the remaining contents literally.
+Its fenced-code-block rule instead closes on a same-character fence
+at least as long as the opening fence.
+No rendering choice has been made from this evidence yet.
+
 The pnpm `v11.8.0` source tag resolves to commit `93458600a8498412f85316d054e033319ba31ed6`.
 Its `installing/commands/src/update/index.ts` implementation uses `checkbox` and `Separator`
 from `@inquirer/prompts` for `pnpm update -i`.
