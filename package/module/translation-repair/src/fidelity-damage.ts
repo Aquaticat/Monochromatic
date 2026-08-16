@@ -77,6 +77,23 @@ export type DamageAttempt = {
    * separates the candidates.
    */
   readonly changedChars: number;
+
+  /**
+   * What the edit did, in enough detail to compare two runs without reading
+   * their prose.
+   *
+   * WHY THIS EXISTS. Comparing a narrow-window arm against a wide one required
+   * knowing that both had damaged the SAME thing, and the only record of that
+   * was whichever numbers the judges happened to quote in their reasons.
+   * Recovering picks by parsing judge prose worked three times and was three
+   * times too many: it can only find what a judge chose to mention.
+   *
+   * SAFE TO PRINT, which is why it is a field rather than a log line. Every
+   * producer writes structure rather than archive prose: the alteration writes
+   * the two numbers, and the deletion and insertion write lengths alone. No
+   * sentence of the corpus reaches it.
+   */
+  readonly damageDetail: string;
 } | {
   /**
    * Nothing could be planted here. An ordinary property of a slice rather than
@@ -169,6 +186,7 @@ export function deleteOneSentence(
     damageKind: 'deletion',
     damagedText,
     changedChars: needle.length,
+    damageDetail: `removed a sentence of ${String(needle.length,)} characters`,
   };
 }
 
@@ -274,6 +292,7 @@ export function insertBorrowedSentence(
     damageKind: 'insertion',
     damagedText: seeded.seededText,
     changedChars: borrowed.length,
+    damageDetail: `inserted a borrowed sentence of ${String(borrowed.length,)} characters`,
   };
 }
 
@@ -413,6 +432,7 @@ export function alterSharedNumber(
     damageKind: 'alteration',
     damagedText,
     changedChars: original.length,
+    damageDetail: `changed ${original} to ${variant}`,
   };
 }
 

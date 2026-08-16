@@ -205,6 +205,12 @@ type FidelityRow = {
   readonly changedChars: number;
 
   /**
+   * What the edit did, so two runs can be compared on the SAME damage without
+   * recovering it from whatever the judges happened to quote.
+   */
+  readonly damageDetail: string;
+
+  /**
    * Reasons in roster order, kept because a judge that names coverage and still
    * picks the damaged text is a different failure from one that never mentions
    * it.
@@ -489,6 +495,7 @@ async function main(): Promise<void> {
                 },)
                 .length,
               changedChars: damaged.changedChars,
+              damageDetail: damaged.damageDetail,
               reasons: outcome.ballots
                 .map(function toReason(ballot,) {
                   return `${ballot.modelId}: ${ballot.picked} ${ballot.reason}`;
