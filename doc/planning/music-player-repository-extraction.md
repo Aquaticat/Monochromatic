@@ -132,6 +132,8 @@ not source checkouts of Monochromatic tooling.
     documentation archive,
     signatures,
     and clean-consumer verification.
+- Publish automatically when version metadata changes reach `main`.
+- Retain manual workflow dispatch for dry runs and retries.
 - Use manual intervention only where a registry requires initial namespace or trusted-publisher bootstrap.
 - Verify every artifact from a clean external consumer before extraction begins.
 
@@ -335,6 +337,8 @@ A later action request must authorize them.
 - Dry-run and inspect every packed artifact before external mutation.
 - Complete required first-publication bootstrap.
 - Configure trusted publishing or equivalent release authentication after bootstrap.
+- Trigger publication automatically when each version change reaches `main`.
+- Retain manual dispatch for dry runs and retries.
 - Install each published artifact in a disposable clean consumer and exercise its real function.
 
 ### Phase 3: Prepare filtered history
@@ -463,11 +467,6 @@ Do not leave both repositories writable as authoritative homes.
 Resolve these one at a time during the remaining grilling session.
 Update this document immediately after each answer.
 
-### Registry release trigger
-
-Decide whether relevant tool changes publish automatically after merge or require manual workflow dispatch.
-Dynamic latest consumption depends on releases being cut consistently.
-
 ### Maven namespace fallback
 
 Decide whether failure or delay verifying `cat.aquati` blocks extraction,
@@ -490,7 +489,7 @@ or whether `io.github.aquaticat` is pre-authorized as fallback.
 - Re-signing filtered historical commits was rejected because it would misstate signature provenance.
 - Keeping or converting `CONTEXT.md` was rejected in favor of deriving terminology from current source.
 - Collapsing the Rust linter family into one crate was rejected because it would redesign the plugin boundary.
-- Manual-only publication was rejected in favor of extending the existing release workflows.
+- Manual-dispatch-only publication was rejected because latest-at-prepare depends on consistent releases.
 - Committing synchronized policy and skill copies was rejected because explicit preparation is the lifecycle boundary.
 
 ## Evidence commands
