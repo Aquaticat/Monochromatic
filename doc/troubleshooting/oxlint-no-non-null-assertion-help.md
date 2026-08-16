@@ -357,7 +357,8 @@ The filing constraints resolve as follows:
     Its rule documentation treats optional chaining as one valid general alternative.
     It does not claim to encode consumer-specific invariant policies or helper libraries.
 4.  Would the repo welcome our contribution?
-    Yes, subject to review and disclosure.
+    Yes,
+    subject to review and disclosure.
     Upstream `CONTRIBUTING.md:10-21` welcomes contributions and requires disclosure,
     understanding,
     and validation of AI-assisted work.
