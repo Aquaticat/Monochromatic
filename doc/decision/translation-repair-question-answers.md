@@ -27,6 +27,12 @@ What it means concretely:
 
 -   No `PRODUCERS_PER_ROLE` constant is introduced now.
 -   `#91` stays blocked on `#84` rather than on this question.
+-   ONE OF THE WORRIES BEHIND THIS QUESTION IS NOW MEASURED. Option C was rejected partly because with every
+    model producing, "self-votes and self-certifications are the norm rather than the exception, which makes
+    the discounts load-bearing in a way nothing has measured". The self-preference bench recorded below under
+    question 4 measures exactly that, and finds self-preference positive at every width from two to six with
+    no trend distinguishable from the run-to-run band. It does not say a wider roster decides better, which is
+    the other half and still open.
 -   The bench numbers already gathered stand as the cost side of a decision whose quality side is missing:
     two producers to six multiplies calls by 1.7 and tokens by 1.8.
 -   Nothing measured says a wider roster decides worse. That remains untested rather than refuted.
@@ -91,8 +97,35 @@ picks a number. The choice is made on consistency with that understood.
 What it means concretely:
 
 -   `#91` takes a half for self-certification.
--   The number is a stated preference rather than a derived one. Anything later measuring self-preference
-    directly, which `#84` may, is grounds to revisit it.
+-   The number was a stated preference rather than a derived one when it was chosen. It has since been
+    measured, below.
+
+### Measured after the fact, and it supports the half
+
+Run 2026-08-16 on the roster bench, four slices at six roster widths, 24 rounds, using the paired
+comparison in `src/self-preference.ts`: each candidate scored against itself, its producer's own ballot
+against the rate among judges holding no stake in that same text.
+
+    pooled       own 39 of 93 (0.42)   others 82 of 376 (0.22)   excess 0.20
+
+Producers named their own candidate roughly 1.9 times as often as judges with no stake in it named the same
+text. The half-weight discount divides a self-vote by 2. Those are not the same operation, since one scales a
+weight and the other describes a rate, but the discount is close to the size of the effect it is correcting,
+which is a better position than the consistency argument it was chosen on.
+
+EVERY WIDTH IS POSITIVE, and no trend with width is claimable:
+
+    width 2 pass 1   0.19        width 4 pass 2   0.23
+    width 3 pass 1   0.21        width 5 pass 1   0.13
+    width 4 pass 1   0.10        width 6 pass 1   0.33
+
+The bench runs one width twice on purpose, and width 4 came back 0.10 then 0.23. That 0.13 spread is the
+run-to-run band, and most of the width-to-width variation sits inside it. The consistent SIGN across six runs
+is what this measures; the ordering is not.
+
+READ IT AS A BENCH RATHER THAN A CENSUS. Four distinct slices were run at six widths, so the 93 opportunities
+are repeated measures over four texts, not 93 independent trials. Widening the sample is cheap now that the
+instrument exists.
 
 ## Replacement rate: widen the judged window and re-read it
 
