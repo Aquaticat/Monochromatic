@@ -11212,3 +11212,67 @@ THE SINGLE-WORD QUOTE IS ALSO EVIDENCE FOR A REVIEW FINDING nobody has acted on:
 the wire guard accepts any non-empty quote, so `September` was admissible
 evidence and only the locator's ambiguity check stopped it. `#106` records the
 identifying-evidence constraint as open.
+
+### A second reviewer on the anchoring change: two real holes, two refusals, one still open
+
+The locator change was sent for review with the four files it touches. Six
+findings came back. What matters is that they split three ways, and the split
+was decided by reading this repository rather than by the reviewer's confidence.
+
+TWO WERE REAL AND ARE FIXED.
+
+The first is the one worth remembering: ANCHORING WAS A CHAIN OF PASSES, strict
+to loose, and each pass checked ambiguity only within its own class before
+returning on its first hit. A document holding `bad\nword` early and `bad word`
+late answered the quote `bad word` with the LATE one, unique among byte-exact
+matches, while the earlier occurrence was just as valid under the wrapping rule
+the next pass would have applied. A model normalizes whitespace and punctuation
+when it copies, so neither says which occurrence it read. The fix judges
+uniqueness over the broadest accepted form, which REMOVES two passes rather than
+adding a fourth.
+
+MEASURED BEFORE CHANGING IT, because a stricter rule that refuses real evidence
+is a regression: over three corpus passes, 16,479 anchored quotes checked against
+the slice each was anchored in, NOT ONE is refused by the stricter rule. The
+first version of that probe counted against whole pages and reported 566, which
+is the wrong scope, since `repair-chunk.ts` parses the chunk pair and claims
+anchor against that. The page figure survives as the positive control: same
+counter, same needles, and it can see ambiguity when the scope allows it, so the
+zero is a measurement rather than a broken probe.
+
+The second is the coverage `evidence` field, which promised text a reader could
+check against the translation and stored what the model sent. Those read the same
+until a fallback does the matching, which is exactly when the submitted text does
+not occur. It now reads the located region back out of the document.
+`unanchoredQuotes` still keeps what was sent, since there the submitted text IS
+the finding.
+
+TWO WERE REFUTED BY THE SOURCE, and both are worth recording because they look
+right until you open the file.
+
+CRLF was said to break offsets, since mapping a two-unit line ending onto one
+space shortens the text. `quote-normalize.ts` maps `\r` and `\n` INDIVIDUALLY, so
+CRLF becomes two spaces and length is preserved. A CRLF document then fails to
+match a one-space quote, which is a refusal rather than a wrong anchor.
+
+A zero-width span carrying an empty quote was said to bypass the anchorless
+guard, since equal offsets are not inverted and the document slices to empty
+there. That shape is the INSERTION ANCHOR: it is how an omission claim names
+where missing content belongs, and `validateIssueClaim` admits it deliberately. A
+guard against it was written, and it broke the omission fixtures, which is how
+the design announced itself. Reverted.
+
+ONE IS REAL, PARTLY FIXED, AND THE REST IS RECORDED IN `#106`. Collapsing every
+line break turned a blank line into two spaces, so a quote carrying two spaces
+matched straight across a paragraph boundary. The old note called that safe,
+which held only while every model joined lines with exactly one space, and a
+critic quote is an untrusted input. Matching now collapses SOLE line breaks and
+leaves a run alone. What remains unprotected needs the parse rather than the
+characters: boundaries carried by a single line break, inside fenced code,
+between list items, between table rows, and Markdown hard breaks.
+
+CHECKED THAT THE NARROWING DID NOT UNDO THE RESCUE, since a fix that refuses the
+quotes it was built to accept is worse than the bug: of 40 space-joined quotes
+spanning a lone wrap taken from four corpus translations, 35 anchor, and the 5
+refusals are `quote-outside-blocks` in front matter, which is not quotable
+content.
