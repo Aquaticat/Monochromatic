@@ -11,6 +11,7 @@ import {
   JSON_RPC_INVALID_REQUEST,
   JSON_RPC_PARSE_ERROR,
   type JsonRpcId,
+  type JsonRpcInbound,
   type JsonRpcOutbound,
 } from './json-rpc.ts';
 import { readLines, } from './line-reader.ts';
@@ -19,6 +20,13 @@ import {
   type McpServerHandle,
   NO_RESPONSE,
 } from './server-types.ts';
+import { CANCELLED_NOTIFICATION, } from './server-response.ts';
+import {
+  createSerialRequestQueue,
+  NO_FRAME,
+  type SerialRequestQueue,
+  UNCANCELLABLE,
+} from './transport-queue.ts';
 
 //region Output writer abstraction: supports both Bun FileSink and standard WritableStream
 
@@ -136,6 +144,24 @@ export async function serve(
    */
   const encoder = new TextEncoder();
 
+  /**
+   * Owns execution order, cancellation, and write order for this connection.
+   *
+   * Every outbound frame goes through it, error frames included: once dispatch no longer
+   * blocks this loop, a frame written directly from here could interleave with one a
+   * running request is writing.
+   */
+  const queue = createSerialRequestQueue({
+    async write(frame: string,): Promise<void> {
+      console.error(`[mcp-stdio] -> ${frame}`,);
+      await writeSerializedMessage({
+        writer: output,
+        encoder,
+        serialized: frame,
+      },);
+    },
+  },);
+
   for await (const line of readLines(input,)) {
     if (line.trim()
       .length
@@ -168,9 +194,8 @@ export async function serve(
           message: 'Failed to parse JSON',
         },
       };
-      await writeSerializedMessage({
-        writer: output,
-        encoder,
+      queueFrame({
+        queue,
         serialized: JSON.stringify(errorResponse,),
       },);
       continue;
@@ -198,9 +223,8 @@ export async function serve(
             + 'a number or string id when present, and object params when present',
         },
       };
-      await writeSerializedMessage({
-        writer: output,
-        encoder,
+      queueFrame({
+        queue,
         serialized: JSON.stringify(errorResponse,),
       },);
       continue;
@@ -209,28 +233,118 @@ export async function serve(
     console.error(`[mcp-stdio] <- ${line}`,);
 
     /**
-     * Dispatch result; `NO_RESPONSE` indicates a notification (no reply expected).
+     * Request this message cancels, when it is a well-formed cancellation.
      */
-    const response = await server.handleMessage(parsed,);
-
-    // Notifications produce no response.
-    if (response === NO_RESPONSE)
+    const cancelling = cancelledRequestId(parsed,);
+    // Applied here rather than through the queue: waiting its turn would defeat the point,
+    // since the request it names is what would be holding the queue.
+    if (cancelling !== NOT_A_CANCELLATION) {
+      if (!queue.cancel({ id: cancelling, },))
+        console.error(`[mcp-stdio] cancellation names no live request: ${String(cancelling,)}`,);
       continue;
+    }
 
-    /**
-     * Serialized response reused for diagnostic output and wire write.
-     */
-    const serializedResponse = serializeResponse({
-      response,
-      id: ('id' in parsed) ? parsed.id : null,
-    },);
-    console.error(`[mcp-stdio] -> ${serializedResponse}`,);
-    await writeSerializedMessage({
-      writer: output,
-      encoder,
-      serialized: serializedResponse,
+    queue.enqueue({
+      id: ('id' in parsed) ? parsed.id : UNCANCELLABLE,
+      async produce(): Promise<string | typeof NO_FRAME> {
+        /**
+         * Dispatch result; `NO_RESPONSE` indicates a notification (no reply expected).
+         */
+        const response = await server.handleMessage(parsed,);
+        if (response === NO_RESPONSE)
+          return NO_FRAME;
+        return serializeResponse({
+          response,
+          id: ('id' in parsed) ? parsed.id : null,
+        },);
+      },
     },);
   }
+
+  // Stdin closing means the client is done sending, not that the server is done replying.
+  // Returning here without draining would strand queued work and drop its frames, which is
+  // the same class of loss as discarding backpressure.
+  await queue.idle();
+}
+
+//endregion
+
+//region Cancellation: recognizing which request a notification cancels
+
+/**
+ * Returned when a message is not a well-formed cancellation notification.
+ */
+const NOT_A_CANCELLATION: unique symbol = Symbol('mcp-stdio message is not a cancellation',);
+
+/**
+ * Reads the request id a cancellation notification names.
+ *
+ * Revision 2026-07-28 declares `requestId` as a `RequestId`, so a cancellation carrying a
+ * missing or wrongly typed one names nothing and is treated as an ordinary notification
+ * rather than silently cancelling some other request.
+ *
+ * @param message - Validated inbound message
+ *
+ * @returns Request id to cancel, or {@link NOT_A_CANCELLATION}
+ *
+ * @example
+ * ```ts
+ * cancelledRequestId({
+ *   jsonrpc: '2.0',
+ *   method: 'notifications/cancelled',
+ *   params: { requestId: 7 },
+ * });
+ * // 7
+ * ```
+ */
+function cancelledRequestId(message: JsonRpcInbound,): JsonRpcId | typeof NOT_A_CANCELLATION {
+  if (message.method !== CANCELLED_NOTIFICATION)
+    return NOT_A_CANCELLATION;
+  // A cancellation is a notification; one carrying an id is malformed, and answering it
+  // as a request would be a likelier reading of the client's intent than cancelling.
+  if ('id' in message)
+    return NOT_A_CANCELLATION;
+  /**
+   * Request id this notification claims to cancel, before type validation.
+   */
+  const requestId = message.params
+    ?.requestId;
+  if ((typeof requestId) === 'number')
+    return requestId;
+  if ((typeof requestId) === 'string')
+    return requestId;
+  return NOT_A_CANCELLATION;
+}
+
+/**
+ * Queues one already-serialized frame that no cancellation can match.
+ *
+ * @param queue - Queue owning write order
+ *
+ * @param serialized - JSON text ready for framing
+ *
+ * @mutates queue - Appends one entry.
+ *
+ * @example
+ * ```ts
+ * queueFrame({ queue, serialized: '{"jsonrpc":"2.0","id":null,"error":{}}' });
+ * ```
+ */
+function queueFrame(
+  {
+    queue,
+    serialized,
+  }: {
+    readonly queue: SerialRequestQueue;
+    readonly serialized: string;
+  },
+): void {
+  queue.enqueue({
+    id: UNCANCELLABLE,
+    produce(): Promise<string> {
+      return Promise.resolve(serialized,);
+    },
+  },);
 }
 
 //endregion

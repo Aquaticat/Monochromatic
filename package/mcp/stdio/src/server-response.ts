@@ -207,8 +207,12 @@ export function respondInitializeRemoved(
 /**
  * Method name of the cancellation notification a client may send for an in-flight request.
  * Handlers here run to completion, so the notification is accepted and dropped without a reply.
+ *
+ * The transport intercepts this method before dispatch so a cancellation takes effect while a
+ * tool is still running; reaching {@link handleNotification} means it arrived by some other
+ * path, such as a direct handle caller.
  */
-const CANCELLED_NOTIFICATION = 'notifications/cancelled';
+export const CANCELLED_NOTIFICATION = 'notifications/cancelled';
 
 /**
  * Processes notifications. Logs unexpected notification methods for protocol debugging.
