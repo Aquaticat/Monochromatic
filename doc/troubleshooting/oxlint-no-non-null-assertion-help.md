@@ -202,12 +202,21 @@ The prototype used this registry value:
 
 The focused `oxlint-augment.unit.test.ts` probe first failed because the registry returned an empty string,
 then passed after the entry was added.
-The probe covered both current upstream variants:
+The test asserts both `nonNullishOrThrow` and the explicit instruction not to use optional chaining.
+It covers both current upstream variants:
 
 - Member assertions such as `x!.y` already have upstream help,
   so the wrapper appends the repository guidance and leaves one `help:` prefix.
 - Standalone assertions such as `x!` have no upstream help,
   so the wrapper injects the repository guidance as a new `help:` line.
+
+Both variants were also exercised through the built wrapper.
+For the standalone `issue442Rows[0]!` fixture,
+the built wrapper retained Oxlint's note and injected this separate line:
+
+```text
+help: Repository policy: preserve fail-loud semantics. Replace `value!` with `nonNullishOrThrow(value,)` from `@monochromatic-dev/module-or-throw/ts`. Do not use optional chaining unless a missing value is intentionally accepted.
+```
 
 `mise run //package/dev-script/task-util:lint:types` also passed in the detached worktree.
 The existing helper verification passed through:
@@ -277,12 +286,21 @@ This is the recommended repository fix.
 It uses the mechanism documented at
 `package/dev-script/task-util/README.md:159-165`,
 which says repository lint runs through `task-oxlint` and that the wrapper augments diagnostics without removing them.
+The location also keeps private repository policy out of the published config package:
+`package/dev-script/task-util/package.json:6` is private,
+while `package/config/oxlint/package.json:3` is published.
+
+Use the bare `no-non-null-assertion` registry key without a header guard.
+The repository policy applies to this syntax regardless of which Oxlint plugin label produced the diagnostic.
 
 Tradeoff:
 the upstream sentence remains visible because the wrapper is intentionally append-only.
 The final sentence must therefore be direct enough to override the generic suggestion for this repository.
 The augmentation applies to the graphical `task-oxlint` path;
-direct Oxlint calls and explicitly selected non-graphical formats do not receive it.
+direct Oxlint calls,
+explicitly selected non-graphical formats,
+and language-server diagnostics do not receive it.
+The language server therefore continues to show the raw upstream message.
 
 ### Replace each assertion with `nonNullishOrThrow`
 
