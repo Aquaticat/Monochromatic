@@ -56,6 +56,15 @@ security quarantine,
 deduplication,
 and GitHub issue operations.
 
+### Pasted input
+
+The user chose structured JSON only for copied and pasted input.
+The adapter must not parse OCR's human-readable terminal format.
+This rule applies to interactive and non-interactive modes.
+ANSI stripping and version-specific text parsing are out of scope.
+
+The exact accepted OCR-native JSON document shapes remain to be settled.
+
 ## Settled prior findings
 
 The installed command is OpenCodeReview `v1.9.4`,
@@ -125,9 +134,18 @@ The source model defines comment fields including:
 - `category`;
 - `severity`.
 
-OCR also persists sessions and exposes `ocr session comments --json`,
-but the user's requested JSONL input must be inspected against actual OCR session files before its schema is designed.
-Do not infer that session JSONL lines have the same shape as final review output.
+OCR also persists sessions and exposes `ocr session comments --json`.
+Source inspection confirms that session JSONL is an event transcript,
+not final review output repeated one object per line.
+Findings are embedded in `comments` arrays on `review_item_done` and `review_item_reused` records.
+A later checkpoint with the same fingerprint supersedes the earlier checkpoint,
+and a later `review_item_failed` record for that fingerprint removes its findings.
+The final `session_end` record can contain `run_manifest`;
+a killed run may leave a partial transcript without `session_end`.
+Other event types can contain prompts,
+code,
+tool calls,
+and model output and must not be treated as findings.
 
 A disposable classifier prototype under the agent scratch directory
 verified the previously proposed fail-closed partition against synthetic findings.
@@ -182,12 +200,13 @@ in dependency order:
    confirms a selected batch,
    or performs another review flow.
 3. Input contracts:
-   exact accepted pasted formats,
+   pasted input is settled as structured JSON only,
+   with no human-readable terminal parser.
    JSON document shapes,
    OCR JSONL record types,
    framing,
    encoding,
-   and malformed-input behavior.
+   and malformed-input behavior remain open.
 4. Non-interactive authority:
    defaults,
    required flags,
@@ -235,8 +254,7 @@ in dependency order:
 
 ## Immediate next action
 
-Inspect OCR's persisted JSONL source schema rather than asking the user for discoverable facts.
-Then ask the next dependent design question about accepted pasted input.
+Ask the next dependent design question about accepted OCR-native JSON document shapes.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -253,5 +271,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   and unresolved design tree.
 - 2026-08-16:
   recorded the user's ingest-only decision and removed OCR process orchestration from scope.
+- 2026-08-16:
+  recorded structured-JSON-only pasted input and excluded human-readable OCR text parsing.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
