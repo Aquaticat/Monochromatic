@@ -490,8 +490,15 @@ Two facts fell out of the work and are now pinned by tests:
     artifact refuses with `SchemaGenerationError` naming `schema version 1: 1 settled, CatEntry1`,
     and the same driver against a fresh directory still plans 92 entries.
     Both runs spent zero quota; plan mode makes no model call and the refusal precedes scheduling.
-3.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
-    optional property, which discards what its own parser established.
+3.  ~~The discriminated `unrecorded` reading collapsing back into an absent optional property~~,
+    landed as `b8cdd5eba`.
+    It was in `artifact-v1-read.ts` rather than in `artifact-read.ts`:
+    `ParsedAcceptedIssue.repair` is now the `RecordRepairReading` itself.
+    The collapse survives in exactly one place, `draw-entry-load.ts`, where a grading candidate is
+    built for the SAMPLE FILE; that file's shape is on disk in draws a human is grading, so widening
+    it is a persisted-format change rather than a reader change, and it is left to whoever decides
+    to make it.
+    Suite after: exit 0, 348 passing groups.
 
 `buildSettledArtifact` (version 1) has lost its last production caller and stays:
 readers still parse version 1 artifacts, and the corpus directory holds them.
