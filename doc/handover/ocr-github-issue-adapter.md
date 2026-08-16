@@ -35,6 +35,27 @@ a JSON comment array,
 or JSONL session records.
 Resolve this during grilling rather than guessing.
 
+## Settled grilling decisions
+
+### Adapter responsibility
+
+The user chose an ingest-only adapter.
+It must not invoke OCR.
+Users run OCR separately,
+then provide its output through paste,
+standard input,
+or a supported file.
+
+This removes OCR argument forwarding,
+process signaling,
+and OCR exit-code propagation from the adapter's scope.
+The adapter still owns parsing,
+validation,
+interactive triage,
+security quarantine,
+deduplication,
+and GitHub issue operations.
+
 ## Settled prior findings
 
 The installed command is OpenCodeReview `v1.9.4`,
@@ -154,9 +175,8 @@ Resolve these branches one at a time,
 in dependency order:
 
 1. Command responsibility:
-   whether the adapter invokes OCR,
-   only ingests existing output,
-   or supports both.
+   settled as ingest-only.
+   The adapter never launches OCR.
 2. Publication timing:
    whether interactive mode confirms every issue,
    confirms a selected batch,
@@ -215,7 +235,8 @@ in dependency order:
 
 ## Immediate next action
 
-Begin the grilling interview with the first dependent decision.
+Inspect OCR's persisted JSONL source schema rather than asking the user for discoverable facts.
+Then ask the next dependent design question about accepted pasted input.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -230,5 +251,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   dependency approval gate,
   prior evidence,
   and unresolved design tree.
+- 2026-08-16:
+  recorded the user's ingest-only decision and removed OCR process orchestration from scope.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
