@@ -618,6 +618,32 @@ and that no public source shows that convergence resolved.
 Recorded as context,
  not as a decision.
 
+Measured local state on 2026-08-16,
+so the points that follow are conditional on a change nobody has made:
+
+- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set in no session environment variable
+  and in none of `~/.claude/settings.json`,
+  `~/.claude/settings.local.json`,
+  `.claude/settings.json`,
+  or `.claude/settings.local.json`.
+  Agent Teams is off here.
+- `~/.claude/settings.json` nonetheless carries `"teammateMode": "auto"`.
+  That setting is inert while the feature is off.
+  Were the feature enabled,
+   `"auto"` selects split panes inside tmux or iTerm2
+  rather than the `"in-process"` default that shipped at v2.1.179.
+- `.claude/settings.local.json` wires both `TeammateIdle` and `TaskCompleted` to `cctt`.
+  Per [the hooks documentation](https://code.claude.com/docs/en/hooks),
+  `TeammateIdle` fires only "when an agent team teammate is about to go idle",
+  so that entry cannot fire while the feature is off.
+  `TaskCompleted` fires "when a task is being marked as completed"
+  and is not tied to teams,
+  so that entry is live in ordinary sessions.
+
+The `TeammateIdle` entry is dead configuration rather than a fault:
+it costs nothing while unreachable,
+and it would take effect if the feature were ever enabled.
+
 - Enabling `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` here would change existing behavior,
   not just add a capability.
   The `CLAUDE.md` preamble currently tells agents that in-process subagents
