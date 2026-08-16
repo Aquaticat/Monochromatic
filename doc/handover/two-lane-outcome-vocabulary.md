@@ -204,39 +204,86 @@ field out. What it buys is that the bytes stay what the schema says. An exact
 -shape type test would turn field growth into a build error too; that is the gap
 to close if an omitted field ever turns out to have mattered.
 
+## The corpus pass now settles from both lanes
+
+`04c6d85cf` wired it, `592c06512` tested it.
+`settleEntry` prepares the document once and calls `runDocumentLanes`,
+so the two documents differ by lane rather than by two runs of the aligner,
+and writes the version 2 artifact.
+One deadline covers both lanes, still armed before either cache opens,
+and `throwIfAborted()` runs after the driver returns rather than between the lanes.
+
+No slice budget is passed, and that was checked rather than assumed:
+`prepareDocumentPair` defaults to the same `SLICE_CHAR_BUDGET`
+that `repairTranslation` passed down when it prepared the document itself,
+so entries settled either side of this change are sliced identically.
+The reviewer's warning that calling preparation directly bypasses a default was wrong on this repo.
+
+The TALLY line was rebuilt rather than transplanted (`settled-tally.ts`, five tests).
+Top-level `status` is the pass's own state,
+every lane measurement carries its lane in the key,
+and `selection=` says out loud that nobody has picked a winner.
+Nothing in the repo parses TALLY lines, checked with `rg`, so no consumer moved with it.
+
+The abort window is the case worth knowing about:
+a resumed entry buys nothing, so no exchange is left to notice a ceiling that has already fired,
+and the lanes hand back two complete documents the run is not entitled to record.
+The test settles once with a write that cannot land, which leaves the cache full rather than discarded,
+then resumes under an aborted signal.
+GFP: stripping `throwIfAborted` makes that case alone fail, writing the artifact anyway.
+
+## Found while testing it: the repair lane's unheard critics (`#112`)
+
+Measured, with every one of 48 critic calls failing on a two-slice fixture:
+the entry SETTLES, `repairStatus=unchanged`, `repairIssues=0`,
+and the repair ledger reports **`decided` at every slice**
+while the findings carry `stage-quorum-unmet (critic 0/6)` for each.
+
+That is this session's defect class in the lane nobody audited for it.
+`decided` means the lane produced a wording;
+here no critic was ever heard, so the archive stands by default,
+which is what `incumbent-fallback` exists to say.
+As recorded, "critics examined this and found nothing" and "no critic answered"
+are the same row.
+`translate-unheard.ts` is the model for the fix.
+Full detail, including the policy question about whether such an entry should settle at all,
+is in `#112`.
+
 ## Next actions, in order
 
-1.  `settleEntry` calling `prepareDocumentPair` and `runDocumentLanes`,
-    one deadline for both lanes, and `throwIfAborted()` between the driver returning
-    and the artifact being built. Not a gate BETWEEN the lanes.
-    Reviewer-supplied specifics, all of which have to hold:
-    `sliceCharBudget` passed explicitly, since calling preparation directly bypasses
-    the default `repairTranslation` supplied;
-    separate cache namespaces per lane under the entry cache root, both retained
-    when either lane fails and the root discarded only after the artifact is written;
-    `RUN_TRANSLATE_MODELS` beside `RUN_MODELS`, and a `Logger` threaded through,
-    because `runDocumentLanes` requires one.
-2.  The TALLY line, which needs rework rather than transplanting: it reads
-    `result.status` and `result.issues`, which are repair-only and now live under
-    `lanes.repair.result`. A two-lane line reports settlement rather than either lane,
-    keeps every repair-only count prefixed, and every consumer of `status=` has to move
-    with it.
-3.  Tests for `settleEntry` once it has its final shape, including an abort after both
-    lanes return from cache: no artifact written, both caches kept.
+1.  **The version 2 parser**, which nothing has written yet and which the writer now
+    depends on: `settleEntry` writes version 2 and `artifact-read.ts` still reads version 1.
+    The contract is written out in the planning doc under
+    "What the version 2 parser must require, and what it may tolerate".
+    Read that rather than re-deriving it, and note the writer's own rule:
+    schema-owned records reject unknown keys, raw lane results and `callConfig` tolerate them.
+2.  **The mixed-generation trap**, which the wiring created and nothing guards:
+    `settledEntryIds` reads FILENAMES only (`pass-settled.ts`), so a pass resumed into
+    a directory holding version 1 artifacts skips those entries and produces a corpus
+    that is half one generation, invisibly.
+    A fresh artifacts directory avoids it, which is the practice, and practice is not a guard.
+    Cheapest honest fix: refuse to start when the directory holds a version this pipeline
+    does not write, naming the count and the two ways forward.
+    Not done here because re-running skipped entries costs real money and that is the user's call.
+3.  `#112`, the repair lane's unheard critics.
 4.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
     optional property, which discards what its own parser established.
 
-`buildSettledArtifact` (version 1) loses its last production caller at step 1.
-Leave it: readers still parse version 1 artifacts, and the corpus directory holds them.
+`buildSettledArtifact` (version 1) has lost its last production caller and stays:
+readers still parse version 1 artifacts, and the corpus directory holds them.
 
 ## The launch gate has not moved
 
 No corpus pass while the window trial is live:
 it measures the same six models, and competing calls would raise its short-panel rate mid-experiment.
-Trial progress is watched by a monitor and was at 150 arms of 327 when this line was last updated,
-with 56 of those on a short panel, the same rate the whole run has held.
+Trial progress is watched by a monitor and was at 167 arms of 327 when this line was last updated,
+with 64 of those on a short panel, the same rate the whole run has held.
 **Build now, launch after the trial finishes.**
 
 The GFP note above still holds and was re-verified at 150 arms:
 same process (PID 2484929, started 12:51:54), and its bundle plus both chunks contain
 zero dynamic imports, so rebuilding `dist` cannot reach it.
+
+One plan-mode pass ran against a throwaway runs directory to check the wiring at the
+user boundary: `PLAN ok`, 92 pending entries, zero quota. That exercises the scheduler
+and stops before any entry settles, which is why `settleEntry` has its own tests.
