@@ -106,7 +106,9 @@ plugins { id 'java' }
 repositories { mavenCentral() }
 configurations {
     detektCli
-    detektRules
+    detektRules {
+        transitive = false
+    }
 }
 dependencies {
     detektCli 'dev.detekt:detekt-cli:2.0.0-alpha.5'
