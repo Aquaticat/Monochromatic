@@ -449,8 +449,9 @@ Two facts fell out of the work and are now pinned by tests:
         `artifact-read.ts` left holding the four-case dispatch and returning the
         generation-discriminated reading.
     8.  `artifact-v2-corpus-verify.ts`, taking a supplied `PreparedDocumentPair`.
-2.  **The mixed-generation trap**, whose premise was WRONG as first written here and is corrected
-    below; read this version rather than the note it replaces.
+2.  ~~**The mixed-generation trap**~~, landed as `pass-schema-guard.ts` (`ed80db5cc`).
+    Its premise was WRONG as first written here; the corrected account is kept below because it is
+    what the guard was built to, and because the correction is the reusable part.
     `settledEntryIds` does read FILENAMES only (`pass-settled.ts`), so the scheduler
     skips an entry settled by any generation.
     What the note missed is that `corpus-pass.ts:232` already calls `assertResumableGeneration`
@@ -475,7 +476,20 @@ Two facts fell out of the work and are now pinned by tests:
     `SETTLED_ARTIFACT_SCHEMA_VERSION` and documented as "Schema generation the pass writes today",
     while `pass-entry.ts:249` writes 2.
     It is `ARTIFACT_SCHEMA_VERSION_V1` now, beside `ARTIFACT_SCHEMA_VERSION_V2`,
-    so the guard importing what the pass writes cannot pick up the wrong one.
+    so the guard importing what the pass writes cannot pick up the wrong one (`262526dcb`).
+
+    What landed: `assertResumableSchemaGeneration` and `censusBySchema`, called from
+    `corpus-pass.ts` immediately after `assertResumableGeneration`, refusing any settled artifact
+    whose generation is not the one this pass writes.
+    Not overridable, by the sibling guard's own rule.
+    Three answers count as foreign: another version, no version field at all
+    (the 2026-08-15 generation, which records a digest and so is neither unplaceable nor legacy),
+    and a version this build cannot read.
+    Verified at the user boundary rather than only in fixtures:
+    the real `corpus-pass -- --plan` against a throwaway runs directory holding one version 1
+    artifact refuses with `SchemaGenerationError` naming `schema version 1: 1 settled, CatEntry1`,
+    and the same driver against a fresh directory still plans 92 entries.
+    Both runs spent zero quota; plan mode makes no model call and the refusal precedes scheduling.
 3.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
     optional property, which discards what its own parser established.
 
