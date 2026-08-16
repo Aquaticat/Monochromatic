@@ -48,7 +48,8 @@ and OCR exit-code propagation from the adapter's scope.
 The adapter owns parsing,
 validation,
 interactive triage,
-security quarantine,
+security disclosure gating,
+quarantine,
 and GitHub issue creation.
 It is create-only.
 It must not synthesize finding identities,
@@ -102,7 +103,12 @@ regardless of TTY detection.
 A missing required non-interactive input or decision is an error rather than an invitation to prompt.
 Without `--apply`,
 non-interactive mode validates and previews proposed issue creation without GitHub mutations.
-`--non-interactive --apply` explicitly authorizes creation.
+`--non-interactive --apply` explicitly authorizes creation only when no security-gated finding is present.
+If one is present,
+bare `--apply` errors without creating any issue.
+`--apply --non-security-only` creates all eligible non-security issues and withholds security-gated findings.
+`--apply --all` creates both non-security and security-gated issues;
+its help and preview must state that it authorizes public disclosure of every included security finding.
 `--apply` is invalid in interactive mode,
 which uses its explicit post-selection confirmation as the mutation boundary.
 
@@ -147,21 +153,39 @@ and not SARIF.
 
 This repository is public.
 [`SECURITY.md`](../../SECURITY.md) requires suspected vulnerabilities to use private vulnerability reporting
-and forbids public security issues.
+and forbids opening a public issue for a suspected vulnerability.
+An OCR security classification does not by itself prove that a finding describes a currently exploitable
+or unresolved vulnerability.
+A finding may already be fixed and may be published later for accountability or as a durable record.
+The adapter must explain this distinction and its disclosure behavior in every relevant CLI help entry,
+prompt,
+preview,
+error,
+and package document.
 
-The prior recommendation therefore requires the publication boundary to fail closed:
+Interactive mode places security-gated findings in a separate picker from other findings.
+That picker must use red styling when color is available and an explicit textual `SECURITY` marker
+so color is never the only signal.
+Every security-gated finding selected for publication requires its own explicit safe-to-disclose confirmation.
+The confirmation has no default;
+empty input reprompts.
+Declining confirmation withholds that finding without approving its publication.
 
-- explicit `bug`,
-  `performance`,
-  `maintainability`,
-  `test`,
-  `style`,
-  and `documentation` categories may become public candidates;
-- `security`,
-  `other`,
-  missing metadata,
-  `critical` findings,
-  and secret or security signals must be quarantined;
+Non-interactive mode uses an explicit authority ladder:
+
+- bare `--apply` errors before all GitHub creation when any security-gated finding is present;
+- `--apply --non-security-only` creates eligible non-security issues and withholds security-gated findings;
+- `--apply --all` includes security-gated issues and explicitly represents that they are safe for public disclosure.
+
+The exact boundary of `security-gated` remains to be settled.
+The prior fail-closed recommendation treated the `security` category,
+`other`,
+missing metadata,
+`critical` severity,
+and secret or security signals as restricted.
+
+The publication boundary also requires that:
+
 - model-provided `thinking` must never be published;
 - `existing_code` and `suggestion_code` require deliberate treatment
   because they can contain secrets or exploit details;
@@ -172,6 +196,9 @@ The prior recommendation therefore requires the publication boundary to fail clo
 
 Grilling can revise the candidate policy only through an explicit user decision.
 Do not silently weaken it during implementation.
+Actual unresolved suspected vulnerabilities remain private under `SECURITY.md`;
+a publication confirmation or flag is an assertion that selected material is safe for disclosure,
+not permission to publish an unresolved vulnerability.
 
 ## Verified technical evidence
 
@@ -297,7 +324,7 @@ in dependency order:
    Users needing multiline input write a file and pass its path.
    An invalid interactive paste reports the error and exits nonzero without retrying.
    A malformed record rejects the entire input before any GitHub operation.
-   Structurally valid findings with missing classification metadata remain security-quarantined.
+   The publication class for structurally valid findings with missing classification metadata remains open.
    Named files require strict UTF-8 without any byte-order mark;
    malformed bytes or a byte-order mark reject the input before GitHub operations.
 4. Non-interactive authority:
@@ -306,14 +333,18 @@ in dependency order:
    or `--non-interactive`.
    Neither or both is an error.
    `--non-interactive` without `--apply` validates and prints a preview without GitHub mutations.
-   `--non-interactive --apply` explicitly authorizes issue creation.
+   Bare `--non-interactive --apply` errors before all creation if any security-gated finding exists.
+   `--apply --non-security-only` creates only eligible non-security issues.
+   `--apply --all` includes security-gated issues under an explicit safe-disclosure assertion.
    `--apply` is invalid with interactive mode,
    whose post-selection yes-or-no confirmation is its mutation boundary.
    Preview format and exit codes remain open.
-5. Security quarantine:
-   where quarantined findings live,
-   how users inspect them,
-   and whether any route to private vulnerability reporting belongs in scope.
+5. Security disclosure and quarantine:
+   security-gated findings use a separate red and text-marked interactive picker.
+   Each selected security finding requires an explicit confirmation with no default.
+   The exact security-gate boundary,
+   where findings withheld from publication live,
+   and how users inspect them remain open.
 6. Repository selection:
    explicit `--repo`,
    Git remote inference,
@@ -354,8 +385,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether quarantined findings block publication of every finding
-or only exclude the quarantined findings themselves.
+Ask the next dependent design question about which OCR metadata and content signals place a finding
+behind the security disclosure gate.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -417,5 +448,14 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   or automatic closure.
 - 2026-08-16:
   settled non-interactive preview by default and required `--apply` for non-interactive issue creation.
+- 2026-08-16:
+  settled a separate red and text-marked interactive security picker,
+  per-finding explicit disclosure confirmation,
+  and the non-interactive `--apply`,
+  `--apply --non-security-only`,
+  and `--apply --all` authority ladder.
+- 2026-08-16:
+  clarified that security-classified findings may document remediated or non-exploitable concerns;
+  the tool must explain disclosure semantics in every relevant interface.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
