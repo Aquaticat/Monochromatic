@@ -191,7 +191,7 @@ await describe({
       },
     },),
     it({
-      name: 'reports SPLIT when neither side reaches a majority of the voices heard, so a passage the '
+      name: 'reports SPLIT when neither side reaches a majority of the roster, so a passage the '
         + 'roster disagrees about is never inserted on a plurality',
       fn: async () => {
         const verdict = judgeCoverage({
