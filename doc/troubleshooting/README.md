@@ -262,6 +262,9 @@ For common issues:
 - **Nested Wayland quit makes hosted winit client report broken pipes?
   ** →
   [Close the client before stopping the compositor](nested-wayland-client-shutdown-order.md)
+- **Android `uiautomator dump` cannot get idle state while an app loads?
+  ** →
+  [Wait for stable rendered content](android-uiautomator-dump-idle-state.md)
 
 ## Contributing
 

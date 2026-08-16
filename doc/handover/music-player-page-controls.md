@@ -403,20 +403,54 @@ Before the package-local host-theme rule was recorded,
 one desktop light-scene probe temporarily selected `BreezeLight` and then restored `VaporBlack`.
 Do not repeat that host mutation;
 all replacement desktop captures must use the isolated nested compositor.
-These captures predate the more-vibrant selected-background adjustment and require final replacement.
-Earlier AVD and stepped-outline captures are superseded before-state evidence only.
-Desktop release capture and requester visual approval remain pending.
+These captures predate the more-vibrant selected-background adjustment and are superseded.
+Earlier AVD and stepped-outline captures are also before-state evidence only.
+
+Final more-vibrant Android captures are:
+
+- `/home/user/temp/agent/music-player-pixel6-led-vibrant-dark-final.png`
+- `/home/user/temp/agent/music-player-pixel6-led-vibrant-light-final.png`
+
+The connected Pixel's current runtime accent is achromatic,
+so its selected fill correctly retains zero available accent chroma while maintaining white-legend contrast.
+The light selected sample reaches near-black at its dark edge,
+and the dark selected sample remains visibly distinct from the plate.
+Focused high-chroma accent tests cover the chroma-retention behavior that this device theme cannot display.
+The Pixel 6 was restored to night mode after capture.
+
+Final isolated desktop captures are:
+
+- `/home/user/temp/agent/music-player-desktop-led-vibrant-dark-final.png`
+- `/home/user/temp/agent/music-player-desktop-led-vibrant-light-final.png`
+
+Both show a saturated blue selected cap and invariant white legend.
+Sampled selected-fill pixels include dark-scene `#206789` and light-scene `#203376`.
+Both scenes ran through `package/cli/nested-wayland-session --color-scheme` on a private session bus.
+The host remained `VaporBlack` with look-and-feel package `com.valve.vapor.desktop` before and after capture.
+Graceful nested shutdown produced client exit code zero without winit broken-pipe or event-loop errors.
+Requester visual approval remains pending.
 
 ## Working-tree and process state
 
-Main `HEAD` contains the brighter light plate and body-sized LED legend changes.
-An Android release with the earlier OKLCH contrast changes is installed on connected Pixel 6 serial
-`1C171FDF600KWW`.
-The more-vibrant selected-background release has not yet been installed or captured.
+Main `HEAD` contains the vibrant OKLCH LED implementation,
+package-local host-theme guardrails,
+and isolated nested dark/light support.
+The more-vibrant Android release is installed on connected Pixel 6 serial `1C171FDF600KWW`.
 No Android emulator is running or authorized for this verification.
-Commit `8eb6c8d82` implements application color operations through OKLCH,
-including alpha changes outside LED controls.
-Focused Android and desktop tests prove brightest-accent white-legend contrast and OKLCH-coordinate preservation.
+Android unit tests,
+Detekt,
+release assembly,
+and Pixel installation pass.
+Desktop tests,
+Slint lint,
+Rust lint/check,
+and release build pass.
+Nested compositor portal tests,
+Rust lint,
+release build,
+and real dark/light runs pass.
+Its full-package Clippy command remains red only on the package's pre-existing explicit-return backlog;
+no new-file diagnostics remain.
 Concurrent unrelated `.serena/project.yml` remains modified.
 Do not stage or alter it.
 
@@ -430,10 +464,7 @@ No build or application process is currently running.
 
 ## Remaining work
 
-1.  Run remaining platform lint,
-    tests,
-    and release builds after the vibrance change.
-2.  Verify final desktop scenes inside `package/cli/nested-wayland-session` and obtain requester visual approval.
+Obtain requester visual approval for the final Android and isolated desktop captures.
 
 ## Risks and guardrails
 
@@ -545,3 +576,27 @@ No build or application process is currently running.
   commit the scoped redesign,
   build both releases,
   and capture measured dark and light wrapped scenes.
+- 2026-08-16,
+  15:00 EDT:
+  Increased selected LED vibrance in commit `cd850fa52` by separating OKLCH lightness and chroma mixing.
+  Selected fills retain roughly 90% of available runtime-accent chroma while contrast lightness remains independent.
+  Commit `c0d77d483` records the design and host-theme guardrails.
+  Android unit tests and Detekt pass;
+  desktop tests,
+  Slint lint,
+  Rust lint/check,
+  and release build pass.
+- 2026-08-16,
+  15:35 EDT:
+  Enhanced `package/cli/nested-wayland-session` for deterministic dark and light scenes.
+  Commit `8efb6e0c8` adds a private session bus and XDG Settings portal.
+  Commits `36bc9cd4b` and `dcf7b390a` repair the compositor run task's duplicate import and usage-argument forwarding.
+  Commits `8fd089b6a` and `510cd545b` close hosted xdg toplevels before compositor teardown,
+  eliminating winit broken-pipe shutdown errors.
+- 2026-08-16,
+  15:35 EDT:
+  Captured final vibrant Android and isolated desktop dark/light scenes.
+  The Pixel release is installed only on `1C171FDF600KWW` and the device is restored to night mode.
+  The desktop host remained `VaporBlack` throughout isolated captures.
+  Next action:
+  obtain requester visual approval.
