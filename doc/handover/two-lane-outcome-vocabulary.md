@@ -14,6 +14,34 @@ Every defect in this stretch is the same shape:
 **an absence recorded as a deliberate choice**,
 and the fix is always to give the absence its own name rather than let it borrow a decision's.
 
+## Standing instruction: `no-non-null-assertion` names the wrong fix
+
+**From the user, 2026-08-16.**
+`oxlint`'s `typescript(no-non-null-assertion)` prints help text suggesting optional chaining
+(`x?.y` in place of `x!.y`). Do not follow it.
+The fix in this repo is `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw/ts`,
+added as a `workspace:*` dependency where a package does not already carry one;
+`translation-repair` already does (`package/module/translation-repair/package.json:23`).
+
+The suggestion is not merely stylistically off, it changes what the code MEANS:
+`x!.y` throws where the value is missing and `x?.y` yields `undefined`,
+so following the help text turns a loud failure into a silent one,
+which is the defect class this whole session exists to close.
+The repo's own configuration already states the intent
+(`package/config/oxlint/src/rule/restriction.ts:214`: "Ban non-null assertion (!): use nonNullishOrThrow instead").
+
+Per the user, the message documented the correct fix not long before, so this reads as a REGRESSION
+in wording rather than as a rule anyone re-decided.
+What is measured so far: the help text (`Consider using the optional chain operator ...`) appears
+nowhere in this repository outside `node_modules`, so it is emitted by oxlint's built-in
+`typescript/no-non-null-assertion` rather than by any config or plugin here,
+while the correct fix IS documented on this side, in
+`package/config/oxlint/src/rule/restriction.ts:214` and
+`package/oxlint-plugin/no-restricted-syntax/README.md` (lines 60, 139, 204).
+The cause is NOT established beyond that: no oxlint source has been read for it.
+Do not attribute it to the oxlint maintainers and do not file anything upstream on this evidence.
+Tracked for the user to fix properly in `#442`.
+
 ## Landed, pushed, safe
 
 -   `92539977f` read the unreached slice on the axis that separates it (test).
