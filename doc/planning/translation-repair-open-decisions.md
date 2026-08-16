@@ -701,24 +701,41 @@ Chinese carries only as an IMAGE, which is Question 2's subject. So the screen i
 three for three on "a per-slice judge will condemn the archive here" and two for
 three on "a passage moved".
 
-SO 6.4 PERCENT OF SLICES IS THE FLOOR on how much of the replacement rate is
-layout rather than quality. A floor because the screen reads SIZE: a passage
-swapped for one of similar length reads as ordinary.
+THAT FIRST READING PUT THE FLOOR AT 6.4 PERCENT OF SLICES, and it is superseded
+by what follows. Read the corrected numbers rather than that one.
 
-CORRECTED AFTER A SECOND HAND-CHECK, and read carefully because the correction
-narrows what the number covers. The three pairs checked above all came from
-entries whose median expansion was ordinary. Four entries have a median far
-outside any plausible Chinese-to-English band, and their flagged pairs are NOT
-relocations: `shi_Yumiaoya` at median 0.76 has three UNTRANSLATED sections whose
-near-zero ratios drag the median down until two ordinary translations are
-flagged; `Zha_Ke` at median 7.51 has a letter that exists only in English;
-`noname3031`'s flagged slice is twenty-three Chinese characters, which is
-arithmetic noise. So the screen measures four things at once: relocation,
-untranslated section, content absent from the source, and noise. 6.4 percent
-remains a floor for "slices where a per-slice judge will misjudge the archive",
-which is the quantity this question needs, and it is NOT a floor for relocation
-specifically. The section "The displacement screen measures four different
-things" in `doc/handover/translation-repair.md` carries the per-slice numbers.
+THAT SCREEN WAS THEN FOUND TO BE MEASURING FOUR THINGS AT ONCE, AND REBUILT.
+The three pairs hand-checked above all came from entries whose expansion was
+ordinary. Four entries sit far outside any plausible Chinese-to-English band, and
+their flagged pairs are NOT relocations: `shi_Yumiaoya` has three UNTRANSLATED
+sections whose near-zero ratios dragged the document median down until two
+ordinary translations were flagged; `Zha_Ke` has a letter that exists only in
+English; `noname3031`'s flagged slice is twenty-three Chinese characters, which
+is arithmetic. The screen now classifies rather than counting one bucket, and
+the corpus reads:
+
+    relocation candidates                              22
+      of which a transcription would also explain        2
+    untranslated slices                                 4
+    target-only slices                                 12
+    other imbalances                                   24
+    slices read                                      1260
+
+SO THE NUMBER THIS QUESTION SHOULD USE IS THE UNION, not the relocation count
+alone. Every one of those classes causes the same judging failure: a per-slice
+judge sees the archive inventing content, or dropping it, or both, and prefers a
+fresh rendering. That union is 62 slices, about 5 percent, and it remains a
+FLOOR because the screen reads SIZE: a passage swapped for one of similar length
+reads as perfectly ordinary.
+
+WHAT IT IS NOT is a count of relocations. Two of the 22 are transcriptions on the
+probe's own evidence, two are verified relocations, and eighteen are unchecked,
+which is why the class is named `relocationCandidates`. The earlier "6.4 percent
+is a floor" wording is withdrawn: it was a floor for the union, never for
+relocation. The sections "The displacement screen measures four different things"
+and "The screen rebuilt, and the corrected corpus numbers" in
+`doc/handover/translation-repair.md` carry the per-slice numbers and what the
+rebuild changed.
 
 ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges decline
 constantly, and not only over names. Across the three arms `gpt-oss-120b`
