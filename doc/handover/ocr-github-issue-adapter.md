@@ -102,7 +102,14 @@ Non-interactive mode must never prompt,
 regardless of TTY detection.
 A missing required non-interactive input or decision is an error rather than an invitation to prompt.
 Without `--apply`,
-non-interactive mode validates and previews proposed issue creation without GitHub mutations.
+non-interactive mode validates and emits an exact JSON publication plan to standard output
+without GitHub mutations.
+The plan includes the destination repository,
+complete generated titles and bodies for normal issues,
+label or title-prefix behavior,
+and source-reference behavior.
+Security findings appear only as a count and input record ordinals or JSONL line numbers.
+Diagnostics go to standard error so standard output remains machine-readable.
 `--non-interactive --apply` explicitly authorizes creation only when no security-gated finding is present.
 If one is present,
 bare `--apply` errors without creating any issue.
@@ -436,7 +443,14 @@ in dependency order:
    `--apply --all` includes security-gated issues under an explicit safe-disclosure assertion.
    `--apply` is invalid with interactive mode,
    whose post-selection yes-or-no confirmation is its mutation boundary.
-   Preview format and exit codes remain open.
+   Preview mode emits an exact JSON publication plan to standard output.
+   It contains complete normal issue titles and bodies,
+   repository,
+   label fallback,
+   source-reference behavior,
+   and only counts and input positions for security findings.
+   Diagnostics use standard error.
+   Applied-run output and remaining exit codes remain open.
 5. Security disclosure and quarantine:
    security-gated findings use a separate red and text-marked interactive picker.
    Each selected security finding requires an explicit confirmation with no default.
@@ -529,7 +543,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about the output format and detail for non-interactive preview mode.
+Ask the next dependent design question about whether issue creation continues after an individual GitHub failure.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -645,5 +659,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   required at least one combined interactive selection while allowing either individual picker to be empty.
 - 2026-08-16:
   made pre-publication Ctrl+C and final-confirmation rejection successful cancellation with status zero.
+- 2026-08-16:
+  made non-interactive preview output an exact machine-readable JSON plan on standard output,
+  with diagnostics on standard error.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
