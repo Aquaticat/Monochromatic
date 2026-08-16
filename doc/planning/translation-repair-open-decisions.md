@@ -648,22 +648,52 @@ ARM WAS RERUN CLEAN WITH THE SAME RESULT: 16 of 16, 92 ballots split 60 for the
 complete text, 2 for the deletion, 30 declining. So the judges were not reading
 the join.
 
-A THIRD FIXTURE IS RUNNING as this is written, and it is the one that would
-settle the remaining question. An ALTERATION changes a number the original also
-states, since digits survive translation: the damaged candidate is the same
-length, equally fluent, and wrong about a fact only the Chinese reveals. If the
-roster passes that too, the reading strengthens from "not running a habit" to
-"able to consult the source when nothing else decides".
+THE THIRD FIXTURE RAN, and it is the one that asks whether the ORIGINAL is read
+at all. An ALTERATION changes a number the original also states, since digits
+survive translation: the damaged candidate is the same length, equally fluent,
+and wrong about a fact only the Chinese reveals. Result: 12 of 16, 96 ballots
+split 55 for the complete text, 41 declining, and NONE for the damaged text. No
+judge ever picked the wrong number. 86 of the 96 reasons appeal to the original
+explicitly, several naming the year it states: "Candidate 1 correctly preserves
+the birth year 2004 from the original".
 
-ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges declined on
-eleven of sixteen trials, both because the pair violates the sheet's exact-names
-criterion in a way THE ARCHIVE ITSELF introduced (the handle `AmbeR_the_安帕`
-romanised to `AmbeR_the_anpa`). On slices like that the effective roster is four
-voices, not six.
+SO THE READING STRENGTHENS: the roster is not running a habit, and on a slice
+where nothing but the original can decide, it consults the original.
 
-So today the replacement rate has a floor beside it and not yet a quality
-reading: a roster that could not see a deleted sentence would be disqualified,
-and this one is not.
+BUT THE FOUR MISSES ARE THE MOST IMPORTANT RESULT OF THE NIGHT, and they are not
+a judge failure. All four are one slice, `Dethelly/0`, in all four arrangements,
+and in each the roster DECLINED. It was right to. That section's Chinese is one
+sentence about a girl from Chongqing arriving in Hangzhou in autumn 2023; its
+English drops Chongqing and adds four sentences about her being introverted,
+shy, and having nobody to confide in. The judges called that hallucinated.
+
+IT IS NOT HALLUCINATED. Every one of those ideas appears in the Chinese
+document, and the NEXT Chinese slice is exactly that material: the translator
+moved it up a section. The alignment is perfect (24 slices, zero findings). The
+per-slice size ratios corroborate it: 11.51 on slice 0 and 2.08 on slice 1
+against a document median of 3.31, which is what a relocation looks like from
+both ends.
+
+WHY THAT BEARS DIRECTLY ON THIS QUESTION. Every judge sees ONE slice pair.
+Wherever the translator moved material across a section boundary, the archive
+looks like it invented content on one slice and dropped content on the next, and
+the roster condemns it on BOTH while preferring a fresh rendering that says only
+what its own slice's original says. SOME UNKNOWN SHARE OF THE THREE-IN-FOUR
+REPLACEMENT RATE MAY BE THIS rather than the archive being worse, and nothing in
+the pipeline can currently see it. `#107` carries a free deterministic probe:
+per-slice ratios against each document's own median, looking for adjacent
+high-low pairs.
+
+ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges decline
+constantly, and not only over names. Across the three arms `gpt-oss-120b`
+declined 11, 11 and 12 of 16, and `Nemotron-3-Super` 11, 15 and 16 of 16, in each
+case because BOTH candidates fall short of full faithfulness against the
+original: a romanised handle the archive introduced, an omitted clause, a
+softened nuance. On slices carrying any archive imperfection the effective roster
+is about four voices, not six.
+
+So the replacement rate now has a quality floor beside it AND a named systematic
+bias that has not been measured yet.
 
 ### Options
 
@@ -710,8 +740,26 @@ D.  Restrict replacement to slices that carry evidence of a defect, which is the
     Cons: it is the shape you deliberately moved away from, and the graded
     sheets showed the critics miss most of what is wrong.
 
-RANKING: C > A > B > D.
+E.  Measure the displacement bias first (`#107`), then decide between the
+    others. The probe is deterministic and costs no model calls: flag slices
+    whose target-to-source ratio departs from their own document's median, check
+    whether the flagged ones come in adjacent high-low pairs, and count how much
+    of the corpus that covers.
+    Pros: it is the only option that separates "the archive is worse" from "the
+    archive is laid out differently", which is the actual question under the
+    number; it is free; and it can run before any of A to D is chosen, so it
+    costs nothing but the reading.
+    Cons: it delays the decision by however long the probe and its reading take,
+    and it answers only the layout half: a document with no displacement still
+    has whatever quality gap the rate reports.
 
+RANKING: E > C > A > B > D.
+
+E over C because E is free and C is not, and because E answers a question C
+cannot: a report-only pass grades what the judges decided, and if displacement is
+driving part of the rate, the grader would be reading decisions that were made on
+a slice window too narrow to be right. Measure the window before grading through
+it.
 C over A because the whole disagreement is about whether the judges are right,
 and C answers that with the calls the run would spend anyway; A spends the same
 quota and commits the result before anyone has read it.
