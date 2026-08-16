@@ -3,6 +3,7 @@ import type {
   LaneSliceText,
 } from './lane-slice-text.ts';
 import type { PreparationIdentity, } from './preparation-identity.ts';
+import { assertDeliveryCoherent, } from './delivery-coherence.ts';
 import type {
   SliceDelivery,
   SliceDeliveryRecord,
@@ -185,6 +186,31 @@ export type SliceLaneComparison = {
 };
 
 /**
+ * One lane's delivery ledger, carrying the slicing it was built over.
+ *
+ * THE IDENTITY TRAVELS WITH THE LEDGER rather than being supplied once beside
+ * both. Two ledgers loaded from different artifacts are exactly the pair a
+ * comparison must refuse, and a single identity passed in by the caller is the
+ * caller's claim about them rather than either ledger's own.
+ *
+ * @example
+ * ```ts
+ * const ledger: IdentifiedDeliveryLedger = { preparationIdentity, records, };
+ * ```
+ */
+export type IdentifiedDeliveryLedger = {
+  /**
+   * Slicing this ledger's rows were built over.
+   */
+  readonly preparationIdentity: PreparationIdentity;
+
+  /**
+   * One row per prepared slice, in document order.
+   */
+  readonly records: readonly SliceDeliveryRecord[];
+};
+
+/**
  * Every slice as both lanes left it, bound to the slicing it describes.
  *
  * THE BINDING IS PART OF THE VALUE rather than something a writer remembers to
@@ -342,51 +368,68 @@ function judgeSlice(
 /**
  * Compares what two lanes' documents carry, slice by slice.
  *
- * @param preparationIdentity - slicing both lanes ran over, carried into the
- * result so no writer can persist rows without the thing that numbers them
+ * @param repair - repair lane's delivery ledger with the slicing it was built
+ * over, already checked against that lane's own document
  *
- * @param repair - repair lane's delivery ledger, already checked against that
- * lane's own document
- *
- * @param translate - translate lane's, over the SAME preparation
+ * @param translate - translate lane's, which must name the SAME slicing
  *
  * @returns One row per slice, in the order the REPAIR ledger reports them,
  * which is document order wherever that lane built it from a preparation and is
  * not re-sorted here
  *
- * @throws {@link LaneComparisonError} when either ledger repeats a slice, when
- * one reports a slice the other does not, or when the two disagree about a
- * slice's archive wording or about whether the archive translates it at all.
- * The last of those is the only one that PROVES different preparations; the
- * rest are shapes a single preparation cannot produce
+ * @throws {@link LaneComparisonError} when the two name different slicings,
+ * when either ledger repeats a slice, when they disagree about which slice sits
+ * at a position, or when they disagree about a slice's original, its archive
+ * wording, or whether the archive translates it at all
  *
  * @example
  * ```ts
- * const comparison = compareDocumentLanes({ preparationIdentity, repair, translate, },);
+ * const comparison = compareDocumentLanes({ repair, translate, },);
  * ```
  */
 export function compareDocumentLanes(
   {
-    preparationIdentity,
     repair,
     translate,
   }: {
-    readonly preparationIdentity: PreparationIdentity;
-    readonly repair: readonly SliceDeliveryRecord[];
-    readonly translate: readonly SliceDeliveryRecord[];
+    readonly repair: IdentifiedDeliveryLedger;
+    readonly translate: IdentifiedDeliveryLedger;
   },
 ): LaneComparison {
-  if (repair.length !== translate.length)
+  // THE FIRST THING CHECKED, because everything below joins on a slice index
+  // and an index means nothing without the slicing that issued it. Two ledgers
+  // from different artifacts of the same entry line up perfectly and describe
+  // different passages.
+  if (repair.preparationIdentity !== translate.preparationIdentity)
     throw new LaneComparisonError({
-      message: `lanes report ${String(repair.length,)} and ${
-        String(translate.length,)
+      message: 'the two ledgers name different slicings, so their slice indices number different passages',
+    },);
+
+  /**
+   * Slicing both ledgers name, now proven to be one.
+   */
+  const { preparationIdentity, } = repair;
+
+  /**
+   * Rows each ledger holds, named once so every count below reads as one step.
+   */
+  const { records: repairRecords, } = repair;
+
+  /**
+   * Rows the translate ledger holds.
+   */
+  const { records: translateRecords, } = translate;
+  if (repairRecords.length !== translateRecords.length)
+    throw new LaneComparisonError({
+      message: `lanes report ${String(repairRecords.length,)} and ${
+        String(translateRecords.length,)
       } slices, so they ran over different preparations`,
     },);
 
   /**
    * Translate row for each slice index.
    */
-  const translateByIndex = new Map(translate.map(function toEntry(record,): [
+  const translateByIndex = new Map(translateRecords.map(function toEntry(record,): [
     number,
     SliceDeliveryRecord,
   ] {
@@ -401,9 +444,9 @@ export function compareDocumentLanes(
   // rows for slice 1 and silently drop slice 2. BOTH sides are checked, because
   // the join walks the repair rows and looks the translate ones up, so a repeat
   // on either side produces that same wrong answer from the other end.
-  if (translateByIndex.size !== translate.length)
+  if (translateByIndex.size !== translateRecords.length)
     throw new LaneComparisonError({
-      message: `translate lane reports ${String(translate.length,)} rows over ${
+      message: `translate lane reports ${String(translateRecords.length,)} rows over ${
         String(translateByIndex.size,)
       } distinct slices`,
     },);
@@ -411,18 +454,21 @@ export function compareDocumentLanes(
   /**
    * Distinct slices the repair rows name.
    */
-  const repairDistinct = new Set(repair.map(function toIndex(record,): number {
+  const repairDistinct = new Set(repairRecords.map(function toIndex(record,): number {
     return record.chunkIndex;
   },),).size;
-  if (repairDistinct !== repair.length)
+  if (repairDistinct !== repairRecords.length)
     throw new LaneComparisonError({
-      message: `repair lane reports ${String(repair.length,)} rows over ${
+      message: `repair lane reports ${String(repairRecords.length,)} rows over ${
         String(repairDistinct,)
       } distinct slices`,
     },);
   return {
     preparationIdentity,
-    slices: repair.map(function toRow(mine,): SliceLaneComparison {
+    slices: repairRecords.map(function toRow(
+      mine,
+      position,
+    ): SliceLaneComparison {
       /**
        * Same slice as the other lane left it.
        */
@@ -430,6 +476,23 @@ export function compareDocumentLanes(
       if (theirs === undefined)
         throw new LaneComparisonError({
           message: `slice ${String(mine.chunkIndex,)} is missing from the translate lane`,
+        },);
+      /**
+       * Row the other ledger holds at this POSITION, as against the one it
+       * holds for this index: a ledger built over one preparation has them in
+       * the same order, and two that do not were not built over one.
+       */
+      const alongside = translateRecords[position];
+      if (theirs.chunkIndex !== alongside?.chunkIndex)
+        throw new LaneComparisonError({
+          message: `slice ${String(mine.chunkIndex,)} sits at position ${
+            String(position,)
+          } in one ledger and elsewhere in the other, so the two are not in one document order`,
+        },);
+      if (theirs.sourceText !== mine.sourceText)
+        throw new LaneComparisonError({
+          message: `slice ${String(mine.chunkIndex,)} covers a different original in each lane, `
+            + 'so the two results describe different preparations',
         },);
       if (theirs.incumbentText !== mine.incumbentText)
         throw new LaneComparisonError({
@@ -451,6 +514,13 @@ export function compareDocumentLanes(
         },);
       assertWordingCoherent({ wording: mine, },);
       assertWordingCoherent({ wording: theirs, },);
+
+      // AND THE DELIVERY AGAINST THE REST OF ITS ROW. A record reaching here is
+      // a structural type rather than proof that `buildSliceDelivery` made it,
+      // and a row shipping wording it never decided is well formed in every
+      // field on its own.
+      assertDeliveryCoherent({ record: mine, },);
+      assertDeliveryCoherent({ record: theirs, },);
       return {
         chunkIndex: mine.chunkIndex,
         incumbentKind: mine.incumbentKind,

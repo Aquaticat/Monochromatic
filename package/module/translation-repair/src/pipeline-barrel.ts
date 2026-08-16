@@ -155,6 +155,8 @@ export {
 export {
   compareDocumentLanes,
   type DecisionComparison,
+  type IdentifiedDeliveryLedger,
+  type LaneComparison,
   LaneComparisonError,
   type SliceLaneComparison,
   type SliceLaneVerdict,

@@ -28,6 +28,8 @@ import {
 import {
   assertPreparationIdentity,
   compareDocumentLanes,
+  type IdentifiedDeliveryLedger,
+  type PreparationIdentity,
   LaneComparisonError,
   type SliceDeliveryRecord,
 } from '../dist/final/node/index.mjs';
@@ -49,8 +51,35 @@ const SOURCE_NAP = '猫猫在窗台上睡觉。';
  * about the join and not about what names it; the validator is what makes it a
  * real identity rather than a bare string.
  */
-const SLICING = `sha256-preparation-v1:${'a'.repeat(64,)}`;
-assertPreparationIdentity(SLICING,);
+const NAMED_SLICING = `sha256-preparation-v1:${'a'.repeat(64,)}`;
+assertPreparationIdentity(NAMED_SLICING,);
+
+/**
+ * Same value with the narrowing written down, since an assertion at module
+ * scope does not reach inside a function declaration.
+ */
+const SLICING: PreparationIdentity = NAMED_SLICING;
+
+/**
+ * Stamps a set of rows with the slicing every case here shares.
+ *
+ * @param records - rows of one lane's ledger
+ *
+ * @returns Those rows, under this file's slicing
+ *
+ * @example
+ * ```ts
+ * const ledger = ledgerOf({ records, },);
+ * ```
+ */
+function ledgerOf(
+  { records, }: { readonly records: readonly SliceDeliveryRecord[]; },
+): IdentifiedDeliveryLedger {
+  return {
+    preparationIdentity: SLICING,
+    records,
+  };
+}
 
 /**
  * Builds one lane's ledger over a single decided slice.
@@ -59,7 +88,8 @@ assertPreparationIdentity(SLICING,);
  *
  * @param shipped - whether the returned document carries it
  *
- * @returns Ledger shaped as `buildSliceDelivery` returns one
+ * @returns Ledger shaped as `buildSliceDelivery` returns one, under the
+ * slicing every case here shares
  *
  * @example
  * ```ts
@@ -74,13 +104,13 @@ function laneOf(
     readonly acceptedText: string;
     readonly shipped: boolean;
   },
-): readonly SliceDeliveryRecord[] {
+): IdentifiedDeliveryLedger {
   /**
    * Whether the lane moved off the archive at all, which decides whether the
    * unshipped case is a withdrawal or an ordinary keep.
    */
   const moved = acceptedText !== ARCHIVE_NAP;
-  return [{
+  return ledgerOf({ records: [{
     chunkIndex: 0,
     sourceText: SOURCE_NAP,
     incumbentKind: 'present',
@@ -98,7 +128,7 @@ function laneOf(
           reason: 'assembly-integrity',
         }
         : { kind: 'incumbent-retained', }),
-  },];
+  },], },);
 }
 
 /**
@@ -123,12 +153,12 @@ function undecidedLaneOf(
     readonly outcome: SliceDeliveryRecord['outcome'];
     readonly incumbentKind: 'present' | 'absent';
   },
-): readonly SliceDeliveryRecord[] {
+): IdentifiedDeliveryLedger {
   /**
    * Archive wording here, which an anchor does not have.
    */
   const incumbentText = (incumbentKind === 'absent') ? '' : ARCHIVE_NAP;
-  return [{
+  return ledgerOf({ records: [{
     chunkIndex: 0,
     sourceText: SOURCE_NAP,
     incumbentKind,
@@ -138,7 +168,7 @@ function undecidedLaneOf(
     delivery: (incumbentKind === 'absent')
       ? { kind: 'gap-remains', }
       : { kind: 'incumbent-retained', },
-  },];
+  },], },);
 }
 
 await describe({
@@ -153,7 +183,6 @@ await describe({
          * Both lanes left the archive wording standing.
          */
         const kept = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
           translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
         },);
@@ -163,7 +192,6 @@ await describe({
          * Only repair changed the slice.
          */
         const repairOnly = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
         },);
@@ -173,7 +201,6 @@ await describe({
          * Only translate changed it.
          */
         const translateOnly = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
@@ -183,7 +210,6 @@ await describe({
          * Both changed it the same way, character for character.
          */
         const agreed = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
@@ -193,7 +219,6 @@ await describe({
          * Both changed it, differently.
          */
         const apart = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
@@ -213,7 +238,6 @@ await describe({
          * Comparison over one unchanged slice.
          */
         const comparison = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
           translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
         },);
@@ -230,7 +254,6 @@ await describe({
          * Repair chose a rewrite the guard took back; translate shipped one.
          */
         const comparison = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: false, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
@@ -262,9 +285,8 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
-            preparationIdentity: SLICING,
             repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-            translate: [],
+            translate: ledgerOf({ records: [], },),
           },);
         }
         catch (error) {
@@ -284,9 +306,8 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
-            preparationIdentity: SLICING,
             repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-            translate: [{
+            translate: ledgerOf({ records: [{
               chunkIndex: 0,
               sourceText: SOURCE_NAP,
               incumbentKind: 'present',
@@ -297,7 +318,7 @@ await describe({
               },
               shippedText: 'A cat dozes in the window.',
               delivery: { kind: 'replacement-shipped', },
-            },],
+            },], },),
           },);
         }
         catch (error) {
@@ -319,8 +340,7 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
-            preparationIdentity: SLICING,
-            repair: [{
+            repair: ledgerOf({ records: [{
               chunkIndex: 0,
               sourceText: SOURCE_NAP,
               incumbentKind: 'present',
@@ -328,7 +348,7 @@ await describe({
               outcome: { kind: 'not-evaluated', },
               shippedText: '',
               delivery: { kind: 'incumbent-retained', },
-            },],
+            },], },),
             translate: undecidedLaneOf({
               outcome: { kind: 'unfilled', },
               incumbentKind: 'absent',
@@ -354,7 +374,6 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
-            preparationIdentity: SLICING,
             repair: undecidedLaneOf({
               // Nothing to fall back on: the archive holds no wording here.
               outcome: { kind: 'incumbent-fallback', },
@@ -382,7 +401,6 @@ await describe({
          * Repair stopped before this slice; translate looked and kept it.
          */
         const comparison = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: undecidedLaneOf({
             outcome: { kind: 'not-evaluated', },
             incumbentKind: 'present',
@@ -411,7 +429,6 @@ await describe({
          * Both lanes reached the anchor and neither filled it.
          */
         const comparison = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: undecidedLaneOf({
             outcome: { kind: 'unfilled', },
             incumbentKind: 'absent',
@@ -441,12 +458,11 @@ await describe({
          * Anchor the translate lane filled and the repair lane cannot touch.
          */
         const comparison = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: undecidedLaneOf({
             outcome: { kind: 'not-applicable', },
             incumbentKind: 'absent',
           },),
-          translate: [{
+          translate: ledgerOf({ records: [{
             chunkIndex: 0,
             sourceText: SOURCE_NAP,
             incumbentKind: 'absent',
@@ -457,7 +473,7 @@ await describe({
             },
             shippedText: 'The cat has a bowl of its own.',
             delivery: { kind: 'replacement-shipped', },
-          },],
+          },], },),
         },);
 
         // ONE lane decided, so there is nothing to compare, and the row names
@@ -481,7 +497,6 @@ await describe({
          * Both lanes chose the same replacement; the guard withdrew translate`s.
          */
         const agreed = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: false, },),
         },);
@@ -497,7 +512,6 @@ await describe({
          * Both lanes chose differently, and both shipped.
          */
         const apart = compareDocumentLanes({
-          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
@@ -519,15 +533,18 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
-            preparationIdentity: SLICING,
-            repair: [
-              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-            ],
-            translate: [
-              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-            ],
+            repair: ledgerOf({
+              records: [
+                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
+                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
+              ],
+            },),
+            translate: ledgerOf({
+              records: [
+                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
+                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
+              ],
+            },),
           },);
         }
         catch (error) {
@@ -535,6 +552,105 @@ await describe({
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
         expect(String(caught,),).toContain('distinct slices',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES two ledgers that name different slicings, which is the pair no other check can catch: '
+        + 'ledgers loaded from two artifacts of one entry line up perfectly, and their slice indices '
+        + 'number different passages',
+      fn: async () => {
+        /**
+         * A slicing that is not this file`s.
+         */
+        const otherSlicing = `sha256-preparation-v1:${'b'.repeat(64,)}`;
+        assertPreparationIdentity(otherSlicing,);
+
+        /**
+         * Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+            translate: {
+              preparationIdentity: otherSlicing,
+              records: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('different slicings',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES two ledgers that disagree about a slice`s ORIGINAL, since two preparations can pair the '
+        + 'same archive wording against different source passages and every other field would still match',
+      fn: async () => {
+        /**
+         * Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+            translate: ledgerOf({
+              records: [{
+                chunkIndex: 0,
+                sourceText: '猫猫在吃饭。',
+                incumbentKind: 'present',
+                incumbentText: ARCHIVE_NAP,
+                outcome: {
+                  kind: 'decided',
+                  acceptedText: ARCHIVE_NAP,
+                },
+                shippedText: ARCHIVE_NAP,
+                delivery: { kind: 'incumbent-retained', },
+              },],
+            },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('a different original in each lane',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a row whose delivery contradicts the wording beside it, because a record reaching here '
+        + 'is a structural type rather than proof that the ledger builder made it: a row shipping wording '
+        + 'it never decided is well formed in every field on its own',
+      fn: async () => {
+        /**
+         * Failure raised by a row shipping a decision it does not have.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: ledgerOf({
+              records: [{
+                chunkIndex: 0,
+                sourceText: SOURCE_NAP,
+                incumbentKind: 'present',
+                incumbentText: ARCHIVE_NAP,
+                outcome: { kind: 'not-evaluated', },
+                shippedText: 'The cat is asleep on the windowsill.',
+                delivery: { kind: 'replacement-shipped', },
+              },],
+            },),
+            translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(String(caught,),).toContain('no decision for the delivery to describe',);
       },
     },),
   ],

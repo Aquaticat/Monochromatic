@@ -57,6 +57,10 @@ export {
   WordingCoherenceError,
 } from './wording-coherence.ts';
 export {
+  assertDeliveryCoherent,
+  DeliveryCoherenceError,
+} from './delivery-coherence.ts';
+export {
   assertPreparationIdentity,
   type PreparationIdentity,
   preparationIdentity,
