@@ -133,14 +133,27 @@ await describe({
         + 'being stripped by a caller: every other case here goes through a helper that removes '
         + 'the property, so without this one nothing tests what the function does with it',
       fn: async () => {
-        expect(translateSliceKey({
+        /**
+         * Argument a JavaScript caller can build and TypeScript refuses.
+         *
+         * `exactOptionalPropertyTypes` rejects this property as `undefined`,
+         * which is a real guard and is why the cast is here rather than the
+         * type being loosened to admit it. What the guard does not reach is an
+         * untyped caller, a spread of a partly filled record, or a wrapper
+         * compiled before this property existed, and each of those hands the
+         * function exactly this object. What it does with it is the runtime
+         * behaviour under test.
+         */
+        const explicitlyAbsent = {
           runShape: RUN_SHAPE,
           sourceText: SOURCE_TEXT,
           incumbentText: INCUMBENT_TEXT,
           incumbentKind: 'present',
           lineStructured: false,
           neighbouringSourceText: undefined,
-        },),).toBe(keyFor({},),);
+        } as unknown as Parameters<typeof translateSliceKey>[0];
+
+        expect(translateSliceKey(explicitlyAbsent,),).toBe(keyFor({},),);
       },
     },),
     it({
