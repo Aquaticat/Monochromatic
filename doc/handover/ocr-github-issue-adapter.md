@@ -768,9 +768,10 @@ in dependency order:
     After publication starts,
     the first Ctrl+C stops future creation while allowing an active bounded creation to settle;
     a second Ctrl+C terminates immediately.
-    Package location and name,
-    binary name,
-    configuration,
+    The package lives at `package/cli/open-code-review-issue`,
+    is named `@monochromatic-dev/cli-open-code-review-issue`,
+    and exposes the `open-code-review-issue` binary.
+    Configuration,
     required GitHub CLI compatibility,
     and mise tasks remain open.
 11. Verification:
@@ -782,9 +783,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask for the package location,
-package name,
-and binary name.
+Inspect sibling CLI manifests and implementation utilities,
+then present the first proposed direct dependency for separate approval.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -960,6 +960,10 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   and selected deterministic end truncation with a trailing ellipsis.
 - 2026-08-16:
   rendered adapter-owned Existing code and Suggested code sections as delimiter-free indented code blocks.
+- 2026-08-16:
+  selected `package/cli/open-code-review-issue`,
+  package `@monochromatic-dev/cli-open-code-review-issue`,
+  and binary `open-code-review-issue`.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-issue-title-length]: ../troubleshooting/github-issue-title-length.md
