@@ -1,8 +1,7 @@
 # Extract music-player into its own repository
 
 Status:
-grilling complete,
-awaiting user confirmation.
+grilling complete and approved.
 This document is the deliverable for the current session.
 The session must not publish tooling,
 create or populate the new repository,
