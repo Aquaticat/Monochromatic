@@ -191,7 +191,12 @@ async function runEntryPipeline(
     const durationMs = Date.now() - t0;
 
     /**
-     * Accepted issues among all adjudicated.
+     * Accepted issues among all adjudicated, for the TALLY line only.
+     *
+     * The ARTIFACT counts these itself. Passing a count in beside the result it
+     * was counted from is what let the two disagree, and a log line that
+     * disagrees with an artifact is a nuisance while an artifact that disagrees
+     * with itself is a wrong measurement.
      */
     const accepted = result.issues
       .filter(function isAccepted(record,) {
@@ -216,13 +221,10 @@ async function runEntryPipeline(
       pipelineDigest,
       corpusSha: RUN_CORPUS_PIN.commitSha,
       callConfig: RUN_CALL_CONFIG,
-      status: result.status,
       durationMs,
       sourceText: entry.sourceText,
       targetText: entry.targetText,
       result,
-      acceptedCount: accepted.length,
-      resolvedCount: resolved.length,
     },);
     await writeFileAtomic({
       path: join(

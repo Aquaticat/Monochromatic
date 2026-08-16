@@ -481,11 +481,11 @@ await describe({
           pipelineDigest: 'sha256-tree-v1:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' as PipelineDigest,
           corpusSha: 'cccccccccccccccccccccccccccccccccccccccc',
           callConfig: { perCallTimeoutMs: 1_000, },
-          status: 'repaired',
           durationMs: 12,
           sourceText: '猫在晒太阳。',
           targetText: 'The cat naps in the sun.',
           result: {
+            status: 'repaired',
             issues: [],
             findings: [],
             chunkCritics: [],
@@ -494,8 +494,6 @@ await describe({
             shippedChunkIndices: [0,],
             withdrawnChunkIndices: [1,],
           },
-          acceptedCount: 0,
-          resolvedCount: 0,
         },);
         /** What lands on disk, which is where a later reader meets it. */
         const onDisk = JSON.stringify(artifact,);

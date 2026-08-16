@@ -33,19 +33,17 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  *
  * @param callConfig - model call configuration this run used
  *
- * @param status - how the run finished
- *
  * @param durationMs - wall time the entry took
  *
  * @param sourceText - original zh page text, measured but not stored
  *
  * @param targetText - translated en page text, measured but not stored
  *
- * @param result - what the pipeline returned
- *
- * @param acceptedCount - accepted issues after adjudication
- *
- * @param resolvedCount - accepted issues the checkers confirmed fixed
+ * @param result - what the pipeline returned, and the ONLY source for the
+ * status and the two issue counts. Those arrived as three parameters BESIDE it
+ * until 2026-08-16, so a caller could state a status the result contradicted
+ * and counts nothing had counted, and the fields a reader trusts most were the
+ * ones least tied to what actually ran
  *
  * @returns Artifact ready to serialize
  *
@@ -61,25 +59,25 @@ export function buildSettledArtifact(
     pipelineDigest,
     corpusSha,
     callConfig,
-    status,
     durationMs,
     sourceText,
     targetText,
     result,
-    acceptedCount,
-    resolvedCount,
   }: {
     readonly entryId: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
     readonly corpusSha: string;
     readonly callConfig: unknown;
-    readonly status: string;
     readonly durationMs: number;
     readonly sourceText: string;
     readonly targetText: string;
     readonly result: {
-      readonly issues: readonly unknown[];
+      readonly status: string;
+      readonly issues: readonly {
+        readonly issue: { readonly status: string; };
+        readonly resolved: boolean;
+      }[];
       readonly findings: readonly unknown[];
       readonly chunkCritics: unknown;
       readonly repairedText: string;
@@ -87,10 +85,18 @@ export function buildSettledArtifact(
       readonly shippedChunkIndices: readonly number[];
       readonly withdrawnChunkIndices: readonly number[];
     };
-    readonly acceptedCount: number;
-    readonly resolvedCount: number;
   },
 ): Readonly<Record<string, unknown>> {
+  /**
+   * Issues the adjudication accepted, counted HERE rather than by the caller.
+   */
+  const accepted = result.issues
+    .filter(function isAccepted(record,): boolean {
+      return record.issue
+        .status
+        === 'accepted';
+    },);
+
   return {
     id: entryId,
 
@@ -109,7 +115,12 @@ export function buildSettledArtifact(
 
     corpusSha,
     callConfig,
-    status,
+
+    // The run's OWN status, read off the result rather than taken from a
+    // parameter beside it, so an artifact cannot report a document settled that
+    // the pipeline reported blocked.
+    status: result.status,
+
     durationMs,
     timestamp: new Date().toISOString(),
 
@@ -130,8 +141,11 @@ export function buildSettledArtifact(
 
     issueCount: result.issues
       .length,
-    acceptedCount,
-    resolvedCount,
+    acceptedCount: accepted.length,
+    resolvedCount: accepted.filter(function isResolved(record,): boolean {
+      return record.resolved;
+    },)
+      .length,
     findings: result.findings,
     issues: result.issues,
     chunkCritics: result.chunkCritics,
