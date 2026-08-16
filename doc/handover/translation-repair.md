@@ -12202,13 +12202,24 @@ return early, so both arms agree trivially and neither read the window. Folded
 into the denominator they dilute the effect toward zero.
 
 BUDGET: roughly 80 flagged slices. Two unpaired arms was 1500 exchanges; the
-three-arm paired design above is about 1760. Every one is a real call, so run it
+three-arm paired design is about 1760 for the flagged slices ALONE. The matched
+ordinary controls are not in that figure and have to be added to it: however many
+are drawn, each costs a full three-arm trial. Every call is real, so run it
 detached and let it notify.
 
-READING IT: the instructions are on `#108` and they have grown past what that
-ticket originally said. Per class; near-floor candidates hand-checked rather than
-counted; an untranslated slice beside a high one treated as a possible
-whole-section move; and the two transcription suspects reported apart.
+A WIDE ARM WITH AN EMPTY WINDOW IS NOT A WIDE TRIAL. A lone slice legitimately
+yields `''`, the stage then renders the narrow sheet, and the trial would record
+a narrow judging in the wide column. The early-return bucket does not catch it,
+because the stage does judge. Give those their own bucket and keep them out of
+the wide denominator.
+
+READING IT: these instructions live HERE, in this section, and nowhere else.
+They are not on any GitHub issue: the numbering incident recorded below means
+GitHub `#108` is a dependency audit, and task-tracker item 108 carries a pointer
+back to this section rather than a copy. Per class; near-floor candidates
+hand-checked rather than counted; an untranslated slice beside a high one treated
+as a possible whole-section move; and the two transcription suspects reported
+apart.
 
 THE ONE CODE STEP BEFORE ANY OF IT, which nothing else in this document records.
 `corpus-run/translate-probe.ts` is hardcoded to `PROBE_ENTRY = 'XingZ60'` with a
