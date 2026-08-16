@@ -86,7 +86,13 @@ modified by the no-pipe rule:
 - no path without `-i` is an error;
 - `-` must not mean standard input.
 
-The implementation must not read redirected stdin as input or reopen `/dev/tty`,
+The implementation must never inspect or read standard input.
+With a positional file,
+it reads only that file.
+Without a positional file,
+non-interactive mode errors and interactive mode uses terminal paste.
+Piped bytes are ignored rather than detected or consumed.
+The implementation must not reopen `/dev/tty`,
 `CONIN$`,
 or another controlling-terminal device.
 
@@ -237,8 +243,9 @@ in dependency order:
    With no path,
    `-i` opens paste and non-interactive mode errors.
    `-` never means standard input.
-   Detection of redirected stdin,
-   paste framing,
+   Standard input is never inspected or read;
+   redirected or piped bytes are ignored.
+   Paste framing,
    encoding,
    and malformed-input behavior remain open.
 4. Non-interactive authority:
@@ -289,8 +296,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask whether non-TTY standard input must cause an immediate error even when a named input file is present,
-or whether the adapter merely never reads standard input.
+Inspect pnpm's `update -r -i --no-save` implementation and prompt behavior before asking about paste framing
+or interactive selection mechanics.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -323,5 +330,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   interactive no-path paste,
   non-interactive no-path failure,
   and rejection of `-` as a standard-input sentinel.
+- 2026-08-16:
+  recorded that the adapter never inspects or reads standard input and ignores piped bytes.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
