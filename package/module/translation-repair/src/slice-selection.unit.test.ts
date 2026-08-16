@@ -20,6 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   buildSliceSelections,
+  selfPreference,
   type SyntheticModelId,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
@@ -94,6 +95,81 @@ function recordFor(
       shippedIndex: 1,
       perCandidate: [],
       findings: [],
+    },
+  } as unknown as TranslateSliceRecord;
+}
+
+/**
+ * Second model, so a round can have a stakeholder and a disinterested judge.
+ */
+const CAT_B = 'hf:cat/Cat-B' as unknown as SyntheticModelId;
+
+/**
+ * Builds a record carrying a REAL round: two candidates by two producers, and
+ * two ballots, one of which is a self-vote.
+ *
+ * Cat-A wrote candidate 1 and named candidate 2; Cat-B wrote candidate 2 and
+ * named it. So over these two candidates there is one self-vote out of two
+ * stakeholder ballots, which is what the measurement case reads.
+ *
+ * @param chunkIndex - slice position
+ *
+ * @returns Record whose round is worth measuring
+ *
+ * @example
+ * ```ts
+ * const record = recordWithRound({ chunkIndex: 0, },);
+ * ```
+ */
+function recordWithRound(
+  { chunkIndex, }: { readonly chunkIndex: number; },
+): TranslateSliceRecord {
+  /**
+   * Base record, whose round is then replaced with a populated one.
+   */
+  const base = recordFor({
+    chunkIndex,
+    origin: 'fresh',
+    decision: 'judged',
+    voteWeight: 2,
+  },);
+
+  return {
+    ...base,
+    stageResult: {
+      ...base.stageResult,
+      slate: [
+        {
+          origin: 'fresh',
+          producer: {
+            kind: 'model',
+            modelId: CAT_A,
+          },
+        },
+        {
+          origin: 'fresh',
+          producer: {
+            kind: 'model',
+            modelId: CAT_B,
+          },
+        },
+      ],
+      ballots: [
+        {
+          modelId: CAT_A,
+          best: 2,
+          reason: 'the second reads more naturally',
+          weight: 1,
+          selfVote: false,
+        },
+        {
+          modelId: CAT_B,
+          best: 2,
+          reason: 'mine keeps the tail clause',
+          weight: 0.5,
+          selfVote: true,
+        },
+      ],
     },
   } as unknown as TranslateSliceRecord;
 }
@@ -205,6 +281,53 @@ await describe({
         },);
         expect(selections[0]?.decision,).toBe('declined-indecision',);
         expect(selections[1]?.decision,).toBe('judged',);
+      },
+    },),
+    it({
+      name: 'CARRIES THE WHOLE ROUND, ballots and reasons included, in slate order. The summary '
+        + 'says what shipped; only the round says who was asked and what they answered, and the '
+        + 'reasons are what found the Kimi-K3 channel marker and the Dethelly relocation',
+      fn: async () => {
+        const selections = buildSliceSelections({
+          records: [recordWithRound({ chunkIndex: 0, },),],
+          shippedChunkIndices: [0,],
+        },);
+
+        /**
+         * Round as the artifact would carry it.
+         */
+        const round = selections[0]?.round;
+        expect(round?.producers
+          .length,).toBe(2,);
+        expect(round?.ballots
+          .length,).toBe(2,);
+        // The judge's stated reason survives, which a tally cannot reconstruct.
+        expect(round?.ballots[0]?.reason,).toBe('the second reads more naturally',);
+      },
+    },),
+    it({
+      name: 'produces a round `selfPreference` consumes AS IS, which is why it is this shape: the '
+        + 'artifact carries what the instrument reads rather than something a reader reshapes, and '
+        + 'a reshaping step is where a measurement quietly starts answering a different question',
+      fn: async () => {
+        const selections = buildSliceSelections({
+          records: [recordWithRound({ chunkIndex: 0, },),],
+          shippedChunkIndices: [0,],
+        },);
+
+        /**
+         * The measurement run straight off the ledger.
+         */
+        const measured = selfPreference({ rounds: selections.map(function toRound(selection,) {
+          return selection.round;
+        },), },);
+        expect(measured.kind,).toBe('measured',);
+        if (measured.kind !== 'measured')
+          return;
+        // Cat-A produced candidate 1 and named candidate 2; Cat-B produced
+        // candidate 2 and named it. One self-vote of two stakeholder ballots.
+        expect(measured.opportunities,).toBe(2,);
+        expect(measured.ownVotes,).toBe(1,);
       },
     },),
     it({

@@ -1,4 +1,5 @@
 import type { CandidateProducer, } from './candidate-select-model.ts';
+import type { SelectionRound, } from './self-preference.ts';
 import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 
 //region Slice selection
@@ -61,6 +62,29 @@ export type SliceSelection = {
    * separates them, which is why both fields are here.
    */
   readonly shipped: boolean;
+
+  /**
+   * The WHOLE round: every candidate's provenance in slate order, and every
+   * ballot cast over it with its reason and weight.
+   *
+   * KEPT IN FULL RATHER THAN SUMMARISED, on the owner's instruction that disk
+   * is not the constraint. The summary above answers what shipped; only the
+   * round answers who was asked and what they said, and three separate
+   * measurements need exactly that. `selfPreference` reads it as-is, which is
+   * why it is this shape: the artifact carries what the instrument consumes
+   * rather than something a reader has to reshape.
+   *
+   * THE REASONS ARE PART OF IT and are the bulk of the bytes. They earn it: the
+   * Kimi-K3 channel-marker defect and the `Dethelly` relocation were both found
+   * by reading what judges said rather than what they chose, and neither is
+   * recoverable from a tally.
+   *
+   * POSITION IS HERE TOO, without a field for it. `producers` is in slate
+   * order and a ballot names a one-based position into it, so a ballot's
+   * position and the candidate it fell on are both readable, which is what a
+   * position-bias measurement needs.
+   */
+  readonly round: SelectionRound;
 };
 
 /**
@@ -111,6 +135,20 @@ export function buildSliceSelections(
       voteWeight: record.stageResult
         .voteWeight,
       shipped: shipped.has(record.chunkIndex,),
+      round: {
+        // SLATE ORDER, which is the order the judges saw and the order their
+        // one-based ballot indices point into. Taking the producers off the
+        // slate rather than off the candidate set is what keeps a ballot's
+        // position meaningful: the slate is rotated per slice and the candidate
+        // set is not.
+        producers: record.stageResult
+          .slate
+          .map(function toProducer(entry,) {
+            return entry.producer;
+          },),
+        ballots: record.stageResult
+          .ballots,
+      },
     };
   },);
 }
