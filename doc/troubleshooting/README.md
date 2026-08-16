@@ -256,6 +256,9 @@ For common issues:
 - **Mise inline TypeScript task reports an already-declared imported binding?
   ** →
   [Keep interpolated imports in one scope owner](mise-inline-task-import-collision.md)
+- **Mise inline Node task receives no declared usage arguments?
+  ** →
+  [Parse mise's `usage_args` value](mise-usage-args-inline-node.md)
 
 ## Contributing
 

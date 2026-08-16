@@ -143,7 +143,8 @@ arg "[args]" var=#true help="Compositor arguments, then the client command to ho
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
+{{vars.parse_usage_args}}
 runCargo(['build', '--release'])
-const args = process.argv.slice(1)
+const args = parseUsageArgs(process.env.usage_args ?? '')
 execFileSync('./target/release/monochromatic-nested-wayland-session', args, { stdio: 'inherit' })
 """
