@@ -138,7 +138,13 @@ export function assembleRepair(
   const issues = buildIssueRecords({
     outcomes,
     blocked: false,
-    withdrawnChunkIndices: guarded.revertedChunkIndices,
+    // The NORMALIZED set rather than the guard's raw one, which is the same
+    // membership either way, since this is a lookup and order cannot change what
+    // it finds. Reading from one set rather than from two spellings of it is the
+    // point: the raw set is the normalizer's input and nothing else should take
+    // it, or a later change to what normalizing means would reach one reader and
+    // not the other.
+    withdrawnChunkIndices: ordered.withdrawn,
   },);
 
   /**
