@@ -395,7 +395,7 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
         Command::Quit => {
             // Ask hosted client to close before tearing down its Wayland connection.
             child::request_hosted_client_shutdown(state);
-            Response::Ok
+            return Response::Ok;
         }
     }
 }
