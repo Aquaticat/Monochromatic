@@ -181,6 +181,18 @@ Issue bodies use this section order:
 Missing category renders as `uncategorized` and missing severity as `unspecified`.
 Absent code fields omit their sections.
 Model `thinking` and raw record JSON are never included.
+OCR `content` is inserted as Markdown unchanged.
+The adapter must not sanitize,
+escape,
+demote,
+contain,
+or neutralize its headings,
+fences,
+HTML,
+links,
+or mentions.
+Documentation and publication previews must state that OCR content retains active GitHub Markdown behavior,
+including notifications caused by mentions.
 Fallbacks and title length handling remain to be settled.
 
 ## Settled prior findings
@@ -459,7 +471,13 @@ in dependency order:
    optional Suggested code,
    and OpenCodeReview attribution.
    Missing metadata uses `uncategorized` and `unspecified`.
-   Safe Markdown and code-fence rendering,
+   OCR content is inserted as unchanged Markdown with active headings,
+   fences,
+   HTML,
+   links,
+   and mentions.
+   Safe rendering of the adapter-owned code sections,
+   publication preview detail,
    and title fallback and length behavior remain open.
 8. Identity and lifecycle:
    settled as create-only.
@@ -490,9 +508,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether OCR content is preserved as Markdown,
-sanitized as Markdown,
-or rendered as plain text.
+Ask the next dependent design question about how much of each unchanged Markdown issue body
+is shown before publication.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -594,5 +611,11 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   Source and metadata,
   optional existing and suggested code,
   and OpenCodeReview attribution sections.
+- 2026-08-16:
+  preserved OCR content as unchanged active Markdown without sanitizing headings,
+  fences,
+  HTML,
+  links,
+  or mentions.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
