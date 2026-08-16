@@ -17,7 +17,7 @@ so this procedure stores it in a mode-`600` local file for direct transfer into 
 ## Setup
 
 Status:
-TODO
+DONE
 
 - Use a Linux desktop with a browser,
   terminal,
@@ -28,7 +28,7 @@ TODO
 ## Steps
 
 Status:
-TODO
+DONE
 
 1. Open <https://central.sonatype.com/usertoken> in the browser.
    The Sonatype page displays **Sign In** when no authenticated session exists.
@@ -57,7 +57,8 @@ TODO
    Nano displays one non-empty first line.
 10. Press **Enter** and paste the token password on the second line.
     Nano displays one non-empty second line.
-11. Save with **Ctrl+O**, then confirm the path with **Enter**.
+11. Save with **Ctrl+O**,
+    then confirm the path with **Enter**.
     Nano reports `[ Wrote 2 lines ]`.
 12. Exit with **Ctrl+X**.
     The terminal returns to its shell prompt.
@@ -70,7 +71,7 @@ TODO
 ## What to check
 
 Status:
-TODO
+DONE
 
 Run:
 
@@ -93,7 +94,7 @@ The coding agent will transfer each line directly into the repository secrets
 ## Restore
 
 Status:
-TODO
+DONE
 
 After the coding agent confirms that both GitHub Actions secrets exist,
 delete the transfer file:
