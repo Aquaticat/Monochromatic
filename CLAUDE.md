@@ -647,6 +647,13 @@ NXR:
 Inspect processes + logs;
  rerun via process tool or bounded execution.
 
+HLT:
+ Stop your own runs by PID.
+`pkill`/`killall` patterns match every command line holding the string,
+ including pi calls that merely quote the same path.
+List matches first;
+ kill only intended PIDs.
+
 RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
