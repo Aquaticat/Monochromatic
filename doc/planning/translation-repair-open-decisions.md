@@ -121,6 +121,31 @@ yesterday's state:
         rather than sending critics to complain about a blank. Decisions 26 and
         27 carry the two choices in it that are yours to veto; nothing produces
         such a slice yet, so no run changes today.
+-   THE NIGHT OF THE 15TH INTO THE 16TH went to the quote anchoring chain and to
+    building `#84`'s instrument. One item here changes a number you may read and
+    one adds a question, so both are stated plainly:
+    -   QUOTE ANCHORING COULD ANCHOR A CRITIC'S QUOTE TO THE WRONG OCCURRENCE.
+        Ambiguity was judged inside each matching pass rather than over the
+        broadest form the chain accepts, so a quote appearing twice under
+        whitespace folding could still bind to the first. The three passes are
+        now one, over one normalization. MEASURED COST: zero. Across three
+        corpus passes, 16,479 real critic quotes, not one became ambiguous under
+        the stricter rule, and a positive control proved the probe could see
+        ambiguity when it exists (566 hits when the same needles were searched
+        over whole pages). The slice cache version moved for it, since the
+        change alters which claims survive while every keyed input stays
+        identical.
+    -   `#84` NOW HAS AN INSTRUMENT AND A FIRST READING, which Question 5 carries
+        in full. The short version: over four entries the judges chose the
+        complete text in all sixteen trials, which rules out keeping what they
+        were handed and preferring a ballot position, and CANNOT rule out
+        preferring the longer text, because a deleted sentence makes the
+        complete candidate the longer one every time. An insertion fixture, whose
+        correct answer is the shorter candidate, is built and running.
+    -   TWO OF SIX JUDGES ABSTAINED ON ELEVEN OF SIXTEEN of those trials, both
+        refusing the pair because the archive's own handle romanisation violates
+        the sheet's exact-names criterion. That is worth knowing before Question
+        6, since it means the effective roster on such slices is four voices.
 
 ## Question 1: how wide should the producing rosters be
 
