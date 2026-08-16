@@ -114,14 +114,20 @@ await describe({
       },
     },),
     it({
-      name: 'leaves ONE paragraph break where a whole paragraph was, rather than the three '
+      name: 'leaves ONE paragraph break where a whole MIDDLE paragraph was, rather than the three '
         + 'consecutive line breaks a bare cut leaves behind',
       fn: async () => {
-        /** Three paragraphs, the middle one long enough to be the needle. */
+        /**
+         * Three paragraphs whose MIDDLE one carries the longest sentence, which
+         * is the one `deriveOmissionSeeds` picks. An earlier fixture put the
+         * longest sentence first, so the cut happened at the start of the text
+         * and this guard passed without ever exercising a middle join.
+         */
         const document = [
-          'The shelter opens at eight in the morning and closes when the last volunteer leaves.',
-          'Marmalade spent her first fortnight refusing to come out from behind the radiator.',
-          'By March she was sleeping in the window and letting strangers scratch her ears.',
+          'The shelter opens at eight and closes late.',
+          'Marmalade spent her first fortnight refusing to come out from behind the radiator in the back office, '
+          + 'where the volunteers left her a bowl every morning and pretended not to watch.',
+          'By March she was sleeping in the window.',
         ].join('\n\n',);
         const attempt = deleteOneSentence({ cleanText: document, },);
         if (attempt.kind !== 'damaged')
@@ -133,17 +139,20 @@ await describe({
       },
     },),
     it({
-      name: 'keeps the trailing line break when the LAST paragraph goes, so the damaged text ends '
+      name: 'keeps ONE trailing line break when the LAST paragraph goes, so the damaged text ends '
         + 'the way every other document does',
       fn: async () => {
-        const document = `First paragraph, long enough to survive the length floor comfortably.\n\n${CLEAN_TEXT}\n`;
+        /**
+         * Two paragraphs whose LAST one carries the longest sentence, so the cut
+         * lands against the end of the text.
+         */
+        const document = 'The shelter opens at eight and closes late.\n\n'
+          + 'She had been found under a parked van near the harbour that winter, thin and unwilling to be '
+          + 'touched by anybody who came near her.\n';
         const attempt = deleteOneSentence({ cleanText: document, },);
         if (attempt.kind !== 'damaged')
           throw new Error(`expected damage, got ${attempt.reason}`,);
-        expect(attempt.damagedText
-          .endsWith('\n',),).toBe(true,);
-        expect(attempt.damagedText
-          .includes('\n\n\n',),).toBe(false,);
+        expect(attempt.damagedText,).toBe('The shelter opens at eight and closes late.\n',);
       },
     },),
     it({
