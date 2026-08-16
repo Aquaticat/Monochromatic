@@ -69,6 +69,7 @@ export {
   notApplicableFinding,
   notApplicableRepair,
 } from './repair-not-applicable.ts';
+export { repairLaneWordings, } from './repair-lane-wordings.ts';
 export {
   assertCheckerIndependence,
   assertJudgeableEditorRoster,

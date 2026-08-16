@@ -469,6 +469,51 @@ await describe({
     },),
     it({
       name:
+        'does not call it disagreement when one lane had no work to do. The repair lane mends existing '
+        + 'English, so at a passage the archive never translated it never had an opinion; reporting its '
+        + 'silence as a decision made every anchor the translate lane filled read as the two lanes '
+        + 'choosing different wordings',
+      fn: async () => {
+        /**
+         * Anchor the translate lane filled and the repair lane cannot touch.
+         */
+        const rows = compareDocumentLanes({
+          repair: {
+            sliceTexts: [{
+              chunkIndex: 0,
+              incumbentKind: 'absent',
+              incumbentText: '',
+              outcome: { kind: 'not-applicable', },
+            },],
+            shippedChunkIndices: [],
+          },
+          translate: {
+            sliceTexts: [{
+              chunkIndex: 0,
+              incumbentKind: 'absent',
+              incumbentText: '',
+              outcome: {
+                kind: 'decided',
+                acceptedText: 'The cat has a bowl of its own.',
+              },
+            },],
+            shippedChunkIndices: [0,],
+          },
+        },);
+
+        // ONE lane decided, so there is nothing to compare, and the row names
+        // which one rather than implying both fell short.
+        expect(rows[0]?.decisionComparison,).toEqual({
+          kind: 'not-comparable',
+          undecidedLanes: ['repair',],
+        },);
+        expect(rows[0]?.verdict,).toBe('translate-only',);
+        expect(rows[0]?.repairOutcome
+          .kind,).toBe('not-applicable',);
+      },
+    },),
+    it({
+      name:
         'compares what the two lanes DECIDED beside what the two documents carry, because both lanes '
         + 'choosing the same wording where only one shipped it is agreement between the lanes and a '
         + 'difference between the documents, and one verdict cannot state both',
