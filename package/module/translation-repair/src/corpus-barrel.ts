@@ -23,6 +23,7 @@ export {
   compareLanesV2,
 } from './corpus-run/artifact-v2-comparison.ts';
 export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
+export { verifyArtifactV2AgainstPreparation, } from './corpus-run/artifact-v2-corpus-verify.ts';
 export { parseLanesV2, } from './corpus-run/artifact-v2-read-lanes.ts';
 export {
   parseRepairEvidenceV2,
