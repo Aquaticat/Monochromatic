@@ -533,6 +533,60 @@ an empty `translate-discarded-unheard-slice` finding list instead (`9d399f763`, 
 `9dde08ed7`).
 Two protections stacked this way will hide each other from any instrument that reads only the cost.
 
+## An independent review of both guards, and what it changed
+
+Ran through `sol` on the two guard files plus the two reader relations files, with the context it
+could not see stated in the prompt.
+It found one defect in code landed the same night, and three more worth acting on.
+All four are fixed (`7e7738b6d`, `ae52ca975`):
+
+-   **Distinctness was the wrong invariant.** Every relation in the version 2 reader joins BY
+    POSITION, so a ledger naming slice 1 then slice 0 agrees with its own permuted evidence, with the
+    other lane under the same permutation, and with the slice count, while every consumer zipping
+    rows against the preparation reads each row against the wrong slice. The reasoning that chose
+    distinctness (the writer renumbers, so do not assume `0` to `length - 1`) is sound and does not
+    reach that far: renumbering produces GAPS, and gaps are still increasing. Now strictly
+    increasing, measured on `prepareDocumentPair` first.
+-   **A label is not a shape.** The schema guard read `artifactSchemaVersion` and never the body, so
+    a version 1 artifact relabelled as version 2 passed it, was skipped by the scheduler, and failed
+    only in whichever reader asked it a two-lane question. Every artifact declaring the generation
+    this pass writes is now parsed with that generation's reader.
+-   **The census was keyed by its own prose**, so three unversioned generations collapsed into one
+    phrase and a corrupt file collapsed with a sound artifact of an unreadable generation, which is
+    how a refusal could tell an operator to preserve a corrupt file.
+-   **The refusal order offered a remedy that does not work**: the build guard ran first, told the
+    operator to set the drift opt-in, and the schema guard then refused anyway while the run logged
+    a resume that never happened. Split into what nothing can override, then the shape, then the
+    overridable build check. Verified at the boundary.
+
+NOT ACTED ON, and recorded so it is not re-derived: sol also notes there is no directory-wide
+snapshot, so a concurrent writer publishing a version 1 artifact between the census and the
+scheduler still produces a mixed directory. The runs directory already takes an exclusive lock
+(`lockRunsDir`), which covers our own passes; a foreign writer is out of scope of that lock and
+would need one shared with it.
+
+## The post-trial run queue, decided in advance
+
+The window trial finishes at 327 arms and was at 300 when this was written, so the gate lifts soon
+and the order should not be re-derived then.
+The user has confirmed quota is not a constraint (near full, regenerating, one reset in hand), so
+nothing below is held back for cost; what held them back was the trial's validity, since every one
+of these calls the same six models.
+
+1.  **The two live arms of the rendering audit (`#85`)**, once its screen and stage land: the
+    polarity-flip fixture that must produce a corroborated finding and the control that must not.
+    The task states both; they are the GFP for the whole instrument and cost a handful of calls.
+2.  **`#105`'s decline-rate bench**, which gates the decision about where an unfilled passage rests
+    and is free of any user question. Synthetic bench over anchored slices with the real roster,
+    counting how many rounds decline.
+3.  **The coverage rerun question (`#106`)**: whether to add the source-sentence field to the
+    coverage wire and rerun. NOTE THE TRADE before doing it, since it is not obvious: option A of
+    question 28 is strong partly because it is built AND measured twice, and changing the wire makes
+    the measurements describe code that no longer exists.
+4.  **A few two-lane entries end to end**, to read the real per-entry cost against `HARD_CAP_MINUTES`
+    of 180 before any full pass. `#92` measured the lane from bench calls; nothing has yet run both
+    lanes over one document under the cap.
+
 ## The launch gate has not moved
 
 No corpus pass while the window trial is live:
