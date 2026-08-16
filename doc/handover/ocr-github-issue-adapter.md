@@ -112,6 +112,17 @@ label or title-prefix behavior,
 and source-reference behavior.
 Security findings appear only as a count and input record ordinals or JSONL line numbers.
 Diagnostics go to standard error so standard output remains machine-readable.
+After a non-interactive applied run completes or stops on a handled terminal failure,
+standard output contains one final JSON result object and no progress events.
+It records the outcome,
+destination repository,
+created Issue numbers and URLs with source input positions,
+withheld-security positions,
+and any stopping failure with its input position.
+It does not repeat finding titles or bodies.
+A partial or failed publication returns nonzero;
+a complete publication returns zero.
+An external kill may prevent the final result from being emitted.
 `--non-interactive --apply` explicitly authorizes creation only when no security-gated finding is present.
 If one is present,
 bare `--apply` errors without creating any issue.
@@ -273,6 +284,9 @@ Either individual picker may be empty,
 so security-only publication remains possible.
 Pressing Ctrl+C during any prompt or answering No at the final confirmation before creation starts
 prints `Issue creation canceled.` and returns status zero without GitHub mutations.
+After creation starts,
+interactive mode prints human-readable progress and ends with a human-readable list of created Issue URLs.
+A handled partial failure also identifies the stopping failure and returns nonzero.
 That picker must use red styling when color is available and an explicit textual `SECURITY` marker
 so color is never the only signal.
 Every security-gated finding selected for publication requires its own explicit safe-to-disclose confirmation.
@@ -507,7 +521,17 @@ in dependency order:
    source-reference behavior,
    and only counts and input positions for security findings.
    Diagnostics use standard error.
-   Applied-run output and remaining exit codes remain open.
+   Non-interactive applied runs emit one final JSON result object after completion or a handled terminal failure,
+   with no standard-output progress events.
+   The result contains outcome,
+   repository,
+   created Issue numbers and URLs with input positions,
+   withheld-security positions,
+   and a positioned stopping failure without repeating titles or bodies.
+   Interactive applied runs use human-readable progress and finish with created Issue URLs.
+   Complete publication returns zero;
+   partial or failed publication returns nonzero.
+   Remaining exact exit codes remain open.
    Issue creation is serial with at least one second between mutative requests.
    Rate-limit rejections,
    network failures,
@@ -642,7 +666,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask what successful and partially completed applied runs emit on standard output.
+Ask how Ctrl+C behaves after Issue creation has begun.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -788,6 +812,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   selected `gh api` as the sole GitHub authentication and HTTP boundary,
   using private named request files and caller-owned retry orchestration.
+- 2026-08-16:
+  selected human-readable interactive applied-run output
+  and one final JSON result object for completed or handled non-interactive applied runs.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
