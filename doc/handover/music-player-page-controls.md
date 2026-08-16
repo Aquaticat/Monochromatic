@@ -375,14 +375,26 @@ Its paired dark recapture is rejected because a near-white selected cap fails co
 
 - `/home/user/temp/agent/music-player-pixel6-led-full-width-dark-final.png`
 
-Both ambient scenes need recapture after the OKLCH contrast correction.
+Final Android OKLCH captures are:
+
+- `/home/user/temp/agent/music-player-pixel6-led-oklch-dark-final.png`
+- `/home/user/temp/agent/music-player-pixel6-led-oklch-light-final.png`
+
+The dark capture has a deep selected fill with clearly contrasting white legend.
+The light capture retains the same white active legend,
+body-sized text,
+content-width caps,
+and a full-width plate.
+Pixel samples measure light ground `#eceef1` and plate `#f7f8fa`.
+The Pixel 6 was restored to dark mode after capture.
 Earlier AVD and stepped-outline captures are superseded before-state evidence only.
 Desktop release capture and requester visual approval remain pending.
 
 ## Working-tree and process state
 
 Main `HEAD` contains the brighter light plate and body-sized LED legend changes.
-An Android release with those changes is installed on connected Pixel 6 serial `1C171FDF600KWW`.
+An Android release with the OKLCH contrast changes is installed and verified on connected Pixel 6 serial
+`1C171FDF600KWW`.
 No Android emulator is running or authorized for this verification.
 Commit `8eb6c8d82` implements application color operations through OKLCH,
 including alpha changes outside LED controls.
@@ -403,11 +415,10 @@ No build or application process is currently running.
 1.  Halve Chromium label inline padding to `10` units per side on both platforms.
 2.  Make Chromium-like tabs the first-install default while preserving persisted numeric mappings and radio fallback.
 3.  Add centralized one-line per-style build-availability toggles and a runbook for changing them.
-4.  Run platform lint,
+4.  Run remaining platform lint,
     tests,
-    and release builds.
-5.  Reinstall on Pixel 6 serial `1C171FDF600KWW` and capture final dark and light LED scenes.
-6.  Capture desktop dark and light scenes and obtain requester visual approval.
+    and release builds after the Chromium and availability changes.
+5.  Capture desktop dark and light scenes and obtain requester visual approval.
 
 ## Risks and guardrails
 
