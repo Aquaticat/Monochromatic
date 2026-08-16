@@ -26,6 +26,10 @@ import {
 } from './translate-candidates.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import {
+  TRANSLATE_SELECTION_CRITERIA,
+  TRANSLATE_SELECTION_TASK,
+} from './translate-selection-sheet.ts';
+import {
   describeSlate,
   NOT_ON_SLATE,
   positionOf,
@@ -377,17 +381,8 @@ export async function runTranslateStage(
     declineConsequence: (incumbentKind === 'absent')
       ? LEAVES_PASSAGE_UNTRANSLATED
       : KEEPS_TRUSTED_TEXT,
-    task:
-      'Each candidate is a complete English translation of the Chinese ORIGINAL below, for a memorial archive.',
-    criteria: [
-      'Complete coverage: every proposition of the ORIGINAL is rendered, nothing left out.',
-      'Faithfulness: nothing added, and no change to who acts, what is referred to, '
-      + 'negation, certainty, time, number, or how things relate.',
-      'Declared names, handles and archive terminology used exactly as given.',
-      'Markdown structure of the ORIGINAL preserved: block quotes, list markers, '
-      + 'headings, footnote markers, links, and the breaks between blocks.',
-      'Natural, idiomatic English reading as one coherent passage.',
-    ],
+    task: TRANSLATE_SELECTION_TASK,
+    criteria: TRANSLATE_SELECTION_CRITERIA,
     evidence: [
       {
         label: 'ORIGINAL (Chinese)',

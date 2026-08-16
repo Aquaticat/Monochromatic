@@ -51,6 +51,10 @@ export {
   TranslateAbsenceError,
   type TranslateAbsenceReason,
 } from './translate-absence.ts';
+export {
+  TRANSLATE_SELECTION_CRITERIA,
+  TRANSLATE_SELECTION_TASK,
+} from './translate-selection-sheet.ts';
 export { runTranslateStage, } from './translate-stage.ts';
 export {
   type TranslateDecision,
