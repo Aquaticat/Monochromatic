@@ -91,9 +91,23 @@ Mechanics, agreed by both reviewers and implemented:
     `translate-assemble.ts` and the refusal sentences to `translate-alignment-refusals.ts`,
     mirroring the repair lane's split on the same seam. The cap was never raised.
 
+## The preparation identity landed
+
+`preparation-identity.ts`, with eight tests and a GFP run.
+It names a slicing and nothing about the run, so a resumed pass over the same slicing gets the same name
+however the commit, cache state or roster differed.
+Fields are length prefixed rather than delimited, because slice text is arbitrary document content
+and can hold any separator anyone might pick.
+The brand is built through `assertPreparationIdentity`, which is also what a version 2 reader
+will use on a value read back from disk.
+
+Stripping the target placement kind fails the blank-content-versus-anchor case;
+stripping the whole-document texts fails the difference-outside-every-slice case.
+Both restored, suite green.
+
 ## Next actions, in order
 
-1.  The artifact at schema version 2, with the preparation identity folded into the SAME bump.
+1.  The artifact at schema version 2. The identity it needs is DONE and exported.
     Both designs are written out in the planning doc under
     "The artifact at version 2, as designed";
     start there rather than re-deriving them.
