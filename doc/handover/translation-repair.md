@@ -12296,3 +12296,47 @@ minutes and `b64uex7px` at 3 hours 43 minutes, each with 00:00:00 of CPU. Their
 siblings the same night finished in minutes. Treat both as stalled, do not kill
 them without being asked, and re-check any eventual output against current
 source before acting: both prompts predate tonight's changes.
+
+### Self-preference measured, position bias refused
+
+TWO OF `#84`'s REMAINING ITEMS WERE TAKEN, 2026-08-16, and only one produced a
+number. Both matter to answers the owner has now given.
+
+SELF-PREFERENCE IS REAL AND THE HALF IS ABOUT RIGHT. Over four slices at six
+roster widths, 24 rounds, producers named their own candidate 39 of 93 times
+against 82 of 376 among judges holding no stake in the same texts: 0.42 against
+0.22, an excess of 0.20 and a lift of roughly 1.9 times. The half-weight discount
+divides a self-vote by 2. Those are different operations, one scaling a weight
+and the other describing a rate, so this is not a derivation of the half; it is
+the first evidence that the half is the right ORDER, where question 4 previously
+had only consistency to stand on.
+
+NO TREND WITH WIDTH IS CLAIMABLE, and the bench is built to say so. It repeats
+one width on purpose; width 4 came back 0.10 and then 0.23, so the run-to-run
+band is 0.13 and it swallows most of the spread between widths 2 and 6. What six
+runs agree on is the SIGN.
+
+THE INSTRUMENT IS PAIRED, which is the whole design. Counting self-votes answers
+nothing, because a model writing the best candidates would cast many without any
+favouritism. Each candidate is scored against itself instead. Candidates nobody
+held a stake in are excluded from both sides, so the two rates cover the same
+texts; removing that restriction fails the test that names it.
+
+POSITION BIAS COULD NOT BE MEASURED, and the reason is worth more than the
+attempt. The slate rotation is a pure function of the SLICE. Across slices it
+spreads properly: the incumbent sat at positions 1, 2, 3, 4 and 5 over the four
+slices. But within one slice the offset never moves, so `Xu_Yushu/2` put the
+incumbent first in all six of its rounds, and with four slices there are four
+rotations in the whole dataset. Position is therefore locked to candidate
+identity.
+
+The pooled distribution looks conclusive and is not. On slates of three, picks by
+position ran `[2, 2, 31]` against a uniform 11.7; on slates of six, `[9, 2, 0, 6,
+0, 0]` against 2.8. That says the candidate that kept winning sat at that
+position. Reporting it as position bias would have repeated the endogenous
+estimator this project has already been caught by twice.
+
+WHAT A REAL ONE NEEDS: many more distinct slices, so the hash spreads rotations
+independently of which candidate is best; or one slate judged at several forced
+rotations, which wants `#109`'s produce/judge split for the same reason `#108`
+does.
