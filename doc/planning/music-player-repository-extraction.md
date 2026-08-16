@@ -1,7 +1,8 @@
 # Extract music-player into its own repository
 
 Status:
-grilling in progress.
+grilling complete,
+awaiting user confirmation.
 This document is the deliverable for the current session.
 The session must not publish tooling,
 create or populate the new repository,
@@ -153,6 +154,8 @@ not source checkouts of Monochromatic tooling.
 - Fetch Monochromatic's current `AGENTS.md` and complete `.agents/` directory from `main` during explicit preparation.
 - Include every canonical skill and bundled skill resource,
   not only `SKILL.md` files.
+- Treat fetched `AGENTS.md` as shared input.
+  Generate local root `AGENTS.md` by composing it with the conflict-checked local addendum.
 - Use file-enforcer to generate `CLAUDE.md` and mirror canonical skills into required consumer directories.
 - Keep fetched and generated policy files ignored and local rather than committing synchronized copies.
 - Run `mise run prepare:file-enforcer` before starting an agent session.
@@ -305,7 +308,16 @@ Do not copy unrelated Monochromatic package families merely to satisfy build pat
 The current session does not execute these phases.
 A later action request must authorize them.
 
-### Phase 1: Prepare publishable tooling
+### Phase 1: Safeguard local ignored artifacts
+
+- Confirm the selected ignored source paths exist and remain ignored.
+- Copy them to a private staging directory outside both repositories before other migration work.
+- Compare file lists,
+  byte counts,
+  and checksums between the original and staged copies.
+- Leave the original ignored tree untouched until separate cleanup authorization.
+
+### Phase 2: Prepare publishable tooling
 
 - Make file-enforcer's published package self-contained at its supported public exports.
 - Remove broken or source-only exports from the packed artifact,
@@ -325,7 +337,7 @@ A later action request must authorize them.
   and Detekt consumer fixtures to the Kotlin linter.
 - Keep each tool's existing runtime behavior unchanged.
 
-### Phase 2: Extend publication workflows
+### Phase 3: Extend publication workflows
 
 - Add file-enforcer to the npm workflow without widening publication to unrelated private packages.
 - Publish Rust crates in this dependency order:
@@ -333,6 +345,7 @@ A later action request must authorize them.
   2.  `monochromatic-rust-linter-pattern`
   3.  `monochromatic-rust-linter-plugin-builtin`
   4.  `monochromatic-rust-linter`
+- Confirm each upstream crate is available from crates.io before publishing its dependent.
 - Verify the `cat.aquati` Maven Central namespace before publication or extraction.
 - Dry-run and inspect every packed artifact before external mutation.
 - Complete required first-publication bootstrap.
@@ -341,8 +354,9 @@ A later action request must authorize them.
 - Retain manual dispatch for dry runs and retries.
 - Install each published artifact in a disposable clean consumer and exercise its real function.
 
-### Phase 3: Prepare filtered history
+### Phase 4: Prepare filtered history
 
+- Refresh the document inventory and record each path as product-owned or retained.
 - Refresh from the final `main` chosen for cutover.
 - Filter all historical product paths,
   including the `packages/` to `package/` rename era.
@@ -357,7 +371,7 @@ A later action request must authorize them.
 - Compare the filtered tip's tracked product files with the selected Monochromatic commit.
 - Repeat the filter or replay a bounded delta if `main` changed before cutover.
 
-### Phase 4: Build the standalone repository tip
+### Phase 5: Build the standalone repository tip
 
 - Add the root README,
   licenses,
@@ -377,8 +391,10 @@ A later action request must authorize them.
 - Update Cargo repository and homepage metadata to `Aquaticat/music-player` where ownership moved.
 - Preserve application identities and runtime state paths.
 - Add no build or test workflow.
+- Copy the staged ignored outputs into the ignored paths of the new local checkout.
+- Compare the new copies with both the staged copies and untouched originals.
 
-### Phase 5: Verify before public cutover
+### Phase 6: Verify before public cutover
 
 - Run file-enforcer and inspect every generated diff.
 - Run all applicable local package lint and test tasks through Mise.
@@ -387,10 +403,11 @@ A later action request must authorize them.
 - Confirm `mise run prepare:file-enforcer` materializes agent policy and skills in a fresh clone.
 - Confirm a Pi session started afterward loads them.
 - Confirm Pi's `/reload` loads them when preparation occurs after session startup.
+- Confirm a disposable conflicting-policy fixture makes synchronization fail.
 - Scan the complete tracked tip for credentials and unintended local identifiers.
 - Confirm ignored benchmark output and desktop distribution artifacts are absent from Git objects.
 
-### Phase 6: Create and configure GitHub repository
+### Phase 7: Create and configure GitHub repository
 
 - Create the empty public `Aquaticat/music-player` repository without initializing files.
 - Push filtered and prepared `main` before enabling signed-commit protection.
@@ -401,14 +418,17 @@ A later action request must authorize them.
   branch protection,
   and Copilot review ruleset.
 - Create reusable labels before issue transfer.
-- Transfer product-owned open issues and verify redirects,
+
+### Phase 8: Cut over ownership
+
+- Reconfirm the new remote tip and selected Monochromatic source tip agree on product content.
+- Refresh the complete open-issue inventory and record each issue as product-owned or retained.
+- Treat the first issue transfer as the irreversible-numbering cutover point.
+  Start transfer only after every preceding verification and governance check passes.
+- Transfer every product-owned open issue and verify redirects,
   comments,
   assignees,
   and labels.
-
-### Phase 7: Remove Monochromatic ownership
-
-- Reconfirm the new remote tip and selected Monochromatic source tip agree on product content.
 - Remove product source and product-owned docs from Monochromatic.
 - Remove music-player-specific Cargo profile enforcement.
 - Remove root Android SDK,
@@ -421,22 +441,17 @@ A later action request must authorize them.
 - Run Monochromatic's affected root checks.
 - Commit and push the removal as the final ownership cutover.
 
-### Phase 8: Preserve local ignored artifacts
-
-- Clone the new repository to a sibling local path.
-- Copy `truepeak-core.bench/out/` and `desktop-app/dist/` without dereferencing them into Git.
-- Compare file lists,
-  byte counts,
-  and checksums between old and new ignored paths.
-- Leave the old ignored tree untouched until separate cleanup authorization.
-
 ## Rollback
 
-Before the Monochromatic removal commit,
-rollback means deleting the unannounced new repository or replacing its imported branch and continuing development in Monochromatic.
+Before the first issue transfer,
+rollback means deleting the pre-cutover new repository or replacing its imported branch and continuing development in Monochromatic.
 
-After the removal commit,
-rollback requires two explicit actions:
+After the first issue transfer,
+rollback requires explicit acceptance that transferred issues receive different numbers when transferred back.
+Transfer them back before restoring Monochromatic ownership.
+
+After the Monochromatic removal commit,
+rollback also requires two explicit actions:
 
 - restore the removed Monochromatic paths from the parent of the removal commit;
 - archive or clearly mark the new repository so two active development homes cannot exist.
@@ -447,19 +462,34 @@ Do not leave both repositories writable as authoritative homes.
 
 - Every prerequisite tool is publicly available from its chosen registry and passes a clean-consumer test.
 - The new repository builds and tests through every locally available path without a Monochromatic tooling checkout.
-- The new repository contains all four product components and every product-owned allowed document.
+- Fresh-clone preparation materializes ignored shared policy,
+  skills,
+  composed `AGENTS.md`,
+  and `CLAUDE.md`.
+- A disposable conflicting-policy fixture proves synchronization rejects unresolved conflicts.
+- Pi loads prepared policy both at startup and through `/reload` after preparation.
+- The new repository contains all four product components and every classified product-owned document.
+- Every retained cross-repository document link is repaired and carries provenance.
+- Application IDs,
+  package names,
+  configuration paths,
+  and user-data paths match the selected Monochromatic source tip.
 - The new repository contains no `CONTEXT.md` file.
 - Filtered history includes the old and current product paths and representative blame remains useful.
 - Initial history is imported before signed-commit protection is enabled.
+- The complete pre-cutover open-issue inventory has a recorded product-owned or retained classification.
+- Every classified product-owned open issue is transferred after labels exist in the target repository.
 - GitHub settings,
-  labels,
-  transferred issues,
+  transferred-issue state,
   and Copilot review match this plan.
 - No build or test CI workflow exists in the new repository.
 - No migration release or tag exists.
 - Monochromatic contains no music-player source subtree and links to the new repository from root `README.md`.
+- Every retained Monochromatic reference to moved content points to the new repository with provenance.
 - Monochromatic no longer provisions product-only Android tooling.
-- Preserved ignored outputs exist only in the new local checkout and were checksum-compared.
+- Preserved ignored outputs exist in the new local checkout and untouched original tree,
+  remain untracked,
+  and were checksum-compared.
 - No credential or signing secret appears in the extracted tracked tree.
 
 ## Rejected alternatives
