@@ -398,5 +398,175 @@ await describe({
         expect(String(foreign,),).toContain('7',);
       },
     },),
+    it({
+      name:
+        'names a slice the lane reached with NO VOICE HEARD as the archive standing by default, which is a '
+        + 'different fact from the archive being chosen: nobody answered, so nobody chose anything, and the '
+        + 'outcome carries no wording for a reader to mistake for one',
+      fn: async () => {
+        /**
+         * Wordings where the second slice met silence.
+         */
+        const wordings = buildLaneSliceTexts({
+          slices: CAT_SLICES,
+          undecided: 'refuse',
+          decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+          unheardChunkIndices: [1,],
+        },);
+        expect(wordings,).toHaveLength(2,);
+        expect(wordings[1]?.outcome,).toEqual({ kind: 'incumbent-fallback', },);
+        // And the archive DOES hold wording here, which is what separates this
+        // from an unfilled passage and what makes falling back possible at all.
+        expect(wordings[1]?.incumbentKind,).toBe('present',);
+        expect(wordings[1]?.incumbentText,).toBe('The bowl is full.',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a slice reported as unheard AND decided, since whether anyone answered for it would be '
+        + 'unstated, and refuses an unheard index this preparation never produced',
+      fn: async () => {
+        /**
+         * Failure raised by a slice claimed both ways.
+         */
+        let both: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'refuse',
+            decided: [
+              { chunkIndex: 0, text: 'The cat naps on the sill.', },
+              { chunkIndex: 1, text: 'The bowl is full.', },
+            ],
+            unheardChunkIndices: [1,],
+          },);
+        }
+        catch (error) {
+          both = error;
+        }
+        expect(both,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(both,),).toContain('unheard and decided at once',);
+
+        /**
+         * Failure raised by an unheard index from another slicing.
+         */
+        let foreign: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'refuse',
+            decided: [
+              { chunkIndex: 0, text: 'The cat naps on the sill.', },
+              { chunkIndex: 1, text: 'The bowl is full.', },
+            ],
+            unheardChunkIndices: [7,],
+          },);
+        }
+        catch (error) {
+          foreign = error;
+        }
+        expect(foreign,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(foreign,),).toContain('7',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a slice reported as unheard AND unfilled, because only one of those has an incumbent to '
+        + 'stand on and the two disagree about whether the archive translates the passage at all',
+      fn: async () => {
+        /**
+         * Failure raised by the contradiction.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: ANCHORED_SLICES,
+            undecided: 'refuse',
+            decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+            unfilledChunkIndices: [1,],
+            unheardChunkIndices: [1,],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(caught,),).toContain('unheard and unfilled at once',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES an unheard slice the archive never translated, the MIRROR of the unfilled rule: '
+        + '`incumbent-fallback` says the archive`s wording stands here, so reporting it at a place with no '
+        + 'archive wording would record a passage as covered by a translation that does not exist',
+      fn: async () => {
+        /**
+         * Failure raised by a fallback with nothing to fall back on.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: ANCHORED_SLICES,
+            undecided: 'refuse',
+            decided: [{ chunkIndex: 0, text: 'The cat naps on the sill.', },],
+            unheardChunkIndices: [1,],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(caught,),).toContain('no wording for it to fall back on',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES an UNFILLED slice that comes after an unexamined one, not only a decision, because a lane '
+        + 'that stopped cannot report reaching a later slice by any route: an unfilled slice sitting after '
+        + 'an unexamined one asserts the lane resumed after stopping',
+      fn: async () => {
+        /**
+         * Failure raised by reaching a slice after the stop.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: ANCHORED_SLICES,
+            undecided: 'not-evaluated',
+            decided: [],
+            unfilledChunkIndices: [1,],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(caught,),).toContain('after leaving an earlier one unexamined',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES an UNHEARD slice after an unexamined one for the same reason, since hearing nobody at a '
+        + 'slice still means the lane got there',
+      fn: async () => {
+        /**
+         * Failure raised by reaching a slice after the stop.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'not-evaluated',
+            decided: [],
+            unheardChunkIndices: [1,],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(caught,),).toContain('after leaving an earlier one unexamined',);
+      },
+    },),
   ],
 },);

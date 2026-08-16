@@ -153,6 +153,7 @@ export {
 } from './assembly-invariant.ts';
 export {
   compareDocumentLanes,
+  type DecisionComparison,
   LaneComparisonError,
   type SliceLaneComparison,
   type SliceLaneVerdict,
@@ -160,6 +161,7 @@ export {
 export {
   buildLaneSliceTexts,
   LaneSliceCoverageError,
+  type LaneSliceOutcome,
   type LaneSliceText,
 } from './lane-slice-text.ts';
 export {

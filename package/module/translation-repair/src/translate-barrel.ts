@@ -31,6 +31,7 @@ export {
   alignmentRefusals,
   translateDocument,
 } from './translate-document.ts';
+export { translateLaneWordings, } from './translate-lane-wordings.ts';
 export {
   translateRunShape,
   translateSliceKey,
