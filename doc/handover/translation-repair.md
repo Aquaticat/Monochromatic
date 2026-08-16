@@ -12343,3 +12343,44 @@ WHAT A REAL ONE NEEDS: many more distinct slices, so the hash spreads rotations
 independently of which candidate is best; or one slate judged at several forced
 rotations, which wants `#109`'s produce/judge split for the same reason `#108`
 does.
+
+### Position bias refused a second time, for a better reason
+
+THE FIRST REFUSAL WAS RIGHT AND THE REASON HAS BEEN SUPERSEDED. With four
+slices there were four rotations, so slate position was locked to candidate
+identity. The wider draw supplies fourteen more slices sharing none of them,
+which is eighteen rotations, and that objection is gone.
+
+THE BINDING CONSTRAINT NOW IS A FLOOR. The incumbent shipped in 14 of 108
+rounds, and its pick rate by slate position is zero almost everywhere: every
+position at slates of five, six and seven, and two of four positions at slates
+of four. A position effect cannot be detected on a candidate that essentially
+never wins, however many rotations it is seen at.
+
+THE ONE APPARENT SIGNAL IS ONE SLICE. Slates of four with the incumbent second
+showed 9 picks against zero at positions three and four, which reads as a
+first-half preference until the picks are split by slice: 8 of the 9 come from
+`XingZ60/55` alone. That is a slice whose archive English was good, not a
+position.
+
+WHAT WOULD ACTUALLY MEASURE IT: the fresh candidates rather than the incumbent,
+since they win almost everything and so carry the signal; or one slate judged at
+several forced rotations, which wants `#109`'s produce/judge split. The
+incumbent was the wrong probe because its identity is constant, which is what
+made it attractive, and its win rate is near zero, which is what makes it
+useless here.
+
+### The replacement rate is higher than question 5 says
+
+Fell out of the same bench, over 18 slices at six widths. The archive's English
+was replaced 0.83 of the time at widths two to four and 0.94 at widths five and
+six, against the 0.73 that question 5 was written around. It survived at least
+once on 10 of the 18 slices and never on the other 8.
+
+Different draw, so not directly comparable: eighteen slices stratified by source
+size with an incumbent on every one, against that figure's ten. Same direction,
+larger, more texts.
+
+NO WIDTH TREND. The repeated width returned 3 of 18 on both passes, which looks
+like a band of zero and is not one: sampling error at 18 rounds is around 0.09,
+so the 0.11 step at width five sits inside it.

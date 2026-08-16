@@ -162,6 +162,29 @@ replacement rate.
 This separates "the archive is worse" from "the archive is laid out differently", which is the question under
 the 73 percent replacement figure.
 
+### The rate this question is about is worse than the question says
+
+Measured 2026-08-16 as a by-product of the self-preference bench, over 18 slices at six roster widths, 108
+rounds. Every slice in the draw already had an archive translation.
+
+    width 2   replaced 0.83        width 5   replaced 0.94
+    width 3   replaced 0.83        width 6   replaced 0.94
+    width 4   replaced 0.83
+
+    the archive's English survived at least once on 10 of the 18 slices, and never on the other 8
+
+The figure this question was written around is about 0.73. On this draw it is 0.83 to 0.94. THE TWO ARE NOT
+DIRECTLY COMPARABLE: that bench drew ten slices, this one draws eighteen stratified by source size with an
+incumbent on every one, and the roster width varies here. Same direction, larger, on more texts.
+
+NO WIDTH TREND IS CLAIMABLE from the apparent 0.83 to 0.94 step. The repeated width returned an identical
+3 of 18 on both passes, which looks like a band of zero and is not one: at 18 rounds per width the sampling
+error alone is around 0.09, so two passes landing on the same integer is partly luck, and the 0.11 step at
+width 5 sits inside that. Do not read the widening as causing more replacement.
+
+WHAT THIS DOES NOT CHANGE: the answer. Option E measures the window before anything decides what to do about
+the rate, and a higher rate is a stronger reason to know how much of it is layout rather than quality.
+
 What it means concretely:
 
 -   `#108` is authorized, and its cost is the repriced one: three arms rather than two, with the candidate
