@@ -8,6 +8,12 @@
  * thing and shipped another, and a comparison that read the choice would report
  * a rewrite no reader ever saw.
  *
+ * It takes each lane's DELIVERY LEDGER rather than its wordings and an index
+ * set. The ledger has already refused a decided slice that is neither shipped,
+ * withdrawn, nor blocked, so what a document carries arrives as a stated fact;
+ * reading an index set here meant an omitted shipped index was indistinguisable
+ * from a lane that kept the archive.
+ *
  * Fixtures are invented. No corpus content appears here.
  *
  * @module
@@ -20,9 +26,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  assertPreparationIdentity,
   compareDocumentLanes,
   LaneComparisonError,
-  type LaneSliceText,
+  type SliceDeliveryRecord,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -31,13 +38,28 @@ import {
 const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
- * Builds one lane's side of a comparison over a single slice.
+ * Original of that slice.
+ */
+const SOURCE_NAP = '猫猫在窗台上睡觉。';
+
+/**
+ * Slicing every case here claims to describe.
+ *
+ * Built as a literal rather than from a preparation, because these cases are
+ * about the join and not about what names it; the validator is what makes it a
+ * real identity rather than a bare string.
+ */
+const SLICING = `sha256-preparation-v1:${'a'.repeat(64,)}`;
+assertPreparationIdentity(SLICING,);
+
+/**
+ * Builds one lane's ledger over a single decided slice.
  *
  * @param acceptedText - wording that lane decided on
  *
  * @param shipped - whether the returned document carries it
  *
- * @returns Lane side shaped as a lane result carries it
+ * @returns Ledger shaped as `buildSliceDelivery` returns one
  *
  * @example
  * ```ts
@@ -52,22 +74,71 @@ function laneOf(
     readonly acceptedText: string;
     readonly shipped: boolean;
   },
-): {
-  readonly sliceTexts: readonly LaneSliceText[];
-  readonly shippedChunkIndices: readonly number[];
-} {
-  return {
-    sliceTexts: [{
-      chunkIndex: 0,
-      incumbentKind: 'present',
-      incumbentText: ARCHIVE_NAP,
-      outcome: {
-        kind: 'decided',
-        acceptedText,
-      },
-    },],
-    shippedChunkIndices: shipped ? [0,] : [],
-  };
+): readonly SliceDeliveryRecord[] {
+  /**
+   * Whether the lane moved off the archive at all, which decides whether the
+   * unshipped case is a withdrawal or an ordinary keep.
+   */
+  const moved = acceptedText !== ARCHIVE_NAP;
+  return [{
+    chunkIndex: 0,
+    sourceText: SOURCE_NAP,
+    incumbentKind: 'present',
+    incumbentText: ARCHIVE_NAP,
+    outcome: {
+      kind: 'decided',
+      acceptedText,
+    },
+    shippedText: shipped ? acceptedText : ARCHIVE_NAP,
+    delivery: shipped
+      ? { kind: 'replacement-shipped', }
+      : (moved
+        ? {
+          kind: 'replacement-withdrawn',
+          reason: 'assembly-integrity',
+        }
+        : { kind: 'incumbent-retained', }),
+  },];
+}
+
+/**
+ * Builds one lane's ledger over a single slice it did not decide.
+ *
+ * @param outcome - what that lane did instead
+ *
+ * @param incumbentKind - whether the archive holds wording at this slice
+ *
+ * @returns Ledger carrying whatever the archive has there
+ *
+ * @example
+ * ```ts
+ * const lane = undecidedLaneOf({ outcome: { kind: 'not-evaluated', }, incumbentKind: 'present', },);
+ * ```
+ */
+function undecidedLaneOf(
+  {
+    outcome,
+    incumbentKind,
+  }: {
+    readonly outcome: SliceDeliveryRecord['outcome'];
+    readonly incumbentKind: 'present' | 'absent';
+  },
+): readonly SliceDeliveryRecord[] {
+  /**
+   * Archive wording here, which an anchor does not have.
+   */
+  const incumbentText = (incumbentKind === 'absent') ? '' : ARCHIVE_NAP;
+  return [{
+    chunkIndex: 0,
+    sourceText: SOURCE_NAP,
+    incumbentKind,
+    incumbentText,
+    outcome,
+    shippedText: incumbentText,
+    delivery: (incumbentKind === 'absent')
+      ? { kind: 'gap-remains', }
+      : { kind: 'incumbent-retained', },
+  },];
 }
 
 await describe({
@@ -82,48 +153,71 @@ await describe({
          * Both lanes left the archive wording standing.
          */
         const kept = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
           translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
         },);
-        expect(kept[0]?.verdict,).toBe('archive-stands',);
+        expect(kept.slices[0]?.verdict,).toBe('archive-stands',);
 
         /**
          * Only repair changed the slice.
          */
         const repairOnly = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
         },);
-        expect(repairOnly[0]?.verdict,).toBe('repair-only',);
+        expect(repairOnly.slices[0]?.verdict,).toBe('repair-only',);
 
         /**
          * Only translate changed it.
          */
         const translateOnly = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
-        expect(translateOnly[0]?.verdict,).toBe('translate-only',);
+        expect(translateOnly.slices[0]?.verdict,).toBe('translate-only',);
 
         /**
          * Both changed it the same way, character for character.
          */
         const agreed = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
-        expect(agreed[0]?.verdict,).toBe('both-agree',);
+        expect(agreed.slices[0]?.verdict,).toBe('both-agree',);
 
         /**
          * Both changed it, differently.
          */
         const apart = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
-        expect(apart[0]?.verdict,).toBe('both-differ',);
-        expect(apart[0]?.repairText,).toBe('The cat is asleep on the windowsill.',);
-        expect(apart[0]?.translateText,).toBe('A cat dozes in the window.',);
+        expect(apart.slices[0]?.verdict,).toBe('both-differ',);
+        expect(apart.slices[0]?.repairText,).toBe('The cat is asleep on the windowsill.',);
+        expect(apart.slices[0]?.translateText,).toBe('A cat dozes in the window.',);
+      },
+    },),
+    it({
+      name:
+        'carries the slicing into the result, so no writer can persist rows without the thing that '
+        + 'numbers them: rows joined on a slice index mean nothing without the preparation, and one '
+        + 'persisted alone reads against a later preparation of the same entry with every row still '
+        + 'looking well formed',
+      fn: async () => {
+        /**
+         * Comparison over one unchanged slice.
+         */
+        const comparison = compareDocumentLanes({
+          preparationIdentity: SLICING,
+          repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+          translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+        },);
+        expect(comparison.preparationIdentity,).toBe(SLICING,);
       },
     },),
     it({
@@ -135,21 +229,31 @@ await describe({
         /**
          * Repair chose a rewrite the guard took back; translate shipped one.
          */
-        const rows = compareDocumentLanes({
+        const comparison = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: false, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
-        expect(rows[0]?.verdict,).toBe('translate-only',);
+        expect(comparison.slices[0]?.verdict,).toBe('translate-only',);
 
-        // The withdrawn wording is nowhere in the row: what repair CARRIES is
-        // the archive text, and that is the only repair-side text a comparison
-        // may state.
-        expect(rows[0]?.repairText,).toBe(ARCHIVE_NAP,);
+        // The withdrawn wording is nowhere in the carried text: what repair
+        // CARRIES is the archive text, and that is the only repair-side text a
+        // comparison may state. Its own decision is still on the row, and so is
+        // the route by which the document came to lack it.
+        expect(comparison.slices[0]?.repairText,).toBe(ARCHIVE_NAP,);
+        expect(comparison.slices[0]?.repairDelivery,).toEqual({
+          kind: 'replacement-withdrawn',
+          reason: 'assembly-integrity',
+        },);
+        expect(comparison.slices[0]?.repairOutcome,).toEqual({
+          kind: 'decided',
+          acceptedText: 'The cat is asleep on the windowsill.',
+        },);
       },
     },),
     it({
       name:
-        'REFUSES two results whose slice counts differ, since a shorter list means the lanes ran over '
+        'REFUSES two ledgers whose slice counts differ, since a shorter one means the lanes ran over '
         + 'different preparations and every row after the first gap compares two different passages',
       fn: async () => {
         /**
@@ -158,11 +262,9 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
+            preparationIdentity: SLICING,
             repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-            translate: {
-              sliceTexts: [],
-              shippedChunkIndices: [],
-            },
+            translate: [],
           },);
         }
         catch (error) {
@@ -173,7 +275,7 @@ await describe({
     },),
     it({
       name:
-        'REFUSES two results that disagree about a slice`s archive wording, which is the same defect '
+        'REFUSES two ledgers that disagree about a slice`s archive wording, which is the same defect '
         + 'arriving with matching counts and is otherwise undetectable downstream',
       fn: async () => {
         /**
@@ -182,289 +284,26 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
+            preparationIdentity: SLICING,
             repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-            translate: {
-              sliceTexts: [{
-                chunkIndex: 0,
-                incumbentKind: 'present',
-                incumbentText: 'A different archive sentence entirely.',
-                outcome: {
-                  kind: 'decided',
-                  acceptedText: 'A cat dozes in the window.',
-                },
-              },],
-              shippedChunkIndices: [0,],
-            },
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(LaneComparisonError,);
-      },
-    },),
-    it({
-      name:
-        'separates a lane that LOOKED and kept the archive wording from one that never reached the slice, '
-        + 'which the repair lane`s whole-document block produces: both documents carry the archive text either way, '
-        + 'and only one of them means anybody examined it',
-      fn: async () => {
-        /**
-         * Repair stopped before this slice; translate looked and kept it.
-         */
-        const rows = compareDocumentLanes({
-          repair: {
-            // `not-evaluated`, which is how a lane says it never reached the
-            // slice: a decision carrying the archive wording would say it
-            // looked and kept it, and one carrying an empty string would say it
-            // chose to delete the passage.
-            sliceTexts: [{
+            translate: [{
               chunkIndex: 0,
+              sourceText: SOURCE_NAP,
               incumbentKind: 'present',
-              incumbentText: ARCHIVE_NAP,
-              outcome: { kind: 'not-evaluated', },
+              incumbentText: 'A different archive sentence entirely.',
+              outcome: {
+                kind: 'decided',
+                acceptedText: 'A cat dozes in the window.',
+              },
+              shippedText: 'A cat dozes in the window.',
+              delivery: { kind: 'replacement-shipped', },
             },],
-            shippedChunkIndices: [],
-          },
-          translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-        },);
-        expect(rows[0]?.verdict,).toBe('archive-stands',);
-        expect(rows[0]?.repairOutcome
-          .kind,).toBe('not-evaluated',);
-        expect(rows[0]?.translateOutcome
-          .kind,).toBe('decided',);
-        expect(rows[0]?.repairText,).toBe(ARCHIVE_NAP,);
-        // The two lanes did different things here, so their DECISIONS are not
-        // comparable however alike the two documents read.
-        expect(rows[0]?.decisionComparison
-          .kind,).toBe('not-comparable',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a shipped index naming a slice the lane reports no wording for. That set and those '
-        + 'rows are the two halves of one claim, and an index matching no row used to be accepted '
-        + 'and then quietly match nothing, so every row below it was wrong one row at a time',
-      fn: async () => {
-        /**
-         * Failure the comparison raised.
-         */
-        let caught: unknown;
-        try {
-          compareDocumentLanes({
-            repair: {
-              sliceTexts: [{
-                chunkIndex: 0,
-                incumbentKind: 'present',
-                incumbentText: ARCHIVE_NAP,
-                outcome: {
-                  kind: 'decided',
-                  acceptedText: 'The cat is asleep on the windowsill.',
-                },
-              },],
-              shippedChunkIndices: [4,],
-            },
-            translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
           },);
         }
         catch (error) {
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('reports no wording for it',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a shipped index whose own row carries the archive`s wording, which is the same '
-        + 'contradiction the assembly checks refuse one layer up and would read here as a rewrite '
-        + 'nobody made',
-      fn: async () => {
-        /**
-         * Failure the comparison raised.
-         */
-        let caught: unknown;
-        try {
-          compareDocumentLanes({
-            repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: true, },),
-            translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('archive',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a lane whose rows REPEAT a slice, on either side. Equal lengths are not equal '
-        + 'coverage: repair rows for slices 0 and 0 against translate rows for 0 and 1 both count '
-        + 'two, and the join then emits two rows for slice 0 and drops slice 1 without a word',
-      fn: async () => {
-        /**
-         * Failure the comparison raised for a repeated repair row.
-         */
-        let caught: unknown;
-        try {
-          compareDocumentLanes({
-            repair: {
-              sliceTexts: [
-                {
-                  chunkIndex: 0,
-                  incumbentKind: 'present',
-                  incumbentText: ARCHIVE_NAP,
-                  outcome: {
-                    kind: 'decided',
-                    acceptedText: ARCHIVE_NAP,
-                  },
-                },
-                {
-                  chunkIndex: 0,
-                  incumbentKind: 'present',
-                  incumbentText: ARCHIVE_NAP,
-                  outcome: {
-                    kind: 'decided',
-                    acceptedText: ARCHIVE_NAP,
-                  },
-                },
-              ],
-              shippedChunkIndices: [],
-            },
-            translate: {
-              sliceTexts: [
-                {
-                  chunkIndex: 0,
-                  incumbentKind: 'present',
-                  incumbentText: ARCHIVE_NAP,
-                  outcome: {
-                    kind: 'decided',
-                    acceptedText: ARCHIVE_NAP,
-                  },
-                },
-                {
-                  chunkIndex: 1,
-                  incumbentKind: 'present',
-                  incumbentText: 'The sill is warm.',
-                  outcome: {
-                    kind: 'decided',
-                    acceptedText: 'The sill is warm.',
-                  },
-                },
-              ],
-              shippedChunkIndices: [],
-            },
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('distinct slices',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a shipped index REPEATED within one lane, rather than folding it into a set: '
-        + 'the repeat is the lane saying something twice about one slice, and every rate built '
-        + 'on that list counts it twice',
-      fn: async () => {
-        /**
-         * Failure the comparison raised.
-         */
-        let caught: unknown;
-        try {
-          compareDocumentLanes({
-            repair: {
-              sliceTexts: [{
-                chunkIndex: 0,
-                incumbentKind: 'present',
-                incumbentText: ARCHIVE_NAP,
-                outcome: {
-                  kind: 'decided',
-                  acceptedText: 'The cat is asleep on the windowsill.',
-                },
-              },],
-              shippedChunkIndices: [
-                0,
-                0,
-              ],
-            },
-            translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('more than once',);
-      },
-    },),
-    it({
-      name: 'REFUSES a slice the other lane does not report at all, even when both lists are the same length',
-      fn: async () => {
-        /**
-         * Failure the comparison raised.
-         */
-        let caught: unknown;
-        try {
-          compareDocumentLanes({
-            repair: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
-            translate: {
-              sliceTexts: [{
-                chunkIndex: 4,
-                incumbentKind: 'present',
-                incumbentText: ARCHIVE_NAP,
-                outcome: {
-                  kind: 'decided',
-                  acceptedText: ARCHIVE_NAP,
-                },
-              },],
-              shippedChunkIndices: [],
-            },
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(LaneComparisonError,);
-      },
-    },),
-    it({
-      name:
-        'reports a passage NEITHER lane filled as a gap that still remains rather than as the archive '
-        + 'standing, since the archive has never translated it: the older verdict told a grader a '
-        + 'translation was being kept where none has ever existed',
-      fn: async () => {
-        /**
-         * One lane's side of an anchor both lanes reached and neither filled.
-         */
-        const unfilledAnchor = {
-          sliceTexts: [{
-            chunkIndex: 0,
-            incumbentKind: 'absent',
-            incumbentText: '',
-            outcome: { kind: 'unfilled', },
-          },],
-          shippedChunkIndices: [],
-        } satisfies {
-          readonly sliceTexts: readonly LaneSliceText[];
-          readonly shippedChunkIndices: readonly number[];
-        };
-
-        /**
-         * Comparison over that one anchor.
-         */
-        const rows = compareDocumentLanes({
-          repair: unfilledAnchor,
-          translate: unfilledAnchor,
-        },);
-        expect(rows[0]?.verdict,).toBe('gap-remains',);
-        expect(rows[0]?.incumbentKind,).toBe('absent',);
-        // Neither lane decided anything, so there is nothing to compare either.
-        expect(rows[0]?.decisionComparison
-          .kind,).toBe('not-comparable',);
       },
     },),
     it({
@@ -480,24 +319,20 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
-            repair: {
-              sliceTexts: [{
-                chunkIndex: 0,
-                incumbentKind: 'present',
-                incumbentText: '',
-                outcome: { kind: 'not-evaluated', },
-              },],
-              shippedChunkIndices: [],
-            },
-            translate: {
-              sliceTexts: [{
-                chunkIndex: 0,
-                incumbentKind: 'absent',
-                incumbentText: '',
-                outcome: { kind: 'unfilled', },
-              },],
-              shippedChunkIndices: [],
-            },
+            preparationIdentity: SLICING,
+            repair: [{
+              chunkIndex: 0,
+              sourceText: SOURCE_NAP,
+              incumbentKind: 'present',
+              incumbentText: '',
+              outcome: { kind: 'not-evaluated', },
+              shippedText: '',
+              delivery: { kind: 'incumbent-retained', },
+            },],
+            translate: undecidedLaneOf({
+              outcome: { kind: 'unfilled', },
+              incumbentKind: 'absent',
+            },),
           },);
         }
         catch (error) {
@@ -509,9 +344,9 @@ await describe({
     },),
     it({
       name:
-        'asserts each lane`s wording against itself before joining them, since the two structural '
-        + 'boundaries that take wordings from a caller are this and the delivery ledger, and a row that '
-        + 'contradicts itself would otherwise be compared as though it did not',
+        'asserts each lane`s row against itself before joining them, since the two structural boundaries '
+        + 'that take rows from a caller are this and the delivery ledger, and a row that contradicts '
+        + 'itself would otherwise be compared as though it did not',
       fn: async () => {
         /**
          * Failure raised by a lane falling back on wording the archive lacks.
@@ -519,31 +354,80 @@ await describe({
         let caught: unknown;
         try {
           compareDocumentLanes({
-            repair: {
-              sliceTexts: [{
-                chunkIndex: 0,
-                incumbentKind: 'absent',
-                incumbentText: '',
-                // Nothing to fall back on: the archive holds no wording here.
-                outcome: { kind: 'incumbent-fallback', },
-              },],
-              shippedChunkIndices: [],
-            },
-            translate: {
-              sliceTexts: [{
-                chunkIndex: 0,
-                incumbentKind: 'absent',
-                incumbentText: '',
-                outcome: { kind: 'unfilled', },
-              },],
-              shippedChunkIndices: [],
-            },
+            preparationIdentity: SLICING,
+            repair: undecidedLaneOf({
+              // Nothing to fall back on: the archive holds no wording here.
+              outcome: { kind: 'incumbent-fallback', },
+              incumbentKind: 'absent',
+            },),
+            translate: undecidedLaneOf({
+              outcome: { kind: 'unfilled', },
+              incumbentKind: 'absent',
+            },),
           },);
         }
         catch (error) {
           caught = error;
         }
         expect(String(caught,),).toContain('standing by default, and the archive holds none',);
+      },
+    },),
+    it({
+      name:
+        'separates a lane that LOOKED and kept the archive wording from one that never reached the slice, '
+        + 'which the repair lane`s whole-document block produces: both documents carry the archive text '
+        + 'either way, and only one of them means anybody examined it',
+      fn: async () => {
+        /**
+         * Repair stopped before this slice; translate looked and kept it.
+         */
+        const comparison = compareDocumentLanes({
+          preparationIdentity: SLICING,
+          repair: undecidedLaneOf({
+            outcome: { kind: 'not-evaluated', },
+            incumbentKind: 'present',
+          },),
+          translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+        },);
+        expect(comparison.slices[0]?.verdict,).toBe('archive-stands',);
+        expect(comparison.slices[0]?.repairOutcome
+          .kind,).toBe('not-evaluated',);
+        expect(comparison.slices[0]?.translateOutcome
+          .kind,).toBe('decided',);
+        expect(comparison.slices[0]?.repairText,).toBe(ARCHIVE_NAP,);
+        // The two lanes did different things here, so their DECISIONS are not
+        // comparable however alike the two documents read.
+        expect(comparison.slices[0]?.decisionComparison
+          .kind,).toBe('not-comparable',);
+      },
+    },),
+    it({
+      name:
+        'reports a passage NEITHER lane filled as a gap that still remains rather than as the archive '
+        + 'standing, since the archive has never translated it: the older verdict told a grader a '
+        + 'translation was being kept where none has ever existed',
+      fn: async () => {
+        /**
+         * Both lanes reached the anchor and neither filled it.
+         */
+        const comparison = compareDocumentLanes({
+          preparationIdentity: SLICING,
+          repair: undecidedLaneOf({
+            outcome: { kind: 'unfilled', },
+            incumbentKind: 'absent',
+          },),
+          translate: undecidedLaneOf({
+            outcome: { kind: 'unfilled', },
+            incumbentKind: 'absent',
+          },),
+        },);
+        expect(comparison.slices[0]?.verdict,).toBe('gap-remains',);
+        expect(comparison.slices[0]?.incumbentKind,).toBe('absent',);
+        expect(comparison.slices[0]?.repairDelivery
+          .kind,).toBe('gap-remains',);
+        // Neither lane decided anything, so there is nothing to compare either.
+        expect(comparison.slices[0]?.decisionComparison
+          .kind,).toBe('not-comparable',);
       },
     },),
     it({
@@ -556,38 +440,34 @@ await describe({
         /**
          * Anchor the translate lane filled and the repair lane cannot touch.
          */
-        const rows = compareDocumentLanes({
-          repair: {
-            sliceTexts: [{
-              chunkIndex: 0,
-              incumbentKind: 'absent',
-              incumbentText: '',
-              outcome: { kind: 'not-applicable', },
-            },],
-            shippedChunkIndices: [],
-          },
-          translate: {
-            sliceTexts: [{
-              chunkIndex: 0,
-              incumbentKind: 'absent',
-              incumbentText: '',
-              outcome: {
-                kind: 'decided',
-                acceptedText: 'The cat has a bowl of its own.',
-              },
-            },],
-            shippedChunkIndices: [0,],
-          },
+        const comparison = compareDocumentLanes({
+          preparationIdentity: SLICING,
+          repair: undecidedLaneOf({
+            outcome: { kind: 'not-applicable', },
+            incumbentKind: 'absent',
+          },),
+          translate: [{
+            chunkIndex: 0,
+            sourceText: SOURCE_NAP,
+            incumbentKind: 'absent',
+            incumbentText: '',
+            outcome: {
+              kind: 'decided',
+              acceptedText: 'The cat has a bowl of its own.',
+            },
+            shippedText: 'The cat has a bowl of its own.',
+            delivery: { kind: 'replacement-shipped', },
+          },],
         },);
 
         // ONE lane decided, so there is nothing to compare, and the row names
         // which one rather than implying both fell short.
-        expect(rows[0]?.decisionComparison,).toEqual({
+        expect(comparison.slices[0]?.decisionComparison,).toEqual({
           kind: 'not-comparable',
           undecidedLanes: ['repair',],
         },);
-        expect(rows[0]?.verdict,).toBe('translate-only',);
-        expect(rows[0]?.repairOutcome
+        expect(comparison.slices[0]?.verdict,).toBe('translate-only',);
+        expect(comparison.slices[0]?.repairOutcome
           .kind,).toBe('not-applicable',);
       },
     },),
@@ -601,13 +481,14 @@ await describe({
          * Both lanes chose the same replacement; the guard withdrew translate`s.
          */
         const agreed = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: false, },),
         },);
         // The DOCUMENTS differ, since only one carries the replacement.
-        expect(agreed[0]?.verdict,).toBe('repair-only',);
+        expect(agreed.slices[0]?.verdict,).toBe('repair-only',);
         // The LANES agree, which the delivery verdict cannot say.
-        expect(agreed[0]?.decisionComparison,).toEqual({
+        expect(agreed.slices[0]?.decisionComparison,).toEqual({
           kind: 'comparable',
           verdict: 'same',
         },);
@@ -616,13 +497,44 @@ await describe({
          * Both lanes chose differently, and both shipped.
          */
         const apart = compareDocumentLanes({
+          preparationIdentity: SLICING,
           repair: laneOf({ acceptedText: 'The cat is asleep on the windowsill.', shipped: true, },),
           translate: laneOf({ acceptedText: 'A cat dozes in the window.', shipped: true, },),
         },);
-        expect(apart[0]?.decisionComparison,).toEqual({
+        expect(apart.slices[0]?.decisionComparison,).toEqual({
           kind: 'comparable',
           verdict: 'different',
         },);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a ledger that reports one slice twice, since equal lengths are not equal coverage: two '
+        + 'rows for slice 1 against rows for 1 and 2 both count two, and the join would emit slice 1 '
+        + 'twice while dropping slice 2 without a symptom',
+      fn: async () => {
+        /**
+         * Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            preparationIdentity: SLICING,
+            repair: [
+              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+            ],
+            translate: [
+              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+              ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
+            ],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('distinct slices',);
       },
     },),
   ],

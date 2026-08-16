@@ -2,6 +2,11 @@ import type {
   LaneSliceOutcome,
   LaneSliceText,
 } from './lane-slice-text.ts';
+import type { PreparationIdentity, } from './preparation-identity.ts';
+import type {
+  SliceDelivery,
+  SliceDeliveryRecord,
+} from './slice-delivery.ts';
 import { assertWordingCoherent, } from './wording-coherence.ts';
 
 //region Lane comparison
@@ -14,10 +19,13 @@ import { assertWordingCoherent, } from './wording-coherence.ts';
 // would be the obvious place to later put a winner. Anyone who wants the
 // comparison asks for it.
 //
-// SHIPPED IS READ OFF THE INDEX SETS, never off a per-slice record. A lane's
-// record says what that slice decided; the assembly guard decides what the
-// document carries, and the two disagree exactly where this comparison is most
-// worth reading.
+// BUILT FROM THE DELIVERY LEDGER, not from wordings and an index set. The two
+// disagree exactly where this comparison is most worth reading, and reading an
+// index set here meant a shipped index left out of it was indistinguishable
+// from a lane that kept the archive: an omission compared as a deliberate keep,
+// which is the defect class this whole area sits downstream of. The ledger has
+// already refused a decided slice that is neither shipped, withdrawn, nor
+// blocked, so what each document carries arrives as a stated fact.
 
 /**
  * What the two lanes did to one slice.
@@ -164,6 +172,42 @@ export type SliceLaneComparison = {
    * came out, which the delivery verdict cannot say.
    */
   readonly decisionComparison: DecisionComparison;
+
+  /**
+   * How the repair document came to carry what it carries.
+   */
+  readonly repairDelivery: SliceDelivery;
+
+  /**
+   * How the translate document came to carry what it carries.
+   */
+  readonly translateDelivery: SliceDelivery;
+};
+
+/**
+ * Every slice as both lanes left it, bound to the slicing it describes.
+ *
+ * THE BINDING IS PART OF THE VALUE rather than something a writer remembers to
+ * record beside it. Rows joined on a slice index mean nothing without the
+ * slicing that numbered them, and a comparison persisted without it can be read
+ * against a later preparation of the same entry with every row still looking
+ * well formed.
+ *
+ * @example
+ * ```ts
+ * const comparison: LaneComparison = compareDocumentLanes({ preparationIdentity, repair, translate, },);
+ * ```
+ */
+export type LaneComparison = {
+  /**
+   * Slicing both lanes ran over, which every row is joined on.
+   */
+  readonly preparationIdentity: PreparationIdentity;
+
+  /**
+   * One row per slice, in the order the repair ledger reports them.
+   */
+  readonly slices: readonly SliceLaneComparison[];
 };
 
 /**
@@ -190,144 +234,6 @@ export class LaneComparisonError extends Error {
     super(message,);
     this.name = 'LaneComparisonError';
   }
-}
-
-/**
- * Wording one lane's document carries for a slice.
- *
- * @param wording - what that lane decided for it
- *
- * @param shipped - whether the returned document carries that decision
- *
- * @returns Decided wording when it shipped, archive wording otherwise
- *
- * @example
- * ```ts
- * const carried = carriedText({ wording, shipped, },);
- * ```
- */
-function carriedText(
-  {
-    wording,
-    shipped,
-  }: {
-    readonly wording: LaneSliceText;
-    readonly shipped: boolean;
-  },
-): string {
-  if (!shipped)
-    return wording.incumbentText;
-
-  // A slice the lane never reached cannot be one the document carries a change
-  // for. Falling back to the archive wording here would answer the question
-  // with a row reading "the archive stands", which is the one thing a result
-  // this contradictory is not evidence of.
-  if (wording.outcome
-    .kind
-    !== 'decided') {
-    throw new LaneComparisonError({
-      message: `slice ${
-        String(wording.chunkIndex,)
-      } is named as shipped by a lane whose outcome for it was ${
-        wording.outcome
-          .kind
-      }`,
-    },);
-  }
-
-  return wording.outcome
-    .acceptedText;
-}
-
-/**
- * Shipped indices as a set, refusing any that the lane's own rows contradict.
- *
- * The comparison used to build these sets and look slices up in them, so an
- * index naming a slice the lane never reported was accepted and then quietly
- * matched nothing. That is the shape a result built from two different
- * preparations has, and it is exactly what every row below would then be wrong
- * about, one row at a time and without a symptom.
- *
- * @param lane - which side these indices came from, for the message
- *
- * @param shipped - slices that lane says its document carries a change for
- *
- * @param wordings - that lane's per-slice rows, which the indices must name
- *
- * @returns Same indices, as a set
- *
- * @throws LaneComparisonError when an index repeats, names no row, or names a
- * row whose accepted wording is the archive's own
- *
- * @example
- * ```ts
- * const shippedSlices = shippedSet({ lane: 'repair', shipped, wordings, },);
- * ```
- */
-function shippedSet(
-  {
-    lane,
-    shipped,
-    wordings,
-  }: {
-    readonly lane: string;
-    readonly shipped: readonly number[];
-    readonly wordings: readonly LaneSliceText[];
-  },
-): ReadonlySet<number> {
-  if (new Set(shipped,).size !== shipped.length)
-    throw new LaneComparisonError({
-      message: `${lane} lane names a slice as shipped more than once; the `
-        + 'repeat is dropped by the set this becomes, so a count taken from the '
-        + 'list and a count taken from the set would disagree',
-    },);
-
-  /**
-   * Rows this lane reported, by slice index.
-   */
-  const rows = new Map(wordings.map(function toEntry(wording,): [
-    number,
-    LaneSliceText,
-  ] {
-    return [
-      wording.chunkIndex,
-      wording,
-    ];
-  },),);
-  for (const chunkIndex of shipped) {
-    /**
-     * Row this index claims to name.
-     */
-    const row = rows.get(chunkIndex,);
-    if (row === undefined)
-      throw new LaneComparisonError({
-        message: `${lane} lane names slice ${
-          String(chunkIndex,)
-        } as shipped and reports no wording for it`,
-      },);
-    if (row.outcome
-      .kind
-      !== 'decided') {
-      throw new LaneComparisonError({
-        message: `${lane} lane names slice ${
-          String(chunkIndex,)
-        } as shipped and reports its outcome there as ${
-          row.outcome
-            .kind
-        }`,
-      },);
-    }
-    if (row.outcome
-      .acceptedText
-      === row.incumbentText) {
-      throw new LaneComparisonError({
-        message: `${lane} lane names slice ${
-          String(chunkIndex,)
-        } as shipped and reports the archive's own wording for it`,
-      },);
-    }
-  }
-  return new Set(shipped,);
 }
 
 /**
@@ -436,117 +342,87 @@ function judgeSlice(
 /**
  * Compares what two lanes' documents carry, slice by slice.
  *
- * @param repair - repair lane's per-slice wordings and shipped indices
+ * @param preparationIdentity - slicing both lanes ran over, carried into the
+ * result so no writer can persist rows without the thing that numbers them
+ *
+ * @param repair - repair lane's delivery ledger, already checked against that
+ * lane's own document
  *
  * @param translate - translate lane's, over the SAME preparation
  *
- * @returns One row per slice, in the order the REPAIR lane reported its rows,
- * which is document order wherever that lane built them from a preparation and
- * is not re-sorted here
+ * @returns One row per slice, in the order the REPAIR ledger reports them,
+ * which is document order wherever that lane built it from a preparation and is
+ * not re-sorted here
  *
- * @throws LaneComparisonError when either lane repeats a slice, when a shipped
- * index repeats or contradicts its own row, when one lane reports a slice the
- * other does not, or when the two disagree about a slice's archive wording. The
- * last of those is the only one that PROVES different preparations; the rest
- * are shapes a single preparation cannot produce
+ * @throws {@link LaneComparisonError} when either ledger repeats a slice, when
+ * one reports a slice the other does not, or when the two disagree about a
+ * slice's archive wording or about whether the archive translates it at all.
+ * The last of those is the only one that PROVES different preparations; the
+ * rest are shapes a single preparation cannot produce
  *
  * @example
  * ```ts
- * const rows = compareDocumentLanes({ repair, translate, },);
+ * const comparison = compareDocumentLanes({ preparationIdentity, repair, translate, },);
  * ```
  */
 export function compareDocumentLanes(
   {
+    preparationIdentity,
     repair,
     translate,
   }: {
-    readonly repair: {
-      readonly sliceTexts: readonly LaneSliceText[];
-      readonly shippedChunkIndices: readonly number[];
-    };
-    readonly translate: {
-      readonly sliceTexts: readonly LaneSliceText[];
-      readonly shippedChunkIndices: readonly number[];
-    };
+    readonly preparationIdentity: PreparationIdentity;
+    readonly repair: readonly SliceDeliveryRecord[];
+    readonly translate: readonly SliceDeliveryRecord[];
   },
-): readonly SliceLaneComparison[] {
-  /**
-   * Rows each lane reports, which must agree before anything is joined.
-   */
-  const counted = {
-    repair: repair.sliceTexts
-      .length,
-    translate: translate.sliceTexts
-      .length,
-  };
-  if (counted.repair !== counted.translate)
+): LaneComparison {
+  if (repair.length !== translate.length)
     throw new LaneComparisonError({
-      message: `lanes report ${String(counted.repair,)} and `
-        + `${String(counted.translate,)} slices, so they ran over different preparations`,
+      message: `lanes report ${String(repair.length,)} and ${
+        String(translate.length,)
+      } slices, so they ran over different preparations`,
     },);
 
   /**
-   * Translate wording for each slice index.
+   * Translate row for each slice index.
    */
-  const translateByIndex = new Map(
-    translate.sliceTexts
-      .map(function toEntry(wording,): [
-        number,
-        LaneSliceText,
-      ] {
-        return [
-          wording.chunkIndex,
-          wording,
-        ];
-      },),
-  );
+  const translateByIndex = new Map(translate.map(function toEntry(record,): [
+    number,
+    SliceDeliveryRecord,
+  ] {
+    return [
+      record.chunkIndex,
+      record,
+    ];
+  },),);
 
   // Equal lengths are not equal COVERAGE: repair rows for slices 1 and 1 and
   // translate rows for 1 and 2 both count two, and the join would then emit two
-  // rows for slice 1 and silently drop slice 2. BOTH lanes are checked, because
+  // rows for slice 1 and silently drop slice 2. BOTH sides are checked, because
   // the join walks the repair rows and looks the translate ones up, so a repeat
   // on either side produces that same wrong answer from the other end.
-  if (translateByIndex.size !== counted.translate)
+  if (translateByIndex.size !== translate.length)
     throw new LaneComparisonError({
-      message: `translate lane reports ${
-        String(counted.translate,)
-      } rows over ${String(translateByIndex.size,)} distinct slices`,
+      message: `translate lane reports ${String(translate.length,)} rows over ${
+        String(translateByIndex.size,)
+      } distinct slices`,
     },);
 
   /**
    * Distinct slices the repair rows name.
    */
-  const repairDistinct = new Set(repair.sliceTexts
-    .map(function toIndex(wording,): number {
-      return wording.chunkIndex;
-    },),).size;
-  if (repairDistinct !== counted.repair)
+  const repairDistinct = new Set(repair.map(function toIndex(record,): number {
+    return record.chunkIndex;
+  },),).size;
+  if (repairDistinct !== repair.length)
     throw new LaneComparisonError({
-      message: `repair lane reports ${
-        String(counted.repair,)
-      } rows over ${String(repairDistinct,)} distinct slices`,
+      message: `repair lane reports ${String(repair.length,)} rows over ${
+        String(repairDistinct,)
+      } distinct slices`,
     },);
-
-  /**
-   * Slices the repair document carries a change for.
-   */
-  const repairShipped = shippedSet({
-    lane: 'repair',
-    shipped: repair.shippedChunkIndices,
-    wordings: repair.sliceTexts,
-  },);
-
-  /**
-   * Slices the translate document carries a replacement for.
-   */
-  const translateShipped = shippedSet({
-    lane: 'translate',
-    shipped: translate.shippedChunkIndices,
-    wordings: translate.sliceTexts,
-  },);
-
-  return repair.sliceTexts
-    .map(function toRow(mine,): SliceLaneComparison {
+  return {
+    preparationIdentity,
+    slices: repair.map(function toRow(mine,): SliceLaneComparison {
       /**
        * Same slice as the other lane left it.
        */
@@ -575,42 +451,27 @@ export function compareDocumentLanes(
         },);
       assertWordingCoherent({ wording: mine, },);
       assertWordingCoherent({ wording: theirs, },);
-
-      /**
-       * Wording the repair document carries here.
-       */
-      const repairText = carriedText({
-        wording: mine,
-        shipped: repairShipped.has(mine.chunkIndex,),
-      },);
-
-      /**
-       * Wording the translate document carries here.
-       */
-      const translateText = carriedText({
-        wording: theirs,
-        shipped: translateShipped.has(theirs.chunkIndex,),
-      },);
-
       return {
         chunkIndex: mine.chunkIndex,
         incumbentKind: mine.incumbentKind,
         incumbentText: mine.incumbentText,
-        repairText,
-        translateText,
+
+        // WHAT EACH DOCUMENT CARRIES, stated by the ledger rather than inferred
+        // from membership of an index set. An omitted shipped index used to
+        // read here as the lane having kept the archive, which is an absence
+        // read as a choice.
+        repairText: mine.shippedText,
+        translateText: theirs.shippedText,
 
         // THE OUTCOMES THEMSELVES, not two booleans derived from them. A
-        // boolean pair answers "did anyone look" and erases the difference
+        // boolean pair answers whether anyone looked and erases the difference
         // between a lane that decided, one that reached the slice and could not
-        // fill it, and one that heard no voice at all, which is the erasure
-        // that put `translateReached: false` on slices the lane demonstrably
-        // reached.
+        // fill it, one that heard no voice at all, and one with no work to do.
         repairOutcome: mine.outcome,
         translateOutcome: theirs.outcome,
-
         verdict: judgeSlice({
-          repairText,
-          translateText,
+          repairText: mine.shippedText,
+          translateText: theirs.shippedText,
           incumbentKind: mine.incumbentKind,
           incumbentText: mine.incumbentText,
         },),
@@ -618,8 +479,11 @@ export function compareDocumentLanes(
           repair: mine.outcome,
           translate: theirs.outcome,
         },),
+        repairDelivery: mine.delivery,
+        translateDelivery: theirs.delivery,
       };
-    },);
+    },),
+  };
 }
 
 //endregion Lane comparison
