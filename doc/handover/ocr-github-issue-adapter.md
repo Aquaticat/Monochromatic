@@ -28,7 +28,9 @@ The adapter must:
 - accept a JSONL file stored by OCR;
 - implement the previously selected local-adapter architecture.
 
-Copied and pasted input means structured JSON entered through the interactive terminal paste flow.
+Copied and pasted input means one line of structured JSON entered through the interactive terminal prompt.
+The adapter provides no multiline paste handling.
+Users needing multiline input must write it to a file and pass that file path.
 Human-readable terminal output and piped standard input are excluded.
 
 ## Settled grilling decisions
@@ -61,7 +63,11 @@ The adapter accepts exactly these OCR-native structured shapes:
 
 - complete `ocr review --format json` or `ocr scan --format json` result object;
 - bare comment array from `ocr session comments --json`;
-- raw OCR session JSONL transcript.
+- raw OCR session JSONL transcript from a named file.
+
+Interactive paste accepts a single-line JSON result object or comment array.
+It has no multiline handling,
+so users must provide JSONL transcripts and pretty-printed JSON through a named file.
 
 It must auto-detect among only these validated schemas.
 It must not search arbitrary nested JSON for comment-like objects or accept individual comment fragments by accident.
@@ -90,7 +96,7 @@ The implementation must never inspect or read redirected or piped standard input
 With a positional file,
 it reads only that file.
 Without a positional file,
-non-interactive mode errors and interactive mode may read the terminal TTY for its paste prompt.
+non-interactive mode errors and interactive mode may read one line from the terminal TTY for its paste prompt.
 Piped bytes are ignored rather than detected or consumed.
 The implementation must not reopen `/dev/tty`,
 `CONIN$`,
@@ -247,9 +253,10 @@ in dependency order:
 3. Input contracts:
    pasted input is settled as structured JSON only,
    with no human-readable terminal parser.
-   Accepted shapes are the complete review or scan result object,
+   Accepted file shapes are the complete review or scan result object,
    `ocr session comments --json` comment array,
    and raw OCR session JSONL transcript.
+   Interactive paste accepts one-line JSON for the result object or comment array.
    No mode may consume piped standard input.
    Non-interactive mode requires a named file.
    Interactive mode receives a named file or terminal paste.
@@ -259,9 +266,9 @@ in dependency order:
    `-` never means standard input.
    Redirected or piped standard input is never inspected or read as ingestion;
    interactive terminal prompts may read TTY standard input.
-   Paste framing,
-   encoding,
-   and malformed-input behavior remain open.
+   Paste framing is settled as one line with no multiline handling.
+   Users needing multiline input write a file and pass its path.
+   Encoding and malformed-input behavior remain open.
 4. Non-interactive authority:
    mode selection is settled as non-interactive by default,
    with interactive behavior enabled only by `--interactive` or `-i`.
@@ -310,7 +317,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about how the interactive terminal paste flow frames multiline JSON.
+Ask the next dependent design question about how interactive mode handles an invalid single-line paste.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -347,5 +354,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   recorded that the adapter never ingests redirected or piped standard input and ignores piped bytes.
 - 2026-08-16:
   recorded the pnpm `v11.8.0` interactive-update source path and its use of `@inquirer/prompts` checkbox UI.
+- 2026-08-16:
+  recorded single-line interactive paste with no multiline handling;
+  multiline JSON and JSONL require a named file.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
