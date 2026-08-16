@@ -55,6 +55,17 @@ const DEFAULT_TRIAL_CAP = 16;
 const MIN_SLICE_CHARS = 400;
 
 /**
+ * Damaged pairs taken from any one entry.
+ *
+ * ONE, so a cap spreads across entries instead of exhausting the first. Walking
+ * an entry's slices in order until the cap is reached samples one document's
+ * prose, one translator's habits and one subject, and reports it as a rate over
+ * the archive. The same bias was recorded against the coverage probe and is
+ * cheaper to avoid here than to caveat later.
+ */
+const PAIRS_PER_ENTRY = 1;
+
+/**
  * Ballot arrangements every pair is run through.
  */
 const ARRANGEMENTS: readonly {
@@ -374,12 +385,16 @@ async function main(): Promise<void> {
       sourceText: texts.source,
       targetText: texts.target,
     },);
+    /**
+     * Damaged pairs taken from this entry so far.
+     */
+    let pairsHere = 0;
     for (const [
       sliceIndex,
       slice,
     ] of prepared.slices
       .entries()) {
-      if (rows.length >= cap)
+      if ((rows.length >= cap) || (pairsHere >= PAIRS_PER_ENTRY))
         break;
 
       /**
@@ -396,6 +411,7 @@ async function main(): Promise<void> {
       const damaged = damageSlice({ cleanText, },);
       if (damaged.kind === 'undamageable')
         continue;
+      pairsHere += 1;
 
       for (const arrangement of ARRANGEMENTS) {
         if (rows.length >= cap)
