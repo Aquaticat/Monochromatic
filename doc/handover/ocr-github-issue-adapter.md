@@ -287,6 +287,15 @@ prints `Issue creation canceled.` and returns status zero without GitHub mutatio
 After creation starts,
 interactive mode prints human-readable progress and ends with a human-readable list of created Issue URLs.
 A handled partial failure also identifies the stopping failure and returns nonzero.
+After creation starts,
+the first Ctrl+C prevents every later creation but allows an active `gh api` creation to finish
+within its normal request timeout.
+An ambiguous completion still receives the settled read-only reconciliation,
+with no retry after the interrupt.
+If only pacing or retry delay is active,
+the first Ctrl+C stops that wait immediately.
+The adapter then emits the partial applied-run result and returns nonzero.
+A second Ctrl+C terminates immediately and may prevent final output.
 That picker must use red styling when color is available and an explicit textual `SECURITY` marker
 so color is never the only signal.
 Every security-gated finding selected for publication requires its own explicit safe-to-disclose confirmation.
@@ -652,6 +661,9 @@ in dependency order:
     Direct authenticated HTTP,
     GitHub client libraries,
     and `gh issue create` are excluded.
+    After publication starts,
+    the first Ctrl+C stops future creation while allowing an active bounded creation to settle;
+    a second Ctrl+C terminates immediately.
     Package location and name,
     binary name,
     configuration,
@@ -666,7 +678,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask how Ctrl+C behaves after Issue creation has begun.
+Determine the current `gh api` timeout boundary,
+then ask what timeout the adapter applies to each GitHub CLI invocation.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -815,6 +828,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   selected human-readable interactive applied-run output
   and one final JSON result object for completed or handled non-interactive applied runs.
+- 2026-08-16:
+  made the first post-publication Ctrl+C stop after an active bounded creation settles,
+  while a second Ctrl+C terminates immediately.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
