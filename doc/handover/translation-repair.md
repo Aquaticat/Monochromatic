@@ -11276,3 +11276,30 @@ quotes it was built to accept is worse than the bug: of 40 space-joined quotes
 spanning a lone wrap taken from four corpus translations, 35 anchor, and the 5
 refusals are `quote-outside-blocks` in front matter, which is not quotable
 content.
+
+### The section set run a third time, under unchanged code, and it reproduces exactly
+
+The v2 run left one sentence unsupported: that XIEPT2's section 7 moved from
+`absent` to `split` for a reason a single run cannot separate from ordinary
+variance between two samples of six stochastic models. So the same eleven
+candidates were run again with nothing changed.
+
+ALL ELEVEN VERDICTS ARE IDENTICAL to v2, section 7 included. It splits again, on
+almost the same tallies.
+
+WHAT THAT BUYS. Section 7's split is REPRODUCIBLE rather than a fluke, so the
+version of the sentence that says "this might just be noise" is no longer the
+honest one. It also gives the stage a variance floor it never had: two
+independent samples of six models over eleven passages agreed on every verdict,
+which is worth more than the individual results, since every earlier number from
+this stage was a single sample.
+
+WHAT IT STILL DOES NOT SETTLE. Attribution of the v1 to v2 move needs a run under
+the OLD sheet, which was not kept. Low variance under v2 makes the sheet the more
+likely cause than sampling, and that is an inference from two runs of one
+configuration, not a measurement of the other.
+
+ALSO WORTH SEEING: three voices were lost to the sixty-second grace in this run,
+and no verdict moved. That is the roster threshold behaving as intended, since a
+majority of the whole roster was still reached and silence could not lower the
+bar.

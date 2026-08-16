@@ -1221,3 +1221,8 @@ That ordering costs nothing, because C keeps B's denominator.
     sixteen passages the block aligner refuses to pair. If anything, the paragraph
     scale reads worse for landing four than it did: at most one of twenty-two, and
     plausibly none.
+    RUN A THIRD TIME under unchanged code, because the one sentence above that
+    said "this might be variance" deserved testing rather than repeating. All
+    eleven verdicts came back IDENTICAL to the second run, section 7's split
+    included. So that split reproduces, and the eleven verdicts this question
+    rests on are now two independent samples in agreement rather than one sample.
