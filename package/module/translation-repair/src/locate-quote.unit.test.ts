@@ -168,25 +168,25 @@ await describe({
 
     //endregion Failure reasons
 
-    //region Soft-line-break diagnosis
+    //region Soft line breaks
 
     it({
-      name: 'names a miss the wrap explains, without locating it',
+      name: 'LOCATES a quote the wrap explains, which it used only to diagnose. A quote differing from '
+        + 'the document by where a paragraph was wrapped is the document text, and refusing it '
+        + 'discarded correct evidence: 45 of 844 stored not-found failures were this, and 10 of 11 on '
+        + 'the coverage question, whose quotes are whole sentences',
       fn: async () => {
         const located = locateQuote({
           document: WRAPPED,
           side: 'target',
           quote: '小猫在窗台上打盹， 阳光晒得暖洋洋。',
         },);
-        expect(located,).toEqual({
-          located: false,
-          reason: 'quote-not-found (target) [line-break-collapsible] '
-            + 'needle="小猫在窗台上打盹， 阳光晒得暖洋洋。"',
-        },);
+        expect(located.located,).toBe(true,);
       },
     },),
     it({
-      name: 'names a wrap-explained miss that collapses onto two occurrences',
+      name: 'refuses a wrap-explained quote that collapses onto TWO occurrences as ambiguous, which is '
+        + 'what it is: locating it would pick one of two passages by position alone',
       fn: async () => {
         const located = locateQuote({
           document: WRAPPED_TWICE,
@@ -195,8 +195,7 @@ await describe({
         },);
         expect(located,).toEqual({
           located: false,
-          reason: 'quote-not-found (target) [line-break-ambiguous] '
-            + 'needle="小猫趴着睡， 阳光很暖和。"',
+          reason: 'ambiguous-quote (target)',
         },);
       },
     },),
@@ -257,7 +256,7 @@ await describe({
       },
     },),
 
-    //endregion Soft-line-break diagnosis
+    //endregion Soft line breaks
 
     //region Block-crossing splits
 
@@ -293,5 +292,49 @@ await describe({
       },
     },),
     //endregion Block-crossing splits
+    it({
+      name: 'LOCATES a quote that differs from the document only in where a paragraph was wrapped, '
+        + 'since a model copying a sentence out of a wrapped paragraph writes it on one line and the '
+        + 'document holds the same characters with a newline in the middle',
+      fn: async () => {
+        /** Translation whose paragraph is wrapped mid-sentence. */
+        const wrappedText = 'The cat sleeps on the windowsill each morning\nand naps on its cushion at noon.\n';
+
+        /** That document as an anchor target. */
+        const document = {
+          text: wrappedText,
+          nodes: parseDocument({ text: wrappedText, },).nodes,
+        };
+
+        /** Same sentence as one line, which is how a model copies it back. */
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'on the windowsill each morning and naps on its cushion',
+        },);
+        expect(located.located,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'still refuses to join across a BLANK LINE, since a paragraph break carries two line '
+        + 'endings where a space-joined quote carries one space, so collapsing cannot merge passages '
+        + 'the document keeps apart',
+      fn: async () => {
+        /** Two paragraphs, separated as paragraphs are. */
+        const twoParagraphs = 'The cat sleeps on the windowsill.\n\nShe watches the birds outside.\n';
+
+        /** That document as an anchor target. */
+        const document = {
+          text: twoParagraphs,
+          nodes: parseDocument({ text: twoParagraphs, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'on the windowsill. She watches',
+        },);
+        expect(located.located,).toBe(false,);
+      },
+    },),
   ],
 },);

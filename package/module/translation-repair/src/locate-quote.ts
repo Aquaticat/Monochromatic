@@ -12,9 +12,12 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // Deterministic evidence anchoring: find a critic's quote in the document,
 // reject absence and ambiguity, and bind the located region to block nodes.
 // Byte-exact search runs first; a punctuation-normalized fallback rescues
-// quotes differing only in curly-versus-ASCII punctuation, and block-crossing
-// regions split into one span per touched block, because models quote across
-// paragraph boundaries no matter what the prompt demands.
+// quotes differing only in curly-versus-ASCII punctuation, a line-break
+// fallback after it rescues quotes differing only in where a paragraph was
+// wrapped, and block-crossing regions split into one span per touched block,
+// because models quote across paragraph boundaries no matter what the prompt
+// demands. Both fallbacks are length-preserving, so every offset still indexes
+// the document as it is stored.
 
 /**
  * Located-quote outcome: anchors, or the failure reason.
@@ -174,58 +177,6 @@ function needlePreview(
 }
 
 /**
- * Names the outcome a soft-line-break collapse would have produced for a
- * quote the punctuation-normalized search missed.
- * Diagnostic only, so the caller still refuses the quote:
- * the corpus soft-wraps its prose, and a critic quoting across a wrap returns
- * a space where the document holds a line break, which this counts without
- * yet acting on it.
- *
- * @param haystack - punctuation-normalized document text
- *
- * @param needle - punctuation-normalized quote
- *
- * @returns Suffix naming the collapsed outcome, empty when it changes nothing
- *
- * @example
- * ```ts
- * lineBreakSuffix({ haystack, needle, },);
- * ```
- */
-function lineBreakSuffix(
-  {
-    haystack,
-    needle,
-  }: {
-    readonly haystack: string;
-    readonly needle: string;
-  },
-): string {
-  /**
-   * Document text reading soft line breaks as spaces.
-   */
-  const collapsedHaystack = collapseLineBreaks({ text: haystack, },);
-
-  /**
-   * Quote reading soft line breaks as spaces.
-   */
-  const collapsedNeedle = collapseLineBreaks({ text: needle, },);
-
-  /**
-   * First collapsed occurrence.
-   */
-  const at = collapsedHaystack.indexOf(collapsedNeedle,);
-  if (at === (-1))
-    return '';
-  if (collapsedHaystack.includes(
-    collapsedNeedle,
-    at + 1,
-  ))
-    return ' [line-break-ambiguous]';
-  return ' [line-break-collapsible]';
-}
-
-/**
  * Locates one quote inside one document and binds it to its blocks.
  * Byte-exact search first;
  * when that misses, a punctuation-normalized search rescues quotes that
@@ -306,20 +257,62 @@ export function locateQuote(
    * First normalized occurrence.
    */
   const normalizedAt = haystack.indexOf(needle,);
-  if (normalizedAt === (-1)) {
+  if (normalizedAt !== (-1)) {
+    if (haystack.includes(
+      needle,
+      normalizedAt + 1,
+    ))
+    {
+      return {
+        located: false,
+        reason: `ambiguous-quote (${side})`,
+      };
+    }
+    return bindQuoteRegion({
+      document,
+      side,
+      at: normalizedAt,
+      end: normalizedAt + needle.length,
+    },);
+  }
+
+  /**
+   * Document with soft line breaks read as spaces as well.
+   *
+   * THE THIRD PASS EXISTS BECAUSE A CORRECT QUOTE WAS BEING REFUSED OVER
+   * WHITESPACE. A model copying a sentence out of a wrapped paragraph writes it
+   * on one line, and the document holds the same characters with a newline in
+   * the middle, so the two differ by a line break and nothing else. Measured on
+   * stored runs: 45 of 844 not-found failures carry the collapsible diagnostic
+   * this pass acts on, and on the coverage question, whose quotes are whole
+   * sentences rather than fragments, ten of eleven refusals were this and
+   * nothing else. Collapsing is length-preserving, so the offsets still index
+   * the original document and the anchors still carry its canonical bytes.
+   *
+   * A BLANK LINE STILL SEPARATES, since it carries two line breaks where a
+   * space-joined quote carries one space, so this cannot join text across a
+   * paragraph boundary that the document keeps apart.
+   */
+  const flatHaystack = collapseLineBreaks({ text: haystack, },);
+
+  /**
+   * Quote read the same way.
+   */
+  const flatNeedle = collapseLineBreaks({ text: needle, },);
+
+  /**
+   * First occurrence once both read line breaks as spaces.
+   */
+  const flatAt = flatHaystack.indexOf(flatNeedle,);
+  if (flatAt === (-1)) {
     return {
       located: false,
-      reason: `quote-not-found (${side})${
-        lineBreakSuffix({
-          haystack,
-          needle,
-        },)
-      }${needlePreview({ needle, },)}`,
+      reason: `quote-not-found (${side})${needlePreview({ needle, },)}`,
     };
   }
-  if (haystack.includes(
-    needle,
-    normalizedAt + 1,
+  if (flatHaystack.includes(
+    flatNeedle,
+    flatAt + 1,
   ))
   {
     return {
@@ -330,8 +323,8 @@ export function locateQuote(
   return bindQuoteRegion({
     document,
     side,
-    at: normalizedAt,
-    end: normalizedAt + needle.length,
+    at: flatAt,
+    end: flatAt + flatNeedle.length,
   },);
 }
 
