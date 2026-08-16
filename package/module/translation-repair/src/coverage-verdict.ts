@@ -2,6 +2,7 @@ import type {
   CoverageDegree,
   CoverageReportWire,
 } from './coverage-wire.ts';
+import type { SpanAnchor, } from './issue-model.ts';
 import { locateQuote, } from './locate-quote.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
@@ -36,6 +37,25 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // then more dangerous than a fabricated quote, which is backwards. A verdict now
 // needs a majority of every model asked, and an unmet quorum is inconclusive
 // whatever the answers say.
+
+/**
+ * Raised when a located quote carries no anchor to read a region from.
+ *
+ * Unreachable through `locateQuote`, which refuses rather than returning an
+ * empty anchor list, so this names a broken contract instead of a case a caller
+ * should handle.
+ *
+ * @example
+ * ```ts
+ * throw new AnchorRegionError('located quote carried no anchors',);
+ * ```
+ */
+export class AnchorRegionError extends Error {
+  /**
+   * Distinguishes this from other errors after serialization.
+   */
+  public override readonly name = 'AnchorRegionError';
+}
 
 /**
  * What a roster concluded about one passage.
@@ -87,8 +107,13 @@ export type CoverageVerdict = {
   readonly asked: number;
 
   /**
-   * Anchored quotes in roster order, kept so a reader can check the verdict
-   * against the document without rerunning anything.
+   * DOCUMENT'S OWN TEXT for each anchored region, in roster order, so a reader
+   * can find every one of these by searching the translation.
+   *
+   * It used to hold the submitted quote, which reads the same until a fallback
+   * pass does the matching: a quote anchored across a soft wrap, or through
+   * normalized punctuation, is by definition text the document does not hold
+   * literally, so the field contradicted the promise made here.
    */
   readonly evidence: readonly string[];
 
@@ -118,7 +143,64 @@ type WeighedVoice = {
    * Quote it offered, empty when it claimed no coverage.
    */
   readonly quote: string;
+
+  /**
+   * Document's OWN bytes for the region its quote matched, empty when nothing
+   * matched. Differs from `quote` whenever a fallback pass did the matching,
+   * which is exactly when the submitted text does not occur in the document.
+   */
+  readonly matched: string;
 };
+
+/**
+ * Reads back the document's own text for a located region.
+ *
+ * WHY NOT THE SUBMITTED QUOTE: a match may come from a fallback pass, which is
+ * exactly when the submitted text does NOT occur in the document, so storing it
+ * as evidence produces a string a reader cannot find. Anchors span from the
+ * first to the last, covering any inter-block bytes between them, so the result
+ * is a literal substring of the document rather than a reassembly.
+ *
+ * @param document - side the region was located in
+ *
+ * @param anchors - located spans in document order, never empty
+ *
+ * @returns Document text from first anchor start to last anchor end
+ *
+ * @throws {@link AnchorRegionError} when handed no anchors, which a located
+ * result cannot produce
+ *
+ * @example
+ * ```ts
+ * const matched = matchedRegion({ document, anchors, },);
+ * ```
+ */
+function matchedRegion(
+  {
+    document,
+    anchors,
+  }: {
+    readonly document: AnchorTarget;
+    readonly anchors: readonly SpanAnchor[];
+  },
+): string {
+  /**
+   * Earliest span, whose start opens the region.
+   */
+  const first = anchors.at(0,);
+
+  /**
+   * Latest span, whose end closes it.
+   */
+  const last = anchors.at(-1,);
+  if ((first === undefined) || (last === undefined))
+    throw new AnchorRegionError('located quote carried no anchors',);
+  return document.text
+    .slice(
+      first.startOffset,
+      last.endOffset,
+    );
+}
 
 /**
  * Looks for one voice's quote in the translation it describes.
@@ -153,6 +235,7 @@ function weighVoice(
       degree,
       anchored: false,
       quote: '',
+      matched: '',
     };
   }
 
@@ -170,6 +253,10 @@ function weighVoice(
     anchored: located.located,
     quote: voice.value
       .quote,
+    matched: located.located ? matchedRegion({
+      document,
+      anchors: located.anchors,
+    },) : '',
   };
 }
 
@@ -267,6 +354,22 @@ function isAnchored(claim: WeighedVoice,): boolean {
  */
 function claimQuote(claim: WeighedVoice,): string {
   return claim.quote;
+}
+
+/**
+ * Reads one claim's matched document text.
+ *
+ * @param claim - weighed reply
+ *
+ * @returns Document's own text for the region it matched
+ *
+ * @example
+ * ```ts
+ * const matched = claimMatched(claim,);
+ * ```
+ */
+function claimMatched(claim: WeighedVoice,): string {
+  return claim.matched;
 }
 
 /**
@@ -393,7 +496,7 @@ export function judgeCoverage(
     heard: voices.length,
     asked,
     evidence: weighed.filter(isAnchored,)
-      .map(claimQuote,),
+      .map(claimMatched,),
     unanchoredQuotes: weighed.filter(isUnanchored,)
       .map(claimQuote,),
   };

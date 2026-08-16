@@ -241,6 +241,36 @@ await describe({
     },),
 
     it({
+      name: 'records the DOCUMENT\'S text as evidence rather than the quote it was sent, since a quote '
+        + 'anchored across a soft wrap is by definition text the document does not hold literally, and '
+        + 'evidence a reader cannot find is not evidence',
+      fn: async () => {
+        /** Translation whose sentence is wrapped mid-way, as the archive stores prose. */
+        const wrappedText = 'The cat naps on its\ncushion at noon.\n';
+        const verdict = judgeCoverage({
+          voices: [
+            voiceOf({
+              modelId: 'hf:cat/Cat-A' as SyntheticModelId,
+              coverage: 'full',
+              // Space-joined, which is how a model copies a wrapped sentence.
+              quote: 'naps on its cushion at noon',
+            },),
+          ],
+          document: {
+            text: wrappedText,
+            nodes: parseDocument({ text: wrappedText, },).nodes,
+          },
+          asked: 1,
+          quorumMet: true,
+        },);
+        expect(verdict.anchoredFull,).toBe(1,);
+        expect(verdict.evidence
+          .at(0,),).toBe('naps on its\ncushion at noon',);
+        expect(wrappedText.includes(verdict.evidence
+          .at(0,) ?? '',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'REFUSES to decide when quorum was not met, however the answers fell: a roster that mostly '
         + 'went silent has not examined the translation, and a verdict from what is left reads as an '
         + 'examination that happened',
