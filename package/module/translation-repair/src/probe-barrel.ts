@@ -52,6 +52,12 @@ export {
   type ScreenedReport,
 } from './rendering-audit-screen.ts';
 export {
+  type AuditVoiceRow,
+  type CorroboratedDefect,
+  type RenderingAuditReport,
+  runRenderingAudit,
+} from './rendering-audit.ts';
+export {
   longestFenceRun,
   selectFence,
 } from './prompt-fence.ts';
