@@ -72,6 +72,11 @@ export type SerialRequestQueue = {
  */
 type QueuedEntry = {
   /**
+   * Identity unique to this entry, unlike `id`, which a client may repeat.
+   */
+  readonly ticket: number;
+
+  /**
    * Identity this entry is cancelled by.
    */
   readonly id: QueuedId;
@@ -127,15 +132,33 @@ export function createSerialRequestQueue(
   const waiting: QueuedEntry[] = [];
 
   /**
-   * Ids accepted and not yet settled, so a cancellation can tell a live request from
-   * one that already finished.
+   * Tickets still live, grouped by the id a client would name to cancel them.
+   *
+   * A set rather than one ticket because JSON-RPC ids are the client's to choose and a
+   * misbehaving one may leave two requests outstanding under the same id. Keying
+   * cancellation by id alone would let settling either erase the other's state.
    */
-  const live = new Set<JsonRpcId>();
+  const liveTickets = new Map<JsonRpcId, Set<number>>();
 
   /**
-   * Ids cancelled while live; consulted before producing and again before writing.
+   * Tickets cancelled while live; consulted before producing and again before writing.
    */
-  const cancelled = new Set<JsonRpcId>();
+  const cancelled = new Set<number>();
+
+  /**
+   * Source of ticket numbers, held in a `const` so no function-root `let` is needed.
+   */
+  const tickets = { issued: 0, };
+
+  /**
+   * Synchronous marker that a drain has been started.
+   *
+   * Set before {@link drain} is invoked. The promise holder alone cannot serve this
+   * purpose: `drain()` is evaluated before its promise is stored, and it runs as far as
+   * its first suspension, so an entry enqueued from inside that stretch would see no
+   * active drain and start a second one.
+   */
+  const running = new Map<'active', true>();
 
   /**
    * Single-key holder for the active drain, avoiding a function-root `let`.
@@ -143,68 +166,77 @@ export function createSerialRequestQueue(
   const draining = new Map<'active', Promise<void>>();
 
   /**
-   * Tests whether this entry was cancelled since it was accepted.
+   * Failure that ended a drain, rethrown from {@link SerialRequestQueue.idle}.
    *
-   * @param id - Identity to test
-   *
-   * @returns Whether a cancellation named this entry
+   * Held rather than left on the drain promise so a rejection cannot go unhandled while
+   * the read loop is still running.
    */
-  function isCancelled(id: QueuedId,): boolean {
-    if (id === UNCANCELLABLE)
-      return false;
-    return cancelled.has(id,);
-  }
+  const failure = new Map<'error', unknown>();
 
   /**
    * Forgets one entry's bookkeeping once it can no longer be cancelled.
    *
-   * Dropping the id from both sets is what keeps them bounded by the number of entries in
-   * flight rather than by everything this connection has ever handled.
+   * Keeps both structures bounded by the number of entries in flight rather than by
+   * everything this connection has ever handled.
    *
-   * @param id - Identity to release
+   * @param entry - Entry that has settled or been dropped
    */
-  function release(id: QueuedId,): void {
-    if (id === UNCANCELLABLE)
+  function release(entry: QueuedEntry,): void {
+    cancelled.delete(entry.ticket,);
+    if (entry.id === UNCANCELLABLE)
       return;
-    live.delete(id,);
-    cancelled.delete(id,);
+    /**
+     * Tickets still outstanding under this entry's id.
+     */
+    const siblings = liveTickets.get(entry.id,);
+    if (siblings === undefined)
+      return;
+    siblings.delete(entry.ticket,);
+    if (siblings.size === 0)
+      liveTickets.delete(entry.id,);
   }
 
   /**
    * Runs one entry and writes its frame unless cancellation overtook it.
    *
+   * A producer is expected to answer its own failures with an error frame; one that throws
+   * anyway would leave its request unanswered forever, so the failure ends the drain rather
+   * than being logged and stepped over. A write failure ends it for the same reason: the
+   * frame is already lost and the stream it was lost on cannot carry a report of that.
+   *
    * @param entry - Entry reaching the front of the queue
    *
    * @mutates entry - Invokes this entry's producer, which dispatches to a tool handler.
+   *
+   * @throws Whatever a producer or the write sink threw
    */
   async function settle(entry: QueuedEntry,): Promise<void> {
     // Cancelled before reaching the front: never dispatched at all, which is the one
     // case where processing genuinely ceases rather than merely going unreported.
-    if (isCancelled(entry.id,)) {
-      release(entry.id,);
+    if (cancelled.has(entry.ticket,)) {
+      release(entry,);
       return;
     }
 
-    // A producer failure must not wedge the queue, so later entries still run.
+    // Deliberate catch-and-rethrow: release must happen on every path, and `using` cannot
+    // express it here because the disposal has to run before the failure propagates.
     try {
       /**
        * Frame this entry produced, or the sentinel when it has nothing to send.
        */
       const frame = await entry.produce();
-      if ((frame !== NO_FRAME) && (!isCancelled(entry.id,)))
+      if ((frame !== NO_FRAME) && (!cancelled.has(entry.ticket,)))
         await write(frame,);
     }
     catch (error: unknown) {
-      console.error(
-        '[mcp-stdio] queued request failed:',
-        caughtValueText(error,),
-      );
+      release(entry,);
+      throw error;
     }
-    release(entry.id,);
+    release(entry,);
   }
 
   /**
-   * Runs queued entries in order until none remain, taking each from the waiting list.
+   * Runs queued entries in order until none remain, removing each from the waiting list.
    */
   async function drain(): Promise<void> {
     /**
@@ -212,6 +244,7 @@ export function createSerialRequestQueue(
      */
     using _drainCleanup = {
       [Symbol.dispose](): void {
+        running.delete('active',);
         draining.delete('active',);
       },
     };
@@ -230,31 +263,101 @@ export function createSerialRequestQueue(
   /**
    * Starts a drain when none is running, leaving an active one to pick up new entries.
    *
-   * Recording the active drain is what lets {@link SerialRequestQueue.idle} await it.
+   * Records the failure rather than letting the drain promise reject on its own, so a
+   * rejection cannot go unobserved while the read loop is still consuming stdin.
+   *
+   * Publishes the active marker before any drain code runs.
    */
   function startDraining(): void {
-    if (draining.has('active',))
+    if (running.has('active',))
       return;
+    running.set(
+      'active',
+      true,
+    );
     draining.set(
       'active',
-      drain(),
+      recordFailure(),
     );
   }
 
+  /**
+   * Runs a drain, storing whatever ended it for {@link SerialRequestQueue.idle} to rethrow.
+   */
+  async function recordFailure(): Promise<void> {
+    // Deliberate catch-and-store: rethrowing here would surface as an unhandled rejection
+    // long before `idle` is awaited.
+    try {
+      await drain();
+    }
+    catch (error: unknown) {
+      console.error(
+        '[mcp-stdio] request queue stopped:',
+        caughtValueText(error,),
+      );
+      failure.set(
+        'error',
+        error,
+      );
+    }
+  }
+
   return {
-    enqueue(entry,): void {
-      if (entry.id !== UNCANCELLABLE)
-        live.add(entry.id,);
-      waiting.push(entry,);
+    enqueue({
+      id,
+      produce,
+    },): void {
+      tickets.issued += 1;
+      /**
+       * This entry's identity, distinct from the id even when a client repeats one.
+       */
+      const ticket = tickets.issued;
+      if (id !== UNCANCELLABLE) {
+        /**
+         * Tickets already outstanding under this id, created on first use.
+         */
+        const siblings = liveTickets.get(id,) ?? new Set<number>();
+        siblings.add(ticket,);
+        liveTickets.set(
+          id,
+          siblings,
+        );
+      }
+      waiting.push({
+        ticket,
+        id,
+        produce,
+      },);
       startDraining();
     },
 
     cancel({ id, },): boolean {
+      /**
+       * Tickets this cancellation names.
+       */
+      const targets = liveTickets.get(id,);
       // A cancellation for an id that never arrived, or already settled, is expected
       // rather than exceptional: the schema allows one to arrive after completion.
-      if (!live.has(id,))
+      if (targets === undefined)
         return false;
-      cancelled.add(id,);
+      for (const ticket of targets)
+        cancelled.add(ticket,);
+
+      // Dropping cancelled entries here rather than skipping them at the front releases
+      // whatever their producers captured immediately, which matters when the running
+      // entry is a tool that takes half an hour.
+      /**
+       * Entries still waiting that this cancellation did not name.
+       */
+      const survivors = waiting.filter(function isUncancelled(entry,): boolean {
+        return !cancelled.has(entry.ticket,);
+      },);
+      for (const entry of waiting)
+        if (cancelled.has(entry.ticket,))
+          release(entry,);
+      waiting.length = 0;
+      for (const entry of survivors)
+        waiting.push(entry,);
       return true;
     },
 
@@ -263,9 +366,16 @@ export function createSerialRequestQueue(
        * Active drain, if one is running.
        */
       const active = draining.get('active',);
-      if (active === undefined)
+      if (active !== undefined)
+        await active;
+      if (!failure.has('error',))
         return;
-      await active;
+      /**
+       * Failure that ended the drain, cleared so a later call reports a fresh one.
+       */
+      const error = failure.get('error',);
+      failure.delete('error',);
+      throw error;
     },
   };
 }

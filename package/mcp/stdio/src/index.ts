@@ -66,6 +66,7 @@ export {
 } from './server-protocol-error.ts';
 export { isPlainObject, } from './plain-object.ts';
 export {
+  strictArguments,
   TOOL_ARGUMENTS_VALID,
   type ToolArgumentsSchema,
   ToolSchemaError,
@@ -90,6 +91,12 @@ export {
 } from './server-types.ts';
 export { createMcpServer, } from './server.ts';
 export { readLines, } from './line-reader.ts';
+export {
+  createSerialRequestQueue,
+  NO_FRAME,
+  type SerialRequestQueue,
+  UNCANCELLABLE,
+} from './transport-queue.ts';
 export {
   processStdoutWriter,
   serve,

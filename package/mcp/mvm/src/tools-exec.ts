@@ -4,10 +4,9 @@
  */
 import {
   defineTool,
+  strictArguments,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
-
-import * as v from 'valibot';
 
 import {
   BACKEND_ARGUMENT,
@@ -35,7 +34,7 @@ export const execTool: ToolEntry = defineTool({
   entry: {
     description:
       'Runs a shell command inside a named VM and returns stdout, stderr, and exit code. libvirt uses the QEMU guest agent (bash for Linux, PowerShell for Windows); hetzner runs it in the remote login shell over SSH.',
-    schema: v.strictObject({
+    schema: strictArguments({
       name: requiredString('VM name to execute in',),
       command: requiredString(
         'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
@@ -84,7 +83,7 @@ export const runTool: ToolEntry = defineTool({
   entry: {
     description:
       'Creates an ephemeral VM, runs a shell command inside it, then destroys the VM. Returns stdout, stderr, and exit code. Optionally clones from an existing VM instead of creating fresh. Runs on the selected backend.',
-    schema: v.strictObject({
+    schema: strictArguments({
       command: requiredString(
         'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
       ),

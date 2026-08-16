@@ -7,6 +7,7 @@ import {
 } from '@valibot/to-json-schema';
 import * as v from 'valibot';
 
+import { isPlainObject, } from './plain-object.ts';
 import type { ToolInputSchema, } from './protocol-tool.ts';
 
 //region Schema vocabulary
@@ -19,6 +20,43 @@ import type { ToolInputSchema, } from './protocol-tool.ts';
  * separately is what lets an advertised contract drift away from the one enforced.
  */
 export type ToolArgumentsSchema = v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>;
+
+/**
+ * Builds a strict argument object that rejects every key it does not declare.
+ *
+ * Prefer this over `v.strictObject` directly. Valibot decides whether a key is declared
+ * with `key in entries`, and a plain entries object inherits from `Object.prototype`, so
+ * `constructor`, `__proto__`, `toString`, and their siblings test as declared and pass
+ * validation. Measured against `valibot@1.4.2`: `{ name, constructor }` satisfies a strict
+ * schema declaring only `name`. A null-prototype entries object removes the inherited
+ * names, so those keys are refused like any other undeclared one.
+ *
+ * That matters beyond tidiness: the advertised schema carries `additionalProperties:
+ * false`, so a client validating locally would reject what this server accepted, and the
+ * gate hands handlers the original object, leaving the undeclared key observable.
+ *
+ * @param entries - Argument schemas keyed by argument name
+ *
+ * @returns Strict object schema refusing undeclared keys, inherited names included
+ *
+ * @example
+ * ```ts
+ * strictArguments({ name: v.string() });
+ * ```
+ */
+export function strictArguments<const TEntries extends v.ObjectEntries,>(
+  entries: TEntries,
+): v.StrictObjectSchema<TEntries, undefined> {
+  /**
+   * Same entries on a prototype-free object, so `key in entries` sees only declared names.
+   */
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.assign returns any through its spread overload; the value is the entries argument with its prototype removed
+  const bareEntries = Object.assign(
+    Object.create(null,),
+    entries,
+  ) as TEntries;
+  return v.strictObject(bareEntries,);
+}
 
 /**
  * Returned by {@link validateToolArguments} when arguments satisfy the tool's schema.
@@ -116,6 +154,31 @@ export function toolInputSchema(
     throw new ToolSchemaError(
       `Tool "${toolName}" declares arguments of type "${String(rootType,)}", but MCP requires an object root`,
     );
+  }
+  // An absent root type means a union. Restoring `object` over branches that are not all
+  // objects would advertise a schema nothing can satisfy: the value would have to be an
+  // object and also a string. Rejecting here beats shipping an uncallable tool.
+  if (rootType === undefined) {
+    /**
+     * Union branches the converter produced, absent when the schema is not a union.
+     */
+    const branches = converted.anyOf ?? [];
+    /**
+     * Refusal shared by both ways a union can fail to admit an object root.
+     */
+    const notAllObjects = new ToolSchemaError(
+      `Tool "${toolName}" declares a union whose branches are not all objects, which no object-rooted argument schema can satisfy`,
+    );
+    if (branches.length === 0)
+      throw notAllObjects;
+    // Element binding rather than a callback parameter: provenance from the converter's
+    // own types does not survive a callback parameter, the gap tracked as #427.
+    for (const branch of branches) {
+      if (!isPlainObject(branch,))
+        throw notAllObjects;
+      if (branch.type !== ROOT_TYPE)
+        throw notAllObjects;
+    }
   }
 
   /**

@@ -4,10 +4,9 @@
  */
 import {
   defineTool,
+  strictArguments,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
-
-import * as v from 'valibot';
 
 import {
   BACKEND_ARGUMENT,
@@ -31,7 +30,7 @@ export const pushTool: ToolEntry = defineTool({
   entry: {
     description:
       'Pushes a file from the host filesystem into a running VM. libvirt writes via the virtiofs shared mount; hetzner copies to the given absolute remote path over SCP.',
-    schema: v.strictObject({
+    schema: strictArguments({
       name: requiredString('VM name to push to',),
       hostPath: requiredString('Absolute or relative path on the host to read from',),
       guestPath: requiredString('Absolute path inside the guest to write to',),
@@ -81,7 +80,7 @@ export const pullTool: ToolEntry = defineTool({
   entry: {
     description:
       'Pulls a file from a running VM to the host filesystem. libvirt reads via the virtiofs shared mount; hetzner copies from the given absolute remote path over SCP.',
-    schema: v.strictObject({
+    schema: strictArguments({
       name: requiredString('VM name to pull from',),
       guestPath: requiredString('Absolute path inside the guest to read from',),
       hostPath: requiredString('Absolute or relative path on the host to write to',),

@@ -4,6 +4,7 @@
  */
 import {
   defineTool,
+  strictArguments,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
@@ -35,7 +36,7 @@ export const createTool: ToolEntry = defineTool({
   entry: {
     description:
       'Creates and starts a new VM on the selected backend. libvirt supports ubuntu (default), fedora, alpine, windows, or a custom template name; hetzner supports ubuntu/debian/fedora/rocky/centos/alma or a literal Hetzner image slug. Windows libvirt VMs take 15-30 minutes on first creation. When `from` is provided, clones from that existing VM instead. `server_type` and `location` apply to the hetzner backend only.',
-    schema: v.strictObject({
+    schema: strictArguments({
       name: requiredString(
         'VM name (alphanumeric, hyphens, underscores; hetzner additionally forbids underscores)',
       ),
@@ -122,11 +123,11 @@ export const destroyTool: ToolEntry = defineTool({
     // states the rule rather than reporting a union mismatch.
     schema: v.union(
       [
-        v.strictObject({
+        strictArguments({
           name: requiredString('VM name to destroy (mutually exclusive with all)',),
           backend: BACKEND_ARGUMENT,
         },),
-        v.strictObject({
+        strictArguments({
           all: v.pipe(
             v.literal(true,),
             v.description('Destroy every managed VM (mutually exclusive with name)',),

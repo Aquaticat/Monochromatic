@@ -28,7 +28,7 @@ import {
  *
  * @example
  * ```ts
- * v.strictObject({ backend: BACKEND_ARGUMENT });
+ * strictArguments({ backend: BACKEND_ARGUMENT });
  * ```
  */
 export const BACKEND_ARGUMENT: OptionalDescribedString = optionalString(

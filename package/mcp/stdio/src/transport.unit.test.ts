@@ -6,8 +6,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
+  createSerialRequestQueue,
   type DispatchResult,
   JSON_RPC_INTERNAL_ERROR,
   JSON_RPC_INVALID_REQUEST,
@@ -16,8 +18,10 @@ import {
   type JsonRpcOutbound,
   type McpServerHandle,
   NO_RESPONSE,
+  NO_FRAME,
   processStdoutWriter,
   serve,
+  UNCANCELLABLE,
   type StdoutWriter,
 } from '@monochromatic-dev/mcp-stdio';
 
@@ -470,6 +474,56 @@ await describe({
       },
     },),
     it({
+      name: 'answers a request whose dispatch threw instead of leaving it unanswered',
+      fn: async () => {
+        /** Server whose dispatch rejects rather than returning a response. */
+        const server: McpServerHandle = {
+          handleMessage: () => {
+            throw new Error('dispatch exploded',);
+          },
+        };
+        const input = stdinFromMessages([requestLine(1,),],);
+        const { writer, lines, } = collectingWriter();
+
+        await serve({ server, input, output: writer, },);
+
+        // Silence here is the worst outcome available: the client waits on a reply that
+        // can never arrive, with no way to tell a slow tool from a dead one.
+        expect(lines,).toHaveLength(1,);
+        const parsed = JSON.parse(lines[0] ?? '{}',) as {
+          id: unknown;
+          error: { code: number; };
+        };
+        expect(parsed.id,).toBe(1,);
+        expect(parsed.error.code,).toBe(JSON_RPC_INTERNAL_ERROR,);
+      },
+    },),
+    it({
+      name: 'drains accepted work even when stdin fails partway',
+      fn: async () => {
+        const { server, } = recordingServer({ slowIds: [1,], },);
+        /** Stdin that yields one request, then fails as a broken pipe would. */
+        const input = {
+          async *[Symbol.asyncIterator](): AsyncGenerator<Uint8Array> {
+            yield new TextEncoder().encode(`${requestLine(1,)}\n`,);
+            throw new Error('stdin failed',);
+          },
+        };
+        const { writer, lines, } = collectingWriter();
+
+        // Deliberate catch: the failure must still propagate, but not before the reply
+        // for work already accepted has been written.
+        try {
+          await serve({ server, input, output: writer, },);
+        }
+        catch (error: unknown) {
+          expect(caughtValueText(error,),).toContain('stdin failed',);
+        }
+
+        expect(writtenIds(lines,),).toEqual([1,],);
+      },
+    },),
+    it({
       name: 'continues processing after encountering invalid JSON',
       fn: async () => {
         const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
@@ -490,3 +544,114 @@ await describe({
 },);
 
 //endregion serve
+
+//region createSerialRequestQueue; ordering, reentrancy, and cancellation bookkeeping
+
+await describe({
+  name: createSerialRequestQueue.name,
+  children: [
+    it({
+      name: 'runs one drain when a producer enqueues during the first producer call',
+      fn: async () => {
+        /** Frames written, in order. */
+        const written: string[] = [];
+        const queue = createSerialRequestQueue({
+          write: async (frame: string,) => {
+            written.push(frame,);
+            await wait(0,);
+          },
+        },);
+
+        queue.enqueue({
+          id: 1,
+          produce: () => {
+            // Reentrant enqueue before the first suspension. The active-drain marker is
+            // published before any drain code runs, so this must join the running drain
+            // rather than start a second one racing it.
+            queue.enqueue({
+              id: 2,
+              produce: () => Promise.resolve('second',),
+            },);
+            return Promise.resolve('first',);
+          },
+        },);
+
+        await queue.idle();
+
+        expect(written,).toEqual(['first', 'second',],);
+      },
+    },),
+    it({
+      name: 'keeps two requests sharing one id independently cancellable',
+      fn: async () => {
+        /** Frames written, in order. */
+        const written: string[] = [];
+        const queue = createSerialRequestQueue({
+          write: (frame: string,) => {
+            written.push(frame,);
+            return Promise.resolve();
+          },
+        },);
+
+        // A client should never leave two requests outstanding under one id, but if it
+        // does, settling the first must not erase the second's cancellation state.
+        queue.enqueue({ id: 7, produce: () => Promise.resolve('a',), },);
+        queue.enqueue({ id: 7, produce: () => Promise.resolve('b',), },);
+        queue.cancel({ id: 7, },);
+
+        await queue.idle();
+
+        expect(written,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'surfaces a write failure through idle rather than resolving quietly',
+      fn: async () => {
+        const queue = createSerialRequestQueue({
+          write: () => Promise.reject(new Error('pipe closed',),),
+        },);
+        queue.enqueue({ id: 1, produce: () => Promise.resolve('frame',), },);
+
+        // Deliberate catch: a lost frame cannot be reported over the stream that lost it,
+        // so the only honest signal left is refusing to resolve as though it succeeded.
+        try {
+          await queue.idle();
+          expect('idle resolved',).toBe('idle should have thrown',);
+        }
+        catch (error: unknown) {
+          expect(caughtValueText(error,),).toContain('pipe closed',);
+        }
+      },
+    },),
+    it({
+      name: 'reports no match for a cancellation naming an unknown id',
+      fn: async () => {
+        const queue = createSerialRequestQueue({
+          write: () => Promise.resolve(),
+        },);
+        expect(queue.cancel({ id: 'never-seen', },),).toBe(false,);
+        expect(queue.cancel({ id: UNCANCELLABLE as unknown as number, },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'writes nothing for a producer yielding the no-frame sentinel',
+      fn: async () => {
+        /** Frames written, in order. */
+        const written: string[] = [];
+        const queue = createSerialRequestQueue({
+          write: (frame: string,) => {
+            written.push(frame,);
+            return Promise.resolve();
+          },
+        },);
+        queue.enqueue({ id: 1, produce: () => Promise.resolve(NO_FRAME,), },);
+
+        await queue.idle();
+
+        expect(written,).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+//endregion createSerialRequestQueue

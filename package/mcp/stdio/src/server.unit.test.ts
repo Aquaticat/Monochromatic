@@ -19,6 +19,7 @@ import {
   NO_RESPONSE,
   PROTOCOL_VERSION,
   registerTools,
+  strictArguments,
   RESULT_TYPE_COMPLETE,
   SUPPORTED_PROTOCOL_VERSIONS,
   type ToolContent,
@@ -208,6 +209,22 @@ await describe({
                 handler: () => ({ content: [], }),
               },],
             },),).toThrow('object root',);
+          },
+        },),
+        it({
+          name: 'throws at construction when a union mixes object and scalar branches',
+          fn: async () => {
+            // Restoring an object root over these branches would advertise a schema
+            // nothing can satisfy: an argument bag would have to be an object and also a
+            // string. Refusing beats shipping a tool no client can call.
+            expect(() => registerTools({
+              tools: [{
+                name: 'mixed',
+                description: 'Declares a scalar union.',
+                schema: v.union([v.string(), v.number(),],),
+                handler: () => ({ content: [], }),
+              },],
+            },),).toThrow('not all objects',);
           },
         },),
         it({
@@ -889,6 +906,43 @@ await describe({
                 // they do not declare, so passing its output would silently change what every
                 // handler receives.
                 expect(seen,).toEqual([{ text: 'hi', extra: 7, },],);
+              },
+            },),
+            it({
+              name: 'refuses an argument named after an inherited property',
+              fn: async () => {
+                /** Argument bags the handler received, if any. */
+                const seen: Record<string, unknown>[] = [];
+                const strictTool: ToolEntry = {
+                  name: 'strict',
+                  description: 'Declares only name.',
+                  schema: strictArguments({ name: v.string(), },),
+                  handler: (args: Readonly<Record<string, unknown>>,) => {
+                    seen.push({ ...args, },);
+                    return { content: [], };
+                  },
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [strictTool,],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 27,
+                    method: 'tools/call',
+                    // Parsed from text so `__proto__` lands as an own property, which an
+                    // object literal would not produce.
+                    params: JSON.parse(
+                      '{"name":"strict","arguments":{"name":"vm1","__proto__":{"polluted":true},"constructor":1}}',
+                    ) as Record<string, unknown>,
+                  },),
+                ) as JsonRpcErrorResponse;
+
+                // Valibot decides declaredness with `key in entries`, so a plain entries
+                // object would treat every Object.prototype name as declared and let these
+                // through, while the advertised schema says additionalProperties false.
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+                expect(seen,).toEqual([],);
               },
             },),
             it({

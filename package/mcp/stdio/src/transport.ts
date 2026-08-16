@@ -162,6 +162,18 @@ export async function serve(
     },
   },);
 
+  /**
+   * Drains accepted work on every exit from this function, not only a clean one.
+   *
+   * Stdin failing mid-session would otherwise abandon requests already accepted, losing
+   * their replies exactly as returning early once did.
+   */
+  await using _drainOnExit = {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await queue.idle();
+    },
+  };
+
   for await (const line of readLines(input,)) {
     if (line.trim()
       .length
@@ -248,23 +260,47 @@ export async function serve(
       id: ('id' in parsed) ? parsed.id : UNCANCELLABLE,
       async produce(): Promise<string | typeof NO_FRAME> {
         /**
-         * Dispatch result; `NO_RESPONSE` indicates a notification (no reply expected).
+         * Id this message expects echoed back, or `null` for a notification.
          */
-        const response = await server.handleMessage(parsed,);
-        if (response === NO_RESPONSE)
-          return NO_FRAME;
-        return serializeResponse({
-          response,
-          id: ('id' in parsed) ? parsed.id : null,
-        },);
+        const replyId = ('id' in parsed) ? parsed.id : null;
+        // Deliberate catch-and-return: dispatch failing without a frame would leave the
+        // client waiting on a reply that can never arrive, which is worse than reporting
+        // an internal error it can act on.
+        try {
+          /**
+           * Dispatch result; `NO_RESPONSE` indicates a notification (no reply expected).
+           */
+          const response = await server.handleMessage(parsed,);
+          if (response === NO_RESPONSE)
+            return NO_FRAME;
+          return serializeResponse({
+            response,
+            id: replyId,
+          },);
+        }
+        catch (error: unknown) {
+          console.error(
+            '[mcp-stdio] dispatch failed:',
+            error,
+          );
+          if (replyId === null)
+            return NO_FRAME;
+          return serializeResponse({
+            response: {
+              jsonrpc: '2.0',
+              id: replyId,
+              error: {
+                code: JSON_RPC_INTERNAL_ERROR,
+                message: `Dispatch failed: ${caughtValueText(error,)}`,
+              },
+            },
+            id: replyId,
+          },);
+        }
       },
     },);
   }
 
-  // Stdin closing means the client is done sending, not that the server is done replying.
-  // Returning here without draining would strand queued work and drop its frames, which is
-  // the same class of loss as discarding backpressure.
-  await queue.idle();
 }
 
 //endregion
