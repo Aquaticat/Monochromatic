@@ -21,6 +21,8 @@ Super fun LED segmented buttons use one connected machined backplate even when c
 Compose packs content-width caps into rows,
 but one rounded plate always fills the complete available width and combined row height.
 Unused row width remains plate material rather than becoming control width or a separate row island.
+In light mode,
+the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
 Cap end-corner ownership still follows each packed row,
 and `placeRelative` preserves cap order in RTL.
 Active-cap legend text is always white,

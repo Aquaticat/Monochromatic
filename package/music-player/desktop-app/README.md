@@ -395,6 +395,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    unused row width remains transparent and unframed.
    LED caps remain content-width,
    while their shared backplate always fills the available page-control width.
+   In the light scene,
+   the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
    The choice applies immediately and persists across launches.
    Each wide page-selector FlexboxLayout pins `align-content` and
   `cross-axis-alignment` to start (both default to stretch),

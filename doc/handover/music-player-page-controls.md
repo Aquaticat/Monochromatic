@@ -32,20 +32,25 @@ Keep this file current after each implementation or visual-verification step.
 - Chromium geometry uses Chromium logical metrics rather than screenshot device pixels.
 - Chromium active-tab shoulders must visibly extend outside the active tab's content container.
 - LED hardware supports distinct dark and light scenes while retaining identical inactive-cap pigments.
+- In the light scene,
+  the full-width backplate must be visibly lighter than the `#eceef1` page ground.
 - Selected LED color is derived from the runtime accent.
   The reference purple demonstrates state and material behavior,
   not a literal pigment.
 - Wrapped LED rows remain one connected machined backplate.
-  One explicit outline follows every content-width row extent and crosses each 8-unit vertical channel.
-  Independently rounded or overlapping row plates are forbidden.
+  Caps retain content width and wrap only between whole controls,
+  but one rounded plate always fills the complete available width and combined row height.
+  Independently rounded,
+  overlapping,
+  or content-width row-island plates are forbidden.
 - Active LED legend text is always white in both ambient scenes.
 - Android's largest dark-mode background is always `#000000`,
   independent of page-control style.
 - Screenshot-driven corrections require measured,
   matching-scale side-by-side renders.
 - Final interactive launches are limited to this machine and the requester-designated Android target.
-  The requester disconnected Pixel 6 serial `1C171FDF600KWW` and authorized the local
-  `Pixel_9_Pro_Fold` AVD for current verification.
+  Pixel 6 serial `1C171FDF600KWW` is connected and is the current authorized target.
+  Do not start an Android emulator for this verification.
   The requester performs final visual approval.
 
 ## Stable persisted mapping
@@ -97,12 +102,14 @@ and wrapped-row shoulders have been verified.
 
 LED controls have been rebuilt on both platforms but still await requester approval.
 Android measures one-line legends first,
-greedily packs their actual content widths,
-then draws one `GenericShape` from all row extents behind independent 48-unit targets.
-The path mirrors in RTL so shorter wrapped rows stay anchored to the physical right edge.
-Slint reports final `FlexboxLayout` cap rectangles through `LedPlateGeometry`.
-Rust groups those rectangles by row and returns one SVG outline with rounded transitions on both physical edges.
-No platform stacks or overlaps independent row plates.
+greedily packs actual content-width caps,
+then draws one rounded plate across the complete available width behind independent 48-unit targets.
+Slint paints the same full-width rounded plate directly from control bounds.
+It reports final `FlexboxLayout` cap rectangles through `LedRowGeometry` only so Rust can classify measured first and
+last caps for exposed 9-unit corners.
+No platform stacks,
+overlaps,
+or ends the plate at a partially filled row.
 Both implementations use 8-unit margins and channels,
 44-unit caps,
 9-unit exposed corners,
@@ -140,7 +147,10 @@ The updated archive is authoritative over all earlier loose downloads:
 Required source values include dark ground `#000000`,
 dark plate `#111111`,
 light ground `#eceef1`,
-light plate `#c4c6ca`,
+and source light plate `#c4c6ca`.
+The requester superseded the source light-plate pigment:
+the application uses `#f7f8fa` so the plate is visibly lighter than the ground.
+Other required source values include
 1 logical-unit selected clearance,
 a 44-unit cap,
 an 8-unit plate margin and channel,
@@ -175,6 +185,9 @@ and a 1-unit contour.
 ## Main implementation files
 
 - `package/music-player/desktop-app/ui/app.slint`
+- `package/music-player/desktop-app/src/ui_led_rows.rs`
+- `package/music-player/desktop-app/src/ui_led_rows_tests.rs`
+- `package/music-player/desktop-app/src/ui_binding_tests.rs`
 - `package/music-player/desktop-app/src/ui_page_style.rs`
 - `package/music-player/desktop-app/src/session.rs`
 - `package/music-player/desktop-app/src/session_tests.rs`
@@ -248,10 +261,20 @@ LED implementation and reference corrections are:
    and revised material layers
 - `08c131258`:
    content-width Android text probe and regression tests
+- `b42adecd4`:
+   measured stepped one-piece backplates,
+   now superseded by the full-width requirement
+- `b848c7c60`,
+  `3ce02afcf`,
+  and `75dbe0c2d`:
+   deferred desktop row reporting and resize lifecycle guards
+- `f17745ec2` and `19a0bdf63`:
+   full-width rounded backplates on Android and desktop,
+   with measured row reports retained only for cap corners
 
 Current scoped Chromium implementation commit is
 `95dcbff91`.
-The rebuilt LED implementation awaits requester approval.
+The rebuilt full-width LED implementation awaits requester approval.
 Unrelated commits are interleaved in history,
 so inspect scoped paths rather than assuming a contiguous feature branch.
 
@@ -293,37 +316,37 @@ Rejected LED captures and comparisons remain useful as before-state evidence:
 - `/var/home/user/temp/agent/music-player-chromium-feet-render/package/music-player/desktop-app/target/led-buttons-reference-side-by-side.png`
 - `/var/home/user/temp/agent/music-player-android-led-final.png`
 
-The one-piece desktop redesign passes Slint lint,
+The full-width desktop redesign passes Slint lint,
 Rust lint,
 Cargo check,
-and all 90 desktop tests.
-Its geometry tests cover incomplete reports,
+and all 86 desktop tests.
+Its row tests cover incomplete reports,
 callback reordering,
 stale same-count generations,
 empty generations,
-single-row paths,
-inward and outward width changes,
-equal-width rows,
-and right-aligned row transitions.
-The one-piece Android redesign passes unit tests,
+shifted origins,
+measured edge ownership,
+and full-width plate size before and after resize.
+The full-width Android redesign passes unit tests,
 Detekt,
-and Android lint.
+Android lint,
+and release assembly.
 Its pure tests cover row packing,
 content-width caps,
-complete plate height,
-and LTR and RTL coordinate mapping.
-Release builds and post-redesign visual captures remain pending.
+and complete multi-row plate height.
 
-The release was installed on `Pixel_9_Pro_Fold` AVD serial `emulator-5554`.
-UI Automator verified a content-width shared plate at `[25,484][1477,601]`,
-with six non-overlapping 48-unit targets from `[42,496][223,595]` through `[1298,496][1460,595]`.
-The state-verified content-width capture before connected-row correction is
-`/var/home/user/temp/agent/music-player-avd-led-content-width-dark.png`.
-It is superseded because separate wrapped-row islands are now rejected.
-Desktop dark and light reference-label renders are in
-`/var/home/user/temp/agent/music-player-led-shared-plate-render/package/music-player/desktop-app/target/`.
-These establish implementation behavior,
-not requester visual approval.
+The release was installed only on connected Pixel 6 serial `1C171FDF600KWW`.
+The dark capture shows one plate spanning approximately `x=27` to `x=1052` on the `1080px` display while shorter
+cap rows remain content-width.
+The screen corner is exactly `#000000`.
+The first light full-width capture exposed a darker-than-ground plate and is rejected before-state evidence.
+Current accepted Android geometry artifact is:
+
+- `/home/user/temp/agent/music-player-pixel6-led-full-width-dark.png`
+
+A new light capture with `#f7f8fa` plate paint remains pending.
+Earlier AVD and stepped-outline captures are superseded before-state evidence only.
+Desktop release capture and requester visual approval remain pending.
 
 ## Working-tree and process state
 
