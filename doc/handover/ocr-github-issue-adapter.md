@@ -177,12 +177,16 @@ Non-interactive mode uses an explicit authority ladder:
 - `--apply --non-security-only` creates eligible non-security issues and withholds security-gated findings;
 - `--apply --all` includes security-gated issues and explicitly represents that they are safe for public disclosure.
 
-The exact boundary of `security-gated` remains to be settled.
-The prior fail-closed recommendation treated the `security` category,
-`other`,
+A finding is security-gated only when its normalized OCR category is exactly `security`.
+No content scanner,
+secret detector,
+severity value,
 missing metadata,
-`critical` severity,
-and secret or security signals as restricted.
+or other category may place a finding in the security gate.
+Consequently,
+`--non-security-only` excludes exactly the `security` category,
+and `--all` adds exactly that category to otherwise eligible publication.
+Handling `other` and missing category metadata remains a separate decision.
 
 The publication boundary also requires that:
 
@@ -342,7 +346,12 @@ in dependency order:
 5. Security disclosure and quarantine:
    security-gated findings use a separate red and text-marked interactive picker.
    Each selected security finding requires an explicit confirmation with no default.
-   The exact security-gate boundary,
+   The security gate contains only findings whose normalized OCR category is exactly `security`.
+   Content signals,
+   severity,
+   `other`,
+   and missing category metadata do not enter that gate.
+   The publication policy for `other` and missing metadata,
    where findings withheld from publication live,
    and how users inspect them remain open.
 6. Repository selection:
@@ -385,8 +394,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about which OCR metadata and content signals place a finding
-behind the security disclosure gate.
+Ask the next dependent design question about publication treatment for findings categorized as `other`
+or missing category metadata.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -457,5 +466,10 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   clarified that security-classified findings may document remediated or non-exploitable concerns;
   the tool must explain disclosure semantics in every relevant interface.
+- 2026-08-16:
+  limited the security gate to normalized OCR category `security` only;
+  content signals,
+  severity,
+  and classification uncertainty do not enter it.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
