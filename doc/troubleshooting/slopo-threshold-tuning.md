@@ -129,8 +129,11 @@ The repository already categorizes comparable tiny fixer matches under
 
 Verified against:
 
-- installed Slopo `0.4.0`, Python `3.14.6`, and SQLite `3.51.2`;
-- upstream tag `v0.4.0`, commit `9b6296f2a6ab5e10cfdae7d6ed521f9bf3cb79fa`;
+- installed Slopo `0.4.0`,
+   Python `3.14.6`,
+   and SQLite `3.51.2`;
+- upstream tag `v0.4.0`,
+   commit `9b6296f2a6ab5e10cfdae7d6ed521f9bf3cb79fa`;
 - copied repository index containing `8,528` code units and `8,309` embedded units;
 - repository source and reports as of `2026-08-16`.
 
@@ -165,16 +168,21 @@ slopo --config /path/to/throwaway-config.yaml analyze
 
 These reports demonstrate that the low-score band contains both incidental scaffolding and substantive duplication:
 
-- `0.962768257`, block-body opening and closing fixer callbacks:
+- `0.962768257`,
+   block-body opening and closing fixer callbacks:
   incidental framework shape;
-- `0.964223504`, duplicate `resolveAddressFamily` implementations in
+- `0.964223504`,
+   duplicate `resolveAddressFamily` implementations in
   `resolve_hosts.ts` and `resolve_storagebox_hosts.ts`:
   substantive shared behavior;
-- `0.960972667`, duplicate checkbox and radio question CSS builders:
+- `0.960972667`,
+   duplicate checkbox and radio question CSS builders:
   substantive shared styling;
-- `0.947156966`, duplicate attached-comment scans in `build-comments.ts` and `comments.ts`:
+- `0.947156966`,
+   duplicate attached-comment scans in `build-comments.ts` and `comments.ts`:
   substantive shared traversal;
-- `0.940766573`, parallel JSON HTTP clients in `client-http.ts` and `exa-http.ts`:
+- `0.940766573`,
+   parallel JSON HTTP clients in `client-http.ts` and `exa-http.ts`:
   substantive transport behavior.
 
 ### Suppressed at a `0.97` threshold
@@ -249,16 +257,24 @@ It would add a shallow interface while coupling opening and closing boundary pol
 
 ### Upstream filing decision
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?**
+    No.
    Both threshold behavior and hash-based dismissal are documented Slopo workflows.
-2. **Can upstream fix it?** No defect was identified.
+2. **Can upstream fix it?**
+    No defect was identified.
    A semantic refactoring verdict cannot be derived from cosine similarity alone.
-3. **Are they supporting this use case?** Yes.
+3. **Are they supporting this use case?**
+    Yes.
    `README.md:89-94` explicitly expects reviewers to dismiss non-actionable clusters by hash.
-4. **Would the repository welcome a contribution?** No restriction was found,
-   but the repository contains no `CONTRIBUTING.md`, issue template, or pull request template.
-5. **Will they likely fix it?** Not applicable because there is no defect or missing documented mechanism.
-6. **Have we prototyped a minimal fix?** Not applicable because constraint one fails.
+4. **Would the repository welcome a contribution?**
+    No restriction was found,
+   but the repository contains no `CONTRIBUTING.md`,
+    issue template,
+    or pull request template.
+5. **Will they likely fix it?**
+    Not applicable because there is no defect or missing documented mechanism.
+6. **Have we prototyped a minimal fix?**
+    Not applicable because constraint one fails.
 
 No matching threshold or reranking issue or pull request was found in open or closed tracker searches on
 `2026-08-16`.
