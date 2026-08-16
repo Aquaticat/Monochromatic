@@ -93,6 +93,13 @@ export {
   runCoverageStage,
 } from './coverage-stage.ts';
 export {
+  type FidelityBallotRead,
+  type FidelityDirection,
+  type FidelityOutcome,
+  type FidelityTrial,
+  runFidelityTrial,
+} from './judge-fidelity.ts';
+export {
   type CoverageVerdict,
   judgeCoverage,
 } from './coverage-verdict.ts';
