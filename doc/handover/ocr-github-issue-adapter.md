@@ -100,6 +100,11 @@ Providing both contradictory mode flags is also an error.
 Non-interactive mode must never prompt,
 regardless of TTY detection.
 A missing required non-interactive input or decision is an error rather than an invitation to prompt.
+Without `--apply`,
+non-interactive mode validates and previews proposed issue creation without GitHub mutations.
+`--non-interactive --apply` explicitly authorizes creation.
+`--apply` is invalid in interactive mode,
+which uses its explicit post-selection confirmation as the mutation boundary.
 
 No mode may consume piped standard input.
 The user explicitly rejected pipes for this adapter.
@@ -300,10 +305,11 @@ in dependency order:
    `--interactive` or `-i`,
    or `--non-interactive`.
    Neither or both is an error.
-   Required authority flags,
-   dry-run behavior,
-   exit codes,
-   and whether public mutation needs an explicit apply flag remain open.
+   `--non-interactive` without `--apply` validates and prints a preview without GitHub mutations.
+   `--non-interactive --apply` explicitly authorizes issue creation.
+   `--apply` is invalid with interactive mode,
+   whose post-selection yes-or-no confirmation is its mutation boundary.
+   Preview format and exit codes remain open.
 5. Security quarantine:
    where quarantined findings live,
    how users inspect them,
@@ -348,8 +354,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether non-interactive mode previews by default
-and requires an explicit apply flag before creating public issues.
+Ask the next dependent design question about whether quarantined findings block publication of every finding
+or only exclude the quarantined findings themselves.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -409,5 +415,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   updates,
   reopens,
   or automatic closure.
+- 2026-08-16:
+  settled non-interactive preview by default and required `--apply` for non-interactive issue creation.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
