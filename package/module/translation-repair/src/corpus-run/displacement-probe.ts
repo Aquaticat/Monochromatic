@@ -108,11 +108,15 @@ type PairRead = {
 /**
  * Reads one entry's two sides, or reports that it has only one.
  *
- * ONLY A CORPUS READ FAILURE IS "MISSING". An earlier version caught every
- * error here, so a permission problem, a decoding fault or a broken git
- * invocation all read as an entry that simply lacks a translation, and the
- * corpus-wide counts would quietly shrink. Anything that is not a corpus read
- * failure is rethrown.
+ * ONLY A CORPUS READ FAILURE IS "MISSING", which narrows the old catch without
+ * closing it. An earlier version caught EVERY error here, so a decoding fault or
+ * a programming mistake read as an entry that simply lacks a translation, and the
+ * corpus-wide counts would quietly shrink. Those now propagate.
+ *
+ * WHAT IT STILL CONFLATES: `CorpusReadError` is thrown whenever git exits
+ * non-zero, so an absent path, a bad pin, a permission problem and a broken git
+ * invocation are one class here. Telling them apart needs a missing-object
+ * discriminant on the error rather than a wider catch, which is `#432`.
  *
  * @param entryId - corpus entry to read
  *
@@ -247,7 +251,10 @@ type CorpusTotals = {
   readonly fellBack: number;
 
   /**
-   * Slices whose neighbour accounts for their surplus.
+   * ADJACENCIES, not slices: one high slice beside two qualifying neighbours
+   * counts twice, and one donor can account for two separate highs. Anything
+   * reported as a share of slices has to be counted as unique slices instead,
+   * which is what the handover does.
    */
   readonly relocationCandidates: number;
 

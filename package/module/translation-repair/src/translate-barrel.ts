@@ -117,7 +117,6 @@ export { sharesMedia, } from './corpus-run/transcription-suspect.ts';
 export {
   CORPUS_REFERENCE_EXPANSION,
   documentBaseline,
-  median,
   MIN_RATIO_SOURCE_CHARS,
   PLAUSIBLE_BASELINE_MAX,
   PLAUSIBLE_BASELINE_MIN,

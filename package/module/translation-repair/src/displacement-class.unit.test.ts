@@ -24,7 +24,6 @@ import {
   classifyDisplacement,
   CORPUS_REFERENCE_EXPANSION,
   documentBaseline,
-  median,
   type SliceSize,
   sliceRatios,
 } from '../dist/final/node/index.mjs';
@@ -57,35 +56,6 @@ function at(
     targetChars: Math.round(sourceChars * ratio,),
   };
 }
-
-await describe({
-  name: median.name,
-  children: [
-    it({
-      name: 'takes the LOW middle on an even count, which it always documented and did not do: '
-        + 'the high middle raises any threshold derived from it and hides the anomalies a caller '
-        + 'is looking for',
-      fn: async () => {
-        expect(median({ values: [
-          1,
-          2,
-        ], },),).toBe(1,);
-        expect(median({ values: [
-          1,
-          2,
-          9,
-          10,
-        ], },),).toBe(2,);
-      },
-    },),
-    it({
-      name: 'answers zero for nothing rather than dividing by a count that is not there',
-      fn: async () => {
-        expect(median({ values: [], },),).toBe(0,);
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: sliceRatios.name,

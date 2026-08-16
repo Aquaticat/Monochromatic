@@ -17,18 +17,34 @@
 // THE THING IT IS MEANT TO DETECT: `shi_Yumiaoya` carries three untranslated
 // sections whose near-zero ratios pull its median to 0.76, which drops the
 // threshold to 1.51, which then flags two perfectly ordinary translations. A
-// document aggregate over slices that are plausibly translated at all does not
-// have that failure, and it has a second property the median lacks: relocation
-// moves text BETWEEN slices without changing either document total, so the
-// aggregate is invariant under exactly the phenomenon being detected.
+// document aggregate over slices that are plausibly translated does not have
+// that failure.
+//
+// THE AGGREGATE IS NOT FULLY INVARIANT UNDER RELOCATION EITHER, and an earlier
+// version of this comment claimed it was. A total over ALL slices would be:
+// moving text between slices leaves both document totals alone. The aggregate
+// this file computes is taken over ELIGIBLE slices, and relocation can move text
+// across that boundary. `Dethelly` is the case: its 35-character recipient is
+// excluded by the length floor while its 129-character donor is included, so the
+// baseline is lower than it would otherwise be. Measured, the ratio of deficit to
+// surplus reads 0.41 under this baseline, 0.44 leaving the pair out, and 0.51
+// over all slices. THE CONCLUSION SURVIVES ALL THREE, since the deficit is the
+// smaller side under every one, but the estimator is endogenous and the honest
+// fix is a baseline computed per adjacency with that pair excluded. Recorded on
+// `#432` with those measurements rather than changed at the same time as the
+// numbers that depend on it.
 
 /**
  * Expansion the corpus works at, used when a document cannot speak for itself.
  *
- * MEASURED, not assumed. Over the 91 complete pairs at the pinned commit, the
- * median of per-document aggregates is 2.86, with a p10 to p90 span of 1.95 to
- * 3.47. An earlier draft of this instrument said "roughly threefold" from
- * recall; the measurement moved it.
+ * MEASURED, not assumed. Over the pinned commit's 92 complete pairs, the 91 that
+ * carry any original text at all give a median per-document aggregate of 2.86,
+ * with a p10 to p90 span of 1.95 to 3.47. An earlier draft of this instrument
+ * said "roughly threefold" from recall; the measurement moved it.
+ *
+ * NINETY-ONE RATHER THAN NINETY-TWO because `XIEPT2` has both files and no
+ * source text, so it can carry no aggregate. Elsewhere this instrument counts
+ * 92, which is complete PAIRS; the two numbers measure different things.
  */
 export const CORPUS_REFERENCE_EXPANSION = 2.86;
 
@@ -102,45 +118,6 @@ export type SliceRatio = SliceSize & {
 };
 
 /**
- * Middle value of a list of numbers, taking the LOW side on an even count.
- *
- * THE LOW SIDE IS DELIBERATE AND WAS PREVIOUSLY WRONG. This function documented
- * the low side and returned the high one, so `median([1, 2, 9, 10,])` answered
- * nine rather than two. On a threshold derived from a multiple of the median
- * that bias runs the wrong way: it raises the bar and hides the anomalies the
- * caller is looking for.
- *
- * @param values - numbers to summarize
- *
- * @returns Middle value, or zero for an empty list
- *
- * @example
- * ```ts
- * const middle = median({ values: [1, 2, 9,], },);
- * ```
- */
-export function median({ values, }: { readonly values: readonly number[]; },): number {
-  if (values.length === 0)
-    return 0;
-
-  /**
-   * Values in ascending order.
-   */
-  const sorted = values.toSorted(function ascending(
-    a,
-    b,
-  ) {
-    return a - b;
-  },);
-
-  /**
-   * Middle position, low side on an even count.
-   */
-  const middle = Math.floor((sorted.length - 1) / 2,);
-  return sorted[middle] ?? 0;
-}
-
-/**
  * Reads each slice's ratio, in slice order and without dropping any.
  *
  * NOTHING IS FILTERED HERE. The old version discarded every slice under a
@@ -191,11 +168,15 @@ export function sliceRatios(
  * Expansion to read a document's slices against.
  *
  * THE AGGREGATE RATHER THAN THE MEDIAN, over slices the caller has already
- * decided are plausibly translated. Two properties matter. It weights by
- * length, so a 1300-character section counts for more than an 80-character one,
- * which a median does not. And it is INVARIANT UNDER RELOCATION: moving text
- * from one slice to its neighbour leaves both document totals unchanged, so the
- * baseline does not absorb the thing being measured.
+ * decided are plausibly translated. It weights by length, so a 1300-character
+ * section counts for more than an 80-character one, which a median does not, and
+ * it is not dragged to nothing by a section nobody translated.
+ *
+ * IT IS ONLY PARTLY INVARIANT UNDER RELOCATION. Over ALL slices it would be
+ * exactly invariant, since moving text between slices leaves both totals alone;
+ * over the ELIGIBLE ones it is not, because relocation can carry text across the
+ * eligibility boundary. The region comment gives the measured size of that
+ * effect and `#432` carries the fix.
  *
  * @param slices - slices believed to be translated
  *
