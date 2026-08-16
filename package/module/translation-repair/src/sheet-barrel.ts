@@ -43,7 +43,9 @@ export {
 export {
   type ParsedAcceptedIssue,
   type ParsedArtifact,
+  type ParsedArtifactReading,
   parseSettledArtifact,
+  readSettledArtifact,
 } from './artifact-read.ts';
 export { formatGradingSheet, } from './grading-sheet.ts';
 export {

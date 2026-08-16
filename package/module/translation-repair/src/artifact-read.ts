@@ -1,278 +1,102 @@
 import {
   ArtifactParseError,
-  requireArray,
   requireRecord,
-  requireString,
 } from './artifact-guard.ts';
 import {
-  type ArtifactChangeSets,
-  readArtifactChangeSets,
-} from './artifact-change-sets.ts';
-import { parseRecordRepair, } from './artifact-repair-read.ts';
-import type {
-  GradableClaim,
-  GradableIssue,
-  GradableRepair,
-  GradableSpan,
-} from './sample-grading.ts';
+  readArtifactSchemaVersion,
+  SETTLED_ARTIFACT_SCHEMA_VERSION,
+} from './artifact-schema-version.ts';
+import {
+  type ParsedArtifact,
+  parseSettledArtifact,
+} from './artifact-v1-read.ts';
+import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.ts';
+import type { ParsedArtifactV2, } from './corpus-run/artifact-v2-read-contract.ts';
+import { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
 
-//region Artifact reading
-// Parses a run artifact's JSON back into the accepted issues that form the
-// precision denominator. This is a MEASUREMENT INSTRUMENT, not a lenient
-// deserializer: a malformed accepted issue is surfaced loudly (thrown), never
-// skipped, because silently dropping one would shrink the accepted population
-// and bias the graded precision. Non-accepted issues (rejected, needs-human)
-// are legitimately excluded -- they are not accepted, so not in the
-// denominator. Category and severity stay plain display strings, so no
-// off-taxonomy value is ever a reason to drop an issue.
-
-/**
- * Parses one span, requiring a known side and a quoted-text string.
- *
- * @param value - the span JSON
- *
- * @param path - dotted path for the error message
- *
- * @returns The gradable span
- */
-function parseSpan(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): GradableSpan {
-  /**
-   * The span as a record.
-   */
-  const record = requireRecord({
-    value,
-    path,
-  },);
-
-  /**
-   * The claimed document side; only source and target are valid.
-   */
-  const {side} = record;
-  if ((side !== 'source') && (side !== 'target'))
-    throw new ArtifactParseError({
-      path: `${path}.side`,
-      reason: "'source' or 'target'",
-    },);
-
-  return {
-    side,
-    quotedText: requireString({
-      value: record.quotedText,
-      path: `${path}.quotedText`,
-    },),
-  };
-}
+//region Artifact dispatch
+// Choosing which generation's reader an artifact belongs to, and nothing else.
+//
+// EVERY GENERATION GETS ITS OWN READER, and this file holds none of them. A
+// single reader that tried to cover all three would have to decide, per field,
+// whether a missing value means an older file or a malformed one, which is the
+// reading that made version 1's optional fields ambiguous in the first place.
+//
+// THE RESULT IS DISCRIMINATED BY GENERATION rather than merged into one shape.
+// Version 1 answers with one status, one output and one issue list; version 2
+// has two lanes, no singular anything, and a comparison. Flattening the second
+// into the first would pick a lane, which is the question nobody has decided,
+// and a caller that cannot say which generation it is holding cannot ask a
+// question either one can answer.
 
 /**
- * Parses one member claim wrapper into its gradable claim.
- *
- * @param value - the member (aggregated-claim) JSON
- *
- * @param path - dotted path for the error message
- *
- * @returns The wrapped gradable claim
- */
-function parseMember(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): { readonly claim: GradableClaim; } {
-  /**
-   * The member as a record.
-   */
-  const member = requireRecord({
-    value,
-    path,
-  },);
-
-  /**
-   * The inner claim as a record.
-   */
-  const claim = requireRecord({
-    value: member.claim,
-    path: `${path}.claim`,
-  },);
-
-  /**
-   * The claim's anchored spans.
-   */
-  const spans = requireArray({
-    value: claim.spans,
-    path: `${path}.claim.spans`,
-  },)
-    .map(function parseSpanAt(
-      spanValue,
-      spanIndex,
-    ) {
-      return parseSpan({
-        value: spanValue,
-        path: `${path}.claim.spans[${String(spanIndex,)}]`,
-      },);
-    },);
-
-  return {
-    claim: {
-      category: requireString({
-        value: claim.category,
-        path: `${path}.claim.category`,
-      },),
-      summary: requireString({
-        value: claim.summary,
-        path: `${path}.claim.summary`,
-      },),
-      spans,
-    },
-  };
-}
-
-/**
- * Parses one accepted issue into its gradable shape.
- *
- * @param issue - the issue record (already confirmed accepted)
- *
- * @param path - dotted path for the error message
- *
- * @returns The gradable issue
- */
-function parseAcceptedIssue(
-  {
-    issue,
-    path,
-  }: {
-    readonly issue: Readonly<Record<string, unknown>>;
-    readonly path: string;
-  },
-): GradableIssue {
-  return {
-    issueId: requireString({
-      value: issue.issueId,
-      path: `${path}.issueId`,
-    },),
-    severity: requireString({
-      value: issue.severity,
-      path: `${path}.severity`,
-    },),
-    claims: requireArray({
-      value: issue.claims,
-      path: `${path}.claims`,
-    },)
-      .map(function parseMemberAt(
-        memberValue,
-        memberIndex,
-      ) {
-        return parseMember({
-          value: memberValue,
-          path: `${path}.claims[${String(memberIndex,)}]`,
-        },);
-      },),
-  };
-}
-
-/**
- * One accepted issue with whatever the run recorded about repairing it.
- *
- * Kept a wrapper rather than folded into {@link GradableIssue} so the issue
- * shape stays the thing a pipeline `AdjudicatedIssue` satisfies structurally,
- * and so repair provenance stays visibly a property of the RECORD the driver
- * built rather than of the panel's decision.
+ * One artifact, read by whichever generation's reader owns it.
  *
  * @example
  * ```ts
- * const accepted: ParsedAcceptedIssue = { issue, };
+ * const reading: ParsedArtifactReading = readSettledArtifact({ value, },);
  * ```
  */
-export type ParsedAcceptedIssue = {
+export type ParsedArtifactReading = {
   /**
-   * Accepted issue as the panel decided it.
+   * Artifact predates the schema version field, so its generation is legible
+   * only from which fields it carries.
    */
-  readonly issue: GradableIssue;
+  readonly kind: 'legacy';
 
   /**
-   * What became of its repair; absent for artifacts written before repair
-   * recording existed, which is not the same as no repair having happened.
+   * What the version 1 reader made of it.
    */
-  readonly repair?: GradableRepair;
+  readonly artifact: ParsedArtifact;
+} | {
+  /**
+   * Artifact states version 1.
+   */
+  readonly kind: 'version-1';
+
+  /**
+   * What the version 1 reader made of it.
+   */
+  readonly artifact: ParsedArtifact;
+} | {
+  /**
+   * Artifact states version 2, the two-lane generation.
+   */
+  readonly kind: 'version-2';
+
+  /**
+   * What the version 2 reader made of it, comparison recomputed.
+   */
+  readonly artifact: ParsedArtifactV2;
 };
 
 /**
- * One artifact's settled identity and its accepted issues.
+ * Reads one artifact of any generation this reader understands.
+ *
+ * ACCEPTS AN EXPLICIT VERSION 1, which is not the same as there being version 1
+ * artifacts on disk: a reader that understands a generation should read it, and
+ * how many files of it exist is a fact about one corpus rather than about the
+ * format. An unknown version is refused by the version reading itself.
+ *
+ * @param value - artifact JSON, freshly parsed and still untyped
+ *
+ * @returns Which generation it is, and what that generation's reader made of it
+ *
+ * @throws {@link ArtifactParseError} when the value is not a record, when it
+ * names a generation this reader does not know, or when the chosen reader
+ * refuses it
  *
  * @example
  * ```ts
- * const parsed: ParsedArtifact = {
- *   id: 'MushroomGuuuu',
- *   status: 'repaired',
- *   acceptedIssues: [],
- *   changeSets: { kind: 'unrecorded', },
- * };
+ * const reading = readSettledArtifact({ value: JSON.parse(text,), },);
  * ```
  */
-export type ParsedArtifact = {
-  /**
-   * Corpus entry id.
-   */
-  readonly id: string;
-
-  /**
-   * Settled status the artifact carries (repaired, unchanged, or blocked).
-   */
-  readonly status: string;
-
-  /**
-   * Every accepted issue, the precision denominator for this entry.
-   */
-  readonly acceptedIssues: readonly ParsedAcceptedIssue[];
-
-  /**
-   * Which slices the settled document changed, with its generation named.
-   *
-   * A DOCUMENT fact rather than an issue one, which is why it rides here beside
-   * the issues rather than inside them: a slice can be withdrawn while carrying
-   * no accepted issue of its own, and a run that recorded nothing is not a run
-   * that changed nothing.
-   */
-  readonly changeSets: ArtifactChangeSets;
-};
-
-/**
- * Parses a run artifact into its accepted issues. Every issue is inspected: a
- * malformed accepted issue throws {@link ArtifactParseError} rather than being
- * skipped, so the accepted population is never silently short. Non-accepted
- * issues are excluded because they are not part of the precision denominator.
- *
- * @param value - the artifact JSON, freshly parsed and still untyped
- *
- * @returns Entry id, status, accepted issues, and which slices the document
- * changed
- *
- * @throws {@link ArtifactParseError} when the artifact or an accepted issue is
- * structurally malformed, when it carries one index set without the other, or
- * when the two sets break a rule the writing lanes hold them to
- *
- * @example
- * ```ts
- * const parsed = parseSettledArtifact({
- *   value: JSON.parse(await readFile(path, 'utf8',),),
- * },);
- * ```
- */
-export function parseSettledArtifact(
+export function readSettledArtifact(
   { value, }: { readonly value: unknown; },
-): ParsedArtifact {
+): ParsedArtifactReading {
   /**
-   * The artifact as a record.
+   * Artifact as a record, read once here so the version can be looked at
+   * before any generation's reader runs.
    */
   const artifact = requireRecord({
     value,
@@ -280,90 +104,49 @@ export function parseSettledArtifact(
   },);
 
   /**
-   * Entry id, used both in the result and in nested error paths.
+   * Which generation it states, or that it states none.
    */
-  const id = requireString({
-    value: artifact.id,
-    path: 'artifact.id',
+  const reading = readArtifactSchemaVersion({
+    artifact,
+    path: 'artifact',
   },);
+  if (reading.kind === 'unversioned') {
+    return {
+      kind: 'legacy',
+      artifact: parseSettledArtifact({ value, },),
+    };
+  }
+  if (reading.version === SETTLED_ARTIFACT_SCHEMA_VERSION) {
+    return {
+      kind: 'version-1',
+      artifact: parseSettledArtifact({ value, },),
+    };
+  }
+  if (reading.version === ARTIFACT_SCHEMA_VERSION_V2) {
+    return {
+      kind: 'version-2',
+      artifact: parseSettledArtifactV2({ value, },),
+    };
+  }
 
-  /**
-   * Settled status string.
-   */
-  const status = requireString({
-    value: artifact.status,
-    path: `${id}.status`,
+  // UNREACHABLE while the version reading refuses what it does not know, and
+  // stated anyway: the day a generation is added to that list and forgotten
+  // here, this says so instead of returning a reading for the wrong one.
+  throw new ArtifactParseError({
+    path: 'artifact.artifactSchemaVersion',
+    reason: `a generation with a reader: version ${
+      String(reading.version,)
+    } is known to this build and nothing here reads it`,
   },);
-
-  /**
-   * Accepted issues gathered across every issue record.
-   */
-  const acceptedIssues: readonly ParsedAcceptedIssue[] = requireArray({
-    value: artifact.issues,
-    path: `${id}.issues`,
-  },)
-    .flatMap(function acceptedAt(
-      recordValue,
-      recordIndex,
-    ) {
-      /**
-       * The issue record wrapper at this index.
-       */
-      const record = requireRecord({
-        value: recordValue,
-        path: `${id}.issues[${String(recordIndex,)}]`,
-      },);
-
-      /**
-       * The adjudicated issue inside the record.
-       */
-      const issue = requireRecord({
-        value: record.issue,
-        path: `${id}.issues[${String(recordIndex,)}].issue`,
-      },);
-
-      /**
-       * The issue's fate; must be readable to classify it.
-       */
-      const issueStatus = requireString({
-        value: issue.status,
-        path: `${id}.issues[${String(recordIndex,)}].issue.status`,
-      },);
-
-      if (issueStatus !== 'accepted')
-        return [];
-
-      /**
-       * Repair provenance of this record, or a named absence when the artifact
-       * predates repair recording.
-       */
-      const reading = parseRecordRepair({
-        record,
-        path: `${id}.issues[${String(recordIndex,)}]`,
-      },);
-
-      return [
-        {
-          issue: parseAcceptedIssue({
-            issue,
-            path: `${id}.issues[${String(recordIndex,)}].issue`,
-          },),
-          ...(reading.kind === 'unrecorded'
-            ? {}
-            : { repair: reading.repair, }),
-        },
-      ];
-    },);
-
-  return {
-    id,
-    status,
-    acceptedIssues,
-    changeSets: readArtifactChangeSets({
-      artifact,
-      path: id,
-    },),
-  };
 }
 
-//endregion Artifact reading
+// RE-EXPORTED under the names their callers already use. The version 1 reader
+// moved to a file naming its generation; every consumer of it wanted exactly
+// what it does, and a rename would have been churn on top of a move.
+export {
+  type ParsedAcceptedIssue,
+  type ParsedArtifact,
+  parseSettledArtifact,
+} from './artifact-v1-read.ts';
+
+//endregion Artifact dispatch
