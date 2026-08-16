@@ -254,6 +254,11 @@ the normal picker and final batch summary show normal issue titles rather than f
 Before confirming each selected security finding,
 the adapter displays its complete generated title and Markdown body.
 Fallbacks and title length handling remain to be settled.
+GitHub's current REST documentation and OpenAPI schema publish no title-length maximum or counting unit;
+see
+[`doc/troubleshooting/github-issue-title-length.md`][github-issue-title-length].
+Any selected limit must therefore be described as an adapter-owned contract,
+not a documented GitHub limit.
 
 ## Settled prior findings
 
@@ -422,6 +427,14 @@ The adapter therefore applies a fixed one-minute child-process deadline to every
 with no timeout flag or configuration override.
 The workspace already invokes `gh api` from active packages and has no direct Octokit dependency.
 The user selected this boundary instead of a GitHub client library or direct authenticated HTTP.
+
+GitHub REST API documentation version 2026-03-10
+and `github/rest-api-description` commit `67c14c7efb01cdeeac0ecd8cee9fae8d7a80e2aa`
+require a Create an issue title but specify no `minLength`,
+`maxLength`,
+or counting unit.
+A community web-interface report mentions 256 characters,
+but no authorized disposable API mutation verified that undocumented boundary.
 
 The pnpm `v11.8.0` source tag resolves to commit `93458600a8498412f85316d054e033319ba31ed6`.
 Its `installing/commands/src/update/index.ts` implementation uses `checkbox` and `Separator`
@@ -707,8 +720,7 @@ in dependency order:
 
 ## Immediate next action
 
-Verify GitHub's current Issue-title limit,
-then ask how empty summaries and overlong generated titles are handled.
+Ask what title summary is used when OCR content has no meaningful line.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -871,5 +883,6 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   and 130 for forced second interrupt.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
+[github-issue-title-length]: ../troubleshooting/github-issue-title-length.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
