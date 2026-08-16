@@ -132,9 +132,45 @@ OUT {"jsonrpc":"2.0","id":0,"result":{"resultType":"complete","tools":[...8 tool
 
 ## Known gaps
 
--   Requests are served one at a time, so a long `run_in_vm` blocks the read loop
-    and `notifications/cancelled` cannot be observed while it runs.
--   `process.stdout.write` backpressure is ignored; large tool output buffers in memory.
--   Tool results carry text content only: no image, audio, resource link, or embedded resource blocks.
+Two of the four gaps recorded when this plan was written are now closed,
+ both in commit `107bd707a`.
+The remaining two are tracked as issues rather than left here,
+ so this section stays accurate as they land.
+
+### Closed
+
+-   `process.stdout.write` backpressure was ignored,
+     so large tool output buffered in memory.
+    Fixed:
+     `processStdoutWriter` now awaits `drain` whenever the stream refuses a chunk.
+    The guard test in `package/mcp/stdio/src/transport.unit.test.ts`
+    ("parks a write on a backed-up stream until it drains")
+    was proven to fail without the fix.
+    The measured failure was worse than the buffering this entry predicted:
+     `serve` could return with replies still unflushed,
+     which a process exiting on stdin close then loses outright.
+-   Tool results carried text content only.
+    Fixed:
+     `ToolContent` in `package/mcp/stdio/src/protocol-tool.ts` is now the full
+    content-block union of text,
+     image,
+     audio,
+     resource link,
+     and embedded resource.
+
+### Open
+
+-   Requests are served one at a time,
+     so a long `run_in_vm` blocks the read loop and `notifications/cancelled`
+    cannot be observed while it runs.
+    Tracked as [#433](https://github.com/Aquaticat/Monochromatic/issues/433);
+     the chosen shape is concurrent dispatch without `AbortSignal`.
 -   Advertised `inputSchema` is not validated against incoming arguments before dispatch,
-    so a missing required field still fails inside the handler.
+     so a missing required field still fails inside the handler.
+    Tracked as [#434](https://github.com/Aquaticat/Monochromatic/issues/434);
+     the chosen tool is valibot,
+     already a workspace dependency.
+
+Neither open item is built.
+`doc/handover/mcp-stdio-2026-07-28.md` gates both on a pending review that had not
+returned when this section was written.

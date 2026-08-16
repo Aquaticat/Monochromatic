@@ -469,31 +469,52 @@ without regard to whether the function implements an externally dictated interfa
      whose upstream also has no options.
     Nothing in the oxc docs or tests addresses Node stream interface implementations.
 4.  **Would the repo welcome our contribution?**
-     Not verified in this session.
-    `CONTRIBUTING.md`,
-     issue templates,
-     and recent maintainer responses in the oxc repo
-    were not read,
-     so this constraint is unproven rather than passed.
+     Yes,
+     conditionally.
+    `CONTRIBUTING.md` carries an "AI Usage Policy" section that reads
+    "We encourage the use of AI tools to assist with development",
+     subject to three conditions:
+     disclose AI usage,
+     accept responsibility for what you submit,
+     and expect that
+    "Low-quality or unreviewed AI content will be closed immediately".
+    No ban exists,
+     so the constraint passes,
+     but any filing must disclose assistance and name the
+    reproduction and source trace a human verified.
 5.  **Will they likely fix it?**
-     Unknown;
-     the upstream tracker was not searched for
-    duplicates in this session.
+     No signal in either direction,
+     which per this check's own wording passes rather than fails.
+    The tracker was searched across both open and closed state:
+     `gh search issues --repo oxc-project/oxc prefer-await-to-callbacks`,
+     the same query against `gh search prs`,
+     and the widened terms `createOnce options null` and `js plugin rule options`.
+    The nearest hit is
+    [oxc#20343](https://github.com/oxc-project/oxc/issues/20343),
+     closed,
+     reporting that the rule flags `Promise.resolve()`.
+    That is a detection false positive,
+     not a request for an allowlist option,
+     so it is not a duplicate and no additive comment belongs on it.
+    Nothing in the tracker leans against adding options to this rule.
 6.  **Have we prototyped a minimal fix compatible with their architecture?**
      No.
 
-Constraints 4,
- 5,
- and 6 are unmet,
- and the local need evaporated once the test stopped
-implementing `_write` at all,
- so **nothing is filed**.
-No draft issue is kept,
- because writing one before searching the tracker for duplicates
-and reading the contribution policy would be drafting a filing this repo's own policy
-forbids sending.
+Constraint 3 is unmet and constraint 6 is unmet,
+ so the auto-prototype trigger
+("constraints 1 through 5 hold or sorta-hold") never fires,
+ and **nothing is filed**.
+The local need evaporated independently once the test stopped implementing `_write` at all,
+ so there is no live incident to report even if the gate had opened.
+No draft issue is kept:
+ with no upstream-visible failure left on our side,
+ a draft would describe a problem we no longer have.
 A future session that genuinely needs an escape from this rule should start at
-constraint 4,
- search `gh search issues --repo oxc-project/oxc prefer-await-to-callbacks`
-across open and closed state,
- and only then decide.
+constraint 3,
+ look for oxc docs,
+ tests,
+ or examples covering rule options on ported
+`eslint-plugin-promise` rules,
+ then prototype the `from_configuration` change before drafting anything.
+The duplicate search and contribution-policy read are done and recorded here;
+ redoing them is only worthwhile if the tracker has moved.

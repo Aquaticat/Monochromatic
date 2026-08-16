@@ -94,8 +94,16 @@ Implemented:
    `outputSchema`,
    and `annotations`
 - `tools/call` with argument dispatch,
-   input validation,
-   and `structuredContent`
+   `structuredContent`,
+   and the full content-block union of text,
+   image,
+   audio,
+   resource links,
+   and embedded resources
+- `tools/call` arguments checked for shape only:
+   a non-object `arguments` is rejected with `-32602`,
+   while conformance to the tool's declared `inputSchema` is not checked
+   before dispatch
 - `resultType` on every result,
    plus `ttlMs` and `cacheScope` on the two cacheable results
 - `io.modelcontextprotocol/serverInfo` stamped into the `_meta` of every result
@@ -129,10 +137,14 @@ HTTP/SSE transport,
  completions,
  subscriptions,
  progress notifications,
- pagination cursors,
- and tool result content other than text.
+ and pagination cursors.
 Tool registries here are fixed at construction,
 so `tools/list` always returns one complete page.
+
+Requests are served one at a time,
+ so a tool that runs long blocks the read loop and
+`notifications/cancelled` cannot be observed while it runs
+([#433](https://github.com/Aquaticat/Monochromatic/issues/433)).
 
 ## Error handling
 
