@@ -705,13 +705,35 @@ SO 6.4 PERCENT OF SLICES IS THE FLOOR on how much of the replacement rate is
 layout rather than quality. A floor because the screen reads SIZE: a passage
 swapped for one of similar length reads as ordinary.
 
+CORRECTED AFTER A SECOND HAND-CHECK, and read carefully because the correction
+narrows what the number covers. The three pairs checked above all came from
+entries whose median expansion was ordinary. Four entries have a median far
+outside any plausible Chinese-to-English band, and their flagged pairs are NOT
+relocations: `shi_Yumiaoya` at median 0.76 has three UNTRANSLATED sections whose
+near-zero ratios drag the median down until two ordinary translations are
+flagged; `Zha_Ke` at median 7.51 has a letter that exists only in English;
+`noname3031`'s flagged slice is twenty-three Chinese characters, which is
+arithmetic noise. So the screen measures four things at once: relocation,
+untranslated section, content absent from the source, and noise. 6.4 percent
+remains a floor for "slices where a per-slice judge will misjudge the archive",
+which is the quantity this question needs, and it is NOT a floor for relocation
+specifically. The section "The displacement screen measures four different
+things" in `doc/handover/translation-repair.md` carries the per-slice numbers.
+
 ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges decline
 constantly, and not only over names. Across the three arms `gpt-oss-120b`
-declined 11, 11 and 12 of 16, and `Nemotron-3-Super` 11, 15 and 16 of 16, in each
+declined 9, 11 and 12 of 16, and `Nemotron-3-Super` 16, 15 and 15 of 16, in each
 case because BOTH candidates fall short of full faithfulness against the
 original: a romanised handle the archive introduced, an omitted clause, a
 softened nuance. On slices carrying any archive imperfection the effective roster
 is about four voices, not six.
+
+Those triples were previously written here as 11, 11, 12 and 11, 15, 16, which
+mixed the superseded marked-deletion arm into the sequence; both models declined
+11 in that arm, which is where both leading elevens came from. Corrected against
+the three current arms. Widening the evidence window does not move either model
+(`gpt-oss` 12, `Nemotron` 14 on the wide alteration arm), so this is a property
+of the two models rather than of the question they were asked.
 
 So the replacement rate now has a quality floor beside it AND a named systematic
 bias that has not been measured yet.
@@ -762,17 +784,34 @@ D.  Restrict replacement to slices that carry evidence of a defect, which is the
     sheets showed the critics miss most of what is wrong.
 
 E.  Widen the judged window on the slices where the archive's layout differs
-    from the original's, then re-read the replacement rate. THE FIRST HALF OF
-    THIS IS ALREADY DONE AND THE NUMBER IS BELOW; what remains is asking the
-    judges again with neighbouring source slices in evidence, and seeing whether
-    they still replace.
+    from the original's, then re-read the replacement rate. BOTH HALVES OF THIS
+    HAVE NOW RUN, and the answer is yes: widening works.
+    The fidelity trial was rerun on the same four slices with the neighbouring
+    source sections added as evidence, ground truth and damage unchanged. It went
+    from 12 of 16 to 15 OF 16. All four narrow-window misses were `Dethelly/0`
+    declines; three became correct choices, and the other three entries held at
+    12 of 12, so widening bought the flip without new failures elsewhere. The
+    picks were verified identical across the two arms, so they differ in the
+    window and nothing else.
+    The one remaining decline is the finding rather than the failure: with the
+    neighbouring Chinese visible, the roster declines because both candidates
+    omit that Sugar is a girl from Chongqing AND both add material this slice's
+    original does not carry. Both are true, and together they state the
+    relocation exactly. That is a judge correctly reporting that no per-slice
+    candidate can satisfy this slice.
+    STILL NOT MEASURED: this says the TRIAL's declines came from the window. It
+    does not say what the production REPLACEMENT rate does on flagged slices,
+    which needs the lane run with fresh candidates over them. Do not read one as
+    the other.
     Pros: it is the only option that separates "the archive is worse" from "the
     archive is laid out differently", which is the actual question under the
-    number; the screen that finds those slices is deterministic and free; and it
-    can run before any of A to D is chosen.
+    number; the screen that finds those slices is deterministic and free; it can
+    run before any of A to D is chosen; and it is now the only option with a
+    measured effect rather than an argued one.
     Cons: widening the window costs a re-run over the flagged slices, and it
     answers only the layout half: a document with no displacement still has
-    whatever quality gap the rate reports.
+    whatever quality gap the rate reports. It also does not help the two chronic
+    decliners, who decline at the same rate wide or narrow.
 
 RANKING: E > C > A > B > D.
 
