@@ -57,10 +57,8 @@ export {
   MissingProtocolVersionError,
   UnsupportedProtocolVersionError,
 } from './server-protocol-error.ts';
-export {
-  readRequestMeta,
-  requireProtocolVersion,
-} from './server-request-version.ts';
+export { isPlainObject, } from './plain-object.ts';
+export { requireProtocolVersion, } from './server-request-version.ts';
 export {
   buildDiscoverResult,
   buildListToolsResult,

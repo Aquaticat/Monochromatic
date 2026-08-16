@@ -1,60 +1,25 @@
-// Reads and validates the protocol revision that MCP revision 2026-07-28 requires
+// Validates the protocol revision that MCP revision 2026-07-28 requires
 // on the `_meta` of every inbound request.
 
 import type { JsonRpcRequest, } from './json-rpc.ts';
 
+import { isPlainObject, } from './plain-object.ts';
+
 import { isSupportedProtocolVersion, } from './protocol.ts';
 
-import {
-  META_PROTOCOL_VERSION,
-  type RequestMeta,
-} from './protocol-meta.ts';
+import { META_PROTOCOL_VERSION, } from './protocol-meta.ts';
 
 import {
   MissingProtocolVersionError,
   UnsupportedProtocolVersionError,
 } from './server-protocol-error.ts';
 
-//region Metadata extraction: pulls `_meta` out of untrusted request params
-
-/**
- * Extracts the `_meta` object from request params without trusting its shape.
- * A missing, null, array, or primitive `_meta` yields empty metadata rather than an absence
- * value: every field is optional, so "carried nothing usable" and "carried nothing" are the
- * same state to every caller, and the emptiness is what validation reports on.
- *
- * @param request - Inbound request whose params arrived unvalidated from the client.
- *
- * @returns Metadata declared by the request, empty when it declared none.
- *
- * @example
- * ```ts
- * readRequestMeta({ request: { jsonrpc: '2.0', id: 1, method: 'tools/list' } });
- * // {}
- * ```
- */
-export function readRequestMeta(
-  { request, }: { readonly request: JsonRpcRequest; },
-): RequestMeta {
-  /**
-   * Raw `_meta` value from params; anything other than a plain object is treated as absent.
-   */
-  const rawMeta = request.params
-    ?._meta;
-  if ((rawMeta === undefined)
-    || (rawMeta === null)
-    || ((typeof rawMeta) !== 'object')
-    || Array.isArray(rawMeta,))
-    return {};
-  return rawMeta;
-}
-
-//endregion
-
 //region Version validation: the gate every served request passes through
 
 /**
  * Validates that a request declares a protocol revision this server implements.
+ * Absence fails loud here rather than travelling onward: nothing downstream can serve a
+ * request whose revision is unknown, so there is no caller for an "absent revision" value.
  *
  * @param request - Inbound request carrying revision metadata from the client.
  *
@@ -81,9 +46,18 @@ export function requireProtocolVersion(
   { request, }: { readonly request: JsonRpcRequest; },
 ): string {
   /**
-   * Declared revision, or `undefined` when the client omitted it or sent a non-string.
+   * Raw `_meta` value from params, still untrusted; anything but a keyed object cannot
+   * carry the revision and is refused exactly as an omitted `_meta` is.
    */
-  const version = readRequestMeta({ request, },)[META_PROTOCOL_VERSION];
+  const rawMeta = request.params
+    ?._meta;
+  if (!isPlainObject(rawMeta,))
+    throw new MissingProtocolVersionError();
+
+  /**
+   * Revision the client declared, refused below unless it is a string this server implements.
+   */
+  const version = rawMeta[META_PROTOCOL_VERSION];
   if ((typeof version) !== 'string')
     throw new MissingProtocolVersionError();
   if (!isSupportedProtocolVersion({ version, },))

@@ -3,6 +3,8 @@
 // type guard that validates them form a single cohesive unit; splitting would scatter
 // tightly-coupled definitions that are always imported together.
 
+import { isPlainObject, } from './plain-object.ts';
+
 //region JSON-RPC 2.0 base types: foundation for all MCP message exchange
 
 /**
@@ -153,24 +155,6 @@ export const JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION = -32_022;
 //endregion
 
 //region Message validation: type guard for untrusted JSON parsed from stdin
-
-/**
- * Reports whether a value is a plain object rather than `null`, an array, or a primitive.
- *
- * @param value - Untrusted value from parsed JSON.
- *
- * @returns `true` when the value can carry string-keyed members.
- *
- * @example
- * ```ts
- * isPlainObject({ a: 1 });
- * // true
- * ```
- */
-function isPlainObject(value: unknown,): value is Record<string, unknown> {
-  return ((typeof value) === 'object') && (value !== null)
-    && (!Array.isArray(value,));
-}
 
 /**
  * Validates that a parsed JSON value has the shape of a {@link JsonRpcInbound} message.
