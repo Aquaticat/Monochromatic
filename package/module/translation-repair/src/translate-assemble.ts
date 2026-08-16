@@ -15,6 +15,7 @@ import type {
   UnfilledSlice,
 } from './translate-document-contract.ts';
 import { translateLaneWordings, } from './translate-lane-wordings.ts';
+import { heardNobody, } from './translate-unheard.ts';
 
 //region Translate assembly
 // What the translate lane RETURNS, built in one place so the driver's loop and
@@ -85,9 +86,7 @@ export function assembleTranslation(
    * deliberately absent from the cache.
    */
   const unheard = settled.filter(function answeredByNobody(record,): boolean {
-    return record.stageResult
-      .heardTranslators
-      === 0;
+    return heardNobody({ record, },);
   },);
   l.info(
     `translated ${String(settled.length,)} slices (${String(resumedSliceCount,)} resumed): `
