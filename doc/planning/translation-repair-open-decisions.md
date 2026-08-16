@@ -1,4 +1,26 @@
-# Decisions waiting on you, 2026-08-15 morning
+# Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-16
+
+WHAT A SECOND NIGHT CHANGED, 08-16, since none of these questions were answered
+in between and you should not re-read the whole document to find it:
+
+-   QUESTION 5'S OPTION E GOT DEARER, and it is the top-ranked option. The
+    production re-run it calls for cannot be a two-arm comparison; that design
+    measures the window and a resampled candidate slate at once. It is three
+    arms now, with the slate held fixed, which needs a refactor first. Priced in
+    option E. The RANKING did not move.
+-   NOTHING ELSE HERE CHANGED ITS ANSWER. The rest of the night went on making
+    the instrument honest rather than on new findings: a window index that
+    silently returned "no window" now throws, the cache key that would have
+    made both arms of that comparison identical is fixed and pinned, and the
+    hop that carries the window to the judges is now a test that was shown to
+    fail without it.
+-   ONE THING I GOT WRONG AND FIXED, recorded because it touched your
+    repository. Six comments about this work were posted onto unrelated GitHub
+    issues: the task-tracker ids in this document collide with GitHub issue
+    numbers, and `#84`, `#106`, `#107` and `#108` are real tickets about other
+    things. The comments have been rewritten in place as misfiled notes, no
+    content was lost, and `AGENTS.md` now carries the rule that would have
+    prevented it.
 
 Written overnight on 2026-08-14 to 15, while the translate lane was built out.
 Each question below is one I could not answer from the code, the corpus, or a
@@ -835,14 +857,29 @@ E.  Widen the judged window on the slices where the archive's layout differs
     answers only the layout half: a document with no displacement still has
     whatever quality gap the rate reports. It also does not help the two chronic
     decliners, who decline at the same rate wide or narrow.
+    WHAT THAT RE-RUN COSTS WENT UP ON 08-16, and it matters because E is ranked
+    first partly on being cheap. The plan was to judge each flagged slice twice
+    and compare. That cannot measure the window: the stage produces its
+    candidates and judges them within one call, so a second call resamples the
+    CANDIDATES as well as changing the evidence, and the judges are stochastic
+    besides, so a two-arm null means only "smaller than a spread nobody
+    measured". The design is now three arms, with the candidate slate produced
+    once and judged repeatedly, which needs `runTranslateStage` split into a
+    producing half and a judging half first. Roughly 1760 exchanges over the
+    flagged slices, plus a matched set of UNFLAGGED ones as a control, plus that
+    refactor. Still far cheaper than a corpus pass, and the split is useful
+    beyond this measurement, but E's screen is what is free, not E's re-run.
 
-RANKING: E > C > A > B > D.
+RANKING: E > C > A > B > D. Unchanged by the cost correction above: E is dearer
+than it was and still cheaper than everything it is ranked over.
 
-E over C because E is free and C is not, and because E answers a question C
-cannot: a report-only pass grades what the judges decided, and if displacement is
-driving part of the rate, the grader would be reading decisions that were made on
-a slice window too narrow to be right. Measure the window before grading through
-it.
+E over C because E costs a bounded measurement over 80 flagged slices where C
+costs a pass over the whole corpus, and because E answers a question C cannot: a
+report-only pass grades what the judges decided, and if displacement is driving
+part of the rate, the grader would be reading decisions that were made on a slice
+window too narrow to be right. Measure the window before grading through it.
+An earlier version of this line said E is free and C is not. E's SCREEN is free;
+E's re-run is not, and the paragraph above prices it.
 C over A because the whole disagreement is about whether the judges are right,
 and C answers that with the calls the run would spend anyway; A spends the same
 quota and commits the result before anyone has read it.
