@@ -268,15 +268,6 @@ import androidx.compose.ui.layout.SubcomposeLayout
 // ```
 import androidx.compose.ui.layout.SubcomposeMeasureScope
 
-// What:     `LocalDensity` converts the 15-unit engraved legend size into a `TextUnit`.
-// Why:      Hardware ink keeps reference geometry instead of inheriting device font enlargement.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { density } from "compose/platform";
-// ```
-import androidx.compose.ui.platform.LocalDensity
-
 // What:     `Role` labels each selectable cap as one radio choice.
 // Why:      Custom visual hardware retains standard accessibility meaning.
 //
@@ -349,15 +340,6 @@ import androidx.compose.ui.unit.Dp
 // ```
 import androidx.compose.ui.unit.DpOffset
 
-// What:     `TextUnit` stores a font dimension whose physical size follows the chosen density conversion.
-// Why:      The hardware legend stays exactly 15 logical units across user font scales.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type TextUnit = number & { readonly unit: "sp" };
-// ```
-import androidx.compose.ui.unit.TextUnit
-
 // What:     `constrainHeight` clamps requested content height to parent bounds.
 // Why:      Empty and multi-row controls must return a legal layout height.
 //
@@ -387,9 +369,6 @@ private val ledTargetHeight: Dp = 48.dp
 
 /** Stores one cap-row plate height: 8 + 44 + 8. */
 private val ledPlateHeight: Dp = 60.dp
-
-/** Stores hardware legend's reference visual size. */
-private val ledLegendSize: Dp = 15.dp
 
 /** Stores label inset that yields source widths for representative reference labels. */
 private val ledLegendHorizontalInset: Dp = 24.dp
@@ -707,18 +686,11 @@ private fun ledPalette(): LedPalette {
     )
 }
 
-/** Returns 15-logical-unit semibold legend style independent of user font enlargement. */
+/** Returns semibold legend style matching other body-large labels such as Volume. */
 @Composable
-private fun ledLabelStyle(): TextStyle {
-    /** Reads current device density and font scale. */
-    val density = LocalDensity.current
-    /** Converts 15dp visual geometry into compensating text units. */
-    val fixedFontSize: TextUnit = with(density) { ledLegendSize.toSp() }
-    return MaterialTheme.typography.bodyMedium.copy(
-        fontSize = fixedFontSize,
-        fontWeight = FontWeight.SemiBold,
-    )
-}
+private fun ledLabelStyle(): TextStyle = MaterialTheme.typography.bodyLarge.copy(
+    fontWeight = FontWeight.SemiBold,
+)
 
 /** Returns per-corner opening shape for one position inside its row. */
 private fun ledOpeningShape(options: LedTargetOptions): RoundedCornerShape = RoundedCornerShape(

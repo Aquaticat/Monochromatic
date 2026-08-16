@@ -401,7 +401,7 @@ component LedSegmentButton inherits Rectangle {
         width: parent.width - 62px;
         height: 46px;
         text: root.text;
-        font-size: 16px;
+        font-size: max(16px, Typography.body-rem * 1rem);
         font-weight: 600;
         vertical-alignment: center;
         horizontal-alignment: center;
@@ -415,7 +415,7 @@ component LedSegmentButton inherits Rectangle {
         width: parent.width - 64px;
         height: 44px;
         text: root.text;
-        font-size: 15px;
+        font-size: max(16px, Typography.body-rem * 1rem);
         font-weight: 600;
         vertical-alignment: center;
         horizontal-alignment: center;
