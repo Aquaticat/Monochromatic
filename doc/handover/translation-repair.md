@@ -11453,3 +11453,44 @@ word alone. Writing them turned up that an insertion anchor carries an EMPTY tex
 rather than an absent one, since both members of `DocumentChunk` declare `text`,
 so the probe's `cleanText === undefined` branch was unreachable and the donor
 helper repeated the same misreading. Both now rely on the length floor.
+
+### The insertion result: the length habit is ruled out
+
+SIXTEEN TRIALS, FOUR PAIRS, the same four entries the deletion spread used, so
+the comparison is within-document. EVERY TRIAL CHOSE THE COMPLETE TEXT, which
+here is the SHORTER candidate. A roster preferring length would have scored
+sixteen of sixteen on the deletion and ZERO of sixteen here.
+
+THE BALLOTS ARE STRONGER THAN THE TALLY. Ninety-five ballots: 64 for the complete
+text, 31 declining, and NOT ONE for the text carrying the borrowed sentence.
+Every judge that chose at all chose correctly. Per judge:
+
+- `hf:Qwen/Qwen3.6-27B`: 16 clean, 0 damaged, 0 declined
+- `hf:moonshotai/Kimi-K3`: 15 clean, 0 damaged, 1 declined
+- `hf:zai-org/GLM-4.7-Flash`: 14 clean, 0 damaged, 1 declined
+- `hf:zai-org/GLM-5.2`: 13 clean, 0 damaged, 3 declined
+- `hf:openai/gpt-oss-120b`: 5 clean, 0 damaged, 11 declined
+- `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4`: 1 clean, 0 damaged,
+  15 declined
+
+THE REASONS NAME THE ADDITION AS UNSUPPORTED, which is the reading that matters:
+"adds an entirely fabricated sentence at the end that has no basis in the
+original Chinese text", "appends a completely unrelated, hallucinated sentence",
+"appends a sentence that does not exist anywhere in the original". 28 of the 95
+reasons QUOTE THE CHINESE directly while comparing (`占有欲很强`, `温柔可爱`),
+which is evidence the judges consulted the original rather than only weighing the
+English against itself.
+
+WHAT THE PAIR OF FIXTURES NOW LICENSES: the roster is not running a status-quo
+reflex, a position preference, or a length preference. Each of those scores half
+or zero across the two fixtures, and the roster scored both in full.
+
+WHAT IT STILL DOES NOT LICENSE, and this is the honest ceiling: "verified against
+the source" is a stronger claim than the fixtures support. A judge that never
+reads the Chinese but prefers whichever English READS BETTER passes both, since
+the deletion leaves a gap in the argument and the borrowed sentence is a topical
+non-sequitur. The quoted-Chinese reasons are evidence against that reading rather
+than proof, because a reason is written after the choice. What would settle it is
+a fixture whose damaged candidate reads BETTER than the archive's English while
+saying something the original does not, which is the hard case `#84` still
+carries.
