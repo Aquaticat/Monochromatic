@@ -47,6 +47,13 @@ global Typography {
     out property <float> body-rem: 14 * 0.0769;
 }
 
+// Rust converts runtime pigments to OKLCH, mixes them toward an achromatic
+// endpoint there, then converts back for display. Slint has no OKLCH color API.
+export global LedPaletteAdapter {
+    pure callback mix-neutral(color, float, float) -> color;
+    pure callback set-alpha(color, float) -> color;
+}
+
 // One small interface joins Slint's actual flex measurements to the Rust plate
 // path adapter. Buttons report final layout geometry; Rust returns one SVG path
 // and exact bounds. Path paint never participates in flex measurement.
@@ -89,8 +96,8 @@ component RadioButton inherits Rectangle {
         // stroke that, when selected, becomes an accent "donut", a 6px accent ring
         // around a centre painted the window's background. Fluent's internal colours
         // are not on the public Palette, so they map onto it here:
-        // control-strong-stroke -> foreground.with-alpha(0.6) (60% ink, matching
-        // Fluent's #FFFFFF99 / #00000099; plain Palette.border is only ~8% alpha in
+        // control-strong-stroke -> 60% foreground alpha through LedPaletteAdapter
+        // (matching Fluent's #FFFFFF99 / #00000099; plain Palette.border is only ~8% alpha in
         // dark mode, which on the pure-black window background reads at ~1.1:1 and
         // fails contrast), then control-alt-secondary -> control-background and
         // state-secondary -> the window background. Keeps the radio consistent with
@@ -102,7 +109,7 @@ component RadioButton inherits Rectangle {
                 height: self.width;
                 border-radius: self.width / 2;
                 border-width: 1px;
-                border-color: ta.has-hover ? Palette.accent-background : Palette.foreground.with-alpha(0.6);
+                border-color: ta.has-hover ? Palette.accent-background : LedPaletteAdapter.set-alpha(Palette.foreground, 0.6);
                 background: root.selected ? transparent : Palette.control-background;
                 animate border-color, background { duration: 150ms; }
                 Rectangle {
@@ -241,6 +248,11 @@ component LedSegmentButton inherits Rectangle {
     callback clicked();
     callback report-geometry();
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
+    private property <color> selected-fill: LedPaletteAdapter.mix-neutral(
+        Palette.accent-background,
+        0,
+        0.6,
+    );
     private property <bool> starts-row:
         LedRowGeometry.starts.length > root.control-index
         && LedRowGeometry.starts[root.control-index];
@@ -304,12 +316,12 @@ component LedSegmentButton inherits Rectangle {
         border-bottom-left-radius: cap-face.border-top-left-radius;
         border-top-right-radius: root.ends-row ? (root.selected ? 8px : 9px) : (root.selected ? 1px : 2px);
         border-bottom-right-radius: cap-face.border-top-right-radius;
-        background: root.selected ? Palette.accent-background : #aaaaaa;
+        background: root.selected ? root.selected-fill : #aaaaaa;
         drop-shadow-offset-x: root.selected ? 0px : 2.5px;
         drop-shadow-offset-y: root.selected ? 0px : 3.5px;
         drop-shadow-blur: root.selected ? 7px : 5px;
         drop-shadow-color: root.selected
-            ? Palette.accent-background.with-alpha(root.light-scene ? 0.16 : 0.28)
+            ? LedPaletteAdapter.set-alpha(root.selected-fill, root.light-scene ? 0.16 : 0.28)
             : (root.light-scene ? #00000052 : #0000006b);
         inner-shadow-offset-x: root.selected ? -3px : 3px;
         inner-shadow-offset-y: root.selected ? -3px : 3px;
@@ -545,9 +557,9 @@ component ChromiumTab inherits Rectangle {
     in property <bool> next-selected;
     in property <bool> show-divider;
     callback clicked();
-    private property <color> active-color: Palette.accent-background.with-alpha(0.2);
-    private property <color> active-outline-color: Palette.accent-background.with-alpha(0.65);
-    private property <color> divider-color: Palette.foreground.with-alpha(0.25);
+    private property <color> active-color: LedPaletteAdapter.set-alpha(Palette.accent-background, 0.2);
+    private property <color> active-outline-color: LedPaletteAdapter.set-alpha(Palette.accent-background, 0.65);
+    private property <color> divider-color: LedPaletteAdapter.set-alpha(Palette.foreground, 0.25);
     private property <color> ink-color: Palette.foreground;
     horizontal-stretch: 0;
     clip: false;
@@ -562,7 +574,7 @@ component ChromiumTab inherits Rectangle {
         width: parent.width - (root.previous-selected ? 12px : 0px) - (root.next-selected ? 12px : 0px);
         height: 35px;
         border-radius: 10px;
-        background: Palette.accent-background.with-alpha(0.12);
+        background: LedPaletteAdapter.set-alpha(Palette.accent-background, 0.12);
     }
 
     if root.selected: Path {
@@ -802,7 +814,7 @@ component VScrollBar inherits Rectangle {
     visible: root.maximum > 0;
     // theme-tinted translucent track: white at 10% alpha on a dark scheme,
     // black at 10% alpha on a light scheme (the unknown scheme falls back to dark-on-light)
-    background: Palette.color-scheme == ColorScheme.dark ? #ffffff.with-alpha(0.1) : #000000.with-alpha(0.1);
+    background: Palette.color-scheme == ColorScheme.dark ? LedPaletteAdapter.set-alpha(#ffffff, 0.1) : LedPaletteAdapter.set-alpha(#000000, 0.1);
     border-radius: 7px;
 
     // the draggable thumb: its length is the visible fraction of the content,
@@ -814,7 +826,7 @@ component VScrollBar inherits Rectangle {
         width: parent.width - 4px;
         height: max(32px, (parent.height - 4px) * root.page-size / (root.maximum + root.page-size));
         y: 2px + (parent.height - 4px - self.height) * (-root.value / root.maximum);
-        background: ta.pressed ? Palette.accent-background : ta.has-hover ? Palette.accent-background.with-alpha(0.8) : Palette.accent-background.with-alpha(0.6);
+        background: ta.pressed ? Palette.accent-background : ta.has-hover ? LedPaletteAdapter.set-alpha(Palette.accent-background, 0.8) : LedPaletteAdapter.set-alpha(Palette.accent-background, 0.6);
         border-radius: self.width / 2;
     }
 

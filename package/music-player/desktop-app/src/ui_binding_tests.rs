@@ -187,7 +187,12 @@ fn led_backplate_fills_width_and_rows_track_resize() {
         "fixture must wrap after deferred reports; rows={wrapped_row_count}, caps={wrapped_positions:?}"
     );
 
-    app.window().set_size(slint::LogicalSize::new(800.0, 600.0));
+    app.window().set_size(slint::LogicalSize::new(1800.0, 600.0));
+    app.set_page_labels(ModelRc::new(VecModel::from(vec![
+        SharedString::from("Alpha"),
+        SharedString::from("Beta"),
+        SharedString::from("GammaLong"),
+    ])));
     let resized_positions =
         ElementHandle::find_by_element_type_name(&app, "LedSegmentButton")
             .map(|cap| cap.absolute_position())
@@ -203,7 +208,7 @@ fn led_backplate_fills_width_and_rows_track_resize() {
         .count();
     assert_eq!(
         resized_row_count, 1,
-        "800px fixture must repack to one row; rows={resized_row_count}, caps={resized_positions:?}"
+        "resized three-cap fixture must repack body-sized legends to one row; rows={resized_row_count}, caps={resized_positions:?}"
     );
     assert_eq!(plate.size().width, controls.size().width, "backplate remains full width after resize");
     assert_eq!(plate.size().height, controls.size().height, "backplate remains full height after resize");

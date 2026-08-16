@@ -2805,12 +2805,21 @@ private data class ChromiumTabColors(
 // ```ts
 // function chromiumTabColors(): ChromiumTabColors { ... }
 // ```
+/** Stores active Chromium surface alpha. */
+private const val CHROMIUM_ACTIVE_ALPHA: Float = 0.20f
+
+/** Stores active Chromium contour alpha. */
+private const val CHROMIUM_ACTIVE_OUTLINE_ALPHA: Float = 0.65f
+
+/** Stores inactive Chromium divider alpha. */
+private const val CHROMIUM_DIVIDER_ALPHA: Float = 0.25f
+
 /** Returns accent-tinted Chromium-like tab colors. */
 @Composable
 private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
-    active = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
-    activeOutline = MaterialTheme.colorScheme.primary.copy(alpha = 0.65f),
-    divider = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.25f),
+    active = MaterialTheme.colorScheme.primary.withOklchAlpha(CHROMIUM_ACTIVE_ALPHA),
+    activeOutline = MaterialTheme.colorScheme.primary.withOklchAlpha(CHROMIUM_ACTIVE_OUTLINE_ALPHA),
+    divider = MaterialTheme.colorScheme.onBackground.withOklchAlpha(CHROMIUM_DIVIDER_ALPHA),
     ink = MaterialTheme.colorScheme.onBackground,
 )
 

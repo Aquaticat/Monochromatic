@@ -59,6 +59,16 @@ mod ui_font_scale;
 /// ```
 mod ui_led_rows;
 
+/// What:     `mod ui_led_palette;` loads runtime LED pigment derivation.
+/// Why:      Slint delegates color-coordinate changes to Rust so every derived pigment
+///           is mixed in OKLCH rather than RGB or HSV.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiLedPalette from "./ui_led_palette";
+/// ```
+mod ui_led_palette;
+
 /// What:     `mod ui_page_style;` loads the sibling settings-persistence bridge.
 /// Why:      Page-control preference wiring uses generated `AppWindow` methods and stays
 ///           separate so `main.rs` remains under its code-line limit.
@@ -1317,6 +1327,9 @@ fn main() -> Result<()> {
     // applyLedRowGeometry(app);
     // ```
     ui_led_rows::apply(&app);
+
+    // Derive every runtime LED pigment through OKLCH coordinates.
+    ui_led_palette::apply(&app);
 
     // Restore page-control preference and register settings persistence.
     ui_page_style::apply(&app);

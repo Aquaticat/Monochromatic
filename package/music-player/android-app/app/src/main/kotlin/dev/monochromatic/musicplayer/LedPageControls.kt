@@ -214,15 +214,6 @@ import androidx.compose.ui.graphics.Color
 // ```
 import androidx.compose.ui.graphics.Shape
 
-// What:     `lerp` interpolates two colors by a normalized fraction.
-// Why:      Selected hot, edge, and glow colors derive from runtime accent.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { lerpColor } from "compose/graphics";
-// ```
-import androidx.compose.ui.graphics.lerp
-
 // What:     `HardwareShadow` aliases surface shadow configuration.
 // Why:      Surface shadows stay distinct from legend text glow.
 //
@@ -382,14 +373,56 @@ private val ledInnerRadius: Dp = 2.dp
 /** Stores shared plate radius concentric with cap end plus margin. */
 private val ledPlateRadius: Dp = 17.dp
 
-/** Stores runtime accent's away-edge darkening mix. */
-private const val LED_ACCENT_EDGE_MIX: Float = 0.28f
+/** Stores OKLCH black mix that guarantees deep selected fill behind white legend ink. */
+private const val LED_ACCENT_BODY_BLACK_MIX: Float = 0.60f
 
-/** Stores runtime accent's hot-layer foreground mix. */
-private const val LED_ACCENT_HOT_MIX: Float = 0.22f
+/** Stores composed OKLCH black mix for selected cap edge. */
+private const val LED_ACCENT_EDGE_BLACK_MIX: Float = 0.712f
 
-/** Stores runtime accent's emitted-ink foreground mix. */
-private const val LED_ACCENT_INK_GLOW_MIX: Float = 0.72f
+/** Stores composed OKLCH black mix for selected hot layer. */
+private const val LED_ACCENT_HOT_BLACK_MIX: Float = 0.468f
+
+/** Stores OKLCH white mix for selected legend emission. */
+private const val LED_ACCENT_INK_GLOW_WHITE_MIX: Float = 0.72f
+
+/** Stores dome center highlight alpha. */
+private const val LED_DOME_CENTER_ALPHA: Float = 0.03f
+
+/** Stores dome middle highlight alpha. */
+private const val LED_DOME_MIDDLE_ALPHA: Float = 0.015f
+
+/** Stores dome near-edge shadow alpha. */
+private const val LED_DOME_NEAR_EDGE_ALPHA: Float = 0.07f
+
+/** Stores dome edge shadow alpha. */
+private const val LED_DOME_EDGE_ALPHA: Float = 0.13f
+
+/** Stores dome outer shadow alpha. */
+private const val LED_DOME_OUTER_ALPHA: Float = 0.22f
+
+/** Stores selected hot-layer alpha. */
+private const val LED_HOT_LAYER_ALPHA: Float = 0.11f
+
+/** Stores shoulder highlight alpha. */
+private const val LED_SHOULDER_HIGHLIGHT_ALPHA: Float = 0.22f
+
+/** Stores shoulder quarter highlight alpha. */
+private const val LED_SHOULDER_QUARTER_ALPHA: Float = 0.12f
+
+/** Stores shoulder middle highlight alpha. */
+private const val LED_SHOULDER_MIDDLE_ALPHA: Float = 0.03f
+
+/** Stores shoulder middle shadow alpha. */
+private const val LED_SHOULDER_SHADOW_ALPHA: Float = 0.04f
+
+/** Stores shoulder near-edge shadow alpha. */
+private const val LED_SHOULDER_NEAR_EDGE_ALPHA: Float = 0.18f
+
+/** Stores shoulder outer-edge shadow alpha. */
+private const val LED_SHOULDER_OUTER_EDGE_ALPHA: Float = 0.32f
+
+/** Stores selected legend glow alpha. */
+private const val LED_SELECTED_INK_GLOW_ALPHA: Float = 0.90f
 
 /** Stores first-quarter shoulder transition. */
 private const val LED_GRADIENT_QUARTER: Float = 0.25f
@@ -657,32 +690,45 @@ internal fun ledMultilineHeight(options: LedMultilineHeightOptions): Int = if (o
     options.plateHeightPx + (options.lineCount - 1) * options.rowPitchPx
 }
 
+/** Returns deep accent-derived fill that preserves contrast with white legend ink. */
+internal fun ledSelectedFill(accent: Color): Color = mixOklchWithNeutral(
+    OklchNeutralMix(
+        color = accent,
+        neutralLightness = OKLCH_BLACK_LIGHTNESS,
+        fraction = LED_ACCENT_BODY_BLACK_MIX,
+    ),
+)
+
 /** Returns selected LED colors derived from runtime Material accent. */
 @Composable
 private fun ledPalette(): LedPalette {
     /** Reads current runtime accent pigment. */
     val accent: Color = MaterialTheme.colorScheme.primary
-    /** Records scene so both schemes select a similarly deep accent tone. */
-    val darkScene: Boolean = androidx.compose.foundation.isSystemInDarkTheme()
-    /** Uses dark container or light primary to preserve one deep cap-pigment treatment. */
-    val accentBody: Color = if (darkScene) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.primary
-    }
-    /** Selects readable ink paired with chosen deep accent role. */
-    val onAccentBody: Color = if (darkScene) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onPrimary
-    }
     return LedPalette(
-        selectedFill = accentBody,
-        selectedEdge = lerp(accentBody, Color.Black, LED_ACCENT_EDGE_MIX),
-        selectedHot = lerp(accent, onAccentBody, LED_ACCENT_HOT_MIX),
+        selectedFill = ledSelectedFill(accent),
+        selectedEdge = mixOklchWithNeutral(
+            OklchNeutralMix(
+                color = accent,
+                neutralLightness = OKLCH_BLACK_LIGHTNESS,
+                fraction = LED_ACCENT_EDGE_BLACK_MIX,
+            ),
+        ),
+        selectedHot = mixOklchWithNeutral(
+            OklchNeutralMix(
+                color = accent,
+                neutralLightness = OKLCH_BLACK_LIGHTNESS,
+                fraction = LED_ACCENT_HOT_BLACK_MIX,
+            ),
+        ),
         selectedGlow = accent,
         selectedInk = Color.White,
-        selectedInkGlow = lerp(accent, Color.White, LED_ACCENT_INK_GLOW_MIX),
+        selectedInkGlow = mixOklchWithNeutral(
+            OklchNeutralMix(
+                color = accent,
+                neutralLightness = OKLCH_WHITE_LIGHTNESS,
+                fraction = LED_ACCENT_INK_GLOW_WHITE_MIX,
+            ),
+        ),
     )
 }
 
@@ -719,10 +765,10 @@ private fun ledPlateModifier(options: LedPlateOptions): Modifier {
     /** Selects subtle key-light-to-away-side metal sheen. */
     val sheen: Brush = Brush.linearGradient(
         colorStops = arrayOf(
-            0f to Color.White.copy(alpha = if (options.lightScene) 0.16f else 0.06f),
-            0.30f to Color.White.copy(alpha = if (options.lightScene) 0.06f else 0.02f),
+            0f to Color.White.withOklchAlpha(if (options.lightScene) 0.16f else 0.06f),
+            0.30f to Color.White.withOklchAlpha(if (options.lightScene) 0.06f else 0.02f),
             0.55f to Color.Transparent,
-            1f to Color.Black.copy(alpha = if (options.lightScene) 0.12f else 0.14f),
+            1f to Color.Black.withOklchAlpha(if (options.lightScene) 0.12f else 0.14f),
         ),
     )
     /** Selects broad bottom-right plate shoulder darkness. */
@@ -759,12 +805,12 @@ private fun ledPlateModifier(options: LedPlateOptions): Modifier {
 /** Returns near-flat offset dome with falloff concentrated near cap edge. */
 private fun ledDomeBrush(size: Size): Brush = Brush.radialGradient(
     colorStops = arrayOf(
-        0f to Color.White.copy(alpha = 0.03f),
-        LED_GRADIENT_MIDDLE to Color.White.copy(alpha = 0.015f),
+        0f to Color.White.withOklchAlpha(LED_DOME_CENTER_ALPHA),
+        LED_GRADIENT_MIDDLE to Color.White.withOklchAlpha(LED_DOME_MIDDLE_ALPHA),
         LED_GRADIENT_THREE_QUARTERS to Color.Transparent,
-        LED_DOME_EDGE_START to Color.Black.copy(alpha = 0.07f),
-        LED_DOME_EDGE_END to Color.Black.copy(alpha = 0.13f),
-        1f to Color.Black.copy(alpha = 0.22f),
+        LED_DOME_EDGE_START to Color.Black.withOklchAlpha(LED_DOME_NEAR_EDGE_ALPHA),
+        LED_DOME_EDGE_END to Color.Black.withOklchAlpha(LED_DOME_EDGE_ALPHA),
+        1f to Color.Black.withOklchAlpha(LED_DOME_OUTER_ALPHA),
     ),
     center = Offset(x = size.width * 0.38f, y = size.height * 0.30f),
     radius = size.maxDimension * 0.95f,
@@ -772,7 +818,7 @@ private fun ledDomeBrush(size: Size): Brush = Brush.radialGradient(
 
 /** Returns selected cap's gentle accent-derived top-left hot layer. */
 private fun ledHotBrush(options: LedBrushOptions): Brush = Brush.radialGradient(
-    colors = listOf(options.palette.selectedHot.copy(alpha = 0.11f), Color.Transparent),
+    colors = listOf(options.palette.selectedHot.withOklchAlpha(LED_HOT_LAYER_ALPHA), Color.Transparent),
     center = Offset(x = options.size.width * 0.40f, y = options.size.height * 0.34f),
     radius = options.size.maxDimension * 0.60f,
 )
@@ -780,19 +826,19 @@ private fun ledHotBrush(options: LedBrushOptions): Brush = Brush.radialGradient(
 /** Returns directional plastic shoulder from reference's 315-degree key light. */
 private fun ledShoulderBrush(options: LedBrushOptions): Brush = Brush.linearGradient(
     colorStops = arrayOf(
-        0f to Color.White.copy(alpha = 0.22f),
-        LED_GRADIENT_QUARTER to Color.White.copy(alpha = 0.12f),
-        LED_GRADIENT_NEAR_MIDDLE to Color.White.copy(alpha = 0.03f),
-        LED_GRADIENT_MIDDLE to Color.Black.copy(alpha = 0.04f),
+        0f to Color.White.withOklchAlpha(LED_SHOULDER_HIGHLIGHT_ALPHA),
+        LED_GRADIENT_QUARTER to Color.White.withOklchAlpha(LED_SHOULDER_QUARTER_ALPHA),
+        LED_GRADIENT_NEAR_MIDDLE to Color.White.withOklchAlpha(LED_SHOULDER_MIDDLE_ALPHA),
+        LED_GRADIENT_MIDDLE to Color.Black.withOklchAlpha(LED_SHOULDER_SHADOW_ALPHA),
         LED_GRADIENT_THREE_QUARTERS to if (options.selected) {
-            options.palette.selectedEdge.copy(alpha = 0.18f)
+            options.palette.selectedEdge.withOklchAlpha(LED_SHOULDER_NEAR_EDGE_ALPHA)
         } else {
-            Color.Black.copy(alpha = 0.18f)
+            Color.Black.withOklchAlpha(LED_SHOULDER_NEAR_EDGE_ALPHA)
         },
         1f to if (options.selected) {
-            options.palette.selectedEdge.copy(alpha = 0.32f)
+            options.palette.selectedEdge.withOklchAlpha(LED_SHOULDER_OUTER_EDGE_ALPHA)
         } else {
-            Color.Black.copy(alpha = 0.32f)
+            Color.Black.withOklchAlpha(LED_SHOULDER_OUTER_EDGE_ALPHA)
         },
     ),
 )
@@ -806,7 +852,7 @@ private fun Modifier.ledFaceModifier(options: LedCapOptions): Modifier {
         HardwareShadow(
             radius = 7.dp,
             spread = 1.dp,
-            color = options.palette.selectedGlow.copy(alpha = if (options.lightScene) 0.16f else 0.28f),
+            color = options.palette.selectedGlow.withOklchAlpha(if (options.lightScene) 0.16f else 0.28f),
         )
     } else {
         HardwareShadow(
@@ -817,9 +863,9 @@ private fun Modifier.ledFaceModifier(options: LedCapOptions): Modifier {
     }
     /** Selects source ambient-share occlusion. */
     val occlusion: Color = if (options.selected) {
-        Color.Black.copy(alpha = if (options.lightScene) 0.60f else 0.45f)
+        Color.Black.withOklchAlpha(if (options.lightScene) 0.60f else 0.45f)
     } else {
-        Color.Black.copy(alpha = 0.22f)
+        Color.Black.withOklchAlpha(0.22f)
     }
     return this.padding(if (options.selected) 1.dp else 0.dp)
         .dropShadow(shape = options.capShape, shadow = outerShadow)
@@ -854,7 +900,7 @@ private fun Modifier.ledFaceModifier(options: LedCapOptions): Modifier {
 @Composable
 private fun androidx.compose.foundation.layout.BoxScope.ledCutLip(lightScene: Boolean) {
     /** Selects brighter arris on silver plate. */
-    val lipColor: Color = Color.White.copy(alpha = if (lightScene) 0.45f else 0.30f)
+    val lipColor: Color = Color.White.withOklchAlpha(if (lightScene) 0.45f else 0.30f)
     Box(
         modifier = Modifier
             .align(Alignment.BottomStart)
@@ -939,7 +985,7 @@ private fun ledCapTarget(options: LedTargetOptions) {
             style = options.labelStyle.copy(
                 shadow = if (options.selected) {
                     TextShadow(
-                        color = options.palette.selectedInkGlow.copy(alpha = 0.90f),
+                        color = options.palette.selectedInkGlow.withOklchAlpha(LED_SELECTED_INK_GLOW_ALPHA),
                         offset = Offset.Zero,
                         blurRadius = 4f,
                     )
