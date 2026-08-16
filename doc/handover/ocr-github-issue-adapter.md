@@ -63,7 +63,15 @@ The adapter must not parse OCR's human-readable terminal format.
 This rule applies to interactive and non-interactive modes.
 ANSI stripping and version-specific text parsing are out of scope.
 
-The exact accepted OCR-native JSON document shapes remain to be settled.
+The adapter accepts exactly these OCR-native structured shapes:
+
+- complete `ocr review --format json` or `ocr scan --format json` result object;
+- bare comment array from `ocr session comments --json`;
+- raw OCR session JSONL transcript.
+
+It must auto-detect among only these validated schemas.
+It must not search arbitrary nested JSON for comment-like objects or accept individual comment fragments by accident.
+All accepted shapes normalize into one internal finding collection before policy or publication logic runs.
 
 ## Settled prior findings
 
@@ -202,8 +210,10 @@ in dependency order:
 3. Input contracts:
    pasted input is settled as structured JSON only,
    with no human-readable terminal parser.
-   JSON document shapes,
-   OCR JSONL record types,
+   Accepted shapes are the complete review or scan result object,
+   `ocr session comments --json` comment array,
+   and raw OCR session JSONL transcript.
+   Source selection,
    framing,
    encoding,
    and malformed-input behavior remain open.
@@ -254,7 +264,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about accepted OCR-native JSON document shapes.
+Ask the next dependent design question about explicit versus TTY-inferred interactive mode selection.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -273,5 +283,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   recorded the user's ingest-only decision and removed OCR process orchestration from scope.
 - 2026-08-16:
   recorded structured-JSON-only pasted input and excluded human-readable OCR text parsing.
+- 2026-08-16:
+  recorded the three accepted OCR-native JSON shapes and rejection of arbitrary JSON fragments.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
