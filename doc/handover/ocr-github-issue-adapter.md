@@ -150,6 +150,9 @@ Issue titles use the deterministic shape `[category] path: summary`.
 The category is the normalized OCR category or `uncategorized` when absent.
 The path comes from the OCR finding.
 The summary is the first meaningful line of OCR content.
+Issue bodies include both OCR `existing_code` and `suggestion_code` in separate,
+clearly labeled code sections when those fields are present.
+Model `thinking` remains excluded.
 Fallbacks and title length handling remain to be settled.
 
 ## Settled prior findings
@@ -258,6 +261,11 @@ The source model defines comment fields including:
 - `thinking`;
 - `category`;
 - `severity`.
+
+Individual comment records have no source commit or repository URL.
+Complete JSON output and completed JSONL transcripts can carry a run manifest with a resolved head commit,
+but bare comment arrays do not.
+The manifest stores repository identity only as a SHA-256 value rather than a repository URL.
 
 OCR also persists sessions and exposes `ocr session comments --json`.
 Source inspection confirms that session JSONL is an event transcript,
@@ -407,12 +415,13 @@ in dependency order:
    `category` is the normalized OCR category or `uncategorized` when absent.
    `path` is the OCR finding path.
    `summary` is the first meaningful line of OCR content.
-   Body fields,
+   Bodies include separate existing-code and suggested-code sections when OCR supplies those fields.
+   Model `thinking` is always omitted.
+   Remaining body fields,
    source links,
    labels,
-   omission of model reasoning,
-   title fallback and length behavior,
-   and handling of code excerpts remain open.
+   safe code-fence rendering,
+   and title fallback and length behavior remain open.
 8. Identity and lifecycle:
    settled as create-only.
    The adapter has no synthetic identity,
@@ -442,8 +451,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether issue bodies include OCR `existing_code`
-and `suggestion_code` excerpts.
+Ask the next dependent design question about whether issue bodies include source hyperlinks
+or only repository-relative paths and line ranges.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -533,5 +542,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   settled deterministic issue titles using normalized category,
   OCR path,
   and the first meaningful content line.
+- 2026-08-16:
+  included both OCR `existing_code` and `suggestion_code` in separate issue-body sections when present.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
