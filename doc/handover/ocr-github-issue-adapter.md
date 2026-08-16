@@ -164,6 +164,23 @@ When that label is confirmed absent,
 the adapter silently omits the label and prepends `[needs-triage] ` to the issue title instead.
 It supports no additional label options and never creates labels.
 A label-lookup failure is not proof of absence and remains an error before creation.
+
+Issue bodies use this section order:
+
+1. `Finding`,
+   containing OCR content.
+2. `Source`,
+   containing the verified permalink or plain path and line range,
+   followed by category and severity metadata.
+3. `Existing code`,
+   when OCR supplied `existing_code`.
+4. `Suggested code`,
+   when OCR supplied `suggestion_code`.
+5. A plain attribution that the issue was generated from OpenCodeReview output.
+
+Missing category renders as `uncategorized` and missing severity as `unspecified`.
+Absent code fields omit their sections.
+Model `thinking` and raw record JSON are never included.
 Fallbacks and title length handling remain to be settled.
 
 ## Settled prior findings
@@ -436,8 +453,13 @@ in dependency order:
    When it is confirmed absent,
    the adapter silently prepends `[needs-triage] ` to the generated title instead.
    It never creates labels and supports no additional label option.
-   Remaining body fields,
-   safe code-fence rendering,
+   Body section structure is settled as Finding,
+   Source with category and severity,
+   optional Existing code,
+   optional Suggested code,
+   and OpenCodeReview attribution.
+   Missing metadata uses `uncategorized` and `unspecified`.
+   Safe Markdown and code-fence rendering,
    and title fallback and length behavior remain open.
 8. Identity and lifecycle:
    settled as create-only.
@@ -468,7 +490,9 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about the issue-body section structure and metadata placement.
+Ask the next dependent design question about whether OCR content is preserved as Markdown,
+sanitized as Markdown,
+or rendered as plain text.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -565,5 +589,10 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   applied `needs-triage` when available and silently fell back to a `[needs-triage] ` title prefix when absent;
   no other label options are supported.
+- 2026-08-16:
+  settled structured issue bodies with Finding,
+  Source and metadata,
+  optional existing and suggested code,
+  and OpenCodeReview attribution sections.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
