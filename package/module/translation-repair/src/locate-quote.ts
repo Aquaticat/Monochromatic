@@ -11,13 +11,25 @@ import type { AnchorTarget, } from './validate-issue.ts';
 //region Quote location
 // Deterministic evidence anchoring: find a critic's quote in the document,
 // reject absence and ambiguity, and bind the located region to block nodes.
-// Byte-exact search runs first; a punctuation-normalized fallback rescues
-// quotes differing only in curly-versus-ASCII punctuation, a line-break
-// fallback after it rescues quotes differing only in where a paragraph was
-// wrapped, and block-crossing regions split into one span per touched block,
-// because models quote across paragraph boundaries no matter what the prompt
-// demands. Both fallbacks are length-preserving, so every offset still indexes
-// the document as it is stored.
+// Block-crossing regions split into one span per touched block, because models
+// quote across paragraph boundaries no matter what the prompt demands.
+//
+// ONE SEARCH OVER THE BROADEST ACCEPTED FORM, rather than a chain of passes
+// from strict to loose. Both normalizations replace one UTF-16 unit with one,
+// so offsets found in the normalized text index the stored document unchanged.
+//
+// WHY IT IS NOT A CHAIN, which is what it was until a review found the hole.
+// Each pass used to check ambiguity WITHIN ITS OWN CLASS and return on its
+// first hit, so a document holding `bad\nword` early and `bad word` late
+// answered the quote `bad word` with the late one: unique among byte-exact
+// matches, and the earlier occurrence just as valid under the wrapping rule the
+// next pass would have applied. Whitespace and punctuation in a model's quote
+// are not evidence of WHICH occurrence it meant, since a model normalizes both
+// when it copies, so uniqueness has to be judged over every form treated as
+// equal. Measured before changing it, over three corpus passes and 16,479
+// anchored quotes checked against the slice each was anchored in: NOT ONE would
+// be refused by the stricter rule. The same count against whole pages, which is
+// the wrong scope but proves the probe can see ambiguity, reports 566.
 
 /**
  * Located-quote outcome: anchors, or the failure reason.
@@ -178,11 +190,13 @@ function needlePreview(
 
 /**
  * Locates one quote inside one document and binds it to its blocks.
- * Byte-exact search first;
- * when that misses, a punctuation-normalized search rescues quotes that
- * differ only in curly-versus-ASCII punctuation (normalization is
- * length-preserving, so normalized offsets index the original text, and
- * anchors always carry the document's canonical bytes).
+ *
+ * Searches the document and the quote in one canonical form, where curly and
+ * ASCII punctuation are the same character and a soft line break is a space, so
+ * a quote copied out of a wrapped paragraph still anchors. Refuses a quote that
+ * occurs more than once in THAT form, whatever the stored punctuation and
+ * wrapping happen to be, because a model's own punctuation and line breaks do
+ * not say which occurrence it read.
  *
  * @param document - side being searched
  *
@@ -216,103 +230,31 @@ export function locateQuote(
   }
 
   /**
-   * First byte-exact occurrence of the quote.
+   * Document read in the broadest form this function accepts: punctuation
+   * variants canonical, soft line breaks read as spaces. Both maps replace one
+   * UTF-16 unit with one, so every offset here indexes the stored document and
+   * anchors still carry its own characters.
    */
-  const rawAt = document
-    .text
-    .indexOf(quote,);
-  if (rawAt !== (-1)) {
-    if (document
-      .text
-      .includes(
-        quote,
-        rawAt + 1,
-      ))
-    {
-      return {
-        located: false,
-        reason: `ambiguous-quote (${side})`,
-      };
-    }
-    return bindQuoteRegion({
-      document,
-      side,
-      at: rawAt,
-      end: rawAt + quote.length,
-    },);
-  }
-
-  /**
-   * Document text with punctuation variants collapsed;
-   * same length as the original, so offsets transfer unchanged.
-   */
-  const haystack = normalizePunctuation({ text: document.text, },);
-
-  /**
-   * Quote with punctuation variants collapsed.
-   */
-  const needle = normalizePunctuation({ text: quote, },);
-
-  /**
-   * First normalized occurrence.
-   */
-  const normalizedAt = haystack.indexOf(needle,);
-  if (normalizedAt !== (-1)) {
-    if (haystack.includes(
-      needle,
-      normalizedAt + 1,
-    ))
-    {
-      return {
-        located: false,
-        reason: `ambiguous-quote (${side})`,
-      };
-    }
-    return bindQuoteRegion({
-      document,
-      side,
-      at: normalizedAt,
-      end: normalizedAt + needle.length,
-    },);
-  }
-
-  /**
-   * Document with soft line breaks read as spaces as well.
-   *
-   * THE THIRD PASS EXISTS BECAUSE A CORRECT QUOTE WAS BEING REFUSED OVER
-   * WHITESPACE. A model copying a sentence out of a wrapped paragraph writes it
-   * on one line, and the document holds the same characters with a newline in
-   * the middle, so the two differ by a line break and nothing else. Measured on
-   * stored runs: 45 of 844 not-found failures carry the collapsible diagnostic
-   * this pass acts on, and on the coverage question, whose quotes are whole
-   * sentences rather than fragments, ten of eleven refusals were this and
-   * nothing else. Collapsing is length-preserving, so the offsets still index
-   * the original document and the anchors still carry its canonical bytes.
-   *
-   * A BLANK LINE STILL SEPARATES, since it carries two line breaks where a
-   * space-joined quote carries one space, so this cannot join text across a
-   * paragraph boundary that the document keeps apart.
-   */
-  const flatHaystack = collapseLineBreaks({ text: haystack, },);
+  const haystack = collapseLineBreaks({ text: normalizePunctuation({ text: document.text, },), },);
 
   /**
    * Quote read the same way.
    */
-  const flatNeedle = collapseLineBreaks({ text: needle, },);
+  const needle = collapseLineBreaks({ text: normalizePunctuation({ text: quote, },), },);
 
   /**
-   * First occurrence once both read line breaks as spaces.
+   * Where the quote sits once both are read that way.
    */
-  const flatAt = flatHaystack.indexOf(flatNeedle,);
-  if (flatAt === (-1)) {
+  const at = haystack.indexOf(needle,);
+  if (at === (-1)) {
     return {
       located: false,
       reason: `quote-not-found (${side})${needlePreview({ needle, },)}`,
     };
   }
-  if (flatHaystack.includes(
-    flatNeedle,
-    flatAt + 1,
+  if (haystack.includes(
+    needle,
+    at + 1,
   ))
   {
     return {
@@ -323,8 +265,8 @@ export function locateQuote(
   return bindQuoteRegion({
     document,
     side,
-    at: flatAt,
-    end: flatAt + flatNeedle.length,
+    at,
+    end: at + needle.length,
   },);
 }
 

@@ -212,6 +212,13 @@ import type { RepairModels, } from './repair-contract.ts';
  * never asks a critic to quote anything, so its settled slices still agree with
  * what this code computes.
  *
+ * TWO LATER ANCHORING CHANGES ALSO RODE INSIDE 27, checked rather than assumed:
+ * no slice-cache file had been written under it when either landed, so there was
+ * nothing on disk for them to disagree with. They are the uniqueness rule now
+ * judged over the broadest accepted form of a quote, and the lane literal below.
+ * Once a run settles a slice under 27, the next behavioural change to anchoring
+ * takes 28.
+ *
  * THE LANE LITERAL RODE ALONG WITH VERSION 27, which is the whole reason it
  * landed on this day rather than another. `translateSliceKey` has always led
  * with `'translate'` and this key led with nothing, so the isolation between the

@@ -200,6 +200,47 @@ await describe({
       },
     },),
     it({
+      name: 'refuses a quote that is unique CHARACTER FOR CHARACTER while a wrapped twin sits earlier '
+        + 'in the document, since a model rewraps whatever it copies and its whitespace cannot say '
+        + 'which of the two it read',
+      fn: async () => {
+        /** Same sentence twice, wrapped the first time and not the second. */
+        const twinText = 'The cat naps on\nits cushion. Later: The cat naps on its cushion.\n';
+        const located = locateQuote({
+          document: {
+            text: twinText,
+            nodes: parseDocument({ text: twinText, },).nodes,
+          },
+          side: 'target',
+          quote: 'The cat naps on its cushion',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'ambiguous-quote (target)',
+        },);
+      },
+    },),
+    it({
+      name: 'refuses the same way when the twin differs only in curly versus straight punctuation, '
+        + 'which an archive mixing both makes ordinary',
+      fn: async () => {
+        /** One sentence with a curly apostrophe, the same one with an ASCII apostrophe. */
+        const twinText = 'It was the cat’s cushion. Later it was the cat\'s cushion.\n';
+        const located = locateQuote({
+          document: {
+            text: twinText,
+            nodes: parseDocument({ text: twinText, },).nodes,
+          },
+          side: 'target',
+          quote: 'the cat\'s cushion',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'ambiguous-quote (target)',
+        },);
+      },
+    },),
+    it({
       name: 'leaves a genuinely absent quote unsuffixed',
       fn: async () => {
         const located = locateQuote({
