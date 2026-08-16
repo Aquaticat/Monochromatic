@@ -12176,3 +12176,46 @@ READING IT: the instructions are on `#108` and they have grown past what that
 ticket originally said. Per class; near-floor candidates hand-checked rather than
 counted; an untranslated slice beside a high one treated as a possible
 whole-section move; and the two transcription suspects reported apart.
+
+THE ONE CODE STEP BEFORE ANY OF IT, which nothing else in this document records.
+`corpus-run/translate-probe.ts` is hardcoded to `PROBE_ENTRY = 'XingZ60'` with a
+fixed slice count and takes no arguments at all. It has to accept an entry plus a
+slice list, so it can be pointed at the flag list, and a switch for supplying the
+neighbouring source. That is small, and it is the only code step left before the
+run other than the design changes named above.
+
+DOCUMENT SCALE IS STILL UNANSWERED, and `#106` is where it belongs. The slice
+verdict exists and is cheap: `classifyDisplacement` calls a slice `untranslated`
+on source at least 150 characters against target at most 60, deterministically
+and with no model. Four such slices in the pinned corpus, all in `shi_Yumiaoya`,
+at ratios near 0.01, where the English side is a bare heading. That is a FLOOR
+rather than an estimate: a section rendered as a heading plus a one-line stub
+carries more than 60 target characters and is not counted.
+
+What has no verdict is the DOCUMENT. `shi_Yumiaoya` is 9795 Chinese characters
+against 1630 English, an aggregate of 0.31, and `documentBaseline` already
+reports which entries fall outside the believable band: 12 of 91 do. Nothing
+turns that reading into a stated verdict, and no lane consumes any of it. The
+probe prints.
+
+### Six comments were filed on the wrong tracker, and the numbering is why
+
+RECORDED SO IT DOES NOT RECUR. Everything in this document numbered `#60` to
+`#108` is a LOCAL TASK TRACKER item. Those numbers also exist as GitHub issues in
+this repository, and they are entirely different tickets: `#84` is an oxlint
+`ignorePatterns` workaround, `#106` is CLI scaffolding, `#107` and `#108` are
+dependency audits. Six comments about this work were posted onto those four
+tickets overnight under the assumption that the numbers referred to GitHub.
+
+The bodies were saved, then each comment was rewritten in place to a short note
+saying it was misfiled and where the work lives. Rewritten rather than deleted
+because deletion was refused, which was the better outcome: the correction is now
+auditable rather than invisible. Nothing was lost, and the two findings those
+comments carried that this document did not already hold, the `PROBE_ENTRY`
+step and the document-scale gap, are recorded above.
+
+ONLY `#431` AND `#432` ARE REAL GITHUB ISSUES for this work, because they were
+created here rather than referenced. Anything else numbered in this document
+belongs to the task tracker and must not be commented onto GitHub. Before
+posting to a GitHub issue from this work, read its title back and confirm it
+matches the subject.
