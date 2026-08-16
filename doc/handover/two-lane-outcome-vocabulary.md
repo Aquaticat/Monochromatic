@@ -592,6 +592,30 @@ scheduler still produces a mixed directory. The runs directory already takes an 
 (`lockRunsDir`), which covers our own passes; a foreign writer is out of scope of that lock and
 would need one shared with it.
 
+## The rendering audit is built, and unmeasured (`#85`)
+
+The absent-baseline instrument the translate lane needs, since a slice rendered from scratch has no
+BEFORE text for the differential probe to compare against.
+Three files, `rendering-audit-wire.ts`, `-screen.ts` and `rendering-audit.ts`, fourteen cases, and
+the self-corroboration guard shown to fail when stripped.
+It sits BESIDE the introduced-defect probe rather than replacing it: the repair lane still has a
+baseline and `#66` still measures the old instrument.
+
+Three decisions inside it are worth not re-litigating:
+
+-   **Each category proves itself from the side it CAN.** An omission has nothing in the candidate to
+    quote, its absence being the claim, so a symmetric rule would make the likeliest defect of a
+    from-scratch rendering unprovable. An unsupported addition is the mirror. Everything that changes
+    something both sides state must quote both.
+-   **The archive is irrelevant by construction, not by instruction.** A source quote is searched in
+    the original and nowhere else, so a claim resting on another translation's wording anchors
+    nowhere and is dropped. The prompt says so too; the prompt is not what enforces it.
+-   **Corroboration counts VOICES, not claims**, threshold two rather than a majority: the first
+    question is whether a defect is there, and a majority over six would discard a defect four of
+    them missed. The rows keep the counts, so a stricter rule can be applied to an existing run.
+
+NOT WIRED TO ANYTHING and unmeasured until its two live arms run, which is item 1 below.
+
 ## The post-trial run queue, decided in advance
 
 The window trial finishes at 327 arms and was at 300 when this was written, so the gate lifts soon
