@@ -4,7 +4,6 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { armCallDeadline, } from '../call-deadline.ts';
 import {
   CorpusReadError,
   listCorpusPeople,
@@ -20,9 +19,11 @@ import {
   type SizedEntry,
   smallBandIds,
 } from './band-order.ts';
-import { buildSettledArtifact, } from './artifact-build.ts';
-import { writeFileAtomic, } from './atomic-write.ts';
 import { readOnlyIds, } from './entry-filter.ts';
+import {
+  type CorpusPair,
+  settleEntry,
+} from './pass-entry.ts';
 import { assertResumableGeneration, } from './pass-generation-guard.ts';
 import {
   countSettled,
@@ -30,20 +31,12 @@ import {
 } from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { lockRunsDir, } from './runs-lock.ts';
-import { repairTranslation, } from '../repair-translation.ts';
-import {
-  discardSliceCache,
-  listResumableEntries,
-  openSliceCache,
-} from './slice-cache-store.ts';
+import { listResumableEntries, } from './slice-cache-store.ts';
 import {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
-  RUN_CALL_CONFIG,
   RUN_CORPUS_PIN,
-  RUN_MODELS,
-  RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 
 //region Corpus pass
@@ -154,34 +147,9 @@ const HARD_CAP_MS = HARD_CAP_MINUTES * MS_PER_MINUTE;
 const CORPUS_PAIR_TARGET = 92;
 
 /**
- * Characters of an error message kept in a TALLY line.
- */
-const ERROR_MESSAGE_CAP = 200;
-
-/**
  * Entry ids previewed on the `--plan` line.
  */
 const PLAN_PREVIEW_COUNT = 5;
-
-/**
- * One eligible corpus pair with its text loaded.
- */
-type CorpusPair = {
-  /**
-   * Person entry id.
-   */
-  readonly id: string;
-
-  /**
-   * Original zh page text.
-   */
-  readonly sourceText: string;
-
-  /**
-   * Translated en page text.
-   */
-  readonly targetText: string;
-};
 
 /**
  * Runs one accumulation pass over the corpus, writing artifacts and TALLY lines.
@@ -502,140 +470,17 @@ async function runCorpusPass(): Promise<void> {
       )}\n`,
     );
 
-    /**
-     * Per-entry slice-cache directory; earlier runs' finished slices live
-     * here so a large document resumes instead of restarting.
-     */
-    const entryCacheDir = join(
+    /* oxlint-disable-next-line no-await-in-loop -- entries run sequentially by design: aggregate concurrency beyond one stream per model collapses throughput on this plan */
+    await settleEntry({
+      client,
+      entry,
+      artifactsDir,
       sliceCacheDir,
-      entry.id,
-    );
-
-    /**
-     * Cross-run cache resuming finished slices and persisting new ones as
-     * each slice completes.
-     */
-    /* oxlint-disable-next-line no-await-in-loop -- per-entry setup, sequential by design */
-    const sliceCache = await openSliceCache({
-      dir: entryCacheDir,
-      generation: pipelineDigest,
+      tip,
+      pipelineDigest,
+      hardCapMs: HARD_CAP_MS,
+      baseSignal: neverAbort,
     },);
-
-    /**
-     * Start time of this entry, for its duration.
-     */
-    const t0 = Date.now();
-
-    /**
-     * Per-entry hard-cap deadline. Disposal at the loop-iteration end
-     * defuses the timer and detaches its listener; the repo bans
-     * try/finally, so cleanup rides on `using` instead.
-     */
-    using deadline = armCallDeadline({
-      signal: neverAbort,
-      timeoutMs: HARD_CAP_MS,
-      label: entry.id,
-    },);
-    try {
-      /**
-       * Repair result for this entry.
-       */
-      /* oxlint-disable-next-line no-await-in-loop -- entries run sequentially by design: aggregate concurrency beyond one stream per model collapses throughput on this plan */
-      const result = await repairTranslation({
-        client,
-        sourceText: entry.sourceText,
-        targetText: entry.targetText,
-        models: RUN_MODELS,
-        signal: deadline.callSignal,
-        perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-        sliceCache,
-      },);
-
-      /**
-       * Wall time this entry took.
-       */
-      const durationMs = Date.now() - t0;
-
-      /**
-       * Accepted issues among all adjudicated.
-       */
-      const accepted = result.issues
-        .filter(function isAccepted(record,) {
-        return record.issue
-          .status
-          === 'accepted';
-      },);
-
-      /**
-       * Accepted issues the checkers confirmed fixed.
-       */
-      const resolved = accepted.filter(function isResolved(record,) {
-        return record.resolved;
-      },);
-
-      /**
-       * Rich artifact for later grading; corpus-derived, hence gitignored.
-       */
-      const artifact = buildSettledArtifact({
-        entryId: entry.id,
-        tip,
-        pipelineDigest,
-        corpusSha: RUN_CORPUS_PIN.commitSha,
-        callConfig: RUN_CALL_CONFIG,
-        status: result.status,
-        durationMs,
-        sourceText: entry.sourceText,
-        targetText: entry.targetText,
-        result,
-        acceptedCount: accepted.length,
-        resolvedCount: resolved.length,
-      },);
-      /* oxlint-disable-next-line no-await-in-loop -- one artifact written per entry, sequential by design */
-      await writeFileAtomic({
-        path: join(
-          artifactsDir,
-          `${entry.id}.json`,
-        ),
-        text: `${JSON.stringify(
-          artifact,
-          undefined,
-          2,
-        )}\n`,
-      },);
-      console.log(
-        `TALLY ${entry.id} status=${result.status} issues=${String(result.issues
-          .length,)} accepted=${String(accepted.length,)} resolved=${String(resolved.length,)} findings=${String(result.findings
-            .length,)} ms=${String(durationMs,)}`,
-      );
-
-      // The entry settled, so its slice cache is spent; drop it to keep the
-      // cache directory bounded to in-flight large documents.
-      /* oxlint-disable-next-line no-await-in-loop -- per-entry cleanup, sequential by design */
-      await discardSliceCache({ dir: entryCacheDir, },);
-    }
-    catch (error) {
-      /**
-       * Wall time before this entry failed.
-       */
-      const durationMs = Date.now() - t0;
-
-      /**
-       * Whether the hard-ceiling abort fired.
-       */
-      const { aborted, } = deadline.callSignal;
-
-      /**
-       * Trimmed failure text for the TALLY line.
-       */
-      const message = Error.isError(error,)
-        ? error.message
-          .slice(
-          0,
-          ERROR_MESSAGE_CAP,
-        )
-        : String(error,);
-      console.log(`TALLY ${entry.id} status=ERROR ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,);
-    }
   }
 
   /**
