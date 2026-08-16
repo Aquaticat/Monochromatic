@@ -18,6 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  CANDIDATE_NONE,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type FidelityDirection,
@@ -68,19 +69,28 @@ const ROSTER = [
 type ScriptedPick = 'clean' | 'damaged';
 
 /**
- * Builds a client whose judges all vote for the same TEXT, whatever position it
- * occupies, so a test states a judge behaviour rather than a ballot index.
+ * What a scripted judge does with its ballot: back one of the texts, or name no
+ * candidate at all.
+ */
+type ScriptedVote = ScriptedPick | 'decline';
+
+/**
+ * Builds a client whose judges vote by TEXT rather than by position, each one
+ * following its own entry in the script, so a test states a judge behaviour and
+ * a mixed roster is expressible.
  *
- * @param pick - text every judge votes for
+ * @param script - vote per roster model id
  *
  * @returns Client the trial can be driven with
  *
  * @example
  * ```ts
- * const client = judgesPicking({ pick: 'clean', },);
+ * const client = judgesVoting({ script: { 'hf:cat/Cat-A': 'decline', },  },);
  * ```
  */
-function judgesPicking({ pick, }: { readonly pick: ScriptedPick; },): SyntheticClient {
+function judgesVoting(
+  { script, }: { readonly script: Readonly<Record<string, ScriptedVote>>; },
+): SyntheticClient {
   return {
     chatText: async () => {
       throw new Error('chatText unused by selection',);
@@ -117,9 +127,19 @@ function judgesPicking({ pick, }: { readonly pick: ScriptedPick; },): SyntheticC
       const cleanIsFirst = sheet.indexOf(CLEAN_ONLY_SENTENCE,) < secondAt;
 
       /**
-       * Ballot position this judge is scripted to back, one-based.
+       * What this particular judge was told to do.
        */
-      const wantedPosition = ((pick === 'clean') === cleanIsFirst) ? 1 : 2;
+      const vote = script[request.modelId];
+      if (vote === undefined)
+        throw new Error(`no scripted vote for ${request.modelId}`,);
+
+      /**
+       * Ballot position this judge is scripted to back, one-based, or
+       * `CANDIDATE_NONE` where it names nothing.
+       */
+      const wantedPosition = (vote === 'decline')
+        ? CANDIDATE_NONE
+        : (((vote === 'clean') === cleanIsFirst) ? 1 : 2);
 
       /**
        * Wire value carrying that vote.
@@ -145,7 +165,72 @@ function judgesPicking({ pick, }: { readonly pick: ScriptedPick; },): SyntheticC
 }
 
 /**
+ * Script in which every judge does the same thing.
+ *
+ * @param vote - what the whole roster does
+ *
+ * @returns Script covering every roster model
+ *
+ * @example
+ * ```ts
+ * const script = wholeRoster({ vote: 'decline', },);
+ * ```
+ */
+function wholeRoster({ vote, }: { readonly vote: ScriptedVote; },): Record<string, ScriptedVote> {
+  return Object.fromEntries(ROSTER.map(function toEntry(modelId,) {
+    return [
+      modelId,
+      vote,
+    ];
+  },),);
+}
+
+/**
  * Runs one trial against a scripted roster.
+ *
+ * @param script - vote per roster model id
+ *
+ * @param direction - which side holds the clean text
+ *
+ * @param cleanFirst - whether the clean text is listed first
+ *
+ * @returns Trial outcome
+ *
+ * @example
+ * ```ts
+ * const outcome = await runScripted({ script, direction: 'preserve', cleanFirst: true, },);
+ * ```
+ */
+async function runScripted(
+  {
+    script,
+    direction,
+    cleanFirst,
+  }: {
+    readonly script: Readonly<Record<string, ScriptedVote>>;
+    readonly direction: FidelityDirection;
+    readonly cleanFirst: boolean;
+  },
+) {
+  return await runFidelityTrial({
+    client: judgesVoting({ script, },),
+    trial: {
+      trialId: 'cat/0',
+      direction,
+      sourceText: SOURCE_TEXT,
+      cleanText: CLEAN_TEXT,
+      damagedText: DAMAGED_TEXT,
+      cleanFirst,
+    },
+    judgeModelIds: ROSTER,
+    signal: AbortSignal.timeout(30_000,),
+    perCallTimeoutMs: 5_000,
+    l,
+  },);
+}
+
+/**
+ * Runs one trial where every judge backs the same text.
  *
  * @param pick - text every judge backs
  *
@@ -171,20 +256,10 @@ async function trial(
     readonly cleanFirst: boolean;
   },
 ) {
-  return await runFidelityTrial({
-    client: judgesPicking({ pick, },),
-    trial: {
-      trialId: 'cat/0',
-      direction,
-      sourceText: SOURCE_TEXT,
-      cleanText: CLEAN_TEXT,
-      damagedText: DAMAGED_TEXT,
-      cleanFirst,
-    },
-    judgeModelIds: ROSTER,
-    signal: AbortSignal.timeout(30_000,),
-    perCallTimeoutMs: 5_000,
-    l,
+  return await runScripted({
+    script: wholeRoster({ vote: pick, },),
+    direction,
+    cleanFirst,
   },);
 }
 
@@ -253,6 +328,86 @@ await describe({
           .every(function backedClean(ballot,) {
             return ballot.picked === 'clean';
           },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'reads an ABSTAINING ballot as declined rather than as a vote for the deletion, which is '
+        + 'what naming no candidate would otherwise collapse into',
+      fn: async () => {
+        /**
+         * One judge names nothing while the other two back the complete text,
+         * which still carries the trial at full weight.
+         */
+        const outcome = await runScripted({
+          script: {
+            'hf:cat/Cat-A': 'decline',
+            'hf:cat/Cat-B': 'clean',
+            'hf:cat/Cat-C': 'clean',
+          },
+          direction: 'preserve',
+          cleanFirst: true,
+        },);
+        expect(outcome.verdict,).toBe('clean',);
+        expect(outcome.correct,).toBe(true,);
+        expect(outcome.ballots
+          .map(function toPick(ballot,) {
+            return ballot.picked;
+          },),).toEqual([
+            'declined',
+            'clean',
+            'clean',
+          ],);
+      },
+    },),
+    it({
+      name: 'counts a roster that WHOLLY DECLINES as incorrect, so an abstention never reads as '
+        + 'having found the deletion',
+      fn: async () => {
+        /** Every judge names nothing, which leaves the trial without a winner. */
+        const outcome = await runScripted({
+          script: wholeRoster({ vote: 'decline', },),
+          direction: 'preserve',
+          cleanFirst: true,
+        },);
+        expect(outcome.verdict,).toBe('declined',);
+        expect(outcome.correct,).toBe(false,);
+        expect(outcome.declineReason,).toBe('every judge declined',);
+        expect(outcome.ballots
+          .every(function abstained(ballot,) {
+            return ballot.picked === 'declined';
+          },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'counts a roster SHORT OF THE MINIMUM WEIGHT as incorrect even where the single judge '
+        + 'that voted named the complete text, since one voice does not carry a stage',
+      fn: async () => {
+        /**
+         * One judge backs the complete text and the rest abstain, which draws
+         * `FULL_VOTE_WEIGHT` against a minimum of `MIN_SELECTION_WEIGHT`.
+         */
+        const outcome = await runScripted({
+          script: {
+            'hf:cat/Cat-A': 'clean',
+            'hf:cat/Cat-B': 'decline',
+            'hf:cat/Cat-C': 'decline',
+          },
+          direction: 'preserve',
+          cleanFirst: true,
+        },);
+        expect(outcome.verdict,).toBe('declined',);
+        expect(outcome.correct,).toBe(false,);
+        expect(outcome.declineReason,).toBe('winner short of the minimum vote weight',);
+        // The ballot still records what that judge chose, which is the reading
+        // that separates a panel nobody voted in from one that could not agree.
+        expect(outcome.ballots
+          .map(function toPick(ballot,) {
+            return ballot.picked;
+          },),).toEqual([
+            'clean',
+            'declined',
+            'declined',
+          ],);
       },
     },),
   ],
