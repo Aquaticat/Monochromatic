@@ -18,7 +18,7 @@ Do not pass `--cwd`:
 the child then will not read the repo `CLAUDE.md`,
 and Claude Code's cwd handling is unreliable.
 
-Use `timeout 1h pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<your question>"` for a strong model's opinion.
+Use `timeout 3600 pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<your question>"` for a strong model's opinion.
 Call it in addition to the advisor tool,
 never instead:
 whenever you are about to call advisor,
@@ -41,7 +41,12 @@ Include the question,
 the repo-relative paths,
 and every file the answer depends on.
 
-Always wrap it in `timeout 1h`.
+Always wrap it in `timeout 3600`, and the unit is SECONDS.
+The `timeout` on this PATH is cargo-timeout-cli, not coreutils:
+its usage is `timeout <SECONDS> <COMMAND> [ARGS]`,
+and it rejects `1h` with `invalid value '1h' for '<SECONDS>': invalid digit found in string`.
+Verified by running it, after an earlier version of this instruction shipped the coreutils spelling untested.
+
 Calls stall indefinitely:
 measured 2026-08-16,
 two sat 5h18m and 3h43m at zero CPU with empty output,
