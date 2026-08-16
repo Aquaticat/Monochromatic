@@ -87,6 +87,10 @@ export {
   flaggedSlices,
   type TrialSlice,
 } from './corpus-run/window-trial-draw.ts';
+export {
+  type PickOutcome,
+  runPick,
+} from './corpus-run/window-trial-pick.ts';
 export { runSliceArms, } from './corpus-run/window-trial-slice.ts';
 export {
   assertWindowReachedJudges,

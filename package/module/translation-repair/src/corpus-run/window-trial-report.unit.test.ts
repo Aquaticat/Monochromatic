@@ -25,6 +25,11 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
+ * Judges every arm in these fixtures seats.
+ */
+const JUDGES_SEATED = 6;
+
+/**
  * Builds one completed arm.
  *
  * @param chunkIndex - slice position
@@ -34,6 +39,9 @@ import {
  * @param shipped - whether this arm replaced the archive
  *
  * @param sliceClass - class the screen flagged, or a control label
+ *
+ * @param judgesHeard - judges whose ballot arrived, short of the seated panel
+ * when the fan-out lost voices
  *
  * @returns Row shaped like one the runner appends
  *
@@ -48,11 +56,13 @@ function rowFor(
     arm,
     shipped,
     sliceClass = 'relocation',
+    judgesHeard = JUDGES_SEATED,
   }: {
     readonly chunkIndex: number;
     readonly arm: string;
     readonly shipped: boolean;
     readonly sliceClass?: string;
+    readonly judgesHeard?: number;
   },
 ): WindowTrialRow {
   return {
@@ -64,6 +74,8 @@ function rowFor(
     shipped,
     decision: 'judged',
     winnerText: shipped ? 'A fresh rendering.\n' : 'The archive wording.\n',
+    judgesHeard,
+    judgesSeated: JUDGES_SEATED,
   };
 }
 
@@ -197,6 +209,58 @@ await describe({
           ?.trials,).toBe(1,);
         expect(report?.transitions
           .replaceToKeep,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'DROPS A TRIPLE WHOSE WIDE ARM DECIDED ON A SHORT PANEL, and counts it separately '
+        + 'from a missing arm. The fan-out proceeds once half the roster answers, so a lost voice '
+        + 'is written as an ordinary decision, and the wide arm sends the longest sheets under the '
+        + 'same deadline: read as it stands, judges that never answered would be credited to the '
+        + 'window',
+      fn: async () => {
+        const rows = [
+          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
+          rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
+          // Slice 1's wide arm heard four of six.
+          rowFor({
+            chunkIndex: 1,
+            arm: TRIAL_ARMS.wide,
+            shipped: false,
+            judgesHeard: 4,
+          },),
+        ];
+
+        const [report,] = reportWindowTrial({ rows, },);
+        expect(report?.degraded,).toBe(1,);
+        // Not counted as merely missing, which is a different fault.
+        expect(report?.incomplete,).toBe(0,);
+        expect(report?.arms[0]
+          ?.trials,).toBe(1,);
+        // The dropped slice would have doubled this had it been read.
+        expect(report?.transitions
+          .replaceToKeep,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'drops a triple whose NARROW arm was the short one too, since the band is what the '
+        + 'wide arm is judged against and a band measured on lost voices is not a band',
+      fn: async () => {
+        const rows = [
+          rowFor({
+            chunkIndex: 0,
+            arm: TRIAL_ARMS.narrowFirst,
+            shipped: true,
+            judgesHeard: 3,
+          },),
+          rowFor({ chunkIndex: 0, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
+          rowFor({ chunkIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },),
+        ];
+
+        const [report,] = reportWindowTrial({ rows, },);
+        expect(report?.degraded,).toBe(1,);
+        expect(report?.arms[0]
+          ?.trials,).toBe(0,);
       },
     },),
     it({

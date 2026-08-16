@@ -364,6 +364,65 @@ await describe({
       },
     },),
     it({
+      name: 'BUYS NOTHING FOR A PARTLY BOUGHT SLICE, which is the resumption path that would '
+        + 'otherwise re-introduce the confound `#109` was split to remove: the slate cannot be '
+        + 'reproduced, so finishing the remaining arms here would judge different candidates from '
+        + 'the arms already on disk while the ledger showed a complete triple',
+      fn: async () => {
+        const rig = driftingClient();
+        const rows = await runSliceArms({
+          client: rig.client,
+          slices: SLICES,
+          chunkIndex: 1,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: await freshLedger(),
+          // A kill after the first two arms.
+          done: new Set([TRIAL_ARMS.narrowFirst,
+            TRIAL_ARMS.narrowSecond,].map(function toKey(arm,) {
+            return `protocol-one Mittens 1 ${arm}`;
+          },),),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        expect(rows.length,).toBe(0,);
+        expect(rig.served
+          .count,).toBe(0,);
+        expect(rig.judgeSheets
+          .length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'records the PANEL EACH ARM DECIDED ON, since the fan-out proceeds once half the '
+        + 'roster answers and an arm that lost judges is otherwise written as an ordinary keep',
+      fn: async () => {
+        const rig = driftingClient();
+        const rows = await runSliceArms({
+          client: rig.client,
+          slices: SLICES,
+          chunkIndex: 1,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: await freshLedger(),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        for (const row of rows) {
+          expect(row.judgesSeated,).toBe(MODELS.judgeModelIds.length,);
+          expect(row.judgesHeard,).toBe(MODELS.judgeModelIds.length,);
+        }
+      },
+    },),
+    it({
       name: 'REFUSES a slice with no neighbouring section before spending anything, since its wide '
         + 'arm would be its narrow arm and the pair would report a false null',
       fn: async () => {

@@ -94,7 +94,7 @@ export type Transitions = {
  *
  * @example
  * ```ts
- * const report: ClassReport = { sliceClass: 'relocation', arms: [], transitions, bandTransitions, incomplete: 0, };
+ * const report: ClassReport = { sliceClass: 'relocation', arms: [], transitions, bandTransitions, incomplete: 0, degraded: 0, };
  * ```
  */
 export type ClassReport = {
@@ -128,6 +128,17 @@ export type ClassReport = {
    * class the analysis covers.
    */
   readonly incomplete: number;
+
+  /**
+   * Complete triples excluded because some arm judged on a short panel.
+   *
+   * SEPARATE FROM {@link ClassReport.incomplete} because the two say different
+   * things. A missing arm is a run that stopped. A short panel is a run that
+   * proceeded on fewer judges than it seated, and the wide arm is the one most
+   * exposed to it, so a class where this number is large is a class whose
+   * comparison was being pulled by lost voices rather than by evidence.
+   */
+  readonly degraded: number;
 };
 
 /**
@@ -303,12 +314,27 @@ export function reportWindowTrial(
     },), },);
 
     /**
-     * Slices carrying all three arms, which is the only population read.
+     * Slices carrying all three arms.
      */
-    const triples = bySlice.filter(function complete(arms,): boolean {
+    const complete = bySlice.filter(function hasEveryArm(arms,): boolean {
       return arms.has(TRIAL_ARMS.narrowFirst,)
         && arms.has(TRIAL_ARMS.narrowSecond,)
         && arms.has(TRIAL_ARMS.wide,);
+    },);
+
+    /**
+     * Of those, the ones every arm decided on a full panel, which is the only
+     * population read.
+     *
+     * A SHORT PANEL IS NOT A SMALLER SAMPLE OF THE SAME THING. The fan-out
+     * proceeds once half the roster answers, so an arm that lost judges still
+     * returns a decision, and the wide arm sends the longest sheets under the
+     * same deadline. Reading those rows would credit lost voices to the window.
+     */
+    const triples = complete.filter(function fullPanel(arms,): boolean {
+      return [...arms.values(),].every(function whole(row,): boolean {
+        return (row.judgesSeated > 0) && (row.judgesHeard === row.judgesSeated);
+      },);
     },);
 
     return {
@@ -333,7 +359,8 @@ export function reportWindowTrial(
         from: TRIAL_ARMS.narrowFirst,
         to: TRIAL_ARMS.narrowSecond,
       },),
-      incomplete: bySlice.length - triples.length,
+      incomplete: bySlice.length - complete.length,
+      degraded: complete.length - triples.length,
     };
   },);
 }

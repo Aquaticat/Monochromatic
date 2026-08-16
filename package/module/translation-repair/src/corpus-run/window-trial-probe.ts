@@ -32,7 +32,7 @@ import {
   flaggedSlices,
   type TrialSlice,
 } from './window-trial-draw.ts';
-import { runSliceArms, } from './window-trial-slice.ts';
+import { runPick, } from './window-trial-pick.ts';
 import {
   assertWindowReachedJudges,
   witnessSheets,
@@ -66,6 +66,15 @@ const TRIAL_PROTOCOL_VERSION = 1;
  * breadth is worth more here than depth.
  */
 const CONTROLS_PER_ENTRY = 1;
+
+/**
+ * Refusals in a row that end the run.
+ *
+ * Small, because slices that genuinely cannot be tried do not cluster: the draw
+ * interleaves entries and classes, so several in a row is a provider or a
+ * roster, not a run of awkward slices.
+ */
+const REFUSALS_BEFORE_STOPPING = 5;
 
 /**
  * Digest characters printed in the run's opening line.
@@ -317,9 +326,21 @@ async function main(): Promise<void> {
   const witness = witnessSheets({ client, },);
 
   /**
-   * Slices bought so far, which the first-slice check reads.
+   * Slices bought so far, which the first-slice check reads, and slices that
+   * refused.
+   *
+   * A REFUSAL IS COUNTED AND WALKED PAST, never fatal to the run. A slice can
+   * refuse for reasons that are properties of the slice rather than of the
+   * trial: no neighbouring section to widen to, or a slice with no incumbent
+   * whose judges all declined. Aborting the walk on one of those would stop the
+   * run at the same slice on every resumption, and since the refusal is never
+   * recorded, no amount of restarting would ever get past it.
    */
-  const bought = { count: 0, };
+  const bought = {
+    count: 0,
+    refused: 0,
+    refusedInARow: 0,
+  };
 
   /**
    * State of the live window check: wide arms bought under the witness, and
@@ -340,13 +361,13 @@ async function main(): Promise<void> {
     for (const pick of drawn.picks) {
       /* oxlint-disable no-await-in-loop -- arms are bought one slice at a time and appended as they complete */
       /**
-       * Arms this call bought, empty when the ledger already held them all.
+       * What this slice yielded: arms it bought, empty when the ledger already
+       * held them all, or a refusal the walk steps over.
        */
-      const rows = await runSliceArms({
+      const outcome = await runPick({
         client: witnessed.passed ? client : witness.client,
         slices: drawn.slices,
-        chunkIndex: pick.chunkIndex,
-        sliceClass: pick.sliceClass,
+        pick,
         entryId,
         protocol,
         ledgerPath,
@@ -360,6 +381,28 @@ async function main(): Promise<void> {
         l,
       },);
       /* oxlint-enable no-await-in-loop */
+      if (outcome.kind === 'refused') {
+        bought.refused += 1;
+        bought.refusedInARow += 1;
+        // A REFUSAL IS NOT FREE: the slate is produced before any arm is judged,
+        // so a fault that fails every judging still spends a roster of
+        // translator calls per slice and leaves an empty ledger. Slices that
+        // genuinely cannot be tried are scattered through the draw, so a run of
+        // them says the fault is the run's rather than the slices'.
+        if (bought.refusedInARow >= REFUSALS_BEFORE_STOPPING)
+          throw new Error(
+            `${String(bought.refusedInARow,)} slices refused in a row, which is `
+              + `a fault in the run rather than in the slices; stopping before `
+              + `the rest of the draw is spent producing slates nobody judges`,
+          );
+        continue;
+      }
+      bought.refusedInARow = 0;
+
+      /**
+       * Arms this call bought.
+       */
+      const { rows, } = outcome;
       if (rows.length === 0)
         continue;
       bought.count += 1;
@@ -392,7 +435,11 @@ async function main(): Promise<void> {
     }
   }
 
-  l.info(`bought ${String(bought.count,)} slices this run`,);
+  l.info(
+    `bought ${String(bought.count,)} slices this run; ${
+      String(bought.refused,)
+    } refused`,
+  );
   for (const report of reportWindowTrial({
     rows: await readTrialLedger({ path: ledgerPath, },),
   },)) {
@@ -411,7 +458,9 @@ async function main(): Promise<void> {
         .replaceToKeep,)} down and ${
         String(report.bandTransitions
           .keepToReplace,)
-      } up; ${String(report.incomplete,)} incomplete`,
+      } up; ${String(report.incomplete,)} incomplete, ${
+        String(report.degraded,)
+      } dropped for a short panel`,
     );
   }
 }

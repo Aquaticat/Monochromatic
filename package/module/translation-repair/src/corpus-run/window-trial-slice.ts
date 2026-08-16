@@ -130,6 +130,24 @@ export async function runSliceArms(
   if (owed.length === 0)
     return [];
 
+  // A PARTLY BOUGHT SLICE IS SPOILED, NOT RESUMABLE. The slate cannot be
+  // reproduced, so finishing the remaining arms here would judge different
+  // candidates from the arms already on disk, and the ledger would then hold a
+  // triple that looks complete while its arms disagree about the slate as well
+  // as the evidence. That is precisely the confound `#109` was split to remove,
+  // arriving through resumption instead of through the stage. Left as it is,
+  // the slice stays incomplete, and the report already excludes it and says so.
+  if (owed.length !== ARM_ORDER.length) {
+    l.warn(
+      `${entryId}/${String(chunkIndex,)}: ${
+        String(ARM_ORDER.length - owed.length,)
+      } of ${String(ARM_ORDER.length,)} arms survive from an interrupted run; `
+        + `skipping rather than finishing them over a slate the earlier arms `
+        + `never saw`,
+    );
+    return [];
+  }
+
   /**
    * Slice under trial.
    */
@@ -208,6 +226,10 @@ export async function runSliceArms(
       shipped: decided.origin !== 'incumbent',
       decision: decided.decision,
       winnerText: decided.text,
+      judgesHeard: decided.tally
+        .ballots,
+      judgesSeated: decided.tally
+        .judgesAvailable,
     };
 
     // APPENDED BEFORE THE NEXT ARM STARTS, which is what makes a kill cost one

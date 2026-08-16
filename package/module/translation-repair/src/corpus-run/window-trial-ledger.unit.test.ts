@@ -79,6 +79,8 @@ function rowFor(
     shipped: arm === 'wide',
     decision: 'judged',
     winnerText: 'The cat sleeps on the windowsill.\n',
+    judgesHeard: 6,
+    judgesSeated: 6,
   };
 }
 

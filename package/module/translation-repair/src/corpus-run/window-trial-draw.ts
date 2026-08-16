@@ -209,12 +209,25 @@ export function controlSlices(
     Math.floor(unflagged.length / wanted,),
   );
 
+  /**
+   * Where the first control sits inside its stride.
+   *
+   * CENTRED RATHER THAN AT THE START. Taking position zero of every stride puts
+   * the first control on the FIRST unflagged slice of the document, and at
+   * `wanted` of one, where the stride is the whole document, that is the only
+   * control the entry contributes. Openings are the population this draw was
+   * written to avoid: several entries begin with a heading and a stub, which a
+   * judge reads differently from body prose, so a control class made of them
+   * would report the opening effect and be labelled context-conservatism.
+   */
+  const offset = Math.floor(stride / 2,);
+
   return unflagged
     .filter(function onStride(
       _chunkIndex,
       position,
     ): boolean {
-      return (position % stride) === 0;
+      return ((position % stride) === offset);
     },)
     .slice(
       0,

@@ -203,9 +203,25 @@ await describe({
         },);
         expect(controls.map(function toIndex(control,) {
           return control.chunkIndex;
-        },),).toEqual([0,
-          4,
-          8,],);
+        },),).toEqual([2,
+          6,
+          10,],);
+      },
+    },),
+    it({
+      name: 'draws the MIDDLE slice when asked for one, not the first: at a single control the '
+        + 'stride is the whole document, so a draw taken at the start of every stride would make '
+        + 'every control in the corpus an opening, and the class exists to detect a general '
+        + 'context conservatism rather than an opening effect',
+      fn: async () => {
+        const controls = controlSlices({
+          entryId: 'Mittens',
+          displacement: readingFor({ sliceCount: 9, },),
+          wanted: 1,
+        },);
+        expect(controls.map(function toIndex(control,) {
+          return control.chunkIndex;
+        },),).toEqual([4,],);
       },
     },),
     it({
