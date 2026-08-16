@@ -225,12 +225,33 @@ every lane measurement carries its lane in the key,
 and `selection=` says out loud that nobody has picked a winner.
 Nothing in the repo parses TALLY lines, checked with `rg`, so no consumer moved with it.
 
+`callConfig` was checked rather than assumed to still describe the run it labels,
+now that a whole second lane runs under it.
+`RunCallConfig` carries only call TIMING (`perCallTimeoutMs`, `streamFirstByteMs`, `streamIdleMs`),
+which is transport-level and identical for both lanes,
+and roster identity rides on `pipelineDigest`:
+that digest is taken over the emitted executable `.mjs` files (`pipeline-digest.ts`, `sha256-tree-v1`),
+and the rosters live in `run-config.ts`, which compiles into one of them.
+So two passes differing only in translate models get different pipeline digests.
+Nothing to change; recorded so the question is not re-asked.
+
 The abort window is the case worth knowing about:
 a resumed entry buys nothing, so no exchange is left to notice a ceiling that has already fired,
 and the lanes hand back two complete documents the run is not entitled to record.
 The test settles once with a write that cannot land, which leaves the cache full rather than discarded,
 then resumes under an aborted signal.
 GFP: stripping `throwIfAborted` makes that case alone fail, writing the artifact anyway.
+
+The cleanup-failure case landed too (`f0ea127c8`), after first probing whether it was injectable at all:
+settle once with a write that cannot land so the cache survives,
+make that cache directory read-only, then settle again.
+Removal unlinks the entries INSIDE a directory, which needs write permission on the directory itself,
+so the artifact lands and the discard cannot.
+It reads what was PRINTED, keyed on an entry id no other case uses,
+because the runner runs cases concurrently in one process and a capture keyed on nothing
+collects whatever else was logging.
+GFP: collapsing the `CLEANUP` line back into a `TALLY` fails it.
+Full suite green after all of it.
 
 ## Found while testing it: the repair lane's unheard critics (`#112`)
 
