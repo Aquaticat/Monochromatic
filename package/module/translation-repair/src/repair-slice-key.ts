@@ -189,8 +189,30 @@ import type { RepairModels, } from './repair-contract.ts';
  * what the stages are asked. What a translator or an editor is asked is the source
  * text, the incumbent, the governance flag and the run shape; where the slice
  * sits is not part of the question, so it is not part of the key.
+ *
+ * Version 27 follows on 2026-08-15 for a change that touches no prompt and no
+ * text: `locateQuote` gained a pass that collapses soft line breaks, so a critic
+ * quote copied out of a wrapped paragraph now anchors where it used to be
+ * dropped. `critic-wire.ts` discards a claim it cannot anchor, which means the
+ * surviving issue set for a slice changed, and with it the patch and the settled
+ * text. The key holds the slice texts, the governance flag and the run shape,
+ * and all three are identical across the fix: the same key answers differently
+ * before and after it, which is precisely what a version is for.
+ *
+ * IT IS NOT THE ONE-DIRECTION CASE that let version 25 stand. That record could
+ * only overclaim a change, and `sliceRecordAgrees` catches an overclaim on
+ * resume at the cost of recomputing one slice. This one can differ in either
+ * direction and leaves no contradiction behind: a slice settled before the fix
+ * with a dropped wrapped quote reads as a clean settlement, indistinguishable
+ * from one where the critic found nothing. Nothing downstream can notice, so the
+ * version has to.
+ *
+ * `TRANSLATE_SLICE_CACHE_VERSION` deliberately does NOT move with it. Anchoring
+ * reaches the repair lane through `repair-stages.ts` alone; the translate lane
+ * never asks a critic to quote anything, so its settled slices still agree with
+ * what this code computes.
  */
-export const SLICE_CACHE_VERSION = 26;
+export const SLICE_CACHE_VERSION = 27;
 /**
  * Everything about a repair run that changes what the models are ASKED, folded
  * into every cache key.

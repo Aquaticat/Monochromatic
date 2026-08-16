@@ -80,9 +80,9 @@ await describe({
         + 'Update this hash only together with SLICE_CACHE_VERSION, and only when the change is '
         + 'meant to invalidate what is on disk',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(26,);
+        expect(SLICE_CACHE_VERSION,).toBe(27,);
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('f5459b69e0d634e3a33d41dff6855d7d15e5e68b4ed338d6cd85843dc68c8984',);
+          .toBe('faf8a6f573a89535b39bdb9d4c5a13b917d588274efe6be2b4c3487e1c48cec9',);
       },
     },),
     it({
