@@ -12016,3 +12016,44 @@ placeholder, it fails on the assertion itself.
 STILL TO BUILD, and it is the only thing left before the run: `translate-probe`
 is hardcoded to one entry with a fixed slice count and takes no arguments. It
 needs an entry plus slice list, and a flag for the wider window.
+
+### The plumbing `#108` needs is done, and here is the one file left
+
+`settleTranslateSlice` now takes an optional `neighbouringSourceText` and passes
+it to `runTranslateStage`, which passes it to the judges as context they are not
+asked to render. Absent by default at every level, so the lane behaves exactly as
+it did and every measurement taken before tonight still describes what production
+sends.
+
+WHAT REMAINS IS ONE PROBE, and writing it deliberately rather than at five in the
+morning is the reason it is not written. Twice tonight a rushed classification
+shipped a design error that only an acceptance test caught, both times by
+deciding a slice's class from the slice alone; the lesson is worth one night's
+delay.
+
+THE SPEC, so the next session does not re-derive it:
+
+1.  Walk the pinned corpus, run `classifyDisplacement` per entry, and collect
+    every flagged slice with the class that flagged it. Reuse the probe's own
+    reading rather than a copy of the thresholds.
+2.  For each flagged slice, call `settleTranslateSlice` TWICE: once as it stands,
+    once with `neighbouringSource({ slices, sliceIndex, },)` supplied. Same
+    client, same rosters, same slice.
+3.  Record per slice: the class, whether each arm replaced the archive text, and
+    the decision the stage reported. `TranslateSliceRecord` already carries what
+    is needed.
+4.  Tally the replacement rate PER CLASS PER ARM.
+
+WHAT THE CACHE DOES TO THIS, and it has to be checked before the run rather than
+after: the two arms send different sheets for the same slice, so they must not
+collide in the slice cache. `translate-slice-key.ts` decides that key, and
+whether the window is part of it is the first thing to read.
+
+BUDGET: roughly 80 flagged slices, two arms, three translators and six judges per
+arm. Call it 1500 exchanges. Every one is a real call, so run it detached and let
+it notify.
+
+READING IT: the instructions are on `#108` and they have grown past what that
+ticket originally said. Per class; near-floor candidates hand-checked rather than
+counted; an untranslated slice beside a high one treated as a possible
+whole-section move; and the two transcription suspects reported apart.
