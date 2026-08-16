@@ -10,10 +10,7 @@ import {
   JsoncPathNotFoundError,
   JsoncTypeError,
 } from './errors.ts';
-import type {
-  JsoncRecordEntry,
-  JsoncValue,
-} from './value.ts';
+import type { JsoncValue, } from './value.ts';
 
 //region Sentinel
 
@@ -82,15 +79,16 @@ function transformAtPath({
     },);
     if (matchIndex === (-1))
       throw new JsoncPathNotFoundError({ path, },);
+    /**
+     * Matched entry retained while its value is rebuilt.
+     */
+    const entry = nonNullishOrThrow(node.entries[matchIndex],);
     return {
       ...node,
       entries: node.entries
-        .map(function rebuildEntry(
-          entry: JsoncRecordEntry,
-          index: number,
-        ): JsoncRecordEntry {
-        return (index === matchIndex)
-          ? {
+        .with(
+          matchIndex,
+          {
             key: entry.key,
             value: transformAtPath({
               node: entry.value,
@@ -98,9 +96,8 @@ function transformAtPath({
               pathIndex: pathIndex + 1,
               transform,
             },),
-          }
-          : entry;
-      },),
+          },
+        ),
     };
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
@@ -108,22 +105,22 @@ function transformAtPath({
       >= node.elements
       .length))
       throw new JsoncPathNotFoundError({ path, },);
+    /**
+     * Matched element rebuilt while siblings retain identity.
+     */
+    const element = nonNullishOrThrow(node.elements[segment],);
     return {
       ...node,
       elements: node.elements
-        .map(function rebuildElement(
-          element: JsoncValue,
-          index: number,
-        ): JsoncValue {
-        return (index === segment)
-          ? transformAtPath({
+        .with(
+          segment,
+          transformAtPath({
             node: element,
             path,
             pathIndex: pathIndex + 1,
             transform,
-          },)
-          : element;
-      },),
+          },),
+        ),
     };
   }
   throw new JsoncTypeError({
@@ -329,23 +326,23 @@ export function jsoncSetKeyComment({
         },);
         if (matchIndex === (-1))
           throw new JsoncPathNotFoundError({ path, },);
+        /**
+         * Matched entry rebuilt while siblings retain identity.
+         */
+        const entry = nonNullishOrThrow(parent.entries[matchIndex],);
         return {
           ...parent,
           entries: parent.entries
-            .map(function rebuildEntry(
-              entry: JsoncRecordEntry,
-              index: number,
-            ): JsoncRecordEntry {
-            return (index === matchIndex)
-              ? {
+            .with(
+              matchIndex,
+              {
                 key: {
                   ...entry.key,
                   comment,
                 },
                 value: entry.value,
-              }
-              : entry;
-          },),
+              },
+            ),
         };
       },
     },),

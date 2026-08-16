@@ -10,10 +10,7 @@ import {
   JsoncPathNotFoundError,
   JsoncTypeError,
 } from './errors.ts';
-import type {
-  JsoncRecordEntry,
-  JsoncValue,
-} from './value.ts';
+import type { JsoncValue, } from './value.ts';
 
 //region Set
 
@@ -74,16 +71,17 @@ function setAtPath({
         .value
         === segment;
     },);
-    if (matchIndex !== (-1))
+    if (matchIndex !== (-1)) {
+      /**
+       * Matched entry retained while its value is rebuilt.
+       */
+      const entry = nonNullishOrThrow(node.entries[matchIndex],);
       return {
         ...node,
         entries: node.entries
-          .map(function rebuildEntry(
-            entry: JsoncRecordEntry,
-            index: number,
-          ): JsoncRecordEntry {
-          return (index === matchIndex)
-            ? {
+          .with(
+            matchIndex,
+            {
               key: entry.key,
               value: setAtPath({
                 node: entry.value,
@@ -91,10 +89,10 @@ function setAtPath({
                 pathIndex: pathIndex + 1,
                 newNode,
               },),
-            }
-            : entry;
-        },),
+            },
+          ),
       };
+    }
     if (pathIndex === (path.length - 1))
       return {
         ...node,
@@ -111,24 +109,25 @@ function setAtPath({
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
     if ((segment >= 0) && (segment
       < node.elements
-      .length))
+      .length)) {
+      /**
+       * Matched element rebuilt while siblings retain identity.
+       */
+      const element = nonNullishOrThrow(node.elements[segment],);
       return {
         ...node,
         elements: node.elements
-          .map(function rebuildElement(
-            element: JsoncValue,
-            index: number,
-          ): JsoncValue {
-          return (index === segment)
-            ? setAtPath({
+          .with(
+            segment,
+            setAtPath({
               node: element,
               path,
               pathIndex: pathIndex + 1,
               newNode,
-            },)
-            : element;
-        },),
+            },),
+          ),
       };
+    }
     if ((segment
       === node.elements
       .length) && (pathIndex === (path.length - 1)))
@@ -252,24 +251,24 @@ function deleteAtPath({
     },);
     if (matchIndex === (-1))
       throw new JsoncPathNotFoundError({ path, },);
+    /**
+     * Matched entry retained while its value is rebuilt.
+     */
+    const entry = nonNullishOrThrow(node.entries[matchIndex],);
     return {
       ...node,
       entries: node.entries
-        .map(function rebuildEntry(
-          entry: JsoncRecordEntry,
-          index: number,
-        ): JsoncRecordEntry {
-        return (index === matchIndex)
-          ? {
+        .with(
+          matchIndex,
+          {
             key: entry.key,
             value: deleteAtPath({
               node: entry.value,
               path,
               pathIndex: pathIndex + 1,
             },),
-          }
-          : entry;
-      },),
+          },
+        ),
     };
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
@@ -288,21 +287,21 @@ function deleteAtPath({
       >= node.elements
       .length))
       throw new JsoncPathNotFoundError({ path, },);
+    /**
+     * Matched element rebuilt while siblings retain identity.
+     */
+    const element = nonNullishOrThrow(node.elements[segment],);
     return {
       ...node,
       elements: node.elements
-        .map(function rebuildElement(
-          element: JsoncValue,
-          index: number,
-        ): JsoncValue {
-        return (index === segment)
-          ? deleteAtPath({
+        .with(
+          segment,
+          deleteAtPath({
             node: element,
             path,
             pathIndex: pathIndex + 1,
-          },)
-          : element;
-      },),
+          },),
+        ),
     };
   }
   throw new JsoncTypeError({
