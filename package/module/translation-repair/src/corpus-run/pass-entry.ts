@@ -39,6 +39,31 @@ import {
 const ERROR_MESSAGE_CAP = 200;
 
 /**
+ * Whether an entry reached its artifact.
+ *
+ * A NAMED RESULT RATHER THAN A FLAG the catch sets, because the only thing
+ * downstream of it is a cache discard, and a discard is destructive: reading
+ * "was this settled" off a mutable variable assigned in two branches is how a
+ * failed entry ends up losing the slices it had already bought.
+ *
+ * @example
+ * ```ts
+ * const outcome: EntryOutcome = { kind: 'settled', };
+ * ```
+ */
+type EntryOutcome = {
+  /**
+   * Artifact was written; whatever the pipeline decided is now on disk.
+   */
+  readonly kind: 'settled';
+} | {
+  /**
+   * Entry raised or hit its ceiling, and no artifact exists for it.
+   */
+  readonly kind: 'failed';
+};
+
+/**
  * One eligible corpus pair with its text loaded.
  */
 export type CorpusPair = {
@@ -59,17 +84,12 @@ export type CorpusPair = {
 };
 
 /**
- * Runs one chosen entry to settlement.
+ * Runs one chosen entry as far as its artifact, and says whether it got there.
  *
- * Returns nothing: the artifact file and the TALLY line ARE the outputs, and a
- * caller that read a value here would be reading a second, weaker copy of what
- * the artifact already says.
- *
- * Never throws for a failed entry. A pass over a corpus stops for a broken
- * SCHEDULER, not for a broken document: an entry that aborts on its ceiling or
- * raises out of a stage records `status=ERROR` and the pass continues to the
- * next one. Anything raised here would therefore end the run, which is why
- * nothing is.
+ * SEPARATE FROM THE CACHE DISCARD that follows it, which is the whole reason
+ * this function exists rather than one longer body. The discard is destructive
+ * and belongs only to the settled path, and a `catch` wide enough to cover both
+ * cannot tell a pipeline failure from a failed unlink.
  *
  * @param client - shared model client
  *
@@ -77,8 +97,7 @@ export type CorpusPair = {
  *
  * @param artifactsDir - directory one JSON per settled entry is written into
  *
- * @param sliceCacheDir - root under which this entry claims its own cache
- * subdirectory
+ * @param entryCacheDir - this entry's own cache directory
  *
  * @param tip - repository head recorded into the artifact
  *
@@ -87,20 +106,21 @@ export type CorpusPair = {
  *
  * @param hardCapMs - wall time this entry may run before its exchanges abort
  *
- * @param baseSignal - abort every entry deadline forwards from; the pass never
- * aborts it, so only a per-entry timeout ever fires
+ * @param baseSignal - abort this entry's deadline forwards from
+ *
+ * @returns Whether an artifact was written
  *
  * @example
  * ```ts
- * await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
+ * const outcome = await runEntryPipeline({ client, entry, artifactsDir, entryCacheDir, ... },);
  * ```
  */
-export async function settleEntry(
+async function runEntryPipeline(
   {
     client,
     entry,
     artifactsDir,
-    sliceCacheDir,
+    entryCacheDir,
     tip,
     pipelineDigest,
     hardCapMs,
@@ -109,31 +129,13 @@ export async function settleEntry(
     readonly client: SyntheticClient;
     readonly entry: CorpusPair;
     readonly artifactsDir: string;
-    readonly sliceCacheDir: string;
+    readonly entryCacheDir: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
   },
-): Promise<void> {
-  /**
-   * Per-entry slice-cache directory; earlier runs' finished slices live here so
-   * a large document resumes instead of restarting.
-   */
-  const entryCacheDir = join(
-    sliceCacheDir,
-    entry.id,
-  );
-
-  /**
-   * Cross-run cache resuming finished slices and persisting new ones as each
-   * slice completes.
-   */
-  const sliceCache = await openSliceCache({
-    dir: entryCacheDir,
-    generation: pipelineDigest,
-  },);
-
+): Promise<EntryOutcome> {
   /**
    * Start time of this entry, for its duration.
    */
@@ -143,6 +145,12 @@ export async function settleEntry(
    * Per-entry hard-cap deadline. Disposal at return defuses the timer and
    * detaches its listener; the repo bans try/finally, so cleanup rides on
    * `using` instead.
+   *
+   * ARMED BEFORE THE CACHE OPENS rather than after. Opening reads and may
+   * discard a directory of settled slices, and on a large entry that is real
+   * wall time; a ceiling armed afterwards would not be counting it, so the cap
+   * would mean something slightly different for a resumed entry than for a
+   * fresh one.
    */
   using deadline = armCallDeadline({
     signal: baseSignal,
@@ -150,6 +158,20 @@ export async function settleEntry(
     label: entry.id,
   },);
   try {
+    /**
+     * Cross-run cache resuming finished slices and persisting new ones as each
+     * slice completes.
+     *
+     * INSIDE the try, because it touches the filesystem and can fail. Opened
+     * outside, one unreadable cache directory ended the whole pass at whatever
+     * entry happened to hold it, which is the opposite of this function's
+     * contract.
+     */
+    const sliceCache = await openSliceCache({
+      dir: entryCacheDir,
+      generation: pipelineDigest,
+    },);
+
     /**
      * Repair result for this entry.
      */
@@ -218,12 +240,7 @@ export async function settleEntry(
         .length,)} accepted=${String(accepted.length,)} resolved=${String(resolved.length,)} findings=${String(result.findings
           .length,)} ms=${String(durationMs,)}`,
     );
-
-    // The entry settled, so its slice cache is spent; drop it to keep the cache
-    // directory bounded to in-flight large documents. AFTER the artifact write,
-    // never before: a discard that ran first would turn a failed write into a
-    // full re-buy of every slice.
-    await discardSliceCache({ dir: entryCacheDir, },);
+    return { kind: 'settled', };
   }
   catch (error) {
     /**
@@ -247,6 +264,122 @@ export async function settleEntry(
         )
       : String(error,);
     console.log(`TALLY ${entry.id} status=ERROR ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,);
+    return { kind: 'failed', };
+  }
+}
+
+/**
+ * Runs one chosen entry to settlement, then retires its cache if it settled.
+ *
+ * Never throws for a failed entry. A pass over a corpus stops for a broken
+ * SCHEDULER, not for a broken document: an entry that aborts on its ceiling or
+ * raises out of a stage records `status=ERROR` and the pass continues to the
+ * next one. Anything raised here would therefore end the run, which is why
+ * nothing is.
+ *
+ * Returns nothing: the artifact file and the TALLY line ARE the outputs, and a
+ * caller that read a value here would be reading a second, weaker copy of what
+ * the artifact already says.
+ *
+ * @param client - shared model client
+ *
+ * @param entry - corpus pair to settle, text already read
+ *
+ * @param artifactsDir - directory one JSON per settled entry is written into
+ *
+ * @param sliceCacheDir - root under which this entry claims its own cache
+ * subdirectory
+ *
+ * @param tip - repository head recorded into the artifact
+ *
+ * @param pipelineDigest - identity of the built pipeline, which also generation
+ * -stamps the slice cache so a changed pipeline cannot resume foreign slices
+ *
+ * @param hardCapMs - wall time this entry may run before its exchanges abort
+ *
+ * @param baseSignal - abort every entry deadline forwards from; the pass never
+ * aborts it, so only a per-entry timeout ever fires
+ *
+ * @example
+ * ```ts
+ * await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
+ * ```
+ */
+export async function settleEntry(
+  {
+    client,
+    entry,
+    artifactsDir,
+    sliceCacheDir,
+    tip,
+    pipelineDigest,
+    hardCapMs,
+    baseSignal,
+  }: {
+    readonly client: SyntheticClient;
+    readonly entry: CorpusPair;
+    readonly artifactsDir: string;
+    readonly sliceCacheDir: string;
+    readonly tip: string;
+    readonly pipelineDigest: PipelineDigest;
+    readonly hardCapMs: number;
+    readonly baseSignal: AbortSignal;
+  },
+): Promise<void> {
+  /**
+   * Per-entry slice-cache directory; earlier runs' finished slices live here so
+   * a large document resumes instead of restarting.
+   */
+  const entryCacheDir = join(
+    sliceCacheDir,
+    entry.id,
+  );
+
+  /**
+   * Whether this entry reached its artifact.
+   */
+  const outcome = await runEntryPipeline({
+    client,
+    entry,
+    artifactsDir,
+    entryCacheDir,
+    tip,
+    pipelineDigest,
+    hardCapMs,
+    baseSignal,
+  },);
+  if (outcome.kind === 'failed') {
+    // The cache is what makes the next attempt cheaper, so a failed entry keeps
+    // every slice it managed to buy. This is the branch the discard used to
+    // share with the settled one.
+    return;
+  }
+
+  try {
+    // The entry settled, so its slice cache is spent; drop it to keep the cache
+    // directory bounded to in-flight large documents. AFTER the artifact write,
+    // never before: a discard that ran first would turn a failed write into a
+    // full re-buy of every slice.
+    await discardSliceCache({ dir: entryCacheDir, },);
+  }
+  catch (error) {
+    // A CLEANUP LINE, NEVER A SECOND TALLY. The artifact is already on disk, so
+    // this entry IS settled; the old shape ran the discard inside the same try
+    // as the pipeline, so a failed unlink logged `TALLY status=ERROR` after the
+    // success line and every reader counting statuses saw one entry as both.
+    // What is left behind is a stale cache directory, which costs disk and
+    // nothing else: the next run skips the entry on its artifact.
+    console.log(
+      `CLEANUP ${entry.id} cache=retained error=${
+        Error.isError(error,)
+          ? error.message
+            .slice(
+              0,
+              ERROR_MESSAGE_CAP,
+            )
+          : String(error,)
+      }`,
+    );
   }
 }
 
