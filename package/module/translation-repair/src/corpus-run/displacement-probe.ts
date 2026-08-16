@@ -12,6 +12,7 @@ import {
 } from '../displacement-class.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
+import { sharesMedia, } from './transcription-suspect.ts';
 
 //region Displacement probe
 // `#107`: where the corpus carries a passage the translator MOVED across a
@@ -66,6 +67,12 @@ type EntryDisplacement = {
    * High slices whose neighbour gave up enough to account for them.
    */
   readonly relocationCandidates: readonly RelocationCandidate[];
+
+  /**
+   * Relocation candidates whose high slice embeds the same media on both sides,
+   * so a transcription explains the surplus at least as well as a move does.
+   */
+  readonly transcriptionSuspects: readonly number[];
 
   /**
    * High slices with no neighbour that gave anything up.
@@ -203,6 +210,24 @@ function readEntry(
     untranslated: reading.untranslated,
     targetOnly: reading.targetOnly,
     relocationCandidates: reading.relocationCandidates,
+    transcriptionSuspects: reading.relocationCandidates
+      .filter(function embedsMedia(candidate,) {
+        /**
+         * Slice pair the surplus sits in.
+         */
+        const slice = prepared.slices[candidate.high];
+        if (slice === undefined)
+          return false;
+        return sharesMedia({
+          sourceText: slice.source
+            .text,
+          targetText: slice.target
+            .text,
+        },);
+      },)
+      .map(function toIndex(candidate,) {
+        return candidate.high;
+      },),
     otherImbalances: reading.otherImbalances,
   };
 }
@@ -235,6 +260,11 @@ type CorpusTotals = {
    * Slices carrying translation the original does not account for.
    */
   readonly targetOnly: number;
+
+  /**
+   * Relocation candidates a transcription would also explain.
+   */
+  readonly transcriptionSuspects: number;
 
   /**
    * Surpluses with only one end.
@@ -289,6 +319,12 @@ function addEntry(
     .length;
 
   /**
+   * Relocation candidates a transcription would also explain.
+   */
+  const suspects = row.transcriptionSuspects
+    .length;
+
+  /**
    * One-ended surpluses this entry carries.
    */
   const imbalances = row.otherImbalances
@@ -299,6 +335,7 @@ function addEntry(
     relocationCandidates: totals.relocationCandidates + relocations,
     untranslated: totals.untranslated + untranslated,
     targetOnly: totals.targetOnly + targetOnly,
+    transcriptionSuspects: totals.transcriptionSuspects + suspects,
     otherImbalances: totals.otherImbalances + imbalances,
   };
 }
@@ -342,6 +379,7 @@ function isNotable({ row, }: { readonly row: EntryDisplacement; },): boolean {
       relocationCandidates: 0,
       untranslated: 0,
       targetOnly: 0,
+      transcriptionSuspects: 0,
       otherImbalances: 0,
     },
     row,
@@ -386,6 +424,7 @@ function corpusTotals(
       relocationCandidates: 0,
       untranslated: 0,
       targetOnly: 0,
+      transcriptionSuspects: 0,
       otherImbalances: 0,
     },
   );
@@ -437,6 +476,9 @@ async function main(): Promise<void> {
   log.info(`slices read: ${String(totals.slices,)}`,);
   log.info(`entries falling back to the corpus baseline: ${String(totals.fellBack,)}`,);
   log.info(`relocation candidates: ${String(totals.relocationCandidates,)}`,);
+  log.info(
+    `  of which a transcription would also explain: ${String(totals.transcriptionSuspects,)}`,
+  );
   log.info(`untranslated slices: ${String(totals.untranslated,)}`,);
   log.info(`target-only slices: ${String(totals.targetOnly,)}`,);
   log.info(`other imbalances: ${String(totals.otherImbalances,)}`,);
@@ -477,6 +519,10 @@ async function main(): Promise<void> {
         [
           'target-only',
           indexList({ indices: row.targetOnly, },),
+        ],
+        [
+          'transcription suspect',
+          indexList({ indices: row.transcriptionSuspects, },),
         ],
         [
           'other imbalance',
