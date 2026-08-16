@@ -18,6 +18,11 @@ export {
   type SettledPreparationV2,
 } from './corpus-run/artifact-v2-contract.ts';
 export {
+  ArtifactComparisonV2Error,
+  assertDerivationsAgree,
+  compareLanesV2,
+} from './corpus-run/artifact-v2-comparison.ts';
+export {
   toArtifactComparisonRowV2,
   toArtifactDecisionsV2,
   toArtifactDeliveryV2,

@@ -9,6 +9,10 @@ import {
   type SettledArtifactV2,
 } from './artifact-v2-contract.ts';
 import {
+  assertDerivationsAgree,
+  compareLanesV2,
+} from './artifact-v2-comparison.ts';
+import {
   toArtifactComparisonRowV2,
   toArtifactRowV2,
 } from './artifact-v2-project.ts';
@@ -179,6 +183,31 @@ export function buildSettledArtifactV2(
         return toArtifactRowV2({ record, },);
       },),
   };
+  /**
+   * The comparison as VERSION 2 derives it, from the rows the artifact carries.
+   *
+   * The projection above froze the words; this freezes the rules. Deriving the
+   * persisted comparison from the live comparator alone would let a later
+   * change to how a verdict is decided reinterpret every artifact on disk,
+   * under an unchanged version number and with nothing in the file recording
+   * which rules produced it.
+   */
+  const frozen = compareLanesV2({
+    repair: delivery.repair,
+    translate: delivery.translate,
+  },);
+
+  // AND THE TWO DERIVATIONS AGAINST EACH OTHER. The live comparator is what
+  // refuses ledger pairs that cannot be compared at all, and the frozen rules
+  // are what version 2 MEANS; today they agree, and this is what makes the day
+  // they stop a stopped corpus pass rather than a silent change of meaning.
+  assertDerivationsAgree({
+    frozen,
+    live: comparison.slices
+      .map(function projectRow(row,) {
+        return toArtifactComparisonRowV2({ row, },);
+      },),
+  },);
   return {
     artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
     id: entryId,
@@ -223,10 +252,7 @@ export function buildSettledArtifactV2(
         delivery: delivery.translate,
       },
     },
-    comparison: comparison.slices
-      .map(function projectRow(row,) {
-        return toArtifactComparisonRowV2({ row, },);
-      },),
+    comparison: frozen,
 
     // NOBODY HAS PICKED ONE, said out loud. Which lane ships is the user's
     // question, and an artifact that left the field out would make "not decided
