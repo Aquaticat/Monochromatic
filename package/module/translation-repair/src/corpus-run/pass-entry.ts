@@ -59,7 +59,10 @@ const ERROR_MESSAGE_CAP = 200;
  */
 type EntryOutcome = {
   /**
-   * Artifact was written; whatever the pipeline decided is now on disk.
+   * Artifact was written: both lanes ran and what each produced is on disk.
+   *
+   * NOT that anything was decided. Under version 2 the pipeline settles an
+   * entry and chooses no lane, and the artifact says so in `laneSelection`.
    */
   readonly kind: 'settled';
 } | {

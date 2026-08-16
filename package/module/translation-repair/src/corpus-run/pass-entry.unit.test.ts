@@ -16,6 +16,7 @@
  */
 
 import {
+  chmod,
   mkdir,
   mkdtemp,
   readdir,
@@ -79,6 +80,20 @@ On the windowsill there is being a bird.
  */
 const ENTRY = {
   id: 'CatEntry1',
+  sourceText: SOURCE_TEXT,
+  targetText: TARGET_TEXT,
+};
+
+/**
+ * Entry the cleanup case settles, under its own id.
+ *
+ * SEPARATE because that case reads what was PRINTED, and the runner runs cases
+ * concurrently in one process: a capture keyed on nothing collects whatever
+ * other cases logged while it was installed. Filtering by an id no other case
+ * uses is what makes the reading this case's own.
+ */
+const CLEANUP_ENTRY = {
+  id: 'CatEntry2',
   sourceText: SOURCE_TEXT,
   targetText: TARGET_TEXT,
 };
@@ -336,6 +351,70 @@ async function artifactNames(
   }
 }
 
+/**
+ * Diverts `console.log` into a list until disposed.
+ *
+ * @param lines - where diverted lines are appended
+ *
+ * @returns Capture holding those lines, which restores logging on disposal
+ *
+ * @example
+ * ```ts
+ * using capture = collectingInto({ lines, },);
+ * ```
+ */
+function collectingInto(
+  { lines, }: { readonly lines: string[]; },
+): { readonly lines: readonly string[]; } & Disposable {
+  /**
+   * Real logger, put back on disposal.
+   */
+  const printed = console.log;
+  console.log = (...parts: readonly unknown[]) => {
+    lines.push(parts.map(String,)
+      .join(' ',),);
+  };
+  return {
+    lines,
+    [Symbol.dispose]: () => {
+      console.log = printed;
+    },
+  };
+}
+
+/**
+ * Runs a body with every `console.log` line collected instead of printed.
+ *
+ * The lines ARE the contract here: an entry that settled and then failed to
+ * retire its cache has to say so on a `CLEANUP` line, and the defect this
+ * guards against is a second `TALLY` after the success line, which made every
+ * reader counting statuses see one entry as both settled and errored.
+ *
+ * @param body - what to run while logging is captured
+ *
+ * @returns Every line the body logged, in order
+ *
+ * @example
+ * ```ts
+ * const lines = await capturedLines({ body: async () => { await settleEntry(...); }, },);
+ * ```
+ */
+async function capturedLines(
+  { body, }: { readonly body: () => Promise<void>; },
+): Promise<readonly string[]> {
+  /**
+   * Lines the body logged.
+   */
+  const lines: string[] = [];
+
+  using capture = collectingInto({ lines, },);
+  await body();
+
+  // Read after the body so a case cannot assert on a capture still installed;
+  // disposal at return puts the real logger back.
+  return capture.lines;
+}
+
 await describe({
   name: settleEntry.name,
   children: [
@@ -586,6 +665,112 @@ await describe({
 
         // The cache is kept, so the entry can be settled properly later.
         expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual(['CatEntry1',],);
+      },
+    },),
+    it({
+      name:
+        'logs a CLEANUP line and NOT a second TALLY when the artifact landed but the cache could not be '
+        + 'retired: the entry IS settled, so a second status line would make every reader counting '
+        + 'statuses see one entry as both settled and errored',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+
+        /**
+         * This entry's own cache directory, which the first run fills.
+         */
+        const entryCacheDir = join(
+          dirs.sliceCacheDir,
+          CLEANUP_ENTRY.id,
+        );
+
+        // FIRST RUN: the write cannot land, so the cache survives rather than
+        // being retired on settlement. There is no hook between the artifact
+        // write and the discard, so the cache has to exist before the run that
+        // fails to remove it.
+        await settleEntry({
+          client: entryClient({ served: [], },),
+          entry: CLEANUP_ENTRY,
+          artifactsDir: join(
+            dirs.artifactsDir,
+            'not-created',
+          ),
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+        expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual([CLEANUP_ENTRY.id,],);
+
+        // Removal unlinks the entries INSIDE this directory, which needs write
+        // permission on the directory itself. Read and traverse are left, so
+        // the run can still resume from it.
+        //
+        // Permissions do not constrain a superuser, so this case reports a
+        // discard that unexpectedly succeeded rather than passing quietly: run
+        // as root, the injection has no effect and there is nothing to test.
+        await chmod(
+          entryCacheDir,
+          0o500,
+        );
+
+        /**
+         * Everything the settling run printed.
+         */
+        const lines = await capturedLines({
+          body: async () => {
+            await settleEntry({
+              client: entryClient({ served: [], },),
+              entry: CLEANUP_ENTRY,
+              artifactsDir: dirs.artifactsDir,
+              sliceCacheDir: dirs.sliceCacheDir,
+              tip: 'a'.repeat(40,),
+              pipelineDigest: DIGEST,
+              hardCapMs: 60_000,
+              baseSignal: new AbortController().signal,
+            },);
+          },
+        },);
+
+        // Put the directory back before asserting, so a failing assertion still
+        // leaves a removable tree behind for the disposal.
+        await chmod(
+          entryCacheDir,
+          0o700,
+        );
+
+        /**
+         * Lines about THIS entry, since other cases log into the same capture.
+         */
+        const mine = lines.filter(function namesThisEntry(line,): boolean {
+          return line.includes(CLEANUP_ENTRY.id,);
+        },);
+
+        /**
+         * Status lines this entry produced.
+         */
+        const tallies = mine.filter(function isTally(line,): boolean {
+          return line.startsWith('TALLY ',);
+        },);
+
+        /**
+         * Cleanup lines it produced.
+         */
+        const cleanups = mine.filter(function isCleanup(line,): boolean {
+          return line.startsWith('CLEANUP ',);
+        },);
+        expect(cleanups.length,).toBe(1,);
+        expect(cleanups[0]?.includes('cache=retained',),).toBe(true,);
+
+        // EXACTLY ONE status line, and it says the entry settled.
+        expect(tallies.length,).toBe(1,);
+        expect(tallies[0]?.includes('status=SETTLED',),).toBe(true,);
+
+        // The artifact is on disk and the cache it could not retire is still
+        // there, which costs disk and nothing else: the next run skips this
+        // entry on its artifact.
+        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([`${CLEANUP_ENTRY.id}.json`,],);
+        expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual([CLEANUP_ENTRY.id,],);
       },
     },),
   ],
