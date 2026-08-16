@@ -520,8 +520,8 @@ Its three remaining items were re-read rather than trusted, and two were already
 
 No corpus pass while the window trial is live:
 it measures the same six models, and competing calls would raise its short-panel rate mid-experiment.
-Trial progress is watched by a monitor and was at 167 arms of 327 when this line was last updated,
-with 64 of those on a short panel, the same rate the whole run has held.
+Trial progress is watched by a monitor and was at 275 arms of 327 when this line was last updated,
+with 114 of those on a short panel, the same rate the whole run has held.
 **Build now, launch after the trial finishes.**
 
 The GFP note above still holds and was re-verified at 150 arms:

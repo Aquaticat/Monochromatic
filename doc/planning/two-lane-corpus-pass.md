@@ -497,20 +497,39 @@ because the shape several of them took differs from the shape they were planned 
     a repair slice no critic was heard about now reads `incumbent-fallback` rather than `decided`,
     measured before and after on a fixture where all 48 critic calls fail and quorum comes out 0 of 6.
 
-Still open:
+Closed since:
 
-8.  `artifact-read.ts` keeps a discriminated `unrecorded` reading and then converts it back into an
-    absent optional property, discarding the distinction its own parser established.
+8.  ~~A discriminated `unrecorded` reading converted back into an absent optional property~~,
+    landed 2026-08-16 as `b8cdd5eba`.
+    It was in `artifact-v1-read.ts` rather than `artifact-read.ts`:
+    `ParsedAcceptedIssue.repair` now carries the `RecordRepairReading` itself.
+    One collapse survives on purpose, in `draw-entry-load.ts`, where a grading candidate is built
+    for the SAMPLE FILE; that shape is on disk in draws a human is grading, so widening it is a
+    persisted-format change rather than a reader change.
 9.  ~~THE VERSION 2 PARSER~~, landed 2026-08-16 across eight commits, to the corrected contract in
     "What the version 2 parser must require, and what it may tolerate".
     Generic dispatch answers with a generation-discriminated reading; version 1 parsing moved to
     `artifact-v1-read.ts` keeping every exported name; `verifyArtifactV2AgainstPreparation` takes a
     rebuilt `PreparedDocumentPair` for the checks a file alone cannot make.
     Verified by writing a real artifact with `settleEntry` and reading it back.
-10. The mixed-generation trap the wiring created: `settledEntryIds` reads FILENAMES only,
-    so a pass resumed into a directory holding version 1 artifacts skips those entries
-    and produces a corpus that is half one generation, invisibly.
-    A fresh artifacts directory avoids it, and practice is not a guard.
+10. ~~The mixed-generation trap~~, landed 2026-08-16 as `pass-schema-guard.ts` (`ed80db5cc`),
+    and its premise as first written here was WRONG.
+    `settledEntryIds` does read FILENAMES only, but `corpus-pass.ts` already called
+    `assertResumableGeneration` before anything settled, and that guard refuses a directory whose
+    artifacts record any pipeline digest but this build's.
+    A build writing version 1 cannot share a digest with one writing version 2, since the digest is
+    over BUILT OUTPUT, so the ordinary mixed-schema resume was already refused.
+    What was genuinely uncovered is the drift opt-in
+    (`TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT=yes`), whose message promises that naming a required
+    commit keeps the pool readable; true of build drift, false of SCHEMA drift, where the files
+    answer no two-lane question at any commit.
+    `assertResumableSchemaGeneration` now refuses any artifact whose generation is not the one this
+    pass writes: another version, no version field at all (the 2026-08-15 generation, which records
+    a digest and so is neither unplaceable nor legacy), or a version this build cannot read.
+    Not overridable, following the sibling guard's own rule that drift is an opinion about digests
+    alone.
+    The version 1 constant was renamed `ARTIFACT_SCHEMA_VERSION_V1` in the same stretch, because it
+    was still documented as the generation the pass writes.
 
 ## Open questions for the user
 
