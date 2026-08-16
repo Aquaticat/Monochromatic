@@ -11303,3 +11303,46 @@ ALSO WORTH SEEING: three voices were lost to the sixty-second grace in this run,
 and no verdict moved. That is the roster threshold behaving as intended, since a
 majority of the whole roster was still reached and silence could not lower the
 bar.
+
+### The judges now have a question with a right answer
+
+`#84` asks whether the translate lane's judges can tell a faithful rendering from
+a fluent one, and it could not be answered from any corpus run, for a reason
+worth stating plainly: IN PRODUCTION NOTHING KNOWS WHICH CANDIDATE IS BETTER.
+That is what the judges are being asked. A run therefore reports how often they
+replaced the archive and never how often they were right to.
+
+SO THE ANSWER IS CONSTRUCTED. A trial takes a real archive slice, deletes one
+whole sentence with `applySeededErrors`, and puts the two texts on the ballot
+`selectBestCandidate` builds. The deletion is word for word the clean text minus
+a sentence, so it cannot lose on fluency, register or house style, only on
+coverage, which is the first criterion the sheet names. A judge that picks it has
+ranked something above saying what the original says.
+
+IT ASKS THE SHEET THAT SHIPS, not a copy of it. The task and criteria moved into
+`translate-selection-sheet.ts` and both the stage and the trial import them, so
+the measurement cannot drift from the thing measured the first time either is
+edited.
+
+FOUR ARRANGEMENTS PER PAIR: clean text as incumbent and as proposal, each listed
+first and second. A judge that keeps whatever it is handed scores half, a judge
+that prefers position one scores half, and only a judge that reads scores four.
+
+A DECLINE IS NOT A HIT, even in the direction where declining happens to leave
+the clean text standing. The judges did not find the deletion, they abstained,
+and counting that as correct is exactly how `#66`'s silent probe came to look
+reliable.
+
+TWO DEFECTS THE TESTS CAUGHT IN THE NEW CODE, which is what they are for.
+`SelectionBallot.best` and `SelectionOutcome.selectedIndex` are BOTH ONE-BASED,
+and both were compared against a zero-based array position, so every correct
+choice read as wrong. `CANDIDATE_NONE` is zero, so a declining ballot had to be
+read before that comparison or it would land in whichever branch was not the
+clean one. The trial now derives the clean text's one-based position once and
+compares both readings against it.
+
+WHAT IT DOES NOT ANSWER, recorded in `#84` rather than implied: self-preference,
+since the fixture is attributed to a composite with no contributors so no ballot
+is discounted; and the HARD case, a fluent paraphrase that quietly drops a
+qualifier. A deletion is a blunt defect, so this is a floor: a roster that cannot
+see a missing sentence will not see a missing hedge.
