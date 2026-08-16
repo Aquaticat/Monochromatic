@@ -25,5 +25,7 @@ In light mode,
 the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
 Cap end-corner ownership still follows each packed row,
 and `placeRelative` preserves cap order in RTL.
+LED legends use `MaterialTheme.typography.bodyLarge`,
+matching ordinary body labels such as Volume while retaining semibold weight.
 Active-cap legend text is always white,
 independent of runtime accent or ambient scene.

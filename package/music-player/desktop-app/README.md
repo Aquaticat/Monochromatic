@@ -397,6 +397,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    while their shared backplate always fills the available page-control width.
    In the light scene,
    the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
+   LED legends use at least the normal body-label size,
+   matching labels such as Volume.
    The choice applies immediately and persists across launches.
    Each wide page-selector FlexboxLayout pins `align-content` and
   `cross-axis-alignment` to start (both default to stretch),

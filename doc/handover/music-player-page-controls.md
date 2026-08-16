@@ -44,6 +44,7 @@ Keep this file current after each implementation or visual-verification step.
   overlapping,
   or content-width row-island plates are forbidden.
 - Active LED legend text is always white in both ambient scenes.
+- LED legends must be at least as large as ordinary body labels such as `Volume`.
 - Android's largest dark-mode background is always `#000000`,
   independent of page-control style.
 - Screenshot-driven corrections require measured,
@@ -115,7 +116,7 @@ Both implementations use 8-unit margins and channels,
 9-unit exposed corners,
 2-unit inner corners,
 1-unit selected clearance,
-15-unit legends,
+body-sized semibold legends,
 always-white active text,
 subtle dome and shoulder layers,
 and accent-derived selection.
@@ -156,7 +157,9 @@ a 44-unit cap,
 an 8-unit plate margin and channel,
 9-unit outer cap corners,
 2-unit inner-facing corners,
-and a 15-unit hardware legend.
+and a 15-unit source hardware legend.
+The requester superseded the source legend size:
+application legends must match or exceed ordinary body labels such as `Volume`.
 Scene-specific void,
 contact,
 shadow,
@@ -340,11 +343,12 @@ The dark capture shows one plate spanning approximately `x=27` to `x=1052` on th
 cap rows remain content-width.
 The screen corner is exactly `#000000`.
 The first light full-width capture exposed a darker-than-ground plate and is rejected before-state evidence.
+The brighter-plate recapture then exposed undersized legends and is also rejected before-state evidence.
 Current accepted Android geometry artifact is:
 
 - `/home/user/temp/agent/music-player-pixel6-led-full-width-dark.png`
 
-A new light capture with `#f7f8fa` plate paint remains pending.
+A new light capture with `#f7f8fa` plate paint and body-sized legends remains pending.
 Earlier AVD and stepped-outline captures are superseded before-state evidence only.
 Desktop release capture and requester visual approval remain pending.
 
