@@ -188,25 +188,27 @@ export const noClass: CreateOnceRule = {
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
-     * Raw rule options; oxlint omits this until config is supplied.
-     */
-    const { options, } = context;
-    /**
-     * Suffix list resolved once per file; default the absent case to an empty array rather than widening the parameter to `| undefined`.
-     */
-    const suffixes = readSuffixes(options ?? [],);
-
-    /**
      * Tests whether `name` ends with any configured allowlist suffix.
+     *
+     * Reads `context.options` per call rather than once in `createOnce`. Oxlint leaves
+     * `options` null until it is about to lint a file (`apps/oxlint/src-js/plugins/context.ts`
+     * documents it as "Initially `null` during `createOnce`, set to options object before
+     * linting a file"), so hoisting the read silently pins every file to the defaults and
+     * makes the rule look unconfigurable.
      *
      * @param name - identifier name to test against the suffix list
      *
      * @returns true when the name ends with any configured suffix
      */
     function matchesSuffix(name: string,): boolean {
-      return suffixes.some(function endsWith(suffix,): boolean {
-        return name.endsWith(suffix,);
-      },);
+      /**
+       * Raw rule options for the file being linted; oxlint leaves this null outside a file.
+       */
+      const { options, } = context;
+      return readSuffixes(options ?? [],)
+        .some(function endsWith(suffix,): boolean {
+          return name.endsWith(suffix,);
+        },);
     }
 
     /**
