@@ -265,6 +265,7 @@ export async function runDocumentLanes(
   assertRostersConfigured({
     lane: 'repair and translate',
     roles: {
+      'repair.criticModelIds': repairModels.criticModelIds,
       'repair.panelModelIds': repairModels.panelModelIds,
       'repair.editorModelIds': repairModels.editorModelIds,
       'repair.judgeModelIds': repairModels.judgeModelIds,

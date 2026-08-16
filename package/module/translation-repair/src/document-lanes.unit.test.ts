@@ -645,5 +645,51 @@ await describe({
         expect(String(caught,),).toContain('translate.translatorModelIds',);
       },
     },),
+
+    it({
+      name: 'REFUSES AN EMPTY CRITIC ROSTER, which until Question 3 was answered had to be '
+        + 'tolerated in case dropping the stage was the shape chosen. Answer B keeps critics as '
+        + 'evidence for the judges, so an empty list is a misconfiguration, and the failure it '
+        + 'used to produce was the expensive kind: a whole corpus pass of settled, unchanged '
+        + 'documents that later analysis reads as pages needing no repair',
+      fn: async () => {
+        /**
+         * Failure the driver raised before either lane started.
+         */
+        let caught: unknown;
+        try {
+          await runDocumentLanes({
+            client: {
+              chatText: async () => {
+                throw new Error('an unconfigured run must ask nobody anything',);
+              },
+              chatJson: async () => {
+                throw new Error('an unconfigured run must ask nobody anything',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused by either lane',);
+              },
+            },
+            prepared: prepareDocumentPair({
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+            },),
+            repairModels: {
+              ...REPAIR_MODELS,
+              criticModelIds: [],
+            },
+            translateModels: TRANSLATE_MODELS,
+            signal: new AbortController().signal,
+            perCallTimeoutMs: CALL_TIMEOUT_MS,
+            l,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(Error,);
+        expect(String(caught,),).toContain('repair.criticModelIds',);
+      },
+    },),
   ],
 },);

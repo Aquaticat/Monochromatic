@@ -143,15 +143,17 @@ export async function repairPreparedDocument(
   // valid. Placed HERE rather than in `repairTranslation`, because the combined
   // driver calls this function directly and a check one level up is bypassed.
   //
-  // CRITICS ARE ABSENT FROM THIS LIST ON PURPOSE. Question 3 may drop the
-  // critic stage from this path outright, which would make an empty critic
-  // roster the INTENDED configuration; guarding it now would refuse a shape the
-  // user may be about to choose. `#93` carries that, and `refinerModelIds` is
-  // absent for a settled reason instead: its empty list is how the naturalness
-  // lane is turned off.
+  // CRITICS ARE IN THIS LIST SINCE QUESTION 3 ANSWERED B: the stage stays, as
+  // evidence for the judges, so an empty critic roster is a misconfiguration
+  // rather than a shape anyone might mean. While the question was open, guarding
+  // it would have refused a configuration the user was about to choose.
+  //
+  // `refinerModelIds` stays absent for a different and settled reason: its empty
+  // list IS how the naturalness lane is turned off.
   assertRostersConfigured({
     lane: 'repair',
     roles: {
+      criticModelIds: models.criticModelIds,
       panelModelIds: models.panelModelIds,
       editorModelIds: models.editorModelIds,
       judgeModelIds: models.judgeModelIds,
