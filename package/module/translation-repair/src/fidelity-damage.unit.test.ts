@@ -100,6 +100,53 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES NO WHITESPACE MARK at the join, so the damaged candidate cannot be spotted by '
+        + 'its typography instead of by what it fails to say',
+      fn: async () => {
+        const attempt = deleteOneSentence({ cleanText: CLEAN_TEXT, },);
+        if (attempt.kind !== 'damaged')
+          throw new Error(`expected damage, got ${attempt.reason}`,);
+        // A sentence is stored trimmed and prose separates sentences on both
+        // sides, so cutting the sentence alone leaves both separators: this ran
+        // as a double space before the splice was written.
+        expect(attempt.damagedText
+          .includes('  ',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'leaves ONE paragraph break where a whole paragraph was, rather than the three '
+        + 'consecutive line breaks a bare cut leaves behind',
+      fn: async () => {
+        /** Three paragraphs, the middle one long enough to be the needle. */
+        const document = [
+          'The shelter opens at eight in the morning and closes when the last volunteer leaves.',
+          'Marmalade spent her first fortnight refusing to come out from behind the radiator.',
+          'By March she was sleeping in the window and letting strangers scratch her ears.',
+        ].join('\n\n',);
+        const attempt = deleteOneSentence({ cleanText: document, },);
+        if (attempt.kind !== 'damaged')
+          throw new Error(`expected damage, got ${attempt.reason}`,);
+        expect(attempt.damagedText
+          .includes('\n\n\n',),).toBe(false,);
+        expect(attempt.damagedText
+          .includes('\n\n',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'keeps the trailing line break when the LAST paragraph goes, so the damaged text ends '
+        + 'the way every other document does',
+      fn: async () => {
+        const document = `First paragraph, long enough to survive the length floor comfortably.\n\n${CLEAN_TEXT}\n`;
+        const attempt = deleteOneSentence({ cleanText: document, },);
+        if (attempt.kind !== 'damaged')
+          throw new Error(`expected damage, got ${attempt.reason}`,);
+        expect(attempt.damagedText
+          .endsWith('\n',),).toBe(true,);
+        expect(attempt.damagedText
+          .includes('\n\n\n',),).toBe(false,);
+      },
+    },),
+    it({
       name: 'REFUSES a passage with no sentence long enough to delete, rather than returning the '
         + 'text unchanged as though it had damaged it',
       fn: async () => {

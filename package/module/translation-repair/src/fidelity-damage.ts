@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { deriveOmissionSeeds, } from './derive-seeds.ts';
+import { spliceOutSentence, } from './fidelity-splice.ts';
 import { applySeededErrors, } from './seeded-error.ts';
 
 //region Fidelity damage
@@ -131,29 +132,32 @@ export function deleteOneSentence(
     };
 
   /**
-   * Slice with that sentence gone.
+   * Slice with that sentence gone and the join left unmarked.
+   *
+   * NOT `applySeededErrors`, which cuts the sentence and leaves both separators:
+   * that left a double space mid-paragraph and three consecutive newlines where
+   * a whole paragraph went, either of which a judge can see without reading the
+   * original. `spliceOutSentence` says why the shared primitive is not the place
+   * to fix it.
    */
-  const seeded = applySeededErrors({
+  const damagedText = spliceOutSentence({
     text: cleanText,
-    specs: [
-      {
-        id: 'fidelity/deletion',
-        category: 'accuracy/omission',
-        kind: 'deletion',
-        needle,
-        replacement: '',
-      },
-    ],
+    needle,
   },);
-  if (seeded.seededText === cleanText)
+  if (damagedText === cleanText)
     return {
       kind: 'undamageable',
       reason: 'deletion left the text unchanged',
     };
+  if (damagedText.trim() === '')
+    return {
+      kind: 'undamageable',
+      reason: 'deletion would leave the slice empty, which is a shape no translation takes',
+    };
   return {
     kind: 'damaged',
     damageKind: 'deletion',
-    damagedText: seeded.seededText,
+    damagedText,
     changedChars: needle.length,
   };
 }
