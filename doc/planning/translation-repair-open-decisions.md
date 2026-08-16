@@ -641,10 +641,19 @@ that READS BETTER than the archive while saying something the original does not,
 which is the hard case `#84` still carries.
 
 ONE CORRECTION TO THE DELETION NUMBER, since it bears on how firmly to read it:
-the recorded sixteen ran while the deletion left a whitespace edit-mark at the
-join (a double space mid-paragraph, three line breaks where a paragraph went),
-which a judge could notice without reading the original at all. That is fixed and
-the arm was rerun; the rerun's number is in the handover.
+the first sixteen ran while the deletion left a whitespace edit-mark at the join
+(a double space mid-paragraph, three line breaks where a paragraph went), which a
+judge could notice without reading the original at all. That is fixed, and THE
+ARM WAS RERUN CLEAN WITH THE SAME RESULT: 16 of 16, 92 ballots split 60 for the
+complete text, 2 for the deletion, 30 declining. So the judges were not reading
+the join.
+
+A THIRD FIXTURE IS RUNNING as this is written, and it is the one that would
+settle the remaining question. An ALTERATION changes a number the original also
+states, since digits survive translation: the damaged candidate is the same
+length, equally fluent, and wrong about a fact only the Chinese reveals. If the
+roster passes that too, the reading strengthens from "not running a habit" to
+"able to consult the source when nothing else decides".
 
 ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges declined on
 eleven of sixteen trials, both because the pair violates the sheet's exact-names
