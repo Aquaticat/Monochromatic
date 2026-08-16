@@ -11612,3 +11612,54 @@ fixture's premise holds, the roster was right twelve times; the four it "failed"
 are four where the archive's own English is not a faithful rendering OF THAT
 SECTION, so declining was the correct answer and the trial has no way to score it
 as one.
+
+### The displacement screen, built and run: 6.4 percent of slices
+
+WHAT IT READS AND WHY THAT WORKS. Chinese-to-English expansion is roughly
+threefold and steady WITHIN one document, because one translator worked at one
+density. So a slice far above its own document's median took text on, and a
+neighbour below it gave text up, and the PAIR is the evidence: one anomaly alone
+is a loose paraphrase, while a high beside a low is a passage that moved.
+Comparing each document to itself is what makes one threshold usable across a
+corpus of different registers.
+
+`src/displacement-ratio.ts` and the `displacement-probe` task. ZERO QUOTA,
+nothing cached, nothing written, no lane reads it.
+
+    complete pairs                        92
+    slices read                         1198
+    high slices                           41
+    moved pairs                           44
+    entries carrying at least one         22   (24 percent of entries)
+    slices involved in a moved pair       77   (6.4 percent of slices)
+
+THE SCREEN WAS VALIDATED BEFORE ITS OUTPUT WAS BELIEVED. Its tests carry a
+positive control (a slice at three times the median beside one below it reads as
+moved) and two nulls that must stay silent (an evenly expanding document flags
+nothing; a high slice with NO low neighbour is reported as high rather than
+moved). Slices under twenty source characters are skipped so a bare heading
+cannot set the median.
+
+AND THEN THREE FLAGGED PAIRS WERE READ BY HAND, on both sides, which is what
+turns a count into a finding:
+
+- `Dethelly` 0 to 1: a true relocation, the one that started this.
+- `lintong` 3 to 2: a true relocation. Slice 3's English carries slice 2's
+  Chinese almost sentence for sentence, and slice 2's English is reduced to an
+  attribution line.
+- `dogesir_` 3 to 2: A DIFFERENT CLASS through the same screen. The English adds
+  "English transcript of her self-description above" plus the transcript, which
+  the Chinese carries only as an IMAGE. That is Question 2's transcribed-image
+  class, found here without looking for it. Its low neighbour is pure
+  `PhotoScroll` markup at ratio 1.00, which cannot expand.
+
+SO SAY THE PRECISION IN TERMS OF THE QUESTION ASKED. For "a per-slice judge will
+condemn the archive here", three of three. For "a passage moved between
+sections", two of three. Both classes cause the same judging failure, which is
+what Question 5 needs; only the remedy differs.
+
+6.4 PERCENT IS A FLOOR, not an estimate. The screen reads SIZE, so a passage
+swapped for one of similar length reads as perfectly ordinary, and a markup-only
+slice at ratio 1.00 will pair with any high neighbour without being a donor.
+Excluding markup-only slices from the low side would sharpen the count and cannot
+create false highs.
