@@ -463,6 +463,15 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   sub-second or zero-duration tracks from flickering the on-screen progress bar or flashing an empty taskbar
   progress indicator.
 
+## Isolated visual verification
+
+Never change the host desktop environment's global theme to test this app.
+Run theme-dependent and other isolated GUI checks inside the repo-owned compositor at
+`package/cli/nested-wayland-session`.
+If that compositor cannot provide a required test feature,
+add the feature to `nested-wayland-session` rather than mutating host-wide desktop settings.
+Restore any app-local fixture state after capture.
+
 ## Page navigation UX choices
 
 Wide windows show the full page-control grid beside the selected page's rows as two independent scroll containers,

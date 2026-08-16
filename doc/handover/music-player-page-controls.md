@@ -65,6 +65,10 @@ Keep this file current after each implementation or visual-verification step.
 - Screenshot-driven corrections require measured,
   matching-scale side-by-side renders.
 - Final interactive launches are limited to this machine and the requester-designated Android target.
+  Desktop theme-dependent checks must run inside `package/cli/nested-wayland-session`.
+  Never change the host desktop environment's global theme for verification.
+  If the nested compositor lacks a required feature,
+  enhance that repo-owned compositor instead of changing the host environment.
   Pixel 6 serial `1C171FDF600KWW` is connected and is the current authorized target.
   Do not start an Android emulator for this verification.
   The requester performs final visual approval.
@@ -445,6 +449,9 @@ No build or application process is currently running.
 - Do not include `.serena/project.yml` or detached-worktree scratch changes in commits.
 - Android verification is authorized only on connected Pixel 6 serial `1C171FDF600KWW`.
   Do not start an emulator.
+- Never change the host desktop environment's global theme.
+  Use `package/cli/nested-wayland-session` for isolated GUI state,
+  and implement missing isolation support there when needed.
 
 ## Progress log
 
