@@ -172,10 +172,15 @@ export async function runSliceArms(
     slices,
     sliceIndex: chunkIndex,
   },);
-  if (neighbouringSourceText === '')
+  // TRIMMED, not compared against the empty string. A window of blank lines is a
+  // window in name only: the wide sheet would differ from the narrow one by
+  // whitespace, and the pair would report a false null under a label saying the
+  // judges had been shown the neighbouring original.
+  if (neighbouringSourceText.trim() === '')
     throw new RangeError(
-      `${entryId}/${String(chunkIndex,)} has no neighbouring section, so its `
-        + `wide arm would be its narrow arm and the pair would report a false null`,
+      `${entryId}/${String(chunkIndex,)} has no neighbouring section carrying `
+        + `text, so its wide arm would be its narrow arm and the pair would `
+        + `report a false null`,
     );
 
   /**

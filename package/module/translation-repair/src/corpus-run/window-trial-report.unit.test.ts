@@ -155,7 +155,7 @@ await describe({
           ...tripleFor({ chunkIndex: 3, narrowFirst: false, narrowSecond: false, wide: false, },),
         ];
 
-        const [report,] = reportWindowTrial({ rows, },);
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         expect(report?.transitions
           .replaceToKeep,).toBe(2,);
         // The band is not zero, and reporting the effect without it would claim
@@ -173,7 +173,7 @@ await describe({
           ...tripleFor({ chunkIndex: 1, narrowFirst: false, narrowSecond: false, wide: true, },),
         ];
 
-        const [report,] = reportWindowTrial({ rows, },);
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         // One each way: the aggregate rate is unchanged and the window plainly
         // did something. Only the paired counts show it.
         expect(report?.transitions
@@ -203,7 +203,7 @@ await describe({
           rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowSecond, shipped: true, },),
         ];
 
-        const [report,] = reportWindowTrial({ rows, },);
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         expect(report?.incomplete,).toBe(1,);
         expect(report?.arms[0]
           ?.trials,).toBe(1,);
@@ -231,7 +231,7 @@ await describe({
           },),
         ];
 
-        const [report,] = reportWindowTrial({ rows, },);
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         expect(report?.degraded,).toBe(1,);
         // Not counted as merely missing, which is a different fault.
         expect(report?.incomplete,).toBe(0,);
@@ -257,7 +257,7 @@ await describe({
           rowFor({ chunkIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },),
         ];
 
-        const [report,] = reportWindowTrial({ rows, },);
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         expect(report?.degraded,).toBe(1,);
         expect(report?.arms[0]
           ?.trials,).toBe(0,);
@@ -278,7 +278,7 @@ await describe({
           },),
         ];
 
-        const reports = reportWindowTrial({ rows, },);
+        const reports = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         expect(reports.length,).toBe(2,);
 
         /**
@@ -311,7 +311,7 @@ await describe({
             },),
         ];
 
-        const [report,] = reportWindowTrial({ rows, },);
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         // Two slices, not one: merging them would have reported a single trial
         // and halved the population without saying so.
         expect(report?.arms[0]
@@ -329,7 +329,7 @@ await describe({
           rowFor({ chunkIndex: 1, arm: TRIAL_ARMS.narrowFirst, shipped: true, },),
         ];
 
-        const [report,] = reportWindowTrial({ rows, },);
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
         for (const rate of report?.arms ?? [])
           expect(rate.trials,).toBe(1,);
       },

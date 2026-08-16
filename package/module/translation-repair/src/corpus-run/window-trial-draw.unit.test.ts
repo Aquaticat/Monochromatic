@@ -24,6 +24,7 @@ import {
   controlSlices,
   type DocumentDisplacement,
   flaggedSlices,
+  RELOCATION_CLASSES,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -116,8 +117,8 @@ await describe({
       },
     },),
     it({
-      name: 'gives a slice flagged two ways the RELOCATION label, since that is the class `#107` '
-        + 'is about and the one the window is expected to move; dropping multiply-flagged slices '
+      name: 'gives a slice flagged two ways a RELOCATION label, since that is the class `#107` is '
+        + 'about and the one the window is expected to move; dropping multiply-flagged slices '
         + 'would discard exactly the ambiguous cases the trial exists to resolve',
       fn: async () => {
         const flagged = flaggedSlices({
@@ -136,9 +137,31 @@ await describe({
         const both = flagged.find(function isOne(slice,) {
           return slice.chunkIndex === 1;
         },);
-        expect(both?.sliceClass,).toBe('relocation',);
+        expect(both?.sliceClass,).toBe(RELOCATION_CLASSES.low,);
         // And it appears once, not twice.
         expect(flagged.length,).toBe(2,);
+      },
+    },),
+    it({
+      name: 'SEPARATES THE TWO ENDS of a relocation, because the window can only reach one of '
+        + 'them: at the high end the archive carries English the original does not account for '
+        + 'and the neighbouring Chinese is where it could have come from, while at the low end '
+        + 'the archive is MISSING English and neighbouring Chinese cannot say where it went. '
+        + 'Pooled, the low ends would dilute the high ones with a population the treatment cannot '
+        + 'touch, and a real effect would read as a weaker one',
+      fn: async () => {
+        const flagged = flaggedSlices({
+          entryId: 'Mittens',
+          displacement: readingFor({
+            sliceCount: 4,
+            relocation: [[1,
+              2,],],
+          },),
+        },);
+        expect(flagged.map(function toClass(slice,) {
+          return slice.sliceClass;
+        },),).toEqual([RELOCATION_CLASSES.high,
+          RELOCATION_CLASSES.low,],);
       },
     },),
     it({

@@ -442,6 +442,7 @@ async function main(): Promise<void> {
   );
   for (const report of reportWindowTrial({
     rows: await readTrialLedger({ path: ledgerPath, },),
+    protocol,
   },)) {
     l.info(
       `${report.sliceClass}: ${

@@ -285,23 +285,45 @@ function groupBySlice(
 /**
  * Reports what the trial found, one entry per class.
  *
+ * READS ONE PROTOCOL AND NO OTHER. The ledger is append-only and outlives any
+ * single experiment, so it holds rows bought under rosters, corpus pins and code
+ * that have since moved. The digest was already keeping those out of RESUMPTION;
+ * without the same filter here it kept them out of the buying and let them into
+ * the answer, which is the half that matters.
+ *
  * @param rows - every completed arm, from the ledger
  *
- * @returns One report per class present in the rows
+ * @param protocol - digest to read, which every other row is excluded by
+ *
+ * @returns One report per class present in that protocol's rows
  *
  * @example
  * ```ts
- * const reports = reportWindowTrial({ rows, },);
+ * const reports = reportWindowTrial({ rows, protocol, },);
  * ```
  */
 export function reportWindowTrial(
-  { rows, }: { readonly rows: readonly WindowTrialRow[]; },
+  {
+    rows,
+    protocol,
+  }: {
+    readonly rows: readonly WindowTrialRow[];
+    readonly protocol: string;
+  },
 ): readonly ClassReport[] {
+  /**
+   * Rows this protocol bought, which are the only ones any number below rests
+   * on.
+   */
+  const mine = rows.filter(function underThisProtocol(row,): boolean {
+    return row.protocol === protocol;
+  },);
+
   /**
    * Classes present, so a report covers what was run rather than what was
    * expected to run.
    */
-  const classes = [...new Set(rows.map(function toClass(row,): string {
+  const classes = [...new Set(mine.map(function toClass(row,): string {
     return row.sliceClass;
   },),),];
 
@@ -309,7 +331,7 @@ export function reportWindowTrial(
     /**
      * Every slice of this class, as arm maps.
      */
-    const bySlice = groupBySlice({ rows: rows.filter(function inClass(row,): boolean {
+    const bySlice = groupBySlice({ rows: mine.filter(function inClass(row,): boolean {
       return row.sliceClass === sliceClass;
     },), },);
 

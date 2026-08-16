@@ -85,6 +85,7 @@ export {
   CONTROL_CLASS,
   controlSlices,
   flaggedSlices,
+  RELOCATION_CLASSES,
   type TrialSlice,
 } from './corpus-run/window-trial-draw.ts';
 export {

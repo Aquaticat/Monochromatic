@@ -21,6 +21,24 @@ import type { DocumentDisplacement, } from '../displacement-class.ts';
 export const CONTROL_CLASS = 'control-unflagged';
 
 /**
+ * Labels the two ends of a relocation candidate carry.
+ *
+ * SEPARATE CLASSES BECAUSE THE WINDOW CAN ONLY EXPLAIN ONE OF THEM. At the HIGH
+ * end the archive carries English the original does not account for, and the
+ * neighbouring Chinese is exactly where that English could have come from, so a
+ * judge shown it can recognise a move rather than a fabrication. At the LOW end
+ * the archive is missing English, and neighbouring CHINESE cannot say where the
+ * missing translation went; only the neighbouring ENGLISH could, and this trial
+ * never shows it. Pooled, the low ends would dilute the high ends with a
+ * population the treatment cannot reach, and a real effect would read as a
+ * weaker one.
+ */
+export const RELOCATION_CLASSES = {
+  high: 'relocation-high',
+  low: 'relocation-low',
+} as const;
+
+/**
  * One slice the trial will buy, with the label its rows carry.
  *
  * @example
@@ -49,11 +67,13 @@ export type TrialSlice = {
  * Flagged slices of one entry, deduplicated, each under one class.
  *
  * A SLICE FLAGGED TWO WAYS TAKES THE FIRST LABEL IN THIS ORDER, and the order is
- * deliberate rather than incidental: relocation is the class `#107` is about and
- * the one the window is expected to move, so a slice that is both a relocation
- * endpoint and something else is read as a relocation. The alternative, dropping
- * multiply-flagged slices, would discard exactly the ambiguous cases the trial
- * exists to resolve.
+ * deliberate rather than incidental. The high end of a relocation comes first
+ * because it is the case `#107` is about and the only one the window can reach:
+ * the archive there carries English the original does not account for, and the
+ * neighbouring Chinese is where it could have come from. Its low end comes next,
+ * since a slice that is both ends of two candidates is more informative read as
+ * the surplus one. The alternative, dropping multiply-flagged slices, would
+ * discard exactly the ambiguous cases the trial exists to resolve.
  *
  * @param entryId - entry these slices belong to
  *
@@ -81,22 +101,20 @@ export function flaggedSlices(
    */
   const assigned = new Map<number, string>();
 
-  /**
-   * Both endpoints of every relocation candidate, which are adjacencies and so
-   * overlap by construction.
-   */
-  const relocation = displacement.relocationCandidates
-    .flatMap(function toEnds(candidate,): readonly number[] {
-      return [
-        candidate.high,
-        candidate.low,
-      ];
-    },);
-
   for (const [sliceClass, indices,] of [
     [
-      'relocation',
-      relocation,
+      RELOCATION_CLASSES.high,
+      displacement.relocationCandidates
+        .map(function toHigh(candidate,): number {
+          return candidate.high;
+        },),
+    ],
+    [
+      RELOCATION_CLASSES.low,
+      displacement.relocationCandidates
+        .map(function toLow(candidate,): number {
+          return candidate.low;
+        },),
     ],
     [
       'untranslated',
