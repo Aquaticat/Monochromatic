@@ -158,11 +158,10 @@ export function createSerialRequestQueue(
   /**
    * Forgets one entry's bookkeeping once it can no longer be cancelled.
    *
+   * Dropping the id from both sets is what keeps them bounded by the number of entries in
+   * flight rather than by everything this connection has ever handled.
+   *
    * @param id - Identity to release
-   *
-   * @mutates live - Drops this id from live tracking.
-   *
-   * @mutates cancelled - Drops any cancellation recorded for this id.
    */
   function release(id: QueuedId,): void {
     if (id === UNCANCELLABLE)
@@ -192,7 +191,7 @@ export function createSerialRequestQueue(
        * Frame this entry produced, or the sentinel when it has nothing to send.
        */
       const frame = await entry.produce();
-      if ((frame !== NO_FRAME) && !isCancelled(entry.id,))
+      if ((frame !== NO_FRAME) && (!isCancelled(entry.id,)))
         await write(frame,);
     }
     catch (error: unknown) {
@@ -205,9 +204,7 @@ export function createSerialRequestQueue(
   }
 
   /**
-   * Runs queued entries in order until none remain.
-   *
-   * @mutates waiting - Removes each entry as it is taken.
+   * Runs queued entries in order until none remain, taking each from the waiting list.
    */
   async function drain(): Promise<void> {
     /**
@@ -233,7 +230,7 @@ export function createSerialRequestQueue(
   /**
    * Starts a drain when none is running, leaving an active one to pick up new entries.
    *
-   * @mutates draining - Records the active drain so {@link SerialRequestQueue.idle} can await it.
+   * Recording the active drain is what lets {@link SerialRequestQueue.idle} await it.
    */
   function startDraining(): void {
     if (draining.has('active',))
