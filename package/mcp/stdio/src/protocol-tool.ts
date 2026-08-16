@@ -5,9 +5,10 @@
 //region Tool schemas: how a tool declares its arguments and its structured output
 
 /**
- * JSON Schema subset describing tool input parameters.
- * Kept intentionally loose; servers provide arbitrary JSON Schema 2020-12 objects,
- * and the root must be an object because tool arguments are always a JSON object.
+ * JSON Schema describing tool input parameters.
+ * The root must be an object because tool arguments are always a JSON object; beyond that
+ * any JSON Schema 2020-12 keyword may appear, so composition keywords such as `oneOf` and
+ * `not` are admitted by the index signature rather than enumerated here.
  *
  * @example
  * ```ts
@@ -23,6 +24,7 @@ export type ToolInputSchema = {
   readonly properties?: Readonly<Record<string, unknown>>;
   readonly required?: readonly string[];
   readonly $schema?: string;
+  readonly [keyword: string]: unknown;
 };
 
 /**

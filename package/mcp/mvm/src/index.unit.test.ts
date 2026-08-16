@@ -83,6 +83,14 @@ async function exchange(
 }
 
 /**
+ * Backend name no registered kind answers to.
+ *
+ * Keeps every destroy_vm case inert: a call that got past argument validation still cannot
+ * resolve a backend, so no VM is ever destroyed by this suite.
+ */
+const UNRESOLVABLE_BACKEND = 'no-such-backend-kind';
+
+/**
  * Request `_meta` declaring the protocol revision the built server implements.
  */
 const REQUEST_META = {
@@ -208,5 +216,96 @@ await describe({
     },),
 
     //endregion Protocol boundary
+
+    //region destroy_vm argument validation: refuses ambiguous targets before touching a backend.
+    // Every case names a backend kind nothing answers to, so even the accepted call cannot
+    // reach a real backend and no VM is ever destroyed.
+
+    it({
+      name: 'refuses destroy_vm naming a VM alongside all: true instead of destroying every VM',
+      fn: async () => {
+        /** Reply to a destroy call carrying both targets. */
+        const replies = await exchange({
+          requests: [{
+            jsonrpc: '2.0',
+            id: 4,
+            method: 'tools/call',
+            params: {
+              ...REQUEST_META,
+              name: 'destroy_vm',
+              arguments: {
+                name: 'web-01',
+                all: true,
+                backend: UNRESOLVABLE_BACKEND,
+              },
+            },
+          },],
+        },);
+        const result = replies[0]?.result as {
+          isError: boolean;
+          content: readonly { text: string; }[];
+        };
+        expect(result.isError,).toBe(true,);
+        expect(result.content[0]?.text,).toContain('not both',);
+        expect(result.content[0]?.text,).toContain('web-01',);
+      },
+    },),
+
+    it({
+      name: 'refuses destroy_vm carrying neither target',
+      fn: async () => {
+        /** Reply to a destroy call with no target. */
+        const replies = await exchange({
+          requests: [{
+            jsonrpc: '2.0',
+            id: 5,
+            method: 'tools/call',
+            params: {
+              ...REQUEST_META,
+              name: 'destroy_vm',
+              arguments: { backend: UNRESOLVABLE_BACKEND, },
+            },
+          },],
+        },);
+        const result = replies[0]?.result as {
+          isError: boolean;
+          content: readonly { text: string; }[];
+        };
+        expect(result.isError,).toBe(true,);
+        expect(result.content[0]?.text,).toContain('all: true',);
+      },
+    },),
+
+    it({
+      name: 'reaches backend resolution once destroy_vm carries exactly one target',
+      fn: async () => {
+        // Positive control for both refusals: the same unresolvable backend now surfaces a
+        // backend error, so the refusals really did stop short of resolving a backend.
+        /** Reply to a well-formed destroy call whose backend cannot be resolved. */
+        const replies = await exchange({
+          requests: [{
+            jsonrpc: '2.0',
+            id: 6,
+            method: 'tools/call',
+            params: {
+              ...REQUEST_META,
+              name: 'destroy_vm',
+              arguments: {
+                name: 'web-01',
+                backend: UNRESOLVABLE_BACKEND,
+              },
+            },
+          },],
+        },);
+        const result = replies[0]?.result as {
+          isError: boolean;
+          content: readonly { text: string; }[];
+        };
+        expect(result.isError,).toBe(true,);
+        expect(result.content[0]?.text,).toContain(UNRESOLVABLE_BACKEND,);
+      },
+    },),
+
+    //endregion destroy_vm argument validation
   ],
 },);

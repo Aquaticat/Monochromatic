@@ -13,6 +13,7 @@ import {
 } from './backend.ts';
 import {
   errorResponse,
+  invalidArgumentsResponse,
   textResponse,
 } from './response.ts';
 import { requiredStringArgument, } from './required-string-argument.ts';
@@ -134,6 +135,19 @@ export const destroyTool: ToolEntry = defineTool({
         },
         backend: BACKEND_PROPERTY,
       },
+      // Encodes the exactly-one rule the description states, so a client can reject an
+      // ambiguous call before it reaches this server at all.
+      oneOf: [
+        {
+          required: ['name',],
+          not: { required: ['all',], },
+        },
+        {
+          required: ['all',],
+          properties: { all: { const: true, }, },
+          not: { required: ['name',], },
+        },
+      ],
     },
     handler: async function handleDestroyVm(args,) {
       /**
@@ -144,6 +158,27 @@ export const destroyTool: ToolEntry = defineTool({
        * Optional destroy-everything flag; mutually exclusive with `name` and validated below.
        */
       const all = ((typeof args.all) === 'boolean') ? args.all : undefined;
+
+      // Refuse ambiguous targets before resolving a backend, so a rejected call never
+      // reaches one. Answering `all: true` first would destroy every VM for a caller who
+      // named the single VM they meant, which is the opposite of what they asked for and
+      // is not recoverable once the backend has run.
+      if ((name !== undefined) && (all === true)) {
+        return invalidArgumentsResponse({
+          tag: 'destroy_vm',
+          text:
+            `Provide either \`name\` or \`all: true\`, not both. Received name "${name}" `
+            + `alongside all: true, and destroying every VM is not what naming one asks for. `
+              + `Send only \`name\` to destroy that VM, or only \`all: true\` to destroy every VM.`,
+        },);
+      }
+      if ((name === undefined) && (all !== true)) {
+        return invalidArgumentsResponse({
+          tag: 'destroy_vm',
+          text: 'Provide either `name` to destroy one VM, or `all: true` to destroy every VM.',
+        },);
+      }
+
       try {
         /**
          * Backend resolved from the optional `backend` arg, env, or default.
@@ -153,17 +188,10 @@ export const destroyTool: ToolEntry = defineTool({
           await backend.destroyAll();
           return textResponse('All VMs destroyed.',);
         }
-        if (name !== undefined) {
-          await backend.destroy({ name, },);
-          return textResponse(`VM ${name} destroyed.`,);
-        }
-        return {
-          content: [{
-            type: 'text' as const,
-            text: 'Error: provide either `name` or `all: true`.',
-          },],
-          isError: true as const,
-        };
+        if (name === undefined)
+          throw new Error('destroy_vm reached backend dispatch without a target',);
+        await backend.destroy({ name, },);
+        return textResponse(`VM ${name} destroyed.`,);
       }
       catch (err: unknown) {
         return errorResponse({

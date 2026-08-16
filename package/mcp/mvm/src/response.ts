@@ -95,6 +95,42 @@ export function errorResponse({
 }
 
 /**
+ * Build an MCP error response for arguments rejected before any backend work began.
+ * Separate from {@link errorResponse} because nothing was caught: the call was refused,
+ * so there is no exception text to preserve and nothing was attempted to roll back.
+ *
+ * @param tag - Tool name or label for the log prefix.
+ *
+ * @param text - Explanation of what the caller must send instead.
+ *
+ * @returns MCP response with `isError: true`.
+ *
+ * @example
+ * ```ts
+ * return invalidArgumentsResponse({
+ *   tag: 'destroy_vm',
+ *   text: 'Provide either `name` or `all: true`, not both.',
+ * });
+ * ```
+ */
+export function invalidArgumentsResponse({
+  tag,
+  text,
+}: {
+  readonly tag: string;
+  readonly text: string;
+},): ErrorResponse {
+  console.error(`[mcp-mvm] ${tag} refused: ${text}`,);
+  return {
+    content: [{
+      type: TEXT_TYPE,
+      text: `Error: ${text}`,
+    },],
+    isError: true,
+  };
+}
+
+/**
  * Format an exec/run result into a human-readable string.
  * Includes stdout, stderr (when non-empty), and exit code.
  *
