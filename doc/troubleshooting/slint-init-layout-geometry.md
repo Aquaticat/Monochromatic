@@ -17,8 +17,8 @@ The desktop music player's LED page controls use repeated Slint components insid
 Each cap reports its measured rectangle to Rust.
 Rust combines those rectangles into one SVG path behind every wrapped row.
 
-With only `changed x`, `changed y`, `changed width`, and `changed height` reporters,
-the caps appeared but `LedPlateGeometry.path` remained empty on the first visible layout.
+The original reporters watched `changed x` and `changed y` together with `changed width` and `changed height`.
+The caps appeared but `LedPlateGeometry.path` remained empty on the first visible layout.
 Adding an `init` reporter made the path nonempty,
 but the first reports still described one unwrapped row.
 The rendered caps had already wrapped to two rows,
