@@ -112,6 +112,8 @@ export {
   MixedGenerationError,
 } from './corpus-run/artifact-pool-refusal.ts';
 export {
+  assertArtifactsPlaceable,
+  assertBuildGenerationResumable,
   assertResumableGeneration,
   GenerationDriftError,
   LegacyPipelineError,
@@ -120,10 +122,14 @@ export {
 } from './corpus-run/pass-generation-guard.ts';
 export {
   assertResumableSchemaGeneration,
-  censusBySchema,
-  type SchemaCensus,
+  MislabelledArtifactError,
   SchemaGenerationError,
 } from './corpus-run/pass-schema-guard.ts';
+export {
+  censusBySchema,
+  type SchemaCensusRow,
+  type SchemaClassification,
+} from './corpus-run/pass-schema-census.ts';
 export {
   abbreviate,
   ArtifactProvenanceError,

@@ -114,11 +114,15 @@ export const PAIRED_CATEGORIES = [
  * RENDERING_AUDIT_CATEGORIES.includes('omission',);
  * ```
  */
-export const RENDERING_AUDIT_CATEGORIES = [
+export const RENDERING_AUDIT_CATEGORIES: readonly (
+  | typeof SOURCE_ONLY_CATEGORIES[number]
+  | typeof CANDIDATE_ONLY_CATEGORIES[number]
+  | typeof PAIRED_CATEGORIES[number]
+)[] = [
   ...SOURCE_ONLY_CATEGORIES,
   ...CANDIDATE_ONLY_CATEGORIES,
   ...PAIRED_CATEGORIES,
-] as const;
+];
 
 /**
  * One category, narrowed to the vocabulary.

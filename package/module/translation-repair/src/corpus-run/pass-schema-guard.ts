@@ -1,17 +1,18 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import {
-  ArtifactParseError,
-  requireRecord,
-} from '../artifact-guard.ts';
-import { readArtifactSchemaVersion, } from '../artifact-schema-version.ts';
-import { readdirArtifacts, } from './artifact-placement.ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { ARTIFACT_SCHEMA_VERSION_V2, } from './artifact-v2-contract.ts';
+import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
+import {
+  censusBySchema,
+  type SchemaCensusRow,
+  type SchemaClassification,
+} from './pass-schema-census.ts';
 
 //region Pass schema guard
-// Refuses to resume an accumulation into a directory whose settled artifacts
-// belong to a SCHEMA generation this pass does not write.
+// Refuses to resume an accumulation into a directory whose settled artifacts do
+// not belong to the SCHEMA generation this pass writes.
 //
 // A sibling of the pipeline guard rather than more of it, because it answers a
 // different question with a different remedy. That one asks which BUILD wrote
@@ -29,8 +30,17 @@ import { ARTIFACT_SCHEMA_VERSION_V2, } from './artifact-v2-contract.ts';
 // WHY IT MATTERS AT ALL, given the pass would still run: the scheduler counts
 // every `.json` NAME as settled (`pass-settled.ts`), so entries of the other
 // generation are never re-run, while every reader that asks them a question
-// this generation answers refuses them. The corpus ends up half one generation
-// and half the other, and nothing in the run says so.
+// this generation answers refuses them. The corpus ends up part one generation
+// and part the other, and nothing in the run says so.
+//
+// THE LABEL IS NOT THE SHAPE, which an independent review of the first version
+// of this guard pointed out and which it did not check. A version 1 body whose
+// `artifactSchemaVersion` is edited to 2 satisfied every check here, was
+// skipped by the scheduler, and failed only later in whatever reader asked it a
+// two-lane question. So every artifact declaring the generation this pass
+// writes is now PARSED with that generation's reader, at the one boundary where
+// refusing is still free. The cost is one full parse per settled artifact at
+// startup, against a pass that runs for days.
 //
 // NOT OVERRIDABLE, deliberately, and not by a variable of its own either. A
 // second opt-in would recreate the hole this closes; the remedies belong in the
@@ -49,177 +59,34 @@ const NAMED_EXAMPLES = 5;
 const ARTIFACT_SUFFIX = '.json';
 
 /**
- * Phrase a refusal uses for artifacts carrying no version field.
- */
-const UNVERSIONED_LABEL = 'no schema version at all';
-
-/**
- * Phrase a refusal uses for artifacts whose version this build cannot read.
+ * Phrase naming one classification, for a refusal.
  *
- * Reachable from a field that is not a count, and from a generation written
- * after this build, which are one answer here: both mean the file names a shape
- * this pass cannot say anything about.
- */
-const UNREADABLE_LABEL = 'a schema generation this build cannot read';
-
-/**
- * Entries settled under each generation, keyed by how that generation reads.
+ * BUILT FROM THE CLASSIFICATION rather than used as its key, so a message can
+ * distinguish a sound artifact of another generation from a file that is not an
+ * artifact, and can offer each the remedy that fits.
  *
- * KEYED BY THE PHRASE rather than by a version number, because three of the
- * answers are not numbers: an artifact can carry no version, carry one this
- * build cannot read, or carry one it reads perfectly well and does not write.
+ * @param classification - what the census made of one file
+ *
+ * @returns Phrase a refusal groups by
  *
  * @example
  * ```ts
- * const census: SchemaCensus = new Map([['schema version 1', ['Mittens',],],],);
- * ```
- */
-export type SchemaCensus = ReadonlyMap<string, readonly string[]>;
-
-/**
- * Reads how one artifact names its generation.
- *
- * @param artifact - artifact as parsed JSON, of any shape
- *
- * @param entryId - entry the artifact belongs to, for the reader's error paths
- *
- * @returns Phrase naming its generation
- *
- * @throws Whatever a reading raised that is not a parse failure, since this
- * classifies artifacts rather than swallowing faults
- *
- * @example
- * ```ts
- * const label = generationLabel({ artifact, entryId: 'Mittens', },);
+ * const label = generationLabel({ classification, },);
  * ```
  */
 function generationLabel(
-  {
-    artifact,
-    entryId,
-  }: {
-    readonly artifact: unknown;
-    readonly entryId: string;
-  },
+  { classification, }: { readonly classification: SchemaClassification; },
 ): string {
-  try {
-    /**
-     * Generation the artifact names, or a named absence.
-     */
-    const reading = readArtifactSchemaVersion({
-      artifact: requireRecord({
-        value: artifact,
-        path: entryId,
-      },),
-      path: entryId,
-    },);
+  if (classification.kind === 'declared')
+    return `schema version ${String(classification.version,)}`;
 
-    return (reading.kind === 'versioned')
-      ? `schema version ${String(reading.version,)}`
-      : UNVERSIONED_LABEL;
-  } catch (error) {
-    // A file that is not a record at all lands here too, and is left with the
-    // unreadable-generation answer on purpose: the pipeline guard runs first
-    // and refuses such a file as unplaceable, with the remedy that case wants,
-    // so reaching here means somebody called this guard alone.
-    if (error instanceof ArtifactParseError)
-      return UNREADABLE_LABEL;
+  if (classification.kind === 'unversioned')
+    return 'no schema version at all';
 
-    throw error;
-  }
-}
+  if (classification.kind === 'unreadable-version')
+    return 'a schema generation this build cannot read';
 
-/**
- * Groups every settled entry by the generation its artifact names.
- *
- * @param artifactsDir - directory holding one JSON per settled entry
- *
- * @returns Entry ids per generation, each list in directory-sorted order
- *
- * @example
- * ```ts
- * const census = await censusBySchema({ artifactsDir, },);
- * ```
- */
-export async function censusBySchema(
-  { artifactsDir, }: { readonly artifactsDir: string; },
-): Promise<SchemaCensus> {
-  /**
-   * Artifact names, sorted so a refusal reads the same twice.
-   */
-  const names = (await readdirArtifacts({ artifactsDir, },))
-    .filter(function isArtifact(name,): boolean {
-      return name.endsWith(ARTIFACT_SUFFIX,);
-    },)
-    .toSorted();
-
-  /**
-   * Each entry paired with the generation it belongs to.
-   */
-  const labelled = await Promise.all(names.map(async function readOne(name,): Promise<readonly [
-    string,
-    string,
-  ]> {
-    /**
-     * Entry id, which is the file name without its suffix.
-     */
-    const entryId = name.slice(
-      0,
-      -ARTIFACT_SUFFIX.length,
-    );
-
-    /**
-     * Artifact text as it sits on disk.
-     */
-    const text = await readFile(
-      join(
-        artifactsDir,
-        name,
-      ),
-      'utf8',
-    );
-
-    try {
-      return [
-        generationLabel({
-          artifact: JSON.parse(text,),
-          entryId,
-        },),
-        entryId,
-      ];
-    } catch (error) {
-      // A file that is not JSON is refused rather than skipped. The pipeline
-      // guard already refuses it as unplaceable, so this is unreachable in a
-      // pass, and skipping it would answer a question about a directory by
-      // ignoring part of the directory.
-      if (error instanceof SyntaxError)
-        return [
-          UNREADABLE_LABEL,
-          entryId,
-        ];
-
-      throw error;
-    }
-  },),);
-
-  return labelled.reduce(
-    function group(
-      census: Map<string, readonly string[]>,
-      [
-        label,
-        entryId,
-      ],
-    ): Map<string, readonly string[]> {
-      return census.set(
-        label,
-        [
-          ...(census.get(label,) ?? []),
-          entryId,
-        ],
-      );
-    },
-    new Map<string, readonly string[]>(),
-  );
+  return 'not an artifact this build recognizes at all';
 }
 
 /**
@@ -265,11 +132,38 @@ function generationLine(
 }
 
 /**
+ * Ways forward every refusal here ends with, in the order an operator should
+ * consider them.
+ *
+ * ARCHIVING IS ONE OF THEM, which the first version of this message denied. It
+ * said deleting was not the remedy, full stop, and that is false: moving an
+ * incompatible artifact out of the directory is exactly what lets the scheduler
+ * re-run that entry, and moving it rather than deleting keeps the sound result
+ * it already is.
+ */
+const WAYS_FORWARD = [
+  'Ways forward:',
+  '',
+  '  Start a fresh directory, with TRANSLATION_REPAIR_RUNS_DIR. The entries',
+  '  already here keep their own generation and stay readable.',
+  '',
+  '  Restore the code those entries were settled under and resume there,',
+  '  which matches the schema and the build at once.',
+  '',
+  '  Move the incompatible artifacts to an archive directory and resume here.',
+  '  The scheduler counts filenames, so each one moved out is re-run and paid',
+  '  for again, and the archived copy stays readable as the generation it is.',
+  '',
+  'Deleting them outright is the one thing to avoid: it costs the same re-run',
+  'and destroys a sound result of the generation that wrote it.',
+];
+
+/**
  * Raised when a resume would settle a second artifact generation into one pool.
  */
 export class SchemaGenerationError extends Error {
   /**
-   * Names every foreign generation, what this pass writes, and both ways
+   * Names every foreign generation, what this pass writes, and every way
    * forward.
    *
    * @param foreign - entries per generation this pass does not write
@@ -286,7 +180,7 @@ export class SchemaGenerationError extends Error {
       foreign,
       writes,
     }: {
-      readonly foreign: SchemaCensus;
+      readonly foreign: ReadonlyMap<string, readonly string[]>;
       readonly writes: number;
     },
   ) {
@@ -307,8 +201,8 @@ export class SchemaGenerationError extends Error {
         '',
         'The scheduler counts every .json NAME as settled, so those entries are',
         'never re-run, while every reader asking them a question this generation',
-        'answers refuses them. Resuming here produces a corpus that is half one',
-        'generation and half the other, and nothing in the run reports it.',
+        'answers refuses them. Resuming here produces a corpus that is part one',
+        'generation and part another, and nothing in the run reports it.',
         '',
         'The pipeline drift opt-in does not cover this and is not asked about.',
         'Drift is an opinion about which BUILD wrote a pool, and its remedy,',
@@ -316,19 +210,168 @@ export class SchemaGenerationError extends Error {
         'still answers the same questions. A file of another schema generation',
         'cannot answer them at all.',
         '',
-        'Two ways forward:',
-        '',
-        '  Start a fresh directory, with TRANSLATION_REPAIR_RUNS_DIR. The',
-        '  entries already here keep their own generation and stay readable.',
-        '',
-        '  Restore the code those entries were settled under and resume there,',
-        '  which matches the schema and the build at once.',
-        '',
-        'Deleting them is NOT the remedy. They are sound results of the',
-        'generation that wrote them.',
+        ...WAYS_FORWARD,
       ].join('\n',),
     );
     this.name = 'SchemaGenerationError';
+  }
+}
+
+/**
+ * Raised when an artifact declares the generation this pass writes and is not
+ * one.
+ */
+export class MislabelledArtifactError extends Error {
+  /**
+   * Names the entry and what its own generation's reader refused.
+   *
+   * @param entryId - entry whose artifact carries the wrong label
+   *
+   * @param writes - generation it claims
+   *
+   * @param reason - what the reader for that generation said
+   *
+   * @example
+   * ```ts
+   * throw new MislabelledArtifactError({ entryId: 'Mittens', writes: 2, reason, },);
+   * ```
+   */
+  constructor(
+    {
+      entryId,
+      writes,
+      reason,
+    }: {
+      readonly entryId: string;
+      readonly writes: number;
+      readonly reason: string;
+    },
+  ) {
+    super(
+      [
+        `${entryId} declares schema version ${
+          String(writes,)
+        }, which is what this pass writes, and is not one:`,
+        '',
+        `  ${reason}`,
+        '',
+        'A label is not a shape. The scheduler counts this file as settled and',
+        'never re-runs the entry, so a body that does not satisfy the generation',
+        'it claims is discovered by whichever reader asks it a question first,',
+        'long after the pass that could have refused it.',
+        '',
+        'This is not ordinary drift: no other generation writes this label, so',
+        'the file was edited, truncated, or written by something that is not',
+        'this pipeline.',
+        '',
+        ...WAYS_FORWARD,
+      ].join('\n',),
+    );
+    this.name = 'MislabelledArtifactError';
+  }
+}
+
+/**
+ * Groups foreign census rows by the phrase a refusal names them with.
+ *
+ * @param rows - every settled entry's classification
+ *
+ * @param writes - generation this pass writes
+ *
+ * @returns Entries per foreign generation, in census order
+ *
+ * @example
+ * ```ts
+ * const foreign = foreignGroups({ rows, writes: 2, },);
+ * ```
+ */
+function foreignGroups(
+  {
+    rows,
+    writes,
+  }: {
+    readonly rows: readonly SchemaCensusRow[];
+    readonly writes: number;
+  },
+): ReadonlyMap<string, readonly string[]> {
+  return rows
+    .filter(function isForeign({ classification, },): boolean {
+      return (classification.kind !== 'declared') || (classification.version !== writes);
+    },)
+    .reduce(
+      function group(
+        groups: Map<string, readonly string[]>,
+        {
+          entryId,
+          classification,
+        },
+      ): Map<string, readonly string[]> {
+        /**
+         * Phrase this row is named under.
+         */
+        const label = generationLabel({ classification, },);
+
+        return groups.set(
+          label,
+          [
+            ...(groups.get(label,) ?? []),
+            entryId,
+          ],
+        );
+      },
+      new Map<string, readonly string[]>(),
+    );
+}
+
+/**
+ * Refuses an artifact that declares this generation and does not satisfy it.
+ *
+ * @param artifactsDir - directory holding the artifact
+ *
+ * @param entryId - entry to check
+ *
+ * @param writes - generation it declares
+ *
+ * @throws {@link MislabelledArtifactError} when this generation's reader
+ * refuses the body
+ *
+ * @example
+ * ```ts
+ * await assertBodyMatchesLabel({ artifactsDir, entryId: 'Mittens', writes: 2, },);
+ * ```
+ */
+async function assertBodyMatchesLabel(
+  {
+    artifactsDir,
+    entryId,
+    writes,
+  }: {
+    readonly artifactsDir: string;
+    readonly entryId: string;
+    readonly writes: number;
+  },
+): Promise<void> {
+  /**
+   * Artifact text as it sits on disk, read again rather than carried out of the
+   * census: the census answers a question about every file and holding every
+   * body in memory to answer it would cost the whole directory at once.
+   */
+  const text = await readFile(
+    join(
+      artifactsDir,
+      `${entryId}${ARTIFACT_SUFFIX}`,
+    ),
+    'utf8',
+  );
+
+  try {
+    parseSettledArtifactV2({ value: JSON.parse(text,), },);
+  } catch (error) {
+    throw new MislabelledArtifactError({
+      entryId,
+      writes,
+      reason: caughtValueText(error,),
+    },);
   }
 }
 
@@ -347,6 +390,9 @@ export class SchemaGenerationError extends Error {
  * @throws {@link SchemaGenerationError} when any settled artifact belongs to
  * another generation, naming every one of them
  *
+ * @throws {@link MislabelledArtifactError} when an artifact declares this
+ * generation and this generation's reader refuses it
+ *
  * @example
  * ```ts
  * await assertResumableSchemaGeneration({ artifactsDir, },);
@@ -362,30 +408,36 @@ export async function assertResumableSchemaGeneration(
   },
 ): Promise<void> {
   /**
-   * Every settled entry, grouped by the generation it belongs to.
+   * Every settled entry, classified.
    */
-  const census = await censusBySchema({ artifactsDir, },);
+  const rows = await censusBySchema({ artifactsDir, },);
 
   /**
-   * Phrase the generation this pass writes reads as, which is the one group
-   * that may be there.
+   * Entries belonging to any other generation.
    */
-  const mine = `schema version ${String(writes,)}`;
-
-  /**
-   * Groups belonging to any other generation.
-   */
-  const foreign = new Map([...census.entries(),].filter(function isForeign([label,],): boolean {
-    return label !== mine;
-  },),);
-
-  if (foreign.size === 0)
-    return;
-
-  throw new SchemaGenerationError({
-    foreign,
+  const foreign = foreignGroups({
+    rows,
     writes,
   },);
+
+  if (foreign.size > 0) {
+    throw new SchemaGenerationError({
+      foreign,
+      writes,
+    },);
+  }
+
+  // THE LABEL CHECK PASSED, so every remaining file claims this generation.
+  // Now they have to BE it, which only this generation's reader can say.
+  await Promise.all(
+    rows.map(async function checkBody({ entryId, },): Promise<void> {
+      await assertBodyMatchesLabel({
+        artifactsDir,
+        entryId,
+        writes,
+      },);
+    },),
+  );
 }
 
 //endregion Pass schema guard

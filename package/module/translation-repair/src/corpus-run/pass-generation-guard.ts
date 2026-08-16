@@ -1,4 +1,7 @@
-import { censusByGeneration, } from './artifact-generation.ts';
+import {
+  censusByGeneration,
+  type GenerationCensus,
+} from './artifact-generation.ts';
 import { abbreviate, } from './artifact-provenance.ts';
 
 //region Pass generation guard
@@ -135,8 +138,8 @@ export class LegacyPipelineError extends Error {
     super(
       [
         `${String(entryIds.length,)} artifact${
-          entryIds.length === 1 ? ' here was' : 's here were'
-        } here record a pipeline this build cannot name:`,
+          entryIds.length === 1 ? '' : 's'
+        } here record${entryIds.length === 1 ? 's' : ''} a pipeline this build cannot name:`,
         ...entryIds.map(function toLine(entryId,): string {
           return `  ${entryId}`;
         },),
@@ -176,7 +179,7 @@ export class UnplaceableArtifactError extends Error {
       [
         `${String(entryIds.length,)} artifact${
           entryIds.length === 1 ? '' : 's'
-        } in this directory record no readable pipeline:`,
+        } in this directory record${entryIds.length === 1 ? 's' : ''} no readable pipeline:`,
         ...entryIds.map(function toLine(entryId,): string {
           return `  ${entryId}`;
         },),
@@ -238,28 +241,65 @@ export async function assertResumableGeneration(
     readonly driftAllowed?: boolean;
   },
 ): Promise<void> {
-  // The census runs even when drift is allowed, and the override is applied
-  // further down, against the foreign-generation check ALONE. Returning here
-  // was a hole: opting into a mixed directory also disarmed the refusals for
-  // artifacts that record nothing readable and for artifacts that predate
+  // BOTH HALVES, IN ORDER, for a caller with nothing to run between them. A
+  // corpus pass has something to run between them and calls the two directly;
+  // see `assertArtifactsPlaceable`.
+  assertBuildGenerationResumable({
+    census: await assertArtifactsPlaceable({ artifactsDir, },),
+    digest,
+    driftAllowed,
+  },);
+}
+
+/**
+ * Refuses a directory holding an artifact nothing can place, and reports what
+ * the rest record.
+ *
+ * THE FIRST HALF of the resume guard, split out because something has to run
+ * BETWEEN the two halves. The second half's refusal is overridable, and its
+ * message tells an operator so; a schema check that refuses after they take
+ * that advice makes the first message a lie and the second run's "resuming
+ * across a foreign pipeline" line describe a resume that never happens. These
+ * refusals are not overridable and belong before it.
+ *
+ * @param artifactsDir - directory holding one JSON per settled entry
+ *
+ * @returns What every placeable artifact records, so the second half need not
+ * read the directory again
+ *
+ * @throws UnplaceableArtifactError when an artifact records nothing usable
+ *
+ * @throws LegacyPipelineError when artifacts predate generation identity
+ *
+ * @example
+ * ```ts
+ * const census = await assertArtifactsPlaceable({ artifactsDir, },);
+ * ```
+ */
+export async function assertArtifactsPlaceable(
+  { artifactsDir, }: { readonly artifactsDir: string; },
+): Promise<GenerationCensus> {
+  // THE CENSUS RUNS EVEN WHEN DRIFT IS ALLOWED, and the override belongs to the
+  // second half, against the foreign-digest check ALONE. Returning early on the
+  // opt-in was a hole: opting into a mixed directory also disarmed the refusals
+  // for artifacts that record nothing readable and for artifacts that predate
   // generation identity, which are different problems with different remedies
   // and neither of which drift is an opinion about.
-  //
-  // Decided BEFORE the census rather than at the point of use, which is what
-  // the default parameter buys: the census is an await, so reading the
-  // environment afterwards would decide this call by whatever the environment
-  // happened to say later.
 
   /**
    * Pipelines the settled entries already record, and the artifacts none could
    * be read from.
    */
+  const census = await censusByGeneration({ artifactsDir, },);
+
+  /**
+   * The three lists this half refuses on.
+   */
   const {
-    groups,
     untaggedIds,
     malformedIds,
     legacyIds,
-  } = await censusByGeneration({ artifactsDir, },);
+  } = census;
 
   // An artifact that cannot be placed is WORSE than a foreign generation, and
   // reading only `groups` missed it entirely: a directory holding nothing but
@@ -283,10 +323,47 @@ export async function assertResumableGeneration(
   if (legacyIds.length > 0)
     throw new LegacyPipelineError({ entryIds: legacyIds, },);
 
+  return census;
+}
+
+/**
+ * Refuses a resume that would add a second BUILD to one pool.
+ *
+ * THE SECOND HALF, and the overridable one. It says nothing about artifacts
+ * that cannot be placed, which the first half already refused, and nothing
+ * about their SHAPE, which is a third question with a third remedy.
+ *
+ * @param census - what the first half read off the directory
+ *
+ * @param digest - built pipeline this invocation would stamp on everything it
+ * settles
+ *
+ * @param driftAllowed - whether a mixed directory was asked for, defaulting to
+ * this process's opt-in
+ *
+ * @throws GenerationDriftError when settled entries record any other build and
+ * the caller has not opted into drift
+ *
+ * @example
+ * ```ts
+ * assertBuildGenerationResumable({ census, digest, },);
+ * ```
+ */
+export function assertBuildGenerationResumable(
+  {
+    census,
+    digest,
+    driftAllowed = readDriftOptIn(),
+  }: {
+    readonly census: GenerationCensus;
+    readonly digest: string;
+    readonly driftAllowed?: boolean;
+  },
+): void {
   /**
    * Recorded pipelines that are not the one this invocation would stamp.
    */
-  const foreign = groups
+  const foreign = census.groups
     .map(function toDigest(group,): string {
       return group.digest;
     },)

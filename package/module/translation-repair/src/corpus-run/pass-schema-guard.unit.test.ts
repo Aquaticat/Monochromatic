@@ -9,6 +9,10 @@
  * promise holds across BUILDS and not across SHAPES: a version 1 artifact
  * cannot answer a two-lane question at any commit.
  *
+ * AND ONE CASE THE FIRST VERSION MISSED, which an independent review found: the
+ * guard read the version LABEL and never the body, so a version 1 artifact
+ * relabelled as version 2 passed it.
+ *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
@@ -50,6 +54,12 @@ const DIGEST_B = `sha256-tree-v1:${'b'.repeat(64,)}`;
 const FIXED_TIP = '1111111111111111111111111111111111111111';
 
 /**
+ * Preparation identity every fixture claims, syntactically valid and describing
+ * nothing, which is all a standalone reader checks.
+ */
+const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
+
+/**
  * Environment variable the pipeline guard reads for an explicit drift opt-in.
  */
 const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
@@ -67,6 +77,12 @@ type Fixture = {
    * Built pipeline it records.
    */
   readonly digest: string;
+
+  /**
+   * Whether the body must satisfy the generation it names, rather than merely
+   * carrying the label.
+   */
+  readonly wellFormed?: boolean;
 };
 
 /**
@@ -97,6 +113,83 @@ function withDriftVar({ value, }: { readonly value: string; },): Disposable {
       else
         process.env[ALLOW_DRIFT_VAR] = original;
     },
+  };
+}
+
+/**
+ * A complete version 2 artifact describing a document with NO slices.
+ *
+ * EMPTY ON PURPOSE. Every per-slice relation the reader runs is vacuous here,
+ * so this is the smallest body that genuinely satisfies the generation rather
+ * than merely claiming it, which is what these cases need to tell a real
+ * artifact from a relabelled one.
+ *
+ * @param entryId - entry it settles
+ *
+ * @param digest - built pipeline it records
+ *
+ * @returns Artifact as JSON
+ *
+ * @example
+ * ```ts
+ * const artifact = emptyVersionTwoArtifact({ entryId: 'Mittens', digest: DIGEST_A, },);
+ * ```
+ */
+function emptyVersionTwoArtifact(
+  {
+    entryId,
+    digest,
+  }: {
+    readonly entryId: string;
+    readonly digest: string;
+  },
+): Record<string, unknown> {
+  return {
+    artifactSchemaVersion: 2,
+    id: entryId,
+    tip: FIXED_TIP,
+    pipelineDigest: digest,
+    corpusSha: 'b'.repeat(40,),
+    callConfig: { perCallTimeoutMs: 600_000, },
+    durationMs: 40,
+    timestamp: '2026-08-17T04:00:00.000Z',
+    preparation: {
+      identity: PREPARATION_IDENTITY,
+      sliceCount: 0,
+      sourceChars: 0,
+      targetChars: 0,
+      sourceBytes: 0,
+      alignmentPairCount: 0,
+      alignmentFindings: [],
+    },
+    lanes: {
+      repair: {
+        result: {
+          status: 'unchanged',
+          sliceCount: 0,
+          shippedChunkIndices: [],
+          withdrawnChunkIndices: [],
+          findings: [],
+          sliceTexts: [],
+        },
+        delivery: [],
+      },
+      translate: {
+        result: {
+          status: 'complete',
+          sliceCount: 0,
+          changedSliceCount: 0,
+          refusedSliceCount: 0,
+          withdrawnSliceCount: 0,
+          shippedChunkIndices: [],
+          withdrawnChunkIndices: [],
+          sliceTexts: [],
+        },
+        delivery: [],
+      },
+    },
+    comparison: [],
+    laneSelection: { kind: 'pending-human-decision', },
   };
 }
 
@@ -133,6 +226,7 @@ async function writeArtifacts(
         {
           version,
           digest,
+          wellFormed = false,
         },
       ],): Promise<void> {
         /**
@@ -145,19 +239,26 @@ async function writeArtifacts(
           pipelineDigest: digest,
         };
 
+        /**
+         * Body this fixture writes: a real version 2 artifact when the case
+         * needs one, and otherwise the label alone over a body that is not one.
+         */
+        const body = wellFormed
+          ? emptyVersionTwoArtifact({
+            entryId,
+            digest,
+          },)
+          : {
+            ...common,
+            ...((version === undefined) ? {} : { artifactSchemaVersion: version, }),
+          };
+
         await writeFile(
           join(
             dir,
             `${entryId}.json`,
           ),
-          JSON.stringify(
-            (version === undefined)
-              ? common
-              : {
-                ...common,
-                artifactSchemaVersion: version,
-              },
-          ),
+          JSON.stringify(body,),
           'utf8',
         );
       },),
@@ -166,13 +267,36 @@ async function writeArtifacts(
   return dir;
 }
 
+/**
+ * Runs the guard and reports what it said, or that it accepted.
+ *
+ * @param artifactsDir - directory to check
+ *
+ * @returns Refusal text, or a sentinel no assertion here matches
+ *
+ * @example
+ * ```ts
+ * const said = await refusalOf({ artifactsDir, },);
+ * ```
+ */
+async function refusalOf(
+  { artifactsDir, }: { readonly artifactsDir: string; },
+): Promise<string> {
+  try {
+    await assertResumableSchemaGeneration({ artifactsDir, },);
+    return 'the guard accepted it';
+  } catch (error) {
+    return caughtValueText(error,);
+  }
+}
+
 await describe({
   name: assertResumableSchemaGeneration.name,
   children: [
     it({
       name:
-        'ACCEPTS a fresh directory and one this pass wrote, which are the two ordinary cases and the '
-        + 'only ones that must stay silent',
+        'ACCEPTS a fresh directory and one holding real artifacts of the generation this pass writes, '
+        + 'which are the two ordinary cases and the only ones that must stay silent',
       fn: async () => {
         await assertResumableSchemaGeneration({ artifactsDir: await writeArtifacts({ entries: {}, },), },);
         await assertResumableSchemaGeneration({
@@ -181,14 +305,44 @@ await describe({
               Mittens: {
                 version: 2,
                 digest: DIGEST_A,
+                wellFormed: true,
               },
               Pouncer: {
                 version: 2,
                 digest: DIGEST_A,
+                wellFormed: true,
               },
             },
           },),
         },);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a body that DECLARES this generation and is not one, which the first version of this '
+        + 'guard accepted: it read the label and never the body, so a version 1 artifact relabelled as '
+        + 'version 2 was counted as settled, never re-run, and left for whichever reader asked it a '
+        + 'two-lane question first',
+      fn: async () => {
+        /**
+         * A version 1 body carrying a version 2 label and nothing else of that
+         * generation.
+         */
+        const artifactsDir = await writeArtifacts({
+          entries: {
+            Mittens: {
+              version: 2,
+              digest: DIGEST_A,
+            },
+          },
+        },);
+
+        /**
+         * What the guard said about it.
+         */
+        const said = await refusalOf({ artifactsDir, },);
+        expect(said,).toContain('Mittens declares schema version 2',);
+        expect(said,).toContain('and is not one',);
       },
     },),
     it({
@@ -211,6 +365,7 @@ await describe({
             Pouncer: {
               version: 2,
               digest: DIGEST_A,
+              wellFormed: true,
             },
           },
         },);
@@ -224,9 +379,7 @@ await describe({
           artifactsDir,
           digest: DIGEST_B,
         },);
-
-        await expect(assertResumableSchemaGeneration({ artifactsDir, },),).rejects
-          .toThrow('schema version 1: 1 settled, Mittens',);
+        expect(await refusalOf({ artifactsDir, },),).toContain('schema version 1: 1 settled, Mittens',);
       },
     },),
     it({
@@ -242,10 +395,12 @@ await describe({
               Mittens: {
                 version: 2,
                 digest: DIGEST_A,
+                wellFormed: true,
               },
               Pouncer: {
                 version: 2,
                 digest: DIGEST_B,
+                wellFormed: true,
               },
             },
           },),
@@ -258,8 +413,8 @@ await describe({
         + 'least likely to catch: those files record a digest, so they are neither unplaceable nor '
         + 'legacy, and one written by this very build would pass every check but this one',
       fn: async () => {
-        await expect(
-          assertResumableSchemaGeneration({
+        expect(
+          await refusalOf({
             artifactsDir: await writeArtifacts({
               entries: {
                 // No `version` key at all rather than one holding `undefined`,
@@ -268,8 +423,7 @@ await describe({
               },
             },),
           },),
-        ).rejects
-          .toThrow('no schema version at all',);
+        ).toContain('no schema version at all',);
       },
     },),
     it({
@@ -277,8 +431,8 @@ await describe({
         'REFUSES a generation written AFTER this build, rather than reading it as one it knows: a reader '
         + 'meeting a later shape knows only that it does not know the shape',
       fn: async () => {
-        await expect(
-          assertResumableSchemaGeneration({
+        expect(
+          await refusalOf({
             artifactsDir: await writeArtifacts({
               entries: {
                 Mittens: {
@@ -288,21 +442,19 @@ await describe({
               },
             },),
           },),
-        ).rejects
-          .toThrow('a schema generation this build cannot read',);
+        ).toContain('a schema generation this build cannot read',);
       },
     },),
     it({
       name:
-        'names both ways forward and neither of them is deleting anything, since the entries already '
-        + 'there are sound results of the generation that wrote them and re-running them costs money '
-        + 'nobody here is entitled to spend',
+        'names every way forward including moving the incompatible artifacts aside, and names deleting '
+        + 'them as the one thing to avoid rather than as no remedy at all: a moved file is re-run and a '
+        + 'deleted one is re-run too, and only one of the two keeps the result it already was',
       fn: async () => {
         /**
-         * Whatever the refusal said, or a sentinel that fails the assertions
-         * below rather than passing them vacuously.
+         * Whatever the refusal said.
          */
-        const message = await assertResumableSchemaGeneration({
+        const said = await refusalOf({
           artifactsDir: await writeArtifacts({
             entries: {
               Mittens: {
@@ -311,20 +463,12 @@ await describe({
               },
             },
           },),
-        },)
-          .then(
-            function accepted(): string {
-              return 'the guard accepted it';
-            },
-            function refused(error: unknown,): string {
-              return caughtValueText(error,);
-            },
-          );
-
-        expect(message,).toContain('TRANSLATION_REPAIR_RUNS_DIR',);
-        expect(message,).toContain('Restore the code those entries were settled under',);
-        expect(message,).toContain('Deleting them is NOT the remedy',);
-        expect(message,).toContain('this pass writes schema version 2',);
+        },);
+        expect(said,).toContain('TRANSLATION_REPAIR_RUNS_DIR',);
+        expect(said,).toContain('Restore the code those entries were settled under',);
+        expect(said,).toContain('Move the incompatible artifacts to an archive directory',);
+        expect(said,).toContain('Deleting them outright is the one thing to avoid',);
+        expect(said,).toContain('this pass writes schema version 2',);
       },
     },),
   ],
@@ -335,38 +479,79 @@ await describe({
   children: [
     it({
       name:
-        'groups every settled entry by the generation its artifact names, in directory order, so a '
-        + 'refusal over a corpus-sized directory names counts rather than a wall of ids',
+        'classifies every settled entry rather than grouping them by the sentence a refusal would '
+        + 'print, so a file that is not an artifact at all stays distinguishable from a sound artifact '
+        + 'of a generation this build cannot read, and each can be offered the remedy that fits',
       fn: async () => {
         /**
-         * A directory holding three generations at once.
+         * A directory holding four different answers at once.
          */
-        const census = await censusBySchema({
-          artifactsDir: await writeArtifacts({
-            entries: {
-              Pouncer: {
-                version: 1,
-                digest: DIGEST_A,
-              },
-              Mittens: {
-                version: 1,
-                digest: DIGEST_A,
-              },
-              Tabby: {
-                version: 2,
-                digest: DIGEST_B,
-              },
-              Whiskers: { digest: DIGEST_B, },
+        const artifactsDir = await writeArtifacts({
+          entries: {
+            Pouncer: {
+              version: 1,
+              digest: DIGEST_A,
             },
-          },),
+            Mittens: {
+              version: 2,
+              digest: DIGEST_B,
+              wellFormed: true,
+            },
+            Whiskers: { digest: DIGEST_B, },
+            Tabby: {
+              version: 99,
+              digest: DIGEST_A,
+            },
+          },
         },);
 
-        expect(census.get('schema version 1',),).toEqual([
-          'Mittens',
-          'Pouncer',
+        // A file that is not JSON at all, written directly since no fixture
+        // shape produces one.
+        await writeFile(
+          join(
+            artifactsDir,
+            'Smudge.json',
+          ),
+          'not json {',
+          'utf8',
+        );
+
+        /**
+         * Every entry, in directory order.
+         */
+        const rows = await censusBySchema({ artifactsDir, },);
+        expect(
+          rows.map(function toPair({ entryId, classification, },): readonly [
+            string,
+            string,
+          ] {
+            return [
+              entryId,
+              classification.kind,
+            ];
+          },),
+        ).toEqual([
+          [
+            'Mittens',
+            'declared',
+          ],
+          [
+            'Pouncer',
+            'declared',
+          ],
+          [
+            'Smudge',
+            'malformed',
+          ],
+          [
+            'Tabby',
+            'unreadable-version',
+          ],
+          [
+            'Whiskers',
+            'unversioned',
+          ],
         ],);
-        expect(census.get('schema version 2',),).toEqual(['Tabby',],);
-        expect(census.get('no schema version at all',),).toEqual(['Whiskers',],);
       },
     },),
   ],

@@ -24,7 +24,10 @@ import {
   type CorpusPair,
   settleEntry,
 } from './pass-entry.ts';
-import { assertResumableGeneration, } from './pass-generation-guard.ts';
+import {
+  assertArtifactsPlaceable,
+  assertBuildGenerationResumable,
+} from './pass-generation-guard.ts';
 import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
 import {
   countSettled,
@@ -230,19 +233,23 @@ async function runCorpusPass(): Promise<void> {
   // changed since the entries already here were written, continuing would stamp
   // a second pipeline into one pool and every reader that computes a rate would
   // then refuse the lot.
-  await assertResumableGeneration({
-    artifactsDir,
+  /**
+   * What every placeable artifact records, read once for both guards.
+   *
+   * THE THREE REFUSALS RUN IN ORDER OF HOW LITTLE CHOICE THE OPERATOR HAS.
+   * First an artifact nothing can place, which no opt-in is an opinion about.
+   * Then the SHAPE, which no commit can reconcile. Only then the BUILD, whose
+   * refusal is overridable and whose message says so; running that one first
+   * offered an operator an opt-in that the shape check then refused anyway, so
+   * the advice was a lie and the second run logged a resume that never
+   * happened.
+   */
+  const generationCensus = await assertArtifactsPlaceable({ artifactsDir, },);
+  await assertResumableSchemaGeneration({ artifactsDir, },);
+  assertBuildGenerationResumable({
+    census: generationCensus,
     digest: pipelineDigest,
   },);
-
-  // And the same question about the artifact SHAPE, which the guard above does
-  // not answer: its drift opt-in exists because a mixed-build pool stays
-  // readable once a rate names a required commit, and that promise does not
-  // hold across schema generations, where the files cannot answer the questions
-  // at all. Ordinarily the digest already refuses such a directory, since a
-  // build writing one generation cannot share a digest with one writing
-  // another; this covers the opt-in and the hand-assembled directory.
-  await assertResumableSchemaGeneration({ artifactsDir, },);
 
   /**
    * Entry ids already carrying an artifact this pass.
