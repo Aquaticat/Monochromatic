@@ -82,6 +82,14 @@ the adapter is non-interactive and must never prompt,
 regardless of TTY detection.
 A missing required non-interactive input or decision is an error rather than an invitation to prompt.
 
+Interactive mode must reject piped standard input.
+It accepts input from a named file or from a terminal paste flow,
+so the prompt library retains normal terminal input.
+The implementation must not reopen `/dev/tty`,
+`CONIN$`,
+or another controlling-terminal device.
+Non-interactive mode may consume piped standard input.
+
 ## Settled prior findings
 
 The installed command is OpenCodeReview `v1.9.4`,
@@ -222,8 +230,11 @@ in dependency order:
    Accepted shapes are the complete review or scan result object,
    `ocr session comments --json` comment array,
    and raw OCR session JSONL transcript.
-   Source selection,
-   framing,
+   Interactive mode cannot consume piped standard input;
+   it receives a named file or terminal paste.
+   Non-interactive mode may consume a named file or piped standard input.
+   CLI source syntax,
+   paste framing,
    encoding,
    and malformed-input behavior remain open.
 4. Non-interactive authority:
@@ -274,7 +285,9 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether interactive mode may consume piped standard input.
+Ask the next dependent design question about CLI syntax for selecting a named file,
+piped standard input,
+or interactive paste.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -297,5 +310,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   recorded the three accepted OCR-native JSON shapes and rejection of arbitrary JSON fragments.
 - 2026-08-16:
   recorded explicit `--interactive` or `-i` mode selection and non-interactive default behavior.
+- 2026-08-16:
+  excluded piped standard input from interactive mode and controlling-terminal reopening from implementation.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
