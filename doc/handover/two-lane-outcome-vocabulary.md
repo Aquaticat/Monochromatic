@@ -169,22 +169,74 @@ rather than as an artifact that quietly means something new.
 `ArtifactJsonValue` deliberately excludes JSON's `null`:
 it is absence spelled as a value, which is what this whole generation exists to stop recording.
 
+## Two holes in the version 2 builder, found by review and closed
+
+Both were the session's own defect class at the newest boundary, and both are
+now committed (`b2478473d`, tests strengthened in `da426b2a2`).
+
+**The identity binding was forgeable.** The builder computed one identity from
+`prepared` and stamped it onto BOTH ledgers before comparing them, so the
+comparison's unequal-identity refusal could never fire there: what it proved was
+that the two ledgers agree with each other, and two ledgers built over some
+other slicing agree with each other perfectly.
+
+The identity is now stamped by `runDocumentLanes`, which is the only place
+holding the preparation and the rows at once, so `DocumentLanesResult` carries
+two `IdentifiedDeliveryLedger`s rather than two bare row arrays. The builder
+recomputes what the name should be, refuses a ledger whose own name disagrees,
+then checks the four per-slice facts a row carries over from preparation,
+because an equal name is a hash claim and the rows are what every join uses. It
+also checks each raw result's slice count, which no ledger check can see: a
+structurally valid driver result could pair one lane's result with the other's
+rows.
+
+**The freeze was half a freeze, and the comment claimed the whole thing.**
+Assignment into the frozen types fails when a live union gains a MEMBER. It does
+not fail when a live record gains a FIELD: excess property checking applies to
+object literals, so the wider object assigns cleanly and `JSON.stringify` writes
+the new field into every artifact, which the version 2 parser then refuses for
+carrying keys the schema does not name. Every row is now rebuilt through object
+literals in `artifact-v2-project.ts`.
+
+Worth keeping straight, because the correction has its own limit: the projection
+does not make a new live FIELD fail compilation either, it simply leaves the
+field out. What it buys is that the bytes stay what the schema says. An exact
+-shape type test would turn field growth into a build error too; that is the gap
+to close if an omitted field ever turns out to have mattered.
+
 ## Next actions, in order
 
-1.  The artifact at schema version 2. The identity it needs is DONE and exported.
-    Both designs are written out in the planning doc under
-    "The artifact at version 2, as designed";
-    start there rather than re-deriving them.
-2.  `settleEntry` calling `prepareDocumentPair` and `runDocumentLanes`,
+1.  `settleEntry` calling `prepareDocumentPair` and `runDocumentLanes`,
     one deadline for both lanes, and `throwIfAborted()` between the driver returning
     and the artifact being built. Not a gate BETWEEN the lanes.
-3.  Tests for `settleEntry` once it has its final shape.
+    Reviewer-supplied specifics, all of which have to hold:
+    `sliceCharBudget` passed explicitly, since calling preparation directly bypasses
+    the default `repairTranslation` supplied;
+    separate cache namespaces per lane under the entry cache root, both retained
+    when either lane fails and the root discarded only after the artifact is written;
+    `RUN_TRANSLATE_MODELS` beside `RUN_MODELS`, and a `Logger` threaded through,
+    because `runDocumentLanes` requires one.
+2.  The TALLY line, which needs rework rather than transplanting: it reads
+    `result.status` and `result.issues`, which are repair-only and now live under
+    `lanes.repair.result`. A two-lane line reports settlement rather than either lane,
+    keeps every repair-only count prefixed, and every consumer of `status=` has to move
+    with it.
+3.  Tests for `settleEntry` once it has its final shape, including an abort after both
+    lanes return from cache: no artifact written, both caches kept.
 4.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
     optional property, which discards what its own parser established.
+
+`buildSettledArtifact` (version 1) loses its last production caller at step 1.
+Leave it: readers still parse version 1 artifacts, and the corpus directory holds them.
 
 ## The launch gate has not moved
 
 No corpus pass while the window trial is live:
 it measures the same six models, and competing calls would raise its short-panel rate mid-experiment.
-Trial progress is watched by a monitor and was at 82 arms of 327 when this was written.
+Trial progress is watched by a monitor and was at 150 arms of 327 when this line was last updated,
+with 56 of those on a short panel, the same rate the whole run has held.
 **Build now, launch after the trial finishes.**
+
+The GFP note above still holds and was re-verified at 150 arms:
+same process (PID 2484929, started 12:51:54), and its bundle plus both chunks contain
+zero dynamic imports, so rebuilding `dist` cannot reach it.
