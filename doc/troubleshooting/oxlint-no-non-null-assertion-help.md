@@ -98,14 +98,13 @@ and added the explicit warning that optional chaining returns `undefined`.
 The current message is generic policy from upstream,
 not evidence that this repository changed its preferred remediation.
 
-### The repository's diagnostic wrapper has no entry for this rule
+### The repository's diagnostic wrapper now owns the local guidance
 
-The repository already has the correct extension point.
 `package/dev-script/task-util/src/oxlint-guidance.ts:44` defines `RULE_GUIDANCE`,
 which owns project-specific additions to Oxlint diagnostics.
-The registry currently has no `no-non-null-assertion` entry.
+The implemented fix adds the `no-non-null-assertion` entry at the same file's line 53.
 
-`package/dev-script/task-util/src/oxlint-guidance.ts:126-128` returns a sentinel for an absent entry:
+`package/dev-script/task-util/src/oxlint-guidance.ts:134-136` keeps returning a sentinel for an absent entry:
 
 ```typescript
 const ruleGuidance = RULE_GUIDANCE[ruleName];
@@ -127,10 +126,10 @@ if ((activeGuidance !== NO_RULE) && (!injected)
 
 When Oxlint emits no help line,
 `package/dev-script/task-util/src/oxlint-augment.ts:664-670` injects one at the diagnostic boundary.
-The missing registry entry is therefore the local defect.
-No parser,
+The missing registry entry was therefore the local defect.
+Commit `07362d55d` added it without changing the parser,
 rule configuration,
-or output-augmentation architecture change is needed.
+or output-augmentation architecture.
 
 ## Verification
 
@@ -175,11 +174,11 @@ run the same consumer boundary used by the repository:
 mise run //package/dev-script/task-util:lint:oxlint
 ```
 
-Before the candidate fix,
-the output contains Oxlint's optional-chaining help and no mention of `nonNullishOrThrow`.
-The command exits nonzero because the fixture intentionally violates the rule.
+Before implementation,
+the output contained Oxlint's optional-chaining help and no mention of `nonNullishOrThrow`.
+The command exited nonzero because the fixture intentionally violated the rule.
 
-A candidate registry entry was then built in a detached worktree and exercised through the built
+The implemented registry entry was built and exercised through
 `package/dev-script/task-util/dist/final/node/oxlint-wrapper.mjs`.
 The same diagnostic became:
 
@@ -187,7 +186,7 @@ The same diagnostic became:
 help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`. Repository policy: preserve fail-loud semantics. Replace `value!` with `nonNullishOrThrow(value,)` from `@monochromatic-dev/module-or-throw/ts`. Do not use optional chaining unless a missing value is intentionally accepted.
 ```
 
-The prototype used this registry value:
+The implementation uses this registry value:
 
 ```typescript
 'no-non-null-assertion': {
@@ -200,8 +199,10 @@ The prototype used this registry value:
 },
 ```
 
-The focused `oxlint-augment.unit.test.ts` probe first failed because the registry returned an empty string,
+The focused `oxlint-augment.unit.test.ts` probe first failed in the detached prototype because the registry
+returned an empty string,
 then passed after the entry was added.
+Commit `9ded59670` added the production tests.
 The test asserts both `nonNullishOrThrow` and the explicit instruction not to use optional chaining.
 It covers both current upstream variants:
 
@@ -218,7 +219,12 @@ the built wrapper retained Oxlint's note and injected this separate line:
 help: Repository policy: preserve fail-loud semantics. Replace `value!` with `nonNullishOrThrow(value,)` from `@monochromatic-dev/module-or-throw/ts`. Do not use optional chaining unless a missing value is intentionally accepted.
 ```
 
-`mise run //package/dev-script/task-util:lint:types` also passed in the detached worktree.
+`mise run //package/dev-script/task-util:lint:types` passed after implementation.
+The package's `lint:oxlint` task still reports seven pre-existing
+`test-import(require-eventual-artifact)` errors.
+A disposable worktree at parent commit `e815bdff5` reproduced the same seven errors,
+so this change added no Oxlint finding.
+
 The existing helper verification passed through:
 
 ```bash
@@ -270,19 +276,19 @@ but their immediate parent is not a member expression:
 - repeated assertions such as `x!!;`
 
 Oxlint emits the warning and note without its optional-chaining help.
-The local wrapper should inject repository guidance.
+The local wrapper now injects repository guidance.
 
 ## Verified workarounds
 
-### Add project guidance at the existing wrapper boundary
+### Implemented project guidance at the existing wrapper boundary
 
-Add `no-non-null-assertion` to `RULE_GUIDANCE` in
-`package/dev-script/task-util/src/oxlint-guidance.ts`.
-Keep `oxlint-augment.ts` generic.
-Add focused tests for the existing-help and no-help variants in
-`package/dev-script/task-util/src/oxlint-augment.unit.test.ts`.
+`RULE_GUIDANCE` in `package/dev-script/task-util/src/oxlint-guidance.ts` now contains
+`no-non-null-assertion` guidance.
+`oxlint-augment.ts` remains generic.
+Focused tests in `package/dev-script/task-util/src/oxlint-augment.unit.test.ts` cover the existing-help
+and no-help variants.
 
-This is the recommended repository fix.
+This is the implemented repository fix.
 It uses the mechanism documented at
 `package/dev-script/task-util/README.md:159-165`,
 which says repository lint runs through `task-oxlint` and that the wrapper augments diagnostics without removing them.
