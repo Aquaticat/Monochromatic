@@ -238,6 +238,8 @@ the combined selection must contain at least one finding.
 An empty combined selection keeps the selection flow active until the user selects a finding or cancels explicitly.
 Either individual picker may be empty,
 so security-only publication remains possible.
+Pressing Ctrl+C during any prompt or answering No at the final confirmation before creation starts
+prints `Issue creation canceled.` and returns status zero without GitHub mutations.
 That picker must use red styling when color is available and an explicit textual `SECURITY` marker
 so color is never the only signal.
 Every security-gated finding selected for publication requires its own explicit safe-to-disclose confirmation.
@@ -510,7 +512,7 @@ in dependency order:
    Either individual picker may be empty.
    pnpm's prompt library and interaction model,
    terminal capabilities,
-   cancellation,
+   post-creation interrupt behavior,
    multi-select behavior,
    and accessibility otherwise remain open.
 10. Package interface:
@@ -527,7 +529,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about the exit status for explicit interactive cancellation.
+Ask the next dependent design question about the output format and detail for non-interactive preview mode.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -641,5 +643,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   preselected all normal findings and left all security findings unselected in their separate interactive pickers.
 - 2026-08-16:
   required at least one combined interactive selection while allowing either individual picker to be empty.
+- 2026-08-16:
+  made pre-publication Ctrl+C and final-confirmation rejection successful cancellation with status zero.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
