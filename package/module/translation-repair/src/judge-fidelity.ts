@@ -63,7 +63,7 @@ export type FidelityDirection = 'preserve' | 'replace';
  *
  * @example
  * ```ts
- * const trial: FidelityTrial = { trialId, direction: 'preserve', damageKind: 'deletion', sourceText, cleanText, damagedText, cleanFirst: true, };
+ * const trial: FidelityTrial = { trialId, direction: 'preserve', damageKind: 'deletion', sourceText, contextText: '', cleanText, damagedText, cleanFirst: true, };
  * ```
  */
 export type FidelityTrial = {
@@ -88,6 +88,19 @@ export type FidelityTrial = {
    * Chinese original both candidates claim to render.
    */
   readonly sourceText: string;
+
+  /**
+   * Original of the SURROUNDING sections, empty by default.
+   *
+   * WHY THIS EXISTS. `#107` measured that 6.4 percent of corpus slices sit in a
+   * pair where the translator carried a passage across a section boundary. A
+   * judge shown one slice pair sees the archive inventing content there and
+   * dropping it next door, and refuses both candidates; `Dethelly/0` is where
+   * that was found, and it accounts for every miss the alteration arm recorded.
+   * Passing the neighbours turns "did the roster judge badly" into "was the
+   * window too narrow", because the ground truth does not move.
+   */
+  readonly contextText: string;
 
   /**
    * Archive English as it stands, which states everything the original does and
@@ -379,6 +392,14 @@ export async function runFidelityTrial(
         label: 'ORIGINAL (Chinese)',
         text: trial.sourceText,
       },
+      // Present only when the caller supplied it, so a narrow run renders the
+      // same sheet it always did and the two runs differ in exactly one thing.
+      ...((trial.contextText === '')
+        ? []
+        : [{
+          label: 'SURROUNDING ORIGINAL (Chinese), context only: the candidates are not expected to render this',
+          text: trial.contextText,
+        },]),
     ],
     signal,
     perCallTimeoutMs,

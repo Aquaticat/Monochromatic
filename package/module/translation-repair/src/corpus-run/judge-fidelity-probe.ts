@@ -13,6 +13,7 @@ import {
   type FidelityDamageKind,
   insertBorrowedSentence,
 } from '../fidelity-damage.ts';
+import { neighbouringSource, } from '../fidelity-window.ts';
 import {
   type FidelityDirection,
   type FidelityTrial,
@@ -226,6 +227,7 @@ function readArguments(): {
   readonly onlyIds: readonly string[];
   readonly cap: number;
   readonly damageKinds: readonly FidelityDamageKind[];
+  readonly withContext: boolean;
 } {
   /**
    * Arguments after the script path.
@@ -272,6 +274,9 @@ function readArguments(): {
   if (damageKinds === undefined)
     throw new Error(`--damage takes deletion, insertion or alteration, not ${damageText}`,);
   return {
+    // `#107`: whether the sheet also carries the neighbouring sections' original,
+    // which is the one thing that differs between a narrow run and a wide one.
+    withContext: args.includes('--context',),
     damageKinds,
     onlyIds: (onlyAt === (-1))
       ? []
@@ -308,6 +313,7 @@ async function main(): Promise<void> {
     onlyIds,
     cap,
     damageKinds,
+    withContext,
   } = readArguments();
 
   /**
@@ -442,6 +448,12 @@ async function main(): Promise<void> {
             damageKind: damaged.damageKind,
             sourceText: slice.source
               .text,
+            contextText: withContext
+              ? neighbouringSource({
+                slices: prepared.slices,
+                sliceIndex,
+              },)
+              : '',
             cleanText,
             damagedText: damaged.damagedText,
             cleanFirst: arrangement.cleanFirst,

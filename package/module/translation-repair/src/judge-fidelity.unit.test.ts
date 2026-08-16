@@ -219,6 +219,7 @@ async function runScripted(
       direction,
       damageKind: 'deletion',
       sourceText: SOURCE_TEXT,
+      contextText: '',
       cleanText: CLEAN_TEXT,
       damagedText: DAMAGED_TEXT,
       cleanFirst,
