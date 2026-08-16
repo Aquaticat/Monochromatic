@@ -106,6 +106,12 @@ export {
   unsupportedVariant,
 } from './fidelity-alteration.ts';
 export {
+  type DocumentDisplacement,
+  median,
+  readDisplacement,
+  type SliceRatio,
+} from './displacement-ratio.ts';
+export {
   type FidelityBallotRead,
   type FidelityDirection,
   type FidelityOutcome,

@@ -85,6 +85,11 @@ description = "PROTOTYPE for question 28: ask a roster whether the translation a
 depends = ["build"]
 run = "node dist/final/node/coverage-probe.mjs"
 
+[tasks."displacement-probe"]
+description = "#107: read per-slice size ratios against each document's own median to find passages the translation moved across a section boundary; SPENDS NO QUOTA"
+depends = ["build"]
+run = "node dist/final/node/displacement-probe.mjs"
+
 [tasks."judge-fidelity-probe"]
 description = "#84: ask the translate judges to choose between a real archive slice and the same slice with one sentence deleted, in both directions and both ballot positions; SPENDS QUOTA (pass --only ids and --cap n after --)"
 depends = ["build"]
