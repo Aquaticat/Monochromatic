@@ -711,6 +711,47 @@ await describe({
     },),
 
     it({
+      name:
+        'ASKS AGAIN for the twin of a slice NO translator answered, rather than reusing it within the '
+        + 'run. In-run memoization exists to make a cold run settle what a warm run settles, and a warm '
+        + 'run can only resume what reached the cache: nothing did here, so reusing it would make the '
+        + 'two disagree in exactly the case the memoization was added to fix',
+      fn: async () => {
+        /** Two byte-identical sections on both sides. */
+        const twinSource = '## 第一节\n\n猫猫在窗台上打盹。\n\n## 第一节\n\n猫猫在窗台上打盹。\n';
+
+        /** Their translation, identical for the same reason. */
+        const twinTarget = '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n\n'
+          + '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n';
+
+        /** Run over the twin document with every translator down. */
+        const twins = await runDriver({
+          sourceText: twinSource,
+          targetText: twinTarget,
+          silentTranslators: true,
+        },);
+
+        /** The same, over one of those sections alone. */
+        const single = await runDriver({
+          sourceText: '## 第一节\n\n猫猫在窗台上打盹。\n',
+          targetText: '## Section one\n\nThe cat is doing the sleeping on the windowsill.\n',
+          silentTranslators: true,
+        },);
+        expect(twins.result
+          .sliceCount,).toBe(2,);
+        expect(twins.persisted
+          .size,).toBe(0,);
+
+        // WHAT SEPARATES THE TWO BEHAVIOURS, and the reason this is a call
+        // count rather than a cache size: memoizing the unheard record makes
+        // the twins cost one question, and refusing to makes them cost two.
+        expect(twins.calls
+          .translate,).toBe(single.calls
+          .translate * 2,);
+      },
+    },),
+
+    it({
       name: 'DISCARDS a cached record that contradicts its own text and buys '
         + 'that slice again, in BOTH directions. A resumed record is trusted on '
         + 'its slice index alone, so a truncated write that still parses, or a '
