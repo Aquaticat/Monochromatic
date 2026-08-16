@@ -516,6 +516,23 @@ Its three remaining items were re-read rather than trusted, and two were already
     fail with the branch stripped (`112295ed2`).
 -   The `unrecorded` collapse, fixed and described in the next-actions item 3 above.
 
+## A GFP trap worth knowing about in the translate driver (`#95` closed)
+
+`#95`'s last open nuance, the unconditional `settledByKey.set`, was already fixed in code when
+re-read: the memoization sits inside the persist branch, so an unheard record is not reused by an
+in-run twin. It had no test, and the first test written for it was WRONG in a way that passed.
+
+A CALL COUNT DOES NOT SEPARATE THE TWO BEHAVIOURS. The resume branch refuses an unheard record
+whatever put it there, so an unconditionally memoized twin costs two questions exactly like a
+non-memoized one. Asserting the call count passed with the memoization moved out of the persist
+branch, which is what the GFP run showed and what saved the case from being a guard that guards
+nothing.
+
+What differs is whether the second twin ever MEETS a record it has to discard, so the case asserts
+an empty `translate-discarded-unheard-slice` finding list instead (`9d399f763`, corrected in
+`9dde08ed7`).
+Two protections stacked this way will hide each other from any instrument that reads only the cost.
+
 ## The launch gate has not moved
 
 No corpus pass while the window trial is live:
