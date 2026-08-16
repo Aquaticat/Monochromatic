@@ -11346,3 +11346,26 @@ since the fixture is attributed to a composite with no contributors so no ballot
 is discounted; and the HARD case, a fluent paraphrase that quietly drops a
 qualifier. A deletion is a blunt defect, so this is a floor: a roster that cannot
 see a missing sentence will not see a missing hedge.
+
+### First reading from the fidelity trial: the judges see a deleted sentence
+
+Eight trials, two archive slices, four arrangements each: EVERY ONE CHOSE THE
+COMPLETE TEXT. Preserving when the clean text was the incumbent, replacing when
+it was the proposal, and both with the clean text listed first and second.
+
+WHAT THAT RULES OUT, which is the useful part. A roster that simply keeps
+whatever it is handed would have scored four of eight, and so would one that
+prefers the first candidate on the ballot. Neither pattern is what came back, so
+on this defect the judges are reading rather than reaching for a habit.
+
+WHAT IT DOES NOT ESTABLISH. Both slices come from ONE ENTRY, so this samples one
+document's prose and one translator's habits; the driver walked that entry slice
+by slice until the cap, which is the same clustering already recorded against the
+coverage probe. It is fixed for later runs, one damaged pair per entry, and a
+spread run is the honest version of this number.
+
+AND THE FIXTURE IS A FLOOR BY CONSTRUCTION. A deleted sentence is a blunt
+coverage defect. What the lane actually risks is a fluent paraphrase that drops a
+qualifier while reading better than the archive, and nothing here speaks to that.
+The reading is: a roster that could not see a missing sentence would be
+disqualified, and this one is not.
