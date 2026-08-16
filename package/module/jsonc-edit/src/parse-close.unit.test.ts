@@ -13,12 +13,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type JsoncRecordEntry,
+  type JsoncValue,
   closeArray,
   closeRecord,
-} from '../dist/final/neutral/index.mjs';
-import type {
-  JsoncRecordEntry,
-  JsoncValue,
 } from '../dist/final/neutral/index.mjs';
 
 const num = (value: number,): JsoncValue => ({ kind: 'number', value, });

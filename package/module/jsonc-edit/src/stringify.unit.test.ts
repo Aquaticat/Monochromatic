@@ -11,8 +11,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from '../dist/final/neutral/index.mjs';
 import {
+  type StringJsonc,
   emitJsoncValue,
   jsoncStringify,
   parseJsonc,

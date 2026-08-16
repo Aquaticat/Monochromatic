@@ -13,12 +13,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type JsoncValue,
   appendComments,
   captureTrailing,
   prependComments,
   skipTrivia,
 } from '../dist/final/neutral/index.mjs';
-import type { JsoncValue, } from '../dist/final/neutral/index.mjs';
 
 const nul = (): JsoncValue => ({ kind: 'null', });
 

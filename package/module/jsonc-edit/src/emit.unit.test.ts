@@ -13,13 +13,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  emitPlainJson,
+  emitScalar,
   isSingleLineComment,
   leadingComment,
   trailingComment,
-} from '../dist/final/neutral/index.mjs';
-import {
-  emitPlainJson,
-  emitScalar,
 } from '../dist/final/neutral/index.mjs';
 
 await describe({
