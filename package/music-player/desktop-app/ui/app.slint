@@ -253,6 +253,17 @@ component LedSegmentButton inherits Rectangle {
     height: 60px;
     preferred-height: 60px;
     background: transparent;
+    init => {
+        LedPlateGeometry.report(
+            root.control-generation,
+            root.control-index,
+            root.control-count,
+            root.x,
+            root.y,
+            root.width,
+            root.height,
+        );
+    }
     changed x => {
         LedPlateGeometry.report(
             root.control-generation,

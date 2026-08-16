@@ -20,6 +20,10 @@
 //           accessibility actions the way real user input would.
 use i_slint_backend_testing::{init_no_event_loop, ElementHandle};
 
+// What:     Slint handles and model types expose generated globals and page labels.
+// Why:      LED lifecycle guard must instantiate real generated UI and inspect final path.
+use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel};
+
 // What:     `use std::sync::Once;`. A one-time initialization guard.
 // Why:      A Slint backend installs only once per process; `Once` lets every test in
 //           this file share a single `init_no_event_loop` call whether the harness
@@ -138,4 +142,31 @@ fn volume_thumb_follows_engine_after_user_input() {
         (thumb(volume) - 0.5).abs() < 0.001,
         "volume thumb froze after user input: the volume binding was destroyed (regression of the two-way <=> fix)"
     );
+}
+
+
+// What:     `led_plate_exists_on_first_led_layout` instantiates initial LED generation.
+// Why:      Change handlers do not fire for every initial property assignment; cap `init`
+//           reports must still complete one backplate before first rendered frame.
+#[test]
+fn led_plate_exists_on_first_led_layout() {
+    setup();
+    let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
+    crate::ui_led_plate::apply(&app);
+    app.set_page_control_style(5);
+    app.set_page_labels(ModelRc::new(VecModel::from(vec![
+        SharedString::from("Alpha"),
+        SharedString::from("Beta"),
+        SharedString::from("GammaLong"),
+        SharedString::from("NightDrive"),
+        SharedString::from("StudioMasters"),
+        SharedString::from("Zeta"),
+    ])));
+    let geometry = app.global::<crate::LedPlateGeometry>();
+    assert!(!geometry.get_path().is_empty(), "first LED frame must contain one backplate path");
+    let starts = geometry.get_starts();
+    let row_start_count = (0..starts.row_count())
+        .filter(|index| starts.row_data(*index) == Some(true))
+        .count();
+    assert!(row_start_count >= 2, "fixture must wrap and report measured row starts");
 }
