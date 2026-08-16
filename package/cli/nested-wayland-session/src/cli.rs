@@ -32,6 +32,9 @@ use std::path::PathBuf;
 /// ```
 use anyhow::{bail, Context, Result};
 
+/// Imports deterministic appearance value served on private nested session bus.
+use crate::appearance_portal::ColorSchemePreference;
+
 /// Default nested-screen width in physical pixels when `--size` is omitted.
 ///
 /// What:     `const DEFAULT_WIDTH: i32 = 1280;`. `i32` is a 32-bit SIGNED integer
@@ -108,6 +111,12 @@ pub struct Config {
     /// Why:      Pairs with `width` for the initial output size.
     pub height: i32,
 
+    /// Optional isolated portal color scheme for hosted client.
+    ///
+    /// What:     `pub color_scheme: Option<ColorSchemePreference>`.
+    /// Why:      `Some` starts private Settings portal without changing host desktop theme.
+    pub color_scheme: Option<ColorSchemePreference>,
+
     /// Whether to launch the hosted app inside a resource-controlled systemd scope.
     ///
     /// What:     `pub isolate: bool`. Set by `--isolate`.
@@ -178,6 +187,9 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
     // let height = DEFAULT_HEIGHT;
     // ```
     let mut height = DEFAULT_HEIGHT;
+
+    // Optional deterministic appearance, absent when child should inherit current session bus.
+    let mut color_scheme: Option<ColorSchemePreference> = None;
 
     // What:     `let mut isolate = false;`. Mutable flag, off by default.
     // Why:      Set true by `--isolate`.
@@ -459,6 +471,15 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
             continue;
         }
 
+        if arg == "--color-scheme" {
+            let value = args
+                .get(index + 1)
+                .context("--color-scheme requires dark or light")?;
+            color_scheme = Some(ColorSchemePreference::parse(value)?);
+            index += 2;
+            continue;
+        }
+
         // What:     `if arg.starts_with("--")`. `.starts_with(&str)` is a plain prefix
         //           test. Reaching here means an unrecognised `--flag`.
         // Why:      Reject unknown flags rather than silently treating them as the
@@ -505,8 +526,9 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         // What:     `bail!(...)`. Early-return usage error.
         // Why:      There is nothing to run.
         bail!(
-            "no client command given; usage: [--socket PATH] [--size WxH] [--isolate] \
-             [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]"
+            "no client command given; usage: [--socket PATH] [--size WxH] \
+             [--color-scheme dark|light] [--isolate] [--app-cpu-quota PCT] \
+             [--app-cpu-weight N] [--] COMMAND [ARG...]"
         );
     }
 
@@ -525,6 +547,7 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         control_socket,
         width,
         height,
+        color_scheme,
         isolate,
         app_cpu_quota,
         app_cpu_weight,
@@ -635,3 +658,8 @@ fn parse_size(spec: &str) -> Result<(i32, i32)> {
     // ```
     Ok((width, height))
 }
+
+/// Verifies color-scheme argument parsing without opening a compositor.
+#[cfg(test)]
+#[path = "cli_tests.rs"]
+mod tests;

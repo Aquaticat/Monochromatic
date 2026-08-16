@@ -21,6 +21,7 @@ FROM registry.fedoraproject.org/fedora:41
 #                          resolve the render node for dmabuf v4 feedback
 #   mesa-libEGL-devel      EGL headers, defensive: renderer_gl dlopens libEGL at
 #                          runtime, but this keeps any build-time probe satisfied
+#   dbus-daemon            private session bus used by --color-scheme integration tests
 # libEGL / libGLESv2 / libwayland-client themselves are dlopened by the binary at
 # RUNTIME on the host, so they are not part of this build image.
 RUN dnf install -y \
@@ -31,6 +32,7 @@ RUN dnf install -y \
       libxkbcommon-devel \
       libdrm-devel \
       mesa-libEGL-devel \
+      dbus-daemon \
     && dnf clean all
 
 # Rust toolchain via rustup stable, not Fedora's `rust` package, matching the

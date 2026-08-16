@@ -34,6 +34,7 @@ use anyhow::{Context, Result};
 /// import { initBackend } from "./backend"; import { spawnChild, ... } from "./child"; ...
 /// ```
 use crate::{
+    appearance_portal::AppearancePortal,
     backend::{init_backend, OUTPUT_REFRESH_MHZ},
     child::{register_exit_poll, spawn_child},
     cli::Config,
@@ -131,6 +132,13 @@ pub fn run(config: Config) -> Result<i32> {
     // Why:      Stop the loop when the hosted client exits.
     register_exit_poll(&loop_handle);
 
+    // Start private Settings portal only when deterministic nested appearance was requested.
+    let appearance_portal = config
+        .color_scheme
+        .map(AppearancePortal::start)
+        .transpose()
+        .context("starting isolated nested appearance")?;
+
     // What:     `let isolation = Isolation { enabled: config.isolate, cpu_quota_percent:
     //           config.app_cpu_quota, cpu_weight: config.app_cpu_weight };`. Assemble the
     //           CPU-isolation settings from the parsed config.
@@ -141,10 +149,13 @@ pub fn run(config: Config) -> Result<i32> {
         cpu_weight: config.app_cpu_weight,
     };
 
-    // What:     `spawn_child(&mut state, &config.child_command, &isolation)?;`. Launch the
-    //           client connected to our socket; `?` fails if the binary cannot be spawned.
-    // Why:      Start the one app the fixture hosts, isolated when requested.
-    spawn_child(&mut state, &config.child_command, &isolation)?;
+    // Launch client on nested Wayland socket and private appearance bus when configured.
+    spawn_child(
+        &mut state,
+        &config.child_command,
+        &isolation,
+        appearance_portal.as_ref().map(AppearancePortal::bus_address),
+    )?;
 
     // What:     `state.backend.window().request_redraw();`. Kick off the first frame.
     // Why:      Rendering is self-sustaining after the first request, but something has
@@ -162,7 +173,7 @@ pub fn run(config: Config) -> Result<i32> {
     // What:     `Ok(state.child_exit_code.unwrap_or(0))`. Return the recorded child code,
     //           or 0 if the loop stopped for another reason. Tail expression.
     // Why:      Propagate the hosted app's exit status as our own.
-    Ok(state.child_exit_code.unwrap_or(0))
+    return Ok(state.child_exit_code.unwrap_or(0));
 }
 
 /// Dispatch one winit event: resize the output, redraw, or stop on close.

@@ -250,6 +250,9 @@ For common issues:
 - **labwc VM uses virgl but has no hardware Vulkan?
   ** →
   [Add virtio-gpu host-memory capsets](qemu-11-virtio-gpu-hostmem-capsets.md)
+- **Slint nested Wayland client still inherits host dark or light preference?
+  ** →
+  [Serve a private XDG Settings portal](slint-nested-color-scheme-portal.md)
 
 ## Contributing
 

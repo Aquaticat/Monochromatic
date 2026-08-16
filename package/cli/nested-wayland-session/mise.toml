@@ -136,7 +136,7 @@ run = [
 ]
 
 [tasks.run]
-description = "Build, then run the compositor on the host Wayland session. Pass: -- [--socket PATH] [--size WxH] [--] COMMAND [ARG...]"
+description = "Build and run compositor; supports socket, size, color-scheme, and child arguments"
 usage = '''
 arg "[args]" var=#true help="Compositor arguments, then the client command to host"
 '''

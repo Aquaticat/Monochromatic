@@ -59,6 +59,7 @@ At run time (present on virtually every Linux desktop):
  `libEGL`,
  `libGLESv2`,
  `libdrm`,
+ `dbus-daemon` when `--color-scheme` is used,
  and a running parent
 Wayland session (this version is a nested winit client of an existing compositor).
 
@@ -83,7 +84,8 @@ cargo binstall monochromatic-nested-wayland-session
 
 ```txt
 monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
-    [--isolate] [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]
+    [--color-scheme dark|light] [--isolate]
+    [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]
 ```
 
 - `--socket PATH` enables the control API on a Unix socket at `PATH`.
@@ -91,6 +93,9 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
    the tool
   just hosts the app with no control channel.
 - `--size WIDTHxHEIGHT` sets the initial nested-screen size in pixels (default `1280x720`).
+- `--color-scheme dark|light` gives the hosted client a private XDG Settings portal
+  with deterministic appearance.
+  It does not change the host desktop theme.
 - `--isolate` launches the hosted app inside a resource-controlled systemd scope so a
   greedy app cannot starve the capture pipeline (see [60fps recording](#60fps-recording)).
   It degrades to a direct launch,
@@ -125,6 +130,33 @@ printf 'resize 500 400\n'             | nc -U /tmp/nws.sock   # => ok
 printf 'screenshot /tmp/after.png\n'  | nc -U /tmp/nws.sock   # => ok
 printf 'quit\n'                       | nc -U /tmp/nws.sock   # => ok
 ```
+
+### Isolate dark and light appearance
+
+Use explicit color schemes for GUI snapshots:
+
+```sh
+monochromatic-nested-wayland-session --color-scheme dark -- my-app
+monochromatic-nested-wayland-session --color-scheme light -- my-app
+```
+
+The fixture starts a private session bus and minimal `org.freedesktop.portal.Settings` service,
+then sets `DBUS_SESSION_BUS_ADDRESS` only for the hosted client.
+The parent compositor and desktop environment remain untouched.
+The private bus intentionally does not expose unrelated host session services,
+such as notifications or file-chooser portals.
+Use this option for deterministic appearance tests whose client does not need those services.
+Without `--color-scheme`,
+the hosted client inherits its usual session bus.
+
+Normal shutdown removes the private socket directory.
+A forced `SIGKILL` bypasses process cleanup and can leave its PID-named temporary directory behind.
+
+Never change the host desktop theme to produce fixture screenshots.
+Use this option for isolated dark and light scenes.
+See [`doc/troubleshooting/slint-nested-color-scheme-portal.md`](
+../../../doc/troubleshooting/slint-nested-color-scheme-portal.md)
+for Slint's D-Bus lookup and the isolation design.
 
 ## Control protocol
 

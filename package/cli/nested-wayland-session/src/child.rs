@@ -13,7 +13,7 @@
 /// ```ts
 /// // Duration ~ a ms count.
 /// ```
-use std::time::Duration;
+use std::{ffi::OsStr, process::Command, time::Duration};
 
 /// What:     Grouped `use` of the calloop timer types and loop handle.
 /// Why:      `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
@@ -59,13 +59,29 @@ use crate::{state::Compositor, systemd::Isolation};
 /// ```
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
 
+/// Applies child-only Wayland and optional private session-bus environment.
+fn configure_child_environment(
+    command: &mut Command,
+    socket_name: &OsStr,
+    session_bus_address: Option<&str>,
+) {
+    command.env("WAYLAND_DISPLAY", socket_name);
+    command.env_remove("WAYLAND_SOCKET");
+    if let Some(address) = session_bus_address {
+        command.env("DBUS_SESSION_BUS_ADDRESS", address);
+        command.env_remove("DBUS_STARTER_ADDRESS");
+        command.env_remove("DBUS_STARTER_BUS_TYPE");
+    }
+}
+
 /// Spawn the hosted client, pointed at the nested Wayland socket.
 ///
-/// What:     `pub fn spawn_child(state: &mut Compositor, command: &[String]) ->
-///           Result<()>`. Borrows the state mutably (to store the `Child`) and the
-///           command read-only. `Result<()>` returns the unit `()` on success.
-/// Why:      Launch the one client the fixture exists to host, connected to us rather
-///           than to the host compositor.
+/// What:     `pub fn spawn_child(...) -> Result<()>` receives compositor state,
+///           command,
+///           isolation,
+///           and optional private session-bus address.
+/// Why:      Launch the one client on nested Wayland and isolated appearance portal
+///           rather than host compositor or host Settings portal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -76,7 +92,12 @@ const POLL_INTERVAL: Duration = Duration::from_millis(200);
 /// ```ts
 /// spawnChild(state, ["music-player", "fixtures"]);
 /// ```
-pub fn spawn_child(state: &mut Compositor, command: &[String], isolation: &Isolation) -> Result<()> {
+pub fn spawn_child(
+    state: &mut Compositor,
+    command: &[String],
+    isolation: &Isolation,
+    session_bus_address: Option<&str>,
+) -> Result<()> {
     // What:     `let program = &command[0];`. Borrow the first token (the executable).
     //           `parse_args` guarantees `command` is non-empty, so index 0 is safe.
     // Why:      Names the program to launch and to report in messages.
@@ -90,18 +111,12 @@ pub fn spawn_child(state: &mut Compositor, command: &[String], isolation: &Isola
     //           set the Wayland environment on it next.
     let mut cmd = crate::systemd::build_child_command(program, &command[1..], isolation);
 
-    // What:     `cmd.env("WAYLAND_DISPLAY", &state.socket_name);`. Set the child's
-    //           `WAYLAND_DISPLAY` to our listening socket. This sets it ONLY for the
-    //           child, not our own process, so our winit window keeps talking to the
-    //           parent compositor.
-    // Why:      Make the client connect to us instead of the host session.
-    cmd.env("WAYLAND_DISPLAY", &state.socket_name);
-
-    // What:     `cmd.env_remove("WAYLAND_SOCKET");`. Drop any inherited `WAYLAND_SOCKET`
-    //           (an fd-based connection override).
-    // Why:      If the parent passed a socket fd, it would override `WAYLAND_DISPLAY` and
-    //           send the child to the wrong compositor.
-    cmd.env_remove("WAYLAND_SOCKET");
+    // Point child at nested Wayland and optional private appearance portal only.
+    configure_child_environment(
+        &mut cmd,
+        state.socket_name.as_os_str(),
+        session_bus_address,
+    );
 
     // What:     `let child = cmd.spawn().with_context(|| format!("failed to spawn {program}"))?;`.
     //           `spawn()` starts the process, returning `io::Result<Child>`;
@@ -121,9 +136,9 @@ pub fn spawn_child(state: &mut Compositor, command: &[String], isolation: &Isola
     // Why:      The exit-poll timer needs the handle to `try_wait` on.
     state.child = Some(child);
 
-    // What:     `Ok(())`. Success with the unit value; tail expression.
+    // What:     `return Ok(());`. Success with unit value.
     // Why:      Signal the spawn succeeded.
-    Ok(())
+    return Ok(());
 }
 
 /// Register the periodic child-exit poll on the event loop.
@@ -225,3 +240,8 @@ fn poll_child(state: &mut Compositor) {
         }
     }
 }
+
+/// Verifies hosted-child environment isolation.
+#[cfg(test)]
+#[path = "child_tests.rs"]
+mod tests;
