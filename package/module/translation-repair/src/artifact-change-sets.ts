@@ -11,7 +11,7 @@ import {
 } from './artifact-guard.ts';
 import {
   readArtifactSchemaVersion,
-  SETTLED_ARTIFACT_SCHEMA_VERSION,
+  ARTIFACT_SCHEMA_VERSION_V1,
 } from './artifact-schema-version.ts';
 
 //region Artifact change sets
@@ -312,11 +312,11 @@ export function readArtifactChangeSets(
   // anything, so there is no answer to give and the honest move is to say so.
   // Reading its absent top-level sets as `unrecorded` would report a run that
   // changed nothing.
-  if (reading.version !== SETTLED_ARTIFACT_SCHEMA_VERSION) {
+  if (reading.version !== ARTIFACT_SCHEMA_VERSION_V1) {
     throw new ArtifactParseError({
       path: `${path}.artifactSchemaVersion`,
       reason: `schema version ${
-        String(SETTLED_ARTIFACT_SCHEMA_VERSION,)
+        String(ARTIFACT_SCHEMA_VERSION_V1,)
       } or an unversioned artifact, since this reading answers with one change set `
         + 'and a later generation records one per lane',
     },);

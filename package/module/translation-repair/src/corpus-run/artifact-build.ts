@@ -1,4 +1,4 @@
-import { SETTLED_ARTIFACT_SCHEMA_VERSION, } from '../artifact-schema-version.ts';
+import { ARTIFACT_SCHEMA_VERSION_V1, } from '../artifact-schema-version.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 
@@ -104,7 +104,7 @@ export function buildSettledArtifact(
     // shapes preceded this field and every reader told them apart by which
     // fields happened to be present, which works only until two generations
     // differ in something other than presence.
-    artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+    artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
 
     tip,
 

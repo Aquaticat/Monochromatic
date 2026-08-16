@@ -38,7 +38,7 @@ export {
   type ArtifactSchemaReading,
   KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   readArtifactSchemaVersion,
-  SETTLED_ARTIFACT_SCHEMA_VERSION,
+  ARTIFACT_SCHEMA_VERSION_V1,
 } from './artifact-schema-version.ts';
 export {
   type ParsedAcceptedIssue,

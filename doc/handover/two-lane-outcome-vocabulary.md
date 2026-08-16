@@ -471,8 +471,11 @@ Two facts fell out of the work and are now pinned by tests:
     Schema version is a third such problem.
     Re-running skipped entries still costs real money, so the guard REFUSES and names the ways
     forward rather than deciding anything.
-    Found while checking that guard: `SETTLED_ARTIFACT_SCHEMA_VERSION` is documented as
-    "Schema generation the pass writes today" and is 1, while `pass-entry.ts:249` writes 2.
+    Found while checking that guard, and FIXED: the version 1 constant was named
+    `SETTLED_ARTIFACT_SCHEMA_VERSION` and documented as "Schema generation the pass writes today",
+    while `pass-entry.ts:249` writes 2.
+    It is `ARTIFACT_SCHEMA_VERSION_V1` now, beside `ARTIFACT_SCHEMA_VERSION_V2`,
+    so the guard importing what the pass writes cannot pick up the wrong one.
 3.  `artifact-read.ts` converting a discriminated `unrecorded` reading back into an absent
     optional property, which discards what its own parser established.
 

@@ -15,7 +15,15 @@ import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.t
 // only reason that one has stayed honest.
 
 /**
- * Schema generation the pass writes today.
+ * First schema generation there has ever been.
+ *
+ * NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V2` and has been
+ * since `settleEntry` moved to the two-lane artifact. This was called
+ * `SETTLED_ARTIFACT_SCHEMA_VERSION` and documented as the generation the pass
+ * writes, which stopped being true at that move; it is renamed rather than
+ * re-documented because a caller reaching for what the pass writes reaches for
+ * the name that says SETTLED, and a guard built on that name would refuse every
+ * artifact this pipeline produces.
  *
  * VERSION HISTORY, and the rule that comes with it: every bump records what
  * changed and why a reader could not have worked it out from the fields alone.
@@ -39,10 +47,10 @@ import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.t
  *
  * @example
  * ```ts
- * const artifact = { artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION, };
+ * const artifact = { artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1, };
  * ```
  */
-export const SETTLED_ARTIFACT_SCHEMA_VERSION = 1;
+export const ARTIFACT_SCHEMA_VERSION_V1 = 1;
 
 /**
  * Generations a reader still understands.
@@ -74,7 +82,7 @@ export const SETTLED_ARTIFACT_SCHEMA_VERSION = 1;
  * ```
  */
 export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
-  SETTLED_ARTIFACT_SCHEMA_VERSION,
+  ARTIFACT_SCHEMA_VERSION_V1,
   ARTIFACT_SCHEMA_VERSION_V2,
 ];
 

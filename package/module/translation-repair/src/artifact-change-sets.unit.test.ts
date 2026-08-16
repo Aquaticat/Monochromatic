@@ -19,7 +19,7 @@ import {
   type PipelineDigest,
   readArtifactChangeSets,
   readArtifactSchemaVersion,
-  SETTLED_ARTIFACT_SCHEMA_VERSION,
+  ARTIFACT_SCHEMA_VERSION_V1,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -53,7 +53,7 @@ function changeSetFailure(
  * Artifact as the pass writes one today, with both sets and their count.
  */
 const VERSIONED_ARTIFACT = {
-  artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+  artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
   sliceCount: 5,
   shippedChunkIndices: [
     3,
@@ -83,7 +83,7 @@ await describe({
           path: 'Mittens',
         },),).toEqual({
           kind: 'versioned',
-          version: SETTLED_ARTIFACT_SCHEMA_VERSION,
+          version: ARTIFACT_SCHEMA_VERSION_V1,
         },);
       },
     },),
@@ -218,7 +218,7 @@ await describe({
       fn: async () => {
         expect(readArtifactChangeSets({
           artifact: {
-            artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+            artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
             sliceCount: 3,
             shippedChunkIndices: [],
             withdrawnChunkIndices: [],
@@ -350,7 +350,7 @@ await describe({
         expect(function versionedWithoutSets() {
           readArtifactChangeSets({
             artifact: {
-              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+              artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
               sliceCount: 2,
             },
             path: 'Mittens',
@@ -359,7 +359,7 @@ await describe({
         expect(function versionedWithoutCount() {
           readArtifactChangeSets({
             artifact: {
-              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+              artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
               shippedChunkIndices: [0,],
               withdrawnChunkIndices: [],
             },
@@ -377,7 +377,7 @@ await describe({
         /** Failure the out-of-range shipped index raised. */
         const caught = changeSetFailure({
           artifact: {
-            artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+            artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
             sliceCount: 2,
             shippedChunkIndices: [2,],
             withdrawnChunkIndices: [],
@@ -389,7 +389,7 @@ await describe({
         expect(function withdrawnOutOfRange() {
           readArtifactChangeSets({
             artifact: {
-              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+              artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
               sliceCount: 2,
               shippedChunkIndices: [],
               withdrawnChunkIndices: [7,],
@@ -406,7 +406,7 @@ await describe({
         expect(function overlapping() {
           readArtifactChangeSets({
             artifact: {
-              artifactSchemaVersion: SETTLED_ARTIFACT_SCHEMA_VERSION,
+              artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
               sliceCount: 4,
               shippedChunkIndices: [
                 1,

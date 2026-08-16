@@ -4,7 +4,7 @@ import {
 } from './artifact-guard.ts';
 import {
   readArtifactSchemaVersion,
-  SETTLED_ARTIFACT_SCHEMA_VERSION,
+  ARTIFACT_SCHEMA_VERSION_V1,
 } from './artifact-schema-version.ts';
 import {
   type ParsedArtifact,
@@ -116,7 +116,7 @@ export function readSettledArtifact(
       artifact: parseSettledArtifact({ value, },),
     };
   }
-  if (reading.version === SETTLED_ARTIFACT_SCHEMA_VERSION) {
+  if (reading.version === ARTIFACT_SCHEMA_VERSION_V1) {
     return {
       kind: 'version-1',
       artifact: parseSettledArtifact({ value, },),
