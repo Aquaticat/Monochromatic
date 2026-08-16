@@ -14,6 +14,11 @@ export {
   requireString,
 } from './artifact-guard.ts';
 export {
+  requireArtifactJsonValue,
+  requireExactKeys,
+  requireOpenRecord,
+} from './artifact-exact-guard.ts';
+export {
   GradedSheetExistsError,
   resolveSheetPath,
   type SheetKind,
