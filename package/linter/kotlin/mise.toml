@@ -17,6 +17,61 @@ description = "Build the signed Maven Central deployment bundle without uploadin
 dir = "{{config_root}}"
 run = "./gradlew centralBundle --no-daemon --console=plain"
 
+[tasks."verify:publication"]
+description = "Build the signed Central bundle and resolve it from a disposable consumer project"
+run = [{ tasks = ["publish:bundle"] }, { tasks = ["verify:publication:consumer"] }]
+
+[tasks."verify:publication:consumer"]
+hide = true
+dir = "{{config_root}}"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync, readFileSync, rmSync, writeFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const { pathToFileURL } = await import('node:url')
+const packageRoot = process.env.MISE_CONFIG_ROOT ?? process.cwd()
+const properties = readFileSync(join(packageRoot, 'gradle.properties'), 'utf8')
+const versionLine = properties.split('\n').find((line) => line.startsWith('version='))
+if (versionLine === undefined) { throw new Error('gradle.properties has no version entry') }
+const version = versionLine.slice('version='.length).trim()
+const consumerRoot = join(packageRoot, 'build', 'publication-consumer')
+const repositoryRoot = join(packageRoot, 'build', 'central-staging')
+rmSync(consumerRoot, { force: true, recursive: true })
+mkdirSync(consumerRoot, { recursive: true })
+writeFileSync(join(consumerRoot, 'settings.gradle'), "rootProject.name = 'publication-consumer'\n")
+writeFileSync(join(consumerRoot, 'build.gradle'), `
+plugins { id 'java' }
+repositories {
+    maven { url = uri(System.getenv('PUBLICATION_REPOSITORY')) }
+    mavenCentral()
+}
+dependencies {
+    runtimeOnly 'cat.aquati.monochromatic:detekt-rules:${version}'
+}
+tasks.register('resolvePublication') {
+    doLast {
+        def artifact = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'cat.aquati.monochromatic' && it.moduleVersion.id.name == 'detekt-rules'
+        }
+        if (artifact == null || !artifact.file.isFile()) {
+            throw new GradleException('Published detekt-rules artifact did not resolve')
+        }
+        println('resolved-publication=' + artifact.file.name)
+    }
+}
+`)
+execFileSync(
+  join(packageRoot, 'gradlew'),
+  ['--project-dir', consumerRoot, 'resolvePublication', '--no-daemon', '--console=plain'],
+  {
+    cwd: packageRoot,
+    env: { ...process.env, PUBLICATION_REPOSITORY: pathToFileURL(repositoryRoot).href },
+    stdio: 'inherit',
+  },
+)
+'''
+
 [tasks.lint]
 description = "Local compile check of the rule set (the monorepo scan is the root lint:detekt)"
 dir = "{{config_root}}"

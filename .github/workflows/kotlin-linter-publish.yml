@@ -105,11 +105,11 @@ jobs:
     - name: Install Java
       run: mise install java
 
-    - name: Build signed Central bundle
+    - name: Build and resolve signed Central bundle
       env:
         ORG_GRADLE_PROJECT_signingKey: ${{ secrets.MAVEN_SIGNING_KEY }}
         ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
-      run: mise run //package/linter/kotlin:publish:bundle
+      run: mise run //package/linter/kotlin:verify:publication
 
     - name: Validate Central bundle
       shell: node {0}
