@@ -136,11 +136,19 @@ Its CLI health check does not probe at all.
  one `-32601` out,
  and no `server/discover` ever sent.
 
-**Expect `claude mcp list` to report this server as failed even while it works in session.**
-That is the price of serving one revision,
- not a fault to chase.
+Whether it probes at all is not a property of the client version.
+It sits behind a remote feature gate,
+ `tengu_mcp_protocol_negotiation_stdio`,
+ which defaults to off,
+ so the same binary and client can connect one hour and fail the next with no local change.
+
+**Expect `claude mcp list` to report this server as failed whenever that gate is off.**
 Verify by driving the binary over stdio instead,
  which is what this package's own tests do.
+Source trace,
+ tapped exchange,
+ and the options for changing this:
+ `doc/troubleshooting/claude-code-mcp-protocol-negotiation.md`.
 
 ### Deliberately omitted
 
