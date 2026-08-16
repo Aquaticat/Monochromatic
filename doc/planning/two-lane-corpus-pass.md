@@ -164,6 +164,58 @@ The delivery ledger's three index contracts landed earlier, as `0c17123bf`, with
     Not by dropping rows:
     a comparison whose row count stops equalling the slice count is invisible absence again.
 
+### Confirmed and fixed, third round
+
+Landed 2026-08-16, after a review of the second round by both reviewers.
+The working state, including what is mid-flight at any moment,
+lives in `doc/handover/two-lane-outcome-vocabulary.md`.
+
+-   **The repair lane decided the empty string at every gap in the archive.**
+    It mends existing English, so at a passage the archive never translated it has nothing to work on:
+    `repair-translation.ts` skips the slice, `notApplicableRepair` returns `repairedText: ''`,
+    and `repair-assemble.ts` fed every outcome to the wording builder as a DECISION.
+    `compareDecisions` then read that against a translate lane that had actually filled the passage
+    and returned `{ kind: 'comparable', verdict: 'different' }`:
+    a row asserting the two lanes chose different wordings where one of them never had an opinion.
+
+    Fixed by a FIFTH outcome member, `not-applicable`, and a repair-side adapter
+    (`repair-lane-wordings.ts`) mirroring the translate lane's.
+    Both reviewers ranked the options the same way and for the same reason.
+    Folding these into `unfilled` was rejected because `unfilled` is a lane that tried and produced
+    nothing, which is a rate `#105` wants measured,
+    and the fold would make the repair lane's decline rate equal the number of gaps in the archive:
+    a constant of the document that measures nothing about the lane.
+
+-   **The two axes could contradict each other and nothing checked.**
+    Three combinations describe a slice that cannot exist,
+    every field of each is individually well formed,
+    and no later join or count could detect one.
+    `wording-coherence.ts` now states the rule once,
+    and the delivery ledger and the lane comparison each assert it for themselves
+    rather than trusting whoever built the wordings.
+
+-   **The comparison joined two lanes that disagreed about whether the archive translates a slice.**
+    It compared incumbent TEXT only, which cannot separate a blank content slice from an anchor,
+    and then took every row's `incumbentKind` from the repair lane.
+
+-   **A blocked run could be told a slice was withdrawn by assembly.**
+    That exit never assembles, so the withdrawal it reports is the block,
+    and the two are the events a reader counting integrity damage has to tell apart.
+
+-   **The non-comparability reason was a free string naming one lane.**
+    A slice neither lane decided reported only the repair lane, since that was the first checked.
+    It is now `undecidedLanes`, which holds both.
+
+-   **The three named index lists were three copies of the same five checks.**
+    That is how their pairwise disjointness came to be checked in one direction only.
+    They now share `lane-slice-sets.ts` and differ by data.
+
+-   **The resume-first comment claimed a progress guarantee that does not hold.**
+    It said a cap-abort always completes at least one new slice.
+    An abort can land before the first persistence, and the slices a lane deliberately leaves uncached,
+    the unfilled and the unheard, produce no cache entry however long they took.
+    What actually bounds it is that a stuck entry surfaces as a repeated same-entry ERROR line.
+
 ### Raised by review and refuted
 
 Recorded so a later session does not re-derive them.
@@ -205,18 +257,83 @@ Recorded so a later session does not re-derive them.
     Recorded at both keys in `351f53656`;
     the translate key had already decided it and the repair key had only omitted it.
 
+-   **A lane that had no work to do says so, rather than deciding nothing.**
+    Adopted 2026-08-16 without asking, because the evidence determines one answer:
+    the alternative corrupts a rate `#105` exists to measure.
+    Recorded here and in the handover so it can be reversed on sight.
+    `not-applicable` means the lane reached the slice and its work has no input there;
+    it is legal only where the archive holds no wording,
+    it is a REACHED outcome so the stopped-prefix rule still refuses it after an unexamined slice,
+    and the blocked exit therefore intersects anchors with the prefix it actually settled.
+
 -   **Both translate roles take the whole roster.**
     The lane has a producing stage and a ranking stage and no third,
     so the editor and checker exclusions have nothing to exclude,
     and it is the width the judge-fidelity probe and the window trial both measured.
     Landed as `RUN_TRANSLATE_MODELS` in `e161bc7f7`.
 
+## The artifact at version 2, as designed
+
+Both reviewers converged on this shape.
+It is written down here rather than held in a session, because it is the next commit.
+
+One shared `preparation` block, one nested `lanes` object, and no top-level lane fields at all:
+keeping `status`, `issues` or `repairedText` at the top would silently make repair the default lane,
+which is the question `runDocumentLanes` exists to leave open.
+
+-   `artifactSchemaVersion: 2`, required and read FIRST,
+    so a reader dispatches on the version rather than on which fields it recognizes.
+    Unversioned artifacts stay explicitly legacy; they are not relabelled version 1.
+-   `provenance`: tip, pipeline digest, corpus commit.
+-   `execution`: timestamp, duration, lane order, call configuration.
+    Call TIMING lives here; rosters do not, because they are a lane's own.
+-   `preparation`: the identity below, plus the shared slice manifest,
+    the source and incumbent text of every slice, placement kind and offsets,
+    the line-structured flag, identity context as a present-or-absent value,
+    and the alignment findings and pair count for audit.
+    Putting the text here rather than under both lanes stops it being stored twice
+    and gives the reader one authoritative incumbent kind.
+-   `lanes.repair` and `lanes.translate`: each with its own roster arrays, effective configuration,
+    status, final document text, per-slice `outcome` and `delivery`,
+    shipped and withdrawn evidence, findings, and lane-specific evidence.
+    Counts are derived where possible and asserted against their arrays where stored.
+-   `comparison`: bound explicitly to the preparation identity, built from validated delivery rows,
+    carrying both outcomes, both deliveries, and structured non-comparability.
+    Recomputed at artifact build time and refused if it disagrees with the persisted copy.
+-   `laneSelection: { kind: 'pending-human-decision' }`.
+    An omitted winner field would be absence encoding a meaningful state, which is the defect class again.
+
+The unions serialize as tagged objects, never flattened to strings:
+readers dispatch on `kind`, which is what the discriminants bought.
+
+### The preparation identity
+
+Computed over a versioned canonical manifest of the preparation itself,
+never over the artifact, the run, or the cache.
+Payload: a domain separator and manifest version, the source and target document digests,
+and one ordered row per slice carrying the global index,
+both sides' placement kind, offsets and exact text, their pairing through the shared row,
+and the line-structured flag, plus identity context stated as present-with-text or absent.
+
+The TARGET PLACEMENT KIND is the field that earns this:
+without it a blank content slice and an anchor hash identically,
+which is exactly the pair the whole vocabulary change exists to separate.
+
+Framing must be unambiguous under arbitrary slice text,
+so fields are length-prefixed rather than separated by a byte the text is assumed not to contain.
+
+Excluded on purpose: tip, pipeline digest, corpus commit, schema version, rosters, call configuration,
+timestamps, durations, cache keys, resumed counts, lane outputs, findings and comparison results.
+That gives the two properties wanted:
+changing boundaries, pairing, ordering, placement kind, offsets, text or governance changes the identity,
+while resuming the same manifest under a different commit, cache state or roster leaves it alone.
+`pipelineDigest` stays the separate execution-generation identity.
+
 ## Still to build
 
-1.  The artifact at a bumped schema version, nesting both lanes,
-    with rosters recorded per lane.
-    `RUN_CALL_CONFIG` is call TIMING and rosters do not belong in it,
-    so this is one change rather than the two it was first written as.
+1.  The artifact at version 2, to the design above,
+    with the preparation identity folded into the SAME bump rather than added later:
+    a persisted comparison without it is joinable across slicings from day one.
 2.  ~~`buildSettledArtifact` deriving its counts~~, landed as `e4f857c83`:
     it takes the result and reads the status and both counts off it,
     where all three used to arrive as parameters beside it and could contradict it.
@@ -229,6 +346,13 @@ Recorded so a later session does not re-derive them.
     Not a gate BETWEEN the lanes: both drivers deliberately let a fully cached lane finish after an abort.
 6.  Tests for `settleEntry`, once it has its final shape:
     the settled path, the failed path, and the cleanup failure that must log `CLEANUP` and never a second `TALLY`.
+7.  The translate lane does not enforce what an unheard stage means.
+    Nothing requires that hearing no translator implies `outputText === incumbentText` and `changed === false`,
+    and the resumed branch would accept an unheard cached record written by an older build,
+    which contradicts the stated invariant that such a slice is never cached.
+    Same defect family as everything above, and cheap.
+8.  `artifact-read.ts` keeps a discriminated `unrecorded` reading and then converts it back into an
+    absent optional property, discarding the distinction its own parser established.
 
 ## Open questions for the user
 
