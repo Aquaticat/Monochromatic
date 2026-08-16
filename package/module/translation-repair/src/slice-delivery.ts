@@ -225,11 +225,22 @@ function decideShipment(
     }
     return { kind: 'replacement-shipped', };
   }
-  if (withdrawn)
+  if (withdrawn) {
+    // A WITHDRAWAL NEEDS SOMETHING TO WITHDRAW. Naming a slice whose decision
+    // is the archive's own wording says assembly took back a replacement that
+    // was never written, which reads downstream as a lane that tried and was
+    // overruled rather than as one that left the slice alone.
+    if (!decided) {
+      throw new SliceDeliveryError({
+        message: `slice ${String(chunkIndex,)} is named as withdrawn and its decision is the archive's `
+          + 'own wording, so there was no replacement for assembly to take back',
+      },);
+    }
     return {
       kind: 'replacement-withdrawn',
       reason: 'assembly-integrity',
     };
+  }
   if (!decided) {
     // The archive's own wording stands, except where the archive has none:
     // agreeing with a blank incumbent at an anchor leaves the passage missing,
@@ -278,6 +289,47 @@ function nonNullishAccepted(
     },);
   }
   return wording.acceptedText;
+}
+
+/**
+ * Refuses an index set that names one slice more than once.
+ *
+ * TAKES BOTH THE ARRAY AND THE SET rather than deriving the second here, so the
+ * caller's own deduplicated set is what the length is compared against. Building
+ * a second set to check the first would be checking this function's work instead
+ * of the work that matters.
+ *
+ * @param indices - index set as the lane reported it
+ *
+ * @param unique - same indices deduplicated, which the caller already built
+ *
+ * @param named - which set this is, for the message
+ *
+ * @throws {@link SliceDeliveryError} when a slice is named twice
+ *
+ * @example
+ * ```ts
+ * assertNoRepeat({ indices: shippedChunkIndices, unique: shipped, named: 'shipped', },);
+ * ```
+ */
+function assertNoRepeat(
+  {
+    indices,
+    unique,
+    named,
+  }: {
+    readonly indices: readonly number[];
+    readonly unique: ReadonlySet<number>;
+    readonly named: string;
+  },
+): void {
+  if (indices.length === unique.size)
+    return;
+  throw new SliceDeliveryError({
+    message: `the ${named} set names ${String(indices.length,)} slices and ${
+      String(unique.size,)
+    } of them are distinct, so it counts at least one slice twice`,
+  },);
 }
 
 /**
@@ -345,6 +397,36 @@ export function buildSliceDelivery(
    * Slices whose change was taken back.
    */
   const withdrawn = new Set(withdrawnChunkIndices,);
+
+  // CHECKED AGAINST THE ARRAYS, not the sets built from them. Building a set is
+  // what makes a repeated index disappear, so a check that reads the set is
+  // asking a question whose answer it has already thrown away, and this
+  // function's own contract promised the throw while the sets quietly deduped.
+  // A lane naming one slice twice has two derivations that disagree about how
+  // many slices it changed, and neither the count nor the ledger would show it.
+  assertNoRepeat({
+    indices: shippedChunkIndices,
+    unique: shipped,
+    named: 'shipped',
+  },);
+  assertNoRepeat({
+    indices: withdrawnChunkIndices,
+    unique: withdrawn,
+    named: 'withdrawn',
+  },);
+
+  for (const chunkIndex of shipped) {
+    // SHIPPED AND WITHDRAWN AT ONCE is a contradiction rather than a precedence
+    // question. The branch order used to answer it silently, in shipped's
+    // favour, which reported a change the assembly guard had taken back as one
+    // the document carries.
+    if (withdrawn.has(chunkIndex,)) {
+      throw new SliceDeliveryError({
+        message: `slice ${String(chunkIndex,)} is named as both shipped and withdrawn, so the lane `
+          + 'reports the document both carrying its change and having taken it back',
+      },);
+    }
+  }
   for (const chunkIndex of [
     ...shipped,
     ...withdrawn,

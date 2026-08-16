@@ -440,5 +440,88 @@ await describe({
         },).toThrow(SliceDeliveryError,);
       },
     },),
+
+    it({
+      name: 'REFUSES an index set that names one slice twice, which building a '
+        + 'set out of it silently forgave: a lane counting one change as two '
+        + 'has two derivations disagreeing about its own document, and neither '
+        + 'the count nor the ledger showed it',
+      fn: async () => {
+        expect(function shippedTwice() {
+          buildSliceDelivery({
+            slices: preparedSlices(),
+            wordings: laneWordings({
+              decided: new Map([[
+                0,
+                'The cat naps.',
+              ],],),
+            },),
+            shippedChunkIndices: [
+              0,
+              0,
+            ],
+            withdrawnChunkIndices: [],
+            blocked: false,
+          },);
+        },).toThrow('counts at least one slice twice',);
+        expect(function withdrawnTwice() {
+          buildSliceDelivery({
+            slices: preparedSlices(),
+            wordings: laneWordings({
+              decided: new Map([[
+                1,
+                'The cat dines.',
+              ],],),
+            },),
+            shippedChunkIndices: [],
+            withdrawnChunkIndices: [
+              1,
+              1,
+            ],
+            blocked: false,
+          },);
+        },).toThrow('counts at least one slice twice',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a slice named as both shipped and withdrawn rather than '
+        + 'letting the branch order answer it, which reported a change assembly '
+        + 'had taken back as one the document carries',
+      fn: async () => {
+        expect(function shippedAndWithdrawn() {
+          buildSliceDelivery({
+            slices: preparedSlices(),
+            wordings: laneWordings({
+              decided: new Map([[
+                2,
+                'The cat studies the birds.',
+              ],],),
+            },),
+            shippedChunkIndices: [2,],
+            withdrawnChunkIndices: [2,],
+            blocked: false,
+          },);
+        },).toThrow('both shipped and withdrawn',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a withdrawal of a slice the lane left at the archive '
+        + 'wording, since assembly cannot take back a replacement nobody wrote '
+        + 'and the row would read as a lane overruled rather than one that left '
+        + 'the slice alone',
+      fn: async () => {
+        expect(function withdrewNothing() {
+          buildSliceDelivery({
+            slices: preparedSlices(),
+            wordings: laneWordings({ decided: everySliceUnchanged(), },),
+            shippedChunkIndices: [],
+            withdrawnChunkIndices: [1,],
+            blocked: false,
+          },);
+        },).toThrow('no replacement for assembly to take back',);
+      },
+    },),
   ],
 },);
