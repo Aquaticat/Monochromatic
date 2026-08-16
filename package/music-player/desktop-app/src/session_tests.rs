@@ -96,8 +96,8 @@ fn old_track_list_format_degrades_to_no_root_but_keeps_settings() {
     // What:     omitted shuffle defaults to `Off`.
     // Why:      Confirms missing fields fall back rather than failing the parse.
     assert_eq!(parsed.shuffle, ShuffleMode::Off);
-    // Missing page-control preferences from older sessions default to radio controls.
-    assert_eq!(parsed.page_control_style, PageControlStyle::Radio);
+    // Missing page-control preferences use the first-install Chromium default.
+    assert_eq!(parsed.page_control_style, PageControlStyle::ChromiumTabs);
 }
 
 
@@ -107,6 +107,7 @@ fn old_track_list_format_degrades_to_no_root_but_keeps_settings() {
 //           the safe default for stale or invalid values.
 #[test]
 fn page_control_style_integer_conversion_covers_every_style() {
+    assert_eq!(PageControlStyle::default(), PageControlStyle::ChromiumTabs);
     assert_eq!(PageControlStyle::Radio.to_int(), 0);
     assert_eq!(PageControlStyle::Md1Tabs.to_int(), 1);
     assert_eq!(PageControlStyle::RoundedButtons.to_int(), 2);

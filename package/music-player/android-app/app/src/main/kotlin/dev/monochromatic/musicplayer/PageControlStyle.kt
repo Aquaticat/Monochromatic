@@ -28,8 +28,8 @@ package dev.monochromatic.musicplayer
  * Defines page-control style choices shared by UI and preference persistence.
  */
 internal enum class PageControlStyle {
-    // What:     `RADIO` is the radio-control variant and first-install default.
-    // Why:      Pages should use radio controls unless the user chooses another style.
+    // What:     `RADIO` is the radio-control variant and unknown-value fallback.
+    // Why:      Stale persisted names degrade to stable style value zero.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -68,8 +68,8 @@ internal enum class PageControlStyle {
     /** Uses wrapping segmented page buttons. */
     SEGMENTED_BUTTONS,
 
-    // What:     `CHROMIUM_TABS` is the content-width browser-tab variant.
-    // Why:      Users can choose raised active tabs matching the supplied Chromium reference.
+    // What:     `CHROMIUM_TABS` is the content-width browser-tab variant and first-install default.
+    // Why:      Fresh installs begin with compact raised tabs matching the Chromium reference.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -97,15 +97,16 @@ internal enum class PageControlStyle {
     // ```
     /** Decodes persisted enum names without throwing on stale values. */
     companion object {
-        // What:     `fromStoredName` finds the enum entry with a matching `.name`.
-        // Why:      Missing and unknown preference values must use radio controls.
+        // What:     `fromStoredName` distinguishes missing first-install state from unknown values.
+        // Why:      Missing preferences choose Chromium while stale names retain radio fallback.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // function fromStoredName(name: string | null): PageControlStyle { ... }
         // ```
-        /** Returns matching style, or radio controls when no stored name is usable. */
+        /** Returns first-install Chromium style, matching stored style, or radio for unknown names. */
         internal fun fromStoredName(name: String?): PageControlStyle {
+            if (name == null) return CHROMIUM_TABS
             return entries.firstOrNull { style -> style.name == name } ?: RADIO
         }
     }

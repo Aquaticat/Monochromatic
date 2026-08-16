@@ -390,18 +390,17 @@ object SessionStore {
     }
 
     // What:     `fun loadPageControlStyle(context: Context): PageControlStyle` reads the
-    //           stored enum name, finds a matching entry, and falls back to `RADIO` when
-    //           the key is absent or unknown.
-    // Why:      Fresh installs and stale preference values safely use radio controls.
+    //           stored enum name and distinguishes a missing key from an unknown value.
+    // Why:      Fresh installs use Chromium tabs while stale values safely use radio controls.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // loadPageControlStyle(context): PageControlStyle {
     //   const name = prefs(context).getString(KEY_PAGE_CONTROL_STYLE, null);
-    //   return PageControlStyle.entries.find((style) => style.name === name) ?? 'RADIO';
+    //   return name === null ? 'CHROMIUM_TABS' : PageControlStyle.fromStoredName(name);
     // }
     // ```
-    /** Loads the saved page-control style with radio controls as the fallback. */
+    /** Loads saved style with Chromium first-install default and radio unknown-value fallback. */
     internal fun loadPageControlStyle(context: Context): PageControlStyle {
         // Read nullable text because a fresh store has no value yet.
         /** Holds the persisted enum name, or null when no choice was saved. */

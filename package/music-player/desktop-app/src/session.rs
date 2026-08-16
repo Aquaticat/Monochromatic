@@ -50,9 +50,8 @@ use crate::identity;
 /// What:     `PageControlStyle` is the saved visual treatment for library-page selectors.
 ///           It has six fixed values: radio controls, wrapping Material Design 1 tabs,
 ///           the earlier rounded buttons, joined segmented buttons, Chromium-like tabs,
-///           and LED hardware buttons. `Default` selects `Radio` for old sessions.
-/// Why:      Users can choose a page selector while fresh and older installs start with
-///           radio controls as requested.
+///           and LED hardware buttons. `Default` selects `ChromiumTabs` for missing preferences.
+/// Why:      Users can choose a page selector while first installs start with compact Chromium tabs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,7 +66,6 @@ use crate::identity;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub enum PageControlStyle {
     /// Radio indicators and labels in a wrapping group.
-    #[default]
     Radio,
     /// Flat wrapping MD1 tabs with selected underlines.
     Md1Tabs,
@@ -76,6 +74,7 @@ pub enum PageControlStyle {
     /// Joined content-width buttons with selected fill.
     SegmentedButtons,
     /// Content-width browser tabs with raised active-tab silhouettes.
+    #[default]
     ChromiumTabs,
     /// Reflective hardware caps with latched LED selection.
     LedSegmentedButtons,
@@ -273,7 +272,7 @@ impl Default for Session {
             volume: 1.0,
             shuffle: ShuffleMode::Off,
             repeat_track: false,
-            page_control_style: PageControlStyle::Radio,
+            page_control_style: PageControlStyle::ChromiumTabs,
         }
     }
 }

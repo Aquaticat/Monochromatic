@@ -30,7 +30,7 @@ use music_player::session::{PageControlStyle, Session};
 /// function apply(app: AppWindow): void { ... }
 /// ```
 pub(crate) fn apply(app: &AppWindow) {
-    // Load and display the saved preference. Missing and older sessions default to radio.
+    // Load saved preference. Missing sessions default to Chromium; unknown integers still decode to radio.
     app.set_page_control_style(Session::load().page_control_style.to_int());
     // Persist only the page-control field while retaining the latest playback session.
     app.on_set_page_control_style(move |style| {

@@ -37,13 +37,13 @@ import org.junit.Test
 class PageControlStyleTest {
     // What:     `fromStoredNameHandlesKnownMissingAndUnknownValues` covers every enum
     //           member plus compatibility fallbacks.
-    // Why:      Radio controls are the required default for old or corrupt preferences.
+    // Why:      Missing preferences use Chromium while corrupt names retain radio fallback.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("decodes names and defaults to radio", () => { ... });
+    // test("decodes names with distinct missing and unknown fallbacks", () => { ... });
     // ```
-    /** Confirms exact names decode and all unusable names fall back to radio controls. */
+    /** Confirms names decode, missing defaults to Chromium, and unknown names fall back to radio. */
     @Test
     fun fromStoredNameHandlesKnownMissingAndUnknownValues() {
         assertEquals(PageControlStyle.RADIO, PageControlStyle.fromStoredName("RADIO"))
@@ -55,7 +55,7 @@ class PageControlStyleTest {
             PageControlStyle.LED_SEGMENTED_BUTTONS,
             PageControlStyle.fromStoredName("LED_SEGMENTED_BUTTONS"),
         )
-        assertEquals(PageControlStyle.RADIO, PageControlStyle.fromStoredName(null))
+        assertEquals(PageControlStyle.CHROMIUM_TABS, PageControlStyle.fromStoredName(null))
         assertEquals(PageControlStyle.RADIO, PageControlStyle.fromStoredName("future-style"))
     }
 }

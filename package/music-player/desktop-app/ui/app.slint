@@ -548,8 +548,8 @@ component LedSegmentControls inherits Rectangle {
     }
 }
 
-// Chromium's logical metrics: a 35px tab below 6px strip padding,
-// 10px top corners, 12px outward shoulders, 1px contour, and 20px insets.
+// Chromium-derived geometry: a 35px tab below 6px strip padding,
+// 10px top corners, 12px outward shoulders, 1px contour, and requester-halved 10px insets.
 component ChromiumTab inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
@@ -563,7 +563,7 @@ component ChromiumTab inherits Rectangle {
     private property <color> ink-color: Palette.foreground;
     horizontal-stretch: 0;
     clip: false;
-    width: min(chromium-label.preferred-width + 40px, root.max-width);
+    width: min(chromium-label.preferred-width + 20px, root.max-width);
     height: 41px;
     preferred-height: 41px;
     background: transparent;
@@ -662,9 +662,9 @@ component ChromiumTab inherits Rectangle {
     }
 
     chromium-label := Text {
-        x: 20px;
+        x: 10px;
         y: 6px;
-        width: parent.width - 40px;
+        width: parent.width - 20px;
         height: 35px;
         text: root.text;
         font-size: 13px;

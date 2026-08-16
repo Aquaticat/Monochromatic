@@ -2823,6 +2823,9 @@ private fun chromiumTabColors(): ChromiumTabColors = ChromiumTabColors(
     ink = MaterialTheme.colorScheme.onBackground,
 )
 
+/** Stores requester-directed half-size Chromium inline label padding. */
+private val chromiumTabInlinePadding: Dp = 10.dp
+
 /**
  * What:     `chromiumTabVisibleHeight` stores Android's 48dp visible-control minimum.
  * Why:      Chromium styling must remain visibly touchable rather than adding transparent hit padding.
@@ -2992,7 +2995,7 @@ private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresent
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(horizontal = 20.dp),
+        modifier = Modifier.padding(horizontal = chromiumTabInlinePadding),
     )
     if (options.selected) {
         Box(
