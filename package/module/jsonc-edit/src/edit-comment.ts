@@ -101,7 +101,11 @@ function transformAtPath({
     };
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
-    if ((!Number.isInteger(segment,)) || (segment < 0) || (segment >= node.elements.length))
+    if (!Number.isInteger(segment,))
+      throw new JsoncPathNotFoundError({ path, },);
+    if ((segment < 0) || (segment
+      >= node.elements
+      .length))
       throw new JsoncPathNotFoundError({ path, },);
     /**
      * Matched element rebuilt while siblings retain identity.
