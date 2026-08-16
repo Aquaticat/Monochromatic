@@ -240,6 +240,26 @@ export const SLICE_CACHE_VERSION = 27;
  * Identity context belongs here for the same reason, since it is
  * front-matter-derived prompt content that varies per document pair.
  *
+ * THE PER-CALL DEADLINE IS DELIBERATELY OUT, decided when the two-lane driver
+ * began passing one explicitly rather than letting each lane keep its own
+ * default. It changes nothing any model is asked; it changes only how long this
+ * side waits before giving up on an answer. Folding it in would split the cache
+ * on a scheduling knob, so raising the deadline for a slow provider would
+ * discard every slice already bought under the old one, and lowering it again
+ * would resurrect them.
+ *
+ * The counter-argument worth stating is that a deadline changes what comes
+ * BACK, since a clipped call costs a voice. It does, and a key covering it
+ * would still promise something this pipeline never offered: a stage that loses
+ * a voice retries to a quorum and then proceeds, so the panel a slice was
+ * decided by already varies run to run under a FIXED deadline. What a resumed
+ * slice is owed is that the QUESTION was the same, and that is what this states.
+ *
+ * {@link translateRunShape} reached the same decision for the same reason. The
+ * two lanes now agree in writing, which is the point of recording it here: one
+ * lane keying on the deadline and the other not would mean a deadline change
+ * discarded half a document's cached work and kept the other half.
+ *
  * @param models - every role roster this run seats
  *
  * @param adjudicationConfig - thresholds the panel is read under
