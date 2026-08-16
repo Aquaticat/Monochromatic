@@ -376,6 +376,25 @@ await describe({
         'REFUSES to build an artifact for a run whose two ledgers cannot be compared, because an entry '
         + 'whose lanes disagree about their own preparation has nothing worth writing',
       fn: async () => {
+        /**
+         * Repair ledger whose anchor row agrees with the preparation on every
+         * per-slice fact and contradicts ITSELF: a lane with no work to do
+         * there, over a passage the archive never had, reported as a
+         * replacement the document carries.
+         */
+        const incoherent = {
+          preparationIdentity: catIdentity(),
+          records: repairLedger()
+            .map(function shipTheAnchor(record, position,): SliceDeliveryRecord {
+              return (position === 1)
+                ? {
+                  ...record,
+                  delivery: { kind: 'replacement-shipped', },
+                }
+                : record;
+            },),
+        };
+
         expect(function lanesDisagree() {
           buildSettledArtifactV2({
             entryId: 'CatEntry1',
@@ -387,12 +406,46 @@ await describe({
             prepared: catPreparation(),
             lanes: {
               ...catLanes(),
-              // One row where the preparation has two slices.
-              translateDelivery: {
-                preparationIdentity: catIdentity(),
-                records: translateLedger().slice(0, 1,),
-              },
+              repairDelivery: incoherent,
             },
+          },);
+        },).toThrow();
+      },
+    },),
+    it({
+      name:
+        'REFUSES two ledgers that agree with each other and cover FEWER slices than the preparation, '
+        + 'which the comparison passes: it checks the two against each other, and a pair of equally '
+        + 'short ledgers line up perfectly while describing a document with slices missing',
+      fn: async () => {
+        /**
+         * Both lanes truncated to the same single row, so nothing about them
+         * disagrees except with the preparation they are filed under.
+         */
+        const bothShort = {
+          ...catLanes(),
+          repairDelivery: {
+            preparationIdentity: catIdentity(),
+            records: repairLedger()
+              .slice(0, 1,),
+          },
+          translateDelivery: {
+            preparationIdentity: catIdentity(),
+            records: translateLedger()
+              .slice(0, 1,),
+          },
+        };
+
+        expect(function bothLedgersAreShort() {
+          buildSettledArtifactV2({
+            entryId: 'CatEntry1',
+            tip: 'a'.repeat(40,),
+            pipelineDigest: DIGEST,
+            corpusSha: 'b'.repeat(40,),
+            callConfig: {},
+            durationMs: 1,
+            prepared: catPreparation(),
+            lanes: bothShort,
           },);
         },).toThrow('1 rows for a preparation of 2 slices',);
       },
@@ -443,13 +496,25 @@ await describe({
         + 'equal identity is a hash claim and the per-slice facts are what every row is filed under',
       fn: async () => {
         /**
-         * Ledger wearing the right name over a row naming a slice the
-         * preparation does not have at that position.
+         * Renumbers a ledger's anchor row, so BOTH lanes name a slice the
+         * preparation does not have there and agree with each other about it.
+         *
+         * @param records - one lane's rows
+         *
+         * @returns Ledger wearing the right name over rows the preparation
+         * contradicts
+         *
+         * @example
+         * ```ts
+         * const misfiled = renumbered({ records: repairLedger(), },);
+         * ```
          */
-        const misfiled = {
-          preparationIdentity: catIdentity(),
-          records: repairLedger()
-            .map(function renumber(record, position,): SliceDeliveryRecord {
+        function renumbered(
+          { records, }: { readonly records: readonly SliceDeliveryRecord[]; },
+        ) {
+          return {
+            preparationIdentity: catIdentity(),
+            records: records.map(function renumber(record, position,): SliceDeliveryRecord {
               return (position === 1)
                 ? {
                   ...record,
@@ -457,7 +522,8 @@ await describe({
                 }
                 : record;
             },),
-        };
+          };
+        }
 
         expect(function rowsContradictTheName() {
           buildSettledArtifactV2({
@@ -470,7 +536,8 @@ await describe({
             prepared: catPreparation(),
             lanes: {
               ...catLanes(),
-              repairDelivery: misfiled,
+              repairDelivery: renumbered({ records: repairLedger(), },),
+              translateDelivery: renumbered({ records: translateLedger(), },),
             },
           },);
         },).toThrow('names slice 7 at position 1',);
