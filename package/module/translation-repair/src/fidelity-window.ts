@@ -22,11 +22,24 @@ import type { ChunkPair, } from './chunk-document.ts';
  * `#107` is about material carried across ONE boundary, so one section each way
  * is the window that would fix it if a window is what is wrong.
  *
+ * WHY AN OUT-OF-RANGE INDEX THROWS rather than returning nothing. Both indices
+ * miss, so the natural answer is the empty string, which is exactly the value
+ * that means NO WINDOW. The wide arm would then send the narrow arm's sheet, the
+ * comparison would report the window as making no difference, and that null
+ * would be indistinguishable from a real one. The risk is live rather than
+ * theoretical: `#99` recorded that `chunkIndex` names three different things
+ * depending on who stamped it, and a caller passing a stamped index where a
+ * slice position belongs is the exact mistake this catches. Empty may therefore
+ * mean ONE thing only, a lone slice with no neighbours.
+ *
  * @param slices - prepared slice pairs of one entry
  *
- * @param sliceIndex - slice being judged
+ * @param sliceIndex - POSITION IN `slices`, never a stamped `chunkIndex`
  *
  * @returns Neighbouring source text, empty when the slice stands alone
+ *
+ * @throws {@link RangeError} when `sliceIndex` is not a position in `slices`,
+ * since the alternative is a silent empty window
  *
  * @example
  * ```ts
@@ -42,6 +55,17 @@ export function neighbouringSource(
     readonly sliceIndex: number;
   },
 ): string {
+  if ((!Number.isInteger(sliceIndex,))
+    || (sliceIndex < 0)
+    || (sliceIndex >= slices.length)) {
+    throw new RangeError(
+      `neighbouringSource asked for slice ${String(sliceIndex,)} of `
+        + `${String(slices.length,)}: not a position in this entry. An index `
+        + `stamped elsewhere would return an empty window here, which reads as `
+        + `a slice with no neighbours and would report a measured null.`,
+    );
+  }
+
   return [
     sliceIndex - 1,
     sliceIndex + 1,

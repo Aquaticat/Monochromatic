@@ -93,6 +93,11 @@ export function translateRunShape(
  *
  * @param lineStructured - whether the enclosing chunk is line-structured
  *
+ * @param neighbouringSourceText - original of the sections either side, shown to
+ * the judges as context. Absent for every ordinary run, and absence is
+ * serialized as though this parameter did not exist, so a settled corpus keyed
+ * before it existed stays valid
+ *
  * @returns Hash keying this slice's record
  *
  * @example

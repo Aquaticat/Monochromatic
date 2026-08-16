@@ -40,6 +40,31 @@ const MODELS = {
 const RUN_SHAPE = translateRunShape({ models: MODELS, },);
 
 /**
+ * Slice original every case keys.
+ */
+const SOURCE_TEXT = '小猫在窗台上睡觉。\n';
+
+/**
+ * Translation already sitting in the archive for it.
+ */
+const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
+
+/**
+ * Key a windowless slice hashes to, pinned rather than recomputed.
+ *
+ * WHY A LITERAL RATHER THAN A COMPARISON. Every other case here asks whether two
+ * keys agree, and a change that moved BOTH sides would pass all of them while
+ * discarding every settled slice in the pinned corpus, since a resumed record is
+ * found by this exact string. Only a value written down outside the code catches
+ * that. It moves when {@link TRANSLATE_SLICE_CACHE_VERSION} moves, which is the
+ * intended signal: a bump means the corpus is deliberately being rebought.
+ *
+ * The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
+ * leaves this alone.
+ */
+const LEGACY_WINDOWLESS_KEY = '1f6e97d24f99fd780ac8ac721f0164c72b7ae812739a0e6a1968931c298b30f0';
+
+/**
  * One slice's key, with whatever this case wants to vary.
  *
  * @param neighbouringSourceText - wider window, absent for an ordinary run
@@ -56,8 +81,8 @@ function keyFor(
 ): string {
   return translateSliceKey({
     runShape: RUN_SHAPE,
-    sourceText: '小猫在窗台上睡觉。\n',
-    incumbentText: 'The cat sleeps on the windowsill.\n',
+    sourceText: SOURCE_TEXT,
+    incumbentText: INCUMBENT_TEXT,
     incumbentKind: 'present',
     lineStructured: false,
     ...((neighbouringSourceText === undefined)
@@ -101,6 +126,30 @@ await describe({
         + 'of the key and the thing every separation above is measured against',
       fn: async () => {
         expect(keyFor({},),).toBe(keyFor({},),);
+      },
+    },),
+    it({
+      name: 'treats an EXPLICITLY passed `undefined` as absence, reaching the function rather than '
+        + 'being stripped by a caller: every other case here goes through a helper that removes '
+        + 'the property, so without this one nothing tests what the function does with it',
+      fn: async () => {
+        expect(translateSliceKey({
+          runShape: RUN_SHAPE,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          incumbentKind: 'present',
+          lineStructured: false,
+          neighbouringSourceText: undefined,
+        },),).toBe(keyFor({},),);
+      },
+    },),
+    it({
+      name: 'HASHES A WINDOWLESS SLICE TO A PINNED STRING, which is what stands between a change '
+        + 'to this serialization and the silent rebuying of every settled slice in the corpus. '
+        + 'A deliberate cache-version bump moves this value and should; an accidental one is what '
+        + 'this catches',
+      fn: async () => {
+        expect(keyFor({},),).toBe(LEGACY_WINDOWLESS_KEY,);
       },
     },),
   ],

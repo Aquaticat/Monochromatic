@@ -169,6 +169,64 @@ await describe({
         },),).toBe('',);
       },
     },),
+    it({
+      name: 'THROWS on an index past the end rather than answering empty, because empty is what a '
+        + 'lone slice answers: a wide arm handed a stray index would send the narrow sheet, and '
+        + 'the comparison would report the window as making no difference',
+      fn: async () => {
+        expect(function askPastEnd() {
+          return neighbouringSource({
+            slices: SLICES,
+            sliceIndex: SLICES.length,
+          },);
+        },).toThrow(RangeError,);
+      },
+    },),
+    it({
+      name: 'THROWS on a STAMPED chunk index that is not this array position, which is the live '
+        + 'mistake `#99` recorded: the same number names three different things, and two of them '
+        + 'silently read the wrong neighbours or none',
+      fn: async () => {
+        /**
+         * Two slices of one section, stamped with the document-wide indices they
+         * would carry in an entry whose earlier sections were not sliced.
+         *
+         * Passing `chunkIndex` here rather than the array position is the whole
+         * hazard: `11` and `12` are ordinary stamps, and both are outside a
+         * two-element array.
+         */
+        const stamped: readonly ChunkPair[] = [
+          sliceOf({
+            text: '小猫在窗台上睡觉。\n',
+            chunkIndex: 11,
+          },),
+          sliceOf({
+            text: '她看着外面的鸟。\n',
+            chunkIndex: 12,
+          },),
+        ];
+        expect(function askByStamp() {
+          return neighbouringSource({
+            slices: stamped,
+            sliceIndex: stamped[0]?.source
+              .chunkIndex ?? 0,
+          },);
+        },).toThrow('not a position in this entry',);
+      },
+    },),
+    it({
+      name: 'THROWS on a negative index rather than reading the end of the array, since a caller '
+        + 'that already subtracted one would otherwise be handed the LAST slice as a neighbour of '
+        + 'the first',
+      fn: async () => {
+        expect(function askBeforeStart() {
+          return neighbouringSource({
+            slices: SLICES,
+            sliceIndex: -1,
+          },);
+        },).toThrow(RangeError,);
+      },
+    },),
   ],
 },);
 
