@@ -11947,3 +11947,49 @@ nothing today. Changing the rule on no evidence would trade a measured zero for
 an unmeasured guess. It is recorded in the class's own TSDoc and in `#108` as a
 reading instruction: an untranslated slice beside a high one is a possible
 whole-section move, so hand-check it rather than trusting the class.
+
+### The second reviewer on the rebuild, and what was deferred on purpose
+
+A reviewer reading the rebuilt instrument found four design problems and four
+false claims. The claims were corrected in place; the design changes went to
+`#432` rather than being made the same night as the numbers that depend on them,
+which is a judgement worth stating rather than hiding: the count had already been
+corrected twice in a few hours, and a third change at that hour is how the third
+error gets introduced.
+
+THE ONE THAT MATTERS MOST, and it was verified rather than relayed. The comment
+claimed the aggregate baseline is INVARIANT UNDER RELOCATION. It is not, as
+implemented. A total over ALL slices would be, but this one is taken over
+ELIGIBLE slices, and relocation can carry text across that boundary. `Dethelly`
+is the case: its 35-character recipient is excluded by the length floor while its
+129-character donor is included. Measured, the deficit over surplus reads
+
+    shipped baseline (>=80 filter)      Dethelly 0.406    lintong 0.352
+    leave-one-pair-out                  Dethelly 0.442    lintong 0.352
+    all slices                          Dethelly 0.513    lintong 0.438
+
+THE CONCLUSION SURVIVES ALL THREE. The deficit is the smaller side under every
+baseline, so the asymmetry finding stands and so does the refusal of a symmetric
+conservation test. What does not survive is the word "invariant", and the
+estimator being endogenous to the thing it measures is the SAME error as the
+median contamination the rebuild was built to fix. `#432` carries the
+leave-one-pair-out estimator.
+
+THREE MORE FALSE CLAIMS, all corrected. `median` returned the lower middle rather
+than a conventional median, and once the aggregate replaced it nothing used it at
+all, so it is deleted rather than renamed. `readPair`'s comment said it separated
+an absent path from a failure, but `CorpusReadError` is thrown on ANY non-zero
+git exit, so a bad pin and a broken invocation still read as a missing
+translation; narrowing the catch was an improvement and not the fix.
+`CorpusTotals.relocationCandidates` counts ADJACENCIES while its documentation
+said slices.
+
+AND THE 91 AGAINST 92: both are right. `XIEPT2` has both files and no source
+text, so it can carry no aggregate while still being a complete pair.
+
+WHAT IS ON `#432` AND UNFIXED: the leave-one-pair-out baseline; a HIGH gate that
+is relative and so misses a large absolute surplus on a long slice, which is a
+false negative and those cost more here; classes that are exclusive when the
+evidence is not, which `wangzihao980` demonstrates by having a real transcription
+pushed out of `target-only` by an unrelated neighbouring deficit; and sizes that
+count markup as translation, which is exactly the class the media cases live in.
