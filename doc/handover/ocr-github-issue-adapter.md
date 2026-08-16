@@ -231,6 +231,8 @@ error,
 and package document.
 
 Interactive mode places security-gated findings in a separate picker from other findings.
+The normal picker initially selects every finding.
+The security picker initially selects no finding.
 That picker must use red styling when color is available and an explicit textual `SECURITY` marker
 so color is never the only signal.
 Every security-gated finding selected for publication requires its own explicit safe-to-disclose confirmation.
@@ -496,11 +498,14 @@ in dependency order:
    or automatic closure behavior.
    Repeated ingestion may create duplicates.
 9. Interactive mechanics:
+   the normal picker initially selects all findings.
+   The separate security picker initially selects none.
    pnpm's prompt library and interaction model,
    terminal capabilities,
+   empty-selection behavior,
    cancellation,
    multi-select behavior,
-   and accessibility.
+   and accessibility otherwise remain open.
 10. Package interface:
     package location and name,
     binary name,
@@ -515,7 +520,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about which findings are initially selected in the interactive pickers.
+Ask the next dependent design question about what submitting an empty interactive selection does.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -625,5 +630,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   or mentions.
 - 2026-08-16:
   limited complete interactive body previews to selected security findings before their individual confirmations.
+- 2026-08-16:
+  preselected all normal findings and left all security findings unselected in their separate interactive pickers.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
