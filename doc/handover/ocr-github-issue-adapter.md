@@ -159,6 +159,11 @@ and the adapter verifies that commit in the destination repository,
 the source reference is a commit-pinned hyperlink.
 Without that verified provenance,
 it remains plain text rather than linking a mutable branch.
+Every issue uses the existing `needs-triage` label when the destination defines it.
+When that label is confirmed absent,
+the adapter silently omits the label and prepends `[needs-triage] ` to the issue title instead.
+It supports no additional label options and never creates labels.
+A label-lookup failure is not proof of absence and remains an error before creation.
 Fallbacks and title length handling remain to be settled.
 
 ## Settled prior findings
@@ -427,8 +432,11 @@ in dependency order:
    They become commit-pinned links only when input supplies a resolved head commit
    that is verified in the destination repository;
    otherwise they remain plain text.
+   Every issue receives the existing `needs-triage` label when available.
+   When it is confirmed absent,
+   the adapter silently prepends `[needs-triage] ` to the generated title instead.
+   It never creates labels and supports no additional label option.
    Remaining body fields,
-   labels,
    safe code-fence rendering,
    and title fallback and length behavior remain open.
 8. Identity and lifecycle:
@@ -460,7 +468,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about the labels applied to newly created issues.
+Ask the next dependent design question about the issue-body section structure and metadata placement.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -554,5 +562,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   included both OCR `existing_code` and `suggestion_code` in separate issue-body sections when present.
 - 2026-08-16:
   settled plain path-and-line source references with commit-pinned hyperlinks only after destination verification.
+- 2026-08-16:
+  applied `needs-triage` when available and silently fell back to a `[needs-triage] ` title prefix when absent;
+  no other label options are supported.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
