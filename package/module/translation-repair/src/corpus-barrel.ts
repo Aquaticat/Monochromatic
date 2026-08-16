@@ -89,6 +89,10 @@ export {
   type TrialSlice,
 } from './corpus-run/window-trial-draw.ts';
 export {
+  armOrderFor,
+  TRIAL_ARM_SET,
+} from './corpus-run/window-trial-order.ts';
+export {
   type PickOutcome,
   runPick,
 } from './corpus-run/window-trial-pick.ts';

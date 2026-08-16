@@ -31,7 +31,7 @@ import { isJsonRecord, } from '../json-guard.ts';
  *
  * @example
  * ```ts
- * const row: WindowTrialRow = { protocol: 'abc123', entryId: 'Mittens', chunkIndex: 7, arm: 'wide', sliceClass: 'relocation', shipped: true, decision: 'judged', winnerText: '...', judgesHeard: 6, judgesSeated: 6, };
+ * const row: WindowTrialRow = { protocol: 'abc123', entryId: 'Mittens', chunkIndex: 7, arm: 'wide', sliceClass: 'relocation', shipped: true, decision: 'judged', winnerText: '...', judgesHeard: 6, judgesSeated: 6, position: 2, };
  * ```
  */
 export type WindowTrialRow = {
@@ -99,6 +99,17 @@ export type WindowTrialRow = {
    * against.
    */
   readonly judgesSeated: number;
+
+  /**
+   * Which of this slice's three calls this arm was, zero-based.
+   *
+   * RECORDED BECAUSE THE POSITION IS ASSIGNED, not fixed. The wide arm used to
+   * be third on every slice, which aliased it onto anything that drifts across
+   * a slice's calls; it now sits at a position derived from the slice, and this
+   * field is what lets the effect of position be estimated rather than assumed
+   * away.
+   */
+  readonly position: number;
 };
 
 /**
@@ -161,7 +172,8 @@ function isWindowTrialRow(value: unknown,): value is WindowTrialRow {
     && ((typeof value.decision) === 'string')
     && ((typeof value.winnerText) === 'string')
     && ((typeof value.judgesHeard) === 'number')
-    && ((typeof value.judgesSeated) === 'number');
+    && ((typeof value.judgesSeated) === 'number')
+    && ((typeof value.position) === 'number');
 }
 
 /**

@@ -13,6 +13,10 @@ import {
   trialKey,
   type WindowTrialRow,
 } from './window-trial-ledger.ts';
+import {
+  armOrderFor,
+  TRIAL_ARM_SET,
+} from './window-trial-order.ts';
 import { TRIAL_ARMS, } from './window-trial-report.ts';
 
 //region Window trial slice
@@ -27,20 +31,6 @@ import { TRIAL_ARMS, } from './window-trial-report.ts';
 // THE THIRD ARM IS NOT A LUXURY. Judges are stochastic, so a narrow-to-wide
 // difference means nothing until it beats the difference between two narrow runs
 // of the same slate. That second narrow arm is the only thing that supplies it.
-
-/**
- * Arms in the order they are bought.
- *
- * NARROW, NARROW, WIDE rather than narrow, wide, narrow. The two narrow arms sit
- * together so the band is measured across the smallest stretch of provider
- * weather, which is the thing most likely to move a rate for reasons the trial
- * is not about.
- */
-const ARM_ORDER = [
-  TRIAL_ARMS.narrowFirst,
-  TRIAL_ARMS.narrowSecond,
-  TRIAL_ARMS.wide,
-] as const;
 
 /**
  * Runs the arms one slice still owes, appending each as it completes.
@@ -118,9 +108,19 @@ export async function runSliceArms(
   }>,
 ): Promise<readonly WindowTrialRow[]> {
   /**
+   * Order this slice buys its arms in, assigned from its own identity so the
+   * wide arm is not always the last call.
+   */
+  const order = armOrderFor({
+    protocol,
+    entryId,
+    chunkIndex,
+  },);
+
+  /**
    * Arms this slice still owes, in buying order.
    */
-  const owed = ARM_ORDER.filter(function notBought(arm,): boolean {
+  const owed = order.filter(function notBought(arm,): boolean {
     // THROUGH `trialKey`, never hand-joined. The two builders disagreed once,
     // on a NUL separator against a space, which no reader shows and which made
     // every resumed run re-buy arms the ledger already held.
@@ -141,11 +141,11 @@ export async function runSliceArms(
   // as the evidence. That is precisely the confound `#109` was split to remove,
   // arriving through resumption instead of through the stage. Left as it is,
   // the slice stays incomplete, and the report already excludes it and says so.
-  if (owed.length !== ARM_ORDER.length) {
+  if (owed.length !== TRIAL_ARM_SET.length) {
     l.warn(
       `${entryId}/${String(chunkIndex,)}: ${
-        String(ARM_ORDER.length - owed.length,)
-      } of ${String(ARM_ORDER.length,)} arms survive from an interrupted run; `
+        String(TRIAL_ARM_SET.length - owed.length,)
+      } of ${String(TRIAL_ARM_SET.length,)} arms survive from an interrupted run; `
         + `skipping rather than finishing them over a slate the earlier arms `
         + `never saw`,
     );
@@ -203,7 +203,7 @@ export async function runSliceArms(
    * Rows this call appended.
    */
   const appended: WindowTrialRow[] = [];
-  for (const arm of owed) {
+  for (const [position, arm,] of order.entries()) {
     /**
      * What the judges made of the same slate under this arm's evidence.
      */
@@ -239,6 +239,7 @@ export async function runSliceArms(
         .ballots,
       judgesSeated: decided.tally
         .judgesAvailable,
+      position,
     };
 
     // APPENDED BEFORE THE NEXT ARM STARTS, which is what makes a kill cost one

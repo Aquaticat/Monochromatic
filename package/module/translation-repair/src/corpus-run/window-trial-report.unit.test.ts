@@ -76,6 +76,7 @@ function rowFor(
     winnerText: shipped ? 'A fresh rendering.\n' : 'The archive wording.\n',
     judgesHeard,
     judgesSeated: JUDGES_SEATED,
+    position: 0,
   };
 }
 

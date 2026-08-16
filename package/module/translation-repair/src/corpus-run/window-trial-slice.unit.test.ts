@@ -24,6 +24,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  armOrderFor,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
@@ -357,9 +358,11 @@ await describe({
 
         expect((await readTrialLedger({ path: ledgerPath, },)).map(function toArm(row,) {
           return row.arm;
-        },),).toEqual([TRIAL_ARMS.narrowFirst,
-          TRIAL_ARMS.narrowSecond,
-          TRIAL_ARMS.wide,],);
+        },),).toEqual([...armOrderFor({
+          protocol: 'protocol-one',
+          entryId: 'Mittens',
+          chunkIndex: 1,
+        },),],);
       },
     },),
     it({

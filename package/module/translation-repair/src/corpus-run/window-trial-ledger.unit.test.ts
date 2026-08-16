@@ -81,6 +81,7 @@ function rowFor(
     winnerText: 'The cat sleeps on the windowsill.\n',
     judgesHeard: 6,
     judgesSeated: 6,
+    position: 0,
   };
 }
 
