@@ -12058,11 +12058,30 @@ THE SPEC, so the next session does not re-derive it:
 4.  Tally the replacement rate PER CLASS PER ARM.
 5.  ON THE FIRST FLAGGED SLICE ONLY, before letting the remaining seventy-nine
     proceed, read the wide arm's judge sheets out of the run log and confirm
-    they carry the `SURROUNDING ORIGINAL` label. The stage is tested directly
-    and the key is tested, but the hop from `settleTranslateSlice` into
-    `runTranslateStage` is not, so a window that silently fails to arrive would
-    produce two identical arms and a confident null. One check at the top of the
-    run costs nothing and closes the gap the tests leave open.
+    they carry the `SURROUNDING ORIGINAL` label. This is a fail-fast guard on the
+    live wiring, not the proof; the proof is now a test, below.
+6.  DEDUPLICATE BEFORE COUNTING. Relocation candidates are ADJACENCIES, so one
+    slice can appear in more than one candidate. The unit of trial is an
+    (entry, slice position) pair; carry the candidate metadata alongside rather
+    than running the same slice twice and counting the same model result twice.
+7.  RUN MATCHED ORDINARY SLICES AS A NEGATIVE CONTROL, drawn from slices the
+    screen did NOT flag. Without them a general context-induced conservatism,
+    judges keeping the incumbent more often simply because they were shown more
+    text, is indistinguishable from the window doing its job on relocations.
+    The three flagged non-relocation classes are not this control: they are
+    flagged too.
+8.  REPORT PAIRED TRANSITIONS, replace-to-keep and keep-to-replace, rather than
+    two aggregate rates. Two rates that match can hide equal traffic in both
+    directions, which is not the window working.
+
+THE HOP IS NOW PINNED BY A TEST, which is what item 5 stopped having to carry.
+`translate-slice.unit.test.ts` drives `settleTranslateSlice` with a recording
+client and asserts the window reaches EVERY judge sheet, NO translator sheet,
+and neither when no caller supplies one. Shown to fail: deleting the forwarding
+spread in `translate-slice.ts` fails it with `expected +0 to equal 5`, which is
+precisely the silent null the run would otherwise have bought. A translator must
+not see the window because one that rendered the neighbouring original would be
+marked down for covering content that was never its slice.
 
 THE CACHE QUESTION HAD TWO HALVES AND ONLY ONE IS ANSWERED.
 
@@ -12162,6 +12181,20 @@ alignment guard can refuse a wide-arm replacement so a real change in the ballot
 lands as `changed: false`. Record the chosen TEXT and the winning candidate's
 producer alongside the flag, or the tally cannot tell a window that changed the
 verdict from one that changed nothing.
+
+FOUR OUTCOMES, NOT ONE FLAG, since `changed: false` currently means any of them:
+the judges kept the incumbent; no usable voice answered; a candidate happened to
+equal the incumbent; or the alignment guard refused a replacement the stage had
+selected. Record which. Folding a degraded stage into "kept" is the reading that
+makes a longer, slower wide prompt look like a window that works.
+
+AND REFUSE A DEGRADED ARM RATHER THAN RECORDING IT. Direct settlement skips the
+document driver's protections, so a slice where no translator was heard still
+returns an unchanged record and looks like an ordinary keep. Give each arm its
+own fresh signal of equal duration, never one shared entry deadline whose
+remaining time penalises whichever arm runs second, require the intended
+participation, and record heard model ids and retry counts per arm. Randomise
+which arm runs first, deterministically, and run the two adjacent.
 
 COUNT SEPARATELY, do not fold into the rate: slices where the stage returns
 before judging at all. An empty candidate set and a sole-incumbent slate both
