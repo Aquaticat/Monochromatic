@@ -23,6 +23,12 @@ export {
   compareLanesV2,
 } from './corpus-run/artifact-v2-comparison.ts';
 export {
+  comparisonRowsEqualV2,
+  decisionsEqualV2,
+  deliveriesEqualV2,
+  outcomesEqualV2,
+} from './corpus-run/artifact-v2-row-equality.ts';
+export {
   toArtifactComparisonRowV2,
   toArtifactDecisionsV2,
   toArtifactDeliveryV2,

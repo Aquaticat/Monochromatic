@@ -23,9 +23,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactComparisonRowV2,
   type ArtifactDeliveryRowV2,
   assertDerivationsAgree,
   compareLanesV2,
+  comparisonRowsEqualV2,
+  decisionsEqualV2,
+  deliveriesEqualV2,
+  outcomesEqualV2,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -321,6 +326,25 @@ await describe({
     },),
     it({
       name:
+        'REFUSES two ledgers that disagree about the ORIGINAL at one position, which is how a pair built '
+        + 'over different slicings shows up: the slice numbers can still line up while the two lanes were '
+        + 'reading different sentences',
+      fn: async () => {
+        expect(function sourcesDisagree() {
+          compareLanesV2({
+            repair: [keptArchive({ chunkIndex: 0, },),],
+            translate: [
+              {
+                ...keptArchive({ chunkIndex: 0, },),
+                sourceText: '猫猫在门口等着。',
+              },
+            ],
+          },);
+        },).toThrow('carries a different original in each ledger',);
+      },
+    },),
+    it({
+      name:
         'REFUSES two ledgers that disagree about whether the archive translates a slice, even where both '
         + 'carry the same text, since that disagreement is exactly the pair equal text hides',
       fn: async () => {
@@ -411,6 +435,42 @@ await describe({
     },),
     it({
       name:
+        'ACCEPTS two derivations whose rows carry the same values in a different KEY ORDER, which is what '
+        + 'the reader will hold: a row parsed out of a file is ordered however the file wrote it, and '
+        + 'calling that a changed rule would stop a pass over a difference no reader can see',
+      fn: async () => {
+        /**
+         * One comparison, derived once.
+         */
+        const frozen = compareLanesV2({
+          repair: [keptArchive({ chunkIndex: 0, },),],
+          translate: [keptArchive({ chunkIndex: 0, },),],
+        },);
+
+        /**
+         * The same rows with every key written in the opposite order, standing
+         * in for rows read back off disk.
+         */
+        const live = frozen.map(function reorderKeys(row,): ArtifactComparisonRowV2 {
+          return Object.fromEntries(
+            Object.entries(row,)
+              .toReversed(),
+          ) as ArtifactComparisonRowV2;
+        },);
+
+        // POSITIVE CONTROL for the case itself: unless the reordering actually
+        // changed the serialized bytes, this case would pass against the
+        // stringify comparison it exists to keep from coming back.
+        expect(JSON.stringify(live[0],),).not
+          .toBe(JSON.stringify(frozen[0],),);
+        assertDerivationsAgree({
+          frozen,
+          live,
+        },);
+      },
+    },),
+    it({
+      name:
         'REFUSES derivations of different lengths, so a comparator that dropped or added a row is caught '
         + 'before the row-by-row reading starts and reports the counts rather than a field',
       fn: async () => {
@@ -427,6 +487,186 @@ await describe({
             live: [],
           },);
         },).toThrow('derives 1 comparison rows where the pipeline derives 0',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: comparisonRowsEqualV2.name,
+  children: [
+    it({
+      name:
+        'reads the UNION members apart from their names: two outcomes both decided on different wording '
+        + 'are different, while two carrying the same name and nothing else are the same',
+      fn: async () => {
+        expect(outcomesEqualV2({
+          left: {
+            kind: 'decided',
+            acceptedText: ARCHIVE_NAP,
+          },
+          right: {
+            kind: 'decided',
+            acceptedText: 'The cat sleeps on the windowsill.',
+          },
+        },),).toBe(false,);
+        expect(outcomesEqualV2({
+          left: { kind: 'incumbent-fallback', },
+          right: { kind: 'incumbent-fallback', },
+        },),).toBe(true,);
+        expect(outcomesEqualV2({
+          left: { kind: 'unfilled', },
+          right: { kind: 'not-evaluated', },
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name:
+        'reads a withdrawal`s REASON, so a replacement pulled for assembly integrity is not the same '
+        + 'delivery as one pulled because the document was blocked as untranslated',
+      fn: async () => {
+        expect(deliveriesEqualV2({
+          left: {
+            kind: 'replacement-withdrawn',
+            reason: 'assembly-integrity',
+          },
+          right: {
+            kind: 'replacement-withdrawn',
+            reason: 'blocked-non-translation',
+          },
+        },),).toBe(false,);
+        expect(deliveriesEqualV2({
+          left: { kind: 'incumbent-retained', },
+          right: { kind: 'incumbent-retained', },
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name:
+        'reads `undecidedLanes` IN ORDER and by length, because the field is stated as lane order: a '
+        + 'reversed pair names a different lane first, and a longer list names a lane the other does not',
+      fn: async () => {
+        expect(decisionsEqualV2({
+          left: {
+            kind: 'not-comparable',
+            undecidedLanes: [
+              'repair',
+              'translate',
+            ],
+          },
+          right: {
+            kind: 'not-comparable',
+            undecidedLanes: [
+              'translate',
+              'repair',
+            ],
+          },
+        },),).toBe(false,);
+        expect(decisionsEqualV2({
+          left: {
+            kind: 'not-comparable',
+            undecidedLanes: ['repair',],
+          },
+          right: {
+            kind: 'not-comparable',
+            undecidedLanes: [
+              'repair',
+              'translate',
+            ],
+          },
+        },),).toBe(false,);
+        expect(decisionsEqualV2({
+          left: {
+            kind: 'comparable',
+            verdict: 'same',
+          },
+          right: {
+            kind: 'comparable',
+            verdict: 'different',
+          },
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name:
+        'answers over EVERY field version 2 owns, so a row differing in exactly one of them is different '
+        + 'whichever one it is: a check reading only some fields would pass artifacts it should stop',
+      fn: async () => {
+        /**
+         * One row every case below changes exactly one field of.
+         */
+        const [row,] = compareLanesV2({
+          repair: [shipped({ chunkIndex: 0, text: 'The cat naps.', },),],
+          translate: [keptArchive({ chunkIndex: 0, },),],
+        },);
+        if (row === undefined)
+          throw new Error('the comparison produced no rows to vary',);
+        expect(comparisonRowsEqualV2({
+          left: row,
+          right: row,
+        },),).toBe(true,);
+
+        /**
+         * One altered row per field, each differing from `row` in that field
+         * alone.
+         */
+        const variants: readonly ArtifactComparisonRowV2[] = [
+          {
+            ...row,
+            chunkIndex: 1,
+          },
+          {
+            ...row,
+            incumbentKind: 'absent',
+          },
+          {
+            ...row,
+            incumbentText: 'The cat dozes.',
+          },
+          {
+            ...row,
+            repairText: 'The cat dozes.',
+          },
+          {
+            ...row,
+            translateText: 'The cat dozes.',
+          },
+          {
+            ...row,
+            verdict: 'both-differ',
+          },
+          {
+            ...row,
+            repairOutcome: { kind: 'unfilled', },
+          },
+          {
+            ...row,
+            translateOutcome: { kind: 'unfilled', },
+          },
+          {
+            ...row,
+            decisionComparison: {
+              kind: 'not-comparable',
+              undecidedLanes: ['repair',],
+            },
+          },
+          {
+            ...row,
+            repairDelivery: { kind: 'gap-remains', },
+          },
+          {
+            ...row,
+            translateDelivery: { kind: 'gap-remains', },
+          },
+        ];
+        expect(variants.map(function isSame(variant,): boolean {
+          return comparisonRowsEqualV2({
+            left: row,
+            right: variant,
+          },);
+        },),).toEqual(variants.map(function alwaysDifferent(): boolean {
+          return false;
+        },),);
       },
     },),
   ],

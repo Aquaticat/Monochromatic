@@ -6,6 +6,8 @@ import type {
   ArtifactSliceOutcomeV2,
 } from './artifact-v2-vocabulary.ts';
 
+import { comparisonRowsEqualV2, } from './artifact-v2-row-equality.ts';
+
 //region Artifact version 2 comparison
 // How version 2 decides what a comparison row SAYS, frozen the way its
 // vocabulary is.
@@ -216,6 +218,12 @@ export function compareLanesV2(
         } in the repair ledger and slice ${String(theirs.chunkIndex,)} in the translate ledger`,
       },);
     }
+    if (theirs.sourceText !== mine.sourceText) {
+      throw new ArtifactComparisonV2Error({
+        message: `slice ${String(mine.chunkIndex,)} carries a different original in each ledger, `
+          + 'so the two ledgers were built over different slicings',
+      },);
+    }
     if (theirs.incumbentText !== mine.incumbentText) {
       throw new ArtifactComparisonV2Error({
         message: `slice ${String(mine.chunkIndex,)} carries a different archive wording in each ledger`,
@@ -269,9 +277,10 @@ export function compareLanesV2(
  * whether version 2 changed with them, which is a version 3, or whether the
  * change was a defect.
  *
- * COMPARED AS SERIALIZED, because that is what a reader will see: two rows that
- * differ only in key order are the same artifact, and two that differ in a
- * value are not.
+ * COMPARED FIELD BY FIELD through {@link comparisonRowsEqualV2}, so key order
+ * does not decide it: two rows carrying the same values in a different order
+ * are the same row, and the reader comparing a recorded row read off disk
+ * against a derived one needs exactly that reading.
  *
  * @param frozen - rows version 2's own rules produced
  *
@@ -309,7 +318,15 @@ export function assertDerivationsAgree(
      * What the live comparator said about the same position.
      */
     const theirs = live[position];
-    if (JSON.stringify(row,) !== JSON.stringify(theirs,)) {
+    if (theirs === undefined) {
+      throw new ArtifactComparisonV2Error({
+        message: `the pipeline has no comparison row at position ${String(position,)}`,
+      },);
+    }
+    if (!comparisonRowsEqualV2({
+      left: row,
+      right: theirs,
+    },)) {
       throw new ArtifactComparisonV2Error({
         message: `version 2 and the pipeline disagree about slice ${
           String(row.chunkIndex,)
