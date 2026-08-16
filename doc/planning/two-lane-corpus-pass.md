@@ -370,28 +370,37 @@ however empty its population happens to be.
 
 ## Still to build
 
-1.  The artifact at version 2, to the design above,
-    with the preparation identity folded into the SAME bump rather than added later:
-    a persisted comparison without it is joinable across slicings from day one.
-2.  ~~`buildSettledArtifact` deriving its counts~~, landed as `e4f857c83`:
-    it takes the result and reads the status and both counts off it,
-    where all three used to arrive as parameters beside it and could contradict it.
-3.  The preparation identity the comparison needs before it is persisted.
-    Equal slice counts, equal indices and equal incumbent text do not prove one preparation,
-    and every insertion incumbent is blank, so two different slicings can be joined silently.
-4.  `settleEntry` calling `prepareDocumentPair` and `runDocumentLanes`,
-    with `sliceCharBudget` passed explicitly since calling the preparation directly bypasses the default `repairTranslation` supplied.
-5.  One deadline for the whole two-lane computation, and `throwIfAborted()` between the driver returning and the artifact being built.
-    Not a gate BETWEEN the lanes: both drivers deliberately let a fully cached lane finish after an abort.
-6.  Tests for `settleEntry`, once it has its final shape:
-    the settled path, the failed path, and the cleanup failure that must log `CLEANUP` and never a second `TALLY`.
-7.  The translate lane does not enforce what an unheard stage means.
-    Nothing requires that hearing no translator implies `outputText === incumbentText` and `changed === false`,
-    and the resumed branch would accept an unheard cached record written by an older build,
-    which contradicts the stated invariant that such a slice is never cached.
-    Same defect family as everything above, and cheap.
+Items 1 through 7 have landed. What each turned into is recorded here rather than deleted,
+because the shape several of them took differs from the shape they were planned in.
+
+1.  ~~The artifact at version 2~~, landed across `artifact-v2-contract.ts`, `artifact-v2-vocabulary.ts`
+    and `artifact-v2-build.ts`. The identity was folded into the same bump as planned,
+    and then strengthened twice after review: it is DERIVED in the builder rather than accepted,
+    and each ledger carries the slicing it was built over, stamped by the driver that built it.
+2.  ~~`buildSettledArtifact` deriving its counts~~, landed as `e4f857c83`.
+3.  ~~The preparation identity~~, landed as `preparation-identity.ts`.
+4.  ~~`settleEntry` calling `prepareDocumentPair` and `runDocumentLanes`~~, landed as `04c6d85cf`.
+    The `sliceCharBudget` clause was WRONG and is retracted:
+    `prepareDocumentPair` defaults to the same `SLICE_CHAR_BUDGET` that `repairTranslation` passed down,
+    so calling the preparation directly bypasses nothing. Measured, not assumed.
+5.  ~~One deadline, `throwIfAborted()` after the driver returns~~, landed in the same commit,
+    with the resumed-lanes case tested and shown to fail without the check.
+6.  ~~Tests for `settleEntry`~~, landed as `592c06512` and `f0ea127c8`, all three paths covered.
+    The cleanup failure turned out to be injectable by making the entry's cache directory read-only,
+    since removal unlinks the entries inside a directory and needs write permission on the directory.
+7.  ~~The translate lane's unheard stage~~, landed as `translate-unheard.ts`.
+    The repair lane has the SAME defect and it is still open: `#112`.
+
+Still open:
+
 8.  `artifact-read.ts` keeps a discriminated `unrecorded` reading and then converts it back into an
     absent optional property, discarding the distinction its own parser established.
+9.  THE VERSION 2 PARSER, which nothing has written and the writer now depends on.
+    The contract is in "What the version 2 parser must require, and what it may tolerate".
+10. The mixed-generation trap the wiring created: `settledEntryIds` reads FILENAMES only,
+    so a pass resumed into a directory holding version 1 artifacts skips those entries
+    and produces a corpus that is half one generation, invisibly.
+    A fresh artifacts directory avoids it, and practice is not a guard.
 
 ## Open questions for the user
 
