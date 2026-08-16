@@ -12,6 +12,11 @@ description = "Build the require-kdoc plugin jar"
 dir = "{{config_root}}"
 run = "./gradlew jar --no-daemon --console=plain"
 
+[tasks."publish:bundle"]
+description = "Build the signed Maven Central deployment bundle without uploading it"
+dir = "{{config_root}}"
+run = "./gradlew centralBundle --no-daemon --console=plain"
+
 [tasks.lint]
 description = "Local compile check of the rule set (the monorepo scan is the root lint:detekt)"
 dir = "{{config_root}}"
