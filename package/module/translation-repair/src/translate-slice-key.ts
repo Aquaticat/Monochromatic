@@ -107,12 +107,14 @@ export function translateSliceKey(
     incumbentText,
     incumbentKind,
     lineStructured,
+    neighbouringSourceText,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly lineStructured: boolean;
+    readonly neighbouringSourceText?: string;
   },
 ): string {
   return hashContent({
@@ -138,6 +140,19 @@ export function translateSliceKey(
       // Two slices can carry identical text and still be governed differently,
       // because the verdict belongs to the enclosing chunk.
       lineStructured,
+      // APPENDED ONLY WHEN PRESENT, which is what keeps every settled slice in
+      // the corpus valid: with no wider window the array is byte-identical to
+      // what it always was, so no cache entry is discarded by this field
+      // existing. Supplying one produces a different key, which it must, because
+      // the judges are shown different evidence and can reach a different
+      // answer. Two arms of one comparison sharing a key would have the second
+      // read the first's result and report the two as identical.
+      ...((neighbouringSourceText === undefined) || (neighbouringSourceText === '')
+        ? []
+        : [
+          'neighbouring',
+          neighbouringSourceText,
+        ]),
     ],),
   },);
 }
