@@ -80,7 +80,8 @@ probe: ... - ! Connected - tools fetch failed - Invalid result for tools/list: m
 When the probe rejects `server/discover` with `-32601`, the client falls back to `initialize`
 and asks for `2025-11-25`.
 
-Consequence: the modern-only choice is safe for this client's session path,
+Consequence:
+ the modern-only choice is safe for this client's session path,
  because it probes discovery first.
 A client that opens with `initialize` instead is not served.
 
