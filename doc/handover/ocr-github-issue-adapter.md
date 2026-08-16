@@ -223,6 +223,14 @@ When all three fields lack a non-whitespace line,
 the finding is invalid and rejects the complete input before GitHub operations.
 Issue bodies include both OCR `existing_code` and `suggestion_code` in separate,
 clearly labeled code sections when those fields are present.
+Each code section uses a GitHub Flavored Markdown indented code block:
+a blank line follows the heading,
+and every source line receives four leading spaces.
+This keeps backticks,
+tildes,
+HTML,
+and other Markdown literal without delimiter selection or HTML escaping.
+The sections provide no inferred language tag or syntax-highlighting hint.
 Model `thinking` remains excluded.
 Source references always include the repository-relative OCR path and line range.
 When the accepted input supplies a resolved head commit
@@ -710,7 +718,11 @@ in dependency order:
    Overlength titles retain the longest valid prefix within 253 bytes,
    trim trailing whitespace,
    and append `…`.
-   Safe rendering of the adapter-owned code sections remains open.
+   Existing code and Suggested code use indented code blocks,
+   with a blank line after the heading and four added spaces on every code line.
+   They use no delimiter,
+   inferred language tag,
+   or syntax-highlighting hint.
 8. Identity and lifecycle:
    settled as create-only.
    The adapter has no persistent synthetic identity,
@@ -762,7 +774,10 @@ in dependency order:
 
 ## Immediate next action
 
-Ask how adapter-owned Existing code and Suggested code sections safely delimit arbitrary OCR code.
+Inspect workspace CLI package naming precedents,
+then ask for the package location,
+package name,
+and binary name.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -936,6 +951,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   capped final titles at 256 UTF-8 bytes
   and selected deterministic end truncation with a trailing ellipsis.
+- 2026-08-16:
+  rendered adapter-owned Existing code and Suggested code sections as delimiter-free indented code blocks.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-issue-title-length]: ../troubleshooting/github-issue-title-length.md
