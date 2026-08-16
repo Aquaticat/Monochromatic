@@ -67,3 +67,10 @@ export {
 } from './corpus-run/pipeline-digest.ts';
 
 //endregion Corpus run barrel
+export {
+  appendTrialRow,
+  completedArms,
+  readTrialLedger,
+  trialKey,
+  type WindowTrialRow,
+} from './corpus-run/window-trial-ledger.ts';
