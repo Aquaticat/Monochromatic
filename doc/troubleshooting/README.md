@@ -158,6 +158,7 @@ Bash shell and CLI tool quirks that cause confusing behavior:
    producing interleaved output that misrepresents execution order
 - rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
 - [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
+- [OpenCodeReview does not create regular GitHub Issues from findings](open-code-review-github-issue-routing.md)
 
 ### [CLI bin entries](cli-bin.md)
 
@@ -239,6 +240,8 @@ For common issues:
   ** → [Content-vs-filename search confusion](bash.md#rg---glob-finds-files-but--l-with-a-content-pattern-does-not)
 - **GitHub issue commands fail in the repository's Git wrapper?
   ** → [Pass explicit repository context](gh-implicit-repository-git-wrapper.md)
+- **Need to route OpenCodeReview findings into GitHub Issues?
+  ** → [Add a fail-closed adapter](open-code-review-github-issue-routing.md)
 - **`pi update` reintroduces `@google/genai`,
    `koffi`,
    or `protobufjs`?
