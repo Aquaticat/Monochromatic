@@ -186,7 +186,10 @@ or other category may place a finding in the security gate.
 Consequently,
 `--non-security-only` excludes exactly the `security` category,
 and `--all` adds exactly that category to otherwise eligible publication.
-Handling `other` and missing category metadata remains a separate decision.
+The explicit OCR category `other` is an ordinary publishable candidate.
+Interactive lists and previews must visibly mark it as `OTHER`,
+but it receives no additional confirmation or non-interactive authority gate.
+Handling missing category metadata remains a separate decision.
 
 The publication boundary also requires that:
 
@@ -351,7 +354,8 @@ in dependency order:
    severity,
    `other`,
    and missing category metadata do not enter that gate.
-   The publication policy for `other` and missing metadata,
+   Explicit category `other` is an ordinary candidate visibly marked `OTHER`.
+   The publication policy for missing metadata,
    where findings withheld from publication live,
    and how users inspect them remain open.
 6. Repository selection:
@@ -394,8 +398,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about publication treatment for findings categorized as `other`
-or missing category metadata.
+Ask the next dependent design question about publication treatment for a structurally valid finding
+with missing category metadata.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -471,5 +475,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   content signals,
   severity,
   and classification uncertainty do not enter it.
+- 2026-08-16:
+  made explicit OCR category `other` an ordinary candidate with a visible `OTHER` marker.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
