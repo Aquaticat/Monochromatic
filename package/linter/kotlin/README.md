@@ -134,6 +134,10 @@ The repository's GitHub Actions secrets are:
 The matching public key has fingerprint
 `5BB5 727B E92B 6283 BBD7 DA85 5E8E 6D8D 791B 1B45`
 and is published on `keyserver.ubuntu.com`.
+It expires on `2028-08-15`.
+Extend or replace it before that date,
+republish the public key,
+and update both `MAVEN_SIGNING_*` secrets together.
 A local recovery copy is held outside the repository.
 Its passphrase is stored separately in the desktop secret service.
 
