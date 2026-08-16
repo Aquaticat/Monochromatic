@@ -742,12 +742,24 @@ await describe({
         expect(twins.persisted
           .size,).toBe(0,);
 
-        // WHAT SEPARATES THE TWO BEHAVIOURS, and the reason this is a call
-        // count rather than a cache size: memoizing the unheard record makes
-        // the twins cost one question, and refusing to makes them cost two.
         expect(twins.calls
           .translate,).toBe(single.calls
           .translate * 2,);
+
+        // WHAT ACTUALLY SEPARATES THE TWO BEHAVIOURS, and it is not the call
+        // count: the resume branch refuses an unheard record whatever put it
+        // there, so the twins cost two questions under either arrangement.
+        // What differs is whether the second twin ever MET such a record.
+        // Memoized unconditionally, it meets one and reports discarding it;
+        // memoized where it is persisted, there is nothing to discard and the
+        // run is silent.
+        expect(
+          twins.result
+            .findings
+            .filter(function namesRefusal(finding,): boolean {
+              return finding.startsWith('translate-discarded-unheard-slice',);
+            },),
+        ).toEqual([],);
       },
     },),
 
