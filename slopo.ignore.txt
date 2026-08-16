@@ -3,12 +3,9 @@
 # A hash covers each unit's code body and its path relative to the index root.
 # It changes when the code or that path changes, so the cluster re-surfaces.
 # Re-indexing from a different root shifts every path, changing the hashes.
-
-# no-sync provenance resolver chain (getNodeSync*Name across binding/member/provenance):
-# shared guard+sentinel skeleton is mandated by conventions (ST9 named params, TQ3/PP8
-# early-return, NOT_NODE_SYNC_CALLEE sentinel); each body resolves a distinct AST node
-# type. Structural idiom, not duplication.
-40d7339c9902
+#
+# This inventory was refreshed against the voyage/voyage-code-4 report.
+# Entries mapped by historical unit identity unless marked as semantic remaps.
 
 # ── Deliberately NOT dismissed: music-player android/desktop drift ──
 # The android app (Kotlin, package/music-player/android-app/app/src/main/kotlin/.../core)
@@ -22,275 +19,133 @@
 # the Kotlin/Rust divergence is gone. (Cross-language code cannot share a function, so these
 # are not extract-a-helper candidates; the remediation is the rewrite, not an ignore entry.)
 
-# ── INTENTIONAL-VARIANT (38) ──
+# ── INTENTIONAL-VARIANT (17) ──
 # Intentional sibling variants (sync/async, single/batch, get/set,
 # plain-vs-from constructors, mirror event handlers). Meant to mirror each
 # other and stay separate; merging would hurt clarity.
-# per-backend wrappers over shared ephemeralRun
-077c69c7387e
 # batch_sheng/batch_sheng2 SIMD-variant twins
-94b83632c131
+f498089d4a03
 # per-event handlers (touchstart/touchmove)
-557f0b010b7d
-# mirror rule handlers, opposite conditions/messageIds
-12247a2ce982
+1fa31c0bbf53
+# mirror yields-rule handlers, opposite conditions/messageIds
+7bb436bcb362
 # distinct AVX512 kernels: single-byte sheng vs pair sheng2
-6149c6c0eb01
-# per-variant closures already delegating to buildProbeLayer
-996a219a2125
+e3a81ba95d1e
 # healBackends/healBackendsSync sync/async twins
-0febcfcce0b1
-# sync/async predicate-judge twins
-da9bd3ad108f
+58a7daddad88
 # sync/async queryBackend twins
-ae3904167a85
+676b3bc00e50
 # sibling or-throw guards, one per iterable kind
-86171faac417
+3fb24b23d353
 # sync/async readCssFile twins
-545417e9a2cc
-# withDeletion/withDeletions single/batch twins
-bd2cb25c7f99
+4e3502a0862f
 # mirror keydown/keyup handlers, opposite cursor
-6b92a096ad94
-# sheng vs sheng2 DFA strategies sharing NEON SIMD idiom
-de7cdbc1bb8e
+714056a4f14c
+# sheng/sheng2 per-strategy platform dispatch, including NEON and AVX paths
+13ad287ede50
 # sync/async delete twins (kv-store)
-1ae7fc42fca5
-# sync/async runPipe twins with unrolled steps
-f812ee0ffb9d
+c2f031e4e416
 # sync/async get twins (kv-store)
-af655970b410
-# empty/nonempty or-throw twins, opposite guards
-fa1605333de9
+df0864563834
 # lazyOnce/lazyOnceAsync sync/async twins
-56d58f6a0666
-# scpPush/scpPull arg-builder twins differing by direction
-14bd3c29af49
-# isDescendable/isUnder complementary prefix predicates
-2637c16b8dd5
+fedafcaaa399
 # isPrefix/isStrictPrefix complementary predicates, differing only by <= vs <
 54a947960da7
 # sync/async clear twins (kv-store)
-368f617a4815
-# sync/async queryAllBackends twins
-8d36d6c36764
+0ed673440f37
 # embedAll/embedBatchAll single vs batch twins
-90b38967d0ae
-# before/after comment-insert twins already sharing withInsertion
-0a3fe2974abe
-# light/dark theme token twins; values are the design
-fa6da54027bc
-# pipe/pipeAsync sync/async twins
-0b330bab5c71
+3351a8d310ee
 # sync/async captureError twins (test fixtures)
-2da96a964eff
-# sibling exec/run VM tool handlers with try/catch wrapper
-48bbfdbe0228
-# numeric/bigint/number OrThrow sibling type guards
-5ca90fe6643d
-# toPushArgs/toPullArgs sibling arg constructors
-e726de9374e2
-# sync/async store.set twins, different concurrency mechanics
-7c7e75297340
-# canUndo/canRedo mirrored predicate pair
-f86019ca85c4
-# JNI entry points differing by one bool arg
-7d2c91d0e621
-# cssOklch vs cssOklchFrom plain-vs-from constructors
-20d60298b1a5
-# onUnlink/onUnlinkDir per-event handlers
-408ad85b3581
-# dispatchUnlink/dispatchUnlinkDir per-event handler bodies
-2cd591438071
+a1b664fb91ed
 
-# ── PLATFORM-CFG (3) ──
-# Platform variants that cannot share code. Per-arch #[cfg] SIMD dispatch,
-# per-OS thread-priority bodies, and per-init-system generators. (music-player
-# Kotlin/Rust ports are deliberately NOT here; see the drift note above.)
-# per-arch #[cfg] SIMD dispatch, sheng vs sheng2 tables
-774af5718fc1
-# systemd vs openrc cloud-init generators, per-init-system
-6870076b9d52
-# per-OS lower_current_thread_to_idle #[cfg] bodies
-2204734b921f
-
-# ── STRUCTURAL-IDIOM (26) ──
+# ── STRUCTURAL-IDIOM (14) ──
 # Structural idioms mandated by conventions. Shared skeleton (oxlint createOnce
-# rule scaffolding, per-locale i18n grammar renderers, named-param guard shells)
-# where each body's actual logic differs. Not extractable without a false
-# abstraction. Same class as the no-sync provenance dismissal above.
-# wh-question renderers diverge per language (word order)
-74245e3a5aa4
-# sentence dispatcher/factory glue; signatures differ
-e3b59b8b15e0
-# verb-phrase renderers diverge per language (morphology)
-44a6520a29f0
+# rule scaffolding and per-locale i18n grammar renderers) where each body's actual
+# logic differs. Not extractable without a false abstraction.
+# semantic split of reviewed wh-question renderers: locale dispatcher
+7ec17c4edbdf
+# semantic split of reviewed wh-question renderers: adverbial questions
+0a43dc0e4435
+# semantic split of reviewed wh-question renderers: subject questions
+6ffeaa95d661
+# semantic split of reviewed wh-question renderers: object questions
+e9510c048af2
+# semantic remap: sentence dispatcher/factory glue; signatures differ
+b3c3ce7ac317
 # imperative renderers diverge per language
-3dfec41d51af
-# noun-phrase renderers diverge (articles vs classifiers)
-956015855bd6
-# adverbial renderers diverge (prepositions vs coverbs)
-c75765ed63f8
+92ae195f9975
+# semantic remap: noun-phrase renderers diverge (articles vs classifiers)
+e0af1a5083e9
+# semantic remap: adverbial renderers diverge (prepositions vs coverbs)
+3350cc2028ca
 # yes/no question renderers diverge per language
-3bbf8247514f
+0a6536d03a2b
 # declarative renderers diverge per language
-50a4164162e0
+329c6892e8f0
 # per-locale wrapper binding locale to shared applyCapitalization
-dedd1df6fd49
+f563c71baeff
 # possessive suffix differs per language grammar
-99389865edf8
-# verb non-finite forms differ per language grammar
-e589f7baad0a
-# per-rule createOnce factories over shared visitor abstraction
-e5040c0c882b
-# createOnce plugin skeleton, genuinely different rule logic
-851823c21ede
-# per-rule oxlint handlers; conditions differ, report shape shared
-d629555e4071
-# two message builders share dispatch shape only
-f6a1439c9bea
-# createOnce/createTsdocVisitor scaffolding; check logic differs
-db754d6e40b2
-# max-lines split of one AST dispatch; each branch unique
-3d37a1d3bf1f
-# distinct tsdoc param-validation rules sharing report shape
-9d43bf0506f8
-# shared 2-line entry guard; distinct verdict fallback strategies
-373b72527244
-# mutually-recursive AST walkers; distinct expr/variable logic
-5bab4aae8252
-# distinct node checks already calling shared checkTrailingComma
-f44552d24b90
-# grammar strategy dispatch; different return contracts
-85b2f1edd230
-# repo query shape; different SQL/row-types/mappers
-fecf02e12177
-# helper + its caller; shared glob error-message idiom only
-49faeda36551
-# toml-edit resolver entry points (locateBlock/locateValueNode/descendValue):
-# the duplicated table scan was extracted into matchTableSection, so what is left
-# is the mandated sentinel-guard plus early-return plus tail-recursion shell
-# (ST9, TQ3, PP8, NOT_LOCATED); each body resolves a different thing.
-534c966e3b99
-# toml-edit block guards (matchesExact/isExactTable/headerEquals) already
-# delegating to the shared segmentsEqual; each dispatches on a different block
-# kind, so only the delegation shape is common.
-f21a96d78684
+238136eee5b5
+# semantic merge of reviewed returns/params createOnce scaffolding
+b80f583dad64
+# per-rule TSDoc handlers; conditions differ, report shape shared
+cbff52731c64
 
-# ── COINCIDENTAL-SHAPE (6) ──
-# Coincidental shape matches. Units share only a signature/destructure shape or
-# an error-message idiom (some inflated by comment-padding) but do unrelated
-# things; no common logic to extract.
+# ── COINCIDENTAL-SHAPE (3) ──
+# Coincidental shape matches. Units share an implementation idiom but do
+# unrelated work; no common logic to extract.
 # engine Drop differs per app (fields, unpark)
-06f97ee9881e
-# parse_repeat/parse_repeat_upper caller/callee, error idiom only
-b2b5fbdd72ca
+7a68ec2bdb9c
 # two is_match_batch impls on different types, unrelated bodies
-162bbc9c40be
-# caller/callee date parse/read, shared error format only
-3403bdafd596
-# one wraps other with mapping; return-type shape only
-35e1f834e7ba
-# shell-out vs env-read; comment-padding inflated similarity
-71e0fbacc670
+3a4a83b47c31
+# one database-row helper wraps another with mapping; return-type shape only
+1a33c04f7f3d
 
-# ── BOILERPLATE-TRIVIAL (28) ──
+# ── BOILERPLATE-TRIVIAL (18) ──
 # Trivial boilerplate fragments. One-line wrappers/forwarders, tiny fixer stubs,
-# From impls, cleanup fragments where extraction costs more than it saves.
+# From impls, and cleanup fragments where extraction costs more than it saves.
 # one-line winit with_name idiom, two unrelated desktop apps
-c4fb43ee7346
-# one-line From impl (error.rs; dup kept via Display cluster)
-a6b206750dfa
+8d50990c49cb
+# one-line From impl (error.rs; duplicate kept through a larger Display cluster)
+811c54eb8a98
 # one-line From impl (error.rs)
-7955a5b92969
+39dbd96a2ba3
 # one-line From impl (error.rs)
-4ec7bac5bb77
-# fake-API sendMessage stub (whole fake kept as cluster 46)
-6dd0c99dc9cc
-# fake-API exec stub
-fe6d7fe9f8dd
-# fake-API registerTool stub
-4d20df38b887
-# rm-temp-dir asyncDispose fragment
-8b52bc167155
-# rm-temp-dir cleanup fragment
-74121aff1610
+654e1000a9c0
+# expanded fake-API sendMessage stubs; whole fake harness stays visible
+798d10651694
+# expanded fake-API exec stubs
+40f0c1f3840b
+# expanded fake-API registerTool stubs
+0e41fd1057e6
 # standard web-component super/attachShadow boilerplate
-b512c2aba1a4
-# one-line lowercase char-range predicate
-91259a9ffa26
-# dynamic browserslist import wrapper; returns differ
-022f91f8ad68
+a907be03b808
+# dynamic browserslist import wrappers; returns differ
+b9640ab1d320
 # one-line bitset empty-check on distinct types
-18ef0c8866a6
-# thin getLastToken wrapper; divergent null handling
-a9b9864a9f45
+0f21701dfcb4
+# thin getLastToken wrappers; divergent null handling
+8717b08104c9
 # one-line atomic-store setter across two audio backends
-f61a194a97b8
-# 3-line map-callback closure wrapping emitContentNode
-820dd3649ca0
-# one-line method wrappers delegating to shared send_and_wake
-2901bf6ac224
+9052405ce43f
+# one-line method wrapper delegating to shared send_and_wake
+fce6f6ca1d38
 # single-line table-engine closure
-2544f8ae243b
-# 4-line onEnd fragment (subsumed by onConnect cluster 151)
-13b8e5191149
-# one-line adapter closures (field vs method access)
-acb94d617328
-# error-subclass constructors each setting own name
-6fcaa43dcb64
-# thin sentinel-remapping wrapper over shared helper
-c85ed2ec3699
-# two tiny fixer stubs (leading vs trailing newline)
-9861a8a4c3f1
-# thin entry wrapper over recursive helper
-bd87c1e9baa4
-# 6-line onTimeout handler differing only in message, per-transport
-ade697e59a53
-# one-line cross-layer forwarders to different targets
-7f2dc5a1739a
-# tiny lint fixer stubs, different ranges/replacements
-d2e4b2d0e74c
+6d15bb200a5b
+# four-line onEnd fragment; broader onConnect logic stays visible
+1682a0e0531e
+# error-subclass constructors each setting their own name
+0a3773a1c347
+# short onTimeout handlers differing only in message, per transport
+77653aa954c8
 # block-body opening/closing fixer stubs, different ranges and indentation
 6be7f9516c9d
 
-# ── TEST-OR-GENERATED (18) ──
-# Test fixtures and generated code. Lint valid/invalid fixture pairs, fuzz
-# arbitraries, integration-test twins, and .js transpiled from a .ts sibling.
-# DRY does not apply.
-# production-vs-linter-test-fixture coincidence
-92551a107a36
-# lint fixture invalid/valid pair; duplication intentional
-7c9d2695d649
-# lint fixture invalid/valid pair
-b0196065aea0
-# oxlint rule test fixtures (valid/invalid cases)
-aa306f4ec14f
-# handover scratch scripts plus compiled .js
-464e0412bceb
+# ── TEST-OR-GENERATED (3) ──
+# Test and generated code where DRY does not apply.
 # bench harness closures (truepeak-core.bench)
-7fe737370a47
-# promise-sequence arrows in test-fixture data-sequence
-f53e01c91ffe
-# fuzz arbitrary build() generators (fuzz/ dir)
-71452b9e6249
-# .js transpiled output of its .ts sibling (handover)
-888bf10f6eeb
-# compiled .js mirrors its .ts source (doc/handover)
-985eba85bf7c
-# roundtrip test cases with intentional repeated setup
-4b5e22a51795
-# binary/text probe integration tests, repeated setup
-10bee6f517f9
-# one-line render closures in fuzz arbitrary generators
-b0bbd93e8689
-# regression fixture intentionally mirrors prod lock-owner writer
-9856e87a8637
-# sync/async/slow generator test fixtures
-70f0426bf31f
-# --version vs -V integration test twins
-14228be66665
-# fuzz Arbitrary impls with distinct generation bodies
-a406ea35fd1e
-# two Rust integration test cases
-fd9bbe66388e
+8df402384c84
+# .js transpiled output of collapse() in its .ts sibling (handover)
+da53cb2e3bfa
+# .js transpiled output of parseImports() in its .ts sibling (handover)
+6ddb97d5cd76
