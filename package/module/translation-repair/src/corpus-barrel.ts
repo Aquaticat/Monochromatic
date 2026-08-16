@@ -74,3 +74,10 @@ export {
   trialKey,
   type WindowTrialRow,
 } from './corpus-run/window-trial-ledger.ts';
+export {
+  type ArmRate,
+  type ClassReport,
+  reportWindowTrial,
+  type Transitions,
+  TRIAL_ARMS,
+} from './corpus-run/window-trial-report.ts';
