@@ -90,6 +90,36 @@ await describe({
     },),
     it({
       name:
+        'REFUSES a version 2 SHAPE carrying no version field, rather than recognising it by its lanes: '
+        + 'the version field is what says which generation wrote a file, and a reader that inferred a '
+        + 'generation from shape would read the next generation as whichever old one it resembles',
+      fn: async () => {
+        expect(function versionTwoShapeWithoutVersion() {
+          readSettledArtifact({
+            value: {
+              id: 'CatEntry1',
+              preparation: {
+                identity: `sha256-preparation-v1:${'a7'.repeat(32,)}`,
+                sliceCount: 1,
+              },
+              lanes: {
+                repair: {
+                  result: {},
+                  delivery: [],
+                },
+                translate: {
+                  result: {},
+                  delivery: [],
+                },
+              },
+              comparison: [],
+            },
+          },);
+        },).toThrow('status',);
+      },
+    },),
+    it({
+      name:
         'ACCEPTS an explicit version 1, which is a different question from whether any version 1 '
         + 'artifacts exist: how many files of a generation a corpus holds is a fact about that corpus, '
         + 'and a reader that understands a generation should read it',

@@ -377,6 +377,53 @@ function repairDecidedRows(): readonly Record<string, unknown>[] {
   ];
 }
 
+/**
+ * A ledger whose rows all claim the first slice.
+ *
+ * @param rows - ledger to collapse
+ *
+ * @returns Same rows, every one naming slice 0
+ *
+ * @example
+ * ```ts
+ * const rows = allNamingSliceZero({ rows: repairLedger(), },);
+ * ```
+ */
+function allNamingSliceZero(
+  { rows, }: { readonly rows: readonly ArtifactDeliveryRowV2[]; },
+): readonly ArtifactDeliveryRowV2[] {
+  return rows.map(function nameZero(row,): ArtifactDeliveryRowV2 {
+    return {
+      ...row,
+      chunkIndex: 0,
+    };
+  },);
+}
+
+/**
+ * Raw slice rows collapsed the same way, so a lane still agrees with itself and
+ * only the repeat is left to catch.
+ *
+ * @param rows - raw slice rows to collapse
+ *
+ * @returns Same rows, every one naming slice 0
+ *
+ * @example
+ * ```ts
+ * const rows = evidenceNamingSliceZero({ rows: raw.sliceTexts, },);
+ * ```
+ */
+function evidenceNamingSliceZero(
+  { rows, }: { readonly rows: readonly Record<string, unknown>[]; },
+): readonly Record<string, unknown>[] {
+  return rows.map(function nameZero(row,): Record<string, unknown> {
+    return {
+      ...row,
+      chunkIndex: 0,
+    };
+  },);
+}
+
 await describe({
   name: parseSettledArtifactV2.name,
   children: [
@@ -536,6 +583,64 @@ await describe({
             },),
           },);
         },).toThrow('position 0 names slice 0',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a ledger that names one slice TWICE, which every other relation reads as a matching '
+        + 'pair: the evidence joins by POSITION and agrees, the two lanes join by position and agree, '
+        + 'and the row count still equals the prepared slice count',
+      fn: async () => {
+        /**
+         * Repair ledger whose two rows both claim slice 0.
+         */
+        const collapsedRepair = allNamingSliceZero({ rows: repairLedger(), },);
+
+        /**
+         * Translate ledger collapsed the same way.
+         */
+        const collapsedTranslate = allNamingSliceZero({ rows: translateLedger(), },);
+
+        // POSITIVE CONTROL for what this case is about: the frozen comparison
+        // reads these two ledgers as a matching pair, so a reader that ran only
+        // the cross-lane rules would have accepted the repeat.
+        expect(
+          compareLanesV2({
+            repair: collapsedRepair,
+            translate: collapsedTranslate,
+          },).length,
+        ).toBe(2,);
+
+        /**
+         * Repair raw result whose slice rows are collapsed to match.
+         */
+        const repairRaw = repairResult();
+
+        /**
+         * Translate raw result on the same footing, its shipped set still
+         * naming the slice its first row shipped.
+         */
+        const translateRaw = translateResult();
+        expect(function slicesRepeat() {
+          parseSettledArtifactV2({
+            value: artifactWith({
+              repairDelivery: collapsedRepair,
+              translateDelivery: collapsedTranslate,
+              repairRaw: {
+                ...repairRaw,
+                sliceTexts: evidenceNamingSliceZero({
+                  rows: repairRaw.sliceTexts as readonly Record<string, unknown>[],
+                },),
+              },
+              translateRaw: {
+                ...translateRaw,
+                sliceTexts: evidenceNamingSliceZero({
+                  rows: translateRaw.sliceTexts as readonly Record<string, unknown>[],
+                },),
+              },
+            },),
+          },);
+        },).toThrow('2 rows name 1 distinct slices',);
       },
     },),
     it({

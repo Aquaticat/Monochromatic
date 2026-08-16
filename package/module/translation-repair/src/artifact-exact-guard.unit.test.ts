@@ -20,8 +20,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  requireArtifactJsonRecord,
   requireArtifactJsonValue,
   requireExactKeys,
+  requireOneOf,
   requireOpenRecord,
 } from '../dist/final/node/index.mjs';
 
@@ -166,6 +168,94 @@ await describe({
             path: 'callConfig',
           },);
         },).toThrow('callConfig.retries',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireOneOf.name,
+  children: [
+    it({
+      name:
+        'RETURNS the member it found rather than the value it was handed, which is what lets a caller '
+        + 'read a narrowed word without asserting a type over a string that merely compared equal',
+      fn: async () => {
+        expect(requireOneOf({
+          value: 'decided',
+          allowed: [
+            'decided',
+            'unfilled',
+          ],
+          path: 'outcome.kind',
+        },),).toBe('decided',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a word outside the list and a value that is not a word at all, listing what this '
+        + 'version knows, since a vocabulary a reader cannot name is a vocabulary it cannot report on',
+      fn: async () => {
+        expect(function unknownWord() {
+          requireOneOf({
+            value: 'napped',
+            allowed: [
+              'decided',
+              'unfilled',
+            ],
+            path: 'outcome.kind',
+          },);
+        },).toThrow('decided, unfilled',);
+        expect(function notAWord() {
+          requireOneOf({
+            value: 2,
+            allowed: ['decided',],
+            path: 'outcome.kind',
+          },);
+        },).toThrow('outcome.kind',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireArtifactJsonRecord.name,
+  children: [
+    it({
+      name:
+        'ACCEPTS a record whose every value survives the value guard, and REFUSES one holding a `null` '
+        + 'anywhere beneath it, so a caller reading a whole configuration gets the same answer per field '
+        + 'as one reading fields singly',
+      fn: async () => {
+        expect(requireArtifactJsonRecord({
+          value: {
+            retries: 2,
+            budgets: { slice: 4_000, },
+          },
+          path: 'callConfig',
+        },),).toEqual({
+          retries: 2,
+          budgets: { slice: 4_000, },
+        },);
+        expect(function nullBeneath() {
+          requireArtifactJsonRecord({
+            value: { budgets: { slice: null, }, },
+            path: 'callConfig',
+          },);
+        },).toThrow('callConfig.budgets.slice',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a value that is not a record, at the path naming it, rather than reading an array or a '
+        + 'bare word as a configuration with every field missing',
+      fn: async () => {
+        expect(function arrayGiven() {
+          requireArtifactJsonRecord({
+            value: [{ retries: 2, },],
+            path: 'callConfig',
+          },);
+        },).toThrow('callConfig',);
       },
     },),
   ],

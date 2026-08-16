@@ -119,6 +119,60 @@ export function assertEvidenceMatchesLedger(
 }
 
 /**
+ * Refuses a ledger that names one slice twice.
+ *
+ * NOT COVERED BY ANY OTHER CHECK HERE, which is why it is its own: the evidence
+ * is compared to the ledger by position and agrees when both repeat the same
+ * index, the two lanes are compared to each other by position and agree for the
+ * same reason, and the row count still matches the preparation. A ledger of two
+ * rows both naming slice 5 passes every one of those and describes a document
+ * with one slice reported twice and another missing.
+ *
+ * DISTINCT, not ordered or contiguous. The writer stamps indices from the
+ * preparation and renumbers them by design, so a reader assuming `0` to
+ * `length - 1` would refuse a valid future artifact; what the writer does
+ * guarantee is that no two slices share an index.
+ *
+ * @param ledger - rows to check
+ *
+ * @param path - dotted path of the lane, for error messages
+ *
+ * @throws {@link ArtifactParseError} when two rows name one slice, reporting
+ * both counts
+ *
+ * @example
+ * ```ts
+ * assertSlicesDistinct({ ledger, path: 'lanes.repair', },);
+ * ```
+ */
+export function assertSlicesDistinct(
+  {
+    ledger,
+    path,
+  }: {
+    readonly ledger: readonly ArtifactDeliveryRowV2[];
+    readonly path: string;
+  },
+): void {
+  /**
+   * Slices the ledger names, which is smaller than the row count exactly when
+   * one is named twice.
+   */
+  const named = new Set(ledger.map(function toIndex(row,): number {
+    return row.chunkIndex;
+  },),);
+  if (named.size !== ledger.length) {
+    throw new ArtifactParseError({
+      path: `${path}.delivery`,
+      reason: `one row per slice, and these ${
+        String(ledger.length,)
+      } rows name ${String(named.size,)} distinct slices, so one slice is reported twice and another `
+        + 'not at all',
+    },);
+  }
+}
+
+/**
  * Refuses a ledger row whose two axes cannot both be true.
  *
  * DELEGATED to the same assertions the writing pipeline runs, rather than
