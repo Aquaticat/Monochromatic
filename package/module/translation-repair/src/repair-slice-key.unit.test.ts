@@ -82,7 +82,7 @@ await describe({
       fn: async () => {
         expect(SLICE_CACHE_VERSION,).toBe(27,);
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('faf8a6f573a89535b39bdb9d4c5a13b917d588274efe6be2b4c3487e1c48cec9',);
+          .toBe('1b3acfaddf27aff5190d1009a4d711f2855cf98965558c0537457e86e582a1dd',);
       },
     },),
     it({

@@ -211,6 +211,15 @@ import type { RepairModels, } from './repair-contract.ts';
  * reaches the repair lane through `repair-stages.ts` alone; the translate lane
  * never asks a critic to quote anything, so its settled slices still agree with
  * what this code computes.
+ *
+ * THE LANE LITERAL RODE ALONG WITH VERSION 27, which is the whole reason it
+ * landed on this day rather than another. `translateSliceKey` has always led
+ * with `'translate'` and this key led with nothing, so the isolation between the
+ * lanes rested on the store's file-name prefix alone. Folding the literal in
+ * changes every key, so it was recorded as waiting for a bump that was happening
+ * anyway rather than spending a corpus of its own. Version 27 is that bump, and
+ * no run had resumed under it when the literal went in, so it cost nothing
+ * beyond what was already spent.
  */
 export const SLICE_CACHE_VERSION = 27;
 /**
@@ -304,6 +313,13 @@ export function repairSliceKey(
 ): string {
   return hashContent({
     content: JSON.stringify([
+      // Mirrors the literal `translateSliceKey` has always led with. The two
+      // lanes are already isolated at the STORE, which prefixes translate files
+      // and leaves repair files bare, so this is a second mechanism rather than
+      // the only one. It exists because two mechanisms that must agree should
+      // not be able to drift: a store that ever stopped prefixing would hand one
+      // lane's record to the other, and a key that names its lane cannot.
+      'repair',
       SLICE_CACHE_VERSION,
       runShape,
       sourceText,
