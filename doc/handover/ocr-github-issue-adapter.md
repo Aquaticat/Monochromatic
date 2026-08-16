@@ -153,6 +153,12 @@ The summary is the first meaningful line of OCR content.
 Issue bodies include both OCR `existing_code` and `suggestion_code` in separate,
 clearly labeled code sections when those fields are present.
 Model `thinking` remains excluded.
+Source references always include the repository-relative OCR path and line range.
+When the accepted input supplies a resolved head commit
+and the adapter verifies that commit in the destination repository,
+the source reference is a commit-pinned hyperlink.
+Without that verified provenance,
+it remains plain text rather than linking a mutable branch.
 Fallbacks and title length handling remain to be settled.
 
 ## Settled prior findings
@@ -417,8 +423,11 @@ in dependency order:
    `summary` is the first meaningful line of OCR content.
    Bodies include separate existing-code and suggested-code sections when OCR supplies those fields.
    Model `thinking` is always omitted.
+   Source references always show path and line range.
+   They become commit-pinned links only when input supplies a resolved head commit
+   that is verified in the destination repository;
+   otherwise they remain plain text.
    Remaining body fields,
-   source links,
    labels,
    safe code-fence rendering,
    and title fallback and length behavior remain open.
@@ -451,8 +460,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether issue bodies include source hyperlinks
-or only repository-relative paths and line ranges.
+Ask the next dependent design question about the labels applied to newly created issues.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -544,5 +552,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   and the first meaningful content line.
 - 2026-08-16:
   included both OCR `existing_code` and `suggestion_code` in separate issue-body sections when present.
+- 2026-08-16:
+  settled plain path-and-line source references with commit-pinned hyperlinks only after destination verification.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
