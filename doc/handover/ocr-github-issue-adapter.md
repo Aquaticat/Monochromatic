@@ -49,8 +49,8 @@ The adapter still owns parsing,
 validation,
 interactive triage,
 security quarantine,
-deduplication,
 and GitHub issue operations.
+Whether it also owns synthetic identity and deduplication is open after the user's issue-update clarification.
 
 ### Pasted input
 
@@ -85,10 +85,13 @@ All accepted shapes normalize into one internal finding collection before policy
 
 ### Mode selection
 
-Interactive behavior is opt-in through `--interactive` with short form `-i`,
+Mode selection must always be explicit.
+Interactive mode uses `--interactive` with short form `-i`,
 matching the explicit pnpm precedent.
-Without that flag,
-the adapter is non-interactive and must never prompt,
+Non-interactive mode requires `--non-interactive`.
+Providing neither mode flag is an error rather than an inferred default.
+Providing both contradictory mode flags is also an error.
+Non-interactive mode must never prompt,
 regardless of TTY detection.
 A missing required non-interactive input or decision is an error rather than an invitation to prompt.
 
@@ -257,9 +260,12 @@ in dependency order:
    settled as ingest-only.
    The adapter never launches OCR.
 2. Publication timing:
-   whether interactive mode confirms every issue,
-   confirms a selected batch,
-   or performs another review flow.
+   interactive mode shows one final summary after selection,
+   then requires an explicit yes or no before GitHub mutations.
+   Empty input has no default and reprompts.
+   The summary names the destination repository and each selected operation and title.
+   It reports quarantined findings only as a count and never displays their sensitive content.
+   Whether selected operations can include updates remains open under identity and lifecycle.
 3. Input contracts:
    pasted input is settled as structured JSON only,
    with no human-readable terminal parser.
@@ -284,9 +290,11 @@ in dependency order:
    Named files require strict UTF-8 without any byte-order mark;
    malformed bytes or a byte-order mark reject the input before GitHub operations.
 4. Non-interactive authority:
-   mode selection is settled as non-interactive by default,
-   with interactive behavior enabled only by `--interactive` or `-i`.
-   Required flags,
+   mode selection always requires exactly one explicit flag:
+   `--interactive` or `-i`,
+   or `--non-interactive`.
+   Neither or both is an error.
+   Required authority flags,
    dry-run behavior,
    exit codes,
    and whether public mutation needs an explicit apply flag remain open.
@@ -331,7 +339,9 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether issue selection directly publishes or needs another confirmation.
+Clarify that OCR supplies no GitHub issue identity and ask whether the adapter should create only,
+create synthetic identities for updates,
+or suppress synthetic duplicates without updating.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -377,5 +387,12 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   recorded atomic rejection before GitHub operations when any input record is malformed.
 - 2026-08-16:
   recorded strict UTF-8 named files without byte-order-mark support or encoding auto-detection.
+- 2026-08-16:
+  recorded one post-selection summary and an explicit yes-or-no confirmation with no default.
+- 2026-08-16:
+  superseded the non-interactive default with required `--non-interactive` mode selection;
+  neither or both mode flags is an error.
+- 2026-08-16:
+  reopened adapter-owned identity and deduplication after the user clarified that OCR supplies no issue identity.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
