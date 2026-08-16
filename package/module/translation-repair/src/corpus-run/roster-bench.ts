@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { runTranslateStage, } from '../translate-stage.ts';
+import type { SelectionRound, } from '../self-preference.ts';
 import {
   type BenchSlice,
   sampleBenchSlices,
@@ -122,6 +123,23 @@ export type BenchRow = {
   readonly selfVotes: number;
 
   /**
+   * This round as {@link selfPreference} needs to read it: who wrote each
+   * candidate, and every ballot cast over that slate.
+   *
+   * KEPT RATHER THAN COUNTED, because the total above cannot answer the
+   * question it looks like it answers. How often a producer backs its own work
+   * says nothing alone: a model whose translations are better would do that
+   * without any favouritism. The paired comparison needs to know what judges
+   * holding NO stake in the same candidate thought of it, and that needs the
+   * slate and the ballots rather than a sum.
+   *
+   * This is the cheaper of the two routes to that number. The other is `#83`'s
+   * per-slice selection field in the settled artifact, which answers it
+   * corpus-wide instead of on a bench and is blocked behind `#89`.
+   */
+  readonly round: SelectionRound;
+
+  /**
    * Distinct proposals the judges saw.
    */
   readonly candidateCount: number;
@@ -238,6 +256,13 @@ async function runOne(
       .abstentions,
     selfVotes: result.tally
       .selfVotes,
+    round: {
+      producers: result.slate
+        .map(function toProducer(entry,) {
+          return entry.producer;
+        },),
+      ballots: result.ballots,
+    },
     candidateCount: result.candidateCount,
     heardTranslators: result.heardTranslators,
     findings: result.findings,

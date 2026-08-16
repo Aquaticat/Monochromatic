@@ -83,6 +83,7 @@ export { footnoteBreakCount, } from './footnote-break-count.ts';
 export { maskInvisibleLines, } from './mask-invisible-lines.ts';
 export { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
 export { restoreTypography, } from './restore-typography.ts';
+export { describeSelfPreference, } from './self-preference-line.ts';
 export {
   type SelectionRound,
   type SelfPreference,
