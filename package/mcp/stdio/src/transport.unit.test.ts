@@ -524,6 +524,27 @@ await describe({
       },
     },),
     it({
+      name: 'surfaces a failing stdout rather than reporting a clean shutdown',
+      fn: async () => {
+        const { server, } = recordingServer();
+        const input = stdinFromMessages([requestLine(1,),],);
+        /** Writer standing in for a stdout whose pipe has closed. */
+        const output: StdoutWriter = {
+          write: () => Promise.reject(new Error('EPIPE broken pipe',),),
+        };
+
+        // A reply that never reached the client is not a successful run. Resolving here
+        // would tell the caller the session ended cleanly while its answer was lost.
+        try {
+          await serve({ server, input, output, },);
+          expect('serve resolved',).toBe('serve should have thrown',);
+        }
+        catch (error: unknown) {
+          expect(caughtValueText(error,),).toContain('EPIPE',);
+        }
+      },
+    },),
+    it({
       name: 'continues processing after encountering invalid JSON',
       fn: async () => {
         const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
