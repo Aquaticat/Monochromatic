@@ -394,6 +394,23 @@ Approval for one dependency does not approve another.
 A transitive dependency does not require separate approval unless the implementation proposes making it direct.
 Record each approval or rejection in this handover.
 
+The user explicitly approved `p-limit` as a direct adapter dependency for bounded issue creation.
+The workspace already catalogs `p-limit` at `>=7.3.1`,
+and multiple active packages consume it through `catalog:`.
+Inspection of
+`node_modules/.pnpm/p-limit@7.3.1/node_modules/p-limit/index.js`
+and its adjacent `index.d.ts` confirms a concurrency cap and `clearQueue()`.
+With `rejectOnClear: true`,
+clearing rejects queued tasks with `AbortError`,
+but it cannot cancel tasks already running.
+No manifest or lockfile change has been made.
+
+The requested creation cap of five remains unresolved against GitHub's current REST best practices.
+[GitHub's current REST best practices][github-rest-best-practices]
+recommend serial API requests and at least one second between mutative requests
+to avoid secondary rate limits.
+A `p-limit` cap of five without separate pacing does not follow that guidance.
+
 ## Design tree still to grill
 
 Resolve these branches one at a time,
@@ -543,7 +560,9 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether issue creation continues after an individual GitHub failure.
+Present the conflict between the requested `p-limit` concurrency of five
+and GitHub's serial mutative-request guidance,
+then ask which behavior governs.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -662,5 +681,11 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   made non-interactive preview output an exact machine-readable JSON plan on standard output,
   with diagnostics on standard error.
+- 2026-08-16:
+  recorded explicit approval for existing catalog dependency `p-limit` and its queue-clearing semantics.
+- 2026-08-16:
+  recorded that requested concurrency five conflicts with GitHub's serial mutative-request guidance;
+  final creation scheduling remains open.
 
+[github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
