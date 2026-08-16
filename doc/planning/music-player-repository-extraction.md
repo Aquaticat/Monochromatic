@@ -150,12 +150,14 @@ not source checkouts of Monochromatic tooling.
 - Include every canonical skill and bundled skill resource,
   not only `SKILL.md` files.
 - Use file-enforcer to generate `CLAUDE.md` and mirror canonical skills into required consumer directories.
+- Keep music-player-specific additive policy in `doc/agent/music-player.md`.
+- Compose the local addendum with fetched policy without relying on source order to override a shared rule.
+- Reject unresolved conflicts during synchronization.
+  Resolve each conflict explicitly in policy before generation continues.
 - Do not treat the live policy source as a live tooling-code dependency.
   Executable tooling still comes from registries.
 
-Policy composition,
-commit behavior,
-and precedence remain open under [Open questions](#open-questions).
+Commit behavior remains open under [Open questions](#open-questions).
 
 ### Local ignored artifacts
 
@@ -452,12 +454,6 @@ Do not leave both repositories writable as authoritative homes.
 
 Resolve these one at a time during the remaining grilling session.
 Update this document immediately after each answer.
-
-### Local policy addendum and precedence
-
-Decide whether music-player may add local policy beside fetched Monochromatic `AGENTS.md` and `.agents/` content.
-If allowed,
-define the canonical addendum path and which source wins on conflict.
 
 ### Committed policy materialization
 
