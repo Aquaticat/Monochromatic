@@ -614,13 +614,37 @@ WHAT IT RULES OUT: a roster that keeps whatever it is handed, and one that
 prefers the first candidate. Both score half by construction, and neither shape
 appeared.
 
-WHAT IT CANNOT RULE OUT: preferring the LONGER text, which also scores sixteen of
-sixteen, because a deletion is a strict subset. That habit is not harmless in
-production, where it favours a padded fresh rendering over a tight archive one.
-The judges' written reasons name the missing propositions specifically, which a
-length rule cannot produce, but reasons are self-reports. The test that settles it
-is an insertion fixture, where the correct answer is the SHORTER text, and it is
-the next build under `#84`.
+WHAT A DELETION ALONE CANNOT RULE OUT: preferring the LONGER text, which also
+scores sixteen of sixteen, because a deletion is a strict subset. That habit is
+not harmless in production, where it favours a padded fresh rendering over a
+tight archive one.
+
+SO A SECOND FIXTURE WAS BUILT AND RUN, and it settles that. An INSERTION splices
+a sentence borrowed from another slice of the same document into the archive's
+English, so the correct answer is the SHORTER candidate. Over the same four
+entries, ALL SIXTEEN INSERTION TRIALS ALSO CHOSE THE COMPLETE TEXT: 95 ballots,
+64 for it, 31 declining, and NOT ONE for the text carrying the borrowed sentence.
+A roster preferring length scores sixteen on the deletion and zero here.
+
+TAKEN TOGETHER, the two fixtures rule out three habits: keeping what it was
+handed, preferring a ballot position, and preferring length. Each scores half or
+zero across the pair, and the roster scored both in full. The written reasons name
+the borrowed sentence as unsupported ("has no basis in the original Chinese
+text"), and 28 of the 95 quote the original directly while comparing.
+
+WHAT IS STILL NOT LICENSED: "verified against the source". A judge that never
+reads the Chinese but prefers whichever English reads better passes both
+fixtures, since a deletion leaves a gap in the argument and a borrowed sentence
+is a non-sequitur. The quoted-Chinese reasons argue against that, but a reason is
+written after the choice. The fixture that would settle it is a damaged candidate
+that READS BETTER than the archive while saying something the original does not,
+which is the hard case `#84` still carries.
+
+ONE CORRECTION TO THE DELETION NUMBER, since it bears on how firmly to read it:
+the recorded sixteen ran while the deletion left a whitespace edit-mark at the
+join (a double space mid-paragraph, three line breaks where a paragraph went),
+which a judge could notice without reading the original at all. That is fixed and
+the arm was rerun; the rerun's number is in the handover.
 
 ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges declined on
 eleven of sixteen trials, both because the pair violates the sheet's exact-names
