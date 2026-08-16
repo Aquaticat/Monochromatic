@@ -492,6 +492,10 @@ in dependency order:
    it queries every newer number and compares the exact generated title and body before retrying.
    One exact match proves the request result for adapter purposes and suppresses the retry.
    No match permits the next retry.
+   More than one exact match is a terminal error:
+   the adapter reports every matching URL,
+   creates no later issue,
+   and performs no automatic closure or cleanup.
    A failed reconciliation query stops processing rather than risking a blind retry.
    Retrying after a successful no-match reconciliation can still create a duplicate
    because GitHub documents no read-after-write consistency guarantee;
@@ -570,6 +574,9 @@ in dependency order:
    Attempt reconciliation is the sole lookup exception:
    it scans only Issue or pull request numbers above a pre-request high-water mark
    after an ambiguous create failure and compares exact generated title and body.
+   One match is success,
+   no match allows retry,
+   and multiple matches stop with every matching URL reported and no automatic cleanup.
 9. Interactive mechanics:
    the normal picker initially selects all findings.
    The separate security picker initially selects none.
@@ -595,8 +602,10 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about what to do if attempt reconciliation finds
-more than one exact matching Issue above the pre-request high-water mark.
+Inspect the installed GitHub CLI's current API and authentication boundary,
+then ask whether the adapter invokes `gh api`,
+uses a GitHub client library,
+or implements direct authenticated HTTP.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -736,6 +745,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   added high-water Issue-number reconciliation before ambiguous retries,
   using exact generated title and body matches only among newly numbered items.
+- 2026-08-16:
+  made multiple post-high-water exact matches terminal,
+  with every URL reported and no automatic closure or cleanup.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
