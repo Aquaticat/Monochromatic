@@ -1,7 +1,7 @@
 # Gradle Central Portal publisher vet
 
-- Status: in progress
-- Lifecycle phase: serious alternatives identified
+- Status: stopped without a technology recommendation
+- Lifecycle phase: selection canceled after scope correction
 - Subject: Gradle Central Portal publisher
 - Scope: publish `package/linter/kotlin` as
   `cat.aquati.monochromatic:detekt-rules` from GitHub Actions when its version changes on `main`
@@ -60,6 +60,25 @@ No relative priority was specified, so each soft criterion has weight `1`.
 
 Each rating will use the `0` to `4` scale defined by the governing skill.
 Hard failures remain outside scoring.
+
+## Audit outcome
+
+This audit began from a category error:
+it treated Gradle upload clients as alternative Maven publishers.
+Sonatype is the sole publisher service in scope.
+The user confirmed that no client-plugin comparison was intended.
+
+No third-party publishing client will be adopted.
+The implementation will use Gradle's built-in `maven-publish` and `signing` plugins
+to stage compliant artifacts,
+then use Sonatype's documented Portal Publisher API from GitHub Actions.
+This is direct integration with the already selected service,
+not a technology recommendation from this candidate set.
+
+The static evidence remains recorded because it explains why the candidate work stopped.
+No candidate was executed,
+scored,
+or recommended.
 
 ## Discovery
 
@@ -189,4 +208,5 @@ Pending equal-depth finalist validation.
 
 ## Recommendation
 
-No recommendation while source audit, runtime validation, scoring, and sensitivity remain incomplete.
+No technology recommendation.
+The candidate comparison was unnecessary for the requested Sonatype publication path and stopped before execution.
