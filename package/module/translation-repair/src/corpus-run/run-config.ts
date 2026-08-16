@@ -9,6 +9,7 @@ import {
   type CorpusPin,
 } from '../corpus-source.ts';
 import type { RepairModels, } from '../repair-contract.ts';
+import type { TranslateModels, } from '../translate-document-contract.ts';
 import {
   STREAM_FIRST_BYTE_MS,
   STREAM_IDLE_MS,
@@ -179,6 +180,36 @@ export const RUN_MODELS: RepairModels = {
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
     'hf:openai/gpt-oss-120b',
   ],
+};
+
+/**
+ * Roster the translate lane runs under during a corpus pass.
+ *
+ * BOTH ROLES TAKE THE WHOLE ROSTER, which is a narrower claim than it looks.
+ * The translate lane has two stages and no third: every model writes a
+ * candidate, then every model ranks the slate. There is no editor stage to keep
+ * a producer out of and no checker stage certifying its own work, so the
+ * exclusions {@link RUN_MODELS} spends most of its rationale on have nothing to
+ * exclude here.
+ *
+ * Self-certification is HANDLED RATHER THAN FORBIDDEN: a judge ranking a slate
+ * that holds its own translation counts half for that candidate alone, exactly
+ * as the repair lane's selection round does. Whether that weighting is the right
+ * one is `#91`, and it is the same open question for both lanes rather than a
+ * new one this constant introduces.
+ *
+ * The width is also what was MEASURED. The judge-fidelity probe and the window
+ * trial both seat all six in both roles, so a corpus pass run under a narrower
+ * roster would be reporting on a lane neither measurement covers.
+ *
+ * @example
+ * ```ts
+ * const lanes = await runDocumentLanes({ translateModels: RUN_TRANSLATE_MODELS, ... },);
+ * ```
+ */
+export const RUN_TRANSLATE_MODELS: TranslateModels = {
+  translatorModelIds: RUN_ROSTER,
+  judgeModelIds: RUN_ROSTER,
 };
 
 /**
