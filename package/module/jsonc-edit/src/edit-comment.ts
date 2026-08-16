@@ -101,7 +101,7 @@ function transformAtPath({
     };
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
-    if ((segment < 0) || (segment
+    if ((!Number.isInteger(segment,)) || (segment < 0) || (segment
       >= node.elements
       .length))
       throw new JsoncPathNotFoundError({ path, },);

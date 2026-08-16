@@ -37,6 +37,11 @@ const matrix = (): ReturnType<typeof parseJsoncEdit> =>
 const dup = (): ReturnType<typeof parseJsoncEdit> =>
   parseJsoncEdit({ source: asJsonc('{ "a": 1, "a": 2 } // c',), },);
 
+/**
+ * Fractional segment used to verify array indexes must be integers.
+ */
+const HALF_INDEX = 1 / 2;
+
 await describe({
   name: 'edit-set branches',
   children: [
@@ -58,10 +63,13 @@ await describe({
           },
         },),
         it({
-          name: 'throws on a negative index',
+          name: 'throws on a negative or fractional index',
           fn: async () => {
             expect(() => {
               jsoncSet({ state: base(), path: ['list', -1,], value: 1, },);
+            },).toThrow('no JSONC node at path',);
+            expect(() => {
+              jsoncSet({ state: base(), path: ['list', HALF_INDEX,], value: 1, },);
             },).toThrow('no JSONC node at path',);
           },
         },),
@@ -223,6 +231,14 @@ await describe({
           fn: async () => {
             expect(() => {
               jsoncDelete({ state: matrix(), path: ['m', -1, 0,], },);
+            },).toThrow('no JSONC node at path',);
+          },
+        },),
+        it({
+          name: 'throws on a fractional array index',
+          fn: async () => {
+            expect(() => {
+              jsoncDelete({ state: base(), path: ['list', HALF_INDEX,], },);
             },).toThrow('no JSONC node at path',);
           },
         },),

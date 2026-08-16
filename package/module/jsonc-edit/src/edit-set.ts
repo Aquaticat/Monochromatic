@@ -107,7 +107,7 @@ function setAtPath({
     throw new JsoncPathNotFoundError({ path, },);
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
-    if ((segment >= 0) && (segment
+    if (Number.isInteger(segment,) && (segment >= 0) && (segment
       < node.elements
       .length)) {
       /**
@@ -272,6 +272,8 @@ function deleteAtPath({
     };
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
+    if (!Number.isInteger(segment,))
+      throw new JsoncPathNotFoundError({ path, },);
     if (isLast)
       return {
         ...node,

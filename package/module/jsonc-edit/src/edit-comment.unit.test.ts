@@ -32,6 +32,11 @@ const dup = (): ReturnType<typeof parseJsoncEdit> =>
 
 const block = { type: 'block', text: ' e ', } as const;
 
+/**
+ * Fractional segment used to verify array indexes must be integers.
+ */
+const HALF_INDEX = 1 / 2;
+
 await describe({
   name: 'edit-comment branches',
   children: [
@@ -104,10 +109,10 @@ await describe({
           },
         },),
         it({
-          name: 'throws on an out-of-range, boundary, or negative array index',
+          name: 'throws on an out-of-range, boundary, negative, or fractional array index',
           fn: async () => {
             const state = parseJsoncEdit({ source: asJsonc('{ "list": [1, 2] } // c',), },);
-            for (const index of [5, 2, -1,]) {
+            for (const index of [5, 2, -1, HALF_INDEX,]) {
               expect(() => {
                 jsoncSetComment({ state, path: ['list', index,], comment: block, },);
               },).toThrow('no JSONC node at path',);
