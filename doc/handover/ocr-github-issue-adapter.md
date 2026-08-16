@@ -132,6 +132,18 @@ The implementation must not reopen `/dev/tty`,
 `CONIN$`,
 or another controlling-terminal device.
 
+### Repository selection
+
+An explicit `--repo OWNER/NAME` selects the destination in either mode.
+Without that flag,
+the adapter infers the repository only when the process working directory is exactly the Git worktree root.
+When run from a subdirectory inside a worktree,
+it errors and instructs the user to rerun at the root or pass `--repo OWNER/NAME`.
+Outside a Git worktree,
+it errors and requires `--repo OWNER/NAME`.
+A repository that cannot be identified unambiguously also errors and suggests the explicit flag.
+These cases print diagnostics and exit rather than opening another prompt.
+
 ## Settled prior findings
 
 The installed command is OpenCodeReview `v1.9.4`,
@@ -371,9 +383,17 @@ in dependency order:
    Output reports only their count and input record ordinals or JSONL line numbers;
    users inspect the original OCR input.
 6. Repository selection:
-   explicit `--repo`,
-   Git remote inference,
-   and behavior outside a Git checkout.
+   explicit `--repo OWNER/NAME` overrides repository inference.
+   Without `--repo`,
+   the adapter infers the destination only when the process working directory is exactly a Git worktree root.
+   From a subdirectory inside a worktree,
+   it errors and instructs the user to rerun at the root or pass `--repo OWNER/NAME`.
+   Outside a Git worktree,
+   it errors and requires `--repo OWNER/NAME`.
+   These are diagnostics followed by exit,
+   not prompts;
+   non-interactive mode never prompts.
+   Failure or ambiguity while identifying the root repository also errors and suggests `--repo`.
 7. Issue rendering:
    title,
    body fields,
@@ -410,8 +430,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether the destination repository is always explicit
-or may be inferred from the current Git checkout.
+Ask the next dependent design question about how to derive an issue title from OCR findings,
+which have content but no dedicated issue-title field.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -494,5 +514,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   rejected separate persistence for withheld security findings;
   only counts and input positions are reported.
+- 2026-08-16:
+  settled root-only Git repository inference with explicit `--repo OWNER/NAME` override;
+  subdirectories and non-repository directories error with rerun instructions when the flag is absent.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
