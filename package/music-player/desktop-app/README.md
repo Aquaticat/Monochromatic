@@ -390,9 +390,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    half the earlier `20px` inset.
    Persisted style integers retain their stable mapping,
    and unknown values still fall back to radio controls.
-   Each style has one centralized build-availability toggle.
+   Each style has one centralized `included` toggle in `src/ui_page_style.rs` `BUILD_STYLES`.
    Settings lists only included styles,
    and disabled persisted selections resolve safely without renumbering values.
+   `../../../doc/runbook/music-player-page-control-styles.md` documents matching desktop and Android changes.
    Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
    joined content-width segmented buttons,
    raised content-width Chromium-like tabs,

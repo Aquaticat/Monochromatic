@@ -12,9 +12,10 @@ Their labels use `10dp` inline padding on each side,
 half the earlier `20dp` inset.
 Persisted style integers retain their stable mapping,
 and unknown values still fall back to radio controls.
-Each style has one centralized build-availability toggle.
+Each style has one centralized `includedInBuild` toggle on its enum line in `PageControlStyle.kt`.
 Settings lists only included styles,
 and disabled persisted selections resolve safely without renumbering values.
+`../../../doc/runbook/music-player-page-control-styles.md` documents matching Android and desktop changes.
 
 ## Custom control sizing
 

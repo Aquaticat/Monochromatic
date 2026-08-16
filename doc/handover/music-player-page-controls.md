@@ -98,6 +98,13 @@ settings UI,
 immediate application,
 persistence,
 and unknown-value fallback.
+Android centralizes one `includedInBuild` Boolean per enum entry.
+Desktop centralizes one `included` Boolean per `BUILD_STYLES` entry.
+Settings models contain only included styles,
+and disabled selections resolve through Chromium,
+radio,
+then first-included fallback without changing persisted IDs.
+`doc/runbook/music-player-page-control-styles.md` records exact maintenance and verification steps.
 Android also handles system Back from Settings.
 Desktop Settings radio sizing is isolated from the smaller shuffle radios.
 
@@ -416,13 +423,11 @@ No build or application process is currently running.
 
 ## Remaining work
 
-1.  Halve Chromium label inline padding to `10` units per side on both platforms.
-2.  Make Chromium-like tabs the first-install default while preserving persisted numeric mappings and radio fallback.
-3.  Add centralized one-line per-style build-availability toggles and a runbook for changing them.
-4.  Run remaining platform lint,
+1.  Increase selected LED background vibrance while retaining OKLCH contrast guarantees.
+2.  Run remaining platform lint,
     tests,
-    and release builds after the Chromium and availability changes.
-5.  Capture desktop dark and light scenes and obtain requester visual approval.
+    and release builds after the vibrance change.
+3.  Verify final desktop scenes inside `package/cli/nested-wayland-session` and obtain requester visual approval.
 
 ## Risks and guardrails
 
