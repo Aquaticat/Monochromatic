@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Positive control for the fixturePatterns option: an empty glob list must strip
+  // every exemption, so the fixture import that .oxlintrc.fixture.json allows becomes
+  // a finding here. A rule that ignores its options reports nothing under this config,
+  // which is exactly the silent-discard bug this proves absent.
+  "jsPlugins": [
+    "../../oxlint-plugin/test-import/dist/final/node/index.mjs"
+  ],
+  "ignorePatterns": [
+    "**/node_modules"
+  ],
+  "rules": {
+    "test-import/require-eventual-artifact": [
+      "error",
+      {
+        "fixturePatterns": []
+      }
+    ]
+  }
+}

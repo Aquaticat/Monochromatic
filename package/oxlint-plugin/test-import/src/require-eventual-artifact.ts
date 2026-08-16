@@ -300,13 +300,23 @@ export const requireEventualArtifact: CreateOnceRule = {
    */
   createOnce(context: ForeignHostCapability<Context>,): VisitorWithHooks {
     /**
-     * Raw rule options; oxlint omits this until config supplies them.
+     * Resolves fixture globs for the file about to be linted.
+     *
+     * Reads `context.options` per call rather than once in `createOnce`. Oxlint leaves
+     * `options` null until it is about to lint a file (`apps/oxlint/src-js/plugins/context.ts`
+     * documents it as "Initially `null` during `createOnce`, set to options object before
+     * linting a file"), so hoisting the read pins every file to
+     * {@link DEFAULT_FIXTURE_PATTERNS} and silently discards a configured list.
+     *
+     * @returns glob list governing which modules count as test-only fixtures
      */
-    const { options, } = context;
-    /**
-     * Fixture globs resolved once for the whole lint run.
-     */
-    const fixturePatterns = readFixturePatterns(options ?? [],);
+    function currentFixturePatterns(): readonly string[] {
+      /**
+       * Raw rule options for the file being linted; null outside a file.
+       */
+      const { options, } = context;
+      return readFixturePatterns(options ?? [],);
+    }
 
     return {
       before() {
@@ -314,12 +324,18 @@ export const requireEventualArtifact: CreateOnceRule = {
         // vast majority of files, which are neither tests nor test helpers.
         if (checkedFileContext({
           fileName: context.filename,
-          fixturePatterns,
+          fixturePatterns: currentFixturePatterns(),
         },) === FILE_OUT_OF_SCOPE)
           return false;
         return undefined;
       },
       ImportDeclaration(node: ForeignBorrowed<ESTree.ImportDeclaration>,): void {
+        /**
+         * Fixture globs governing this file; read once here and reused below so a
+         * single import is never classified against two different option reads.
+         */
+        const fixturePatterns = currentFixturePatterns();
+
         /**
          * File context; recomputed per import from memoized package data rather
          * than held in visitor state, so nothing has to be reset between files.

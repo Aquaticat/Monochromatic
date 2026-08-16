@@ -30,11 +30,24 @@ const CASE_ROOT = resolve(
 );
 
 /**
+ * Absolute path to fixture config emptying `fixturePatterns`.
+ *
+ * Serves as positive control that rule options are read at all: with no globs
+ * exempting anything, an import the default list allows must become a finding.
+ */
+const NO_FIXTURES_CONFIG = fixtureConfigPath({
+  fixturePackageName: FIXTURE_PACKAGE_NAME,
+  fileName: '.oxlintrc.no-fixtures.fixture.json',
+},);
+
+/**
  * Runs the rule over one fixture file through a real oxlint process.
  *
  * @param caseName - nested pseudo-package directory name
  *
  * @param fileName - file inside that case's `src`
+ *
+ * @param fixtureConfig - oxlint config driving this run; defaults to unconfigured rule
  *
  * @returns diagnostics this plugin emitted for that file
  *
@@ -46,6 +59,7 @@ const CASE_ROOT = resolve(
 async function lintCase({
   caseName,
   fileName,
+  fixtureConfig = FIXTURE_CONFIG,
 }: {
   /**
    * Nested pseudo-package directory name.
@@ -55,11 +69,15 @@ async function lintCase({
    * File inside that case's `src`.
    */
   readonly fileName: string;
+  /**
+   * Oxlint config driving this run.
+   */
+  readonly fixtureConfig?: string;
 },): Promise<readonly OxlintRuleDiagnostic[]> {
   return await runOxlintFixture({
     codePrefix: CODE_PREFIX,
     configFlag: '--config',
-    fixtureConfig: FIXTURE_CONFIG,
+    fixtureConfig,
     target: resolve(
       CASE_ROOT,
       caseName,
@@ -79,6 +97,21 @@ await describe({
           caseName: 'standard',
           fileName: 'allowed.test.ts',
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'honors a configured fixturePatterns list rather than always using defaults',
+      fn: async () => {
+        // Positive control. `allowed.test.ts` imports `./fixture.data.ts`, exempt only
+        // because `**/fixture.*` sits in the default glob list. Emptying the option must
+        // move that import from allowed to reported. A rule that reads `context.options`
+        // inside `createOnce`, where oxlint leaves it null, silently keeps the defaults
+        // and reports nothing here, which is the failure this case exists to catch.
+        expect((await lintCase({
+          caseName: 'standard',
+          fileName: 'allowed.test.ts',
+          fixtureConfig: NO_FIXTURES_CONFIG,
+        },)).length,).toBe(1,);
       },
     },),
     it({
