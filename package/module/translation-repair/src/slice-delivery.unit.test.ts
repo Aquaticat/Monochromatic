@@ -553,6 +553,25 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a slice named as withdrawn BY ASSEMBLY on a blocked run, because that exit returns '
+        + 'the archive without assembling anything: the withdrawal it reports is the block itself, and '
+        + 'those are the two events a reader counting integrity damage has to tell apart',
+      fn: async () => {
+        expect(function withdrewWhileBlocked() {
+          buildSliceDelivery({
+            slices: preparedSlices(),
+            wordings: laneWordings({
+              decided: new Map([[0, 'The cat is asleep.',],],),
+            },),
+            shippedChunkIndices: [],
+            withdrawnChunkIndices: [0,],
+            blocked: true,
+          },);
+        },).toThrow('without assembling anything',);
+      },
+    },),
+
+    it({
       name: 'REFUSES a shipped slice on a BLOCKED run, because that exit returns the archive document '
         + 'whatever any slice decided: a shipped index there names a replacement no reader can have '
         + 'seen, and the ledger would report the run delivering work it explicitly refused to deliver',

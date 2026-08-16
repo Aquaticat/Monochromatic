@@ -469,6 +469,85 @@ await describe({
     },),
     it({
       name:
+        'REFUSES two lanes that disagree about whether the archive translates a slice at all, EVEN WHEN '
+        + 'their incumbent text matches, which is the only case that matters: a blank content slice and a '
+        + 'place the archive never translated both carry the empty string, and every row took its kind '
+        + 'from the repair lane',
+      fn: async () => {
+        /**
+         * Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: {
+              sliceTexts: [{
+                chunkIndex: 0,
+                incumbentKind: 'present',
+                incumbentText: '',
+                outcome: { kind: 'not-evaluated', },
+              },],
+              shippedChunkIndices: [],
+            },
+            translate: {
+              sliceTexts: [{
+                chunkIndex: 0,
+                incumbentKind: 'absent',
+                incumbentText: '',
+                outcome: { kind: 'unfilled', },
+              },],
+              shippedChunkIndices: [],
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect(String(caught,),).toContain('whether the archive translates it',);
+      },
+    },),
+    it({
+      name:
+        'asserts each lane`s wording against itself before joining them, since the two structural '
+        + 'boundaries that take wordings from a caller are this and the delivery ledger, and a row that '
+        + 'contradicts itself would otherwise be compared as though it did not',
+      fn: async () => {
+        /**
+         * Failure raised by a lane falling back on wording the archive lacks.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: {
+              sliceTexts: [{
+                chunkIndex: 0,
+                incumbentKind: 'absent',
+                incumbentText: '',
+                // Nothing to fall back on: the archive holds no wording here.
+                outcome: { kind: 'incumbent-fallback', },
+              },],
+              shippedChunkIndices: [],
+            },
+            translate: {
+              sliceTexts: [{
+                chunkIndex: 0,
+                incumbentKind: 'absent',
+                incumbentText: '',
+                outcome: { kind: 'unfilled', },
+              },],
+              shippedChunkIndices: [],
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(String(caught,),).toContain('standing by default, and the archive holds none',);
+      },
+    },),
+    it({
+      name:
         'does not call it disagreement when one lane had no work to do. The repair lane mends existing '
         + 'English, so at a passage the archive never translated it never had an opinion; reporting its '
         + 'silence as a decision made every anchor the translate lane filled read as the two lanes '
