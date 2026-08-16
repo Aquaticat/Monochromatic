@@ -680,9 +680,30 @@ looks like it invented content on one slice and dropped content on the next, and
 the roster condemns it on BOTH while preferring a fresh rendering that says only
 what its own slice's original says. SOME UNKNOWN SHARE OF THE THREE-IN-FOUR
 REPLACEMENT RATE MAY BE THIS rather than the archive being worse, and nothing in
-the pipeline can currently see it. `#107` carries a free deterministic probe:
-per-slice ratios against each document's own median, looking for adjacent
-high-low pairs.
+the pipeline can currently see it. `#107` carries the probe, and IT HAS NOW RUN over the
+whole pinned corpus at zero quota: per-slice ratios against each document's own
+median, flagging a slice at twice the median that sits beside a below-median
+neighbour.
+
+    complete pairs                        92
+    slices read                         1198
+    high slices                           41
+    moved pairs                           44
+    entries carrying at least one         22   (24 percent of entries)
+    slices involved in a moved pair       77   (6.4 percent of slices)
+
+HAND-CHECKED ON THREE FLAGGED PAIRS, read on both sides. Two are true
+relocations: `Dethelly` (above) and `lintong`, whose English carries the previous
+slice's Chinese almost sentence for sentence while that slice's English is
+reduced to an attribution line. The third, `dogesir_`, is a DIFFERENT class
+arriving through the same screen: the English adds a transcript of text the
+Chinese carries only as an IMAGE, which is Question 2's subject. So the screen is
+three for three on "a per-slice judge will condemn the archive here" and two for
+three on "a passage moved".
+
+SO 6.4 PERCENT OF SLICES IS THE FLOOR on how much of the replacement rate is
+layout rather than quality. A floor because the screen reads SIZE: a passage
+swapped for one of similar length reads as ordinary.
 
 ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges decline
 constantly, and not only over names. Across the three arms `gpt-oss-120b`
@@ -740,18 +761,18 @@ D.  Restrict replacement to slices that carry evidence of a defect, which is the
     Cons: it is the shape you deliberately moved away from, and the graded
     sheets showed the critics miss most of what is wrong.
 
-E.  Measure the displacement bias first (`#107`), then decide between the
-    others. The probe is deterministic and costs no model calls: flag slices
-    whose target-to-source ratio departs from their own document's median, check
-    whether the flagged ones come in adjacent high-low pairs, and count how much
-    of the corpus that covers.
+E.  Widen the judged window on the slices where the archive's layout differs
+    from the original's, then re-read the replacement rate. THE FIRST HALF OF
+    THIS IS ALREADY DONE AND THE NUMBER IS BELOW; what remains is asking the
+    judges again with neighbouring source slices in evidence, and seeing whether
+    they still replace.
     Pros: it is the only option that separates "the archive is worse" from "the
     archive is laid out differently", which is the actual question under the
-    number; it is free; and it can run before any of A to D is chosen, so it
-    costs nothing but the reading.
-    Cons: it delays the decision by however long the probe and its reading take,
-    and it answers only the layout half: a document with no displacement still
-    has whatever quality gap the rate reports.
+    number; the screen that finds those slices is deterministic and free; and it
+    can run before any of A to D is chosen.
+    Cons: widening the window costs a re-run over the flagged slices, and it
+    answers only the layout half: a document with no displacement still has
+    whatever quality gap the rate reports.
 
 RANKING: E > C > A > B > D.
 
