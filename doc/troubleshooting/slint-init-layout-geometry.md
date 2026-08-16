@@ -174,7 +174,7 @@ pub fn mock_elapsed_time(time_in_ms: u64) {
 ### Patterns that work
 
 - Fixed geometry read after the component has reached its final width.
-- Repeated cap geometry reported after the one-shot post-instantiation timer tick.
+- Repeated cap geometry reported by a finite post-instantiation timer burst.
 - Absolute cap positions normalized against the plate component origin.
 - A generation token plus measured row membership,
   so stale reports cannot mix with a newer label model.
@@ -192,15 +192,21 @@ pub fn mock_elapsed_time(time_in_ms: u64) {
 It sends the cap's absolute position minus the plate component's absolute origin.
 This preserves local plate coordinates even when the control group itself starts away from `(0,0)`.
 
-`package/music-player/desktop-app/ui/app.slint:454-483` adds one stopped `Timer` to the parent control group.
-Every geometry generation restarts that timer.
-After `1ms`,
-the timer increments one layout-tick property,
+`package/music-player/desktop-app/ui/app.slint:460-488` adds one stopped `Timer` to the parent control group.
+Every geometry generation resets and starts a finite report burst.
+The timer reports after `1ms`,
+then twice more at `16ms` intervals.
+Each pass increments one layout-tick property,
 and every repeated cap reports its current measured rectangle.
-The timer stops itself immediately,
+The timer stops after the third pass,
 so it does not keep the render loop active.
 
-Slint's Timer API supports explicit stopped state and restart.
+`package/music-player/desktop-app/src/ui_led_plate.rs` retains the last completed path while a nonempty replacement
+generation is gathering reports.
+An empty generation still clears the global geometry.
+This prevents resize flicker without mixing reports across generation tokens.
+
+Slint's Timer API supports explicit stopped state plus start and restart.
 `internal/compiler/builtins.slint:2695-2739` defines the relevant surface:
 
 ```slint
@@ -219,8 +225,9 @@ export component Timer {
 
 Tradeoffs:
 
-- Plate publication is deferred by `1ms` instead of occurring synchronously during component construction.
-- Each geometry generation invokes one report per cap after the timer fires.
+- Geometry correction starts after `1ms` and finishes its bounded settling burst after two `16ms` intervals.
+- Each geometry generation can invoke three reports per cap.
+- A resizing generation temporarily keeps the last complete path rather than clearing paint.
 - The workaround remains consumer-owned and does not expose a general Slint post-layout event.
 
 ## What does not work
@@ -233,10 +240,10 @@ Tradeoffs:
 - **Watching `changed absolute-position` alone.**
   In the headless first-layout harness,
   it did not provide a later complete report after the visible caps had wrapped.
-- **Keeping a repeating timer active.**
+- **Keeping a repeating timer active indefinitely.**
   It would eventually correct geometry,
   but Slint's Timer documentation warns that an always-running timer causes constant CPU and power usage.
-  A stopped one-shot timer has no such persistent cost.
+  The bounded three-pass burst has no persistent timer cost.
 - **Applying the fix for issue #7402 again.**
   Slint 1.17.0 already contains PR #11397,
   and the observed failure is stale geometry rather than recursion.
@@ -273,7 +280,7 @@ There is nothing additive to post on the closed issue.
    The related eager-instantiation problem was already fixed by PR #11397.
 6. **Have we prototyped a minimal upstream fix?**
    Not applicable.
-   The verified minimal change is the consumer-side one-shot report tick.
+   The verified minimal change is the consumer-side finite report burst and last-complete-path retention.
 
 Decision:
 do not file a new issue and do not comment on issue #7402.
