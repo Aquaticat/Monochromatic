@@ -3,6 +3,7 @@ import { deriveShippedIndices, } from './assembly-invariant.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import { buildChunkCriticRecords, } from './critic-attribution.ts';
 import { buildIssueRecords, } from './repair-record.ts';
+import { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';
 
@@ -114,9 +115,10 @@ export function blockedRepairResult(
       ...outcomes.flatMap(function toFindings(done,): readonly string[] {
         return done.findings;
       },),
-      `non-translation dominance (${String(standingChars,)} of ${
-        String(totalChars,)
-      } target chars)`,
+      nonTranslationDominanceFinding({
+        standingChars,
+        totalChars,
+      },),
     ],
   };
 }

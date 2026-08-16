@@ -16,6 +16,7 @@ import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
+import { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
 import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
 import { refineSettledSlices, } from './repair-refine-step.ts';
 import {
@@ -434,9 +435,8 @@ export async function repairPreparedDocument(
     },);
     if (dominance.blocked) {
       rl.warn(
-        `non-translation dominance (${String(dominance.standingChars,)} of ${
-          String(dominance.totalChars,)
-        } target chars); repair blocked, input returned unchanged`,
+        `${nonTranslationDominanceFinding(dominance,)}; repair blocked, `
+          + `input returned unchanged`,
       );
       return blockedRepairResult({
         targetText,
