@@ -699,7 +699,11 @@ await describe({
     },),
 
     it({
-      name: 'blocks repair on ensemble-agreed critical non-translation',
+      name: 'REPORTS ensemble-agreed critical non-translation instead of blocking on it, and still '
+        + 'names the dominance in its findings. This test asserted the opposite until 2026-08-16, '
+        + 'when question 3 answer B made critics evidence and took away every early return they '
+        + 'owned; the old exit returned the archive untouched and discarded every slice already '
+        + 'repaired, which on a sparse target was the common outcome rather than the rare one',
       fn: async () => {
         /** Full run whose critics all report a non-translation. */
         const result = await repairTranslation({
@@ -718,8 +722,15 @@ await describe({
           models: MODELS,
           signal: new AbortController().signal,
         },);
-        expect(result.status,).toBe('blocked-non-translation',);
-        expect(result.repairedText,).toBe(TARGET_TEXT,);
+        expect(result.status,).not
+          .toBe('blocked-non-translation',);
+        // THE READING SURVIVES THE BLOCK'S REMOVAL. Evidence that stops
+        // deciding must not stop being recorded, or a document whose critics
+        // all called it untranslated would ship with nothing saying so.
+        expect(result.findings
+          .some(function namesDominance(finding,) {
+            return finding.includes('non-translation dominance',);
+          },),).toBe(true,);
       },
     },),
 

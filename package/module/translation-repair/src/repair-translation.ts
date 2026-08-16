@@ -408,49 +408,53 @@ export async function repairPreparedDocument(
     }
     /* oxlint-enable no-await-in-loop */
     outcomes.push(outcome,);
-
-    /**
-     * Dominance verdict over every slice, standing marked where heard;
-     * standing character share only grows, so deciding at the earliest
-     * crossing spends no further quota on a wholly unrelated pair.
-     */
-    const dominance = assessNonTranslationDominance({
-      slices: slices.map(function toTally(
-        sliceRef,
-        sliceIndex,
-      ) {
-        /**
-         * This slice's settled outcome, absent until it is processed.
-         */
-        const sliceOutcome = outcomes[sliceIndex];
-        return {
-          targetChars: sliceRef.target
-            .text
-            .length,
-          votesStand: sliceOutcome?.nonTranslationStanding ?? false,
-          anchorsTranslation: (sliceOutcome !== undefined)
-            && sliceAnchorsTranslation({ outcome: sliceOutcome, },),
-        };
-      },),
-    },);
-    if (dominance.blocked) {
-      rl.warn(
-        `${nonTranslationDominanceFinding(dominance,)}; repair blocked, `
-          + `input returned unchanged`,
-      );
-      return blockedRepairResult({
-        targetText,
-        slices,
-        outcomes,
-        findings: [
-          ...alignmentFindings,
-          ...refusedCacheFindings,
-        ],
-        standingChars: dominance.standingChars,
-        totalChars: dominance.totalChars,
-      },);
-    }
   }
+
+  /**
+   * Non-translation dominance over the whole run, computed ONCE.
+   *
+   * IT REPORTS AND DOES NOT DECIDE, which is question 3 answer B. Until
+   * 2026-08-16 this ran after every slice so the earliest crossing could
+   * abandon the document and return the archive untouched, discarding every
+   * slice already repaired. On a sparse target that was the common outcome
+   * rather than the rare one, so the exit spent the quota and then threw the
+   * results away.
+   *
+   * ONCE RATHER THAN PER SLICE now that nothing exits early: the reading only
+   * had to be incremental because the crossing had to be caught at its earliest
+   * point. One pass over settled outcomes says the same thing.
+   */
+  const dominance = assessNonTranslationDominance({
+    slices: slices.map(function toTally(
+      sliceRef,
+      sliceIndex,
+    ) {
+      /**
+       * This slice's settled outcome.
+       */
+      const sliceOutcome = outcomes[sliceIndex];
+      return {
+        targetChars: sliceRef.target
+          .text
+          .length,
+        votesStand: sliceOutcome?.nonTranslationStanding ?? false,
+        anchorsTranslation: (sliceOutcome !== undefined)
+          && sliceAnchorsTranslation({ outcome: sliceOutcome, },),
+      };
+    },),
+  },);
+  if (dominance.blocked) {
+    rl.warn(
+      `${nonTranslationDominanceFinding(dominance,)}; reported, not blocking`,
+    );
+  }
+
+  /**
+   * Dominance as a finding, carried only when the reading crossed.
+   */
+  const dominanceFindings = dominance.blocked
+    ? [nonTranslationDominanceFinding(dominance,),]
+    : [];
 
   /**
    * Naturalness lane over every settled slice.
@@ -486,6 +490,7 @@ export async function repairPreparedDocument(
     findings: [
       ...alignmentFindings,
       ...refusedCacheFindings,
+      ...dominanceFindings,
       ...finalOutcomes.flatMap(function toFindings(outcome,) {
         return outcome.findings;
       },),
