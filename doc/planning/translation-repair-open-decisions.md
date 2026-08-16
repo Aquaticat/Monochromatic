@@ -357,6 +357,8 @@ B over C because C makes both discounts load-bearing on every slice at once,
 and the self-preference rate they compensate for is exactly what `#84` has not
 measured yet.
 
+D, do #84 first
+
 ## Question 2: the transcribed-image class
 
 BLOCKS nothing mechanically, and is the largest known quality risk in the new
@@ -485,6 +487,8 @@ structural and needs no decision from you, and leave the paired-quote guard
 alone until you have ruled, because that one is a threshold and thresholds are
 yours to set.
 
+B, but best effort, fallback to A whenever an image's OCR doesn't make sense.
+
 ## Question 3: does the critic stage survive
 
 BLOCKS `#86`, and the answer changes the cost of every entry.
@@ -538,6 +542,8 @@ A over C because C reintroduces exactly the magic threshold you rejected in the
 pipeline-shape decision, and a threshold that decides whether a passage is
 examined at all is worse than one that decides how it is routed.
 
+B, land #83
+
 ## Question 4: what a self-certifying checker's verdict is worth
 
 BLOCKS `#91` alongside Question 1.
@@ -575,6 +581,8 @@ that shape repeatedly.
 B over C because C is right and unavailable: it needs a corpus run under the new
 shape to produce the agreement rates it weighs by, so A or B has to hold the
 seat until then anyway.
+
+A
 
 ## Question 5: the lane replaces most of the archive's English
 
@@ -890,6 +898,8 @@ B over D because D is the shape you already rejected on evidence: the critics
 miss most of what is wrong, so gating replacement on a filed defect keeps the
 worst translations exactly as they are.
 
+E
+
 ## Question 6: what a thin roster's verdict is worth to the cache
 
 BLOCKS NOTHING. It changes how much a resumed run re-buys, so it is worth
@@ -953,6 +963,8 @@ inspected this", and C's field cannot be added without a cache version bump,
 which discards the 150 slices already on disk to gain a filter over none of them.
 C over A because A pays for a whole slice to retry one optional lane, and pays
 it again on every attempt while the cause persists.
+
+B
 
 ## Question 7: what the non-translation block counts against
 
@@ -1029,6 +1041,8 @@ narrowness is stated and constant.
 WHAT I WOULD DO IF YOU DELEGATE THIS: take B now, since it is documentation of
 what already happens, and hold C until `#96` can carry an unexaminable verdict.
 That ordering costs nothing, because C keeps B's denominator.
+
+DELEGATE
 
 ## Decisions I took without you, veto cheaply
 
