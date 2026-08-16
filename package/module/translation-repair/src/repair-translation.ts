@@ -28,7 +28,6 @@ import {
   resumedSliceDiscardFinding,
   sliceRecordAgrees,
 } from './slice-record-agreement.ts';
-import { blockedRepairResult, } from './repair-blocked-exit.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
@@ -47,10 +46,16 @@ export {
 //region Repair translation
 // The batch driver over the whole loop: parse, align into chunk pairs, run
 // each pair through the repair stages, splice winning chunks back into the
-// document. Ensemble-agreed critical non-translation blocks repair and
-// returns the input unchanged (settled architecture) unless deterministic
-// evidence contradicts the votes (see non-translation-evidence.ts);
-// everything else degrades chunk by chunk, never document-wide.
+// document. Everything degrades chunk by chunk, never document-wide.
+//
+// NOTHING BLOCKS THE DOCUMENT ANY MORE. Ensemble-agreed critical
+// non-translation used to end the run and return the input unchanged, which
+// discarded every slice already repaired; on a sparse target that was the
+// common outcome rather than the rare one. Question 3 answer B keeps the
+// critics as evidence and takes away every early return they owned, so the
+// dominance reading is reported in the findings and decides nothing. See
+// `doc/decision/translation-repair-question-answers.md` and
+// `non-translation-evidence.ts`.
 
 /**
  * Logger root for the repair pipeline.
