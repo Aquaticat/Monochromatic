@@ -156,6 +156,27 @@ it errors and requires `--repo https://github.com/OWNER/NAME`.
 A repository that cannot be identified unambiguously also errors and suggests the explicit flag.
 These cases print diagnostics and exit rather than opening another prompt.
 
+### GitHub API boundary
+
+The user chose `gh api` as the sole GitHub authentication and HTTP boundary.
+The adapter requires an installed and authenticated GitHub CLI,
+uses its existing credentials without extracting or accepting a token,
+and invokes GitHub REST endpoints through non-paginated `gh api` subprocesses.
+It must not use `gh issue create`,
+a GitHub client library,
+or direct authenticated `fetch` calls.
+
+JSON request bodies use private named temporary files passed through `--input`.
+Neither adapter input nor GitHub request bodies pass through standard input or process arguments.
+The `gh` subprocess receives no inherited standard input.
+The adapter requests response status and headers through `--include`,
+parses those plus the response JSON,
+and owns the explicit scheduling,
+rate-limit delay,
+ambiguous-failure reconciliation,
+and bounded-retry policy.
+Temporary request files must be inaccessible to other users and removed after each invocation.
+
 ### Issue rendering
 
 Issue titles use the deterministic shape `[category] path: summary`.
@@ -361,7 +382,7 @@ Source inspection of `pkg/cmd/api/api.go` and `pkg/cmd/api/http.go`
 found one `client.Do` path per non-paginated invocation and no API-command retry loop.
 The underlying `cli/go-gh` 2.13.0 client uses the Go default transport rather than a retry transport.
 The workspace already invokes `gh api` from active packages and has no direct Octokit dependency.
-No GitHub boundary has been selected from this evidence yet.
+The user selected this boundary instead of a GitHub client library or direct authenticated HTTP.
 
 The pnpm `v11.8.0` source tag resolves to commit `93458600a8498412f85316d054e033319ba31ed6`.
 Its `installing/commands/src/update/index.ts` implementation uses `checkbox` and `Separator`
@@ -465,7 +486,7 @@ in dependency order:
    Users needing multiline input write a file and pass its path.
    An invalid interactive paste reports the error and exits nonzero without retrying.
    A malformed record rejects the entire input before any GitHub operation.
-   The publication class for structurally valid findings with missing classification metadata remains open.
+   Structurally valid findings with missing category metadata remain ordinary publishable candidates.
    Named files require strict UTF-8 without any byte-order mark;
    malformed bytes or a byte-order mark reject the input before GitHub operations.
 4. Non-interactive authority:
@@ -572,8 +593,7 @@ in dependency order:
    Interactive normal candidates and the final batch summary show titles only.
    Each selected security candidate shows its complete generated title and body
    before its individual disclosure confirmation.
-   Safe rendering of the adapter-owned code sections,
-   non-interactive preview detail,
+   Safe rendering of the adapter-owned code sections
    and title fallback and length behavior remain open.
 8. Identity and lifecycle:
    settled as create-only.
@@ -601,11 +621,18 @@ in dependency order:
    post-creation interrupt behavior,
    multi-select behavior,
    and accessibility otherwise remain open.
-10. Package interface:
-    package location and name,
+10. GitHub boundary and package interface:
+    GitHub operations use non-paginated `gh api --include` subprocesses
+    with private named request-body files and no inherited standard input.
+    The adapter reuses GitHub CLI authentication and owns retry decisions.
+    Direct authenticated HTTP,
+    GitHub client libraries,
+    and `gh issue create` are excluded.
+    Package location and name,
     binary name,
     configuration,
-    and mise tasks.
+    required GitHub CLI compatibility,
+    and mise tasks remain open.
 11. Verification:
     parser fixtures,
     prompt interaction tests,
@@ -615,9 +642,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask whether the adapter delegates GitHub authentication and HTTP to `gh api`,
-uses a GitHub client library,
-or implements direct authenticated HTTP.
+Ask what successful and partially completed applied runs emit on standard output.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -760,6 +785,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   made multiple post-high-water exact matches terminal,
   with every URL reported and no automatic closure or cleanup.
+- 2026-08-16:
+  selected `gh api` as the sole GitHub authentication and HTTP boundary,
+  using private named request files and caller-owned retry orchestration.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api

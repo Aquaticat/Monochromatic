@@ -114,6 +114,72 @@ Help,
 preview,
 and result diagnostics must disclose that residual risk.
 
+### `gh api` leaves explicit retry orchestration to its caller
+
+The selected adapter delegates authentication and HTTP to GitHub CLI 2.97.0,
+but retains its own retry policy.
+[`pkg/cmd/api/api.go:369-381`][gh-api-input]
+opens the named `--input` file and supplies it as the request body:
+
+```go
+if opts.RequestInputFile != "" {
+	file, size, err := openUserFile(opts.RequestInputFile, opts.IO.In)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	requestPath = addQuery(requestPath, params)
+	requestBody = file
+```
+
+The adapter can therefore avoid sending issue bodies through its standard input or process arguments.
+[`pkg/cmd/api/api.go:474-478`][gh-api-headers]
+prints response status and headers before processing the body when `--include` is set:
+
+```go
+if opts.ShowResponseHeaders {
+	fmt.Fprintln(headersWriter, resp.Proto, resp.Status)
+	printHeaders(headersWriter, resp.Header, opts.IO.ColorEnabled())
+	fmt.Fprint(headersWriter, "\r\n")
+}
+```
+
+For each non-paginated command invocation,
+[`pkg/cmd/api/http.go:83`][gh-api-do]
+performs the request through one client call:
+
+```go
+return client.Do(req)
+```
+
+The `cli/go-gh` 2.13.0 client begins with `http.DefaultTransport`
+and then wraps it for sanitization,
+optional caching,
+logging,
+and headers.
+[`pkg/api/http_client.go:59-69`][go-gh-transport]
+shows no retry transport in that chain:
+
+```go
+transport := http.DefaultTransport
+
+if opts.UnixDomainSocket != "" {
+	transport = newUnixDomainSocketRoundTripper(opts.UnixDomainSocket)
+}
+
+if opts.Transport != nil {
+	transport = opts.Transport
+}
+
+transport = newSanitizerRoundTripper(transport)
+```
+
+This establishes that `gh api` has no application-level retry loop on this path.
+The adapter can classify the returned status and headers,
+reconcile an ambiguous creation result,
+and decide whether to start another command.
+It must not claim control over undocumented lower-level transport behavior.
+
 ## Verification
 
 ### Versions and sources
@@ -129,6 +195,12 @@ and result diagnostics must disclose that residual risk.
   `~/temp/agent/p-limit-7.3.1-20260816`.
 - Workspace catalog:
   `pnpm-workspace.yaml` already contains `p-limit: '>=7.3.1'`.
+- GitHub CLI:
+  tag `v2.97.0`,
+  commit `55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55`.
+- `cli/go-gh` used by GitHub CLI:
+  tag `v2.13.0`,
+  commit `a0a6e8947ae2ceedb496654757886ef41ef5ac72`.
 
 No live GitHub Issue was created for this investigation.
 The deciding GitHub behavior is an explicit provider instruction,
@@ -186,8 +258,15 @@ The selected adapter design follows both provider instructions:
 6. Reconcile ambiguous failures against Issue or pull request numbers above a pre-request high-water mark.
 7. Stop instead of retrying if the reconciliation query fails.
 8. Stop scheduling new Issues after a retry-exhausted failure.
+9. Invoke each REST operation through non-paginated `gh api --include`.
+10. Pass each JSON request body through a private named file with `--input`,
+    never through standard input or process arguments.
+11. Parse returned status,
+    headers,
+    and JSON before deciding whether another `gh api` invocation is allowed.
 
-This is verified against GitHub's published concurrency and mutation-pacing contract.
+This is verified against GitHub's published concurrency and mutation-pacing contract
+and the GitHub CLI 2.97.0 request path.
 Runtime verification remains part of adapter implementation because no production adapter exists yet.
 
 Tradeoffs:
@@ -263,6 +342,10 @@ There is nothing additive to file or comment upstream.
 
 [github-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [github-create-issue]: https://docs.github.com/en/rest/issues/issues#create-an-issue
+[gh-api-do]: https://github.com/cli/cli/blob/55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55/pkg/cmd/api/http.go#L83
+[gh-api-headers]: https://github.com/cli/cli/blob/55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55/pkg/cmd/api/api.go#L474-L478
+[gh-api-input]: https://github.com/cli/cli/blob/55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55/pkg/cmd/api/api.go#L369-L381
+[go-gh-transport]: https://github.com/cli/go-gh/blob/v2.13.0/pkg/api/http_client.go#L59-L69
 [p-limit-clear-source]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.js#L77-L89
 [p-limit-clear-type]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.d.ts#L17-L27
 [p-limit-immediate]: https://github.com/sindresorhus/p-limit/blob/v7.3.1/index.js#L59-L63
