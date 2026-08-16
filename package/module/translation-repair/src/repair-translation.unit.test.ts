@@ -956,9 +956,19 @@ Meow meow meow meow.
           signal: new AbortController().signal,
         },);
         expect(result.status,).toBe('repaired',);
-        // The standing region ships unchanged while the rest repairs.
-        expect(result.repairedText,).toContain('Meow meow meow meow.',);
+        // THE STANDING REGION IS REPAIRED NOW RATHER THAN SHIPPED UNCHANGED.
+        // This assertion was its own opposite until 2026-08-16, when question 3
+        // answer B made critics evidence and took away every early return they
+        // owned. What the old exit cost is why: a sparse target draws standing
+        // votes on most of what it examines, so it fired precisely where the
+        // work was needed and discarded it.
+        expect(result.repairedText,).not
+          .toContain('Meow meow meow meow.',);
         expect(result.repairedText,).toContain('The cat also loves chasing butterflies.',);
+        // THE VOTES ARE STILL REPORTED, which is the half that did not change.
+        // Evidence that stops deciding must not also stop being recorded, or
+        // the lane would repair a passage its own critics called untranslated
+        // and say nothing about it.
         expect(result.findings
           .some(function mentionsStanding(finding,) {
             return finding.includes('non-translation votes stand',);

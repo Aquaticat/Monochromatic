@@ -146,22 +146,27 @@ export async function repairChunk(
     heardCriticIds: critic.heardCriticIds,
     claimAttributions: critic.claimAttributions,
   };
+  // STANDING NON-TRANSLATION VOTES NO LONGER END THE SLICE. They used to return
+  // here with the input unchanged, which threw away whatever this chunk's repair
+  // would have produced. Question 3 answer B keeps the critics as EVIDENCE for
+  // the judges and removes every early return they owned:
+  // `doc/decision/translation-repair-question-answers.md`.
+  //
+  // WHY IT MATTERED MOST ON THE SLICES THE LANE EXISTS FOR. On a sparse target,
+  // a chunk whose critics call it untranslated is the common case rather than
+  // the rare one, so the exit fired exactly where the work was most needed and
+  // discarded it.
+  //
+  // NOTHING IS LOST BY PROCEEDING: `nonTranslationStanding` rides on the outcome
+  // either way and `critic.findings` are folded into `stageFindings`, so a
+  // reader still learns the votes stood. What changes is that the votes now
+  // inform rather than decide.
   if (critic.votesStand) {
     l.warn(
       `chunk ${String(chunkIndex,)}: ${
         String(critic.nonTranslationVotes,)
-      } non-translation votes stand; slice ships unchanged`,
+      } non-translation votes stand; proceeding, votes carried as evidence`,
     );
-    return {
-      ...unchangedOutcome,
-      issues: [],
-      findings: [
-        ...critic.findings,
-        `non-translation votes stand (${
-          String(critic.nonTranslationVotes,)
-        }/${String(critic.heardCritics,)} heard); slice unchanged`,
-      ],
-    };
   }
   if (critic.claims
     .length
@@ -211,6 +216,15 @@ export async function repairChunk(
     ...critic.findings,
     ...panel.findings,
     ...deduped.findings,
+    // NAMED ON THE PROCEEDING PATH, since the exit that used to name it is gone.
+    // The wording says what now happens: the votes stood AND the slice was
+    // repaired anyway. The old finding said "slice unchanged", which would be a
+    // false statement about this path.
+    ...(critic.votesStand
+      ? [`non-translation votes stand (${
+        String(critic.nonTranslationVotes,)
+      }/${String(critic.heardCritics,)} heard); repaired anyway, votes are evidence`,]
+      : []),
   ];
 
   /**
