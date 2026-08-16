@@ -3,18 +3,21 @@
 Agent Teams lets one Claude Code session spawn other full Claude Code sessions as teammates,
 coordinated through a shared task list and a file-backed mailbox.
 It shipped as a research preview and is still gated behind an opt-in environment variable.
-This note answers why.
+This note collects what the public evidence supports about why.
 
-The question has three separable answers that are easy to blur together:
+Three answers get blurred together and are worth keeping apart:
 what "experimental" means mechanically in the shipped binary,
-what Anthropic states is unfinished,
-and what the release history and issue tracker show about stability.
-Only the second is Anthropic's own account.
-The others corroborate it or fail to.
+what Anthropic documents as limitations,
+and what the release history and issue tracker show.
+Only the middle one is Anthropic's own account of the feature.
+Anthropic states nowhere in the sources gathered here
+which limitation determines general availability,
+so every causal reading in the "Assessment" section is this note's interpretation,
+labeled as such.
 
 ## Verification basis
 
-Facts below come from reading primary sources on 2026-08-16,
+Facts in this note come from reading primary sources on 2026-08-16,
 not from recall.
 
 - Binary:
@@ -33,20 +36,31 @@ not from recall.
   [`https://code.claude.com/docs/en/costs`][costs-docs],
    fetched 2026-08-16.
   The older `docs.claude.com/en/docs/claude-code/agent-teams` path now returns a 301 to the former.
+- Feature-status labels:
+   [the beta and research preview features page][status-labels],
+  fetched 2026-08-16.
 - Release history:
    `anthropics/claude-code` `CHANGELOG.md` retrieved through `gh api`.
-- Issue counts:
+- Issue counts and samples:
    GitHub `search/issues` through `gh api`,
-   same date.
+   same date,
+  with the exact queries given in the "What users report" section.
 
 **Source quality note:**
 the binary and the official documentation are primary.
 The changelog is primary but curated by Anthropic,
- so absence of an entry is not absence of a change.
-Issue-tracker counts measure user reports,
- not defect density,
-and are the weakest evidence here.
-No claim below rests on a secondary blog or aggregator.
+so absence of an entry is not absence of a change,
+and an entry saying a defect was fixed is evidence about the past,
+ not the present.
+Issue-tracker material is the weakest evidence here:
+titles are unverified reporter allegations,
+no report was reproduced,
+and maintainer triage status was not checked.
+No claim in this note rests on a secondary blog or aggregator.
+
+**Reproduction limit:**
+no team was run.
+Every claim about the binary is static reading of minified bundle text.
 
 ## What "experimental" means mechanically
 
@@ -65,12 +79,11 @@ function md(){
 }
 ```
 
-The first condition is the documented opt-in:
+The user-facing condition is the documented opt-in:
 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`,
  or the undocumented `--agent-teams` argument.
 
-The second condition is a feature flag,
-and the flag is server-supplied.
+The other condition is a feature-flag lookup.
 `rt(name, fallback)` resolves through `fkr` to `eY().getFeatureValueWithSource(name, fallback)`,
 and the same bundle embeds the GrowthBook client SDK,
 defaulting its API host to `https://cdn.growthbook.io`,
@@ -79,21 +92,56 @@ and a refresh interval read from `tengu_gb_refresh_interval_minutes`
 (default 360 minutes,
  clamped to the range 5 to 360,
  jittered).
-So `tengu_amber_flint` has a local fallback of `true`
-but can be flipped by Anthropic without shipping a new binary,
+So `tengu_amber_flint` is eligible for remote override through that evaluator,
+its observed fallback is `true`,
 and the CLI argument does not bypass it.
+This investigation did not observe the flag's live source or value.
 
-That is the concrete difference between this feature and a general-availability one:
-Anthropic keeps a remote off switch over code that is already installed on every machine.
+**That gating is not what distinguishes the feature.**
+The bundle contains 342 distinct `rt("tengu_...")` gate lookups
+covering features that are generally available,
+so remote flag evaluation is how Claude Code ships everything,
+not a marker of preview status.
+What is distinctive is the conjunction:
+Agent Teams additionally requires an explicit user opt-in that generally available features do not.
 
-The settings panel classifies the feature the same way.
-Its `Experimental` group is exactly
+The settings panel classifies the feature the same way the environment variable name does.
+Its `Experimental` group is
 `["precomputeCompactionEnabled","timestamps","showStatusInTerminalTab","teammateMode","teammateDefaultModel"]`,
-so both team-related settings sit beside other unfinished toggles rather than in `Advanced`.
+so both team-related settings sit in that group rather than in `Advanced`.
 The documentation adds that the per-session override
 "is experimental and doesn't appear in `claude --help`".
 
-## What Anthropic states is unfinished
+## Anthropic's own status vocabulary does not cover this feature
+
+Anthropic publishes definitions for two feature-status labels
+on [the beta and research preview features page][status-labels]:
+
+> "Research preview features are earlier in development.
+> They give you a first look at something we're exploring,
+> and they're more likely to change significantly before they become generally available."
+
+> "Beta features are further along in development.
+> They're stable enough for regular use,
+> and we're still refining how they work based on what we learn from people using them."
+
+Neither definition attaches a support or stability commitment beyond those characterizations,
+and neither defines the word "experimental".
+
+Agent Teams is not listed on that page at all.
+The Claude Code entries there are Claude Code Desktop (beta),
+Claude Code Security Center (research preview),
+Claude Code web (research preview),
+and Code review (research preview).
+
+The feature is therefore described three ways across Anthropic's own surfaces:
+the changelog entry that introduced it calls it a "research preview",
+the documentation and the environment variable call it "experimental",
+and the status-label page tracks neither.
+That is a gap in the public record:
+no published criterion says what would move Agent Teams out of this state.
+
+## What Anthropic documents as limitations
 
 The documentation page opens with a warning that the feature is
 "experimental and disabled by default",
@@ -101,7 +149,9 @@ and closes with a section headed "Limitations" that begins
 "Agent teams are experimental."
 Those limitations,
  quoted from the [Agent teams documentation page][agent-teams-docs],
-sort into classes that explain the gate better than the raw list does.
+sort into classes.
+Some read as unfinished work and some as deliberate design constraints;
+the documentation does not say which are which.
 
 ### State that does not survive the session
 
@@ -118,10 +168,11 @@ sort into classes that explain the gate better than the raw list does.
    the main session is the lead for its lifetime.
   You can't promote a teammate to lead or transfer leadership."
 
-The resume limitation is the most consequential,
+The resume limitation is the most consequential of the three,
 because it does not merely lose the teammates.
 It leaves the lead holding names that no longer resolve,
 and the documented remedy is for the human to notice and say so.
+The other two read as scope decisions rather than defects.
 
 ### Coordination that needs a human to close the loop
 
@@ -134,7 +185,7 @@ and the documented remedy is for the human to notice and say so.
 - "Shutdown can be slow:
    teammates finish their current request or tool call before shutting down."
 
-A blocked dependent task is not a cosmetic problem:
+A blocked dependent task is not cosmetic:
 task claiming is how teammates pick up work,
 so a missed completion stalls the team rather than slowing it.
 
@@ -145,6 +196,9 @@ so a missed completion stalls the team rather than slowing it.
    Only the lead can manage the team."
 - "No background subagents from in-process teammates ... returns an error,
   because a teammate's background work can't outlive the lead's process."
+
+Both are stated with a rationale,
+ which reads as design rather than as unfinished work.
 
 ### Environment and permission limits
 
@@ -158,18 +212,18 @@ so a missed completion stalls the team rather than slowing it.
    Windows Terminal,
    or Ghostty."
 
-### The spillover nobody opts into
+### The delegation change that comes with the flag
 
-The sharpest reason to keep the feature off by default is not in the Limitations section.
-Enabling Agent Teams changes ordinary delegation:
+Enabling Agent Teams changes ordinary delegation,
+which the documentation covers in troubleshooting rather than in its Limitations section:
 
 > "while agent teams are enabled,
 >  a subagent that Claude names launches as a teammate,
 > so teams can form even when you didn't ask for one."
 
-And the two differ in how results come back.
+Subagents and teammates then differ in how results come back.
 The documentation states this as a two-item list followed by a separate sentence,
-flattened here into one quote:
+quoted here with the seams marked:
 
 > "Subagents:
 >  Claude receives the subagent's result when it completes."
@@ -178,29 +232,30 @@ flattened here into one quote:
 >  without its output."
 > "An orchestration flow that waits on subagent results can stall."
 
-So turning the flag on silently converts a reliable result-forwarding path into one that does not forward
-results at all,
-for delegation the user never framed as team work.
-That is a behavior change to unrelated workflows,
-which is a strong argument for opt-in independent of any bug.
+The user opts into Agent Teams,
+but not separately into each conversion of a named subagent into a teammate.
+Turning the flag on therefore changes how results reach the caller
+in delegation the user never framed as team work.
 
 ### Cost
 
-The [cost management documentation page][costs-docs] gives the only quantified figure Anthropic publishes:
+The [cost management documentation page][costs-docs] provides a quantified figure:
 
 > "Agent teams use approximately 7x more tokens than standard sessions when teammates run in plan mode,
 > because each teammate maintains its own context window and runs as a separate Claude instance."
 
-This is design,
- not defect.
-It is still a reason to gate:
-a feature that multiplies spend sevenfold under a common configuration cannot be on by default.
+That is token usage,
+ not spend;
+per-token pricing varies by model,
+ so the two do not convert one to one.
+The figure is also scoped to plan mode,
+and no source gathered here establishes how often teammates run in plan mode.
 
 ## What the shipped code shows
 
 The binary enforces the documented topology limits rather than merely documenting them,
 each with its own telemetry category.
-Literals below are verbatim from the extracted bundle,
+Literals are verbatim from the extracted bundle,
 including their dash characters:
 
 ```text
@@ -225,9 +280,7 @@ The binary also carries a limit the documentation page does not mention:
 > Run this from the main session,
 > or switch the desktop app to a profile-based or API-key credential"
 
-More telling are the paths where the code admits its own state can be wrong.
-Three verbatim literals,
- again including their dash characters:
+Three further literals show conditions the implementation represents and handles:
 
 ```text
 getTeammateModeFromSnapshot called before capture - this indicates an initialization bug
@@ -238,20 +291,22 @@ Retry the tool call.
 Couldn't open a teammate pane — running in-process instead.
 ```
 
-Initialization order is not guaranteed.
-`getTeammateModeFromSnapshot` passes that first literal to the error reporter,
+The teammate-mode literal is a guard.
+`getTeammateModeFromSnapshot` passes it to the error reporter when its snapshot is unset,
 then captures the setting lazily and continues with the `"in-process"` default.
-The bug is named in the shipped artifact and handled fail-soft rather than fixed.
+This shows the code recognizes an invalid initialization ordering and recovers from it.
+It does not show that the ordering currently occurs in practice.
 
-Permission requests can be lost in transit.
-Two call sites resolve the permission promise with the second literal.
-Because teammate permission prompts surface in the lead session,
-a failed mailbox write means a teammate blocks on an approval nobody will ever see.
+The permission literal is the resolution value of a failed mailbox write.
+Both call sites resolve the permission promise with `behavior: "ask"` carrying that message,
+so the failure is returned to the requesting teammate rather than leaving it blocked indefinitely,
+and the instruction is to retry.
+What a mailbox-write failure does establish is that
+the lead may never receive a request the teammate believed it sent.
 
-Backend selection degrades silently by design.
-The third literal is a warning notification,
- not an error,
-so a session asking for split panes can end up in a different execution mode than requested.
+The pane literal accompanies a warning notification with `color: "warning"`.
+Split-pane selection therefore falls back to in-process execution non-fatally and with a warning,
+not silently.
 
 The transport underneath is a per-recipient JSON file with a sibling lockfile:
 `writeToMailbox` computes `${inboxPath}.lock`,
@@ -264,17 +319,22 @@ an error string proves that a condition is represented and handled.
 It does not prove that the condition is frequent,
  severe,
 or the reason Anthropic withholds general availability.
-None of the extracted text states a GA criterion.
+No extracted text states a general-availability criterion.
 
 ## How much the feature has churned
 
 Measured against `anthropics/claude-code` `CHANGELOG.md`,
 which covers 365 releases from 0.2.21 through 2.1.233:
 
-- 36 changelog lines mention a teammate or an agent team,
+- 36 changelog lines match `teammate` or `agent team`,
    spread across 26 releases.
-- 29 of those 36 are `Fixed` or `Improved`;
-   7 add or change behavior.
+- 29 of those 36 begin with `Fixed` or `Improved`.
+  The remaining 7 begin with `Added`,
+   `Agent teams:`,
+   `Simplified`,
+   or `Subagent`;
+  they were classified by that prefix,
+   not by reading each entry's effect.
 - 9 of the 36 mention a crash,
    leak,
    hang,
@@ -289,11 +349,14 @@ The first entry sets the baseline:
 >  requires setting `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`)"
 
 npm published 2.1.32 on 2026-02-05 and 2.1.233 on 2026-08-14,
-so the feature has been in research preview for roughly six months.
+ which is 190 days.
 Counting `## ` headings in the changelog,
  160 releases shipped after 2.1.32.
 
-The fixes are not cosmetic.
+**These entries describe defects Anthropic reports as fixed,
+in releases preceding the v2.1.233 binary examined here.
+They are evidence of sustained stabilization work,
+ not of current behavior.**
 Grouped by what broke:
 
 - Memory retention:
@@ -323,95 +386,128 @@ Grouped by what broke:
    2.1.145 fixed teammates with non-ASCII names "failing every API call
   due to invalid header encoding".
 
-The architecture also changed under existing users mid-preview.
+Several of these are attributed to Agent Teams by the changelog wording
+but plausibly belong to shared machinery that teams exercise:
+provider environment propagation,
+ permission dialogs,
+ compaction,
+ and non-interactive exit handling
+are not team-specific subsystems.
+The team-specific entries are the roster,
+ mailbox,
+ and nested-spawn ones.
+
+The interface also changed under existing users mid-preview.
 Release 2.1.178,
  published 2026-06-15,
  removed the `TeamCreate` and `TeamDelete` tools entirely,
 replaced explicit teams with one implicit team per session,
 and left `team_name` "still accepted but ignored".
 The documentation still carries a compatibility note about that change.
-An interface that was replaced two months ago is a plain reason not to promise stability yet.
+That release is 62 days before this note.
 
-A crude size proxy across the versions installed locally,
-counting case-insensitive `teammate` matches in each executable:
-1179 at 2.1.226,
- 1234 at 2.1.227,
- 1240 at 2.1.228,
- 1244 at 2.1.232,
- 1246 at 2.1.233.
-`swarm` moves 133 to 152 over the same span.
-**Data quality note:**
- string counts track bundled text,
- including prompts and error messages,
-not code volume,
-and almost all of the movement is one jump between 2.1.226 and 2.1.227.
-Read this as "still actively edited in the last week",
- not as a growth rate.
+**No baseline was measured.**
+Nothing here compares this churn rate against another preview feature
+or against a generally available one,
+so the counts describe activity without establishing that the activity is unusual.
 
 ## What users report
 
-GitHub `search/issues` against `anthropics/claude-code` on 2026-08-16:
+Counts from GitHub `search/issues` through `gh api` on 2026-08-16,
+with the exact query strings:
 
-- 928 issues match "agent teams" anywhere,
-   205 of them open.
-- 969 match "teammate" anywhere,
-   249 open.
-- 410 have "agent team" in the title.
-- 63 open issues have "teammate" in the title.
+- `repo:anthropics/claude-code is:issue "agent teams"`:
+   928,
+   of which `is:open` gives 205.
+- `repo:anthropics/claude-code is:issue teammate`:
+   969,
+   of which `is:open` gives 249.
+- `repo:anthropics/claude-code is:issue in:title "agent team"`: 410.
+- `repo:anthropics/claude-code is:issue is:open in:title teammate`: 63.
 
 **Data quality note:**
- the "anywhere" counts include comment text
-and overstate how many issues are actually about the feature.
+ the unrestricted queries match comment text as well as titles,
+overlap each other heavily,
+and have no denominator,
+so they cannot establish defect density or unusual instability.
+High counts also track usage.
 The title-scoped counts are the tighter measure.
-High counts also reflect usage,
- not just breakage.
 
-More useful than the counts is what the recent open titles cluster around.
-Sampling the 30 most recently created open issues with a title match,
-the same failure keeps reappearing under different names:
-a teammate finishes work and the result does not reach the agent waiting for it.
+The sample that follows is the 30 most recently created open issues matching
+`repo:anthropics/claude-code is:issue is:open in:title teammate OR "agent team"`
+with `sort=created&order=desc&per_page=30`,
+classified by title text alone,
+each issue counted once,
+with no duplicate detection applied.
 
-- Results discarded on completion:
-   #84527 ("In-process teammate's final text is discarded on idle,
-  coordinator gets a payload-less `idle_notification`"),
-  #86090 (named background teammate's final message "never delivered to the parent"),
-  #86070 (teammate system prompt contradicts itself on result delivery,
-   "reports silently lost").
-- Delivery timing:
-   #85963 ("Teammates ignore message inbox until end of task"),
-  #83788 (messages sent during the busy-to-idle transition "never processed"),
-  #84494 ("batched 40-min deliveries"),
-  #87009 (completion notifications "delayed by tens of minutes,
-   require manual nudge").
-- False success:
-   #85949 (`SendMessage` to `team-lead` "false-succeeds into an orphaned inbox").
+- Message delivery and result reporting:
+   8 issues (#87009,
+   #86090,
+   #86070,
+   #85963,
+   #85949,
+  #84527,
+   #84494,
+   #83788).
+- Feature requests rather than defects:
+   4 (#86716,
+   #86666,
+   #83602,
+   #82203).
+- Failures reported while using teams but attributed to shared infrastructure by their own titles:
+  4 (#86129 auto-updater,
+   #84905 Remote Control,
+   #82627 macOS provenance,
+   #83366 tmux on Windows).
 - Live and persisted state diverging:
-   #86518 (`members[]` never pruned across `/clear`),
-  #86174 (`ListAgents` returns empty while the team is alive),
-  #85955 (`background_tasks` never clears idle `in_process_teammate` entries).
-- Configuration silently dropped:
-   #81852 (`tools:` allowlist "enforced for subagents
-  but silently dropped for named agents"),
-  #83533 (teammate does not inherit project MCP tools),
-  #86006 (`model` override "silently ignored" for background teammate sessions).
-- Hook coverage gaps:
-   #82418 (`PermissionRequest` hooks "never dispatched for agent-teams teammates"),
-  #82665,
-   #86285.
-- Isolation:
-   #84493 reports that worktree binding is session-scoped,
-  so "any in-process teammate's `EnterWorktree`/`ExitWorktree` silently repoints every other agent
-  in the session".
+   3 (#86518,
+   #86174,
+   #85955).
+- Configuration not inherited:
+   3 (#86006,
+   #83533,
+   #81852).
+- Hook coverage:
+   3 (#86285,
+   #82665,
+   #82418).
+- User interface:
+   2 (#86079,
+   #83512).
+- Lifecycle,
+   isolation,
+   and prompt caching:
+   1 each (#85047,
+   #84493,
+   #85954).
 
-The isolation report deserves separate mention.
+Message delivery and result reporting is the largest cluster in this sample,
+ at 8 of 30.
+Reporters in that cluster allege,
+ in their own words,
+that an in-process teammate's final text "is discarded on idle"
+leaving the coordinator a "payload-less `idle_notification`" (#84527),
+that `SendMessage` to `team-lead` "false-succeeds into an orphaned inbox" (#85949),
+and that deliveries are "batched 40-min" (#84494).
+The payload-less idle notification is documented behavior rather than a transport failure:
+the documentation states the notification "doesn't carry the teammate's output".
+The reports allege that the documented alternative,
+a teammate messaging the lead directly,
+does not reliably arrive either.
+
+One report deserves naming because it bears on an assumption a reader is likely to make.
 Teammates are described as independent Claude Code sessions,
-and a reader can reasonably assume they isolate like separate sessions do.
-If worktree binding is session-scoped,
- they do not.
+which invites the assumption that they isolate like separate sessions do.
+Reporter #84493 alleges that worktree binding is session-scoped,
+so "any in-process teammate's `EnterWorktree`/`ExitWorktree` silently repoints every other agent
+in the session".
+This was not reproduced,
+and no source gathered here documents the intended working-directory isolation model,
+which remains an open question about the feature.
 
 ## Local corroboration, and its limits
 
-This repository already records a finding about the same substrate.
+This repository records a finding about adjacent delegation mechanisms.
 `doc/decision/general-purpose-subagent-ban.md` states that
 "Programmatic steering via `SendMessage` is unreliable;
  in the last test it did not work
@@ -422,10 +518,12 @@ The generated `CLAUDE.md` preamble repeats the `SendMessage` finding to every se
 That document is about general-purpose subagents and `spawn-claude` child sessions,
 not about Agent Teams,
 and it must not be cited as evidence about teams.
-What it does corroborate is narrower and still relevant:
-the `SendMessage` and result-forwarding machinery that Agent Teams is built on
-has been observed unreliable in this repository,
-independently of the tracker reports above.
+Manual `SendMessage` steering and automatic final-result forwarding are also different channels,
+which the repository document treats separately.
+What it supports is narrower:
+this repository has independently observed analogous coordination failures
+in other delegation mechanisms.
+That similarity does not establish a shared implementation or an Agent Teams defect.
 
 ## What this evidence does not establish
 
@@ -433,12 +531,10 @@ Stated with the same confidence as the findings.
 
 - No fetched source says which limitation blocks general availability.
   The documentation enumerates limitations without ranking them or naming exit criteria,
-  and Anthropic publishes no GA date.
-  Every causal claim in this note is about what "experimental" protects against,
-  not about Anthropic's internal decision.
-- The live value of `tengu_amber_flint` is unknown.
-  The local fallback is `true` and the evaluator is the embedded GrowthBook client;
-  no live evaluation was observed.
+  the status-label page does not list the feature,
+  and Anthropic publishes no general-availability date.
+- The live value and source of `tengu_amber_flint` are unknown.
+  Only the local fallback of `true` and the presence of the GrowthBook evaluator were observed.
 - Error strings prove handling,
    not incidence.
   No failure rate,
@@ -450,53 +546,72 @@ Stated with the same confidence as the findings.
   The documentation says "There's no hard limit on the number of teammates" and recommends 3 to 5,
   which is guidance,
    not a measured limit.
-- No team was run.
-  Every claim about the binary is static reading of minified bundle text,
-  and identifier names in the quoted snippet are mangled.
-- Issue numbers are cited from titles returned by the search API.
-  Individual reports were not reproduced,
-   and maintainer triage status was not checked.
+- The working-directory and edit-isolation model for teammates was not established
+  from either the documentation or the binary.
+- No team was run,
+  so no claim here is a reproduction.
+  Issue contents are reporter allegations classified by title.
+- No churn or gating baseline was measured against other Claude Code features,
+  beyond the count of 342 `rt("tengu_...")` gates showing that remote gating is universal.
 
 ## Assessment
 
-"Experimental" on Agent Teams is doing three jobs at once,
-and collapsing them into "it's buggy" loses the useful part.
+This section is this note's interpretation of the evidence,
+not Anthropic's stated reasoning.
+Anthropic has not publicly identified a blocker or a general-availability criterion for Agent Teams.
 
-It is a support contract.
-The documented limitations are behaviors Anthropic is telling you to work around by hand:
-notice that a task never got marked complete,
- notice that the lead is messaging teammates
-that stopped existing at `/resume`,
- wait out a slow shutdown.
-Shipping that as general availability would mean promising it works unattended,
- which it does not.
+Reading the material as a whole,
+ "experimental" here appears to cover three separable things.
 
-It is an operational control.
-The second gate is a server-evaluated flag over already-installed binaries,
-which means Anthropic can withdraw the feature from every machine without a release.
-A feature you keep a remote off switch on is a feature you are not finished underwriting.
+The first is a set of documented behaviors that require human intervention.
+Task status lags and blocks dependents,
+resume leaves the lead addressing teammates that no longer exist,
+and the documented remedies are for the operator to notice and correct by hand.
+These are current,
+ vendor-stated behaviors in the documentation for this version,
+which is the strongest evidence in this note.
 
-It is a cost warning.
-Roughly sevenfold token usage in plan mode,
-plus the fact that enabling teams silently converts named subagents into teammates,
-means the flag changes both spend and the semantics of delegation the user never asked to change.
+The second is delegation semantics.
+Enabling the flag converts named subagents into teammates,
+and the documentation states plainly that an orchestration flow waiting on subagent results
+can stall as a result.
+A flag that changes how unrelated workflows return results is a reason for opt-in
+independent of any defect.
 
-Underneath the support-contract job,
- the technical core is narrower than the limitation list suggests,
-and it is not about whether models can collaborate.
-It is that the mailbox and lifecycle layer does not reliably deliver:
-results arrive as payload-less idle notifications,
-sends report success when the write failed,
-inbox reads lag until a turn ends,
-and the persisted team record drifts from the live one across `/clear` and `/resume`.
-The documented limitations,
- the changelog fixes,
- and the open tracker
-all point at that same layer.
-Until delivery is dependable,
- everything built above it inherits the doubt,
-which is a sufficient reason to keep the feature opt-in
-without needing any statement about Anthropic's roadmap.
+The third is cost.
+Roughly sevenfold token usage in plan mode is a design consequence of giving each teammate
+its own context window,
+and it argues against enabling by default regardless of stability.
+
+Separating the evidence by tense matters for the reliability question,
+because it is easy to overstate.
+Currently documented:
+ task-status lag,
+ resume gaps,
+ output-less idle notifications.
+Reported fixed before this version:
+ false `Message sent` on inbox write failure,
+the mailbox crash loop,
+ duplicate idle notifications,
+ memory retention.
+Currently alleged but unreproduced:
+ batched deliveries,
+ orphaned inboxes,
+discarded final text,
+ registry entries that outlive their agents.
+Deliberate semantics rather than failure:
+ the idle notification carrying no output.
+
+Those four categories all touch the mailbox and lifecycle layer,
+which is the narrowest description of the feature's weak point that the evidence supports.
+It is not a claim that the layer currently fails at any measured rate,
+and several changelog entries and issue reports grouped under Agent Teams
+plausibly belong to shared subsystems that teams merely exercise.
+What can be said is that message delivery and lifecycle state
+are where the documented limitations,
+ the fix history,
+ and the current reports converge,
+and that no public source shows that convergence resolved.
 
 ## What this means for this repository
 
@@ -508,19 +623,20 @@ Recorded as context,
   The `CLAUDE.md` preamble currently tells agents that in-process subagents
   "forward their results back to you reliably".
   With the flag on,
-   a subagent Claude names launches as a teammate instead,
+   a subagent Claude names launches as a teammate,
   and per the documentation the lead then gets an idle notification without the output.
   That preamble would become wrong.
 - The repository's existing preference for in-process subagents over `spawn-claude`
   rests on reliable result forwarding.
-  Agent Teams sits on the far side of that same tradeoff:
+  Agent Teams sits on the far side of that tradeoff:
   richer coordination,
    weaker forwarding.
-- The failure the tracker reports most often against teams,
-  a completed agent whose output never reaches the coordinator,
-  is the failure this repository already documented for `spawn-claude`.
-  Adopting teams would reintroduce a monitoring burden that
-  `doc/decision/general-purpose-subagent-ban.md` was revised to remove.
+- The largest cluster of current reports against teams,
+  a completed agent whose output does not reach the coordinator,
+  resembles the failure this repository already documented for `spawn-claude`.
+  The resemblance is in user-visible shape only;
+  no shared implementation was established.
 
 [agent-teams-docs]: https://code.claude.com/docs/en/agent-teams
 [costs-docs]: https://code.claude.com/docs/en/costs
+[status-labels]: https://support.claude.com/en/articles/14503520-available-beta-and-research-preview-features
