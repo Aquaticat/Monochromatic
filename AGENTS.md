@@ -653,6 +653,13 @@ RGT:
  grep-reflex `rg -rl`/`-ir` silently rewrites matches in output.
 Long form removes trap.
 
+RGD:
+ A shell glob defeats that recursion:
+ `rg pat src/*.ts` never enters `src/corpus-run/`,
+ and reports zero as confidently as a real absence.
+Pass the directory;
+ filter with `--glob`.
+
 LF2:
  No long-form spelling:
  short flag stays;
