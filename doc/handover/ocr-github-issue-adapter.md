@@ -350,6 +350,19 @@ verified the previously proposed fail-closed partition against synthetic finding
 That prototype is evidence only,
 not production code and not part of this repository.
 
+The installed GitHub CLI is `gh` 2.97.0,
+release commit `55dbb4dc6b7edb10b48e3d7fc5bccd32318d1b55`.
+Its `gh api` command delegates authentication to GitHub CLI configuration
+or the documented token environment variables,
+accepts a named JSON request file through `--input`,
+and can include response status and headers with `--include`.
+The adapter would never use either option's `-` standard-input form.
+Source inspection of `pkg/cmd/api/api.go` and `pkg/cmd/api/http.go`
+found one `client.Do` path per non-paginated invocation and no API-command retry loop.
+The underlying `cli/go-gh` 2.13.0 client uses the Go default transport rather than a retry transport.
+The workspace already invokes `gh api` from active packages and has no direct Octokit dependency.
+No GitHub boundary has been selected from this evidence yet.
+
 The pnpm `v11.8.0` source tag resolves to commit `93458600a8498412f85316d054e033319ba31ed6`.
 Its `installing/commands/src/update/index.ts` implementation uses `checkbox` and `Separator`
 from `@inquirer/prompts` for `pnpm update -i`.
@@ -602,8 +615,7 @@ in dependency order:
 
 ## Immediate next action
 
-Inspect the installed GitHub CLI's current API and authentication boundary,
-then ask whether the adapter invokes `gh api`,
+Ask whether the adapter delegates GitHub authentication and HTTP to `gh api`,
 uses a GitHub client library,
 or implements direct authenticated HTTP.
 Ask one question only,
