@@ -170,6 +170,14 @@ Every security-gated finding selected for publication requires its own explicit 
 The confirmation has no default;
 empty input reprompts.
 Declining confirmation withholds that finding without approving its publication.
+Withheld security findings are not persisted to another file or destination.
+The adapter reports only their count and input record ordinals or JSONL line numbers,
+never their titles,
+paths,
+code,
+or content.
+The original OCR input remains the authoritative retained copy;
+interactive pasted input is not retained by the adapter.
 
 Non-interactive mode uses an explicit authority ladder:
 
@@ -359,7 +367,9 @@ in dependency order:
    Explicit category `other` is an ordinary candidate visibly marked `OTHER`.
    Missing category metadata is an ordinary candidate visibly marked `UNCATEGORIZED`.
    Neither receives an additional authority gate.
-   Where findings withheld from publication live and how users inspect them remain open.
+   Withheld security findings are not persisted separately.
+   Output reports only their count and input record ordinals or JSONL line numbers;
+   users inspect the original OCR input.
 6. Repository selection:
    explicit `--repo`,
    Git remote inference,
@@ -400,8 +410,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about whether findings withheld by the security gate
-are persisted separately or remain only in the source input.
+Ask the next dependent design question about whether the destination repository is always explicit
+or may be inferred from the current Git checkout.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -481,5 +491,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   made explicit OCR category `other` an ordinary candidate with a visible `OTHER` marker.
 - 2026-08-16:
   made missing category metadata an ordinary candidate with a visible `UNCATEGORIZED` marker.
+- 2026-08-16:
+  rejected separate persistence for withheld security findings;
+  only counts and input positions are reported.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
