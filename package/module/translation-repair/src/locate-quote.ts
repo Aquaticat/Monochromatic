@@ -4,6 +4,7 @@ import type {
 } from './issue-model.ts';
 import {
   collapseLineBreaks,
+  collapseSoftLineBreaks,
   normalizePunctuation,
 } from './quote-normalize.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
@@ -235,12 +236,12 @@ export function locateQuote(
    * UTF-16 unit with one, so every offset here indexes the stored document and
    * anchors still carry its own characters.
    */
-  const haystack = collapseLineBreaks({ text: normalizePunctuation({ text: document.text, },), },);
+  const haystack = collapseSoftLineBreaks({ text: normalizePunctuation({ text: document.text, },), },);
 
   /**
    * Quote read the same way.
    */
-  const needle = collapseLineBreaks({ text: normalizePunctuation({ text: quote, },), },);
+  const needle = collapseSoftLineBreaks({ text: normalizePunctuation({ text: quote, },), },);
 
   /**
    * Where the quote sits once both are read that way.

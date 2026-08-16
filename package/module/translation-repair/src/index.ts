@@ -55,6 +55,7 @@ export {
 } from './locate-quote.ts';
 export {
   collapseLineBreaks,
+  collapseSoftLineBreaks,
   normalizePunctuation,
 } from './quote-normalize.ts';
 export {

@@ -105,11 +105,13 @@ export function normalizePunctuation({ text, }: { readonly text: string; },): st
 }
 
 /**
- * Collapses soft line breaks onto plain spaces.
+ * Collapses every line break onto a plain space.
  * Shares the length guarantee of `normalizePunctuation`, so a position found
  * in the result still indexes the input.
- * A blank line stays unmatchable by a space-joined quote, because it carries
- * two line breaks where such a quote carries one space.
+ *
+ * FOR DISPLAY, NOT FOR MATCHING: this flattens a paragraph break as readily as
+ * a soft wrap, which is right for a one-line diagnostic and wrong for deciding
+ * whether a quote occurs. Matching uses {@link collapseSoftLineBreaks}.
  *
  * @param text - text whose line breaks collapse
  *
@@ -125,6 +127,93 @@ export function collapseLineBreaks({ text, }: { readonly text: string; },): stri
     text,
     map: LINE_BREAK_CANON,
   },);
+}
+
+/**
+ * Whether one position holds a line-break unit.
+ *
+ * @param text - text being scanned
+ *
+ * @param index - position to read, which may sit outside the text
+ *
+ * @returns Whether that position holds a line break
+ *
+ * @example
+ * ```ts
+ * const breaks = isLineBreakAt({ text: 'a\nb', index: 1, },);
+ * ```
+ */
+function isLineBreakAt(
+  {
+    text,
+    index,
+  }: {
+    readonly text: string;
+    readonly index: number;
+  },
+): boolean {
+  return LINE_BREAK_CANON[text.charAt(index,)] !== undefined;
+}
+
+/**
+ * Collapses only SOLE line breaks onto plain spaces, leaving a run of them as
+ * it stands.
+ *
+ * WHY A RUN IS LEFT ALONE: a lone break inside a paragraph is a soft wrap, and
+ * a model quoting across it writes a space, so the two forms mean the same text.
+ * A run of breaks is a STRUCTURAL boundary. Collapsing those too made a blank
+ * line into two spaces, so a quote carrying two spaces matched straight across
+ * a paragraph boundary the document keeps: safe only for as long as every model
+ * joined lines with exactly one space, which is not a property this pipeline can
+ * assume of its inputs. A run now matches nothing but itself.
+ *
+ * WHAT IT STILL DOES NOT PROTECT: boundaries a single line break represents,
+ * inside fenced code, between list items, and between table rows, plus a
+ * Markdown hard break, whose two trailing spaces plus a wrap read as three
+ * spaces. Those need the parse rather than the characters, and `#106` records
+ * it.
+ *
+ * Length-preserving like everything here, so offsets still index the input.
+ *
+ * @param text - text whose soft wraps collapse
+ *
+ * @returns Same-length text reading sole line breaks as spaces
+ *
+ * @example
+ * ```ts
+ * collapseSoftLineBreaks({ text: 'her\nshop', },);
+ * ```
+ */
+export function collapseSoftLineBreaks({ text, }: { readonly text: string; },): string {
+  /**
+   * Units in input order, each either collapsed or kept.
+   */
+  const units: string[] = [];
+  for (
+    let index = 0;
+    index < text.length;
+    index += 1
+  ) {
+    /**
+     * Unit at this position.
+     */
+    const unit = text.charAt(index,);
+
+    /**
+     * Whether this break stands alone between non-break neighbours.
+     */
+    const sole = (LINE_BREAK_CANON[unit] !== undefined)
+      && (!isLineBreakAt({
+        text,
+        index: index - 1,
+      },))
+      && (!isLineBreakAt({
+        text,
+        index: index + 1,
+      },));
+    units.push(sole ? ' ' : unit,);
+  }
+  return units.join('',);
 }
 
 //endregion Quote normalization

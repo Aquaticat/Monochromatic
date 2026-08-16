@@ -200,6 +200,25 @@ await describe({
       },
     },),
     it({
+      name: 'refuses to join text across a PARAGRAPH BREAK even when the quote carries exactly as many '
+        + 'spaces as the break carries line endings, which is what a model does when it joins lines '
+        + 'blindly: a run of line breaks is structure and matches nothing but itself',
+      fn: async () => {
+        /** Two paragraphs, so the break between them is two line endings. */
+        const twoParagraphs = 'The cat naps at noon.\n\nShe watches the birds.\n';
+        const located = locateQuote({
+          document: {
+            text: twoParagraphs,
+            nodes: parseDocument({ text: twoParagraphs, },).nodes,
+          },
+          side: 'target',
+          // Two spaces, matching the two line endings one for one.
+          quote: 'The cat naps at noon.  She watches the birds.',
+        },);
+        expect(located.located,).toBe(false,);
+      },
+    },),
+    it({
       name: 'refuses a quote that is unique CHARACTER FOR CHARACTER while a wrapped twin sits earlier '
         + 'in the document, since a model rewraps whatever it copies and its whitespace cannot say '
         + 'which of the two it read',
