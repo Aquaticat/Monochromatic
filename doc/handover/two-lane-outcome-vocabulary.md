@@ -503,6 +503,19 @@ Two facts fell out of the work and are now pinned by tests:
 `buildSettledArtifact` (version 1) has lost its last production caller and stays:
 readers still parse version 1 artifacts, and the corpus directory holds them.
 
+## The invariants review is fully closed (`#103`)
+
+Its three remaining items were re-read rather than trusted, and two were already built:
+
+-   The translate lane already enforces what hearing nobody means, at `translate-document.ts:367`,
+    before the record is kept.
+-   The resumed branch already refuses an unheard cached record.
+    It was untested and its finding was the only one written as a bare sentence while its siblings
+    carry a tag, so a build that started refusing every cached slice would have read as a run with no
+    cache. Now `translate-discarded-unheard-slice chunk N; ...`, pinned by a driver test shown to
+    fail with the branch stripped (`112295ed2`).
+-   The `unrecorded` collapse, fixed and described in the next-actions item 3 above.
+
 ## The launch gate has not moved
 
 No corpus pass while the window trial is live:
