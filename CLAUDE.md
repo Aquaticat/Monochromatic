@@ -18,60 +18,16 @@ Do not pass `--cwd`:
 the child then will not read the repo `CLAUDE.md`,
 and Claude Code's cwd handling is unreliable.
 
-Use `timeout 3600 pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<your question>"` for a strong model's opinion.
-Call it in addition to the advisor tool,
+Use `timeout 3600 pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<question>"` alongside advisor,
 never instead:
-whenever you are about to call advisor,
-launch sol on the same question too,
-then continue working.
-Advisor reads the whole transcript and catches what you skipped;
-sol reads only what you paste and catches what you got wrong.
-Neither substitutes for the other.
-
-Paste the actual source into sol's prompt,
-whole files,
-never excerpts:
-its context window is always large enough,
-so trimming only risks cutting the part that mattered.
-Never send a prose description of code sol could read instead.
-Measured:
-prose-only runs returned plausible-sounding advice that missed defects the source-bearing run of the same question found immediately,
-because every bug had already survived the description.
-Include the question,
-the repo-relative paths,
-and every file the answer depends on.
-
-Always wrap it in `timeout 3600`, and the unit is SECONDS.
-The `timeout` on this PATH is cargo-timeout-cli, not coreutils:
-its usage is `timeout <SECONDS> <COMMAND> [ARGS]`,
-and it rejects `1h` with `invalid value '1h' for '<SECONDS>': invalid digit found in string`.
-Verified by running it, after an earlier version of this instruction shipped the coreutils spelling untested.
-
-Calls stall indefinitely:
-measured 2026-08-16,
-two sat 5h18m and 3h43m at zero CPU with empty output,
-while siblings launched the same night finished in minutes.
-Later that day two more stalled back to back,
-both killed by the wrapper at the full hour with zero bytes,
-exiting 124,
-and no sibling finished at all.
-Do not count on a sibling returning;
-budget the work as if the answer may never arrive.
-An hour bounds a stall without truncating a real answer.
-This is TMO's unbounded-runtime exception,
-not routine verification.
-
-Launch it in the background and continue other work;
-the completion notification arrives on its own.
-Output stays completely empty until the answer lands in one final flush,
-so an empty file means still thinking OR stalled,
-never partial;
-elapsed time against a sibling call is what separates the two.
-Never poll or sleep-wait on the output file.
-Never stop a running pi call without an explicit cancellation request;
-"don't wait for it" or "let's move on" means keep working while it runs,
-not kill it.
-The `timeout` wrapper is the only thing that may end one early.
+advisor reads the transcript,
+sol reads only what you paste.
+Paste whole files,
+never prose.
+`timeout` here takes SECONDS.
+Background it;
+never poll or kill it;
+it may never return.
 
 # Development guidelines for AI agents
 
