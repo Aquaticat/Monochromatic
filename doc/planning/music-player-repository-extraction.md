@@ -124,6 +124,8 @@ not source checkouts of Monochromatic tooling.
 - Preserve the four-crate Rust plugin architecture rather than collapsing it for publication.
 - Publish the Kotlin Detekt rules JAR to Maven Central as
   `cat.aquati.monochromatic:detekt-rules`.
+- Require verified control of the `cat.aquati` Maven Central namespace before extraction.
+- Do not fall back to `io.github.aquaticat` if verification is delayed.
 - Extend Monochromatic's existing publication workflows:
   - npm publication with package inspection and provenance;
   - crates.io publication in dependency order with package verification and provenance;
@@ -161,8 +163,6 @@ not source checkouts of Monochromatic tooling.
   Resolve each conflict explicitly in policy before generation continues.
 - Do not treat the live policy source as a live tooling-code dependency.
   Executable tooling still comes from registries.
-
-Commit behavior remains open under [Open questions](#open-questions).
 
 ### Local ignored artifacts
 
@@ -333,7 +333,7 @@ A later action request must authorize them.
   2.  `monochromatic-rust-linter-pattern`
   3.  `monochromatic-rust-linter-plugin-builtin`
   4.  `monochromatic-rust-linter`
-- Add Maven Central namespace verification and publication.
+- Verify the `cat.aquati` Maven Central namespace before publication or extraction.
 - Dry-run and inspect every packed artifact before external mutation.
 - Complete required first-publication bootstrap.
 - Configure trusted publishing or equivalent release authentication after bootstrap.
@@ -462,16 +462,6 @@ Do not leave both repositories writable as authoritative homes.
 - Preserved ignored outputs exist only in the new local checkout and were checksum-compared.
 - No credential or signing secret appears in the extracted tracked tree.
 
-## Open questions
-
-Resolve these one at a time during the remaining grilling session.
-Update this document immediately after each answer.
-
-### Maven namespace fallback
-
-Decide whether failure or delay verifying `cat.aquati` blocks extraction,
-or whether `io.github.aquaticat` is pre-authorized as fallback.
-
 ## Rejected alternatives
 
 - A synchronized copy was rejected because it creates competing sources of truth.
@@ -491,6 +481,7 @@ or whether `io.github.aquaticat` is pre-authorized as fallback.
 - Collapsing the Rust linter family into one crate was rejected because it would redesign the plugin boundary.
 - Manual-dispatch-only publication was rejected because latest-at-prepare depends on consistent releases.
 - Committing synchronized policy and skill copies was rejected because explicit preparation is the lifecycle boundary.
+- Falling back to `io.github.aquaticat` was rejected to avoid permanent coordinate fragmentation.
 
 ## Evidence commands
 
