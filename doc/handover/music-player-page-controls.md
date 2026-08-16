@@ -11,7 +11,8 @@ Keep this file current after each implementation or visual-verification step.
 
 ## Product requirements
 
-- Radio controls remain the first-install default.
+- Chromium-like tabs are the first-install default.
+  Radio remains stable persisted value `0` and remains the unknown-value fallback.
 - Settings appears immediately before Open.
 - A settings selection applies immediately and persists.
 - Available styles are radio controls,
@@ -30,11 +31,19 @@ Keep this file current after each implementation or visual-verification step.
   music,
   and close affordances are omitted.
 - Chromium geometry uses Chromium logical metrics rather than screenshot device pixels.
+- Chromium label inline padding is `10` logical units on each side,
+  half the earlier `20`-unit inset.
 - Chromium active-tab shoulders must visibly extend outside the active tab's content container.
 - LED hardware supports distinct dark and light scenes while retaining identical inactive-cap pigments.
 - In the light scene,
   the full-width backplate must be visibly lighter than the `#eceef1` page ground.
 - Selected LED color is derived from the runtime accent.
+  All color-coordinate manipulation uses OKLCH,
+  including darkening selected fills and deriving edges,
+  hot layers,
+  glow,
+  and ink glow.
+  Alpha-only changes do not alter color coordinates.
   The reference purple demonstrates state and material behavior,
   not a literal pigment.
 - Wrapped LED rows remain one connected machined backplate.
@@ -120,6 +129,9 @@ body-sized semibold legends,
 always-white active text,
 subtle dome and shoulder layers,
 and accent-derived selection.
+The latest Android dark capture rejected a near-white selected fill behind white text.
+The selected fill must be dark enough for clear white-legend contrast in every runtime accent and ambient scene.
+The pending correction performs every dynamic accent derivation in OKLCH on both platforms.
 Android dark background and surface roles are true black for every style.
 
 The first Android `SubcomposeLayout` probe measured complete targets containing `fillMaxSize()` paint,
@@ -166,17 +178,20 @@ shadow,
 bloom,
 and occlusion treatments must follow `led-buttons-generator.py`.
 The active hue must be derived from runtime accent while preserving those material relationships.
+All derived LED pigments must be computed in OKLCH,
+never by RGB or HSV interpolation or brightness manipulation.
 
 ### Chromium tabs
 
 `doc/troubleshooting/chromium-tab-raster-scale.md` records the Chromium source audit and citations.
 The source checkout used during research has been removed.
-Implemented logical dimensions are a 41-unit row,
+Target logical dimensions are a 41-unit row,
 35-unit tab,
 10-unit and 12-unit radii,
-20-unit text inset without browser icons,
+10-unit inline text padding on each side,
 a 2 by 16-unit divider,
 and a 1-unit contour.
+The `10`-unit product inset deliberately halves Chromium's source-derived `20`-unit inset.
 
 ### Layout investigations
 
@@ -344,58 +359,47 @@ cap rows remain content-width.
 The screen corner is exactly `#000000`.
 The first light full-width capture exposed a darker-than-ground plate and is rejected before-state evidence.
 The brighter-plate recapture then exposed undersized legends and is also rejected before-state evidence.
-Current accepted Android geometry artifact is:
+The body-sized light recapture confirms equal `77px` accessibility-node heights for `Volume` and LED legends,
+and pixel samples confirm the `#f8f9fa` rendered plate is lighter than the `#eceef1` ground:
 
-- `/home/user/temp/agent/music-player-pixel6-led-full-width-dark.png`
+- `/home/user/temp/agent/music-player-pixel6-led-full-width-light-final.png`
 
-A new light capture with `#f7f8fa` plate paint and body-sized legends remains pending.
+Its paired dark recapture is rejected because a near-white selected cap fails contrast with its invariant white legend:
+
+- `/home/user/temp/agent/music-player-pixel6-led-full-width-dark-final.png`
+
+Both ambient scenes need recapture after the OKLCH contrast correction.
 Earlier AVD and stepped-outline captures are superseded before-state evidence only.
 Desktop release capture and requester visual approval remain pending.
 
 ## Working-tree and process state
 
-Main worktree contains the scoped one-piece plate redesign pending commit.
-Concurrent unrelated modifications currently include `.serena/project.yml` and troubleshooting documents outside this task.
-Do not stage or alter those unrelated paths.
+Main `HEAD` contains the brighter light plate and body-sized LED legend changes.
+An Android release with those changes is installed on connected Pixel 6 serial `1C171FDF600KWW`.
+No Android emulator is running or authorized for this verification.
+The active source change is the uncommitted contrast correction,
+which must replace its temporary RGB interpolation with OKLCH before commit.
+Concurrent unrelated `.serena/project.yml` remains modified.
+Do not stage or alter it.
 
 Current detached render worktree:
 `/var/home/user/temp/agent/music-player-led-shared-plate-render`.
-It is based on `b495108be` and has fixture-only changes to
-`package/music-player/desktop-app/ui/app.slint`.
 Treat that worktree and its target images as disposable visual-analysis material,
 not source to merge wholesale.
 The older `/var/home/user/temp/agent/music-player-led-render` worktree remains rejected before-state material.
 
-The current desktop release runs in `proc_4e50`.
-The `Pixel_9_Pro_Fold` AVD runs in `proc_fd67` with `-no-snapshot-save`.
-Android Emulator 37.1.11 emitted `bad color buffer handle 388` once after boot,
-but subsequent explicit-display screenshots rendered the app.
-Do not infer emulator stability from that single capture.
-Completed process records still available in the harness include:
-
-- `proc_d7a6`:
-   desktop compact Chromium run,
-  exited successfully after the user closed it
-- `proc_441e`:
-   Android compact Chromium release install and launch,
-  exited successfully
-
-The current Android release runs on AVD serial `emulator-5554`.
-The Pixel 6 is disconnected.
-Re-enumerate devices before any future install.
-
-`doc/troubleshooting/README.md` indexes troubleshooting categories,
-not every standalone report.
-The Chromium raster-scale report therefore needs no explicit entry under the current index policy.
+No build or application process is currently running.
 
 ## Remaining work
 
-1.  Complete platform checks for connected wrapped rows.
-2.  Rebuild desktop and Android releases.
-3.  Reinstall on `emulator-5554` and verify the connected wrapped state through UI Automator.
-4.  Capture dark and light connected-row scenes with an explicit display ID.
-5.  Relaunch the desktop release and obtain requester visual approval.
-6.  Restore the AVD display override after verification.
+1.  Implement white-legend contrast using OKLCH-only dynamic color derivation on Android and desktop.
+2.  Halve Chromium label inline padding to `10` units per side on both platforms.
+3.  Make Chromium-like tabs the first-install default while preserving persisted numeric mappings and radio fallback.
+4.  Run platform lint,
+    tests,
+    and release builds.
+5.  Reinstall on Pixel 6 serial `1C171FDF600KWW` and capture final dark and light LED scenes.
+6.  Capture desktop dark and light scenes and obtain requester visual approval.
 
 ## Risks and guardrails
 
@@ -411,13 +415,16 @@ The Chromium raster-scale report therefore needs no explicit entry under the cur
   matching-scale captures and correct every material or geometry mismatch they expose.
 - Treat purple in the LED reference as an accent-derived placeholder,
   never a fixed application color.
+- Compute every derived pigment in OKLCH.
+  Do not use RGB interpolation or HSV brightness changes.
+- Keep selected fills dark enough to contrast clearly with invariant white active legends.
 - Android dark-mode page ground and full-screen surface must both be `#000000`.
 - Preserve the stable persisted integer mapping.
 - Do not reintroduce full-row segment decoration.
 - Do not add package-specific segmented sizing policy to `AGENTS.md`.
 - Do not include `.serena/project.yml` or detached-worktree scratch changes in commits.
-- Current Android verification is authorized only on local AVD serial `emulator-5554` while the Pixel is disconnected.
-  Reconfirm the target when the requester reconnects hardware.
+- Android verification is authorized only on connected Pixel 6 serial `1C171FDF600KWW`.
+  Do not start an emulator.
 
 ## Progress log
 

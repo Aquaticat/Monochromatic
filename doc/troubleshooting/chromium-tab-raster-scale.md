@@ -60,7 +60,8 @@ int TabStyle::GetBottomCornerRadius() const {
 
 The project deliberately does not adopt Chromium's fixed standard width.
 Its accepted product requirement is content-width labels that wrap as whole tabs.
-It does adopt Chromium's internal horizontal inset.
+Chromium's internal horizontal inset remains source evidence,
+but the product now deliberately halves it.
 `chrome/browser/ui/tabs/tab_style.cc:314-324` composes the `12`-DIP shoulder with `8` DIPs of padding:
 
 ```cpp
@@ -76,7 +77,10 @@ return gfx::Insets::TLBR(
 ```
 
 That gives `20` DIPs on each side of text when the favicon and close control are omitted.
-The earlier `24`-unit inset made every content-width tab `8` units wider.
+The application now uses `10` logical units on each side,
+exactly half the source-derived inset,
+per requester direction.
+The earlier `24`-unit inset made every content-width tab `8` units wider than the former `20`-unit version.
 
 The file-folder silhouette is source behavior,
 not a rounded rectangle approximation.
@@ -131,12 +135,13 @@ mise run //package/music-player/android-app:test:unit
 - `41` source row height:
    `35` tab height plus `6` strip padding.
 - `10:35` top-corner ratio and `12:35` bottom-shoulder ratio.
-- `20` horizontal text inset when icon and close controls are omitted.
+- `20` Chromium-source horizontal text inset when icon and close controls are omitted.
+- `10` application inline text padding on each side after the requester-directed halving.
 - `2` by `16` inactive separators.
 - `1`-unit active contour.
 
-Desktop uses the source values directly.
-Android uses a visible `48dp` face plus the `6dp` strip inset,
+Desktop uses the source geometry except for the deliberate `10px` inline text padding.
+Android uses the same `10dp` inline text padding plus a visible `48dp` face and the `6dp` strip inset,
 then scales the corner and shoulder ratios to that face.
 
 ### Values that reproduce the oversized imitation

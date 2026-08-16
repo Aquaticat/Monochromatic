@@ -5,6 +5,14 @@ Build,
 test,
 and lint commands are defined in `mise.toml`.
 
+## Page-control default
+
+Chromium-like tabs are the first-install page-control style.
+Their labels use `10dp` inline padding on each side,
+half the earlier `20dp` inset.
+Persisted style integers retain their stable mapping,
+and unknown values still fall back to radio controls.
+
 ## Custom control sizing
 
 A requested minimum control size applies to both the visible control face and its owned layout target unless the
@@ -29,3 +37,7 @@ LED legends use `MaterialTheme.typography.bodyLarge`,
 matching ordinary body labels such as Volume while retaining semibold weight.
 Active-cap legend text is always white,
 independent of runtime accent or ambient scene.
+Every selected-pigment derivation uses OKLCH color coordinates.
+The selected fill remains dark enough to contrast clearly with its white legend,
+even when the runtime Material accent is very light.
+Alpha-only changes may adjust opacity without changing color coordinates.

@@ -385,7 +385,11 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The full page grid remains
   visible,
    so late-alphabet artists stay discoverable.
-   Page selectors default to wrapping radio controls.
+   Page selectors default to wrapping Chromium-like tabs.
+   Their labels use `10px` inline padding on each side,
+   half the earlier `20px` inset.
+   Persisted style integers retain their stable mapping,
+   and unknown values still fall back to radio controls.
    Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
    joined content-width segmented buttons,
    raised content-width Chromium-like tabs,
@@ -399,6 +403,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
    LED legends use at least the normal body-label size,
    matching labels such as Volume.
+   Active legends remain white,
+   so selected fills stay dark enough for clear contrast across runtime accents and ambient scenes.
+   Every derived LED pigment uses OKLCH color coordinates;
+   alpha-only opacity changes do not alter color coordinates.
    The choice applies immediately and persists across launches.
    Each wide page-selector FlexboxLayout pins `align-content` and
   `cross-axis-alignment` to start (both default to stretch),
