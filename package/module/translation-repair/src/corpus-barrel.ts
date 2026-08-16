@@ -9,6 +9,22 @@
 // pipeline.
 
 export { buildSettledArtifact, } from './corpus-run/artifact-build.ts';
+export { buildSettledArtifactV2, } from './corpus-run/artifact-v2-build.ts';
+export {
+  ARTIFACT_SCHEMA_VERSION_V2,
+  type ArtifactJsonValue,
+  type SettledArtifactV2,
+  type SettledLaneV2,
+  type SettledPreparationV2,
+} from './corpus-run/artifact-v2-contract.ts';
+export type {
+  ArtifactComparisonRowV2,
+  ArtifactDecisionComparisonV2,
+  ArtifactDeliveryRowV2,
+  ArtifactLaneVerdictV2,
+  ArtifactSliceDeliveryV2,
+  ArtifactSliceOutcomeV2,
+} from './corpus-run/artifact-v2-vocabulary.ts';
 export {
   censusByGeneration,
   type GenerationCensus,
