@@ -42,6 +42,7 @@ Keep this file current after each implementation or visual-verification step.
 - In the light scene,
   the full-width backplate must be visibly lighter than the `#eceef1` page ground.
 - Selected LED color is derived from the runtime accent.
+  Contrast darkening must retain most available runtime-accent chroma so the selected background remains vibrant.
   Every application color operation uses OKLCH,
   including non-LED controls,
   darkening selected fills,
@@ -148,7 +149,7 @@ subtle dome and shoulder layers,
 and accent-derived selection.
 The latest Android dark capture rejected a near-white selected fill behind white text.
 The selected fill must be dark enough for clear white-legend contrast in every runtime accent and ambient scene.
-The pending correction performs every dynamic accent derivation in OKLCH on both platforms.
+Commit `cd850fa52` separates OKLCH lightness and chroma mixing so contrast darkening retains vibrant accent chroma.
 Android dark background and surface roles are true black for every style.
 
 The first Android `SubcomposeLayout` probe measured complete targets containing `fillMaxSize()` paint,
@@ -398,14 +399,16 @@ content-width caps,
 and a full-width plate.
 Pixel samples measure light ground `#eceef1` and plate `#f7f8fa`.
 The Pixel 6 was restored to dark mode after capture.
+These captures predate the more-vibrant selected-background adjustment and require final replacement.
 Earlier AVD and stepped-outline captures are superseded before-state evidence only.
 Desktop release capture and requester visual approval remain pending.
 
 ## Working-tree and process state
 
 Main `HEAD` contains the brighter light plate and body-sized LED legend changes.
-An Android release with the OKLCH contrast changes is installed and verified on connected Pixel 6 serial
+An Android release with the earlier OKLCH contrast changes is installed on connected Pixel 6 serial
 `1C171FDF600KWW`.
+The more-vibrant selected-background release has not yet been installed or captured.
 No Android emulator is running or authorized for this verification.
 Commit `8eb6c8d82` implements application color operations through OKLCH,
 including alpha changes outside LED controls.
@@ -423,11 +426,10 @@ No build or application process is currently running.
 
 ## Remaining work
 
-1.  Increase selected LED background vibrance while retaining OKLCH contrast guarantees.
-2.  Run remaining platform lint,
+1.  Run remaining platform lint,
     tests,
     and release builds after the vibrance change.
-3.  Verify final desktop scenes inside `package/cli/nested-wayland-session` and obtain requester visual approval.
+2.  Verify final desktop scenes inside `package/cli/nested-wayland-session` and obtain requester visual approval.
 
 ## Risks and guardrails
 

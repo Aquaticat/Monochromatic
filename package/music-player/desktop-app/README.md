@@ -409,6 +409,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    matching labels such as Volume.
    Active legends remain white,
    so selected fills stay dark enough for clear contrast across runtime accents and ambient scenes.
+   Independent OKLCH lightness and chroma mixing retains most available accent chroma,
+   keeping selected backgrounds vibrant.
    Every application color operation uses OKLCH,
    including alpha changes and operations outside LED controls.
    The choice applies immediately and persists across launches.

@@ -45,3 +45,5 @@ Every application color operation uses OKLCH,
 including Chromium colors and alpha changes outside LED controls.
 The selected fill remains dark enough to contrast clearly with its white legend,
 even when the runtime Material accent is very light.
+Independent OKLCH lightness and chroma mixing retains most available accent chroma,
+keeping the selected background vibrant instead of muddy.
