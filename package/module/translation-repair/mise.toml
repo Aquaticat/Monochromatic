@@ -142,3 +142,8 @@ run = "node dist/final/node/roster-bench.mjs"
 description = "Measure the pinned corpus after slicing: slice size spread, sections only one side carries, and blocks only the translation has; spends no quota"
 depends = ["build"]
 run = "node dist/final/node/slice-census.mjs"
+
+[tasks."window-trial-probe"]
+description = "#107: judge flagged slices and matched controls three times over ONE slate, narrow, narrow again, then with the neighbouring original, and report whether the window moved the replacement rate further than two narrow runs move it; SPENDS QUOTA, resumes from its ledger, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR"
+depends = ["build"]
+run = "node dist/final/node/window-trial-probe.mjs"

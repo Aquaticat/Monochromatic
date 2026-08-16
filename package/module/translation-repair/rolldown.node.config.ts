@@ -44,6 +44,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "judge-fidelity-probe": "./src/corpus-run/judge-fidelity-probe.ts",
     "slice-census": "./src/corpus-run/slice-census.ts",
     "translate-probe": "./src/corpus-run/translate-probe.ts",
+    "window-trial-probe": "./src/corpus-run/window-trial-probe.ts",
   },
 },);
 

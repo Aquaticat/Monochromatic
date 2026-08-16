@@ -25,6 +25,7 @@ import {
 } from './window-trial-ledger.ts';
 import {
   reportWindowTrial,
+  TRIAL_ARMS,
 } from './window-trial-report.ts';
 import {
   controlSlices,
@@ -32,6 +33,10 @@ import {
   type TrialSlice,
 } from './window-trial-draw.ts';
 import { runSliceArms, } from './window-trial-slice.ts';
+import {
+  assertWindowReachedJudges,
+  witnessSheets,
+} from './window-trial-witness.ts';
 
 //region Window trial probe
 // `#108`, run end to end: does showing the judges the neighbouring original
@@ -307,9 +312,23 @@ async function main(): Promise<void> {
   const { signal, } = new AbortController();
 
   /**
+   * Wrapper the run buys under until the window is seen on the wire.
+   */
+  const witness = witnessSheets({ client, },);
+
+  /**
    * Slices bought so far, which the first-slice check reads.
    */
   const bought = { count: 0, };
+
+  /**
+   * State of the live window check: wide arms bought under the witness, and
+   * whether the check has passed and the wrapper been dropped.
+   */
+  const witnessed = {
+    wideArms: 0,
+    passed: false,
+  };
 
   for (const entryId of await listCorpusPeople({ pin: RUN_CORPUS_PIN, },)) {
     /* oxlint-disable no-await-in-loop -- entries are walked in order so a kill leaves a prefix */
@@ -324,7 +343,7 @@ async function main(): Promise<void> {
        * Arms this call bought, empty when the ledger already held them all.
        */
       const rows = await runSliceArms({
-        client,
+        client: witnessed.passed ? client : witness.client,
         slices: drawn.slices,
         chunkIndex: pick.chunkIndex,
         sliceClass: pick.sliceClass,
@@ -344,6 +363,24 @@ async function main(): Promise<void> {
       if (rows.length === 0)
         continue;
       bought.count += 1;
+      // THE ONE CHECK ONLY A LIVE RUN CAN MAKE, on the earliest slice that
+      // bought a wide arm. Resumption can leave that slice owing narrow arms
+      // only, so this waits for a wide arm rather than for the first purchase.
+      if (!witnessed.passed) {
+        witnessed.wideArms += rows
+          .filter(function isWide(row,) {
+            return row.arm === TRIAL_ARMS.wide;
+          },)
+          .length;
+        if (witnessed.wideArms > 0) {
+          assertWindowReachedJudges({
+            sheets: witness.sheets,
+            expected: witnessed.wideArms * RUN_ROSTER.length,
+          },);
+          witnessed.passed = true;
+          l.info('the window reached every judge of the first wide arm',);
+        }
+      }
       l.info(
         `${entryId}/${String(pick.chunkIndex,)} (${pick.sliceClass}): ${
           rows.map(function toOutcome(row,) {

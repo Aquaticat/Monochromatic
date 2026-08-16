@@ -299,7 +299,7 @@ await describe({
     },),
 
     it({
-      name: 'FAILS integrity when the patch breaks a footnote, which leaves the '
+      name: 'REFUSES integrity when the patch breaks a footnote, which leaves the '
         + 'grammar perfectly valid so the downgrade signal cannot see it. Four '
         + 'settled repairs shipped exactly this damage while the pipeline was '
         + 'already detecting it and consulting nothing: a definition invented, '

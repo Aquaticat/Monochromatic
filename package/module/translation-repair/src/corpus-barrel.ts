@@ -88,3 +88,10 @@ export {
   type TrialSlice,
 } from './corpus-run/window-trial-draw.ts';
 export { runSliceArms, } from './corpus-run/window-trial-slice.ts';
+export {
+  assertWindowReachedJudges,
+  type SheetWitness,
+  WINDOW_LABEL,
+  WindowEvidenceError,
+  witnessSheets,
+} from './corpus-run/window-trial-witness.ts';
