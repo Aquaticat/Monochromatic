@@ -409,7 +409,7 @@ await describe({
         it({
           name: 'appends repository-safe guidance to non-null assertion help',
           fn: async () => {
-            const helpText = 'Consider using the optional chain operator `?.` instead.';
+            const helpText = 'Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.';
             const input = [
               ...buildDiagnostic({
                 rule: 'no-non-null-assertion',
