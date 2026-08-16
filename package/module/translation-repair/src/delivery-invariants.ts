@@ -146,7 +146,7 @@ export function assertDeliveryAgreesWithDocument(
    * Rows saying the document carries this slice's change, in document order.
    */
   const shipped = ledger.filter(function carriesAChange(record,): boolean {
-    return record.shipment
+    return record.delivery
       .kind
       === 'replacement-shipped';
   },);

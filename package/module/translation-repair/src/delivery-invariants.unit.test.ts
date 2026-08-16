@@ -195,13 +195,21 @@ const REWRITTEN_SLICES: readonly ChunkPair[] = [
 const REWRITTEN_WORDINGS: readonly LaneSliceText[] = [
   {
     chunkIndex: 0,
+    incumbentKind: 'present',
     incumbentText: 'The cat sleeps.',
-    acceptedText: 'The cat dozes.',
+    outcome: {
+      kind: 'decided',
+      acceptedText: 'The cat dozes.',
+    },
   },
   {
     chunkIndex: 1,
+    incumbentKind: 'present',
     incumbentText: 'She purrs.',
-    acceptedText: 'She purrs.',
+    outcome: {
+      kind: 'decided',
+      acceptedText: 'She purrs.',
+    },
   },
 ];
 
@@ -277,13 +285,21 @@ await describe({
         const wordings: readonly LaneSliceText[] = [
           {
             chunkIndex: 0,
+            incumbentKind: 'present',
             incumbentText: 'The cat sleeps.',
-            acceptedText: 'The cat dozes.',
+            outcome: {
+              kind: 'decided',
+              acceptedText: 'The cat dozes.',
+            },
           },
           {
             chunkIndex: 1,
+            incumbentKind: 'present',
             incumbentText: 'She purrs.',
-            acceptedText: 'She rumbles.',
+            outcome: {
+              kind: 'decided',
+              acceptedText: 'She rumbles.',
+            },
           },
         ];
         expect(function checkAgreement(): void {
@@ -334,18 +350,33 @@ await describe({
         const wordings: readonly LaneSliceText[] = [
           {
             chunkIndex: 0,
+            incumbentKind: 'present',
             incumbentText: 'The cat sleeps.',
-            acceptedText: 'The cat sleeps.',
+            outcome: {
+              kind: 'decided',
+              acceptedText: 'The cat sleeps.',
+            },
           },
           {
             chunkIndex: 1,
+            // The anchor, where the archive holds no wording at all. Stamping
+            // it `present` is what the ledger's own consistency check refuses,
+            // since the prepared chunk says otherwise.
+            incumbentKind: 'absent',
             incumbentText: '',
-            acceptedText: 'She stretches.',
+            outcome: {
+              kind: 'decided',
+              acceptedText: 'She stretches.',
+            },
           },
           {
             chunkIndex: 2,
+            incumbentKind: 'present',
             incumbentText: 'She purrs.',
-            acceptedText: 'She purrs.',
+            outcome: {
+              kind: 'decided',
+              acceptedText: 'She purrs.',
+            },
           },
         ];
         expect(function checkAgreement(): void {

@@ -18,11 +18,79 @@ import { isInsertionChunk, } from './chunk-placement.ts';
 // downstream of.
 
 /**
+ * What became of one slice inside a lane.
+ *
+ * A DISCRIMINATED UNION rather than an optional wording, since 2026-08-16. The
+ * optional field had to mean everything that was not a decision, and four
+ * different things are not a decision. Two of them, a slice nobody reached and
+ * a slice everybody failed at, were read as the same fact by every consumer,
+ * and the second was reported to graders as the archive's wording standing.
+ *
+ * Named for the OUTCOME rather than for reach on purpose: three of the four
+ * mean the lane reached the slice, so a field called `reach` invites the next
+ * reader to write `reach === 'decided'` and rebuild the defect this replaced.
+ *
+ * @example
+ * ```ts
+ * const outcome: LaneSliceOutcome = { kind: 'decided', acceptedText: 'The cat is napping.', };
+ * ```
+ */
+export type LaneSliceOutcome = {
+  /**
+   * Lane produced a wording for this slice.
+   *
+   * Its text equals the incumbent when the lane examined the slice and chose to
+   * leave it alone, which is a decision rather than an absence.
+   */
+  readonly kind: 'decided';
+
+  /**
+   * Wording the lane decided on, whether or not the document carries it.
+   */
+  readonly acceptedText: string;
+} | {
+  /**
+   * Lane never reached this slice.
+   *
+   * The repair lane's whole-document block produces exactly this: it stops at
+   * the earliest crossing, so every later slice went unexamined.
+   */
+  readonly kind: 'not-evaluated';
+} | {
+  /**
+   * Lane reached the slice, produced nothing, and had nothing to fall back on
+   * because the archive holds no wording here either.
+   *
+   * The passage is MISSING, which is a different fact from every other member:
+   * `decided` would claim a wording, `not-evaluated` would claim nobody looked,
+   * and `incumbent-fallback` would claim something stands here.
+   */
+  readonly kind: 'unfilled';
+} | {
+  /**
+   * Lane reached the slice, produced nothing, and the archive's own wording
+   * therefore stands BY DEFAULT rather than by anyone's choice.
+   *
+   * The translate lane produces this whenever no translator was heard. It was
+   * recorded as a decision equal to the incumbent until 2026-08-16, so a stage
+   * that heard nobody read exactly like a panel that examined the slice and
+   * kept the archive, which is the same defect the window trial had to fix for
+   * judges.
+   */
+  readonly kind: 'incumbent-fallback';
+};
+
+/**
  * One slice's wording as a lane left it.
  *
  * @example
  * ```ts
- * const wording: LaneSliceText = { chunkIndex: 3, incumbentText: 'The cat naps.', acceptedText: 'The cat is napping.', };
+ * const wording: LaneSliceText = {
+ *   chunkIndex: 3,
+ *   incumbentKind: 'present',
+ *   incumbentText: 'The cat naps.',
+ *   outcome: { kind: 'decided', acceptedText: 'The cat is napping.', },
+ * };
  * ```
  */
 export type LaneSliceText = {
@@ -32,23 +100,25 @@ export type LaneSliceText = {
   readonly chunkIndex: number;
 
   /**
+   * Whether the archive holds any wording at this slice at all.
+   *
+   * A SEPARATE AXIS from the outcome, and not inferable from the text: a
+   * content slice may legitimately be blank, so an empty
+   * {@link LaneSliceText.incumbentText} cannot answer this. Without it a reader
+   * meeting an unchanged slice cannot tell the archive's wording standing from
+   * a gap left where the archive never had any.
+   */
+  readonly incumbentKind: 'present' | 'absent';
+
+  /**
    * Archive's own English for this slice, before either lane touched it.
    */
   readonly incumbentText: string;
 
   /**
-   * Wording this lane decided on, whether or not the document carries it.
-   *
-   * Equals {@link LaneSliceText.incumbentText} when the lane left the slice
-   * alone, which is a decision rather than an absence and is recorded as one.
-   *
-   * ABSENT means the lane never reached this slice, which the repair lane's
-   * whole-document block produces: it stops at the earliest crossing, so the
-   * slices after it were never examined. Supplying the archive wording there
-   * would state a decision nobody took, and an empty string would say the lane
-   * chose to delete the passage.
+   * What this lane did about the slice.
    */
-  readonly acceptedText?: string;
+  readonly outcome: LaneSliceOutcome;
 };
 
 /**
@@ -71,6 +141,84 @@ export type UndecidedSlicePolicy =
    * BY DESIGN and says so in its status.
    */
   | 'not-evaluated';
+
+/**
+ * Names one slice's outcome from what the lane reported about it.
+ *
+ * ORDERED DELIBERATELY: a decision wins over both named sets, since a lane
+ * naming a slice both decided and unreachable is a contradiction the caller
+ * already refuses, and reading the sets first here would hide it rather than
+ * let that check speak.
+ *
+ * @param chunkIndex - slice being named, for the failure message
+ *
+ * @param byIndex - wordings the lane reported, by slice index; asked BOTH
+ * whether it holds this slice and what it holds, because a slice reported with
+ * nothing in it and a slice not reported at all are different faults and a
+ * lookup answers them the same way
+ *
+ * @param unfilledHere - whether the lane named this slice as reached and
+ * unfillable
+ *
+ * @param unheardHere - whether the lane named it as reached with no voice heard
+ *
+ * @param undecided - what an unnamed gap means for this lane
+ *
+ * @returns Outcome for this slice
+ *
+ * @throws {@link LaneSliceCoverageError} when a decision carries no wording, or
+ * when a gap is left under `refuse`
+ *
+ * @example
+ * ```ts
+ * const outcome = outcomeOf({ chunkIndex, byIndex, unfilledHere, unheardHere, undecided, },);
+ * ```
+ */
+function outcomeOf(
+  {
+    chunkIndex,
+    byIndex,
+    unfilledHere,
+    unheardHere,
+    undecided,
+  }: {
+    readonly chunkIndex: number;
+    readonly byIndex: ReadonlyMap<number, string>;
+    readonly unfilledHere: boolean;
+    readonly unheardHere: boolean;
+    readonly undecided: UndecidedSlicePolicy;
+  },
+): LaneSliceOutcome {
+  if (byIndex.has(chunkIndex,)) {
+    /**
+     * Wording the lane reported, which the membership check above proves is
+     * there unless the lane reported the slice with nothing in it.
+     */
+    const acceptedText = byIndex.get(chunkIndex,);
+    if ((typeof acceptedText) !== 'string')
+      throw new LaneSliceCoverageError({
+        message: `lane decided slice ${String(chunkIndex,)} with no wording`,
+      },);
+    return {
+      kind: 'decided',
+      acceptedText,
+    };
+  }
+
+  // NAMED RATHER THAN INFERRED, and checked before the policy, because a slice
+  // the lane reached and could not fill is neither of the two shapes the policy
+  // describes: refusing it would fail a run that did nothing wrong, and treating
+  // it as an early stop would let every later slice pass unexamined.
+  if (unfilledHere)
+    return { kind: 'unfilled', };
+  if (unheardHere)
+    return { kind: 'incumbent-fallback', };
+  if (undecided === 'refuse')
+    throw new LaneSliceCoverageError({
+      message: `lane left prepared slice ${String(chunkIndex,)} undecided`,
+    },);
+  return { kind: 'not-evaluated', };
+}
 
 /**
  * Raised when a lane reports a decision for a slice its preparation never
@@ -146,6 +294,7 @@ export function buildLaneSliceTexts(
     decided,
     undecided,
     unfilledChunkIndices = [],
+    unheardChunkIndices = [],
   }: {
     readonly slices: readonly ChunkPair[];
     readonly decided: readonly {
@@ -154,6 +303,7 @@ export function buildLaneSliceTexts(
     }[];
     readonly undecided: UndecidedSlicePolicy;
     readonly unfilledChunkIndices?: readonly number[];
+    readonly unheardChunkIndices?: readonly number[];
   },
 ): readonly LaneSliceText[] {
   /**
@@ -246,6 +396,58 @@ export function buildLaneSliceTexts(
   }
 
   /**
+   * Slices the lane reached where no voice was heard, so the archive's own
+   * wording stands by default.
+   */
+  const unheard = new Set(unheardChunkIndices,);
+  if (unheard.size !== unheardChunkIndices.length)
+    throw new LaneSliceCoverageError({
+      message: `lane reports ${
+        String(unheardChunkIndices.length,)
+      } unheard slices under ${String(unheard.size,)} distinct indices`,
+    },);
+  for (const chunkIndex of unheard) {
+    if (!prepared.has(chunkIndex,))
+      throw new LaneSliceCoverageError({
+        message: `lane reports slice ${
+          String(chunkIndex,)
+        } unheard, which this preparation never produced`,
+      },);
+    if (byIndex.has(chunkIndex,))
+      throw new LaneSliceCoverageError({
+        message: `lane reports slice ${
+          String(chunkIndex,)
+        } as unheard and decided at once, so whether anyone answered for it is unstated`,
+      },);
+    if (unfilled.has(chunkIndex,))
+      throw new LaneSliceCoverageError({
+        message: `lane reports slice ${
+          String(chunkIndex,)
+        } as unheard and unfilled at once, and only one of those has an incumbent to stand on`,
+      },);
+
+    /**
+     * Pair this index names, which the membership check above proves exists.
+     */
+    const named = slices.find(function isNamed(slice,): boolean {
+      return slice.target
+        .chunkIndex
+        === chunkIndex;
+    },);
+    // THE MIRROR OF THE UNFILLED RULE. `incumbent-fallback` says the archive's
+    // wording stands here, so a slice with no archive wording cannot be one:
+    // that slice is unfilled, and calling it a fallback would report a passage
+    // as covered by wording that does not exist.
+    if ((named !== undefined) && isInsertionChunk(named.target,)) {
+      throw new LaneSliceCoverageError({
+        message: `lane reports slice ${
+          String(chunkIndex,)
+        } unheard, and the archive holds no wording for it to fall back on`,
+      },);
+    }
+  }
+
+  /**
    * Whether some earlier slice in document order went undecided.
    *
    * `not-evaluated` describes ONE shape and no other: a lane that stopped, so
@@ -262,59 +464,40 @@ export function buildLaneSliceTexts(
     const { chunkIndex, } = slice.target;
 
     /**
-     * Whether the lane decided this slice at all.
-     *
-     * Asked of the map rather than read off a lookup, because a decision whose
-     * text is missing entirely and one that is present are different facts, and
-     * a lookup returns the same thing for both.
+     * What this lane did about the slice, before the stopped-prefix rule sees
+     * it.
      */
-    const decidedHere = byIndex.has(chunkIndex,);
-    if (!decidedHere) {
-      // NAMED RATHER THAN INFERRED, and checked before the policy, because a
-      // slice the lane examined and could not fill is neither of the two shapes
-      // the policy describes: refusing it would fail a run that did nothing
-      // wrong, and treating it as an early stop would let every later slice
-      // pass unexamined. The lane says which slices these are; every other gap
-      // still meets the policy.
-      if (unfilled.has(chunkIndex,)) {
-        return {
-          chunkIndex,
-          incumbentText: slice.target
-            .text,
-        };
-      }
-      if (undecided === 'refuse')
-        throw new LaneSliceCoverageError({
-          message: `lane left prepared slice ${String(chunkIndex,)} undecided`,
-        },);
-      stopped.already = true;
-      return {
-        chunkIndex,
-        incumbentText: slice.target
-          .text,
-      };
-    }
-    if (stopped.already)
+    const outcome = outcomeOf({
+      chunkIndex,
+      byIndex,
+      unfilledHere: unfilled.has(chunkIndex,),
+      unheardHere: unheard.has(chunkIndex,),
+      undecided,
+    },);
+
+    // EVERY REACHED OUTCOME, not decisions alone. A lane that stopped cannot
+    // report reaching a later slice by any route, and checking only decisions
+    // let an unfilled slice sit after an unexamined one, which asserts the lane
+    // resumed after stopping.
+    if (stopped.already && (outcome.kind !== 'not-evaluated')) {
       throw new LaneSliceCoverageError({
-        message: `lane decided slice ${
+        message: `lane reports reaching slice ${
           String(chunkIndex,)
         } after leaving an earlier one unexamined, which no early stop produces`,
       },);
-
-    /**
-     * Wording the lane accepted here.
-     */
-    const acceptedText = byIndex.get(chunkIndex,);
-    if ((typeof acceptedText) !== 'string')
-      throw new LaneSliceCoverageError({
-        message: `lane decided slice ${String(chunkIndex,)} with no wording`,
-      },);
+    }
+    if (outcome.kind === 'not-evaluated')
+      stopped.already = true;
 
     return {
       chunkIndex,
+      // READ OFF THE PREPARED CHUNK, which is the only thing that knows. An
+      // anchor names a place the archive never translated; a content slice that
+      // happens to be blank is wording the archive does hold.
+      incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
       incumbentText: slice.target
         .text,
-      acceptedText,
+      outcome,
     };
   },);
 }

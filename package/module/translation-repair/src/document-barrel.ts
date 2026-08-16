@@ -45,8 +45,8 @@ export {
 export {
   buildSliceDelivery,
   SliceDeliveryError,
+  type SliceDelivery,
   type SliceDeliveryRecord,
-  type SliceShipment,
 } from './slice-delivery.ts';
 export {
   assertDeliveryAgreesWithDocument,

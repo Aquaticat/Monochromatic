@@ -448,7 +448,7 @@ await describe({
          */
         const translateShipped = lanes.translateDelivery
           .filter(function carriesAChange(record,): boolean {
-            return record.shipment
+            return record.delivery
               .kind === 'replacement-shipped';
           },)
           .map(function toIndex(record,): number {
@@ -463,7 +463,7 @@ await describe({
          */
         const repairShipped = lanes.repairDelivery
           .some(function carriesAChange(record,): boolean {
-            return record.shipment
+            return record.delivery
               .kind === 'replacement-shipped';
           },);
         expect(repairShipped,).toBe(false,);

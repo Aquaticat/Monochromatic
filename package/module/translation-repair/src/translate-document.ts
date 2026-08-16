@@ -7,7 +7,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import { buildLaneSliceTexts, } from './lane-slice-text.ts';
 import { buildSliceSelections, } from './slice-selection.ts';
 import {
   absenceFinding,
@@ -38,6 +37,8 @@ import type {
   TranslateSliceRecord,
   UnfilledSlice,
 } from './translate-document-contract.ts';
+
+import { translateLaneWordings, } from './translate-lane-wordings.ts';
 
 //region Translate document
 // The lane's document driver: every prepared slice is translated, judged, and
@@ -536,25 +537,11 @@ export async function translateDocument(
     // against. Taken from the PREPARATION rather than from the settled records,
     // which are cache values a resumed run may have written under an earlier
     // preparation of the same entry.
-    sliceTexts: buildLaneSliceTexts({
+    sliceTexts: translateLaneWordings({
       slices: prepared.slices,
-      // This lane visits every slice by contract and throws rather than
-      // returning a partial document, so a gap is a defect.
-      undecided: 'refuse',
-      // Except these, which the lane REACHED and could not fill: they have no
-      // wording because there is none to have, neither the archive's nor one
-      // this run produced. Named one by one, so every other gap still fails.
+      settled,
       unfilledChunkIndices: unfilled.map(function toIndex(passage,): number {
         return passage.chunkIndex;
-      },),
-      decided: settled.map(function toDecision(record,): {
-        readonly chunkIndex: number;
-        readonly text: string;
-      } {
-        return {
-          chunkIndex: record.chunkIndex,
-          text: record.outputText,
-        };
       },),
     },),
     resumedSliceCount: counted.resumed,

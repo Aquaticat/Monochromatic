@@ -1,6 +1,9 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
-import type { LaneSliceText, } from './lane-slice-text.ts';
+import type {
+  LaneSliceOutcome,
+  LaneSliceText,
+} from './lane-slice-text.ts';
 
 //region Slice delivery
 // What became of every slice, in one row: the original, the archive's English,
@@ -14,27 +17,34 @@ import type { LaneSliceText, } from './lane-slice-text.ts';
 // an artifact cannot see what was being translated without re-preparing the
 // corpus at the right commit with the right budget.
 //
-// SHIPMENT IS ITS OWN VOCABULARY, deliberately not reusing either lane's. A
+// DELIVERY IS ITS OWN VOCABULARY, deliberately not reusing either lane's. A
 // repair disposition is the fate of ONE ISSUE's targeted edit, and a translate
 // disposition is a slice-local acceptance decision; both can hold several
 // values inside one slice whose text ships once. This names the fate of the
 // slice TEXT and nothing else.
+//
+// TWO AXES, since 2026-08-16, because one word could not carry both. What the
+// LANE did is its outcome and what the DOCUMENT carries is its delivery, and a
+// row states each separately: a run blocked before an anchor never evaluated
+// that slice and also leaves a gap there, and the single vocabulary this
+// replaced had to report one of those facts and drop the other.
 
 /**
- * Why a slice's shipped text is what it is.
+ * What the returned document carries at one slice.
+ *
+ * ONE AXIS, and deliberately not the only one a record needs. This says what
+ * the DOCUMENT ends up with; {@link LaneSliceOutcome} says what the LANE did,
+ * and they are independent facts one word cannot hold. A repair lane blocked
+ * before an anchor never evaluated that slice AND leaves a gap there; the
+ * single vocabulary this replaced had to report one of those and lose the
+ * other.
  *
  * @example
  * ```ts
- * const shipment: SliceShipment = { kind: 'replacement-shipped', };
+ * const delivery: SliceDelivery = { kind: 'replacement-shipped', };
  * ```
  */
-export type SliceShipment = {
-  /**
-   * Lane examined the slice and the document carries the archive's own wording:
-   * either the lane chose it, or its own decision was to leave it alone.
-   */
-  readonly kind: 'incumbent-shipped';
-} | {
+export type SliceDelivery = {
   /**
    * Document carries what the lane decided, which differs from the archive.
    */
@@ -55,24 +65,20 @@ export type SliceShipment = {
   readonly reason: 'assembly-integrity' | 'blocked-non-translation';
 } | {
   /**
-   * Lane never reached this slice, so nothing was decided for it and the
-   * archive wording stands by default rather than by choice.
+   * Document carries the archive's own wording for this slice.
+   *
+   * Says nothing about WHY, which is the outcome's job: the lane may have
+   * examined the slice and kept it, may never have reached it, or may have
+   * heard no voice at all. All three leave the same text in the document and
+   * mean three different things about the run.
    */
-  readonly kind: 'not-evaluated';
+  readonly kind: 'incumbent-retained';
 } | {
   /**
-   * Passage is MISSING from the document, and no lane decision could have put
-   * it there: the slice is an anchor, so the archive holds no wording for it,
-   * and this lane wrote none.
-   *
-   * A DISTINCT KIND rather than either neighbour, because both would read
-   * falsely. `incumbent-shipped` says the document carries the archive's own
-   * wording, and here there is none to carry; `not-evaluated` says the lane
-   * never reached the slice, which is a different fact with a different
-   * remedy, and is what a grader would count as unexamined rather than as
-   * still missing.
+   * Passage is MISSING from the document, and nothing could have kept it there:
+   * the archive holds no wording for this slice and this lane wrote none.
    */
-  readonly kind: 'unfilled';
+  readonly kind: 'gap-remains';
 };
 
 /**
@@ -83,10 +89,11 @@ export type SliceShipment = {
  * const record: SliceDeliveryRecord = {
  *   chunkIndex: 3,
  *   sourceText: '猫猫在睡觉。',
+ *   incumbentKind: 'present',
  *   incumbentText: 'The cat sleeps.',
- *   acceptedText: 'The cat is asleep.',
+ *   outcome: { kind: 'decided', acceptedText: 'The cat is asleep.', },
  *   shippedText: 'The cat is asleep.',
- *   shipment: { kind: 'replacement-shipped', },
+ *   delivery: { kind: 'replacement-shipped', },
  * };
  * ```
  */
@@ -108,24 +115,34 @@ export type SliceDeliveryRecord = {
   readonly sourceText: string;
 
   /**
+   * Whether the archive holds any wording at this slice at all, carried through
+   * from the preparation so a reader need not guess it from blank text.
+   */
+  readonly incumbentKind: 'present' | 'absent';
+
+  /**
    * Archive's own English for this slice.
    */
   readonly incumbentText: string;
 
   /**
-   * Wording the lane decided on, absent where it never reached the slice.
+   * What the LANE did about this slice, exactly as the lane reported it.
    */
-  readonly acceptedText?: string;
+  readonly outcome: LaneSliceOutcome;
 
   /**
    * Wording the returned document carries for this slice.
+   *
+   * Empty where {@link SliceDeliveryRecord.delivery} says the gap remains,
+   * which is why that field and not this one answers whether a passage is
+   * missing: an empty translation and no translation are the same string.
    */
   readonly shippedText: string;
 
   /**
-   * Why the shipped wording is the one it is.
+   * What the DOCUMENT ends up carrying, and by which route.
    */
-  readonly shipment: SliceShipment;
+  readonly delivery: SliceDelivery;
 };
 
 /**
@@ -154,11 +171,16 @@ export class SliceDeliveryError extends Error {
 }
 
 /**
- * Decides one slice's shipment from what the lane reported about it.
+ * Decides what one slice's document text is, from what the lane reported.
+ *
+ * READS THE LANE'S OWN OUTCOME. It used to infer this from whether the slice
+ * was an anchor, which is a fact about the PREPARATION and cannot say whether
+ * a lane ran: a repair lane blocked at an anchor was reported as reached and
+ * unfillable when nobody had looked at it.
  *
  * @param chunkIndex - slice being described
  *
- * @param wording - what the lane decided for it
+ * @param wording - what the lane reported for it
  *
  * @param shipped - whether the document carries this slice's change
  *
@@ -166,37 +188,33 @@ export class SliceDeliveryError extends Error {
  *
  * @param blocked - whether the whole run refused before assembly
  *
- * @param anchored - whether this slice names a place rather than covering
- * existing text, which decides whether an undecided or unchanged slice leaves
- * the archive's wording standing or leaves a passage missing
- *
- * @returns Shipment naming why the shipped wording is what it is
+ * @returns What the document carries here, and by which route
  *
  * @throws {@link SliceDeliveryError} when the reports contradict each other
  *
  * @example
  * ```ts
- * const shipment = decideShipment({ chunkIndex, wording, shipped, withdrawn, blocked, },);
+ * const delivery = decideDelivery({ chunkIndex, wording, shipped, withdrawn, blocked, },);
  * ```
  */
-function decideShipment(
+function decideDelivery(
   {
     chunkIndex,
     wording,
     shipped,
     withdrawn,
     blocked,
-    anchored,
   }: {
     readonly chunkIndex: number;
     readonly wording: LaneSliceText;
     readonly shipped: boolean;
     readonly withdrawn: boolean;
     readonly blocked: boolean;
-    readonly anchored: boolean;
   },
-): SliceShipment {
-  if (wording.acceptedText === undefined) {
+): SliceDelivery {
+  if (wording.outcome
+    .kind
+    !== 'decided') {
     if (shipped || withdrawn) {
       throw new SliceDeliveryError({
         message: `slice ${String(chunkIndex,)} is named as ${
@@ -204,23 +222,34 @@ function decideShipment(
         } and reports no decision, so the lane both did and did not reach it`,
       },);
     }
-    // An anchor with no decision is not an unexamined slice: there is nothing
-    // to examine and nothing to fall back on, so what the document carries
-    // there is a gap either way.
-    return anchored
-      ? { kind: 'unfilled', }
-      : { kind: 'not-evaluated', };
+    // WHAT THE DOCUMENT CARRIES, which the archive answers and the outcome does
+    // not: an unreached slice and an unheard one both leave the incumbent
+    // standing wherever there is one, and leave the gap wherever there is not.
+    return (wording.incumbentKind === 'absent')
+      ? { kind: 'gap-remains', }
+      : { kind: 'incumbent-retained', };
   }
 
   /**
    * Whether the lane's decision moved off the archive at all.
    */
-  const decided = wording.acceptedText !== wording.incumbentText;
+  const decided = wording.outcome
+    .acceptedText
+    !== wording.incumbentText;
   if (shipped) {
     if (!decided) {
       throw new SliceDeliveryError({
         message: `slice ${String(chunkIndex,)} is named as shipped and its decision is the archive's `
           + 'own wording, so the document would carry a change nobody made',
+      },);
+    }
+    // A BLOCKED RUN RETURNS THE ARCHIVE UNTOUCHED, whatever any slice decided,
+    // so no slice of one can be carrying a replacement. Accepting this pair
+    // reported a change as shipped by a document that was never assembled.
+    if (blocked) {
+      throw new SliceDeliveryError({
+        message: `slice ${String(chunkIndex,)} is named as shipped by a blocked run, which returns the `
+          + 'archive untouched, so no slice of it carries a replacement',
       },);
     }
     return { kind: 'replacement-shipped', };
@@ -244,10 +273,10 @@ function decideShipment(
   if (!decided) {
     // The archive's own wording stands, except where the archive has none:
     // agreeing with a blank incumbent at an anchor leaves the passage missing,
-    // which `incumbent-shipped` would report as the archive being carried.
-    return anchored
-      ? { kind: 'unfilled', }
-      : { kind: 'incumbent-shipped', };
+    // which `incumbent-retained` would report as the archive being carried.
+    return (wording.incumbentKind === 'absent')
+      ? { kind: 'gap-remains', }
+      : { kind: 'incumbent-retained', };
   }
   if (blocked)
     return {
@@ -261,10 +290,10 @@ function decideShipment(
 }
 
 /**
- * Reads the accepted wording of a slice whose shipment says it has one.
+ * Reads the accepted wording of a slice whose delivery says it has one.
  *
  * A separate step rather than an assertion at the use site, because the
- * shipment already proves it: `replacement-shipped` is only ever returned for a
+ * delivery already proves it: `replacement-shipped` is only ever returned for a
  * wording that decided something. This turns that proof into a value without
  * the non-null assertion the repo forbids.
  *
@@ -272,8 +301,8 @@ function decideShipment(
  *
  * @returns That wording
  *
- * @throws {@link SliceDeliveryError} when it is absent, which the shipment
- * decision makes unreachable
+ * @throws {@link SliceDeliveryError} when the outcome is not a decision, which
+ * the delivery decision makes unreachable
  *
  * @example
  * ```ts
@@ -283,12 +312,15 @@ function decideShipment(
 function nonNullishAccepted(
   { wording, }: { readonly wording: LaneSliceText; },
 ): string {
-  if (wording.acceptedText === undefined) {
+  if (wording.outcome
+    .kind
+    !== 'decided') {
     throw new SliceDeliveryError({
       message: `slice ${String(wording.chunkIndex,)} ships a replacement and reports no decision`,
     },);
   }
-  return wording.acceptedText;
+  return wording.outcome
+    .acceptedText;
 }
 
 /**
@@ -427,15 +459,27 @@ export function buildSliceDelivery(
       },);
     }
   }
+  /**
+   * Indices the preparation actually produced.
+   *
+   * MEMBERSHIP, not a numeric range. A range check assumes the prepared indices
+   * are exactly `0` to `length - 1`, which is a property of today's stamping
+   * rather than a contract, so a renumbered preparation would let an index that
+   * names no slice pass as in range.
+   */
+  const preparedIndices = new Set(slices.map(function toIndex(slice,): number {
+    return slice.target
+      .chunkIndex;
+  },),);
   for (const chunkIndex of [
     ...shipped,
     ...withdrawn,
   ]) {
-    if ((chunkIndex < 0) || (chunkIndex >= slices.length)) {
+    if (!preparedIndices.has(chunkIndex,)) {
       throw new SliceDeliveryError({
-        message: `an index set names slice ${String(chunkIndex,)} of ${
+        message: `an index set names slice ${String(chunkIndex,)}, which this preparation of ${
           String(slices.length,)
-        } prepared`,
+        } slices never produced`,
       },);
     }
   }
@@ -472,33 +516,43 @@ export function buildSliceDelivery(
       },);
     }
 
+    // CHECKED RATHER THAN TAKEN, because the lane and the preparation are two
+    // derivations of the same fact and this is the one place holding both. The
+    // lane reads it off the prepared chunk today, which makes this agree by
+    // construction; what it pins is that it keeps doing so.
+    if (
+      wording.incumbentKind
+        !== (isInsertionChunk(slice.target,) ? 'absent' : 'present')
+    ) {
+      throw new SliceDeliveryError({
+        message: `slice ${String(chunkIndex,)} is ${
+          wording.incumbentKind
+        } of archive wording by its lane record and the other way by its prepared chunk`,
+      },);
+    }
+
     /**
-     * Why this slice's text is what the document carries.
-     *
-     * READS THE CHUNK for whether the archive holds any wording here, rather
-     * than taking a caller's word for it or testing the text for emptiness: the
-     * prepared pair is in hand, and it is the only place that distinguishes an
-     * anchor from a content span that happens to be blank.
+     * What the document carries here, and by which route.
      */
-    const shipment = decideShipment({
+    const delivery = decideDelivery({
       chunkIndex,
       wording,
       shipped: shipped.has(chunkIndex,),
       withdrawn: withdrawn.has(chunkIndex,),
       blocked,
-      anchored: isInsertionChunk(slice.target,),
     },);
 
     return {
       chunkIndex,
       sourceText: slice.source
         .text,
+      incumbentKind: wording.incumbentKind,
       incumbentText: wording.incumbentText,
-      ...(wording.acceptedText === undefined ? {} : { acceptedText: wording.acceptedText, }),
-      shippedText: (shipment.kind === 'replacement-shipped')
+      outcome: wording.outcome,
+      shippedText: (delivery.kind === 'replacement-shipped')
         ? nonNullishAccepted({ wording, },)
         : wording.incumbentText,
-      shipment,
+      delivery,
     };
   },);
 }

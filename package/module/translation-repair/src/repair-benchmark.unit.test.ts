@@ -772,8 +772,12 @@ await describe({
             withdrawnChunkIndices: [],
             sliceTexts: [{
               chunkIndex: 0,
+              incumbentKind: 'present',
               incumbentText: targetText,
-              acceptedText: repairedText,
+              outcome: {
+                kind: 'decided',
+                acceptedText: repairedText,
+              },
             },],
           };
         };

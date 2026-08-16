@@ -147,11 +147,17 @@ await describe({
         },);
         expect(wordings,).toHaveLength(2,);
         expect(wordings[0]?.incumbentText,).toBe('The cat sleeps on the sill.',);
-        expect(wordings[0]?.acceptedText,).toBe('The cat is asleep on the windowsill.',);
+        expect(wordings[0]?.outcome,).toEqual({
+          kind: 'decided',
+          acceptedText: 'The cat is asleep on the windowsill.',
+        },);
 
         // The untouched slice is still reported, and its accepted wording is the
         // archive's own rather than an empty string standing for "nothing".
-        expect(wordings[1]?.acceptedText,).toBe('The bowl is full.',);
+        expect(wordings[1]?.outcome,).toEqual({
+          kind: 'decided',
+          acceptedText: 'The bowl is full.',
+        },);
         expect(wordings[1]?.incumbentText,).toBe('The bowl is full.',);
       },
     },),
@@ -242,15 +248,14 @@ await describe({
           decided: [{ chunkIndex: 0, text: 'The cat is asleep on the windowsill.', },],
         },);
         expect(wordings,).toHaveLength(2,);
-        expect(wordings[0]?.acceptedText,).toBe('The cat is asleep on the windowsill.',);
-        expect(wordings[1]?.acceptedText,).toBe(undefined,);
-        // ABSENT rather than present-and-undefined, which is a different value
-        // under exactOptionalPropertyTypes and the only one that survives a
-        // round trip through the cache as "nobody looked".
-        expect(Object.hasOwn(
-          wordings[1] ?? {},
-          'acceptedText',
-        ),).toBe(false,);
+        expect(wordings[0]?.outcome,).toEqual({
+          kind: 'decided',
+          acceptedText: 'The cat is asleep on the windowsill.',
+        },);
+        // NAMED rather than absent. An optional wording had to carry this
+        // meaning by not being there, which every consumer then had to guess
+        // at, and two different gaps guessed the same way.
+        expect(wordings[1]?.outcome,).toEqual({ kind: 'not-evaluated', },);
 
         // The archive wording is still reported for the unexamined slice, since
         // that is what the returned document carries there.
@@ -322,7 +327,10 @@ await describe({
           unfilledChunkIndices: [1,],
         },);
         expect(wordings,).toHaveLength(2,);
-        expect(wordings[1]?.acceptedText,).toBe(undefined,);
+        expect(wordings[1]?.outcome,).toEqual({ kind: 'unfilled', },);
+        // And the anchor says the archive holds nothing here, which is the
+        // fact separating a gap that remains from wording that stands.
+        expect(wordings[1]?.incumbentKind,).toBe('absent',);
         expect(wordings[1]?.incumbentText,).toBe('',);
 
         /**

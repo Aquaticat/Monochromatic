@@ -1119,8 +1119,11 @@ The cat is doing the sleeping on the windowsill.
         expect(result.sliceTexts
           .length,).toBe(prepared.slices
           .length,);
+        // NAMED as reached and unfillable rather than left with no wording,
+        // which is how a reader tells it from a slice nobody got to.
         expect(result.sliceTexts[anchorIndex]
-          ?.acceptedText,).toBe(undefined,);
+          ?.outcome
+          .kind,).toBe('unfilled',);
         // NOTHING CACHED for it, which is what makes the next run ask again;
         // every other slice was heard and persisted.
         expect(persisted.size,).toBe(result.slices

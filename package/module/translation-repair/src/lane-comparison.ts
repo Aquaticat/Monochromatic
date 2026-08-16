@@ -1,4 +1,7 @@
-import type { LaneSliceText, } from './lane-slice-text.ts';
+import type {
+  LaneSliceOutcome,
+  LaneSliceText,
+} from './lane-slice-text.ts';
 
 //region Lane comparison
 // What the two lanes did to the SAME slice, which is the question running both
@@ -47,7 +50,51 @@ export type SliceLaneVerdict =
    * Both documents changed this slice and the two wordings differ, which is the
    * case a human has to read.
    */
-  | 'both-differ';
+  | 'both-differ'
+  /**
+   * Neither document carries anything here, and the archive never did either:
+   * the passage is still MISSING.
+   *
+   * Split from `archive-stands` because that word asserts a translation is
+   * being kept, and at a slice the archive never translated there is none to
+   * keep. Every anchor neither lane filled read as the archive standing until
+   * 2026-08-16.
+   */
+  | 'gap-remains';
+
+/**
+ * Whether the two lanes' own decisions can be compared on a slice, and how they
+ * came out.
+ *
+ * NOT DERIVABLE FROM THE VERDICT, which describes the two documents. A slice
+ * neither lane could decide is not a slice where they agreed.
+ *
+ * @example
+ * ```ts
+ * const comparison: DecisionComparison = { kind: 'comparable', verdict: 'same', };
+ * ```
+ */
+export type DecisionComparison = {
+  /**
+   * Both lanes decided a wording, so the two are comparable.
+   */
+  readonly kind: 'comparable';
+
+  /**
+   * Whether those wordings are the same, character for character.
+   */
+  readonly verdict: 'same' | 'different';
+} | {
+  /**
+   * At least one lane decided nothing here.
+   */
+  readonly kind: 'not-comparable';
+
+  /**
+   * Which lane, and what it did instead.
+   */
+  readonly reason: string;
+};
 
 /**
  * One slice as both lanes left it.
@@ -62,6 +109,11 @@ export type SliceLaneComparison = {
    * Global slice index both lanes name it by.
    */
   readonly chunkIndex: number;
+
+  /**
+   * Whether the archive holds any wording at this slice at all.
+   */
+  readonly incumbentKind: 'present' | 'absent';
 
   /**
    * Archive's own English for this slice.
@@ -85,20 +137,27 @@ export type SliceLaneComparison = {
   readonly verdict: SliceLaneVerdict;
 
   /**
-   * Whether the repair lane examined this slice at all.
+   * What the repair lane did about this slice.
    *
-   * False only where that lane stopped early by design, which its
-   * whole-document non-translation block does from inside the slice loop.
-   * Separate from the verdict because both documents carrying the archive
-   * wording says nothing about whether anyone looked, and "examined and left
-   * alone" is a different fact from "never reached".
+   * THE OUTCOME RATHER THAN A REACHED FLAG. Both documents carrying the archive
+   * wording says nothing about whether anyone looked, and a boolean says only
+   * that somebody did: it cannot separate a lane that examined the slice and
+   * kept it from one that reached it and could not fill it, or from one that
+   * heard no voice at all. A pair of booleans recorded the second of those as
+   * nobody having looked.
    */
-  readonly repairReached: boolean;
+  readonly repairOutcome: LaneSliceOutcome;
 
   /**
-   * Whether the translate lane examined this slice at all.
+   * What the translate lane did about this slice.
    */
-  readonly translateReached: boolean;
+  readonly translateOutcome: LaneSliceOutcome;
+
+  /**
+   * Whether the two lanes' own decisions were comparable here, and how they
+   * came out, which the delivery verdict cannot say.
+   */
+  readonly decisionComparison: DecisionComparison;
 };
 
 /**
@@ -157,14 +216,21 @@ function carriedText(
   // for. Falling back to the archive wording here would answer the question
   // with a row reading "the archive stands", which is the one thing a result
   // this contradictory is not evidence of.
-  if (wording.acceptedText === undefined)
+  if (wording.outcome
+    .kind
+    !== 'decided') {
     throw new LaneComparisonError({
       message: `slice ${
         String(wording.chunkIndex,)
-      } is named as shipped by a lane that never evaluated it`,
+      } is named as shipped by a lane whose outcome for it was ${
+        wording.outcome
+          .kind
+      }`,
     },);
+  }
 
-  return wording.acceptedText;
+  return wording.outcome
+    .acceptedText;
 }
 
 /**
@@ -233,14 +299,74 @@ function shippedSet(
           String(chunkIndex,)
         } as shipped and reports no wording for it`,
       },);
-    if (row.acceptedText === row.incumbentText)
+    if (row.outcome
+      .kind
+      !== 'decided') {
+      throw new LaneComparisonError({
+        message: `${lane} lane names slice ${
+          String(chunkIndex,)
+        } as shipped and reports its outcome there as ${
+          row.outcome
+            .kind
+        }`,
+      },);
+    }
+    if (row.outcome
+      .acceptedText
+      === row.incumbentText) {
       throw new LaneComparisonError({
         message: `${lane} lane names slice ${
           String(chunkIndex,)
         } as shipped and reports the archive's own wording for it`,
       },);
+    }
   }
   return new Set(shipped,);
+}
+
+/**
+ * Names how the two lanes' DECISIONS relate, where both made one.
+ *
+ * SEPARATE FROM THE DELIVERY VERDICT because they answer different questions
+ * and this file used to answer only the second while claiming the first. Two
+ * lanes accepting different replacements that are both withdrawn deliver the
+ * same document and disagree completely; two lanes accepting the same wording
+ * where only one ships deliver differently and agree exactly.
+ *
+ * @param repair - what the repair lane did with this slice
+ *
+ * @param translate - what the translate lane did
+ *
+ * @returns Whether the two decisions can be compared, and how they came out
+ *
+ * @example
+ * ```ts
+ * const comparison = compareDecisions({ repair, translate, },);
+ * ```
+ */
+function compareDecisions(
+  {
+    repair,
+    translate,
+  }: {
+    readonly repair: LaneSliceOutcome;
+    readonly translate: LaneSliceOutcome;
+  },
+): DecisionComparison {
+  if (repair.kind !== 'decided')
+    return {
+      kind: 'not-comparable',
+      reason: `repair ${repair.kind}`,
+    };
+  if (translate.kind !== 'decided')
+    return {
+      kind: 'not-comparable',
+      reason: `translate ${translate.kind}`,
+    };
+  return {
+    kind: 'comparable',
+    verdict: (repair.acceptedText === translate.acceptedText) ? 'same' : 'different',
+  };
 }
 
 /**
@@ -250,23 +376,28 @@ function shippedSet(
  *
  * @param translateText - wording the translate document carries
  *
+ * @param incumbentKind - whether the archive holds any wording here, which is
+ * what separates its wording standing from a passage still missing
+ *
  * @param incumbentText - archive wording both fall back to
  *
  * @returns Verdict for this slice
  *
  * @example
  * ```ts
- * const verdict = judgeSlice({ repairText, translateText, incumbentText, },);
+ * const verdict = judgeSlice({ repairText, translateText, incumbentKind, incumbentText, },);
  * ```
  */
 function judgeSlice(
   {
     repairText,
     translateText,
+    incumbentKind,
     incumbentText,
   }: {
     readonly repairText: string;
     readonly translateText: string;
+    readonly incumbentKind: 'present' | 'absent';
     readonly incumbentText: string;
   },
 ): SliceLaneVerdict {
@@ -285,7 +416,12 @@ function judgeSlice(
     return 'repair-only';
   if (translateMoved)
     return 'translate-only';
-  return 'archive-stands';
+
+  // NEITHER DOCUMENT MOVED, which means the archive's wording stands only where
+  // the archive HAS wording. At an anchor it means the passage is still
+  // missing, and reporting that as the archive standing told a grader a
+  // translation was being kept where none has ever existed.
+  return (incumbentKind === 'absent') ? 'gap-remains' : 'archive-stands';
 }
 
 /**
@@ -434,15 +570,29 @@ export function compareDocumentLanes(
 
       return {
         chunkIndex: mine.chunkIndex,
+        incumbentKind: mine.incumbentKind,
         incumbentText: mine.incumbentText,
         repairText,
         translateText,
-        repairReached: mine.acceptedText !== undefined,
-        translateReached: theirs.acceptedText !== undefined,
+
+        // THE OUTCOMES THEMSELVES, not two booleans derived from them. A
+        // boolean pair answers "did anyone look" and erases the difference
+        // between a lane that decided, one that reached the slice and could not
+        // fill it, and one that heard no voice at all, which is the erasure
+        // that put `translateReached: false` on slices the lane demonstrably
+        // reached.
+        repairOutcome: mine.outcome,
+        translateOutcome: theirs.outcome,
+
         verdict: judgeSlice({
           repairText,
           translateText,
+          incumbentKind: mine.incumbentKind,
           incumbentText: mine.incumbentText,
+        },),
+        decisionComparison: compareDecisions({
+          repair: mine.outcome,
+          translate: theirs.outcome,
         },),
       };
     },);

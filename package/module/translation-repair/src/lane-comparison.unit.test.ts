@@ -22,6 +22,7 @@ import {
 import {
   compareDocumentLanes,
   LaneComparisonError,
+  type LaneSliceText,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -52,18 +53,18 @@ function laneOf(
     readonly shipped: boolean;
   },
 ): {
-  readonly sliceTexts: readonly {
-    readonly chunkIndex: number;
-    readonly incumbentText: string;
-    readonly acceptedText: string;
-  }[];
+  readonly sliceTexts: readonly LaneSliceText[];
   readonly shippedChunkIndices: readonly number[];
 } {
   return {
     sliceTexts: [{
       chunkIndex: 0,
+      incumbentKind: 'present',
       incumbentText: ARCHIVE_NAP,
-      acceptedText,
+      outcome: {
+        kind: 'decided',
+        acceptedText,
+      },
     },],
     shippedChunkIndices: shipped ? [0,] : [],
   };
@@ -185,8 +186,12 @@ await describe({
             translate: {
               sliceTexts: [{
                 chunkIndex: 0,
+                incumbentKind: 'present',
                 incumbentText: 'A different archive sentence entirely.',
-                acceptedText: 'A cat dozes in the window.',
+                outcome: {
+                  kind: 'decided',
+                  acceptedText: 'A cat dozes in the window.',
+                },
               },],
               shippedChunkIndices: [0,],
             },
@@ -209,21 +214,30 @@ await describe({
          */
         const rows = compareDocumentLanes({
           repair: {
-            // No `acceptedText` key at all, which is how a lane says it never
-            // reached the slice: an empty string would say it chose to delete
-            // the passage.
+            // `not-evaluated`, which is how a lane says it never reached the
+            // slice: a decision carrying the archive wording would say it
+            // looked and kept it, and one carrying an empty string would say it
+            // chose to delete the passage.
             sliceTexts: [{
               chunkIndex: 0,
+              incumbentKind: 'present',
               incumbentText: ARCHIVE_NAP,
+              outcome: { kind: 'not-evaluated', },
             },],
             shippedChunkIndices: [],
           },
           translate: laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },),
         },);
         expect(rows[0]?.verdict,).toBe('archive-stands',);
-        expect(rows[0]?.repairReached,).toBe(false,);
-        expect(rows[0]?.translateReached,).toBe(true,);
+        expect(rows[0]?.repairOutcome
+          .kind,).toBe('not-evaluated',);
+        expect(rows[0]?.translateOutcome
+          .kind,).toBe('decided',);
         expect(rows[0]?.repairText,).toBe(ARCHIVE_NAP,);
+        // The two lanes did different things here, so their DECISIONS are not
+        // comparable however alike the two documents read.
+        expect(rows[0]?.decisionComparison
+          .kind,).toBe('not-comparable',);
       },
     },),
     it({
@@ -241,8 +255,12 @@ await describe({
             repair: {
               sliceTexts: [{
                 chunkIndex: 0,
+                incumbentKind: 'present',
                 incumbentText: ARCHIVE_NAP,
-                acceptedText: 'The cat is asleep on the windowsill.',
+                outcome: {
+                  kind: 'decided',
+                  acceptedText: 'The cat is asleep on the windowsill.',
+                },
               },],
               shippedChunkIndices: [4,],
             },
@@ -295,13 +313,21 @@ await describe({
               sliceTexts: [
                 {
                   chunkIndex: 0,
+                  incumbentKind: 'present',
                   incumbentText: ARCHIVE_NAP,
-                  acceptedText: ARCHIVE_NAP,
+                  outcome: {
+                    kind: 'decided',
+                    acceptedText: ARCHIVE_NAP,
+                  },
                 },
                 {
                   chunkIndex: 0,
+                  incumbentKind: 'present',
                   incumbentText: ARCHIVE_NAP,
-                  acceptedText: ARCHIVE_NAP,
+                  outcome: {
+                    kind: 'decided',
+                    acceptedText: ARCHIVE_NAP,
+                  },
                 },
               ],
               shippedChunkIndices: [],
@@ -310,13 +336,21 @@ await describe({
               sliceTexts: [
                 {
                   chunkIndex: 0,
+                  incumbentKind: 'present',
                   incumbentText: ARCHIVE_NAP,
-                  acceptedText: ARCHIVE_NAP,
+                  outcome: {
+                    kind: 'decided',
+                    acceptedText: ARCHIVE_NAP,
+                  },
                 },
                 {
                   chunkIndex: 1,
+                  incumbentKind: 'present',
                   incumbentText: 'The sill is warm.',
-                  acceptedText: 'The sill is warm.',
+                  outcome: {
+                    kind: 'decided',
+                    acceptedText: 'The sill is warm.',
+                  },
                 },
               ],
               shippedChunkIndices: [],
@@ -345,8 +379,12 @@ await describe({
             repair: {
               sliceTexts: [{
                 chunkIndex: 0,
+                incumbentKind: 'present',
                 incumbentText: ARCHIVE_NAP,
-                acceptedText: 'The cat is asleep on the windowsill.',
+                outcome: {
+                  kind: 'decided',
+                  acceptedText: 'The cat is asleep on the windowsill.',
+                },
               },],
               shippedChunkIndices: [
                 0,
@@ -376,8 +414,12 @@ await describe({
             translate: {
               sliceTexts: [{
                 chunkIndex: 4,
+                incumbentKind: 'present',
                 incumbentText: ARCHIVE_NAP,
-                acceptedText: ARCHIVE_NAP,
+                outcome: {
+                  kind: 'decided',
+                  acceptedText: ARCHIVE_NAP,
+                },
               },],
               shippedChunkIndices: [],
             },

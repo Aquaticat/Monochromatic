@@ -97,23 +97,25 @@ function preparedSlices(): readonly {
  */
 function laneWordings(
   { decided, }: { readonly decided: ReadonlyMap<number, string>; },
-): readonly {
-  readonly chunkIndex: number;
-  readonly incumbentText: string;
-  readonly acceptedText?: string;
-}[] {
+): readonly LaneSliceText[] {
   return INCUMBENTS.map(function toWording(
     incumbentText,
     chunkIndex,
-  ) {
+  ): LaneSliceText {
     /**
      * What this case says the lane decided here.
      */
     const accepted = decided.get(chunkIndex,);
     return {
       chunkIndex,
+      incumbentKind: 'present',
       incumbentText,
-      ...(accepted === undefined ? {} : { acceptedText: accepted, }),
+      outcome: (accepted === undefined)
+        ? { kind: 'not-evaluated', }
+        : {
+          kind: 'decided',
+          acceptedText: accepted,
+        },
     };
   },);
 }
@@ -186,20 +188,36 @@ function anchoredWordings(
   return [
     {
       chunkIndex: 0,
+      incumbentKind: 'present',
       incumbentText: INCUMBENTS[0],
-      acceptedText: INCUMBENTS[0],
+      outcome: {
+        kind: 'decided',
+        acceptedText: INCUMBENTS[0],
+      },
     },
     {
       chunkIndex: 1,
+      incumbentKind: 'absent',
       incumbentText: '',
       // Deciding the blank is what a lane does when it agrees with an
-      // incumbent, and at an anchor the incumbent is nothing at all.
-      ...(anchorDecided ? { acceptedText: '', } : {}),
+      // incumbent, and at an anchor the incumbent is nothing at all; the
+      // alternative is the lane reporting it reached the slice and could not
+      // fill it.
+      outcome: anchorDecided
+        ? {
+          kind: 'decided',
+          acceptedText: '',
+        }
+        : { kind: 'unfilled', },
     },
     {
       chunkIndex: 2,
+      incumbentKind: 'present',
       incumbentText: INCUMBENTS[2],
-      acceptedText: INCUMBENTS[2],
+      outcome: {
+        kind: 'decided',
+        acceptedText: INCUMBENTS[2],
+      },
     },
   ];
 }
@@ -220,8 +238,8 @@ await describe({
           withdrawnChunkIndices: [],
           blocked: false,
         },);
-        expect(undecided[1]?.shipment
-          .kind,).toBe('unfilled',);
+        expect(undecided[1]?.delivery
+          .kind,).toBe('gap-remains',);
 
         /** Same anchor, with the lane agreeing with the blank it found. */
         const agreed = buildSliceDelivery({
@@ -231,14 +249,14 @@ await describe({
           withdrawnChunkIndices: [],
           blocked: false,
         },);
-        expect(agreed[1]?.shipment
-          .kind,).toBe('unfilled',);
+        expect(agreed[1]?.delivery
+          .kind,).toBe('gap-remains',);
         // Every content slice still reads exactly as it did: this changes what
         // an ANCHOR means and nothing else.
-        expect(agreed[0]?.shipment
-          .kind,).toBe('incumbent-shipped',);
-        expect(agreed[2]?.shipment
-          .kind,).toBe('incumbent-shipped',);
+        expect(agreed[0]?.delivery
+          .kind,).toBe('incumbent-retained',);
+        expect(agreed[2]?.delivery
+          .kind,).toBe('incumbent-retained',);
       },
     },),
     it({
@@ -261,12 +279,12 @@ await describe({
           blocked: false,
         },);
         expect(ledger.map(function toShipment(record,): string {
-          return record.shipment
+          return record.delivery
             .kind;
         },),).toEqual([
           'replacement-shipped',
           'replacement-withdrawn',
-          'incumbent-shipped',
+          'incumbent-retained',
         ],);
         expect(ledger.map(function toShipped(record,): string {
           return record.shippedText;
@@ -278,7 +296,7 @@ await describe({
         expect(ledger.map(function toSource(record,): string {
           return record.sourceText;
         },),).toEqual([...SOURCES,],);
-        expect(ledger[1]?.shipment,).toEqual({
+        expect(ledger[1]?.delivery,).toEqual({
           kind: 'replacement-withdrawn',
           reason: 'assembly-integrity',
         },);
@@ -300,10 +318,10 @@ await describe({
           blocked: true,
         },);
         expect(ledger.map(function toShipment(record,): string {
-          return record.shipment
+          return record.delivery
             .kind;
         },),).toEqual([
-          'incumbent-shipped',
+          'incumbent-retained',
           'not-evaluated',
           'not-evaluated',
         ],);
@@ -329,12 +347,15 @@ await describe({
           withdrawnChunkIndices: [],
           blocked: true,
         },);
-        expect(ledger[0]?.shipment,).toEqual({
+        expect(ledger[0]?.delivery,).toEqual({
           kind: 'replacement-withdrawn',
           reason: 'blocked-non-translation',
         },);
         expect(ledger[0]?.shippedText,).toBe(INCUMBENTS[0],);
-        expect(ledger[0]?.acceptedText,).toBe('The cat is asleep.',);
+        expect(ledger[0]?.outcome,).toEqual({
+          kind: 'decided',
+          acceptedText: 'The cat is asleep.',
+        },);
       },
     },),
     it({
