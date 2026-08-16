@@ -1,4 +1,31 @@
-# Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-16
+# Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-17
+
+WHAT A THIRD NIGHT CHANGED, 08-16 into 08-17.
+None of the questions below were answered in between and none of them changed
+its answer: the night went on the artifact reader, two resume guards and the
+last of the invariants review, so this is a note about what is now built rather
+than about anything you have to re-decide.
+
+-   THE VERSION 2 ARTIFACT PARSER IS IN, and with it a refusal the adversarial
+    list called for and I had dropped: a ledger naming one slice twice used to
+    pass every relation, because they all join by POSITION, so two rows naming
+    slice 5 agree with each other, with their evidence, and with the slice
+    count.
+-   TWO RESUME GUARDS, one of which corrects a claim this repository made in
+    three places. The mixed-generation trap was recorded as unguarded; it was
+    not. `assertResumableGeneration` already refuses a directory whose artifacts
+    record another pipeline digest, and a build that writes version 1 cannot
+    share a digest with one that writes version 2. What was genuinely open is
+    the drift opt-in, which promises that naming a required commit keeps a mixed
+    pool readable: true of build drift, false of schema drift. That hole is
+    closed and the new guard is deliberately NOT overridable.
+-   `#103` IS FULLY CLOSED, and two of its three remaining items turned out to
+    be built already. Re-reading them cost less than rebuilding them.
+-   NOTHING SPENT YOUR QUOTA. The only runs were plan-mode, which makes no model
+    call, and unit tests against the synthetic client.
+-   `#105`'S FIRST ITEM, the decline-rate measurement that gates its decision,
+    still cannot run: it wants the real roster, and the launch gate holds while
+    the window trial is live.
 
 WHAT A SECOND NIGHT CHANGED, 08-16, since none of these questions were answered
 in between and you should not re-read the whole document to find it:
