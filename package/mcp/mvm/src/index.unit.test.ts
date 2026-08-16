@@ -188,6 +188,54 @@ await describe({
     },),
 
     it({
+      name: 'advertises the exclusivity rule in the schema destroy_vm derives',
+      fn: async () => {
+        /** Replies to a lone listing request. */
+        const replies = await exchange({
+          requests: [{
+            jsonrpc: '2.0',
+            id: 7,
+            method: 'tools/list',
+            params: REQUEST_META,
+          },],
+        },);
+        const result = replies[0]?.result as {
+          tools: readonly {
+            name: string;
+            inputSchema: {
+              type: string;
+              $schema: string;
+              anyOf?: readonly {
+                required?: readonly string[];
+                additionalProperties?: boolean;
+              }[];
+            };
+          }[];
+        };
+        /** Advertised argument schema for the one tool that can destroy everything. */
+        const schema = result.tools
+          .find(function isDestroy(tool,): boolean {
+            return tool.name === 'destroy_vm';
+          },)
+          ?.inputSchema;
+
+        // The exclusivity rule lives here now rather than in the handler, so a client can
+        // reject an ambiguous call locally. If conversion ever stopped emitting it, the
+        // server would still refuse such calls while advertising that it accepts them.
+        expect(schema?.type,).toBe('object',);
+        expect(schema?.$schema,).toBe('https://json-schema.org/draft/2020-12/schema',);
+        expect(schema?.anyOf,).toHaveLength(2,);
+        expect(schema?.anyOf?.map(function requiredOf(branch,) {
+          return branch.required;
+        },),).toEqual([['name',], ['all',],],);
+        // Strict branches are what make the union exclusive: without them a bag carrying
+        // both targets would satisfy each branch instead of neither.
+        expect(schema?.anyOf?.every(function isStrict(branch,): boolean {
+          return branch.additionalProperties === false;
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'refuses a request declaring a revision it does not implement',
       fn: async () => {
         /** Replies to a request naming a handshake-era revision. */

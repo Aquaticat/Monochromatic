@@ -634,6 +634,77 @@ await describe({
       },
     },),
     it({
+      name: 'reports no match for a cancellation arriving after the request settled',
+      fn: async () => {
+        const queue = createSerialRequestQueue({
+          write: () => Promise.resolve(),
+        },);
+        queue.enqueue({ id: 3, produce: () => Promise.resolve('done',), },);
+        await queue.idle();
+
+        // Bookkeeping is released on settle, so a late cancellation finds nothing. That is
+        // also the limit of this design: were a client to reuse id 3 for a new request, a
+        // cancellation meant for the old one would name the new one instead.
+        expect(queue.cancel({ id: 3, },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'releases a cancelled entry immediately rather than at its turn',
+      fn: async () => {
+        /** Frames written, in order. */
+        const written: string[] = [];
+        const queue = createSerialRequestQueue({
+          write: async (frame: string,) => {
+            written.push(frame,);
+            await wait(SLOW_TOOL_MS,);
+          },
+        },);
+
+        queue.enqueue({ id: 1, produce: () => Promise.resolve('first',), },);
+        queue.enqueue({ id: 2, produce: () => Promise.resolve('second',), },);
+
+        // Cancelling while entry 1 is still writing must drop entry 2 from the waiting list
+        // there and then, not leave it parked until it reaches the front. A second
+        // cancellation naming it therefore matches nothing.
+        expect(queue.cancel({ id: 2, },),).toBe(true,);
+        expect(queue.cancel({ id: 2, },),).toBe(false,);
+
+        await queue.idle();
+
+        expect(written,).toEqual(['first',],);
+      },
+    },),
+    it({
+      name: 'stops the queue when a producer throws instead of leaving it unanswered',
+      fn: async () => {
+        /** Frames written, in order. */
+        const written: string[] = [];
+        const queue = createSerialRequestQueue({
+          write: (frame: string,) => {
+            written.push(frame,);
+            return Promise.resolve();
+          },
+        },);
+        queue.enqueue({
+          id: 1,
+          produce: () => Promise.reject(new Error('producer exploded',),),
+        },);
+        queue.enqueue({ id: 2, produce: () => Promise.resolve('second',), },);
+
+        // Producers are expected to answer their own failures; one that throws anyway has
+        // left a request permanently unanswered, which is a broken connection rather than a
+        // skippable entry. Stopping surfaces it instead of quietly continuing.
+        try {
+          await queue.idle();
+          expect('idle resolved',).toBe('idle should have thrown',);
+        }
+        catch (error: unknown) {
+          expect(caughtValueText(error,),).toContain('producer exploded',);
+        }
+        expect(written,).toEqual([],);
+      },
+    },),
+    it({
       name: 'writes nothing for a producer yielding the no-frame sentinel',
       fn: async () => {
         /** Frames written, in order. */
