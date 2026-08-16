@@ -51,6 +51,12 @@ Calls stall indefinitely:
 measured 2026-08-16,
 two sat 5h18m and 3h43m at zero CPU with empty output,
 while siblings launched the same night finished in minutes.
+Later that day two more stalled back to back,
+both killed by the wrapper at the full hour with zero bytes,
+exiting 124,
+and no sibling finished at all.
+Do not count on a sibling returning;
+budget the work as if the answer may never arrive.
 An hour bounds a stall without truncating a real answer.
 This is TMO's unbounded-runtime exception,
 not routine verification.
