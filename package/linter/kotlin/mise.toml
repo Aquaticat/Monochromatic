@@ -131,7 +131,7 @@ tasks.register('verifyPublishedRules', JavaExec) {
         if (executionResult.get().exitValue == 0) {
             throw new GradleException('Published rule did not reject the undocumented fixture')
         }
-        if (!output.contains('Missing KDoc on function undocumented.') || !output.contains('RequireKDoc')) {
+        if (!output.contains("Missing KDoc on function 'undocumented'.") || !output.contains('[RequireKDoc]')) {
             throw new GradleException('Published rule did not emit the expected RequireKDoc finding')
         }
     }
