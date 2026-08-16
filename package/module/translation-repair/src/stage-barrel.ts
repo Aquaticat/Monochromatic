@@ -7,6 +7,12 @@
 // repair pipeline in particular.
 
 export {
+  assertUnheardKeptArchive,
+  heardNobodyAbout,
+  RepairUnheardError,
+  type RepairVoiceRecord,
+} from './repair-unheard.ts';
+export {
   attemptStageCall,
   type StageVoice,
 } from './stage-call.ts';

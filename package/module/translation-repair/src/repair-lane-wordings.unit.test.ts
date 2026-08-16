@@ -28,6 +28,7 @@ import {
   type ChunkPair,
   makeInsertionChunk,
   repairLaneWordings,
+  type RepairVoiceRecord,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -83,6 +84,76 @@ function alternatingSlices(): readonly ChunkPair[] {
   },);
 }
 
+/**
+ * One settled slice a critic answered on, which is what makes it a decision.
+ *
+ * WRITTEN OUT rather than defaulted, because the field it fills is exactly what
+ * separates a slice the lane examined from one it heard nobody about, and a
+ * fixture that left it implicit would stop testing the distinction the moment
+ * the default changed.
+ *
+ * @param chunkIndex - slice this settled
+ *
+ * @param repairedText - wording the lane settled on
+ *
+ * @returns Outcome carrying one heard critic and no refinement
+ *
+ * @example
+ * ```ts
+ * const outcome = heard({ chunkIndex: 0, repairedText: 'The cat naps.', },);
+ * ```
+ */
+function heard(
+  {
+    chunkIndex,
+    repairedText,
+  }: {
+    readonly chunkIndex: number;
+    readonly repairedText: string;
+  },
+): RepairVoiceRecord {
+  return {
+    chunkIndex,
+    repairedText,
+    changed: false,
+    heardCriticIds: ['hf:openai/gpt-oss-120b',],
+    refined: false,
+  };
+}
+
+/**
+ * One settled slice no stage spoke about, which leaves the archive standing.
+ *
+ * @param chunkIndex - slice this settled
+ *
+ * @param repairedText - wording the lane settled on, which for a silent slice
+ * has to be the archive's own
+ *
+ * @returns Outcome carrying no heard critic and no refinement
+ *
+ * @example
+ * ```ts
+ * const outcome = unheard({ chunkIndex: 0, repairedText: ARCHIVE_NAP, },);
+ * ```
+ */
+function unheard(
+  {
+    chunkIndex,
+    repairedText,
+  }: {
+    readonly chunkIndex: number;
+    readonly repairedText: string;
+  },
+): RepairVoiceRecord {
+  return {
+    chunkIndex,
+    repairedText,
+    changed: false,
+    heardCriticIds: [],
+    refined: false,
+  };
+}
+
 await describe({
   name: repairLaneWordings.name,
   children: [
@@ -100,10 +171,10 @@ await describe({
           slices: alternatingSlices(),
           undecided: 'refuse',
           outcomes: [
-            { chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },
-            { chunkIndex: 1, repairedText: '', },
-            { chunkIndex: 2, repairedText: 'The bowl is full.', },
-            { chunkIndex: 3, repairedText: '', },
+            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ chunkIndex: 1, repairedText: '', },),
+            heard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
+            heard({ chunkIndex: 3, repairedText: '', },),
           ],
         },);
         expect(wordings.map(function toOutcome(one,): string {
@@ -142,9 +213,9 @@ await describe({
           slices: alternatingSlices(),
           undecided: 'not-evaluated',
           outcomes: [
-            { chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },
-            { chunkIndex: 1, repairedText: '', },
-            { chunkIndex: 2, repairedText: 'The bowl is full.', },
+            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ chunkIndex: 1, repairedText: '', },),
+            heard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
           ],
         },);
         expect(wordings.map(function toOutcome(one,): string {
@@ -156,6 +227,109 @@ await describe({
           'decided',
           'not-evaluated',
         ],);
+      },
+    },),
+    it({
+      name:
+        'reports a slice NOBODY was heard about as the archive standing by default, not as a decision: '
+        + 'with every critic lost and the naturalness lane silent, the lane settled the archive`s own '
+        + 'wording because nothing else was available, and calling that a decision credits it with '
+        + 'having examined a passage it never saw an answer about',
+      fn: async () => {
+        /**
+         * Wordings for a run whose second content slice heard nobody.
+         */
+        const wordings = repairLaneWordings({
+          slices: alternatingSlices(),
+          undecided: 'refuse',
+          outcomes: [
+            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ chunkIndex: 1, repairedText: '', },),
+            unheard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
+            heard({ chunkIndex: 3, repairedText: '', },),
+          ],
+        },);
+        expect(wordings.map(function toOutcome(one,): string {
+          return one.outcome
+            .kind;
+        },),).toEqual([
+          'decided',
+          'not-applicable',
+          'incumbent-fallback',
+          'not-applicable',
+        ],);
+      },
+    },),
+    it({
+      name:
+        'keeps a slice a critic answered on as a DECISION even where the answer changed nothing, since '
+        + 'a lane that examined a passage and left it alone has chosen it: folding that together with a '
+        + 'lost stage would make the two indistinguishable in exactly the direction that flatters the run',
+      fn: async () => {
+        /**
+         * Wordings where every content slice was examined and kept.
+         */
+        const wordings = repairLaneWordings({
+          slices: alternatingSlices(),
+          undecided: 'refuse',
+          outcomes: [
+            heard({ chunkIndex: 0, repairedText: 'The cat sleeps on the sill.', },),
+            heard({ chunkIndex: 1, repairedText: '', },),
+            heard({ chunkIndex: 2, repairedText: 'The bowl is full.', },),
+            heard({ chunkIndex: 3, repairedText: '', },),
+          ],
+        },);
+        expect(wordings[0]?.outcome
+          .kind,).toBe('decided',);
+        expect(wordings[2]?.outcome
+          .kind,).toBe('decided',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a slice nobody was heard about that carries a wording other than the archive`s, because '
+        + 'something produced text no stage was recorded as having produced, and a row like that reaches '
+        + 'a ledger, a comparison and a rate before anyone notices',
+      fn: async () => {
+        expect(function silentSliceCarriesText() {
+          repairLaneWordings({
+            slices: alternatingSlices(),
+            undecided: 'refuse',
+            outcomes: [
+              heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+              heard({ chunkIndex: 1, repairedText: '', },),
+              unheard({ chunkIndex: 2, repairedText: 'The bowl is overflowing.', },),
+              heard({ chunkIndex: 3, repairedText: '', },),
+            ],
+          },);
+        },).toThrow('slice 2 heard no critic',);
+      },
+    },),
+    it({
+      name:
+        'reports a slice the NATURALNESS lane rewrote as a decision even where no critic answered, '
+        + 'because that stage produces wordings too: reading only the critics would report a rewritten '
+        + 'passage as the archive standing untouched',
+      fn: async () => {
+        /**
+         * Wordings where the refiner acted on a slice no critic raised.
+         */
+        const wordings = repairLaneWordings({
+          slices: alternatingSlices(),
+          undecided: 'refuse',
+          outcomes: [
+            heard({ chunkIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+            heard({ chunkIndex: 1, repairedText: '', },),
+            {
+              ...unheard({ chunkIndex: 2, repairedText: 'The bowl is brimming.', },),
+              refined: true,
+              changed: true,
+            },
+            heard({ chunkIndex: 3, repairedText: '', },),
+          ],
+        },);
+        expect(wordings[2]?.outcome
+          .kind,).toBe('decided',);
       },
     },),
   ],

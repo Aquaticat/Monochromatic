@@ -5,6 +5,11 @@ import {
   type LaneSliceText,
   type UndecidedSlicePolicy,
 } from './lane-slice-text.ts';
+import {
+  assertUnheardKeptArchive,
+  heardNobodyAbout,
+  type RepairVoiceRecord,
+} from './repair-unheard.ts';
 
 //region Repair lane wordings
 // The repair lane's settled outcomes turned into the shared per-slice wording
@@ -21,6 +26,14 @@ import {
 // wording, and a lane comparison then reported the two lanes choosing DIFFERENT
 // wordings wherever the translate lane filled the passage. The repair lane had
 // no opinion there at all.
+//
+// THE OTHER SILENCE IS A LOST STAGE, and it looked identical until `#112`.
+// Every producing voice can fail: with all six critics erroring and the
+// naturalness lane silent, the lane settles the archive's own wording and
+// reported that as a DECISION too. Nobody looked at that slice. It is
+// `incumbent-fallback`, the archive standing by default, and the difference
+// matters to every rate taken over these rows: a lane that heard nobody all
+// document otherwise measures as one that examined everything and approved.
 
 /**
  * Builds the repair lane's per-slice wordings from its settled outcomes.
@@ -28,7 +41,8 @@ import {
  * @param slices - preparation the lane ran over, which supplies every incumbent
  * and says which slices the archive never translated
  *
- * @param outcomes - what the lane settled, anchors included, in any order
+ * @param outcomes - what the lane settled, anchors included, in any order,
+ * each carrying who was heard about it
  *
  * @param undecided - what an unnamed gap means; `refuse` after assembly, where
  * every slice was visited, and `not-evaluated` at the blocked exit, which stops
@@ -38,6 +52,9 @@ import {
  *
  * @throws {@link LaneSliceCoverageError} when the outcomes do not cover the
  * preparation as the policy requires
+ *
+ * @throws {@link RepairUnheardError} when a slice nobody spoke about carries a
+ * wording that is not the archive's
  *
  * @example
  * ```ts
@@ -51,10 +68,7 @@ export function repairLaneWordings(
     undecided,
   }: {
     readonly slices: readonly ChunkPair[];
-    readonly outcomes: readonly {
-      readonly chunkIndex: number;
-      readonly repairedText: string;
-    }[];
+    readonly outcomes: readonly RepairVoiceRecord[];
     readonly undecided: UndecidedSlicePolicy;
   },
 ): readonly LaneSliceText[] {
@@ -69,6 +83,40 @@ export function repairLaneWordings(
       return slice.target
         .chunkIndex;
     },),);
+
+  /**
+   * Archive's own wording per slice, which an unheard outcome has to match.
+   */
+  const incumbents = new Map(slices.map(function toEntry(slice,): [
+    number,
+    string,
+  ] {
+    return [
+      slice.target
+        .chunkIndex,
+      slice.target
+        .text,
+    ];
+  },),);
+
+  /**
+   * Outcomes at a slice the archive does translate, which are the only ones
+   * that can be a decision or a fallback: an anchor is neither.
+   */
+  const mendable = outcomes.filter(function hadSomethingToRepair(outcome,): boolean {
+    return !anchored.has(outcome.chunkIndex,);
+  },);
+
+  // CHECKED BEFORE CLASSIFYING, so a contradiction is refused rather than
+  // recorded as whichever outcome the classification happens to pick. A slice
+  // no stage spoke about cannot carry a wording, and one that does means
+  // something produced text without being recorded as having produced it.
+  for (const outcome of mendable) {
+    assertUnheardKeptArchive({
+      outcome,
+      incumbentText: incumbents.get(outcome.chunkIndex,) ?? '',
+    },);
+  }
 
   // INTERSECTED WITH WHAT THE LANE REACHED, rather than taken from the
   // preparation whole. The blocked exit settles a prefix and stops, so an
@@ -85,9 +133,16 @@ export function repairLaneWordings(
       .map(function toIndex(outcome,): number {
         return outcome.chunkIndex;
       },),
-    decided: outcomes
-      .filter(function hadSomethingToRepair(outcome,): boolean {
-        return !anchored.has(outcome.chunkIndex,);
+    unheardChunkIndices: mendable
+      .filter(function nobodySpoke(outcome,): boolean {
+        return heardNobodyAbout({ outcome, },);
+      },)
+      .map(function toIndex(outcome,): number {
+        return outcome.chunkIndex;
+      },),
+    decided: mendable
+      .filter(function somebodySpoke(outcome,): boolean {
+        return !heardNobodyAbout({ outcome, },);
       },)
       .map(function toDecision(outcome,): {
         readonly chunkIndex: number;
