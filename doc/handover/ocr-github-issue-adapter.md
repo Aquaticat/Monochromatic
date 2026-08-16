@@ -70,6 +70,11 @@ It has no multiline handling,
 so users must provide JSONL transcripts and pretty-printed JSON through a named file.
 A malformed or unsupported interactive paste reports its validation error and exits nonzero immediately.
 The adapter must not keep the prompt open for correction or request another paste.
+If any record inside an otherwise recognized input has invalid types or structure,
+the adapter must reject the entire input before performing any GitHub operation.
+It must not quarantine or skip malformed records and continue processing.
+A structurally valid finding with absent classification metadata is not malformed under this rule;
+the security policy still quarantines it.
 
 It must auto-detect among only these validated schemas.
 It must not search arbitrary nested JSON for comment-like objects or accept individual comment fragments by accident.
@@ -271,7 +276,9 @@ in dependency order:
    Paste framing is settled as one line with no multiline handling.
    Users needing multiline input write a file and pass its path.
    An invalid interactive paste reports the error and exits nonzero without retrying.
-   Encoding and handling malformed records inside an otherwise accepted input remain open.
+   A malformed record rejects the entire input before any GitHub operation.
+   Structurally valid findings with missing classification metadata remain security-quarantined.
+   Encoding remains open.
 4. Non-interactive authority:
    mode selection is settled as non-interactive by default,
    with interactive behavior enabled only by `--interactive` or `-i`.
@@ -320,7 +327,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about malformed finding records inside an otherwise accepted input.
+Ask the next dependent design question about the accepted text encoding for named input files.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -362,5 +369,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   multiline JSON and JSONL require a named file.
 - 2026-08-16:
   recorded that invalid interactive paste reports its error and exits nonzero without retrying.
+- 2026-08-16:
+  recorded atomic rejection before GitHub operations when any input record is malformed.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
