@@ -143,14 +143,14 @@ fn volume_thumb_follows_engine_after_user_input() {
 }
 
 
-// What:     `led_plate_tracks_deferred_layout_and_resize` drives measured LED layouts.
-// Why:      Deferred report bursts must build first wrapped plate and retain completed paint
-//           while a resize generation replaces it with current one-row geometry.
+// What:     `led_backplate_fills_width_and_rows_track_resize` drives measured LED layouts.
+// Why:      Plate paint must always fill available width while deferred reports preserve
+//           measured cap-end corners across wrapped and one-row layouts.
 #[test]
-fn led_plate_tracks_deferred_layout_and_resize() {
+fn led_backplate_fills_width_and_rows_track_resize() {
     setup();
     let app = crate::AppWindow::new().expect("AppWindow builds under testing backend");
-    crate::ui_led_plate::apply(&app);
+    crate::ui_led_rows::apply(&app);
     app.set_page_control_style(5);
     app.set_page_labels(ModelRc::new(VecModel::from(vec![
         SharedString::from("Alpha"),
@@ -167,9 +167,16 @@ fn led_plate_tracks_deferred_layout_and_resize() {
         mock_elapsed_time(std::time::Duration::from_millis(delay_ms));
     }
 
-    let geometry = app.global::<crate::LedPlateGeometry>();
-    let wrapped_path = geometry.get_path();
-    assert!(!wrapped_path.is_empty(), "deferred LED reports must publish one backplate path");
+    let controls = ElementHandle::find_by_element_type_name(&app, "LedSegmentControls")
+        .next()
+        .expect("LED controls exist");
+    let plate = ElementHandle::find_by_element_id(&app, "LedSegmentControls::led-backplate")
+        .next()
+        .expect("full-width LED backplate exists");
+    assert_eq!(plate.size().width, controls.size().width, "backplate fills wrapped control width");
+    assert_eq!(plate.size().height, controls.size().height, "backplate fills wrapped control height");
+
+    let geometry = app.global::<crate::LedRowGeometry>();
     let wrapped_starts = geometry.get_starts();
     let wrapped_row_count = (0..wrapped_starts.row_count())
         .filter(|index| wrapped_starts.row_data(*index) == Some(true))
@@ -186,10 +193,6 @@ fn led_plate_tracks_deferred_layout_and_resize() {
             .map(|cap| cap.absolute_position())
             .collect::<Vec<_>>();
     mock_elapsed_time(std::time::Duration::ZERO);
-    assert!(
-        !geometry.get_path().is_empty(),
-        "new generation must retain completed plate until replacement reports finish"
-    );
     for delay_ms in [1, 16, 16] {
         mock_elapsed_time(std::time::Duration::from_millis(delay_ms));
     }
@@ -202,5 +205,6 @@ fn led_plate_tracks_deferred_layout_and_resize() {
         resized_row_count, 1,
         "800px fixture must repack to one row; rows={resized_row_count}, caps={resized_positions:?}"
     );
-    assert_ne!(geometry.get_path(), wrapped_path, "resize must replace wrapped plate outline");
+    assert_eq!(plate.size().width, controls.size().width, "backplate remains full width after resize");
+    assert_eq!(plate.size().height, controls.size().height, "backplate remains full height after resize");
 }

@@ -49,15 +49,15 @@ mod ui_page;
 /// ```
 mod ui_font_scale;
 
-/// What:     `mod ui_led_plate;` loads the measured LED plate path adapter.
-/// Why:      Slint owns text wrapping while Rust turns final cap rectangles into one
-///           multi-line SVG outline behind generated `LedPlateGeometry` interface.
+/// What:     `mod ui_led_rows;` loads measured LED row-membership adapter.
+/// Why:      Slint owns full-width plate paint while Rust derives cap end corners from
+///           actual wrapped positions through generated `LedRowGeometry` interface.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import * as uiLedPlate from "./ui_led_plate";
+/// import * as uiLedRows from "./ui_led_rows";
 /// ```
-mod ui_led_plate;
+mod ui_led_rows;
 
 /// What:     `mod ui_page_style;` loads the sibling settings-persistence bridge.
 /// Why:      Page-control preference wiring uses generated `AppWindow` methods and stays
@@ -1308,16 +1308,15 @@ fn main() -> Result<()> {
     // ```
     ui_font_scale::apply_os_font_scale(&app);
 
-    // What:     `ui_led_plate::apply(&app);` joins Slint's measured cap geometry to
-    //           one Rust-generated SVG path.
-    // Why:      The plate remains one surface without guessing text widths or
-    //           overlapping row plates.
+    // What:     `ui_led_rows::apply(&app);` derives measured cap row membership.
+    // Why:      Full-width plate paint stays in Slint while Rust marks physical first and
+    //           last caps so exposed ends retain source corner geometry.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // applyLedPlateGeometry(app);
+    // applyLedRowGeometry(app);
     // ```
-    ui_led_plate::apply(&app);
+    ui_led_rows::apply(&app);
 
     // Restore page-control preference and register settings persistence.
     ui_page_style::apply(&app);

@@ -1,11 +1,11 @@
-//! Builds one multi-line LED backplate from Slint's actual flex geometry.
+//! Derives LED cap end-corner ownership from Slint's actual wrapped rows.
 //!
 //! Slint owns text shaping and wrapping. Each cap reports its final rectangle through
-//! `LedPlateGeometry.report`; this module groups those rectangles into rows and returns
-//! one SVG path. The path is paint-only, so updating it cannot change flex geometry.
+//! `LedRowGeometry.report`; this module groups complete reports by measured position and
+//! returns first/last membership. The full-width plate itself stays entirely in Slint.
 
 /// What:     `RefCell` provides checked interior mutability on one UI thread.
-/// Why:      Repeated geometry callbacks fill one shared state vector before path generation.
+/// Why:      Repeated geometry callbacks fill shared state before row classification.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -22,7 +22,7 @@ use std::cell::RefCell;
 /// ```
 use std::cmp::Ordering;
 
-/// What:     `Rc` shares geometry state between registration scope and callback.
+/// What:     `Rc` shares geometry state between registration scope and callbacks.
 /// Why:      Slint callbacks run on one UI thread, so atomic ownership is unnecessary.
 ///
 /// In TS you'd write (pseudocode):
@@ -31,30 +31,23 @@ use std::cmp::Ordering;
 /// ```
 use std::rc::Rc;
 
-/// What:     Generated window and LED global types cross the Rust-to-Slint seam.
-/// Why:      Callback registration reads reports and writes final path properties.
+/// What:     Generated window and LED row-global types cross the Rust-to-Slint seam.
+/// Why:      Callback registration reads measured reports and writes row-edge models.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { AppWindow, LedPlateGeometry } from "./generated/app.slint";
+/// import { AppWindow, LedRowGeometry } from "./generated/app.slint";
 /// ```
-use crate::{AppWindow, LedPlateGeometry};
+use crate::{AppWindow, LedRowGeometry};
 
-/// What:     Slint handle traits expose weak handles and global adapters.
-/// Why:      Geometry callback must not keep window alive.
+/// What:     Slint handle traits expose weak handles and model adapters.
+/// Why:      Geometry callbacks must not keep the window alive.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { ComponentHandle, Global, SharedString } from "slint";
+/// import { ComponentHandle, ModelRc, VecModel } from "slint";
 /// ```
-use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
-
-/// Loads pure stepped-outline generation behind adapter state.
-#[path = "ui_led_plate_path.rs"]
-mod path;
-
-/// Imports normalized plate and row geometry from pure path module.
-use path::{plate_geometry, PlateGeometry, RowGeometry};
+use slint::{ComponentHandle, ModelRc, VecModel};
 
 /// Maximum coordinate drift treated as one visual row.
 const ROW_EPSILON: f32 = 0.25;
@@ -66,19 +59,26 @@ struct ControlGeometry {
     x: f32,
     /// Vertical origin relative to LED controls.
     y: f32,
-    /// Complete logical slot width including plate margins.
+    /// Complete logical slot width including cap margins.
     width: f32,
-    /// Complete logical slot height including plate margins.
-    height: f32,
 }
 
-/// Complete paint and per-cap edge ownership for one layout generation.
-struct PlateUpdate {
-    /// Holds normalized one-piece plate.
-    plate: PlateGeometry,
-    /// Marks first cap on each visual row by page index.
+/// Measured physical extent of one wrapped cap row.
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct RowGeometry {
+    /// Shared vertical origin for row members.
+    y: f32,
+    /// Minimum physical horizontal origin.
+    left: f32,
+    /// Maximum physical horizontal end.
+    right: f32,
+}
+
+/// Complete per-cap edge ownership for one layout generation.
+struct RowUpdate {
+    /// Marks first physical cap on each visual row by page index.
     starts: Vec<bool>,
-    /// Marks final cap on each visual row by page index.
+    /// Marks final physical cap on each visual row by page index.
     ends: Vec<bool>,
 }
 
@@ -112,7 +112,7 @@ impl GeometryState {
         self.generation = self.generation.wrapping_add(1);
         self.expected_count = count;
         self.controls = vec![None; count];
-        tracing::debug!(generation = self.generation, count, "beginning LED plate geometry generation");
+        tracing::debug!(generation = self.generation, count, "beginning LED row geometry generation");
         self.generation
     }
 
@@ -125,7 +125,7 @@ impl GeometryState {
                 current_generation = self.generation,
                 count,
                 expected_count = self.expected_count,
-                "ignoring stale LED geometry report",
+                "ignoring stale LED row geometry report",
             );
             return false;
         }
@@ -133,7 +133,7 @@ impl GeometryState {
             *slot = Some(geometry);
             return true;
         }
-        tracing::warn!(index, count, "ignoring out-of-range LED geometry report");
+        tracing::warn!(index, count, "ignoring out-of-range LED row geometry report");
         false
     }
 }
@@ -141,6 +141,9 @@ impl GeometryState {
 /// Groups completed reports into visual rows ordered top-to-bottom.
 fn measured_rows(controls: &[Option<ControlGeometry>]) -> Option<Vec<RowGeometry>> {
     let mut measured = controls.iter().copied().collect::<Option<Vec<_>>>()?;
+    if measured.is_empty() {
+        return None;
+    }
     measured.sort_by(|left, right| {
         left.y
             .partial_cmp(&right.y)
@@ -152,23 +155,21 @@ fn measured_rows(controls: &[Option<ControlGeometry>]) -> Option<Vec<RowGeometry
             && (row.y - control.y).abs() <= ROW_EPSILON
         {
             row.left = row.left.min(control.x);
-            row.width = row.width.max(control.x + control.width);
-            row.height = row.height.max(control.height);
+            row.right = row.right.max(control.x + control.width);
             return rows;
         }
         rows.push(RowGeometry {
             y: control.y,
             left: control.x,
-            width: control.x + control.width,
-            height: control.height,
+            right: control.x + control.width,
         });
         rows
     });
     Some(rows)
 }
 
-/// Builds plate and row-edge ownership only after every cap reports.
-fn completed_update(controls: &[Option<ControlGeometry>]) -> Option<PlateUpdate> {
+/// Builds row-edge ownership only after every cap reports.
+fn completed_update(controls: &[Option<ControlGeometry>]) -> Option<RowUpdate> {
     let rows = measured_rows(controls)?;
     let measured = controls.iter().copied().collect::<Option<Vec<_>>>()?;
     let starts = measured
@@ -184,58 +185,49 @@ fn completed_update(controls: &[Option<ControlGeometry>]) -> Option<PlateUpdate>
         .map(|control| {
             rows.iter().any(|row| {
                 (row.y - control.y).abs() <= ROW_EPSILON
-                    && (row.width - control.x - control.width).abs() <= ROW_EPSILON
+                    && (row.right - control.x - control.width).abs() <= ROW_EPSILON
             })
         })
         .collect();
-    Some(PlateUpdate { plate: plate_geometry(&rows)?, starts, ends })
+    Some(RowUpdate { starts, ends })
 }
 
-/// Writes complete plate or clears stale paint until every cap has reported.
-fn update_global(global: &LedPlateGeometry<'_>, update: Option<PlateUpdate>) {
+/// Writes complete row ownership or clears it for an empty generation.
+fn update_global(global: &LedRowGeometry<'_>, update: Option<RowUpdate>) {
     if let Some(update) = update {
-        let plate = update.plate;
-        tracing::debug!(x = plate.x, width = plate.width, height = plate.height, "updating one-piece LED plate path");
-        global.set_path(SharedString::from(plate.path));
-        global.set_x(plate.x);
-        global.set_width(plate.width);
-        global.set_height(plate.height);
+        tracing::debug!("updating measured LED row-edge ownership");
         global.set_starts(ModelRc::new(VecModel::from(update.starts)));
         global.set_ends(ModelRc::new(VecModel::from(update.ends)));
         return;
     }
-    global.set_path(SharedString::default());
-    global.set_x(0.0);
-    global.set_width(0.0);
-    global.set_height(0.0);
     global.set_starts(ModelRc::default());
     global.set_ends(ModelRc::default());
 }
 
-/// Registers Slint geometry adapter for one-piece multi-line LED plate.
+/// Registers measured Slint row classification for LED cap corner ownership.
 pub(crate) fn apply(app: &AppWindow) {
-    tracing::debug!("registering LED plate geometry adapter");
+    tracing::debug!("registering LED row geometry adapter");
     let state = Rc::new(RefCell::new(GeometryState::default()));
     let begin_state = Rc::clone(&state);
     let begin_weak = app.as_weak();
-    let global = app.global::<LedPlateGeometry>();
-    global.on_begin(move |count, width| {
-        tracing::trace!(count, width, "received LED layout generation start");
+    let global = app.global::<LedRowGeometry>();
+    global.on_begin(move |count| {
+        tracing::trace!(count, "received LED row generation start");
         let Ok(count) = usize::try_from(count) else {
-            tracing::warn!(count, "ignoring negative LED geometry count");
+            tracing::warn!(count, "ignoring negative LED row count");
             return begin_state.borrow().generation;
         };
         let generation = begin_state.borrow_mut().begin(count);
         if count == 0 && let Some(app) = begin_weak.upgrade() {
-            update_global(&app.global::<LedPlateGeometry>(), None);
+            update_global(&app.global::<LedRowGeometry>(), None);
         }
         generation
     });
     let report_weak = app.as_weak();
-    global.on_report(move |generation, index, count, x, y, width, height| {
-        tracing::trace!(generation, index, count, x, y, width, height, "received LED cap geometry");
+    global.on_report(move |generation, index, count, x, y, width| {
+        tracing::trace!(generation, index, count, x, y, width, "received LED cap row geometry");
         let (Ok(index), Ok(count)) = (usize::try_from(index), usize::try_from(count)) else {
-            tracing::warn!(index, count, "ignoring negative LED geometry index or count");
+            tracing::warn!(index, count, "ignoring negative LED row index or count");
             return;
         };
         let Some(app) = report_weak.upgrade() else {
@@ -247,18 +239,20 @@ pub(crate) fn apply(app: &AppWindow) {
                 generation,
                 index,
                 count,
-                geometry: ControlGeometry { x, y, width, height },
+                geometry: ControlGeometry { x, y, width },
             }) {
                 return;
             }
             completed_update(&state.controls)
         };
-        update_global(&app.global::<LedPlateGeometry>(), update);
+        if update.is_some() {
+            update_global(&app.global::<LedRowGeometry>(), update);
+        }
     });
     global.set_adapter_ready(true);
 }
 
-/// Compiles pure geometry regression tests beside implementation internals.
+/// Compiles pure row-membership regression tests beside implementation internals.
 #[cfg(test)]
-#[path = "ui_led_plate_tests.rs"]
+#[path = "ui_led_rows_tests.rs"]
 mod tests;

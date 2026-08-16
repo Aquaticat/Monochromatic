@@ -32,7 +32,7 @@ import org.junit.Test
 // ```ts
 // describe("LED page controls", () => { ... });
 // ```
-/** Verifies measured LED targets pack into exact content-width shared plates. */
+/** Verifies measured LED targets pack into content-width rows over full-width plate. */
 class LedPageControlsTest {
     // What:     `emptyInputProducesNoPlateRows` covers zero pages.
     // Why:      Empty libraries must not reserve or paint an unused plate.
@@ -107,13 +107,13 @@ class LedPageControlsTest {
     }
 
     // What:     `multipleRowsPreservePageOrderAndContentWidths` covers repeated packing.
-    // Why:      Wrapping must never reorder page semantics or reserve full parent width.
+    // Why:      Wrapping must never reorder page semantics even though plate fills parent width.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // test("multiple rows preserve order and width", () => { ... });
     // ```
-    /** Confirms row order and each shared plate width. */
+    /** Confirms row order and each occupied cap extent. */
     @Test
     fun multipleRowsPreservePageOrderAndContentWidths() {
         assertEquals(
@@ -227,7 +227,7 @@ class LedPageControlsTest {
     // ```ts
     // test("wrapped rows form one plate", () => { ... });
     // ```
-    /** Confirms one stepped plate contains both cap rows. */
+    /** Confirms one full-width plate contains both cap rows. */
     @Test
     fun wrappedRowsFormOneMultilinePlate() {
         assertEquals(
@@ -237,82 +237,4 @@ class LedPageControlsTest {
             ),
         )
     }
-
-    // What:     `leftToRightPlateUsesLogicalCoordinate` covers default physical start edge.
-    // Why:      Content-width row steps must remain anchored to left in LTR.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("LTR coordinate", () => { ... });
-    // ```
-    /** Confirms LTR start coordinate remains unchanged. */
-    @Test
-    fun leftToRightPlateUsesLogicalCoordinate() {
-        assertEquals(
-            80f,
-            ledPlateX(LedPlateCoordinateOptions(valuePx = 80f, canvasWidthPx = 300f, rightToLeft = false)),
-        )
-    }
-
-    // What:     `rightToLeftPlateMirrorsLogicalCoordinate` covers localized physical start edge.
-    // Why:      Short wrapped rows must step from left while staying anchored to right in RTL.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("RTL coordinate", () => { ... });
-    // ```
-    /** Confirms RTL maps logical width inward from physical right edge. */
-    @Test
-    fun rightToLeftPlateMirrorsLogicalCoordinate() {
-        assertEquals(
-            220f,
-            ledPlateX(LedPlateCoordinateOptions(valuePx = 80f, canvasWidthPx = 300f, rightToLeft = true)),
-        )
-    }
-
-    // What:     `narrowerNextRowUsesOuterThenInnerRadius` covers inward plate step.
-    // Why:      Convex exposed corner stays broad while concave channel corner stays tight.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("inward radii", () => { ... });
-    // ```
-    /** Confirms narrowing step uses outer then inner hardware radii. */
-    @Test
-    fun narrowerNextRowUsesOuterThenInnerRadius() {
-        assertEquals(
-            LedTransitionRadii(firstPx = 17f, secondPx = 2f),
-            ledTransitionRadii(
-                LedTransitionRadiusOptions(
-                    differencePx = -100f,
-                    rowPitchPx = 52f,
-                    outerRadiusPx = 17f,
-                    innerRadiusPx = 2f,
-                ),
-            ),
-        )
-    }
-
-    // What:     `widerNextRowUsesInnerThenOuterRadius` covers outward plate step.
-    // Why:      Concave channel corner stays tight before broad exposed lower-row corner.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("outward radii", () => { ... });
-    // ```
-    /** Confirms widening step uses inner then outer hardware radii. */
-    @Test
-    fun widerNextRowUsesInnerThenOuterRadius() {
-        assertEquals(
-            LedTransitionRadii(firstPx = 2f, secondPx = 17f),
-            ledTransitionRadii(
-                LedTransitionRadiusOptions(
-                    differencePx = 100f,
-                    rowPitchPx = 52f,
-                    outerRadiusPx = 17f,
-                    innerRadiusPx = 2f,
-                ),
-            ),
-        )
-    }
-}
+\n}\n

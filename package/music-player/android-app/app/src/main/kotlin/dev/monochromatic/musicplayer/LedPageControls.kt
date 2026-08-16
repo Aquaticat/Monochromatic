@@ -88,15 +88,6 @@ import androidx.compose.foundation.selection.selectableGroup
 // ```
 import androidx.compose.foundation.shape.RoundedCornerShape
 
-// What:     `GenericShape` adapts one measured multi-line path to Compose shape operations.
-// Why:      One silhouette drives plate fill, clipping, contact shadow, and inner shadow.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { GenericShape } from "compose/shapes";
-// ```
-import androidx.compose.foundation.shape.GenericShape
-
 // What:     `MaterialTheme` exposes runtime primary and on-primary accent colors.
 // Why:      Reference purple is replaced by scene-safe colors derived from live accent.
 //
@@ -213,15 +204,6 @@ import androidx.compose.ui.graphics.Brush
 // import { Color } from "compose/graphics";
 // ```
 import androidx.compose.ui.graphics.Color
-
-// What:     `Path` stores one connected stepped plate outline.
-// Why:      Wrapped hardware must be one machined body rather than overlapping row surfaces.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Path } from "compose/graphics";
-// ```
-import androidx.compose.ui.graphics.Path
 
 // What:     `Shape` is Compose's reusable outline interface.
 // Why:      Same connected outline feeds every material and shadow modifier.
@@ -367,15 +349,6 @@ import androidx.compose.ui.unit.Dp
 // ```
 import androidx.compose.ui.unit.DpOffset
 
-// What:     `LayoutDirection` identifies physical start edge after localization.
-// Why:      Short wrapped plate rows step on left in RTL and right in LTR.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type LayoutDirection = "ltr" | "rtl";
-// ```
-import androidx.compose.ui.unit.LayoutDirection
-
 // What:     `TextUnit` stores a font dimension whose physical size follows the chosen density conversion.
 // Why:      The hardware legend stays exactly 15 logical units across user font scales.
 //
@@ -394,15 +367,6 @@ import androidx.compose.ui.unit.TextUnit
 // ```
 import androidx.compose.ui.unit.constrainHeight
 
-// What:     `constrainWidth` clamps content-width plate result to parent bounds.
-// Why:      Shared rows stay content-sized without violating incoming constraints.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { constrainWidth } from "compose/units";
-// ```
-import androidx.compose.ui.unit.constrainWidth
-
 // What:     `dp` converts numeric literals into density-independent dimensions.
 // Why:      Every geometry constant maps directly from the authoritative generator.
 //
@@ -411,24 +375,6 @@ import androidx.compose.ui.unit.constrainWidth
 // const dp = (value: number): Dp => value as Dp;
 // ```
 import androidx.compose.ui.unit.dp
-
-// What:     `absoluteValue` returns non-negative width difference at plate steps.
-// Why:      Step radius is bounded by half either inward or outward width change.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const absoluteValue = Math.abs;
-// ```
-import kotlin.math.absoluteValue
-
-// What:     `min` returns smallest geometric radius bound.
-// Why:      Machined corners cannot exceed step depth, row pitch, or source radius.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const min = Math.min;
-// ```
-import kotlin.math.min
 
 /** Stores reference's shared plate margin and inter-cap channel. */
 private val ledChannel: Dp = 8.dp
@@ -484,11 +430,11 @@ private const val LED_DOME_EDGE_START: Float = 0.86f
 /** Stores dome's final edge-shadow transition. */
 private const val LED_DOME_EDGE_END: Float = 0.93f
 
-/** Describes measured cap indexes sharing one backplate row extent. */
+/** Describes measured cap indexes sharing one wrapped row. */
 internal data class LedLine(
     /** Lists source page indexes in visual row order. */
     val pageIndexes: List<Int>,
-    /** Stores exact row extent width in physical pixels. */
+    /** Stores occupied cap extent including both horizontal plate margins. */
     val widthPx: Int,
 )
 
@@ -584,66 +530,12 @@ private data class LedCapOptions(
     val palette: LedPalette,
 )
 
-/** Groups ambient scene with one-piece multi-line plate silhouette. */
+/** Groups ambient scene with full-width one-piece plate silhouette. */
 private data class LedPlateOptions(
     /** Records bright ambient scene. */
     val lightScene: Boolean,
-    /** Holds complete stepped plate shape. */
+    /** Holds complete rounded rectangular plate shape. */
     val shape: Shape,
-)
-
-/** Groups physical row dimensions for one connected plate path. */
-private data class LedPlatePathOptions(
-    /** Stores content width of every wrapped row. */
-    val rowWidthsPx: List<Int>,
-    /** Stores vertical pitch between cap rows. */
-    val rowPitchPx: Int,
-    /** Stores complete plate height. */
-    val heightPx: Int,
-    /** Stores source outer-corner radius in physical pixels. */
-    val radiusPx: Float,
-    /** Stores source concave transition radius in physical pixels. */
-    val innerRadiusPx: Float,
-)
-
-/** Groups one stepped-edge radius calculation. */
-internal data class LedTransitionRadiusOptions(
-    /** Stores signed next-row width change. */
-    val differencePx: Float,
-    /** Stores cap-row vertical pitch. */
-    val rowPitchPx: Float,
-    /** Stores convex outer radius. */
-    val outerRadiusPx: Float,
-    /** Stores concave inner radius. */
-    val innerRadiusPx: Float,
-)
-
-/** Holds ordered radii encountered while descending one stepped edge. */
-internal data class LedTransitionRadii(
-    /** Stores radius before horizontal width change. */
-    val firstPx: Float,
-    /** Stores radius after horizontal width change. */
-    val secondPx: Float,
-)
-
-/** Groups physical x-coordinate mapping across layout directions. */
-internal data class LedPlateCoordinateOptions(
-    /** Stores LTR coordinate measured from start edge. */
-    val valuePx: Float,
-    /** Stores complete plate canvas width. */
-    val canvasWidthPx: Float,
-    /** Records whether start edge is physically right. */
-    val rightToLeft: Boolean,
-)
-
-/** Groups resolved outline geometry with physical layout direction. */
-private data class LedPlateDrawOptions(
-    /** Holds source row geometry. */
-    val path: LedPlatePathOptions,
-    /** Stores complete plate canvas width. */
-    val canvasWidthPx: Float,
-    /** Records whether logical start is physically right. */
-    val rightToLeft: Boolean,
 )
 
 /** Groups legend content with selected-state-invariant measurement style. */
@@ -718,13 +610,11 @@ private data class LedPositionedMeasureOptions(
     val capWidthsPx: List<Int>,
 )
 
-/** Groups one-piece plate measurement inputs. */
+/** Groups full-width plate measurement inputs. */
 private data class LedPlateMeasureOptions(
     /** Holds physical geometry and ambient scene. */
     val measure: LedMeasureOptions,
-    /** Holds content-width row dimensions. */
-    val lines: List<LedLine>,
-    /** Stores maximum row width. */
+    /** Stores complete available control width. */
     val widthPx: Int,
     /** Stores complete multi-line height. */
     val heightPx: Int,
@@ -848,132 +738,6 @@ private fun ledCapShape(options: LedTargetOptions): RoundedCornerShape {
         bottomEnd = if (options.last) ledEndRadius - clearance else ledInnerRadius - clearance,
         bottomStart = if (options.first) ledEndRadius - clearance else ledInnerRadius - clearance,
     )
-}
-
-/** Maps one logical-start coordinate to physical plate canvas. */
-internal fun ledPlateX(options: LedPlateCoordinateOptions): Float = if (options.rightToLeft) {
-    options.canvasWidthPx - options.valuePx
-} else {
-    options.valuePx
-}
-
-/** Returns convex and concave radii in descending path order. */
-internal fun ledTransitionRadii(options: LedTransitionRadiusOptions): LedTransitionRadii {
-    /** First turn is convex when following row narrows. */
-    val firstIsOuter: Boolean = options.differencePx < 0f
-    /** Selects source radius before horizontal step. */
-    val firstBasePx: Float = if (firstIsOuter) options.outerRadiusPx else options.innerRadiusPx
-    /** Selects source radius after horizontal step. */
-    val secondBasePx: Float = if (firstIsOuter) options.innerRadiusPx else options.outerRadiusPx
-    /** Shrinks both radii proportionally when width change cannot hold their sum. */
-    val scale: Float = min(1f, options.differencePx.absoluteValue / (firstBasePx + secondBasePx))
-    return LedTransitionRadii(
-        firstPx = min(firstBasePx * scale, options.rowPitchPx / 2f),
-        secondPx = min(secondBasePx * scale, options.rowPitchPx / 2f),
-    )
-}
-
-/** Appends stepped logical-end edge shared by every wrapped control row. */
-private fun Path.appendLedPlateEndEdge(options: LedPlateDrawOptions) {
-    /** Reads reusable source geometry. */
-    val path: LedPlatePathOptions = options.path
-    /** Maps one logical-start coordinate to physical canvas. */
-    val physicalX: (Float) -> Float = { valuePx ->
-        ledPlateX(
-            LedPlateCoordinateOptions(
-                valuePx = valuePx,
-                canvasWidthPx = options.canvasWidthPx,
-                rightToLeft = options.rightToLeft,
-            ),
-        )
-    }
-    /** Recovers full one-row height from complete multi-line height. */
-    val rowHeightPx: Int = path.heightPx - (path.rowWidthsPx.size - 1) * path.rowPitchPx
-    path.rowWidthsPx.dropLast(1).forEachIndexed { rowIndex, currentWidthPx ->
-        /** Reads following content-width row. */
-        val nextWidthPx: Int = path.rowWidthsPx[rowIndex + 1]
-        /** Centers width step inside cap-to-cap vertical channel. */
-        val transitionYPx: Float =
-            ((rowIndex + 1) * path.rowPitchPx + (rowHeightPx - path.rowPitchPx) / 2).toFloat()
-        /** Stores signed outward or inward width change. */
-        val differencePx: Int = nextWidthPx - currentWidthPx
-        if (differencePx == 0) {
-            lineTo(physicalX(currentWidthPx.toFloat()), transitionYPx)
-        } else {
-            /** Selects logical direction toward next row's edge. */
-            val direction: Float = if (differencePx > 0) 1f else -1f
-            /** Preserves distinct convex outer and concave inner treatment. */
-            val radii: LedTransitionRadii = ledTransitionRadii(
-                LedTransitionRadiusOptions(
-                    differencePx = differencePx.toFloat(),
-                    rowPitchPx = path.rowPitchPx.toFloat(),
-                    outerRadiusPx = path.radiusPx,
-                    innerRadiusPx = path.innerRadiusPx,
-                ),
-            )
-            lineTo(physicalX(currentWidthPx.toFloat()), transitionYPx - radii.firstPx)
-            quadraticTo(
-                physicalX(currentWidthPx.toFloat()),
-                transitionYPx,
-                physicalX(currentWidthPx + direction * radii.firstPx),
-                transitionYPx,
-            )
-            lineTo(physicalX(nextWidthPx - direction * radii.secondPx), transitionYPx)
-            quadraticTo(
-                physicalX(nextWidthPx.toFloat()),
-                transitionYPx,
-                physicalX(nextWidthPx.toFloat()),
-                transitionYPx + radii.secondPx,
-            )
-        }
-    }
-}
-
-/** Returns one shape whose stepped outline encloses all wrapped rows. */
-private fun ledPlateShape(options: LedPlatePathOptions): Shape = GenericShape { size, layoutDirection ->
-    if (options.rowWidthsPx.isEmpty()) {
-        return@GenericShape
-    }
-    /** Resolves physical start edge without changing row packing. */
-    val drawOptions = LedPlateDrawOptions(
-        path = options,
-        canvasWidthPx = size.width,
-        rightToLeft = layoutDirection == LayoutDirection.Rtl,
-    )
-    /** Maps logical start coordinate to physical canvas. */
-    val physicalX: (Float) -> Float = { valuePx ->
-        ledPlateX(
-            LedPlateCoordinateOptions(
-                valuePx = valuePx,
-                canvasWidthPx = drawOptions.canvasWidthPx,
-                rightToLeft = drawOptions.rightToLeft,
-            ),
-        )
-    }
-    /** Reads first row width for top edge. */
-    val firstWidthPx: Float = options.rowWidthsPx.first().toFloat()
-    /** Reads final row width for bottom edge. */
-    val lastWidthPx: Float = options.rowWidthsPx.last().toFloat()
-    /** Bounds top outer radius by first row width. */
-    val topRadiusPx: Float = min(options.radiusPx, firstWidthPx / 2f)
-    /** Bounds bottom outer radius by final row width. */
-    val bottomRadiusPx: Float = min(options.radiusPx, lastWidthPx / 2f)
-    moveTo(physicalX(topRadiusPx), 0f)
-    lineTo(physicalX(firstWidthPx - topRadiusPx), 0f)
-    quadraticTo(physicalX(firstWidthPx), 0f, physicalX(firstWidthPx), topRadiusPx)
-    appendLedPlateEndEdge(drawOptions)
-    lineTo(physicalX(lastWidthPx), options.heightPx - bottomRadiusPx)
-    quadraticTo(
-        physicalX(lastWidthPx),
-        options.heightPx.toFloat(),
-        physicalX(lastWidthPx - bottomRadiusPx),
-        options.heightPx.toFloat(),
-    )
-    lineTo(physicalX(bottomRadiusPx), options.heightPx.toFloat())
-    quadraticTo(physicalX(0f), options.heightPx.toFloat(), physicalX(0f), options.heightPx - bottomRadiusPx)
-    lineTo(physicalX(0f), topRadiusPx)
-    quadraticTo(physicalX(0f), 0f, physicalX(topRadiusPx), 0f)
-    close()
 }
 
 /** Returns scene-specific one-piece metal plate styling. */
@@ -1300,18 +1064,10 @@ private fun SubcomposeMeasureScope.measureLedPositionedCaps(
     }
 }
 
-/** Measures one exact stepped plate behind all packed rows. */
+/** Measures one rounded plate across complete available control width. */
 private fun SubcomposeMeasureScope.measureLedPlate(options: LedPlateMeasureOptions): Placeable {
-    /** Builds one source-radius outline from measured row widths. */
-    val shape: Shape = ledPlateShape(
-        LedPlatePathOptions(
-            rowWidthsPx = options.lines.map { line -> line.widthPx },
-            rowPitchPx = options.measure.plateHeightPx - options.measure.gapPx,
-            heightPx = options.heightPx,
-            radiusPx = ledPlateRadius.roundToPx().toFloat(),
-            innerRadiusPx = ledInnerRadius.roundToPx().toFloat(),
-        ),
-    )
+    /** Uses 17-unit source radius on every exposed plate corner. */
+    val shape: Shape = RoundedCornerShape(ledPlateRadius)
     return subcompose("led-multiline-plate") {
         ledMultilinePlate(
             LedPlateOptions(
@@ -1337,7 +1093,7 @@ private fun Placeable.PlacementScope.placeLedRows(options: LedPlacementOptions) 
     }
 }
 
-/** Measures all LED hardware layers and returns content-width layout result. */
+/** Measures content-width caps over one full-width hardware plate. */
 private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions): MeasureResult {
     /** Measures real legends before deciding target and row widths. */
     val capWidthsPx: List<Int> = measureLedProbeWidths(options)
@@ -1354,9 +1110,9 @@ private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions)
     val positionedCaps: List<List<Placeable>> = measureLedPositionedCaps(
         LedPositionedMeasureOptions(measure = options, lines = lines, capWidthsPx = capWidthsPx),
     )
-    /** Computes content width rather than reserving unused row width. */
-    val contentWidthPx: Int = lines.maxOfOrNull { line -> line.widthPx } ?: 0
-    /** Computes one stepped plate height from source cap-row pitch. */
+    /** Expands plate and outer layout to complete incoming width. */
+    val layoutWidthPx: Int = options.constraints.maxWidth
+    /** Computes one continuous plate height from source cap-row pitch. */
     val contentHeightPx: Int = ledMultilineHeight(
         LedMultilineHeightOptions(
             lineCount = lines.size,
@@ -1368,13 +1124,12 @@ private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions)
     val plate: Placeable = measureLedPlate(
         LedPlateMeasureOptions(
             measure = options,
-            lines = lines,
-            widthPx = contentWidthPx,
+            widthPx = layoutWidthPx,
             heightPx = contentHeightPx,
         ),
     )
     return layout(
-        width = options.constraints.constrainWidth(contentWidthPx),
+        width = layoutWidthPx,
         height = options.constraints.constrainHeight(contentHeightPx),
     ) {
         placeLedRows(
@@ -1391,7 +1146,7 @@ private fun SubcomposeMeasureScope.measureLedControl(options: LedMeasureOptions)
     }
 }
 
-/** Displays wrapped LED caps over one content-width plate per measured row. */
+/** Displays wrapped content-width caps over one continuous full-width plate. */
 @Composable
 internal fun ledPageControls(options: LedPageControlsOptions) {
     /** Reads stable scene and state shared by every measured layer. */
