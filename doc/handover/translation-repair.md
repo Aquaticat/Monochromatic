@@ -11547,3 +11547,68 @@ text is supported by nothing.
 WHAT IT WILL NOT PROVE even if the roster passes: that judges consult the source
 on ordinary slices. It shows whether they CAN, on a slice where nothing else can
 decide. That is still the strongest reading available without human grading.
+
+### The alteration result, and the thing it turned up underneath
+
+TWELVE OF SIXTEEN chose the complete text, over `AmbeR_the_anpa`, `Arita`,
+`Chinatsu_Suzuki` and `Dethelly` (the fourth entry differs from the other two
+arms because `CuspariaKLSY` states no number both sides share). 96 ballots: 55
+for the complete text, 41 declining, and AGAIN NOT ONE for the damaged text.
+
+SO NO JUDGE EVER PICKED THE WRONG NUMBER. Every miss is a roster that declined
+rather than a roster that chose wrongly.
+
+THE REASONS ARE THE POINT HERE, because this is the fixture built to ask whether
+the source is read at all: "Candidate 1 correctly preserves the birth year 2004
+from the original", "Candidate 2 incorrectly alters the birth year from 2004 to
+2005, violating the faithfulness criterion regarding time", "a direct
+faithfulness error on a number/time fact". They name the number the ORIGINAL
+states. 86 of 96 reasons appeal to the original explicitly.
+
+ALL FOUR MISSES ARE ONE SLICE, `Dethelly/0`, in all four arrangements, and the
+roster was RIGHT to refuse it. That slice is where the interesting thing is.
+
+### A relocation reads as a fabrication, and the judges condemn the archive twice
+
+WHAT IS ON THAT SLICE, read directly rather than taken from the judges. The
+Chinese `## 简介` is one sentence: Sugar is a girl from Chongqing who came to
+Hangzhou in autumn 2023 for university. The English `## Description` carries that
+sentence WITHOUT Chongqing, plus four sentences about being introverted, caring
+too much about others' feelings, being too shy to express confusion, having
+nobody to confide in, and looking intimidated.
+
+THE JUDGES CALLED THAT HALLUCINATED. They are right about the slice and wrong
+about the document: 内向, 焦虑, 倾诉, 困惑 and 在意 all appear in the Chinese, and
+the NEXT Chinese slice is exactly that material. The English moved it up a
+section. Alignment is not at fault: 24 slices, zero findings, every heading
+pairs.
+
+THE RATIOS CORROBORATE IT, which is what makes this evidence rather than a
+reading:
+
+- whole document: 3.06, which is ordinary Chinese-to-English expansion
+- median slice: 3.31
+- slice 0: 11.51, content moved IN
+- slice 1: 2.08, content moved OUT
+
+Two complementary anomalies on adjacent slices is what displacement looks like.
+Fabrication would raise one without lowering its neighbour.
+
+WHY THIS MATTERS FAR BEYOND THE TRIAL, and why it is now `#107`. Every judge sees
+ONE slice pair and nothing else. Wherever a translator moved material across a
+section boundary, the archive looks like it invented content on one slice and
+dropped content on the next, and the roster will condemn it on BOTH while
+preferring a fresh rendering that says only what its own slice's original says.
+
+THAT IS A SYSTEMATIC BIAS AGAINST THE ARCHIVE, in the direction that matters
+most for a memorial archive, and some unknown share of the three-in-four
+replacement rate on the bench may be exactly this rather than the archive being
+worse. Nothing in the pipeline can currently see it. `#107` carries a free
+deterministic probe for it: per-slice ratios against each document's own median,
+looking for adjacent high-low pairs.
+
+AND IT MEANS THE ALTERATION NUMBER IS A FLOOR. On the twelve trials where the
+fixture's premise holds, the roster was right twelve times; the four it "failed"
+are four where the archive's own English is not a faithful rendering OF THAT
+SECTION, so declining was the correct answer and the trial has no way to score it
+as one.
