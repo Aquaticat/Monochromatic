@@ -73,6 +73,15 @@ It must auto-detect among only these validated schemas.
 It must not search arbitrary nested JSON for comment-like objects or accept individual comment fragments by accident.
 All accepted shapes normalize into one internal finding collection before policy or publication logic runs.
 
+### Mode selection
+
+Interactive behavior is opt-in through `--interactive` with short form `-i`,
+matching the explicit pnpm precedent.
+Without that flag,
+the adapter is non-interactive and must never prompt,
+regardless of TTY detection.
+A missing required non-interactive input or decision is an error rather than an invitation to prompt.
+
 ## Settled prior findings
 
 The installed command is OpenCodeReview `v1.9.4`,
@@ -218,11 +227,12 @@ in dependency order:
    encoding,
    and malformed-input behavior remain open.
 4. Non-interactive authority:
-   defaults,
-   required flags,
+   mode selection is settled as non-interactive by default,
+   with interactive behavior enabled only by `--interactive` or `-i`.
+   Required flags,
    dry-run behavior,
    exit codes,
-   and whether public mutation needs an explicit apply flag.
+   and whether public mutation needs an explicit apply flag remain open.
 5. Security quarantine:
    where quarantined findings live,
    how users inspect them,
@@ -264,7 +274,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about explicit versus TTY-inferred interactive mode selection.
+Ask the next dependent design question about whether interactive mode may consume piped standard input.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -285,5 +295,7 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   recorded structured-JSON-only pasted input and excluded human-readable OCR text parsing.
 - 2026-08-16:
   recorded the three accepted OCR-native JSON shapes and rejection of arbitrary JSON fragments.
+- 2026-08-16:
+  recorded explicit `--interactive` or `-i` mode selection and non-interactive default behavior.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
