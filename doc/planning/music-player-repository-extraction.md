@@ -461,7 +461,10 @@ Do not leave both repositories writable as authoritative homes.
 ## Acceptance criteria for future execution
 
 - Every prerequisite tool is publicly available from its chosen registry and passes a clean-consumer test.
+- Each prerequisite's version change on `main` triggers automatic publication,
+  while manual dry-run and retry dispatch remain available.
 - The new repository builds and tests through every locally available path without a Monochromatic tooling checkout.
+- `doc/agent/music-player.md` is tracked as the local policy source.
 - Fresh-clone preparation materializes ignored shared policy,
   skills,
   composed `AGENTS.md`,
@@ -478,6 +481,7 @@ Do not leave both repositories writable as authoritative homes.
 - Filtered history includes the old and current product paths and representative blame remains useful.
 - Initial history is imported before signed-commit protection is enabled.
 - The complete pre-cutover open-issue inventory has a recorded product-owned or retained classification.
+- The target label set includes the selected reusable labels and excludes Monochromatic-specific blockers.
 - Every classified product-owned open issue is transferred after labels exist in the target repository.
 - GitHub settings,
   transferred-issue state,
