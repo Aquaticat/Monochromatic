@@ -52,7 +52,17 @@ function parsePositiveInteger({
   const parsed = Number(value,);
   if ((!Number.isSafeInteger(parsed,)) || (parsed < 1)
     || (String(parsed,) !== value))
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+    throw new ForbiddenStringsPluginError(
+      `Malformed forbidden-strings scanner output: ${line}\n`
+        + 'Expected `PATH:LINE rule=NAME`. A line carrying a column span '
+        + '(`PATH:LINE:START..END`) or a numeric rule id is the pre-0.3.0 '
+        + 'format, which means the executed BINARY predates the crate '
+        + 'source; rebuild it with `mise run '
+        + '//package/cli/forbidden-strings:build`. This fails closed '
+        + 'rather than parsing the old shape, because a stale binary '
+        + 'scans with a stale rule baseline and would report success '
+        + 'while missing what the current rules catch.',
+    );
   return parsed;
 }
 
@@ -77,7 +87,17 @@ function parseRuleToken({
   line: string;
 }>): string {
   if (value.length === 0)
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+    throw new ForbiddenStringsPluginError(
+      `Malformed forbidden-strings scanner output: ${line}\n`
+        + 'Expected `PATH:LINE rule=NAME`. A line carrying a column span '
+        + '(`PATH:LINE:START..END`) or a numeric rule id is the pre-0.3.0 '
+        + 'format, which means the executed BINARY predates the crate '
+        + 'source; rebuild it with `mise run '
+        + '//package/cli/forbidden-strings:build`. This fails closed '
+        + 'rather than parsing the old shape, because a stale binary '
+        + 'scans with a stale rule baseline and would report success '
+        + 'while missing what the current rules catch.',
+    );
   // Indexed UTF-16 walk instead of string spread: the alphabet is pure ASCII,
   // so any surrogate half fails the range checks and rejects correctly.
   for (let index = 0; index < value.length; index += 1) {
@@ -93,7 +113,17 @@ function parseRuleToken({
       || (ch === '.')
       || (ch === '-');
     if (!isNameChar)
-      throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+      throw new ForbiddenStringsPluginError(
+      `Malformed forbidden-strings scanner output: ${line}\n`
+        + 'Expected `PATH:LINE rule=NAME`. A line carrying a column span '
+        + '(`PATH:LINE:START..END`) or a numeric rule id is the pre-0.3.0 '
+        + 'format, which means the executed BINARY predates the crate '
+        + 'source; rebuild it with `mise run '
+        + '//package/cli/forbidden-strings:build`. This fails closed '
+        + 'rather than parsing the old shape, because a stale binary '
+        + 'scans with a stale rule baseline and would report success '
+        + 'while missing what the current rules catch.',
+    );
   }
   return value;
 }
@@ -111,7 +141,17 @@ function parseHit(line: string,): ScannerHit {
    */
   const ruleSeparator = line.lastIndexOf(' rule=',);
   if (ruleSeparator === (-1))
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+    throw new ForbiddenStringsPluginError(
+      `Malformed forbidden-strings scanner output: ${line}\n`
+        + 'Expected `PATH:LINE rule=NAME`. A line carrying a column span '
+        + '(`PATH:LINE:START..END`) or a numeric rule id is the pre-0.3.0 '
+        + 'format, which means the executed BINARY predates the crate '
+        + 'source; rebuild it with `mise run '
+        + '//package/cli/forbidden-strings:build`. This fails closed '
+        + 'rather than parsing the old shape, because a stale binary '
+        + 'scans with a stale rule baseline and would report success '
+        + 'while missing what the current rules catch.',
+    );
   /**
    * Line-number separator; the last colon before the rule suffix keeps
    * candidate paths that themselves embed colons out of the numeric field.
@@ -121,7 +161,17 @@ function parseHit(line: string,): ScannerHit {
     ruleSeparator,
   );
   if (lineSeparator === (-1))
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+    throw new ForbiddenStringsPluginError(
+      `Malformed forbidden-strings scanner output: ${line}\n`
+        + 'Expected `PATH:LINE rule=NAME`. A line carrying a column span '
+        + '(`PATH:LINE:START..END`) or a numeric rule id is the pre-0.3.0 '
+        + 'format, which means the executed BINARY predates the crate '
+        + 'source; rebuild it with `mise run '
+        + '//package/cli/forbidden-strings:build`. This fails closed '
+        + 'rather than parsing the old shape, because a stale binary '
+        + 'scans with a stale rule baseline and would report success '
+        + 'while missing what the current rules catch.',
+    );
   /**
    * Complete parsed hit.
    */
