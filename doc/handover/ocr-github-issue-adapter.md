@@ -206,6 +206,14 @@ Issue titles use the deterministic shape `[category] path: summary`.
 The category is the normalized OCR category or `uncategorized` when absent.
 The path comes from the OCR finding.
 The summary is the first meaningful line of OCR content.
+When content has no non-whitespace line,
+the summary instead uses the first non-whitespace line of OCR `existing_code`,
+trimmed of surrounding whitespace but otherwise unchanged.
+This fallback can expose source code or secrets in the Issue title and notification surfaces;
+help,
+previews,
+and publication confirmations must warn about that behavior.
+The fallback when both fields lack a meaningful line remains unsettled.
 Issue bodies include both OCR `existing_code` and `suggestion_code` in separate,
 clearly labeled code sections when those fields are present.
 Model `thinking` remains excluded.
@@ -643,6 +651,10 @@ in dependency order:
    `category` is the normalized OCR category or `uncategorized` when absent.
    `path` is the OCR finding path.
    `summary` is the first meaningful line of OCR content.
+   When content has none,
+   the first non-whitespace `existing_code` line becomes the summary after trimming surrounding whitespace.
+   Interfaces warn that this fallback can expose code or secrets in titles and notifications.
+   Behavior when neither field supplies a meaningful line remains open.
    Bodies include separate existing-code and suggested-code sections when OCR supplies those fields.
    Model `thinking` is always omitted.
    Source references always show path and line range.
@@ -720,7 +732,7 @@ in dependency order:
 
 ## Immediate next action
 
-Ask what title summary is used when OCR content has no meaningful line.
+Ask what title summary is used when neither OCR content nor `existing_code` has a meaningful line.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -881,6 +893,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   one for runtime and handled publication failures,
   two for invocation misuse,
   and 130 for forced second interrupt.
+- 2026-08-16:
+  selected the first meaningful `existing_code` line as the title-summary fallback
+  when OCR content has no meaningful line.
 
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-issue-title-length]: ../troubleshooting/github-issue-title-length.md
