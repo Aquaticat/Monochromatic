@@ -144,6 +144,14 @@ it errors and requires `--repo OWNER/NAME`.
 A repository that cannot be identified unambiguously also errors and suggests the explicit flag.
 These cases print diagnostics and exit rather than opening another prompt.
 
+### Issue rendering
+
+Issue titles use the deterministic shape `[category] path: summary`.
+The category is the normalized OCR category or `uncategorized` when absent.
+The path comes from the OCR finding.
+The summary is the first meaningful line of OCR content.
+Fallbacks and title length handling remain to be settled.
+
 ## Settled prior findings
 
 The installed command is OpenCodeReview `v1.9.4`,
@@ -395,12 +403,16 @@ in dependency order:
    non-interactive mode never prompts.
    Failure or ambiguity while identifying the root repository also errors and suggests `--repo`.
 7. Issue rendering:
-   title,
-   body fields,
+   issue titles use `[category] path: summary`.
+   `category` is the normalized OCR category or `uncategorized` when absent.
+   `path` is the OCR finding path.
+   `summary` is the first meaningful line of OCR content.
+   Body fields,
    source links,
    labels,
    omission of model reasoning,
-   and handling of code excerpts.
+   title fallback and length behavior,
+   and handling of code excerpts remain open.
 8. Identity and lifecycle:
    settled as create-only.
    The adapter has no synthetic identity,
@@ -430,8 +442,8 @@ in dependency order:
 
 ## Immediate next action
 
-Ask the next dependent design question about how to derive an issue title from OCR findings,
-which have content but no dedicated issue-title field.
+Ask the next dependent design question about whether issue bodies include OCR `existing_code`
+and `suggestion_code` excerpts.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -517,5 +529,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   settled root-only Git repository inference with explicit `--repo OWNER/NAME` override;
   subdirectories and non-repository directories error with rerun instructions when the flag is absent.
+- 2026-08-16:
+  settled deterministic issue titles using normalized category,
+  OCR path,
+  and the first meaningful content line.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
