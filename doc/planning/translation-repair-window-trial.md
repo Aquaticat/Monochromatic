@@ -176,6 +176,39 @@ so a slice that failed before writing any row is absent rather than incomplete.
 A frozen draw manifest, validated before the client is built, would fix that.
 The refusal counter and the run log cover the operational need for now.
 
+## Pre-registered: how the short-panel exclusion will be decided
+
+Written before the numbers exist, because a rule chosen after seeing them is not a rule.
+
+The first arms bought show a short panel on 4 of 8,
+which is far higher than the roughly 4.5 percent of calls the 360 second deadline was tuned to stop clipping.
+At that rate an all-arms-full-panel requirement leaves almost nothing:
+if each arm is independently full about half the time,
+fewer than one triple in seven survives,
+and `relocation-high` has 19 to begin with.
+
+The losses so far land on narrow arms as well as the wide one,
+which matters,
+because the reason for excluding was never that a short panel is noisy.
+It was that the wide arm sends the longest sheets under the same deadline,
+so its degradation would be ASYMMETRIC,
+and asymmetric in the direction the trial predicts.
+Symmetric loss is noise;
+asymmetric loss is bias.
+
+So the exclusion will be decided from the run's own record,
+by this rule, fixed now:
+
+1.  Compute the short-panel rate per arm over every arm bought, not per triple.
+2.  If the wide arm's rate exceeds each narrow arm's by more than the binomial spread at that sample size, keep the strict exclusion. Degradation is asymmetric and reading those triples would credit lost voices to the window.
+3.  If the three rates sit within that spread of each other, relax to reading every complete triple, and report BOTH readings side by side with the rates that justified the choice.
+
+Nothing about this needs re-buying:
+every row records the panel it decided on,
+so the reading is revisable from the ledger alone.
+The counterbalanced arm order also helps here,
+since the wide arm no longer occupies the position most exposed to a filling queue.
+
 ## Open questions for the user
 
 1.  Is a fourth sham-context arm worth roughly a third more quota, to separate semantic relevance from extra context as such?
