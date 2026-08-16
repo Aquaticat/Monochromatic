@@ -1,5 +1,8 @@
 // Stdio transport: reads JSON-RPC from stdin, dispatches through server handle, writes responses to stdout.
 
+import { once, } from 'node:events';
+import type { Writable, } from 'node:stream';
+
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
@@ -41,7 +44,14 @@ export type StdoutWriter = {
  * Creates a {@link StdoutWriter} backed by `process.stdout.write`.
  * Cross-runtime alternative to `Bun.stdout.writer()` that works in Node, Bun, and Deno.
  *
- * @returns Writer that delegates to `process.stdout.write`.
+ * Honors backpressure by waiting for `drain` whenever the stream stops accepting writes.
+ * Discarding that signal would let a server outrunning its client accumulate every
+ * unflushed response in memory; a tool returning many megabytes of command output is
+ * exactly that case.
+ *
+ * @param stream - Destination stream, defaulting to process stdout; injectable so backpressure is testable.
+ *
+ * @returns Writer that delegates to the stream and waits when it backs up.
  *
  * @example
  * ```ts
@@ -49,20 +59,34 @@ export type StdoutWriter = {
  * await writer.write(new TextEncoder().encode('hello\n'));
  * ```
  */
-function processStdoutWriter(): StdoutWriter {
+export function processStdoutWriter(
+  { stream = process.stdout, }: { readonly stream?: Writable; } = {},
+): StdoutWriter {
   return {
     /**
-     * Writes one byte chunk to process stdout.
+     * Writes one byte chunk to the stream and waits when the stream asks it to pause.
      *
      * @param data - Bytes passed to Node stream.
      *
-     * @returns Number of accepted bytes.
+     * @returns Number of bytes handed to the stream.
      *
-     * @mutates data - `process.stdout.write` may retain byte storage until output consumption completes.
+     * @mutates data - `write` may retain byte storage until output consumption completes.
+     *
+     * @mutates stream - Appends to stream buffer and advances its drain state.
      */
-    write(data: Uint8Array,): number {
-      process.stdout
-        .write(data,);
+    async write(data: Uint8Array,): Promise<number> {
+      /**
+       * Whether the chunk fit in the stream buffer; `false` means the buffer is over its
+       * high-water mark and the stream is asking the writer to pause until it drains.
+       */
+      const accepted = stream.write(data,);
+      // `once` rejects if the stream errors first, so a broken pipe surfaces here rather
+      // than hanging this await forever.
+      if (!accepted)
+        await once(
+          stream,
+          'drain',
+        );
       return data.byteLength;
     },
   };

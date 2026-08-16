@@ -1,8 +1,11 @@
+import { PassThrough, } from 'node:stream';
+
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
 import {
   type DispatchResult,
@@ -12,6 +15,7 @@ import {
   type JsonRpcOutbound,
   type McpServerHandle,
   NO_RESPONSE,
+  processStdoutWriter,
   serve,
   type StdoutWriter,
 } from '@monochromatic-dev/mcp-stdio';
@@ -56,6 +60,13 @@ function collectingWriter(): { writer: StdoutWriter; lines: string[]; } {
   };
   return { writer, lines, };
 }
+
+/**
+ * Milliseconds the backpressure probe waits before concluding a write is still parked.
+ * Nothing consumes the stream during that window, so a writer honoring backpressure cannot
+ * resolve within it no matter how long the window is; the value only bounds the test.
+ */
+const BACKPRESSURE_PROBE_MS = 25;
 
 /**
  * Creates a mock MCP server handle that returns a fixed response for any request.
@@ -154,6 +165,44 @@ await describe({
         expect((parsed as { error: { code: number; }; }).error.code,).toBe(
           JSON_RPC_INVALID_REQUEST,
         );
+      },
+    },),
+    it({
+      name: 'parks a write on a backed-up stream until it drains',
+      fn: async () => {
+        // A one-byte high-water mark means any real payload overshoots it, so the stream
+        // refuses the write and asks the writer to wait. Nothing consumes the stream until
+        // `resume()` below, so a writer honoring that request cannot resolve before then.
+        const sink = new PassThrough({ highWaterMark: 1, },);
+        const writer = processStdoutWriter({ stream: sink, },);
+
+        const pending = writer.write(
+          new TextEncoder().encode(`${'x'.repeat(1_024,)}\n`,),
+        );
+
+        /**
+         * Resolves once the write completes, labelling that outcome for the race below.
+         */
+        const flushOutcome = async (): Promise<string> => {
+          await pending;
+          return 'resolved';
+        };
+        /**
+         * Resolves after the probe window, labelling a write still parked on backpressure.
+         */
+        const probeOutcome = async (): Promise<string> => {
+          await wait(BACKPRESSURE_PROBE_MS,);
+          return 'parked';
+        };
+
+        // Dropping the drain wait makes this 'resolved': the writer hands the stream a
+        // chunk it refused and reports success, so `serve` runs on and can return with
+        // replies still unflushed, which a process exiting on stdin close then loses.
+        expect(await Promise.race([flushOutcome(), probeOutcome(),],),).toBe('parked',);
+
+        // Consuming the stream fires `drain`, which releases the parked write.
+        sink.resume();
+        expect(await pending,).toBe(1_025,);
       },
     },),
     it({

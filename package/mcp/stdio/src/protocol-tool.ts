@@ -89,19 +89,135 @@ export type ToolDefinition = {
 //region Tool results: what a handler returns and what the server sends back
 
 /**
+ * Hints telling a client who a content item is for and how much it matters.
+ * Advisory only: they come from the server, so a client weighs them rather than trusting them.
+ *
+ * @example
+ * ```ts
+ * const annotations: ContentAnnotations = { audience: ['user'], priority: 0.5 };
+ * ```
+ */
+export type ContentAnnotations = {
+  readonly audience?: readonly ('user' | 'assistant')[];
+  readonly priority?: number;
+  readonly lastModified?: string;
+};
+
+/**
+ * Text content item, the form every tool in this repo returns.
+ *
+ * @example
+ * ```ts
+ * const content: TextContent = { type: 'text', text: 'Hello, world!' };
+ * ```
+ */
+export type TextContent = {
+  readonly type: 'text';
+  readonly text: string;
+  readonly annotations?: ContentAnnotations;
+};
+
+/**
+ * Image content item carrying base64 image bytes.
+ * `data` is base64 rather than raw bytes because content items cross the wire as JSON.
+ *
+ * @example
+ * ```ts
+ * const content: ImageContent = { type: 'image', data: 'iVBORw0KGgo=', mimeType: 'image/png' };
+ * ```
+ */
+export type ImageContent = {
+  readonly type: 'image';
+  readonly data: string;
+  readonly mimeType: string;
+  readonly annotations?: ContentAnnotations;
+};
+
+/**
+ * Audio content item carrying base64 audio bytes.
+ *
+ * @example
+ * ```ts
+ * const content: AudioContent = { type: 'audio', data: 'SUQzBA==', mimeType: 'audio/mpeg' };
+ * ```
+ */
+export type AudioContent = {
+  readonly type: 'audio';
+  readonly data: string;
+  readonly mimeType: string;
+  readonly annotations?: ContentAnnotations;
+};
+
+/**
+ * Pointer to a resource the client may fetch, rather than its bytes.
+ * Preferred over embedding when the payload is large or the client may not need it.
+ *
+ * @example
+ * ```ts
+ * const content: ResourceLink = { type: 'resource_link', uri: 'file:///var/log/build.log' };
+ * ```
+ */
+export type ResourceLink = {
+  readonly type: 'resource_link';
+  readonly uri: string;
+  readonly name?: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly mimeType?: string;
+  readonly size?: number;
+  readonly annotations?: ContentAnnotations;
+};
+
+/**
+ * Contents of a resource embedded directly in a result.
+ * Carries exactly one of `text` or base64 `blob`, matching the two resource-contents shapes.
+ *
+ * @example
+ * ```ts
+ * const contents: ResourceContents = { uri: 'file:///etc/hosts', text: '127.0.0.1 localhost' };
+ * ```
+ */
+export type ResourceContents = {
+  readonly uri: string;
+  readonly mimeType?: string;
+  readonly text?: string;
+  readonly blob?: string;
+};
+
+/**
+ * Resource embedded directly in a result, bytes and all.
+ *
+ * @example
+ * ```ts
+ * const content: EmbeddedResource = {
+ *   type: 'resource',
+ *   resource: { uri: 'file:///etc/hosts', text: '127.0.0.1 localhost' },
+ * };
+ * ```
+ */
+export type EmbeddedResource = {
+  readonly type: 'resource';
+  readonly resource: ResourceContents;
+  readonly annotations?: ContentAnnotations;
+};
+
+/**
  * Single content item in a tool call result.
- * Text content covers every response this package produces; a server needing image,
- * audio, or resource blocks would widen this union and the handlers that build it.
+ * Every tool in this repo returns {@link TextContent}; the rest of the union exists so a
+ * handler returning an image, a sound, or a resource is expressible without widening the
+ * protocol types at that point.
  *
  * @example
  * ```ts
  * const content: ToolContent = { type: 'text', text: 'Hello, world!' };
  * ```
  */
-export type ToolContent = {
-  readonly type: 'text';
-  readonly text: string;
-};
+export type ToolContent =
+  | TextContent
+  | ImageContent
+  | AudioContent
+  | ResourceLink
+  | EmbeddedResource;
 
 /**
  * Result returned from a tool call handler.

@@ -44,6 +44,13 @@ export {
   type ResultMeta,
 } from './protocol-meta.ts';
 export {
+  type AudioContent,
+  type ContentAnnotations,
+  type EmbeddedResource,
+  type ImageContent,
+  type ResourceContents,
+  type ResourceLink,
+  type TextContent,
   type ToolAnnotations,
   type ToolCallResult,
   type ToolContent,
@@ -77,6 +84,7 @@ export {
 export { createMcpServer, } from './server.ts';
 export { readLines, } from './line-reader.ts';
 export {
+  processStdoutWriter,
   serve,
   type StdoutWriter,
 } from './transport.ts';

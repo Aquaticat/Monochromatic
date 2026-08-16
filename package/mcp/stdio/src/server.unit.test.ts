@@ -21,6 +21,7 @@ import {
   registerTools,
   RESULT_TYPE_COMPLETE,
   SUPPORTED_PROTOCOL_VERSIONS,
+  type ToolContent,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio';
 
@@ -574,6 +575,78 @@ await describe({
                 expect(
                   (response.result as { structuredContent: unknown; }).structuredContent,
                 ).toEqual({ exitCode: 0, },);
+              },
+            },),
+            it({
+              name: 'passes every spec content block type through untouched',
+              fn: async () => {
+                /** One item per ContentBlock variant the 2026-07-28 schema defines. */
+                const blocks: readonly ToolContent[] = [
+                  { type: 'text', text: 'plain', },
+                  { type: 'image', data: 'aW1n', mimeType: 'image/png', },
+                  { type: 'audio', data: 'c25k', mimeType: 'audio/mpeg', },
+                  {
+                    type: 'resource_link',
+                    uri: 'file:///var/log/build.log',
+                    name: 'build log',
+                    mimeType: 'text/plain',
+                  },
+                  {
+                    type: 'resource',
+                    resource: { uri: 'file:///etc/hosts', text: '127.0.0.1 localhost', },
+                  },
+                ];
+                const everyBlockTool: ToolEntry = {
+                  name: 'every-block',
+                  description: 'Returns one of each content block.',
+                  handler: () => ({ content: blocks, }),
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [everyBlockTool,],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 29,
+                    method: 'tools/call',
+                    params: { name: 'every-block', },
+                  },),
+                ) as JsonRpcResponse;
+                expect((response.result as { content: unknown; }).content,).toEqual(blocks,);
+              },
+            },),
+            it({
+              name: 'carries content annotations through to the client',
+              fn: async () => {
+                const annotatedTool: ToolEntry = {
+                  name: 'annotated',
+                  description: 'Returns annotated content.',
+                  handler: () => ({
+                    content: [{
+                      type: 'text',
+                      text: 'for the user',
+                      annotations: { audience: ['user',], priority: 1, },
+                    },],
+                  }),
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [annotatedTool,],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 30,
+                    method: 'tools/call',
+                    params: { name: 'annotated', },
+                  },),
+                ) as JsonRpcResponse;
+                const { content, } = response.result as {
+                  content: readonly { annotations: unknown; }[];
+                };
+                expect(content[0]?.annotations,).toEqual({
+                  audience: ['user',],
+                  priority: 1,
+                },);
               },
             },),
             it({
