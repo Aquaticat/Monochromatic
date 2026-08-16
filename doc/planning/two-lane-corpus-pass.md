@@ -501,8 +501,12 @@ Still open:
 
 8.  `artifact-read.ts` keeps a discriminated `unrecorded` reading and then converts it back into an
     absent optional property, discarding the distinction its own parser established.
-9.  THE VERSION 2 PARSER, which nothing has written and the writer now depends on.
-    The contract is in "What the version 2 parser must require, and what it may tolerate".
+9.  ~~THE VERSION 2 PARSER~~, landed 2026-08-16 across eight commits, to the corrected contract in
+    "What the version 2 parser must require, and what it may tolerate".
+    Generic dispatch answers with a generation-discriminated reading; version 1 parsing moved to
+    `artifact-v1-read.ts` keeping every exported name; `verifyArtifactV2AgainstPreparation` takes a
+    rebuilt `PreparedDocumentPair` for the checks a file alone cannot make.
+    Verified by writing a real artifact with `settleEntry` and reading it back.
 10. The mixed-generation trap the wiring created: `settledEntryIds` reads FILENAMES only,
     so a pass resumed into a directory holding version 1 artifacts skips those entries
     and produces a corpus that is half one generation, invisibly.

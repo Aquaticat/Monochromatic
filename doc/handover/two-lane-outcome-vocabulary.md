@@ -361,10 +361,48 @@ outside can make them disagree. Its accept and refuse paths are both covered dir
 `artifact-v2-comparison.unit.test.ts`. Recorded rather than left unremarked, the same way the
 `CLEANUP` capture's limits were.
 
+## The version 2 parser landed, all eight steps
+
+Written to the corrected contract, one commit per step, each with lint, types and its own tests green
+before the next started.
+What exists now:
+
+-   `artifact-exact-guard.ts`: `requireExactKeys`, `requireOneOf`, `requireArtifactJsonValue`,
+    `requireArtifactJsonRecord` (both refuse `null` at every depth), and `requireOpenRecord`, which
+    accepts it. That pair IS the tolerance boundary.
+-   `artifact-v2-read-contract.ts`: parsed types plus the frozen evidence core.
+    Both lane statuses are literal copies rather than imports of the live unions.
+-   `artifact-v2-read-vocabulary.ts` and `artifact-v2-read-rows.ts`: exact parsers for the three
+    unions and the three rows. The tolerant row parser refuses a RESERVED field on the wrong member
+    (`acceptedText` on an outcome that decided nothing) while tolerating unknown ones.
+-   `artifact-v2-read-evidence.ts`: both lanes' tolerant evidence parsing, in ONE file rather than one
+    each as the sketch had it, because they differ by three fields and share the index-list reading.
+-   `artifact-v2-read-row-relations.ts`, `artifact-v2-read-set-relations.ts`,
+    `artifact-v2-read-comparison.ts`: evidence against ledger BY POSITION, index sets against the rows
+    that produce them, blocked COMPATIBILITY, per-row `assertWordingCoherent` and
+    `assertDeliveryCoherent`, and the recorded comparison against `compareLanesV2`.
+-   `artifact-v2-read.ts`: the orchestrator, `parseSettledArtifactV2`.
+-   `artifact-read.ts`: dispatch only, returning a generation-discriminated reading;
+    version 1 parsing moved to `artifact-v1-read.ts` keeping every exported name.
+-   `artifact-v2-corpus-verify.ts`: `verifyArtifactV2AgainstPreparation`, taking a rebuilt preparation.
+
+Verified at the boundary rather than only in fixtures: `settleEntry` wrote a real artifact into a
+throwaway directory and the parser read it back, both lanes, recomputed comparison and all nine raw
+repair fields intact (`scratchpad/probe-v2-roundtrip.mjs`).
+Two facts fell out of the work and are now pinned by tests:
+
+-   A LEGACY artifact is not version 1 with its version field removed.
+    The slice count and the two index sets arrived WITH that field, so an artifact carrying them and
+    no version is refused rather than read as older.
+-   The scripted critic reply in the probes does not satisfy the wire contract, so those runs lose
+    every voice (`stage-quorum-unmet (critic 0/6)`) and the repair outcomes read `incumbent-fallback`.
+    That is `#112` working, not over-firing; do not read those probe outputs as a clean run.
+
 ## Next actions, in order
 
-1.  **The version 2 parser**, which nothing has written yet and which the writer now
-    depends on: `settleEntry` writes version 2 and `artifact-read.ts` still reads version 1.
+1.  ~~**The version 2 parser**~~, landed; see above.
+    Original note kept for the shape of the requirement:
+    `settleEntry` writes version 2 and `artifact-read.ts` read version 1 only.
     Read the CORRECTED contract in the planning doc rather than re-deriving it,
     and start from the file seams the review proposed:
     generic dispatch stays in `artifact-read.ts` and returns a generation-discriminated reading;
