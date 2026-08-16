@@ -83,6 +83,69 @@ execFileSync(
 )
 '''
 
+[tasks."verify:central"]
+description = "Resolve the current version from Maven Central and trigger it through detekt"
+dir = "{{config_root}}"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync, readFileSync, rmSync, writeFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const packageRoot = process.env.MISE_CONFIG_ROOT ?? process.cwd()
+const properties = readFileSync(join(packageRoot, 'gradle.properties'), 'utf8')
+const versionLine = properties.split('\n').find((line) => line.startsWith('version='))
+if (versionLine === undefined) { throw new Error('gradle.properties has no version entry') }
+const version = versionLine.slice('version='.length).trim()
+const consumerRoot = join(packageRoot, 'build', 'central-consumer')
+rmSync(consumerRoot, { force: true, recursive: true })
+mkdirSync(consumerRoot, { recursive: true })
+writeFileSync(join(consumerRoot, 'settings.gradle'), "rootProject.name = 'central-consumer'\n")
+writeFileSync(join(consumerRoot, 'Fixture.kt'), 'fun undocumented(): Int = 1\n')
+writeFileSync(join(consumerRoot, 'build.gradle'), `
+plugins { id 'java' }
+repositories { mavenCentral() }
+configurations {
+    detektCli
+    detektRules
+}
+dependencies {
+    detektCli 'dev.detekt:detekt-cli:2.0.0-alpha.5'
+    detektRules 'cat.aquati.monochromatic:detekt-rules:${version}'
+}
+def detektOutput = new ByteArrayOutputStream()
+tasks.register('verifyPublishedRules', JavaExec) {
+    classpath = configurations.detektCli
+    mainClass = 'dev.detekt.cli.Main'
+    args '--input', file('Fixture.kt').absolutePath,
+        '--config', file('${join(packageRoot, 'detekt.yml')}').absolutePath,
+        '--build-upon-default-config',
+        '--plugins', configurations.detektRules.singleFile.absolutePath
+    ignoreExitValue = true
+    standardOutput = detektOutput
+    errorOutput = detektOutput
+    doLast {
+        def output = detektOutput.toString('UTF-8')
+        print output
+        if (executionResult.get().exitValue == 0) {
+            throw new GradleException('Published rule did not reject the undocumented fixture')
+        }
+        if (!output.contains('Missing KDoc on function undocumented.') || !output.contains('RequireKDoc')) {
+            throw new GradleException('Published rule did not emit the expected RequireKDoc finding')
+        }
+    }
+}
+`)
+execFileSync(
+  join(packageRoot, 'gradlew'),
+  ['--project-dir', consumerRoot, 'verifyPublishedRules', '--no-daemon', '--console=plain'],
+  {
+    cwd: packageRoot,
+    env: { ...process.env, GRADLE_USER_HOME: join(consumerRoot, 'gradle-user-home') },
+    stdio: 'inherit',
+  },
+)
+'''
+
 [tasks.lint]
 description = "Local compile check of the rule set (the monorepo scan is the root lint:detekt)"
 dir = "{{config_root}}"
