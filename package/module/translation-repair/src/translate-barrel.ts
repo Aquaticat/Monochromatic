@@ -95,6 +95,7 @@ export {
 export {
   type DamageAttempt,
   deleteOneSentence,
+  donorTextFor,
   type FidelityDamageKind,
   insertBorrowedSentence,
 } from './fidelity-damage.ts';

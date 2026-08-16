@@ -282,13 +282,15 @@ export function donorTextFor(
       readonly text: string;
     } {
       /**
-       * English this slice carries, absent on an insertion anchor.
+       * English this slice carries, EMPTY on an insertion anchor rather than
+       * absent: both members of `DocumentChunk` declare `text`, and an anchor
+       * names a boundary where text is not.
        */
       const carried = slice.target
         .text;
       return {
         distance: Math.abs(index - sliceIndex,),
-        text: carried ?? '',
+        text: carried,
       };
     },)
     .filter(function isUsable(candidate,): boolean {

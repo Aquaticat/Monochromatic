@@ -381,11 +381,12 @@ async function main(): Promise<void> {
         break;
 
       /**
-       * English this slice carries, absent on an insertion anchor.
+       * English this slice carries, EMPTY on an insertion anchor, which the
+       * length floor excludes along with every slice too short to damage.
        */
       const cleanText = slice.target
         .text;
-      if ((cleanText === undefined) || (cleanText.length < MIN_SLICE_CHARS))
+      if (cleanText.length < MIN_SLICE_CHARS)
         continue;
 
       /**
