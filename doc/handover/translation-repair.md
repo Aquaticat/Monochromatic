@@ -11064,3 +11064,32 @@ and quorum unmet, while four fabricated quotes plus two such reports gave only
 split: silence was more dangerous than fabrication. It now needs a majority of
 every model ASKED, an unmet quorum is inconclusive, and partial coverage is its
 own verdict rather than collapsing into carried.
+
+### A correct quote was being refused over a line break, in both lanes
+
+The three coverage candidates that came back SPLIT had something in common: no
+voice said the passage was absent. Every one believed the translation carried
+it, and some could not point at it. The new rows keep the quotes that failed to
+anchor, so the reason is now measurable rather than guessable.
+
+TEN OF ELEVEN FAILED ANCHORS ARE A SOFT LINE WRAP AND NOTHING ELSE. A model
+copying a sentence out of a wrapped paragraph writes it on one line; the
+document holds the same characters with a newline in the middle; the locator
+searched byte-exact, then with punctuation normalised, and refused. It then
+NAMED the cause in the failure reason, `[line-break-collapsible]`, having
+computed the collapsed match to say so.
+
+MEASURED BEFORE CHANGING ANYTHING, across every stored run artifact: 844
+`quote-not-found` failures, of which 45 carry that suffix. So for critic claims
+this is a small correction, consistent with what `#72` estimated, and for the
+coverage question, whose quotes are whole sentences rather than fragments, it
+was almost the whole failure mode.
+
+THE FIX IS A THIRD PASS, collapsing soft line breaks on both sides. Both
+fallbacks are length-preserving, so offsets still index the stored document and
+anchors still carry its canonical bytes. A blank line still separates: a
+paragraph break carries two line endings where a space-joined quote carries one
+space, so nothing can be joined across a boundary the document keeps. The
+diagnostic is deleted, because nothing can emit it now, and the two tests that
+pinned the refusal now pin the location and the ambiguity. Shown to fail with
+the pass disabled, then restored; the whole package suite is green.
