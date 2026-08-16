@@ -194,7 +194,7 @@ b2b5fbdd72ca
 # shell-out vs env-read; comment-padding inflated similarity
 71e0fbacc670
 
-# ── BOILERPLATE-TRIVIAL (27) ──
+# ── BOILERPLATE-TRIVIAL (28) ──
 # Trivial boilerplate fragments. One-line wrappers/forwarders, tiny fixer stubs,
 # From impls, cleanup fragments where extraction costs more than it saves.
 # one-line winit with_name idiom, two unrelated desktop apps
@@ -251,6 +251,8 @@ ade697e59a53
 7f2dc5a1739a
 # tiny lint fixer stubs, different ranges/replacements
 d2e4b2d0e74c
+# block-body opening/closing fixer stubs, different ranges and indentation
+6be7f9516c9d
 
 # ── TEST-OR-GENERATED (18) ──
 # Test fixtures and generated code. Lint valid/invalid fixture pairs, fuzz
