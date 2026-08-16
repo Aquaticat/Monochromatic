@@ -373,12 +373,24 @@ export function openSemanticFile({
     const releaseSnapshot = api.updateSnapshot({
       closeFiles: [normalizedFileName,],
     },);
-    releaseSnapshot.dispose();
+    /* This failure advanced the service twice, and one of those updates may have reported the
+     * previously active source as deleted. Keeping the snapshot from before them would leave the
+     * bridge describing a service that still holds a source the service has dropped, and the next
+     * open of that path would announce it as changed, which creates nothing: the project then omits
+     * it and the open fails. The snapshot that closed the association is the current description,
+     * so it is the one to keep. */
+    if (bridgeState.snapshot !== NO_SNAPSHOT)
+      bridgeState
+        .snapshot
+        .dispose();
+    bridgeState.snapshot = releaseSnapshot;
     if (discoverySnapshot !== NO_SNAPSHOT)
       discoverySnapshot.dispose();
     bridgeState.activeFileName = NO_ACTIVE_FILE;
+    /* Only this source's text goes. Every other one is text the service still holds and still
+     * reads through this map, and dropping those reverts them to disk behind their own snapshot. */
     bridgeState.overlays
-      .clear();
+      .delete(normalizedFileName,);
     throw new SemanticBridgeError({
       reason: 'project-not-found',
       message: `TypeScript found no configured project for ${normalizedFileName}.`,
