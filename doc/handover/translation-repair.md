@@ -12071,9 +12071,20 @@ models, identity context, source, incumbent, mode and the governance flag, and
 NOT the window, so two arms would have shared a key. The window is now part of
 the key, APPENDED ONLY WHEN PRESENT so a key computed without one is
 byte-identical to what it always was and no settled slice in the corpus is
-discarded. Verified by hash: absent, undefined and empty all give `0522d446...`,
-and a supplied window `09bc539a...`. That file had no tests at all; it now has
-four.
+discarded. That file had no tests at all; it now has six.
+
+THE HASHES THIS DOCUMENT QUOTED FOR THAT CHECK, `0522d446...` and `09bc539a...`,
+came from an ad-hoc fixture whose inputs were never written down, so nobody could
+reproduce them. Against the fixture now pinned in
+`translate-slice-key.unit.test.ts`, absent, explicit `undefined` and empty all
+give `1f6e97d2...` and a supplied window gives `60a7a398...`. The relationship
+the old figures were quoted for held; the figures themselves named nothing.
+
+THE WINDOWLESS HASH IS NOW A LITERAL IN THE TEST, because every other case in
+that file compares two keys, and a change that moved BOTH sides would pass all of
+them while silently discarding every settled slice in the pinned corpus. Shown to
+fail: appending one field to the serialized array fails the pinned hash and
+nothing else in the file.
 
 THE HALF THAT IS NOT is where that key is READ, and this document previously
 implied the fix alone de-risked the run. It does not, because the fix protects a
@@ -12104,9 +12115,62 @@ keyed by entry, slice and arm, avoids the question entirely and is enough for a
 one-off measurement; prefer it unless the probe needs something the lane
 machinery gives.
 
-BUDGET: roughly 80 flagged slices, two arms, three translators and six judges per
-arm. Call it 1500 exchanges. Every one is a real call, so run it detached and let
-it notify.
+### The two-arm design does not measure the window, and this is the blocker
+
+FOUND BY REVIEW BEFORE THE RUN, which is the second defect this probe has shed
+without costing a call. The spec above says to call `settleTranslateSlice` twice
+per slice and compare. Traced through `translate-stage.ts`, that does not compare
+what it claims to.
+
+WHAT THE SECOND CALL ACTUALLY REDOES. `runTranslateStage` gathers translator
+voices at line 188, repairs invalid candidates at 208 and builds the slate at
+222. The judges only see it at 382, and the window is rendered into their
+evidence at 410. So the translators run AGAIN on the second call, and they are
+never shown the window. The two arms therefore differ in two things at once: the
+evidence the judges read, and a freshly sampled set of candidates for them to
+read it against. Any difference in replacement rate is divisible between them,
+and nothing in the record says which.
+
+AND THE JUDGES ARE STOCHASTIC TOO, so the null this probe could report is not
+"the window changed nothing" but "the change was smaller than a spread nobody
+measured". A two-arm design cannot separate those either.
+
+WHAT THE DESIGN HAS TO BECOME, in order of what each buys:
+
+1.  A THIRD ARM IS REQUIRED whatever else changes: narrow, run twice. Its two
+    readings are the run-to-run band, and the narrow-to-wide difference means
+    nothing until it is bigger than that band. This is the positive-control
+    discipline the displacement work already used, applied to a comparison
+    rather than a detector.
+2.  HOLDING THE SLATE FIXED is worth a refactor. Produce the candidates once per
+    slice, then judge that exact slate three times. It removes the translator
+    variance entirely, which makes the narrow pair measure judge noise alone,
+    and it is CHEAPER: 80 slices times four production calls plus three judgings
+    of six is about 1760 exchanges, against roughly 2300 for three unpaired
+    arms. The cost is splitting `runTranslateStage` into produce and judge
+    halves, and that file is already 527 lines, so the split has to land as
+    sibling modules rather than as one longer file.
+
+RECOMMENDED: do both, in that order, and treat the third arm as
+non-negotiable. Option 2 without option 1 still reports an unbanded difference;
+option 1 without option 2 works but costs more calls and yields a noisier band.
+
+WHAT THE PROBE MUST RECORD PER SLICE, widened for the same reason. A binary
+replaced-or-not hides two things the review named: two different fresh
+candidates both count as "replaced" though the judges chose differently, and the
+alignment guard can refuse a wide-arm replacement so a real change in the ballot
+lands as `changed: false`. Record the chosen TEXT and the winning candidate's
+producer alongside the flag, or the tally cannot tell a window that changed the
+verdict from one that changed nothing.
+
+COUNT SEPARATELY, do not fold into the rate: slices where the stage returns
+before judging at all. An empty candidate set and a sole-incumbent slate both
+return early, so both arms agree trivially and neither read the window. Folded
+into the denominator they dilute the effect toward zero.
+
+BUDGET: roughly 80 flagged slices. Two unpaired arms was 1500 exchanges; the
+three-arm paired design above is about 1760. Every one is a real call, so run it
+detached and let it notify.
 
 READING IT: the instructions are on `#108` and they have grown past what that
 ticket originally said. Per class; near-floor candidates hand-checked rather than
