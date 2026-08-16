@@ -317,18 +317,26 @@ await describe({
           withdrawnChunkIndices: [],
           blocked: true,
         },);
-        expect(ledger.map(function toShipment(record,): string {
+        // WHAT THE LANE DID, which is the axis that separates these slices.
+        expect(ledger.map(function toOutcome(record,): string {
+          return record.outcome
+            .kind;
+        },),).toEqual([
+          'decided',
+          'not-evaluated',
+          'not-evaluated',
+        ],);
+        // And what the DOCUMENT carries, which is the same for all three: the
+        // archive's own wording, whether anyone looked at it or not. One word
+        // could not hold both of these, which is why there are two.
+        expect(ledger.map(function toDelivery(record,): string {
           return record.delivery
             .kind;
         },),).toEqual([
           'incumbent-retained',
-          'not-evaluated',
-          'not-evaluated',
+          'incumbent-retained',
+          'incumbent-retained',
         ],);
-        expect(Object.hasOwn(
-          ledger[1] ?? {},
-          'acceptedText',
-        ),).toBe(false,);
       },
     },),
     it({
@@ -434,7 +442,7 @@ await describe({
             withdrawnChunkIndices: [],
             blocked: false,
           },);
-        },).toThrow('of 3 prepared',);
+        },).toThrow('this preparation of 3 slices never produced',);
 
         /** Wordings whose archive text was taken from another document. */
         const drifted = laneWordings({ decided: everySliceUnchanged(), },)
