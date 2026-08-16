@@ -86,11 +86,11 @@ modified by the no-pipe rule:
 - no path without `-i` is an error;
 - `-` must not mean standard input.
 
-The implementation must never inspect or read standard input.
+The implementation must never inspect or read redirected or piped standard input as an ingestion source.
 With a positional file,
 it reads only that file.
 Without a positional file,
-non-interactive mode errors and interactive mode uses terminal paste.
+non-interactive mode errors and interactive mode may read the terminal TTY for its paste prompt.
 Piped bytes are ignored rather than detected or consumed.
 The implementation must not reopen `/dev/tty`,
 `CONIN$`,
@@ -183,6 +183,20 @@ verified the previously proposed fail-closed partition against synthetic finding
 That prototype is evidence only,
 not production code and not part of this repository.
 
+The pnpm `v11.8.0` source tag resolves to commit `93458600a8498412f85316d054e033319ba31ed6`.
+Its `installing/commands/src/update/index.ts` implementation uses `checkbox` and `Separator`
+from `@inquirer/prompts` for `pnpm update -i`.
+The prompt groups choices with separators,
+uses a terminal-dependent page size,
+requires at least one choice,
+shows explicit selection and cancellation instructions,
+uses custom checked,
+unchecked,
+and cursor icons,
+enables vim keybindings,
+and catches Inquirer's `ExitPromptError` as a clean cancellation.
+No dependency decision has been made from this evidence.
+
 ## Repository state and commits
 
 The capability investigation and troubleshooting document landed in:
@@ -243,8 +257,8 @@ in dependency order:
    With no path,
    `-i` opens paste and non-interactive mode errors.
    `-` never means standard input.
-   Standard input is never inspected or read;
-   redirected or piped bytes are ignored.
+   Redirected or piped standard input is never inspected or read as ingestion;
+   interactive terminal prompts may read TTY standard input.
    Paste framing,
    encoding,
    and malformed-input behavior remain open.
@@ -296,8 +310,7 @@ in dependency order:
 
 ## Immediate next action
 
-Inspect pnpm's `update -r -i --no-save` implementation and prompt behavior before asking about paste framing
-or interactive selection mechanics.
+Ask the next dependent design question about how the interactive terminal paste flow frames multiline JSON.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -331,6 +344,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   non-interactive no-path failure,
   and rejection of `-` as a standard-input sentinel.
 - 2026-08-16:
-  recorded that the adapter never inspects or reads standard input and ignores piped bytes.
+  recorded that the adapter never ingests redirected or piped standard input and ignores piped bytes.
+- 2026-08-16:
+  recorded the pnpm `v11.8.0` interactive-update source path and its use of `@inquirer/prompts` checkbox UI.
 
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
