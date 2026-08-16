@@ -150,6 +150,9 @@ not source checkouts of Monochromatic tooling.
 - Include every canonical skill and bundled skill resource,
   not only `SKILL.md` files.
 - Use file-enforcer to generate `CLAUDE.md` and mirror canonical skills into required consumer directories.
+- Keep fetched and generated policy files ignored and local rather than committing synchronized copies.
+- Run `mise run prepare:file-enforcer` before starting an agent session.
+  Run Pi's `/reload` command when preparation occurs inside an already-running session.
 - Keep music-player-specific additive policy in `doc/agent/music-player.md`.
 - Compose the local addendum with fetched policy without relying on source order to override a shared rule.
 - Reject unresolved conflicts during synchronization.
@@ -272,12 +275,12 @@ It must remain ignored and private unless a separate audit authorizes publicatio
 The retained nesting decision produces this shape:
 
 ```text
-# Aquaticat/music-player
+# Aquaticat/music-player after local preparation
 .
-├── .agents/
+├── .agents/                  # ignored, fetched
 ├── .github/
-├── AGENTS.md
-├── CLAUDE.md
+├── AGENTS.md                 # ignored, generated
+├── CLAUDE.md                 # ignored, generated
 ├── LICENSES/
 ├── README.md
 ├── doc/
@@ -360,7 +363,10 @@ A later action request must authorize them.
   and repository-specific metadata.
 - Replace custom-linter relative paths with registry-backed tool invocations.
 - Resolve latest tool releases during `mise run prepare`.
-- Fetch agent policy and `.agents/` according to the final policy-composition decision.
+- Add the committed local addendum at `doc/agent/music-player.md`.
+- Add `prepare:file-enforcer` to fetch shared policy and skills,
+  reject conflicts,
+  and generate ignored local policy outputs.
 - Remove both `CONTEXT.md` files.
 - Move product-owned docs into the new `doc/` tree.
 - Repair relative and cross-repository links.
@@ -374,7 +380,9 @@ A later action request must authorize them.
 - Run all applicable local package lint and test tasks through Mise.
 - Exercise every available end-user boundary.
 - Confirm a fresh clone can prepare tools from registries without a Monochromatic source checkout.
-- Confirm a fresh clone receives usable agent policy under the chosen commit behavior.
+- Confirm `mise run prepare:file-enforcer` materializes agent policy and skills in a fresh clone.
+- Confirm a Pi session started afterward loads them.
+- Confirm Pi's `/reload` loads them when preparation occurs after session startup.
 - Scan the complete tracked tip for credentials and unintended local identifiers.
 - Confirm ignored benchmark output and desktop distribution artifacts are absent from Git objects.
 
@@ -455,14 +463,6 @@ Do not leave both repositories writable as authoritative homes.
 Resolve these one at a time during the remaining grilling session.
 Update this document immediately after each answer.
 
-### Committed policy materialization
-
-Decide whether fetched `AGENTS.md`,
-`.agents/`,
-generated `CLAUDE.md`,
-and skill mirrors are committed outputs or prepare-only local files.
-Remote agents cannot read prepare-only files from a fresh clone.
-
 ### Registry release trigger
 
 Decide whether relevant tool changes publish automatically after merge or require manual workflow dispatch.
@@ -491,6 +491,7 @@ or whether `io.github.aquaticat` is pre-authorized as fallback.
 - Keeping or converting `CONTEXT.md` was rejected in favor of deriving terminology from current source.
 - Collapsing the Rust linter family into one crate was rejected because it would redesign the plugin boundary.
 - Manual-only publication was rejected in favor of extending the existing release workflows.
+- Committing synchronized policy and skill copies was rejected because explicit preparation is the lifecycle boundary.
 
 ## Evidence commands
 
@@ -522,6 +523,10 @@ before publication.[^npm-scoped-public]
 Cargo's current documentation states that crates.io versions are permanent and recommends package verification before upload.[^cargo-publish]
 Maven Central requires controlled coordinates and supports either reverse-DNS or GitHub-account namespace verification.[^maven-namespace]
 
+Pi loads context files and skill descriptions at startup,
+and its `/reload` command reloads context files and skills.[^pi-readme][^pi-skills]
+This establishes the required sequencing for prepare-only policy materialization.
+
 [^github-issue-transfer]:
     <https://docs.github.com/en/issues/tracking-your-work-with-issues/administering-issues/transferring-an-issue-to-another-repository>
 
@@ -536,3 +541,11 @@ Maven Central requires controlled coordinates and supports either reverse-DNS or
 
 [^maven-namespace]:
     <https://central.sonatype.org/register/namespace/>
+
+[^pi-readme]:
+    `@earendil-works/pi-coding-agent@0.84.1` `README.md`,
+    sections "Commands" and "Context Files".
+
+[^pi-skills]:
+    `@earendil-works/pi-coding-agent@0.84.1` `docs/skills.md`,
+    sections "Locations" and "How Skills Work".
