@@ -1,7 +1,13 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { assertDeliveryCoherent, } from '../delivery-coherence.ts';
-import { assertWordingCoherent, } from '../wording-coherence.ts';
+import {
+  assertDeliveryCoherent,
+  DeliveryCoherenceError,
+} from '../delivery-coherence.ts';
+import {
+  assertWordingCoherent,
+  WordingCoherenceError,
+} from '../wording-coherence.ts';
 import type { ArtifactEvidenceRowV2, } from './artifact-v2-read-contract.ts';
 import { outcomesEqualV2, } from './artifact-v2-row-equality.ts';
 import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
@@ -104,15 +110,37 @@ export function assertEvidenceMatchesLedger(
       left: mine.outcome,
       right: theirs.outcome,
     },)) {
-      throw new ArtifactParseError({
-        path: `${path}.delivery[${String(position,)}].outcome`,
-        reason: `the outcome the raw result records for slice ${String(mine.chunkIndex,)}, which is ${
+      /**
+       * How the two outcomes differ, in terms that distinguish them.
+       *
+       * NAMING THE KINDS IS NOT ENOUGH when they agree. Two outcomes can carry
+       * the same member and still disagree, since one of them holds wording,
+       * and a message built from the kinds alone would read `decided rather
+       * than decided` and send its reader looking for a difference it refused
+       * to state. Phrased as what the member carries rather than as accepted
+       * wording specifically, so it stays true of the next member that gains a
+       * payload.
+       */
+      const disagreement = (mine.outcome
+        .kind === theirs.outcome
+        .kind)
+        ? `both name ${
+          mine.outcome
+            .kind
+        }, and they differ in what that member carries`
+        : `${
           mine.outcome
             .kind
         } rather than ${
           theirs.outcome
             .kind
-        }`,
+        }`;
+
+      throw new ArtifactParseError({
+        path: `${path}.delivery[${String(position,)}].outcome`,
+        reason: `the outcome the raw result records for slice ${
+          String(mine.chunkIndex,)
+        }, which is ${disagreement}`,
       },);
     }
   }
@@ -228,6 +256,20 @@ export function assertRowsCoherent(
       assertWordingCoherent({ wording: row, },);
       assertDeliveryCoherent({ record: row, },);
     } catch (error) {
+      /**
+       * Whether one of the two rules refused this row, as against something
+       * else failing inside the same `try`.
+       */
+      const refusedTheRow = (error instanceof WordingCoherenceError)
+        || (error instanceof DeliveryCoherenceError);
+
+      // ONLY A COHERENCE REFUSAL DESCRIBES THE FILE. Anything else raised in
+      // here is a defect in this reader, and rewriting it as an artifact
+      // refusal would blame the artifact for it: an operator reading that
+      // message archives a run that was fine and never sees the real fault.
+      if (!refusedTheRow)
+        throw error;
+
       throw new ArtifactParseError({
         path: `${path}.delivery[${String(position,)}]`,
         reason: `a row whose outcome and delivery can both be true: ${
