@@ -276,11 +276,13 @@ async function runLane(
     needle,
     incumbentText,
     incumbentKind = 'present',
+    neighbouringSourceText,
   }: {
     readonly translations: TranslateScript;
     readonly needle: string;
     readonly incumbentText: string;
     readonly incumbentKind?: IncumbentKind;
+    readonly neighbouringSourceText?: string;
   },
 ) {
   /**
@@ -311,6 +313,7 @@ async function runLane(
     sourceText: SOURCE_TEXT,
     incumbentText,
     incumbentKind,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     lineStructured: false,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
@@ -608,6 +611,60 @@ await describe({
           .some(function namesTheSlate(finding: string,): boolean {
             return finding.startsWith('translate-candidates',);
           },),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${runTranslateStage.name} window`,
+  children: [
+    it({
+      name: 'renders NO surrounding block when a caller does not ask for one, in EVERY judge '
+        + 'sheet, so every measurement taken before this parameter existed still describes the '
+        + 'sheet production sends',
+      fn: async () => {
+        const { judgeSheets, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: INCUMBENT_TEXT,
+        },);
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(judgeSheets
+          .filter(function carriesLabel(sheet,) {
+            return sheet.includes('SURROUNDING ORIGINAL',);
+          },)
+          .length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'renders the surrounding block AND its context-only caveat when a caller supplies '
+        + 'one, which is what lets a flagged slice be judged twice differing in exactly one '
+        + 'thing, as `#107` needs',
+      fn: async () => {
+        const { judgeSheets, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: INCUMBENT_TEXT,
+          neighbouringSourceText: '她看着外面的鸟。\n',
+        },);
+        expect(judgeSheets
+          .filter(function carriesContext(sheet,) {
+            if (!sheet.includes('SURROUNDING ORIGINAL',))
+              return false;
+            if (!sheet.includes('她看着外面的鸟。',))
+              return false;
+            return sheet.includes('not expected to render this',);
+          },)
+          .length,).toBe(judgeSheets.length,);
       },
     },),
   ],

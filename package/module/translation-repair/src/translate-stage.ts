@@ -92,6 +92,14 @@ import {
  * @param identityContext - declared names from both sides' front matter,
  * omitted when neither declares anything
  *
+ * @param neighbouringSourceText - original of the sections either side, shown as
+ * CONTEXT the candidates are not expected to render. Absent by default, so a
+ * caller that does not ask for it gets the sheet production has always sent.
+ * `#107` is why it exists: where the archive carried a passage across a section
+ * boundary, a judge shown one slice pair sees invention on one side and omission
+ * on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
+ * the same trial was given exactly this
+ *
  * @param lineStructured - whether the enclosing CHUNK's original is
  * line-structured, decided by the caller
  *
@@ -129,6 +137,7 @@ export async function runTranslateStage(
     incumbentText,
     incumbentKind,
     identityContext,
+    neighbouringSourceText,
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -141,6 +150,7 @@ export async function runTranslateStage(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
+    readonly neighbouringSourceText?: string;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -388,6 +398,19 @@ export async function runTranslateStage(
         label: 'ORIGINAL (Chinese)',
         text: sourceText,
       },
+      // Neighbouring sections travel as CONTEXT, never as something to render,
+      // and only when a caller asked for them, so a run that does not want the
+      // wider window renders the sheet this stage has always sent. The label
+      // carries the caveat because a judge that reads it as required content
+      // starts filing coverage complaints against every candidate.
+      ...((neighbouringSourceText === undefined) || (neighbouringSourceText === '')
+        ? []
+        : [
+          {
+            label: 'SURROUNDING ORIGINAL (Chinese), context only: the candidates are not expected to render this',
+            text: neighbouringSourceText,
+          },
+        ]),
       // Declared names travel as evidence rather than as part of a candidate,
       // because a judge cannot check criterion three without them. The existing
       // translation deliberately does NOT travel here: it is on the ballot,
