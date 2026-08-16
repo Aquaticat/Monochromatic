@@ -3,6 +3,7 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import type { TranslateAbsenceReason, } from './translate-absence.ts';
 import type { SliceAlignmentAssessment, } from './translate-alignment.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
+import type { SliceSelection, } from './slice-selection.ts';
 
 //region Translate document contract
 // What the translate lane stores per slice, and what it returns per document.
@@ -233,6 +234,15 @@ export type TranslateDocumentResult = {
    * rather than what the document carries.
    */
   readonly shippedChunkIndices: readonly number[];
+
+  /**
+   * Who won each slice and whether the document kept it, in document order.
+   *
+   * The index sets say WHICH slices moved; this says who the text came from
+   * and how the judges got there. Every question asked of this lane since it
+   * was built is per slice and per producer, and a count answers none of them.
+   */
+  readonly sliceSelections: readonly SliceSelection[];
 
   /**
    * Slices whose replacement the assembly guard took back, in document order.

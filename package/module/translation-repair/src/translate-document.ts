@@ -8,6 +8,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { buildLaneSliceTexts, } from './lane-slice-text.ts';
+import { buildSliceSelections, } from './slice-selection.ts';
 import {
   absenceFinding,
   type IncumbentKind,
@@ -526,6 +527,10 @@ export async function translateDocument(
     // The same surviving replacements the count above is the size of, named,
     // and checked against the withdrawn set before either is reported.
     shippedChunkIndices: ordered.shipped,
+    sliceSelections: buildSliceSelections({
+      records: settled,
+      shippedChunkIndices: ordered.shipped,
+    },),
     withdrawnChunkIndices: ordered.withdrawn,
     // Every prepared slice paired with the archive wording it was judged
     // against. Taken from the PREPARATION rather than from the settled records,

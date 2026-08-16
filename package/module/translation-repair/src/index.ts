@@ -82,6 +82,10 @@ export { fencedLineFlags, } from './code-fence-lines.ts';
 export { footnoteBreakCount, } from './footnote-break-count.ts';
 export { maskInvisibleLines, } from './mask-invisible-lines.ts';
 export { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
+export {
+  buildSliceSelections,
+  type SliceSelection,
+} from './slice-selection.ts';
 export { restoreTypography, } from './restore-typography.ts';
 export { describeSelfPreference, } from './self-preference-line.ts';
 export {
