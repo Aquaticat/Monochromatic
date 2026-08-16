@@ -11780,3 +11780,86 @@ NEXT: `readDisplacement` should return a classification rather than one bucket,
 so each class is separately actionable, and the median should be computed over
 slices that are plausibly translated at all. A second reviewer was asked for the
 type and the thresholds before this is rebuilt.
+
+### The screen rebuilt, and the corrected corpus numbers
+
+`src/displacement-ratio.ts` now holds size primitives and
+`src/displacement-class.ts` the classification. Twelve tests gate it, built from
+the labelled cases rather than from invented shapes.
+
+    complete pairs                                     92
+    slices read                                      1260
+    entries falling back to the corpus baseline         12
+    relocation candidates                              22
+      of which a transcription would also explain        2
+    untranslated slices                                 4
+    target-only slices                                 12
+    other imbalances                                   24
+
+AGAINST THE OLD 44 MOVED PAIRS, which is the comparison worth reading: roughly
+half of that number was relocation and the rest was three other phenomena plus
+arithmetic. The count did not shrink because the screen got stricter in general;
+it shrank because three of the four things it was counting now have their own
+names.
+
+WHAT CHANGED IN THE INSTRUMENT, each with a test that fails without it:
+
+- THE DOCUMENT MEDIAN IS GONE, replaced by an aggregate over slices that are
+  plausibly translated. A median is contaminated by the untranslated sections it
+  exists to find. An aggregate is also invariant under relocation, since moving
+  text between slices leaves both document totals alone, so the baseline cannot
+  absorb the phenomenon being measured.
+- THE CORPUS REFERENCE IS MEASURED: 2.86, the median of 91 document aggregates,
+  where the first version said "roughly threefold" from recall. Twelve entries
+  fall outside the believable band and borrow it.
+- `median` TOOK THE HIGH MIDDLE on an even count while documenting the low one,
+  so `median([1, 2, 9, 10,])` answered nine. On a threshold that is a multiple of
+  the median, that bias raises the bar and hides anomalies.
+- A MEDIAN OF ZERO MADE EVERY SLICE HIGH, since twice zero is zero. A document
+  whose sections are mostly untranslated hit this exactly.
+- A SOURCE-LENGTH FLOOR DISCARDED THE BEST EVIDENCE. `Zha_Ke`'s slice carries 41
+  original characters against 3652 translated and was dropped before anything
+  looked at it.
+- `readPair` CAUGHT EVERY ERROR as a missing translation, so a permission or
+  decoding fault would have quietly shrunk the corpus-wide counts.
+
+TWO THINGS THE ACCEPTANCE GATE CAUGHT IN MY OWN DESIGN, which is what it was for:
+
+- `target-only` AS A SLICE CLASS SILENTLY ATE THE FOUNDING CASE. `Dethelly/0` is
+  35 original characters against 403 translated, and so is the shape of
+  `Zha_Ke/1`. Size cannot tell a relocation from English-only content; only the
+  neighbour's deficit can. It is now decided AFTER the neighbour test.
+- A LENGTH FLOOR ON THE DONOR SIDE DROPPED `lintong`. Its verified donor carries
+  43 original characters against 25 translated. What makes a slice evidence is
+  its residual, not its length.
+
+CONSERVATION IS ASYMMETRIC, measured rather than assumed. Both verified
+relocations run a deficit near HALF the surplus: `Dethelly` 297 against 121,
+`lintong` 281 against 99. The slice that gave text up still renders its own
+original, while the slice that took it on carries the expanded English of both.
+A reviewer proposed requiring "reasonably similar magnitudes", which would have
+rejected both cases the instrument exists for.
+
+AND ONE MORE CLASS FOUND BY HAND-CHECKING THE BOUNDARY. `wangzihao980/4->3` sat
+just over the conservation floor at 232/816. Reading both sides: the Chinese
+embeds a `PhotoScroll` of a note, and the English embeds the SAME image plus a
+full transcription and translation of what it holds. The neighbour's deficit is
+independent condensation that happens to sit next door. Screening all 22
+candidates for a media component present on both sides flags exactly the two
+entries already verified by hand as transcriptions, `dogesir_/3` and
+`wangzihao980/4`, and leaves both verified relocations clean. That check reads
+TEXT rather than sizes, so it lives beside the probe in
+`src/corpus-run/transcription-suspect.ts`.
+
+SO THE HONEST READING OF 22. Two are transcriptions on the probe's own evidence.
+Two are verified relocations. The remaining eighteen are unchecked, and the class
+is named `relocationCandidates` for that reason. What the number supports is
+"slices where a per-slice judge will misjudge the archive", which is what
+Question 5 needs; it does not yet support "22 passages moved".
+
+WHAT WAS ADOPTED FROM THE SECOND REVIEWER AND WHAT WAS NOT. Adopted: candidates
+rather than verdicts in the naming, the fifth bucket for one-ended surpluses,
+absolute floors beside relative ones, the aggregate baseline, all four defects
+above. Rejected: a twenty-five threshold configuration table and leave-one-out
+corpus learning, neither of which 92 documents and seven labelled slices can
+calibrate; and the symmetric conservation test, which the measurement refuted.
