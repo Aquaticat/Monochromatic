@@ -1,6 +1,7 @@
 import {
   ArtifactParseError,
   requireRecord,
+  requireString,
 } from './artifact-guard.ts';
 import type { ArtifactJsonValue, } from './corpus-run/artifact-v2-contract.ts';
 import {
@@ -77,6 +78,64 @@ export function requireExactKeys(
       reason: `no key here beyond ${allowed.join(', ',)}`,
     },);
   }
+}
+
+/**
+ * Reads a string the schema allows only a named few of.
+ *
+ * Returns the member FOUND IN `allowed` rather than the value read, so the
+ * result is narrowed by the list rather than by an assertion: a caller passing
+ * a literal tuple gets that tuple's union back, and no cast stands between the
+ * check and the type.
+ *
+ * @param value - value to check
+ *
+ * @param allowed - every member this version describes here
+ *
+ * @param path - dotted path for error message
+ *
+ * @returns Whichever member the value matched
+ *
+ * @throws {@link ArtifactParseError} when the value is not a string, or is one
+ * this version does not name
+ *
+ * @example
+ * ```ts
+ * const kind = requireOneOf({ value: row.incumbentKind, allowed: ['present', 'absent',], path, },);
+ * ```
+ */
+export function requireOneOf<const TAllowed extends string,>(
+  {
+    value,
+    allowed,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly allowed: readonly TAllowed[];
+    readonly path: string;
+  },
+): TAllowed {
+  /**
+   * String the artifact carries, before it is known to be one of these.
+   */
+  const held = requireString({
+    value,
+    path,
+  },);
+
+  /**
+   * Member it matched, or nothing.
+   */
+  const member = allowed.find(function isHeld(one,): boolean {
+    return one === held;
+  },);
+  if (member === undefined) {
+    throw new ArtifactParseError({
+      path,
+      reason: `one of ${allowed.join(', ',)}`,
+    },);
+  }
+  return member;
 }
 
 /**

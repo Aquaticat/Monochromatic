@@ -16,6 +16,7 @@ export {
 export {
   requireArtifactJsonValue,
   requireExactKeys,
+  requireOneOf,
   requireOpenRecord,
 } from './artifact-exact-guard.ts';
 export {

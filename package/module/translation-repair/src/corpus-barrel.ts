@@ -23,6 +23,27 @@ export {
   compareLanesV2,
 } from './corpus-run/artifact-v2-comparison.ts';
 export {
+  parseDecisionComparisonV2,
+  parseSliceDeliveryV2,
+  parseSliceOutcomeV2,
+  type UnknownKeyPolicy,
+} from './corpus-run/artifact-v2-read-vocabulary.ts';
+export {
+  parseComparisonRowV2,
+  parseDeliveryRowV2,
+  parseEvidenceRowV2,
+} from './corpus-run/artifact-v2-read-rows.ts';
+export type {
+  ArtifactEvidenceRowV2,
+  ArtifactRepairEvidenceV2,
+  ArtifactRepairStatusV2,
+  ArtifactTranslateEvidenceV2,
+  ArtifactTranslateStatusV2,
+  ParsedArtifactV2,
+  ParsedLaneV2,
+  ParsedPreparationV2,
+} from './corpus-run/artifact-v2-read-contract.ts';
+export {
   comparisonRowsEqualV2,
   decisionsEqualV2,
   deliveriesEqualV2,
