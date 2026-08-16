@@ -27,11 +27,15 @@ export {
   rotateCandidates,
   type TranslateSlateEntry,
 } from './translate-slate.ts';
-export {
-  alignmentRefusals,
-  translateDocument,
-} from './translate-document.ts';
+export { translateDocument, } from './translate-document.ts';
+export { assembleTranslation, } from './translate-assemble.ts';
+export { alignmentRefusals, } from './translate-alignment-refusals.ts';
 export { translateLaneWordings, } from './translate-lane-wordings.ts';
+export {
+  assertUnheardKeptIncumbent,
+  heardNobody,
+  TranslateUnheardError,
+} from './translate-unheard.ts';
 export {
   translateRunShape,
   translateSliceKey,

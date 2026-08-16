@@ -4,6 +4,7 @@ import {
   type LaneSliceText,
 } from './lane-slice-text.ts';
 import type { TranslateSliceRecord, } from './translate-document-contract.ts';
+import { heardNobody, } from './translate-unheard.ts';
 
 //region Translate lane wordings
 // The translate lane's per-slice records turned into the shared per-slice
@@ -60,9 +61,7 @@ export function translateLaneWordings(
    * carrying a wording anybody chose.
    */
   const heard = settled.filter(function heardSomebody(record,): boolean {
-    return record.stageResult
-      .heardTranslators
-      !== 0;
+    return !heardNobody({ record, },);
   },);
 
   return buildLaneSliceTexts({
@@ -72,10 +71,8 @@ export function translateLaneWordings(
     undecided: 'refuse',
     unfilledChunkIndices,
     unheardChunkIndices: settled
-      .filter(function heardNobody(record,): boolean {
-        return record.stageResult
-          .heardTranslators
-          === 0;
+      .filter(function answeredByNobody(record,): boolean {
+        return heardNobody({ record, },);
       },)
       .map(function toIndex(record,): number {
         return record.chunkIndex;

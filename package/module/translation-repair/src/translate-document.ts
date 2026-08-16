@@ -7,7 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import { buildSliceSelections, } from './slice-selection.ts';
+import { assembleTranslation, } from './translate-assemble.ts';
 import {
   absenceFinding,
   type IncumbentKind,
@@ -26,7 +26,6 @@ import {
   deriveShippedIndices,
   orderedChangeSets,
 } from './assembly-invariant.ts';
-import { alignmentRefusalFinding, } from './translate-alignment.ts';
 import {
   translateRunShape,
   translateSliceKey,
@@ -38,7 +37,10 @@ import type {
   UnfilledSlice,
 } from './translate-document-contract.ts';
 
-import { translateLaneWordings, } from './translate-lane-wordings.ts';
+import {
+  assertUnheardKeptIncumbent,
+  heardNobody,
+} from './translate-unheard.ts';
 
 //region Translate document
 // The lane's document driver: every prepared slice is translated, judged, and
@@ -69,39 +71,6 @@ import { translateLaneWordings, } from './translate-lane-wordings.ts';
 // that would have thrown: they are the only place the collapse is visible, and
 // without them a spent entry deadline writes "kept, unjudged" into the cache
 // for every slice it never reached.
-
-/**
- * Names what the alignment guard measured, for callers building a report.
- *
- * DERIVED RATHER THAN STORED. The sentence names a slice by its index, and a
- * settled record is keyed by what the models were asked, which since translate
- * version 2 excludes the index. The same record can therefore be resumed at a
- * different position, so the only trustworthy index is the one the record
- * carries after the driver stamps it, which is the one this reads.
- *
- * @param records - settled slice records
- *
- * @returns Refusal findings in the order the slices appear
- *
- * @example
- * ```ts
- * const refusals = alignmentRefusals({ records: result.slices, },);
- * ```
- */
-export function alignmentRefusals(
-  { records, }: { readonly records: readonly TranslateSliceRecord[]; },
-): readonly string[] {
-  return records
-    .filter(function wasRefused(record,): boolean {
-      return record.disposition === 'refused-alignment';
-    },)
-    .map(function toFinding(record,): string {
-      return alignmentRefusalFinding({
-        chunkIndex: record.chunkIndex,
-        assessment: record.alignment,
-      },);
-    },);
-}
 
 /**
  * Translates every slice of a prepared document pair and reassembles it.
@@ -281,7 +250,20 @@ export async function translateDocument(
       // rather than at assembly, where the same contradiction fails the whole
       // document after every other slice has been bought. Discarded, this slice
       // simply costs what an uncached one costs.
-      if (sliceRecordAgrees({
+      // NEVER WRITTEN BY THIS DRIVER, which refuses to cache a slice no
+      // translator answered for. One in the cache came from an older build, and
+      // resuming it would settle a slice that reports the archive standing by
+      // default without anybody having asked again.
+      if (heardNobody({ record: resumed, },)) {
+        /**
+         * Why this slice is being asked again rather than resumed.
+         */
+        const unheard = `translate slice ${String(chunkIndex,)}: cached record heard no translator, `
+          + 'which this driver never caches; asking again';
+        tl.warn(unheard,);
+        refusedCacheFindings.push(unheard,);
+      }
+      else if (sliceRecordAgrees({
         changed: resumed.changed,
         decidedText: resumed.outputText,
         incumbentText: slice.target
@@ -379,9 +361,16 @@ export async function translateDocument(
       incumbentText: slice.target
         .text,
     },);
-    if (record.stageResult
-      .heardTranslators
-      === 0) {
+    // WHAT HEARING NOBODY HAS TO MEAN, checked before the record is kept. The
+    // branch below rests on it, and so does every wording built from this
+    // record afterwards.
+    assertUnheardKeptIncumbent({
+      chunkIndex,
+      record,
+      incumbentText: slice.target
+        .text,
+    },);
+    if (heardNobody({ record, },)) {
       tl.warn(
         `slice ${String(chunkIndex,)}: no translator was heard, so the incumbent `
           + 'stands for this run and the slice is NOT cached',
@@ -411,166 +400,21 @@ export async function translateDocument(
     settled.push(record,);
   }
 
-  /**
-   * Slices whose accepted text differs from the archive's.
-   */
-  const changed = settled.filter(function isChanged(record,): boolean {
-    return record.changed;
-  },);
-
-  /**
-   * Slices where the guard refused a replacement the judges chose.
-   */
-  const refused = settled.filter(function wasRefused(record,): boolean {
-    return record.disposition === 'refused-alignment';
-  },);
-
-  /**
-   * Slices no translator answered for, which stand on the incumbent and are
-   * deliberately absent from the cache.
-   */
-  const unheard = settled.filter(function heardNobody(record,): boolean {
-    return record.stageResult
-      .heardTranslators
-      === 0;
-  },);
-  tl.info(
-    `translated ${String(settled.length,)} slices (${String(counted.resumed,)} resumed): `
-    + `${String(changed.length,)} changed, ${String(refused.length,)} refused on alignment`,
-  );
-
-  /**
-   * What this lane wants written, checked before the guard sees it.
-   *
-   * A BACKSTOP rather than the defence it used to be. Every record reaching
-   * here has already been checked against its own text, whether it came from
-   * the stage or from the cache, so a contradiction at this point means a
-   * defect between those checks and this line rather than a bad cache file.
-   */
-  const replacements = changed.map(function toReplacement(record,) {
-    return {
-      chunkIndex: record.chunkIndex,
-      replacementText: record.outputText,
-    };
-  },);
-  assertReplacementsChange({
-    slices: prepared.slices,
-    replacements,
-  },);
-
-  /**
-   * Assembly with any replacement withdrawn that the whole document refuses.
-   *
-   * Runs here rather than inside a slice because everything it checks is a
-   * relation BETWEEN slices: a footnote's reference and definition are settled
-   * separately, so a candidate that drops or renumbers a marker validates
-   * perfectly on its own, and a set that reassembles to the archive text is a
-   * fact no single slice can see.
-   */
-  const guarded = guardFootnoteAssembly({
-    targetText: prepared.targetText,
-    slices: prepared.slices,
-    replacements,
-  },);
-  if (guarded.revertedChunkIndices
-    .length
-    > 0) {
-    // Deliberately does not name a cause. The guard withdraws for footnote
-    // damage, for structural regressions, and for a set that reassembles to the
-    // archive text; only its findings say which, and a warning that guessed
-    // would send a reader looking for a footnote that is not there.
-    tl.warn(
-      `withdrew ${
-        String(guarded.revertedChunkIndices
-          .length,)
-      } replacements at assembly; the findings say why`,
-    );
-  }
-
-  /**
-   * Slices the returned document carries a change for, derived from the
-   * surviving replacements and checked against the document's own bytes.
-   *
-   * Derived here rather than mapped by this driver, so the text and the index
-   * set cannot disagree about which slices moved.
-   */
-  const shipped = deriveShippedIndices({
-    incumbentText: prepared.targetText,
-    assembledText: guarded.assembledText,
-    slices: prepared.slices,
-    survivingReplacements: guarded.replacements,
-  },);
-
-  /**
-   * Both index sets, checked against each other and put in document order.
-   *
-   * The guard returns each in the order it worked, and a reader comparing two
-   * lanes wants document order for both.
-   */
-  const ordered = orderedChangeSets({
-    sliceCount: prepared.slices
-      .length,
-    shipped,
-    withdrawn: guarded.revertedChunkIndices,
-  },);
-
-  return {
-    translatedText: guarded.assembledText,
-    sliceCount: prepared.slices
-      .length,
-    // What SHIPPED, which is not what the judges chose whenever the guard
-    // withdrew one of their choices.
-    changedSliceCount: guarded.replacements
-      .length,
-    refusedSliceCount: refused.length,
-    withdrawnSliceCount: guarded.revertedChunkIndices
-      .length,
-    // The same surviving replacements the count above is the size of, named,
-    // and checked against the withdrawn set before either is reported.
-    shippedChunkIndices: ordered.shipped,
-    sliceSelections: buildSliceSelections({
-      records: settled,
-      shippedChunkIndices: ordered.shipped,
-    },),
-    withdrawnChunkIndices: ordered.withdrawn,
-    // Every prepared slice paired with the archive wording it was judged
-    // against. Taken from the PREPARATION rather than from the settled records,
-    // which are cache values a resumed run may have written under an earlier
-    // preparation of the same entry.
-    sliceTexts: translateLaneWordings({
-      slices: prepared.slices,
-      settled,
-      unfilledChunkIndices: unfilled.map(function toIndex(passage,): number {
-        return passage.chunkIndex;
-      },),
-    },),
-    resumedSliceCount: counted.resumed,
-    // Passages the archive has not translated and this run could not either.
-    // The document carries the gap they name, so a reader counting coverage
-    // has to subtract them rather than read every unshipped slice as a slice
-    // the judges left alone.
-    status: (unfilled.length === 0) ? 'complete' : 'unfilled',
+  // ASSEMBLED ELSEWHERE, because everything past this point is derived from
+  // what the loop settled: which slices moved, what the whole document
+  // refuses, and what a reader is told about each. Nothing after this line
+  // buys anything, and keeping it here put two jobs in one file.
+  return assembleTranslation({
+    prepared,
+    settled,
     unfilled,
-    slices: settled,
+    resumedSliceCount: counted.resumed,
     findings: [
       ...refusedCacheFindings,
       ...unfilledFindings,
-      ...settled.flatMap(function toFindings(record,): readonly string[] {
-        return record.findings;
-      },),
-      // Derived here rather than read out of the records, because the sentence
-      // names a slice and a stored sentence would name whichever slice the
-      // record was FIRST settled for. Every refusal still reaches this list;
-      // only where the sentence is built moved.
-      ...alignmentRefusals({ records: settled, },),
-      ...guarded.findings,
-      ...unheard.map(function toUnheardFinding(record,): string {
-        return `translate-heard-no-translator chunk ${
-          String(record.chunkIndex,)
-        }; incumbent stands, slice not cached`;
-      },),
     ],
-  };
+    l: tl,
+  },);
 }
 
 //endregion Translate document
