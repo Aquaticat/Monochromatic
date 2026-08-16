@@ -11418,3 +11418,38 @@ coverage defect. What the lane actually risks is a fluent paraphrase that drops 
 qualifier while reading better than the archive, and nothing here speaks to that.
 The reading is: a roster that could not see a missing sentence would be
 disqualified, and this one is not.
+
+### The insertion fixture, which is what settles the length question
+
+BOTH FIXTURES NOW LIVE IN `src/fidelity-damage.ts`, and `--damage
+deletion|insertion` chooses; the probe runs both by default and reports per
+defect as well as overall, because a combined figure hides the reading that
+matters. Every trial and every row carries which defect it was built with.
+
+WHAT THE INSERTION IS: a sentence taken from ANOTHER SLICE OF THE SAME DOCUMENT,
+spliced into the clean text after its own longest unique sentence. Same
+translator, same register, same subject, genuinely fluent prose, and unsupported
+by the original this slice shows the judges. The correct answer is therefore the
+SHORTER candidate, which is the one thing a deletion can never ask.
+
+WHY THE DONOR IS ORDERED RATHER THAN CHOSEN, and this is worth knowing because
+the first version was wrong on the corpus rather than in principle. Taking
+strictly the furthest slice refused FIFTEEN OF SIXTEEN attempts: the last slice
+of a memorial entry is often a credit line, a short list, or a single sentence,
+and none of those offers a borrowable sentence. Refusing there would have sampled
+only documents that happen to end in prose, which is a selection rule nobody
+chose. `donorTextsFor` now returns every other slice carrying English, furthest
+first, and the fixture takes the first that offers a sentence this slice does not
+already carry. Distance is still the preference; it is no longer a veto.
+
+WHAT THE FIXTURE REFUSES, each for a reason worth keeping: a donor sentence the
+slice already carries, since that adds nothing while scoring a judge wrong for
+keeping a text that says the same things; a slice with no sentence long or unique
+enough to splice after; and an entry with no other slice at all.
+
+THE TESTS STATE THE INVERSION rather than describing it: the deletion leaves the
+complete text longer, the insertion leaves it SHORTER, and both leave every other
+word alone. Writing them turned up that an insertion anchor carries an EMPTY text
+rather than an absent one, since both members of `DocumentChunk` declare `text`,
+so the probe's `cleanText === undefined` branch was unreachable and the donor
+helper repeated the same misreading. Both now rely on the length floor.
