@@ -399,6 +399,10 @@ content-width caps,
 and a full-width plate.
 Pixel samples measure light ground `#eceef1` and plate `#f7f8fa`.
 The Pixel 6 was restored to dark mode after capture.
+Before the package-local host-theme rule was recorded,
+one desktop light-scene probe temporarily selected `BreezeLight` and then restored `VaporBlack`.
+Do not repeat that host mutation;
+all replacement desktop captures must use the isolated nested compositor.
 These captures predate the more-vibrant selected-background adjustment and require final replacement.
 Earlier AVD and stepped-outline captures are superseded before-state evidence only.
 Desktop release capture and requester visual approval remain pending.
