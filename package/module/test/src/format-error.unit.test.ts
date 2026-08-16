@@ -352,7 +352,7 @@ await describe({
     //region formatFailure summary fusion
 
     it({
-      name: 'fuses FAIL summary with first error line',
+      name: 'fuses the failure summary with first error line',
       fn: async () => {
         const error = makeError({
           message: 'boom',

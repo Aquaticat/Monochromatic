@@ -1327,6 +1327,14 @@ TC2:
  compare test names against implementation branches,
  confirm no untested path.
 
+TNM:
+ Never all-caps `PASS`/`FAIL` in a test name.
+Runner prefixes its own verdict,
+ so a name carrying one makes result greps report the opposite.
+Use `REFUSES`,
+ `ACCEPTS`,
+ `FORWARDS`.
+
 GFP:
  Guard test proves nothing until shown to fail:
  remove guard,
