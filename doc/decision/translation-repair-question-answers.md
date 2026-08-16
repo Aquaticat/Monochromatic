@@ -45,15 +45,38 @@ Supply the image to the translators and judges so the transcribed text has a sou
 Where the reading does not make sense, protect the block structurally instead: keep it out of translation and
 splice it back unchanged.
 
-This is the only answer on the sheet that asks for a capability the pipeline does not have, and it carries a
+This is the only answer on the sheet that asks for a capability the pipeline does not have, and it carried a
 prerequisite the sheet named as a con: the provider roster must actually hold models that read images.
-That is a research question with a measurable answer and it is settled before any transport is built, not
-assumed.
+
+### The prerequisite holds, checked against the provider
+
+Settled 2026-08-16 by asking rather than assuming. `GET https://api.synthetic.new/openai/v1/models` reports
+`input_modalities` per model, and two of the six already in the production roster read images:
+
+    hf:moonshotai/Kimi-K3                               ["text", "image"]
+    hf:Qwen/Qwen3.6-27B                                 ["text", "image"]
+    hf:zai-org/GLM-5.2                                  ["text"]
+    hf:zai-org/GLM-4.7-Flash                            ["text"]
+    hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4   ["text"]
+    hf:openai/gpt-oss-120b                              ["text"]
+
+The provider lists ten entries and the only other vision ones, `syn:large:vision` and `syn:small:vision`, are
+aliases of those same two models. So the vision sub-roster is exactly two, and widening it needs a different
+provider rather than a different configuration.
+
+TWO IS THIN, and that is what this answer has to be built around. Selection needs a minimum weight of two, a
+producer's ballot for its own work counts half, and `#84` measured that on slices carrying any archive
+imperfection the effective roster is already about four of six. Where both vision models produce, no
+disinterested judge remains at all, which is exactly the `no-disinterested-ballots` case the self-preference
+instrument names. Expect the A fallback to carry more of this than the answer's wording implies.
+
+WORTH CONTRASTING WITH QUESTION 4, whose answer turned out to rest on a premise that does not hold. This one
+holds.
 
 What it means concretely:
 
--   Establish first whether the configured roster has vision-capable models. If none does, option B cannot run
-    and the fallback becomes the whole behaviour until the roster changes.
+-   `SyntheticModelInfo` has no modality field, so nothing in code can express which models read images.
+    Adding one is part of the work rather than a blocker.
 -   The image path is already in the markdown, so locating the asset is path resolution rather than a new
     corpus reader.
 -   "Does not make sense" needs a stated rule rather than a judgement call, since it decides which of two
