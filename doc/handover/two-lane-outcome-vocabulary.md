@@ -105,6 +105,35 @@ Stripping the target placement kind fails the blank-content-versus-anchor case;
 stripping the whole-document texts fails the difference-outside-every-slice case.
 Both restored, suite green.
 
+## The comparison moved onto the ledger
+
+The last of the reviewer's ship blockers. It took each lane's wordings and its shipped index set,
+and read absence from that set as the archive being retained,
+so a changed decision left out of the set compared as a deliberate keep:
+the same defect the outcome union was split to end, in the one place that reports on both lanes.
+
+It now takes the two delivery ledgers `runDocumentLanes` already builds,
+which have already refused a decided slice that is neither shipped, withdrawn nor blocked.
+The result carries the preparation identity, so rows cannot be persisted without the slicing that numbers them.
+Nothing called the comparison yet, so no production caller had to change; its tests were rewritten to the new boundary.
+
+Three guards from the vocabulary commit were also pinned and GFP'd:
+the incumbent-kind disagreement at EQUAL empty text,
+the withdrawal by assembly on a run that never assembled,
+and the two coherence assertions at the comparison's call sites.
+
+Two corrections landed on top: a fourth spelling of hearing nobody in the extracted assembler,
+and the identity framing only the target's slice index while the source's was equal by assumption.
+
+## A note on stripping guards while the trial runs
+
+Measured, not assumed: the window trial is ONE long-lived process (started 12:51),
+its bundle contains zero dynamic imports, and nothing restarts it,
+so every module was resolved at startup and rebuilding `dist` cannot reach it.
+That is why the GFP strips here were safe.
+If the trial is ever restarted, or a bundle gains a dynamic import, that reasoning expires:
+strip in a throwaway worktree instead.
+
 ## Next actions, in order
 
 1.  The artifact at schema version 2. The identity it needs is DONE and exported.
