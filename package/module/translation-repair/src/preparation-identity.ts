@@ -66,6 +66,89 @@ const FORMAT_SEPARATOR = ':';
 export type PreparationIdentity = string & { readonly __brand: 'PreparationIdentity'; };
 
 /**
+ * Characters of a sha256 hex digest.
+ */
+const DIGEST_LENGTH = 64;
+
+/**
+ * Narrows a recorded string to an identity, or refuses it.
+ *
+ * The brand is built THROUGH this rather than asserted at the construction
+ * site, so a value read back from an artifact passes exactly the check a fresh
+ * one does, and a hand-written or truncated string cannot become an identity by
+ * assertion alone.
+ *
+ * @param value - string claiming to be an identity
+ *
+ * @returns Nothing; it narrows `value` in the caller on success
+ *
+ * @throws {@link PreparationIdentityError} when the scheme name is missing or
+ * the hex half is not sixty-four lowercase hex characters
+ *
+ * @example
+ * ```ts
+ * assertPreparationIdentity(recorded,);
+ * ```
+ */
+export function assertPreparationIdentity(
+  value: string,
+): asserts value is PreparationIdentity {
+  /**
+   * Prefix every identity carries.
+   */
+  const prefix = `${IDENTITY_FORMAT}${FORMAT_SEPARATOR}`;
+  if (!value.startsWith(prefix,)) {
+    throw new PreparationIdentityError({
+      message: `identity does not name this scheme: ${value}`,
+    },);
+  }
+
+  /**
+   * Hex half, once the scheme name is off.
+   */
+  const hex = value.slice(prefix.length,);
+  if (hex.length !== DIGEST_LENGTH) {
+    throw new PreparationIdentityError({
+      message: `identity carries ${String(hex.length,)} hex characters rather than ${
+        String(DIGEST_LENGTH,)
+      }`,
+    },);
+  }
+  for (const character of hex) {
+    if (!'0123456789abcdef'.includes(character,)) {
+      throw new PreparationIdentityError({
+        message: `identity carries a character no digest can: ${character}`,
+      },);
+    }
+  }
+}
+
+/**
+ * Raised when a recorded identity is not one this scheme could have produced.
+ *
+ * @example
+ * ```ts
+ * throw new PreparationIdentityError({ message: 'identity does not name this scheme', },);
+ * ```
+ */
+export class PreparationIdentityError extends Error {
+  /**
+   * Builds the refusal naming what is wrong with the value.
+   *
+   * @param message - what the value is missing or carries that it cannot
+   *
+   * @example
+   * ```ts
+   * throw new PreparationIdentityError({ message: 'identity does not name this scheme', },);
+   * ```
+   */
+  constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'PreparationIdentityError';
+  }
+}
+
+/**
  * Frames one field so no field's content can forge another's boundary.
  *
  * LENGTH PREFIXED rather than separated by a byte assumed absent from the text.
@@ -84,7 +167,15 @@ export type PreparationIdentity = string & { readonly __brand: 'PreparationIdent
  * ```
  */
 function framed({ value, }: { readonly value: string; },): string {
-  return `${String(Buffer.byteLength(value, 'utf8',),)}:${value}`;
+  /**
+   * Bytes this field occupies, which is what the hash consumes and therefore
+   * what the count has to describe.
+   */
+  const bytes = Buffer.byteLength(
+    value,
+    'utf8',
+  );
+  return `${String(bytes,)}:${value}`;
 }
 
 /**
@@ -200,11 +291,19 @@ export function preparationIdentity(
     framed({ value: (prepared.identityContext === undefined) ? 'no-identity-context' : 'identity-context', },),
     framed({ value: prepared.identityContext ?? '', },),
   ].join('',);
-  return `${IDENTITY_FORMAT}${FORMAT_SEPARATOR}${
+  /**
+   * Recorded value, naming the scheme that produced it.
+   */
+  const identity = `${IDENTITY_FORMAT}${FORMAT_SEPARATOR}${
     createHash(DIGEST_ALGORITHM,)
-      .update(payload, 'utf8',)
+      .update(
+        payload,
+        'utf8',
+      )
       .digest('hex',)
-  }` as PreparationIdentity;
+  }`;
+  assertPreparationIdentity(identity,);
+  return identity;
 }
 
 //endregion Preparation identity

@@ -57,8 +57,10 @@ export {
   WordingCoherenceError,
 } from './wording-coherence.ts';
 export {
+  assertPreparationIdentity,
   type PreparationIdentity,
   preparationIdentity,
+  PreparationIdentityError,
 } from './preparation-identity.ts';
 
 //endregion Document barrel
