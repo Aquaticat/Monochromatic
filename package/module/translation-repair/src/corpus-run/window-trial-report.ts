@@ -94,7 +94,7 @@ export type Transitions = {
  *
  * @example
  * ```ts
- * const report: ClassReport = { sliceClass: 'relocation', arms: [], transitions, bandTransitions, incomplete: 0, degraded: 0, };
+ * const report: ClassReport = { sliceClass: 'relocation-high', arms: [], transitions, bandTransitions, pairedExcess: 0.2, entries: 9, incomplete: 0, degraded: 0, };
  * ```
  */
 export type ClassReport = {
@@ -128,6 +128,28 @@ export type ClassReport = {
    * class the analysis covers.
    */
   readonly incomplete: number;
+
+  /**
+   * Mean, over the read triples, of the two narrow arms' replacement rate minus
+   * the wide arm's.
+   *
+   * THE PRIMARY NUMBER, and positive means the window reduced replacement. The
+   * transition counts describe; this estimates. It uses BOTH narrow arms rather
+   * than privileging the first, which is what the transition counts do, and it
+   * is a paired difference on one slice, so nothing about the slice can explain
+   * it. Zero when nothing was read.
+   */
+  readonly pairedExcess: number;
+
+  /**
+   * Documents the read triples came from.
+   *
+   * CARRIED BECAUSE SLICES ARE NOT INDEPENDENT. Several come from one entry, and
+   * relocation endpoints overlap by construction, so a spread computed as though
+   * every slice were its own document would be too narrow. This is the number a
+   * reader needs to know that.
+   */
+  readonly entries: number;
 
   /**
    * Complete triples excluded because some arm judged on a short panel.
@@ -238,6 +260,88 @@ function transitionsBetween(
     },)
       .length,
   };
+}
+
+/**
+ * Mean paired difference between the narrow pair and the wide arm.
+ *
+ * PER SLICE FIRST, THEN AVERAGED, which is what makes it paired: each slice
+ * contributes the difference between what it did with the window and what the
+ * same slate did twice without it, so anything about the slice cancels.
+ *
+ * @param triples - slices with all three arms on a full panel
+ *
+ * @returns Positive when the window reduced replacement, zero over nothing
+ *
+ * @example
+ * ```ts
+ * const excess = pairedExcessOf({ triples, },);
+ * ```
+ */
+function pairedExcessOf(
+  { triples, }: {
+    readonly triples: readonly ReadonlyMap<string, WindowTrialRow>[];
+  },
+): number {
+  if (triples.length === 0)
+    return 0;
+
+  /**
+   * Halving factor, since the two narrow arms are averaged.
+   */
+  const HALF = 1 / 2;
+
+  return triples.reduce(
+    function addDifference(
+      running,
+      triple,
+    ): number {
+      /**
+       * What each arm did with this slice.
+       */
+      const shipped = [
+        TRIAL_ARMS.narrowFirst,
+        TRIAL_ARMS.narrowSecond,
+        TRIAL_ARMS.wide,
+      ].map(function toShipped(arm,): number {
+        /**
+         * Whether this arm replaced the archive.
+         */
+        const replaced = triple.get(arm,)
+          ?.shipped
+          === true;
+        return replaced ? 1 : 0;
+      },);
+
+      return running
+        + ((((shipped[0] ?? 0) + (shipped[1] ?? 0)) * HALF) - (shipped[2] ?? 0));
+    },
+    0,
+  ) / triples.length;
+}
+
+/**
+ * Documents a set of triples came from.
+ *
+ * @param triples - slices with all three arms on a full panel
+ *
+ * @returns Count of distinct entries
+ *
+ * @example
+ * ```ts
+ * const entries = entriesOf({ triples, },);
+ * ```
+ */
+function entriesOf(
+  { triples, }: {
+    readonly triples: readonly ReadonlyMap<string, WindowTrialRow>[];
+  },
+): number {
+  return new Set(triples.flatMap(function toEntry(triple,): readonly string[] {
+    return [...triple.values(),].map(function toId(row,): string {
+      return row.entryId;
+    },);
+  },),).size;
 }
 
 /**
@@ -381,6 +485,8 @@ export function reportWindowTrial(
         from: TRIAL_ARMS.narrowFirst,
         to: TRIAL_ARMS.narrowSecond,
       },),
+      pairedExcess: pairedExcessOf({ triples, },),
+      entries: entriesOf({ triples, },),
       incomplete: bySlice.length - complete.length,
       degraded: complete.length - triples.length,
     };

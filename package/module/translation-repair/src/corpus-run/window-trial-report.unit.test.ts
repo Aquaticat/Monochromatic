@@ -213,6 +213,79 @@ await describe({
       },
     },),
     it({
+      name: 'ESTIMATES WITH BOTH NARROW ARMS, not just the first. The transition counts read the '
+        + 'wide arm against narrow-a alone, so a slice the two narrow arms disagree on is credited '
+        + 'as a whole flip in whichever direction narrow-a happened to fall; averaging them makes '
+        + 'that slice count for half, which is what it is worth',
+      fn: async () => {
+        /**
+         * One slice both narrow arms replaced and the wide arm kept, and one
+         * where the narrow arms disagreed and the wide arm kept.
+         */
+        const rows = [
+          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ chunkIndex: 1, narrowFirst: true, narrowSecond: false, wide: false, },),
+        ];
+
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
+        // 1 and 0.5, averaged. Reading narrow-a alone would say 1.
+        expect(report?.pairedExcess,).toBe(0.75,);
+        expect(report?.transitions
+          .replaceToKeep,).toBe(2,);
+      },
+    },),
+    it({
+      name: 'reports NEGATIVE when the window pushed the other way, so a result contradicting '
+        + '`#107` reads as one number rather than as an absence of the expected one',
+      fn: async () => {
+        const rows = [
+          ...tripleFor({ chunkIndex: 0, narrowFirst: false, narrowSecond: false, wide: true, },),
+        ];
+
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
+        expect(report?.pairedExcess,).toBe(-1,);
+      },
+    },),
+    it({
+      name: 'counts the DOCUMENTS its triples came from, because several slices share an entry and '
+        + 'relocation endpoints overlap by construction, so a spread taken as though every slice '
+        + 'were its own document would be too narrow',
+      fn: async () => {
+        const rows = [
+          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ chunkIndex: 1, narrowFirst: true, narrowSecond: true, wide: false, },),
+        ];
+
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
+        expect(report?.arms[0]
+          ?.trials,).toBe(2,);
+        expect(report?.entries,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'READS ONLY ITS OWN PROTOCOL, since the ledger is append-only and outlives any one '
+        + 'experiment: rows bought under a roster or corpus pin that has since moved answer a '
+        + 'different question, and resumption already excluded them from the buying while the '
+        + 'reading took every one',
+      fn: async () => {
+        const rows = [
+          ...tripleFor({ chunkIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },),
+          ...tripleFor({ chunkIndex: 1, narrowFirst: true, narrowSecond: true, wide: true, },)
+            .map(function underAnother(row,): WindowTrialRow {
+              return {
+                ...row,
+                protocol: 'protocol-two',
+              };
+            },),
+        ];
+
+        const [report,] = reportWindowTrial({ rows, protocol: 'protocol-one', },);
+        expect(report?.arms[0]
+          ?.trials,).toBe(1,);
+        expect(report?.pairedExcess,).toBe(1,);
+      },
+    },),
+    it({
       name: 'DROPS A TRIPLE WHOSE WIDE ARM DECIDED ON A SHORT PANEL, and counts it separately '
         + 'from a missing arm. The fan-out proceeds once half the roster answers, so a lost voice '
         + 'is written as an ordinary decision, and the wide arm sends the longest sheets under the '

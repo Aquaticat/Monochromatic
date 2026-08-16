@@ -68,6 +68,15 @@ const TRIAL_PROTOCOL_VERSION = 1;
 const CONTROLS_PER_ENTRY = 1;
 
 /**
+ * Decimal places the paired estimate is printed to.
+ *
+ * Two, because the draw cannot resolve a third: at the size measured here the
+ * spread on this estimate is larger than a hundredth, and printing more digits
+ * would suggest a precision the sample does not have.
+ */
+const EXCESS_DIGITS = 2;
+
+/**
  * Refusals in a row that end the run.
  *
  * Small, because slices that genuinely cannot be tried do not cluster: the draw
@@ -445,7 +454,10 @@ async function main(): Promise<void> {
     protocol,
   },)) {
     l.info(
-      `${report.sliceClass}: ${
+      `${report.sliceClass}: window moved replacement by ${
+        report.pairedExcess
+          .toFixed(EXCESS_DIGITS,)
+      } over ${String(report.entries,)} entries; ${
         report.arms
           .map(function toRate(rate,) {
             return `${rate.arm} ${String(rate.replaced,)}/${String(rate.trials,)}`;
