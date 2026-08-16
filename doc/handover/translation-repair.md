@@ -11896,10 +11896,21 @@ STILL OPEN AND UNTOUCHED TONIGHT: `#84`'s remaining items (self-preference rate,
 production position bias, a wider sample, the hard fluent-paraphrase case), and
 the queue behind `#106`. Two `sol` reviews launched yesterday evening are still
 running, `bt8g6brhj` on the locator rewrite and `b64uex7px` on fidelity
-measurement; both processes are alive and their output files are still empty,
-which for that tool means thinking rather than hung. A third, on the displacement
-instrument, came back and its findings are recorded above under what was adopted
-and what was refused.
+measurement.
+
+PRESUMED STALLED, AND THE EARLIER READING OF THEM WAS WRONG. This document said
+an empty output file means thinking rather than hung, which was calibrated on
+runs that eventually flushed. Measured since: `bt8g6brhj` has been alive 4 hours
+32 minutes and `b64uex7px` 2 hours 58 minutes, each with 00:00:00 of CPU time,
+against sibling calls the same night that finished in minutes. Treat both as
+stalled. Neither is killed, since nothing authorised that, but nothing should
+wait on them. If either eventually lands, its findings describe PRE-REBUILD
+source and must be re-checked against the current files before any of it is
+acted on; `b64uex7px`'s prompt predates `damageDetail`, the wide arm and the
+window plumbing, so its findings are stale regardless of what it says.
+
+A third review, on the displacement instrument, came back and its findings are
+recorded above under what was adopted and what was refused.
 
 ONE JUDGEMENT TO CARRY FORWARD, since it cost the most time to learn tonight. Both
 of the design errors the acceptance gate caught were the same error: deciding a
@@ -12041,21 +12052,57 @@ THE SPEC, so the next session does not re-derive it:
     client, same rosters, same slice.
 3.  Record per slice: the class, whether each arm replaced the archive text, and
     the decision the stage reported. `TranslateSliceRecord` already carries what
-    is needed.
+    is needed. Append each result durably AS IT LANDS, and on restart skip every
+    (entry, slice, arm) triple already recorded. See what the cache does and
+    does not do, below.
 4.  Tally the replacement rate PER CLASS PER ARM.
+5.  ON THE FIRST FLAGGED SLICE ONLY, before letting the remaining seventy-nine
+    proceed, read the wide arm's judge sheets out of the run log and confirm
+    they carry the `SURROUNDING ORIGINAL` label. The stage is tested directly
+    and the key is tested, but the hop from `settleTranslateSlice` into
+    `runTranslateStage` is not, so a window that silently fails to arrive would
+    produce two identical arms and a confident null. One check at the top of the
+    run costs nothing and closes the gap the tests leave open.
 
-THE CACHE QUESTION IS ANSWERED, and it was a real defect rather than a worry.
-The key covered models, identity context, source, incumbent, mode and the
-governance flag, and NOT the window, so the two arms would have shared a key.
-The wide arm would have read what the narrow arm cached, and the comparison
-would have reported a window change as having made no difference, after fifteen
-hundred calls. Found by reading the key before the run rather than after it.
+THE CACHE QUESTION HAD TWO HALVES AND ONLY ONE IS ANSWERED.
 
-The window is now part of the key, APPENDED ONLY WHEN PRESENT so a key computed
-without one is byte-identical to what it always was and no settled slice in the
-corpus is discarded. Verified by hash: absent, undefined and empty all give
-`0522d446...`, and a supplied window `09bc539a...`. That file had no tests at
-all; it now has four.
+THE HALF THAT IS ANSWERED was a real defect rather than a worry. The key covered
+models, identity context, source, incumbent, mode and the governance flag, and
+NOT the window, so two arms would have shared a key. The window is now part of
+the key, APPENDED ONLY WHEN PRESENT so a key computed without one is
+byte-identical to what it always was and no settled slice in the corpus is
+discarded. Verified by hash: absent, undefined and empty all give `0522d446...`,
+and a supplied window `09bc539a...`. That file had no tests at all; it now has
+four.
+
+THE HALF THAT IS NOT is where that key is READ, and this document previously
+implied the fix alone de-risked the run. It does not, because the fix protects a
+path the probe does not take. The only call site of `translateSliceKey` is the
+document driver, `translate-document.ts:252`; `settleTranslateSlice` imports no
+store at all, and its two mentions of caching are comments. So a probe that
+calls `settleTranslateSlice` directly, which is what step 2 says, consults no
+cache. The arms cannot collide, which is the good half, but nothing resumes
+either: at roughly fifteen hundred real calls, a run that dies at hour three
+restarts from zero.
+
+The key change stays regardless. It is correct for the driver path and for any
+later windowing there, and it cost four tests. It simply is not the thing that
+makes the probe survivable.
+
+WHAT MAKES IT SURVIVABLE is step 3's own durable append, and the infrastructure
+for it already exists: `openNamespacedCache` in
+`src/corpus-run/slice-cache-namespace.ts` is generic over its stored value and
+takes a lane prefix plus its own generation marker.
+
+ONE TRAP IF THAT ROUTE IS TAKEN, and it is the same neighbour-discriminator
+error that has now bitten three times. `CLAIMED_PREFIXES` in that file defines
+the repair lane as everything NOT in the list. A new lane that invents a prefix
+without registering it there is therefore adopted by the repair lane, whose
+`discardNamespace` deletes it on the next generation change. Registering the
+prefix is what claims the files. A plain append-only JSONL beside the run,
+keyed by entry, slice and arm, avoids the question entirely and is enough for a
+one-off measurement; prefer it unless the probe needs something the lane
+machinery gives.
 
 BUDGET: roughly 80 flagged slices, two arms, three translators and six judges per
 arm. Call it 1500 exchanges. Every one is a real call, so run it detached and let
