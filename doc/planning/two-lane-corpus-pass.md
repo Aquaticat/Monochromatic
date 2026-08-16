@@ -75,10 +75,70 @@ including the ones a reviewer raised that turned out to be wrong.
     and that proxy fails in the other direction:
     a repair lane blocking at an anchored slice is `not-evaluated` in truth and `unfilled` by the proxy.
 
-    The fix under review is an explicit `reach` discriminant on `LaneSliceText`,
+    The fix is an explicit outcome discriminant on `LaneSliceText`,
     so both consumers read a stated fact.
     Blast radius measured:
     three source files consume `acceptedText`, three call `buildLaneSliceTexts`, nine files including tests.
+
+-   **A FOURTH state exists and the driver already knows about it.**
+    `translate-document.ts:381` warns when `record.stageResult.heardTranslators === 0`,
+    keeps the incumbent for that run and refuses to cache the slice,
+    and line 431 collects those slices as `unheard`.
+    They still enter `settled`,
+    so `buildLaneSliceTexts` stamps them with `acceptedText` equal to the incumbent,
+    and every consumer reads that as the lane having examined the slice and chosen to leave it alone.
+
+    This is the window trial's lost-judge defect in the translate lane's producing stage:
+    **a stage that heard nobody is recorded as a deliberate keep.**
+    Any lane comparison run today counts unheard slices as agreement with the archive.
+
+    So the outcome union needs four members, not three,
+    and they separate on two questions rather than one:
+
+    -   `decided`, the lane produced a wording.
+    -   `not-evaluated`, the lane never reached the slice.
+    -   `unfilled`, reached, no output, and NO incumbent to fall back on.
+    -   `incumbent-fallback`, reached, no output, and an incumbent that therefore stands by default.
+
+-   **Naming: the discriminant is `outcome`, not `reach`.**
+    Three of the four states mean the lane reached the slice,
+    so a field called `reach` invites the next reader to write `reach === 'decided'`
+    and re-introduce exactly the defect above.
+
+-   **Whether an incumbent exists is a SEPARATE axis, and cannot be inferred from blank text.**
+    A content chunk may legitimately be blank, so `incumbentText === ''` does not mean the archive has nothing there.
+    `LaneSliceText` needs `incumbentKind: 'present' | 'absent'` beside the outcome.
+    This is the same critique as the `anchored` proxy, applied to the incumbent side.
+
+-   **`SliceShipment` mixes evaluation with delivery, and one `kind` cannot hold both.**
+    A blocked repair at an anchor is `not-evaluated` AND the gap remains;
+    today it must pick one word for both facts.
+    The two axes are evaluation (the four outcomes above) and delivery
+    (replacement shipped, replacement withdrawn, incumbent retained, gap remains).
+
+-   **The comparison answers a different question from the one it was built for.**
+    `lane-slice-text.ts` opens by saying the point is whether both lanes produce the SAME ENGLISH,
+    and `judgeSlice` compares what the documents CARRY.
+    Two lanes accepting different replacements that are both withdrawn read as `archive-stands`;
+    two lanes accepting the same replacement where only one ships read as `repair-only`.
+    Both are true delivery facts and neither answers lane agreement,
+    so the persisted comparison needs both verdicts rather than one word doing duty as both.
+
+-   **The stopped-prefix invariant has a hole.**
+    `buildLaneSliceTexts` rejects a slice decided after an undecided one,
+    but an `unfilled` slice after a `not-evaluated` one passes,
+    which asserts the lane resumed after stopping.
+    The invariant should reject any later REACHED outcome, not only a later decision.
+
+-   **"Same preparation" is not actually established by the comparison.**
+    Equal slice counts, equal indices and equal incumbent text do not prove one preparation:
+    two slices can carry the same target wording over different source passages,
+    and every insertion incumbent is blank.
+    A persisted comparison needs a preparation identity, or a per-slice identity covering source text and placement.
+
+-   **Two more index-set gaps beyond the three now fixed.**
+    `buildSliceDelivery` still lets a BLOCKED result claim a shipped replacement,
+    and it range-checks indices rather than checking membership in the prepared set.
 
 -   **The verdict vocabulary is a second, separate lie.**
     `judgeSlice` compares what the two documents CARRY while `reach` describes what the lanes DID,
