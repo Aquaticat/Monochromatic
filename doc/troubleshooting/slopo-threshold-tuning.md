@@ -17,8 +17,8 @@ rerank_threshold: 0.94
 body_node_count_threshold: 13
 ```
 
-Against the copied current index and ignore file,
-the baseline produced `355` clusters.
+Against the copied current index and an empty throwaway ignore file,
+the baseline produced `356` clusters.
 Changing only `similarity_threshold` to `0.97` produced `225` clusters.
 Changing only `rerank_threshold` to `0.97` produced `288` clusters.
 The target cluster disappeared in both probes.
@@ -125,6 +125,28 @@ to add discarded cluster hashes to `slopo.ignore.txt`
 The repository already categorizes comparable tiny fixer matches under
 `BOILERPLATE-TRIVIAL` in `slopo.ignore.txt:197-253`.
 
+### Existing ignore hashes are mostly stale
+
+`src/slopo/analysis/ignore.py:18-24` includes every unit path and body hash in a cluster hash:
+
+```python
+pairs = sorted(
+    (units[uid].file_path, units[uid].body_hash) for uid in cluster.unit_ids
+)
+canonical = "\n".join(f"{path}\0{body_hash}" for path, body_hash in pairs)
+```
+
+Commit `ece5b7553` renamed the repository's `packages/` tree to `package/`.
+The commit updated path text in `slopo.ignore.txt` but retained all `116` existing hash lines.
+Those hashes necessarily changed for clusters containing renamed paths.
+
+The current ignore file contains `119` hashes.
+An empty-ignore baseline produced `356` clusters,
+while the current ignore file produced `355` and logged exactly one dismissal.
+Only `54a947960da7` intersects the current unignored report hashes.
+This staleness does not make a new targeted dismissal ineffective,
+but the old ignore inventory needs separate retriage or regeneration.
+
 ## Verification
 
 Verified against:
@@ -134,11 +156,12 @@ Verified against:
    and SQLite `3.51.2`;
 - upstream tag `v0.4.0`,
    commit `9b6296f2a6ab5e10cfdae7d6ed521f9bf3cb79fa`;
-- copied repository index containing `8,528` code units and `8,309` embedded units;
+- copied repository index containing `8,528` code units and `8,309` stored embedding rows,
+   covering every code unit through shared body hashes;
 - repository source and reports as of `2026-08-16`.
 
-All threshold probes used a copied database,
-a copied ignore file,
+All controlled threshold probes used a copied database,
+an empty throwaway ignore file,
 and separate report directories under a private throwaway directory.
 They did not mutate the repository index or reports.
 
@@ -188,11 +211,13 @@ These reports demonstrate that the low-score band contains both incidental scaff
 ### Suppressed at a `0.97` threshold
 
 Both `similarity_threshold: 0.97` and `rerank_threshold: 0.97` suppress every pair in the preceding catalog.
-The raw-similarity probe removed `130` baseline clusters.
-The rerank probe removed `67` baseline clusters.
+The raw-similarity probe produced `131` fewer clusters than the controlled baseline.
+The rerank probe produced `68` fewer clusters than the controlled baseline.
 
 The exact pair scores were calculated directly from the copied database embeddings with the same cosine formula and
 boost functions used by Slopo.
+Every catalog pair received zero location boost,
+so each listed score is both its raw and reranked score.
 The target pair was also absent from both generated report directories.
 
 ## Verified workarounds
@@ -210,6 +235,8 @@ This removes only the reviewed cluster.
 Its tradeoff is intentional:
 editing either body or moving either path changes the hash,
 so Slopo asks for review again.
+The repository's path migration already invalidated most older dismissals,
+so the current ignore inventory should be refreshed independently of this new entry.
 
 ### Raise thresholds only after labeled calibration
 
