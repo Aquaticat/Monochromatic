@@ -2702,36 +2702,13 @@ private fun ColumnScope.settingsPage(
     ) {
         Text(text = "Page controls", style = MaterialTheme.typography.headlineSmall)
         Text("Choose how library pages are shown.")
-        radioOption(
-            label = "Radio controls",
-            selected = style == PageControlStyle.RADIO,
-            onSelect = { onSelectStyle(PageControlStyle.RADIO) },
-        )
-        radioOption(
-            label = "Multi-row MD1 tabs",
-            selected = style == PageControlStyle.MD1_TABS,
-            onSelect = { onSelectStyle(PageControlStyle.MD1_TABS) },
-        )
-        radioOption(
-            label = "Rounded buttons",
-            selected = style == PageControlStyle.ROUNDED_BUTTONS,
-            onSelect = { onSelectStyle(PageControlStyle.ROUNDED_BUTTONS) },
-        )
-        radioOption(
-            label = "Segmented buttons",
-            selected = style == PageControlStyle.SEGMENTED_BUTTONS,
-            onSelect = { onSelectStyle(PageControlStyle.SEGMENTED_BUTTONS) },
-        )
-        radioOption(
-            label = "Super fun LED segmented buttons",
-            selected = style == PageControlStyle.LED_SEGMENTED_BUTTONS,
-            onSelect = { onSelectStyle(PageControlStyle.LED_SEGMENTED_BUTTONS) },
-        )
-        radioOption(
-            label = "Chromium-like tabs",
-            selected = style == PageControlStyle.CHROMIUM_TABS,
-            onSelect = { onSelectStyle(PageControlStyle.CHROMIUM_TABS) },
-        )
+        PageControlStyle.includedStyles.forEach { includedStyle ->
+            radioOption(
+                label = includedStyle.displayLabel,
+                selected = style == includedStyle,
+                onSelect = { onSelectStyle(includedStyle) },
+            )
+        }
         Button(onClick = onBack) { Text("Back to library") }
     }
 }

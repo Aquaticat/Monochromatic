@@ -16,6 +16,7 @@ package dev.monochromatic.musicplayer
 // import { expect } from "test";
 // ```
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 
 // What:     `Test` is the annotation used to register a JUnit test method.
 // Why:      The JVM test runner discovers the decoder coverage method.
@@ -46,16 +47,73 @@ class PageControlStyleTest {
     /** Confirms names decode, missing defaults to Chromium, and unknown names fall back to radio. */
     @Test
     fun fromStoredNameHandlesKnownMissingAndUnknownValues() {
-        assertEquals(PageControlStyle.RADIO, PageControlStyle.fromStoredName("RADIO"))
-        assertEquals(PageControlStyle.MD1_TABS, PageControlStyle.fromStoredName("MD1_TABS"))
-        assertEquals(PageControlStyle.ROUNDED_BUTTONS, PageControlStyle.fromStoredName("ROUNDED_BUTTONS"))
-        assertEquals(PageControlStyle.SEGMENTED_BUTTONS, PageControlStyle.fromStoredName("SEGMENTED_BUTTONS"))
-        assertEquals(PageControlStyle.CHROMIUM_TABS, PageControlStyle.fromStoredName("CHROMIUM_TABS"))
+        PageControlStyle.entries.forEach { storedStyle ->
+            assertEquals(
+                resolvePageControlStyle(
+                    PageControlStyleResolutionOptions(
+                        requested = storedStyle,
+                        included = PageControlStyle.includedStyles,
+                    ),
+                ),
+                PageControlStyle.fromStoredName(storedStyle.name),
+            )
+        }
         assertEquals(
-            PageControlStyle.LED_SEGMENTED_BUTTONS,
-            PageControlStyle.fromStoredName("LED_SEGMENTED_BUTTONS"),
+            resolvePageControlStyle(
+                PageControlStyleResolutionOptions(
+                    requested = PageControlStyle.CHROMIUM_TABS,
+                    included = PageControlStyle.includedStyles,
+                ),
+            ),
+            PageControlStyle.fromStoredName(null),
         )
-        assertEquals(PageControlStyle.CHROMIUM_TABS, PageControlStyle.fromStoredName(null))
-        assertEquals(PageControlStyle.RADIO, PageControlStyle.fromStoredName("future-style"))
+        assertEquals(
+            resolvePageControlStyle(
+                PageControlStyleResolutionOptions(
+                    requested = PageControlStyle.RADIO,
+                    included = PageControlStyle.includedStyles,
+                ),
+            ),
+            PageControlStyle.fromStoredName("future-style"),
+        )
+    }
+
+    /** Confirms every independently excluded style follows deterministic build fallback chain. */
+    @Test
+    fun excludedStylesResolveWithoutRenumbering() {
+        PageControlStyle.entries.forEach { excludedStyle ->
+            /** Simulates one source toggle without mutating production constants. */
+            val included: List<PageControlStyle> = PageControlStyle.entries.filter { style ->
+                style != excludedStyle
+            }
+            /** Chromium is primary fallback unless Chromium itself is excluded. */
+            val expected: PageControlStyle = if (excludedStyle == PageControlStyle.CHROMIUM_TABS) {
+                PageControlStyle.RADIO
+            } else {
+                PageControlStyle.CHROMIUM_TABS
+            }
+            assertEquals(
+                expected,
+                resolvePageControlStyle(
+                    PageControlStyleResolutionOptions(
+                        requested = excludedStyle,
+                        included = included,
+                    ),
+                ),
+            )
+        }
+    }
+
+    /** Confirms invalid build with no styles fails instead of exposing unusable Settings. */
+    @Test
+    fun emptyBuildAvailabilityThrowsConfigurationError() {
+        assertThrows(PageControlStyleAvailabilityError::class.java) {
+            resolvePageControlStyle(
+                PageControlStyleResolutionOptions(
+                    requested = PageControlStyle.CHROMIUM_TABS,
+                    included = emptyList(),
+                ),
+            )
+        }
     }
 }

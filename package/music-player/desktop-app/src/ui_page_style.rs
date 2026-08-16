@@ -1,43 +1,101 @@
-//! Wires the page-control style preference between Slint and the saved desktop session.
+//! Wires build-available page-control styles between Slint and desktop session persistence.
 
-/// What:     `use crate::AppWindow` imports the generated Slint window type from the
-///           binary crate root.
-/// Why:      The bridge reads and registers properties on that window.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { AppWindow } from './main';
-/// ```
-use crate::AppWindow;
+/// Imports generated application, style-option, and component-handle types.
+use crate::{AppWindow, PageControlStyleOption};
 
-/// What:     `use music_player::session::{PageControlStyle, Session}` imports the named
-///           preference variants and persisted session record.
-/// Why:      The bridge converts Slint integers and saves each selection.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { PageControlStyle, Session } from 'music-player/session';
-/// ```
+/// Imports named persisted page-control variants and session record.
 use music_player::session::{PageControlStyle, Session};
 
-/// What:     `apply` restores the selected page-control style, then registers the
-///           callback that persists later settings-page selections.
-/// Why:      Keep UI-only preference wiring outside playback code and under the Rust
-///           source-line budget.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function apply(app: AppWindow): void { ... }
-/// ```
+/// Imports Slint model and shared-string adapters.
+use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
+
+/// Describes one stable page-control style and its one-line build toggle.
+#[derive(Clone, Copy, Debug)]
+struct BuildStyle {
+    /// Stable persisted style variant.
+    style: PageControlStyle,
+    /// Human-readable Settings label.
+    label: &'static str,
+    /// Whether current build exposes and resolves to this style.
+    included: bool,
+}
+
+/// Central page-control build catalog. Change only `included` on one line to toggle a style.
+const BUILD_STYLES: [BuildStyle; 6] = [
+    BuildStyle { style: PageControlStyle::Radio, label: "Radio controls", included: true },
+    BuildStyle { style: PageControlStyle::Md1Tabs, label: "Multi-row MD1 tabs", included: true },
+    BuildStyle { style: PageControlStyle::RoundedButtons, label: "Rounded buttons", included: true },
+    BuildStyle { style: PageControlStyle::SegmentedButtons, label: "Segmented buttons", included: true },
+    BuildStyle { style: PageControlStyle::ChromiumTabs, label: "Chromium-like tabs", included: true },
+    BuildStyle {
+        style: PageControlStyle::LedSegmentedButtons,
+        label: "Super fun LED segmented buttons",
+        included: true,
+    },
+];
+
+/// Groups requested style with build catalog used to resolve it.
+#[derive(Clone, Copy, Debug)]
+struct StyleResolution<'catalog> {
+    /// Style decoded from first-install or persisted state.
+    requested: PageControlStyle,
+    /// Catalog whose availability controls effective result.
+    catalog: &'catalog [BuildStyle],
+}
+
+/// Resolves requested style through Chromium, radio, then first-included fallback chain.
+fn resolve_style(options: StyleResolution<'_>) -> Option<PageControlStyle> {
+    if options.catalog.iter().any(|entry| entry.included && entry.style == options.requested) {
+        return Some(options.requested);
+    }
+    for fallback in [PageControlStyle::ChromiumTabs, PageControlStyle::Radio] {
+        if options.catalog.iter().any(|entry| entry.included && entry.style == fallback) {
+            return Some(fallback);
+        }
+    }
+    options.catalog.iter().find(|entry| entry.included).map(|entry| entry.style)
+}
+
+/// Builds Settings model from styles included by current build catalog.
+fn settings_options(catalog: &[BuildStyle]) -> Vec<PageControlStyleOption> {
+    catalog
+        .iter()
+        .filter(|entry| entry.included)
+        .map(|entry| PageControlStyleOption {
+            label: SharedString::from(entry.label),
+            style: entry.style.to_int(),
+        })
+        .collect()
+}
+
+/// Restores effective style, supplies Settings options, and persists later selections.
 pub(crate) fn apply(app: &AppWindow) {
-    // Load saved preference. Missing sessions default to Chromium; unknown integers still decode to radio.
-    app.set_page_control_style(Session::load().page_control_style.to_int());
-    // Persist only the page-control field while retaining the latest playback session.
+    let restored = Session::load().page_control_style;
+    let resolved = resolve_style(StyleResolution { requested: restored, catalog: &BUILD_STYLES })
+        .expect("at least one BUILD_STYLES entry must set included: true");
+    let options = settings_options(&BUILD_STYLES);
+    app.set_page_control_style(resolved.to_int());
+    app.set_page_control_style_options(ModelRc::new(VecModel::from(options)));
+
+    let weak = app.as_weak();
     app.on_set_page_control_style(move |style| {
+        let requested = PageControlStyle::from_int(style);
+        let resolved = resolve_style(StyleResolution { requested, catalog: &BUILD_STYLES })
+            .expect("at least one BUILD_STYLES entry must set included: true");
+        if resolved != requested {
+            if let Some(app) = weak.upgrade() {
+                app.set_page_control_style(resolved.to_int());
+            }
+        }
         let mut session = Session::load();
-        session.page_control_style = PageControlStyle::from_int(style);
+        session.page_control_style = resolved;
         if let Err(error) = session.save() {
             tracing::warn!(%error, "page-control style save failed");
         }
     });
 }
+
+/// Verifies catalog filtering and disabled-style resolution.
+#[cfg(test)]
+#[path = "ui_page_style_tests.rs"]
+mod tests;

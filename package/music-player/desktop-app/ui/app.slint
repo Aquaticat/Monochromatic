@@ -74,6 +74,12 @@ struct PageItem {
     index: int,
 }
 
+// One build-included page-control style supplied by Rust's centralized catalog.
+struct PageControlStyleOption {
+    label: string,
+    style: int,
+}
+
 // A radio button drawn like a plain HTML <input type="radio">: a small ring that
 // shows a filled centre dot when selected, with a label to its right. The whole
 // row is clickable. The root is a Rectangle wrapping a HorizontalLayout (which
@@ -936,7 +942,8 @@ export component AppWindow inherits Window {
     // 2 = the previous rounded buttons, 3 = segmented buttons,
     // 4 = Chromium-like tabs, 5 = super fun LED segmented buttons.
     // Rust restores and persists this value.
-    in-out property <int> page-control-style: 0;
+    in-out property <int> page-control-style: 4;
+    in property <[PageControlStyleOption]> page-control-style-options: [];
     // Settings is a local navigation page, not playback state.
     in-out property <bool> show-settings: false;
 
@@ -1167,58 +1174,13 @@ export component AppWindow inherits Window {
                     font-size: Typography.body-rem * 1rem;
                     color: Palette.foreground;
                 }
-                RadioButton {
-                    text: "Radio controls";
-                    selected: root.page-control-style == 0;
+                for option in root.page-control-style-options: RadioButton {
+                    text: option.label;
+                    selected: root.page-control-style == option.style;
                     large-target: true;
                     clicked => {
-                        root.page-control-style = 0;
-                        root.set-page-control-style(0);
-                    }
-                }
-                RadioButton {
-                    text: "Multi-row MD1 tabs";
-                    selected: root.page-control-style == 1;
-                    large-target: true;
-                    clicked => {
-                        root.page-control-style = 1;
-                        root.set-page-control-style(1);
-                    }
-                }
-                RadioButton {
-                    text: "Rounded buttons";
-                    selected: root.page-control-style == 2;
-                    large-target: true;
-                    clicked => {
-                        root.page-control-style = 2;
-                        root.set-page-control-style(2);
-                    }
-                }
-                RadioButton {
-                    text: "Segmented buttons";
-                    selected: root.page-control-style == 3;
-                    large-target: true;
-                    clicked => {
-                        root.page-control-style = 3;
-                        root.set-page-control-style(3);
-                    }
-                }
-                RadioButton {
-                    text: "Super fun LED segmented buttons";
-                    selected: root.page-control-style == 5;
-                    large-target: true;
-                    clicked => {
-                        root.page-control-style = 5;
-                        root.set-page-control-style(5);
-                    }
-                }
-                RadioButton {
-                    text: "Chromium-like tabs";
-                    selected: root.page-control-style == 4;
-                    large-target: true;
-                    clicked => {
-                        root.page-control-style = 4;
-                        root.set-page-control-style(4);
+                        root.page-control-style = option.style;
+                        root.set-page-control-style(option.style);
                     }
                 }
                 Button {
