@@ -42,6 +42,33 @@ The cause is NOT established beyond that: no oxlint source has been read for it.
 Do not attribute it to the oxlint maintainers and do not file anything upstream on this evidence.
 Tracked for the user to fix properly in `#442`.
 
+## Standing instruction: fixtures are cat-themed invention, and adapting is not inventing
+
+**From the user, 2026-08-17**, on a fixture I wrote for the rendering audit:
+"Ensure everything is cat-themed. Cats don't hand over letters to Li Ming by hand."
+
+The fixture in question was not corpus content, and that was checked rather than assumed: `git grep`
+against the corpus clone at the pinned commit (`~/one-among-us/data`, `a41fc607`) reports zero files
+for `没有离开`, `三封信`, `在窗台上`, `第二天把三封信`, `她没有离开`, `睡了一整天`, and zero for the
+English side (`gave three letters`, `the windowsill`, `slept on the windowsill`).
+The single hit anywhere was `交给了`, an ordinary verb phrase, in an unrelated sentence.
+Nothing had been committed either: the file was untracked when the question was asked.
+
+WHAT WAS ACTUALLY WRONG is worth keeping, because it is subtler than a licensing slip.
+The sentence was ADAPTED from the fixture written into task `#85` by an earlier review, with the
+place and person swapped, rather than invented here.
+An inherited skeleton is weaker than the standard even when it carries no corpus text, and it is how
+a non-cat example survives three rewrites.
+Write fixtures; do not adapt them.
+
+THE CHECK IS CHEAP, so run it rather than reasoning about it: `git grep --fixed-strings --count` for
+each distinctive span in the corpus clone, before a fixture is committed and before one is sent to
+any model.
+
+WHERE CORPUS TEXT MAY GO, unchanged: to the production provider, which is ZDR and retains no
+content. Not into the repository, and not into any other external tool. The sol reviews in this
+handover were four source files with no corpus content and no fixtures beyond what those files hold.
+
 ## Landed, pushed, safe
 
 -   `92539977f` read the unreached slice on the axis that separates it (test).
