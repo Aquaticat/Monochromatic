@@ -1670,6 +1670,19 @@ SK1:
  `Closes #N` in the commit body auto-closes on auto-push.
 See `doc/agent/issue-tracker.md`.
 
+XNS:
+ Task-tracker ids and GitHub issue numbers are separate namespaces that collide.
+Before `gh issue comment`/`view`,
+ read the title back and confirm it names the subject.
+
+XN2:
+ Same collision in prose:
+ bare `#N` autolinks on GitHub.
+Writing a task id into an issue body,
+ PR,
+ or commit links a stranger's ticket;
+ code-span it or name the tracker.
+
 SK2:
  **Triage labels**:
  canonical roles with default label strings.
