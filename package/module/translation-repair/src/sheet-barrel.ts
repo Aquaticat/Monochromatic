@@ -14,6 +14,7 @@ export {
   requireString,
 } from './artifact-guard.ts';
 export {
+  requireArtifactJsonRecord,
   requireArtifactJsonValue,
   requireExactKeys,
   requireOneOf,

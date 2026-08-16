@@ -218,6 +218,58 @@ export function requireArtifactJsonValue(
 }
 
 /**
+ * Reads a RECORD of values the schema leaves open.
+ *
+ * Beside {@link requireArtifactJsonValue} rather than folded into it, because a
+ * caller reading a field declared as a record needs that back: the value guard
+ * answers with a union, and narrowing it at the call site would put a cast
+ * between the check and the type it proves.
+ *
+ * @param value - value to check
+ *
+ * @param path - dotted path for error message
+ *
+ * @returns Record whose values are open JSON, with no null at any depth
+ *
+ * @throws {@link ArtifactParseError} when the value is not an object, is an
+ * array, or holds anything this schema does not allow
+ *
+ * @example
+ * ```ts
+ * const callConfig = requireArtifactJsonRecord({ value: artifact.callConfig, path, },);
+ * ```
+ */
+export function requireArtifactJsonRecord(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): Readonly<Record<string, ArtifactJsonValue>> {
+  return Object.fromEntries(Object.entries(requireRecord({
+    value,
+    path,
+  },),)
+    .map(function readEntry([
+      key,
+      held,
+    ],): readonly [
+      string,
+      ArtifactJsonValue,
+    ] {
+      return [
+        key,
+        requireArtifactJsonValue({
+          value: held,
+          path: `${path}.${key}`,
+        },),
+      ];
+    },),);
+}
+
+/**
  * Reads a record the schema deliberately does not describe.
  *
  * TOLERANT WHERE THE OTHER GUARD IS NOT, and the difference is the point. This

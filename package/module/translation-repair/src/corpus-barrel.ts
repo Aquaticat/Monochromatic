@@ -22,6 +22,22 @@ export {
   assertDerivationsAgree,
   compareLanesV2,
 } from './corpus-run/artifact-v2-comparison.ts';
+export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
+export { parseLanesV2, } from './corpus-run/artifact-v2-read-lanes.ts';
+export {
+  parseRepairEvidenceV2,
+  parseTranslateEvidenceV2,
+} from './corpus-run/artifact-v2-read-evidence.ts';
+export {
+  assertEvidenceMatchesLedger,
+  assertRowsCoherent,
+} from './corpus-run/artifact-v2-read-row-relations.ts';
+export {
+  assertBlockedCompatible,
+  assertIndexSetsMatchLedger,
+  assertTranslateCountsAgree,
+} from './corpus-run/artifact-v2-read-set-relations.ts';
+export { assertRecordedComparisonMatches, } from './corpus-run/artifact-v2-read-comparison.ts';
 export {
   parseDecisionComparisonV2,
   parseSliceDeliveryV2,
