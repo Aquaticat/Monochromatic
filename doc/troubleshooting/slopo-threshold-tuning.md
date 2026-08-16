@@ -122,10 +122,10 @@ if ignored:
 The upstream workflow explicitly says that not every similar pair is actionable and directs reviewers
 to add discarded cluster hashes to `slopo.ignore.txt`
 (`README.md:89-94`).
-The repository already categorizes comparable tiny fixer matches under
-`BOILERPLATE-TRIVIAL` in `slopo.ignore.txt:197-253`.
+The repository categorizes comparable tiny fixer matches under
+`BOILERPLATE-TRIVIAL` in `slopo.ignore.txt`.
 
-### Existing ignore hashes are mostly stale
+### Path migration made prior ignore hashes stale
 
 `src/slopo/analysis/ignore.py:18-24` includes every unit path and body hash in a cluster hash:
 
@@ -140,12 +140,15 @@ Commit `ece5b7553` renamed the repository's `packages/` tree to `package/`.
 The commit updated path text in `slopo.ignore.txt` but retained all `116` existing hash lines.
 Those hashes necessarily changed for clusters containing renamed paths.
 
-The current ignore file contains `119` hashes.
-An empty-ignore baseline produced `356` clusters,
-while the current ignore file produced `355` and logged exactly one dismissal.
-Only `54a947960da7` intersects the current unignored report hashes.
-This staleness does not make a new targeted dismissal ineffective,
-but the old ignore inventory needs separate retriage or regeneration.
+After the targeted block-body dismissal was added,
+the pre-refresh ignore file contained `120` hashes.
+Only `54a947960da7` and the new `6be7f9516c9d` intersected the current unignored report.
+
+The refreshed inventory contains `55` unique hashes,
+each present in the current `voyage/voyage-code-4` no-ignore report.
+Historical unit identity recovered entries whose paths or bodies changed.
+Explicitly labeled semantic remaps cover reviewed clusters that split or merged;
+unrecoverable no-effect entries were deleted.
 
 ## Verification
 
@@ -159,6 +162,9 @@ Verified against:
 - copied repository index containing `8,528` code units and `8,309` stored embedding rows,
    covering every code unit through shared body hashes;
 - repository source and reports as of `2026-08-16`.
+
+The current index and every probe use the approved `voyage/voyage-code-4` model.
+No other embedding model was invoked during the refresh.
 
 All controlled threshold probes used a copied database,
 an empty throwaway ignore file,
@@ -220,11 +226,19 @@ Every catalog pair received zero location boost,
 so each listed score is both its raw and reranked score.
 The target pair was also absent from both generated report directories.
 
+### Refreshed inventory
+
+A disposable analysis with the refreshed ignore file logged
+`Ignored 55 previously reviewed clusters` and produced `301` remaining clusters from the `356`-cluster baseline.
+All ignored hashes were unique and present in the baseline report.
+No ignored hash overlaps the currently visible music-player Android/Rust drift clusters,
+and the whole fake Pi harness cluster remains visible.
+
 ## Verified workarounds
 
 ### Dismiss the reviewed cluster hash
 
-Add the following entry under `BOILERPLATE-TRIVIAL` in `slopo.ignore.txt`:
+The refreshed `BOILERPLATE-TRIVIAL` section contains:
 
 ```text
 # block-body opening/closing fixer stubs, different ranges and indentation
@@ -235,8 +249,7 @@ This removes only the reviewed cluster.
 Its tradeoff is intentional:
 editing either body or moving either path changes the hash,
 so Slopo asks for review again.
-The repository's path migration already invalidated most older dismissals,
-so the current ignore inventory should be refreshed independently of this new entry.
+The inventory refresh replaced the path-invalidated entries and deleted stale hashes that could not be recovered.
 
 ### Raise thresholds only after labeled calibration
 

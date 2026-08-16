@@ -41,7 +41,7 @@ source_dir_exclude:
 - '*.old'
 - 'done-*'
 
-# Embedding model in LiteLLM format, e.g. "voyage/voyage-code-3"
+# Approved embedding model in LiteLLM format.
 # For all supported providers see
 # https://docs.litellm.ai/docs/embedding/supported_embedding
 embedding_model: voyage/voyage-code-4
