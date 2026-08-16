@@ -11349,20 +11349,69 @@ see a missing sentence will not see a missing hedge.
 
 ### First reading from the fidelity trial: the judges see a deleted sentence
 
-Eight trials, two archive slices, four arrangements each: EVERY ONE CHOSE THE
-COMPLETE TEXT. Preserving when the clean text was the incumbent, replacing when
-it was the proposal, and both with the clean text listed first and second.
+Sixteen trials over FOUR PAIRS, one from each of `AmbeR_the_anpa`, `Arita`,
+`Chinatsu_Suzuki` and `CuspariaKLSY`, four arrangements each: EVERY TRIAL CHOSE
+THE COMPLETE TEXT. Preserving when the clean text was the incumbent, replacing
+when it was the proposal, and both with the clean text listed first and second.
+Deletions ran 75 to 158 characters.
 
-WHAT THAT RULES OUT, which is the useful part. A roster that simply keeps
-whatever it is handed would have scored four of eight, and so would one that
-prefers the first candidate on the ballot. Neither pattern is what came back, so
-on this defect the judges are reading rather than reaching for a habit.
+COUNT THE PAIRS, NOT THE TRIALS. Sixteen trials are four independent questions
+asked four ways each, not sixteen independent questions, because the four
+arrangements of a pair share their text. The earlier eight-trial reading came
+from two slices of ONE entry, which is why it was rerun.
 
-WHAT IT DOES NOT ESTABLISH. Both slices come from ONE ENTRY, so this samples one
-document's prose and one translator's habits; the driver walked that entry slice
-by slice until the cap, which is the same clustering already recorded against the
-coverage probe. It is fixed for later runs, one damaged pair per entry, and a
-spread run is the honest version of this number.
+THE BALLOTS SAY MORE THAN THE VERDICTS. Ninety-five ballots were cast across the
+sixteen trials: 66 for the complete text, 3 for the deletion, 26 declining to
+choose. Per judge:
+
+- `hf:moonshotai/Kimi-K3`: 16 clean, 0 damaged, 0 declined
+- `hf:zai-org/GLM-5.2`: 15 clean, 0 damaged, 1 declined
+- `hf:Qwen/Qwen3.6-27B`: 15 clean, 0 damaged, 1 declined
+- `hf:zai-org/GLM-4.7-Flash`: 10 clean, 3 damaged, 2 declined
+- `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4`: 5 clean, 0 damaged,
+  11 declined
+- `hf:openai/gpt-oss-120b`: 5 clean, 0 damaged, 11 declined
+
+EVERY VOTE FOR THE DELETION CAME FROM ONE JUDGE, `GLM-4.7-Flash`, and never
+enough of them to carry a trial.
+
+TWO JUDGES ABSTAIN ON TWO THIRDS OF TRIALS, and the reason is legible in what
+they wrote: both hold the pair to the sheet's exact-names criterion, which the
+ARCHIVE ITSELF violates by romanising the handle `AmbeR_the_安帕` to
+`AmbeR_the_anpa`, and refuse both candidates on that ground. That is a property
+of the source slice rather than of the damage, so on slices like these the
+effective roster is four voices and not six. It is worth carrying into `#93` and
+into any quorum decision: a criterion the archive cannot satisfy silently removes
+a third of the panel.
+
+WHAT THAT RULES OUT. A roster that keeps whatever it is handed scores half, and
+so does one that prefers the first candidate; the rotation was built to separate
+exactly those. Neither pattern is what came back.
+
+WHAT IT DOES NOT RULE OUT, and this is a limit of the FIXTURE rather than of the
+run: PREFER THE LONGER TEXT scores sixteen of sixteen here too. The deletion is a
+strict subset of the clean text, so the complete candidate is the longer one in
+every arrangement and rotating the ballot cannot touch that. Longer-is-better is
+not a harmless habit either: in production it favours a padded fresh rendering
+over a tight archive one, which is the sheet's "nothing added" criterion failing
+quietly.
+
+THE ONE PIECE OF EVIDENCE AGAINST A LENGTH HABIT is what the judges wrote. They
+name the missing propositions specifically: "Candidate 2 completely omits the
+first sentence containing the handle, birth date, and hometown". A length rule
+cannot produce that sentence. It is still a SELF-REPORT and reasons can be
+written after the fact, so it is evidence and not proof.
+
+WHAT SETTLES IT IS AN INSERTION FIXTURE, where the correct answer is the SHORTER
+candidate: splice a sentence from elsewhere in the same document into the clean
+text, so it is in register and fluent and unsupported by this slice's original.
+`SeededErrorKind` already carries `insertion`. A roster that passes deletion and
+insertion both cannot be reading length. That is the next build under `#84`.
+
+ONE LEAK CHANNEL IS ALREADY CLOSED, checked by dumping a real judge sheet: the
+producer labels do not reach the model. It sees `CANDIDATE 1` and `CANDIDATE 2`
+and nothing saying which is the archive's. So length is the remaining channel,
+which is why the insertion fixture is the whole answer rather than a refinement.
 
 AND THE FIXTURE IS A FLOOR BY CONSTRUCTION. A deleted sentence is a blunt
 coverage defect. What the lane actually risks is a fluent paraphrase that drops a

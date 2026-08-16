@@ -571,10 +571,41 @@ disagreed on 3 of the 10 slices, so the corpus rate is "most of it" rather than
 what would turn it into one.
 
 WHAT WOULD MAKE IT SAFER TO ACCEPT, in the order it becomes available:
-`#84` measures whether the judges are RIGHT when they replace, on a graded
-sample, and `#85` rebuilds the damage instrument for output that has no before
-text. Neither exists yet, so today the replacement rate is a fact without a
-quality reading beside it.
+`#84` measures whether the judges are RIGHT when they replace, and `#85` rebuilds
+the damage instrument for output that has no before text.
+
+`#84` NOW HAS ITS FIRST READING, and it is a floor rather than a verdict. A trial
+takes a real archive slice, deletes one whole sentence, puts both texts on the
+ballot the production sheet builds, and runs all four arrangements: clean text as
+incumbent and as proposal, listed first and listed second. Over four pairs from
+`AmbeR_the_anpa`, `Arita`, `Chinatsu_Suzuki` and `CuspariaKLSY`, ALL SIXTEEN
+TRIALS CHOSE THE COMPLETE TEXT. Of 95 ballots, 66 backed it, 3 backed the
+deletion, and 26 declined to choose.
+
+READ IT AS FOUR QUESTIONS ASKED FOUR WAYS, not sixteen questions: the four
+arrangements of one pair share their text.
+
+WHAT IT RULES OUT: a roster that keeps whatever it is handed, and one that
+prefers the first candidate. Both score half by construction, and neither shape
+appeared.
+
+WHAT IT CANNOT RULE OUT: preferring the LONGER text, which also scores sixteen of
+sixteen, because a deletion is a strict subset. That habit is not harmless in
+production, where it favours a padded fresh rendering over a tight archive one.
+The judges' written reasons name the missing propositions specifically, which a
+length rule cannot produce, but reasons are self-reports. The test that settles it
+is an insertion fixture, where the correct answer is the SHORTER text, and it is
+the next build under `#84`.
+
+ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges declined on
+eleven of sixteen trials, both because the pair violates the sheet's exact-names
+criterion in a way THE ARCHIVE ITSELF introduced (the handle `AmbeR_the_安帕`
+romanised to `AmbeR_the_anpa`). On slices like that the effective roster is four
+voices, not six.
+
+So today the replacement rate has a floor beside it and not yet a quality
+reading: a roster that could not see a deleted sentence would be disqualified,
+and this one is not.
 
 ### Options
 
