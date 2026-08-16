@@ -137,7 +137,10 @@ export async function handleToolCall(
       id,
       result: buildToolCallResult({
         result: {
-          content: [{ type: 'text', text: `Tool execution failed: ${message}`, },],
+          content: [{
+            type: 'text',
+            text: `Tool execution failed: ${message}`,
+          },],
           isError: true,
         },
         serverInfo,

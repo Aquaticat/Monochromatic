@@ -17,8 +17,6 @@ import {
   NO_RESPONSE,
 } from './server-types.ts';
 
-import type { UnsupportedProtocolVersionError, } from './server-protocol-error.ts';
-
 //region Generic builders: success and error envelopes
 
 /**
@@ -105,7 +103,9 @@ export function respondError(
  *
  * @param id - Request id to echo back.
  *
- * @param error - Validation failure carrying refused and supported revisions.
+ * @param requested - Revision the client declared and this server refused.
+ *
+ * @param supported - Revisions this server implements, for the client to retry on.
  *
  * @returns Error response with code -32022 and its mandated `data` payload.
  *
@@ -113,17 +113,20 @@ export function respondError(
  * ```ts
  * respondUnsupportedProtocolVersion({
  *   id: 1,
- *   error: new UnsupportedProtocolVersionError({ requested: '2025-06-18' }),
+ *   requested: '2025-06-18',
+ *   supported: ['2026-07-28'],
  * });
  * ```
  */
 export function respondUnsupportedProtocolVersion(
   {
     id,
-    error,
+    requested,
+    supported,
   }: {
     readonly id: JsonRpcRequest['id'];
-    readonly error: UnsupportedProtocolVersionError;
+    readonly requested: string;
+    readonly supported: readonly string[];
   },
 ): JsonRpcErrorResponse {
   return respondError({
@@ -131,8 +134,8 @@ export function respondUnsupportedProtocolVersion(
     code: JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
     message: 'Unsupported protocol version',
     data: {
-      supported: error.supported,
-      requested: error.requested,
+      supported,
+      requested,
     },
   },);
 }
@@ -192,7 +195,7 @@ export function respondInitializeRemoved(
     message:
       `Method not found: initialize. This server implements MCP revision `
       + `${SUPPORTED_PROTOCOL_VERSIONS.join(', ',)}, which removed the initialize handshake: `
-      + `call server/discover and declare the revision in each request's params._meta instead`,
+        + `call server/discover and declare the revision in each request's params._meta instead`,
     data: { supported: SUPPORTED_PROTOCOL_VERSIONS, },
   },);
 }

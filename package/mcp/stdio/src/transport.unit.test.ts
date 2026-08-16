@@ -6,6 +6,8 @@ import {
 
 import {
   type DispatchResult,
+  JSON_RPC_INTERNAL_ERROR,
+  JSON_RPC_INVALID_REQUEST,
   JSON_RPC_PARSE_ERROR,
   type JsonRpcOutbound,
   type McpServerHandle,
@@ -96,7 +98,7 @@ await describe({
         const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
         const server = mockServer(serverResponse,);
         const input = stdinFromMessages(['', '  ',
-          '{"jsonrpc":"2.0","id":1,"method":"ping"}',],);
+          '{"jsonrpc":"2.0","id":1,"method":"server/discover"}',],);
         const { writer, lines, } = collectingWriter();
 
         await serve({ server, input, output: writer, },);
@@ -121,7 +123,7 @@ await describe({
       },
     },),
     it({
-      name: 'returns parse error for valid JSON that is not a JSON-RPC message',
+      name: 'returns invalid request for valid JSON that is not a JSON-RPC message',
       fn: async () => {
         const server = mockServer(NO_RESPONSE,);
         const input = stdinFromMessages(['{"not":"jsonrpc"}',],);
@@ -132,8 +134,52 @@ await describe({
         expect(lines,).toHaveLength(1,);
         const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
         expect((parsed as { error: { code: number; }; }).error.code,).toBe(
-          JSON_RPC_PARSE_ERROR,
+          JSON_RPC_INVALID_REQUEST,
         );
+      },
+    },),
+    it({
+      name: 'returns invalid request for a message whose id is null',
+      fn: async () => {
+        const server = mockServer(NO_RESPONSE,);
+        const input = stdinFromMessages([
+          '{"jsonrpc":"2.0","id":null,"method":"tools/list"}',
+        ],);
+        const { writer, lines, } = collectingWriter();
+
+        await serve({ server, input, output: writer, },);
+
+        expect(lines,).toHaveLength(1,);
+        const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
+        expect((parsed as { error: { code: number; }; }).error.code,).toBe(
+          JSON_RPC_INVALID_REQUEST,
+        );
+      },
+    },),
+    it({
+      name: 'returns an internal error frame when a result cannot be serialized',
+      fn: async () => {
+        /** Result carrying a `bigint`, which `JSON.stringify` refuses to encode. */
+        const server: McpServerHandle = {
+          handleMessage: () => ({
+            jsonrpc: '2.0' as const,
+            id: 1,
+            result: { size: 1n, } as unknown,
+          }),
+        };
+        const input = stdinFromMessages([
+          '{"jsonrpc":"2.0","id":1,"method":"server/discover"}',
+        ],);
+        const { writer, lines, } = collectingWriter();
+
+        await serve({ server, input, output: writer, },);
+
+        expect(lines,).toHaveLength(1,);
+        const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
+        expect((parsed as { error: { code: number; }; }).error.code,).toBe(
+          JSON_RPC_INTERNAL_ERROR,
+        );
+        expect((parsed as { id: unknown; }).id,).toBe(1,);
       },
     },),
     it({
@@ -162,9 +208,9 @@ await describe({
           },
         };
         const input = stdinFromMessages([
-          '{"jsonrpc":"2.0","id":1,"method":"ping"}',
-          '{"jsonrpc":"2.0","id":2,"method":"ping"}',
-          '{"jsonrpc":"2.0","id":3,"method":"ping"}',
+          '{"jsonrpc":"2.0","id":1,"method":"server/discover"}',
+          '{"jsonrpc":"2.0","id":2,"method":"server/discover"}',
+          '{"jsonrpc":"2.0","id":3,"method":"server/discover"}',
         ],);
         const { writer, lines, } = collectingWriter();
 
@@ -180,7 +226,7 @@ await describe({
         const server = mockServer(serverResponse,);
         const input = stdinFromMessages([
           'bad-json',
-          '{"jsonrpc":"2.0","id":1,"method":"ping"}',
+          '{"jsonrpc":"2.0","id":1,"method":"server/discover"}',
         ],);
         const { writer, lines, } = collectingWriter();
 

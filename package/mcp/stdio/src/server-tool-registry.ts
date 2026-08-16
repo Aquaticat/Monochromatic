@@ -79,17 +79,28 @@ export function registerTools(
   // A duplicate name would silently drop the earlier tool: `tools/list` would advertise one
   // tool per name while `tools/call` dispatched to whichever entry was declared last.
   if (registry.size !== tools.length) {
+    /**
+     * Names seen while scanning, so a second sighting identifies the collision to report.
+     */
+    const seen = new Set<string>();
+    /**
+     * Names declared more than once, in declaration order.
+     */
+    const duplicates = tools
+      .filter(function isRepeatedName(entry,) {
+        /**
+         * Whether this name already appeared earlier in the declaration list.
+         */
+        const repeated = seen.has(entry.name,);
+        seen.add(entry.name,);
+        return repeated;
+      },)
+      .map(function getName(entry,) {
+        return entry.name;
+      },);
     throw new Error(
-      `Duplicate tool names registered: ${
-        tools
-          .map(function getName(entry,) {
-            return entry.name;
-          },)
-          .filter(function isDuplicate(name, index, names,) {
-            return names.indexOf(name,) !== index;
-          },)
-          .join(', ',)
-      }. Clients address tools by name, so each name must be unique within one server`,
+      `Duplicate tool names registered: ${duplicates.join(', ',)}. `
+        + `Clients address tools by name, so each name must be unique within one server`,
     );
   }
 

@@ -19,31 +19,34 @@ import {
 
 /**
  * Extracts the `_meta` object from request params without trusting its shape.
+ * A missing, null, array, or primitive `_meta` yields empty metadata rather than an absence
+ * value: every field is optional, so "carried nothing usable" and "carried nothing" are the
+ * same state to every caller, and the emptiness is what validation reports on.
  *
  * @param request - Inbound request whose params arrived unvalidated from the client.
  *
- * @returns Metadata object, or `undefined` when params carry no usable `_meta`.
+ * @returns Metadata declared by the request, empty when it declared none.
  *
  * @example
  * ```ts
- * readRequestMeta({ request: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: { _meta: {} } } });
+ * readRequestMeta({ request: { jsonrpc: '2.0', id: 1, method: 'tools/list' } });
  * // {}
  * ```
  */
 export function readRequestMeta(
   { request, }: { readonly request: JsonRpcRequest; },
-): RequestMeta | undefined {
+): RequestMeta {
   /**
    * Raw `_meta` value from params; anything other than a plain object is treated as absent.
    */
-  const rawMeta = request.params?._meta;
+  const rawMeta = request.params
+    ?._meta;
   if ((rawMeta === undefined)
     || (rawMeta === null)
     || ((typeof rawMeta) !== 'object')
     || Array.isArray(rawMeta,))
-    return undefined;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to non-array object above; every RequestMeta field is optional, so the assertion adds no unchecked requirement
-  return rawMeta as RequestMeta;
+    return {};
+  return rawMeta;
 }
 
 //endregion
@@ -80,7 +83,7 @@ export function requireProtocolVersion(
   /**
    * Declared revision, or `undefined` when the client omitted it or sent a non-string.
    */
-  const version = readRequestMeta({ request, },)?.[META_PROTOCOL_VERSION];
+  const version = readRequestMeta({ request, },)[META_PROTOCOL_VERSION];
   if ((typeof version) !== 'string')
     throw new MissingProtocolVersionError();
   if (!isSupportedProtocolVersion({ version, },))

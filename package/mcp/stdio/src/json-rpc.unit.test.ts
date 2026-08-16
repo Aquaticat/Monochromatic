@@ -8,8 +8,10 @@ import {
   isJsonRpcMessage,
   JSON_RPC_INTERNAL_ERROR,
   JSON_RPC_INVALID_PARAMS,
+  JSON_RPC_INVALID_REQUEST,
   JSON_RPC_METHOD_NOT_FOUND,
   JSON_RPC_PARSE_ERROR,
+  JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
 } from '@monochromatic-dev/mcp-stdio';
 
 //region isJsonRpcMessage: validates minimum JSON-RPC 2.0 shape
@@ -104,6 +106,54 @@ await describe({
             expect(isJsonRpcMessage({},),).toBe(false,);
           },
         },),
+        it({
+          name: 'rejects a null id, which no response could echo back',
+          fn: async () => {
+            expect(
+              isJsonRpcMessage({ jsonrpc: '2.0', id: null, method: 'tools/list', },),
+            ).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects a boolean id',
+          fn: async () => {
+            expect(
+              isJsonRpcMessage({ jsonrpc: '2.0', id: true, method: 'tools/list', },),
+            ).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects an object id',
+          fn: async () => {
+            expect(
+              isJsonRpcMessage({ jsonrpc: '2.0', id: {}, method: 'tools/list', },),
+            ).toBe(false,);
+          },
+        },),
+        it({
+          name: 'accepts a numeric id',
+          fn: async () => {
+            expect(
+              isJsonRpcMessage({ jsonrpc: '2.0', id: 7, method: 'tools/list', },),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'rejects array params',
+          fn: async () => {
+            expect(
+              isJsonRpcMessage({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: [], },),
+            ).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects null params',
+          fn: async () => {
+            expect(
+              isJsonRpcMessage({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: null, },),
+            ).toBe(false,);
+          },
+        },),
       ],
     },),
 
@@ -136,6 +186,18 @@ await describe({
           name: 'JSON_RPC_PARSE_ERROR is -32700',
           fn: async () => {
             expect(JSON_RPC_PARSE_ERROR,).toBe(-32_700,);
+          },
+        },),
+        it({
+          name: 'JSON_RPC_INVALID_REQUEST is -32600',
+          fn: async () => {
+            expect(JSON_RPC_INVALID_REQUEST,).toBe(-32_600,);
+          },
+        },),
+        it({
+          name: 'JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION is -32022',
+          fn: async () => {
+            expect(JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,).toBe(-32_022,);
           },
         },),
       ],

@@ -168,7 +168,8 @@ export const JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION = -32_022;
  * ```
  */
 function isPlainObject(value: unknown,): value is Record<string, unknown> {
-  return ((typeof value) === 'object') && (value !== null) && (!Array.isArray(value,));
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -195,7 +196,8 @@ export function isJsonRpcMessage(value: unknown,): value is JsonRpcInbound {
   if ((value.jsonrpc !== '2.0') || ((typeof value.method) !== 'string'))
     return false;
   // An absent `id` marks a notification; a present one must be a number or string.
-  if (('id' in value) && ((typeof value.id) !== 'number') && ((typeof value.id) !== 'string'))
+  if (('id' in value) && ((typeof value.id) !== 'number')
+    && ((typeof value.id) !== 'string'))
     return false;
   return (value.params === undefined) || isPlainObject(value.params,);
 }

@@ -7,14 +7,20 @@ import {
 import {
   createMcpServer,
   defineTool,
-  JSON_RPC_INTERNAL_ERROR,
   JSON_RPC_INVALID_PARAMS,
   JSON_RPC_METHOD_NOT_FOUND,
+  JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,
   type JsonRpcErrorResponse,
+  type JsonRpcId,
   type JsonRpcInbound,
   type JsonRpcResponse,
+  META_PROTOCOL_VERSION,
+  META_SERVER_INFO,
   NO_RESPONSE,
   PROTOCOL_VERSION,
+  registerTools,
+  RESULT_TYPE_COMPLETE,
+  SUPPORTED_PROTOCOL_VERSIONS,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio';
 
@@ -27,6 +33,42 @@ const echoTool: ToolEntry = {
     content: [{ type: 'text', text: JSON.stringify(args,), },],
   }),
 };
+
+/** Identity every server in this file reports, so result metadata assertions stay short. */
+const serverIdentity = { name: 'srv', version: '0.1.0', };
+
+/**
+ * Builds a request carrying the protocol revision metadata every served request needs.
+ *
+ * @param id - Request id echoed back in the response.
+ *
+ * @param method - MCP method to invoke.
+ *
+ * @param params - Method params merged alongside the generated `_meta`.
+ *
+ * @param version - Revision to declare, defaulting to the one this server implements.
+ *
+ * @returns Inbound request ready for `handleMessage`.
+ */
+const modernRequest = ({
+  id,
+  method,
+  params = {},
+  version = PROTOCOL_VERSION,
+}: {
+  readonly id: JsonRpcId;
+  readonly method: string;
+  readonly params?: Readonly<Record<string, unknown>>;
+  readonly version?: string;
+},): JsonRpcInbound => ({
+  jsonrpc: '2.0',
+  id,
+  method,
+  params: {
+    ...params,
+    _meta: { [META_PROTOCOL_VERSION]: version, },
+  },
+});
 
 //region defineTool: bundles name with tool entry options
 
@@ -84,48 +126,281 @@ await describe({
 
     //endregion defineTool
 
+    //region registerTools: normalizes entries and rejects colliding names
+
+    describe({
+      name: registerTools.name,
+      children: [
+        it({
+          name: 'carries title, outputSchema, and annotations into the definition',
+          fn: async () => {
+            const registry = registerTools({
+              tools: [{
+                name: 'rich',
+                title: 'Rich Tool',
+                description: 'Declares every optional field.',
+                outputSchema: { type: 'object', },
+                annotations: { readOnlyHint: true, },
+                handler: () => ({ content: [], }),
+              },],
+            },);
+            expect(registry.get('rich',)?.definition,).toEqual({
+              name: 'rich',
+              description: 'Declares every optional field.',
+              inputSchema: { type: 'object', },
+              title: 'Rich Tool',
+              outputSchema: { type: 'object', },
+              annotations: { readOnlyHint: true, },
+            },);
+          },
+        },),
+        it({
+          name: 'omits optional definition fields that were not declared',
+          fn: async () => {
+            const registry = registerTools({ tools: [echoTool,], },);
+            expect(registry.get('echo',)?.definition,).toEqual({
+              name: 'echo',
+              description: 'Echoes arguments.',
+              inputSchema: { type: 'object', properties: { text: { type: 'string', }, }, },
+            },);
+          },
+        },),
+        it({
+          name: 'throws when two entries share a name',
+          fn: async () => {
+            expect(() => registerTools({
+              tools: [
+                echoTool,
+                { ...echoTool, description: 'Shadowing duplicate.', },
+              ],
+            },),).toThrow('Duplicate tool names registered: echo',);
+          },
+        },),
+      ],
+    },),
+
+    //endregion registerTools
+
     //region createMcpServer: builds immutable server and dispatches messages
 
     describe({
       name: createMcpServer.name,
       children: [
-        //region initialize: returns server identity and capabilities
+        //region server/discover: advertises revisions, capabilities, and cache policy
 
         describe({
-          name: 'initialize',
+          name: 'server/discover',
           children: [
             it({
-              name: 'responds with protocol version, capabilities, and server info',
+              name: 'responds with supported revisions, capabilities, and cache hints',
               fn: async () => {
                 const server = createMcpServer({
                   config: { name: 'test-server', version: '1.0.0', },
                   tools: [],
                 },);
-                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 1,
-                  method: 'initialize', };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
+                const response = await server.handleMessage(
+                  modernRequest({ id: 1, method: 'server/discover', },),
+                ) as JsonRpcResponse;
                 expect(response,).toEqual({
                   jsonrpc: '2.0',
                   id: 1,
                   result: {
-                    protocolVersion: PROTOCOL_VERSION,
+                    resultType: RESULT_TYPE_COMPLETE,
+                    supportedVersions: SUPPORTED_PROTOCOL_VERSIONS,
                     capabilities: { tools: {}, },
-                    serverInfo: { name: 'test-server', version: '1.0.0', },
+                    ttlMs: 0,
+                    cacheScope: 'private',
+                    _meta: {
+                      [META_SERVER_INFO]: { name: 'test-server', version: '1.0.0', },
+                    },
                   },
                 },);
               },
             },),
             it({
-              name: 'echoes the request id',
+              name: 'includes instructions and title when configured',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: {
+                    ...serverIdentity,
+                    title: 'Test Server',
+                    instructions: 'Call echo first.',
+                  },
                   tools: [],
                 },);
+                const response = await server.handleMessage(
+                  modernRequest({ id: 2, method: 'server/discover', },),
+                ) as JsonRpcResponse;
+                const result = response.result as {
+                  instructions?: string;
+                  _meta: Record<string, unknown>;
+                };
+                expect(result.instructions,).toBe('Call echo first.',);
+                expect(result._meta[META_SERVER_INFO],).toEqual({
+                  name: 'srv',
+                  version: '0.1.0',
+                  title: 'Test Server',
+                },);
+              },
+            },),
+            it({
+              name: 'honors a configured cache hint and capability set',
+              fn: async () => {
+                const server = createMcpServer({
+                  config: {
+                    ...serverIdentity,
+                    capabilities: { tools: { listChanged: true, }, },
+                    discoverCache: { ttlMs: 3_600_000, cacheScope: 'public', },
+                  },
+                  tools: [],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({ id: 3, method: 'server/discover', },),
+                ) as JsonRpcResponse;
+                const result = response.result as {
+                  ttlMs: number;
+                  cacheScope: string;
+                  capabilities: unknown;
+                };
+                expect(result.ttlMs,).toBe(3_600_000,);
+                expect(result.cacheScope,).toBe('public',);
+                expect(result.capabilities,).toEqual({ tools: { listChanged: true, }, },);
+              },
+            },),
+            it({
+              name: 'omits instructions when not configured',
+              fn: async () => {
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({ id: 4, method: 'server/discover', },),
+                ) as JsonRpcResponse;
+                expect(
+                  Object.hasOwn(response.result as object, 'instructions',),
+                ).toBe(false,);
+              },
+            },),
+          ],
+        },),
+
+        //endregion server/discover
+
+        //region protocol version validation: every request declares its revision
+
+        describe({
+          name: 'protocol version validation',
+          children: [
+            it({
+              name: 'rejects a request whose params carry no _meta',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 5,
+                  method: 'tools/list', };
+                const response = await server.handleMessage(request,) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+                expect(response.error.message,).toContain(META_PROTOCOL_VERSION,);
+                expect(response.error.data,).toEqual({
+                  supported: SUPPORTED_PROTOCOL_VERSIONS,
+                },);
+              },
+            },),
+            it({
+              name: 'rejects a request whose _meta omits the revision key',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const request: JsonRpcInbound = {
+                  jsonrpc: '2.0',
+                  id: 6,
+                  method: 'tools/list',
+                  params: { _meta: { other: 'value', }, },
+                };
+                const response = await server.handleMessage(request,) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+              },
+            },),
+            it({
+              name: 'rejects a request whose declared revision is not implemented',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const response = await server.handleMessage(
+                  modernRequest({ id: 7, method: 'tools/list', version: '2025-06-18', },),
+                ) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,);
+                expect(response.error.message,).toBe('Unsupported protocol version',);
+                expect(response.error.data,).toEqual({
+                  supported: SUPPORTED_PROTOCOL_VERSIONS,
+                  requested: '2025-06-18',
+                },);
+              },
+            },),
+            it({
+              name: 'rejects a request whose revision is not a string',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const request: JsonRpcInbound = {
+                  jsonrpc: '2.0',
+                  id: 8,
+                  method: 'tools/list',
+                  params: { _meta: { [META_PROTOCOL_VERSION]: 20_260_728, }, },
+                };
+                const response = await server.handleMessage(request,) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+              },
+            },),
+            it({
+              name: 'rejects a request whose _meta is an array rather than an object',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const request: JsonRpcInbound = {
+                  jsonrpc: '2.0',
+                  id: 9,
+                  method: 'tools/list',
+                  params: { _meta: [PROTOCOL_VERSION,], },
+                };
+                const response = await server.handleMessage(request,) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+              },
+            },),
+          ],
+        },),
+
+        //endregion protocol version validation
+
+        //region initialize: removed in this revision, answered with a diagnostic
+
+        describe({
+          name: 'initialize',
+          children: [
+            it({
+              name: 'reports the handshake removed and names supported revisions',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const request: JsonRpcInbound = {
+                  jsonrpc: '2.0',
+                  id: 10,
+                  method: 'initialize',
+                  params: { protocolVersion: '2025-11-25', },
+                };
+                const response = await server.handleMessage(request,) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_METHOD_NOT_FOUND,);
+                expect(response.error.message,).toContain(PROTOCOL_VERSION,);
+                expect(response.error.message,).toContain('server/discover',);
+                expect(response.error.data,).toEqual({
+                  supported: SUPPORTED_PROTOCOL_VERSIONS,
+                },);
+              },
+            },),
+            it({
+              name: 'answers without requiring the revision metadata it predates',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
                 const request: JsonRpcInbound = { jsonrpc: '2.0', id: 'string-id',
                   method: 'initialize', };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
+                const response = await server.handleMessage(request,) as JsonRpcErrorResponse;
                 expect(response.id,).toBe('string-id',);
+                expect(response.error.code,).toBe(JSON_RPC_METHOD_NOT_FOUND,);
               },
             },),
           ],
@@ -133,67 +408,45 @@ await describe({
 
         //endregion initialize
 
-        //region ping: responds with empty object
-
-        describe({
-          name: 'ping',
-          children: [
-            it({
-              name: 'responds with empty result',
-              fn: async () => {
-                const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
-                  tools: [],
-                },);
-                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 2,
-                  method: 'ping', };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
-                expect(response.result,).toEqual({},);
-              },
-            },),
-          ],
-        },),
-
-        //endregion ping
-
         //region tools/list: returns registered tool definitions
 
         describe({
           name: 'tools/list',
           children: [
             it({
-              name: 'returns empty tools array when no tools registered',
+              name: 'returns an empty listing with result envelope and cache hints',
               fn: async () => {
-                const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const response = await server.handleMessage(
+                  modernRequest({ id: 11, method: 'tools/list', },),
+                ) as JsonRpcResponse;
+                expect(response.result,).toEqual({
+                  resultType: RESULT_TYPE_COMPLETE,
                   tools: [],
+                  ttlMs: 0,
+                  cacheScope: 'private',
+                  _meta: { [META_SERVER_INFO]: serverIdentity, },
                 },);
-                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 3,
-                  method: 'tools/list', };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
-                expect(response.result,).toEqual({ tools: [], },);
               },
             },),
             it({
               name: 'returns all registered tools with definitions',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 4,
-                  method: 'tools/list', };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
-                expect(response.result,).toEqual({
-                  tools: [
-                    {
-                      name: 'echo',
-                      description: 'Echoes arguments.',
-                      inputSchema: { type: 'object',
-                        properties: { text: { type: 'string', }, }, },
-                    },
-                  ],
-                },);
+                const response = await server.handleMessage(
+                  modernRequest({ id: 12, method: 'tools/list', },),
+                ) as JsonRpcResponse;
+                expect((response.result as { tools: unknown; }).tools,).toEqual([
+                  {
+                    name: 'echo',
+                    description: 'Echoes arguments.',
+                    inputSchema: { type: 'object',
+                      properties: { text: { type: 'string', }, }, },
+                  },
+                ],);
               },
             },),
             it({
@@ -205,12 +458,12 @@ await describe({
                   handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
                 };
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [tool,],
                 },);
-                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 5,
-                  method: 'tools/list', };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
+                const response = await server.handleMessage(
+                  modernRequest({ id: 13, method: 'tools/list', },),
+                ) as JsonRpcResponse;
                 const { tools, } = response.result as {
                   tools: readonly { inputSchema: unknown; }[];
                 };
@@ -231,12 +484,12 @@ await describe({
                   handler: () => ({ content: [{ type: 'text', text: 'b', },], }),
                 };
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [toolA, toolB,],
                 },);
-                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 6,
-                  method: 'tools/list', };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
+                const response = await server.handleMessage(
+                  modernRequest({ id: 14, method: 'tools/list', },),
+                ) as JsonRpcResponse;
                 const names =
                   (response.result as { tools: readonly { name: string; }[]; })
                     .tools
@@ -244,6 +497,24 @@ await describe({
                       tool => tool.name,
                     );
                 expect(names,).toEqual(['alpha', 'beta',],);
+              },
+            },),
+            it({
+              name: 'honors a configured tools cache hint',
+              fn: async () => {
+                const server = createMcpServer({
+                  config: {
+                    ...serverIdentity,
+                    toolsCache: { ttlMs: 300_000, cacheScope: 'public', },
+                  },
+                  tools: [],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({ id: 15, method: 'tools/list', },),
+                ) as JsonRpcResponse;
+                const result = response.result as { ttlMs: number; cacheScope: string; };
+                expect(result.ttlMs,).toBe(300_000,);
+                expect(result.cacheScope,).toBe('public',);
               },
             },),
           ],
@@ -257,39 +528,67 @@ await describe({
           name: 'tools/call',
           children: [
             it({
-              name: 'calls the correct tool handler and returns result',
+              name: 'calls the correct tool handler and stamps the result envelope',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 7,
-                  method: 'tools/call',
-                  params: { name: 'echo', arguments: { text: 'hello', }, },
-                };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 16,
+                    method: 'tools/call',
+                    params: { name: 'echo', arguments: { text: 'hello', }, },
+                  },),
+                ) as JsonRpcResponse;
                 expect(response.result,).toEqual({
+                  resultType: RESULT_TYPE_COMPLETE,
                   content: [{ type: 'text', text: '{"text":"hello"}', },],
+                  _meta: { [META_SERVER_INFO]: serverIdentity, },
                 },);
+              },
+            },),
+            it({
+              name: 'carries structuredContent through to the client',
+              fn: async () => {
+                const structuredTool: ToolEntry = {
+                  name: 'structured',
+                  description: 'Returns structured output.',
+                  outputSchema: { type: 'object', },
+                  handler: () => ({
+                    content: [{ type: 'text', text: '{"exitCode":0}', },],
+                    structuredContent: { exitCode: 0, },
+                  }),
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [structuredTool,],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 17,
+                    method: 'tools/call',
+                    params: { name: 'structured', },
+                  },),
+                ) as JsonRpcResponse;
+                expect(
+                  (response.result as { structuredContent: unknown; }).structuredContent,
+                ).toEqual({ exitCode: 0, },);
               },
             },),
             it({
               name: 'returns error for unknown tool name',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 8,
-                  method: 'tools/call',
-                  params: { name: 'nonexistent', },
-                };
                 const response = await server.handleMessage(
-                  request,
+                  modernRequest({
+                    id: 18,
+                    method: 'tools/call',
+                    params: { name: 'nonexistent', },
+                  },),
                 ) as JsonRpcErrorResponse;
                 expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
                 expect(response.error.message,).toContain('nonexistent',);
@@ -299,17 +598,11 @@ await describe({
               name: 'returns error when tool name is missing',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 9,
-                  method: 'tools/call',
-                  params: {},
-                };
                 const response = await server.handleMessage(
-                  request,
+                  modernRequest({ id: 19, method: 'tools/call', },),
                 ) as JsonRpcErrorResponse;
                 expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
               },
@@ -318,17 +611,11 @@ await describe({
               name: 'returns error when tool name is not a string',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 10,
-                  method: 'tools/call',
-                  params: { name: 42, },
-                } as unknown as JsonRpcInbound;
                 const response = await server.handleMessage(
-                  request,
+                  modernRequest({ id: 20, method: 'tools/call', params: { name: 42, }, },),
                 ) as JsonRpcErrorResponse;
                 expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
               },
@@ -337,61 +624,58 @@ await describe({
               name: 'defaults arguments to empty object when not provided',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 11,
-                  method: 'tools/call',
-                  params: { name: 'echo', },
-                };
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
-                expect(response.result,).toEqual({
-                  content: [{ type: 'text', text: '{}', },],
-                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 21,
+                    method: 'tools/call',
+                    params: { name: 'echo', },
+                  },),
+                ) as JsonRpcResponse;
+                expect((response.result as { content: unknown; }).content,).toEqual([
+                  { type: 'text', text: '{}', },
+                ],);
               },
             },),
             it({
-              name: 'defaults arguments to empty object when arguments is null',
+              name: 'rejects null arguments rather than treating them as empty',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 12,
-                  method: 'tools/call',
-                  params: { name: 'echo', arguments: null, },
-                } as unknown as JsonRpcInbound;
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
-                expect(response.result,).toEqual({
-                  content: [{ type: 'text', text: '{}', },],
-                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 22,
+                    method: 'tools/call',
+                    params: { name: 'echo', arguments: null, },
+                  },),
+                ) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
+                expect(response.error.message,).toContain('must be a JSON object',);
               },
             },),
             it({
-              name: 'defaults arguments to empty object when arguments is an array',
+              name: 'rejects array arguments rather than treating them as empty',
               fn: async () => {
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [echoTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 13,
-                  method: 'tools/call',
-                  params: { name: 'echo', arguments: [1, 2,], },
-                } as unknown as JsonRpcInbound;
-                const response = await server.handleMessage(request,) as JsonRpcResponse;
-                expect(response.result,).toEqual({
-                  content: [{ type: 'text', text: '{}', },],
-                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 23,
+                    method: 'tools/call',
+                    params: { name: 'echo', arguments: [1, 2,], },
+                  },),
+                ) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_INVALID_PARAMS,);
               },
             },),
             it({
-              name: 'returns internal error when handler throws',
+              name: 'reports a thrown handler failure as an isError result, not a protocol error',
               fn: async () => {
                 const failingTool: ToolEntry = {
                   name: 'fail',
@@ -401,20 +685,24 @@ await describe({
                   },
                 };
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [failingTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 14,
-                  method: 'tools/call',
-                  params: { name: 'fail', },
-                };
                 const response = await server.handleMessage(
-                  request,
-                ) as JsonRpcErrorResponse;
-                expect(response.error.code,).toBe(JSON_RPC_INTERNAL_ERROR,);
-                expect(response.error.message,).toContain('deliberate failure',);
+                  modernRequest({
+                    id: 24,
+                    method: 'tools/call',
+                    params: { name: 'fail', },
+                  },),
+                ) as JsonRpcResponse;
+                expect(response.result,).toEqual({
+                  resultType: RESULT_TYPE_COMPLETE,
+                  content: [
+                    { type: 'text', text: 'Tool execution failed: deliberate failure', },
+                  ],
+                  isError: true,
+                  _meta: { [META_SERVER_INFO]: serverIdentity, },
+                },);
               },
             },),
             it({
@@ -429,19 +717,47 @@ await describe({
                   },
                 };
                 const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
+                  config: serverIdentity,
                   tools: [throwStringTool,],
                 },);
-                const request: JsonRpcInbound = {
-                  jsonrpc: '2.0',
-                  id: 15,
-                  method: 'tools/call',
-                  params: { name: 'throw-string', },
-                };
                 const response = await server.handleMessage(
-                  request,
-                ) as JsonRpcErrorResponse;
-                expect(response.error.message,).toContain('string-error',);
+                  modernRequest({
+                    id: 25,
+                    method: 'tools/call',
+                    params: { name: 'throw-string', },
+                  },),
+                ) as JsonRpcResponse;
+                const result = response.result as {
+                  content: readonly { text: string; }[];
+                  isError: boolean;
+                };
+                expect(result.isError,).toBe(true,);
+                expect(result.content[0]?.text,).toContain('string-error',);
+              },
+            },),
+            it({
+              name: 'preserves an isError result the handler produced itself',
+              fn: async () => {
+                const reportingTool: ToolEntry = {
+                  name: 'reports',
+                  description: 'Reports its own failure.',
+                  handler: () => ({
+                    content: [{ type: 'text', text: 'exit code 1', },],
+                    isError: true,
+                  }),
+                };
+                const server = createMcpServer({
+                  config: serverIdentity,
+                  tools: [reportingTool,],
+                },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 26,
+                    method: 'tools/call',
+                    params: { name: 'reports', },
+                  },),
+                ) as JsonRpcResponse;
+                expect((response.result as { isError: boolean; }).isError,).toBe(true,);
               },
             },),
           ],
@@ -457,17 +773,26 @@ await describe({
             it({
               name: 'returns method not found error',
               fn: async () => {
-                const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
-                  tools: [],
-                },);
-                const request: JsonRpcInbound = { jsonrpc: '2.0', id: 16,
-                  method: 'unknown/method', };
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
                 const response = await server.handleMessage(
-                  request,
+                  modernRequest({ id: 27, method: 'unknown/method', },),
                 ) as JsonRpcErrorResponse;
                 expect(response.error.code,).toBe(JSON_RPC_METHOD_NOT_FOUND,);
                 expect(response.error.message,).toContain('unknown/method',);
+              },
+            },),
+            it({
+              name: 'checks the declared revision before the method name',
+              fn: async () => {
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
+                const response = await server.handleMessage(
+                  modernRequest({
+                    id: 28,
+                    method: 'unknown/method',
+                    version: '1900-01-01',
+                  },),
+                ) as JsonRpcErrorResponse;
+                expect(response.error.code,).toBe(JSON_RPC_UNSUPPORTED_PROTOCOL_VERSION,);
               },
             },),
           ],
@@ -481,14 +806,11 @@ await describe({
           name: 'notifications',
           children: [
             it({
-              name: 'returns NO_RESPONSE for notifications/initialized',
+              name: 'returns NO_RESPONSE for notifications/cancelled',
               fn: async () => {
-                const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
-                  tools: [],
-                },);
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
                 const notification: JsonRpcInbound = { jsonrpc: '2.0',
-                  method: 'notifications/initialized', };
+                  method: 'notifications/cancelled', };
                 const result = await server.handleMessage(notification,);
                 expect(result,).toBe(NO_RESPONSE,);
               },
@@ -496,10 +818,7 @@ await describe({
             it({
               name: 'returns NO_RESPONSE for unexpected notification methods',
               fn: async () => {
-                const server = createMcpServer({
-                  config: { name: 'srv', version: '0.1.0', },
-                  tools: [],
-                },);
+                const server = createMcpServer({ config: serverIdentity, tools: [], },);
                 const notification: JsonRpcInbound = { jsonrpc: '2.0',
                   method: 'notifications/unknown', };
                 const result = await server.handleMessage(notification,);

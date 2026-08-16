@@ -173,12 +173,21 @@ export function createMcpServer(
     catch (error: unknown) {
       if (error instanceof UnsupportedProtocolVersionError) {
         console.error(`[mcp-stdio] refused request: ${error.message}`,);
-        return Promise.resolve(respondUnsupportedProtocolVersion({ id: request.id, error, },),);
+        return Promise.resolve(
+          respondUnsupportedProtocolVersion({
+            id: request.id,
+            requested: error.requested,
+            supported: error.supported,
+          },),
+        );
       }
       if (error instanceof MissingProtocolVersionError) {
         console.error(`[mcp-stdio] refused request: ${error.message}`,);
         return Promise.resolve(
-          respondMissingProtocolVersion({ id: request.id, message: error.message, },),
+          respondMissingProtocolVersion({
+            id: request.id,
+            message: error.message,
+          },),
         );
       }
       throw error;

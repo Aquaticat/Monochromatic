@@ -13,7 +13,7 @@ import type { ToolDefinition, } from './protocol-tool.ts';
  * Revision 2026-07-28 replaced the `initialize` handshake with per-request version
  * metadata plus a mandatory `server/discover` RPC.
  */
-export const PROTOCOL_VERSION: '2026-07-28' = '2026-07-28';
+export const PROTOCOL_VERSION = '2026-07-28' as const;
 
 /**
  * Every protocol revision accepted on an inbound request, advertised through
