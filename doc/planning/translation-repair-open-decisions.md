@@ -1085,7 +1085,7 @@ DELEGATE
     slice asks the judges the same question a fresh one did.
 4.  Structural validation compares block structure, footnote markers, link and
     image destinations, and inline code, and deliberately NOT numbers or names,
-    because 三封信 becomes "three letters" and no digit survives on either side.
+    because 三只猫 becomes "three cats" and no digit survives on either side.
 5.  Atoms are compared as a multiset rather than in order, since a translation
     reorders clauses and a link moving inside a sentence is not damage.
 6.  THE ROSTER GUARD NOW MATCHES YOUR RULING. It required two judges with no

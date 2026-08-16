@@ -26,7 +26,7 @@ import type {
 //
 // WHAT IS DELIBERATELY NOT HERE: prose atoms. `scanTextAtoms` protects numbers
 // and foreign runs, which is right when a rewrite and its base are the same
-// language and wrong across a translation, where 三封信 becomes "three letters"
+// language and wrong across a translation, where 三只猫 becomes "three cats"
 // and no digit survives on either side. Structure and references survive
 // translation; wording does not, and the judges are the instrument for wording.
 
