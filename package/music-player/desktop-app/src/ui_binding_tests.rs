@@ -13,12 +13,10 @@
 //           executable guard that keeps it that way, and the first proof that the
 //           in-process `i-slint-backend-testing` seam can drive this app's UI.
 
-// What:     `use i_slint_backend_testing::{init_no_event_loop, ElementHandle};`.
-//           The headless testing backend initializer and the element locator/driver.
-// Why:      `init_no_event_loop` installs a per-thread backend whose mock renderer
-//           needs no window server; `ElementHandle` finds the `Slider` and drives its
-//           accessibility actions the way real user input would.
-use i_slint_backend_testing::{init_no_event_loop, ElementHandle};
+// What:     Testing backend initialization, mock-time control, and element driver.
+// Why:      `init_no_event_loop` needs no window server; `ElementHandle` drives real
+//           generated UI, while mock time triggers the post-layout LED report timer.
+use i_slint_backend_testing::{init_no_event_loop, mock_elapsed_time, ElementHandle};
 
 // What:     Slint handles and model types expose generated globals and page labels.
 // Why:      LED lifecycle guard must instantiate real generated UI and inspect final path.
@@ -145,9 +143,9 @@ fn volume_thumb_follows_engine_after_user_input() {
 }
 
 
-// What:     `led_plate_exists_on_first_led_layout` instantiates initial LED generation.
-// Why:      Change handlers do not fire for every initial property assignment; cap `init`
-//           reports must still complete one backplate before first rendered frame.
+// What:     `led_plate_exists_on_first_led_layout` drives first measured LED layout.
+// Why:      Layout-managed coordinates do not reliably dispatch `changed x` or `changed y`;
+//           one deferred report tick must still build wrapped plate before visible capture.
 #[test]
 fn led_plate_exists_on_first_led_layout() {
     setup();
@@ -162,11 +160,19 @@ fn led_plate_exists_on_first_led_layout() {
         SharedString::from("StudioMasters"),
         SharedString::from("Zeta"),
     ])));
+    app.show().expect("first frame lays out under testing backend");
+    let caps = ElementHandle::find_by_element_type_name(&app, "LedSegmentButton").collect::<Vec<_>>();
+    assert_eq!(caps.len(), 6, "first layout instantiates every LED cap");
+    mock_elapsed_time(std::time::Duration::from_millis(1));
     let geometry = app.global::<crate::LedPlateGeometry>();
     assert!(!geometry.get_path().is_empty(), "first LED frame must contain one backplate path");
     let starts = geometry.get_starts();
     let row_start_count = (0..starts.row_count())
         .filter(|index| starts.row_data(*index) == Some(true))
         .count();
-    assert!(row_start_count >= 2, "fixture must wrap and report measured row starts");
+    let cap_positions = caps.iter().map(ElementHandle::absolute_position).collect::<Vec<_>>();
+    assert!(
+        row_start_count >= 2,
+        "fixture must wrap and report measured row starts; starts={row_start_count}, caps={cap_positions:?}"
+    );
 }

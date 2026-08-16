@@ -240,7 +240,10 @@ component LedSegmentButton inherits Rectangle {
     in property <int> control-index;
     in property <int> control-count;
     in property <int> control-generation;
+    in property <int> control-layout-tick;
+    in property <Point> plate-origin;
     callback clicked();
+    callback report-geometry();
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
     private property <bool> starts-row:
         LedPlateGeometry.starts.length > root.control-index
@@ -253,71 +256,37 @@ component LedSegmentButton inherits Rectangle {
     height: 60px;
     preferred-height: 60px;
     background: transparent;
+    report-geometry => {
+        LedPlateGeometry.report(
+            root.control-generation,
+            root.control-index,
+            root.control-count,
+            root.absolute-position.x - root.plate-origin.x,
+            root.absolute-position.y - root.plate-origin.y,
+            root.width,
+            root.height,
+        );
+    }
     init => {
-        LedPlateGeometry.report(
-            root.control-generation,
-            root.control-index,
-            root.control-count,
-            root.x,
-            root.y,
-            root.width,
-            root.height,
-        );
+        root.report-geometry();
     }
-    changed x => {
-        LedPlateGeometry.report(
-            root.control-generation,
-            root.control-index,
-            root.control-count,
-            root.x,
-            root.y,
-            root.width,
-            root.height,
-        );
+    changed absolute-position => {
+        root.report-geometry();
     }
-    changed y => {
-        LedPlateGeometry.report(
-            root.control-generation,
-            root.control-index,
-            root.control-count,
-            root.x,
-            root.y,
-            root.width,
-            root.height,
-        );
+    changed plate-origin => {
+        root.report-geometry();
     }
     changed width => {
-        LedPlateGeometry.report(
-            root.control-generation,
-            root.control-index,
-            root.control-count,
-            root.x,
-            root.y,
-            root.width,
-            root.height,
-        );
+        root.report-geometry();
     }
     changed height => {
-        LedPlateGeometry.report(
-            root.control-generation,
-            root.control-index,
-            root.control-count,
-            root.x,
-            root.y,
-            root.width,
-            root.height,
-        );
+        root.report-geometry();
     }
     changed control-generation => {
-        LedPlateGeometry.report(
-            root.control-generation,
-            root.control-index,
-            root.control-count,
-            root.x,
-            root.y,
-            root.width,
-            root.height,
-        );
+        root.report-geometry();
+    }
+    changed control-layout-tick => {
+        root.report-geometry();
     }
 
     opening := Rectangle {
@@ -485,7 +454,16 @@ component LedSegmentControls inherits Rectangle {
     private property <bool> light-scene: Palette.color-scheme != ColorScheme.dark;
     private property <bool> geometry-adapter-ready: LedPlateGeometry.adapter-ready;
     private property <int> geometry-generation: 0;
+    private property <int> geometry-layout-tick: 0;
     callback refresh-geometry();
+    geometry-report-timer := Timer {
+        interval: 1ms;
+        running: false;
+        triggered => {
+            self.stop();
+            root.geometry-layout-tick += 1;
+        }
+    }
     init => {
         root.refresh-geometry();
     }
@@ -501,6 +479,7 @@ component LedSegmentControls inherits Rectangle {
     refresh-geometry => {
         if root.geometry-adapter-ready {
             root.geometry-generation = LedPlateGeometry.begin(root.labels.length, root.width);
+            geometry-report-timer.restart();
         }
     }
     height: led-layout.preferred-height;
@@ -559,6 +538,8 @@ component LedSegmentControls inherits Rectangle {
             control-index: p;
             control-count: root.labels.length;
             control-generation: root.geometry-generation;
+            control-layout-tick: root.geometry-layout-tick;
+            plate-origin: root.absolute-position;
             selected: p == root.selected-page;
             max-width: root.width;
             clicked => {
