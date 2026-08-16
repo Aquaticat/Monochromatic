@@ -10,6 +10,7 @@ import { judgeTranslateSlate, } from '../translate-judge.ts';
 import { produceTranslateSlate, } from '../translate-produce.ts';
 import {
   appendTrialRow,
+  trialKey,
   type WindowTrialRow,
 } from './window-trial-ledger.ts';
 import { TRIAL_ARMS, } from './window-trial-report.ts';
@@ -120,12 +121,15 @@ export async function runSliceArms(
    * Arms this slice still owes, in buying order.
    */
   const owed = ARM_ORDER.filter(function notBought(arm,): boolean {
-    return !done.has([
+    // THROUGH `trialKey`, never hand-joined. The two builders disagreed once,
+    // on a NUL separator against a space, which no reader shows and which made
+    // every resumed run re-buy arms the ledger already held.
+    return !done.has(trialKey({ row: {
       protocol,
       entryId,
-      String(chunkIndex,),
+      chunkIndex,
       arm,
-    ].join(' ',),);
+    }, },),);
   },);
   if (owed.length === 0)
     return [];

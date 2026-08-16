@@ -27,11 +27,13 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
+  completedArms,
   readTrialLedger,
   runSliceArms,
   type SyntheticClient,
   type SyntheticModelId,
   TRIAL_ARMS,
+  trialKey,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -240,6 +242,35 @@ async function freshLedger(): Promise<string> {
   );
 }
 
+/**
+ * Arms already bought, keyed the way the ledger keys them.
+ *
+ * THROUGH `trialKey` RATHER THAN A LITERAL, because a test that spells the key
+ * itself agrees with nothing: the runner and the ledger once disagreed on the
+ * separator and every hand-written fixture passed anyway.
+ *
+ * @param arms - arms to mark bought for the slice every case uses
+ *
+ * @returns Key set shaped like `completedArms` returns
+ *
+ * @example
+ * ```ts
+ * const done = doneFor({ arms: [TRIAL_ARMS.wide,], },);
+ * ```
+ */
+function doneFor(
+  { arms, }: { readonly arms: readonly string[]; },
+): ReadonlySet<string> {
+  return new Set(arms.map(function toKey(arm,) {
+    return trialKey({ row: {
+      protocol: 'protocol-one',
+      entryId: 'Mittens',
+      chunkIndex: 1,
+      arm,
+    }, },);
+  },),);
+}
+
 await describe({
   name: runSliceArms.name,
   children: [
@@ -345,11 +376,11 @@ await describe({
           entryId: 'Mittens',
           protocol: 'protocol-one',
           ledgerPath: await freshLedger(),
-          done: new Set([TRIAL_ARMS.narrowFirst,
-            TRIAL_ARMS.narrowSecond,
-            TRIAL_ARMS.wide,].map(function toKey(arm,) {
-            return `protocol-one Mittens 1 ${arm}`;
-          },),),
+          done: doneFor({
+            arms: [TRIAL_ARMS.narrowFirst,
+              TRIAL_ARMS.narrowSecond,
+              TRIAL_ARMS.wide,],
+          },),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),
           perCallTimeoutMs: 5_000,
@@ -379,10 +410,10 @@ await describe({
           protocol: 'protocol-one',
           ledgerPath: await freshLedger(),
           // A kill after the first two arms.
-          done: new Set([TRIAL_ARMS.narrowFirst,
-            TRIAL_ARMS.narrowSecond,].map(function toKey(arm,) {
-            return `protocol-one Mittens 1 ${arm}`;
-          },),),
+          done: doneFor({
+            arms: [TRIAL_ARMS.narrowFirst,
+              TRIAL_ARMS.narrowSecond,],
+          },),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),
           perCallTimeoutMs: 5_000,
@@ -393,6 +424,62 @@ await describe({
         expect(rig.served
           .count,).toBe(0,);
         expect(rig.judgeSheets
+          .length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'RESUMES OFF ITS OWN LEDGER, buying nothing the first run already wrote. This goes '
+        + 'through the real file rather than a hand-written key set, which is the only way to '
+        + 'catch the two key builders disagreeing: they did, on a NUL separator against a space, '
+        + 'and every fixture that spelled the key itself passed while no live run ever resumed',
+      fn: async () => {
+        const ledgerPath = await freshLedger();
+
+        /**
+         * First run, which buys all three arms and writes them.
+         */
+        const first = driftingClient();
+        await runSliceArms({
+          client: first.client,
+          slices: SLICES,
+          chunkIndex: 1,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath,
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        /**
+         * Second run, resuming off exactly what the first wrote.
+         */
+        const second = driftingClient();
+        const rows = await runSliceArms({
+          client: second.client,
+          slices: SLICES,
+          chunkIndex: 1,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath,
+          done: completedArms({
+            rows: await readTrialLedger({ path: ledgerPath, },),
+            protocol: 'protocol-one',
+          },),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        expect(rows.length,).toBe(0,);
+        expect(second.served
+          .count,).toBe(0,);
+        expect(second.judgeSheets
           .length,).toBe(0,);
       },
     },),

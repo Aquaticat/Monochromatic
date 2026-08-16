@@ -30,6 +30,7 @@ import {
   runPick,
   type SyntheticClient,
   type SyntheticModelId,
+  trialKey,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -203,7 +204,12 @@ await describe({
           done: new Set(['narrow-a',
             'narrow-b',
             'wide',].map(function toKey(arm,) {
-            return `protocol-one Mittens 0 ${arm}`;
+            return trialKey({ row: {
+              protocol: 'protocol-one',
+              entryId: 'Mittens',
+              chunkIndex: 0,
+              arm,
+            }, },);
           },),),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),
