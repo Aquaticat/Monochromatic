@@ -11993,3 +11993,26 @@ false negative and those cost more here; classes that are exclusive when the
 evidence is not, which `wangzihao980` demonstrates by having a real transcription
 pushed out of `target-only` by an unrelated neighbouring deficit; and sizes that
 count markup as translation, which is exactly the class the media cases live in.
+
+### `#108`'s pre-flight, and the capability it turned out to need
+
+Before spending quota, the run was checked against what exists.
+
+ALREADY THERE: `runTranslateStage` puts the incumbent on the ballot and rotates
+the slate by a hash of the slice, so production selection over a named slice is
+invocable and the incumbent's win rate is not also a measure of position
+preference.
+
+WAS MISSING, NOW BUILT: the stage had NO parameter for surrounding source, so
+`#108`'s wide arm could not have been run at all. `neighbouringSourceText`
+mirrors what `judge-fidelity.ts` already does, caveat label included, and is
+absent by default so every measurement taken before it still describes the sheet
+production sends. The narrow-sheet guard was shown to fail before being trusted,
+and the first falsification was thrown away for failing the wrong way: removing
+the guard entirely made the sheet builder crash on an undefined text, so the test
+went red without its assertion ever being reached. Redone with a defined
+placeholder, it fails on the assertion itself.
+
+STILL TO BUILD, and it is the only thing left before the run: `translate-probe`
+is hardcoded to one entry with a fixed slice count and takes no arguments. It
+needs an entry plus slice list, and a flag for the wider window.
