@@ -134,6 +134,20 @@ That is why the GFP strips here were safe.
 If the trial is ever restarted, or a bundle gains a dynamic import, that reasoning expires:
 strip in a throwaway worktree instead.
 
+## The ledger boundary was strengthened again after a second review
+
+Each ledger now carries the slicing it was built over, rather than one identity passed beside both:
+two ledgers loaded from different artifacts of one entry line up perfectly and number different passages,
+and that is the pair the comparison exists to refuse.
+It also checks that both ledgers agree about which slice sits at each POSITION,
+about each slice's ORIGINAL as well as its archive wording,
+and that every row survives the four-case delivery rule (`delivery-coherence.ts`, eight tests).
+A record reaching the comparison is a structural type, not proof the ledger builder made it.
+
+The version 2 parser contract is written up in the planning doc under
+"What the version 2 parser must require, and what it may tolerate".
+Read that before writing the parser rather than re-deriving it.
+
 ## Next actions, in order
 
 1.  The artifact at schema version 2. The identity it needs is DONE and exported.

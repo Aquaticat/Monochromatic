@@ -329,6 +329,45 @@ changing boundaries, pairing, ordering, placement kind, offsets, text or governa
 while resuming the same manifest under a different commit, cache state or roster leaves it alone.
 `pipelineDigest` stays the separate execution-generation identity.
 
+### What the version 2 parser must require, and what it may tolerate
+
+Every field is REQUIRED, including empty arrays, zero counts, both lanes, both ledgers,
+the recorded comparison and the lane selection.
+Within the discriminated unions, a member's fields are required only for that member
+(`acceptedText` only when decided, `reason` only on an assembly withdrawal,
+`verdict` only on a comparable decision, `undecidedLanes` only on a non-comparable one),
+and a field belonging to an inactive member is refused rather than ignored.
+
+Unknown keys are refused in schema-owned records:
+an addition is a version 3, not a tolerated extra.
+The deliberate tolerances are the inside of `callConfig`,
+the free-text category and finding strings the domain already allows,
+and anything a leaf contract explicitly defines as opaque evidence.
+A version 2 object carrying a legacy top-level alias
+(`status`, `issues`, `repairedText`, `shippedChunkIndices`)
+is refused rather than read.
+
+The reader RECOMPUTES rather than trusts, and refuses on disagreement:
+each lane's slice count against the preparation's,
+each ledger's length against both,
+each `sliceTexts` row against the ledger row at its index,
+each raw index set against the ledger rows that would produce it,
+the translate lane's changed, withdrawn and refused counts against their own lists,
+its `unfilled` status against whether anything is unfilled,
+the repair lane's blocked status against the deliveries it allows,
+and the whole comparison, field by field, against the persisted copy.
+
+A standalone reader can only check the SYNTAX of the recorded identity;
+it cannot recompute it, because version 2 stores measurements rather than the canonical manifest.
+A corpus-aware reader re-prepares the texts at the recorded corpus commit,
+recomputes the identity, and refuses a mismatch.
+That asymmetry is stated here so nobody later reads a syntax check as a verification.
+
+Version dispatch has three cases and no fallback:
+a missing version is LEGACY, version 2 is version 2, and anything else is refused.
+An explicit version 1 is refused rather than treated as legacy,
+however empty its population happens to be.
+
 ## Still to build
 
 1.  The artifact at version 2, to the design above,
