@@ -118,10 +118,14 @@ Set `dry-run` to `false` to retry a release upload manually.
 
 The repository's GitHub Actions secrets are:
 
-- `MAVEN_CENTRAL_USERNAME`: Sonatype Portal user-token username;
-- `MAVEN_CENTRAL_PASSWORD`: Sonatype Portal user-token password;
-- `MAVEN_SIGNING_KEY`: ASCII-armored private OpenPGP key;
-- `MAVEN_SIGNING_PASSWORD`: private-key passphrase.
+- `MAVEN_CENTRAL_USERNAME`:
+  Sonatype Portal user-token username;
+- `MAVEN_CENTRAL_PASSWORD`:
+  Sonatype Portal user-token password;
+- `MAVEN_SIGNING_KEY`:
+  ASCII-armored private OpenPGP key;
+- `MAVEN_SIGNING_PASSWORD`:
+  private-key passphrase.
 
 The matching public key has fingerprint
 `5BB5 727B E92B 6283 BBD7 DA85 5E8E 6D8D 791B 1B45`
