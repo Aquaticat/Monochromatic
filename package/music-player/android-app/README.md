@@ -12,6 +12,9 @@ Their labels use `10dp` inline padding on each side,
 half the earlier `20dp` inset.
 Persisted style integers retain their stable mapping,
 and unknown values still fall back to radio controls.
+Each style has one centralized build-availability toggle.
+Settings lists only included styles,
+and disabled persisted selections resolve safely without renumbering values.
 
 ## Custom control sizing
 
@@ -37,7 +40,7 @@ LED legends use `MaterialTheme.typography.bodyLarge`,
 matching ordinary body labels such as Volume while retaining semibold weight.
 Active-cap legend text is always white,
 independent of runtime accent or ambient scene.
-Every selected-pigment derivation uses OKLCH color coordinates.
+Every application color operation uses OKLCH,
+including Chromium colors and alpha changes outside LED controls.
 The selected fill remains dark enough to contrast clearly with its white legend,
 even when the runtime Material accent is very light.
-Alpha-only changes may adjust opacity without changing color coordinates.

@@ -13,6 +13,10 @@ Keep this file current after each implementation or visual-verification step.
 
 - Chromium-like tabs are the first-install default.
   Radio remains stable persisted value `0` and remains the unknown-value fallback.
+- Every page-control style has one centralized per-platform build-availability toggle.
+  Settings lists only included styles,
+  disabled persisted selections resolve safely,
+  and changing availability must not renumber persisted values.
 - Settings appears immediately before Open.
 - A settings selection applies immediately and persists.
 - Available styles are radio controls,
@@ -38,12 +42,14 @@ Keep this file current after each implementation or visual-verification step.
 - In the light scene,
   the full-width backplate must be visibly lighter than the `#eceef1` page ground.
 - Selected LED color is derived from the runtime accent.
-  All color-coordinate manipulation uses OKLCH,
-  including darkening selected fills and deriving edges,
+  Every application color operation uses OKLCH,
+  including non-LED controls,
+  darkening selected fills,
+  deriving edges,
   hot layers,
   glow,
-  and ink glow.
-  Alpha-only changes do not alter color coordinates.
+  ink glow,
+  and alpha changes.
   The reference purple demonstrates state and material behavior,
   not a literal pigment.
 - Wrapped LED rows remain one connected machined backplate.
@@ -178,8 +184,9 @@ shadow,
 bloom,
 and occlusion treatments must follow `led-buttons-generator.py`.
 The active hue must be derived from runtime accent while preserving those material relationships.
-All derived LED pigments must be computed in OKLCH,
-never by RGB or HSV interpolation or brightness manipulation.
+All application color operations must pass through OKLCH,
+never RGB or HSV interpolation or brightness manipulation.
+This rule applies outside LED controls and includes alpha changes.
 
 ### Chromium tabs
 
@@ -377,8 +384,9 @@ Desktop release capture and requester visual approval remain pending.
 Main `HEAD` contains the brighter light plate and body-sized LED legend changes.
 An Android release with those changes is installed on connected Pixel 6 serial `1C171FDF600KWW`.
 No Android emulator is running or authorized for this verification.
-The active source change is the uncommitted contrast correction,
-which must replace its temporary RGB interpolation with OKLCH before commit.
+Commit `8eb6c8d82` implements application color operations through OKLCH,
+including alpha changes outside LED controls.
+Focused Android and desktop tests prove brightest-accent white-legend contrast and OKLCH-coordinate preservation.
 Concurrent unrelated `.serena/project.yml` remains modified.
 Do not stage or alter it.
 
@@ -392,9 +400,9 @@ No build or application process is currently running.
 
 ## Remaining work
 
-1.  Implement white-legend contrast using OKLCH-only dynamic color derivation on Android and desktop.
-2.  Halve Chromium label inline padding to `10` units per side on both platforms.
-3.  Make Chromium-like tabs the first-install default while preserving persisted numeric mappings and radio fallback.
+1.  Halve Chromium label inline padding to `10` units per side on both platforms.
+2.  Make Chromium-like tabs the first-install default while preserving persisted numeric mappings and radio fallback.
+3.  Add centralized one-line per-style build-availability toggles and a runbook for changing them.
 4.  Run platform lint,
     tests,
     and release builds.
@@ -415,7 +423,8 @@ No build or application process is currently running.
   matching-scale captures and correct every material or geometry mismatch they expose.
 - Treat purple in the LED reference as an accent-derived placeholder,
   never a fixed application color.
-- Compute every derived pigment in OKLCH.
+- Perform every application color operation in OKLCH,
+  including alpha changes and operations outside LED controls.
   Do not use RGB interpolation or HSV brightness changes.
 - Keep selected fills dark enough to contrast clearly with invariant white active legends.
 - Android dark-mode page ground and full-screen surface must both be `#000000`.

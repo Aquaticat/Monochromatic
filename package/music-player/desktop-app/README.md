@@ -390,6 +390,9 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    half the earlier `20px` inset.
    Persisted style integers retain their stable mapping,
    and unknown values still fall back to radio controls.
+   Each style has one centralized build-availability toggle.
+   Settings lists only included styles,
+   and disabled persisted selections resolve safely without renumbering values.
    Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
    joined content-width segmented buttons,
    raised content-width Chromium-like tabs,
@@ -405,8 +408,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    matching labels such as Volume.
    Active legends remain white,
    so selected fills stay dark enough for clear contrast across runtime accents and ambient scenes.
-   Every derived LED pigment uses OKLCH color coordinates;
-   alpha-only opacity changes do not alter color coordinates.
+   Every application color operation uses OKLCH,
+   including alpha changes and operations outside LED controls.
    The choice applies immediately and persists across launches.
    Each wide page-selector FlexboxLayout pins `align-content` and
   `cross-axis-alignment` to start (both default to stretch),
