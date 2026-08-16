@@ -26,6 +26,7 @@ import {
   documentBaseline,
   median,
   type SliceSize,
+  sliceRatios,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -81,6 +82,65 @@ await describe({
       name: 'answers zero for nothing rather than dividing by a count that is not there',
       fn: async () => {
         expect(median({ values: [], },),).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: sliceRatios.name,
+  children: [
+    it({
+      name: 'KEEPS a slice with no original at all and reads its ratio as the translated length, '
+        + 'since an insertion anchor is a real state rather than an input to sanitize, and '
+        + 'dividing by a floored one would have called it ordinary',
+      fn: async () => {
+        const readings = sliceRatios({
+          slices: [
+            {
+              sourceChars: 0,
+              targetChars: 900,
+            },
+            at({
+              sourceChars: 300,
+              ratio: 3,
+            },),
+          ],
+        },);
+        expect(readings.length,).toBe(2,);
+        expect(readings[0]
+          ?.ratio,).toBe(900,);
+      },
+    },),
+    it({
+      name: 'DROPS NOTHING, in slice order, so a caller can index a reading by its slice: the '
+        + 'previous version filtered short originals here and lost the strongest evidence in '
+        + 'the corpus before anything looked at it',
+      fn: async () => {
+        const readings = sliceRatios({
+          slices: [
+            {
+              sourceChars: 4,
+              targetChars: 6,
+            },
+            {
+              sourceChars: 41,
+              targetChars: 3_652,
+            },
+            at({
+              sourceChars: 300,
+              ratio: 3,
+            },),
+          ],
+        },);
+        expect(readings.length,).toBe(3,);
+        expect(readings.map(function toIndex(reading,) {
+          return reading.sliceIndex;
+        },),).toEqual([
+          0,
+          1,
+          2,
+        ],);
       },
     },),
   ],

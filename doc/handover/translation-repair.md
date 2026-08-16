@@ -11784,8 +11784,8 @@ type and the thresholds before this is rebuilt.
 ### The screen rebuilt, and the corrected corpus numbers
 
 `src/displacement-ratio.ts` now holds size primitives and
-`src/displacement-class.ts` the classification. Twelve tests gate it, built from
-the labelled cases rather than from invented shapes.
+`src/displacement-class.ts` the classification, gated by tests built from the
+labelled cases rather than from invented shapes.
 
     complete pairs                                     92
     slices read                                      1260
@@ -11908,3 +11908,42 @@ sits in the NEIGHBOUR. `target-only` and relocation share a shape; a short donor
 and a noise slice share a shape. Every time the fix was to stop reading the slice
 in isolation, which is also, one level up, exactly what `#107` says about the
 judges.
+
+### Three corrections to what this document said an hour ago
+
+A reviewer reading the shipped state caught three numbers, and all three were
+wrong in the same way: stated confidently, never recomputed after the thing they
+described changed.
+
+THE UNION WAS NOT 62 SLICES, IT IS 80 OF 1260, 6.3 percent. Adding the four class
+totals mixes units: the relocation figure counts PAIRS while the other three
+count slices, and pairs share slices, since `lintong` reports 3 to 2 and 3 to 4
+across three slices rather than four. Counted as unique slices, with both ends of
+every pair included because a per-slice judge misjudges the archive at both, the
+answer is 80. Corrected in Question 5.
+
+THE CONSERVATION RATIOS IN THE CODE COMMENT WERE FROM THE OLD BASELINE. It cited
+0.51 and 0.44, measured before the eligibility filter existed. Against the
+baseline the shipped code computes they are 0.41 and 0.35. The margin above the
+quarter floor is thinner than the comment implied, and the corrected numbers say
+something the old ones hid: BOTH candidates verified by hand as transcriptions
+sit at 0.28, and both verified relocations at 0.35 and 0.41. Five points is not
+grounds to retune a threshold. It is grounds to hand-check a near-floor candidate
+rather than count it, which `#108` now says to do.
+
+THE TEST COUNT WAS WRONG and the numeral is gone rather than corrected, per WR4.
+
+AND A FOURTH INSTANCE OF THE SLICE-ALONE MISTAKE, found by the same reviewer
+after reading the closing observation above and applying it to the one class the
+rebuild exempted. `untranslated` is decided from the slice alone, and its own
+discriminator can sit in the neighbour: where a translator rendered a WHOLE
+section inside its neighbour, the emptied slice reads untranslated, the taker
+reads high, and the guard that refuses an untranslated donor suppresses exactly
+that pair.
+
+IT WAS MEASURED RATHER THAN FIXED, and the measurement is why. At the pinned
+commit, ZERO untranslated slices sit beside a flagged high, so the gap costs
+nothing today. Changing the rule on no evidence would trade a measured zero for
+an unmeasured guess. It is recorded in the class's own TSDoc and in `#108` as a
+reading instruction: an untranslated slice beside a high one is a possible
+whole-section move, so hand-check it rather than trusting the class.

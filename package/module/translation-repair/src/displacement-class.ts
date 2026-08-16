@@ -35,6 +35,20 @@ export type SliceClass =
    * Long original, negligible translation. `#106`'s subject: this is the
    * positive verdict that a passage was never rendered, and a ratio of 0.01 is
    * not an ambiguous one.
+   *
+   * THE ONE CASE THIS CLASS READS WRONG is a WHOLE-SECTION move: where a
+   * translator rendered an entire section inside its neighbour, the emptied
+   * slice looks untranslated and the neighbour looks high, and the guard that
+   * refuses an untranslated donor suppresses exactly that pair. So this class is
+   * decided from the slice alone while its own discriminator sits in the
+   * neighbour, which is the mistake this file made twice already.
+   *
+   * IT IS LEFT AS IT IS BECAUSE THE CORPUS SAYS IT COSTS NOTHING TODAY: at the
+   * pinned commit, ZERO untranslated slices sit beside a flagged high. Changing
+   * the rule on no evidence would trade a measured zero for an unmeasured guess.
+   * What the finding earns is a reading instruction rather than a code change:
+   * an untranslated slice next to a high one is a possible whole-section move
+   * and wants a hand-check.
    */
   | 'untranslated'
   /**
@@ -109,15 +123,21 @@ const MIN_RELOCATION_SURPLUS = 120;
 /**
  * How much of a surplus the neighbour's deficit must account for.
  *
- * MEASURED ON BOTH VERIFIED RELOCATIONS, and it is the reason this is not the
- * "similar magnitudes" test that conservation suggests. `Dethelly` runs a
- * surplus of 290 against a deficit of 149, and `lintong` 261 against 114:
- * ratios of 0.51 and 0.44. The deficit is consistently the SMALLER side,
- * because the slice that gave text up still renders its own original while the
- * slice that took it on carries the expanded English of both. A symmetric test
- * would reject both cases this instrument was built from. A quarter keeps them
- * with margin while still requiring the neighbour to have actually given
- * something up.
+ * MEASURED ON BOTH VERIFIED RELOCATIONS, against the baseline this file computes
+ * rather than an earlier draft's: `Dethelly` runs a surplus of 297 against a
+ * deficit of 121, and `lintong` 281 against 99, which are ratios of 0.41 and
+ * 0.35. The deficit is consistently the SMALLER side, because the slice that
+ * gave text up still renders its own original while the slice that took it on
+ * carries the expanded English of both. A symmetric "similar magnitudes" test,
+ * which is what conservation suggests and what a reviewer proposed, would reject
+ * both cases this instrument was built from.
+ *
+ * A QUARTER RATHER THAN A THIRD, and the margin is thinner than it looks. Both
+ * candidates verified by hand as TRANSCRIPTIONS rather than moves sit at 0.28,
+ * and the two verified relocations at 0.35 and 0.41, so the band just above this
+ * floor is where the false ones have so far been found. That is five data points
+ * and not grounds to retune; it is grounds to hand-check a near-floor candidate
+ * rather than count it, which is what `#108` is told to do.
  */
 const MIN_CONSERVED_FRACTION = (1 / 2) * (1 / 2);
 

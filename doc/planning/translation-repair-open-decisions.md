@@ -724,9 +724,15 @@ the corpus reads:
 SO THE NUMBER THIS QUESTION SHOULD USE IS THE UNION, not the relocation count
 alone. Every one of those classes causes the same judging failure: a per-slice
 judge sees the archive inventing content, or dropping it, or both, and prefers a
-fresh rendering. That union is 62 slices, about 5 percent, and it remains a
-FLOOR because the screen reads SIZE: a passage swapped for one of similar length
-reads as perfectly ordinary.
+fresh rendering. Counted as UNIQUE SLICES, with both ends of every relocation
+pair included because a per-slice judge misjudges the archive at both, that union
+is 80 of 1260 slices, 6.3 percent. It remains a FLOOR because the screen reads
+SIZE: a passage swapped for one of similar length reads as perfectly ordinary.
+
+Counting slices rather than adding the four class totals matters, and an earlier
+draft of this paragraph got it wrong by summing them to 62. The relocation figure
+counts PAIRS, the other three count slices, and pairs share slices: `lintong`
+reports 3 to 2 and 3 to 4, which is three slices rather than four.
 
 WHAT IT IS NOT is a count of relocations. Two of the 22 are transcriptions on the
 probe's own evidence, two are verified relocations, and eighteen are unchecked,

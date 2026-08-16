@@ -113,6 +113,7 @@ export {
   type RelocationCandidate,
   type SliceClass,
 } from './displacement-class.ts';
+export { sharesMedia, } from './corpus-run/transcription-suspect.ts';
 export {
   CORPUS_REFERENCE_EXPANSION,
   documentBaseline,
