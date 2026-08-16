@@ -80,8 +80,35 @@ probe: ... - ! Connected - tools fetch failed - Invalid result for tools/list: m
 When the probe rejects `server/discover` with `-32601`, the client falls back to `initialize`
 and asks for `2025-11-25`.
 
-Consequence: the modern-only choice is safe for this client, because it probes discovery first.
+Consequence: the modern-only choice is safe for this client's session path,
+ because it probes discovery first.
 A client that opens with `initialize` instead is not served.
+
+### Correction, measured later the same day: the CLI health check never probes
+
+The paragraph above describes the in-session connection.
+The `claude mcp get` and `claude mcp list` health checks behave differently,
+ and this was measured by tapping a disposable registration pointed at the same binary:
+
+```text
+IN  {"method":"initialize","params":{"protocolVersion":"2025-11-25",...}}
+OUT {"jsonrpc":"2.0","id":0,"error":{"code":-32601,"message":"Method not found: initialize..."}}
+```
+
+One message in,
+ one error out,
+ and `server/discover` never sent.
+So a modern-only server can never pass the CLI health check,
+ and `claude mcp list` reports it as failed while it works in session.
+
+This also corrects how this work was verified.
+Several `claude mcp get mvm` runs earlier that day reported Connected,
+ and were cited as boundary evidence.
+A fresh health check cannot produce that result against this server,
+ so those readings reflected connection state the session already held rather than a
+handshake the check performed.
+The durable evidence is driving the built binary over stdio,
+ which is what the package tests do.
 
 ## Delivered
 
@@ -120,8 +147,11 @@ Defects corrected along the way, several surfaced by a source-bearing `sol` revi
 
 ## Verified at the user boundary
 
-`claude mcp get mvm` reports Connected, and a tap on the real exchange confirms the client
-negotiates 2026-07-28 with no `initialize` fallback:
+A tap on the real in-session exchange confirms the client negotiates 2026-07-28 with no
+`initialize` fallback.
+This tap,
+ not a `claude mcp get` reading,
+ is the evidence:
 
 ```text
 IN  {"jsonrpc":"2.0","id":"server-discover-probe-1","method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",...}}}

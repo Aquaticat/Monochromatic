@@ -122,9 +122,25 @@ it receives a `-32601` naming the revision this server implements,
 which is all a handshake-era client can be told,
 since the older revisions have no way to fall forward.
 
-Claude Code 2.1.233 probes `server/discover` first and falls back to `initialize`
+Claude Code 2.1.233 behaves differently on its two paths,
+ both measured by tapping the real exchange.
+
+Its in-session connection probes `server/discover` first and falls back to `initialize`
 only when that probe returns a non-modern error,
-so it stays on the modern path against this package.
+ so it stays on the modern path against this package.
+
+Its CLI health check does not probe at all.
+`claude mcp get` and `claude mcp list` send `initialize` as the first and only message,
+ so a modern-only server can never pass them:
+ the tapped exchange is one `initialize` in,
+ one `-32601` out,
+ and no `server/discover` ever sent.
+
+**Expect `claude mcp list` to report this server as failed even while it works in session.**
+That is the price of serving one revision,
+ not a fault to chase.
+Verify by driving the binary over stdio instead,
+ which is what this package's own tests do.
 
 ### Deliberately omitted
 
