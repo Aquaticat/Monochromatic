@@ -165,38 +165,61 @@ export function deleteOneSentence(
  *
  * @param cleanText - slice English as the archive holds it
  *
- * @param donorText - English of a different slice of the same document
+ * @param donorTexts - English of other slices of the same document, FURTHEST
+ * FIRST, of which the first usable one donates
  *
  * @returns Damaged twin and what it cost, or why none could be built
  *
  * @example
  * ```ts
- * const attempt = insertBorrowedSentence({ cleanText, donorText, },);
+ * const attempt = insertBorrowedSentence({ cleanText, donorTexts, },);
  * ```
  */
 export function insertBorrowedSentence(
   {
     cleanText,
-    donorText,
+    donorTexts,
   }: {
     readonly cleanText: string;
-    readonly donorText: string;
+    readonly donorTexts: readonly string[];
   },
 ): DamageAttempt {
   /**
    * Sentence to borrow, drawn the same way the deletion draws its own so both
    * fixtures move a comparable amount of text.
+   *
+   * THE FIRST USABLE DONOR RATHER THAN THE FURTHEST ONE FULL STOP. Measured on
+   * the corpus, taking only the furthest slice refused fifteen of sixteen
+   * attempts: the last slice of a memorial entry is often a short list, a
+   * credit line or a single sentence, and none of those offers a borrowable
+   * sentence. Refusing there would have sampled only documents that happen to
+   * end in prose, which is a selection rule nobody chose. Order still carries
+   * the preference, so the borrowed sentence is as far from the damaged slice
+   * as the document allows.
    */
-  const borrowed = anchorSentence({ text: donorText, },);
+  const offered = donorTexts
+    .map(function toSentence(donorText,) {
+      return anchorSentence({ text: donorText, },);
+    },);
+
+  /**
+   * First offered sentence this slice does not already carry, absent when every
+   * donor is empty or repeats something here.
+   */
+  const usable = offered.find(function isUsable(sentence,) {
+    if (sentence === '')
+      return false;
+    return !cleanText.includes(sentence,);
+  },);
+
+  /**
+   * That sentence, or empty when no donor offered one.
+   */
+  const borrowed = usable ?? '';
   if (borrowed === '')
     return {
       kind: 'undamageable',
-      reason: 'donor slice offers no sentence long enough and unique enough to borrow',
-    };
-  if (cleanText.includes(borrowed,))
-    return {
-      kind: 'undamageable',
-      reason: 'borrowed sentence already appears in this slice, so it would add nothing',
+      reason: 'no other slice offers a sentence this one does not already carry',
     };
 
   /**
@@ -241,27 +264,28 @@ export function insertBorrowedSentence(
 }
 
 /**
- * English of the slice furthest from the one being damaged, which is where the
- * insertion fixture borrows its sentence.
+ * English of every other slice, FURTHEST FIRST, which is where the insertion
+ * fixture borrows its sentence.
  *
- * FURTHEST RATHER THAN ADJACENT, because the borrowed sentence must be
- * unsupported by the damaged slice's own original. Neighbouring slices of a
- * biography often restate the same fact in different words, and a judge that
- * kept the longer text on those would be right about the document while the
- * trial recorded it as wrong.
+ * FURTHEST FIRST, because the borrowed sentence must be unsupported by the
+ * damaged slice's own original. Neighbouring slices of a biography often restate
+ * the same fact in different words, and a judge that kept the longer text on
+ * those would be right about the document while the trial recorded it as wrong.
+ * Ordering rather than selecting is what keeps that preference without letting
+ * one unusable slice refuse the whole entry.
  *
  * @param slices - prepared slice pairs of one entry
  *
  * @param sliceIndex - slice being damaged, which cannot donate to itself
  *
- * @returns English of the donor, empty when the entry has no other slice
+ * @returns English of every other slice that carries some, furthest first
  *
  * @example
  * ```ts
- * const donorText = donorTextFor({ slices, sliceIndex, },);
+ * const donorTexts = donorTextsFor({ slices, sliceIndex, },);
  * ```
  */
-export function donorTextFor(
+export function donorTextsFor(
   {
     slices,
     sliceIndex,
@@ -269,11 +293,8 @@ export function donorTextFor(
     readonly slices: readonly ChunkPair[];
     readonly sliceIndex: number;
   },
-): string {
-  /**
-   * Every other slice that carries English, paired with its distance.
-   */
-  const candidates = slices
+): readonly string[] {
+  return slices
     .map(function toCandidate(
       slice,
       index,
@@ -295,25 +316,16 @@ export function donorTextFor(
     },)
     .filter(function isUsable(candidate,): boolean {
       return (candidate.distance > 0) && (candidate.text !== '');
+    },)
+    .toSorted(function byDistanceDescending(
+      a,
+      b,
+    ): number {
+      return b.distance - a.distance;
+    },)
+    .map(function toText(candidate,): string {
+      return candidate.text;
     },);
-
-  /**
-   * Furthest of them, ties going to the earlier slice because `reduce` keeps
-   * what it has on an equal distance.
-   */
-  const furthest = candidates.reduce(
-    function byDistance(
-      best,
-      candidate,
-    ) {
-      return (candidate.distance > best.distance) ? candidate : best;
-    },
-    {
-      distance: 0,
-      text: '',
-    },
-  );
-  return furthest.text;
 }
 
 //endregion Fidelity damage

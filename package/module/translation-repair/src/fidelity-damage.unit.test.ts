@@ -18,7 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   deleteOneSentence,
-  donorTextFor,
+  donorTextsFor,
   insertBorrowedSentence,
 } from '../dist/final/node/index.mjs';
 
@@ -119,7 +119,7 @@ await describe({
       fn: async () => {
         const attempt = insertBorrowedSentence({
           cleanText: CLEAN_TEXT,
-          donorText: DONOR_TEXT,
+          donorTexts: [DONOR_TEXT,],
         },);
         if (attempt.kind !== 'damaged')
           throw new Error(`expected damage, got ${attempt.reason}`,);
@@ -143,7 +143,7 @@ await describe({
       fn: async () => {
         const attempt = insertBorrowedSentence({
           cleanText: `${CLEAN_TEXT} ${BORROWED}`,
-          donorText: DONOR_TEXT,
+          donorTexts: [DONOR_TEXT,],
         },);
         expect(attempt.kind,).toBe('undamageable',);
       },
@@ -154,7 +154,7 @@ await describe({
       fn: async () => {
         const attempt = insertBorrowedSentence({
           cleanText: CLEAN_TEXT,
-          donorText: '',
+          donorTexts: [],
         },);
         expect(attempt.kind,).toBe('undamageable',);
       },
@@ -163,13 +163,13 @@ await describe({
 },);
 
 await describe({
-  name: donorTextFor.name,
+  name: donorTextsFor.name,
   children: [
     it({
-      name: 'takes the FURTHEST slice carrying English, since a neighbour restates what the damaged '
-        + 'slice says and would make the borrowed sentence supported after all',
+      name: 'orders donors FURTHEST FIRST, since a neighbour restates what the damaged slice says '
+        + 'and would make the borrowed sentence supported after all',
       fn: async () => {
-        const donor = donorTextFor({
+        const donors = donorTextsFor({
           slices: [
             sliceCarrying({ text: CLEAN_TEXT, },),
             sliceCarrying({ text: 'A neighbouring slice.', },),
@@ -177,25 +177,56 @@ await describe({
           ],
           sliceIndex: 0,
         },);
-        expect(donor,).toBe(DONOR_TEXT,);
+        expect(donors,).toEqual([
+          DONOR_TEXT,
+          'A neighbouring slice.',
+        ],);
+      },
+    },),
+    it({
+      name: 'KEEPS the nearer slices rather than returning the furthest alone, because a document '
+        + 'whose last slice is a credit line would otherwise refuse the whole entry',
+      fn: async () => {
+        const donors = donorTextsFor({
+          slices: [
+            sliceCarrying({ text: CLEAN_TEXT, },),
+            sliceCarrying({ text: DONOR_TEXT, },),
+            sliceCarrying({ text: 'Photo credits.', },),
+          ],
+          sliceIndex: 0,
+        },);
+        expect(donors,).toEqual([
+          'Photo credits.',
+          DONOR_TEXT,
+        ],);
+        // The unusable furthest slice is offered first and the fixture falls
+        // past it, which is the whole point of returning an ordered list.
+        const attempt = insertBorrowedSentence({
+          cleanText: CLEAN_TEXT,
+          donorTexts: donors,
+        },);
+        if (attempt.kind !== 'damaged')
+          throw new Error(`expected damage, got ${attempt.reason}`,);
+        expect(attempt.damagedText
+          .includes(BORROWED,),).toBe(true,);
       },
     },),
     it({
       name: 'never donates a slice to itself, which would splice a sentence the slice already '
         + 'carries and damage nothing',
       fn: async () => {
-        const donor = donorTextFor({
+        const donors = donorTextsFor({
           slices: [sliceCarrying({ text: CLEAN_TEXT, },),],
           sliceIndex: 0,
         },);
-        expect(donor,).toBe('',);
+        expect(donors,).toEqual([],);
       },
     },),
     it({
-      name: 'skips a slice carrying no English at all, so the furthest INSERTION ANCHOR cannot be '
-        + 'chosen as the donor and leave the insertion fixture with nothing to borrow',
+      name: 'skips a slice carrying no English at all, which is what an insertion anchor is, rather '
+        + 'than offering the empty string as a donor',
       fn: async () => {
-        const donor = donorTextFor({
+        const donors = donorTextsFor({
           slices: [
             sliceCarrying({ text: CLEAN_TEXT, },),
             sliceCarrying({ text: DONOR_TEXT, },),
@@ -203,7 +234,7 @@ await describe({
           ],
           sliceIndex: 0,
         },);
-        expect(donor,).toBe(DONOR_TEXT,);
+        expect(donors,).toEqual([DONOR_TEXT,],);
       },
     },),
   ],

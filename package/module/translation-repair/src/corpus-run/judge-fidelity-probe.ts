@@ -8,7 +8,7 @@ import { prepareDocumentPair, } from '../document-preparation.ts';
 import {
   type DamageAttempt,
   deleteOneSentence,
-  donorTextFor,
+  donorTextsFor,
   type FidelityDamageKind,
   insertBorrowedSentence,
 } from '../fidelity-damage.ts';
@@ -402,7 +402,7 @@ async function main(): Promise<void> {
             return deleteOneSentence({ cleanText, },);
           return insertBorrowedSentence({
             cleanText,
-            donorText: donorTextFor({
+            donorTexts: donorTextsFor({
               slices: prepared.slices,
               sliceIndex,
             },),
