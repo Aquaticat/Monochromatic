@@ -90,5 +90,29 @@ await describe({
         expect(stderr.text(),).toContain('exactly one',);
       },
     },),
+    it({
+      name: 'rejects interactive mode without TTY streams',
+      fn: async () => {
+        /**
+         * Captured standard output.
+         */
+        const stdout = new CaptureStream();
+        /**
+         * Captured standard error.
+         */
+        const stderr = new CaptureStream();
+        /**
+         * Non-TTY standard input.
+         */
+        const stdin = new PassThrough();
+
+        expect(await runCli({
+          arguments: ['--interactive',],
+          cwd: process.cwd(),
+          streams: { stdin, stdout, stderr, },
+        },),).toBe(1,);
+        expect(stderr.text(),).toContain('requires TTY standard input',);
+      },
+    },),
   ],
 },);
