@@ -486,7 +486,31 @@ unchecked,
 and cursor icons,
 enables vim keybindings,
 and catches Inquirer's `ExitPromptError` as a clean cancellation.
-No dependency decision has been made from this evidence.
+A completed pairwise vet now compares `@clack/prompts` 1.7.0
+with `@inquirer/prompts` 8.5.2 in
+[`doc/audit/tech-clack-versus-inquirer-for-a-standalone-type-vet-2026-08-16.md`][prompt-vet].
+The no-context equal-weight baseline places Inquirer first,
+but dependency-surface weighting reverses the order,
+so the formal context-free result is conditional.
+The adapter's known requirements supply the deciding context:
+Inquirer provides per-prompt themes for the red security picker,
+preselected checkbox choices,
+custom streams,
+and the pnpm interaction precedent.
+Clack's high-level active and selected colors are fixed in version 1.7.0,
+and its custom-stream path still reads global stdout width.
+Both exact packages passed the adapter-focused consumer fixture.
+Inquirer's complete CI-equivalent,
+ESM,
+and CommonJS validation passed.
+Clack's target prompt suites passed,
+but its full suite exposed a supported-runtime nested-color mismatch documented in
+[`doc/troubleshooting/clack-note-nested-styletext-node-floor.md`][clack-note-node-floor].
+
+The recommendation is `@inquirer/prompts` 8.5.2 for this adapter.
+That recommendation is not dependency approval.
+No dependency decision has been made,
+and the user must explicitly approve making it direct.
 
 CLI packages under `package/cli/<name>` use package names shaped
 `@monochromatic-dev/cli-<name>` and usually expose an unscoped `<name>` binary.
@@ -783,8 +807,9 @@ in dependency order:
 
 ## Immediate next action
 
-Inspect sibling CLI manifests and implementation utilities,
-then present the first proposed direct dependency for separate approval.
+Ask whether the user explicitly approves `@inquirer/prompts` 8.5.2
+as a direct dependency of `@monochromatic-dev/cli-open-code-review-issue`.
+Recommendation alone is not approval.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -964,8 +989,14 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   selected `package/cli/open-code-review-issue`,
   package `@monochromatic-dev/cli-open-code-review-issue`,
   and binary `open-code-review-issue`.
+- 2026-08-16:
+  completed the Clack versus Inquirer vet;
+  adapter-specific interaction requirements recommend Inquirer,
+  pending separate dependency approval.
 
+[clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-issue-title-length]: ../troubleshooting/github-issue-title-length.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
+[prompt-vet]: ../audit/tech-clack-versus-inquirer-for-a-standalone-type-vet-2026-08-16.md
