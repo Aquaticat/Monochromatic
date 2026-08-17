@@ -80,6 +80,7 @@ export {
 export {
   parseRepositoryUrl,
   RepositorySelectionError,
+  selectRepository,
 } from './repository.ts';
 export {
   preflightPublication,
