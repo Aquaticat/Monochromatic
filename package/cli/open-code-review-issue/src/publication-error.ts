@@ -23,8 +23,14 @@ export class IssuePublicationError extends Error {
    * const error = new IssuePublicationError('Issue creation failed');
    * ```
    */
-  public constructor(message: string, options?: ErrorOptions,) {
-    super(message, options,);
+  public constructor(
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      message,
+      options,
+    );
     this.name = 'IssuePublicationError';
   }
 }
