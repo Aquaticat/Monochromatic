@@ -36,7 +36,7 @@ export class CliInputNotFoundError extends Error {
       `positional input ${JSON.stringify(input,)} is neither inline JSON nor an existing named file`,
       { cause, },
     );
-    this.name = CliInputNotFoundError.name;
+    this.name = 'CliInputNotFoundError';
   }
 }
 

@@ -67,6 +67,9 @@ export function parsePositionalInput({
    * Leading-whitespace-insensitive syntax discriminator preserving original JSON text.
    */
   const candidate = value.trimStart();
+  /**
+   * Whether positional syntax unambiguously opens a JSON object or array.
+   */
   const inlineJson = candidate.startsWith('{',) || candidate.startsWith('[',);
   if (inlineJson && (!interactive)) {
     throw new CliInvocationError('inline JSON positional input requires `--interactive`',);

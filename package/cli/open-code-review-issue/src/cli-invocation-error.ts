@@ -20,7 +20,7 @@ export class CliInvocationError extends Error {
    */
   public constructor(message: string,) {
     super(message,);
-    this.name = CliInvocationError.name;
+    this.name = 'CliInvocationError';
   }
 }
 
@@ -38,6 +38,6 @@ export class MissingCliInputError extends CliInvocationError {
    */
   public constructor() {
     super('every mode requires one positional input',);
-    this.name = MissingCliInputError.name;
+    this.name = 'MissingCliInputError';
   }
 }

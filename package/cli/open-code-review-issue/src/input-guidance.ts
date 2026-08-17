@@ -21,6 +21,11 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 const l = tagged({ tag: 'input-guidance', },);
 
 /**
+ * Domain sentinel indicating no persisted OCR session was discovered.
+ */
+const NO_OCR_SESSION_JSONL: unique symbol = Symbol('no OCR session JSONL found',);
+
+/**
  * Candidate persisted session ordered by filesystem modification time.
  */
 type SessionCandidate = {
@@ -49,47 +54,97 @@ async function readableDirectory(path: string,): Promise<readonly Dirent[]> {
 }
 
 /**
- * Reads candidate modification evidence without replacing primary diagnostic.
+ * Reads one candidate's modification evidence.
  *
  * @param path - Persisted JSONL candidate path.
  *
- * @returns Timed candidate or undefined after filesystem race or access failure.
+ * @returns Singleton candidate list, or empty list after filesystem failure.
  */
-async function sessionCandidate(path: string,): Promise<SessionCandidate | undefined> {
+async function sessionCandidate(path: string,): Promise<readonly SessionCandidate[]> {
   try {
     /**
      * Filesystem metadata used only for latest-session selection.
      */
     const metadata = await stat(path,);
-    return {
+    return [{
       path,
       modifiedMilliseconds: metadata.mtimeMs,
-    };
+    },];
   }
   catch (error: unknown) {
     l.debug(`OCR session discovery skipped a file: ${caughtValueText(error,)}`,);
-    return undefined;
+    return [];
   }
 }
 
 /**
- * Selects later session candidate while preserving undefined identity.
+ * Identifies regular persisted OCR JSONL files.
+ *
+ * @param entry - Directory entry under encoded repository session directory.
+ *
+ * @returns Whether entry is a regular `.jsonl` file.
+ */
+function isJsonlSessionEntry(entry: Dirent,): boolean {
+  return entry.isFile()
+    && entry.name
+      .endsWith('.jsonl',);
+}
+
+/**
+ * Reads timed candidates from one encoded repository directory.
+ *
+ * @param sessionsRoot - OCR persisted-session root.
+ *
+ * @param repositoryEntry - Encoded repository directory entry.
+ *
+ * @returns Timed readable JSONL candidates.
+ */
+async function repositorySessionCandidates({
+  sessionsRoot,
+  repositoryEntry,
+}: {
+  readonly sessionsRoot: string;
+  readonly repositoryEntry: Dirent;
+},): Promise<readonly SessionCandidate[]> {
+  if (!repositoryEntry.isDirectory()) {
+    return [];
+  }
+  /**
+   * Persisted session directory for one encoded repository.
+   */
+  const repositoryDirectory = join(
+    sessionsRoot,
+    repositoryEntry.name,
+  );
+  /**
+   * Entries inspected without reading transcript contents.
+   */
+  const sessionEntries = await readableDirectory(repositoryDirectory,);
+  return (await Promise.all(sessionEntries
+    .filter(isJsonlSessionEntry,)
+    .map(function inspectSessionEntry(entry,): Promise<readonly SessionCandidate[]> {
+      return sessionCandidate(join(
+        repositoryDirectory,
+        entry.name,
+      ),);
+    },),))
+    .flat();
+}
+
+/**
+ * Selects candidate with later modification time.
  *
  * @param current - Current latest candidate.
  *
- * @param candidate - Newly inspected candidate.
+ * @param candidate - Newly compared candidate.
  *
- * @returns Candidate with later modification time.
+ * @returns Later candidate.
  */
-function laterCandidate({
-  current,
-  candidate,
-}: {
-  readonly current: SessionCandidate | undefined;
-  readonly candidate: SessionCandidate;
-},): SessionCandidate {
-  return (current === undefined)
-    || (candidate.modifiedMilliseconds > current.modifiedMilliseconds)
+function laterCandidate(
+  current: SessionCandidate,
+  candidate: SessionCandidate,
+): SessionCandidate {
+  return candidate.modifiedMilliseconds > current.modifiedMilliseconds
     ? candidate
     : current;
 }
@@ -99,9 +154,11 @@ function laterCandidate({
  *
  * @param homeDirectory - Runtime home containing `.opencodereview`.
  *
- * @returns Latest session path across encoded repositories when present.
+ * @returns Latest path or domain-specific absent sentinel.
  */
-async function findLatestOcrSessionJsonl(homeDirectory: string,): Promise<string | undefined> {
+async function findLatestOcrSessionJsonl(
+  homeDirectory: string,
+): Promise<string | typeof NO_OCR_SESSION_JSONL> {
   /**
    * OCR v1.9.4 persisted-session root confirmed from current CLI help and source.
    */
@@ -114,40 +171,23 @@ async function findLatestOcrSessionJsonl(homeDirectory: string,): Promise<string
    * Encoded repository directories under OCR session root.
    */
   const repositoryEntries = await readableDirectory(sessionsRoot,);
-  let latest: SessionCandidate | undefined;
-  for (const repositoryEntry of repositoryEntries) {
-    if (!repositoryEntry.isDirectory()) {
-      continue;
-    }
-    /**
-     * Persisted session files for one encoded repository.
-     */
-    const repositoryDirectory = join(
-      sessionsRoot,
-      repositoryEntry.name,
-    );
-    const sessionEntries = await readableDirectory(repositoryDirectory,);
-    for (const sessionEntry of sessionEntries) {
-      if ((!sessionEntry.isFile()) || (!sessionEntry.name
-        .endsWith('.jsonl',))) {
-        continue;
-      }
-      /**
-       * Timed path for latest comparison.
-       */
-      const candidate = await sessionCandidate(join(
-        repositoryDirectory,
-        sessionEntry.name,
-      ),);
-      if (candidate !== undefined) {
-        latest = laterCandidate({
-          current: latest,
-          candidate,
-        });
-      }
-    }
+  /**
+   * Timed candidates loaded concurrently from finite directory entries.
+   */
+  const candidates = (await Promise.all(repositoryEntries
+    .map(function inspectRepositoryEntry(entry,): Promise<readonly SessionCandidate[]> {
+      return repositorySessionCandidates({
+        sessionsRoot,
+        repositoryEntry: entry,
+      },);
+    },),))
+    .flat();
+  if (candidates.length === 0) {
+    return NO_OCR_SESSION_JSONL;
   }
-  return latest?.path;
+  return candidates
+    .reduce(laterCandidate,)
+    .path;
 }
 
 /**
@@ -171,7 +211,10 @@ export async function buildInputGuidance({
    * Latest persisted transcript discovered without invoking OCR.
    */
   const latestSession = await findLatestOcrSessionJsonl(homeDirectory,);
-  return [
+  /**
+   * Stable generation and common-location guidance.
+   */
+  const baseLines = [
     'Get supported OCR input with one of these commands:',
     '  open-code-review-issue --interactive "$(ocr review --format json)"',
     '  ocr review --format json > review.json',
@@ -181,12 +224,14 @@ export async function buildInputGuidance({
     '',
     'Persisted OCR session JSONL files are commonly stored at:',
     '  ~/.opencodereview/sessions/<encoded-repo-path>/<session-id>.jsonl',
-    ...(latestSession === undefined
-      ? []
-      : [
-        '',
-        'Latest OCR session JSONL found:',
-        `  ${latestSession}`,
-      ]),
+  ] as const;
+  if (typeof latestSession === 'symbol') {
+    return baseLines.join('\n',);
+  }
+  return [
+    ...baseLines,
+    '',
+    'Latest OCR session JSONL found:',
+    `  ${latestSession}`,
   ].join('\n',);
 }

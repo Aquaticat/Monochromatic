@@ -6,8 +6,10 @@
 
 import { parseArgs, } from 'node:util';
 
-import type { CliInputArgument, } from './cli-input.ts';
-import { parsePositionalInput, } from './cli-input.ts';
+import {
+  type CliInputArgument,
+  parsePositionalInput,
+} from './cli-input.ts';
 import { CliInvocationError, } from './cli-invocation-error.ts';
 import type { ApplyAuthority, } from './plan-model.ts';
 
