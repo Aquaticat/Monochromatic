@@ -1494,9 +1494,14 @@ budget, so the pass would have stopped near 50 anyway, and the freeze would have
 ### THE ACCUMULATION BAR IS NOW SIX, EVERYWHERE, AND IT IS PROVISIONAL
 
 Lowered by the user 2026-08-17 from the "15+" set on 2026-08-14, in their words low but defensible
-at this early stage, with an explicit instruction to flip it back to 15 "when we're more confident".
-So the trigger for raising it is CONFIDENCE and not any new measurement, and nobody should read a
-six-entry result as having met the older bar.
+at this early stage, to be flipped back to 15 "when we're more confident".
+
+RESTORING IT TO 15 IS THE USER'S CALL AND NOBODY ELSE'S, and the user said so explicitly when this
+was first written down as "the trigger is confidence": confidence will need their approval AFTER an
+agent already believes it is confident. Two steps, in that order. An agent reaching its own
+threshold is the moment to ASK, never the moment to act, and "we're more confident now" is not a
+reason to raise the bar unasked. Nobody should read a six-entry result as having met the older bar
+either.
 
 It lives in prose only; there is no constant. `#60` carries the authoritative statement and the
 reason. Older passages in `doc/handover/translation-repair.md` still reason about fifteen (bands per
