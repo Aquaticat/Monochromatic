@@ -165,6 +165,17 @@ The implementation must not reopen `/dev/tty`,
 `CONIN$`,
 or another controlling-terminal device.
 
+### Configuration
+
+The user chose CLI-only adapter configuration.
+The adapter defines no project-local configuration file,
+user-global configuration file,
+or adapter-specific environment variables.
+Every configurable publication decision is visible in the current invocation's arguments and input.
+The adapter may invoke Git and GitHub CLI,
+which retain their own configuration and authentication behavior,
+but it must not parse or add hidden defaults from those tools beyond the settled repository-inference rule.
+
 ### Repository selection
 
 An explicit `--repo https://github.com/OWNER/NAME` selects the destination in either mode.
@@ -815,9 +826,11 @@ in dependency order:
     The package lives at `package/cli/open-code-review-issue`,
     is named `@monochromatic-dev/cli-open-code-review-issue`,
     and exposes the `open-code-review-issue` binary.
-    Configuration,
-    required GitHub CLI compatibility,
-    and mise tasks remain open.
+    Configuration is CLI-only,
+    with no project,
+    user,
+    or environment configuration surface.
+    Required GitHub CLI compatibility and mise tasks remain open.
 11. Verification:
     parser fixtures,
     prompt interaction tests,
@@ -828,8 +841,7 @@ in dependency order:
 ## Immediate next action
 
 Do not add the umbrella package or a direct core dependency.
-Continue grilling configuration,
-GitHub CLI compatibility,
+Continue grilling GitHub CLI compatibility,
 mise tasks,
 and verification.
 Ask one question only,
@@ -1024,6 +1036,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   separately approved `@inquirer/checkbox` 5.2.1 as a direct dependency.
 - 2026-08-16:
   separately approved `@inquirer/input` 5.1.2 as a direct dependency.
+- 2026-08-16:
+  selected CLI-only adapter configuration,
+  with no adapter configuration files or environment variables.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
