@@ -782,6 +782,37 @@ NOTHING IS DECIDED BY THIS RUN. Whether to widen the deadline for `hf:zai-org/GL
 replacement, or accept the voice loss is a user bullet on `#105`, and the run was deliberately
 launched under the CURRENT roster and deadline so it reports that configuration as it stands.
 
+## What is owed the moment the cost run exits
+
+DO THIS FIRST, BEFORE READING THE RUN, because it is the half that is not yet verified.
+
+`2ff6228d9` added per-slice cost telemetry (`slice-cost-log.ts`, `slice-cost-read.ts`) and its unit
+tests import from `dist/`, which the cost run is reading. Building would have swapped code under a
+live multi-hour run, so the build and the full sweep were deferred on purpose:
+
+1.  `mise run //package/module/translation-repair:build`
+2.  `mise run //package/module/translation-repair:test:unit`
+3.  `mise run //package/module/translation-repair:lint`
+4.  `mise run //package/module/translation-repair:lint:types`
+
+WHAT WAS ALREADY VERIFIED, so this is a sweep rather than an unknown: the source modules were
+exercised directly with node, outside `dist`, and every assertion held. The round trip between
+writer and reader, the early-exit path where a lane leaves a slice by `continue`, a mixed log with
+unrelated lines, and all three refusals (half-written line, unknown lane, non-integer measurement).
+What the sweep adds is the built artifact, the lint rules and the types.
+
+NOTHING ELSE MAY RUN `mise` IN THIS PACKAGE UNTIL THE RUN EXITS. `lint:types` runs `tsc --build`
+and `build` writes `dist/` outright; `test:unit` reads `dist/` and would test the wrong code.
+
+THEN READ THE RUN, and only then: the `TALLY <id> status=... ms=` lines against the 180 minute cap,
+the cost split between lanes, the voice-loss rate, and `XingZ60` as the full-scale check of `#71`'s
+alignment fix. The `6/6 heard` critic line already in the log is one stage of one entry and is not
+a rate; report what the whole run measures.
+
+THE COST TELEMETRY DOES NOT APPLY TO THIS RUN. It was added after launch, so the run in flight
+emits no `SLICE-COST` lines. This run answers the ENTRY-scale slope, over four entries spanning 28
+times in size; the next run answers the per-slice question in `#92`.
+
 ## The launch gate has lifted
 
 The trial finished at 2026-08-16T23:58Z after 25622 seconds, so the reason for holding the corpus
