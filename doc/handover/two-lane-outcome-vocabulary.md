@@ -786,19 +786,44 @@ NOTHING IS DECIDED BY THIS RUN. Whether to widen the deadline for `hf:zai-org/GL
 replacement, or accept the voice loss is a user bullet on `#105`, and the run was deliberately
 launched under the CURRENT roster and deadline so it reports that configuration as it stands.
 
-## The cost run finished, and the cap is a wall (`#114`)
+## The cost run finished, and a seven hour cap clears the corpus (`#114`)
 
 DONE 2026-08-17, written up in `doc/audit/two-lane-entry-cost.md`. The sweep listed under
 "What is owed the moment the cost run exits" HAS BEEN RUN and is clear: lint 0 warnings 0 errors,
 types clean, 359 test groups passing. That section is kept as the record of why it was deferred.
 
+READ THE AUDIT RATHER THAN THIS SUMMARY IF THE CAP IS THE QUESTION. The first reading of this run
+was wrong by about a factor of three on how many entries the cap stops, and the audit records both
+the corrected numbers and the wrong ones under "What the first reading got wrong".
+
 TWO OF FOUR ENTRIES NEVER FINISHED. `XingZ60` (41720 bytes) and `aiyysk` (21455) each ran the full
 three hours and produced no artifact; `zheermao101` (2323) settled in 65.3 minutes and `Aniloviraw`
 (1481) in 35.4. Seven and a half hours bought two artifacts, six of those hours buying nothing.
 
-A FULL PASS WOULD COST 120 to 133 HOURS, settle 76 to 78 of 92, and spend 42 to 48 hours on the 14
-to 16 entries that abort having produced nothing. It exceeds the 72 hour soft budget, so one pass
-cannot reach the end of the corpus even in principle.
+NEITHER ABORT WAS CLOSE TO HOPELESS, which is the fact the first reading missed. The aborted
+entries KEEP their slice caches, so file counts and mtimes recover per-slice timing directly:
+`aiyysk` had settled 73 of its 80 slices and `XingZ60` 55 of 83, both in the repair lane, at 2.47
+and 3.19 minutes per slice. Whole-entry cost is therefore about 4.7 and 6.4 hours, not the 10 and
+19.5 the per-byte extrapolation predicted.
+
+COST IS SUBLINEAR IN SIZE: `cost_minutes = 0.2585 * bytes^0.694`, fitting all four entries within 16
+percent. Per-byte cost FALLS threefold from the smallest entry to the largest, so a rate taken from
+small entries badly over-prices large ones. That single error produced every wrong number.
+
+A FULL PASS COSTS 119 to 128 HOURS. At the current cap 4 to 6 entries abort, wasting 12 to 18 hours.
+AT A SEVEN HOUR CAP NONE ABORT, for about 8 hours more in total, because an aborting entry is
+already paid for in full and thrown away. The budget conclusion survives unchanged: a full pass does
+not fit the 72 hour soft budget at any cap.
+
+THE CACHE DOES NOT SPAN A REBUILD, verified rather than assumed. `slice-cache-namespace.ts:463`
+resumes only when `cached === generation` and `:470` discards otherwise, and the two surviving caches
+hold 128 slices stamped `sha256-tree-v1:e327ca8b` while the current build digests to
+`sha256-tree-v1:d8507690`. About 6 hours of paid work was orphaned by the sweep that followed the
+run. Any plan that lets an entry span runs has to answer that first.
+
+RECOVERED FOR FREE: `XingZ60` confirmed the `#71` and `#74` alignment fix at full scale before it
+aborted, because preparation runs before the lanes. The log reports `12 chunk pairs, 83 slices, 4
+alignment findings`, exactly what `doc/decision/translation-repair-unpairable-section.md` predicted.
 
 THE SWEEP FOUND SOMETHING TOO, and it is worth knowing the telemetry cost a file split: the eight
 lines of timing pushed `repair-translation.ts` to 301 lines, so `repairTranslation` now lives in
@@ -831,8 +856,17 @@ THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked:
 
 1.  THE VOICE LOSS, first because everything else is measured through it. 135 of 327 judgings lost at
     least one voice of six, dominated by `hf:zai-org/GLM-5.2` abandoned 60000 ms after quorum. Widen
-    that deadline or seat a replacement, AFTER the cost run reports so that run still describes the
-    configuration it was launched under, then re-measure the decline rate.
+    that deadline or seat a replacement, then re-measure the decline rate.
+
+    ITS SEQUENCING PRECONDITION IS MET: the cost run has reported, so a change here no longer
+    invalidates a run in flight. The old cache is already orphaned by the sweep's rebuild, so moving
+    the digest again costs nothing.
+
+    ONE CONSTRAINT THE COST RUN ADDS, which discriminates widen from replace: widening the deadline
+    adds wall time per call on a pipeline where `XingZ60` already projects at 6.4 hours against a 3
+    hour cap. Widening pushes the wrong way on the number just measured. `roster-bench` and
+    `model-health` exist to vet a replacement instead. Not pre-decided here, but weigh it against
+    that number rather than in isolation.
 
 2.  `#105`'s retry policy: retry a declining slate ONCE against the same panel, then record what
     still declines as `no-candidate-backed`. The delivery vocabulary already says WHERE such a slice
@@ -856,13 +890,22 @@ THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked:
 NONE OF IT BEFORE THE SWEEP. Every item is code, and there is already one unverified change in the
 tree; three would compound into a sweep that cannot say which change broke what.
 
-ONE KNOWN GAP TO CLOSE IN THE SAME SITTING, since it needs the build and the tests that are already
-running then. A `SLICE-COST` line cannot say WHY a slice was cheap. Both lanes leave a slice early
-on a cache hit and on an insertion chunk, and both emit a row near zero milliseconds at any size. On
-a fresh runs directory nothing is cached, so tonight's shape is unaffected; a RESUMED pass would
-scatter near-zero points across every size band and flatten the very slope the line exists to show,
-with nothing in the row to identify them. One more `key=value` naming the exit kind, plus a case in
-`slice-cost-read.unit.test.ts`, closes it.
+ONE KNOWN GAP TO CLOSE IN THE SAME SITTING: CLOSED 2026-08-17 (`3309ffff8`). A `SLICE-COST` line
+could not say WHY a slice was cheap. Both lanes leave a slice early on a cache hit and on an
+insertion chunk, and both emitted a row near zero milliseconds at any size, which on a RESUMED pass
+would have scattered near-zero points across every size band and flattened the very slope the line
+exists to show.
+
+Every line now carries `exit=`, one of `computed`, `resumed`, `no-translation` or `unfilled`.
+Ordinary completion is the default and needs no call, so the common path cannot be forgotten; the
+other three name themselves before leaving, which the disposable cannot infer once scope has ended.
+The reader REQUIRES the field rather than treating it as optional, because the telemetry landed
+after the only pass that has run, so no production log carries the older shape.
+
+THE ROUND TRIP WAS GFP'D, since its own header calls it the only thing keeping writer and reader
+agreed about a shape neither owns. The writer's `sourceChars=` was renamed to `sourceCharacters=`,
+rebuilt, and the suite exited 1 with that case failing by name and the reader reporting
+`sourceChars missing`; restored, it passes. The guard was committed before the strip.
 
 THEN READ THE RUN, and only then: the `TALLY <id> status=... ms=` lines against the 180 minute cap,
 the cost split between lanes, the voice-loss rate, and `XingZ60` as the full-scale check of `#71`'s
