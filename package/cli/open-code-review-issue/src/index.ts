@@ -11,6 +11,11 @@ export {
   type GitHubApiMethod,
   type GitHubApiRequest,
 } from './github-api.ts';
+export type {
+  GitHubApiClient,
+  GitHubRepository,
+  PublicationPreflight,
+} from './github-model.ts';
 export {
   GitHubProcessError,
   GitHubProcessTimeoutError,
@@ -61,6 +66,10 @@ export {
   buildNonInteractivePreview,
   buildPublicationPlan,
 } from './plan.ts';
+export {
+  preflightPublication,
+  PublicationPreflightError,
+} from './preflight.ts';
 export type {
   FindingCategory,
   FindingSeverity,
