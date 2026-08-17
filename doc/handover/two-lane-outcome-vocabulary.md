@@ -1300,7 +1300,50 @@ TWO TRAPS FOUND, both worth carrying:
     `doc/troubleshooting/barrel-star-export-drops-ambiguous-names.md` keeps its warning: a clean
     type-check does not prove there is no collision.
 
-### Where `#115` stands at 15:45Z
+### `#115` IS DONE, and its answer is a refusal
+
+Three audits of the same 40 subjects, all persisted in
+`node_modules/.monochromatic/translation-repair-runs/rendering-audit-settled/`:
+
+```text
+run 1  2026-08-17T14-25-51.584Z-b7d84b5b   digest stamped WRONG, see below
+run 2  2026-08-17T15-06-37.885Z-c157db5b
+run 3  2026-08-17T15-44-00.750Z-eeda8b9b
+```
+
+The comparison the audit exists to make CANNOT BE MADE on this population, for two
+independent reasons, either sufficient alone: it is confounded with the entry, and the
+band is wider than the effect. Over 40 digest-verified pairs of identical text the
+corroborated total moved from four to ten, and ten of forty subjects flipped between
+claiming something and claiming nothing. Full write-up and every number:
+`doc/audit/rendering-audit-settled-population.md`. Task `#115` carries the summary.
+
+WHAT UNBLOCKS IT: more ENTRIES, not more slices. Slices tighten each cell without adding
+a degree of freedom. That means more settled version 2 artifacts, which is what `#108`
+would produce, and `#108` now records this as a second reason to run.
+
+RE-READING ANY RUN COSTS NOTHING:
+
+```sh
+cd /var/home/user/worktrees/translation-repair
+R=/var/home/user/worktrees/translation-repair/node_modules/.monochromatic/translation-repair-runs/rendering-audit-settled
+mise run //package/module/translation-repair:rendering-audit-settled-report -- \
+  --run $R/2026-08-17T15-44-00.750Z-eeda8b9b.json \
+  --against $R/2026-08-17T15-06-37.885Z-c157db5b.json
+```
+
+Paths must be ABSOLUTE: the mise task runs from the package directory, so a repo-relative
+path gives `ENOENT` naming a path that exists. Run 1 pairs against nothing, because its
+rows predate the recorded text identity; the report says so in its own sentence rather
+than reporting it as an archive that moved.
+
+TWO TASKS CAME OUT OF THIS AND ARE OPEN: `#116`, stamp runs with the runner's own
+dependency closure rather than a whole-tree digest, since the closure is what a band
+measurement needs. `#117`, every stage round leaks a live 180-second timer, so any CLI
+running one outlives its own work; NOT fixed because `stage-round.ts` is in the producing
+path `#115` was forbidden to touch.
+
+### Where `#115` stood at 15:45Z, kept for the trail
 
 RUN 2 LANDED as `2026-08-17T15-06-37.885Z-c157db5b.json` and is written up. RUN 3 IS RUNNING,
 launched DIRECTLY in background task `bveiyodmy`, log `~/temp/agent/audit-settled-run3.log`.
