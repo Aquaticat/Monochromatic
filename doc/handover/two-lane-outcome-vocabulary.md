@@ -786,6 +786,25 @@ NOTHING IS DECIDED BY THIS RUN. Whether to widen the deadline for `hf:zai-org/GL
 replacement, or accept the voice loss is a user bullet on `#105`, and the run was deliberately
 launched under the CURRENT roster and deadline so it reports that configuration as it stands.
 
+## The cost run finished, and the cap is a wall (`#114`)
+
+DONE 2026-08-17, written up in `doc/audit/two-lane-entry-cost.md`. The sweep listed under
+"What is owed the moment the cost run exits" HAS BEEN RUN and is clear: lint 0 warnings 0 errors,
+types clean, 359 test groups passing. That section is kept as the record of why it was deferred.
+
+TWO OF FOUR ENTRIES NEVER FINISHED. `XingZ60` (41720 bytes) and `aiyysk` (21455) each ran the full
+three hours and produced no artifact; `zheermao101` (2323) settled in 65.3 minutes and `Aniloviraw`
+(1481) in 35.4. Seven and a half hours bought two artifacts, six of those hours buying nothing.
+
+A FULL PASS WOULD COST 120 to 133 HOURS, settle 76 to 78 of 92, and spend 42 to 48 hours on the 14
+to 16 entries that abort having produced nothing. It exceeds the 72 hour soft budget, so one pass
+cannot reach the end of the corpus even in principle.
+
+THE SWEEP FOUND SOMETHING TOO, and it is worth knowing the telemetry cost a file split: the eight
+lines of timing pushed `repair-translation.ts` to 301 lines, so `repairTranslation` now lives in
+`repair-entry.ts` (`c2a16470a`). The boundary is real rather than convenient: one half takes two
+documents and decides how to slice them, the other takes slices already decided.
+
 ## What is owed the moment the cost run exits
 
 DO THIS FIRST, BEFORE READING THE RUN, because it is the half that is not yet verified.
