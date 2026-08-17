@@ -161,3 +161,103 @@ The per-slice cost telemetry now carries an `exit` key, so the same run reports 
 window costs directly rather than by the estimate above. That run is also the telemetry's first
 emission in production, so it doubles as the user-boundary check that `SLICE-COST` lines appear and
 parse.
+
+## The re-measure, attempted 2026-08-17, and why it is still owed
+
+Read from a frozen snapshot of the running pass,
+`~/temp/agent/grace-remeasure-snapshot.log`,
+3271 lines,
+taken at 19:34 with 5 of 6 entries done and the sixth mid-flight.
+Frozen first because the live log grows between commands
+and two readings of it disagreed by six stages.
+
+### On this document's own definition
+
+Per-stage voice completeness,
+counted once per stage,
+at the 180 second window:
+
+```text
+critic    seats 6     4 of  37 stages   0.108
+panel     seats 6     6 of  32 stages   0.188
+checker   seats 3     0 of  40 stages   0.000
+probe     seats 3     0 of  41 stages   0.000
+pooled  (critic, panel, checker)  10 of 109   0.092
+```
+
+That reads as beating the 0.130 recorded above.
+It should not be read that way,
+for a reason this document already names in its own words:
+a re-measure against the wrong denominator
+"would report a change that is only a change of denominator".
+
+THE TWO NUMBERS ARE NO LONGER THE SAME INSTRUMENT.
+The 0.130 was measured on a repair-only pipeline that the definition covered completely.
+The 0.092 is measured on a pipeline that has since grown a translate lane,
+and the definition cannot see it:
+`translate-document.ts:391` logs selection only when ZERO translators were heard,
+so a stage that seats six and hears five leaves no `heard` line at all.
+Of the 30 voices lost in this snapshot,
+17 were lost in `select` and one in `refiner`,
+neither of which emits a line the definition can count.
+The instrument sees 10 of 30 actual losses.
+
+### The named positive control was never run
+
+This document names `Aniloviraw` and `zheermao101` as the control,
+11 of 80 stages,
+and says a clean result without them proves nothing.
+The pass ran `Arita`, `AmbeR_the_anpa`, `Acheron`, `Anilovr` and `Chinatsu_Suzuki`.
+None of those is one of the four baseline entries.
+`Anilovr` and `Aniloviraw` are distinct entries,
+checked rather than assumed:
+both carry their own artifact in the settled archive.
+
+Between-entry spread is also wider than the effect.
+Tonight's per-entry rates run 0.000 to 0.364;
+the baseline's run 0.103 to 0.227.
+A pooled difference of 0.038 sits well inside that.
+
+### What the snapshot does establish
+
+ABANDONMENT IS THE ONLY LOSS MODE HERE,
+which is worth stating because it means nothing else is quietly eating voices.
+Losses reconcile against abandon lines stage by stage:
+critic lost 4 stages against 4 abandons,
+checker lost 0 against 0,
+panel lost 6 stages against 7 abandons,
+the extra being one stage that lost two voices at once.
+
+EVERY ABANDONED VOICE IN THIS SNAPSHOT IS A GLM.
+Of 30 `voice lost` lines,
+29 attribute to a stage and a model,
+and all 29 name `hf:zai-org/GLM-5.2` or `hf:zai-org/GLM-4.7-Flash`.
+Zero name `hf:moonshotai/Kimi-K3`,
+which appears more often in this log than any other model.
+That is a zero-numerator fact and not a rate:
+appearance counts are log mentions rather than calls.
+It supersedes `#77`'s finding that Kimi-K3 dominates voice loss,
+which was measured before `#64`'s channel-marker fix landed.
+
+It also explains the stage shape without appealing to seat count.
+`checker` and the probe seat `Qwen3.6`, `Nemotron` and `gpt-oss`,
+the three models that never abandoned,
+so their perfect completeness is a roster property.
+Seat count alone does not account for it:
+fitting a uniform per-voice loss rate to the six-seat stages
+predicts about six losses across the 81 three-seat stages,
+and zero were observed,
+which that fitted rate makes about a 0.0015 event.
+
+### What must follow, revised
+
+-   RUN THE NAMED CONTROL. `Aniloviraw` and `zheermao101`, after the freeze lifts.
+    Until then the re-measure is owed, not delivered.
+-   EXTEND THE DEFINITION BEFORE RE-RUNNING, or the control will be read through the same
+    blind spot. `select` needs a heard-equivalent line. This is `#119`.
+-   THE RESIDUAL IS NOT A LATENCY FINDING, and this document's latency table cannot be used to
+    argue it is. An abandoned call is killed at quorum plus 180 seconds, so its true duration is
+    censored: unknown, and strictly greater. The bench maxima of 85.5 s and 88.6 s were measured
+    over calls that COMPLETED, at bench slice sizes. Whether a GLM call still running at 180
+    seconds is slow or is degenerating cannot be told apart from anything recorded, because
+    `#118` discards the partial text and nothing stores raw output. That is `#119`.
