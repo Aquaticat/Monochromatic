@@ -39,6 +39,13 @@ export {
   type GitHubCliVersion,
 } from './github-version.ts';
 export {
+  CliInvocationError,
+  parseCliArguments,
+  type CliArguments,
+  type HelpCliArguments,
+  type RunCliArguments,
+} from './cli-args.ts';
+export {
   SecurityAuthorityError,
   selectApplyPlan,
 } from './authority.ts';
