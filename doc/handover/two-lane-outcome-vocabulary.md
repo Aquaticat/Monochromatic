@@ -1542,3 +1542,72 @@ quoted, and it says nothing about the stragglers it was used to describe.
 3.  Re-read the slice cost telemetry, which by then includes translate-lane slices.
 4.  Re-run the settled rendering audit over the six new artifacts. The reader takes the flat layout
     now, so point it straight at `~/translation-repair-runs-20260817/artifacts`.
+
+## READ THIS FIRST AFTER A COMPACTION (written 2026-08-17 23:22Z)
+
+### What is running right now
+
+```text
+corpus pass      PID 3768707, node dist/final/node/corpus-pass.mjs
+runs directory   ~/translation-repair-runs-20260817
+artifacts        ~/translation-repair-runs-20260817/artifacts   (FLAT, no run-set subdirectories)
+log              ~/temp/agent/corpus-pass-20260817.log
+watcher          background task bkfhlg7ya
+progress         3 entries settled of the 6 the user asked for, ~86 min an entry
+```
+
+THE WATCHER polls the artifact directory and kills the pass by PID once six artifacts exist. It
+exits early and says so if the pass dies first. If it is gone after a compaction, do the same by
+hand; there is nothing subtle in it:
+
+```sh
+A=~/translation-repair-runs-20260817/artifacts
+while [ "$(ls "$A" | wc --lines)" -lt 6 ]; do sleep 60; done
+kill 3768707
+```
+
+DO NOT write a `pgrep --full` wait loop for this. It matches the shell running it and never exits;
+that trap was documented here at 09:16 today and then walked into at 15:50 anyway. See
+`doc/troubleshooting/pgrep-wait-loop-matches-itself.md`.
+
+Stopping loses nothing: the in-flight entry's slices stay in `slice-cache/`, and a later run resumes
+them PROVIDED THE BUILD HAS NOT MOVED.
+
+### The freeze, which is the one thing that can be broken by accident
+
+DO NOT CHANGE ANYTHING THE PIPELINE RUNS, and do not rebuild after doing so, until the pass has
+stopped. `assertResumableGeneration` throws `GenerationDriftError` when a pool holds entries settled
+under another build, so a rebuild costs this run's resumability. Reading, reporting, documentation
+and anything under `corpus-run/` that only reads are all safe; `slice-cost-report.ts` was built under
+this freeze as the model.
+
+Frozen and waiting: `#91` (half-weight, settled and located at `tallyResolutionChecks`), `#118` (the
+stream diagnostics), and anything in `#90`, `#100` or `#106` touching slicing.
+
+### When the pass stops, in order
+
+1.  `#91` half-weight self-certification. Settled, authorized, located.
+2.  `#118`: keep the partial text on abort, emit the `drainBody` progress sample on the abort path
+    too, and put the model id on that line. Small, and it makes `#68`'s latency axis answerable.
+3.  Re-read the slice cost telemetry, which by then includes translate-lane slices:
+    `mise run //package/module/translation-repair:slice-cost-report -- ~/temp/agent/corpus-pass-20260817.log`
+4.  Re-run the settled rendering audit over the six artifacts. The reader takes the flat layout, so:
+    `mise run //package/module/translation-repair:rendering-audit-settled -- --archive ~/translation-repair-runs-20260817/artifacts`
+    Verified working against the real artifacts at `--cap 0` on 2026-08-17.
+5.  `#60`'s redraw, now unblocked at the lowered bar of six.
+6.  `#108`'s replacement rate ON displacement-flagged slices against off them, which is what `#107`'s
+    remaining decision waits on.
+
+### Claims of mine that were retracted today, so they are not re-quoted
+
+-   "GLM models are slow." NO. 262 successful GLM answers against 24 abandons in the same window,
+    and the abandons are stage-shaped: 15 `select`, 6 `panel`, 4 `critic`, 0 `checker`, evenly
+    spread. Selection carries the largest prompts. A tail on large prompts, and still a hypothesis.
+-   "1349 streams, mean firstByte 1822ms." NO. The `drainBody` progress line is emitted after the
+    try/catch, so aborted streams log nothing and that figure covers survivors only. Survivorship
+    bias over exactly the population it was describing.
+-   "An abandoned call leaves nothing." NO. Streaming is always on and `drainBody` accumulates the
+    partial text in `parts`; the catch rethrows and drops it. The evidence exists at the cut and is
+    discarded, which is `#118` item 1.
+-   "#96 storing the target text doubles artifact size." NO, it is 0.6 to 0.9 percent. An artifact
+    is judge evidence, not text. `doc/planning/artifact-archive-text.md`.
