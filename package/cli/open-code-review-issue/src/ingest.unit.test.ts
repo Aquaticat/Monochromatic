@@ -21,7 +21,7 @@ await describe({
   children: [
     it({
       name: 'accepts a complete OCR JSON result',
-      fn: () => {
+      fn: async () => {
         /**
          * Complete result fixture carrying repository-head provenance.
          */
@@ -76,7 +76,7 @@ await describe({
     },),
     it({
       name: 'accepts a bare OCR comment array',
-      fn: () => {
+      fn: async () => {
         /**
          * Bare comments fixture with optional metadata absent.
          */
@@ -115,7 +115,7 @@ await describe({
     },),
     it({
       name: 'replays JSONL supersession and failure records',
-      fn: () => {
+      fn: async () => {
         /**
          * Session transcript whose later records replace and remove checkpoints.
          */
@@ -203,7 +203,7 @@ await describe({
     },),
     it({
       name: 'rejects findings without a meaningful title source',
-      fn: () => {
+      fn: async () => {
         /**
          * Sparse finding forbidden by atomic input validation.
          */
