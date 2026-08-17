@@ -8,6 +8,38 @@ this file holds the WORKING STATE.
 Worktree: `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`.
 All commands below assume it, not the main worktree.
 
+## Where the 2026-08-17 afternoon sitting got to
+
+Newest first. Everything named here is COMMITTED and pushed unless it says otherwise.
+
+-   `ad76cc8da` records that queue item 3 is BLOCKED and that its census already exists. Read that
+    item before touching the aligner; it cost this sitting an hour before the task itself was read.
+-   `3c070bde8`, `cffd4c376` the retry's missing test (raised-then-decided) and a count correction.
+-   `3ab0a2d15` re-reads the straggler-grace re-measure on the AT-RISK population and prices the
+    retry from settled artifacts. Both are in `doc/audit/straggler-grace-remeasure.md`.
+-   `fcc6a4b57`, `3a667a187` the re-measure write-up and `#105`'s retry, from the morning.
+
+IN FLIGHT AT THE TIME OF WRITING, and the one thing a REISUB would interrupt: a GFP strip of the
+retry wiring in `translate-stage.ts`. The file is MODIFIED IN THE WORKING TREE on purpose, with
+`judgeSlateWithRetry` replaced by a direct `judgeTranslateSlate` call, to prove the four retry cases
+fail without it.
+
+IF YOU FIND THAT STRIP IN PLACE, RESTORE IT AND REBUILD, in the `translation-repair` worktree:
+
+```bash
+git checkout -- package/module/translation-repair/src/translate-stage.ts
+mise run //package/module/translation-repair:build
+```
+
+A pristine copy is also at `scratchpad/translate-stage.ts.bak`. Nothing else in the tree is dirty,
+and `dist/` currently holds the STRIPPED build, so rebuild before trusting any run.
+
+WHAT IS NEXT, given item 3 is blocked: item 6, persisting `coverage-probe` output into the runs
+directory, which is decided and unblocked. The design settled on is a sibling
+`coverage-probe-store.ts` rather than growing `coverage-probe.ts`, which sits at 396 physical lines
+against a 300 code-line cap, and a per-run filename so successive probes accumulate instead of
+clobbering each other, which is the failure that lost the 2026-08-16 numbers in the first place.
+
 ## The one sentence
 
 Every defect in this stretch is the same shape:
