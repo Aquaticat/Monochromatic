@@ -80,17 +80,33 @@ rate, since a residual concentrated in the tail is a different finding from one 
 
 ## What it costs
 
-Almost nothing, and the handover's earlier note that widening "pushes the wrong way" on entry cost
-was wrong.
+MORE THAN THE ESTIMATE BELOW, and the estimate is left standing because the re-measure contradicted
+it and that is worth showing rather than hiding.
 
-The window is only paid when a voice is late. A voice that answers before it costs nothing at all,
-and a voice that would have been cut now costs the difference between when it arrives and the old 60
-second cut, which the distribution puts in the tens of seconds. Over the cost run, 63 of 283
-six-voice stages lost a voice; at roughly 20 seconds more each that is about 21 minutes across a
-seven and a half hour run, under half a percent.
+The estimate was: the window is only paid when a voice is late, a voice that answers before it costs
+nothing, and a voice that would have been cut costs the difference between its arrival and the old
+60 second cut. Over the cost run, 63 of 283 six-voice stages lost a voice; at roughly 20 seconds
+more each that is about 21 minutes across a seven and a half hour run, under half a percent.
 
-Against that, `doc/audit/two-lane-entry-cost.md` measures entries costing hours. Voice loss is worth
-more than the seconds it takes to stop losing them.
+WHAT THE RE-MEASURE ACTUALLY REPORTED for `zheermao101`, the first entry through: 5039467 ms against
+3917494 ms under the old window, 29 percent longer. That is far more than the estimate.
+
+The estimate is not simply wrong about the window; it is incomplete about what recovering voices
+does. The same run also reports 50 issues against 37, 29 accepted against 22, and 26 resolved
+against 20. Panels that hear six voices find more than panels that hear five, and finding more costs
+more. The extra time is buying extra work, not waiting.
+
+TWO THINGS THIS DOES NOT ESTABLISH, both of which need saying:
+
+-   THE RUN-TO-RUN BAND WAS NEVER MEASURED. One run against one earlier run cannot separate a 29
+    percent change from ordinary provider variance, and no unchanged-build repeat exists to say how
+    wide that band is. The number is what happened, not what the window costs.
+-   HOW MUCH OF IT IS THE WINDOW. Arithmetic says little of it: 6 of 58 stages lost a voice under
+    the old window, each would now wait at most tens of seconds longer, which is minutes rather than
+    the 18.7 observed. The rest is the wider judging that more surviving voices produce.
+
+The honest summary is that the window costs more than a rounding error and buys more than voices.
+Whether the trade is worth it is a quality question the corrected numbers can now be argued from.
 
 ## What was rejected, and why it is worth recording
 
