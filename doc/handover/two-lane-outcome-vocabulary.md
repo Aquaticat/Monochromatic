@@ -917,9 +917,35 @@ THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked:
     EVERY TIMING COMPARISON FROM HERE IS TWO CHANGES DEEP against the 2026-08-16 baselines, the
     window and this retry, and no arithmetic separates them afterwards. Record the `pipeline=` digest
     from a run's own `START` line beside any number taken from it.
-3.  `#74` and `#98`, the aligner, now foundational rather than optional: 85 of 92 entries never reach
-    the matcher because equal section counts skip it, so the population every section-scale
-    measurement was drawn from is itself an artifact of the aligner. Re-run the section census after.
+3.  `#74` and `#98`, the aligner. **`#74` IS CLOSED. `#98` IS BLOCKED, and this item as written
+    misdirects**, which cost a sitting on 2026-08-17 before the task itself was read. Corrected here
+    so it cannot cost another.
+
+    THE CENSUS THIS ITEM ASKS FOR HAS ALREADY BEEN RUN, on 2026-08-15, at zero quota, WITH a positive
+    control. Of 92 complete pairs, 85 take the equal-shape fast path, and forced alignment would pair
+    NONE of them differently. The control was invented headings (`Intro/Life/Notes` against
+    `Intro/Notes/Afterword`, equal counts, one dropped and one added) and `alignHeadingsForced`
+    returned a non-identity script with two refusals and one shift, so the probe can show the defect
+    and the corpus simply does not contain a case it can see. Do not rebuild this.
+
+    WHY THE ZERO IS NOT A CLEAN BILL, and why routing the fast path through the aligner anyway is
+    the wrong move: `headingAffinity` scores SHARED LATIN RUNS, so it pairs a handle carried across
+    (`Mikä`, `wing`, `Baimao suki`) and has nothing whatever to prefer between two headings with no
+    Latin in common, which is the common case here. Routing the 85 through it would change no pairing
+    while looking like a fix, and REFUSING every equal-count pairing would discard real repair
+    coverage to catch a case nothing here can detect.
+
+    WHAT ACTUALLY UNBLOCKS IT is a heading signal that works on handle-free headings. Three
+    deterministic substitutes are already measured and REFUTED, recorded on `#106` so they are not
+    re-derived: neighbour length excess, distinctive body tokens (which made alignment WORSE, raising
+    unpaired source sections from 11 to 18, because weak plentiful evidence promotes a spurious
+    pairing to a trusted anchor), and float-equality in the scorer. The one instrument measured
+    CORRECT on this question is the coverage stage, eleven of eleven at section scale, and wiring it
+    is question 28's subject rather than a free choice.
+
+    `#98` also carries `blockedBy: #106` in the tracker, and `#106` waits on question 28. Landing
+    section-scale insertion behind it is decided (paragraph scale is refused); the aligner gate in
+    front of it is not.
 4.  SECTION-SCALE insertion, with the heading defect fixed, over the population that then reaches the
     matcher. When a source section's counterpart is a heading with no body, the body belongs UNDER
     that heading; landing it as designed would have produced eight duplicate headings on `XIEPT2`.
