@@ -4,6 +4,7 @@
  * @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { runAppliedPublication, } from './applied-run.ts';
@@ -302,6 +303,44 @@ async function runNonInteractive({
 }
 
 /**
+ * Executes input, GitHub preflight, planning, and selected mode for known repository.
+ *
+ * @returns Settled mode status.
+ */
+async function executeRepositoryRun({
+  command,
+  cwd,
+  streams,
+  repository,
+}: {
+  readonly command: RunCliArguments;
+  readonly cwd: string;
+  readonly streams: CliStreams;
+  readonly repository: GitHubRepository;
+},): Promise<number> {
+  /**
+   * Validated OCR input loaded before GitHub operations.
+   */
+  const input = await loadInput({ command, streams, });
+  if (input.findings.length === 0) {
+    throw new CliRuntimeError('OCR input contains no findings to publish',);
+  }
+  await checkGitHubCliVersion({ cwd, });
+  /**
+   * Authenticated GitHub API process client.
+   */
+  const api = createGitHubApiClient({ cwd, });
+  /**
+   * Destination-aware complete publication plan.
+   */
+  const plan = await preparePlan({ input, repository, api, });
+  l.debug(`prepared ${String(plan.issues.length,)} Issue(s) in ${command.mode} mode`,);
+  return command.mode === 'interactive'
+    ? runInteractive({ plan, repository, api, streams, })
+    : runNonInteractive({ command, plan, repository, api, streams, });
+}
+
+/**
  * Executes one validated run command through input, preflight, and selected mode.
  *
  * @returns Settled mode status.
@@ -330,45 +369,35 @@ export async function executeRun({
     ...(command.repositoryUrl === undefined ? {} : { explicitUrl: command.repositoryUrl, }),
     cwd,
   },);
-  /**
-   * Validated OCR input loaded before GitHub operations.
-   */
-  const input = await loadInput({
-    command,
-    streams,
-  });
-  if (input.findings
-    .length
-    === 0) {
-    throw new CliRuntimeError('OCR input contains no findings to publish',);
-  }
-  await checkGitHubCliVersion({ cwd, });
-  /**
-   * Authenticated GitHub API process client.
-   */
-  const api = createGitHubApiClient({ cwd, });
-  /**
-   * Destination-aware complete publication plan.
-   */
-  const plan = await preparePlan({
-    input,
-    repository,
-    api,
-  });
-  l.debug(`prepared ${String(plan.issues
-    .length,)} Issue(s) in ${command.mode} mode`,);
-  return command.mode === 'interactive'
-    ? runInteractive({
-      plan,
-      repository,
-      api,
-      streams,
-    })
-    : runNonInteractive({
+  try {
+    return await executeRepositoryRun({
       command,
-      plan,
-      repository,
-      api,
+      cwd,
       streams,
-    });
+      repository,
+    },);
+  }
+  catch (error: unknown) {
+    if (command.mode !== 'non-interactive'
+      || command.applyAuthority === undefined)
+    {
+      throw error;
+    }
+    /**
+     * Safe pre-publication applied-run failure message.
+     */
+    const message = caughtValueText(error,);
+    l.error(message,);
+    writeAppliedResult({
+      output: streams.stdout,
+      result: {
+        outcome: 'failed',
+        repository: repository.url,
+        created: [],
+        withheldSecurityPositions: [],
+        failure: { message, },
+      },
+    },);
+    return EXIT_RUNTIME_FAILURE;
+  }
 }
