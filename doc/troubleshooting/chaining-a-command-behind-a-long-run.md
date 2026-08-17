@@ -64,19 +64,56 @@ printed `kept at <path>`,
 and did not exit for about another three minutes.
 It held ten socket and pipe descriptors the whole time.
 
-The cause is the roster fan-out.
-`runRenderingAudit` proceeds once a quorum of voices answers
-and abandons the slower ones,
-logging lines like:
+The first guess was that abandoned requests were holding sockets open,
+because the log is full of lines like:
 
 ```text
 [warn] runRenderingAudit hf:nvidia/...: abandoned 180000ms after quorum (AbortError)
 ```
 
-Abandoning the RESULT does not close the request.
-The underlying connection stays open until its own per-call timeout expires,
-and an open socket keeps the Node event loop alive,
-so the process outlives its work by up to the per-call timeout.
+THAT GUESS WAS WRONG,
+and reading the deciding source rather than the symptom found the real cause.
+`runStageRound` in `package/module/translation-repair/src/stage-round.ts`
+does abort the stragglers,
+through an `AbortController` every call in the round honors.
+It is not leaking sockets.
+
+It leaks a TIMER:
+
+```ts
+await Promise.race([
+  Promise.allSettled(asks,),
+  wait(graceMs,),
+],);
+abandon.abort();
+```
+
+`Promise.race` settles on the first result and does NOTHING to the loser.
+When the roster answers before the grace expires,
+which is the ordinary case,
+`wait(graceMs)` is still pending.
+
+And `wait` is a bare `setTimeout`
+(`package/module/async-time/src/wait.ts`)
+that returns no handle,
+so nothing can clear it,
+and does not call `unref`,
+so it holds the event loop:
+
+```ts
+const { promise, resolve, } = Promise.withResolvers<undefined>();
+setTimeout(function resolveAfterDelay(): void { resolve(undefined,); }, ms,);
+return promise;
+```
+
+Every round therefore leaves one live timer behind.
+The last round's timer is the one that matters,
+and `graceMs` here is 180000,
+which is the three minutes observed.
+
+This is not specific to the audit.
+Every stage round in the pipeline does it,
+so any CLI that runs one can outlive its own work by up to the grace window.
 
 Nothing is lost:
 the run file is already written when `kept at` prints,
@@ -100,3 +137,25 @@ If that line is absent, the process is still working.
 That distinction is why the completion line is worth printing
 with the path in it,
 rather than relying on the exit code alone.
+
+### The fix, which is not applied here
+
+`wait` should return something cancellable,
+or the race should clear the loser:
+
+```ts
+const cut = setTimeout(...,);
+try { await Promise.race([...,],); } finally { clearTimeout(cut,); }
+```
+
+`unref` would also stop it holding the loop,
+but it is the weaker fix:
+it hides the leak rather than removing it,
+and a timer that stops keeping the process alive
+still fires on a process kept alive by something else.
+
+Not applied at the time of writing because `stage-round.ts` is in the
+PRODUCING path and the task that found this
+(`#115`, the settled rendering audit)
+is forbidden from changing anything there.
+Tracked separately.
