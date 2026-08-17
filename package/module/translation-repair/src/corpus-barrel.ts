@@ -160,6 +160,10 @@ export {
   PipelineDigestError,
   type PipelineStamp,
 } from './corpus-run/pipeline-digest.ts';
+export {
+  persistProbeRun,
+  type ProbeRun,
+} from './corpus-run/probe-store.ts';
 
 //endregion Corpus run barrel
 export {

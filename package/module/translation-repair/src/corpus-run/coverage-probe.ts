@@ -7,8 +7,11 @@ import {
 import { listCoverageCandidates, } from '../coverage-candidates.ts';
 import { runCoverageStage, } from '../coverage-stage.ts';
 import { parseDocument, } from '../parse-document.ts';
+import { digestPipeline, } from './pipeline-digest.ts';
+import { persistProbeRun, } from './probe-store.ts';
 import {
   createRunClient,
+  resolveRunsDir,
   RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
@@ -27,9 +30,16 @@ import {
 // passages the aligners actually refuse, and records what came back so the
 // answer to question 28 rests on a measurement rather than on an expectation.
 //
-// IT DECIDES NOTHING. No slicing, no artifact and no lane reads its output. It
-// prints its rows as JSON on standard output and writes nothing, so a caller
-// redirects them wherever the measurement is being kept.
+// IT DECIDES NOTHING. No slicing, no artifact and no lane reads its output.
+//
+// IT DOES KEEP ITS ANSWERS, which it did not always. It used to print rows to
+// standard output and write nothing, on the reasoning that a caller would
+// redirect them wherever the measurement was being kept. Nobody did, and both
+// scales were probed on 2026-08-16 at real quota cost: `#106` records that
+// those numbers "survive only in session transcripts". Every run now lands in
+// the runs directory under `coverage-probe/` as well, carrying the corpus pin,
+// the roster and the pipeline digest that produced it. Standard output is
+// unchanged, so a caller already redirecting it loses nothing.
 
 /**
  * How many candidates one invocation asks about by default.
@@ -216,6 +226,12 @@ async function main(): Promise<void> {
   const log = tagged({ tag: 'coverage-probe', },);
 
   /**
+   * When this run began, read before any work so the record dates the run
+   * rather than the moment it happened to finish.
+   */
+  const startedAt = new Date().toISOString();
+
+  /**
    * Entry filter and candidate cap.
    */
   const {
@@ -381,6 +397,41 @@ async function main(): Promise<void> {
     }
   }
   /* oxlint-enable no-await-in-loop */
+
+  /**
+   * Digest over built output, which is the only identity that moves when the
+   * code moves but the commit does not.
+   */
+  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
+
+  /**
+   * Where this run was kept, said out loud so the answers are findable without
+   * searching a runs directory for them.
+   */
+  const keptAt = await persistProbeRun({
+    runsDir: await resolveRunsDir(),
+    probeName: 'coverage-probe',
+    run: {
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      pipelineDigest,
+      // THE COMMIT, not the whole pin: the pin also carries a local clone
+      // directory, which names this machine rather than the corpus and is worth
+      // nothing to a later reader holding the file.
+      corpusPin: RUN_CORPUS_PIN.commitSha,
+      roster: RUN_ROSTER,
+      subject: {
+        entriesWalked: entryIds,
+        entriesRequested: onlyIds,
+        candidateCap: cap,
+      },
+      rows,
+    },
+  },);
+  log.info(`kept ${String(rows.length,)} rows at ${keptAt}`,);
+
+  // STANDARD OUTPUT STAYS. Redirecting it is the workflow this probe shipped
+  // with, and removing it would trade one lost measurement for another.
   console.log(JSON.stringify(
     { rows, },
     undefined,
