@@ -4,6 +4,7 @@
  * @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   logger,
   tagged,
@@ -94,6 +95,20 @@ export class CliRuntimeError extends Error {
 }
 
 /**
+ * Projects process streams to Inquirer input/output names.
+ *
+ * @param streams - Process standard streams.
+ *
+ * @returns Explicit prompt streams.
+ */
+function promptStreams(streams: CliStreams,): PromptStreams {
+  return {
+    input: streams.stdin,
+    output: streams.stdout,
+  };
+}
+
+/**
  * Requires visible and responsive streams for every interactive flow.
  *
  * @param streams - Process standard streams.
@@ -133,7 +148,7 @@ async function loadInput({
   /**
    * One-line pasted structured JSON.
    */
-  const text = await promptForPastedInput({ streams, });
+  const text = await promptForPastedInput({ streams: promptStreams(streams,), });
   return parseStructuredInput({ text, },);
 }
 
@@ -175,6 +190,8 @@ async function preparePlan({
 
 /**
  * Executes interactive selection, disclosure, and final confirmation.
+ *
+ * @returns Clean cancellation, success, or publication failure status.
  */
 async function runInteractive({
   plan,
@@ -190,7 +207,10 @@ async function runInteractive({
   /**
    * Selected ordinary and individually confirmed security Issues.
    */
-  const selection = await selectInteractiveIssues({ plan, streams, });
+  const selection = await selectInteractiveIssues({
+    plan,
+    streams: promptStreams(streams,),
+  },);
   if (selection.issues.length === 0) {
     writeCancellation(streams.stdout,);
     return EXIT_SUCCESS;
@@ -206,7 +226,7 @@ async function runInteractive({
    */
   const confirmed = await promptForExplicitDecision({
     message: 'Create these public GitHub Issues? Type yes or no',
-    streams,
+    streams: promptStreams(streams,),
   },);
   if (!confirmed) {
     writeCancellation(streams.stdout,);
@@ -224,6 +244,8 @@ async function runInteractive({
 
 /**
  * Executes exact preview or explicitly authorized non-interactive publication.
+ *
+ * @returns Preview, success, or handled publication failure status.
  */
 async function runNonInteractive({
   command,
@@ -281,6 +303,8 @@ async function runNonInteractive({
 
 /**
  * Executes one validated run command through input, preflight, and selected mode.
+ *
+ * @returns Settled mode status.
  */
 async function executeRun({
   command,
@@ -348,6 +372,14 @@ export async function runCli({
   readonly cwd: string;
   readonly streams: CliStreams;
 },): Promise<number> {
+  /**
+   * Async cleanup that flushes logger on every return or throw path.
+   */
+  await using loggerCleanup = {
+    async [Symbol.asyncDispose]() {
+      await logger.flush();
+    },
+  };
   try {
     l.debug('parsing invocation',);
     /**
@@ -368,14 +400,11 @@ export async function runCli({
     /**
      * Safe handled error message; no finding content is logged by implementations.
      */
-    const message = Error.isError(error,) ? error.message : String(error,);
+    const message = caughtValueText(error,);
     l.error(message,);
     streams.stderr.write(`${message}\n`,);
     return error instanceof CliInvocationError
       ? EXIT_INVOCATION_MISUSE
       : EXIT_RUNTIME_FAILURE;
-  }
-  finally {
-    await logger.flush();
   }
 }

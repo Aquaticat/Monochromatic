@@ -34,15 +34,15 @@ export type AppliedStreams = {
 /**
  * Extracts multiple reconciliation URLs from nested stopping failure.
  *
- * @param error - Positioned stopping publication error.
+ * @param cause - Underlying positioned stopping cause.
  *
  * @returns Optional matching URL property for machine result.
  */
 function matchingUrlMetadata(
-  error: PublicationStoppedError,
+  cause: unknown,
 ): { readonly matchingUrls?: readonly string[]; } {
-  return error.cause instanceof AmbiguousReconciliationError
-    ? { matchingUrls: error.cause.urls, }
+  return cause instanceof AmbiguousReconciliationError
+    ? { matchingUrls: cause.urls, }
     : {};
 }
 
@@ -83,6 +83,9 @@ export async function runAppliedPublication({
   readonly api: GitHubApiClient;
   readonly streams: AppliedStreams;
 },): Promise<number> {
+  /**
+   * Two-stage signal control scoped to publication lifecycle.
+   */
   using interrupts = createPublicationInterruptControl({});
   try {
     /**
@@ -150,7 +153,7 @@ export async function runAppliedPublication({
             failure: {
               position: error.position,
               message: error.message,
-              ...matchingUrlMetadata(error,),
+              ...matchingUrlMetadata(error.cause,),
             },
           },
         },);

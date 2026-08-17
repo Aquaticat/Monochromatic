@@ -25,6 +25,7 @@
   "dependencies": {
     "@inquirer/checkbox": "catalog:",
     "@inquirer/input": "catalog:",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "nano-spawn": "catalog:"
   },

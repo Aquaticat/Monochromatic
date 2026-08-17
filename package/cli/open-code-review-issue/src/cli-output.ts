@@ -37,6 +37,11 @@ export const HELP_TEXT = [
  * @param output - Destination standard output stream.
  *
  * @param value - Machine-readable object.
+ *
+ * @example
+ * ```ts
+ * writeJson({ output: process.stdout, value: {} });
+ * ```
  */
 export function writeJson({
   output,
@@ -69,6 +74,11 @@ function formatPosition(position: InputPosition,): string {
  * @param issues - Selected complete Issues.
  *
  * @param withheldCount - Security findings not authorized for publication.
+ *
+ * @example
+ * ```ts
+ * writeInteractiveSummary({ output, repository, issues, withheldCount: 0 });
+ * ```
  */
 export function writeInteractiveSummary({
   output,
@@ -103,6 +113,11 @@ export function writeInteractiveSummary({
  * @param output - Interactive TTY standard output.
  *
  * @param created - Confirmed created or reconciled Issues.
+ *
+ * @example
+ * ```ts
+ * writeCreatedIssues({ output, created: [] });
+ * ```
  */
 export function writeCreatedIssues({
   output,
@@ -121,6 +136,11 @@ export function writeCreatedIssues({
  * Writes exact clean cancellation message.
  *
  * @param output - Interactive TTY standard output.
+ *
+ * @example
+ * ```ts
+ * writeCancellation(process.stdout);
+ * ```
  */
 export function writeCancellation(output: NodeJS.WritableStream,): void {
   output.write('Issue creation canceled.\n',);
@@ -132,6 +152,11 @@ export function writeCancellation(output: NodeJS.WritableStream,): void {
  * @param output - Standard output reserved for one JSON object.
  *
  * @param result - Complete success or handled failure result.
+ *
+ * @example
+ * ```ts
+ * writeAppliedResult({ output, result });
+ * ```
  */
 export function writeAppliedResult({
   output,
