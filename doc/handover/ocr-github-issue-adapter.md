@@ -507,10 +507,12 @@ Clack's target prompt suites passed,
 but its full suite exposed a supported-runtime nested-color mismatch documented in
 [`doc/troubleshooting/clack-note-nested-styletext-node-floor.md`][clack-note-node-floor].
 
-The recommendation is `@inquirer/prompts` 8.5.2 for this adapter.
-That recommendation is not dependency approval.
-No dependency decision has been made,
-and the user must explicitly approve making it direct.
+The recommendation is Inquirer 8.5.2 for this adapter.
+The user approved Inquirer on 2026-08-16,
+with the direction to cherry-pick only necessary package parts.
+Treat this as approval of the Inquirer technology family,
+not approval to install its umbrella package unnecessarily.
+The exact direct subpackages remain under audit and each must be named before adoption.
 
 CLI packages under `package/cli/<name>` use package names shaped
 `@monochromatic-dev/cli-<name>` and usually expose an unscoped `<name>` binary.
@@ -807,9 +809,11 @@ in dependency order:
 
 ## Immediate next action
 
-Ask whether the user explicitly approves `@inquirer/prompts` 8.5.2
-as a direct dependency of `@monochromatic-dev/cli-open-code-review-issue`.
-Recommendation alone is not approval.
+Audit direct Inquirer subpackages and propose only the exact minimal dependency set.
+Then continue grilling configuration,
+GitHub CLI compatibility,
+mise tasks,
+and verification.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -991,8 +995,10 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   and binary `open-code-review-issue`.
 - 2026-08-16:
   completed the Clack versus Inquirer vet;
-  adapter-specific interaction requirements recommend Inquirer,
-  pending separate dependency approval.
+  adapter-specific interaction requirements recommend Inquirer.
+- 2026-08-16:
+  approved the Inquirer technology family,
+  with only necessary package parts to become direct dependencies.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
