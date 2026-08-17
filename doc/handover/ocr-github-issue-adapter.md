@@ -176,6 +176,35 @@ The adapter may invoke Git and GitHub CLI,
 which retain their own configuration and authentication behavior,
 but it must not parse or add hidden defaults from those tools beyond the settled repository-inference rule.
 
+### Package task surface
+
+Repository conventions determine the package's mise task surface without another preference decision.
+The package defines `run`,
+`build`,
+`build:js`,
+`build:js:node`,
+`watch:build`,
+`watch:build:js`,
+`watch:build:js:node`,
+`lint`,
+`lint:types`,
+`lint:oxlint`,
+`format:oxlint`,
+`test:unit`,
+`test:integration`,
+and `buildAndTest`.
+Unit tests cover pure parser,
+normalization,
+policy,
+rendering,
+and prompt paths.
+Integration tests invoke the built binary with disposable filesystem fixtures and a fake `gh` executable.
+`buildAndTest` uses mise's array form to run build,
+unit tests,
+and integration tests in sequence.
+No routine mise task performs live GitHub mutations;
+any live disposable-repository verification requires its separately settled authorization and safeguards.
+
 ### Repository selection
 
 An explicit `--repo https://github.com/OWNER/NAME` selects the destination in either mode.
@@ -838,7 +867,8 @@ in dependency order:
     user,
     or environment configuration surface.
     GitHub CLI compatibility requires parseable version 2.97.0 or newer.
-    Mise tasks remain open.
+    Mise tasks follow the settled package task surface,
+    including unit and built-CLI integration suites.
 11. Verification:
     parser fixtures,
     prompt interaction tests,
@@ -849,7 +879,7 @@ in dependency order:
 ## Immediate next action
 
 Do not add the umbrella package or a direct core dependency.
-Continue grilling mise tasks and verification.
+Continue grilling live GitHub verification.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -1047,6 +1077,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   with no adapter configuration files or environment variables.
 - 2026-08-16:
   selected GitHub CLI 2.97.0 as the minimum supported version.
+- 2026-08-16:
+  settled the standard mise task surface,
+  including unit and built-CLI integration suites.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
