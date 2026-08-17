@@ -23,6 +23,15 @@ export {
   compareLanesV2,
 } from './corpus-run/artifact-v2-comparison.ts';
 export {
+  type AudienceSplit,
+  rateByVoice,
+  type AuditRelocationPair,
+  splitFor,
+  type VoiceRate,
+} from './corpus-run/rendering-audit-settled-read.ts';
+export { auditRelocationPairs, } from './corpus-run/rendering-audit-settled-relocation.ts';
+export type { SettledAuditRow, } from './corpus-run/rendering-audit-settled-row.ts';
+export {
   readArchiveSubjects,
   readArtifactSubjects,
   type SettledArtifactReading,

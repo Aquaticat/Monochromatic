@@ -34,6 +34,30 @@ the name is excluded from the resulting namespace.
 Not an error, not a warning, not a last-one-wins.
 It is simply absent.
 
+## Types collide loudly, values collide silently
+
+A second collision landed the same afternoon,
+in the same package,
+on a type rather than a function:
+a new `RelocationCandidate` met the one `translate-barrel.ts` already exported.
+
+That one DID fail, immediately and clearly:
+
+```text
+typescript(TS2308): Module './corpus-barrel.ts' has already exported a member
+named 'RelocationCandidate'. Consider explicitly re-exporting to resolve the
+ambiguity.
+```
+
+So the two halves of the same hazard behave in opposite ways.
+TypeScript raises TS2308 for an ambiguous TYPE re-export,
+and says nothing at all when the ambiguous name is a value,
+because the value case is legal ECMAScript with defined semantics:
+exclude it.
+
+Do not read a clean type-check as evidence there is no collision.
+It only rules out the loud half.
+
 ## Why nothing caught it
 
 -   `tsc` passed.
