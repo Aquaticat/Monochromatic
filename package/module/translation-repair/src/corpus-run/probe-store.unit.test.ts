@@ -57,6 +57,11 @@ async function scratch(): Promise<string> {
  */
 const BASE_RUN: ProbeRun = {
   startedAt: '2026-08-17T09:00:00.000Z',
+  runnerClosure: {
+    kind: 'read',
+    entry: 'tabby-probe.mjs',
+    chunks: [],
+  },
   finishedAt: '2026-08-17T09:02:00.000Z',
   pipelineDigest: 'sha256-tree-v1:cafef00d',
   roster: ['hf:cat/Tabby-1', 'hf:cat/Calico-2',],

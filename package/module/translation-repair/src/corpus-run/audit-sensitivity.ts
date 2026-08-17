@@ -18,6 +18,7 @@ import {
 } from './audit-sensitivity-input.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
+import { readRunnerClosure, } from './runner-closure.ts';
 import {
   createRunClient,
   resolveRunsDir,
@@ -444,6 +445,13 @@ async function main(): Promise<void> {
   const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
+   * Chunks this entry imports, read from the executing file at run START for
+   * the same reason the digest is: a rebuild mid-run would otherwise stamp a
+   * build that never ran. `#116`.
+   */
+  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+
+  /**
    * Both arms, in the order they ran.
    *
    * SEQUENTIAL rather than concurrent, because the two arms share one roster
@@ -474,6 +482,7 @@ async function main(): Promise<void> {
       startedAt,
       finishedAt: new Date().toISOString(),
       pipelineDigest,
+      runnerClosure,
       roster: RUN_MODELS.checkerModelIds,
       // NO CORPUS PIN, deliberately: this probe reads invented fixtures and a
       // corpus commit here would name text it never saw.

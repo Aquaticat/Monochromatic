@@ -9,6 +9,7 @@ import { runCoverageStage, } from '../coverage-stage.ts';
 import { parseDocument, } from '../parse-document.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
+import { readRunnerClosure, } from './runner-closure.ts';
 import {
   createRunClient,
   resolveRunsDir,
@@ -255,6 +256,13 @@ async function main(): Promise<void> {
   const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
+   * Chunks this entry imports, read from the executing file at run START for
+   * the same reason the digest is: a rebuild mid-run would otherwise stamp a
+   * build that never ran. `#116`.
+   */
+  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+
+  /**
    * Entry filter and candidate cap.
    */
   const {
@@ -433,6 +441,7 @@ async function main(): Promise<void> {
       startedAt,
       finishedAt: new Date().toISOString(),
       pipelineDigest,
+      runnerClosure,
       roster: RUN_ROSTER,
       subject: {
         // THE COMMIT, not the whole pin: the pin also carries a local clone

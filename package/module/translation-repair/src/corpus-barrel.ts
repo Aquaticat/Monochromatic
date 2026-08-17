@@ -203,6 +203,10 @@ export {
   persistProbeRun,
   type ProbeRun,
 } from './corpus-run/probe-store.ts';
+export {
+  readRunnerClosure,
+  type RunnerClosure,
+} from './corpus-run/runner-closure.ts';
 
 //endregion Corpus run barrel
 export {

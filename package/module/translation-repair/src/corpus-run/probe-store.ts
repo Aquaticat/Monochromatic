@@ -2,6 +2,7 @@ import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { writeFileAtomic, } from './atomic-write.ts';
+import type { RunnerClosure, } from './runner-closure.ts';
 
 //region Probe store
 // Keeps what a quota-spending probe measured, which used to survive only in
@@ -69,6 +70,17 @@ export type ProbeRun = {
    * build something else.
    */
   readonly pipelineDigest: string;
+
+  /**
+   * Chunks the executing entry imports, which is the identity a COMPARISON
+   * needs and the tree digest cannot give.
+   *
+   * The digest moves whenever anything in the tree moves, including code this
+   * run never loaded, so two runs of byte-identical probe code carry different
+   * digests and nothing tells that apart from a real change. The closure moves
+   * only when this runner's own code does. `#116`.
+   */
+  readonly runnerClosure: RunnerClosure;
 
   /**
    * Models asked, in roster order, since a verdict over six voices is not

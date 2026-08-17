@@ -3,6 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
+import { readRunnerClosure, } from './runner-closure.ts';
 import {
   type AuditArguments,
   readAuditArguments,
@@ -352,6 +353,13 @@ async function main(): Promise<void> {
   const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
+   * Chunks this entry imports, read from the executing file at run START for
+   * the same reason the digest is: a rebuild mid-run would otherwise stamp a
+   * build that never ran. `#116`.
+   */
+  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+
+  /**
    * What the command line asked for.
    */
   const asked = readAuditArguments({ argv: process.argv, },);
@@ -419,6 +427,7 @@ async function main(): Promise<void> {
       startedAt,
       finishedAt: new Date().toISOString(),
       pipelineDigest,
+      runnerClosure,
       roster: RUN_MODELS.checkerModelIds,
       subject: {
         archiveDir: asked.archiveDir,
