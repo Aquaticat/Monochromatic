@@ -11,7 +11,7 @@ import { runCli, } from '../dist/final/node/index.mjs';
 /**
  * Writable capture stream for CLI output assertions.
  */
-class CaptureStream extends PassThrough {
+class CaptureStreamElement extends PassThrough {
   /**
    * Captured output chunks.
    */
@@ -46,11 +46,11 @@ await describe({
         /**
          * Captured standard output.
          */
-        const stdout = new CaptureStream();
+        const stdout = new CaptureStreamElement();
         /**
          * Captured standard error.
          */
-        const stderr = new CaptureStream();
+        const stderr = new CaptureStreamElement();
         /**
          * Empty standard input.
          */
@@ -71,11 +71,11 @@ await describe({
         /**
          * Captured standard output.
          */
-        const stdout = new CaptureStream();
+        const stdout = new CaptureStreamElement();
         /**
          * Captured standard error.
          */
-        const stderr = new CaptureStream();
+        const stderr = new CaptureStreamElement();
         /**
          * Empty standard input.
          */
@@ -96,11 +96,11 @@ await describe({
         /**
          * Captured standard output.
          */
-        const stdout = new CaptureStream();
+        const stdout = new CaptureStreamElement();
         /**
          * Captured standard error.
          */
-        const stderr = new CaptureStream();
+        const stderr = new CaptureStreamElement();
         /**
          * Non-TTY standard input.
          */

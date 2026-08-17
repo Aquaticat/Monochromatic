@@ -150,8 +150,8 @@ await describe({
         const preview: unknown = JSON.parse(result.stdout,);
         expect(result.stdout.trim().split('\n',)).toHaveLength(1,);
         expect(JSON.stringify(preview,),).not.toContain('SECRET',);
-        expect(JSON.stringify(preview,),).toContain('\"outcome\":\"preview\"',);
-        expect(JSON.stringify(preview,),).toContain('\"count\":1',);
+        expect(JSON.stringify(preview,),).toContain('"outcome":"preview"',);
+        expect(JSON.stringify(preview,),).toContain('"count":1',);
       },
     },),
     it({
