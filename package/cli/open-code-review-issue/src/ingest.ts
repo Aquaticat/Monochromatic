@@ -26,14 +26,22 @@ import type {
  * ```
  */
 function readResolvedHead(result: Readonly<Record<string, unknown>>,): string | undefined {
-  if (!isRecord(result.manifest,)
-    || !isRecord(result.manifest.input,)
-    || typeof result.manifest.input.resolved_head !== 'string'
-    || result.manifest.input.resolved_head === '')
+  if ((!isRecord(result.manifest,))
+    || (!isRecord(result.manifest
+      .input,))
+    || ((typeof result.manifest
+      .input
+      .resolved_head) !== 'string')
+    || (result.manifest
+      .input
+      .resolved_head
+      === ''))
   {
     return undefined;
   }
-  return result.manifest.input.resolved_head;
+  return result.manifest
+    .input
+    .resolved_head;
 }
 
 /**
@@ -49,10 +57,16 @@ function readResolvedHead(result: Readonly<Record<string, unknown>>,): string | 
  * ```
  */
 function normalizeComments(comments: readonly unknown[],): readonly NormalizedFinding[] {
-  return comments.map(function normalizeEnvelopeComment(value, index,): NormalizedFinding {
+  return comments.map(function normalizeEnvelopeComment(
+    value,
+    index,
+  ): NormalizedFinding {
     return normalizeComment({
       value,
-      position: { kind: 'record', value: index + 1, },
+      position: {
+        kind: 'record',
+        value: index + 1,
+      },
     },);
   },);
 }
@@ -78,9 +92,9 @@ function parseJsonDocument(parsed: unknown,): NormalizedInput {
       findings: normalizeComments(parsed,),
     };
   }
-  if (!isRecord(parsed,)
-    || typeof parsed.status !== 'string'
-    || !Array.isArray(parsed.comments,))
+  if ((!isRecord(parsed,))
+    || ((typeof parsed.status) !== 'string')
+    || (!Array.isArray(parsed.comments,)))
   {
     throw new InputValidationError('input is not a complete OCR result or comment array',);
   }

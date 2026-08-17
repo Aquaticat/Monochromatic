@@ -24,7 +24,9 @@ type ReplayGroup = {
  * Reads optional string field from JSONL event.
  *
  * @param record - Event carrying candidate field.
+ *
  * @param key - Event property to inspect.
+ *
  * @param line - One-based JSONL line number.
  *
  * @returns Empty string when absent or supplied string.
@@ -49,7 +51,7 @@ function eventString({
   if (value === undefined) {
     return '';
   }
-  if (typeof value !== 'string') {
+  if ((typeof value) !== 'string') {
     throw new InputValidationError(`line ${String(line,)} property ${key} must be a string`,);
   }
   return value;
@@ -59,6 +61,7 @@ function eventString({
  * Extracts resolved head from session-end manifest when present.
  *
  * @param record - Session event carrying optional run manifest.
+ *
  * @param line - One-based JSONL line number.
  *
  * @returns Resolved head or absence.
@@ -80,16 +83,19 @@ function jsonlResolvedHead({
   if (record.run_manifest === undefined) {
     return undefined;
   }
-  if (!isRecord(record.run_manifest,)
-    || !isRecord(record.run_manifest.input,))
+  if ((!isRecord(record.run_manifest,))
+    || (!isRecord(record.run_manifest
+      .input,)))
   {
     throw new InputValidationError(`line ${String(line,)} run_manifest.input must be an object`,);
   }
-  const value = record.run_manifest.input.resolved_head;
-  if (value === undefined || value === '') {
+  const value = record.run_manifest
+    .input
+    .resolved_head;
+  if ((value === undefined) || (value === '')) {
     return undefined;
   }
-  if (typeof value !== 'string') {
+  if ((typeof value) !== 'string') {
     throw new InputValidationError(
       `line ${String(line,)} run_manifest.input.resolved_head must be a string`,
     );
@@ -101,6 +107,7 @@ function jsonlResolvedHead({
  * Parses one JSONL line as event record.
  *
  * @param text - One physical JSONL line without newline delimiter.
+ *
  * @param line - One-based line number.
  *
  * @returns Validated event record.
@@ -129,7 +136,7 @@ function parseJsonlRecord({
   catch (error: unknown) {
     throw new InputValidationError(`line ${String(line,)} must be valid JSON: ${String(error,)}`,);
   }
-  if (!isRecord(value,) || typeof value.type !== 'string') {
+  if ((!isRecord(value,)) || ((typeof value.type) !== 'string')) {
     throw new InputValidationError(`line ${String(line,)} must be an event object with string type`,);
   }
   return value;
@@ -139,6 +146,7 @@ function parseJsonlRecord({
  * Normalizes comments carried by a completed or reused checkpoint.
  *
  * @param record - Checkpoint event.
+ *
  * @param line - One-based JSONL line number.
  *
  * @returns Findings inheriting event path when comment path is empty.
@@ -160,13 +168,25 @@ function checkpointFindings({
   if (!Array.isArray(record.comments,)) {
     throw new InputValidationError(`line ${String(line,)} property comments must be an array`,);
   }
-  const filePath = eventString({ record, key: 'filePath', line, });
-  const newPath = eventString({ record, key: 'newPath', line, });
+  const filePath = eventString({
+    record,
+    key: 'filePath',
+    line,
+  });
+  const newPath = eventString({
+    record,
+    key: 'newPath',
+    line,
+  });
   const fallbackPath = filePath === '' ? newPath : filePath;
-  return record.comments.map(function normalizeCheckpointComment(value,): NormalizedFinding {
+  return record.comments
+    .map(function normalizeCheckpointComment(value,): NormalizedFinding {
     return normalizeComment({
       value,
-      position: { kind: 'line', value: line, },
+      position: {
+        kind: 'line',
+        value: line,
+      },
       fallbackPath,
     },);
   },);
@@ -188,22 +208,47 @@ function checkpointFindings({
  */
 export function parseJsonlInput({ text, }: { readonly text: string; },): NormalizedInput {
   const physicalLines = text.split('\n',);
-  const lines = physicalLines.at(-1,) === '' ? physicalLines.slice(0, -1,) : physicalLines;
+  const lines = physicalLines.at(-1,) === '' ? physicalLines.slice(
+    0,
+    -1,
+  ) : physicalLines;
   const groups: ReplayGroup[] = [];
   const groupByFingerprint = new Map<string, number>();
   let resolvedHead: string | undefined;
 
-  lines.forEach(function replayLine(lineText, zeroBasedLine,): void {
+  lines.forEach(function replayLine(
+    lineText,
+    zeroBasedLine,
+  ): void {
     const line = zeroBasedLine + 1;
-    const record = parseJsonlRecord({ text: lineText.endsWith('\r',) ? lineText.slice(0, -1,) : lineText, line, });
-    if (record.type === 'review_item_done' || record.type === 'review_item_reused') {
-      const fingerprint = eventString({ record, key: 'fingerprint', line, });
-      const group = { fingerprint, findings: checkpointFindings({ record, line, }), };
+    const record = parseJsonlRecord({
+      text: lineText.endsWith('\r',) ? lineText.slice(
+        0,
+        -1,
+      ) : lineText,
+      line,
+    });
+    if ((record.type === 'review_item_done') || (record.type === 'review_item_reused')) {
+      const fingerprint = eventString({
+        record,
+        key: 'fingerprint',
+        line,
+      });
+      const group = {
+        fingerprint,
+        findings: checkpointFindings({
+          record,
+          line,
+        }),
+      };
       const existingIndex = fingerprint === '' ? undefined : groupByFingerprint.get(fingerprint,);
       if (existingIndex === undefined) {
         groups.push(group,);
         if (fingerprint !== '') {
-          groupByFingerprint.set(fingerprint, groups.length - 1,);
+          groupByFingerprint.set(
+            fingerprint,
+            groups.length - 1,
+          );
         }
       }
       else {
@@ -212,15 +257,25 @@ export function parseJsonlInput({ text, }: { readonly text: string; },): Normali
       return;
     }
     if (record.type === 'review_item_failed') {
-      const fingerprint = eventString({ record, key: 'fingerprint', line, });
+      const fingerprint = eventString({
+        record,
+        key: 'fingerprint',
+        line,
+      });
       const existingIndex = fingerprint === '' ? undefined : groupByFingerprint.get(fingerprint,);
       if (existingIndex !== undefined) {
-        groups[existingIndex] = { fingerprint, findings: [], };
+        groups[existingIndex] = {
+          fingerprint,
+          findings: [],
+        };
       }
       return;
     }
     if (record.type === 'session_end') {
-      resolvedHead = jsonlResolvedHead({ record, line, }) ?? resolvedHead;
+      resolvedHead = jsonlResolvedHead({
+        record,
+        line,
+      }) ?? resolvedHead;
     }
   },);
 

@@ -19,7 +19,9 @@ import type {
  * Reads mandatory string property from one untrusted record.
  *
  * @param record - Record carrying candidate property.
+ *
  * @param key - Property whose type is part of accepted OCR schema.
+ *
  * @param positionLabel - Input position for diagnostic evidence.
  *
  * @returns Validated string value.
@@ -41,7 +43,7 @@ function requiredString({
   readonly positionLabel: string;
 },): string {
   const value = record[key];
-  if (typeof value !== 'string') {
+  if ((typeof value) !== 'string') {
     throw new InputValidationError(`${positionLabel} property ${key} must be a string`,);
   }
   return value;
@@ -51,7 +53,9 @@ function requiredString({
  * Reads optional string property with empty-string normalization.
  *
  * @param record - Record carrying candidate property.
+ *
  * @param key - Optional OCR property.
+ *
  * @param positionLabel - Input position for diagnostic evidence.
  *
  * @returns Empty string when absent or validated supplied text.
@@ -76,7 +80,7 @@ function optionalString({
   if (value === undefined) {
     return '';
   }
-  if (typeof value !== 'string') {
+  if ((typeof value) !== 'string') {
     throw new InputValidationError(`${positionLabel} property ${key} must be a string`,);
   }
   return value;
@@ -86,7 +90,9 @@ function optionalString({
  * Reads positive integer line property.
  *
  * @param record - Record carrying line property.
+ *
  * @param key - Start or end line key.
+ *
  * @param positionLabel - Input position for diagnostic evidence.
  *
  * @returns Validated positive integer.
@@ -108,7 +114,8 @@ function positiveLine({
   readonly positionLabel: string;
 },): number {
   const value = record[key];
-  if (typeof value !== 'number' || !Number.isInteger(value,) || value < 1) {
+  if (((typeof value) !== 'number') || (!Number.isInteger(value,))
+    || (value < 1)) {
     throw new InputValidationError(`${positionLabel} property ${key} must be a positive integer`,);
   }
   return value;
@@ -118,7 +125,9 @@ function positiveLine({
  * Selects explicit comment path or inherited JSONL item path.
  *
  * @param record - Comment carrying optional explicit path.
+ *
  * @param fallbackPath - Item-level path inherited by pathless JSONL comments.
+ *
  * @param positionLabel - Input position for diagnostic evidence.
  *
  * @returns Non-empty source path.
@@ -139,7 +148,11 @@ function commentPath({
   readonly fallbackPath?: string;
   readonly positionLabel: string;
 },): string {
-  const suppliedPath = requiredString({ record, key: 'path', positionLabel, });
+  const suppliedPath = requiredString({
+    record,
+    key: 'path',
+    positionLabel,
+  });
   const path = suppliedPath === '' ? fallbackPath ?? '' : suppliedPath;
   if (path.trim() === '') {
     throw new InputValidationError(`${positionLabel} property path must not be empty`,);
@@ -179,7 +192,8 @@ function commentPath({
  * ```
  */
 function hasNonWhitespaceLine(text: string,): boolean {
-  return text.split('\n',).some(function lineHasText(line,): boolean {
+  return text.split('\n',)
+    .some(function lineHasText(line,): boolean {
     return line.trim() !== '';
   },);
 }
@@ -197,20 +211,54 @@ export function normalizeComment({
   if (!isRecord(value,)) {
     throw new InputValidationError(`${positionLabel} must be an object`,);
   }
-  const path = commentPath({ record: value, fallbackPath, positionLabel, });
-  const content = requiredString({ record: value, key: 'content', positionLabel, });
-  const existingCode = optionalString({ record: value, key: 'existing_code', positionLabel, });
-  const suggestionCode = optionalString({ record: value, key: 'suggestion_code', positionLabel, });
-  if (![content, existingCode, suggestionCode,].some(hasNonWhitespaceLine,)) {
+  const path = commentPath({
+    record: value,
+    fallbackPath,
+    positionLabel,
+  });
+  const content = requiredString({
+    record: value,
+    key: 'content',
+    positionLabel,
+  });
+  const existingCode = optionalString({
+    record: value,
+    key: 'existing_code',
+    positionLabel,
+  });
+  const suggestionCode = optionalString({
+    record: value,
+    key: 'suggestion_code',
+    positionLabel,
+  });
+  if (![
+    content,
+    existingCode,
+    suggestionCode,
+  ].some(hasNonWhitespaceLine,)) {
     throw new InputValidationError(`${positionLabel} must contain a non-whitespace line`,);
   }
-  const startLine = positiveLine({ record: value, key: 'start_line', positionLabel, });
-  const endLine = positiveLine({ record: value, key: 'end_line', positionLabel, });
+  const startLine = positiveLine({
+    record: value,
+    key: 'start_line',
+    positionLabel,
+  });
+  const endLine = positiveLine({
+    record: value,
+    key: 'end_line',
+    positionLabel,
+  });
   if (endLine < startLine) {
     throw new InputValidationError(`${positionLabel} end_line precedes start_line`,);
   }
-  const category = normalizeCategory({ record: value, positionLabel, });
-  const severity = normalizeSeverity({ record: value, positionLabel, });
+  const category = normalizeCategory({
+    record: value,
+    positionLabel,
+  });
+  const severity = normalizeSeverity({
+    record: value,
+    positionLabel,
+  });
   return {
     position,
     path,

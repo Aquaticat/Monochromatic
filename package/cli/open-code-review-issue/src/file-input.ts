@@ -28,6 +28,7 @@ const FORBIDDEN_BOM_PREFIXES: readonly string[] = [
  * Rejects byte-order marks before strict decoding.
  *
  * @param bytes - Exact named-file bytes.
+ *
  * @param path - Input path used in diagnostic evidence.
  *
  * @throws {@link InputValidationError} when bytes start with known BOM.
@@ -44,7 +45,11 @@ function rejectByteOrderMark({
   readonly bytes: Uint8Array;
   readonly path: string;
 },): void {
-  const leadingHex = Buffer.from(bytes.subarray(0, LONGEST_BOM_BYTES,),).toString('hex',);
+  const leadingHex = Buffer.from(bytes.subarray(
+    0,
+    LONGEST_BOM_BYTES,
+  ),)
+    .toString('hex',);
   if (FORBIDDEN_BOM_PREFIXES.some(function startsWithBom(prefix,): boolean {
     return leadingHex.startsWith(prefix,);
   },)) {
@@ -56,6 +61,7 @@ function rejectByteOrderMark({
  * Decodes exact bytes as strict UTF-8 without replacement characters.
  *
  * @param bytes - Named-file bytes after BOM validation.
+ *
  * @param path - Input path used in diagnostic evidence.
  *
  * @returns Decoded structured text.
@@ -75,7 +81,13 @@ function decodeUtf8({
   readonly path: string;
 },): string {
   try {
-    return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true, },).decode(bytes,);
+    return new TextDecoder(
+      'utf-8',
+      {
+        fatal: true,
+        ignoreBOM: true,
+      },
+    ).decode(bytes,);
   }
   catch (error: unknown) {
     throw new InputValidationError(`input file ${path} is not strict UTF-8: ${String(error,)}`,);
@@ -102,6 +114,12 @@ export async function readStructuredInputFile({
   readonly path: string;
 },): Promise<NormalizedInput> {
   const bytes = await readFile(path,);
-  rejectByteOrderMark({ bytes, path, });
-  return parseStructuredInput({ text: decodeUtf8({ bytes, path, }), },);
+  rejectByteOrderMark({
+    bytes,
+    path,
+  });
+  return parseStructuredInput({ text: decodeUtf8({
+    bytes,
+    path,
+  }), },);
 }

@@ -70,6 +70,7 @@ function isFindingSeverity(value: string,): value is FindingSeverity {
  * Normalizes optional category after case and whitespace folding.
  *
  * @param record - Comment record carrying category.
+ *
  * @param positionLabel - Input position for diagnostic evidence.
  *
  * @returns Supported category or absence.
@@ -89,13 +90,14 @@ export function normalizeCategory({
   readonly positionLabel: string;
 },): FindingCategory | undefined {
   const value = record.category;
-  if (value === undefined || value === '') {
+  if ((value === undefined) || (value === '')) {
     return undefined;
   }
-  if (typeof value !== 'string') {
+  if ((typeof value) !== 'string') {
     throw new InputValidationError(`${positionLabel} property category must be a string`,);
   }
-  const normalized = value.trim().toLowerCase();
+  const normalized = value.trim()
+    .toLowerCase();
   if (!isFindingCategory(normalized,)) {
     throw new InputValidationError(`${positionLabel} has unsupported category ${value}`,);
   }
@@ -106,6 +108,7 @@ export function normalizeCategory({
  * Normalizes optional severity after case and whitespace folding.
  *
  * @param record - Comment record carrying severity.
+ *
  * @param positionLabel - Input position for diagnostic evidence.
  *
  * @returns Supported severity or absence.
@@ -125,13 +128,14 @@ export function normalizeSeverity({
   readonly positionLabel: string;
 },): FindingSeverity | undefined {
   const value = record.severity;
-  if (value === undefined || value === '') {
+  if ((value === undefined) || (value === '')) {
     return undefined;
   }
-  if (typeof value !== 'string') {
+  if ((typeof value) !== 'string') {
     throw new InputValidationError(`${positionLabel} property severity must be a string`,);
   }
-  const normalized = value.trim().toLowerCase();
+  const normalized = value.trim()
+    .toLowerCase();
   if (!isFindingSeverity(normalized,)) {
     throw new InputValidationError(`${positionLabel} has unsupported severity ${value}`,);
   }
