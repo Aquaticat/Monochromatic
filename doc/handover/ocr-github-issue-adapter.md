@@ -387,8 +387,11 @@ and package document.
 Interactive mode places security-gated findings in a separate picker from other findings.
 The normal picker initially selects every finding.
 The security picker initially selects no finding.
-Both use square checkbox indicators rather than circular radio-style indicators;
-the exact checked and unchecked glyphs remain to be selected.
+Both use square checkbox indicators rather than circular radio-style indicators:
+`☐` for unchecked and `☑` for checked.
+Disabled variants,
+if rendered,
+retain the same square shapes with disabled styling.
 The normal picker retains Inquirer's select-all and invert shortcuts.
 The security picker disables both shortcuts,
 so each security selection requires direct navigation and toggling.
@@ -860,10 +863,9 @@ in dependency order:
 9. Interactive mechanics:
    the normal picker initially selects all findings.
    The separate security picker initially selects none.
-   Both use square checkbox indicators rather than circles.
+   Both use `☐` for unchecked and `☑` for checked rather than circular indicators.
    The normal picker retains select-all and invert shortcuts;
    the security picker disables both.
-   Exact checkbox glyphs remain open.
    The combined result must select at least one issue;
    otherwise selection remains active until a finding is selected or the user cancels.
    Either individual picker may be empty.
@@ -1118,6 +1120,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   disabled select-all and invert shortcuts only in the security picker.
 - 2026-08-16:
   required square checkbox indicators rather than circular indicators.
+- 2026-08-16:
+  selected `☐` and `☑` as the unchecked and checked indicators.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md

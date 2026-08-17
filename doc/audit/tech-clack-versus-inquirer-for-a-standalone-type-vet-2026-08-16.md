@@ -910,9 +910,9 @@ It passed:
 - one-line text input;
 - preselected checkbox choices;
 - separators;
-- red message,
-  highlight,
-  and selection icons;
+- red message and highlight styling;
+- red `☐` and `☑` selection icons,
+  including disabled icon overrides;
 - required selection;
 - empty explicit-decision rejection and reprompt;
 - Ctrl+C rejection;
