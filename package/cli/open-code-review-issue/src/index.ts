@@ -7,6 +7,11 @@
 
 export { readStructuredInputFile, } from './file-input.ts';
 export {
+  IncludedResponseError,
+  parseIncludedResponse,
+  type IncludedResponse,
+} from './github-response.ts';
+export {
   SecurityAuthorityError,
   selectApplyPlan,
 } from './authority.ts';
