@@ -529,7 +529,8 @@ validation,
 Ctrl+C,
 and cleanup.
 The umbrella `@inquirer/prompts` package is rejected because it adds unused prompt and editor paths.
-Neither direct subpackage has yet received its separately named approval.
+The user separately approved `@inquirer/checkbox` 5.2.1 on 2026-08-16.
+`@inquirer/input` 5.1.2 still requires its separately named approval.
 
 CLI packages under `package/cli/<name>` use package names shaped
 `@monochromatic-dev/cli-<name>` and usually expose an unscoped `<name>` binary.
@@ -826,8 +827,7 @@ in dependency order:
 
 ## Immediate next action
 
-Request separately named approval for `@inquirer/checkbox` 5.2.1,
-then `@inquirer/input` 5.1.2.
+Request separately named approval for `@inquirer/input` 5.1.2.
 Do not add the umbrella package or a direct core dependency.
 Then continue grilling configuration,
 GitHub CLI compatibility,
@@ -1021,6 +1021,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   validated `@inquirer/checkbox` plus `@inquirer/input` as the minimal library-backed set;
   rejected the umbrella package.
+- 2026-08-16:
+  separately approved `@inquirer/checkbox` 5.2.1 as a direct dependency.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
