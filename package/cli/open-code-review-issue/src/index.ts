@@ -78,6 +78,10 @@ export {
   buildPublicationPlan,
 } from './plan.ts';
 export {
+  parseRepositoryUrl,
+  RepositorySelectionError,
+} from './repository.ts';
+export {
   preflightPublication,
   PublicationPreflightError,
 } from './preflight.ts';
