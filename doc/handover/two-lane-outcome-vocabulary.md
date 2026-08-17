@@ -1175,3 +1175,44 @@ that a two-thirds strict-population loss is the price of the current configurati
 One plan-mode pass ran against a throwaway runs directory to check the wiring at the
 user boundary: `PLAN ok`, 92 pending entries, zero quota. That exercises the scheduler
 and stops before any entry settles, which is why `settleEntry` has its own tests.
+
+## Queue item 5 is under way: the rendering audit over settled artifacts (`#115`)
+
+The FREE HALF is done, committed and green, and it changed the plan in three ways worth carrying:
+
+-   The population is 40 subjects, not "roughly 40 per run". Every translate delivery row in all
+    four archived artifacts is `decided`, so the whole ledger is the population.
+-   16 of those 40 audit the ARCHIVE's own English rather than a fresh rendering. That split is
+    recorded per subject and must be reported apart, or the instrument's first real measurement
+    blurs its own denominator.
+-   The audit needs NO corpus text. Delivery rows carry `sourceText`, and `outcome.acceptedText`
+    equals `shippedText` on all 40. Re-preparation is still done, but only for `identityContext`
+    and for provenance.
+
+Everything measured, with the numbers, is in `doc/audit/rendering-audit-settled-population.md`.
+That file also records the `#107` reading rule, fixed BEFORE the run so the tally cannot move it.
+
+Landed so far:
+
+-   `src/corpus-run/rendering-audit-settled-input.ts`, the zero-quota reader.
+-   `src/corpus-run/rendering-audit-settled-input.unit.test.ts`, eight cases on a throwaway git
+    corpus of cat-themed invention.
+
+A TRAP WORTH REMEMBERING: the reader's first name, `readSettledArtifact`, already existed in
+`artifact-read.ts` and reached the package through `sheet-barrel.ts`. `export *` drops an ambiguous
+name SILENTLY, so `corpus-barrel.ts` exported one of the two new functions and quietly did not
+export the other. The only symptom was an import error in a test. Anything added to a barrel should
+be checked against the package's runtime exports, not just against a type-check.
+
+The fixture had to resolve the REAL git binary through `resolveGit()`. This repository's PATH
+exposes the policy shim, which rejects fixture staging patterns and settles worktree copies against
+the real repository; concurrent cases then raced on `.git/cli-git-worktree-copy/v1/settlement.lock`
+and `git init` failed with `ENOTEMPTY`. `corpus-source.unit.test.ts` already had this right and
+says so in a comment.
+
+STILL OWED on `#115`: the driver itself (`rendering-audit-settled.ts` plus a mise task), which must
+carry an `import.meta.main` guard from the start, take `--cap` and `--only`, treat `--cap 0` as the
+zero-quota boundary check, buy a small cap first and have it read in full before the rest, and
+persist through `persistProbeRun({ probeName: 'rendering-audit-settled', ... })`. The probe name
+deliberately does NOT say "census": the write-up must not let the word carry an implication two
+entries cannot support.
