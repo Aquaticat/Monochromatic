@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type AuditVoiceRow,
+  type RenderingAuditReport,
   runRenderingAudit,
 } from '../rendering-audit.ts';
 import type {
@@ -15,8 +16,11 @@ import {
   ORACLE_SOURCE_SPAN,
   SOURCE_TEXT,
 } from './audit-sensitivity-input.ts';
+import { digestPipeline, } from './pipeline-digest.ts';
+import { persistProbeRun, } from './probe-store.ts';
 import {
   createRunClient,
+  resolveRunsDir,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_MODELS,
 } from './run-config.ts';
@@ -52,7 +56,20 @@ import {
 // catching what the strict one missed.
 //
 // Inputs live in `audit-sensitivity-input.ts` and are cat-themed invention. NO
-// corpus text takes part, and this writes nothing.
+// corpus text takes part.
+//
+// IT KEEPS ITS ANSWERS, which it did not always. Both arms ran three times on
+// 2026-08-17 and the results existed only in the terminal that ran them, so
+// nothing can now re-read them, and the instrument's stability across those
+// runs cannot be checked by anyone. Every invocation now lands under
+// `audit-sensitivity/` in the runs directory, carrying the roster and the
+// pipeline digest that produced it. Standard output is unchanged.
+//
+// IT ONLY RUNS WHEN INVOKED, which it also did not always. Both arms used to
+// execute at module scope, so anything that imported this file bought a full
+// roster of calls by importing it. `coverage-probe.ts` has carried the guard
+// against exactly that from the start; this file did not, and nothing but the
+// bundler's entry list stood between an ordinary import and the spend.
 
 /**
  * Wording one side of a finding rests on, empty where it rests on none.
@@ -217,6 +234,42 @@ function reportVoice(
 }
 
 /**
+ * What one arm produced, kept whole so a later reader can rescore it.
+ *
+ * `oracleVoices` is carried beside the report rather than left to be recomputed,
+ * because deciding whether a claim points at the planted defect depends on the
+ * oracle spans in `audit-sensitivity-input.ts`, and a fixture edit would silently
+ * change what an old run appears to have said.
+ *
+ * @example
+ * ```ts
+ * const row: AuditArmRow = { arm: 'flipped', expectation: '...', oracleVoices: 3, report, };
+ * ```
+ */
+type AuditArmRow = {
+  /**
+   * Which arm this was.
+   */
+  readonly arm: string;
+
+  /**
+   * What a working instrument should have concluded.
+   */
+  readonly expectation: string;
+
+  /**
+   * Voices that pointed at the planted defect at least once, as scored against
+   * the oracle spans this run used.
+   */
+  readonly oracleVoices: number;
+
+  /**
+   * Everything the audit returned, unreduced.
+   */
+  readonly report: RenderingAuditReport;
+};
+
+/**
  * Runs one arm and reports what the instrument said about it.
  *
  * @param candidateText - rendering under audit
@@ -226,9 +279,12 @@ function reportVoice(
  * @param expectation - what a working instrument should conclude, printed only;
  * nothing branches on it
  *
+ * @returns Arm's whole result, for the record rather than for a caller to
+ * branch on
+ *
  * @example
  * ```ts
- * await auditOne({ candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', },);
+ * const row = await auditOne({ candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', },);
  * ```
  */
 async function auditOne(
@@ -241,7 +297,7 @@ async function auditOne(
     readonly arm: string;
     readonly expectation: string;
   },
-): Promise<void> {
+): Promise<AuditArmRow> {
   /**
    * What the roster said about this rendering.
    */
@@ -350,18 +406,85 @@ async function auditOne(
 
   for (const finding of report.findings)
     console.log(`  DEGRADED ${arm} ${finding}`,);
+
+  return {
+    arm,
+    expectation,
+    oracleVoices: sighted.length,
+    report,
+  };
 }
 
-await auditOne({
-  candidateText: FLIPPED_CANDIDATE,
-  arm: 'flipped',
-  expectation: 'agreement at either tier on the oracle span',
-},);
+/**
+ * Runs both arms and keeps what they said.
+ *
+ * @example
+ * ```ts
+ * await main();
+ * ```
+ */
+async function main(): Promise<void> {
+  /**
+   * When this invocation began, read before any call so the record dates the
+   * run rather than the moment it happened to finish.
+   */
+  const startedAt = new Date().toISOString();
 
-await auditOne({
-  candidateText: CLEAN_CANDIDATE,
-  arm: 'clean',
-  expectation: 'agreement at neither tier',
-},);
+  /**
+   * Both arms, in the order they ran.
+   *
+   * SEQUENTIAL rather than concurrent, because the two arms share one roster
+   * and interleaving their progress lines would make the stream unreadable,
+   * which is the whole point of printing it.
+   */
+  const rows: readonly AuditArmRow[] = [
+    await auditOne({
+      candidateText: FLIPPED_CANDIDATE,
+      arm: 'flipped',
+      expectation: 'agreement at either tier on the oracle span',
+    },),
+    await auditOne({
+      candidateText: CLEAN_CANDIDATE,
+      arm: 'clean',
+      expectation: 'agreement at neither tier',
+    },),
+  ];
+
+  /**
+   * Digest over built output, which is the only identity that moves when the
+   * code moves but the commit does not.
+   */
+  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
+
+  /**
+   * Where this run was kept, said out loud so the answers are findable.
+   */
+  const keptAt = await persistProbeRun({
+    runsDir: await resolveRunsDir(),
+    probeName: 'audit-sensitivity',
+    run: {
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      pipelineDigest,
+      roster: RUN_MODELS.checkerModelIds,
+      // NO CORPUS PIN, deliberately: this probe reads invented fixtures and a
+      // corpus commit here would name text it never saw.
+      subject: {
+        fixtures: 'audit-sensitivity-input.ts',
+        arms: rows.map(function named(row,): string {
+          return row.arm;
+        },),
+      },
+      rows,
+    },
+  },);
+  console.log(`SENSITIVITY kept ${String(rows.length,)} arms at ${keptAt}`,);
+}
+
+// Guarded so this runs only when INVOKED, never as an import side effect: for a
+// probe that spends a full roster per arm, loading the library would otherwise
+// buy the calls.
+if (import.meta.main)
+  await main();
 
 //endregion Audit sensitivity
