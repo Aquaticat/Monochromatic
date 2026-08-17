@@ -825,16 +825,22 @@ THE COST TELEMETRY DOES NOT APPLY TO THIS RUN. It was added after launch, so the
 emits no `SLICE-COST` lines. This run answers the ENTRY-scale slope, over four entries spanning 28
 times in size; the next run answers the per-slice question in `#92`.
 
-AFTER THAT, RUN THE COVERAGE MEASUREMENT, without asking. Option A of
-`doc/planning/coverage-wire-rerun-trade.md` needs no user answer and should not wait for one: it
-changes NOTHING that ships, leaving question 28's evidence intact, and the user has said quota is
-not a constraint. It was held back only because it calls the same six models the cost run holds.
-Its steps are listed in that document under "What A would consist of"; the first, persisting probe
-output into the runs directory instead of stdout only, is worth doing whichever option eventually
-wins and is the reason the 2026-08-16 numbers survive nowhere but a transcript.
+DO NOT RUN THE COVERAGE MEASUREMENT. This reverses an instruction that stood in this document for
+about an hour, and the reversal is the user's answer rather than a change of mind: BOTH INSERTION
+LANDINGS ARE PARKED. Option A of `doc/planning/coverage-wire-rerun-trade.md` existed to say how much
+of the block-scale null to believe, and the block-scale null existed to decide landing four. With
+both landings parked, that measurement informs no pending decision, so running it would spend the
+roster on a question nobody is waiting on. The trade note stays as the record of why, and option A
+stays the right first step IF insertion is ever revisited.
 
-WHAT STILL NEEDS THE USER, unchanged by tonight: question 28, and Question 8 on where the rendering
-audit runs. Neither is unblocked by anything above.
+ONE PIECE OF IT SURVIVES ON ITS OWN ACCOUNT: persisting probe output into the runs directory rather
+than stdout only. That is why the 2026-08-16 coverage numbers survive nowhere but a transcript, and
+it is worth doing whatever happens to insertion.
+
+WHAT THE USER ANSWERED, 2026-08-16, all four recorded in
+`doc/decision/translation-repair-four-answers.md`: the rendering audit runs over a SAMPLE of settled
+artifacts; declines get ONE retry and then a name; both insertion landings are PARKED; the window
+trial is DROPPED.
 
 ## The launch gate has lifted
 
