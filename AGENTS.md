@@ -338,6 +338,19 @@ Settled decisions determine one answer:
  adopt + record it unasked.
 Ask only while two paths hinge on non-measurable preference or authority.
 
+QCS:
+ A quality-over-cost guideline makes cost a non-constraint.
+Options differing only in price aren't user questions:
+ pick the one buying more evidence or better output,
+ record it,
+ invite veto.
+
+QSP:
+ Never bundle separable decisions into one option set,
+ nor offer complements as alternatives.
+Split by what each actually decides;
+ answering both "yes, in this order" must be reachable.
+
 ### Present options with pros, cons, and a personal ranking
 
 OPT:
