@@ -26,14 +26,13 @@ The adapter must:
 - study `pnpm update -r -i --no-save` as the interactive UX precedent;
 - prefer the libraries pnpm uses for that interaction;
 - ask the user separately before adding each new workspace dependency;
-- accept OCR output copied and pasted by the user;
+- accept OCR structured output from one required positional named file;
 - accept a JSONL file stored by OCR;
 - implement the previously selected local-adapter architecture.
 
-Copied and pasted input means one line of structured JSON entered through the interactive terminal prompt.
-The adapter provides no multiline paste handling.
-Users needing multiline input must write it to a file and pass that file path.
-Human-readable terminal output and piped standard input are excluded.
+Human-readable terminal output,
+piped standard input,
+and TTY-pasted standard input are excluded from ingestion.
 
 ## Settled grilling decisions
 
@@ -42,7 +41,7 @@ Human-readable terminal output and piped standard input are excluded.
 The user chose an ingest-only adapter.
 It must not invoke OCR.
 Users run OCR separately,
-then provide its structured output through interactive paste or a supported named file.
+then provide its structured output through the required positional named file.
 
 This removes OCR argument forwarding,
 process signaling,
@@ -63,24 +62,20 @@ Repeated ingestion may create duplicate issues.
 The only matching query is attempt reconciliation after an ambiguous create failure,
 limited to new repository Issue or pull request numbers above a pre-request high-water mark.
 
-### Pasted input
+### Structured input
 
-The user chose structured JSON only for copied and pasted input.
 The adapter must not parse OCR's human-readable terminal format.
 This rule applies to interactive and non-interactive modes.
 ANSI stripping and version-specific text parsing are out of scope.
 
-The adapter accepts exactly these OCR-native structured shapes:
+The required named file accepts exactly these OCR-native structured shapes:
 
 - complete `ocr review --format json` or `ocr scan --format json` result object;
 - bare comment array from `ocr session comments --json`;
-- raw OCR session JSONL transcript from a named file.
+- raw OCR session JSONL transcript.
 
-Interactive paste accepts a single-line JSON result object or comment array.
-It has no multiline handling,
-so users must provide JSONL transcripts and pretty-printed JSON through a named file.
-A malformed or unsupported interactive paste reports its validation error and exits nonzero immediately.
-The adapter must not keep the prompt open for correction or request another paste.
+Standard input is never an ingestion source.
+A malformed or unsupported named file reports its validation error and exits nonzero immediately.
 If any record inside an otherwise recognized input has invalid types or structure,
 the adapter must reject the entire input before performing any GitHub operation.
 A finding is also invalid when OCR `content`,
@@ -148,20 +143,16 @@ its help and preview must state that it authorizes public disclosure of every in
 which uses its explicit post-selection confirmation as the mutation boundary.
 
 No mode may consume piped standard input.
-The user explicitly rejected pipes for this adapter.
-Input uses one optional positional file path with conventional CLI defaults,
-modified by the no-pipe rule:
+The user explicitly rejected pipes and TTY-pasted ingestion for this adapter.
+Every mode requires exactly one positional named file path:
 
-- a positional path reads that named file in either mode;
-- no path with `-i` opens the terminal paste flow;
-- no path without `-i` is an error;
+- the positional path reads that named file;
+- omitting the path is invocation misuse with status two before any prompt;
+- multiple positional paths are invocation misuse;
 - `-` must not mean standard input.
 
 The implementation must never inspect or read redirected or piped standard input as an ingestion source.
-With a positional file,
-it reads only that file.
-Without a positional file,
-non-interactive mode errors and interactive mode may read one line from the terminal TTY for its paste prompt.
+It reads only the required named file.
 Piped bytes are ignored rather than detected or consumed.
 The implementation must not reopen `/dev/tty`,
 `CONIN$`,
@@ -454,8 +445,7 @@ never their titles,
 paths,
 code,
 or content.
-The original OCR input remains the authoritative retained copy;
-interactive pasted input is not retained by the adapter.
+The original named OCR input remains the authoritative retained copy.
 
 Non-interactive mode uses an explicit authority ladder:
 
@@ -613,7 +603,7 @@ not approval to install its umbrella package unnecessarily.
 The completed subpackage audit proposes only:
 
 - `@inquirer/checkbox` 5.2.1 for both finding pickers;
-- `@inquirer/input` 5.1.2 for one-line paste and validated explicit decisions.
+- `@inquirer/input` 5.1.2 for validated explicit decisions.
 
 Checkbox re-exports `Separator`,
 so no direct core dependency is needed.
@@ -799,24 +789,16 @@ The following branches were resolved one at a time in dependency order:
    Every selected operation is creation.
    It reports quarantined findings only as a count and never displays their sensitive content.
 3. Input contracts:
-   pasted input is settled as structured JSON only,
-   with no human-readable terminal parser.
    Accepted file shapes are the complete review or scan result object,
    `ocr session comments --json` comment array,
    and raw OCR session JSONL transcript.
-   Interactive paste accepts one-line JSON for the result object or comment array.
-   No mode may consume piped standard input.
-   Non-interactive mode requires a named file.
-   Interactive mode receives a named file or terminal paste.
-   Source syntax is one optional positional file path.
-   With no path,
-   `-i` opens paste and non-interactive mode errors.
+   Every mode requires exactly one positional named file.
+   Omitting it or supplying multiple paths is invocation misuse with status two before any prompt.
    `-` never means standard input.
-   Redirected or piped standard input is never inspected or read as ingestion;
-   interactive terminal prompts may read TTY standard input.
-   Paste framing is settled as one line with no multiline handling.
-   Users needing multiline input write a file and pass its path.
-   An invalid interactive paste reports the error and exits nonzero without retrying.
+   Redirected,
+   piped,
+   and TTY-pasted standard input are never inspected or read as ingestion.
+   Interactive terminal prompts use TTY standard input only for finding selection and explicit decisions.
    A malformed record rejects the entire input before any GitHub operation.
    Structurally valid findings with missing category metadata remain ordinary publishable candidates.
    Named files require strict UTF-8 without any byte-order mark;
@@ -1277,6 +1259,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   passed package lint and complete fake-`gh` suites,
   exercised both interactive picker classes,
   and created then closed final live verification Issue `Aquaticat/issues-api#2`.
+- 2026-08-17:
+  removed interactive pasted-JSON ingestion and required one positional named file in every mode.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md

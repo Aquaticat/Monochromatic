@@ -35,7 +35,7 @@ Review every preview before publication.
 
 ## Accepted input
 
-The command accepts one optional positional named file containing:
+Every invocation requires exactly one positional named file containing:
 
 - complete `ocr review --format json` or `ocr scan --format json` output;
 - a comment array from `ocr session comments --json`;
@@ -44,8 +44,7 @@ The command accepts one optional positional named file containing:
 Named files must be strict UTF-8 without a byte-order mark.
 `-` never means standard input.
 Piped or redirected standard input is never an ingestion source.
-Interactive mode without a path accepts one line of JSON through TTY standard input.
-Use a named file for pretty-printed JSON or JSONL.
+Omitting the positional file is command misuse and exits with status `2` before any prompt.
 
 ## Modes
 
