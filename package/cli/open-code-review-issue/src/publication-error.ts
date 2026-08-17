@@ -102,3 +102,44 @@ export class PublicationStoppedError extends IssuePublicationError {
     this.position = position;
   }
 }
+
+
+/**
+ * Carries confirmed creations after first handled publication interrupt.
+ */
+export class PublicationInterruptedError extends IssuePublicationError {
+  /**
+   * Confirmed Issues created before interrupt settled.
+   */
+  public readonly created: readonly CreatedIssue[];
+
+  /**
+   * Position active or next when publication stopped.
+   */
+  public readonly position: InputPosition;
+
+  /**
+   * Creates handled publication interruption.
+   *
+   * @param created - Confirmed Issues retained after interrupt.
+   *
+   * @param position - Input position active or next at stop boundary.
+   *
+   * @example
+   * ```ts
+   * const error = new PublicationInterruptedError({ created: [], position });
+   * ```
+   */
+  public constructor({
+    created,
+    position,
+  }: {
+    readonly created: readonly CreatedIssue[];
+    readonly position: InputPosition;
+  },) {
+    super(`Issue creation interrupted at ${position.kind} ${String(position.value,)}`,);
+    this.name = 'PublicationInterruptedError';
+    this.created = created;
+    this.position = position;
+  }
+}

@@ -77,11 +77,13 @@ export {
 export type {
   CreatedIssue,
   PublicationResult,
+  PublicationStopCheck,
   PublicationWait,
 } from './publisher-model.ts';
 export {
   AmbiguousReconciliationError,
   IssuePublicationError,
+  PublicationInterruptedError,
   PublicationStoppedError,
 } from './publication-error.ts';
 export { publishIssues, } from './publisher.ts';

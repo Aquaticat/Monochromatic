@@ -12,10 +12,14 @@ import type {
   GitHubRepository,
 } from './github-model.ts';
 import type { RenderedIssue, } from './issue-model.ts';
-import { PublicationStoppedError, } from './publication-error.ts';
+import {
+  PublicationInterruptedError,
+  PublicationStoppedError,
+} from './publication-error.ts';
 import type {
   CreatedIssue,
   PublicationResult,
+  PublicationStopCheck,
   PublicationWait,
 } from './publisher-model.ts';
 
@@ -35,6 +39,15 @@ async function defaultWait(milliseconds: number,): Promise<void> {
 }
 
 /**
+ * Default publication stop check.
+ *
+ * @returns False until signal-aware caller injects another check.
+ */
+function neverStop(): boolean {
+  return false;
+}
+
+/**
  * Creates rendered Issues serially with provider-aligned pacing.
  *
  * @param repository - Canonical destination identity.
@@ -46,6 +59,8 @@ async function defaultWait(milliseconds: number,): Promise<void> {
  * @param wait - Injectable delay implementation.
  *
  * @param now - Injectable epoch-millisecond clock for rate resets.
+ *
+ * @param shouldStop - First-interrupt state check at every serial boundary.
  *
  * @returns Complete successful creation identities.
  *
@@ -60,18 +75,26 @@ export async function publishIssues({
   api,
   wait = defaultWait,
   now = Date.now,
+  shouldStop = neverStop,
 }: {
   readonly repository: GitHubRepository;
   readonly issues: readonly RenderedIssue[];
   readonly api: GitHubApiClient;
   readonly wait?: PublicationWait;
   readonly now?: () => number;
+  readonly shouldStop?: PublicationStopCheck;
 },): Promise<PublicationResult> {
   /**
    * Mutable result list scoped to this serial ownership boundary.
    */
   const created: CreatedIssue[] = [];
   for (const issue of issues) {
+    if (shouldStop()) {
+      throw new PublicationInterruptedError({
+        created: [...created,],
+        position: issue.position,
+      },);
+    }
     try {
       if (created.length > 0) {
         // oxlint-disable-next-line eslint/no-await-in-loop -- Issue N+1 mutation waits for Issue N pacing boundary.
@@ -91,10 +114,22 @@ export async function publishIssues({
       created.push(createdIssue,);
     }
     catch (error: unknown) {
+      if (shouldStop()) {
+        throw new PublicationInterruptedError({
+          created: [...created,],
+          position: issue.position,
+        },);
+      }
       throw new PublicationStoppedError({
         created: [...created,],
         position: issue.position,
         cause: error,
+      },);
+    }
+    if (shouldStop()) {
+      throw new PublicationInterruptedError({
+        created: [...created,],
+        position: issue.position,
       },);
     }
   }

@@ -13,6 +13,12 @@ export type PublicationWait = (
   milliseconds: number,
 ) => Promise<void>;
 
+
+/**
+ * Reads publication interrupt state without mutating it.
+ */
+export type PublicationStopCheck = () => boolean;
+
 /**
  * Confirmed created GitHub Issue identity.
  */
