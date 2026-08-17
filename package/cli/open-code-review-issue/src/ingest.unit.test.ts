@@ -64,5 +64,44 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'accepts a bare OCR comment array',
+      fn: () => {
+        /**
+         * Bare comments fixture with optional metadata absent.
+         */
+        const text = JSON.stringify([
+          {
+            path: 'src/plain.ts',
+            content: 'Use the guarded branch.',
+            start_line: 7,
+            end_line: 7,
+          },
+        ],);
+
+        /**
+         * Normalized adapter input.
+         */
+        const result = parseStructuredInput({ text, },);
+
+        expect(result,).toStrictEqual({
+          inputKind: 'comments',
+          findings: [
+            {
+              position: {
+                kind: 'record',
+                value: 1,
+              },
+              path: 'src/plain.ts',
+              content: 'Use the guarded branch.',
+              existingCode: '',
+              suggestionCode: '',
+              startLine: 7,
+              endLine: 7,
+            },
+          ],
+        },);
+      },
+    },),
   ],
 },);
