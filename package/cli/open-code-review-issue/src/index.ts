@@ -82,6 +82,7 @@ export type {
 export {
   AmbiguousReconciliationError,
   IssuePublicationError,
+  PublicationStoppedError,
 } from './publication-error.ts';
 export { publishIssues, } from './publisher.ts';
 export type {

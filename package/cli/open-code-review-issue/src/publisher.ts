@@ -12,6 +12,7 @@ import type {
   GitHubRepository,
 } from './github-model.ts';
 import type { RenderedIssue, } from './issue-model.ts';
+import { PublicationStoppedError, } from './publication-error.ts';
 import type {
   CreatedIssue,
   PublicationResult,
@@ -71,18 +72,31 @@ export async function publishIssues({
    */
   const created: CreatedIssue[] = [];
   for (const issue of issues) {
-    if (created.length > 0) {
-      // oxlint-disable-next-line eslint/no-await-in-loop -- Issue N+1 mutation waits for Issue N pacing boundary.
-      await wait(MUTATION_INTERVAL_MS,);
+    try {
+      if (created.length > 0) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- Issue N+1 mutation waits for Issue N pacing boundary.
+        await wait(MUTATION_INTERVAL_MS,);
+      }
+      /**
+       * Confirmed created or reconciled Issue for current position.
+       */
+      // oxlint-disable-next-line eslint/no-await-in-loop -- create-only publication is deliberately serial and stops at first failure.
+      const createdIssue = await createIssueWithRetry({
+        repository,
+        issue,
+        api,
+        wait,
+        now,
+      },);
+      created.push(createdIssue,);
     }
-    // oxlint-disable-next-line eslint/no-await-in-loop -- create-only publication is deliberately serial and stops at first failure.
-    created.push(await createIssueWithRetry({
-      repository,
-      issue,
-      api,
-      wait,
-      now,
-    },),);
+    catch (error: unknown) {
+      throw new PublicationStoppedError({
+        created: [...created,],
+        position: issue.position,
+        cause: error,
+      },);
+    }
   }
   return { created, };
 }
