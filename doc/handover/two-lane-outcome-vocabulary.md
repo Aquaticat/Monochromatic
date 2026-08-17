@@ -1358,10 +1358,16 @@ Landed since the last note:
 -   `#116`, a task: stamp runs with the runner's own dependency closure instead of a whole-tree
     digest, since the closure is what a band actually needs and the built entry already names it.
 
-VERIFIED, so nobody re-does it: full unit suite green at HEAD, 371 passing describes, zero failures,
-`~/temp/agent/suite-at-head.log`. The positive control was checked, meaning all nine reading modules
-appear in the log as having run, rather than trusting an exit code. RE-RUN IT at the very end, since
-`ef8c1eb87` landed after that suite started.
+VERIFIED, so nobody re-does it: full unit suite green at FINAL HEAD, 371 passing describes, zero
+failures, zero assertion or type errors, `~/temp/agent/suite-final.log`. Checked from the FILE with
+a positive control rather than from an exit code: the six new reading modules appear in the log as
+having run, and so does the fourteenth case, `SEPARATES "the archive moved" FROM "nobody recorded
+what this saw"`, which was added after the previous green suite.
+
+That positive control is not ceremony. An earlier suite run in this session was piped through
+`rg ... | head --lines=30`, and `head` closed the pipe on a stream whose first thirty matching lines
+were all `Error` fixtures, so nothing of the actual result survived and the exit code was `head`'s.
+Grep the file, never the pipe.
 
 GFP was satisfied for the sharpest guard: removing the unrecorded-rows refusal from
 `sameAuditedText`, rebuilding and running gave `expected true to equal false`, and the guard was
