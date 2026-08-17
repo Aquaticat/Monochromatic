@@ -180,5 +180,49 @@ await describe({
         expect(all.withheldPositions,).toStrictEqual([],);
       },
     },),
+    it({
+      name: 'retains ordinary classification markers in preview',
+      fn: async () => {
+        /**
+         * Other and missing-category findings requiring visible markers.
+         */
+        const input: NormalizedInput = {
+          inputKind: 'comments',
+          findings: [
+            {
+              position: { kind: 'record', value: 1, },
+              path: 'src/other.ts',
+              content: 'Other category.',
+              existingCode: '',
+              suggestionCode: '',
+              startLine: 1,
+              endLine: 1,
+              category: 'other',
+            },
+            {
+              position: { kind: 'record', value: 2, },
+              path: 'src/missing.ts',
+              content: 'Missing category.',
+              existingCode: '',
+              suggestionCode: '',
+              startLine: 2,
+              endLine: 2,
+            },
+          ],
+        };
+        /**
+         * Safe preview retaining explicit ordinary markers.
+         */
+        const preview = buildNonInteractivePreview(buildPublicationPlan({
+          input,
+          repository: 'https://github.com/Aquaticat/issues-api',
+          needsTriageLabel: true,
+        },),);
+
+        expect(preview.issues.map(function marker(issue,) {
+          return issue.classificationMarker;
+        },),).toStrictEqual(['OTHER', 'UNCATEGORIZED',],);
+      },
+    },),
   ],
 },);
