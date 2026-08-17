@@ -15,7 +15,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
+import spawn, { SubprocessError, } from 'nano-spawn';
 
 /**
  * Built executable artifact under test.
@@ -29,7 +29,7 @@ const FAKE_GH_SOURCE = `#!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 const args = process.argv.slice(2);
 if (args[0] === '--version') {
-  process.stdout.write('gh version 2.97.0 (fixture)\\n');
+  process.stdout.write('gh version ' + (process.env.FAKE_GH_VERSION ?? '2.97.0') + ' (fixture)\\n');
 } else {
   const method = args[args.indexOf('--method') + 1];
   const endpoint = args[4];
@@ -191,6 +191,51 @@ await describe({
         expect(JSON.stringify(applied,),).toContain(
           '"withheldSecurityPositions":[{"kind":"record","value":2}]',
         );
+      },
+    },),
+    it({
+      name: 'emits one final JSON object for applied preflight failure',
+      fn: async () => {
+        /**
+         * Disposable integration directory.
+         */
+        await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-cli-',),);
+        /**
+         * Fake process and OCR fixture paths.
+         */
+        const fixture = await createFixture({ directory: directory.path, },);
+        /**
+         * Captured expected nonzero built CLI result.
+         */
+        let caught: unknown;
+        try {
+          await spawn(process.execPath, [
+            CLI_PATH,
+            '--non-interactive',
+            '--apply',
+            '--repo',
+            'https://github.com/Aquaticat/issues-api',
+            fixture.inputPath,
+          ], {
+            cwd: directory.path,
+            env: {
+              PATH: fixture.executablePath,
+              FAKE_GH_VERSION: '2.96.0',
+            },
+            stdin: 'ignore',
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(SubprocessError,);
+        /**
+         * Captured machine output from expected exit-one command.
+         */
+        const stdout = (caught as SubprocessError).stdout;
+        expect(stdout.trim().split('\n',)).toHaveLength(1,);
+        expect(stdout,).toContain('\"outcome\":\"failed\"',);
+        expect(stdout,).toContain('GitHub CLI 2.96.0 is unsupported',);
       },
     },),
   ],
