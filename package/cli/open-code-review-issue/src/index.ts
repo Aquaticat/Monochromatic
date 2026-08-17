@@ -51,6 +51,19 @@ export {
 } from './authority.ts';
 export { InputValidationError, } from './input-validation-error.ts';
 export type {
+  InteractiveSelection,
+  PromptStreams,
+  SquareCheckboxTheme,
+} from './interactive-model.ts';
+export {
+  createSquareCheckboxTheme,
+  isPromptCancellation,
+  promptForExplicitDecision,
+  promptForIssues,
+  promptForPastedInput,
+} from './interactive-prompts.ts';
+export { selectInteractiveIssues, } from './interactive-selection.ts';
+export type {
   RenderedIssue,
   SourceLink,
 } from './issue-model.ts';
