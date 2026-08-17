@@ -36,10 +36,23 @@ once item 3 turned out not to be. It landed as `src/corpus-run/probe-store.ts` w
 
 TWO THINGS ABOUT ITS DESIGN worth not re-litigating:
 
--   IT IS SHARED, not coverage-specific, because `audit-sensitivity.ts` has the identical defect and
-    its three runs of each arm on 2026-08-17 also survive only in a transcript. Fixing one and
-    leaving the other would be knowingly leaving the same bug. Wiring that second caller is the next
-    step and is not done yet.
+-   IT IS SHARED, not coverage-specific, because `audit-sensitivity.ts` had the identical defect and
+    its three runs of each arm on 2026-08-17 also survive only in a transcript. BOTH CALLERS ARE NOW
+    WIRED (`d8dd1172c`), and the second one turned out to carry a worse defect than the one it was
+    being fixed for: it had NO `import.meta.main` guard, so both arms ran at module scope and any
+    import of that file bought a full checker roster twice. Verified from git rather than memory:
+    the previous revision ends in two bare `await auditOne(...)` calls and contains no guard at all.
+    Only the bundler's entry list stood between an ordinary import and the spend.
+
+    THE GUARD IS DEMONSTRATED ONE WAY ONLY, and that is deliberate. Importing the built `.mjs` with
+    `TRANSLATION_REPAIR_SYNTHETIC_API_KEY` cleared returns in 16 ms with no output, so the guard
+    holds. The negative half, stripping it to watch the arms fire, is NOT run: it would spend a full
+    roster, and the git evidence establishes the before-state without paying for it. Recorded here
+    the same way `assertDerivationsAgree`'s missing strip demonstration was.
+
+    `audit-sensitivity` RECORDS NO CORPUS PIN, deliberately, since it reads invented fixtures. That
+    is what moved the corpus commit out of `ProbeRun` and into `subject`: the second caller could not
+    fill the field honestly, which is the signal a field is in the wrong place.
 
 GFP'D AND VERIFIED AT THE BOUNDARY, both:
 
