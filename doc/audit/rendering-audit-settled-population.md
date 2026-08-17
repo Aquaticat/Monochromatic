@@ -9,10 +9,12 @@ under rules this document fixed in advance.
 
 ## What this answers, and what it does not
 
-IT DOES NOT ANSWER the question it was opened to ask.
-The audit exists to compare the archive's own English against a fresh rendering,
-and that comparison is CONFOUNDED WITH THE ENTRY:
-every corroborated archive defect sits in one of the two entries
+IT DOES NOT ANSWER the question it was opened to ask,
+and it fails for TWO INDEPENDENT REASONS,
+either of which would be enough on its own.
+
+CONFOUNDED WITH THE ENTRY.
+Every corroborated archive defect sits in one of the two entries
 and the single corroborated fresh defect sits in the other,
 so neither entry shows the pattern the pooled table shows.
 More slices cannot separate them.
@@ -20,20 +22,34 @@ Only more entries can,
 which means more settled version 2 artifacts,
 which is what task `#108` would produce.
 
+AND NOT STABLE BETWEEN RUNS.
+The same 40 subjects audited twice, forty minutes apart, moved
+the archive corroborated count from five to three
+and the relocation candidates from two to none.
+A gap of four cannot be read off a quantity that moves by two on a re-read.
+
 IT DOES ANSWER several things worth having:
 
 -   The instrument runs on real lane output at all,
     over 40 subjects, at zero cost to the producing path.
--   Both `#107` relocation candidates anchor against their shared slice boundary,
+-   Both `#107` relocation candidates found in the first run anchor against
+    their shared slice boundary,
     which is the geometry `#107` predicts,
-    so the mechanism is corroborated even though neither pair is proved to be one move.
--   The per-voice rates do not reproduce `#68`:
-    the three voices are within a factor of two of each other here,
-    where one ran at a tenth the rate over the introduced-defect probe.
+    so the mechanism is corroborated even though neither pair is proved to be
+    one move,
+    and the second run found no candidates at all.
+-   The order-of-magnitude gap `#68` measured over the introduced-defect probe
+    appears in NEITHER run here,
+    so that finding still looks specific to the probe task rather than to a model.
+    The SIZE of the gap at this task is not measurable from these runs:
+    two runs disagree about it.
 -   `claimed` counts CLAIMS and not distinct problems,
     because one voice can anchor two categories to one span,
     and it did.
 -   Voice loss is not spread evenly across the population.
+-   A band measured on the six texts one run audits twice is NARROW,
+    and it is narrow because those six are the easy ones.
+    It disagrees with the population it was drawn from.
 
 NOTHING HERE MAY GATE WHAT SHIPS.
 The instrument's own production error rate is unmeasured;
@@ -564,6 +580,31 @@ If they move it by nothing or one,
 it stands.
 Say which,
 in those words.
+
+### What run 3 must produce, recorded before it lands
+
+Both runs read their texts straight out of the same four artifacts,
+which nothing has touched.
+So pairing run 3 against run 2 must give:
+
+```text
+paired        40
+textMoved      0
+unverifiable   0
+```
+
+and `auditRepeatsWithin` on run 3 must again give six.
+
+Any other numbers are a finding rather than a result.
+A non-zero `textMoved` would mean the archive changed under the two runs,
+which nothing should have done and which would invalidate the band.
+A non-zero `unverifiable` would mean one of the two runs did not record
+what it was shown,
+which both builds do.
+Fewer than 40 paired would mean the two runs bought different populations.
+
+Writing this down turns 40, 0, 0 into a confirmation
+instead of a description of whatever turns up.
 
 ### What "the same build" can and cannot mean here
 
