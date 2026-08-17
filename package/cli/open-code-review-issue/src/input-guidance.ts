@@ -85,9 +85,16 @@ async function sessionCandidate(path: string,): Promise<readonly SessionCandidat
  * @returns Whether entry is a regular `.jsonl` file.
  */
 function isJsonlSessionEntry(entry: Dirent,): boolean {
-  return entry.isFile()
-    && entry.name
-      .endsWith('.jsonl',);
+  /**
+   * Regular-file evidence excluding nested directories and special files.
+   */
+  const regularFile = entry.isFile();
+  /**
+   * Persisted OCR transcript extension evidence.
+   */
+  const jsonlExtension = entry.name
+    .endsWith('.jsonl',);
+  return regularFile && jsonlExtension;
 }
 
 /**
@@ -132,24 +139,6 @@ async function repositorySessionCandidates({
 }
 
 /**
- * Selects candidate with later modification time.
- *
- * @param current - Current latest candidate.
- *
- * @param candidate - Newly compared candidate.
- *
- * @returns Later candidate.
- */
-function laterCandidate(
-  current: SessionCandidate,
-  candidate: SessionCandidate,
-): SessionCandidate {
-  return candidate.modifiedMilliseconds > current.modifiedMilliseconds
-    ? candidate
-    : current;
-}
-
-/**
  * Finds latest persisted OCR JSONL without invoking OCR or reading session content.
  *
  * @param homeDirectory - Runtime home containing `.opencodereview`.
@@ -186,7 +175,14 @@ async function findLatestOcrSessionJsonl(
     return NO_OCR_SESSION_JSONL;
   }
   return candidates
-    .reduce(laterCandidate,)
+    .reduce(function selectLaterCandidate(
+      current,
+      candidate,
+    ): SessionCandidate {
+      return candidate.modifiedMilliseconds > current.modifiedMilliseconds
+        ? candidate
+        : current;
+    },)
     .path;
 }
 
@@ -225,7 +221,7 @@ export async function buildInputGuidance({
     'Persisted OCR session JSONL files are commonly stored at:',
     '  ~/.opencodereview/sessions/<encoded-repo-path>/<session-id>.jsonl',
   ] as const;
-  if (typeof latestSession === 'symbol') {
+  if ((typeof latestSession) === 'symbol') {
     return baseLines.join('\n',);
   }
   return [
