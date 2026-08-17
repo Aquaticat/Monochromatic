@@ -5,10 +5,8 @@
  * @module
  */
 
-export {
-  InputValidationError,
-  parseStructuredInput,
-} from './ingest.ts';
+export { InputValidationError, } from './input-validation-error.ts';
+export { parseStructuredInput, } from './ingest.ts';
 export type {
   FindingCategory,
   FindingSeverity,
