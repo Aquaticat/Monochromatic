@@ -575,11 +575,59 @@ It drives each package through caller-provided input and output streams and veri
 The fixture runs under the same container bounds.
 Network is enabled only during installation and disabled during execution.
 
+## Execution results
+
+### Clack
+
+The dependency fetch completed in six seconds with lifecycle scripts disabled.
+The first offline validation attempt failed before candidate code ran
+because the ephemeral Corepack cache tried to download pnpm with networking disabled.
+Persisting the already-inspected pnpm 10.33.0 manager cache corrected that harness error.
+
+The corrected run passed build and type checking,
+then reported four snapshot failures in `packages/prompts/test/note.test.ts`:
+
+```text
+Test Files  1 failed | 17 passed (18)
+Tests  4 failed | 593 passed (597)
+```
+
+Every failure expected nested red formatting to resume after nested cyan formatting,
+but Node 22.18.0 emitted the foreground reset instead.
+A positive control on Node 26.7.0 restored the outer red style.
+Node's [`respect nested formats in styleText`][node-styletext]
+landed after Node 22.18.0 and appears in the Node 22.19.0 release history.
+Clack's engine range begins at Node 20.12.0,
+so the checked-in snapshots assume behavior absent from part of the declared runtime range.
+
+This failure is outside the consumed input,
+multiselect,
+and confirmation paths.
+A focused offline rerun passed:
+
+- every `@clack/core` test:
+  148 tests in 12 files;
+- `text`,
+  `multi-select`,
+  and `confirm` high-level suites:
+  98 tests in three files;
+- the production dependency check.
+
+The exact default suite does not pass on Node 22.18.0,
+but every target interaction suite does.
+This reduces platform-confidence scoring rather than creating a target-path hard-gate failure.
+
+### Inquirer
+
+Dependency installation completed with lifecycle scripts disabled.
+The offline CI-equivalent run remains in progress.
+
 ## Evidence limits
 
 No candidate has been recommended yet.
-The static audit is complete.
-The declared upstream and consumer-boundary executions,
+The static audit and Clack execution are complete.
+Inquirer execution,
+consumer-boundary validation,
 score calculation,
 and sensitivity analysis remain pending.
 
@@ -590,3 +638,4 @@ and sensitivity analysis remain pending.
 [inquirer-checkbox]: https://github.com/SBoudrias/Inquirer.js/blob/bfd8710/packages/checkbox/src/index.ts#L70-L101
 [inquirer-context]: https://github.com/SBoudrias/Inquirer.js/blob/bfd8710/packages/type/src/inquirer.ts#L24-L30
 [inquirer-create]: https://github.com/SBoudrias/Inquirer.js/blob/bfd8710/packages/core/src/lib/create-prompt.ts
+[node-styletext]: https://github.com/nodejs/node/pull/59098
