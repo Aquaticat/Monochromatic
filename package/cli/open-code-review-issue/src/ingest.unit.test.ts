@@ -1,10 +1,20 @@
 import {
+  mkdtempDisposable,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
+import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseStructuredInput, } from '../dist/final/node/index.mjs';
+import {
+  parseStructuredInput,
+  readStructuredInputFile,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: parseStructuredInput.name,
@@ -221,6 +231,37 @@ await describe({
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain('record 1',);
         expect((caught as Error).message,).toContain('non-whitespace line',);
+      },
+    },),
+    it({
+      name: 'rejects a UTF-8 byte-order mark in a named file',
+      fn: async () => {
+        /**
+         * Disposable input directory.
+         */
+        await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-input-',),);
+        /**
+         * Named file carrying forbidden UTF-8 BOM before valid JSON.
+         */
+        const path = join(directory.path, 'review.json',);
+        await writeFile(path, Buffer.concat([
+          Buffer.from('\uFEFF', 'utf8',),
+          Buffer.from('[]', 'utf8',),
+        ],),);
+
+        /**
+         * Captured transport validation failure.
+         */
+        let caught: unknown;
+        try {
+          await readStructuredInputFile({ path, },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('byte-order mark',);
       },
     },),
   ],
