@@ -12,6 +12,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  InputValidationError,
   parseStructuredInput,
   readStructuredInputFile,
 } from '../dist/final/node/index.mjs';
@@ -262,6 +263,116 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain('byte-order mark',);
+      },
+    },),
+    it({
+      name: 'reads a strict UTF-8 named file',
+      fn: async () => {
+        /**
+         * Disposable input directory.
+         */
+        await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-input-',),);
+        /**
+         * Valid named comment-array file.
+         */
+        const path = join(directory.path, 'review.json',);
+        await writeFile(path, '[]', 'utf8',);
+
+        /**
+         * Parsed named-file input.
+         */
+        const result = await readStructuredInputFile({ path, },);
+
+        expect(result,).toStrictEqual({
+          inputKind: 'comments',
+          findings: [],
+        },);
+      },
+    },),
+    it({
+      name: 'rejects malformed UTF-8 bytes in a named file',
+      fn: async () => {
+        /**
+         * Disposable input directory.
+         */
+        await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-input-',),);
+        /**
+         * Invalid two-byte UTF-8 sequence fixture.
+         */
+        const path = join(directory.path, 'review.json',);
+        await writeFile(path, Buffer.from('c328', 'hex',),);
+
+        /**
+         * Captured strict-decoding failure.
+         */
+        let caught: unknown;
+        try {
+          await readStructuredInputFile({ path, },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(InputValidationError,);
+        expect((caught as Error).message,).toContain('not strict UTF-8',);
+      },
+    },),
+    it({
+      name: 'rejects malformed records atomically',
+      fn: async () => {
+        /**
+         * Inputs whose recognized envelopes contain one malformed record.
+         */
+        const cases: readonly {
+          readonly text: string;
+          readonly expected: string;
+        }[] = [
+          {
+            text: JSON.stringify({ status: 'complete', comments: 'wrong', },),
+            expected: 'complete OCR result or comment array',
+          },
+          {
+            text: JSON.stringify([
+              {
+                path: 'src/valid.ts',
+                content: 'Valid.',
+                start_line: 1,
+                end_line: 1,
+              },
+              {
+                path: 'src/invalid.ts',
+                content: 'Invalid category.',
+                start_line: 1,
+                end_line: 1,
+                category: 'mystery',
+              },
+            ],),
+            expected: 'record 2 has unsupported category',
+          },
+          {
+            text: [
+              JSON.stringify({ type: 'session_start', }),
+              '',
+              JSON.stringify({ type: 'session_end', }),
+            ].join('\n',),
+            expected: 'line 2 must not be blank',
+          },
+        ];
+
+        for (const invalidCase of cases) {
+          /**
+           * Captured validation failure for current malformed fixture.
+           */
+          let caught: unknown;
+          try {
+            parseStructuredInput({ text: invalidCase.text, },);
+          }
+          catch (error: unknown) {
+            caught = error;
+          }
+          expect(caught,).toBeInstanceOf(InputValidationError,);
+          expect((caught as Error).message,).toContain(invalidCase.expected,);
+        }
       },
     },),
   ],
