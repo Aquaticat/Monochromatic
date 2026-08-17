@@ -70,8 +70,14 @@ costs about 100 minutes of real quota. They are now copied, about 1.8 MB in tota
 
 ```text
 ~/translation-repair-v2-archive/grace-remeasure-2026-08-17/{Aniloviraw,zheermao101}.json
+~/translation-repair-v2-archive/grace-remeasure-2026-08-17/remeasure.log
 ~/translation-repair-v2-archive/two-lane-cost-2026-08-16/{Aniloviraw,zheermao101}.json
+~/translation-repair-v2-archive/two-lane-cost-2026-08-16/two-lane-cost.log
 ```
+
+THE LOGS WENT TOO, 3.7 MB with the artifacts. They are the evidence behind every table in
+`doc/audit/straggler-grace-remeasure.md`: the per-stage voice completeness split by stage kind and
+roster size was computed from them and cannot be recomputed from the artifacts alone.
 
 OUTSIDE THE REPOSITORY ON PURPOSE: they carry corpus text, which does not enter this repo.
 
