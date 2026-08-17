@@ -132,10 +132,13 @@ js code leaks into browser bundles:
 
 ### [Barrel `export *` drops an ambiguous name](barrel-star-export-drops-ambiguous-names.md)
 
-A symbol exported by two barrels vanishes from the package instead of erroring:
+A symbol exported by two barrels vanishes from the package at runtime:
 
-- `tsc`, `oxlint` and the bundler all pass, and the built file contains both function bodies
-- The only symptom is `does not provide an export named` at an import three steps away
+- `oxlint` and the bundler pass, and the built file contains both function bodies
+- `tsc` DOES catch it, as TS2308, for values as well as types;
+   an earlier claim to the contrary is corrected in the document with a reduction
+- The only symptom otherwise is `does not provide an export named`
+   at an import three steps away
 - How to ask the built package what it actually exports
 
 ### [NUL bytes land invisibly in source](nul-bytes-land-invisibly-in-source.md)

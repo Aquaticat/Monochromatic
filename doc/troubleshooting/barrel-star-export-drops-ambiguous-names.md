@@ -34,35 +34,69 @@ the name is excluded from the resulting namespace.
 Not an error, not a warning, not a last-one-wins.
 It is simply absent.
 
-## Types collide loudly, values collide silently
+## TS2308 fires for values too, corrected 2026-08-17
 
-A second collision landed the same afternoon,
-in the same package,
-on a type rather than a function:
-a new `RelocationCandidate` met the one `translate-barrel.ts` already exported.
+An earlier version of this document said types collide loudly and values collide
+silently,
+on the evidence that `readSettledArtifact` vanished while a type-check passed.
+THAT RULE IS WRONG,
+and a third collision is what prompted checking it:
+a new `repeatBandOf` met the `bandOf` in `band-order.ts`,
+both plain functions,
+both arriving through `corpus-barrel.ts` against `sheet-barrel.ts`,
+and it failed loudly.
 
-That one DID fail, immediately and clearly:
+Reduced to five files in a throwaway directory,
+with two functions of the same name and no types involved at all:
+
+```ts
+// src/index.ts
+export * from './barrel-one.ts'; // re-exports shared() from alpha.ts
+export * from './barrel-two.ts'; // re-exports shared() from beta.ts
+```
 
 ```text
-typescript(TS2308): Module './corpus-barrel.ts' has already exported a member
-named 'RelocationCandidate'. Consider explicitly re-exporting to resolve the
+src/index.ts(2,1): error TS2308: Module './barrel-one.ts' has already exported
+a member named 'shared'. Consider explicitly re-exporting to resolve the
 ambiguity.
 ```
 
-So the two halves of the same hazard behave in opposite ways.
-TypeScript raises TS2308 for an ambiguous TYPE re-export,
-and says nothing at all when the ambiguous name is a value,
-because the value case is legal ECMAScript with defined semantics:
-exclude it.
+So TypeScript reports the ambiguity for values as readily as for types.
+The same reduction stays SILENT,
+correctly,
+when both paths reach the SAME declaration,
+because a diamond is one export and not two.
 
-Do not read a clean type-check as evidence there is no collision.
-It only rules out the loud half.
+What that means for the original incident:
+the clean type-check recorded there did not prove TypeScript was quiet about it.
+Far likelier that no type-check ran between the barrel line landing
+and the import failure turning up,
+since the built package comes from the bundler,
+which emits regardless.
 
-## Why nothing caught it
+So the practical rule is the opposite of what was written here:
+RUN THE TYPE-CHECK after touching a barrel,
+because it does catch this,
+and a collision reaching a test means the check was skipped rather than fooled.
+The runtime half of this document stands unchanged and still bites,
+because a bundle can be built and shipped without one.
 
--   `tsc` passed.
-    Every source module is internally consistent;
-    the ambiguity exists only in the namespace the two star-exports produce.
+## What the runtime actually does, measured
+
+```text
+namespace keys: onlyAlpha, onlyBeta
+shared() threw: TypeError m.shared is not a function
+```
+
+Two modules star-exported into one,
+each exporting `shared` plus one unique name.
+The unique names both survive.
+`shared` is not shadowed, not last-one-wins, not an error at import:
+it is simply absent from the namespace,
+and the failure lands at the CALL SITE of whoever expected it.
+
+## Why nothing else caught it
+
 -   `oxlint` passed.
     No rule looks across barrels for name collisions.
 -   The bundler passed and emitted BOTH function bodies into `index.mjs`,
