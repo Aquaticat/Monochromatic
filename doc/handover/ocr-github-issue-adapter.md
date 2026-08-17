@@ -269,8 +269,13 @@ It contained no Issues or pull requests and no `needs-triage` label.
 That starting state directly supports verification of the settled title-prefix fallback.
 The user authorizes synthetic Issue creation there during implementation verification.
 The adapter must not target another live repository for tests.
-Cleanup behavior for created verification Issues remains to be settled.
-The adapter's create-only contract cannot close or delete them.
+A separate verification harness closes every synthetic Issue it created after assertions complete.
+It patches only the Issue numbers recorded from that verification run,
+sets state to `closed` with reason `completed`,
+and never adds cleanup behavior to the adapter.
+Cleanup runs after successful assertions and after handled assertion failures when created numbers are known.
+A closure failure fails verification and reports every affected URL for manual cleanup.
+Closed Issue history and repository audit events remain.
 
 ### Issue rendering
 
@@ -344,7 +349,6 @@ In interactive mode,
 the normal picker and final batch summary show normal issue titles rather than full bodies.
 Before confirming each selected security finding,
 the adapter displays its complete generated title and Markdown body.
-Title length handling remains to be settled.
 GitHub's current REST documentation and OpenAPI schema publish no title-length maximum or counting unit;
 see
 [`doc/troubleshooting/github-issue-title-length.md`][github-issue-title-length].
@@ -919,12 +923,15 @@ in dependency order:
     Issues enabled,
     an empty Issue history,
     and no `needs-triage` label.
-    Synthetic live Issue cleanup remains open.
+    A separate harness closes only the synthetic Issues recorded from its own run,
+    including after handled assertion failures.
+    Cleanup failure fails verification and reports affected URLs.
 
 ## Immediate next action
 
 Do not add the umbrella package or a direct core dependency.
-Continue grilling unresolved interactive mechanics and live verification cleanup.
+Review remaining direct dependency roles,
+then confirm shared understanding before implementation.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -1142,6 +1149,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   selected Node's native terminal and environment color policy,
   with no adapter-specific color flag.
+- 2026-08-16:
+  authorized the separate verification harness to close only synthetic Issues created during its own run.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
