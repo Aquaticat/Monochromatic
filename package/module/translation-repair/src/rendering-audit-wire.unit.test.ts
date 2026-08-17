@@ -101,13 +101,13 @@ await describe({
   children: [
     it({
       name: 'ACCEPTS a reply carrying a verdict and a list of fully-formed findings',
-      fn: () => {
+      fn: async () => {
         expect(isRenderingAuditReportWire(SOUND_REPLY,),).toBe(true,);
       },
     },),
     it({
       name: 'ACCEPTS a reply that claims nothing, since an auditor finding no defect is an answer',
-      fn: () => {
+      fn: async () => {
         expect(
           isRenderingAuditReportWire({
             verdict: 'no-defect-found',
@@ -121,7 +121,7 @@ await describe({
         'ACCEPTS words this version does not know, because SHAPE is the only question here: a reply that '
         + 'parsed and named an unknown category is a voice that answered, and reporting it as a lost '
         + 'voice would hide it in the degradation rate instead of in the screen`s drop list',
-      fn: () => {
+      fn: async () => {
         expect(
           isRenderingAuditReportWire({
             verdict: 'catastrophic',
@@ -139,7 +139,7 @@ await describe({
     },),
     it({
       name: 'REFUSES anything that is not a record, including the array and the bare string a model may answer with',
-      fn: () => {
+      fn: async () => {
         expect(isRenderingAuditReportWire(undefined,),).toBe(false,);
         expect(isRenderingAuditReportWire(null,),).toBe(false,);
         expect(isRenderingAuditReportWire('no-defect-found',),).toBe(false,);
@@ -148,7 +148,7 @@ await describe({
     },),
     it({
       name: 'REFUSES a reply with no verdict, or one that is not a string',
-      fn: () => {
+      fn: async () => {
         expect(isRenderingAuditReportWire({ findings: [], },),).toBe(false,);
         expect(
           isRenderingAuditReportWire({
@@ -162,7 +162,7 @@ await describe({
       name:
         'REFUSES a reply whose findings are missing or not a list, including the single object a model '
         + 'sends when it found exactly one thing',
-      fn: () => {
+      fn: async () => {
         expect(isRenderingAuditReportWire({ verdict: 'no-defect-found', },),).toBe(false,);
         expect(
           isRenderingAuditReportWire({
@@ -176,7 +176,7 @@ await describe({
       name:
         'REFUSES a finding missing any one of its four fields, so a claim can never reach the screen '
         + 'with a quote field the screen would read as an empty one',
-      fn: () => {
+      fn: async () => {
         for (const field of [
           'category',
           'sourceQuote',
@@ -204,7 +204,7 @@ await describe({
     },),
     it({
       name: 'REFUSES a finding whose quote is a number rather than text, and one that is not a record at all',
-      fn: () => {
+      fn: async () => {
         expect(
           isRenderingAuditReportWire({
             verdict: 'defects-found',
@@ -232,7 +232,7 @@ await describe({
   children: [
     it({
       name: 'CARRIES both texts, each inside the fenced block, so the auditor sees the pair it is asked about',
-      fn: () => {
+      fn: async () => {
         /**
          * What the auditor is shown.
          */
@@ -250,7 +250,7 @@ await describe({
       name:
         'OMITS the identity block entirely when the run licensed nothing, rather than showing an empty '
         + 'one: a heading with nothing under it invites an auditor to treat the absence as a rule',
-      fn: () => {
+      fn: async () => {
         expect(
           userContent({
             subject: {
@@ -264,7 +264,7 @@ await describe({
     },),
     it({
       name: 'SHOWS licensed identity evidence when the run has some, marked as evidence rather than as a rule',
-      fn: () => {
+      fn: async () => {
         /**
          * What the auditor is shown when names were licensed.
          */
@@ -283,7 +283,7 @@ await describe({
       name:
         'ESCAPES a passage carrying its own fence run, so a candidate that opens a code block cannot '
         + 'close the block it was pasted into and turn its own tail into instructions',
-      fn: () => {
+      fn: async () => {
         /**
          * Candidate carrying a longer fence run than the default.
          */
@@ -321,7 +321,7 @@ await describe({
       name:
         'STATES both closed vocabularies in the instructions, so an auditor is never asked to invent a '
         + 'word the screen will then discard it for using',
-      fn: () => {
+      fn: async () => {
         /**
          * System turn of one audit call.
          */

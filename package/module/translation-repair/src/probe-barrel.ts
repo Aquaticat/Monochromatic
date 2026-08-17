@@ -30,8 +30,8 @@ export {
   runIntroducedDefectProbe,
 } from './introduced-defect-probe.ts';
 export {
-  buildRenderingAuditMessages,
   CANDIDATE_ONLY_CATEGORIES,
+  FINDING_FIELDS,
   isRenderingAuditReportWire,
   PAIRED_CATEGORIES,
   RENDERING_AUDIT_CATEGORIES,
@@ -44,16 +44,28 @@ export {
   type RenderingAuditVerdict,
   SOURCE_ONLY_CATEGORIES,
 } from './rendering-audit-wire.ts';
+export { buildRenderingAuditMessages, } from './rendering-audit-prompt.ts';
 export {
-  anchorQuote,
-  type QuoteAnchor,
+  type AnchoredSpan,
+  anchorLocatedSpan,
+  type SpanAnchor,
+} from './rendering-audit-anchor.ts';
+export {
   screenRenderingAudit,
   type ScreenedFinding,
   type ScreenedReport,
+  type SideReading,
 } from './rendering-audit-screen.ts';
 export {
-  type AuditVoiceRow,
+  type AuditMemberClaim,
+  CORROBORATION_VOICES,
+  corroborate,
   type CorroboratedDefect,
+  nearMisses,
+  type NearMiss,
+} from './rendering-audit-corroborate.ts';
+export {
+  type AuditVoiceRow,
   type RenderingAuditReport,
   runRenderingAudit,
 } from './rendering-audit.ts';

@@ -1,7 +1,7 @@
 import {
-  collapseSoftLineBreaks,
-  normalizePunctuation,
-} from './quote-normalize.ts';
+  type AnchoredSpan,
+  anchorLocatedSpan,
+} from './rendering-audit-anchor.ts';
 import {
   CANDIDATE_ONLY_CATEGORIES,
   PAIRED_CATEGORIES,
@@ -15,25 +15,22 @@ import {
 } from './rendering-audit-wire.ts';
 
 //region Rendering audit screen
-// What survives of one auditor's answer once the quotes are checked against the
+// What survives of one auditor's answer once its quotes are checked against the
 // texts, deterministically and without asking anybody.
 //
-// THE PROMPT IS NOT WHAT MAKES THE ARCHIVE IRRELEVANT. It says so, and a model
-// follows that unevenly; what enforces it is that an original quote is searched
-// in the ORIGINAL and nowhere else, so a claim resting on the archive's wording
-// anchors nowhere and is dropped with the finding on it.
-//
-// EACH CATEGORY PROVES ITSELF FROM THE SIDE IT CAN. Content the candidate never
+// EACH CATEGORY MUST ANCHOR IN THE SIDE IT CAN. Content the candidate never
 // rendered has nothing in the candidate to quote, so demanding a candidate span
-// for an omission would make omission unprovable, which is the likeliest defect
-// a from-scratch rendering has. An addition nothing supports is the mirror. A
-// changed number, actor or polarity is stated by both and must quote both.
+// for an omission would make omission unfileable, and it is the likeliest
+// defect a from-scratch rendering has. An addition nothing supports is the
+// mirror. A changed number, actor or polarity is stated by both and anchors in
+// both.
 //
-// A QUOTE HAS TO IDENTIFY ITS SPAN, not merely occur. A quote occurring twice in
-// the text it names does not say which occurrence was read, and a very short one
-// identifies nothing even when it occurs once; the coverage probe accepted the
-// single word `September` as evidence and only an ambiguity check stopped it.
-// Both rules run here.
+// THE OBLIGATION RUNS BOTH WAYS, which an earlier version left half-enforced.
+// A missing required side was dropped, and a quote on a side the category does
+// not use was silently ERASED. That let an `omission` arrive carrying candidate
+// text, which is a contradiction in terms, and let a voice escape a paired
+// category's evidence obligation by filing the same claim as one-sided. Both
+// directions are refused here.
 //
 // A DROPPED CLAIM IS NOT EVIDENCE OF FIDELITY, and the tally says so separately:
 // a voice that reported nothing and a voice whose every claim was dropped are
@@ -41,221 +38,46 @@ import {
 // answers look like agreement that a rendering is sound.
 
 /**
- * Fewest characters a quote may carry, once canonical, when it names Latin
- * text.
+ * What one side of a screened finding rests on.
  *
- * Short English words identify nothing: `September` occurs in most of these
- * documents more than once, and `the` in all of them.
- */
-const MIN_LATIN_QUOTE_CHARS = 12;
-
-/**
- * Fewest characters a quote may carry when it names text with CJK in it.
- *
- * Lower on purpose rather than by oversight: a Chinese clause carries far more
- * per character, and a twelve-character floor would refuse most honest source
- * spans.
- */
-const MIN_CJK_QUOTE_CHARS = 4;
-
-/**
- * What `indexOf` answers when a needle is absent.
- */
-const NOT_FOUND = -1;
-
-/**
- * First and last code points of the CJK Unified Ideographs block.
- *
- * Read directly rather than through a regex: this is one range test over the
- * code points of a short string, and a character class would say the same thing
- * less legibly while adding a pattern nobody can bound.
- */
-const CJK_FIRST = 0x4E_00;
-
-/**
- * Last code point of that block.
- */
-const CJK_LAST = 0x9F_FF;
-
-/**
- * Whether a quote carries any CJK character.
- *
- * @param text - quote to inspect
- *
- * @returns True when at least one character is a CJK ideograph
+ * NAMED ABSENCE rather than an optional field: a side a category does not use
+ * is a different thing from a side that happens to be missing, and a reader
+ * that has to tell them apart from `undefined` will eventually get it wrong.
  *
  * @example
  * ```ts
- * const cjk = carriesCjk({ text: '猫猫', },);
+ * const reading: SideReading = { kind: 'unused', };
  * ```
  */
-function carriesCjk({ text, }: { readonly text: string; },): boolean {
-  // OVER UTF-16 UNITS, which is exact for this question and not in general:
-  // the block tested lies in the basic plane, and a character outside it is
-  // stored as two surrogates, both far above this range, so a supplementary
-  // character cannot be read as CJK here.
-  for (let index = 0; index < text.length; index += 1) {
-    /**
-     * Code unit at this position.
-     */
-    const point = text.codePointAt(index,) ?? 0;
-    if ((point >= CJK_FIRST) && (point <= CJK_LAST))
-      return true;
-  }
-
-  return false;
-}
-
-/**
- * One quote read in the broadest form the anchoring accepts.
- *
- * @param text - text to canonicalize
- *
- * @returns Same text with punctuation variants folded and soft line breaks read
- * as spaces
- *
- * @example
- * ```ts
- * const canonical = canonicalize({ text: quote, },);
- * ```
- */
-function canonicalize({ text, }: { readonly text: string; },): string {
-  return collapseSoftLineBreaks({ text: normalizePunctuation({ text, },), },);
-}
-
-/**
- * What checking one quote against one text found.
- *
- * @example
- * ```ts
- * const anchor: QuoteAnchor = { anchored: true, evidence: 'The cat sleeps.', };
- * ```
- */
-export type QuoteAnchor = {
+export type SideReading = {
   /**
-   * Quote identifies exactly one span of the text it names.
+   * Category does not rest on this side at all.
    */
-  readonly anchored: true;
-
-  /**
-   * That span as the TEXT ITSELF holds it, rather than as the auditor typed it,
-   * so a report never quotes a document back with wording the document does not
-   * carry.
-   */
-  readonly evidence: string;
+  readonly kind: 'unused';
 } | {
   /**
-   * Quote proves nothing, for the stated reason.
+   * Category rests on this side, and both spans were located.
    */
-  readonly anchored: false;
+  readonly kind: 'anchored';
 
   /**
-   * Which check refused, in wording a tally can group by.
+   * Span that identified which occurrence was meant.
    */
-  readonly reason: string;
+  readonly locator: AnchoredSpan;
+
+  /**
+   * Smallest span carrying the claimed change, which is what corroboration
+   * compares.
+   */
+  readonly focus: AnchoredSpan;
 };
-
-/**
- * Checks one quote against the text it claims to come from.
- *
- * @param text - side the quote names
- *
- * @param quote - span the auditor claims
- *
- * @param side - which side this is, for the refusal wording
- *
- * @returns The text's own wording for the span, or why the quote proves nothing
- *
- * @example
- * ```ts
- * const anchor = anchorQuote({ text: sourceText, quote, side: 'source', },);
- * ```
- */
-export function anchorQuote(
-  {
-    text,
-    quote,
-    side,
-  }: {
-    readonly text: string;
-    readonly quote: string;
-    readonly side: string;
-  },
-): QuoteAnchor {
-  /**
-   * Quote in the broadest accepted form.
-   */
-  const needle = canonicalize({ text: quote, },);
-
-  if (needle === '') {
-    return {
-      anchored: false,
-      reason: `empty-quote (${side})`,
-    };
-  }
-
-  /**
-   * Fewest characters this quote must carry to identify anything.
-   */
-  const floor = carriesCjk({ text: needle, },) ? MIN_CJK_QUOTE_CHARS : MIN_LATIN_QUOTE_CHARS;
-
-  if (needle.length < floor) {
-    return {
-      anchored: false,
-      reason: `unidentifying-quote (${side})`,
-    };
-  }
-
-  /**
-   * Text in the same form, so a quote copied out of a wrapped paragraph still
-   * anchors.
-   */
-  const haystack = canonicalize({ text, },);
-
-  /**
-   * Where the quote first occurs, or nowhere.
-   */
-  const at = haystack.indexOf(needle,);
-
-  if (at === NOT_FOUND) {
-    return {
-      anchored: false,
-      reason: `unanchored-quote (${side})`,
-    };
-  }
-
-  if (haystack.includes(
-    needle,
-    at + 1,
-  )) {
-    return {
-      anchored: false,
-      reason: `ambiguous-quote (${side})`,
-    };
-  }
-
-  // BOTH CANONICAL MAPS REPLACE ONE UTF-16 UNIT WITH ONE, which is what lets
-  // these offsets index the stored text and return its own characters.
-  return {
-    anchored: true,
-    evidence: text.slice(
-      at,
-      at + needle.length,
-    ),
-  };
-}
 
 /**
  * One finding that survived screening.
  *
  * @example
  * ```ts
- * const finding: ScreenedFinding = {
- *   category: 'omission',
- *   sourceEvidence: '猫猫没有离开窗台',
- *   candidateEvidence: '',
- *   reason: 'the clause is absent',
- * };
+ * const finding: ScreenedFinding = { category: 'omission', source, candidate: { kind: 'unused', }, reason, };
  * ```
  */
 export type ScreenedFinding = {
@@ -265,19 +87,17 @@ export type ScreenedFinding = {
   readonly category: RenderingAuditCategory;
 
   /**
-   * Original's own wording for the span this rests on, empty where the category
-   * proves itself from the candidate alone.
+   * What this rests on in the original.
    */
-  readonly sourceEvidence: string;
+  readonly source: SideReading;
 
   /**
-   * Candidate's own wording, empty where the category proves itself from the
-   * original alone.
+   * What it rests on in the candidate.
    */
-  readonly candidateEvidence: string;
+  readonly candidate: SideReading;
 
   /**
-   * What the auditor said the two spans amount to.
+   * What the auditor said the spans amount to.
    */
   readonly reason: string;
 };
@@ -287,7 +107,7 @@ export type ScreenedFinding = {
  *
  * @example
  * ```ts
- * const screened: ScreenedReport = { verdict: 'defects-found', findings: [], dropped: ['unanchored-quote (source)',], };
+ * const screened: ScreenedReport = { verdict: 'defects-found', findings: [], dropped: [], };
  * ```
  */
 export type ScreenedReport = {
@@ -310,11 +130,14 @@ export type ScreenedReport = {
 };
 
 /**
- * Which sides a category must and must not quote.
+ * Which sides a category rests on.
  *
  * @param category - category to ask about
  *
  * @returns Whether each side is required
+ *
+ * @throws {@link Error} when a category belongs to no anchoring rule, which is
+ * a vocabulary that grew without this rule growing with it
  *
  * @example
  * ```ts
@@ -360,6 +183,71 @@ function quotesRequired(
 }
 
 /**
+ * Reads one side of one claim.
+ *
+ * @param text - side the claim names
+ *
+ * @param locator - span identifying which occurrence is meant
+ *
+ * @param focus - smallest span carrying the claimed change
+ *
+ * @param side - which side this is, for the refusal wording
+ *
+ * @param needed - whether this category rests on this side
+ *
+ * @returns What the side rests on, or why the claim falls
+ *
+ * @example
+ * ```ts
+ * const reading = readSide({ text, locator, focus, side: 'source', needed: true, },);
+ * ```
+ */
+function readSide(
+  {
+    text,
+    locator,
+    focus,
+    side,
+    needed,
+  }: {
+    readonly text: string;
+    readonly locator: string;
+    readonly focus: string;
+    readonly side: string;
+    readonly needed: boolean;
+  },
+): SideReading | { readonly dropped: string; } {
+  if (!needed) {
+    // A QUOTE HERE IS A CONTRADICTION, not a stray field to ignore: this
+    // category says the side holds nothing to point at, and the claim points at
+    // something anyway, so one of the two is wrong and neither can be trusted.
+    if ((locator !== '') || (focus !== ''))
+      return { dropped: `forbidden-side-quote (${side})`, };
+
+    return { kind: 'unused', };
+  }
+
+  /**
+   * Where the claim says it is.
+   */
+  const anchor = anchorLocatedSpan({
+    text,
+    locator,
+    focus,
+    side,
+  },);
+
+  if (!anchor.anchored)
+    return { dropped: anchor.reason, };
+
+  return {
+    kind: 'anchored',
+    locator: anchor.locator,
+    focus: anchor.focus,
+  };
+}
+
+/**
  * Screens one claimed finding against both texts.
  *
  * @param finding - claim as the auditor sent it
@@ -368,7 +256,7 @@ function quotesRequired(
  *
  * @param candidateText - rendering under audit
  *
- * @returns The finding with the texts' own wording, or why it was dropped
+ * @returns The finding with the texts' own spans, or why it was dropped
  *
  * @example
  * ```ts
@@ -400,7 +288,7 @@ function screenFinding(
     return { dropped: `unknown-category (${finding.category})`, };
 
   /**
-   * Which sides this category has to prove itself from.
+   * Which sides this category rests on.
    */
   const {
     needsSource,
@@ -408,43 +296,37 @@ function screenFinding(
   } = quotesRequired({ category, },);
 
   /**
-   * What the original says, when this category rests on it.
+   * What the original side amounts to.
    */
-  const source = needsSource
-    ? anchorQuote({
-      text: sourceText,
-      quote: finding.sourceQuote,
-      side: 'source',
-    },)
-    : {
-      anchored: true,
-      evidence: '',
-    } as const;
+  const source = readSide({
+    text: sourceText,
+    locator: finding.sourceLocator,
+    focus: finding.sourceFocus,
+    side: 'source',
+    needed: needsSource,
+  },);
 
-  if (!source.anchored)
-    return { dropped: source.reason, };
+  if ('dropped' in source)
+    return source;
 
   /**
-   * What the candidate says, when this category rests on it.
+   * What the candidate side amounts to.
    */
-  const candidate = needsCandidate
-    ? anchorQuote({
-      text: candidateText,
-      quote: finding.candidateQuote,
-      side: 'candidate',
-    },)
-    : {
-      anchored: true,
-      evidence: '',
-    } as const;
+  const candidate = readSide({
+    text: candidateText,
+    locator: finding.candidateLocator,
+    focus: finding.candidateFocus,
+    side: 'candidate',
+    needed: needsCandidate,
+  },);
 
-  if (!candidate.anchored)
-    return { dropped: candidate.reason, };
+  if ('dropped' in candidate)
+    return candidate;
 
   return {
     category,
-    sourceEvidence: source.evidence,
-    candidateEvidence: candidate.evidence,
+    source,
+    candidate,
     reason: finding.reason,
   };
 }
@@ -488,24 +370,35 @@ export function screenRenderingAudit(
       },);
     },);
 
+  /**
+   * Verdict this version knows, or the absence of one.
+   *
+   * A VERDICT THIS VERSION DOES NOT KNOW READS AS `uncertain` rather than as a
+   * refusal of the whole answer: the findings underneath it are checked against
+   * the texts either way, and a mis-cast verdict is not a reason to discard
+   * evidence that anchors. The substitution is RECORDED in the drop list, since
+   * an unknown verdict is a protocol failure and silently reading it as an
+   * epistemic state would hide one instrument defect behind a vocabulary word.
+   */
+  const cast = RENDERING_AUDIT_VERDICTS.find(function isCast(one,): boolean {
+    return one === report.verdict;
+  },);
+
   return {
-    // A VERDICT THIS VERSION DOES NOT KNOW READS AS `uncertain` rather than as a
-    // refusal of the whole answer: the findings underneath it are checked
-    // against the texts either way, and a mis-cast verdict is not a reason to
-    // discard evidence that anchors.
-    verdict: RENDERING_AUDIT_VERDICTS.find(function isCast(one,): boolean {
-      return one === report.verdict;
-    },) ?? 'uncertain',
+    verdict: cast ?? 'uncertain',
     findings: screened.filter(function survived(one,): one is ScreenedFinding {
       return !('dropped' in one);
     },),
-    dropped: screened
-      .filter(function fell(one,): one is { readonly dropped: string; } {
-        return 'dropped' in one;
-      },)
-      .map(function toReason(one,): string {
-        return one.dropped;
-      },),
+    dropped: [
+      ...((cast === undefined) ? [`unknown-verdict (${report.verdict})`,] : []),
+      ...screened
+        .filter(function fell(one,): one is { readonly dropped: string; } {
+          return 'dropped' in one;
+        },)
+        .map(function toReason(one,): string {
+          return one.dropped;
+        },),
+    ],
   };
 }
 

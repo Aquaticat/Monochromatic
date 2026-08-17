@@ -1,11 +1,8 @@
-import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
-
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
-import { selectFence, } from './prompt-fence.ts';
 
 //region Rendering audit wire
 // Asks whether one candidate rendering says what its original says, with NO
@@ -23,18 +20,23 @@ import { selectFence, } from './prompt-fence.ts';
 // identity evidence this run licensed, does the candidate fail to render or
 // misrepresent anything. Nothing about improvement, nothing about the archive.
 //
-// THE ARCHIVE IS NOT THE STANDARD, and the prompt is not what enforces that.
-// The screen anchors an original quote in the ORIGINAL only, so a claim that
-// quotes the archive's wording as though it were the source anchors nowhere and
-// is dropped. A prompt sentence would be advice; this is a property of what
-// counts as evidence.
+// THE ARCHIVE IS EXCLUDED AT THE CALLER, which is a narrower claim than an
+// earlier version of this comment made. What is true: no archive text is ever
+// serialized into these messages, and archive wording cannot anchor a quote,
+// since a quote naming the original is searched in the ORIGINAL and nowhere
+// else. What is NOT true, and was written here as though it were: that this
+// makes a voice reason independently of an archive it may have seen elsewhere.
+// Nothing here can establish that. The `reason` field is not screened at all,
+// and a candidate-only finding needs no original quote.
 //
-// EVERY CATEGORY NAMES WHICH SIDE IT CAN PROVE ITSELF FROM, which is the one
-// thing a symmetric rule gets wrong. Content the candidate never rendered has
+// EVERY CATEGORY NAMES WHICH SIDE IT MUST ANCHOR IN, which is an evidence
+// obligation rather than a proof. Content the candidate never rendered has
 // nothing in the candidate to quote, its absence being the whole claim, so
-// omission proves itself from the original alone. An addition nothing supports
-// has nothing in the original to quote, for the mirror reason. Everything else
-// changes something both sides state, and must quote both.
+// demanding a candidate span for an omission would make it unfileable. An
+// addition nothing supports is the mirror. Everything else changes something
+// both sides state, and must anchor in both. An anchored source span proves
+// that the original says that; whether the candidate fails to render it is what
+// the auditor claims and what corroboration weighs.
 
 /**
  * Every verdict one auditor may cast on one candidate, closed vocabulary.
@@ -137,19 +139,29 @@ export type RenderingAuditCategory = typeof RENDERING_AUDIT_CATEGORIES[number];
 /**
  * One claimed defect as an auditor sent it, before any screening.
  *
- * BOTH QUOTE FIELDS ALWAYS PRESENT ON THE WIRE, and empty where the category
- * cannot prove itself from that side. A schema whose required fields varied by
- * category would ask a model to satisfy a conditional shape, which is the kind
- * of instruction a model follows unevenly; the screen enforces the obligation
- * instead, where it is deterministic.
+ * FOUR QUOTES, TWO PER SIDE, because one span cannot both identify a place and
+ * name a change. A LOCATOR says which occurrence is meant and must be unique in
+ * its text; a FOCUS says what changed and need only be unique inside its own
+ * locator. The first version asked for one span per side and got both jobs done
+ * badly: a span wide enough to be unique was too wide to say what changed, so
+ * two different defects in one sentence arrived as the same quote.
+ *
+ * EVERY FIELD ALWAYS PRESENT ON THE WIRE, and empty where the category does not
+ * use that side. A schema whose required fields varied by category would ask a
+ * model to satisfy a conditional shape, which is the kind of instruction a
+ * model follows unevenly; the screen enforces the obligation instead, where it
+ * is deterministic, in BOTH directions: a missing required side is dropped, and
+ * so is a quote on a side the category forbids.
  *
  * @example
  * ```ts
  * const finding: RenderingAuditFindingWire = {
  *   category: 'omission',
- *   sourceQuote: '猫猫没有离开窗台',
- *   candidateQuote: '',
- *   reason: 'the clause is absent',
+ *   sourceLocator: '她们不吃罐头，每天傍晚只喝一碗温牛奶',
+ *   sourceFocus: '不吃罐头',
+ *   candidateLocator: '',
+ *   candidateFocus: '',
+ *   reason: 'the original denies it and the candidate states no counterpart',
  * };
  * ```
  */
@@ -160,17 +172,28 @@ export type RenderingAuditFindingWire = {
   readonly category: string;
 
   /**
-   * Minimal span of the ORIGINAL this claim rests on.
+   * Span of the ORIGINAL identifying which occurrence this claim is about.
    */
-  readonly sourceQuote: string;
+  readonly sourceLocator: string;
 
   /**
-   * Minimal span of the CANDIDATE this claim rests on.
+   * Smallest span of the ORIGINAL carrying the claimed change.
    */
-  readonly candidateQuote: string;
+  readonly sourceFocus: string;
 
   /**
-   * Why those two spans amount to the claimed defect.
+   * Span of the CANDIDATE identifying which occurrence this claim is about.
+   */
+  readonly candidateLocator: string;
+
+  /**
+   * Smallest span of the CANDIDATE carrying the claimed change.
+   */
+  readonly candidateFocus: string;
+
+  /**
+   * What the original asserts, what the candidate asserts, and why the
+   * difference is semantic.
    */
   readonly reason: string;
 };
@@ -196,6 +219,24 @@ export type RenderingAuditReportWire = {
 };
 
 /**
+ * Every field a finding carries, named once so the guard and the schema cannot
+ * drift apart.
+ *
+ * @example
+ * ```ts
+ * FINDING_FIELDS.includes('sourceFocus',);
+ * ```
+ */
+export const FINDING_FIELDS = [
+  'category',
+  'sourceLocator',
+  'sourceFocus',
+  'candidateLocator',
+  'candidateFocus',
+  'reason',
+] as const;
+
+/**
  * Reads one wire finding out of an untyped value.
  *
  * @param value - one element of a reply's finding list
@@ -211,10 +252,9 @@ function isRenderingAuditFindingWire(value: unknown,): value is RenderingAuditFi
   if (!isJsonRecord(value,))
     return false;
 
-  return ((typeof value.category) === 'string')
-    && ((typeof value.sourceQuote) === 'string')
-    && ((typeof value.candidateQuote) === 'string')
-    && ((typeof value.reason) === 'string');
+  return FINDING_FIELDS.every(function carriesText(field,): boolean {
+    return (typeof value[field]) === 'string';
+  },);
 }
 
 /**
@@ -274,90 +314,6 @@ export type RenderingAuditSubject = {
 };
 
 /**
- * Builds the messages for one audit call.
- *
- * @param subject - original, candidate and any licensed identity evidence
- *
- * @returns System and user messages
- *
- * @example
- * ```ts
- * const messages = buildRenderingAuditMessages({ subject, },);
- * ```
- */
-export function buildRenderingAuditMessages(
-  { subject, }: { readonly subject: RenderingAuditSubject; },
-): readonly ChatMessage[] {
-  /**
-   * Fence long enough to hold both texts without either closing it.
-   */
-  const fence = selectFence({
-    texts: [
-      subject.sourceText,
-      subject.candidateText,
-      subject.identityContext ?? '',
-    ],
-  },);
-
-  return [
-    {
-      role: 'system',
-      content: [
-        'You audit one translated passage against its original.',
-        '',
-        'THE QUESTION IS ABSOLUTE, not comparative. Against the ORIGINAL, and against any identity',
-        'evidence given below, does the CANDIDATE fail to render or misrepresent anything?',
-        '',
-        'Report concrete omissions, unsupported additions, and changes to actor, referent, polarity,',
-        'modality, time, number, relation, identity, or required structure.',
-        '',
-        'A difference from any other translation is NOT a defect, and no other translation is shown to',
-        'you. Wording you would have chosen differently is not a defect either. Report only what the',
-        'original does not support or what the candidate leaves unrendered.',
-        '',
-        'Every finding must quote the MINIMAL spans it rests on, copied character for character:',
-        '',
-        `  ${SOURCE_ONLY_CATEGORIES.join(', ',)}: quote the ORIGINAL span only, and leave candidateQuote empty,`,
-        '  because content that was never rendered has nothing in the candidate to quote.',
-        `  ${CANDIDATE_ONLY_CATEGORIES.join(', ',)}: quote the CANDIDATE span only, and leave sourceQuote empty.`,
-        '  every other category: quote BOTH, since the two spans are what disagree.',
-        '',
-        'A quote that does not occur in the text it names is discarded, and so is the finding resting',
-        'on it. Quote the fewest characters that still identify the span uniquely.',
-        '',
-        `verdict is one of: ${RENDERING_AUDIT_VERDICTS.join(', ',)}.`,
-        `category is one of: ${RENDERING_AUDIT_CATEGORIES.join(', ',)}.`,
-        '',
-        'Answer with JSON only.',
-      ].join('\n',),
-    },
-    {
-      role: 'user',
-      content: [
-        'ORIGINAL:',
-        fence,
-        subject.sourceText,
-        fence,
-        '',
-        'CANDIDATE:',
-        fence,
-        subject.candidateText,
-        fence,
-        ...((subject.identityContext === undefined)
-          ? []
-          : [
-            '',
-            'IDENTITY EVIDENCE, licensed for this document, not a defect when the candidate follows it:',
-            fence,
-            subject.identityContext,
-            fence,
-          ]),
-      ].join('\n',),
-    },
-  ];
-}
-
-/**
  * Response format one audit call asks for.
  *
  * @example
@@ -382,19 +338,17 @@ export const RENDERING_AUDIT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
           type: 'array',
           items: {
             type: 'object',
-            required: [
-              'category',
-              'sourceQuote',
-              'candidateQuote',
-              'reason',
-            ],
+            required: [...FINDING_FIELDS,],
             additionalProperties: false,
-            properties: {
-              category: { type: 'string', },
-              sourceQuote: { type: 'string', },
-              candidateQuote: { type: 'string', },
-              reason: { type: 'string', },
-            },
+            properties: Object.fromEntries(FINDING_FIELDS.map(function toStringField(field,): readonly [
+              string,
+              { readonly type: 'string'; },
+            ] {
+              return [
+                field,
+                { type: 'string', },
+              ];
+            },),),
           },
         },
       },

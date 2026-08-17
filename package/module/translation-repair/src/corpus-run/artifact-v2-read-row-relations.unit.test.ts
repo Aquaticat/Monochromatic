@@ -74,7 +74,7 @@ await describe({
         'ACCEPTS a row whose outcome and delivery can both be true, which is the control this file`s '
         + 'other cases are read against: a check that refused everything would look identical to one that '
         + 'refuses the right things',
-      fn: () => {
+      fn: async () => {
         expect(() => {
           assertRowsCoherent({
             ledger: [RETAINED_ROW,],
@@ -88,7 +88,7 @@ await describe({
       name:
         'REFUSES a row that reports a missing passage where the archive holds wording, naming the row`s '
         + 'position so a reader of a long ledger can find it',
-      fn: () => {
+      fn: async () => {
         expect(() => {
           assertRowsCoherent({
             ledger: [
@@ -109,7 +109,7 @@ await describe({
         'RETHROWS an error that is not a coherence refusal instead of reporting it as a malformed row: a '
         + 'defect in this reader dressed as an artifact refusal sends an operator to archive a run that '
         + 'was fine, and buries the real fault under a message about the file',
-      fn: () => {
+      fn: async () => {
         /**
          * Row that fails while being read rather than while being judged, which
          * is what a defect inside either coherence rule would look like from
@@ -144,7 +144,7 @@ await describe({
     it({
       name:
         'NAMES BOTH KINDS when the raw result and the ledger disagree about what the lane did',
-      fn: () => {
+      fn: async () => {
         /**
          * Raw result saying the lane decided a wording here.
          */
@@ -174,7 +174,7 @@ await describe({
         'says WHAT DIFFERS rather than repeating one kind twice when both sides name the same member and '
         + 'carry different wording, since `decided rather than decided` states a disagreement and then '
         + 'refuses to say what it is',
-      fn: () => {
+      fn: async () => {
         /**
          * Raw result and ledger that agree on the member and not on the wording.
          */

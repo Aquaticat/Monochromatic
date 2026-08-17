@@ -3,10 +3,16 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
-  type RenderingAuditCategory,
+  type AuditMemberClaim,
+  type CorroboratedDefect,
+  corroborate,
+  type NearMiss,
+  nearMisses,
+} from './rendering-audit-corroborate.ts';
+import { buildRenderingAuditMessages, } from './rendering-audit-prompt.ts';
+import {
   RENDERING_AUDIT_RESPONSE_FORMAT,
   type RenderingAuditSubject,
-  buildRenderingAuditMessages,
   isRenderingAuditReportWire,
 } from './rendering-audit-wire.ts';
 import {
@@ -31,29 +37,15 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // from one auditor's opinion, and the roster is the only independence available
 // here.
 //
-// TWO FINDINGS MATCH WHEN THEY NAME THE SAME CATEGORY OVER THE SAME SPAN, where
-// the span is the TEXT'S OWN wording rather than what either voice typed, since
-// the screen already replaced each quote with the characters the document
-// carries. Two voices quoting the same clause with different punctuation
-// therefore corroborate each other, and two quoting different clauses do not,
-// however similar their prose.
+// WHAT COUNTS AS THE SAME DEFECT lives in `rendering-audit-corroborate.ts`,
+// which compares FOCUS INTERVALS rather than quoted text, and reports overlap
+// as a near miss rather than merging it.
 //
 // PER-VOICE ROWS ARE KEPT. `#68` measured three probers disagreeing by an order
 // of magnitude about how often an edit is worth a claim, and the decision about
 // how to read a tally over such a roster is still open. A report that kept only
 // the aggregate would have to be re-run to answer it; one that keeps the rows
 // can be re-read.
-
-/**
- * How many distinct voices must find one defect for it to count as corroborated.
- *
- * TWO, not a majority, and the difference matters at this roster size: the
- * question this instrument answers first is whether a defect is THERE, and a
- * majority rule over six voices would discard a defect four of them missed. The
- * tally keeps the count, so a stricter rule can be applied later without
- * re-running anything.
- */
-const CORROBORATION_VOICES = 2;
 
 /**
  * One auditor's screened answer, kept whole.
@@ -75,7 +67,7 @@ export type AuditVoiceRow = {
   readonly verdict: string;
 
   /**
-   * What it claimed that proved itself.
+   * What it claimed that anchored.
    */
   readonly findings: readonly ScreenedFinding[];
 
@@ -87,55 +79,25 @@ export type AuditVoiceRow = {
 };
 
 /**
- * One defect and how many voices found it.
- *
- * @example
- * ```ts
- * const defect: CorroboratedDefect = { category: 'altered-polarity', voices: 2, ... };
- * ```
- */
-export type CorroboratedDefect = {
-  /**
-   * Category every voice counted here named.
-   */
-  readonly category: RenderingAuditCategory;
-
-  /**
-   * Original's own wording for the span, empty where the category proves itself
-   * from the candidate alone.
-   */
-  readonly sourceEvidence: string;
-
-  /**
-   * Candidate's own wording, empty for the mirror case.
-   */
-  readonly candidateEvidence: string;
-
-  /**
-   * Distinct auditors that named this defect over this span.
-   */
-  readonly voices: number;
-
-  /**
-   * What each of them said it amounts to, in voice order.
-   */
-  readonly reasons: readonly string[];
-};
-
-/**
  * Everything one audit produced about one rendering.
  *
  * @example
  * ```ts
- * const report: RenderingAuditReport = { corroborated: [], rows: [], findings: [], };
+ * const report: RenderingAuditReport = { corroborated: [], near: [], rows: [], findings: [], };
  * ```
  */
 export type RenderingAuditReport = {
   /**
-   * Defects at least {@link CORROBORATION_VOICES} auditors found, most-agreed
-   * first.
+   * Defects at least two auditors located identically, most-agreed first.
    */
   readonly corroborated: readonly CorroboratedDefect[];
+
+  /**
+   * Pairs of claims from different voices that nearly agreed, reported rather
+   * than merged, since a merge on overlap would manufacture agreement nobody
+   * reached.
+   */
+  readonly near: readonly NearMiss[];
 
   /**
    * Every auditor's screened answer, kept for a later decision about how to
@@ -148,127 +110,6 @@ export type RenderingAuditReport = {
    */
   readonly findings: readonly string[];
 };
-
-/**
- * Key under which two findings count as the same defect.
- *
- * @param finding - screened finding
- *
- * @returns Category and both evidence spans, joined by a separator none of them
- * can contain unescaped
- *
- * @example
- * ```ts
- * const key = defectKey({ finding, },);
- * ```
- */
-function defectKey({ finding, }: { readonly finding: ScreenedFinding; },): string {
-  return JSON.stringify([
-    finding.category,
-    finding.sourceEvidence,
-    finding.candidateEvidence,
-  ],);
-}
-
-/**
- * Counts each defect across the voices that named it.
- *
- * @param rows - every auditor's screened answer
- *
- * @returns Defects reaching the corroboration threshold, most-agreed first
- *
- * @example
- * ```ts
- * const corroborated = corroborate({ rows, },);
- * ```
- */
-function corroborate(
-  { rows, }: { readonly rows: readonly AuditVoiceRow[]; },
-): readonly CorroboratedDefect[] {
-  /**
-   * Every claim, grouped by what it claims.
-   *
-   * ONE VOICE COUNTS ONCE per defect, which the inner set enforces: an auditor
-   * that reports the same span twice in one answer is one opinion, and counting
-   * it twice would let a single voice corroborate itself.
-   */
-  const grouped = rows.reduce(
-    function collectRow(
-      groups: Map<string, {
-        readonly finding: ScreenedFinding;
-        readonly voices: Set<string>;
-        readonly reasons: string[];
-      }>,
-      row,
-    ) {
-      for (const finding of row.findings) {
-        /**
-         * Key this finding is counted under.
-         */
-        const key = defectKey({ finding, },);
-
-        /**
-         * What has been collected for this defect so far.
-         */
-        const group = groups.get(key,) ?? {
-          finding,
-          voices: new Set<string>(),
-          reasons: [],
-        };
-
-        if (!group.voices
-          .has(row.modelId,)) {
-          group.voices
-            .add(row.modelId,);
-          group.reasons
-            .push(finding.reason,);
-        }
-
-        groups.set(
-          key,
-          group,
-        );
-      }
-
-      return groups;
-    },
-    new Map<string, {
-      readonly finding: ScreenedFinding;
-      readonly voices: Set<string>;
-      readonly reasons: string[];
-    }>(),
-  );
-
-  return [...grouped.values(),]
-    .filter(function reachedThreshold(group,): boolean {
-      /**
-       * Distinct auditors that named this defect.
-       */
-      const found = group.voices
-        .size;
-
-      return found >= CORROBORATION_VOICES;
-    },)
-    .map(function toDefect(group,): CorroboratedDefect {
-      return {
-        category: group.finding
-          .category,
-        sourceEvidence: group.finding
-          .sourceEvidence,
-        candidateEvidence: group.finding
-          .candidateEvidence,
-        voices: group.voices
-          .size,
-        reasons: [...group.reasons,],
-      };
-    },)
-    .toSorted(function byAgreement(
-      left,
-      right,
-    ): number {
-      return right.voices - left.voices;
-    },);
-}
 
 /**
  * Audits one rendering against its original.
@@ -349,8 +190,23 @@ export async function runRenderingAudit(
       };
     },);
 
+  /**
+   * Every anchored claim, tagged with the voice that made it, which is the form
+   * both the matcher and the near-miss pass read.
+   */
+  const claims: readonly AuditMemberClaim[] = rows.flatMap(function toClaims(row,): readonly AuditMemberClaim[] {
+    return row.findings
+      .map(function toClaim(finding,): AuditMemberClaim {
+        return {
+          modelId: row.modelId,
+          finding,
+        };
+      },);
+  },);
+
   return {
-    corroborated: corroborate({ rows, },),
+    corroborated: corroborate({ claims, },),
+    near: nearMisses({ claims, },),
     rows,
     findings: gathered.findings,
   };

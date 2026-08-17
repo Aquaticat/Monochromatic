@@ -1,0 +1,377 @@
+import type {
+  ScreenedFinding,
+  SideReading,
+} from './rendering-audit-screen.ts';
+import type { RenderingAuditCategory, } from './rendering-audit-wire.ts';
+import type { SyntheticModelId, } from './synthetic-catalog.ts';
+
+//region Rendering audit corroboration
+// When two auditors are talking about the SAME DEFECT, as against the same
+// sentence.
+//
+// ON FOCUS INTERVALS, not on quoted text. Two voices pointing at one dropped
+// negation will not type the same characters: one quotes the clause, the other
+// quotes the two words that carry it. What they have in common is a position in
+// a document, so that is what this compares.
+//
+// EXACT INTERVALS CORROBORATE, AND NOTHING ELSE DOES. Overlap is reported and
+// never merged, because a merge on overlap is a false claim of agreement: one
+// sentence can carry two changed numbers, and two voices each finding a
+// different one overlap perfectly while agreeing on nothing. A near miss says
+// what it is, which is two claims about neighbouring text whose relationship a
+// human or a later rule has to decide.
+//
+// NO TRANSITIVE CLUSTERING. If A overlaps B and B overlaps C, that does not put
+// A and C in one defect: a single wide span would otherwise bridge two narrow
+// findings that share no text at all. Every relation here is pairwise, and
+// membership comes only from an exact key.
+//
+// EVERY MEMBER IS KEPT. A defect reports the claims it was built from, one per
+// voice per claim, because the aggregate is what a later calibration re-reads,
+// and a summary that discarded the voices could not answer a question nobody
+// has asked yet.
+
+/**
+ * How many distinct voices must find one defect for it to count as
+ * corroborated.
+ *
+ * TWO, not a majority, and the difference matters at this roster size: the
+ * question this instrument answers first is whether a defect is THERE, and a
+ * majority rule over six voices would discard a defect four of them missed. The
+ * tally keeps the count, so a stricter rule can be applied later without
+ * re-running anything.
+ */
+export const CORROBORATION_VOICES = 2;
+
+/**
+ * One voice's claim, kept whole.
+ *
+ * @example
+ * ```ts
+ * const member: AuditMemberClaim = { modelId, finding, };
+ * ```
+ */
+export type AuditMemberClaim = {
+  /**
+   * Auditor that made this claim.
+   */
+  readonly modelId: SyntheticModelId;
+
+  /**
+   * What it claimed, screened.
+   */
+  readonly finding: ScreenedFinding;
+};
+
+/**
+ * One defect more than one voice located identically.
+ *
+ * @example
+ * ```ts
+ * const defect: CorroboratedDefect = { category: 'altered-polarity', voices: 2, members, };
+ * ```
+ */
+export type CorroboratedDefect = {
+  /**
+   * Category every member named, since a differing category is a different
+   * defect here rather than the same one.
+   */
+  readonly category: RenderingAuditCategory;
+
+  /**
+   * Where it is in the original.
+   */
+  readonly source: SideReading;
+
+  /**
+   * Where it is in the candidate.
+   */
+  readonly candidate: SideReading;
+
+  /**
+   * Distinct auditors that located it.
+   */
+  readonly voices: number;
+
+  /**
+   * Every claim it was built from, including a voice claiming it twice.
+   */
+  readonly members: readonly AuditMemberClaim[];
+};
+
+/**
+ * Two claims that are about neighbouring text and are NOT the same defect.
+ *
+ * @example
+ * ```ts
+ * const near: NearMiss = { kind: 'overlapping-focus', left, right, };
+ * ```
+ */
+export type NearMiss = {
+  /**
+   * Which way they nearly matched: the same span under different categories, or
+   * intersecting spans that are not the same span.
+   */
+  readonly kind: 'same-focus-different-category' | 'overlapping-focus';
+
+  /**
+   * One claim.
+   */
+  readonly left: AuditMemberClaim;
+
+  /**
+   * The other, always from a different voice.
+   */
+  readonly right: AuditMemberClaim;
+};
+
+/**
+ * One side's interval, or its absence, in a form two claims can be compared by.
+ *
+ * @param reading - what one side of a finding rests on
+ *
+ * @returns Interval as a pair, or null for a side the category does not use
+ *
+ * @example
+ * ```ts
+ * const interval = intervalOf({ reading: finding.source, },);
+ * ```
+ */
+function intervalOf(
+  { reading, }: { readonly reading: SideReading; },
+): readonly [number, number,] | null {
+  if (reading.kind === 'unused')
+    return null;
+
+  return [
+    reading.focus
+      .start,
+    reading.focus
+      .end,
+  ];
+}
+
+/**
+ * Key under which two claims are the same defect.
+ *
+ * @param finding - screened finding
+ *
+ * @returns Category and both focus intervals
+ *
+ * @example
+ * ```ts
+ * const key = defectKey({ finding, },);
+ * ```
+ */
+function defectKey({ finding, }: { readonly finding: ScreenedFinding; },): string {
+  return JSON.stringify([
+    finding.category,
+    intervalOf({ reading: finding.source, },),
+    intervalOf({ reading: finding.candidate, },),
+  ],);
+}
+
+/**
+ * Whether two intervals share any position.
+ *
+ * @param left - one interval, or null
+ *
+ * @param right - the other
+ *
+ * @returns Whether both exist and intersect
+ *
+ * @example
+ * ```ts
+ * const shared = intersects({ left: [0, 4,], right: [2, 9,], },);
+ * ```
+ */
+function intersects(
+  {
+    left,
+    right,
+  }: {
+    readonly left: readonly [number, number,] | null;
+    readonly right: readonly [number, number,] | null;
+  },
+): boolean {
+  if ((left === null) || (right === null))
+    return false;
+
+  return (left[0] < right[1]) && (right[0] < left[1]);
+}
+
+/**
+ * Whether two findings point at exactly the same spans, whatever they call
+ * them.
+ *
+ * @param left - one finding
+ *
+ * @param right - the other
+ *
+ * @returns Whether both sides' intervals match exactly
+ *
+ * @example
+ * ```ts
+ * const same = sameSpans({ left, right, },);
+ * ```
+ */
+function sameSpans(
+  {
+    left,
+    right,
+  }: {
+    readonly left: ScreenedFinding;
+    readonly right: ScreenedFinding;
+  },
+): boolean {
+  return (JSON.stringify(intervalOf({ reading: left.source, },),)
+    === JSON.stringify(intervalOf({ reading: right.source, },),))
+    && (JSON.stringify(intervalOf({ reading: left.candidate, },),)
+      === JSON.stringify(intervalOf({ reading: right.candidate, },),));
+}
+
+/**
+ * Groups every claim by the defect it names.
+ *
+ * @param claims - every voice's claims
+ *
+ * @returns Defects reaching the corroboration threshold, most-agreed first
+ *
+ * @example
+ * ```ts
+ * const corroborated = corroborate({ claims, },);
+ * ```
+ */
+export function corroborate(
+  { claims, }: { readonly claims: readonly AuditMemberClaim[]; },
+): readonly CorroboratedDefect[] {
+  /**
+   * Claims under each defect key, in arrival order.
+   */
+  const grouped = claims.reduce(
+    function collect(
+      groups: Map<string, AuditMemberClaim[]>,
+      claim,
+    ): Map<string, AuditMemberClaim[]> {
+      /**
+       * Key this claim falls under.
+       */
+      const key = defectKey({ finding: claim.finding, },);
+      groups.set(
+        key,
+        [
+          ...groups.get(key,) ?? [],
+          claim,
+        ],
+      );
+      return groups;
+    },
+    new Map<string, AuditMemberClaim[]>(),
+  );
+
+  return [...grouped.values(),]
+    .map(function toDefect(members,): CorroboratedDefect {
+      /**
+       * First member, which every member agrees with by construction of the
+       * key.
+       */
+      const [first,] = members;
+
+      if (first === undefined)
+        throw new Error('a defect group with no members cannot occur, since groups are built from claims',);
+
+      return {
+        category: first.finding
+          .category,
+        source: first.finding
+          .source,
+        candidate: first.finding
+          .candidate,
+        // DISTINCT VOICES, so a voice claiming one defect twice in one answer
+        // is one opinion rather than agreement with itself.
+        voices: new Set(members.map(function toVoice(member,): string {
+          return member.modelId;
+        },),).size,
+        members,
+      };
+    },)
+    .filter(function reachedThreshold(defect,): boolean {
+      return defect.voices >= CORROBORATION_VOICES;
+    },)
+    .toSorted(function byAgreement(
+      left,
+      right,
+    ): number {
+      return right.voices - left.voices;
+    },);
+}
+
+/**
+ * Finds pairs of claims that nearly agree, and says how.
+ *
+ * @param claims - every voice's claims
+ *
+ * @returns Pairs from different voices that overlap without matching
+ *
+ * @example
+ * ```ts
+ * const near = nearMisses({ claims, },);
+ * ```
+ */
+export function nearMisses(
+  { claims, }: { readonly claims: readonly AuditMemberClaim[]; },
+): readonly NearMiss[] {
+  return claims.flatMap(function againstLater(
+    left,
+    position,
+  ): readonly NearMiss[] {
+    return claims
+      .slice(position + 1,)
+      .flatMap(function pair(right,): readonly NearMiss[] {
+        // ONE VOICE'S OWN CLAIMS ARE NOT A NEAR MISS: a voice filing two
+        // findings about one sentence is doing what atomicity asks of it.
+        if (left.modelId === right.modelId)
+          return [];
+
+        if (defectKey({ finding: left.finding, },) === defectKey({ finding: right.finding, },))
+          return [];
+
+        if (sameSpans({
+          left: left.finding,
+          right: right.finding,
+        },)) {
+          return [{
+            kind: 'same-focus-different-category',
+            left,
+            right,
+          },];
+        }
+
+        /**
+         * Whether either side's spans touch at all.
+         */
+        const touching = intersects({
+          left: intervalOf({ reading: left.finding
+            .source, },),
+          right: intervalOf({ reading: right.finding
+            .source, },),
+        },)
+          || intersects({
+            left: intervalOf({ reading: left.finding
+              .candidate, },),
+            right: intervalOf({ reading: right.finding
+              .candidate, },),
+          },);
+
+        return touching
+          ? [{
+            kind: 'overlapping-focus',
+            left,
+            right,
+          },]
+          : [];
+      },);
+  },);
+}
+
+//endregion Rendering audit corroboration
