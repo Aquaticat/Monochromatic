@@ -1,4 +1,7 @@
-import { sameAuditedText, } from './rendering-audit-settled-digest.ts';
+import {
+  sameAuditedText,
+  textIdentityOf,
+} from './rendering-audit-settled-digest.ts';
 import { anchoredClaims, } from './rendering-audit-settled-read.ts';
 import {
   type SettledAuditRow,
@@ -129,6 +132,28 @@ function subjectKey(
 }
 
 /**
+ * Whether a row says what its audit was shown.
+ *
+ * @param row - one audited slice
+ *
+ * @returns Whether the run recorded a text identity for it
+ *
+ * @example
+ * ```ts
+ * const vouched = recorded({ row, },);
+ * ```
+ */
+function recorded(
+  { row, }: { readonly row: SettledAuditRow; },
+): boolean {
+  /**
+   * What the run wrote down about this subject's texts.
+   */
+  const identity = textIdentityOf({ row, },);
+  return identity.kind === 'digested';
+}
+
+/**
  * Reads one row down to what a repeat comparison needs.
  *
  * @param row - one audited slice
@@ -245,19 +270,27 @@ export function auditRepeatsWithin(
  * are never crossed with each other; that pairing is `auditRepeatsWithin`'s job
  * and means something different.
  *
- * A slot present in both runs whose text identity DISAGREES is left out and
- * named. That means the archive changed under the two runs, which invalidates
- * the pair as a band measurement and is worth knowing rather than skipping.
+ * THREE OUTCOMES, NOT TWO, and the third is the one that matters most in
+ * practice. A slot both runs recorded and whose digests DISAGREE means the
+ * archive changed underneath them, which invalidates that subject as a band
+ * measurement and is worth saying. A slot either run left UNRECORDED means
+ * nobody wrote down what was shown, which is a fact about the run and says
+ * nothing whatever about the archive.
+ *
+ * Collapsing those two into one list would report an older run, from before the
+ * identity field existed, as a population whose every subject changed text
+ * between the runs. That is a confident statement about the corpus assembled
+ * out of the absence of evidence about the probe.
  *
  * @param first - rows of the earlier run
  *
  * @param second - rows of the later one
  *
- * @returns Pairs, plus slots that matched by position and not by text
+ * @returns Pairs, slots whose text moved, and slots nobody can vouch for
  *
  * @example
  * ```ts
- * const { paired, textMoved, } = auditRepeatsAcross({ first, second, },);
+ * const { paired, textMoved, unverifiable, } = auditRepeatsAcross({ first, second, },);
  * ```
  */
 export function auditRepeatsAcross(
@@ -271,6 +304,7 @@ export function auditRepeatsAcross(
 ): {
   readonly paired: readonly AuditRepeatPair[];
   readonly textMoved: readonly string[];
+  readonly unverifiable: readonly string[];
 } {
   /**
    * Later run, reachable by slot.
@@ -304,8 +338,18 @@ export function auditRepeatsAcross(
     },];
   },);
 
+  /**
+   * Slots where BOTH runs said what they saw, so the digests decide.
+   */
+  const witnessed = matched.filter(function bothRecorded({
+    left,
+    right,
+  },): boolean {
+    return recorded({ row: left, },) && recorded({ row: right, },);
+  },);
+
   return {
-    paired: matched
+    paired: witnessed
       .filter(function textAgrees({
         left,
         right,
@@ -327,7 +371,7 @@ export function auditRepeatsAcross(
           right: repeatSideOf({ row: right, },),
         };
       },),
-    textMoved: matched
+    textMoved: witnessed
       .filter(function textDisagrees({
         left,
         right,
@@ -337,10 +381,34 @@ export function auditRepeatsAcross(
           right,
         },);
       },)
-      .map(function name({ left, },): string {
-        return `${left.runSet}/${left.entryId}#${String(left.chunkIndex,)}`;
-      },),
+      .map(nameOf,),
+    unverifiable: matched
+      .filter(function eitherUnrecorded({
+        left,
+        right,
+      },): boolean {
+        return !(recorded({ row: left, },) && recorded({ row: right, },));
+      },)
+      .map(nameOf,),
   };
+}
+
+/**
+ * Names one matched slot for a reader.
+ *
+ * @param left - row from the earlier run, which carries the naming parts
+ *
+ * @returns Slot as a reader would write it
+ *
+ * @example
+ * ```ts
+ * const name = nameOf({ left, },);
+ * ```
+ */
+function nameOf(
+  { left, }: { readonly left: SettledAuditRow; },
+): string {
+  return `${left.runSet}/${left.entryId}#${String(left.chunkIndex,)}`;
 }
 
 //endregion Settled audit repeat readings

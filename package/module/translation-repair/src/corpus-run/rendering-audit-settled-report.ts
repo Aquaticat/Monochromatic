@@ -223,11 +223,12 @@ async function printAcross(
   const { rows: earlier, } = await readRunRows({ path: against, },);
 
   /**
-   * Subjects both runs bought, and slots where the text moved under them.
+   * Subjects both runs bought, split three ways.
    */
   const {
     paired,
     textMoved,
+    unverifiable,
   } = auditRepeatsAcross({
     first: earlier,
     second: rows,
@@ -237,12 +238,22 @@ async function printAcross(
     band: repeatBandOf({ pairs: paired, },),
     over: `the same subjects in ${against}`,
   },);
+
+  // Two different sentences, deliberately. One is about the corpus and one is
+  // about the probe, and saying the corpus moved when a run simply did not
+  // record what it saw would be a confident claim built from missing evidence.
   if (textMoved.length > 0)
     console.log(
+      `  ${String(textMoved.length,)} slots were recorded by BOTH runs and their text DISAGREES,`
+        + ` so the archive moved between them and these are left out: ${textMoved.join(', ',)}`,
+    );
+  if (unverifiable.length > 0)
+    console.log(
       `  ${
-        String(textMoved.length,)
-      } slots matched by position and NOT by text, so the archive moved between`
-        + ` the two runs and these are left out: ${textMoved.join(', ',)}`,
+        String(unverifiable.length,)
+      } slots cannot be checked, because one of the runs recorded no text identity.`
+        + ` That is a fact about the run and says NOTHING about the archive. No band is quotable`
+        + ` over them.`,
     );
 }
 

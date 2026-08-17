@@ -138,7 +138,7 @@ await describe({
         const theirs = digestAuditedText(OTHER_TEXTS,);
 
         expect(mine.kind,).toBe('digested',);
-        if (mine.kind !== 'digested' || theirs.kind !== 'digested')
+        if ((mine.kind !== 'digested') || (theirs.kind !== 'digested'))
           throw new Error('both fixtures are digested by construction',);
         expect(mine.source,).toBe(theirs.source,);
         expect(mine.candidate,).not.toBe(theirs.candidate,);
@@ -399,6 +399,41 @@ await describe({
 
         expect(paired.length,).toBe(0,);
         expect(textMoved,).toEqual(['first/mittens#3',],);
+      },
+    },),
+
+    it({
+      name: 'SEPARATES "the archive moved" FROM "nobody recorded what this saw", because a run '
+        + 'that predates the recorded identity would otherwise be reported as forty slots whose '
+        + 'text changed under it, which is a confident statement about the archive made from the '
+        + 'absence of evidence about the run',
+      fn: async () => {
+        /**
+         * An older run against a current one: same subject, no recorded identity on one side.
+         */
+        const {
+          paired,
+          textMoved,
+          unverifiable,
+        } = auditRepeatsAcross({
+          first: [rowFor({
+            runSet: 'first',
+            entryId: 'mittens',
+            chunkIndex: 2,
+            claims: 1,
+          },),],
+          second: [rowFor({
+            runSet: 'first',
+            entryId: 'mittens',
+            chunkIndex: 2,
+            claims: 5,
+            texts: SAME_TEXTS,
+          },),],
+        },);
+
+        expect(paired.length,).toBe(0,);
+        expect(textMoved.length,).toBe(0,);
+        expect(unverifiable,).toEqual(['first/mittens#2',],);
       },
     },),
 
