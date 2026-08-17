@@ -191,5 +191,37 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'rejects findings without a meaningful title source',
+      fn: () => {
+        /**
+         * Sparse finding forbidden by atomic input validation.
+         */
+        const text = JSON.stringify([
+          {
+            path: 'src/empty.ts',
+            content: ' \n\t ',
+            existing_code: '\n',
+            suggestion_code: '  ',
+            start_line: 1,
+            end_line: 1,
+          },
+        ],);
+        /**
+         * Captured validation failure.
+         */
+        let caught: unknown;
+        try {
+          parseStructuredInput({ text, },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('record 1',);
+        expect((caught as Error).message,).toContain('non-whitespace line',);
+      },
+    },),
   ],
 },);
