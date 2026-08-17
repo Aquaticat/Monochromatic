@@ -375,5 +375,23 @@ await describe({
         }
       },
     },),
+    it({
+      name: 'accepts completed JSONL checkpoints without comments field',
+      fn: async () => {
+        /**
+         * OCR omits comments property when completed item has zero findings.
+         */
+        const text = JSON.stringify({
+          type: 'review_item_done',
+          filePath: 'src/clean.ts',
+          fingerprint: 'clean-fingerprint',
+        },);
+
+        expect(parseStructuredInput({ text, },),).toStrictEqual({
+          inputKind: 'jsonl',
+          findings: [],
+        },);
+      },
+    },),
   ],
 },);
