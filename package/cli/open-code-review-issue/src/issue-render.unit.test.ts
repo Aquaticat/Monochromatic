@@ -167,5 +167,31 @@ await describe({
         );
       },
     },),
+    it({
+      name: 'marks other and missing categories explicitly',
+      fn: async () => {
+        /**
+         * Shared finding fields for category marker assertions.
+         */
+        const base = {
+          position: { kind: 'record' as const, value: 1, },
+          path: 'src/category.ts',
+          content: 'Category marker.',
+          existingCode: '',
+          suggestionCode: '',
+          startLine: 1,
+          endLine: 1,
+        };
+
+        expect(renderIssue({
+          finding: { ...base, category: 'other', },
+          needsTriageLabel: true,
+        },).classificationMarker,).toBe('OTHER',);
+        expect(renderIssue({
+          finding: base,
+          needsTriageLabel: true,
+        },).classificationMarker,).toBe('UNCATEGORIZED',);
+      },
+    },),
   ],
 },);
