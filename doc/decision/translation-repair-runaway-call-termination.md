@@ -95,6 +95,46 @@ Fed the raw body it would condemn every healthy stream,
 because the JSON envelope wrapped around each token is identical by construction
 and would dominate the sample.
 
+## Both channels are scanned, and the thinking one matters most
+
+Required 2026-08-17 by the user:
+degeneration inside a thinking trace must be caught,
+in the shape "I will output. I will output. I will output.", repeating without end.
+
+THIS IS THE CASE THAT WOULD OTHERWISE ESCAPE ENTIRELY.
+A model cycling inside its reasoning emits no answer at all,
+so a scanner reading only `content` hands the detector an empty string.
+An empty string reads as a short reply,
+which is exactly the state the detector is built to stay silent about,
+so the worst failure would have produced the most reassuring reading.
+
+`scanStreamDeltas` in `package/module/translation-repair/src/stream-delta-scan.ts`
+reads both fields this provider uses,
+`content` and `reasoning_content`,
+and tags each piece with the channel it came from
+so a verdict can say where the repetition happened.
+The two are judged separately,
+because varied thinking must not excuse a repeating answer
+and a good answer must not excuse thinking that never ended.
+
+The other delivery shape needs nothing extra.
+Some models embed `<think>` blocks inside `content`,
+which `model-content.ts` strips after the fact;
+such text arrives as content and is scanned as content.
+
+The scanner COUNTS frames it cannot read rather than throwing on them.
+It runs inside the drain loop for every chunk of every call,
+so one unreadable frame must leave a working stream working,
+and a provider that changes its wire format then shows up
+as a rising count rather than as silence.
+
+Verified end to end through scanner and detector:
+an infinite thinking trace is refused while its answer channel stays unjudged,
+long varied thinking is not condemned,
+a runaway in the answer channel is refused,
+and keep-alive comments, usage-only frames, finish-only frames and the done
+marker all pass through without producing text.
+
 ## Calibration
 
 Threshold is 0.1 distinct.
