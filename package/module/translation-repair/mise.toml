@@ -80,6 +80,11 @@ description = "Ask whether the introduced-defect probe can detect damage at all:
 depends = ["build"]
 run = "node dist/final/node/probe-sensitivity.mjs"
 
+[tasks."audit-sensitivity"]
+description = "Ask whether the rendering audit can detect a planted defect at all, and whether it invents one: one flipped rendering and one faithful, cat-themed fixtures only; SPENDS QUOTA"
+depends = ["build"]
+run = "node dist/final/node/audit-sensitivity.mjs"
+
 [tasks."coverage-probe"]
 description = "PROTOTYPE for question 28: ask a roster whether the translation already carries each passage the aligners refuse to pair, at both scales; SPENDS QUOTA (pass --only ids and --cap n after --)"
 depends = ["build"]
