@@ -388,6 +388,106 @@ A voice that answers less often and anchors less well
 contributes less than its seat suggests,
 which is the same shape as `#68` in a different quantity.
 
+## What the second full run said, and it settles the headline
+
+Run `2026-08-17T15-06-37.885Z-c157db5b`,
+the same 40 subjects,
+the same roster,
+about forty minutes after the first,
+and this one recorded its pipeline digest at run start,
+so it answers for itself.
+
+```text
+                subjects   drew a claim   claims   corroborated   agreed   near   degraded
+ARCHIVE text          16             10       31              3        4     13          3
+FRESH   text          24             10       21              1        2      3          3
+```
+
+Set beside the first run,
+over identical input:
+
+```text
+                       run 1    run 2
+ARCHIVE corroborated       5        3
+FRESH   corroborated       1        1
+ARCHIVE near               8       13
+relocation candidates      2        0
+```
+
+THE ARCHIVE CORROBORATED COUNT MOVED FROM FIVE TO THREE
+with nothing changed but the hour.
+The relocation candidates went from two to none:
+the `#107` pairing found nothing at all the second time,
+on the same forty subjects.
+
+That is the answer to the question this audit was bought to ask,
+and it is a refusal.
+The archive-versus-fresh gap was 5 against 1,
+then 3 against 1.
+A quantity that moves by two between two readings of one population
+cannot support a claim about a difference of four,
+and the confound with the entry was already fatal to it independently.
+The headline is dead twice over,
+for two unrelated reasons,
+and neither is a reason to distrust the two entries:
+they are reasons this population cannot answer this question.
+
+### The within-run band is narrow, and it is narrow on the easy subjects
+
+Over the six texts this run audited twice,
+which the pairing found exactly as predicted:
+
+```text
+pairs 6   same claim count 3   widest gap 4   total gap 8   silent on one side only 1
+claims 8 against 8, corroborated 1 against 1
+```
+
+Read alone,
+that looks reassuring:
+the corroborated totals do not move at all,
+and by the rule fixed in advance
+a corroborated total that moves by nought means the tier is stable.
+
+Read against the population figures above, it is misleading,
+and the reason is already recorded:
+those six are almost all archive text inside one entry,
+five of six retained in both runs.
+They are the subjects two independent productions agreed about.
+The corroborated tier moved by two on the full population
+while moving by nought on them.
+
+So a narrow band measured on a convenience sample of a population
+is not a band for that population.
+The six pairs were free, and worth having,
+and they would have licensed exactly the wrong conclusion on their own.
+
+### The per-voice rates are not stable either, which revises `#68`
+
+```text
+                                    run 1                 run 2
+hf:openai/gpt-oss-120b        spoke 17  claims 25   spoke 14  claims 20
+hf:nvidia/NVIDIA-Nemotron     spoke 13  claims 16   spoke 12  claims 24
+hf:Qwen/Qwen3.6-27B           spoke 11  claims 14   spoke  6  claims  8
+```
+
+An earlier note on `#68`,
+written from run 1 alone,
+said the three voices sit within a factor of two of each other here
+and so do not reproduce the order-of-magnitude gap seen over the probe.
+Run 2 does not support the "factor of two" part.
+Nemotron claims 24 against Qwen's 8,
+which is three to one,
+and Qwen's own claim count nearly halves between the two runs
+on identical input.
+
+What survives, and it is the part that mattered:
+the ORDER-OF-MAGNITUDE gap from the introduced-defect probe does not appear
+in either run,
+so that finding still looks specific to the probe task.
+What does not survive is any claim about the size of the gap here.
+Two runs disagree about it,
+so a third figure would be a third number rather than a confirmation.
+
 ## How the band will be read, written before it exists
 
 Two bands, resting on different things,
