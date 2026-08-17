@@ -907,10 +907,24 @@ other three name themselves before leaving, which the disposable cannot infer on
 The reader REQUIRES the field rather than treating it as optional, because the telemetry landed
 after the only pass that has run, so no production log carries the older shape.
 
-THE ROUND TRIP WAS GFP'D, since its own header calls it the only thing keeping writer and reader
-agreed about a shape neither owns. The writer's `sourceChars=` was renamed to `sourceCharacters=`,
-rebuilt, and the suite exited 1 with that case failing by name and the reader reporting
-`sourceChars missing`; restored, it passes. The guard was committed before the strip.
+THE MIRROR HOLE WAS FOUND AND CLOSED IN THE SAME SITTING (`dab4c6946`): `using` fires dispose on
+THROW, so a slice killed by the entry deadline was logging `exit=computed` with near-cap
+milliseconds, which is one poisoned row per aborted entry sitting inside the very population the
+field exists to keep clean, passing an `exit=computed` filter. There is now an `aborted` exit, READ
+FROM THE SIGNAL at dispose rather than named at each throw site: a slice can throw from the abort
+check, from the stages, or from an assertion after them, and `Symbol.dispose` is not told which. A
+named exit still wins, since a cache hit bought nothing either way. Both lanes now pass `signal`.
+
+BOTH GUARDS WERE GFP'D, each committed before its strip.
+
+-   The round trip, which its own header calls the only thing keeping writer and reader agreed about
+    a shape neither owns: the writer's `sourceChars=` was renamed to `sourceCharacters=`, rebuilt,
+    and the suite exited 1 with that case failing by name and the reader reporting `sourceChars
+    missing`.
+-   The abort exit: the signal check was replaced with a bare `taken.exit`, rebuilt, and the suite
+    exited 1 with the cut-slice case failing by name.
+
+Restored in both cases, and the suite passes.
 
 THEN READ THE RUN, and only then: the `TALLY <id> status=... ms=` lines against the 180 minute cap,
 the cost split between lanes, the voice-loss rate, and `XingZ60` as the full-scale check of `#71`'s
