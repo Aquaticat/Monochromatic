@@ -12,6 +12,11 @@ export {
   type IncludedResponse,
 } from './github-response.ts';
 export {
+  GitHubCliVersionError,
+  parseGitHubCliVersion,
+  type GitHubCliVersion,
+} from './github-version.ts';
+export {
   SecurityAuthorityError,
   selectApplyPlan,
 } from './authority.ts';
