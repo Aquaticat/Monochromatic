@@ -1,6 +1,8 @@
 import {
   chmod,
+  mkdir,
   mkdtempDisposable,
+  utimes,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -119,6 +121,73 @@ await describe({
   name: 'built CLI with fake gh',
   concurrency: 1,
   children: [
+    it({
+      name: 'guides missing input and suggests latest OCR session JSONL',
+      fn: async () => {
+        /**
+         * Disposable integration directory containing isolated OCR home.
+         */
+        await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-cli-',),);
+        /**
+         * Synthetic persisted OCR session directory.
+         */
+        const sessionDirectory = join(
+          directory.path,
+          'home',
+          '.opencodereview',
+          'sessions',
+          'encoded-repository',
+        );
+        await mkdir(sessionDirectory, { recursive: true, },);
+        /**
+         * Older persisted session path that must not be suggested.
+         */
+        const olderPath = join(sessionDirectory, 'older.jsonl',);
+        /**
+         * Latest persisted session path expected in diagnostic.
+         */
+        const latestPath = join(sessionDirectory, 'latest.jsonl',);
+        await Promise.all([
+          writeFile(olderPath, '{"type":"session_start"}\n', 'utf8',),
+          writeFile(latestPath, '{"type":"session_start"}\n', 'utf8',),
+        ],);
+        await Promise.all([
+          utimes(olderPath, new Date('2026-01-01T00:00:00Z'), new Date('2026-01-01T00:00:00Z'),),
+          utimes(latestPath, new Date('2026-01-02T00:00:00Z'), new Date('2026-01-02T00:00:00Z'),),
+        ],);
+        /**
+         * Captured expected invocation-misuse process result.
+         */
+        let caught: unknown;
+        try {
+          await spawn(process.execPath, [
+            CLI_PATH,
+            '--interactive',
+          ], {
+            cwd: directory.path,
+            env: { HOME: join(directory.path, 'home',), },
+            stdin: 'ignore',
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(SubprocessError,);
+        /**
+         * Missing-input diagnostic from expected status-two command.
+         */
+        const {stderr} = (caught as SubprocessError);
+        expect((caught as SubprocessError).exitCode,).toBe(2,);
+        expect(stderr,).toContain('ocr review --format json',);
+        expect(stderr,).toContain('ocr scan --format json',);
+        expect(stderr,).toContain('ocr session comments --json',);
+        expect(stderr,).toContain(
+          '~/.opencodereview/sessions/<encoded-repo-path>/<session-id>.jsonl',
+        );
+        expect(stderr,).toContain(latestPath,);
+        expect(stderr,).not.toContain(olderPath,);
+      },
+    },),
     it({
       name: 'emits one redacted preview JSON object',
       fn: async () => {
