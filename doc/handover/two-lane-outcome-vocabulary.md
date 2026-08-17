@@ -707,8 +707,10 @@ The negative control also measured something nobody asked for, and it constrains
 below: the per-slice preserve-or-replace decision is about 19 percent unstable between identical
 runs, so no single pass settles a per-slice question. Recorded on `#105` and `#108`.
 
-ITEM 1 IS DONE. The rebuild landed and both arms ran three times; see "The audit is rebuilt, run
-live, and measured". Items 2, 3 and 4 are unblocked and need no user answer.
+THE WHOLE QUEUE IS NOW HANDLED, as of 2026-08-16. Item 1 ran, item 2 was answered from the trial
+ledger without building the bench, item 3 was answered and its trade corrected, and item 4 is
+RUNNING; see "The two-lane cost run, launched 2026-08-16" for where to find it.
+Nothing in the queue is waiting on a user answer.
 
 What is left on the audit is not a measurement but a decision, and it is the user's: the instrument
 is WIRED TO NOTHING. Whether it runs per slice inside the translate lane, or standalone over settled
@@ -719,9 +721,10 @@ The user has confirmed quota is not a constraint (near full, regenerating, one r
 nothing below is held back for cost; what held them back was the trial's validity, since every one
 of these calls the same six models.
 
-1.  **The two live arms of the rendering audit (`#85`)**, once its screen and stage land: the
-    polarity-flip fixture that must produce a corroborated finding and the control that must not.
-    The task states both; they are the GFP for the whole instrument and cost a handful of calls.
+1.  ~~**The two live arms of the rendering audit (`#85`)**~~ DONE, three runs of each arm; the
+    polarity-flip fixture and the control that must not fire. They were the GFP for the whole
+    instrument, and they earned their keep: the strict matcher missed a unanimous defect, which is
+    why a second tier exists.
 2.  ~~**`#105`'s decline-rate bench**~~ DONE, and the bench was never built: the window trial's
     ledger already held 327 real judgings under the production roster, which is better evidence than
     a synthetic bench and cost nothing. Decline rate 0.171 overall, but 0.063 on a full panel against
