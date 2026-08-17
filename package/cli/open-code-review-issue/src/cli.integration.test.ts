@@ -186,6 +186,37 @@ await describe({
         );
         expect(stderr,).toContain(latestPath,);
         expect(stderr,).not.toContain(olderPath,);
+        /**
+         * Captured expected runtime failure for nonexistent named-file positional.
+         */
+        let absentCaught: unknown;
+        try {
+          await spawn(process.execPath, [
+            CLI_PATH,
+            '--non-interactive',
+            '--repo',
+            'https://github.com/Aquaticat/issues-api',
+            join(directory.path, 'absent.json',),
+          ], {
+            cwd: directory.path,
+            env: { HOME: join(directory.path, 'home',), },
+            stdin: 'ignore',
+          },);
+        }
+        catch (error: unknown) {
+          absentCaught = error;
+        }
+        expect(absentCaught,).toBeInstanceOf(SubprocessError,);
+        /**
+         * Existing-file remediation attached to runtime status one.
+         */
+        const absentResult = absentCaught as SubprocessError;
+        expect(absentResult.exitCode,).toBe(1,);
+        expect(absentResult.stderr,).toContain(
+          'is neither inline JSON nor an existing named file',
+        );
+        expect(absentResult.stderr,).toContain('ocr review --format json',);
+        expect(absentResult.stderr,).toContain(latestPath,);
       },
     },),
     it({
