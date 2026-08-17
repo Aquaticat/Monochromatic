@@ -1302,14 +1302,25 @@ TWO TRAPS FOUND, both worth carrying:
 
 ### Where `#115` stands at 15:45Z
 
-RUN 2 IS FINISHING and RUN 3 IS CHAINED BEHIND IT, in background task `bls9hwlkq`, which waits for
-the audit process to exit, checks run 2 actually wrote `kept at`, and only then starts run 3 on the
-SAME `dist`. Logs: `~/temp/agent/audit-settled-run2.log`, `~/temp/agent/audit-settled-run3.log`.
+RUN 2 LANDED as `2026-08-17T15-06-37.885Z-c157db5b.json` and is written up. RUN 3 IS RUNNING,
+launched DIRECTLY in background task `bveiyodmy`, log `~/temp/agent/audit-settled-run3.log`.
 
-DO NOT REBUILD until run 3 has started. Run 2 and run 3 sharing one build is the whole point of
-chaining them; a rebuild between them would leave the band measured across two builds. Source edits
-and `lint:types` are safe (different output directory); anything that runs a unit test is not,
-because tests import `dist`.
+THE CHAIN THAT WAS MEANT TO START IT DID NOT WORK, and the reason is worth carrying:
+`pgrep --full 'node dist/final/node/rendering-audit-settled.mjs'` matches the SHELL RUNNING THE
+PGREP, because that pattern is inside the shell's own command line. The wait loop found itself and
+never exited. It was killed by PID and run 3 started by hand. Separately, the probe holds its
+process open for about three minutes after printing `kept at`, on sockets left by voices abandoned
+after quorum, so `kept at` is the completion signal and process exit is not. Both are written up in
+`doc/troubleshooting/chaining-a-command-behind-a-long-run.md`.
+
+RUN 2 AND RUN 3 ARE NOT ON THE SAME BUILD, and the doc says why that is acceptable rather than
+pretending otherwise. `rendering-audit-settled-digest.ts` gained `isDigested` between them, and
+that module IS in the runner's closure, so the chunk changed. `digestAuditedText`, the only part of
+it the runner calls while writing rows, did not change, so both runs produce rows by identical
+logic. The population doc records the closure and the distinction.
+
+REBUILDING NOW IS SAFE: run 3 loaded its code at startup and reads its digest at start, so neither
+its behaviour nor its recorded identity can move under it.
 
 Why three runs and not two: run 1 has no recorded text identity, so pairing it against anything
 yields 40 subjects that match by position and cannot be vouched for. Run 2 alone supplies six
