@@ -5,11 +5,6 @@
  */
 
 /**
- * Markdown inline characters requiring escaping in source path text.
- */
-const ;
-
-/**
  * Escapes path text at final GitHub Markdown interpolation boundary.
  *
  * @param text - Untrusted source path displayed as ordinary inline text.
