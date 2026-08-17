@@ -33,7 +33,8 @@ at. Entries were picked by `page.md` blob size at corpus pin `a41fc607`, over a 
 minimum is 120 bytes, first quartile 1557, median 2497, third quartile 5050 and maximum 41720,
 totalling 396881 bytes across 92 complete pairs.
 
-The four cover the first quartile, the median, the second largest entry and the largest.
+The four sit near the first quartile and the median, and at the second largest entry and the
+largest.
 
 ## What it reported, verbatim
 
@@ -124,6 +125,13 @@ Under the power law, against the real 92 entry distribution:
 The linear fit puts the abort count at 4 rather than 6 and reaches zero by 420 minutes as well, so
 the two disagree on the count and agree on the shape.
 
+A CAP SET AT EXACTLY 420 MINUTES WOULD HAVE NO HEADROOM. `XingZ60` projects at 385 minutes, which
+leaves 35 minutes of margin inside a fit whose residuals reach 16 percent and whose largest input is
+itself a projection from a lane that was 66 percent done. If that entry runs 10 percent slow it
+burns the full seven hours and still produces nothing, which is the outcome this whole measurement
+exists to avoid. A cap chosen to clear the corpus should carry margin, so eight hours rather than
+seven, or it should be set after the queue lands and the rate is re-measured.
+
 ## What this does not say
 
 -   NOTHING ABOUT QUALITY. Both settled entries report `selection=pending-human-decision`, so this
@@ -159,7 +167,8 @@ described. Three responses are available and they are not exclusive:
 1.  RAISE THE CAP, which is now the cheapest of the three. Seven hours removes every abort for about
     8 more hours of total budget, and the entries it rescues are ones already being paid for in full
     and thrown away. The first version of this document dismissed this option on a projection of
-    19.5 hours for `XingZ60` that direct measurement has since replaced with 6.4.
+    19.5 hours for `XingZ60` that direct measurement has since replaced with 6.4. Set it with
+    margin, per "Where the cap falls".
 2.  MAKE LARGE ENTRIES CHEAPER, which is where the per-slice numbers point. Both aborts died in the
     repair lane, which takes about 71 percent of an entry, so anything that cuts repair cost moves
     this number and anything that cuts translate cost barely does. Voice loss and retries are the

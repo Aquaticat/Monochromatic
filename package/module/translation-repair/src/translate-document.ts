@@ -221,6 +221,7 @@ export async function translateDocument(
       sourceChars: slice.source
         .text
         .length,
+      signal,
     },);
 
     /**

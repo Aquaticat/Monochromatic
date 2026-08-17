@@ -255,6 +255,7 @@ export async function repairPreparedDocument(
       sourceChars: slice.source
         .text
         .length,
+      signal,
     },);
 
     if (isInsertionChunk(slice.target,)) {

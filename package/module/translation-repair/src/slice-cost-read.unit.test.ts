@@ -60,6 +60,11 @@ function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
 }
 
 /**
+ * Run that has not been stopped, which is every ordinary slice's condition.
+ */
+const LIVE_RUN = new AbortController();
+
+/**
  * Log holding one cost line per lane, among lines about other things.
  */
 const TWO_LANE_LOG = [
@@ -190,6 +195,7 @@ await describe({
             lane: 'repair',
             chunkIndex,
             sourceChars: 7,
+            signal: LIVE_RUN.signal,
           },);
 
           continue;
@@ -210,6 +216,7 @@ await describe({
             lane: 'translate',
             chunkIndex: 12,
             sourceChars: 843,
+            signal: LIVE_RUN.signal,
           },);
         }
 
@@ -236,6 +243,7 @@ await describe({
             lane: 'repair',
             chunkIndex: 0,
             sourceChars: 11,
+            signal: LIVE_RUN.signal,
           },);
         }
 
@@ -256,12 +264,83 @@ await describe({
             lane: 'translate',
             chunkIndex: 4,
             sourceChars: 96,
+            signal: LIVE_RUN.signal,
           },);
           cost.left({ exit: 'resumed', },);
         }
 
         const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
         expect(dropped,).toHaveLength(0,);
+        expect(rows[0]
+          ?.exit,).toBe('resumed',);
+      },
+    },),
+    it({
+      name:
+        'REPORTS a slice cut mid-flight as aborted rather than as ordinary work, which is the case '
+        + 'that would otherwise put one near-cap row per aborted entry inside the computed population',
+      fn: async () => {
+        const said: string[] = [];
+
+        /**
+         * Run stopped while this slice was in flight, as an entry deadline does.
+         */
+        const stopped = new AbortController();
+
+        /**
+         * Thrown out of the slice body, so the measurement leaves scope the way
+         * a real abort takes it: by exception, naming no exit.
+         */
+        const cut = new Error('entry deadline',);
+        try {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'repair',
+            chunkIndex: 9,
+            sourceChars: 4_096,
+            signal: stopped.signal,
+          },);
+
+          stopped.abort(cut,);
+          throw cut;
+        }
+        catch (error) {
+          // Expected: this test drives the throwing path deliberately.
+          if (error !== cut)
+            throw error;
+        }
+
+        const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+        expect(dropped,).toHaveLength(0,);
+        expect(rows[0]
+          ?.exit,).toBe('aborted',);
+      },
+    },),
+    it({
+      name:
+        'keeps a NAMED exit even once the run is stopped, because a slice that bought nothing bought '
+        + 'nothing whether the run was later torn down or not',
+      fn: async () => {
+        const said: string[] = [];
+
+        /**
+         * Run stopped after this slice had already answered from cache.
+         */
+        const stopped = new AbortController();
+        {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'translate',
+            chunkIndex: 3,
+            sourceChars: 51,
+            signal: stopped.signal,
+          },);
+
+          cost.left({ exit: 'resumed', },);
+          stopped.abort(new Error('entry deadline',),);
+        }
+
+        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
         expect(rows[0]
           ?.exit,).toBe('resumed',);
       },
@@ -276,6 +355,7 @@ await describe({
             lane: 'translate',
             chunkIndex: 5,
             sourceChars: 96,
+            signal: LIVE_RUN.signal,
           },);
           cost.left({ exit: 'resumed', },);
           cost.left({ exit: 'unfilled', },);

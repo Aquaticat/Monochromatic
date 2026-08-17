@@ -68,6 +68,7 @@ export const SLICE_COST_EXITS = [
   'resumed',
   'no-translation',
   'unfilled',
+  'aborted',
 ] as const;
 
 /**
@@ -77,6 +78,7 @@ export const SLICE_COST_EXITS = [
  * Only `computed` prices work. `resumed` answered from cache, `no-translation`
  * found nothing to repair, and `unfilled` bought calls that produced no usable
  * candidate, so its time is real but prices a failure rather than a slice.
+ * `aborted` was cut mid-flight, so its time prices the deadline.
  *
  * @example
  * ```ts
@@ -90,6 +92,19 @@ export type SliceCostExit = typeof SLICE_COST_EXITS[number];
  * ordinary path through both loop bodies.
  */
 const DEFAULT_EXIT: SliceCostExit = 'computed';
+
+/**
+ * Exit assumed when a lane leaves a slice without naming one WHILE THE RUN IS
+ * BEING TORN DOWN.
+ *
+ * Read from the signal rather than named at each throw site, deliberately. A
+ * slice can leave its loop body by throwing from several places (an abort check
+ * before the stages, the stages themselves, an assertion after them), and
+ * `Symbol.dispose` is not told which exception took it there. Naming each site
+ * would record whichever ones someone remembered, which is the failure the
+ * scope binding exists to avoid.
+ */
+const ABORTED_EXIT: SliceCostExit = 'aborted';
 
 /**
  * Token every cost line opens with, so a reader can find them among unrelated
@@ -143,11 +158,14 @@ export type SliceCostSpan = {
  * @param sourceChars - size of what was translated, so cost can be read against
  * it
  *
+ * @param signal - run's abort, read on scope exit so a slice cut mid-flight
+ * reports itself rather than passing as ordinary work
+ *
  * @returns Measurement reporting on scope exit
  *
  * @example
  * ```ts
- * using span = armSliceCost({ l: rl, lane: 'repair', chunkIndex: 3, sourceChars: 812, },);
+ * using span = armSliceCost({ l: rl, lane: 'repair', chunkIndex: 3, sourceChars: 812, signal, },);
  * ```
  */
 export function armSliceCost(
@@ -156,11 +174,13 @@ export function armSliceCost(
     lane,
     chunkIndex,
     sourceChars,
+    signal,
   }: {
     readonly l: Logger;
     readonly lane: SliceCostLane;
     readonly chunkIndex: number;
     readonly sourceChars: number;
+    readonly signal: AbortSignal;
   },
 ): SliceCostSpan {
   /**
@@ -182,10 +202,21 @@ export function armSliceCost(
       taken.exit = named;
     },
     [Symbol.dispose](): void {
+      /**
+       * Exit this line reports.
+       *
+       * A NAMED PATH WINS over the signal, since a lane that said `resumed`
+       * bought nothing whether the run was later torn down or not. Only a slice
+       * that named nothing can have been cut mid-flight.
+       */
+      const exit = ((taken.exit === DEFAULT_EXIT) && signal.aborted)
+        ? ABORTED_EXIT
+        : taken.exit;
+
       l.info(
         `${SLICE_COST_MARKER} lane=${lane} chunk=${String(chunkIndex,)} sourceChars=${
           String(sourceChars,)
-        } ms=${String(Date.now() - startedAt,)} exit=${taken.exit}`,
+        } ms=${String(Date.now() - startedAt,)} exit=${exit}`,
       );
     },
   };

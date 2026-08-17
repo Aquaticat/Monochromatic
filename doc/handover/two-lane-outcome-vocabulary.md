@@ -815,6 +815,11 @@ AT A SEVEN HOUR CAP NONE ABORT, for about 8 hours more in total, because an abor
 already paid for in full and thrown away. The budget conclusion survives unchanged: a full pass does
 not fit the 72 hour soft budget at any cap.
 
+SET ANY CAP WITH MARGIN. `XingZ60` projects at 385 minutes, so exactly 420 leaves 35 minutes inside
+a fit whose residuals reach 16 percent and whose largest input is itself a projection. Eight hours
+rather than seven, or set it after the queue lands and the rate is re-measured, which `#114` already
+says is the better order.
+
 THE CACHE DOES NOT SPAN A REBUILD, verified rather than assumed. `slice-cache-namespace.ts:463`
 resumes only when `cached === generation` and `:470` discards otherwise, and the two surviving caches
 hold 128 slices stamped `sha256-tree-v1:e327ca8b` while the current build digests to
