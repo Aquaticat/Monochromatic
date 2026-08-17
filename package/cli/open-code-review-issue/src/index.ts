@@ -37,6 +37,10 @@ export {
   parseGitHubCliVersion,
   type GitHubCliVersion,
 } from './github-version.ts';
+export type {
+  AppliedFailure,
+  AppliedResult,
+} from './cli-result.ts';
 export {
   CliInvocationError,
   parseCliArguments,
@@ -62,6 +66,11 @@ export {
   promptForPastedInput,
 } from './interactive-prompts.ts';
 export { selectInteractiveIssues, } from './interactive-selection.ts';
+export {
+  createPublicationInterruptControl,
+  type PublicationInterruptControl,
+  type PublicationSignalHost,
+} from './interrupt.ts';
 export type {
   RenderedIssue,
   SourceLink,
@@ -89,6 +98,11 @@ export {
   buildNonInteractivePreview,
   buildPublicationPlan,
 } from './plan.ts';
+export {
+  CliRuntimeError,
+  runCli,
+  type CliStreams,
+} from './run-cli.ts';
 export {
   parseRepositoryUrl,
   RepositorySelectionError,
