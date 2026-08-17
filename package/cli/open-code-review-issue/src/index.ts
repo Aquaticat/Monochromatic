@@ -11,6 +11,10 @@ export {
   type GitHubApiMethod,
   type GitHubApiRequest,
 } from './github-api.ts';
+export {
+  checkGitHubCliVersion,
+  createGitHubApiClient,
+} from './github-client.ts';
 export type {
   GitHubApiClient,
   GitHubRepository,
