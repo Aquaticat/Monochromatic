@@ -7,6 +7,8 @@ Implementation has not started.
 No dependency has been added.
 
 The user requested a design grilling before implementation.
+Every identified design branch is now resolved;
+implementation waits for the user's explicit shared-understanding confirmation.
 Follow the `grilling` skill:
 ask one decision question at a time,
 provide a recommended answer,
@@ -735,10 +737,9 @@ No manifest or lockfile change has been made.
 The source trace and scheduling rationale are recorded in
 [`doc/troubleshooting/github-issue-creation-concurrency.md`][github-issue-concurrency].
 
-## Design tree still to grill
+## Resolved design tree pending confirmation
 
-Resolve these branches one at a time,
-in dependency order:
+The following branches were resolved one at a time in dependency order:
 
 1. Command responsibility:
    settled as ingest-only.
