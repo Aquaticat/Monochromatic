@@ -110,8 +110,8 @@ export async function runCli({
     /**
      * Actionable input acquisition guidance for omitted or absent positional input.
      */
-    const guidance = error instanceof MissingCliInputError
-      || error instanceof CliInputNotFoundError
+    const guidance = (error instanceof MissingCliInputError)
+      || (error instanceof CliInputNotFoundError)
       ? `\n\n${await buildInputGuidance()}`
       : '';
     streams.stderr

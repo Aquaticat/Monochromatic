@@ -37,7 +37,10 @@ type SessionCandidate = {
  */
 async function readableDirectory(path: string,): Promise<readonly Dirent[]> {
   try {
-    return await readdir(path, { withFileTypes: true, },);
+    return await readdir(
+      path,
+      { withFileTypes: true, },
+    );
   }
   catch (error: unknown) {
     l.debug(`OCR session discovery skipped a directory: ${caughtValueText(error,)}`,);
@@ -85,8 +88,8 @@ function laterCandidate({
   readonly current: SessionCandidate | undefined;
   readonly candidate: SessionCandidate;
 },): SessionCandidate {
-  return current === undefined
-    || candidate.modifiedMilliseconds > current.modifiedMilliseconds
+  return (current === undefined)
+    || (candidate.modifiedMilliseconds > current.modifiedMilliseconds)
     ? candidate
     : current;
 }
@@ -102,7 +105,11 @@ async function findLatestOcrSessionJsonl(homeDirectory: string,): Promise<string
   /**
    * OCR v1.9.4 persisted-session root confirmed from current CLI help and source.
    */
-  const sessionsRoot = join(homeDirectory, '.opencodereview', 'sessions',);
+  const sessionsRoot = join(
+    homeDirectory,
+    '.opencodereview',
+    'sessions',
+  );
   /**
    * Encoded repository directories under OCR session root.
    */
@@ -115,18 +122,28 @@ async function findLatestOcrSessionJsonl(homeDirectory: string,): Promise<string
     /**
      * Persisted session files for one encoded repository.
      */
-    const repositoryDirectory = join(sessionsRoot, repositoryEntry.name,);
+    const repositoryDirectory = join(
+      sessionsRoot,
+      repositoryEntry.name,
+    );
     const sessionEntries = await readableDirectory(repositoryDirectory,);
     for (const sessionEntry of sessionEntries) {
-      if (!sessionEntry.isFile() || !sessionEntry.name.endsWith('.jsonl',)) {
+      if ((!sessionEntry.isFile()) || (!sessionEntry.name
+        .endsWith('.jsonl',))) {
         continue;
       }
       /**
        * Timed path for latest comparison.
        */
-      const candidate = await sessionCandidate(join(repositoryDirectory, sessionEntry.name,),);
+      const candidate = await sessionCandidate(join(
+        repositoryDirectory,
+        sessionEntry.name,
+      ),);
       if (candidate !== undefined) {
-        latest = laterCandidate({ current: latest, candidate, });
+        latest = laterCandidate({
+          current: latest,
+          candidate,
+        });
       }
     }
   }

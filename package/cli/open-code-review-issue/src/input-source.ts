@@ -55,8 +55,8 @@ type NodeFileError = Error & {
  * @returns Whether Node reported `ENOENT`.
  */
 function isAbsentFileError(value: unknown,): value is NodeFileError {
-  return value instanceof Error
-    && (value as NodeFileError).code === 'ENOENT';
+  return (Error.isError(value,))
+    && ((value as NodeFileError).code === 'ENOENT');
 }
 
 /**

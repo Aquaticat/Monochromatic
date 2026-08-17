@@ -68,10 +68,16 @@ export function parsePositionalInput({
    */
   const candidate = value.trimStart();
   const inlineJson = candidate.startsWith('{',) || candidate.startsWith('[',);
-  if (inlineJson && !interactive) {
+  if (inlineJson && (!interactive)) {
     throw new CliInvocationError('inline JSON positional input requires `--interactive`',);
   }
   return inlineJson
-    ? { kind: 'inline-json', text: value, }
-    : { kind: 'file', path: value, };
+    ? {
+      kind: 'inline-json',
+      text: value,
+    }
+    : {
+      kind: 'file',
+      path: value,
+    };
 }
