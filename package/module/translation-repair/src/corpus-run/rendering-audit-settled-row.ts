@@ -10,6 +10,37 @@ import type { RenderingAuditReport, } from '../rendering-audit.ts';
 // runs twice.
 
 /**
+ * Digests of the exact two texts one audit was shown.
+ *
+ * A TAGGED ABSENCE rather than two optional strings, because the question a
+ * reader asks of this field is whether two rows audited the SAME characters,
+ * and a missing digest must answer "cannot say" rather than compare equal to
+ * another missing digest. Rows persisted before this field existed carry
+ * nothing here, and pairing them by slot alone would assert text identity from
+ * index equality, which is the assumption the field was added to stop.
+ *
+ * @example
+ * ```ts
+ * const identity: AuditedTextIdentity = { kind: 'digested', source, candidate, };
+ * ```
+ */
+export type AuditedTextIdentity = {
+  readonly kind: 'digested';
+
+  /**
+   * Original this audit read.
+   */
+  readonly source: string;
+
+  /**
+   * Rendering it judged.
+   */
+  readonly candidate: string;
+} | {
+  readonly kind: 'unrecorded';
+};
+
+/**
  * One audited slice, with everything needed to say which decision it describes.
  *
  * @example
@@ -59,6 +90,16 @@ export type SettledAuditRow = {
    * Whether the producing run had declared names to pass on.
    */
   readonly identityKind: string;
+
+  /**
+   * What this audit was actually shown, by digest.
+   *
+   * Carries NO TEXT. The corpus is licensed material that leaves this machine
+   * only for the production provider, and a run file is read, quoted and pasted
+   * freely. A digest answers the one question a reading needs, which is whether
+   * two rows saw identical characters, and answers nothing else.
+   */
+  readonly textIdentity: AuditedTextIdentity;
 
   /**
    * Everything the instrument said, WHOLE and uninterpreted.

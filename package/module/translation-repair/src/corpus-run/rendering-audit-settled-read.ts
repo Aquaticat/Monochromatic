@@ -166,7 +166,7 @@ export type AuditRelocationPair = {
  * const claims = anchoredClaims({ row, },);
  * ```
  */
-function anchoredClaims(
+export function anchoredClaims(
   { row, }: { readonly row: SettledAuditRow; },
 ): readonly ScreenedFinding[] {
   /**
@@ -231,6 +231,40 @@ function nearIn(row: SettledAuditRow,): number {
   return row.report
     .near
     .length;
+}
+
+/**
+ * Sums a per-row number.
+ *
+ * @param rows - rows to sum over
+ *
+ * @param of - what to take from each
+ *
+ * @returns Total
+ *
+ * @example
+ * ```ts
+ * const total = sumOver({ rows, of: nearIn, },);
+ * ```
+ */
+function sumOver(
+  {
+    rows,
+    of,
+  }: {
+    readonly rows: readonly SettledAuditRow[];
+    readonly of: (row: SettledAuditRow) => number;
+  },
+): number {
+  return rows.reduce(
+    function add(
+      sum,
+      row,
+    ): number {
+      return sum + of(row,);
+    },
+    0,
+  );
 }
 
 /**
@@ -401,40 +435,6 @@ export function rateByVoice(
       dropped: tally.dropped,
     };
   },);
-}
-
-/**
- * Sums a per-row number.
- *
- * @param rows - rows to sum over
- *
- * @param of - what to take from each
- *
- * @returns Total
- *
- * @example
- * ```ts
- * const total = sumOver({ rows, of: (row) => row.report.near.length, },);
- * ```
- */
-function sumOver(
-  {
-    rows,
-    of,
-  }: {
-    readonly rows: readonly SettledAuditRow[];
-    readonly of: (row: SettledAuditRow) => number;
-  },
-): number {
-  return rows.reduce(
-    function add(
-      sum,
-      row,
-    ): number {
-      return sum + of(row,);
-    },
-    0,
-  );
 }
 
 //endregion Settled audit reading

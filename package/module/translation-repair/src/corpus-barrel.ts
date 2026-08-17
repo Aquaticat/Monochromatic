@@ -30,7 +30,25 @@ export {
   type VoiceRate,
 } from './corpus-run/rendering-audit-settled-read.ts';
 export { auditRelocationPairs, } from './corpus-run/rendering-audit-settled-relocation.ts';
-export type { SettledAuditRow, } from './corpus-run/rendering-audit-settled-row.ts';
+export {
+  type AuditRepeatPair,
+  auditRepeatsAcross,
+  type AuditRepeatSide,
+  auditRepeatsWithin,
+} from './corpus-run/rendering-audit-settled-repeat.ts';
+export {
+  type AuditRepeatBand,
+  bandOf,
+} from './corpus-run/rendering-audit-settled-band.ts';
+export {
+  digestAuditedText,
+  sameAuditedText,
+  textIdentityOf,
+} from './corpus-run/rendering-audit-settled-digest.ts';
+export type {
+  AuditedTextIdentity,
+  SettledAuditRow,
+} from './corpus-run/rendering-audit-settled-row.ts';
 export {
   readArchiveSubjects,
   readArtifactSubjects,

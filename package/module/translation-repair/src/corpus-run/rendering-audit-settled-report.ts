@@ -6,7 +6,6 @@ import { join, } from 'node:path';
 
 import { requireRecord, } from '../artifact-guard.ts';
 
-import { readAuditArguments, } from './rendering-audit-settled-args.ts';
 import {
   type AudienceSplit,
   rateByVoice,
@@ -60,7 +59,10 @@ const PROBE_NAME = 'rendering-audit-settled';
  */
 async function readRunRows(
   { path, }: { readonly path: string; },
-): Promise<readonly SettledAuditRow[]> {
+): Promise<{
+  readonly rows: readonly SettledAuditRow[];
+  readonly archiveDir: string;
+}> {
   /**
    * Run as written.
    */
@@ -79,7 +81,23 @@ async function readRunRows(
   if (!Array.isArray(rows,))
     throw new Error(`${path} carries no rows array`,);
 
-  return rows as readonly SettledAuditRow[];
+  /**
+   * What that run was pointed at, in its own words.
+   *
+   * FROM THE FILE, never from this invocation's arguments. Reading an old run
+   * with `--run` would otherwise print the archive THIS command defaulted to
+   * and attribute the rows to it, which is a confident misstatement of where
+   * they came from.
+   */
+  const subject: unknown = run.subject;
+  const archiveDir = ((subject !== null) && (typeof subject === 'object'))
+    ? String((subject as Record<string, unknown>).archiveDir ?? 'unrecorded',)
+    : 'unrecorded';
+
+  return {
+    rows: rows as readonly SettledAuditRow[],
+    archiveDir,
+  };
 }
 
 /**
@@ -196,12 +214,6 @@ function printSplit({ split, }: { readonly split: AudienceSplit; },): void {
  */
 async function main(): Promise<void> {
   /**
-   * Command line, reused for its `--archive` flag, which here names a run file
-   * rather than an archive when one is given.
-   */
-  const asked = readAuditArguments({ argv: process.argv, },);
-
-  /**
    * Run to read: whatever was named, else the newest kept.
    */
   const named = namedRun({ argv: process.argv, },);
@@ -212,9 +224,12 @@ async function main(): Promise<void> {
   const path = (named === '') ? await newestRun({ runsDir: await resolveRunsDir(), },) : named;
 
   /**
-   * Rows that run bought.
+   * Rows that run bought, and where it said it read them from.
    */
-  const rows = await readRunRows({ path, },);
+  const {
+    rows,
+    archiveDir,
+  } = await readRunRows({ path, },);
   console.log(`${path}\n${String(rows.length,)} subjects\n`,);
 
   console.log('THE TWO HALVES, READ APART',);
@@ -274,7 +289,7 @@ async function main(): Promise<void> {
   console.log(
     `\nTWO ENTRIES. Nothing here settles anything about a particular entry, and nothing here may`
       + ` gate what ships: the instrument's own error rate is unmeasured (#66, #68).`
-      + `\nArchive read from ${asked.archiveDir}`,
+      + `\nArchive that run read: ${archiveDir}`,
   );
 }
 

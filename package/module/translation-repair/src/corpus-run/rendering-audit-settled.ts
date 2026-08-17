@@ -7,6 +7,7 @@ import {
   type AuditArguments,
   readAuditArguments,
 } from './rendering-audit-settled-args.ts';
+import { digestAuditedText, } from './rendering-audit-settled-digest.ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
 import {
   readArchiveSubjects,
@@ -132,6 +133,12 @@ async function auditOne(
     artifactDigest,
     corpusSha,
     identityKind: identity.kind,
+    // Digested rather than kept, so a run file can say whether two rows saw one
+    // text without carrying licensed material into a file that gets quoted.
+    textIdentity: digestAuditedText({
+      sourceText,
+      candidateText,
+    },),
     report,
   };
 }
