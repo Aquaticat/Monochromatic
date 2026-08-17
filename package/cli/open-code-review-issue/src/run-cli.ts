@@ -321,8 +321,13 @@ async function executeRepositoryRun({
   /**
    * Validated OCR input loaded before GitHub operations.
    */
-  const input = await loadInput({ command, streams, });
-  if (input.findings.length === 0) {
+  const input = await loadInput({
+    command,
+    streams,
+  });
+  if (input.findings
+    .length
+    === 0) {
     throw new CliRuntimeError('OCR input contains no findings to publish',);
   }
   await checkGitHubCliVersion({ cwd, });
@@ -333,11 +338,27 @@ async function executeRepositoryRun({
   /**
    * Destination-aware complete publication plan.
    */
-  const plan = await preparePlan({ input, repository, api, });
-  l.debug(`prepared ${String(plan.issues.length,)} Issue(s) in ${command.mode} mode`,);
+  const plan = await preparePlan({
+    input,
+    repository,
+    api,
+  });
+  l.debug(`prepared ${String(plan.issues
+    .length,)} Issue(s) in ${command.mode} mode`,);
   return command.mode === 'interactive'
-    ? runInteractive({ plan, repository, api, streams, })
-    : runNonInteractive({ command, plan, repository, api, streams, });
+    ? runInteractive({
+      plan,
+      repository,
+      api,
+      streams,
+    })
+    : runNonInteractive({
+      command,
+      plan,
+      repository,
+      api,
+      streams,
+    });
 }
 
 /**
@@ -378,8 +399,8 @@ export async function executeRun({
     },);
   }
   catch (error: unknown) {
-    if (command.mode !== 'non-interactive'
-      || command.applyAuthority === undefined)
+    if ((command.mode !== 'non-interactive')
+      || (command.applyAuthority === undefined))
     {
       throw error;
     }

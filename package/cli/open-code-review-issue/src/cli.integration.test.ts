@@ -232,9 +232,9 @@ await describe({
         /**
          * Captured machine output from expected exit-one command.
          */
-        const stdout = (caught as SubprocessError).stdout;
+        const {stdout} = (caught as SubprocessError);
         expect(stdout.trim().split('\n',)).toHaveLength(1,);
-        expect(stdout,).toContain('\"outcome\":\"failed\"',);
+        expect(stdout,).toContain('"outcome":"failed"',);
         expect(stdout,).toContain('GitHub CLI 2.96.0 is unsupported',);
       },
     },),
