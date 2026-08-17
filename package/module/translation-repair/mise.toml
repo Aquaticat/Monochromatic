@@ -100,6 +100,11 @@ description = "PROTOTYPE for question 28: ask a roster whether the translation a
 depends = ["build"]
 run = "node dist/final/node/coverage-probe.mjs"
 
+[tasks."slice-cost-report"]
+description = "Read the per-slice cost telemetry a pass wrote, and say whether cost tracks slice size or a fixed overhead (pass a log path after --)"
+depends = ["build"]
+run = "node dist/final/node/slice-cost-report.mjs"
+
 [tasks."displacement-probe"]
 description = "#107: read per-slice size ratios against each document's own median to find passages the translation moved across a section boundary; SPENDS NO QUOTA"
 depends = ["build"]
