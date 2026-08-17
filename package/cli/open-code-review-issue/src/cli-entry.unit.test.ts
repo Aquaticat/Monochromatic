@@ -143,7 +143,7 @@ await describe({
           streams: { stdin, stdout, stderr, },
         },),).toBe(2,);
         expect(stdout.text(),).toBe('',);
-        expect(stderr.text(),).toContain('requires one positional named input file',);
+        expect(stderr.text(),).toContain('requires one positional input',);
       },
     },),
   ],
