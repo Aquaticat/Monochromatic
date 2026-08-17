@@ -20,6 +20,7 @@ import {
 } from './slice-record-agreement.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import { armSliceCost, } from './slice-cost-log.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
 import {
   assertReplacementsChange,
@@ -209,6 +210,18 @@ export async function translateDocument(
      * Global index of this slice, which every record and replacement names.
      */
     const { chunkIndex, } = slice.target;
+
+    /**
+     * What this slice cost, reported however this loop body is left.
+     */
+    using cost = armSliceCost({
+      l: tl,
+      lane: 'translate',
+      chunkIndex,
+      sourceChars: slice.source
+        .text
+        .length,
+    },);
 
     /**
      * Whether the archive holds a translation for this slice at all, which

@@ -49,6 +49,17 @@ export {
   type SliceDeliveryRecord,
 } from './slice-delivery.ts';
 export {
+  armSliceCost,
+  SLICE_COST_MARKER,
+  type SliceCostLane,
+  type SliceCostSpan,
+} from './slice-cost-log.ts';
+export {
+  readSliceCosts,
+  type SliceCostReading,
+  type SliceCostRow,
+} from './slice-cost-read.ts';
+export {
   assertDeliveryAgreesWithDocument,
   DeliveryInvariantError,
 } from './delivery-invariants.ts';

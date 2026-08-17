@@ -31,6 +31,7 @@ import {
 import { repairChunk, } from './repair-chunk.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import { armSliceCost, } from './slice-cost-log.ts';
 import { assembleRepair, } from './repair-assemble.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';
 import type {
@@ -243,6 +244,19 @@ export async function repairPreparedDocument(
      * stages are asked, and where a slice sits is not part of that question.
      */
     const { chunkIndex, } = slice.target;
+
+    /**
+     * What this slice cost, reported however this loop body is left.
+     */
+    using cost = armSliceCost({
+      l: rl,
+      lane: 'repair',
+      chunkIndex,
+      sourceChars: slice.source
+        .text
+        .length,
+    },);
+
     if (isInsertionChunk(slice.target,)) {
       // NOTHING TO REPAIR, and nothing bought to discover that. Every stage of
       // this lane reads existing wording, so an anchor would have critics
