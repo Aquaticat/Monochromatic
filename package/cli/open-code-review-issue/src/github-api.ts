@@ -166,7 +166,8 @@ async function executeBodyRequest({
     flag: 'wx',
   },
   );
-  return executeApi({
+  // Await before async disposal so request file remains present through child completion.
+  return await executeApi({
     runProcess,
     arguments: [
       ...apiArguments(request,),
