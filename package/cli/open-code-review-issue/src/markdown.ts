@@ -7,16 +7,7 @@
 /**
  * Markdown inline characters requiring escaping in source path text.
  */
-const MARKDOWN_INLINE_SPECIALS: ReadonlySet<string> = new Set([
-  '\\',
-  '`',
-  '*',
-  '_',
-  '[',
-  ']',
-  '<',
-  '>',
-],);
+const ;
 
 /**
  * Escapes path text at final GitHub Markdown interpolation boundary.
@@ -31,13 +22,15 @@ const MARKDOWN_INLINE_SPECIALS: ReadonlySet<string> = new Set([
  * ```
  */
 export function escapeMarkdownInline(text: string,): string {
-  return [...text,]
-    .flatMap(function escapeCharacter(character,): readonly string[] {
-      return MARKDOWN_INLINE_SPECIALS.has(character,)
-        ? ['\\', character,]
-        : [character,];
-    },)
-    .join('',);
+  return text
+    .replaceAll('\\', '\\\\',)
+    .replaceAll('`', '\\`',)
+    .replaceAll('*', '\\*',)
+    .replaceAll('_', '\\_',)
+    .replaceAll('[', '\\[',)
+    .replaceAll(']', '\\]',)
+    .replaceAll('<', '\\<',)
+    .replaceAll('>', '\\>',);
 }
 
 /**

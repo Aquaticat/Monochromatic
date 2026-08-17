@@ -160,10 +160,10 @@ await describe({
         },);
 
         expect(issue.body,).toContain(
-          '- Location: [src/a\\] (bad)#.ts:9-9]'
-          + '(https://github.com/Aquaticat/issues-api/blob/'
-          + 'abcdefabcdefabcdefabcdefabcdefabcdefabcd/'
-          + 'src/a%5D%20%28bad%29%23.ts#L9-L9)',
+          `${String.raw`- Location: [src/a\] (bad)#.ts:9-9]`
+           }(https://github.com/Aquaticat/issues-api/blob/`
+          + `abcdefabcdefabcdefabcdefabcdefabcdefabcd/`
+          + `src/a%5D%20%28bad%29%23.ts#L9-L9)`,
         );
       },
     },),

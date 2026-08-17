@@ -73,7 +73,8 @@ function securityPositions(plan: PublicationPlan,): readonly InputPosition[] {
 function formatPositions(positions: readonly InputPosition[],): string {
   return positions.map(function formatPosition(position,): string {
     return `${position.kind} ${String(position.value,)}`;
-  },).join(', ',);
+  },)
+    .join(', ',);
 }
 
 /**
@@ -112,7 +113,8 @@ export function selectApplyPlan({
   /**
    * Ordinary issues selected by default and non-security-only authority.
    */
-  const ordinaryIssues = plan.issues.filter(function isOrdinary(issue,): boolean {
+  const ordinaryIssues = plan.issues
+    .filter(function isOrdinary(issue,): boolean {
     return !issue.security;
   },);
   if (authority === 'non-security-only') {

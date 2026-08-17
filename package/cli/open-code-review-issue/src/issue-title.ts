@@ -103,25 +103,31 @@ function utf8Prefix({
    */
   const encoder = new TextEncoder();
   /**
-   * Accepted code points accumulated without splitting surrogate pairs.
+   * Mutable scan state scoped behind one constant binding.
    */
-  const accepted: string[] = [];
-  /**
-   * Mutable byte total scoped to this linear scan.
-   */
-  let bytes = 0;
+  const state: {
+    readonly accepted: string[];
+    bytes: number;
+  } = {
+    accepted: [],
+    bytes: 0,
+  };
   for (const character of text) {
     /**
      * UTF-8 byte width of current code point.
      */
-    const characterBytes = encoder.encode(character,).length;
-    if ((bytes + characterBytes) > maximumBytes) {
+    const characterBytes = encoder
+      .encode(character,)
+      .length;
+    if ((state.bytes + characterBytes) > maximumBytes) {
       break;
     }
-    accepted.push(character,);
-    bytes += characterBytes;
+    state.accepted
+      .push(character,);
+    state.bytes += characterBytes;
   }
-  return accepted.join('',);
+  return state.accepted
+    .join('',);
 }
 
 /**
@@ -141,7 +147,9 @@ export function capIssueTitle(title: string,): string {
    * UTF-8 encoder used for complete-title size decision.
    */
   const encoder = new TextEncoder();
-  if (encoder.encode(title,).length <= TITLE_MAX_BYTES) {
+  if (encoder.encode(title,)
+    .length
+    <= TITLE_MAX_BYTES) {
     return title;
   }
   /**

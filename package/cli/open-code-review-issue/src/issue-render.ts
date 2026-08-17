@@ -31,8 +31,14 @@ function encodeSourcePath(path: string,): string {
   return path.split('/',)
     .map(function encodeSegment(segment,): string {
       return encodeURIComponent(segment,)
-        .replaceAll('(', '%28',)
-        .replaceAll(')', '%29',);
+        .replaceAll(
+          '(',
+          '%28',
+        )
+        .replaceAll(
+          ')',
+          '%29',
+        );
     },)
     .join('/',);
 }
@@ -189,7 +195,10 @@ export function renderIssue({
   return {
     position: finding.position,
     security: finding.category === 'security',
-    title: renderIssueTitle({ finding, needsTriageLabel, }),
+    title: renderIssueTitle({
+      finding,
+      needsTriageLabel,
+    }),
     body: renderIssueBody({
       finding,
       ...(sourceLink === undefined ? {} : { sourceLink, }),

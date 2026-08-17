@@ -48,7 +48,8 @@ export function buildPublicationPlan({
       ? 'needs-triage-label'
       : 'needs-triage-title-prefix',
     sourceReference: sourceLink === undefined ? 'plain' : 'commit-pinned',
-    issues: input.findings.map(function renderFinding(finding,) {
+    issues: input.findings
+      .map(function renderFinding(finding,) {
       return renderIssue({
         finding,
         needsTriageLabel,
