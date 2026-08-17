@@ -40,6 +40,25 @@ TWO THINGS ABOUT ITS DESIGN worth not re-litigating:
     its three runs of each arm on 2026-08-17 also survive only in a transcript. Fixing one and
     leaving the other would be knowingly leaving the same bug. Wiring that second caller is the next
     step and is not done yet.
+
+GFP'D AND VERIFIED AT THE BOUNDARY, both:
+
+-   THE STRIP was the filename, replaced by a fixed `rows.json`. Exactly three cases failed, and
+    they are the three loss-guards: keeping both runs, separating two builds of one instant, and the
+    stamped name. The other three pass under a fixed name, correctly, and are not strip evidence.
+    Run per file with `node src/corpus-run/probe-store.unit.test.ts`, which takes seconds against
+    the full suite's ten minutes.
+-   THE BOUNDARY CHECK was the real task against a throwaway `TRANSLATION_REPAIR_RUNS_DIR` at
+    `--cap 0`, which short-circuits before any candidate and so spends NO quota. Exit 0, one file
+    written, carrying both instants, a real six-model roster, the corpus commit, 93 entries walked
+    and a pipeline digest computed over built output.
+
+AND IT FOUND SOMETHING, which is why that check is worth running rather than reasoning about: THE
+REDIRECT THE PROBE WAS BUILT AROUND NEVER WORKED. The tagged logger writes to STANDARD OUTPUT, the
+same stream the rows JSON goes to, and the probe logs a line per candidate, so
+`coverage-probe > rows.json` yields progress lines wrapped around a JSON document that no parser
+accepts. The rows were never recoverable that way for any run that actually probed anything. That
+is not a regression from this change; it is why a file is the answer rather than better discipline.
 -   A PER-RUN FILENAME, carrying the instant and the pipeline digest, because both probes are rerun
     against the same subject ON PURPOSE to see whether a verdict is stable, and one fixed `rows.json`
     would let each rerun destroy the run it was bought to be compared against.
