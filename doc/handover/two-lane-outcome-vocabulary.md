@@ -734,7 +734,44 @@ of these calls the same six models.
     the measurements describe code that no longer exists.
 4.  **A few two-lane entries end to end**, to read the real per-entry cost against `HARD_CAP_MINUTES`
     of 180 before any full pass. `#92` measured the lane from bench calls; nothing has yet run both
-    lanes over one document under the cap.
+    lanes over one document under the cap. LAUNCHED 2026-08-16, see "The two-lane cost run".
+
+## The two-lane cost run, launched 2026-08-16
+
+WHERE IT IS, so a killed session can find it without this transcript:
+
+-   Runs directory, throwaway and outside the repo:
+    `~/temp/agent/two-lane-cost.l9Fpgk6V`
+-   Combined stdout and stderr:
+    `~/temp/agent/two-lane-cost.l9Fpgk6V/two-lane-cost.log`
+-   Command, from the `translation-repair` worktree:
+    `TRANSLATION_REPAIR_RUNS_DIR=<that dir> mise run
+    //package/module/translation-repair:corpus-pass -- --only
+    Aniloviraw,zheermao101,aiyysk,XingZ60`
+-   Code tip when launched: `4fed9d7bd`.
+
+WHICH ENTRIES, AND WHY THOSE. Sizes are `page.md` blob bytes at corpus pin
+`a41fc607ea5a70d8a7625cc67d5ed8c444f53379`, over 92 pending entries whose distribution is
+min 120, q1 1481, median 2323, q3 4557, max 41720:
+
+-   `Aniloviraw`, 1481 bytes, the first quartile.
+-   `zheermao101`, 2323 bytes, the median.
+-   `aiyysk`, 21455 bytes, second largest, the clean large point.
+-   `XingZ60`, 41720 bytes, the largest by a factor of two, so the worst case the cap must survive.
+    It is also `#71`'s pathological alignment entry, so it doubles as a full-scale check of that fix.
+
+WHAT IT IS FOR, and what it cannot answer. Per-entry wall time against the 180 minute cap, the cost
+split between the two lanes, and the voice-loss rate under the current roster. NOT per-slice
+verdicts: the window trial's negative control measured the preserve-or-replace decision as about 19
+percent unstable between identical runs, so nothing per-slice from a single pass is evidence.
+
+HOW TO READ IT. Each entry logs one `TALLY <id> status=... ms=<durationMs>` line, and `durationMs`
+also lands in the entry's artifact, so cost is readable from the log or the runs directory. An entry
+that aborts at the cap is a RESULT, not a failed run; the soft budget is 72 hours and absorbs it.
+
+NOTHING IS DECIDED BY THIS RUN. Whether to widen the deadline for `hf:zai-org/GLM-5.2`, seat a
+replacement, or accept the voice loss is a user bullet on `#105`, and the run was deliberately
+launched under the CURRENT roster and deadline so it reports that configuration as it stands.
 
 ## The launch gate has lifted
 
