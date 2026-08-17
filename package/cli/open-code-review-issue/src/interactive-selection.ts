@@ -4,7 +4,10 @@
  * @module
  */
 
-import type { InteractiveSelection, PromptStreams, } from './interactive-model.ts';
+import type {
+  InteractiveSelection,
+  PromptStreams,
+} from './interactive-model.ts';
 import {
   promptForExplicitDecision,
   promptForIssues,
@@ -57,13 +60,15 @@ export async function selectInteractiveIssues({
   /**
    * Ordinary candidates shown selected by default.
    */
-  const ordinaryCandidates = plan.issues.filter(function ordinary(issue,): boolean {
+  const ordinaryCandidates = plan.issues
+    .filter(function ordinary(issue,): boolean {
     return !issue.security;
   },);
   /**
    * Security candidates shown unselected in separate red picker.
    */
-  const securityCandidates = plan.issues.filter(function security(issue,): boolean {
+  const securityCandidates = plan.issues
+    .filter(function security(issue,): boolean {
     return issue.security;
   },);
   /**
@@ -106,7 +111,9 @@ export async function selectInteractiveIssues({
    * Confirmed security positions used to derive complete withheld set.
    */
   const confirmedPositions = new Set(confirmedSecurity.map(function positionKey(issue,) {
-    return `${issue.position.kind}:${String(issue.position.value,)}`;
+    return `${issue.position
+      .kind}:${String(issue.position
+        .value,)}`;
   },),);
   return {
     issues: [
@@ -115,7 +122,9 @@ export async function selectInteractiveIssues({
     ],
     withheldPositions: securityCandidates
       .filter(function notConfirmed(issue,): boolean {
-        return !confirmedPositions.has(`${issue.position.kind}:${String(issue.position.value,)}`,);
+        return !confirmedPositions.has(`${issue.position
+          .kind}:${String(issue.position
+            .value,)}`,);
       },)
       .map(function position(issue,) {
         return issue.position;

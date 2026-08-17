@@ -45,9 +45,9 @@ export class RepositorySelectionError extends Error {
  * @returns Whether character belongs to ASCII alphanumeric set.
  */
 function isAsciiAlphanumeric(character: string,): boolean {
-  return (character >= 'a' && character <= 'z')
-    || (character >= 'A' && character <= 'Z')
-    || (character >= '0' && character <= '9');
+  return ((character >= 'a') && (character <= 'z'))
+    || ((character >= 'A') && (character <= 'Z'))
+    || ((character >= '0') && (character <= '9'));
 }
 
 /**
@@ -58,7 +58,7 @@ function isAsciiAlphanumeric(character: string,): boolean {
  * @returns Whether owner accepts character.
  */
 function isOwnerCharacter(character: string,): boolean {
-  return isAsciiAlphanumeric(character,) || character === '-';
+  return isAsciiAlphanumeric(character,) || (character === '-');
 }
 
 /**
@@ -70,9 +70,9 @@ function isOwnerCharacter(character: string,): boolean {
  */
 function isRepositoryCharacter(character: string,): boolean {
   return isAsciiAlphanumeric(character,)
-    || character === '-'
-    || character === '_'
-    || character === '.';
+    || (character === '-')
+    || (character === '_')
+    || (character === '.');
 }
 
 /**
@@ -139,10 +139,16 @@ export function parseRepositoryUrl(value: string,): GitHubRepository {
    * Candidate owner segment.
    */
   const [owner, name,] = segments;
-  if (owner === undefined
-    || name === undefined
-    || !everyCharacter({ value: owner, accepts: isOwnerCharacter, })
-    || !everyCharacter({ value: name, accepts: isRepositoryCharacter, })
+  if ((owner === undefined)
+    || (name === undefined)
+    || (!everyCharacter({
+      value: owner,
+      accepts: isOwnerCharacter,
+    }))
+    || (!everyCharacter({
+      value: name,
+      accepts: isRepositoryCharacter,
+    }))
     || owner.startsWith('-',)
     || owner.endsWith('-',)
     || name.endsWith('.git',))
@@ -192,7 +198,10 @@ function parseOriginRemote(remote: string,): GitHubRepository {
    * Owner/name without clone-only `.git` suffix.
    */
   const canonicalSuffix = suffix.endsWith('.git',)
-    ? suffix.slice(0, -'.git'.length,)
+    ? suffix.slice(
+      0,
+      -'.git'.length,
+    )
     : suffix;
   return parseRepositoryUrl(`${GITHUB_URL_PREFIX}${canonicalSuffix}`,);
 }
@@ -220,6 +229,9 @@ async function runGit({
   readonly runProcess: BoundedProcessRunner;
 },): Promise<string> {
   try {
+    /**
+     * Captured Git inspection result.
+     */
     const result = await runProcess({
       file: 'git',
       arguments: commandArguments,
@@ -269,7 +281,10 @@ export async function selectRepository({
    */
   const root = (await runGit({
     cwd,
-    arguments: ['rev-parse', '--show-toplevel',],
+    arguments: [
+      'rev-parse',
+      '--show-toplevel',
+    ],
     runProcess,
   },)).trim();
   if (resolve(root,) !== resolve(cwd,)) {
@@ -282,7 +297,11 @@ export async function selectRepository({
    */
   const origin = await runGit({
     cwd,
-    arguments: ['remote', 'get-url', 'origin',],
+    arguments: [
+      'remote',
+      'get-url',
+      'origin',
+    ],
     runProcess,
   },);
   return parseOriginRemote(origin,);

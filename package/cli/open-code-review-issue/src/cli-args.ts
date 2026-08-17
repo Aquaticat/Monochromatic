@@ -59,7 +59,7 @@ type RawArguments = ReturnType<typeof parseArgs>;
 /**
  * Parses tokens through strict Node argument grammar.
  *
- * @param arguments - CLI tokens excluding executable and script paths.
+ * @param arguments_ - CLI tokens excluding executable and script paths.
  *
  * @returns Raw values and positionals.
  *
@@ -150,7 +150,7 @@ function applyAuthorityMetadata({
   if (nonSecurityOnly && all) {
     throw new CliInvocationError('`--non-security-only` and `--all` are mutually exclusive',);
   }
-  if (!apply && (nonSecurityOnly || all)) {
+  if ((!apply) && (nonSecurityOnly || all)) {
     throw new CliInvocationError('security authority flags require `--apply`',);
   }
   if (!apply) {
@@ -188,13 +188,17 @@ export function parseCliArguments({
    * Strict raw option and positional parse.
    */
   const raw = parseRaw(arguments_,);
-  if (raw.values.help === true) {
+  if (raw.values
+    .help
+    === true) {
     return { kind: 'help', };
   }
   /**
    * Explicit interactive mode selection.
    */
-  const interactive = raw.values.interactive === true;
+  const interactive = raw.values
+    .interactive
+    === true;
   /**
    * Explicit non-interactive mode selection.
    */
@@ -209,13 +213,17 @@ export function parseCliArguments({
   /**
    * Optional canonical repository URL string for later validation.
    */
-  const repositoryMetadata = typeof raw.values.repo === 'string'
-    ? { repositoryUrl: raw.values.repo, }
+  const repositoryMetadata = (typeof raw.values
+    .repo) === 'string'
+    ? { repositoryUrl: raw.values
+      .repo, }
     : {};
   /**
    * Mutation flag state.
    */
-  const apply = raw.values.apply === true;
+  const apply = raw.values
+    .apply
+    === true;
   /**
    * Non-security-only authority state.
    */
@@ -223,9 +231,12 @@ export function parseCliArguments({
   /**
    * All-findings disclosure authority state.
    */
-  const all = raw.values.all === true;
+  const all = raw.values
+    .all
+    === true;
   if (interactive) {
-    if (apply || nonSecurityOnly || all) {
+    if (apply || nonSecurityOnly
+      || all) {
       throw new CliInvocationError('interactive mode cannot use apply authority flags',);
     }
     return {
@@ -243,6 +254,10 @@ export function parseCliArguments({
     mode: 'non-interactive',
     ...fileMetadata,
     ...repositoryMetadata,
-    ...applyAuthorityMetadata({ apply, nonSecurityOnly, all, }),
+    ...applyAuthorityMetadata({
+      apply,
+      nonSecurityOnly,
+      all,
+    }),
   };
 }

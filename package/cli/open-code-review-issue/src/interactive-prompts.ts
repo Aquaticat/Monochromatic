@@ -34,7 +34,22 @@ function colorize({
   readonly value: string;
   readonly output: NodeJS.WritableStream;
 },): string {
-  return styleText(color, value, { stream: output, },);
+  return styleText(
+    color,
+    value,
+    { stream: output, },
+  );
+}
+
+/**
+ * Returns prompt text unchanged for ordinary picker.
+ *
+ * @param value - Prompt text.
+ *
+ * @returns Original text.
+ */
+function unchangedText(value: string,): string {
+  return value;
 }
 
 /**
@@ -70,18 +85,24 @@ export function createSquareCheckboxTheme({
    * Unselected indicator red only in security picker.
    */
   const unchecked = security
-    ? colorize({ color: 'red', value: '☐', output, })
+    ? colorize({
+      color: 'red',
+      value: '☐',
+      output,
+    })
     : '☐';
   /**
    * Security-aware text style or identity for ordinary picker.
    */
   const textStyle = security
     ? function red(value: string,): string {
-      return colorize({ color: 'red', value, output, });
+      return colorize({
+        color: 'red',
+        value,
+        output,
+      });
     }
-    : function unchanged(value: string,): string {
-      return value;
-    };
+    : unchangedText;
   return {
     icon: {
       checked,
@@ -108,15 +129,18 @@ export function createSquareCheckboxTheme({
  * await promptForPastedInput({ streams });
  * ```
  */
-export async function promptForPastedInput({
+export function promptForPastedInput({
   streams,
 }: {
   readonly streams: PromptStreams;
 },): Promise<string> {
-  return inputPrompt({
+  return inputPrompt(
+    {
     message: 'Paste one-line OCR JSON:',
     required: true,
-  }, streams,);
+  },
+    streams,
+  );
 }
 
 /**
@@ -143,19 +167,25 @@ export async function promptForExplicitDecision({
   /**
    * Validated explicit decision text.
    */
-  const answer = await inputPrompt({
+  const answer = await inputPrompt(
+    {
     message,
     validate(value,) {
       /**
        * Case-folded trimmed decision candidate.
        */
-      const normalized = value.trim().toLowerCase();
-      return normalized === 'yes' || normalized === 'no'
+      const normalized = value.trim()
+        .toLowerCase();
+      return (normalized === 'yes') || (normalized === 'no')
         ? true
         : 'Type yes or no';
     },
-  }, streams,);
-  return answer.trim().toLowerCase() === 'yes';
+  },
+    streams,
+  );
+  return answer.trim()
+    .toLowerCase()
+    === 'yes';
 }
 
 /**
@@ -193,11 +223,15 @@ export async function promptForIssues({
   /**
    * Selected zero-based issue indexes.
    */
-  const selected = await checkbox<number>({
+  const selected = await checkbox<number>(
+    {
     message: security
       ? 'SECURITY findings: select only findings safe to disclose publicly'
       : 'Select findings to create as GitHub Issues',
-    choices: issues.map(function issueChoice(issue, index,) {
+    choices: issues.map(function issueChoice(
+      issue,
+      index,
+    ) {
       return {
         name: security ? `SECURITY ${issue.title}` : issue.title,
         value: index,
@@ -213,8 +247,13 @@ export async function promptForIssues({
         },
       }
       : {}),
-    theme: createSquareCheckboxTheme({ security, output: streams.output, }),
-  }, streams,);
+    theme: createSquareCheckboxTheme({
+      security,
+      output: streams.output,
+    }),
+  },
+    streams,
+  );
   return selected.map(function selectedIssue(index,) {
     /**
      * Selected issue indexed by library-owned choice value.
@@ -240,5 +279,5 @@ export async function promptForIssues({
  * ```
  */
 export function isPromptCancellation(error: unknown,): boolean {
-  return error instanceof Error && error.name === 'ExitPromptError';
+  return Error.isError(error,) && (error.name === 'ExitPromptError');
 }
