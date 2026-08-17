@@ -130,6 +130,14 @@ js code leaks into browser bundles:
 - `node:` protocol dynamic imports cause CORS errors in browser consoles
 - Environment guards for dual-target modules
 
+### [Barrel `export *` drops an ambiguous name](barrel-star-export-drops-ambiguous-names.md)
+
+A symbol exported by two barrels vanishes from the package instead of erroring:
+
+- `tsc`, `oxlint` and the bundler all pass, and the built file contains both function bodies
+- The only symptom is `does not provide an export named` at an import three steps away
+- How to ask the built package what it actually exports
+
 ### [dprint-plugin-exec](dprint-exec.md)
 
 Why the exec plugin silently does nothing and why certain tools are incompatible:
