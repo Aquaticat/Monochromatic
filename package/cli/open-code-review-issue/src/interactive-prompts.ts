@@ -257,7 +257,10 @@ export async function promptForIssues({
       index,
     ) {
       return {
-        name: issueChoiceName({ issue, security, }),
+        name: issueChoiceName({
+          issue,
+          security,
+        }),
         value: index,
         checked: !security,
       };
