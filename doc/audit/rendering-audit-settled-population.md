@@ -232,6 +232,17 @@ minutes apart,
 every pair verified by recorded digest on both sides.
 Small, and free.
 
+A CHECK ON THE PAIRING ITSELF, recorded before the run lands:
+the population section says those six are
+`zheermao101` slices 0, 2, 7, 8, 9 and 11,
+measured from the artifacts back when the population was counted.
+`auditRepeatsWithin` should find exactly those six and no others.
+It reaches that answer by a completely different route,
+from digests of the text each audit was actually shown
+rather than from the artifacts' own delivery rows,
+so agreement is real corroboration and a different count is a defect
+in one of the two readings.
+
 ACROSS two runs,
 every subject in both.
 Forty pairs,
