@@ -422,6 +422,13 @@ The adapter then emits the partial applied-run result and returns nonzero.
 A second Ctrl+C terminates immediately and may prevent final output.
 That picker must use red styling when color is available and an explicit textual `SECURITY` marker
 so color is never the only signal.
+Custom styles use Node's native `styleText()` stream validation against standard output.
+They honor terminal capability,
+`NO_COLOR`,
+`NODE_DISABLE_COLORS`,
+and `FORCE_COLOR` rather than defining an adapter-specific color flag.
+A Node probe verified plain text under both disable variables and ANSI red under `FORCE_COLOR`.
+Square `☐` and `☑` indicators and textual markers retain state and security meaning when color is disabled.
 Every security-gated finding selected for publication requires its own explicit safe-to-disclose confirmation.
 The confirmation has no default;
 empty input reprompts.
@@ -878,7 +885,8 @@ in dependency order:
    Inquirer direct subpackages implement pnpm-style prompting.
    Post-creation interrupt and multi-select behavior are settled.
    Interactive mode requires TTY standard input and TTY standard output.
-   Color and accessibility policy otherwise remain open.
+   Native Node color controls govern ANSI styling;
+   square indicators and textual security markers prevent color-only meaning.
 10. GitHub boundary and package interface:
     GitHub operations use non-paginated `gh api --include` subprocesses
     with private named request-body files and no inherited standard input.
@@ -1131,6 +1139,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   selected `☐` and `☑` as the unchecked and checked indicators.
 - 2026-08-16:
   required TTY standard input and TTY standard output for interactive mode.
+- 2026-08-16:
+  selected Node's native terminal and environment color policy,
+  with no adapter-specific color flag.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
