@@ -91,7 +91,36 @@ await describe({
       },
     },),
     it({
-      name: 'requires named input before interactive TTY validation',
+      name: 'accepts shell-safe inline JSON as interactive positional input',
+      fn: async () => {
+        /**
+         * Captured TTY standard output.
+         */
+        const stdout = Object.assign(new CaptureStreamElement(), { isTTY: true, },);
+        /**
+         * Captured standard error.
+         */
+        const stderr = new CaptureStreamElement();
+        /**
+         * TTY standard input reserved for later interactive decisions.
+         */
+        const stdin = Object.assign(new PassThrough(), { isTTY: true, },);
+
+        expect(await runCli({
+          arguments: [
+            '--interactive',
+            '{"status":"complete","comments":[]}',
+          ],
+          cwd: process.cwd(),
+          streams: { stdin, stdout, stderr, },
+        },),).toBe(1,);
+        expect(stdout.text(),).toBe('',);
+        expect(stderr.text(),).toContain('OCR input contains no findings to publish',);
+        expect(stderr.text(),).not.toContain('ENOENT',);
+      },
+    },),
+    it({
+      name: 'requires positional input before interactive TTY validation',
       fn: async () => {
         /**
          * Captured standard output.
