@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  type AuditVoiceRow,
+  type RenderingAuditReport,
   runRenderingAudit,
 } from '../rendering-audit.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
@@ -70,42 +70,11 @@ import {
 const PROBE_NAME = 'rendering-audit-settled';
 
 /**
- * What one voice said, flattened to what a later reader needs.
- *
- * @example
- * ```ts
- * const voice: AuditVoiceSummary = { modelId, verdict: 'defects-found', claims: 2, dropped: 0, };
- * ```
- */
-type AuditVoiceSummary = {
-  /**
-   * Auditor that answered.
-   */
-  readonly modelId: string;
-
-  /**
-   * What it concluded overall.
-   */
-  readonly verdict: string;
-
-  /**
-   * Claims that survived screening against the two texts.
-   */
-  readonly claims: number;
-
-  /**
-   * Claims it made that could not be anchored, which is a fact about the prompt
-   * and the screen rather than about the rendering.
-   */
-  readonly dropped: number;
-};
-
-/**
  * One audited slice, with everything needed to say which decision it describes.
  *
  * @example
  * ```ts
- * const row: SettledAuditRow = { runSet, entryId, chunkIndex, corroborated: 0, ... };
+ * const row: SettledAuditRow = { runSet, entryId, chunkIndex, report, ... };
  * ```
  */
 type SettledAuditRow = {
@@ -152,69 +121,31 @@ type SettledAuditRow = {
   readonly identityKind: string;
 
   /**
-   * Defects at least two auditors located identically.
+   * Everything the instrument said, WHOLE and uninterpreted.
+   *
+   * NOT SUMMARISED INTO COUNTS, which is what the first two-subject buy was
+   * bought to find out. Counts said `corroborated=0 agreed=0 near=1` over two
+   * voices claiming two defects each and a third dropping one, and nothing in
+   * the file could say WHAT any of them claimed. That makes three separate
+   * questions unanswerable from the artifact this probe exists to produce:
+   * whether the matcher was right to bring nothing together (`#68`), which
+   * voice was right when they disagreed (`#66`), and whether a paired omission
+   * and addition on adjacent slices is one relocation rather than two defects
+   * (`#107`), which is a rule fixed before this run and unenforceable without
+   * categories and spans.
+   *
+   * Every count a reader wants is derivable from this. None of this is
+   * recoverable from the counts.
    */
-  readonly corroborated: number;
-
-  /**
-   * Groups of voices that agreed without quoting identical spans.
-   */
-  readonly agreed: number;
-
-  /**
-   * Pairs that nearly agreed, reported rather than merged.
-   */
-  readonly near: number;
-
-  /**
-   * Degradation findings from the gather, empty when quorum was met.
-   */
-  readonly gatherFindings: readonly string[];
-
-  /**
-   * Every voice's answer, kept so a later decision about how to read a tally
-   * over a roster that disagrees with itself has something to read.
-   */
-  readonly voices: readonly AuditVoiceSummary[];
+  readonly report: RenderingAuditReport;
 };
 
 /**
- * Flattens one voice's screened answer.
- *
- * @param row - screened answer from the audit
- *
- * @returns What a later reader needs from it
- *
- * @example
- * ```ts
- * const summary = summarizeVoice({ row, },);
- * ```
- */
-function summarizeVoice({ row, }: { readonly row: AuditVoiceRow; },): AuditVoiceSummary {
-  /**
-   * What this voice answered and what survived screening.
-   */
-  const {
-    modelId,
-    verdict,
-    findings,
-    dropped,
-  } = row;
-
-  return {
-    modelId,
-    verdict,
-    claims: findings.length,
-    dropped: dropped.length,
-  };
-}
-
-/**
- * Audits one slice and flattens what the roster said.
+ * Audits one slice and keeps what the roster said, whole.
  *
  * @param subject - slice under audit, with the identity its producing run had
  *
- * @returns One row, degradation included
+ * @returns One row: provenance, plus the report uninterpreted
  *
  * @example
  * ```ts
@@ -265,17 +196,6 @@ async function auditOne(
     l,
   },);
 
-  /**
-   * Both agreement tiers, the near misses, the degradation and every voice.
-   */
-  const {
-    corroborated,
-    agreed,
-    near,
-    findings,
-    rows,
-  } = report;
-
   return {
     runSet,
     entryId,
@@ -285,13 +205,7 @@ async function auditOne(
     artifactDigest,
     corpusSha,
     identityKind: identity.kind,
-    corroborated: corroborated.length,
-    agreed: agreed.length,
-    near: near.length,
-    gatherFindings: findings,
-    voices: rows.map(function flatten(row,): AuditVoiceSummary {
-      return summarizeVoice({ row, },);
-    },),
+    report,
   };
 }
 
@@ -404,17 +318,48 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
     entryId,
     chunkIndex,
     auditsArchiveText,
+    report,
+  } = row;
+
+  /**
+   * Both agreement tiers, the near misses, the degradation and every voice.
+   */
+  const {
     corroborated,
     agreed,
     near,
-    gatherFindings,
-  } = row;
+    findings,
+    rows,
+  } = report;
+
+  /**
+   * Claims that anchored, across the whole roster.
+   *
+   * PRINTED BESIDE THE TIERS because the difference between them is the
+   * measurement: voices that claimed plenty and agreed on none says something
+   * about the matcher, and a silent roster says something else entirely.
+   */
+  const claimed = rows.reduce(
+    function total(
+      sum,
+      voice,
+    ): number {
+      /**
+       * What this voice claimed that anchored.
+       */
+      const { findings: anchored, } = voice;
+      return sum + anchored.length;
+    },
+    0,
+  );
 
   console.log(
     `${runSet}/${entryId}#${String(chunkIndex,)} ${
       auditsArchiveText ? 'ARCHIVE' : 'FRESH  '
-    } corroborated=${String(corroborated,)} agreed=${String(agreed,)} near=${String(near,)}${
-      (gatherFindings.length === 0) ? '' : ` degraded=${String(gatherFindings.length,)}`
+    } claimed=${String(claimed,)} corroborated=${String(corroborated.length,)} agreed=${
+      String(agreed.length,)
+    } near=${String(near.length,)}${
+      (findings.length === 0) ? '' : ` degraded=${String(findings.length,)}`
     }`,
   );
 }
