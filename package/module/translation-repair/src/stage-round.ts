@@ -1,5 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { settleWithin, } from '@monochromatic-dev/module-async-time/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -313,10 +313,18 @@ export async function runGatherRound<ValueT,>(
   // `allSettled` rather than `all`: the caller's own abort rejects every ask,
   // and a rejected `all` inside a race nobody reads becomes an unhandled
   // rejection on a teardown path.
-  await Promise.race([
-    Promise.allSettled(asks,),
-    wait(graceMs,),
-  ],);
+  //
+  // `settleWithin` RATHER THAN `Promise.race([..., wait(graceMs,),],)`, which
+  // is what this was. `Promise.race` does nothing to the loser, and `wait` is a
+  // bare `setTimeout` with no handle, so every round where the roster answered
+  // in time left a live timer holding the event loop for the rest of the grace
+  // window. The work was unaffected and the process simply would not exit:
+  // measured at three minutes past a completed 40-subject run, long enough to
+  // read as a hang and to stall anything chained behind it.
+  await settleWithin({
+    promise: Promise.allSettled(asks,),
+    ms: graceMs,
+  },);
   abandon.abort();
 
   // The caller's abort has to leave this round as a FAILURE, not as a thin

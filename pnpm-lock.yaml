@@ -2122,6 +2122,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.2.0
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
