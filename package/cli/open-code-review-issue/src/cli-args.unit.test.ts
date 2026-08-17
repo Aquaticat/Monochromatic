@@ -25,7 +25,10 @@ await describe({
         },),).toStrictEqual({
           kind: 'run',
           mode: 'interactive',
-          filePath: 'review.json',
+          input: {
+            kind: 'file',
+            path: 'review.json',
+          },
           repositoryUrl: 'https://github.com/Aquaticat/issues-api',
         },);
         expect(parseCliArguments({
@@ -38,8 +41,24 @@ await describe({
         },),).toStrictEqual({
           kind: 'run',
           mode: 'non-interactive',
-          filePath: 'review.json',
+          input: {
+            kind: 'file',
+            path: 'review.json',
+          },
           applyAuthority: 'non-security-only',
+        },);
+        expect(parseCliArguments({
+          arguments: [
+            '--interactive',
+            '{"status":"complete","comments":[]}',
+          ],
+        },),).toStrictEqual({
+          kind: 'run',
+          mode: 'interactive',
+          input: {
+            kind: 'inline-json',
+            text: '{"status":"complete","comments":[]}',
+          },
         },);
       },
     },),
@@ -53,6 +72,7 @@ await describe({
           ['review.json',],
           ['--interactive', '--non-interactive', 'review.json',],
           ['--non-interactive', '-',],
+          ['--non-interactive', '{}',],
           ['--non-interactive',],
           ['--interactive',],
           ['--interactive', '--apply', 'review.json',],
