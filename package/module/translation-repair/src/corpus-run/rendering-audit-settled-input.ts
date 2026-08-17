@@ -2,7 +2,10 @@ import {
   readdir,
   readFile,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  basename,
+  join,
+} from 'node:path';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
@@ -233,7 +236,21 @@ export type SettledArtifactReading = {
  */
 type ArtifactLocation = {
   /**
-   * Archive subdirectory.
+   * Subdirectory to look in, EMPTY when the artifact sits at the archive root.
+   *
+   * SEPARATE FROM `runSet`, which it used to be the same field as, and the two
+   * came apart the moment a flat layout was accepted: the path segment must be
+   * empty for an artifact at the root, while the label must still name
+   * something a reader can trace. One field cannot be both, and a test caught
+   * it doing neither.
+   */
+  readonly runSetDir: string;
+
+  /**
+   * What every row calls this settlement.
+   *
+   * For a nested archive this is the subdirectory. For a flat one it is the
+   * archive's own name, because the directory IS the settlement there.
    */
   readonly runSet: string;
 
@@ -418,11 +435,13 @@ function subjectsOf(
 export async function readArtifactSubjects(
   {
     archiveDir,
+    runSetDir,
     runSet,
     artifactFile,
     cloneDir,
   }: {
     readonly archiveDir: string;
+    readonly runSetDir: string;
     readonly runSet: string;
     readonly artifactFile: string;
     readonly cloneDir: string;
@@ -434,7 +453,7 @@ export async function readArtifactSubjects(
   const raw: unknown = JSON.parse(await readFile(
     join(
       archiveDir,
-      runSet,
+      runSetDir,
       artifactFile,
     ),
     'utf8',
@@ -497,9 +516,31 @@ export async function readArtifactSubjects(
 /**
  * Lists every artifact under an archive directory, in a stable order.
  *
- * @param archiveDir - directory whose subdirectories are run sets
+ * TAKES TWO LAYOUTS, because two exist and only one was accepted before.
+ *
+ * NESTED, `archive/<run set>/<entry>.json`, which is what the hand-built
+ * archive at `~/translation-repair-v2-archive/` carries: each subdirectory is
+ * one settlement of the corpus and its name is the run set.
+ *
+ * FLAT, `<runs dir>/artifacts/<entry>.json`, which is what `corpus-pass`
+ * ACTUALLY WRITES. A pass produces exactly one settlement, so it has no reason
+ * to invent a subdirectory for it, and the four archived artifacts read today
+ * only because somebody copied them into run-set directories by hand. Pointing
+ * this reader at a pass's own output found nothing and the audit refused with
+ * "no artifacts under", which reads like an empty pass rather than like a
+ * layout it cannot see.
+ *
+ * REFUSES A DIRECTORY CARRYING BOTH rather than choosing. A directory with
+ * artifacts at its root AND in subdirectories is either two populations or a
+ * half-finished move, and reading one while ignoring the other would report a
+ * population smaller than the archive holds without saying so. That is the
+ * defect this whole instrument keeps finding in other places.
+ *
+ * @param archiveDir - directory of run sets, or of artifacts
  *
  * @returns Locations sorted by run set then file
+ *
+ * @throws {@link Error} when artifacts sit at both levels
  *
  * @example
  * ```ts
@@ -510,12 +551,17 @@ async function locateSettledArtifacts(
   { archiveDir, }: { readonly archiveDir: string; },
 ): Promise<readonly ArtifactLocation[]> {
   /**
-   * Run-set subdirectories, sorted.
+   * Everything the archive directory holds, read once.
    */
-  const runSets = (await readdir(
+  const entries = await readdir(
     archiveDir,
     { withFileTypes: true, },
-  ))
+  );
+
+  /**
+   * Run-set subdirectories, sorted.
+   */
+  const runSets = entries
     .filter(function isRunSet(entry,): boolean {
       return entry.isDirectory();
     },)
@@ -523,6 +569,49 @@ async function locateSettledArtifacts(
       return entry.name;
     },)
     .toSorted();
+
+  /**
+   * Artifacts sitting at the archive root, which is the layout a pass writes.
+   */
+  const loose = entries
+    .filter(function isLooseArtifact(entry,): boolean {
+      /**
+       * Whether this entry is a file at all.
+       */
+      const isFile = entry.isFile();
+
+      /**
+       * Whether it is named like an artifact.
+       */
+      const isJson = entry.name
+        .endsWith('.json',);
+
+      return isFile && isJson;
+    },)
+    .map(function named(entry,): string {
+      return entry.name;
+    },)
+    .toSorted();
+
+  if ((loose.length > 0) && (runSets.length > 0))
+    throw new Error(
+      `${archiveDir} carries artifacts at its root AND in subdirectories`
+        + ` (${String(loose.length,)} loose, ${String(runSets.length,)} run sets).`
+        + ` Reading one and ignoring the other would report a smaller population than`
+        + ` the archive holds. Move them together, then re-run.`,
+    );
+
+  if (loose.length > 0)
+    return loose.map(function atRoot(artifactFile,): ArtifactLocation {
+      return {
+        runSetDir: '',
+        // The archive is itself the one settlement, so it names the run set.
+        // Its own basename rather than a placeholder, because that name lands
+        // in every row and a reader tracing a row back wants the directory.
+        runSet: basename(archiveDir,),
+        artifactFile,
+      };
+    },);
 
   return (await Promise.all(runSets.map(
     async function within(runSet,): Promise<readonly ArtifactLocation[]> {
@@ -536,6 +625,7 @@ async function locateSettledArtifacts(
         .toSorted()
         .map(function at(artifactFile,): ArtifactLocation {
           return {
+            runSetDir: runSet,
             runSet,
             artifactFile,
           };
@@ -580,6 +670,7 @@ export async function readArchiveSubjects(
     async function read(at,): Promise<SettledArtifactReading> {
       return await readArtifactSubjects({
         archiveDir,
+        runSetDir: at.runSetDir,
         runSet: at.runSet,
         artifactFile: at.artifactFile,
         cloneDir,

@@ -583,6 +583,7 @@ await describe({
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
+          runSetDir: 'first',
           runSet: 'first',
           artifactFile: `${ENTRY_ID}.json`,
           cloneDir: corpus.cloneDir,
@@ -625,6 +626,7 @@ await describe({
          */
         const { subjects, } = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
+          runSetDir: 'first',
           runSet: 'first',
           artifactFile: `${ENTRY_ID}.json`,
           cloneDir: corpus.cloneDir,
@@ -672,6 +674,7 @@ await describe({
          */
         const { subjects, } = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
+          runSetDir: 'first',
           runSet: 'first',
           artifactFile: `${ENTRY_ID}.json`,
           cloneDir: corpus.cloneDir,
@@ -720,6 +723,7 @@ await describe({
          */
         const { subjects, } = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
+          runSetDir: 'first',
           runSet: 'first',
           artifactFile: 'tabby.json',
           cloneDir: corpus.cloneDir,
@@ -765,6 +769,7 @@ await describe({
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
+          runSetDir: 'first',
           runSet: 'first',
           artifactFile: `${ENTRY_ID}.json`,
           cloneDir: corpus.cloneDir,
@@ -809,6 +814,7 @@ await describe({
          */
         const reading = await readArtifactSubjects({
           archiveDir: archive.archiveDir,
+          runSetDir: 'first',
           runSet: 'first',
           artifactFile: `${ENTRY_ID}.json`,
           cloneDir: corpus.cloneDir,
@@ -913,6 +919,99 @@ await describe({
 
         expect(readings.length,).toBe(1,);
         expect(readings[0]?.entryId,).toBe(ENTRY_ID,);
+      },
+    },),
+
+    it({
+      name: 'READS THE FLAT LAYOUT A PASS ACTUALLY WRITES, artifacts straight under the directory '
+        + 'with no run-set subdirectory. corpus-pass produces one settlement so it invents no '
+        + 'subdirectory for it, and before this the audit refused such a directory with "no '
+        + 'artifacts under", which reads like an empty pass rather than like a layout it cannot see',
+      fn: async () => {
+        await using corpus = await makeCorpus();
+        await using archive = await makeArchive();
+
+        /**
+         * Pair both sides describe.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_PAGE,
+          targetText: TARGET_PAGE,
+        },);
+
+        // Written with an EMPTY run set, which puts the file at the archive
+        // root exactly as a pass writes it.
+        await writeArtifact({
+          archiveDir: archive.archiveDir,
+          runSet: '',
+          prepared,
+          corpusSha: corpus.commitSha,
+          entryId: ENTRY_ID,
+        },);
+
+        /**
+         * Everything the flat directory holds.
+         */
+        const readings = await readArchiveSubjects({
+          archiveDir: archive.archiveDir,
+          cloneDir: corpus.cloneDir,
+        },);
+
+        expect(readings.length,).toBe(1,);
+        expect(readings[0]?.entryId,).toBe(ENTRY_ID,);
+
+        // The directory names the settlement, since there is exactly one and a
+        // reader tracing a row back wants the directory it came from.
+        expect(readings[0]?.runSet.length,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A DIRECTORY CARRYING BOTH LAYOUTS rather than choosing one, because artifacts '
+        + 'at the root AND in subdirectories are either two populations or a half-finished move, '
+        + 'and reading one while ignoring the other would report a population smaller than the '
+        + 'archive holds without saying so',
+      fn: async () => {
+        await using corpus = await makeCorpus();
+        await using archive = await makeArchive();
+
+        /**
+         * Pair both sides describe.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_PAGE,
+          targetText: TARGET_PAGE,
+        },);
+
+        await writeArtifact({
+          archiveDir: archive.archiveDir,
+          runSet: '',
+          prepared,
+          corpusSha: corpus.commitSha,
+          entryId: ENTRY_ID,
+        },);
+        await writeArtifact({
+          archiveDir: archive.archiveDir,
+          runSet: 'nested-run',
+          prepared,
+          corpusSha: corpus.commitSha,
+          entryId: ENTRY_ID,
+        },);
+
+        /**
+         * What the reader says about the mixture.
+         */
+        const refusal = await readArchiveSubjects({
+          archiveDir: archive.archiveDir,
+          cloneDir: corpus.cloneDir,
+        },).then(
+          function unexpected(): string {
+            return 'no refusal';
+          },
+          String,
+        );
+
+        expect(refusal.includes('at its root AND in subdirectories',),).toBe(true,);
       },
     },),
   ],
