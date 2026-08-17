@@ -412,10 +412,10 @@ function subjectsOf(
  *
  * @example
  * ```ts
- * const reading = await readSettledArtifact({ archiveDir, runSet, artifactFile, cloneDir, },);
+ * const reading = await readArtifactSubjects({ archiveDir, runSet, artifactFile, cloneDir, },);
  * ```
  */
-export async function readSettledArtifact(
+export async function readArtifactSubjects(
   {
     archiveDir,
     runSet,
@@ -559,10 +559,10 @@ async function locateSettledArtifacts(
  *
  * @example
  * ```ts
- * const readings = await readSettledArchive({ archiveDir, cloneDir, },);
+ * const readings = await readArchiveSubjects({ archiveDir, cloneDir, },);
  * ```
  */
-export async function readSettledArchive(
+export async function readArchiveSubjects(
   {
     archiveDir,
     cloneDir,
@@ -578,7 +578,7 @@ export async function readSettledArchive(
 
   return await Promise.all(located.map(
     async function read(at,): Promise<SettledArtifactReading> {
-      return await readSettledArtifact({
+      return await readArtifactSubjects({
         archiveDir,
         runSet: at.runSet,
         artifactFile: at.artifactFile,
