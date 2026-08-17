@@ -926,8 +926,8 @@ cancellation,
 and cleanup behavior already supplied by `@inquirer/input`.
 The two direct packages are therefore the minimal library-backed proposal.
 Neither package has been added to the repository.
-The user approved `@inquirer/checkbox` 5.2.1 as a direct dependency on 2026-08-16.
-Approval for `@inquirer/input` 5.1.2 remains separate.
+The user separately approved `@inquirer/checkbox` 5.2.1
+and `@inquirer/input` 5.1.2 as direct dependencies on 2026-08-16.
 
 ## Evidence limits
 
