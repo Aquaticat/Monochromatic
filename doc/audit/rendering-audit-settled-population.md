@@ -402,6 +402,33 @@ minutes apart,
 every pair verified by recorded digest on both sides.
 Small, and free.
 
+AND IT IS NOT A GENERAL SAMPLE, re-derived from the artifacts before the run landed
+by digesting both texts of every slice in both run sets:
+
+```text
+Aniloviraw    0 identical of  5
+zheermao101   6 identical of 15   (slices 0, 2, 7, 8, 9, 11)
+```
+
+`Aniloviraw` contributes NOTHING.
+Not one of its five slices shipped the same English in both runs,
+which is itself worth noticing:
+two of them were `replacement-shipped` in both runs and still differ,
+so two independent productions of one source never converged there.
+
+Five of the six pairs are `incumbent-retained` in both runs,
+so they are archive text.
+Only slice 9 is a fresh rendering,
+and it qualifies because two productions happened to converge on the same characters.
+
+So the within-run band is measured
+almost entirely on ARCHIVE text,
+entirely within ONE entry.
+It can say how stable the instrument is when re-reading the archive's own English.
+It cannot say anything about its stability on fresh renderings,
+which is the half the instrument was built for.
+Only the across-run band reaches those.
+
 A CHECK ON THE PAIRING ITSELF, recorded before the run lands:
 the population section says those six are
 `zheermao101` slices 0, 2, 7, 8, 9 and 11,
