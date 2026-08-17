@@ -5,4 +5,14 @@
  * @module
  */
 
-export {};
+export {
+  InputValidationError,
+  parseStructuredInput,
+} from './ingest.ts';
+export type {
+  FindingCategory,
+  FindingSeverity,
+  InputPosition,
+  NormalizedFinding,
+  NormalizedInput,
+} from './model.ts';
