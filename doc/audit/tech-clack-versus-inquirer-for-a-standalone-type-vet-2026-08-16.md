@@ -620,14 +620,60 @@ This reduces platform-confidence scoring rather than creating a target-path hard
 ### Inquirer
 
 Dependency installation completed with lifecycle scripts disabled.
-The offline CI-equivalent run remains in progress.
+The complete offline CI-equivalent path passed:
+
+- 22 TypeScript workspace tasks;
+- oxlint with no warnings or errors;
+- oxfmt;
+- ESLint;
+- package setup lint;
+- 387 tests passed,
+  one skipped,
+  in 35 files;
+- 88.7 percent statement coverage and 87.0 percent branch coverage.
+
+Separate offline integration runs passed seven ESM tests and five CommonJS tests.
+No upstream failure remained.
+
+### Published-package consumer boundary
+
+The exact published tarballs installed together with lifecycle scripts disabled.
+The installation added 28 packages.
+Every installed package declared MIT or ISC licensing;
+none declared an install lifecycle script,
+native `.node` artifact,
+or Wasm artifact.
+The resolved Clack subtree used six package nodes.
+The Inquirer subtree used 23 named package nodes before dependencies shared with Clack were de-duplicated.
+
+A Node 22.18.0 custom-stream fixture passed for both candidates.
+It verified:
+
+- one-line input;
+- preselected multi-selection;
+- red security text;
+- empty explicit-decision rejection followed by an accepted `yes`;
+- Ctrl+C cancellation;
+- raw-mode restoration;
+- keypress-listener cleanup.
+
+Clack resolved Ctrl+C to its cancel symbol.
+Inquirer rejected with the documented `ExitPromptError`.
+A source search found no production `/dev/tty` or `CONIN$` opening in either package.
+Inquirer's documentation contains an optional `/dev/tty` shell recipe,
+but no consumed source path performs that action.
+
+The published manifests confirmed JavaScript distribution entry points.
+Inquirer's installed manifest maps to the audited commit through `gitHead`.
+Clack's registry provenance maps its tarball to the audited commit.
 
 ## Evidence limits
 
 No candidate has been recommended yet.
-The static audit and Clack execution are complete.
-Inquirer execution,
-consumer-boundary validation,
+Source,
+upstream execution,
+and the shared consumer boundary are complete.
+The Clack runtime-floor prototype,
 score calculation,
 and sensitivity analysis remain pending.
 
