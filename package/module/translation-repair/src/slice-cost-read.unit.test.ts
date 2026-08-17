@@ -86,12 +86,12 @@ await describe({
           lane: 'repair',
           chunkIndex: 0,
           sourceChars: 812,
-          elapsedMs: 45210,
+          elapsedMs: 45_210,
         },);
         expect(rows[1]
           ?.lane,).toBe('translate',);
         expect(rows[1]
-          ?.elapsedMs,).toBe(88130,);
+          ?.elapsedMs,).toBe(88_130,);
       },
     },),
     it({

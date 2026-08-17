@@ -1,5 +1,5 @@
 import { readCorpusFile, } from '../corpus-source.ts';
-import { repairTranslation, } from '../repair-translation.ts';
+import { repairTranslation, } from '../repair-entry.ts';
 import {
   createRunClient,
   RUN_CORPUS_PIN,

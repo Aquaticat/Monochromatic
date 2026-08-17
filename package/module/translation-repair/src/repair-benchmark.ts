@@ -13,10 +13,10 @@ import {
   gradeSeedDetection,
   type SeedDetectionVerdict,
 } from './seed-detection.ts';
-import {
-  repairTranslation,
-  type RepairStatus,
-  type RepairTranslationResult,
+import { repairTranslation, } from './repair-entry.ts';
+import type {
+  RepairStatus,
+  RepairTranslationResult,
 } from './repair-translation.ts';
 import {
   runDerivabilityProbe,

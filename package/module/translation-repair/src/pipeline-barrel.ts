@@ -251,10 +251,10 @@ export {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
 } from './slice-pair.ts';
+export { repairTranslation, } from './repair-entry.ts';
 export {
   repairPreparedDocument,
   type RepairStatus,
-  repairTranslation,
   type RepairTranslationResult,
 } from './repair-translation.ts';
 export type { SliceCache, } from './slice-cache.ts';

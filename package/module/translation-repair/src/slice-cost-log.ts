@@ -52,7 +52,7 @@ export type SliceCostSpan = {
   /**
    * Reports elapsed time for this slice.
    */
-  [Symbol.dispose](): void;
+  readonly [Symbol.dispose]: () => void;
 };
 
 /**

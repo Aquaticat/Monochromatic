@@ -89,7 +89,7 @@ const REQUIRED_FIELDS = [
  * const fields = fieldsOf({ line, },);
  * ```
  */
-function fieldsOf({ line, }: { readonly line: string; },): Record<string, string> {
+function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, string> {
   /**
    * Where the cost report starts, past anything the logger put in front.
    */
@@ -103,7 +103,7 @@ function fieldsOf({ line, }: { readonly line: string; },): Record<string, string
   /**
    * Pairs read so far.
    */
-  const fields: Record<string, string> = {};
+  const fields = new Map<string, string>();
   for (const token of body.split(' ',)) {
     /**
      * Where this token separates its name from its value.
@@ -112,37 +112,107 @@ function fieldsOf({ line, }: { readonly line: string; },): Record<string, string
     if (split <= 0)
       continue;
 
-    fields[token.slice(
-      0,
-      split,
-    )] = token.slice(split + 1,);
+    fields.set(
+      token.slice(
+        0,
+        split,
+      ),
+      token.slice(split + 1,),
+    );
   }
 
   return fields;
 }
 
 /**
- * Reads one whole number out of a field, or nothing when it is not one.
+ * Whether a field's text is a whole number, and what it is when so.
  *
- * @param raw - field value as the log carried it
- *
- * @returns Whole number, or `undefined` when the value is not one
+ * DISCRIMINATED rather than a nullish union, because absence and zero are both
+ * ordinary answers here: a slice can genuinely cost 0 ms, and a sentinel would
+ * make that indistinguishable from a field the log never carried.
  *
  * @example
  * ```ts
- * const ms = wholeNumber({ raw: fields['ms'], },);
+ * const read: WholeRead = wholeNumber({ raw, },);
  * ```
  */
-function wholeNumber({ raw, }: { readonly raw: string | undefined; },): number | undefined {
-  if (raw === undefined)
-    return undefined;
+type WholeRead = {
+  /**
+   * Text names a whole number.
+   */
+  readonly kind: 'whole';
 
+  /**
+   * Number it names.
+   */
+  readonly value: number;
+} | {
+  /**
+   * Text names something else.
+   */
+  readonly kind: 'not-whole';
+};
+
+/**
+ * Reads one whole number out of a field's text.
+ *
+ * @param raw - field value as the log carried it
+ *
+ * @returns Whole number, or a refusal when the text names something else
+ *
+ * @example
+ * ```ts
+ * const ms = wholeNumber({ raw, },);
+ * ```
+ */
+function wholeNumber({ raw, }: { readonly raw: string; },): WholeRead {
   /**
    * Value read as a number, which is `NaN` for anything else.
    */
   const value = Number(raw,);
 
-  return Number.isInteger(value,) ? value : undefined;
+  return Number.isInteger(value,)
+    ? {
+      kind: 'whole',
+      value,
+    }
+    : { kind: 'not-whole', };
+}
+
+/**
+ * Reads a field the caller has already proven is a whole number.
+ *
+ * @param fields - pairs read off one line
+ *
+ * @param name - field to read
+ *
+ * @returns Number it carries
+ *
+ * @throws {@link Error} when called before validation, which is a programming
+ * error rather than a malformed log
+ *
+ * @example
+ * ```ts
+ * const ms = provenWhole({ fields, name: 'ms', },);
+ * ```
+ */
+function provenWhole(
+  {
+    fields,
+    name,
+  }: {
+    readonly fields: ReadonlyMap<string, string>;
+    readonly name: string;
+  },
+): number {
+  /**
+   * What this field carries, which validation proved is a whole number.
+   */
+  const read = wholeNumber({ raw: nonNullishOrThrow(fields.get(name,),), },);
+  if (read.kind !== 'whole')
+    throw new Error(`${name} was read as a number before it was checked to be one`,);
+
+  return read.value;
 }
 
 /**
@@ -193,21 +263,22 @@ type LineReading = {
  * ```
  */
 function readLine(
-  { fields, }: { readonly fields: Readonly<Record<string, string>>; },
+  { fields, }: { readonly fields: ReadonlyMap<string, string>; },
 ): LineReading {
   /**
    * Names that failed, collected in declared order.
    */
   const failed: string[] = [];
   for (const name of REQUIRED_FIELDS) {
-    /**
-     * Value the line carried for it, absent when the line omitted it.
-     */
-    const raw = fields[name];
-    if (raw === undefined) {
+    if (!fields.has(name,)) {
       failed.push(`${name} missing`,);
       continue;
     }
+
+    /**
+     * Value the line carried for it.
+     */
+    const raw = nonNullishOrThrow(fields.get(name,),);
 
     if (name === 'lane') {
       if ((raw !== 'translate') && (raw !== 'repair'))
@@ -216,7 +287,11 @@ function readLine(
       continue;
     }
 
-    if (wholeNumber({ raw, },) === undefined)
+    /**
+     * Whether this field's text names a whole number.
+     */
+    const read = wholeNumber({ raw, },);
+    if (read.kind !== 'whole')
       failed.push(`${name} ${raw}`,);
   }
 
@@ -230,15 +305,24 @@ function readLine(
   /**
    * Lane, narrowed by the check just passed.
    */
-  const lane: SliceCostLane = (fields['lane'] === 'translate') ? 'translate' : 'repair';
+  const lane: SliceCostLane = (fields.get('lane',) === 'translate') ? 'translate' : 'repair';
 
   return {
     kind: 'row',
     row: {
       lane,
-      chunkIndex: nonNullishOrThrow(wholeNumber({ raw: fields['chunk'], },),),
-      sourceChars: nonNullishOrThrow(wholeNumber({ raw: fields['sourceChars'], },),),
-      elapsedMs: nonNullishOrThrow(wholeNumber({ raw: fields['ms'], },),),
+      chunkIndex: provenWhole({
+        fields,
+        name: 'chunk',
+      },),
+      sourceChars: provenWhole({
+        fields,
+        name: 'sourceChars',
+      },),
+      elapsedMs: provenWhole({
+        fields,
+        name: 'ms',
+      },),
     },
   };
 }
