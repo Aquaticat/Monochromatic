@@ -614,12 +614,53 @@ Three decisions inside it are worth not re-litigating:
     question is whether a defect is there, and a majority over six would discard a defect four of
     them missed. The rows keep the counts, so a stricter rule can be applied to an existing run.
 
-NOT WIRED TO ANYTHING and unmeasured until its two live arms run, which is item 1 below.
+NOT WIRED TO ANYTHING and unmeasured.
+
+The second of those three decisions is now stated too strongly, and the code has been left as it is
+while the wording is corrected: nothing in the anchoring makes a voice reason independently of an
+archive it may have seen elsewhere, and the `reason` field is not screened at all. What is true is
+narrower and still worth having: the archive is not serialized into the prompt, and archive wording
+cannot serve as an anchor. That is data-flow exclusion at the caller, not a property enforced by
+quote anchoring.
+
+## The audit's live arms are on hold, and the matcher is being rebuilt
+
+Read this before running anything against the audit.
+
+An adversarial review of the three audit files on 2026-08-17 returned a NO-GO for the live arms,
+and it is right.
+The matcher cannot distinguish agreement on ONE DEFECT from agreement on ONE SENTENCE:
+
+-   FALSE SPLIT, which was already suspected: `defectKey` demands both evidence strings match
+    exactly, so two voices quoting different-width spans of the same dropped negation do not
+    corroborate, and neither do two voices calling it `omission` and `altered-polarity`.
+-   FALSE MERGE, which was not suspected and is worse: the quote floors (12 Latin characters, 4 CJK)
+    FORCE a voice to pad a short trigger with context, since `not`, `three` and a three-character
+    Chinese negation all fail the floor. Two DISTINCT defects in one sentence then arrive as the
+    same padded quote under the same category, and are reported as one twice-confirmed defect. The
+    floors cause the defect they were meant to prevent.
+
+Had the positive arm run first it would have failed, and the failure would have been unattributable
+between the auditors, the anchoring and the matcher.
+
+The rebuild separates a LOCATOR span, which identifies one occurrence uniquely, from a FOCUS span,
+which carries the alleged change and need only be unique inside its locator, keeps document offsets
+for both, and corroborates on the focus interval rather than on the text a voice typed.
+Overlap and containment become NEAR MISSES rather than merges.
+`#85` carries the full scope, including the one review finding deliberately not adopted (schema
+enums for verdict and category, which would turn vocabulary noncompliance into voice loss) and why.
 
 ## The post-trial run queue, decided in advance
 
-The window trial finishes at 327 arms and was at 300 when this was written, so the gate lifts soon
-and the order should not be re-derived then.
+THE GATE HAS LIFTED. The window trial finished 2026-08-16T23:58Z, all 327 arms, zero refusals.
+Its result is in `doc/planning/translation-repair-window-trial.md`: widening the judge's context did
+not move selection, and in the larger reading the effect is SMALLER than the run-to-run noise band.
+The negative control also measured something nobody asked for, and it constrains items 2 and 4
+below: the per-slice preserve-or-replace decision is about 19 percent unstable between identical
+runs, so no single pass settles a per-slice question. Recorded on `#105` and `#108`.
+
+Item 1 is now blocked on the rebuild above rather than on the trial.
+Items 2, 3 and 4 are unblocked and need no user answer.
 The user has confirmed quota is not a constraint (near full, regenerating, one reset in hand), so
 nothing below is held back for cost; what held them back was the trial's validity, since every one
 of these calls the same six models.
@@ -638,17 +679,19 @@ of these calls the same six models.
     of 180 before any full pass. `#92` measured the lane from bench calls; nothing has yet run both
     lanes over one document under the cap.
 
-## The launch gate has not moved
+## The launch gate has lifted
 
-No corpus pass while the window trial is live:
-it measures the same six models, and competing calls would raise its short-panel rate mid-experiment.
-Trial progress is watched by a monitor and was at 275 arms of 327 when this line was last updated,
-with 114 of those on a short panel, the same rate the whole run has held.
-**Build now, launch after the trial finishes.**
+The trial finished at 2026-08-16T23:58Z after 25622 seconds, so the reason for holding the corpus
+pass is gone: nothing else is competing for the same six models.
 
-The GFP note above still holds and was re-verified at 150 arms:
-same process (PID 2484929, started 12:51:54), and its bundle plus both chunks contain
-zero dynamic imports, so rebuilding `dist` cannot reach it.
+What the trial cost in voices is worth carrying into whatever runs next, because it is the honest
+rate for this roster and this deadline: 135 of 327 judgings lost at least one voice of six, a rate
+of 0.413, dominated by `hf:zai-org/GLM-5.2` abandoned 60000 ms after quorum. Panels that seat six
+and hear four still decide, and the trial's strict reading threw two thirds of its slices away on
+that account.
+
+A pass launched now should either widen the deadline for that model, seat a replacement, or accept
+that a two-thirds strict-population loss is the price of the current configuration.
 
 One plan-mode pass ran against a throwaway runs directory to check the wiring at the
 user boundary: `PLAN ok`, 92 pending entries, zero quota. That exercises the scheduler
