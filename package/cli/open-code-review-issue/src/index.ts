@@ -6,6 +6,10 @@
  */
 
 export { readStructuredInputFile, } from './file-input.ts';
+export {
+  SecurityAuthorityError,
+  selectApplyPlan,
+} from './authority.ts';
 export { InputValidationError, } from './input-validation-error.ts';
 export type {
   RenderedIssue,
@@ -21,6 +25,8 @@ export {
 } from './issue-title.ts';
 export { parseStructuredInput, } from './ingest.ts';
 export type {
+  ApplyAuthority,
+  ApplySelection,
   LabelStrategy,
   NonInteractivePreview,
   PreviewIssue,

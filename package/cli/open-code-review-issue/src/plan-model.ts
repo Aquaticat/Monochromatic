@@ -61,3 +61,17 @@ export type NonInteractivePreview = {
   readonly issues: readonly PreviewIssue[];
   readonly security: SecurityPreview;
 };
+
+
+/**
+ * Explicit non-interactive publication authority.
+ */
+export type ApplyAuthority = 'default' | 'non-security-only' | 'all';
+
+/**
+ * Issues authorized for creation plus redacted withheld positions.
+ */
+export type ApplySelection = {
+  readonly issues: PublicationPlan['issues'];
+  readonly withheldPositions: readonly InputPosition[];
+};
