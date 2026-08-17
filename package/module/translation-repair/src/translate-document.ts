@@ -293,6 +293,7 @@ export async function translateDocument(
           ...resumed,
           chunkIndex,
         },);
+        cost.left({ exit: 'resumed', },);
         continue;
       }
 
@@ -353,6 +354,7 @@ export async function translateDocument(
         ...attempt.findings,
         `${absenceFinding({ reason: attempt.reason, },)} chunk ${String(chunkIndex,)}`,
       );
+      cost.left({ exit: 'unfilled', },);
       continue;
     }
 

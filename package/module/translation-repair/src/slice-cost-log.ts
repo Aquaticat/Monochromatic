@@ -18,6 +18,31 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 // SEQUENTIALLY (`translate-document.ts` and `repair-translation.ts` each hold one
 // `for (const slice of ...)`). Under concurrency this number would fold in
 // waiting on shared rate limits and would not be a per-slice cost at all.
+//
+// EVERY LINE NAMES HOW ITS SLICE WAS LEFT, because the paths cost wildly
+// different things and only one of them answers the question. A slice resumed
+// from cache costs near zero and bought nothing; a slice nothing translated
+// bought nothing either. Averaging those in with slices that were actually
+// computed reports a per-slice cost describing no path at all, and the mistake
+// is invisible, since a cheap run and a well cached one look identical.
+
+/**
+ * Every lane that can pay for a slice.
+ *
+ * DECLARED AS VALUES with the type derived from them, rather than the other way
+ * round, because the reader validates against this list and the writer is typed
+ * by it. Two hand-kept copies would drift the moment a lane is added, and the
+ * failure would be a reader silently refusing lines a lane really writes.
+ *
+ * @example
+ * ```ts
+ * const known = SLICE_COST_LANES.includes(raw,);
+ * ```
+ */
+export const SLICE_COST_LANES = [
+  'translate',
+  'repair',
+] as const;
 
 /**
  * Which lane paid for a slice.
@@ -27,7 +52,44 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
  * const lane: SliceCostLane = 'translate';
  * ```
  */
-export type SliceCostLane = 'translate' | 'repair';
+export type SliceCostLane = typeof SLICE_COST_LANES[number];
+
+/**
+ * Every way a lane can leave a slice, kept as values for the same reason
+ * {@link SLICE_COST_LANES} is.
+ *
+ * @example
+ * ```ts
+ * const known = SLICE_COST_EXITS.includes(raw,);
+ * ```
+ */
+export const SLICE_COST_EXITS = [
+  'computed',
+  'resumed',
+  'no-translation',
+  'unfilled',
+] as const;
+
+/**
+ * How a lane left one slice, which decides whether its cost is a measurement of
+ * anything.
+ *
+ * Only `computed` prices work. `resumed` answered from cache, `no-translation`
+ * found nothing to repair, and `unfilled` bought calls that produced no usable
+ * candidate, so its time is real but prices a failure rather than a slice.
+ *
+ * @example
+ * ```ts
+ * const exit: SliceCostExit = 'resumed';
+ * ```
+ */
+export type SliceCostExit = typeof SLICE_COST_EXITS[number];
+
+/**
+ * Exit assumed when a lane leaves a slice without naming one, which is the
+ * ordinary path through both loop bodies.
+ */
+const DEFAULT_EXIT: SliceCostExit = 'computed';
 
 /**
  * Token every cost line opens with, so a reader can find them among unrelated
@@ -53,6 +115,15 @@ export type SliceCostSpan = {
    * Reports elapsed time for this slice.
    */
   readonly [Symbol.dispose]: () => void;
+
+  /**
+   * Names how this slice was left, for a path that is not ordinary completion.
+   *
+   * Called BEFORE leaving, since the report is written on scope exit and cannot
+   * ask afterwards which branch took it there. Calling more than once keeps the
+   * last name, so a path that refines its own answer reports the refined one.
+   */
+  readonly left: ({ exit, }: { readonly exit: SliceCostExit; },) => void;
 };
 
 /**
@@ -97,12 +168,24 @@ export function armSliceCost(
    */
   const startedAt = Date.now();
 
+  /**
+   * How this slice was left, until a path says otherwise.
+   *
+   * A NAMED CELL rather than a bare binding, because this value is written by
+   * one function and read by another, which makes it state the measurement
+   * holds rather than a local of either.
+   */
+  const taken = { exit: DEFAULT_EXIT, };
+
   return {
+    left({ exit: named, },): void {
+      taken.exit = named;
+    },
     [Symbol.dispose](): void {
       l.info(
         `${SLICE_COST_MARKER} lane=${lane} chunk=${String(chunkIndex,)} sourceChars=${
           String(sourceChars,)
-        } ms=${String(Date.now() - startedAt,)}`,
+        } ms=${String(Date.now() - startedAt,)} exit=${taken.exit}`,
       );
     },
   };

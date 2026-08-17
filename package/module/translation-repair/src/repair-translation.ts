@@ -272,6 +272,7 @@ export async function repairPreparedDocument(
           + 'the translate lane owns this passage',
       );
       outcomes.push(notApplicableRepair({ chunkIndex, },),);
+      cost.left({ exit: 'no-translation', },);
       continue;
     }
 
@@ -339,6 +340,12 @@ export async function repairPreparedDocument(
      * Outcome this run may reuse, absent when there is none to reuse.
      */
     const resumed = trustworthy ? cached : undefined;
+
+    // Named here rather than at the bottom, because this path buys nothing and
+    // falls through the same exit as a slice that bought a full roster. Its
+    // near-zero time prices the cache, not the work.
+    if (resumed !== undefined)
+      cost.left({ exit: 'resumed', },);
 
     // A stopped run cannot BUY the slices it is missing, and every abandoned
     // exchange reaches the stages as silence rather than as a failure: a critic

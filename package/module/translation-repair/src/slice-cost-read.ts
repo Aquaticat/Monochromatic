@@ -1,7 +1,10 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
+  SLICE_COST_EXITS,
+  SLICE_COST_LANES,
   SLICE_COST_MARKER,
+  type SliceCostExit,
   type SliceCostLane,
 } from './slice-cost-log.ts';
 
@@ -45,6 +48,11 @@ export type SliceCostRow = {
    * Wall time the slice took.
    */
   readonly elapsedMs: number;
+
+  /**
+   * How the lane left this slice, which says whether its time prices work.
+   */
+  readonly exit: SliceCostExit;
 };
 
 /**
@@ -69,13 +77,36 @@ export type SliceCostReading = {
 
 /**
  * Fields a cost line must carry for a row to be built from it.
+ *
+ * `exit` is REQUIRED rather than optional, though it was added after the rest.
+ * No production log carries the older shape: the telemetry landed after the only
+ * pass that has run, so there are no legacy lines to stay compatible with, and
+ * an optional field would mean inventing an exit for a line that named none.
  */
 const REQUIRED_FIELDS = [
   'lane',
   'chunk',
   'sourceChars',
   'ms',
+  'exit',
 ] as const;
+
+/**
+ * Values each enumerated field may carry.
+ *
+ * Read from the writer's own lists, so a lane or exit added there is accepted
+ * here without a second edit.
+ */
+const ENUMERATED_FIELDS: ReadonlyMap<string, readonly string[]> = new Map<string, readonly string[]>([
+  [
+    'lane',
+    SLICE_COST_LANES,
+  ],
+  [
+    'exit',
+    SLICE_COST_EXITS,
+  ],
+],);
 
 /**
  * Splits one marker-bearing line into its `key=value` pairs.
@@ -216,6 +247,54 @@ function provenWhole(
 }
 
 /**
+ * Reads a field the caller has already proven carries one of a fixed set of
+ * values, narrowed to that set.
+ *
+ * @param fields - pairs read off one line
+ *
+ * @param name - field to read
+ *
+ * @param allowed - values validation checked it against
+ *
+ * @returns Value it carries, as a member of that set
+ *
+ * @throws {@link Error} when called before validation, which is a programming
+ * error rather than a malformed log
+ *
+ * @example
+ * ```ts
+ * const lane = provenMember({ fields, name: 'lane', allowed: SLICE_COST_LANES, },);
+ * ```
+ */
+function provenMember<const MemberT extends string,>(
+  {
+    fields,
+    name,
+    allowed,
+  }: {
+    readonly fields: ReadonlyMap<string, string>;
+    readonly name: string;
+    readonly allowed: readonly MemberT[];
+  },
+): MemberT {
+  /**
+   * What this field carries, as text.
+   */
+  const raw = nonNullishOrThrow(fields.get(name,),);
+
+  /**
+   * Member matching it, which validation proved exists.
+   */
+  const found = allowed.find(function matches(member,): boolean {
+    return member === raw;
+  },);
+  if (found === undefined)
+    throw new Error(`${name} was read as one of its values before it was checked to be one`,);
+
+  return found;
+}
+
+/**
  * What one marker-bearing line yielded: a row, or the reason it yielded none.
  *
  * @example
@@ -280,9 +359,13 @@ function readLine(
      */
     const raw = nonNullishOrThrow(fields.get(name,),);
 
-    if (name === 'lane') {
-      if ((raw !== 'translate') && (raw !== 'repair'))
-        failed.push(`lane ${raw}`,);
+    /**
+     * Values this field may carry, absent when it carries a number instead.
+     */
+    const allowed = ENUMERATED_FIELDS.get(name,);
+    if (allowed !== undefined) {
+      if (!allowed.includes(raw,))
+        failed.push(`${name} ${raw}`,);
 
       continue;
     }
@@ -302,15 +385,19 @@ function readLine(
     };
   }
 
-  /**
-   * Lane, narrowed by the check just passed.
-   */
-  const lane: SliceCostLane = (fields.get('lane',) === 'translate') ? 'translate' : 'repair';
-
   return {
     kind: 'row',
     row: {
-      lane,
+      lane: provenMember({
+        fields,
+        name: 'lane',
+        allowed: SLICE_COST_LANES,
+      },),
+      exit: provenMember({
+        fields,
+        name: 'exit',
+        allowed: SLICE_COST_EXITS,
+      },),
       chunkIndex: provenWhole({
         fields,
         name: 'chunk',

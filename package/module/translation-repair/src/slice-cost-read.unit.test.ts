@@ -65,9 +65,9 @@ function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
 const TWO_LANE_LOG = [
   '[info] [2026-08-17T01:17:12.580Z] [Mittens] [repairPreparedDocument] critic stage: 6/6 heard',
   '[info] [2026-08-17T01:17:13.000Z] [Mittens] [repairPreparedDocument] SLICE-COST lane=repair '
-  + 'chunk=0 sourceChars=812 ms=45210',
+  + 'chunk=0 sourceChars=812 ms=45210 exit=computed',
   '[info] [2026-08-17T01:17:14.000Z] [Mittens] [translateDocument] SLICE-COST lane=translate '
-  + 'chunk=1 sourceChars=1204 ms=88130',
+  + 'chunk=1 sourceChars=1204 ms=88130 exit=resumed',
   '[info] [2026-08-17T01:17:15.000Z] [Mittens] [drainBody] stream finished, 671606 chars',
 ].join('\n',);
 
@@ -87,11 +87,14 @@ await describe({
           chunkIndex: 0,
           sourceChars: 812,
           elapsedMs: 45_210,
+          exit: 'computed',
         },);
         expect(rows[1]
           ?.lane,).toBe('translate',);
         expect(rows[1]
           ?.elapsedMs,).toBe(88_130,);
+        expect(rows[1]
+          ?.exit,).toBe('resumed',);
       },
     },),
     it({
@@ -104,17 +107,41 @@ await describe({
         },);
         expect(rows,).toHaveLength(0,);
         expect(dropped,).toHaveLength(1,);
-        expect(dropped[0],).toBe('sourceChars missing, ms missing',);
+        expect(dropped[0],).toBe('sourceChars missing, ms missing, exit missing',);
       },
     },),
     it({
       name: 'REFUSES a lane it does not know, rather than counting it under one it does',
       fn: async () => {
         const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=refine chunk=4 sourceChars=10 ms=20',
+          log: 'SLICE-COST lane=refine chunk=4 sourceChars=10 ms=20 exit=computed',
         },);
         expect(rows,).toHaveLength(0,);
         expect(dropped[0],).toBe('lane refine',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES an exit it does not know, so a path added to a lane without being added here cannot '
+        + 'be silently counted as ordinary work',
+      fn: async () => {
+        const { rows, dropped, } = readSliceCosts({
+          log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20 exit=abandoned',
+        },);
+        expect(rows,).toHaveLength(0,);
+        expect(dropped[0],).toBe('exit abandoned',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a line carrying no exit at all, which is the shape written before exits were '
+        + 'recorded and prices a cache hit the same as a full roster',
+      fn: async () => {
+        const { rows, dropped, } = readSliceCosts({
+          log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20',
+        },);
+        expect(rows,).toHaveLength(0,);
+        expect(dropped[0],).toBe('exit missing',);
       },
     },),
     it({
@@ -123,7 +150,7 @@ await describe({
         + 'duration looks like',
       fn: async () => {
         const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=45e',
+          log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=45e exit=computed',
         },);
         expect(rows,).toHaveLength(0,);
         expect(dropped[0],).toBe('ms 45e',);
@@ -195,6 +222,68 @@ await describe({
           ?.chunkIndex,).toBe(12,);
         expect(rows[0]
           ?.sourceChars,).toBe(843,);
+      },
+    },),
+    it({
+      name:
+        'reports the ordinary exit for a slice that names none, so the common path needs no call and '
+        + 'cannot be forgotten',
+      fn: async () => {
+        const said: string[] = [];
+        {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'repair',
+            chunkIndex: 0,
+            sourceChars: 11,
+          },);
+        }
+
+        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+        expect(rows[0]
+          ?.exit,).toBe('computed',);
+      },
+    },),
+    it({
+      name:
+        'REPORTS the exit a lane named rather than the ordinary one, which is what separates a cache '
+        + 'hit costing nothing from a slice that bought a full roster',
+      fn: async () => {
+        const said: string[] = [];
+        {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'translate',
+            chunkIndex: 4,
+            sourceChars: 96,
+          },);
+          cost.left({ exit: 'resumed', },);
+        }
+
+        const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+        expect(dropped,).toHaveLength(0,);
+        expect(rows[0]
+          ?.exit,).toBe('resumed',);
+      },
+    },),
+    it({
+      name: 'keeps the LAST exit named, so a path that refines its own answer reports the refined one',
+      fn: async () => {
+        const said: string[] = [];
+        {
+          using cost = armSliceCost({
+            l: capturingLogger({ lines: said, },),
+            lane: 'translate',
+            chunkIndex: 5,
+            sourceChars: 96,
+          },);
+          cost.left({ exit: 'resumed', },);
+          cost.left({ exit: 'unfilled', },);
+        }
+
+        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+        expect(rows[0]
+          ?.exit,).toBe('unfilled',);
       },
     },),
   ],
