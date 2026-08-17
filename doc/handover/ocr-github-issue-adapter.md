@@ -387,6 +387,11 @@ and package document.
 Interactive mode places security-gated findings in a separate picker from other findings.
 The normal picker initially selects every finding.
 The security picker initially selects no finding.
+Both use square checkbox indicators rather than circular radio-style indicators;
+the exact checked and unchecked glyphs remain to be selected.
+The normal picker retains Inquirer's select-all and invert shortcuts.
+The security picker disables both shortcuts,
+so each security selection requires direct navigation and toggling.
 After both picker stages,
 the combined selection must contain at least one finding.
 An empty combined selection keeps the selection flow active until the user selects a finding or cancels explicitly.
@@ -855,14 +860,16 @@ in dependency order:
 9. Interactive mechanics:
    the normal picker initially selects all findings.
    The separate security picker initially selects none.
+   Both use square checkbox indicators rather than circles.
+   The normal picker retains select-all and invert shortcuts;
+   the security picker disables both.
+   Exact checkbox glyphs remain open.
    The combined result must select at least one issue;
    otherwise selection remains active until a finding is selected or the user cancels.
    Either individual picker may be empty.
-   pnpm's prompt library and interaction model,
-   terminal capabilities,
-   post-creation interrupt behavior,
-   multi-select behavior,
-   and accessibility otherwise remain open.
+   Inquirer direct subpackages implement pnpm-style prompting.
+   Post-creation interrupt and multi-select behavior are settled.
+   Terminal capabilities and accessibility otherwise remain open.
 10. GitHub boundary and package interface:
     GitHub operations use non-paginated `gh api --include` subprocesses
     with private named request-body files and no inherited standard input.
@@ -1107,6 +1114,10 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   empty,
   Issue-enabled,
   and administratively writable.
+- 2026-08-16:
+  disabled select-all and invert shortcuts only in the security picker.
+- 2026-08-16:
+  required square checkbox indicators rather than circular indicators.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
