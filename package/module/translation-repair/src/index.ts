@@ -224,6 +224,12 @@ export {
   watchForDegeneration,
 } from './stream-degeneration.ts';
 export {
+  type ChannelDelta,
+  type DeltaScanner,
+  scanStreamDeltas,
+  type StreamChannel,
+} from './stream-delta-scan.ts';
+export {
   armIdleGuard,
   type IdleGuard,
   STREAM_FIRST_BYTE_MS,
