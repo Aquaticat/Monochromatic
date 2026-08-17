@@ -219,6 +219,11 @@ export {
 } from './synthetic-quota.ts';
 export { drainBody, } from './stream-drain.ts';
 export {
+  type DegenerationDetector,
+  type DegenerationVerdict,
+  watchForDegeneration,
+} from './stream-degeneration.ts';
+export {
   armIdleGuard,
   type IdleGuard,
   STREAM_FIRST_BYTE_MS,
