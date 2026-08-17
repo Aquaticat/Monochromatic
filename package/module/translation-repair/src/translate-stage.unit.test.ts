@@ -685,6 +685,35 @@ await describe({
           },),).toBe(true,);
       },
     },),
+
+    it({
+      name: 'ACCEPTS a candidate backed on the second ask at a passage with NO '
+        + 'existing translation, which is the door the other retry cases never '
+        + 'open: a decline there leaves by an exception rather than a return, so '
+        + 'a retry wired only to the returning door would refuse this passage '
+        + 'while filling the identical one that happens to have an incumbent',
+      fn: async () => {
+        const { result, calls, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: '',
+          needleAfterRetry: 'dozes',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },);
+        expect(result.decision,).toBe('judged',);
+        expect(result.origin,).not
+          .toBe('incumbent',);
+        expect(result.text,).toContain('dozes',);
+        // The first round's evidence survives the exception it left by, which is
+        // the part a returning round gets for free and this one does not.
+        expect(result.findings,).toContain('translate-declined-retried',);
+        expect(calls.select,).toBe(JUDGES.length * 2,);
+      },
+    },),
   ],
 },);
 
