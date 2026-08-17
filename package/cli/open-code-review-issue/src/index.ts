@@ -21,6 +21,18 @@ export {
 } from './issue-title.ts';
 export { parseStructuredInput, } from './ingest.ts';
 export type {
+  LabelStrategy,
+  NonInteractivePreview,
+  PreviewIssue,
+  PublicationPlan,
+  SecurityPreview,
+  SourceReferenceStrategy,
+} from './plan-model.ts';
+export {
+  buildNonInteractivePreview,
+  buildPublicationPlan,
+} from './plan.ts';
+export type {
   FindingCategory,
   FindingSeverity,
   InputPosition,
