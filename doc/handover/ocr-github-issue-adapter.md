@@ -164,6 +164,12 @@ Piped bytes are ignored rather than detected or consumed.
 The implementation must not reopen `/dev/tty`,
 `CONIN$`,
 or another controlling-terminal device.
+Interactive mode requires both standard input and standard output to be TTYs.
+It checks both after command-line validation and before reading input or opening a prompt.
+A failed TTY preflight is a handled runtime failure with status one.
+Prompts and human-readable interactive results use standard output;
+diagnostics use standard error.
+Interactive mode does not support redirecting its human-readable output.
 
 ### Configuration
 
@@ -871,7 +877,8 @@ in dependency order:
    Either individual picker may be empty.
    Inquirer direct subpackages implement pnpm-style prompting.
    Post-creation interrupt and multi-select behavior are settled.
-   Terminal capabilities and accessibility otherwise remain open.
+   Interactive mode requires TTY standard input and TTY standard output.
+   Color and accessibility policy otherwise remain open.
 10. GitHub boundary and package interface:
     GitHub operations use non-paginated `gh api --include` subprocesses
     with private named request-body files and no inherited standard input.
@@ -1122,6 +1129,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   required square checkbox indicators rather than circular indicators.
 - 2026-08-16:
   selected `☐` and `☑` as the unchecked and checked indicators.
+- 2026-08-16:
+  required TTY standard input and TTY standard output for interactive mode.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
