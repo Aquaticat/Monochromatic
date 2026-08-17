@@ -109,6 +109,8 @@ await describe({
         expect(await runCli({
           arguments: [
             '--interactive',
+            '--repo',
+            'https://github.com/Aquaticat/issues-api',
             '{"status":"complete","comments":[]}',
           ],
           cwd: process.cwd(),
