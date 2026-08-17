@@ -7,6 +7,8 @@ import {
 import {
   buildNonInteractivePreview,
   buildPublicationPlan,
+  SecurityAuthorityError,
+  selectApplyPlan,
   type NormalizedInput,
 } from '../dist/final/node/index.mjs';
 
@@ -107,6 +109,75 @@ await describe({
           },
         },);
         expect(JSON.stringify(preview,),).not.toContain('SECRET',);
+      },
+    },),
+    it({
+      name: 'enforces non-interactive security authority atomically',
+      fn: async () => {
+        /**
+         * Complete plan with one ordinary and one security Issue.
+         */
+        const plan = buildPublicationPlan({
+          input: {
+            inputKind: 'comments',
+            findings: [
+              {
+                position: { kind: 'record', value: 1, },
+                path: 'src/ordinary.ts',
+                content: 'Ordinary.',
+                existingCode: '',
+                suggestionCode: '',
+                startLine: 1,
+                endLine: 1,
+                category: 'bug',
+              },
+              {
+                position: { kind: 'record', value: 2, },
+                path: 'src/security.ts',
+                content: 'Private security content.',
+                existingCode: '',
+                suggestionCode: '',
+                startLine: 2,
+                endLine: 2,
+                category: 'security',
+              },
+            ],
+          },
+          repository: 'https://github.com/Aquaticat/issues-api',
+          needsTriageLabel: false,
+        },);
+
+        /**
+         * Captured bare-apply authority failure.
+         */
+        let caught: unknown;
+        try {
+          selectApplyPlan({ plan, authority: 'default', },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(SecurityAuthorityError,);
+        expect((caught as Error).message,).not.toContain('Private security content',);
+
+        /**
+         * Non-security-only apply selection.
+         */
+        const ordinary = selectApplyPlan({
+          plan,
+          authority: 'non-security-only',
+        },);
+        expect(ordinary.issues,).toHaveLength(1,);
+        expect(ordinary.withheldPositions,).toStrictEqual([
+          { kind: 'record', value: 2, },
+        ],);
+
+        /**
+         * Explicit all-findings apply selection.
+         */
+        const all = selectApplyPlan({ plan, authority: 'all', },);
+        expect(all.issues,).toHaveLength(2,);
+        expect(all.withheldPositions,).toStrictEqual([],);
       },
     },),
   ],
