@@ -38,6 +38,7 @@ import { preflightPublication, } from './preflight.ts';
 import { promptForExplicitDecision, } from './interactive-prompts.ts';
 import { selectInteractiveIssues, } from './interactive-selection.ts';
 import type { PromptStreams, } from './interactive-model.ts';
+import { parseStructuredInput, } from './ingest.ts';
 import { selectRepository, } from './repository.ts';
 
 /**
@@ -113,18 +114,21 @@ function assertInteractiveTty(streams: CliStreams,): void {
 }
 
 /**
- * Loads required named file.
+ * Loads required named file or shell-quoted inline JSON.
  *
- * @param command - Validated run command carrying input path.
+ * @param command - Validated run command carrying positional input.
  *
  * @returns Atomically normalized OCR input.
  */
-function loadInput({
+async function loadInput({
   command,
 }: {
   readonly command: RunCliArguments;
 },): Promise<NormalizedInput> {
-  return readStructuredInputFile({ path: command.filePath, });
+  if (command.input.kind === 'inline-json') {
+    return parseStructuredInput({ text: command.input.text, },);
+  }
+  return await readStructuredInputFile({ path: command.input.path, });
 }
 
 /**

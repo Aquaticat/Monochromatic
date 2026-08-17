@@ -45,6 +45,7 @@ export {
   CliInvocationError,
   parseCliArguments,
   type CliArguments,
+  type CliInputArgument,
   type HelpCliArguments,
   type RunCliArguments,
 } from './cli-args.ts';

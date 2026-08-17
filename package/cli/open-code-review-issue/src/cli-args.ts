@@ -16,12 +16,25 @@ export type HelpCliArguments = {
 };
 
 /**
+ * Required positional input interpreted without consulting standard input.
+ */
+export type CliInputArgument =
+  | {
+    readonly kind: 'file';
+    readonly path: string;
+  }
+  | {
+    readonly kind: 'inline-json';
+    readonly text: string;
+  };
+
+/**
  * Validated adapter run command.
  */
 export type RunCliArguments = {
   readonly kind: 'run';
   readonly mode: 'interactive' | 'non-interactive';
-  readonly filePath: string;
+  readonly input: CliInputArgument;
   readonly repositoryUrl?: string;
   readonly applyAuthority?: ApplyAuthority;
 };
@@ -103,29 +116,47 @@ function parseRaw(arguments_: readonly string[],): RawArguments {
 }
 
 /**
- * Validates exactly one positional named file.
+ * Validates exactly one positional input argument.
  *
  * @param positionals - Raw positional arguments.
  *
- * @returns Required file-path property.
+ * @param interactive - Whether inline structured JSON is accepted.
  *
- * @throws {@link CliInvocationError} unless exactly one named path is supplied.
+ * @returns Named-file or shell-quoted inline JSON input.
+ *
+ * @throws {@link CliInvocationError} unless one supported positional is supplied.
  */
-function filePathMetadata(positionals: readonly string[],): Pick<RunCliArguments, 'filePath'> {
+function positionalInput({
+  positionals,
+  interactive,
+}: {
+  readonly positionals: readonly string[];
+  readonly interactive: boolean;
+},): CliInputArgument {
   if (positionals.length !== 1) {
-    throw new CliInvocationError('every mode requires one positional named input file',);
+    throw new CliInvocationError('every mode requires one positional input',);
   }
   /**
-   * Sole required positional named file.
+   * Sole required positional value.
    */
-  const filePath = positionals.at(0,);
-  if (filePath === undefined) {
-    throw new CliInvocationError('every mode requires one positional named input file',);
+  const value = positionals.at(0,);
+  if (value === undefined) {
+    throw new CliInvocationError('every mode requires one positional input',);
   }
-  if (filePath === '-') {
+  if (value === '-') {
     throw new CliInvocationError('`-` is not an input source; pass a named file path',);
   }
-  return { filePath, };
+  /**
+   * Leading-whitespace-insensitive syntax discriminator preserving original JSON text.
+   */
+  const candidate = value.trimStart();
+  const inlineJson = candidate.startsWith('{',) || candidate.startsWith('[',);
+  if (inlineJson && !interactive) {
+    throw new CliInvocationError('inline JSON positional input requires `--interactive`',);
+  }
+  return inlineJson
+    ? { kind: 'inline-json', text: value, }
+    : { kind: 'file', path: value, };
 }
 
 /**
@@ -210,10 +241,6 @@ export function parseCliArguments({
     throw new CliInvocationError('exactly one of `--interactive` or `--non-interactive` is required',);
   }
   /**
-   * Validated required named file.
-   */
-  const fileMetadata = filePathMetadata(raw.positionals,);
-  /**
    * Optional canonical repository URL string for later validation.
    */
   const repositoryMetadata = (typeof raw.values
@@ -245,14 +272,20 @@ export function parseCliArguments({
     return {
       kind: 'run',
       mode: 'interactive',
-      ...fileMetadata,
+      input: positionalInput({
+        positionals: raw.positionals,
+        interactive: true,
+      }),
       ...repositoryMetadata,
     };
   }
   return {
     kind: 'run',
     mode: 'non-interactive',
-    ...fileMetadata,
+    input: positionalInput({
+      positionals: raw.positionals,
+      interactive: false,
+    }),
     ...repositoryMetadata,
     ...applyAuthorityMetadata({
       apply,
