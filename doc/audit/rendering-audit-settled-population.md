@@ -455,13 +455,45 @@ The relocation candidates went from two to none:
 the `#107` pairing found nothing at all the second time,
 on the same forty subjects.
 
-That is the answer to the question this audit was bought to ask,
-and it is a refusal.
+### Applying the pre-committed rule to that, without rounding it
+
+The rule fixed in advance says
+that a corroborated total moving by about four between two readings
+means the archive-versus-fresh difference is inside the noise,
+and that a move of nothing or one means it stands.
+
+The observed move is TWO.
+That is between the two markers,
+so the rule as written DOES NOT DECIDE IT,
+and reading it toward either marker would be choosing an answer
+and then calling it a rule.
+State it as it is:
+undecidable under the pre-committed rule,
+which was under-specified in the middle.
+
+Nothing rests on closing that gap,
+because the confound settles the headline independently,
+which is exactly why an honest in-between reading costs nothing here.
+The rule is worth keeping and worth sharpening for the next population.
+It would have been worth much less
+if it had been quietly stretched the first time it landed between its own markers.
+
+### What the numbers still say
+
 The archive-versus-fresh gap was 5 against 1,
 then 3 against 1.
-A quantity that moves by two between two readings of one population
-cannot support a claim about a difference of four,
-and the confound with the entry was already fatal to it independently.
+
+This is a DIFFERENT measurement from the band rule just applied,
+and it is worth not blurring them.
+The band rule asks how far apart two audits of ONE TEXT land,
+and its answer here is undecided.
+This asks what the POPULATION AGGREGATE did between two readings,
+and its answer is that it moved by two while the claimed effect is four.
+An effect cannot be read off an aggregate
+that moves by half the effect's size when nothing changes,
+whatever the per-text band turns out to be.
+
+And the confound with the entry was already fatal to it independently.
 The headline is dead twice over,
 for two unrelated reasons,
 and neither is a reason to distrust the two entries:
