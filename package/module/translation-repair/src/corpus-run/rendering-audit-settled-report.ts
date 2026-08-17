@@ -4,19 +4,32 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { requireRecord, } from '../artifact-guard.ts';
-
 import {
-  type AudienceSplit,
+  requireRecord,
+  requireString,
+} from '../artifact-guard.ts';
+
+import { repeatBandOf, } from './rendering-audit-settled-band.ts';
+import {
+  printBand,
+  printRelocations,
+  printSplit,
+  printVoices,
+} from './rendering-audit-settled-print.ts';
+import {
   rateByVoice,
   splitFor,
 } from './rendering-audit-settled-read.ts';
 import { auditRelocationPairs, } from './rendering-audit-settled-relocation.ts';
+import {
+  auditRepeatsAcross,
+  auditRepeatsWithin,
+} from './rendering-audit-settled-repeat.ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Settled audit report
-// Prints the three readings `#115` owes, from a run already on disk.
+// Prints the readings `#115` owes, from a run already on disk.
 //
 // SPENDS NOTHING. The rows were bought once; every question anyone asks of them
 // afterwards should be free, or it will not get asked twice.
@@ -25,11 +38,11 @@ import { resolveRunsDir, } from './run-config.ts';
 // the store keeps every run so a verdict can be compared against the one it was
 // bought to be compared against, and a reader that silently merged them would
 // undo that.
-
-/**
- * Width model ids are padded to, so a column of rates reads down the page.
- */
-const MODEL_COLUMN = 48;
+//
+// `--against <run>` PAIRS TWO RUNS subject by subject, which is the only way to
+// state the spread this instrument moves through on unchanged input. Without
+// it, the archive-versus-fresh comparison is a difference with no scale to read
+// it against.
 
 /**
  * Directory the settled audit collects its runs in.
@@ -45,7 +58,7 @@ const PROBE_NAME = 'rendering-audit-settled';
  *
  * @param path - persisted run file
  *
- * @returns Rows as the probe wrote them
+ * @returns Rows as the probe wrote them, and the archive that run named
  *
  * @throws {@link ArtifactParseError} when the file is not an object
  *
@@ -54,7 +67,7 @@ const PROBE_NAME = 'rendering-audit-settled';
  *
  * @example
  * ```ts
- * const rows = await readRunRows({ path, },);
+ * const { rows, archiveDir, } = await readRunRows({ path, },);
  * ```
  */
 async function readRunRows(
@@ -89,14 +102,17 @@ async function readRunRows(
    * and attribute the rows to it, which is a confident misstatement of where
    * they came from.
    */
-  const subject: unknown = run.subject;
-  const archiveDir = ((subject !== null) && (typeof subject === 'object'))
-    ? String((subject as Record<string, unknown>).archiveDir ?? 'unrecorded',)
-    : 'unrecorded';
+  const subject = requireRecord({
+    value: run.subject,
+    path: `${path}.subject`,
+  },);
 
   return {
     rows: rows as readonly SettledAuditRow[],
-    archiveDir,
+    archiveDir: requireString({
+      value: subject.archiveDir,
+      path: `${path}.subject.archiveDir`,
+    },),
   };
 }
 
@@ -149,59 +165,85 @@ async function newestRun({ runsDir, }: { readonly runsDir: string; },): Promise<
 }
 
 /**
- * Reads the run file named after `--run`, when one was named.
+ * Reads the run file named after a flag, when one was named.
  *
  * @param argv - process arguments
  *
- * @returns Path as written, empty when no run was named
+ * @param flag - flag to look for
+ *
+ * @returns Path as written, empty when the flag was absent
  *
  * @example
  * ```ts
- * const named = namedRun({ argv: process.argv, },);
+ * const named = namedRun({ argv: process.argv, flag: '--run', },);
  * ```
  */
-function namedRun({ argv, }: { readonly argv: readonly string[]; },): string {
+function namedRun(
+  {
+    argv,
+    flag,
+  }: {
+    readonly argv: readonly string[];
+    readonly flag: string;
+  },
+): string {
   /**
    * Where the flag was written.
    */
-  const at = argv.indexOf('--run',);
+  const at = argv.indexOf(flag,);
   if (at === (-1))
     return '';
   return argv[at + 1] ?? '';
 }
 
 /**
- * Prints one half of the population.
+ * Pairs this run against an earlier one and prints the spread.
  *
- * @param split - that half, summed
+ * @param rows - rows of the run being reported
+ *
+ * @param against - path of the run to pair against
  *
  * @example
  * ```ts
- * printSplit({ split, },);
+ * await printAcross({ rows, against, },);
  * ```
  */
-function printSplit({ split, }: { readonly split: AudienceSplit; },): void {
+async function printAcross(
+  {
+    rows,
+    against,
+  }: {
+    readonly rows: readonly SettledAuditRow[];
+    readonly against: string;
+  },
+): Promise<void> {
   /**
-   * Everything this half amounts to.
+   * Rows of the run being compared against.
+   */
+  const { rows: earlier, } = await readRunRows({ path: against, },);
+
+  /**
+   * Subjects both runs bought, and slots where the text moved under them.
    */
   const {
-    audits,
-    subjects,
-    claimed,
-    subjectsWithClaims,
-    corroborated,
-    agreed,
-    near,
-    degraded,
-  } = split;
+    paired,
+    textMoved,
+  } = auditRepeatsAcross({
+    first: earlier,
+    second: rows,
+  },);
 
-  console.log(
-    `  ${(audits === 'archive') ? 'ARCHIVE text' : 'FRESH   text'}  subjects=${
-      String(subjects,)
-    }  drew a claim=${String(subjectsWithClaims,)}  claims=${String(claimed,)}  corroborated=${
-      String(corroborated,)
-    }  agreed=${String(agreed,)}  near=${String(near,)}  degraded=${String(degraded,)}`,
-  );
+  printBand({
+    band: repeatBandOf({ pairs: paired, },),
+    over: `the same subjects in ${against}`,
+  },);
+  if (textMoved.length > 0)
+    console.log(
+      `  ${
+        String(textMoved.length,)
+      } slots matched by position and NOT by text, so the archive moved between`
+        + ` the two runs and these are left out: ${textMoved.join(', ',)}`,
+    );
 }
 
 /**
@@ -216,12 +258,25 @@ async function main(): Promise<void> {
   /**
    * Run to read: whatever was named, else the newest kept.
    */
-  const named = namedRun({ argv: process.argv, },);
+  const named = namedRun({
+    argv: process.argv,
+    flag: '--run',
+  },);
 
   /**
    * File this report reads, which is the newest kept when none was named.
    */
-  const path = (named === '') ? await newestRun({ runsDir: await resolveRunsDir(), },) : named;
+  const path = (named === '')
+    ? await newestRun({ runsDir: await resolveRunsDir(), },)
+    : named;
+
+  /**
+   * Earlier run to pair against, empty when none was named.
+   */
+  const against = namedRun({
+    argv: process.argv,
+    flag: '--against',
+  },);
 
   /**
    * Rows that run bought, and where it said it read them from.
@@ -246,45 +301,19 @@ async function main(): Promise<void> {
     },),
   },);
 
-  console.log('\nWHAT EACH AUDITOR THOUGHT WAS WORTH A CLAIM',);
-  rateByVoice({ rows, },)
-    .forEach(function printRate(rate,): void {
-      /**
-       * This auditor's tally.
-       */
-      const {
-        modelId,
-        asked: timesAsked,
-        spoke,
-        claims,
-        dropped,
-      } = rate;
-
-      console.log(
-        `  ${modelId.padEnd(
-          MODEL_COLUMN,
-          ' ',
-        )} asked=${String(timesAsked,)} spoke on=${String(spoke,)} claims=${
-          String(claims,)
-        } dropped=${String(dropped,)}`,
-      );
+  printVoices({ rates: rateByVoice({ rows, },), },);
+  printRelocations({ pairs: auditRelocationPairs({ rows, },), },);
+  printBand({
+    band: repeatBandOf({ pairs: auditRepeatsWithin({ rows, },), },),
+    over: 'texts this run audited twice',
+  },);
+  if (against !== '')
+    await printAcross({
+      rows,
+      against,
     },);
 
-  /**
-   * Omission and addition claims on neighbouring slices, which `#107` says are
-   * one relocation rather than two defects.
-   */
-  const pairs = auditRelocationPairs({ rows, },);
-  console.log(`\nRELOCATION CANDIDATES (#107): ${String(pairs.length,)}`,);
-  pairs.forEach(function printPair(pair,): void {
-    console.log(
-      `  ${pair.runSet}/${pair.entryId}  omission at ${String(pair.omissionAt,)} <-> addition at ${
-        String(pair.additionAt,)
-      }`,
-    );
-  },);
-
-  // Said every time, because the number above is the one most likely to be
+  // Said every time, because the numbers above are the ones most likely to be
   // quoted without it.
   console.log(
     `\nTWO ENTRIES. Nothing here settles anything about a particular entry, and nothing here may`

@@ -114,10 +114,10 @@ function sumOf(
  *
  * @example
  * ```ts
- * const band = bandOf({ pairs, },);
+ * const band = repeatBandOf({ pairs, },);
  * ```
  */
-export function bandOf(
+export function repeatBandOf(
   { pairs, }: { readonly pairs: readonly AuditRepeatPair[]; },
 ): AuditRepeatBand {
   /**
@@ -127,15 +127,33 @@ export function bandOf(
    * of one text, and calling either of them correct is the assumption this
    * measurement exists to avoid.
    */
-  const gaps = pairs.map(function gapOf(pair,): number {
-    return Math.abs(pair.left.claimed - pair.right.claimed,);
+  const gaps = pairs.map(function gapOf({
+    left,
+    right,
+  },): number {
+    return Math.abs(left.claimed - right.claimed,);
+  },);
+
+  /**
+   * Pairs where both audits landed on the same count.
+   */
+  const exact = gaps.filter(function isZero(gap,): boolean {
+    return gap === 0;
+  },);
+
+  /**
+   * Pairs where one audit found something and the other found nothing.
+   */
+  const lopsided = pairs.filter(function onlyOneSpoke({
+    left,
+    right,
+  },): boolean {
+    return (left.claimed === 0) !== (right.claimed === 0);
   },);
 
   return {
     pairs: pairs.length,
-    agreedExactly: gaps.filter(function isZero(gap,): boolean {
-      return gap === 0;
-    },).length,
+    agreedExactly: exact.length,
     widest: gaps.reduce(
       function larger(
         worst,
@@ -149,27 +167,25 @@ export function bandOf(
       0,
     ),
     totalGap: sumOf({ values: gaps, },),
-    silentOnOneSide: pairs.filter(function onlyOneSpoke(pair,): boolean {
-      return (pair.left.claimed === 0) !== (pair.right.claimed === 0);
-    },).length,
+    silentOnOneSide: lopsided.length,
     leftClaimed: sumOf({
-      values: pairs.map(function claimed(pair,): number {
-        return pair.left.claimed;
+      values: pairs.map(function claimed({ left, },): number {
+        return left.claimed;
       },),
     },),
     rightClaimed: sumOf({
-      values: pairs.map(function claimed(pair,): number {
-        return pair.right.claimed;
+      values: pairs.map(function claimed({ right, },): number {
+        return right.claimed;
       },),
     },),
     leftCorroborated: sumOf({
-      values: pairs.map(function strict(pair,): number {
-        return pair.left.corroborated;
+      values: pairs.map(function strict({ left, },): number {
+        return left.corroborated;
       },),
     },),
     rightCorroborated: sumOf({
-      values: pairs.map(function strict(pair,): number {
-        return pair.right.corroborated;
+      values: pairs.map(function strict({ right, },): number {
+        return right.corroborated;
       },),
     },),
   };

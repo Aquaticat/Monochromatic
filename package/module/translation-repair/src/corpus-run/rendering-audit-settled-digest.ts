@@ -73,6 +73,37 @@ export function digestAuditedText(
 }
 
 /**
+ * Whether a value off disk is a recorded pair of digests.
+ *
+ * @param value - field as it came out of the run file, positional because a
+ * type predicate cannot name a destructured binding
+ *
+ * @returns Whether both digests are there and are strings
+ *
+ * @example
+ * ```ts
+ * if (isDigested(value,)) console.log(value.source,);
+ * ```
+ */
+function isDigested(value: unknown,): value is {
+  readonly kind: 'digested';
+  readonly source: string;
+  readonly candidate: string;
+} {
+  if ((value === null) || ((typeof value) !== 'object'))
+    return false;
+
+  /**
+   * Same value, reachable by key.
+   */
+  const fields: Record<string, unknown> = { ...value, };
+
+  return (fields.kind === 'digested')
+    && ((typeof fields.source) === 'string')
+    && ((typeof fields.candidate) === 'string');
+}
+
+/**
  * Reads a row's text identity, including rows written before it existed.
  *
  * RETURNS `unrecorded` RATHER THAN THROWING. A run persisted before this field
@@ -97,10 +128,14 @@ export function textIdentityOf(
   { row, }: { readonly row: SettledAuditRow; },
 ): AuditedTextIdentity {
   /**
-   * Field as it came off disk, which older runs do not carry at all.
+   * Field as it came off disk.
+   *
+   * READ AS `unknown` rather than as the declared type. The declaration says
+   * what this code writes today; the value came out of a file that an older
+   * build wrote, where the field is simply not there.
    */
-  const recorded: AuditedTextIdentity | undefined = row.textIdentity;
-  if (recorded === undefined)
+  const recorded: unknown = row.textIdentity;
+  if (!isDigested(recorded,))
     return { kind: 'unrecorded', };
   return recorded;
 }

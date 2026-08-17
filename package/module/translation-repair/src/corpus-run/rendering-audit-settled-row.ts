@@ -10,6 +10,21 @@ import type { RenderingAuditReport, } from '../rendering-audit.ts';
 // runs twice.
 
 /**
+ * Joins the parts of a composite key over these rows.
+ *
+ * NUL, WRITTEN AS AN ESCAPE so it is visible in source. A run set, an entry id
+ * and a slice index are joined into one string wherever rows are grouped, and
+ * any separator that can occur inside a part makes two different tuples collide
+ * on one key. NUL cannot occur in any of them.
+ *
+ * ONE CONSTANT, SHARED, because the failure mode here is two key builders that
+ * disagree. That has already happened once in this package, between a NUL and a
+ * space, and every fixture that spelled its own key passed while no live run
+ * ever paired anything.
+ */
+export const SLOT_SEPARATOR = '\u0000';
+
+/**
  * Digests of the exact two texts one audit was shown.
  *
  * A TAGGED ABSENCE rather than two optional strings, because the question a
