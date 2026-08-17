@@ -866,6 +866,68 @@ and explicit custom presentation.
 Those requirements select Inquirer within this pairwise comparison.
 That contextual result still requires separate dependency approval before adoption.
 
+## Post-selection package minimization
+
+After the user approved the Inquirer technology family,
+they directed the adapter to cherry-pick only necessary package parts.
+The umbrella package is not necessary.
+
+The minimal proposed direct set is:
+
+- `@inquirer/checkbox` 5.2.1 for both finding pickers;
+- `@inquirer/input` 5.1.2 for one-line JSON input and validated explicit decisions.
+
+`@inquirer/checkbox` re-exports `Separator`,
+so the adapter does not need a direct `@inquirer/core` dependency.
+Checkbox already brings core,
+type,
+ANSI,
+figures,
+width,
+wrapping,
+stream,
+and signal dependencies.
+Adding input contributes one additional installed package node.
+
+Installing only checkbox and input adds 12 package nodes,
+compared with 23 named nodes in the audited umbrella subtree before shared width dependencies.
+It omits confirm,
+editor,
+expand,
+number,
+password,
+raw list,
+search,
+select,
+external-editor,
+character-detection,
+and encoding packages.
+
+A fresh Node 22.18.0 consumer-boundary fixture imported only the two direct packages.
+It passed:
+
+- custom input and output streams;
+- one-line text input;
+- preselected checkbox choices;
+- separators;
+- red message,
+  highlight,
+  and selection icons;
+- required selection;
+- empty explicit-decision rejection and reprompt;
+- Ctrl+C rejection;
+- raw-mode restoration;
+- keypress-listener cleanup.
+
+A checkbox-only design could implement text and decision prompts directly with Node readline.
+That saves one package node but duplicates validation,
+rendering,
+cancellation,
+and cleanup behavior already supplied by `@inquirer/input`.
+The two direct packages are therefore the minimal library-backed proposal.
+Neither package has been added to the repository;
+exact direct-dependency approval remains separate.
+
 ## Evidence limits
 
 The consumer boundary ran on Linux x86_64 with Node 22.18.0.

@@ -512,7 +512,24 @@ The user approved Inquirer on 2026-08-16,
 with the direction to cherry-pick only necessary package parts.
 Treat this as approval of the Inquirer technology family,
 not approval to install its umbrella package unnecessarily.
-The exact direct subpackages remain under audit and each must be named before adoption.
+The completed subpackage audit proposes only:
+
+- `@inquirer/checkbox` 5.2.1 for both finding pickers;
+- `@inquirer/input` 5.1.2 for one-line paste and validated explicit decisions.
+
+Checkbox re-exports `Separator`,
+so no direct core dependency is needed.
+The direct pair installs 12 package nodes;
+input contributes only one node beyond checkbox's graph.
+A direct-package fixture passed custom streams,
+preselection,
+separators,
+red security theming,
+validation,
+Ctrl+C,
+and cleanup.
+The umbrella `@inquirer/prompts` package is rejected because it adds unused prompt and editor paths.
+Neither direct subpackage has yet received its separately named approval.
 
 CLI packages under `package/cli/<name>` use package names shaped
 `@monochromatic-dev/cli-<name>` and usually expose an unscoped `<name>` binary.
@@ -809,7 +826,9 @@ in dependency order:
 
 ## Immediate next action
 
-Audit direct Inquirer subpackages and propose only the exact minimal dependency set.
+Request separately named approval for `@inquirer/checkbox` 5.2.1,
+then `@inquirer/input` 5.1.2.
+Do not add the umbrella package or a direct core dependency.
 Then continue grilling configuration,
 GitHub CLI compatibility,
 mise tasks,
@@ -999,6 +1018,9 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   approved the Inquirer technology family,
   with only necessary package parts to become direct dependencies.
+- 2026-08-16:
+  validated `@inquirer/checkbox` plus `@inquirer/input` as the minimal library-backed set;
+  rejected the umbrella package.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
