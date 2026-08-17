@@ -879,9 +879,25 @@ THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked:
     about 21 minutes across a seven and a half hour run, under half a percent, against entries that
     cost hours.
 
-    STILL OWED: re-measure the decline rate under the new window, which was always the second half
-    of this item. Every rate quoted in this handover, including the 0.413, describes the 60 second
-    window.
+    THE RE-MEASURE IS RUNNING, launched 2026-08-17 over `Aniloviraw,zheermao101` into a throwaway
+    runs directory recorded in the scratchpad as `grace-run-dir.txt`. Those two are the POSITIVE
+    CONTROL: under the old window they lost a voice on 5 of 22 and 6 of 58 stages, so a clean result
+    from them means the fix worked rather than that there was nothing to fix. They also settled in
+    35.4 and 65.3 minutes before, so the run is short.
+
+    COMPARE ON PER-STAGE VOICE COMPLETENESS and nothing else. The old-window baseline recomputed on
+    that definition is 63 of 483 stages, 0.130, per entry 5/22, 6/58, 30/208, 22/195. The 0.413
+    quoted elsewhere in this handover counts JUDGINGS and is not comparable; the 96 loss lines in
+    the cost run count retries and are not comparable either. Read the residual BY SLICE SIZE too,
+    because the 88.6 second maximum behind the new window came from bench slices of 94 to 497
+    characters, which samples the corpus only to about its 90th percentile.
+
+    THE RUN IS ALSO THE TELEMETRY'S FIRST PRODUCTION EMISSION, so it doubles as the user-boundary
+    check that `SLICE-COST` lines appear and parse, and its `exit=` rows price the wider window
+    directly instead of the 21 minute estimate.
+
+    NOTHING MAY RUN `mise` IN THIS PACKAGE UNTIL IT EXITS, for the same reason as before: `build`
+    and `lint:types` write `dist/`, and the run is reading it.
 
 2.  `#105`'s retry policy: retry a declining slate ONCE against the same panel, then record what
     still declines as `no-candidate-backed`. The delivery vocabulary already says WHERE such a slice
