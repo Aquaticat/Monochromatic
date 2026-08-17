@@ -7,10 +7,17 @@
 
 export { readStructuredInputFile, } from './file-input.ts';
 export {
+  runGitHubApi,
+  type GitHubApiMethod,
+  type GitHubApiRequest,
+} from './github-api.ts';
+export {
   GitHubProcessError,
   GitHubProcessTimeoutError,
   runBoundedProcess,
+  type BoundedProcessRequest,
   type BoundedProcessResult,
+  type BoundedProcessRunner,
 } from './github-process.ts';
 export {
   IncludedResponseError,

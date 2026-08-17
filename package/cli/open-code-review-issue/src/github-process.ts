@@ -182,21 +182,36 @@ function throwProcessFailure({
  * await runBoundedProcess({ file: 'gh', arguments: ['--version'], cwd: process.cwd() });
  * ```
  */
+/**
+ * Exact subprocess request accepted by bounded runner.
+ */
+export type BoundedProcessRequest = {
+  readonly file: string;
+  readonly arguments: readonly string[];
+  readonly cwd: string;
+};
+
+/**
+ * Injectable bounded process function for consumer-boundary tests.
+ */
+export type BoundedProcessRunner = (
+  request: BoundedProcessRequest,
+) => Promise<BoundedProcessResult>;
+
 export async function runBoundedProcess({
   file,
   arguments: commandArguments,
   cwd,
-}: {
-  readonly file: string;
-  readonly arguments: readonly string[];
-  readonly cwd: string;
-},): Promise<BoundedProcessResult> {
+}: BoundedProcessRequest,): Promise<BoundedProcessResult> {
   try {
     return await spawn(file, commandArguments, {
       cwd,
       stdin: 'ignore',
       stdout: 'pipe',
       stderr: 'pipe',
+      env: {
+        GH_PROMPT_DISABLED: '1',
+      },
       signal: AbortSignal.timeout(GITHUB_CHILD_DEADLINE_MS,),
       killSignal: 'SIGKILL',
       windowsHide: true,
