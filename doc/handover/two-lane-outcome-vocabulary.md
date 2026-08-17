@@ -1416,3 +1416,35 @@ GFP was satisfied for the sharpest guard: removing the unrecorded-rows refusal f
 `sameAuditedText`, rebuilding and running gave `expected true to equal false`, and the guard was
 restored and re-verified. The run aborted at that describe, so the OTHER refusals in
 `auditRepeatsWithin` were not exercised under the broken guard and have not been shown to fail.
+
+### A PRODUCING-PATH FREEZE IS IN FORCE while the corpus pass runs
+
+Started 2026-08-17 18:00Z: `mise run //package/module/translation-repair:corpus-pass` over 92
+entries, `TRANSLATION_REPAIR_RUNS_DIR=~/translation-repair-runs-20260817`, log
+`~/temp/agent/corpus-pass-20260817.log`. This is `#108`, and it is also the only source of the
+more ENTRIES that `#115` proved the rendering audit needs.
+
+DO NOT CHANGE ANYTHING THE PIPELINE RUNS, and do not rebuild after doing so, until it finishes or
+is abandoned. The running process is safe either way, because Node loaded its code at startup and
+`corpus-pass` reads its digest before settling anything. THE RESUME IS NOT SAFE:
+`assertResumableGeneration` throws `GenerationDriftError` when the settled entries in a pool record
+a build other than the one resuming, and the driver's own plan output says why in as many words,
+that continuing "would stamp a second pipeline into one pool and every reader that computes a rate
+would then refuse the lot". At up to 7 hours an entry over 92 entries, this run will want resuming.
+
+WHAT THAT RULES OUT for now, each otherwise ready:
+
+-   `#91`'s half-weight self-certification. Settled and authorized, and it changes how the checker
+    stage tallies, which is the producing path.
+-   Anything in `#90`, `#100` or `#106` that touches slicing.
+
+WHAT IS STILL SAFE: telemetry readers, reporting entry points, documentation, decision write-ups,
+and anything under `corpus-run/` that only READS. `slice-cost-report.ts` was built under this
+freeze and is the model: it reads a log and prints.
+
+THE FREEZE IS NOT A REASON TO IDLE. Re-read the cost telemetry as the pass accumulates slices; the
+answer it owes `#92` improves on its own:
+
+```sh
+mise run //package/module/translation-repair:slice-cost-report -- ~/temp/agent/corpus-pass-20260817.log
+```
