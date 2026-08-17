@@ -1,9 +1,44 @@
-# The population the rendering audit will run over
+# The rendering audit over every settled version 2 artifact
 
-Everything here was measured before a single model was asked anything,
+Task `#115`.
+The population was measured before a single model was asked anything,
 from the four archived version 2 artifacts at `~/translation-repair-v2-archive/`
 and the corpus clone at `~/one-among-us/data`.
-Task `#115` is the work these numbers scope.
+The results were added after each run landed,
+under rules this document fixed in advance.
+
+## What this answers, and what it does not
+
+IT DOES NOT ANSWER the question it was opened to ask.
+The audit exists to compare the archive's own English against a fresh rendering,
+and that comparison is CONFOUNDED WITH THE ENTRY:
+every corroborated archive defect sits in one of the two entries
+and the single corroborated fresh defect sits in the other,
+so neither entry shows the pattern the pooled table shows.
+More slices cannot separate them.
+Only more entries can,
+which means more settled version 2 artifacts,
+which is what task `#108` would produce.
+
+IT DOES ANSWER several things worth having:
+
+-   The instrument runs on real lane output at all,
+    over 40 subjects, at zero cost to the producing path.
+-   Both `#107` relocation candidates anchor against their shared slice boundary,
+    which is the geometry `#107` predicts,
+    so the mechanism is corroborated even though neither pair is proved to be one move.
+-   The per-voice rates do not reproduce `#68`:
+    the three voices are within a factor of two of each other here,
+    where one ran at a tenth the rate over the introduced-defect probe.
+-   `claimed` counts CLAIMS and not distinct problems,
+    because one voice can anchor two categories to one span,
+    and it did.
+-   Voice loss is not spread evenly across the population.
+
+NOTHING HERE MAY GATE WHAT SHIPS.
+The instrument's own production error rate is unmeasured;
+`#66` is the false-negative half and is open.
+This is telemetry.
 
 ## It is 40 subjects, and "every artifact" costs no more than one run did
 
