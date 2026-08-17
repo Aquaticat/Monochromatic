@@ -1250,3 +1250,52 @@ STILL OWED when the run lands: apply `splitFor`, `rateByVoice` and `auditRelocat
 persisted rows and write the result into `doc/audit/rendering-audit-settled-population.md`, which
 already holds the population and the reading rules. Report the archive and fresh halves apart, and
 say plainly that two entries settle nothing about any entry.
+
+### Where `#115` stands at 15:30Z
+
+The first full run LANDED, all 40 subjects, as
+`node_modules/.monochromatic/translation-repair-runs/rendering-audit-settled/2026-08-17T14-25-51.584Z-b7d84b5b.json`.
+Its numbers are written up in `doc/audit/rendering-audit-settled-population.md`.
+
+A SECOND full run over the same 40 is IN FLIGHT, logging to `~/temp/agent/audit-settled-run2.log`.
+It buys two things at once: a pipeline digest that is actually the build that ran, and the
+run-to-run band. Both matter because `QNB` says a comparison resolves nothing narrower than the
+spread on unchanged input, and the headline of `#115` is a comparison. When it lands:
+
+```sh
+mise run //package/module/translation-repair:rendering-audit-settled-report -- \
+  --against node_modules/.monochromatic/translation-repair-runs/rendering-audit-settled/2026-08-17T14-25-51.584Z-b7d84b5b.json
+```
+
+Then write the band into the population doc beside the halves. That doc already says, in its own
+words, that the archive-versus-fresh difference is not quotable without it.
+
+Landed since the last note:
+
+-   `rendering-audit-settled-repeat.ts`, the two pairings: within one run, where two artifacts of
+    one entry carry identical characters at one slice; and across two runs, where every subject
+    appears in both.
+-   `rendering-audit-settled-band.ts`, `repeatBandOf`, which reads the spread off those pairs.
+-   `rendering-audit-settled-digest.ts`, the recorded text identity. Rows now carry a DIGEST of the
+    two texts each audit saw, never the texts: a run file is read, grepped and quoted, and the
+    corpus goes only to the production provider. It is a tagged union so rows that predate it read
+    as "cannot say" rather than pairing through their shared absence.
+-   `rendering-audit-settled-print.ts`, split out of the report to keep it under its line budget.
+-   `--against <run>` on the report, plus the fix that made the report print the archive the RUN
+    named rather than the one this invocation defaulted to.
+-   `rendering-audit-settled-repeat.unit.test.ts`, thirteen cases, mostly refusals.
+
+TWO TRAPS FOUND, both worth carrying:
+
+-   NUL BYTES IN COMMITTED SOURCE. Six of them, where spaces were intended, between the
+    interpolations of every composite key these readings build; one had been there since the `#107`
+    key builder landed. Nothing misbehaved, because a NUL is a better separator than a space and
+    both sides built keys the same way. `rg` and `grep --perl-regexp` report a CLEAN FILE. Full
+    write-up and the searches that do work:
+    `doc/troubleshooting/nul-bytes-land-invisibly-in-source.md`. The separator is now
+    `SLOT_SEPARATOR`, a shared constant written as an escape.
+-   ANOTHER BARREL COLLISION, `bandOf`, already in `band-order.ts`. This one failed LOUDLY as
+    TS2308, unlike `readSettledArtifact`, which was also a value and was dropped in silence. Why
+    the two differ is not established, so
+    `doc/troubleshooting/barrel-star-export-drops-ambiguous-names.md` keeps its warning: a clean
+    type-check does not prove there is no collision.
