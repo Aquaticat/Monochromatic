@@ -54,6 +54,26 @@ TWO THINGS ABOUT ITS DESIGN worth not re-litigating:
     is what moved the corpus commit out of `ProbeRun` and into `subject`: the second caller could not
     fill the field honestly, which is the signal a field is in the wrong place.
 
+    VERIFIED BY RUNNING IT FOR REAL, 6 calls and about two minutes, which is both the boundary check
+    and a fourth stability sample. It wrote
+    `audit-sensitivity/2026-08-17T13-41-58.852Z-c93f970d.json`, 18435 bytes, carrying three
+    checkers, the subject naming its fixtures and arms, and BOTH ARMS' REPORTS WHOLE. It is the
+    first `audit-sensitivity` result in this project's history that survives the terminal that ran
+    it.
+
+    WHAT THAT FOURTH SAMPLE SAYS, and it is not nothing:
+
+    ```text
+    flipped   heard 3/3   oracleVoices 3   agreed 1 (3 voices)   corroborated 0   near 3
+    clean     heard 3/3   oracleVoices 0   agreed 0              corroborated 0   near 0
+    ```
+
+    THE CONTROL IS STILL CLEAN and the auditors still find the planted defect unanimously. THE
+    STRICT TIER STILL MISSES IT: all three voices pointed at the oracle span and `corroborated` is
+    zero, while the loose `agreed` tier caught it with all three. That is the fourth run in a row
+    where the strict count would have reported a unanimous defect as nothing, which is exactly why
+    the second tier was added, and it is now on disk rather than in a transcript.
+
 GFP'D AND VERIFIED AT THE BOUNDARY, both:
 
 -   THE STRIP was the filename, replaced by a fixed `rows.json`. Exactly three cases failed, and
