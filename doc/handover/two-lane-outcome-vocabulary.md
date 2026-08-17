@@ -623,12 +623,41 @@ narrower and still worth having: the archive is not serialized into the prompt, 
 cannot serve as an anchor. That is data-flow exclusion at the caller, not a property enforced by
 quote anchoring.
 
-## The audit's live arms are on hold, and the matcher is being rebuilt
+## The audit is rebuilt, run live, and measured (`#85`)
 
-Read this before running anything against the audit.
+Both arms ran on 2026-08-17, three times, through `mise run
+//package/module/translation-repair:audit-sensitivity`.
+
+THE CONTROL IS CLEAN, in every run: three auditors, three verdicts of `no-defect-found`, zero
+claims, zero corroborated, zero near misses. Nothing was invented about a faithful rendering.
+
+THE POSITIVE ARM FINDS THE PLANTED DEFECT, also in every run. The auditors are not the weak part:
+they located a dropped negator, named it `altered-polarity`, and anchored it.
+
+WHAT THE ARMS EXPOSED is the matcher, and only because the arm reports three measurements rather
+than one count. Run by run, on the same fixture and the same roster:
+
+-   Three voices, three oracle hits, no dropped claims, ONE corroborated defect, three near misses.
+-   Three voices, three oracle hits, no dropped claims, ZERO corroborated defects. All three named
+    `altered-polarity`; they quoted `不吃`, `吃` and `不吃罐头`. Unanimous agreement, reported as
+    nothing.
+-   Three voices, two oracle hits, one claim dropped as `unanchored-locator (source)`, zero
+    corroborated, one agreed group of two voices.
+
+Which span a voice picks is not stable between runs, so a count keyed on exact spans is a coin flip.
+That is why the report now carries a SECOND TIER, `agreed`, beside the strict `corroborated`: it
+groups claims of one category whose focus spans overlap, pairwise throughout, so two claims about
+different words of one sentence never join and a wide claim touching two narrow ones pairs with each
+rather than forming a trio. Both counts are reported; neither is folded into the other.
+
+READ BOTH, and read the per-voice rows under them. The strict count is the conservative fact; the
+second is the useful one; the oracle hits and the drop list say which component to blame when they
+disagree.
+
+## What the review found before any of that ran, kept because the reasoning still applies
 
 An adversarial review of the three audit files on 2026-08-17 returned a NO-GO for the live arms,
-and it is right.
+and it was right.
 The matcher cannot distinguish agreement on ONE DEFECT from agreement on ONE SENTENCE:
 
 -   FALSE SPLIT, which was already suspected: `defectKey` demands both evidence strings match
@@ -646,9 +675,26 @@ between the auditors, the anchoring and the matcher.
 The rebuild separates a LOCATOR span, which identifies one occurrence uniquely, from a FOCUS span,
 which carries the alleged change and need only be unique inside its locator, keeps document offsets
 for both, and corroborates on the focus interval rather than on the text a voice typed.
-Overlap and containment become NEAR MISSES rather than merges.
 `#85` carries the full scope, including the one review finding deliberately not adopted (schema
 enums for verdict and category, which would turn vocabulary noncompliance into voice loss) and why.
+
+Two things the review predicted arrived exactly as described, which is worth recording because it
+says what that kind of review is worth: the false merge it found was real and unsuspected, and the
+false split it warned would spoil the positive arm did spoil it, twice, before the second tier
+existed. One thing it recommended was not taken and should stay untaken: schema enums.
+
+WHAT WAS NOT REBUILT, and is recorded rather than done, because each needs a decision or more than
+one fixture to settle:
+
+-   Cross-category agreement. Two voices naming one span `altered-polarity` and `omission` are
+    reported as a near miss and counted as neither. Deciding whether they agree is a question about
+    the taxonomy, and the precedence rule in the prompt is the current attempt to prevent it arising.
+-   `broken-structure` still requires both sides. The review argued for splitting it; the precedence
+    rule routes the one-sided cases to `omission` and `unsupported-addition` instead, which answers
+    the objection by definition rather than by adding categories. Untested against a real structural
+    defect.
+-   `identityContext` is never anchored. An `altered-identity` claim resting on licensed evidence
+    cannot point at that evidence, only at the two texts.
 
 ## The post-trial run queue, decided in advance
 
@@ -659,8 +705,14 @@ The negative control also measured something nobody asked for, and it constrains
 below: the per-slice preserve-or-replace decision is about 19 percent unstable between identical
 runs, so no single pass settles a per-slice question. Recorded on `#105` and `#108`.
 
-Item 1 is now blocked on the rebuild above rather than on the trial.
-Items 2, 3 and 4 are unblocked and need no user answer.
+ITEM 1 IS DONE. The rebuild landed and both arms ran three times; see "The audit is rebuilt, run
+live, and measured". Items 2, 3 and 4 are unblocked and need no user answer.
+
+What is left on the audit is not a measurement but a decision, and it is the user's: the instrument
+is WIRED TO NOTHING. Whether it runs per slice inside the translate lane, or standalone over settled
+version 2 artifacts, changes what it costs and what it can be compared against, and neither is
+obviously right. Recorded as Question 8 in `doc/planning/translation-repair-open-decisions.md`, with
+options, a ranking and the reason for each step of it.
 The user has confirmed quota is not a constraint (near full, regenerating, one reset in hand), so
 nothing below is held back for cost; what held them back was the trial's validity, since every one
 of these calls the same six models.

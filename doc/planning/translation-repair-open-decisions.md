@@ -1,5 +1,28 @@
 # Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-17
 
+WHAT A FOURTH NIGHT CHANGED, 08-17.
+One new question, Question 8, and one gate that is no longer a gate. Nothing
+below was answered in between and nothing changed its answer.
+
+-   THE WINDOW TRIAL FINISHED, all 327 arms, zero refusals. Widening the judge's
+    context did NOT move selection: over the 109 slices it read, the wide arm
+    decided differently from a narrow arm 18 times and the two identically
+    configured narrow arms differed 21 times, so the effect is smaller than the
+    noise it was measured against. The result and the pre-registered reading it
+    fired are in `doc/planning/translation-repair-window-trial.md`.
+-   ITS NEGATIVE CONTROL MEASURED SOMETHING NOBODY ASKED FOR, and it constrains
+    how any single pass may be read: the per-slice preserve-or-replace decision
+    is about 19 percent unstable between identical runs. Rates over many slices
+    survive that; per-slice claims and small comparisons do not.
+-   THE LAUNCH GATE IS LIFTED. The corpus pass was held only because the trial
+    was competing for the same six models, and it is done.
+-   THE RENDERING AUDIT WORKS, and Question 8 asks where it should run. Both
+    live arms ran three times: the planted defect is found by every auditor
+    every time, and the faithful control drew no claims at all.
+-   QUOTA WAS SPENT, deliberately and in small amounts: three runs of two audit
+    arms against a three-model roster. Everything else was unit tests against
+    the synthetic client.
+
 WHAT A THIRD NIGHT CHANGED, 08-16 into 08-17.
 None of the questions below were answered in between and none of them changed
 its answer: the night went on the artifact reader, two resume guards and the
@@ -1068,6 +1091,74 @@ narrowness is stated and constant.
 WHAT I WOULD DO IF YOU DELEGATE THIS: take B now, since it is documentation of
 what already happens, and hold C until `#96` can carry an unexaminable verdict.
 That ordering costs nothing, because C keeps B's denominator.
+
+DELEGATE
+
+## Question 8: where the rendering audit runs, now that it works
+
+The absent-baseline instrument (`#85`) is built, tested, and MEASURED against
+its own planted defect: on the positive fixture every auditor finds the dropped
+negator, and on the faithful fixture every auditor claims nothing at all.
+
+It is wired to nothing. That is the last decision on it, and it is yours because
+the options differ in what they cost you rather than in whether they work.
+
+WHAT EACH CALL COSTS, structurally: one exchange per voice per audited unit,
+against whatever roster it is given. The multiplier is how many units you audit,
+and that is what the options differ on.
+
+### Options
+
+A.  **Per slice, inside the translate lane, on every slice it renders.**
+    -   For: every rendering is audited before anything downstream reads it, and
+        the findings arrive while that slice's context is still in hand, so a
+        future gate could act on them without a second pass.
+    -   Against: it multiplies a corpus pass by the roster width, does that on
+        slices nobody has reason to doubt, and puts an instrument whose
+        production error rate is unmeasured inside the path that produces the
+        output rather than beside it.
+
+B.  **Standalone, over settled version 2 artifacts, after a pass.**
+    -   For: nothing in the producing path changes, so a bad audit run cannot
+        cost a pass. It reads the artifact the pass already wrote, and it can be
+        re-run against those same artifacts when the instrument changes, which
+        is exactly what this week needed and did not have.
+    -   Against: it cannot influence what ships without a second pass, and it
+        re-reads text the pass already had in memory.
+
+C.  **Standalone over a SAMPLE of settled artifacts, not all of them.**
+    -   For: the cheapest way to get a RATE rather than a verdict, which is what
+        an instrument in shadow mode is for. A sample is enough to say how often
+        the lane's renderings carry corroborated defects.
+    -   Against: it says nothing about any particular entry, so it cannot settle
+        a question about one.
+
+D.  **Leave it unwired, and run it by hand when investigating.**
+    -   For: costs nothing, and the sensitivity arms already show it works when
+        pointed at something.
+    -   Against: nothing accumulates. Every question about the lane's fidelity
+        would start from zero, which is how an instrument built at some expense
+        quietly stops being used.
+
+### Ranking
+
+C > B > A > D.
+
+-   C over B, because the first thing anyone will ask of this instrument is a
+    RATE, and a sample answers that for a fraction of the cost. B's advantage,
+    covering every entry, only pays once a rate exists and someone wants to act
+    per entry.
+-   B over A, because re-runnability is worth more than immediacy while the
+    instrument is still changing: the matcher was rebuilt twice this week, and
+    under A each rebuild would have needed a fresh corpus pass to re-measure,
+    while under B the artifacts are still on disk.
+-   A over D, because A at least accumulates evidence, and D's cost argument is
+    real but its outcome is an unused instrument.
+
+WHAT I WOULD DO IF YOU DELEGATE THIS: C now, B once a rate exists and per-entry
+action is wanted, and A only if a gate is ever built on the audit, which would
+need its false-positive rate measured on real renderings rather than on one
+faithful fixture.
 
 DELEGATE
 
