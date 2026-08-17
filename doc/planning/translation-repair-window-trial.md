@@ -141,6 +141,80 @@ Per class:
 -   The narrow-against-narrow band, which is the negative control.
 -   `incomplete` and `degraded` counts, so the reader can see how much of the class the analysis covers.
 
+## The result
+
+The run finished 2026-08-16T23:58Z after 25622 seconds,
+buying all 327 arms of the planned draw with zero refusals.
+Ledger: `/home/user/temp/agent/window-trial-20260816-115844/window-trial/arms.jsonl`,
+one throwaway runs directory, never the shared one.
+Every number here was recomputed from that ledger rather than read out of the run log.
+
+### Widening the window did not move selection
+
+Two readings, because the pre-registered exclusion rule resolved to reporting both.
+Under each, the primary number is the wide arm's disagreement with a narrow arm,
+read against the negative control, which is the two identically configured narrow arms' disagreement with each other.
+
+Strict, every arm on a full panel, 37 slices over 21 entries:
+
+-   Paired excess overall 0.000, and `relocation-high` alone -0.071 over 7 slices.
+-   The wide arm decided differently from `narrow-a` on 2 slices.
+-   The two narrow arms decided differently from each other on 2 slices.
+
+Relaxed, every complete triple, 109 slices over 29 entries:
+
+-   Paired excess overall +0.005, and `relocation-high` alone exactly 0.000 over its full 19 slices.
+-   The wide arm decided differently from `narrow-a` on 18 slices.
+-   The two narrow arms decided differently from each other on 21 slices.
+
+The effect is not merely inside the noise band.
+In the larger reading it is SMALLER than the noise band:
+two runs of the same arm disagree more often than the narrow and wide arms disagree.
+The hypothesis that neighbouring Chinese lets judges recognise a relocation and keep the archive's wording
+is not supported at any resolution this trial can reach.
+
+### Which exclusion rule fired, and why
+
+The pre-registered rule fixed in "Pre-registered: how the short-panel exclusion will be decided" asks for
+the short-panel rate per arm over every arm bought, not per triple:
+
+-   `narrow-a` 43 of 109, rate 0.394.
+-   `narrow-b` 44 of 109, rate 0.404.
+-   `wide` 48 of 109, rate 0.440.
+
+The binomial spread of a difference between two such proportions at this sample size is 0.067,
+and the wide arm exceeds `narrow-a` by 0.046 and `narrow-b` by 0.037.
+Both differences sit inside the spread,
+so degradation is symmetric rather than asymmetric,
+and branch 3 fires: read every complete triple, and report both readings side by side.
+That is what "The result" does.
+
+Symmetric loss was the outcome the rule was written to detect,
+and it is the one that arrived:
+the wide arm sends the longest sheets under the same deadline,
+so had its losses run ahead of the narrow arms',
+every relaxed number would have credited lost voices to the window.
+
+### The negative control found something the trial was not looking for
+
+Two arms configured identically, judging the same slate of candidates, disagreed on 21 of 109 slices.
+The per-slice preserve-or-replace decision is therefore about 19 percent unstable run to run,
+and the trial's own primary comparison sits under that.
+
+This is a measurement about the selection stage, not about the window,
+and it constrains everything downstream that reads a single run's per-slice decisions:
+`#105`'s decline rate, `#108`'s replacement rate, and any future gate gated on one pass.
+It also sets the resolution of any future arm of this kind:
+an effect smaller than a fifth of slices cannot be seen in one run per arm.
+
+### Short panels cost two thirds of the strict population
+
+135 of 327 arms lost at least one judge, a rate of 0.413, with panels seating 6 and hearing 4, 5 or 6.
+72 of 109 slices had at least one short-panelled arm, which is what shrank the strict reading to 37.
+The run log attributes most of it to `hf:zai-org/GLM-5.2` being abandoned 60000 ms after quorum,
+with `hf:openai/gpt-oss-120b` returning empty content occasionally.
+Neither the deadline nor the roster was changed mid-run, so the rate is the honest one for this configuration.
+
 ## What this still cannot say
 
 Stated plainly because a number without these caveats is worse than no number.
@@ -229,6 +303,16 @@ Reachable on `translation-repair-rebased`:
 
 ## Next action
 
-The run is live against a throwaway `TRANSLATION_REPAIR_RUNS_DIR`.
-Read `pairedExcess` per class against the narrow band,
-and read `relocation-high` separately from everything else.
+The run is finished and read; see "The result".
+What remains is a decision rather than a measurement, and it is the user's:
+
+The window treatment does not earn its place in the pipeline on this evidence,
+so the choice is whether to drop the idea,
+or to buy the fourth sham-context arm from "The wide prompt changes several things at once" and ask a sharper question.
+Dropping it does not resolve `#107`, which is why the trial existed:
+per-slice judging still cannot tell a relocation from a fabrication,
+and the remaining routes to that are hand-labelled relocation candidates or a whole-document pass over the pair.
+
+The instability the negative control found is a separate matter and needs no decision to act on:
+it belongs in `#105` and `#108` as a constraint on how their numbers may be read,
+and it is recorded there.
