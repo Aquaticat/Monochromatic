@@ -26,7 +26,8 @@ The adapter must:
 - study `pnpm update -r -i --no-save` as the interactive UX precedent;
 - prefer the libraries pnpm uses for that interaction;
 - ask the user separately before adding each new workspace dependency;
-- accept OCR structured output from one required positional named file;
+- accept OCR structured output from one required positional argument;
+- allow interactive positional input as shell-quoted JSON or a named file;
 - accept a JSONL file stored by OCR;
 - implement the previously selected local-adapter architecture.
 
@@ -41,7 +42,7 @@ and TTY-pasted standard input are excluded from ingestion.
 The user chose an ingest-only adapter.
 It must not invoke OCR.
 Users run OCR separately,
-then provide its structured output through the required positional named file.
+then provide its structured output as interactive shell-quoted JSON or through a supported named file.
 
 This removes OCR argument forwarding,
 process signaling,
@@ -68,14 +69,14 @@ The adapter must not parse OCR's human-readable terminal format.
 This rule applies to interactive and non-interactive modes.
 ANSI stripping and version-specific text parsing are out of scope.
 
-The required named file accepts exactly these OCR-native structured shapes:
+Interactive shell-quoted JSON or a required named file accepts these OCR-native structured shapes:
 
 - complete `ocr review --format json` or `ocr scan --format json` result object;
 - bare comment array from `ocr session comments --json`;
-- raw OCR session JSONL transcript.
+- raw OCR session JSONL transcript from a named file.
 
 Standard input is never an ingestion source.
-A malformed or unsupported named file reports its validation error and exits nonzero immediately.
+A malformed or unsupported positional input reports its validation error and exits nonzero immediately.
 If any record inside an otherwise recognized input has invalid types or structure,
 the adapter must reject the entire input before performing any GitHub operation.
 A finding is also invalid when OCR `content`,
@@ -144,16 +145,21 @@ which uses its explicit post-selection confirmation as the mutation boundary.
 
 No mode may consume piped standard input.
 The user explicitly rejected pipes and TTY-pasted ingestion for this adapter.
-Every mode requires exactly one positional named file path:
+Every mode requires exactly one positional input:
 
-- the positional path reads that named file;
-- omitting the path is invocation misuse with status two before any prompt;
-- multiple positional paths are invocation misuse;
+- interactive mode accepts shell-quoted JSON or a named file;
+- non-interactive mode accepts only a named file;
+- omitting input is invocation misuse with status two before any prompt;
+- a nonexistent path is a handled runtime failure with status one;
+- multiple positional values are invocation misuse;
 - `-` must not mean standard input.
 
 The implementation must never inspect or read redirected or piped standard input as an ingestion source.
-It reads only the required named file.
 Piped bytes are ignored rather than detected or consumed.
+Missing or nonexistent input diagnostics show commands for generating JSON,
+the common OCR session location,
+and the most recently modified discovered session JSONL path when present.
+Discovery scans only file metadata under `~/.opencodereview/sessions` and never invokes OCR or reads transcript content.
 The implementation must not reopen `/dev/tty`,
 `CONIN$`,
 or another controlling-terminal device.
@@ -634,7 +640,8 @@ The package implements the complete settled contract:
 
 - strict complete-result,
   comment-array,
-  and JSONL ingestion;
+  and JSONL ingestion from named files plus interactive shell-quoted JSON;
+- missing-input generation guidance and latest persisted-session discovery;
 - atomic validation and strict BOM-free UTF-8 named files;
 - deterministic titles,
   bodies,
@@ -789,16 +796,21 @@ The following branches were resolved one at a time in dependency order:
    Every selected operation is creation.
    It reports quarantined findings only as a count and never displays their sensitive content.
 3. Input contracts:
-   Accepted file shapes are the complete review or scan result object,
+   Accepted shapes are the complete review or scan result object,
    `ocr session comments --json` comment array,
-   and raw OCR session JSONL transcript.
-   Every mode requires exactly one positional named file.
-   Omitting it or supplying multiple paths is invocation misuse with status two before any prompt.
+   and raw OCR session JSONL transcript from a named file.
+   Every mode requires exactly one positional input.
+   Interactive mode accepts shell-quoted JSON or a named file;
+   non-interactive mode accepts only a named file.
+   Omitting input or supplying multiple values is invocation misuse with status two before any prompt.
    `-` never means standard input.
    Redirected,
    piped,
    and TTY-pasted standard input are never inspected or read as ingestion.
    Interactive terminal prompts use TTY standard input only for finding selection and explicit decisions.
+   Missing and nonexistent input diagnostics show generation commands,
+   the common persisted-session path,
+   and a specifically discovered latest JSONL path when present.
    A malformed record rejects the entire input before any GitHub operation.
    Structurally valid findings with missing category metadata remain ordinary publishable candidates.
    Named files require strict UTF-8 without any byte-order mark;
@@ -1260,7 +1272,11 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   exercised both interactive picker classes,
   and created then closed final live verification Issue `Aquaticat/issues-api#2`.
 - 2026-08-17:
-  removed interactive pasted-JSON ingestion and required one positional named file in every mode.
+  removed interactive prompted JSON ingestion and required one positional input in every mode.
+- 2026-08-17:
+  restored shell-safe interactive inline JSON as a quoted positional value,
+  retained named-file input,
+  and added actionable generation plus latest-session JSONL guidance.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md

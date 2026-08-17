@@ -35,16 +35,21 @@ Review every preview before publication.
 
 ## Accepted input
 
-Every invocation requires exactly one positional named file containing:
+Every invocation requires exactly one positional input.
+Interactive mode accepts either:
 
-- complete `ocr review --format json` or `ocr scan --format json` output;
-- a comment array from `ocr session comments --json`;
-- an OCR session JSONL transcript.
+- shell-quoted complete JSON from `ocr review --format json`,
+  `ocr scan --format json`,
+  or `ocr session comments --json`;
+- a named file containing one of those shapes or an OCR session JSONL transcript.
 
+Non-interactive mode requires the named-file form.
 Named files must be strict UTF-8 without a byte-order mark.
 `-` never means standard input.
-Piped or redirected standard input is never an ingestion source.
-Omitting the positional file is command misuse and exits with status `2` before any prompt.
+Piped,
+redirected,
+and TTY-pasted standard input are never ingestion sources.
+Omitting the positional input is command misuse and exits with status `2` before any prompt.
 
 ## Modes
 
@@ -58,7 +63,23 @@ open-code-review-issue --interactive ./review.json \
 ```
 
 Short form `-i` is available.
+To pass generated JSON as one shell-safe positional argument:
+
+```bash
+open-code-review-issue --interactive "$(ocr review --format json)" \
+  --repo https://github.com/OWNER/NAME
+```
+
+A literal JSON argument must quote the complete JSON value:
+
+```bash
+open-code-review-issue --interactive \
+  '{"status":"complete","comments":[]}' \
+  --repo https://github.com/OWNER/NAME
+```
+
 Interactive mode requires TTY standard input and TTY standard output.
+TTY input is used only for finding selection and explicit decisions.
 It presents ordinary and security findings separately,
 requires explicit disclosure decisions,
 and confirms the final batch before mutation.
@@ -97,6 +118,32 @@ open-code-review-issue --non-interactive --apply --all ./review.json \
 
 `--all` authorizes public disclosure.
 Do not use it for an unresolved suspected vulnerability.
+
+## Finding OCR input
+
+Generate a named JSON file with:
+
+```bash
+ocr review --format json > review.json
+ocr scan --format json > scan.json
+```
+
+Inspect saved sessions or export one session's comments with:
+
+```bash
+ocr session list --json
+ocr session comments --json <session-id> > comments.json
+```
+
+OCR session transcripts are commonly persisted at:
+
+```text
+~/.opencodereview/sessions/<encoded-repo-path>/<session-id>.jsonl
+```
+
+When positional input is omitted or a named path does not exist,
+the command prints these generation instructions.
+It also scans that sessions root without reading transcript contents and suggests the most recently modified JSONL path when one exists.
 
 ## Repository selection
 
