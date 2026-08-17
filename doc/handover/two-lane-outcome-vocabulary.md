@@ -30,11 +30,27 @@ passes with the wiring stripped, because a decision buys no retry either way, so
 evidence and must not be counted as any. Worth keeping straight: a guard suite where every case
 fails on a strip is usually a suite that is testing the wiring rather than the behaviour.
 
-WHAT IS NEXT, given item 3 is blocked: item 6, persisting `coverage-probe` output into the runs
-directory, which is decided and unblocked. The design settled on is a sibling
-`coverage-probe-store.ts` rather than growing `coverage-probe.ts`, which sits at 396 physical lines
-against a 300 code-line cap, and a per-run filename so successive probes accumulate instead of
-clobbering each other, which is the failure that lost the 2026-08-16 numbers in the first place.
+ITEM 6 IS BUILT, persisting probe output into the runs directory, which was decided and unblocked
+once item 3 turned out not to be. It landed as `src/corpus-run/probe-store.ts` with six tests, and
+`coverage-probe.ts` now writes through it while still printing to standard output.
+
+TWO THINGS ABOUT ITS DESIGN worth not re-litigating:
+
+-   IT IS SHARED, not coverage-specific, because `audit-sensitivity.ts` has the identical defect and
+    its three runs of each arm on 2026-08-17 also survive only in a transcript. Fixing one and
+    leaving the other would be knowingly leaving the same bug. Wiring that second caller is the next
+    step and is not done yet.
+-   A PER-RUN FILENAME, carrying the instant and the pipeline digest, because both probes are rerun
+    against the same subject ON PURPOSE to see whether a verdict is stable, and one fixed `rows.json`
+    would let each rerun destroy the run it was bought to be compared against.
+
+NOT the reason, though an earlier draft of this section said so: `coverage-probe.ts` is nowhere near
+the line cap. It measures about 209 CODE lines against a cap of 300, which counts code only; the 396
+physical lines are mostly TSDoc. The split is justified by the second caller, not by size.
+
+ALSO FOUND, and not yet fixed: `audit-sensitivity.ts` has NO `import.meta.main` guard, so importing
+it runs both arms and spends quota. `coverage-probe.ts` carries that guard with a comment saying
+exactly why. Nothing imports it today except the bundler entry list, so the hole is latent.
 
 ## The one sentence
 
