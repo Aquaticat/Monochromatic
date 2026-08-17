@@ -207,6 +207,45 @@ and it constrains everything downstream that reads a single run's per-slice deci
 It also sets the resolution of any future arm of this kind:
 an effect smaller than a fifth of slices cannot be seen in one run per arm.
 
+### The ledger also answers `#105`'s decline question, which it was not built for
+
+`#105` wanted a measured decline rate before deciding where an unfilled passage rests, and planned a
+synthetic bench for it. The trial produced a better one at no extra cost: 327 real judgings, on real
+slices, under the production roster.
+
+-   Declines overall: 56 of 327, a rate of 0.171. Of those, 55 are `declined-indecision` and one is
+    `declined-rejection`.
+-   BY PANEL SIZE, which is where the rate actually lives: a full panel of six declines 12 times in
+    192, a rate of 0.063. A panel that heard five declines 35 times in 122, a rate of 0.287. A panel
+    that heard four declines 9 times in 13, a rate of 0.692.
+
+The mechanism is in the source rather than inferred: `MIN_SELECTION_WEIGHT` is 2 and a self-vote
+counts a half (`package/module/translation-repair/src/candidate-select-model.ts`), so a winner needs
+agreement between two judges, and every lost voice makes that threshold harder to reach. Of the four
+decline reasons visible in the surviving tail of the run log, all four are
+`winner short of the minimum vote weight` rather than a tie or an all-declined round.
+
+So a decline is mostly a fact about the ROUND, not about the passage.
+
+### And it answers the retry question too, because every slate was judged three times
+
+The two narrow arms are identically configured and judge the SAME candidate slate, which is exactly
+a retry:
+
+-   Across both narrow arms, 37 judgings declined. A second judging of the same slate decided in 21
+    of them, a rate of 0.57.
+-   Both identically configured judgings declined on 8 of 109 slices, a rate of 0.073.
+
+Reading all three arms together, 37 slices had at least one declining judging and 32 of those had
+another judging of the same slate decide, but that figure includes the wide arm, which saw different
+evidence. The honest retry number is the 0.57 above.
+
+WHAT THIS SUPPORTS, stated as evidence rather than as a decision, since `#105`'s policy is the
+user's: retrying a declined judging once resolves the majority of declines, and the passages that
+decline under repeated identical judging are about 7 percent of slices rather than the 17 percent
+the raw rate suggests. Reducing voice loss would do more than any retry policy, since a full panel
+declines at a rate of 0.063.
+
 ### Short panels cost two thirds of the strict population
 
 135 of 327 arms lost at least one judge, a rate of 0.413, with panels seating 6 and hearing 4, 5 or 6.

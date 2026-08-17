@@ -720,9 +720,12 @@ of these calls the same six models.
 1.  **The two live arms of the rendering audit (`#85`)**, once its screen and stage land: the
     polarity-flip fixture that must produce a corroborated finding and the control that must not.
     The task states both; they are the GFP for the whole instrument and cost a handful of calls.
-2.  **`#105`'s decline-rate bench**, which gates the decision about where an unfilled passage rests
-    and is free of any user question. Synthetic bench over anchored slices with the real roster,
-    counting how many rounds decline.
+2.  ~~**`#105`'s decline-rate bench**~~ DONE, and the bench was never built: the window trial's
+    ledger already held 327 real judgings under the production roster, which is better evidence than
+    a synthetic bench and cost nothing. Decline rate 0.171 overall, but 0.063 on a full panel against
+    0.287 on a panel of five and 0.692 on a panel of four, so declines are mostly VOICE LOSS rather
+    than passages. Retrying the same slate decided 21 of 37 declines. Only 8 slices of 109 declined
+    under both identical judgings. `#105` carries it; the policy decision is still the user's.
 3.  **The coverage rerun question (`#106`)**: whether to add the source-sentence field to the
     coverage wire and rerun. NOTE THE TRADE before doing it, since it is not obvious: option A of
     question 28 is strong partly because it is built AND measured twice, and changing the wire makes
