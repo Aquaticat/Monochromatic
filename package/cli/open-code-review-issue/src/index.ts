@@ -5,6 +5,7 @@
  * @module
  */
 
+export { readStructuredInputFile, } from './file-input.ts';
 export { InputValidationError, } from './input-validation-error.ts';
 export { parseStructuredInput, } from './ingest.ts';
 export type {
