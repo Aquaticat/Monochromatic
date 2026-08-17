@@ -35,7 +35,7 @@ six-voice stages only         3 of 39  0.077     11 of 38  0.289
 all stages                    3 of 77  0.039     11 of 80  0.138
 ```
 
-THE THREE-VOICE STAGES NEVER LOST A VOICE, in either run, 0 of 40 and 0 of 42. They cannot show this
+THE THREE-VOICE STAGES NEVER LOST A VOICE, in either run, 0 of 38 and 0 of 42. They cannot show this
 effect and they dilute both rates, so the all-stages figure understates the change on the population
 that was actually at risk. Both readings are kept because the decision fixed the all-stages
 definition in advance and moving the goalposts after seeing the result is exactly what invalidates a
