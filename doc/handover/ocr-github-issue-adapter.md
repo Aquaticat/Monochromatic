@@ -194,8 +194,15 @@ These cases print diagnostics and exit rather than opening another prompt.
 ### GitHub API boundary
 
 The user chose `gh api` as the sole GitHub authentication and HTTP boundary.
-The adapter requires an installed and authenticated GitHub CLI,
-uses its existing credentials without extracting or accepting a token,
+The adapter requires GitHub CLI 2.97.0 or newer,
+installed and authenticated.
+Before its first `gh api` operation,
+it parses `gh --version` and rejects a missing,
+unparseable,
+or older CLI as a handled runtime failure with status one.
+The minimum matches the source-audited implementation;
+the adapter does not accept older versions through capability probing or require an exact version pin.
+It uses existing GitHub CLI credentials without extracting or accepting a token,
 and invokes GitHub REST endpoints through non-paginated `gh api` subprocesses.
 It must not use `gh issue create`,
 a GitHub client library,
@@ -830,7 +837,8 @@ in dependency order:
     with no project,
     user,
     or environment configuration surface.
-    Required GitHub CLI compatibility and mise tasks remain open.
+    GitHub CLI compatibility requires parseable version 2.97.0 or newer.
+    Mise tasks remain open.
 11. Verification:
     parser fixtures,
     prompt interaction tests,
@@ -841,9 +849,7 @@ in dependency order:
 ## Immediate next action
 
 Do not add the umbrella package or a direct core dependency.
-Continue grilling GitHub CLI compatibility,
-mise tasks,
-and verification.
+Continue grilling mise tasks and verification.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -1039,6 +1045,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   selected CLI-only adapter configuration,
   with no adapter configuration files or environment variables.
+- 2026-08-16:
+  selected GitHub CLI 2.97.0 as the minimum supported version.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
