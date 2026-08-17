@@ -251,6 +251,21 @@ A timed-out creation is ambiguous and enters the settled reconciliation path;
 a timed-out read-only operation fails its owning preflight or reconciliation step.
 Temporary request files must be inaccessible to other users and removed after each invocation.
 
+### Live verification repository
+
+The user selected a supplied disposable repository for end-user GitHub verification:
+`https://github.com/Aquaticat/issues-api`.
+Read-only preflight on 2026-08-16 verified that it is a private,
+unarchived repository with Issues enabled,
+default branch `main`,
+and authenticated administrative permission.
+It contained no Issues or pull requests and no `needs-triage` label.
+That starting state directly supports verification of the settled title-prefix fallback.
+The user authorizes synthetic Issue creation there during implementation verification.
+The adapter must not target another live repository for tests.
+Cleanup behavior for created verification Issues remains to be settled.
+The adapter's create-only contract cannot close or delete them.
+
 ### Issue rendering
 
 Issue titles use the deterministic shape `[category] path: summary`.
@@ -873,13 +888,19 @@ in dependency order:
     parser fixtures,
     prompt interaction tests,
     mocked `gh` boundaries,
-    disposable GitHub-side verification if authorized,
     and end-user CLI exercise.
+    Live verification uses only the user-supplied private repository
+    `https://github.com/Aquaticat/issues-api`.
+    Read-only preflight confirmed administrative access,
+    Issues enabled,
+    an empty Issue history,
+    and no `needs-triage` label.
+    Synthetic live Issue cleanup remains open.
 
 ## Immediate next action
 
 Do not add the umbrella package or a direct core dependency.
-Continue grilling live GitHub verification.
+Continue grilling unresolved interactive mechanics and live verification cleanup.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -1080,6 +1101,12 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
 - 2026-08-16:
   settled the standard mise task surface,
   including unit and built-CLI integration suites.
+- 2026-08-16:
+  selected `https://github.com/Aquaticat/issues-api` as the supplied disposable live-verification repository;
+  read-only preflight confirmed that it is private,
+  empty,
+  Issue-enabled,
+  and administratively writable.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
