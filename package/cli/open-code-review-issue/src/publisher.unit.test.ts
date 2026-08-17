@@ -7,6 +7,7 @@ import {
 import {
   AmbiguousReconciliationError,
   GitHubProcessTimeoutError,
+  PublicationInterruptedError,
   PublicationStoppedError,
   publishIssues,
   type GitHubApiClient,
@@ -456,6 +457,71 @@ await describe({
             url: 'https://github.com/Aquaticat/issues-api/issues/20',
           },
         ],);
+      },
+    },),
+    it({
+      name: 'stops future creation after publication interrupt',
+      fn: async () => {
+        /**
+         * Mutable publication interrupt state.
+         */
+        const state = { creates: 0, interrupted: false, };
+        /**
+         * Fake API that raises stop flag after first successful create.
+         */
+        const api: GitHubApiClient = async (request,) => {
+          if (request.method === 'GET') {
+            return { status: 200, headers: {}, body: [], };
+          }
+          state.creates += 1;
+          state.interrupted = true;
+          return {
+            status: 201,
+            headers: {},
+            body: {
+              number: 30,
+              html_url: 'https://github.com/Aquaticat/issues-api/issues/30',
+            },
+          };
+        };
+        /**
+         * Captured handled interruption.
+         */
+        let caught: unknown;
+        try {
+          await publishIssues({
+            repository: {
+              owner: 'Aquaticat',
+              name: 'issues-api',
+              url: 'https://github.com/Aquaticat/issues-api',
+            },
+            issues: [
+              {
+                position: { kind: 'record', value: 1, },
+                security: false,
+                title: 'First',
+                body: 'First body',
+                labels: [],
+              },
+              {
+                position: { kind: 'record', value: 2, },
+                security: false,
+                title: 'Second',
+                body: 'Second body',
+                labels: [],
+              },
+            ],
+            api,
+            wait: async () => {},
+            shouldStop: () => state.interrupted,
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(PublicationInterruptedError,);
+        expect((caught as PublicationInterruptedError).created,).toHaveLength(1,);
+        expect(state.creates,).toBe(1,);
       },
     },),
   ],
