@@ -1,9 +1,12 @@
 # The window trial: what it measures, what it cost to make it measure that, and what it still cannot say
 
-CLOSED 2026-08-16 BY THE OWNER: the trial is DROPPED, and no fourth sham-context arm is bought.
+CLOSED 2026-08-16: the trial is DROPPED, and no fourth sham-context arm is bought.
 The effect was smaller than the noise band it was measured against,
 and the practical answer, do not widen the judge's context,
 is the same whether the null is real or the design is underpowered.
+This one was decided on its merits rather than on its price:
+a fourth arm would refine a MEASUREMENT whose resulting action does not change either way,
+which the best-quality guideline does not buy.
 Recorded in `doc/decision/translation-repair-four-answers.md`.
 WHAT DOES NOT LAPSE WITH IT:
 the negative control's finding that the per-slice preserve-or-replace decision

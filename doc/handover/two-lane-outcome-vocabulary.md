@@ -808,16 +808,29 @@ What the sweep adds is the built artifact, the lint rules and the types.
 NOTHING ELSE MAY RUN `mise` IN THIS PACKAGE UNTIL THE RUN EXITS. `lint:types` runs `tsc --build`
 and `build` writes `dist/` outright; `test:unit` reads `dist/` and would test the wrong code.
 
-THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked by the owner's answers:
+THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked:
 
-1.  `#105`'s retry policy: retry a declining slate ONCE against the same panel, then record what
+1.  THE VOICE LOSS, first because everything else is measured through it. 135 of 327 judgings lost at
+    least one voice of six, dominated by `hf:zai-org/GLM-5.2` abandoned 60000 ms after quorum. Widen
+    that deadline or seat a replacement, AFTER the cost run reports so that run still describes the
+    configuration it was launched under, then re-measure the decline rate.
+
+2.  `#105`'s retry policy: retry a declining slate ONCE against the same panel, then record what
     still declines as `no-candidate-backed`. The delivery vocabulary already says WHERE such a slice
     lands, so this is a reason rather than a new kind: with an incumbent it stays
     `incumbent-retained`, without one it stays `gap-remains`.
-2.  The rendering audit, standalone over a SAMPLE of settled version 2 artifacts. It reads what a
-    pass already wrote, so nothing in the producing path changes and it can be re-run when the
-    instrument changes.
-3.  Persisting `coverage-probe` output into the runs directory rather than stdout only. This is the
+3.  `#74` and `#98`, the aligner, now foundational rather than optional: 85 of 92 entries never reach
+    the matcher because equal section counts skip it, so the population every section-scale
+    measurement was drawn from is itself an artifact of the aligner. Re-run the section census after.
+4.  SECTION-SCALE insertion, with the heading defect fixed, over the population that then reaches the
+    matcher. When a source section's counterpart is a heading with no body, the body belongs UNDER
+    that heading; landing it as designed would have produced eight duplicate headings on `XIEPT2`.
+    PARAGRAPH-SCALE insertion is REFUSED on the evidence and is not part of this.
+5.  The rendering audit, standalone over EVERY settled version 2 artifact rather than a sample. A
+    census has no sampling error and can settle questions about particular entries. Nothing in the
+    producing path changes, so an instrument whose production error rate is still unmeasured cannot
+    reach what ships, and it can be re-run against those same artifacts when the instrument changes.
+6.  Persisting `coverage-probe` output into the runs directory rather than stdout only. This is the
     one piece of the parked coverage work that survives on its own account, being the reason its
     2026-08-16 numbers exist nowhere but a transcript.
 
@@ -841,22 +854,32 @@ THE COST TELEMETRY DOES NOT APPLY TO THIS RUN. It was added after launch, so the
 emits no `SLICE-COST` lines. This run answers the ENTRY-scale slope, over four entries spanning 28
 times in size; the next run answers the per-slice question in `#92`.
 
-DO NOT RUN THE COVERAGE MEASUREMENT. This reverses an instruction that stood in this document for
-about an hour, and the reversal is the user's answer rather than a change of mind: BOTH INSERTION
-LANDINGS ARE PARKED. Option A of `doc/planning/coverage-wire-rerun-trade.md` existed to say how much
-of the block-scale null to believe, and the block-scale null existed to decide landing four. With
-both landings parked, that measurement informs no pending decision, so running it would spend the
-roster on a question nobody is waiting on. The trade note stays as the record of why, and option A
-stays the right first step IF insertion is ever revisited.
+DO NOT RUN THE COVERAGE MEASUREMENT. Option A of `doc/planning/coverage-wire-rerun-trade.md` exists
+to say how much of the BLOCK-scale null to believe, and block-scale insertion is refused, so it
+informs no decision that remains open. Section-scale insertion does not need it: the instrument was
+eleven of eleven correct there, and its false-CARRIED weakness suppresses insertion rather than
+causing it. The trade note stays as the record of why.
 
 ONE PIECE OF IT SURVIVES ON ITS OWN ACCOUNT: persisting probe output into the runs directory rather
 than stdout only. That is why the 2026-08-16 coverage numbers survive nowhere but a transcript, and
 it is worth doing whatever happens to insertion.
 
-WHAT THE USER ANSWERED, 2026-08-16, all four recorded in
-`doc/decision/translation-repair-four-answers.md`: the rendering audit runs over a SAMPLE of settled
-artifacts; declines get ONE retry and then a name; both insertion landings are PARKED; the window
-trial is DROPPED.
+THE FOUR DECISIONS, taken on the best-quality guideline and recorded with their reasoning in
+`doc/decision/translation-repair-four-answers.md`. They were first put to the owner as option sets;
+the owner answered and then WITHDREW the answers, because three of the four sets were priced on cost
+and cost is not a constraint here, so they were decided on quality instead. Two came out differently
+from what the owner clicked, and both differences are flagged in that file for a cheap veto:
+
+-   The rendering audit runs standalone over EVERY settled artifact, not a sample. A census has no
+    sampling error and can settle questions about particular entries; the sample won its earlier
+    place on price alone.
+-   Declines get one retry AND the voice loss gets fixed. These were offered as alternatives, which
+    was the error: the retry treats the symptom and the deadline treats the cause.
+-   Insertion splits in two. PARAGRAPH scale is refused on the evidence. SECTION scale is real and
+    gets landed, but AFTER `#74` and `#98`, because 85 of 92 entries never reach the matcher and
+    every section-scale number was drawn from the 7 that do.
+-   The window trial is dropped, unchanged, and this one was decided on its merits rather than its
+    price: a fourth arm would refine a measurement whose practical action is the same either way.
 
 ## The launch gate has lifted
 

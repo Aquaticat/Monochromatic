@@ -1098,10 +1098,18 @@ DELEGATE
 
 ## Question 8: where the rendering audit runs, now that it works
 
-ANSWERED 2026-08-16: option C, standalone over a SAMPLE of settled artifacts.
-Recorded with the other three answers of that date in
-`doc/decision/translation-repair-four-answers.md`. The options and reasoning are kept as written,
-because they are the record of what the answer was chosen against.
+ANSWERED 2026-08-16: option B, standalone over EVERY settled artifact.
+Recorded with three other decisions of that date in
+`doc/decision/translation-repair-four-answers.md`.
+
+The ranking below puts C first and is SUPERSEDED, deliberately and for a reason worth keeping: C won
+its place as "the cheapest way to get a RATE rather than a verdict", and under the standing
+best-quality guideline cost is not a constraint, so the saving is not a benefit. A census has no
+sampling error and additionally answers questions about particular entries, which C says outright it
+cannot. Everything else in the ranking still holds, including why the audit stays OUT of the
+producing path until its production error rate is known.
+
+The options are kept as written, because they are the record of what the answer was chosen against.
 
 The absent-baseline instrument (`#85`) is built, tested, and MEASURED against
 its own planted defect, three runs of each arm. On the positive fixture the
