@@ -171,6 +171,10 @@ export {
   assertArtifactProvenance,
   type GenerationSelection,
 } from './corpus-run/artifact-provenance.ts';
+export {
+  isMarkupOnly,
+  markupFraction,
+} from './corpus-run/markup-slice.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 export {
   type DrawableSlice,

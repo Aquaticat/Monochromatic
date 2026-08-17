@@ -12,6 +12,7 @@ import {
 } from '../displacement-class.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
+import { isMarkupOnly, } from './markup-slice.ts';
 import { sharesMedia, } from './transcription-suspect.ts';
 
 //region Displacement probe
@@ -73,6 +74,14 @@ type EntryDisplacement = {
    * so a transcription explains the surplus at least as well as a move does.
    */
   readonly transcriptionSuspects: readonly number[];
+
+  /**
+   * Low slices whose ORIGINAL is markup rather than prose, so they sit below
+   * baseline for a reason unrelated to giving a passage up and cannot be a
+   * relocation donor. `#107` named this class by hand; it is reported rather
+   * than suppressed so a reader knows what to subtract.
+   */
+  readonly markupDonors: readonly number[];
 
   /**
    * High slices with no neighbour that gave anything up.
@@ -231,6 +240,26 @@ function readEntry(
       },)
       .map(function toIndex(candidate,) {
         return candidate.high;
+      },),
+    markupDonors: reading.relocationCandidates
+      .filter(function donorIsMarkup(candidate,) {
+        /**
+         * Slice the passage would have had to come FROM, which is the low side.
+         *
+         * THE LOW SIDE, not the high one, and that is the whole point. A
+         * transcription suspect is recognised by what the HIGH slice embeds; a
+         * markup donor is recognised by what the LOW slice never had.
+         */
+        const slice = prepared.slices[candidate.low];
+        if (slice === undefined)
+          return false;
+        return isMarkupOnly({
+          sourceText: slice.source
+            .text,
+        },);
+      },)
+      .map(function toIndex(candidate,) {
+        return candidate.low;
       },),
     otherImbalances: reading.otherImbalances,
   };
