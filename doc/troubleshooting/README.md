@@ -141,14 +141,15 @@ A symbol exported by two barrels vanishes from the package at runtime:
    at an import three steps away
 - How to ask the built package what it actually exports
 
-### [Chaining a command behind a long run](chaining-a-command-behind-a-long-run.md)
+### [A finished process that will not exit](finished-process-does-not-exit.md)
 
-Two traps that both look like the watched process never finishing:
+A run wrote its results, printed its completion line, and held the process for three more minutes:
 
-- `pgrep --full` matches the shell running the `pgrep`,
-   because the pattern is in that shell's own command line
-- A finished run can hold its process open for minutes on abandoned sockets,
-   so `kept at <path>` in the log is the completion signal, not process exit
+- `Promise.race` does nothing to the loser, and `wait` is a bare `setTimeout` with no handle,
+   so a won race leaves a live timer holding the event loop
+- The first diagnosis blamed leaked sockets and was wrong;
+   the source said otherwise in a minute
+- Why the leak test had to spawn a child process rather than count timers in-process
 
 ### [NUL bytes land invisibly in source](nul-bytes-land-invisibly-in-source.md)
 

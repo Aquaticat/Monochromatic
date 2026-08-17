@@ -68,3 +68,32 @@ The cost is not the stuck loop, which is free to kill.
 The cost is that the loop makes a REBUILD SILENTLY NOT HAPPEN,
 so a later step reads a stale or deliberately broken build and reports a result about the wrong code.
 That failure looks like a real measurement, which is the expensive kind.
+
+## It happened again six hours later, to the agent who wrote this
+
+2026-08-17, same session.
+A loop chaining a second corpus audit behind a first,
+built to keep both runs on one build:
+
+```bash
+while pgrep --full 'node dist/final/node/rendering-audit-settled.mjs' > /dev/null; do sleep 15; done
+```
+
+Identical trap, identical silence,
+and the chained run never started.
+The remedy applied was the one this document already prescribes,
+which is the point:
+the document was right, and it was not read.
+
+So the lesson is not about `pgrep`, which is covered above.
+It is that BUILDING PROCESS AUTOMATION IS A CUE TO READ THIS INDEX FIRST.
+The traps that cost the most here are the silent ones,
+and a silent trap cannot remind you it exists.
+Two of the four incidents this file now records
+were written down before they were repeated.
+
+A second trap was hit the same afternoon
+that presents identically from the outside,
+a run that had genuinely finished but would not exit:
+see [A finished process that will not exit](finished-process-does-not-exit.md).
+Distinguishing them takes one look at the log's completion line.
