@@ -91,7 +91,10 @@ export class PublicationStoppedError extends IssuePublicationError {
     readonly position: InputPosition;
     readonly cause: unknown;
   },) {
-    super(`publication stopped at ${position.kind} ${String(position.value,)}: ${String(cause,)}`,);
+    super(
+      `publication stopped at ${position.kind} ${String(position.value,)}: ${String(cause,)}`,
+      { cause, },
+    );
     this.name = 'PublicationStoppedError';
     this.created = created;
     this.position = position;

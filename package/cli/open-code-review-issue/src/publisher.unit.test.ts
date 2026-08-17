@@ -368,8 +368,13 @@ await describe({
         catch (error: unknown) {
           caught = error;
         }
-        expect(caught,).toBeInstanceOf(AmbiguousReconciliationError,);
-        expect((caught as AmbiguousReconciliationError).urls,).toStrictEqual([
+        expect(caught,).toBeInstanceOf(PublicationStoppedError,);
+        expect((caught as PublicationStoppedError).cause,).toBeInstanceOf(
+          AmbiguousReconciliationError,
+        );
+        expect(
+          ((caught as PublicationStoppedError).cause as AmbiguousReconciliationError).urls,
+        ).toStrictEqual([
           'https://github.com/Aquaticat/issues-api/issues/11',
           'https://github.com/Aquaticat/issues-api/issues/12',
         ],);
