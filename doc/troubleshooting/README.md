@@ -141,6 +141,15 @@ A symbol exported by two barrels vanishes from the package at runtime:
    at an import three steps away
 - How to ask the built package what it actually exports
 
+### [Chaining a command behind a long run](chaining-a-command-behind-a-long-run.md)
+
+Two traps that both look like the watched process never finishing:
+
+- `pgrep --full` matches the shell running the `pgrep`,
+   because the pattern is in that shell's own command line
+- A finished run can hold its process open for minutes on abandoned sockets,
+   so `kept at <path>` in the log is the completion signal, not process exit
+
 ### [NUL bytes land invisibly in source](nul-bytes-land-invisibly-in-source.md)
 
 A control character written where a space was intended,
