@@ -879,30 +879,44 @@ THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked:
     about 21 minutes across a seven and a half hour run, under half a percent, against entries that
     cost hours.
 
-    THE RE-MEASURE IS RUNNING, launched 2026-08-17 over `Aniloviraw,zheermao101` into a throwaway
-    runs directory recorded in the scratchpad as `grace-run-dir.txt`. Those two are the POSITIVE
-    CONTROL: under the old window they lost a voice on 5 of 22 and 6 of 58 stages, so a clean result
-    from them means the fix worked rather than that there was nothing to fix. They also settled in
-    35.4 and 65.3 minutes before, so the run is short.
+    THE RE-MEASURE FINISHED 2026-08-17 and is written up in
+    `doc/audit/straggler-grace-remeasure.md`. NO RUN IS IN FLIGHT and NO `mise` EMBARGO IS IN FORCE;
+    an earlier version of this section said both, and a session reading it would have held itself
+    back from a run that had already exited. Its artifacts and log survive at
+    `~/temp/agent/grace-remeasure.UfE5pP1J`, also recorded in the scratchpad as `grace-run-dir.txt`.
 
-    COMPARE ON PER-STAGE VOICE COMPLETENESS and nothing else. The old-window baseline recomputed on
-    that definition is 63 of 483 stages, 0.130, per entry 5/22, 6/58, 30/208, 22/195. The 0.413
-    quoted elsewhere in this handover counts JUDGINGS and is not comparable; the 96 loss lines in
-    the cost run count retries and are not comparable either. Read the residual BY SLICE SIZE too,
-    because the 88.6 second maximum behind the new window came from bench slices of 94 to 497
-    characters, which samples the corpus only to about its 90th percentile.
+    HEADLINE: per-stage voice completeness fell from 11 of 80 stages (0.138) to 3 of 77 (0.039) on
+    the same two entries. One abandonment survived at 180000 ms on `hf:zai-org/GLM-5.2`, so the tail
+    the decision warned about is real but is one call rather than a class. The other two residual
+    losses are `schema-mismatch`, a different fault that the window never touched.
 
-    THE RUN IS ALSO THE TELEMETRY'S FIRST PRODUCTION EMISSION, so it doubles as the user-boundary
-    check that `SLICE-COST` lines appear and parse, and its `exit=` rows price the wider window
-    directly instead of the 21 minute estimate.
+    COST ROSE, by more than the estimate the decision carried: +7.1 percent and +28.6 percent on the
+    two entries. No unchanged-build repeat exists, so the run-to-run band is unmeasured and 21
+    percent aggregate cannot yet be separated from provider variance. The audit says so at length.
 
-    NOTHING MAY RUN `mise` IN THIS PACKAGE UNTIL IT EXITS, for the same reason as before: `build`
-    and `lint:types` write `dist/`, and the run is reading it.
+    COMPARE ON PER-STAGE VOICE COMPLETENESS and nothing else, for any future re-measure. The
+    old-window baseline on that definition is 63 of 483 stages, 0.130, per entry 5/22, 6/58, 30/208,
+    22/195. The 0.413 quoted elsewhere in this handover counts JUDGINGS and is not comparable; the 96
+    loss lines in the cost run count retries and are not comparable either.
 
-2.  `#105`'s retry policy: retry a declining slate ONCE against the same panel, then record what
-    still declines as `no-candidate-backed`. The delivery vocabulary already says WHERE such a slice
-    lands, so this is a reason rather than a new kind: with an incumbent it stays
-    `incumbent-retained`, without one it stays `gap-remains`.
+2.  ~~`#105`'s retry policy~~ DONE 2026-08-17 (`3a667a187`), as `src/translate-retry.ts`.
+    A declining slate is judged ONCE more against the same panel, and what still declines is recorded
+    as `no-candidate-backed`. The delivery vocabulary already said WHERE such a slice lands, so this
+    is a reason rather than a new kind: with an incumbent it stays `incumbent-retained`, without one
+    it stays `gap-remains`. Both exit doors are covered, since a decline RETURNS when an incumbent
+    exists and THROWS when none does, and covering one would have applied the policy to half the
+    slices.
+
+    PRICED FROM THE SETTLED ARTIFACTS, since the retry landed after the last run and has never
+    executed in production: 8 of 40 slices declined under the new window and 4 of 40 under the old,
+    every one of them `declined-indecision`, so the retry buys a second judging round on roughly one
+    slice in five rather than the one in sixteen a full-panel rate predicts. `no-candidate` never
+    occurred, so the exclusion in `RETRIED_DECLINES` protects nothing on this evidence. Budget
+    accordingly; the audit carries the working.
+
+    EVERY TIMING COMPARISON FROM HERE IS TWO CHANGES DEEP against the 2026-08-16 baselines, the
+    window and this retry, and no arithmetic separates them afterwards. Record the `pipeline=` digest
+    from a run's own `START` line beside any number taken from it.
 3.  `#74` and `#98`, the aligner, now foundational rather than optional: 85 of 92 entries never reach
     the matcher because equal section counts skip it, so the population every section-scale
     measurement was drawn from is itself an artifact of the aligner. Re-run the section census after.
