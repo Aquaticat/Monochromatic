@@ -1,19 +1,14 @@
 /**
- * Tests for screening one auditor's answer against the two texts.
+ * Tests for what survives screening of one auditor's answer.
  *
- * WHAT THESE PIN is that a claim proves itself from the side it CAN. An
- * omission has nothing in the candidate to quote, its absence being the whole
- * claim, so a symmetric rule would make the likeliest defect of a from-scratch
- * rendering permanently unprovable. An unsupported addition is the mirror.
- * Everything else changes something both sides state and must quote both.
+ * THE OBLIGATION RUNS BOTH WAYS, and half of these cases exist for the
+ * direction the first version left unenforced: a category resting on one side
+ * must not carry a quote on the other. An `omission` arriving with candidate
+ * text contradicts itself, and silently erasing that text let a voice file a
+ * paired claim under a one-sided category and escape the evidence the paired
+ * one asks for.
  *
- * AND that the archive is irrelevant BY CONSTRUCTION rather than by
- * instruction: a source quote is searched in the original and nowhere else, so
- * a claim resting on some other translation's wording anchors nowhere.
- *
- * Fixtures are cat-themed invention, written here rather than adapted from
- * anywhere. Checked against the corpus at the pinned commit: none of these
- * spans occurs in it. No corpus content appears here.
+ * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
  */
@@ -25,103 +20,120 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  anchorQuote,
+  type RenderingAuditFindingWire,
   screenRenderingAudit,
 } from '../dist/final/node/index.mjs';
 
 /**
- * Original passage, carrying a negation and a count so one fixture serves both
- * the polarity cases and the anchoring floors.
+ * Original every case screens against.
  */
-const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，每天傍晚只喝一碗温牛奶。';
+const SOURCE_TEXT = '三只猫住在书店的阁楼里。她们不吃罐头，只喝温牛奶。';
 
 /**
- * A rendering that says what the original says, with one phrase repeated so an
- * ambiguous quote has something to be ambiguous about.
+ * Rendering with the negation dropped.
  */
-const FAITHFUL_TEXT = 'Three cats live in the attic of the bookshop. They do not eat canned food, '
-  + 'and every evening they drink one bowl of warm milk in the attic of the bookshop.';
+const CANDIDATE_TEXT = 'Three cats live in the bookshop attic. They eat canned food, and drink warm milk.';
 
 /**
- * The same rendering with the negation dropped, which is the defect shape the
- * live arms of this instrument are built around.
- */
-const FLIPPED_TEXT = 'Three cats live in the attic of the bookshop. They eat canned food, '
-  + 'and every evening they drink one bowl of warm milk in the attic of the bookshop.';
-
-/**
- * Wording no version of this passage carries, standing in for another
- * translation an auditor might quote instead of the original.
- */
-const FOREIGN_WORDING = 'The cats abandoned the attic before winter.';
-
-/**
- * Builds one auditor reply around a single finding.
+ * Fields a case may replace on the sound finding.
  *
- * @param category - category the finding claims
- *
- * @param sourceQuote - span of the original it rests on
- *
- * @param candidateQuote - span of the candidate it rests on
- *
- * @returns Reply as the wire guard would accept it
+ * SPELLED OUT rather than derived from the wire type, because every property
+ * here is genuinely optional to a case: one that changes only the category
+ * should not restate four quotes it does not care about.
  *
  * @example
  * ```ts
- * const report = reportOf({ category: 'omission', sourceQuote: '她们不吃罐头', candidateQuote: '', },);
+ * const overrides: FindingOverrides = { category: 'omission', };
  * ```
  */
-function reportOf(
-  {
-    category,
-    sourceQuote,
-    candidateQuote,
-  }: {
-    readonly category: string;
-    readonly sourceQuote: string;
-    readonly candidateQuote: string;
-  },
-): {
-  readonly verdict: string;
-  readonly findings: readonly {
-    readonly category: string;
-    readonly sourceQuote: string;
-    readonly candidateQuote: string;
-    readonly reason: string;
-  }[];
-} {
+type FindingOverrides = {
+  /**
+   * Category this case names.
+   */
+  readonly category?: string;
+
+  /**
+   * Original span identifying the occurrence.
+   */
+  readonly sourceLocator?: string;
+
+  /**
+   * Original span carrying the change.
+   */
+  readonly sourceFocus?: string;
+
+  /**
+   * Candidate span identifying the occurrence.
+   */
+  readonly candidateLocator?: string;
+
+  /**
+   * Candidate span carrying the change.
+   */
+  readonly candidateFocus?: string;
+
+  /**
+   * What the voice says the spans amount to.
+   */
+  readonly reason?: string;
+};
+
+/**
+ * One finding with every field, which each case overrides one part of.
+ *
+ * @param overrides - fields this case changes
+ *
+ * @returns Finding as a voice would send it
+ *
+ * @example
+ * ```ts
+ * const finding = claim({ overrides: { category: 'omission', }, },);
+ * ```
+ */
+function claim(
+  { overrides, }: { readonly overrides: FindingOverrides; },
+): RenderingAuditFindingWire {
   return {
-    verdict: 'defects-found',
-    findings: [
-      {
-        category,
-        sourceQuote,
-        candidateQuote,
-        reason: 'the candidate does not say what the original says here',
-      },
-    ],
+    category: 'altered-polarity',
+    sourceLocator: '她们不吃罐头',
+    sourceFocus: '不吃',
+    candidateLocator: 'They eat canned food',
+    candidateFocus: 'eat',
+    reason: 'the original denies it and the candidate asserts it',
+    ...overrides,
   };
 }
 
 /**
- * Screens one reply against the rendering that dropped the negation.
+ * Screens one answer carrying one finding.
  *
- * @param report - reply to screen
+ * @param overrides - fields that finding changes
  *
- * @returns What survived
+ * @param verdict - what the voice cast
+ *
+ * @returns Screened report
  *
  * @example
  * ```ts
- * const screened = screenAgainstFlipped({ report, },);
+ * const screened = screenOne({ overrides: {}, },);
  * ```
  */
-function screenAgainstFlipped(
-  { report, }: { readonly report: ReturnType<typeof reportOf>; },
+function screenOne(
+  {
+    overrides,
+    verdict = 'defects-found',
+  }: {
+    readonly overrides: FindingOverrides;
+    readonly verdict?: string;
+  },
 ): ReturnType<typeof screenRenderingAudit> {
   return screenRenderingAudit({
-    report,
+    report: {
+      verdict,
+      findings: [claim({ overrides, },),],
+    },
     sourceText: SOURCE_TEXT,
-    candidateText: FLIPPED_TEXT,
+    candidateText: CANDIDATE_TEXT,
   },);
 }
 
@@ -129,250 +141,141 @@ await describe({
   name: screenRenderingAudit.name,
   children: [
     it({
-      name:
-        'KEEPS an omission proved from the ORIGINAL alone, which a symmetric rule would refuse: content '
-        + 'the candidate never rendered has nothing in the candidate to quote, its absence being the '
-        + 'claim, so demanding a candidate span would make the likeliest defect of a from-scratch '
-        + 'rendering permanently unprovable',
+      name: 'KEEPS a paired finding that anchors on both sides, and reads each side as anchored',
       fn: async () => {
-        /**
-         * A claim that the negation is gone, quoting only the original.
-         */
-        const screened = screenAgainstFlipped({
-          report: reportOf({
+        const screened = screenOne({ overrides: {}, },);
+        expect(screened.findings,).toHaveLength(1,);
+        expect(screened.dropped,).toEqual([],);
+        expect(screened.findings[0]
+          ?.source
+          .kind,).toBe('anchored',);
+        expect(screened.findings[0]
+          ?.candidate
+          .kind,).toBe('anchored',);
+      },
+    },),
+    it({
+      name:
+        'KEEPS an omission quoting the ORIGINAL only, since content the candidate never rendered has '
+        + 'nothing in the candidate to point at, and marks the other side unused rather than empty',
+      fn: async () => {
+        const screened = screenOne({
+          overrides: {
             category: 'omission',
-            sourceQuote: '她们不吃罐头',
-            candidateQuote: '',
-          },),
+            sourceLocator: '只喝温牛奶',
+            sourceFocus: '温',
+            candidateLocator: '',
+            candidateFocus: '',
+          },
         },);
         expect(screened.findings,).toHaveLength(1,);
         expect(screened.findings[0]
-          ?.sourceEvidence,).toBe('她们不吃罐头',);
-        expect(screened.findings[0]
-          ?.candidateEvidence,).toBe('',);
-        expect(screened.dropped,).toEqual([],);
+          ?.candidate
+          .kind,).toBe('unused',);
       },
     },),
     it({
       name:
-        'KEEPS an unsupported addition proved from the CANDIDATE alone, the mirror case: wording nothing '
-        + 'supports has nothing in the original to quote for the same reason',
+        'DROPS an omission carrying candidate text, a claim contradicting itself: it says the candidate '
+        + 'rendered nothing here and then quotes what the candidate rendered here',
       fn: async () => {
-        expect(
-          screenAgainstFlipped({
-            report: reportOf({
-              category: 'unsupported-addition',
-              sourceQuote: '',
-              candidateQuote: 'They eat canned food',
-            },),
-          },).findings,
-        ).toHaveLength(1,);
-      },
-    },),
-    it({
-      name:
-        'REQUIRES BOTH SIDES of a category that changes something both sides state, and drops the claim '
-        + 'when either span fails: a changed polarity is a disagreement between two wordings, and one '
-        + 'of them alone names no disagreement',
-      fn: async () => {
-        /**
-         * The same defect claimed properly, from both sides.
-         */
-        const both = screenAgainstFlipped({
-          report: reportOf({
-            category: 'altered-polarity',
-            sourceQuote: '她们不吃罐头',
-            candidateQuote: 'They eat canned food',
-          },),
-        },);
-        expect(both.findings,).toHaveLength(1,);
-        expect(both.findings[0]
-          ?.candidateEvidence,).toBe('They eat canned food',);
-
-        /**
-         * The same claim with the candidate span left out.
-         */
-        const halfProved = screenAgainstFlipped({
-          report: reportOf({
-            category: 'altered-polarity',
-            sourceQuote: '她们不吃罐头',
-            candidateQuote: '',
-          },),
-        },);
-        expect(halfProved.findings,).toEqual([],);
-        expect(halfProved.dropped,).toEqual(['empty-quote (candidate)',],);
-      },
-    },),
-    it({
-      name:
-        'DROPS a claim resting on wording that is in neither text, which is what makes the archive '
-        + 'irrelevant by construction rather than by instruction: the prompt says not to treat another '
-        + 'translation as the standard, and this is what enforces it, since a quote from one anchors '
-        + 'nowhere',
-      fn: async () => {
-        /**
-         * A claim quoting a rendering nobody here was shown.
-         */
-        const screened = screenAgainstFlipped({
-          report: reportOf({
-            category: 'unsupported-addition',
-            sourceQuote: '',
-            candidateQuote: FOREIGN_WORDING,
-          },),
+        const screened = screenOne({
+          overrides: {
+            category: 'omission',
+            sourceLocator: '只喝温牛奶',
+            sourceFocus: '温',
+            candidateLocator: 'drink warm milk',
+            candidateFocus: 'warm',
+          },
         },);
         expect(screened.findings,).toEqual([],);
-        expect(screened.dropped,).toEqual(['unanchored-quote (candidate)',],);
+        expect(screened.dropped,).toEqual(['forbidden-side-quote (candidate)',],);
       },
     },),
     it({
       name:
-        'DROPS a quote that occurs TWICE, since a repeated span does not say which occurrence was read, '
-        + 'and one that is too short to identify anything, which is the hole the coverage probe left '
-        + 'open when it accepted a single word as evidence',
+        'DROPS an unsupported-addition carrying original text, the mirror case, so a voice cannot file a '
+        + 'paired claim under a one-sided category and skip the evidence a paired category asks for',
       fn: async () => {
-        /**
-         * A span the candidate carries twice.
-         */
-        const repeated = screenAgainstFlipped({
-          report: reportOf({
+        const screened = screenOne({
+          overrides: {
             category: 'unsupported-addition',
-            sourceQuote: '',
-            candidateQuote: 'the attic of the bookshop',
-          },),
-        },);
-        expect(repeated.dropped,).toEqual(['ambiguous-quote (candidate)',],);
-
-        /**
-         * A span too short to identify anything, though it does occur.
-         */
-        const tiny = screenAgainstFlipped({
-          report: reportOf({
-            category: 'unsupported-addition',
-            sourceQuote: '',
-            candidateQuote: 'They',
-          },),
-        },);
-        expect(tiny.dropped,).toEqual(['unidentifying-quote (candidate)',],);
-      },
-    },),
-    it({
-      name:
-        'holds CJK quotes to a lower floor than Latin ones, deliberately: a Chinese clause carries far '
-        + 'more per character, so one floor for both would either admit an English word that identifies '
-        + 'nothing or refuse most honest source spans',
-      fn: async () => {
-        // Four characters of Chinese, which is above the CJK floor and far
-        // below the Latin one.
-        expect(
-          anchorQuote({
-            text: SOURCE_TEXT,
-            quote: '不吃罐头',
-            side: 'source',
-          },).anchored,
-        ).toBe(true,);
-        expect(
-          anchorQuote({
-            text: SOURCE_TEXT,
-            quote: '罐头',
-            side: 'source',
-          },).anchored,
-        ).toBe(false,);
-      },
-    },),
-    it({
-      name:
-        'returns the TEXT`S OWN wording as evidence rather than the quote it was sent, so a report never '
-        + 'quotes a document back with punctuation or line breaks the document does not carry',
-      fn: async () => {
-        /**
-         * A candidate whose sentence is wrapped, as a real document is.
-         */
-        const wrapped = 'They drink one bowl of warm milk,\nand then they sleep in the attic.';
-
-        /**
-         * The same span quoted as one line, which is how a model returns it.
-         */
-        const anchored = anchorQuote({
-          text: wrapped,
-          quote: 'one bowl of warm milk, and then they',
-          side: 'candidate',
-        },);
-        expect(anchored.anchored,).toBe(true,);
-        if (!anchored.anchored)
-          throw new Error('expected the wrapped quote to anchor',);
-
-        expect(anchored.evidence,).toBe('one bowl of warm milk,\nand then they',);
-      },
-    },),
-    it({
-      name:
-        'DROPS a category this version does not name, and reads an unknown VERDICT as uncertain while '
-        + 'still screening the findings under it: a mis-cast verdict is not a reason to discard evidence '
-        + 'that anchors',
-      fn: async () => {
-        expect(
-          screenAgainstFlipped({
-            report: reportOf({
-              category: 'vibes-off',
-              sourceQuote: '她们不吃罐头',
-              candidateQuote: 'They eat canned food',
-            },),
-          },).dropped,
-        ).toEqual(['unknown-category (vibes-off)',],);
-
-        /**
-         * A reply whose verdict is not one this version knows, carrying a
-         * finding that proves itself.
-         */
-        const screened = screenRenderingAudit({
-          report: {
-            verdict: 'looks-bad',
-            findings: reportOf({
-              category: 'altered-polarity',
-              sourceQuote: '她们不吃罐头',
-              candidateQuote: 'They eat canned food',
-            },).findings,
+            sourceLocator: '她们不吃罐头',
+            sourceFocus: '不吃',
+            candidateLocator: 'They eat canned food',
+            candidateFocus: 'canned',
           },
-          sourceText: SOURCE_TEXT,
-          candidateText: FLIPPED_TEXT,
+        },);
+        expect(screened.findings,).toEqual([],);
+        expect(screened.dropped,).toEqual(['forbidden-side-quote (source)',],);
+      },
+    },),
+    it({
+      name: 'DROPS a paired finding that anchors on one side only, naming which side failed',
+      fn: async () => {
+        const screened = screenOne({
+          overrides: {
+            candidateLocator: 'They devour canned food',
+            candidateFocus: 'devour',
+          },
+        },);
+        expect(screened.findings,).toEqual([],);
+        expect(screened.dropped,).toEqual(['unanchored-locator (candidate)',],);
+      },
+    },),
+    it({
+      name:
+        'DROPS a claim whose original quote is another translation`s English rather than the original`s '
+        + 'Chinese, which is what keeps a rendering nobody was shown out of this instrument',
+      fn: async () => {
+        const screened = screenOne({
+          overrides: {
+            sourceLocator: 'They do not eat canned food',
+            sourceFocus: 'not',
+          },
+        },);
+        expect(screened.findings,).toEqual([],);
+        expect(screened.dropped,).toEqual(['unanchored-locator (source)',],);
+      },
+    },),
+    it({
+      name: 'DROPS a category this version does not name, and says which word it was',
+      fn: async () => {
+        const screened = screenOne({ overrides: { category: 'altered-whiskers', }, },);
+        expect(screened.findings,).toEqual([],);
+        expect(screened.dropped,).toEqual(['unknown-category (altered-whiskers)',],);
+      },
+    },),
+    it({
+      name:
+        'RECORDS an unknown verdict rather than quietly reading it as uncertain: a voice casting a word '
+        + 'this version never offered is a protocol failure, while uncertain is a state a voice may '
+        + 'legitimately be in, and reading one as the other hides an instrument defect',
+      fn: async () => {
+        const screened = screenOne({
+          overrides: {},
+          verdict: 'catastrophic',
         },);
         expect(screened.verdict,).toBe('uncertain',);
+        expect(screened.dropped,).toEqual(['unknown-verdict (catastrophic)',],);
+        // AND THE FINDING SURVIVES, because a mis-cast verdict is not a reason
+        // to discard evidence that anchors.
         expect(screened.findings,).toHaveLength(1,);
       },
     },),
     it({
-      name:
-        'reports NOTHING FOUND and EVERYTHING DROPPED differently, which the tally over voices rests on: '
-        + 'a dropped claim is not evidence that a rendering is sound, so a run of unanchored answers '
-        + 'must not read as agreement that it is',
+      name: 'KEEPS a known verdict without adding anything to the drop list',
       fn: async () => {
-        /**
-         * A voice that claimed nothing, against the rendering that says what
-         * the original says.
-         */
-        const quiet = screenRenderingAudit({
+        const screened = screenRenderingAudit({
           report: {
             verdict: 'no-defect-found',
             findings: [],
           },
           sourceText: SOURCE_TEXT,
-          candidateText: FAITHFUL_TEXT,
+          candidateText: CANDIDATE_TEXT,
         },);
-        expect(quiet.findings,).toEqual([],);
-        expect(quiet.dropped,).toEqual([],);
-
-        /**
-         * A voice whose every claim fell.
-         */
-        const unfounded = screenAgainstFlipped({
-          report: reportOf({
-            category: 'unsupported-addition',
-            sourceQuote: '',
-            candidateQuote: FOREIGN_WORDING,
-          },),
-        },);
-        expect(unfounded.findings,).toEqual([],);
-        expect(unfounded.dropped,).toHaveLength(1,);
+        expect(screened.verdict,).toBe('no-defect-found',);
+        expect(screened.dropped,).toEqual([],);
       },
     },),
   ],

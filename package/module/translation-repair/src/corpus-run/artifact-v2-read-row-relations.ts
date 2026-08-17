@@ -34,6 +34,41 @@ import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
 // nothing to do there parses cleanly and cannot have happened.
 
 /**
+ * Says how two disagreeing outcomes differ, in terms that distinguish them.
+ *
+ * NAMING THE KINDS IS NOT ENOUGH when they agree. Two outcomes can carry the
+ * same member and still disagree, since one member holds wording, and a message
+ * built from the kinds alone would read `decided rather than decided` and send
+ * its reader looking for a difference it refused to state. Phrased as what the
+ * member carries rather than as accepted wording specifically, so it stays true
+ * of the next member that gains a payload.
+ *
+ * @param raw - member the raw result names
+ *
+ * @param recorded - member the ledger names
+ *
+ * @returns Phrase naming the difference
+ *
+ * @example
+ * ```ts
+ * const said = describeOutcomeDisagreement({ raw: 'decided', recorded: 'decided', },);
+ * ```
+ */
+function describeOutcomeDisagreement(
+  {
+    raw,
+    recorded,
+  }: {
+    readonly raw: string;
+    readonly recorded: string;
+  },
+): string {
+  return (raw === recorded)
+    ? `both name ${raw}, and they differ in what that member carries`
+    : `${raw} rather than ${recorded}`;
+}
+
+/**
  * Refuses a lane whose raw evidence and ledger describe different runs.
  *
  * @param evidence - what the lane's raw result says per slice
@@ -111,30 +146,14 @@ export function assertEvidenceMatchesLedger(
       right: theirs.outcome,
     },)) {
       /**
-       * How the two outcomes differ, in terms that distinguish them.
-       *
-       * NAMING THE KINDS IS NOT ENOUGH when they agree. Two outcomes can carry
-       * the same member and still disagree, since one of them holds wording,
-       * and a message built from the kinds alone would read `decided rather
-       * than decided` and send its reader looking for a difference it refused
-       * to state. Phrased as what the member carries rather than as accepted
-       * wording specifically, so it stays true of the next member that gains a
-       * payload.
+       * How these two outcomes differ.
        */
-      const disagreement = (mine.outcome
-        .kind === theirs.outcome
-        .kind)
-        ? `both name ${
-          mine.outcome
-            .kind
-        }, and they differ in what that member carries`
-        : `${
-          mine.outcome
-            .kind
-        } rather than ${
-          theirs.outcome
-            .kind
-        }`;
+      const disagreement = describeOutcomeDisagreement({
+        raw: mine.outcome
+          .kind,
+        recorded: theirs.outcome
+          .kind,
+      },);
 
       throw new ArtifactParseError({
         path: `${path}.delivery[${String(position,)}].outcome`,

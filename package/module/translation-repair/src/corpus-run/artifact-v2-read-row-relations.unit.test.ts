@@ -67,7 +67,7 @@ const RETAINED_ROW: ArtifactDeliveryRowV2 = {
 };
 
 await describe({
-  name: 'assertRowsCoherent',
+  name: assertRowsCoherent.name,
   children: [
     it({
       name:
@@ -139,7 +139,7 @@ await describe({
 },);
 
 await describe({
-  name: 'assertEvidenceMatchesLedger',
+  name: assertEvidenceMatchesLedger.name,
   children: [
     it({
       name:

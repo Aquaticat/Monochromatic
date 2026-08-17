@@ -126,11 +126,45 @@ export type NearMiss = {
 };
 
 /**
- * One side's interval, or its absence, in a form two claims can be compared by.
+ * One side's focus span, in the form two claims are compared by.
+ *
+ * NAMED ABSENCE rather than a nullish union: a side a category does not use is
+ * a thing this comparison knows about, and it must never intersect anything,
+ * which a missing value would leave to whoever remembered to check.
+ *
+ * @example
+ * ```ts
+ * const interval: FocusInterval = { kind: 'unused', };
+ * ```
+ */
+type FocusInterval = {
+  /**
+   * Category does not rest on this side.
+   */
+  readonly kind: 'unused';
+} | {
+  /**
+   * Category rests on this side, and the focus sits here.
+   */
+  readonly kind: 'span';
+
+  /**
+   * Where the focus begins.
+   */
+  readonly start: number;
+
+  /**
+   * Where it ends, exclusive.
+   */
+  readonly end: number;
+};
+
+/**
+ * Reads one side's focus interval.
  *
  * @param reading - what one side of a finding rests on
  *
- * @returns Interval as a pair, or null for a side the category does not use
+ * @returns Interval, or the named absence for a side the category does not use
  *
  * @example
  * ```ts
@@ -139,16 +173,17 @@ export type NearMiss = {
  */
 function intervalOf(
   { reading, }: { readonly reading: SideReading; },
-): readonly [number, number,] | null {
+): FocusInterval {
   if (reading.kind === 'unused')
-    return null;
+    return { kind: 'unused', };
 
-  return [
-    reading.focus
+  return {
+    kind: 'span',
+    start: reading.focus
       .start,
-    reading.focus
+    end: reading.focus
       .end,
-  ];
+  };
 }
 
 /**
@@ -190,14 +225,17 @@ function intersects(
     left,
     right,
   }: {
-    readonly left: readonly [number, number,] | null;
-    readonly right: readonly [number, number,] | null;
+    readonly left: FocusInterval;
+    readonly right: FocusInterval;
   },
 ): boolean {
-  if ((left === null) || (right === null))
+  // A SIDE NEITHER CLAIM USES IS NOT A SHARED POSITION. Two omissions both
+  // leaving the candidate side unused agree about nothing there, and reading
+  // that as an intersection would make every pair of one-sided claims touch.
+  if ((left.kind === 'unused') || (right.kind === 'unused'))
     return false;
 
-  return (left[0] < right[1]) && (right[0] < left[1]);
+  return (left.start < right.end) && (right.start < left.end);
 }
 
 /**
@@ -250,9 +288,9 @@ export function corroborate(
    */
   const grouped = claims.reduce(
     function collect(
-      groups: Map<string, AuditMemberClaim[]>,
+      groups: Map<string, readonly AuditMemberClaim[]>,
       claim,
-    ): Map<string, AuditMemberClaim[]> {
+    ): Map<string, readonly AuditMemberClaim[]> {
       /**
        * Key this claim falls under.
        */
@@ -266,7 +304,7 @@ export function corroborate(
       );
       return groups;
     },
-    new Map<string, AuditMemberClaim[]>(),
+    new Map<string, readonly AuditMemberClaim[]>(),
   );
 
   return [...grouped.values(),]

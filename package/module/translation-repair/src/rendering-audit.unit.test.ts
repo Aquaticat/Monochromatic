@@ -1,13 +1,12 @@
 /**
- * Tests for the rendering audit stage: what it asks, what survives screening,
- * and what it takes for a defect to count as corroborated.
+ * Tests for the rendering audit stage, driven through the whole instrument.
  *
- * DRIVEN THROUGH THE WHOLE INSTRUMENT rather than through the screen alone,
- * because the question this exists to answer is whether a defect survives
- * AGGREGATION. A single scripted voice proves only that the stage ran.
+ * WHY END TO END rather than through the matcher alone: the question this exists
+ * to answer is whether a defect survives the trip from a scripted reply, through
+ * anchoring, into an aggregate. The pieces are tested apart in their own files;
+ * these cases exist to catch a seam between them.
  *
- * Fixtures are cat-themed invention, written here. Checked against the corpus
- * at the pinned commit: none of these spans occurs in it.
+ * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
  */
@@ -53,16 +52,6 @@ const CANDIDATE_TEXT = 'Three cats live in the attic of the bookshop. They eat c
   + 'and every evening they drink one bowl of warm milk.';
 
 /**
- * Span of the original the honest finding rests on.
- */
-const SOURCE_SPAN = '她们不吃罐头';
-
-/**
- * Span of the candidate it disagrees with.
- */
-const CANDIDATE_SPAN = 'They eat canned food';
-
-/**
  * Deadline every fixture call runs under.
  */
 const CALL_TIMEOUT_MS = 4_000;
@@ -79,33 +68,42 @@ type ScriptedVoice = {
   /**
    * Findings it claims, already in wire shape.
    */
-  readonly findings: readonly {
-    readonly category: string;
-    readonly sourceQuote: string;
-    readonly candidateQuote: string;
-    readonly reason: string;
-  }[];
+  readonly findings: readonly Readonly<Record<string, string>>[];
 };
 
 /**
- * One honest polarity finding, as a voice would send it.
+ * One honest polarity finding, located however this voice chose to locate it.
  *
- * @param reason - what this voice says the two spans amount to
+ * @param sourceLocator - original span this voice quotes
+ *
+ * @param candidateLocator - candidate span it quotes
+ *
+ * @param reason - what it says the spans amount to
  *
  * @returns Finding in wire shape
  *
  * @example
  * ```ts
- * const finding = polarityFinding({ reason: 'the negation is gone', },);
+ * const finding = polarityFinding({ sourceLocator, candidateLocator, reason, },);
  * ```
  */
 function polarityFinding(
-  { reason, }: { readonly reason: string; },
-): ScriptedVoice['findings'][number] {
+  {
+    sourceLocator,
+    candidateLocator,
+    reason,
+  }: {
+    readonly sourceLocator: string;
+    readonly candidateLocator: string;
+    readonly reason: string;
+  },
+): Readonly<Record<string, string>> {
   return {
     category: 'altered-polarity',
-    sourceQuote: SOURCE_SPAN,
-    candidateQuote: CANDIDATE_SPAN,
+    sourceLocator,
+    sourceFocus: '不吃',
+    candidateLocator,
+    candidateFocus: 'eat canned food',
     reason,
   };
 }
@@ -119,7 +117,7 @@ const QUIET_VOICE: ScriptedVoice = {
 };
 
 /**
- * Client answering with one scripted reply per auditor, by roster position.
+ * Client answering with one scripted reply per auditor.
  *
  * @param script - what each auditor answers, keyed by model id
  *
@@ -200,22 +198,31 @@ await describe({
   children: [
     it({
       name:
-        'CORROBORATES a defect two auditors found over the same span, and counts the voices rather than '
-        + 'the claims: the whole point of a roster here is that one auditor`s opinion and a defect two '
-        + 'of them located independently are different facts',
+        'CORROBORATES one defect two auditors located, THROUGH DIFFERENT LOCATORS: the whole rebuild '
+        + 'rests on two voices not having to quote the same width of text to be talking about the same '
+        + 'thing, and this is the case that proves the seam between anchoring and the matcher holds',
       fn: async () => {
-        /**
-         * Two auditors finding the dropped negation, one finding nothing.
-         */
         const report = await auditWith({
           script: {
             [AUDITORS[0] ?? '']: {
               verdict: 'defects-found',
-              findings: [polarityFinding({ reason: 'the original negates this and the candidate does not', },),],
+              findings: [
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头',
+                  candidateLocator: 'They eat canned food',
+                  reason: 'the original negates this and the candidate does not',
+                },),
+              ],
             },
             [AUDITORS[1] ?? '']: {
               verdict: 'defects-found',
-              findings: [polarityFinding({ reason: 'the candidate asserts what the original denies', },),],
+              findings: [
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头，每天傍晚只喝一碗温牛奶',
+                  candidateLocator: 'They eat canned food, and every evening they drink one bowl of warm milk',
+                  reason: 'the candidate asserts what the original denies',
+                },),
+              ],
             },
             [AUDITORS[2] ?? '']: QUIET_VOICE,
           },
@@ -226,22 +233,27 @@ await describe({
         expect(report.corroborated[0]
           ?.voices,).toBe(2,);
         expect(report.corroborated[0]
-          ?.sourceEvidence,).toBe(SOURCE_SPAN,);
-        expect(report.corroborated[0]
-          ?.reasons,).toHaveLength(2,);
+          ?.members,).toHaveLength(2,);
+        expect(report.near,).toEqual([],);
       },
     },),
     it({
       name:
-        'REPORTS NO CORROBORATED DEFECT when only one auditor found it, while keeping that auditor`s row: '
-        + 'a lone claim is evidence about the auditor as much as about the rendering, and discarding it '
-        + 'would destroy what a later calibration of these voices has to read',
+        'REPORTS NO CORROBORATED DEFECT when only one auditor found it, while keeping that auditor`s '
+        + 'row: a lone claim is evidence about the auditor as much as about the rendering, and '
+        + 'discarding it would destroy what a later calibration has to read',
       fn: async () => {
         const report = await auditWith({
           script: {
             [AUDITORS[0] ?? '']: {
               verdict: 'defects-found',
-              findings: [polarityFinding({ reason: 'the negation is gone', },),],
+              findings: [
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头',
+                  candidateLocator: 'They eat canned food',
+                  reason: 'the negation is gone',
+                },),
+              ],
             },
             [AUDITORS[1] ?? '']: QUIET_VOICE,
             [AUDITORS[2] ?? '']: QUIET_VOICE,
@@ -260,16 +272,24 @@ await describe({
     },),
     it({
       name:
-        'does NOT let one auditor corroborate itself by claiming the same span twice, which is the way a '
-        + 'count over claims rather than over voices would report agreement nobody reached',
+        'does NOT let one auditor corroborate itself by filing the same defect twice, which is what a '
+        + 'count over claims rather than over voices would report as agreement nobody reached',
       fn: async () => {
         const report = await auditWith({
           script: {
             [AUDITORS[0] ?? '']: {
               verdict: 'defects-found',
               findings: [
-                polarityFinding({ reason: 'the negation is gone', },),
-                polarityFinding({ reason: 'saying it again does not make it two opinions', },),
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头',
+                  candidateLocator: 'They eat canned food',
+                  reason: 'the negation is gone',
+                },),
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头',
+                  candidateLocator: 'They eat canned food',
+                  reason: 'saying it again does not make it two opinions',
+                },),
               ],
             },
             [AUDITORS[1] ?? '']: QUIET_VOICE,
@@ -290,8 +310,10 @@ await describe({
          */
         const invented = {
           category: 'unsupported-addition',
-          sourceQuote: '',
-          candidateQuote: 'The cats abandoned the attic before winter.',
+          sourceLocator: '',
+          sourceFocus: '',
+          candidateLocator: 'The cats abandoned the attic before winter.',
+          candidateFocus: 'abandoned',
           reason: 'this sentence is not supported',
         };
 
@@ -315,28 +337,77 @@ await describe({
               return row.dropped;
             },),
         ).toEqual([
-          'unanchored-quote (candidate)',
-          'unanchored-quote (candidate)',
+          'unanchored-locator (candidate)',
+          'unanchored-locator (candidate)',
         ],);
       },
     },),
     it({
       name:
-        'accounts for an auditor it could not hear rather than reading silence as agreement, and says so '
-        + 'in the findings: a lost voice shrinks the roster that could have corroborated anything',
+        'reports two voices who NAMED THE SAME SPAN DIFFERENTLY as a near miss rather than as a defect '
+        + 'or as nothing, since which of them is right is a question about the taxonomy that neither was '
+        + 'asked and this instrument must not answer by merging',
       fn: async () => {
-        /**
-         * Two auditors answering, one scripted to lose its voice entirely.
-         */
         const report = await auditWith({
           script: {
             [AUDITORS[0] ?? '']: {
               verdict: 'defects-found',
-              findings: [polarityFinding({ reason: 'the negation is gone', },),],
+              findings: [
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头',
+                  candidateLocator: 'They eat canned food',
+                  reason: 'the polarity is reversed',
+                },),
+              ],
             },
             [AUDITORS[1] ?? '']: {
               verdict: 'defects-found',
-              findings: [polarityFinding({ reason: 'the candidate says the opposite', },),],
+              findings: [
+                {
+                  ...polarityFinding({
+                    sourceLocator: '她们不吃罐头',
+                    candidateLocator: 'They eat canned food',
+                    reason: 'the negation was dropped, so it reads as an omission to me',
+                  },),
+                  category: 'broken-structure',
+                },
+              ],
+            },
+            [AUDITORS[2] ?? '']: QUIET_VOICE,
+          },
+        },);
+        expect(report.corroborated,).toEqual([],);
+        expect(report.near,).toHaveLength(1,);
+        expect(report.near[0]
+          ?.kind,).toBe('same-focus-different-category',);
+      },
+    },),
+    it({
+      name:
+        'accounts for an auditor it could not hear rather than reading silence as agreement, since a '
+        + 'lost voice shrinks the roster that could have corroborated anything',
+      fn: async () => {
+        const report = await auditWith({
+          script: {
+            [AUDITORS[0] ?? '']: {
+              verdict: 'defects-found',
+              findings: [
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头',
+                  candidateLocator: 'They eat canned food',
+                  reason: 'the negation is gone',
+                },),
+              ],
+            },
+            [AUDITORS[1] ?? '']: {
+              verdict: 'defects-found',
+              findings: [
+                polarityFinding({
+                  sourceLocator: '她们不吃罐头',
+                  candidateLocator: 'They eat canned food',
+                  reason: 'the candidate says the opposite',
+                },),
+              ],
             },
           },
         },);
