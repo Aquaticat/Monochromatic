@@ -38,7 +38,7 @@ export {
 } from './corpus-run/rendering-audit-settled-repeat.ts';
 export {
   type AuditRepeatBand,
-  bandOf,
+  repeatBandOf,
 } from './corpus-run/rendering-audit-settled-band.ts';
 export {
   digestAuditedText,
