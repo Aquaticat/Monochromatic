@@ -1480,3 +1480,40 @@ WHEN THE PASS LANDS, in order:
     More ENTRIES is the one thing `#115` proved the audit needs.
 3.  `#108`'s replacement rate, which is what `#107`'s remaining decision waits on.
 4.  Lift the freeze: `#91`'s half-weight first, since it is settled, authorized and located.
+
+### The pass is being STOPPED AT 6 ENTRIES, on the user's instruction
+
+Decided by the user 2026-08-17 22:50Z, who noted 6 is low and defensible at this stage. A watcher
+polls the artifact directory and stops the pass by PID once six exist; the seventh entry's slices
+stay in the cache, so nothing is lost and a later run resumes them.
+
+WHY NOT MORE: measured rate is about 86 minutes an entry (73, 139 and 45 for the first three, the
+spread being #114's size dependence). All 92 would take about 128 hours against a 72-hour soft
+budget, so the pass would have stopped near 50 anyway, and the freeze would have held for days.
+
+WHAT SIX ENTRIES BUYS, and it is worth being plain that it is less than #60 asked for: #60's bar was
+15+, set 2026-08-14, so its redraw is NOT unblocked by this. What six does buy is #115: the
+rendering audit's confound was two entries against two entries, and six settled under one pipeline
+is a real step even though it will not settle the archive-versus-fresh question either.
+
+### The GLM finding, corrected
+
+A first reading said "GLM models are slow" from abandon counts alone. THAT IS RETRACTED. The same
+window carries 262 successful GLM answers against 24 abandons, and the abandons are stage-shaped:
+15 `select`, 6 `panel`, 4 `critic`, 0 `checker`, spread evenly with no clustering. Selection carries
+the largest prompts (`#92`: 12119 tokens against a slate of 7), so the shape is a tail on the
+largest prompts rather than a slow model. It is a hypothesis, not a finding.
+
+IT CANNOT BE SETTLED WITH WHAT IS LOGGED, which is `#118`: an abandoned call leaves no output, no
+token count and no reasoning, so "never got a first byte" and "was mid-reasoning" are
+indistinguishable and have opposite remedies. `drainBody` also carries no model id, which is why
+that investigation had to reason from abandon counts and reached the wrong answer first.
+
+### When the freeze lifts, in order
+
+1.  `#91` half-weight self-certification. Settled, authorized, located at `tallyResolutionChecks`
+    in `src/tally-resolution.ts`, called from `runCheckerStage`.
+2.  `#118`, the two diagnostics above. Small, and they make `#68`'s latency axis answerable.
+3.  Re-read the slice cost telemetry, which by then includes translate-lane slices.
+4.  Re-run the settled rendering audit over the six new artifacts. The reader takes the flat layout
+    now, so point it straight at `~/translation-repair-runs-20260817/artifacts`.
