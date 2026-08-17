@@ -1107,6 +1107,9 @@ importers:
       '@inquirer/input':
         specifier: 'catalog:'
         version: 5.1.2(@types/node@26.2.0)
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

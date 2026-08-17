@@ -165,5 +165,8 @@ export function writeAppliedResult({
   readonly output: NodeJS.WritableStream;
   readonly result: AppliedResult;
 },): void {
-  writeJson({ output, value: result, });
+  writeJson({
+    output,
+    value: result,
+  });
 }

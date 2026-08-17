@@ -98,9 +98,10 @@ export {
   buildNonInteractivePreview,
   buildPublicationPlan,
 } from './plan.ts';
+export { runCli, } from './cli-entry.ts';
 export {
   CliRuntimeError,
-  runCli,
+  executeRun,
   type CliStreams,
 } from './run-cli.ts';
 export {

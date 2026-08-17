@@ -52,7 +52,9 @@ await describe({
         const cancellation = new Error('User force closed the prompt');
         cancellation.name = 'ExitPromptError';
         expect(isPromptCancellation(cancellation,),).toBe(true,);
-        expect(isPromptCancellation(new Error('other',),),).toBe(false,);
+        expect(
+          isPromptCancellation(new Error('other',),),
+        ).toBe(false,);
         expect(isPromptCancellation('ExitPromptError',),).toBe(false,);
       },
     },),

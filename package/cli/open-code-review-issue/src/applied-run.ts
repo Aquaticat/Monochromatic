@@ -99,7 +99,10 @@ export async function runAppliedPublication({
       shouldStop: interrupts.shouldStop,
     },);
     if (mode === 'interactive') {
-      writeCreatedIssues({ output: streams.stdout, created: result.created, });
+      writeCreatedIssues({
+        output: streams.stdout,
+        created: result.created,
+      });
     }
     else {
       writeAppliedResult({
@@ -117,8 +120,12 @@ export async function runAppliedPublication({
   catch (error: unknown) {
     if (error instanceof PublicationInterruptedError) {
       if (mode === 'interactive') {
-        streams.stderr.write(`${error.message}\n`,);
-        writeCreatedIssues({ output: streams.stdout, created: error.created, });
+        streams.stderr
+          .write(`${error.message}\n`,);
+        writeCreatedIssues({
+          output: streams.stdout,
+          created: error.created,
+        });
       }
       else {
         writeAppliedResult({
@@ -139,8 +146,12 @@ export async function runAppliedPublication({
     }
     if (error instanceof PublicationStoppedError) {
       if (mode === 'interactive') {
-        streams.stderr.write(`${error.message}\n`,);
-        writeCreatedIssues({ output: streams.stdout, created: error.created, });
+        streams.stderr
+          .write(`${error.message}\n`,);
+        writeCreatedIssues({
+          output: streams.stdout,
+          created: error.created,
+        });
       }
       else {
         writeAppliedResult({

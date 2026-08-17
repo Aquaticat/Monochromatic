@@ -40,13 +40,22 @@ export type PublicationInterruptControl = {
  */
 const PROCESS_SIGNAL_HOST: PublicationSignalHost = {
   onInterrupt(listener,) {
-    process.on('SIGINT', listener,);
+    process.on(
+      'SIGINT',
+      listener,
+    );
   },
   offInterrupt(listener,) {
-    process.off('SIGINT', listener,);
+    process.off(
+      'SIGINT',
+      listener,
+    );
   },
   forceInterrupt() {
-    process.kill(process.pid, 'SIGINT',);
+    process.kill(
+      process.pid,
+      'SIGINT',
+    );
   },
 };
 
@@ -97,7 +106,11 @@ export function createPublicationInterruptControl({
       return state.stop;
     },
     async wait(milliseconds,) {
-      await delay(milliseconds, undefined, { signal: waitAbort.signal, },);
+      await delay(
+        milliseconds,
+        undefined,
+        { signal: waitAbort.signal, },
+      );
     },
     [Symbol.dispose]() {
       host.offInterrupt(interrupt,);

@@ -4,21 +4,15 @@
  * @module
  */
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import {
-  logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { runAppliedPublication, } from './applied-run.ts';
-import { selectApplyPlan, SecurityAuthorityError, } from './authority.ts';
 import {
-  parseCliArguments,
-  CliInvocationError,
-  type RunCliArguments,
-} from './cli-args.ts';
+  selectApplyPlan,
+  SecurityAuthorityError,
+} from './authority.ts';
+import type { RunCliArguments, } from './cli-args.ts';
 import {
-  HELP_TEXT,
   writeAppliedResult,
   writeCancellation,
   writeInteractiveSummary,
@@ -41,7 +35,6 @@ import {
 import type { PublicationPlan, } from './plan-model.ts';
 import { preflightPublication, } from './preflight.ts';
 import {
-  isPromptCancellation,
   promptForExplicitDecision,
   promptForPastedInput,
 } from './interactive-prompts.ts';
@@ -59,11 +52,6 @@ const EXIT_SUCCESS = 0;
  * Handled runtime or publication failure status.
  */
 const EXIT_RUNTIME_FAILURE = 1;
-
-/**
- * Invocation misuse exit status.
- */
-const EXIT_INVOCATION_MISUSE = 2;
 
 /**
  * Tagged root logger; messages never include finding content or paths.
@@ -116,7 +104,11 @@ function promptStreams(streams: CliStreams,): PromptStreams {
  * @throws {@link CliRuntimeError} when stdin or stdout is not a TTY.
  */
 function assertInteractiveTty(streams: CliStreams,): void {
-  if (streams.stdin.isTTY !== true || streams.stdout.isTTY !== true) {
+  if ((streams.stdin
+    .isTTY
+    !== true) || (streams.stdout
+      .isTTY
+      !== true)) {
     throw new CliRuntimeError(
       'interactive mode requires TTY standard input and TTY standard output',
     );
@@ -211,7 +203,9 @@ async function runInteractive({
     plan,
     streams: promptStreams(streams,),
   },);
-  if (selection.issues.length === 0) {
+  if (selection.issues
+    .length
+    === 0) {
     writeCancellation(streams.stdout,);
     return EXIT_SUCCESS;
   }
@@ -219,7 +213,8 @@ async function runInteractive({
     output: streams.stdout,
     repository,
     issues: selection.issues,
-    withheldCount: selection.withheldPositions.length,
+    withheldCount: selection.withheldPositions
+      .length,
   },);
   /**
    * Explicit final batch mutation decision with no default.
@@ -261,7 +256,10 @@ async function runNonInteractive({
   readonly streams: CliStreams;
 },): Promise<number> {
   if (command.applyAuthority === undefined) {
-    writeJson({ output: streams.stdout, value: buildNonInteractivePreview(plan,), });
+    writeJson({
+      output: streams.stdout,
+      value: buildNonInteractivePreview(plan,),
+    });
     return EXIT_SUCCESS;
   }
   try {
@@ -291,7 +289,9 @@ async function runNonInteractive({
         outcome: 'failed',
         repository: repository.url,
         created: [],
-        withheldSecurityPositions: buildNonInteractivePreview(plan,).security.positions,
+        withheldSecurityPositions: buildNonInteractivePreview(plan,)
+          .security
+          .positions,
         failure: {
           message: error.message,
         },
@@ -305,8 +305,13 @@ async function runNonInteractive({
  * Executes one validated run command through input, preflight, and selected mode.
  *
  * @returns Settled mode status.
+ *
+ * @example
+ * ```ts
+ * await executeRun({ command, cwd: process.cwd(), streams });
+ * ```
  */
-async function executeRun({
+export async function executeRun({
   command,
   cwd,
   streams,
@@ -328,8 +333,13 @@ async function executeRun({
   /**
    * Validated OCR input loaded before GitHub operations.
    */
-  const input = await loadInput({ command, streams, });
-  if (input.findings.length === 0) {
+  const input = await loadInput({
+    command,
+    streams,
+  });
+  if (input.findings
+    .length
+    === 0) {
     throw new CliRuntimeError('OCR input contains no findings to publish',);
   }
   await checkGitHubCliVersion({ cwd, });
@@ -340,71 +350,25 @@ async function executeRun({
   /**
    * Destination-aware complete publication plan.
    */
-  const plan = await preparePlan({ input, repository, api, });
-  l.debug(`prepared ${String(plan.issues.length,)} Issue(s) in ${command.mode} mode`,);
+  const plan = await preparePlan({
+    input,
+    repository,
+    api,
+  });
+  l.debug(`prepared ${String(plan.issues
+    .length,)} Issue(s) in ${command.mode} mode`,);
   return command.mode === 'interactive'
-    ? runInteractive({ plan, repository, api, streams, })
-    : runNonInteractive({ command, plan, repository, api, streams, });
-}
-
-/**
- * Runs adapter command and maps every handled outcome to compact exit status.
- *
- * @param arguments - CLI tokens excluding executable and script paths.
- *
- * @param cwd - Process working directory.
- *
- * @param streams - Process standard streams.
- *
- * @returns Settled exit status without terminating host process.
- *
- * @example
- * ```ts
- * const status = await runCli({ arguments: ['--help'], cwd: process.cwd(), streams });
- * ```
- */
-export async function runCli({
-  arguments: arguments_,
-  cwd,
-  streams,
-}: {
-  readonly arguments: readonly string[];
-  readonly cwd: string;
-  readonly streams: CliStreams;
-},): Promise<number> {
-  /**
-   * Async cleanup that flushes logger on every return or throw path.
-   */
-  await using loggerCleanup = {
-    async [Symbol.asyncDispose]() {
-      await logger.flush();
-    },
-  };
-  try {
-    l.debug('parsing invocation',);
-    /**
-     * Validated help or run command.
-     */
-    const command = parseCliArguments({ arguments: arguments_, });
-    if (command.kind === 'help') {
-      streams.stdout.write(`${HELP_TEXT}\n`,);
-      return EXIT_SUCCESS;
-    }
-    return await executeRun({ command, cwd, streams, });
-  }
-  catch (error: unknown) {
-    if (isPromptCancellation(error,)) {
-      writeCancellation(streams.stdout,);
-      return EXIT_SUCCESS;
-    }
-    /**
-     * Safe handled error message; no finding content is logged by implementations.
-     */
-    const message = caughtValueText(error,);
-    l.error(message,);
-    streams.stderr.write(`${message}\n`,);
-    return error instanceof CliInvocationError
-      ? EXIT_INVOCATION_MISUSE
-      : EXIT_RUNTIME_FAILURE;
-  }
+    ? runInteractive({
+      plan,
+      repository,
+      api,
+      streams,
+    })
+    : runNonInteractive({
+      command,
+      plan,
+      repository,
+      api,
+      streams,
+    });
 }
