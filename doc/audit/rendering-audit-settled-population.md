@@ -171,6 +171,55 @@ Both are named rather than subtracted:
 this reading can say which pairs a human should look at,
 and cannot say whether either is really one move.
 
+### Both relocation candidates have the geometry `#107` predicts
+
+`#107` says a passage the archive carried across a slice boundary
+reads as an omission on one slice and an unsupported addition on its neighbour.
+That predicts WHERE inside each slice the two claims should anchor:
+against the shared boundary.
+
+Measured, from the persisted spans and the artifacts' own slice lengths.
+No text, only offsets:
+
+```text
+Aniloviraw   omission  at slice 1, source 189 chars, anchored [149..161]   79% to 85% through
+             addition  at slice 2, shipped 278 chars, anchored [0..44]      0% to 16% through
+
+zheermao101  omission  at slice 1, source  80 chars, anchored [7..30]       9% to 37% through
+             addition  at slice 0, shipped 265 chars, anchored [176..218]  66% to 82% through
+```
+
+Both pairs anchor against their shared boundary,
+the first at the end of one slice and the start of the next,
+the second at the start of one slice and the latter third of the one before it.
+That is corroboration for the MECHANISM `#107` describes,
+measured rather than assumed,
+and it is the strongest thing two candidates can supply.
+
+It is still not proof that either is one move.
+Confirming that needs the two texts read side by side by a person,
+which is what `#107` asks for and what this reading deliberately does not do.
+
+### One voice can claim one region twice, and the claim count adds them up
+
+On `zheermao101` slice 0,
+Qwen anchored BOTH an `altered-actor` and an `unsupported-addition`
+to the identical candidate span, characters 176 to 218.
+One voice, one region, two claims.
+
+So `claimed` counts CLAIMS and not distinct problems,
+and the two are not the same number.
+Anything that ever reads a threshold over this figure
+has to decide whether one voice describing one region twice
+should count once or twice,
+and the honest answer is not obvious:
+a passage that both invents material and misattributes it
+arguably is two defects.
+
+Recorded here because it is invisible in the tally
+and only exists to be found because the whole report is persisted
+rather than a count.
+
 ### The one thing this run cannot support is the comparison it was bought for
 
 Archive text drew five corroborated defects over 16 subjects
