@@ -110,5 +110,81 @@ await describe({
         expect(waits,).toStrictEqual([1_000,],);
       },
     },),
+    it({
+      name: 'reconciles an ambiguous server failure before retrying',
+      fn: async () => {
+        /**
+         * Mutable fake API state hidden behind one binding.
+         */
+        const state = {
+          creates: 0,
+          highWaterReads: 0,
+          waits: [] as number[],
+        };
+        /**
+         * Fake API returning one ambiguous failure followed by success.
+         */
+        const api: GitHubApiClient = async (request,) => {
+          if (request.method === 'GET') {
+            state.highWaterReads += 1;
+            return {
+              status: 200,
+              headers: {},
+              body: [],
+            };
+          }
+          state.creates += 1;
+          if (state.creates === 1) {
+            return {
+              status: 503,
+              headers: {},
+              body: { message: 'Service unavailable', },
+            };
+          }
+          return {
+            status: 201,
+            headers: {},
+            body: {
+              number: 9,
+              html_url: 'https://github.com/Aquaticat/issues-api/issues/9',
+            },
+          };
+        };
+        /**
+         * Single rendered Issue request.
+         */
+        const issue: RenderedIssue = {
+          position: { kind: 'line', value: 3, },
+          security: false,
+          title: 'Retry me',
+          body: 'Exact body',
+          labels: [],
+        };
+
+        expect(await publishIssues({
+          repository: {
+            owner: 'Aquaticat',
+            name: 'issues-api',
+            url: 'https://github.com/Aquaticat/issues-api',
+          },
+          issues: [issue,],
+          api,
+          wait: async (milliseconds,) => {
+            state.waits.push(milliseconds,);
+          },
+        },),).toStrictEqual({
+          created: [
+            {
+              position: { kind: 'line', value: 3, },
+              number: 9,
+              url: 'https://github.com/Aquaticat/issues-api/issues/9',
+            },
+          ],
+        },);
+        expect(state.creates,).toBe(2,);
+        expect(state.highWaterReads,).toBe(2,);
+        expect(state.waits,).toStrictEqual([1_000,],);
+      },
+    },),
   ],
 },);
