@@ -757,7 +757,11 @@ WHERE IT IS, so a killed session can find it without this transcript:
     `TRANSLATION_REPAIR_RUNS_DIR=<that dir> mise run
     //package/module/translation-repair:corpus-pass -- --only
     Aniloviraw,zheermao101,aiyysk,XingZ60`
--   Code tip when launched: `4fed9d7bd`.
+-   Code identity, from the run's OWN `START` line rather than from this document:
+    `tip=e79bb338 pipeline=sha256-tree-v1:e327ca8b`. The tip is the run-record commit, one later than
+    the `4fed9d7bd` the plan check ran at, and the PIPELINE HASH IS THE SAME in both, so the delta
+    is documentation and the code is unchanged. Read the hash, not the tip: only one of them
+    describes what actually ran.
 
 WHICH ENTRIES, AND WHY THOSE. Sizes are `page.md` blob bytes at corpus pin
 `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`, over 92 pending entries whose distribution is
@@ -803,6 +807,14 @@ What the sweep adds is the built artifact, the lint rules and the types.
 
 NOTHING ELSE MAY RUN `mise` IN THIS PACKAGE UNTIL THE RUN EXITS. `lint:types` runs `tsc --build`
 and `build` writes `dist/` outright; `test:unit` reads `dist/` and would test the wrong code.
+
+ONE KNOWN GAP TO CLOSE IN THE SAME SITTING, since it needs the build and the tests that are already
+running then. A `SLICE-COST` line cannot say WHY a slice was cheap. Both lanes leave a slice early
+on a cache hit and on an insertion chunk, and both emit a row near zero milliseconds at any size. On
+a fresh runs directory nothing is cached, so tonight's shape is unaffected; a RESUMED pass would
+scatter near-zero points across every size band and flatten the very slope the line exists to show,
+with nothing in the row to identify them. One more `key=value` naming the exit kind, plus a case in
+`slice-cost-read.unit.test.ts`, closes it.
 
 THEN READ THE RUN, and only then: the `TALLY <id> status=... ms=` lines against the 180 minute cap,
 the cost split between lanes, the voice-loss rate, and `XingZ60` as the full-scale check of `#71`'s
