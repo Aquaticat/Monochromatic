@@ -133,7 +133,15 @@ const SOFT_BUDGET_MINUTES = 4_320;
  * run. Slice-level resumability means a capped entry resumes next run, so a
  * generous cap risks wall time and never work.
  */
-const HARD_CAP_MINUTES = 180;
+const HARD_CAP_MINUTES = 420;
+
+// RAISED FROM 180 TO 420 on 2026-08-17, on `#114`'s measurement rather than on
+// the reasoning above, which had only a bound against runaway to offer. `#114`
+// timed the two-lane shape end to end and found 4 to 6 entries hitting the
+// 180-minute cap, all of them clearing at 7 hours. Every argument in the
+// paragraph above points the same way: cost is not the constraint, slice-level
+// resumability means a capped entry resumes rather than dies, so the cap buys
+// nothing except a shorter run and costs entries covered by it.
 
 /**
  * Soft budget in milliseconds.
