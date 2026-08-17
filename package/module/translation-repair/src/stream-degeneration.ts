@@ -43,23 +43,41 @@ const WINDOW_CHARS = 64;
 const WINDOW_STRIDE = 32;
 
 /**
- * Windows kept in the trailing sample, which at the stride above is about 64000
- * characters of recent text.
+ * Windows kept in the trailing sample, which at the stride above is about
+ * 131000 characters of recent text.
  *
  * TRAILING RATHER THAN CUMULATIVE so late-onset degeneration is caught. A
  * cumulative ratio over a reply that ran healthy for a long time cannot fall
  * far enough to trip, no matter how long it then cycles.
  */
-const TRAILING_WINDOWS = 2_048;
+const TRAILING_WINDOWS = 4_096;
 
 /**
- * Windows required before any verdict is offered.
+ * Windows required before any verdict is offered, which must not exceed
+ * {@link TRAILING_WINDOWS}: the sample is capped at that size, so a larger
+ * minimum would make every verdict unreachable and this guard silently inert.
+ * Equal to it here, so a verdict is offered exactly when the sample is full.
  *
- * A short reply has too few windows for the ratio to mean anything, and a
- * legitimate one that happens to open with a repeated heading would trip
- * instantly without this.
+ * SET SO THAT LENGTH ALONE NEVER CONDEMNS, and so that being verbose is not
+ * treated as being broken. Some models legitimately write a great deal. The
+ * ratio is what decides; this constant only decides when there is enough text
+ * for the ratio to mean anything, and it is deliberately far above any real
+ * reply. Across all 56 settled artifacts the longest recorded model output is
+ * 8358 characters, so a bar at about 131000 sits roughly fifteen times above
+ * anything this pipeline has ever legitimately produced.
+ *
+ * IT IS ALSO WHAT KEEPS VERSE SAFE. A translated poem carrying a refrain is
+ * genuinely repetitive, and measured at 116800 characters one scored 0.036,
+ * which the ratio alone would condemn. No slice translation approaches this
+ * bar, so such a reply is never judged at all.
+ *
+ * REVISIT ONCE `#118` LANDS. The figure above is in characters of generated
+ * text, while the only length telemetry in production counts raw server-sent
+ * event bytes, envelope included. The two are related by a per-token envelope
+ * cost that has been estimated and never measured, so this bar is set from the
+ * artifact evidence rather than from that column.
  */
-const MIN_WINDOWS_FOR_VERDICT = 512;
+const MIN_WINDOWS_FOR_VERDICT = 4_096;
 
 /**
  * Share of distinct windows at or below which the sample is called degenerate.
