@@ -74,6 +74,9 @@ export function buildPublicationPlan({
 function toPreviewIssue(issue: PublicationPlan['issues'][number],): PreviewIssue {
   return {
     position: issue.position,
+    ...(issue.classificationMarker === undefined
+      ? {}
+      : { classificationMarker: issue.classificationMarker, }),
     title: issue.title,
     body: issue.body,
     labels: issue.labels,
