@@ -22,11 +22,15 @@ Only more entries can,
 which means more settled version 2 artifacts,
 which is what task `#108` would produce.
 
-AND NOT STABLE BETWEEN RUNS.
-The same 40 subjects audited twice, forty minutes apart, moved
-the archive corroborated count from five to three
-and the relocation candidates from two to none.
-A gap of four cannot be read off a quantity that moves by two on a re-read.
+AND WIDER THAN THE EFFECT, measured rather than feared.
+The population was audited THREE times.
+Over 40 digest-verified pairs of identical text,
+the corroborated total moved from four to ten,
+ten of the forty subjects flipped between claiming something and claiming nothing,
+and across the three readings the archive corroborated count ran 5, 3, 7
+while the gap being measured ran 4, 2, 4.
+The rule fixed in advance puts a move of about four inside the noise;
+this is six.
 
 IT DOES ANSWER several things worth having:
 
@@ -555,7 +559,90 @@ What does not survive is any claim about the size of the gap here.
 Two runs disagree about it,
 so a third figure would be a third number rather than a confirmation.
 
-## How the band will be read, written before it exists
+## The band, at full population width, and it decides
+
+Run `2026-08-17T15-44-00.750Z-eeda8b9b` is the third audit of the same 40 subjects.
+Paired against the second:
+
+```text
+paired        40      predicted 40
+textMoved      0      predicted 0
+unverifiable   0      predicted 0
+within-run pairs 6    predicted 6
+```
+
+All four predictions were recorded before the run landed and all four hold,
+so the pairing is doing what it claims
+and the archive did not move under any of the three audits.
+
+THE BAND OVER 40 IDENTICAL TEXTS, about thirty-eight minutes apart:
+
+```text
+pairs 40   same claim count 19   widest gap 4   total gap 37   silent on one side only 10
+claims 52 against 63, corroborated 4 against 10
+```
+
+### The pre-committed rule decides this one, and the answer is noise
+
+The rule fixed in advance:
+a corroborated total moving by about four between two readings
+puts the archive-versus-fresh difference inside the noise.
+
+The corroborated total moved from FOUR TO TEN.
+That is a move of six, on identical text, with an identical roster.
+It is past the marker rather than between the markers,
+so unlike the run-one-to-run-two comparison this one is not undecidable:
+the rule applies and the answer is that a difference of four is not readable.
+
+### Ten of forty subjects flipped between silent and speaking
+
+`silent on one side only 10`.
+A quarter of the population drew at least one claim in one audit
+and nothing at all in the other,
+on the same characters.
+
+That is the number any future gate should be shown first.
+A threshold reading "at least one claim" would have flipped
+on a quarter of these subjects for no reason in the text,
+and a quiet subject is indistinguishable from a clean one.
+
+### Three readings of one population
+
+```text
+                        run 1   run 2   run 3
+ARCHIVE corroborated        5       3       7
+FRESH   corroborated        1       1       3
+gap                         4       2       4
+relocation candidates       2       0       0
+```
+
+The archive figure ranges from three to seven across three readings of one
+unchanged population.
+The gap that the whole audit was bought to measure ranges from two to four
+while the quantity it is computed from swings by four.
+
+The relocation candidates appeared once and never again,
+which is worth stating plainly:
+the two candidates whose geometry corroborates `#107` so neatly
+were not reproduced by either later audit of the same text.
+The GEOMETRY finding stands, because it is a fact about where those two claims
+anchored.
+The RATE finding does not exist: two, nought and nought is not a rate.
+
+### What this does not say
+
+It does not say the archive's English is as good as a fresh rendering,
+or worse, or better.
+It says this instrument on this population cannot tell,
+and now says so with a measured band rather than as a caution.
+
+It also does not say the instrument is broken.
+An instrument with a wide band is still an instrument;
+it needs either a larger population or repeated readings averaged,
+and this population can supply neither
+because it is two entries.
+
+## How the band was to be read, written before it existed
 
 Two bands, resting on different things,
 and the write-up must say which is which rather than quoting the friendlier one.
