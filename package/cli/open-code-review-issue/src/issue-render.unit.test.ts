@@ -127,5 +127,45 @@ await describe({
         expect(capped.slice(0, -1,),).toBe('x'.repeat(overPrefixLength,),);
       },
     },),
+    it({
+      name: 'encodes commit-pinned source links at Markdown boundary',
+      fn: async () => {
+        /**
+         * Finding path containing Markdown and URL delimiters.
+         */
+        const finding: NormalizedFinding = {
+          position: {
+            kind: 'line',
+            value: 4,
+          },
+          path: 'src/a] (bad)#.ts',
+          content: 'Use the verified source link.',
+          existingCode: '',
+          suggestionCode: '',
+          startLine: 9,
+          endLine: 9,
+          category: 'documentation',
+        };
+
+        /**
+         * Rendered linked Issue.
+         */
+        const issue = renderIssue({
+          finding,
+          needsTriageLabel: true,
+          sourceLink: {
+            repository: 'Aquaticat/issues-api',
+            commit: 'abcdefabcdefabcdefabcdefabcdefabcdefabcd',
+          },
+        },);
+
+        expect(issue.body,).toContain(
+          '- Location: [src/a\\] (bad)#.ts:9-9]'
+          + '(https://github.com/Aquaticat/issues-api/blob/'
+          + 'abcdefabcdefabcdefabcdefabcdefabcdefabcd/'
+          + 'src/a%5D%20%28bad%29%23.ts#L9-L9)',
+        );
+      },
+    },),
   ],
 },);
