@@ -72,6 +72,7 @@ export {
   type PublicationSignalHost,
 } from './interrupt.ts';
 export type {
+  ClassificationMarker,
   RenderedIssue,
   SourceLink,
 } from './issue-model.ts';

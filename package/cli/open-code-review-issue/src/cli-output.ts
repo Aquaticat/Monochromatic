@@ -95,7 +95,13 @@ export function writeInteractiveSummary({
    * Selected title lines safe because user already reviewed security choices.
    */
   const titles = issues.map(function titleLine(issue,): string {
-    return `- ${issue.title}`;
+    /**
+     * Optional explicit ordinary classification marker.
+     */
+    const marker = issue.classificationMarker === undefined
+      ? ''
+      : `${issue.classificationMarker} `;
+    return `- ${marker}${issue.title}`;
   },);
   output.write([
     '',

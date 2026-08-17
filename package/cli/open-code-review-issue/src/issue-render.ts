@@ -168,6 +168,25 @@ export function renderIssueBody({
 }
 
 /**
+ * Selects explicit marker for ordinary exceptional category states.
+ *
+ * @param finding - Validated finding classification.
+ *
+ * @returns Optional OTHER or UNCATEGORIZED marker property.
+ */
+function classificationMarkerMetadata(
+  finding: NormalizedFinding,
+): Pick<RenderedIssue, 'classificationMarker'> {
+  if (finding.category === 'other') {
+    return { classificationMarker: 'OTHER', };
+  }
+  if (finding.category === undefined) {
+    return { classificationMarker: 'UNCATEGORIZED', };
+  }
+  return {};
+}
+
+/**
  * Renders one complete create-only Issue request.
  *
  * @param finding - Validated normalized finding.
@@ -195,6 +214,7 @@ export function renderIssue({
   return {
     position: finding.position,
     security: finding.category === 'security',
+    ...classificationMarkerMetadata(finding,),
     title: renderIssueTitle({
       finding,
       needsTriageLabel,

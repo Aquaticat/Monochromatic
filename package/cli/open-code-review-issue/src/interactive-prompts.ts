@@ -189,6 +189,30 @@ export async function promptForExplicitDecision({
 }
 
 /**
+ * Builds visible picker label with mandatory textual classification markers.
+ *
+ * @param issue - Complete rendered candidate.
+ *
+ * @param security - Whether security disclosure marker is required.
+ *
+ * @returns SECURITY, OTHER, UNCATEGORIZED, or ordinary title label.
+ */
+function issueChoiceName({
+  issue,
+  security,
+}: {
+  readonly issue: RenderedIssue;
+  readonly security: boolean;
+},): string {
+  if (security) {
+    return `SECURITY ${issue.title}`;
+  }
+  return issue.classificationMarker === undefined
+    ? issue.title
+    : `${issue.classificationMarker} ${issue.title}`;
+}
+
+/**
  * Prompts one ordinary or security checkbox stage.
  *
  * @param issues - Issues available in this picker.
@@ -233,7 +257,7 @@ export async function promptForIssues({
       index,
     ) {
       return {
-        name: security ? `SECURITY ${issue.title}` : issue.title,
+        name: issueChoiceName({ issue, security, }),
         value: index,
         checked: !security,
       };

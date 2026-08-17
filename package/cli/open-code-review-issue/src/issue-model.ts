@@ -7,6 +7,11 @@
 import type { InputPosition, } from './model.ts';
 
 /**
+ * Explicit ordinary classification marker for interactive and preview surfaces.
+ */
+export type ClassificationMarker = 'OTHER' | 'UNCATEGORIZED';
+
+/**
  * Verified destination source-link coordinates.
  *
  * @example
@@ -39,6 +44,7 @@ export type SourceLink = {
 export type RenderedIssue = {
   readonly position: InputPosition;
   readonly security: boolean;
+  readonly classificationMarker?: ClassificationMarker;
   readonly title: string;
   readonly body: string;
   readonly labels: readonly string[];
