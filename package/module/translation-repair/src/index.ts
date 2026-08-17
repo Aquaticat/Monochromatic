@@ -230,6 +230,12 @@ export {
   type StreamChannel,
 } from './stream-delta-scan.ts';
 export {
+  type RunawayVerdict,
+  type RunawayWatch,
+  StreamDegenerateError,
+  watchRunaway,
+} from './stream-runaway-watch.ts';
+export {
   armIdleGuard,
   type IdleGuard,
   STREAM_FIRST_BYTE_MS,
