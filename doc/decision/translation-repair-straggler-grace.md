@@ -68,6 +68,16 @@ own deadline would. The user's rule of 2026-08-14, that one model's failure must
 pipeline for the day, is preserved: a voice that never comes is now abandoned at roughly 193 seconds
 from dispatch rather than 73, against a deadline of 360.
 
+AND THAT MAXIMUM IS NOT A CORPUS BOUND EITHER, which this document would be repeating its own lesson
+to ignore. The bench's ten slices spanned 94 to 497 incumbent characters, which the same audit says
+samples the corpus only to about its 90th percentile: slice size runs p99 1512 characters and
+`shihai4h` carries 10959 in a single slice. A model's call grows with what it is asked to read, so
+on the largest slices these two may still exceed 180 seconds and still be cut.
+
+That does not change the decision, because the fallback is exactly today's behaviour, a lost voice
+on a large slice. It does mean the re-measure should read losses BY SLICE SIZE rather than as one
+rate, since a residual concentrated in the tail is a different finding from one spread evenly.
+
 ## What it costs
 
 Almost nothing, and the handover's earlier note that widening "pushes the wrong way" on entry cost
@@ -94,12 +104,44 @@ here, so a silence window cannot separate stalled from working. Both idle consta
 That is the same shape of answer as this one: when a guard cannot discriminate, do not tighten it,
 move the killing to the deadline that can.
 
+## The baseline to compare against, on one definition
+
+THREE DIFFERENT RATES ARE IN CIRCULATION and none of them measure the same thing. The trial's 0.413
+counts judgings; the cost run's loss LINES number 96 and count retries, so one voice lost twice
+counts twice; and stage completeness is a third number again. A re-measure against the wrong one
+would report a change that is only a change of denominator.
+
+The definition this fix is measured on is PER-STAGE VOICE COMPLETENESS: a stage counts as losing
+when it heard fewer voices than it seated, whatever the roster size, counted once per stage. Under
+that definition, recomputed from the same cost-run log the fix was diagnosed from:
+
+```text
+Aniloviraw     5 of  22 stages   0.227
+zheermao101    6 of  58 stages   0.103
+aiyysk        30 of 208 stages   0.144
+XingZ60       22 of 195 stages   0.113
+whole run     63 of 483 stages   0.130
+```
+
+That 0.130 is the number the new window has to beat, and it is not comparable to the 0.413 quoted
+elsewhere.
+
 ## What must follow
 
 RE-MEASURE THE DECLINE RATE, which is the recorded next step and the reason this was first in the
-queue. The 0.413 loss rate quoted throughout the handover describes the 60 second window, and every
-measurement taken through a panel that lost voices was taken through this defect. Nothing that rests
-on it should be trusted until the rate is read again under the new window.
+queue. Every measurement taken through a panel that lost voices was taken through this defect, so
+nothing resting on one should be trusted until the rate is read again.
 
-The per-slice cost telemetry now carries an `exit` key, so the re-measure run reports what the wider
-window costs directly rather than by the estimate above.
+TWO CONSTRAINTS ON THAT RUN, both learned from getting them wrong elsewhere:
+
+-   COMPARE ON THE DEFINITION ABOVE, not on loss lines and not on judgings.
+-   RUN ENTRIES THAT ACTUALLY LOST VOICES, or a clean result proves nothing. The settled pair
+    qualifies: `Aniloviraw` lost on 5 of its 22 stages and `zheermao101` on 6 of 58, so 11 of 80
+    stages is the positive control, and a run of those two that still loses at that rate says the
+    fix did not work rather than that there was nothing to fix.
+-   READ THE RESIDUAL BY SLICE SIZE, per the caveat about the bench's slice range.
+
+The per-slice cost telemetry now carries an `exit` key, so the same run reports what the wider
+window costs directly rather than by the estimate above. That run is also the telemetry's first
+emission in production, so it doubles as the user-boundary check that `SLICE-COST` lines appear and
+parse.
