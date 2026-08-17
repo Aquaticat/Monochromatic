@@ -68,8 +68,19 @@ function catManifest(
     sample: [catCandidate({ issueId, },),],
     seed: 'cat-seed',
     corpusSha: 'sha/1',
+    generation: CAT_GENERATION,
   },);
 }
+
+/**
+ * A recorded generation, so every fixture manifest says which pipeline settled
+ * the pool it was drawn from.
+ */
+const CAT_GENERATION = {
+  kind: 'recorded',
+  digest: 'sha256-tree-v1:tabbycafe',
+  entries: 3,
+} as const;
 
 await describe({
   name: assertSheetMatchesManifest.name,
@@ -144,6 +155,7 @@ await describe({
           manifest: {
             seed: 'cat-seed',
             corpusSha: 'sha/1',
+            generation: CAT_GENERATION,
             items: [
               {
                 position: 1,
@@ -172,6 +184,7 @@ await describe({
         const unbound = {
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          generation: CAT_GENERATION,
           items: [
             {
               position: 1,

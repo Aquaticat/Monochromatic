@@ -7,6 +7,7 @@ import { formatGradingSheet, } from '../grading-sheet.ts';
 import { formatRepairSheet, } from '../repair-sheet.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
 import { buildSampleManifest, } from '../sample-manifest.ts';
+import { poolGeneration, } from './pool-generation.ts';
 import {
   assertRepairMeasurable,
   countUnrecordedRepairs,
@@ -328,12 +329,26 @@ async function drawGradingSample(): Promise<void> {
   // three files carry. Computing it twice would let the sheets and the manifest
   // disagree about the very thing that exists to prove they agree.
   /**
+   * Which built pipeline settled this pool.
+   *
+   * ONE DIGEST FOR THE WHOLE POOL, taken from the entries the draw actually
+   * kept. The pool refuses a mixed generation before a draw can reach it, so
+   * every kept entry carries the same digest and disagreement here would mean
+   * that guard had failed rather than that a choice was needed.
+   */
+  const generation = poolGeneration({
+    eligible,
+    names,
+  },);
+
+  /**
    * What sat at each sheet position, and the fingerprint of this exact draw.
    */
   const manifest = buildSampleManifest({
     sample,
     seed: drawSeed,
     corpusSha: RUN_CORPUS_PIN.commitSha,
+    generation,
   },);
 
   /**

@@ -54,6 +54,52 @@ export type SampleManifestItem = {
 };
 
 /**
+ * Which built pipeline settled the entries a sample was drawn from.
+ *
+ * A TAGGED ABSENCE rather than an optional string, for the reason this whole
+ * generation runs on: a manifest written before this field existed cannot claim
+ * a generation, and reading its silence as any particular one would attribute a
+ * sample to a pipeline nobody checked. `#60` records exactly this gap, that
+ * `EligibleEntries` already carries the selection and the digests while the
+ * manifest wrote neither.
+ *
+ * @example
+ * ```ts
+ * const generation: SampleGeneration = { kind: 'recorded', digest, entries: 15, };
+ * ```
+ */
+export type SampleGeneration = {
+  readonly kind: 'recorded';
+
+  /**
+   * Digest of the built output that settled every entry in the pool.
+   *
+   * ONE DIGEST FOR THE POOL, not one per entry, because a pool holding two
+   * generations is refused before a draw can reach it. If that ever stops being
+   * true this field is the thing that has to grow, and a reader comparing it
+   * against an artifact will notice before a rate does.
+   */
+  readonly digest: string;
+
+  /**
+   * How many entries the pool offered, which is not how many the sample took.
+   *
+   * Kept because a sample of fifty issues drawn from fifteen entries and one
+   * drawn from ninety are different evidence, and the items alone cannot say
+   * which, since one entry contributes many issues.
+   */
+  readonly entries: number;
+} | {
+  readonly kind: 'unrecorded';
+
+  /**
+   * Why, so a reader can tell an old manifest from a draw that could not
+   * determine its pool.
+   */
+  readonly reason: string;
+};
+
+/**
  * Everything needed to join a graded sheet back to the run that produced it.
  *
  * @example
@@ -85,6 +131,17 @@ export type SampleManifest = {
   readonly drawDigest?: string;
 
   /**
+   * Pipeline that settled the entries this sample was drawn from.
+   *
+   * DELIBERATELY OUTSIDE `drawDigest`. That fingerprint binds seed, corpus pin
+   * and items, and every sheet already drawn is bound by it; folding a new field
+   * into it would change the digest of manifests whose sheets are already
+   * graded, and every one of those bindings would break at once. So the
+   * generation sits beside it and is checked separately.
+   */
+  readonly generation: SampleGeneration;
+
+  /**
    * Items in sheet order.
    */
   readonly items: readonly SampleManifestItem[];
@@ -111,10 +168,12 @@ export function buildSampleManifest(
     sample,
     seed,
     corpusSha,
+    generation,
   }: {
     readonly sample: readonly GradingCandidate[];
     readonly seed: string;
     readonly corpusSha: string;
+    readonly generation: SampleGeneration;
   },
 ): SampleManifest {
   /**
@@ -139,7 +198,62 @@ export function buildSampleManifest(
       corpusSha,
       items,
     },),
+    generation,
     items,
+  };
+}
+
+/**
+ * Reads a manifest's generation, naming its absence rather than guessing one.
+ *
+ * @param manifest - manifest as a record
+ *
+ * @returns Recorded generation, or why there is none
+ *
+ * @throws {@link ArtifactParseError} when a present generation is malformed,
+ * since a half-written one is worse than none: it would be read as evidence
+ *
+ * @example
+ * ```ts
+ * const generation = readGeneration({ manifest, },);
+ * ```
+ */
+function readGeneration(
+  { manifest, }: { readonly manifest: Readonly<Record<string, unknown>>; },
+): SampleGeneration {
+  if (manifest.generation === undefined)
+    return {
+      kind: 'unrecorded',
+      reason: 'manifest predates the generation field',
+    };
+
+  /**
+   * Generation as a record.
+   */
+  const generation = requireRecord({
+    value: manifest.generation,
+    path: 'manifest.generation',
+  },);
+
+  if (generation.kind === 'unrecorded')
+    return {
+      kind: 'unrecorded',
+      reason: requireString({
+        value: generation.reason,
+        path: 'manifest.generation.reason',
+      },),
+    };
+
+  return {
+    kind: 'recorded',
+    digest: requireString({
+      value: generation.digest,
+      path: 'manifest.generation.digest',
+    },),
+    entries: requireCount({
+      value: generation.entries,
+      path: 'manifest.generation.entries',
+    },),
   };
 }
 
@@ -241,10 +355,16 @@ export function parseSampleManifest(
       };
     },);
 
+  /**
+   * Which pipeline settled the pool, or a named absence.
+   */
+  const generation = readGeneration({ manifest, },);
+
   if (manifest.drawDigest === undefined)
     return {
       seed,
       corpusSha,
+      generation,
       items,
     };
 
@@ -279,6 +399,7 @@ export function parseSampleManifest(
     seed,
     corpusSha,
     drawDigest: declared,
+    generation,
     items,
   };
 }

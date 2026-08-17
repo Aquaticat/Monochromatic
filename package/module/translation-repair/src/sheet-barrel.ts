@@ -143,6 +143,7 @@ export {
 } from './sample-draw.ts';
 export {
   buildSampleManifest,
+  type SampleGeneration,
   parseSampleManifest,
   type SampleManifest,
   type SampleManifestItem,

@@ -55,6 +55,16 @@ function catCandidate(
   };
 }
 
+/**
+ * A recorded generation, so every fixture manifest says which pipeline settled
+ * the pool it was drawn from.
+ */
+const CAT_GENERATION = {
+  kind: 'recorded',
+  digest: 'sha256-tree-v1:tabbycafe',
+  entries: 3,
+} as const;
+
 await describe({
   name: buildSampleManifest.name,
   children: [
@@ -72,6 +82,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          generation: CAT_GENERATION,
         },);
         expect(manifest.items,).toHaveLength(2,);
         expect(manifest.items[0]?.position,).toBe(1,);
@@ -89,6 +100,7 @@ await describe({
           sample: [],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          generation: CAT_GENERATION,
         },);
         expect(manifest.seed,).toBe('cat-seed',);
         expect(manifest.corpusSha,).toBe('sha/1',);
@@ -101,6 +113,46 @@ await describe({
   name: parseSampleManifest.name,
   children: [
     it({
+      name: 'READS A MANIFEST THAT PREDATES THE GENERATION FIELD as unrecorded, never as a guess: '
+        + 'a sample attributed to a pipeline nobody checked is worse evidence than one that says '
+        + 'it does not know, because only the second stops a reader quoting it',
+      fn: async () => {
+        /**
+         * A manifest as it was written before the field existed.
+         */
+        const older = buildSampleManifest({
+          sample: [catCandidate({ issueId: 'adjudicated/nap', },),],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+          generation: CAT_GENERATION,
+        },);
+
+        /**
+         * The same manifest with the generation removed, which is exactly what
+         * an older draw wrote.
+         *
+         * Destructured rather than deleted from a clone, so the field's absence
+         * is a fact about this binding rather than a mutation a reader has to
+         * trace.
+         */
+        const {
+          generation: _dropped,
+          ...withoutGeneration
+        } = older;
+
+        /**
+         * What the parser makes of it.
+         */
+        const parsed = parseSampleManifest({ value: withoutGeneration, },);
+
+        expect(parsed.generation.kind,).toBe('unrecorded',);
+        if (parsed.generation.kind !== 'unrecorded')
+          throw new Error('unrecorded by construction',);
+        expect(parsed.generation.reason.length,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
       name: 'round-trips what the draw wrote, which is the only property the '
         + 'join depends on',
       fn: async () => {
@@ -109,6 +161,7 @@ await describe({
           sample: [catCandidate({ issueId: 'adjudicated/nap', },),],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          generation: CAT_GENERATION,
         },);
 
         /**
@@ -165,6 +218,7 @@ await describe({
           sample: [catCandidate({ issueId: 'adjudicated/nap', },),],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          generation: CAT_GENERATION,
         },);
 
         expect(function readsTamperedItems() {
