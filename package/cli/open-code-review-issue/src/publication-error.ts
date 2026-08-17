@@ -16,13 +16,15 @@ export class IssuePublicationError extends Error {
    *
    * @param message - Safe status or response-shape diagnostic.
    *
+   * @param options - Optional native error cause metadata.
+   *
    * @example
    * ```ts
    * const error = new IssuePublicationError('Issue creation failed');
    * ```
    */
-  public constructor(message: string,) {
-    super(message,);
+  public constructor(message: string, options?: ErrorOptions,) {
+    super(message, options,);
     this.name = 'IssuePublicationError';
   }
 }
