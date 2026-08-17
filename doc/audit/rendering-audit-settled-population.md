@@ -218,6 +218,72 @@ A voice that answers less often and anchors less well
 contributes less than its seat suggests,
 which is the same shape as `#68` in a different quantity.
 
+## How the band will be read, written before it exists
+
+Two bands, resting on different things,
+and the write-up must say which is which rather than quoting the friendlier one.
+
+WITHIN one run,
+the six character-identical subjects two artifacts of one entry already contain.
+Six pairs,
+one build,
+one roster,
+minutes apart,
+every pair verified by recorded digest on both sides.
+Small, and free.
+
+ACROSS two runs,
+every subject in both.
+Forty pairs,
+which is the band at the full width of the population.
+The first full run cannot supply this:
+its rows predate the recorded text identity,
+so pairing it against anything yields forty subjects
+that are matched by position and cannot be vouched for.
+The report says exactly that,
+in its own sentence,
+kept apart from the sentence about the archive having moved.
+
+THE HEADLINE GAP IS A CORROBORATED GAP,
+five over 16 archive subjects against one over 24 fresh ones,
+so the band that decides whether it is readable
+is the band on CORROBORATED counts,
+not on raw claims.
+`AuditRepeatBand` carries both sides' corroborated totals for that reason.
+If two runs of identical input move the corroborated total by about four,
+the archive-versus-fresh difference is inside the noise and must not be quoted as a finding.
+If they move it by nothing or one,
+it stands.
+Say which,
+in those words.
+
+### What "the same build" can and cannot mean here
+
+`pipelineDigest` hashes the whole built tree,
+so any two runs separated by any commit carry different stamps,
+including commits the audit runner never loads.
+
+The runner's actual dependency closure,
+read off its own import statements in the built entry:
+
+```text
+./run-config-DHZxe1GN.mjs
+./rendering-audit-settled-digest-DhVzr2R3.mjs
+./rendering-audit-settled-input-PANwDHyw.mjs
+./pipeline-digest-DDwOLNUW.mjs
+./probe-store-CIfFH-eS.mjs
+./rendering-audit-Cw-Y7Wq9.mjs
+```
+
+The reading modules that changed between runs compile into
+`rendering-audit-settled-report.mjs` and `rendering-audit-settled-band-*.mjs`,
+which are not in that list.
+So runs separated only by reading-side commits executed identical auditing code
+while reporting different digests.
+Task `#116` proposes recording the closure alongside the tree digest,
+since the closure is the thing a band measurement actually needs
+and it costs nothing to read.
+
 ## Provenance of the first run, which its own file gets wrong
 
 The run file records pipeline digest `...b7d84b5b`.
