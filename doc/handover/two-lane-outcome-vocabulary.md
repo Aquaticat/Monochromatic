@@ -808,6 +808,22 @@ What the sweep adds is the built artifact, the lint rules and the types.
 NOTHING ELSE MAY RUN `mise` IN THIS PACKAGE UNTIL THE RUN EXITS. `lint:types` runs `tsc --build`
 and `build` writes `dist/` outright; `test:unit` reads `dist/` and would test the wrong code.
 
+THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked by the owner's answers:
+
+1.  `#105`'s retry policy: retry a declining slate ONCE against the same panel, then record what
+    still declines as `no-candidate-backed`. The delivery vocabulary already says WHERE such a slice
+    lands, so this is a reason rather than a new kind: with an incumbent it stays
+    `incumbent-retained`, without one it stays `gap-remains`.
+2.  The rendering audit, standalone over a SAMPLE of settled version 2 artifacts. It reads what a
+    pass already wrote, so nothing in the producing path changes and it can be re-run when the
+    instrument changes.
+3.  Persisting `coverage-probe` output into the runs directory rather than stdout only. This is the
+    one piece of the parked coverage work that survives on its own account, being the reason its
+    2026-08-16 numbers exist nowhere but a transcript.
+
+NONE OF IT BEFORE THE SWEEP. Every item is code, and there is already one unverified change in the
+tree; three would compound into a sweep that cannot say which change broke what.
+
 ONE KNOWN GAP TO CLOSE IN THE SAME SITTING, since it needs the build and the tests that are already
 running then. A `SLICE-COST` line cannot say WHY a slice was cheap. Both lanes leave a slice early
 on a cache hit and on an insertion chunk, and both emit a row near zero milliseconds at any size. On
