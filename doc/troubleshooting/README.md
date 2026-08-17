@@ -138,6 +138,16 @@ A symbol exported by two barrels vanishes from the package instead of erroring:
 - The only symptom is `does not provide an export named` at an import three steps away
 - How to ask the built package what it actually exports
 
+### [NUL bytes land invisibly in source](nul-bytes-land-invisibly-in-source.md)
+
+A control character written where a space was intended,
+committed, and found only when an `Edit` would not apply:
+
+- `rg` and `grep --perl-regexp` both report nothing on a file full of them
+- `tr --delete --complement`, `od --format=c` and `cat --show-all` do find them
+- Why a working NUL separator is still a defect,
+   and the shared escaped constant that fixes it
+
 ### [dprint-plugin-exec](dprint-exec.md)
 
 Why the exec plugin silently does nothing and why certain tools are incompatible:
