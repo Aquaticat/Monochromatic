@@ -15,11 +15,12 @@ import type { CreatedIssue, } from './publisher-model.ts';
  */
 export const HELP_TEXT: string = [
   'Usage:',
-  '  open-code-review-issue --interactive FILE [--repo https://github.com/OWNER/NAME]',
+  '  open-code-review-issue --interactive INPUT [--repo https://github.com/OWNER/NAME]',
   '  open-code-review-issue --non-interactive FILE [--repo https://github.com/OWNER/NAME]',
   '    [--apply [--non-security-only | --all]]',
   '',
-  'Exactly one mode and one positional named FILE are required.',
+  'Exactly one mode and one positional INPUT are required.',
+  'Interactive INPUT is a named file or shell-quoted JSON; non-interactive INPUT is a named file.',
   'Piped stdin, redirected stdin, TTY paste, and `-` are never input sources.',
   '',
   'Security:',
