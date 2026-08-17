@@ -6,6 +6,8 @@ import {
   type AuditMemberClaim,
   type CorroboratedDefect,
   corroborate,
+  corroborateByOverlap,
+  type OverlapAgreement,
   type NearMiss,
   nearMisses,
 } from './rendering-audit-corroborate.ts';
@@ -91,6 +93,14 @@ export type RenderingAuditReport = {
    * Defects at least two auditors located identically, most-agreed first.
    */
   readonly corroborated: readonly CorroboratedDefect[];
+
+  /**
+   * Groups of voices that agreed about a defect without quoting identical
+   * spans, reported BESIDE the strict count rather than inside it: the strict
+   * count asks whether voices picked the same characters, and this asks whether
+   * they were talking about the same thing.
+   */
+  readonly agreed: readonly OverlapAgreement[];
 
   /**
    * Pairs of claims from different voices that nearly agreed, reported rather
@@ -206,6 +216,7 @@ export async function runRenderingAudit(
 
   return {
     corroborated: corroborate({ claims, },),
+    agreed: corroborateByOverlap({ claims, },),
     near: nearMisses({ claims, },),
     rows,
     findings: gathered.findings,

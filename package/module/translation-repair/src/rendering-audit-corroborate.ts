@@ -345,6 +345,231 @@ export function corroborate(
 }
 
 /**
+ * One defect a group of voices agreed on WITHOUT quoting identical spans.
+ *
+ * A SECOND TIER, reported beside the strict count rather than folded into it,
+ * because the two answer different questions. The strict count asks whether
+ * voices picked out the same characters; this asks whether they were talking
+ * about the same thing. Both are worth having and neither should be mistaken
+ * for the other.
+ *
+ * MEASURED, NOT SUPPOSED: on the instrument's own positive control, three
+ * auditors independently found one dropped negator, all three called it
+ * `altered-polarity`, and they quoted `不吃`, `吃` and `不吃罐头`. Under the
+ * strict count that is zero corroborated defects. Unanimous agreement reported
+ * as nothing is a worse answer than the false merge the strict count exists to
+ * prevent, and a run earlier the same evening had two of those three voices
+ * landing on identical spans, so the strict count also turns on a coin flip.
+ *
+ * @example
+ * ```ts
+ * const agreed: OverlapAgreement = { category: 'altered-polarity', voices: 3, members, };
+ * ```
+ */
+export type OverlapAgreement = {
+  /**
+   * Category every member named, since voices disagreeing about what KIND of
+   * defect it is have not agreed about the defect.
+   */
+  readonly category: RenderingAuditCategory;
+
+  /**
+   * Distinct auditors in this group.
+   */
+  readonly voices: number;
+
+  /**
+   * Every claim in it, so a reader can see the spans that were merged and judge
+   * the merge.
+   */
+  readonly members: readonly AuditMemberClaim[];
+};
+
+/**
+ * Whether two claims say the same thing about ONE side.
+ *
+ * A SIDE NEITHER USES is agreement by absence: both claims say their category
+ * rests on the other side, which is the same statement about where the defect
+ * is rather than a missing comparison.
+ *
+ * @param mine - one claim's interval on this side
+ *
+ * @param theirs - the other claim's
+ *
+ * @returns Whether they agree about this side
+ *
+ * @example
+ * ```ts
+ * const agrees = sideAgrees({ mine, theirs, },);
+ * ```
+ */
+function sideAgrees(
+  {
+    mine,
+    theirs,
+  }: {
+    readonly mine: FocusInterval;
+    readonly theirs: FocusInterval;
+  },
+): boolean {
+  if ((mine.kind === 'unused') && (theirs.kind === 'unused'))
+    return true;
+
+  return intersects({
+    left: mine,
+    right: theirs,
+  },);
+}
+
+/**
+ * Whether two claims are about the same thing, loosely enough to survive two
+ * voices choosing different widths.
+ *
+ * EVERY USED SIDE MUST TOUCH, not just one. Two claims agreeing about the
+ * original and pointing at different candidate clauses are two claims.
+ *
+ * @param left - one claim
+ *
+ * @param right - the other
+ *
+ * @returns Whether the categories match and every side they both use overlaps
+ *
+ * @example
+ * ```ts
+ * const same = aboutTheSameThing({ left, right, },);
+ * ```
+ */
+function aboutTheSameThing(
+  {
+    left,
+    right,
+  }: {
+    readonly left: ScreenedFinding;
+    readonly right: ScreenedFinding;
+  },
+): boolean {
+  if (left.category !== right.category)
+    return false;
+
+  return sideAgrees({
+    mine: intervalOf({ reading: left.source, },),
+    theirs: intervalOf({ reading: right.source, },),
+  },)
+    && sideAgrees({
+      mine: intervalOf({ reading: left.candidate, },),
+      theirs: intervalOf({ reading: right.candidate, },),
+    },);
+}
+
+/**
+ * Groups claims that are about the same thing, without merging through a third.
+ *
+ * PAIRWISE THROUGHOUT, which is what keeps this from collapsing into the false
+ * merge. Every member of a group must be about the same thing as every OTHER
+ * member, so a wide claim touching two narrow ones that share no text cannot
+ * pull them into one group: it forms a pair with each instead.
+ *
+ * @param claims - every voice's claims
+ *
+ * @returns Groups of at least {@link CORROBORATION_VOICES} distinct voices,
+ * most-agreed first
+ *
+ * @example
+ * ```ts
+ * const agreed = corroborateByOverlap({ claims, },);
+ * ```
+ */
+export function corroborateByOverlap(
+  { claims, }: { readonly claims: readonly AuditMemberClaim[]; },
+): readonly OverlapAgreement[] {
+  /**
+   * One candidate group per claim, each holding every claim that agrees with
+   * the seed AND with everything already in it.
+   */
+  const grown = claims.map(function growFrom(seed,): readonly AuditMemberClaim[] {
+    /**
+     * Members admitted so far, starting from the seed.
+     */
+    const group: AuditMemberClaim[] = [seed,];
+    for (const claim of claims) {
+      if (claim === seed)
+        continue;
+
+      /**
+       * Whether this claim is about the same thing as every member so far,
+       * which is what stops a group forming through a third claim.
+       */
+      const fits = group.every(function agrees(member,): boolean {
+        return aboutTheSameThing({
+          left: member.finding,
+          right: claim.finding,
+        },);
+      },);
+
+      if (fits)
+        group.push(claim,);
+    }
+    return group;
+  },);
+
+  /**
+   * Groups that reached the threshold, one per distinct membership.
+   */
+  const byMembership = grown.reduce(
+    function keepDistinct(
+      groups: Map<string, readonly AuditMemberClaim[]>,
+      group,
+    ): Map<string, readonly AuditMemberClaim[]> {
+      /**
+       * Voices in this group, which is what the threshold counts.
+       */
+      const voices = new Set(group.map(function toVoice(member,): string {
+        return member.modelId;
+      },),);
+
+      if (voices.size < CORROBORATION_VOICES)
+        return groups;
+
+      groups.set(
+        JSON.stringify(group.map(function toKey(member,): string {
+          return `${member.modelId}${defectKey({ finding: member.finding, },)}`;
+        },)
+          .toSorted(),),
+        group,
+      );
+      return groups;
+    },
+    new Map<string, readonly AuditMemberClaim[]>(),
+  );
+
+  return [...byMembership.values(),]
+    .map(function toAgreement(members,): OverlapAgreement {
+      /**
+       * First member, whose category every other member shares.
+       */
+      const [first,] = members;
+
+      if (first === undefined)
+        throw new Error('an overlap group with no members cannot occur, since groups are grown from a seed',);
+
+      return {
+        category: first.finding
+          .category,
+        voices: new Set(members.map(function toVoice(member,): string {
+          return member.modelId;
+        },),).size,
+        members,
+      };
+    },)
+    .toSorted(function byAgreement(
+      left,
+      right,
+    ): number {
+      return right.voices - left.voices;
+    },);
+}
+
+/**
  * Finds pairs of claims that nearly agree, and says how.
  *
  * @param claims - every voice's claims

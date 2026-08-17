@@ -60,7 +60,9 @@ export {
   type AuditMemberClaim,
   CORROBORATION_VOICES,
   corroborate,
+  corroborateByOverlap,
   type CorroboratedDefect,
+  type OverlapAgreement,
   nearMisses,
   type NearMiss,
 } from './rendering-audit-corroborate.ts';

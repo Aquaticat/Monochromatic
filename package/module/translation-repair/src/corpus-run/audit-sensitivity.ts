@@ -273,6 +273,23 @@ async function auditOne(
     } corroborated=${
       String(report.corroborated
         .length,)
+    } agreed=${
+      String(report.agreed
+        .length,)
+    } agreedVoices=${
+      String(report.agreed
+        .reduce(
+          function widest(
+            best: number,
+            group,
+          ): number {
+            return Math.max(
+              best,
+              group.voices,
+            );
+          },
+          0,
+        ),)
     } near=${
       String(report.near
         .length,)
@@ -294,6 +311,19 @@ async function auditOne(
       `  CORROBORATED ${arm} ${defect.category} voices=${String(defect.voices,)} at ${
         shownText({ reading: defect.source, },)
       } || ${shownText({ reading: defect.candidate, },)}`,
+    );
+  }
+
+  for (const group of report.agreed) {
+    console.log(
+      `  AGREED ${arm} ${group.category} voices=${String(group.voices,)} spans=${
+        group.members
+          .map(function toSpan(member,): string {
+            return shownText({ reading: member.finding
+              .source, },);
+          },)
+          .join(' / ',)
+      }`,
     );
   }
 

@@ -31,7 +31,7 @@ export const SOURCE_TEXT = `三只猫住在书店的阁楼里。她们不吃罐�
  * trusted to find anything subtler, and one that reports defects elsewhere here
  * is claiming damage the original supports.
  */
-export const FLIPPED_CANDIDATE = `Three cats live in the attic of a bookshop. They eat canned food, and every evening they drink one bowl of warm milk.
+export const FLIPPED_CANDIDATE = `Three cats live in the attic of a bookshop. They eat canned food, and every evening they drink only one bowl of warm milk.
 The tabby sleeps on the windowsill, and the other two sleep on the bookshelf.`;
 
 /**

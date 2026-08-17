@@ -30,6 +30,7 @@ import {
   anchorLocatedSpan,
   type AuditMemberClaim,
   corroborate,
+  corroborateByOverlap,
   nearMisses,
   type RenderingAuditCategory,
   type SyntheticModelId,
@@ -416,6 +417,147 @@ await describe({
             ],
           },),
         ).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: corroborateByOverlap.name,
+  children: [
+    it({
+      name:
+        'GATHERS voices who named one defect at different widths, which the strict count cannot: this '
+        + 'was measured on the live control, where three auditors independently found one dropped '
+        + 'negator, all three called it altered-polarity, and quoted three different spans of it',
+      fn: async () => {
+        /**
+         * Third voice quoting a span that contains the other two.
+         */
+        const wider = claimOf({
+          modelId: 'hf:zai-org/GLM-5.2',
+          category: 'altered-number',
+          sourceLocator: COUNT_SENTENCE_SOURCE,
+          sourceFocus: '两只猫睡在窗台上',
+          candidateLocator: COUNT_SENTENCE_CANDIDATE,
+          candidateFocus: 'three cats sleep on the windowsill',
+        },);
+
+        /**
+         * Same three claims the strict count splits.
+         */
+        const claims = [
+          TWO_TO_THREE_A,
+          TWO_TO_THREE_B,
+          wider,
+        ];
+
+        // The strict count still reports the exact pair only, unchanged.
+        expect(corroborate({ claims, },),).toHaveLength(1,);
+
+        const agreed = corroborateByOverlap({ claims, },);
+        expect(agreed,).toHaveLength(1,);
+        expect(agreed[0]
+          ?.voices,).toBe(3,);
+        expect(agreed[0]
+          ?.category,).toBe('altered-number',);
+      },
+    },),
+    it({
+      name:
+        'does NOT gather two DIFFERENT defects in one sentence, which is the whole risk of a looser rule: '
+        + 'the two changed counts share a sentence and share no focus, so nothing here may join them',
+      fn: async () => {
+        expect(
+          corroborateByOverlap({
+            claims: [
+              TWO_TO_THREE_A,
+              ONE_TO_TWO,
+            ],
+          },),
+        ).toEqual([],);
+      },
+    },),
+    it({
+      name:
+        'does NOT join two narrow claims THROUGH a wide one that touches both, since a group whose '
+        + 'members are not all about the same thing is not agreement, however each pair looks',
+      fn: async () => {
+        /**
+         * Claim spanning both counts.
+         */
+        const wide = claimOf({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          category: 'altered-number',
+          sourceLocator: COUNT_SENTENCE_SOURCE,
+          sourceFocus: '两只猫睡在窗台上，一只猫',
+          candidateLocator: COUNT_SENTENCE_CANDIDATE,
+          candidateFocus: 'three cats sleep on the windowsill, two cats',
+        },);
+
+        /**
+         * Groups over the three claims.
+         */
+        const agreed = corroborateByOverlap({
+          claims: [
+            TWO_TO_THREE_A,
+            wide,
+            ONE_TO_TWO,
+          ],
+        },);
+
+        // Pairs with the wide claim are allowed; a trio is not.
+        for (const group of agreed) {
+          expect(group.voices,).toBeLessThan(3,);
+          expect(
+            group.members
+              .some(function isWide(member,): boolean {
+                return member.modelId === 'hf:moonshotai/Kimi-K3';
+              },),
+          ).toBe(true,);
+        }
+      },
+    },),
+    it({
+      name:
+        'does NOT gather two voices who disagree about the CATEGORY, since naming the same span two ways '
+        + 'is a question about the taxonomy rather than agreement about a defect',
+      fn: async () => {
+        const claims = [
+          claimOf({
+            modelId: 'hf:Qwen/Qwen3.6-27B',
+            category: 'altered-polarity',
+            sourceLocator: '她们不吃罐头',
+            sourceFocus: '不吃',
+            candidateLocator: 'They eat canned food',
+            candidateFocus: 'eat',
+          },),
+          claimOf({
+            modelId: 'hf:openai/gpt-oss-120b',
+            category: 'omission',
+            sourceLocator: '她们不吃罐头',
+            sourceFocus: '不吃罐头',
+            candidateLocator: 'They eat canned food',
+            candidateFocus: 'eat canned food',
+          },),
+        ];
+        expect(corroborateByOverlap({ claims, },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'does NOT let one voice form a group with itself by claiming one defect at two widths',
+      fn: async () => {
+        const claims = [
+          TWO_TO_THREE_A,
+          {
+            ...TWO_TO_THREE_A,
+            finding: {
+              ...TWO_TO_THREE_A.finding,
+              reason: 'the same voice, saying it wider',
+            },
+          },
+        ];
+        expect(corroborateByOverlap({ claims, },),).toEqual([],);
       },
     },),
   ],
