@@ -121,6 +121,9 @@ export function checkpointFindings({
   readonly record: Readonly<Record<string, unknown>>;
   readonly line: number;
 },): readonly NormalizedFinding[] {
+  if (record.comments === undefined) {
+    return [];
+  }
   if (!Array.isArray(record.comments,)) {
     throw new InputValidationError(`line ${String(line,)} property comments must be an array`,);
   }

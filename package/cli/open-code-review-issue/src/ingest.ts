@@ -133,6 +133,9 @@ export function parseStructuredInput({ text, }: { readonly text: string; },): No
      * Complete JSON document before envelope narrowing.
      */
     const parsed: unknown = JSON.parse(text,);
+    if (isRecord(parsed,) && (typeof parsed.type) === 'string') {
+      return parseJsonlInput({ text, },);
+    }
     return parseJsonDocument(parsed,);
   }
   catch (error: unknown) {
