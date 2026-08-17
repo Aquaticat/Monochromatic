@@ -5,6 +5,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  AmbiguousReconciliationError,
+  GitHubProcessTimeoutError,
   publishIssues,
   type GitHubApiClient,
   type RenderedIssue,
@@ -184,6 +186,192 @@ await describe({
         expect(state.creates,).toBe(2,);
         expect(state.highWaterReads,).toBe(2,);
         expect(state.waits,).toStrictEqual([1_000,],);
+      },
+    },),
+    it({
+      name: 'accepts one exact reconciliation match without retry',
+      fn: async () => {
+        /**
+         * Mutable call counters for fake API.
+         */
+        const state = { highWaterReads: 0, creates: 0, };
+        /**
+         * Fake timeout followed by one exact visible Issue.
+         */
+        const api: GitHubApiClient = async (request,) => {
+          if (request.method === 'POST') {
+            state.creates += 1;
+            throw new GitHubProcessTimeoutError({ stdout: '', stderr: '', });
+          }
+          if (request.endpoint.endsWith('/issues/11',)) {
+            return {
+              status: 200,
+              headers: {},
+              body: {
+                title: 'Reconciled',
+                body: 'Exact body',
+                html_url: 'https://github.com/Aquaticat/issues-api/issues/11',
+              },
+            };
+          }
+          state.highWaterReads += 1;
+          return {
+            status: 200,
+            headers: {},
+            body: [{ number: state.highWaterReads === 1 ? 10 : 11, },],
+          };
+        };
+        /**
+         * Ambiguously created Issue request.
+         */
+        const issue: RenderedIssue = {
+          position: { kind: 'record', value: 1, },
+          security: false,
+          title: 'Reconciled',
+          body: 'Exact body',
+          labels: [],
+        };
+
+        expect(await publishIssues({
+          repository: {
+            owner: 'Aquaticat',
+            name: 'issues-api',
+            url: 'https://github.com/Aquaticat/issues-api',
+          },
+          issues: [issue,],
+          api,
+          wait: async () => {},
+        },),).toStrictEqual({
+          created: [{
+            position: { kind: 'record', value: 1, },
+            number: 11,
+            url: 'https://github.com/Aquaticat/issues-api/issues/11',
+          },],
+        },);
+        expect(state.creates,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'honors retry-after without reconciliation for rate limits',
+      fn: async () => {
+        /**
+         * Mutable fake rate-limit state.
+         */
+        const state = { creates: 0, waits: [] as number[], };
+        /**
+         * Fake rate-limited create followed by success.
+         */
+        const api: GitHubApiClient = async (request,) => {
+          if (request.method === 'GET') {
+            return { status: 200, headers: {}, body: [], };
+          }
+          state.creates += 1;
+          return state.creates === 1
+            ? {
+              status: 429,
+              headers: { 'retry-after': '2', },
+              body: { message: 'rate limited', },
+            }
+            : {
+              status: 201,
+              headers: {},
+              body: {
+                number: 12,
+                html_url: 'https://github.com/Aquaticat/issues-api/issues/12',
+              },
+            };
+        };
+        /**
+         * Rate-limited Issue request.
+         */
+        const issue: RenderedIssue = {
+          position: { kind: 'record', value: 1, },
+          security: false,
+          title: 'Rate limited',
+          body: 'Body',
+          labels: [],
+        };
+
+        await publishIssues({
+          repository: {
+            owner: 'Aquaticat',
+            name: 'issues-api',
+            url: 'https://github.com/Aquaticat/issues-api',
+          },
+          issues: [issue,],
+          api,
+          wait: async (milliseconds,) => {
+            state.waits.push(milliseconds,);
+          },
+        },);
+        expect(state.waits,).toStrictEqual([2_000,],);
+      },
+    },),
+    it({
+      name: 'stops on multiple exact reconciliation matches',
+      fn: async () => {
+        /**
+         * Mutable high-water lookup count.
+         */
+        const state = { highWaterReads: 0, };
+        /**
+         * Fake API exposing two exact matches after server failure.
+         */
+        const api: GitHubApiClient = async (request,) => {
+          if (request.method === 'POST') {
+            return { status: 503, headers: {}, body: {}, };
+          }
+          if (request.endpoint.endsWith('/issues/11',)
+            || request.endpoint.endsWith('/issues/12',))
+          {
+            const number = request.endpoint.endsWith('/11',) ? 11 : 12;
+            return {
+              status: 200,
+              headers: {},
+              body: {
+                title: 'Ambiguous',
+                body: 'Exact body',
+                html_url: `https://github.com/Aquaticat/issues-api/issues/${String(number,)}`,
+              },
+            };
+          }
+          state.highWaterReads += 1;
+          return {
+            status: 200,
+            headers: {},
+            body: [{ number: state.highWaterReads === 1 ? 10 : 12, },],
+          };
+        };
+        /**
+         * Captured multiple-match failure.
+         */
+        let caught: unknown;
+        try {
+          await publishIssues({
+            repository: {
+              owner: 'Aquaticat',
+              name: 'issues-api',
+              url: 'https://github.com/Aquaticat/issues-api',
+            },
+            issues: [{
+              position: { kind: 'record', value: 1, },
+              security: false,
+              title: 'Ambiguous',
+              body: 'Exact body',
+              labels: [],
+            },],
+            api,
+            wait: async () => {},
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(AmbiguousReconciliationError,);
+        expect((caught as AmbiguousReconciliationError).urls,).toStrictEqual([
+          'https://github.com/Aquaticat/issues-api/issues/11',
+          'https://github.com/Aquaticat/issues-api/issues/12',
+        ],);
       },
     },),
   ],
