@@ -393,11 +393,19 @@ export function parseStructuredInput({ text, }: { readonly text: string; },): No
   catch (error: unknown) {
     throw new InputValidationError(`input must be valid JSON: ${String(error,)}`,);
   }
+  if (Array.isArray(parsed,)) {
+    return {
+      inputKind: 'comments',
+      findings: parsed.map(function normalizeArrayComment(value, index,): NormalizedFinding {
+        return normalizeComment({ value, position: index + 1, });
+      },),
+    };
+  }
   if (!isRecord(parsed,)
     || typeof parsed.status !== 'string'
     || !Array.isArray(parsed.comments,))
   {
-    throw new InputValidationError('input is not a complete OCR result',);
+    throw new InputValidationError('input is not a complete OCR result or comment array',);
   }
   const resolvedHead = readResolvedHead(parsed,);
   return {
