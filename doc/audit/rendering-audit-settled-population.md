@@ -56,7 +56,26 @@ The instrument's own production error rate is unmeasured;
 `#66` is the false-negative half and is open.
 This is telemetry.
 
-## It is 40 subjects, and "every artifact" costs no more than one run did
+## Two things are called a run here, so this document calls them apart
+
+A SETTLEMENT is one pass of the production pipeline over an entry,
+which is what produced an artifact.
+Two of them exist per entry,
+in the archive subdirectories `two-lane-cost-2026-08-16`
+and `grace-remeasure-2026-08-17`.
+Nothing in this task re-ran one.
+
+An AUDIT RUN is one pass of this telemetry probe over all 40 subjects.
+Three of them exist,
+numbered 1, 2 and 3 throughout,
+and they differ only in when they were bought.
+
+Both were called "runs" in earlier drafts,
+which is the `#99` defect in prose:
+one word carrying two meanings that a reader has to infer from context.
+Where this document says "run" without a qualifier it means an audit run.
+
+## It is 40 subjects, and "every artifact" costs no more than one settlement did
 
 The archive holds four artifacts:
 two entries settled twice,
@@ -76,7 +95,7 @@ EVERY delivery row in the translate lane is `decided`.
 There is no `not-evaluated` row and no withdrawal anywhere in the archive,
 so the audit population is the whole delivery ledger rather than a subset of it,
 and the earlier estimate of roughly 40 audits was right by accident:
-it was reasoning about one run per entry,
+it was reasoning about one settlement per entry,
 and 40 is all four artifacts.
 
 ## 16 of the 40 audit the archive, not a fresh rendering
@@ -96,7 +115,7 @@ The invariant that makes this free was checked on all 40:
 `shippedText` equals `incumbentText` on every retained slice,
 and differs from it on every replaced one.
 
-## The two runs are directly comparable, slice for slice
+## The two settlements are directly comparable, slice for slice
 
 Both entries produced the SAME preparation identity under both builds,
 at the same corpus commit,
@@ -108,17 +127,17 @@ zheermao101    sha256-preparation-v1:100b954149dcaf28a05a1f  15 slices
 corpus         a41fc607     digests  3e6902fb  and  8a63a9cd
 ```
 
-Same slices, same source text, two independent runs.
+Same slices, same source text, two independent settlements.
 That buys two readings nothing was paid for:
 
--   SIX SUBJECTS ARE CHARACTER-IDENTICAL ACROSS BOTH RUNS
+-   SIX SUBJECTS ARE CHARACTER-IDENTICAL ACROSS BOTH SETTLEMENTS
     (`zheermao101` slices 0, 2, 7, 8, 9, 11),
     so the instrument can be asked the same question twice
-    and its own run-to-run band read off real text rather than fixtures.
+    and its own audit-to-audit band read off real text rather than fixtures.
     Five of those six are retained-in-both, identical by construction.
-    The sixth, slice 9, is `replacement-shipped` in BOTH runs with identical text:
+    The sixth, slice 9, is `replacement-shipped` in BOTH settlements with identical text:
     two independent productions converged on the same characters.
--   SIX OF TWENTY SLICES CHANGED THEIR DECISION between the runs
+-   SIX OF TWENTY SLICES CHANGED THEIR DECISION between the settlements
     (`Aniloviraw` 1, 2, 3; `zheermao101` 3, 6, 13).
     That is the per-slice instability measured on identical inputs,
     and it is the reason a single run of anything here settles very little.
@@ -467,7 +486,7 @@ a corroborated total that moves by nought means the tier is stable.
 Read against the population figures above, it is misleading,
 and the reason is already recorded:
 those six are almost all archive text inside one entry,
-five of six retained in both runs.
+five of six retained in both settlements.
 They are the subjects two independent productions agreed about.
 The corroborated tier moved by two on the full population
 while moving by nought on them.
@@ -527,12 +546,12 @@ zheermao101   6 identical of 15   (slices 0, 2, 7, 8, 9, 11)
 ```
 
 `Aniloviraw` contributes NOTHING.
-Not one of its five slices shipped the same English in both runs,
+Not one of its five slices shipped the same English in both settlements,
 which is itself worth noticing:
-two of them were `replacement-shipped` in both runs and still differ,
+two of them were `replacement-shipped` in both settlements and still differ,
 so two independent productions of one source never converged there.
 
-Five of the six pairs are `incumbent-retained` in both runs,
+Five of the six pairs are `incumbent-retained` in both settlements,
 so they are archive text.
 Only slice 9 is a fresh rendering,
 and it qualifies because two productions happened to converge on the same characters.
