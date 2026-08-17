@@ -158,6 +158,8 @@ Bash shell and CLI tool quirks that cause confusing behavior:
    producing interleaved output that misrepresents execution order
 - rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
 - [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
+- [A `pgrep --full` wait loop matches its own shell and never exits](pgrep-wait-loop-matches-itself.md),
+   so the step it was gating silently never runs
 
 ### [CLI bin entries](cli-bin.md)
 
