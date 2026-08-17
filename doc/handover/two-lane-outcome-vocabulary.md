@@ -1216,3 +1216,37 @@ zero-quota boundary check, buy a small cap first and have it read in full before
 persist through `persistProbeRun({ probeName: 'rendering-audit-settled', ... })`. The probe name
 deliberately does NOT say "census": the write-up must not let the word carry an implication two
 entries cannot support.
+
+### Where `#115` stands at 14:40Z
+
+The full run is IN FLIGHT: `node dist/final/node/rendering-audit-settled.mjs`, logging to
+`~/temp/agent/audit-settled-full.log`, 18 of 40 subjects bought. It persists to the real runs
+directory on completion. If it dies, rerun it; nothing is cached, so a rerun buys all 40 again.
+
+Landed since the last note:
+
+-   `rendering-audit-settled.ts` plus `-args.ts`, the probe and its command line, with the
+    `import.meta.main` guard and a `--cap 0` zero-quota mode that was run FIRST, on a throwaway runs
+    directory: four artifacts read, all four verified, 40 subjects counted, nobody asked anything.
+-   `rendering-audit-settled-row.ts`, the shared row shape.
+-   `rendering-audit-settled-read.ts` and `-relocation.ts`, the readings, plus eight cases.
+-   A `mise` task, `//package/module/translation-repair:rendering-audit-settled`.
+
+TWO THINGS THE SMALL FIRST BUY PAID FOR, which is the entire argument for capping the first run:
+
+-   The rows were storing COUNTS. One subject read `corroborated=0 agreed=0 near=1` over two voices
+    claiming two defects each, and the file could not say what any of them claimed. That makes
+    `#66`, `#68` and the `#107` relocation rule all unanswerable from the artifact the probe exists
+    to produce. Fixed: the whole report is persisted, uninterpreted.
+-   It priced the rest at roughly 30 seconds a subject.
+
+ALSO OBSERVED, and worth carrying: the SAME subject (`grace-remeasure/Aniloviraw#0`) read
+`claimed=1 corroborated=0` on the capped buy and `claimed=5 corroborated=1 agreed=1` on the full
+run. Identical text, identical roster, minutes apart. Whatever the final tally says, a single audit
+of a slice is not a measurement, and the six character-identical repeat subjects in the archive are
+the only principled way to put a number on that.
+
+STILL OWED when the run lands: apply `splitFor`, `rateByVoice` and `auditRelocationPairs` to the
+persisted rows and write the result into `doc/audit/rendering-audit-settled-population.md`, which
+already holds the population and the reading rules. Report the archive and fresh halves apart, and
+say plainly that two entries settle nothing about any entry.
