@@ -194,9 +194,27 @@ possibly unresponsive desktop, which is a preference rather than a fix.
   `memory.pressure`, so usage figures do not reproduce its decision. Read the PSI line.
 - Reading `/etc/systemd/oomd.conf.d/` and concluding the journal record must be wrong. Local
   overrides may postdate the incident; check `stat` and the daemon's `ActiveEnterTimestamp`.
-- Trusting that a per-tool memory setting protects a session retroactively. It applies to processes
-  started AFTER it is configured, so a session already running when it was added keeps spawning into
-  the old cgroup.
+- Trusting that a per-tool memory setting protects a session that was already running. The setting
+  here was configured after the session that later died had launched, and that session's children
+  were in its terminal scope when the kill came. Whether the setting is picked up at session start
+  or at each spawn was NOT established, so do not reason from either; check `/proc/self/cgroup` in
+  the session you actually care about.
+- Concluding that isolation worked because some long-running process survived the kill. It is the
+  most inviting wrong answer available, and it was reached and discarded during this investigation.
+  A `pi` process with four hours of uptime outlived the reap, which looked like proof that spawned
+  children were safely elsewhere. It was not:
+
+```text
+$ cat /proc/2919919/cgroup
+0::/user.slice/.../app.slice/app-ghostty-surface-transient-2894351.scope
+$ ps --no-headers -o lstart= -p 2919919
+Sun Aug 16 16:48:19 2026
+```
+
+  Scope `2894351` is a DIFFERENT terminal surface from the reaped `5181`. The process survived
+  because it was in another tab, and it is in no `claude-code-bash` cgroup at all despite starting
+  six hours after that setting was configured. Every surface is its own scope, so surviving
+  processes prove only that the kill was scoped, which was already known from its name.
 
 ## Upstream filing decision
 
