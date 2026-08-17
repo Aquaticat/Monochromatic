@@ -7,6 +7,7 @@ import {
 import {
   AmbiguousReconciliationError,
   GitHubProcessTimeoutError,
+  PublicationStoppedError,
   publishIssues,
   type GitHubApiClient,
   type RenderedIssue,
@@ -371,6 +372,84 @@ await describe({
         expect((caught as AmbiguousReconciliationError).urls,).toStrictEqual([
           'https://github.com/Aquaticat/issues-api/issues/11',
           'https://github.com/Aquaticat/issues-api/issues/12',
+        ],);
+      },
+    },),
+    it({
+      name: 'reports created Issues and positioned stopping failure',
+      fn: async () => {
+        /**
+         * Mutable fake create count.
+         */
+        const state = { creates: 0, };
+        /**
+         * Fake API succeeding once then returning terminal validation status.
+         */
+        const api: GitHubApiClient = async (request,) => {
+          if (request.method === 'GET') {
+            return { status: 200, headers: {}, body: [], };
+          }
+          state.creates += 1;
+          return state.creates === 1
+            ? {
+              status: 201,
+              headers: {},
+              body: {
+                number: 20,
+                html_url: 'https://github.com/Aquaticat/issues-api/issues/20',
+              },
+            }
+            : {
+              status: 422,
+              headers: {},
+              body: { message: 'Validation failed', },
+            };
+        };
+        /**
+         * Captured positioned publication failure.
+         */
+        let caught: unknown;
+        try {
+          await publishIssues({
+            repository: {
+              owner: 'Aquaticat',
+              name: 'issues-api',
+              url: 'https://github.com/Aquaticat/issues-api',
+            },
+            issues: [
+              {
+                position: { kind: 'record', value: 1, },
+                security: false,
+                title: 'Created',
+                body: 'Created body',
+                labels: [],
+              },
+              {
+                position: { kind: 'record', value: 2, },
+                security: false,
+                title: 'Rejected',
+                body: 'Rejected body',
+                labels: [],
+              },
+            ],
+            api,
+            wait: async () => {},
+          },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(PublicationStoppedError,);
+        expect((caught as PublicationStoppedError).position,).toStrictEqual({
+          kind: 'record',
+          value: 2,
+        },);
+        expect((caught as PublicationStoppedError).created,).toStrictEqual([
+          {
+            position: { kind: 'record', value: 1, },
+            number: 20,
+            url: 'https://github.com/Aquaticat/issues-api/issues/20',
+          },
         ],);
       },
     },),
