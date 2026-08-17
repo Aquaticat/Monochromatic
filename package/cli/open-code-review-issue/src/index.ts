@@ -63,7 +63,6 @@ export {
   isPromptCancellation,
   promptForExplicitDecision,
   promptForIssues,
-  promptForPastedInput,
 } from './interactive-prompts.ts';
 export { selectInteractiveIssues, } from './interactive-selection.ts';
 export {

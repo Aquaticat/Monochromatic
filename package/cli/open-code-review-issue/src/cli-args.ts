@@ -21,7 +21,7 @@ export type HelpCliArguments = {
 export type RunCliArguments = {
   readonly kind: 'run';
   readonly mode: 'interactive' | 'non-interactive';
-  readonly filePath?: string;
+  readonly filePath: string;
   readonly repositoryUrl?: string;
   readonly applyAuthority?: ApplyAuthority;
 };
@@ -103,26 +103,29 @@ function parseRaw(arguments_: readonly string[],): RawArguments {
 }
 
 /**
- * Validates one optional positional named file.
+ * Validates exactly one positional named file.
  *
  * @param positionals - Raw positional arguments.
  *
- * @returns Optional file-path property.
+ * @returns Required file-path property.
  *
- * @throws {@link CliInvocationError} for multiple paths or stdin sentinel.
+ * @throws {@link CliInvocationError} unless exactly one named path is supplied.
  */
 function filePathMetadata(positionals: readonly string[],): Pick<RunCliArguments, 'filePath'> {
-  if (positionals.length > 1) {
-    throw new CliInvocationError('at most one positional input file is allowed',);
+  if (positionals.length !== 1) {
+    throw new CliInvocationError('every mode requires one positional named input file',);
   }
   /**
-   * Sole positional named file when supplied.
+   * Sole required positional named file.
    */
-  const [filePath,] = positionals;
+  const filePath = positionals.at(0,);
+  if (filePath === undefined) {
+    throw new CliInvocationError('every mode requires one positional named input file',);
+  }
   if (filePath === '-') {
     throw new CliInvocationError('`-` is not an input source; pass a named file path',);
   }
-  return filePath === undefined ? {} : { filePath, };
+  return { filePath, };
 }
 
 /**
@@ -207,7 +210,7 @@ export function parseCliArguments({
     throw new CliInvocationError('exactly one of `--interactive` or `--non-interactive` is required',);
   }
   /**
-   * Validated optional named file.
+   * Validated required named file.
    */
   const fileMetadata = filePathMetadata(raw.positionals,);
   /**
@@ -245,9 +248,6 @@ export function parseCliArguments({
       ...fileMetadata,
       ...repositoryMetadata,
     };
-  }
-  if (fileMetadata.filePath === undefined) {
-    throw new CliInvocationError('non-interactive mode requires a named input file',);
   }
   return {
     kind: 'run',

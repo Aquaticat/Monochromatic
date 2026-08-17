@@ -15,7 +15,7 @@ import type { CreatedIssue, } from './publisher-model.ts';
  */
 export const HELP_TEXT: string = [
   'Usage:',
-  '  open-code-review-issue --interactive [FILE] [--repo https://github.com/OWNER/NAME]',
+  '  open-code-review-issue --interactive FILE [--repo https://github.com/OWNER/NAME]',
   '  open-code-review-issue --non-interactive FILE [--repo https://github.com/OWNER/NAME]',
   '    [--apply [--non-security-only | --all]]',
   '',

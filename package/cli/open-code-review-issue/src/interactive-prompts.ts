@@ -118,32 +118,6 @@ export function createSquareCheckboxTheme({
 }
 
 /**
- * Prompts for one-line pasted structured JSON.
- *
- * @param streams - Explicit TTY streams.
- *
- * @returns One submitted line.
- *
- * @example
- * ```ts
- * await promptForPastedInput({ streams });
- * ```
- */
-export function promptForPastedInput({
-  streams,
-}: {
-  readonly streams: PromptStreams;
-},): Promise<string> {
-  return inputPrompt(
-    {
-    message: 'Paste one-line OCR JSON:',
-    required: true,
-  },
-    streams,
-  );
-}
-
-/**
  * Prompts one explicit yes-or-no decision with no default.
  *
  * @param message - Decision question naming its authority consequence.

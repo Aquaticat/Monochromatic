@@ -35,13 +35,9 @@ import {
 } from './plan.ts';
 import type { PublicationPlan, } from './plan-model.ts';
 import { preflightPublication, } from './preflight.ts';
-import {
-  promptForExplicitDecision,
-  promptForPastedInput,
-} from './interactive-prompts.ts';
+import { promptForExplicitDecision, } from './interactive-prompts.ts';
 import { selectInteractiveIssues, } from './interactive-selection.ts';
 import type { PromptStreams, } from './interactive-model.ts';
-import { parseStructuredInput, } from './ingest.ts';
 import { selectRepository, } from './repository.ts';
 
 /**
@@ -117,32 +113,18 @@ function assertInteractiveTty(streams: CliStreams,): void {
 }
 
 /**
- * Loads named file or one-line interactive paste.
+ * Loads required named file.
  *
- * @param command - Validated run command.
- *
- * @param streams - Process standard streams.
+ * @param command - Validated run command carrying input path.
  *
  * @returns Atomically normalized OCR input.
  */
 async function loadInput({
   command,
-  streams,
 }: {
   readonly command: RunCliArguments;
-  readonly streams: CliStreams;
 },): Promise<NormalizedInput> {
-  if (command.filePath !== undefined) {
-    return readStructuredInputFile({ path: command.filePath, });
-  }
-  if (command.mode !== 'interactive') {
-    throw new CliRuntimeError('non-interactive mode requires a named input file',);
-  }
-  /**
-   * One-line pasted structured JSON.
-   */
-  const text = await promptForPastedInput({ streams: promptStreams(streams,), });
-  return parseStructuredInput({ text, },);
+  return readStructuredInputFile({ path: command.filePath, });
 }
 
 /**
@@ -321,10 +303,7 @@ async function executeRepositoryRun({
   /**
    * Validated OCR input loaded before GitHub operations.
    */
-  const input = await loadInput({
-    command,
-    streams,
-  });
+  const input = await loadInput({ command, });
   if (input.findings
     .length
     === 0) {
