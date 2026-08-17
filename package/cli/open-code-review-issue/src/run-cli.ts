@@ -119,7 +119,7 @@ function assertInteractiveTty(streams: CliStreams,): void {
  *
  * @returns Atomically normalized OCR input.
  */
-async function loadInput({
+function loadInput({
   command,
 }: {
   readonly command: RunCliArguments;
