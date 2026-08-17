@@ -1448,3 +1448,35 @@ answer it owes `#92` improves on its own:
 ```sh
 mise run //package/module/translation-repair:slice-cost-report -- ~/temp/agent/corpus-pass-20260817.log
 ```
+
+### Where things stand at 18:45Z, with the pass still running
+
+THE PASS: 153 lane starts, 7 slices priced, no aborts, no entry settled yet. First artifacts land in
+`~/translation-repair-runs-20260817/artifacts/`. The freeze above is still in force.
+
+LANDED UNDER THE FREEZE, all of it read-only or tooling:
+
+-   `slice-cost-report.ts` and its task. Nothing had ever read the per-slice cost telemetry, which
+    is `#71`'s failure exactly. Interim reading on `#92`: `ms/char` falls fourfold across three size
+    bands while `min/slice` only doubles, which is the shape a FIXED per-slice overhead makes. Seven
+    slices, all repair lane, so it is a shape and not yet a finding.
+-   `runner-closure.ts`, `#116` closed. Runs now record which chunks the entry imports, so two runs
+    can be compared for "same code" by string equality. The whole-tree digest could never say that.
+-   Sample manifests record the pipeline that settled their pool, `#60`'s last named mechanic.
+-   The audit reader accepts the FLAT layout a pass writes, not only the hand-built nested archive.
+    This one mattered: pointing the audit at a pass's own output found nothing and refused with "no
+    artifacts under", which reads like an empty pass rather than a layout it cannot see. The four
+    archived artifacts only ever read because somebody copied them into run-set directories by hand.
+-   `doc/planning/artifact-archive-text.md`, `#96`: its premise was measured and is wrong. Storing
+    the whole target text costs 0.6 to 0.9 percent of an artifact, not the "doubles" the task
+    assumed, because an artifact is judge evidence rather than text.
+
+WHEN THE PASS LANDS, in order:
+
+1.  Re-read the cost telemetry; by then it will include translate-lane slices and the larger bands.
+2.  Re-run the settled rendering audit over the new artifacts. It reads the flat layout directly
+    now, so point it at `~/translation-repair-runs-20260817/artifacts` with no copying:
+    `mise run //package/module/translation-repair:rendering-audit-settled -- --archive <that path>`.
+    More ENTRIES is the one thing `#115` proved the audit needs.
+3.  `#108`'s replacement rate, which is what `#107`'s remaining decision waits on.
+4.  Lift the freeze: `#91`'s half-weight first, since it is settled, authorized and located.
