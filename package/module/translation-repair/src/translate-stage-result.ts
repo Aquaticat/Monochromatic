@@ -34,6 +34,7 @@ export type TranslateDecision =
   | 'sole-candidate'
   | 'declined-indecision'
   | 'declined-rejection'
+  | 'no-candidate-backed'
   | 'no-candidate';
 
 /**

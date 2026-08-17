@@ -62,7 +62,20 @@ export type TranslateAbsenceReason =
   /**
    * Judges rejected every candidate they were shown.
    */
-  | 'declined-rejection';
+  | 'declined-rejection'
+  /**
+   * Judges declined the same slate TWICE, so the panel was asked again and
+   * still backed nothing.
+   *
+   * Stronger than either single-round decline, and recorded instead of them once
+   * the retry is spent. Those two describe one round's mood, where this says the
+   * slate itself never won a voice from a panel that saw it twice.
+   *
+   * A REASON RATHER THAN A LANDING: the slice goes where it would have gone
+   * anyway, keeping an incumbent where there is one and leaving the gap where
+   * there is not.
+   */
+  | 'no-candidate-backed';
 
 /**
  * Raised when selection returned text that says nothing for a source that does.

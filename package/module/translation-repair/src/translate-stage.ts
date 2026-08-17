@@ -5,8 +5,8 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
-import { judgeTranslateSlate, } from './translate-judge.ts';
 import { produceTranslateSlate, } from './translate-produce.ts';
+import { judgeSlateWithRetry, } from './translate-retry.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 //region Translate stage
@@ -145,18 +145,24 @@ export async function runTranslateStage(
     l,
   },);
 
-  return await judgeTranslateSlate({
-    client,
-    produced,
-    judgeModelIds,
-    sourceText,
-    incumbentText,
-    incumbentKind,
-    ...((identityContext === undefined) ? {} : { identityContext, }),
-    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
-    signal,
-    perCallTimeoutMs,
-    l,
+  // JUDGED THROUGH THE RETRY rather than directly, so a panel that declines is
+  // asked once more about the same candidates before the slice is recorded as
+  // one nothing backed. The window trial drives the halves itself and does not
+  // get this, which is correct: judging one slate repeatedly IS its experiment.
+  return await judgeSlateWithRetry({
+    judging: {
+      client,
+      produced,
+      judgeModelIds,
+      sourceText,
+      incumbentText,
+      incumbentKind,
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+      signal,
+      perCallTimeoutMs,
+      l,
+    },
   },);
 }
 

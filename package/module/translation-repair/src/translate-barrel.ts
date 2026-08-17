@@ -66,6 +66,7 @@ export {
   type ProducedSlate,
   produceTranslateSlate,
 } from './translate-produce.ts';
+export { judgeSlateWithRetry, } from './translate-retry.ts';
 export { runTranslateStage, } from './translate-stage.ts';
 export {
   type TranslateDecision,

@@ -141,6 +141,10 @@ function pickCandidate(
  *
  * @param needle - text the judges vote for, absent when they should abstain
  *
+ * @param needleAfterRetry - text the judges vote for once the panel has been
+ * asked a second time, so a case can script a panel that declines and then
+ * agrees; without it the panel answers the same way every round
+ *
  * @param calls - shared call log the cases assert on
  *
  * @param judgeSheets - every judge sheet this run produced, so a case can read
@@ -158,11 +162,13 @@ function laneClient(
   {
     translations,
     needle,
+    needleAfterRetry,
     calls,
     judgeSheets,
   }: {
     readonly translations: TranslateScript;
     readonly needle: string;
+    readonly needleAfterRetry?: string;
     readonly calls: CallLog;
     readonly judgeSheets: string[];
   },
@@ -231,12 +237,21 @@ function laneClient(
       judgeSheets.push(content,);
 
       /**
+       * Text this round votes for, which changes once the panel has been asked
+       * again. `calls.select` counts individual judges, so a whole first round
+       * is one per judge.
+       */
+      const roundNeedle = ((needleAfterRetry !== undefined) && (calls.select > JUDGES.length))
+        ? needleAfterRetry
+        : needle;
+
+      /**
        * Ballot naming the candidate carrying the needle.
        */
       const ballot: unknown = {
-        best: (needle === '') ? 0 : pickCandidate({
+        best: (roundNeedle === '') ? 0 : pickCandidate({
           content,
-          needle,
+          needle: roundNeedle,
         },),
         reason: 'scripted',
       };
@@ -274,12 +289,14 @@ async function runLane(
   {
     translations,
     needle,
+    needleAfterRetry,
     incumbentText,
     incumbentKind = 'present',
     neighbouringSourceText,
   }: {
     readonly translations: TranslateScript;
     readonly needle: string;
+    readonly needleAfterRetry?: string;
     readonly incumbentText: string;
     readonly incumbentKind?: IncumbentKind;
     readonly neighbouringSourceText?: string;
@@ -305,6 +322,7 @@ async function runLane(
     client: laneClient({
       translations,
       needle,
+      ...((needleAfterRetry === undefined) ? {} : { needleAfterRetry, }),
       calls,
       judgeSheets,
     },),
@@ -429,13 +447,13 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS the existing translation when judges decline, and records '
+      name: 'KEEPS the existing translation when judges decline TWICE, and records '
         + 'that as a decline rather than a win. A tie, a lost round and an '
         + 'empty slate all ship the incumbent too, and counting those as wins '
         + 'would report the archive as vindicated by the rounds that examined '
         + 'nothing',
       fn: async () => {
-        const { result, } = await runLane({
+        const { result, calls, } = await runLane({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
@@ -444,13 +462,63 @@ await describe({
           needle: '',
           incumbentText: INCUMBENT_TEXT,
         },);
-        expect(result.decision,).toBe('declined-rejection',);
+        expect(result.decision,).toBe('no-candidate-backed',);
         expect(result.origin,).toBe('incumbent',);
         expect(result.text,).toBe(INCUMBENT_TEXT,);
         expect(result.voteWeight,).toBe(0,);
         expect(result.findings,).toContain('translate-declined (rejection)',);
+        // The panel was asked twice about the same candidates, which is what
+        // separates a settled decline from a momentary one.
+        expect(result.findings,).toContain('translate-declined-retried',);
+        expect(calls.select,).toBe(JUDGES.length * 2,);
       },
     },),
+
+    it({
+      name: 'ACCEPTS a candidate the panel backs on the SECOND ask, which is the '
+        + 'whole reason the retry is bought: a panel that declines once has not '
+        + 'necessarily settled anything, and shipping the incumbent there would '
+        + 'discard a rendering the judges did in the end prefer',
+      fn: async () => {
+        const { result, calls, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: '',
+          needleAfterRetry: 'dozes',
+          incumbentText: INCUMBENT_TEXT,
+        },);
+        expect(result.decision,).toBe('judged',);
+        expect(result.origin,).not
+          .toBe('incumbent',);
+        expect(result.findings,).toContain('translate-declined-retried',);
+        expect(calls.select,).toBe(JUDGES.length * 2,);
+      },
+    },),
+
+    it({
+      name: 'BUYS NO SECOND ROUND when the first one decided, since the retry '
+        + 'exists to separate a momentary decline from a settled one and a '
+        + 'decision is neither',
+      fn: async () => {
+        const { result, calls, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: INCUMBENT_TEXT,
+        },);
+        expect(result.decision,).toBe('judged',);
+        expect(result.findings,).not
+          .toContain('translate-declined-retried',);
+        expect(calls.select,).toBe(JUDGES.length,);
+      },
+    },),
+
 
     it({
       name: 'ships UNJUDGED when every translator reproduced the existing '
@@ -605,8 +673,12 @@ await describe({
         expect(raised instanceof TranslateAbsenceError,).toBe(true,);
         if (!(raised instanceof TranslateAbsenceError))
           throw new Error('expected the absent-mode refusal',);
-        expect(raised.reason,).toBe('declined-rejection',);
+        // NAMED FOR THE PAIR OF ROUNDS, not for either one: the panel saw these
+        // same candidates twice and backed none of them, which is a stronger
+        // statement than one round's rejection and the one worth recording.
+        expect(raised.reason,).toBe('no-candidate-backed',);
         expect(raised.findings,).toContain('translate-declined (rejection)',);
+        expect(raised.findings,).toContain('translate-declined-retried',);
         expect(raised.findings
           .some(function namesTheSlate(finding: string,): boolean {
             return finding.startsWith('translate-candidates',);
