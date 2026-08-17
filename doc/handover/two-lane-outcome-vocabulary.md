@@ -863,15 +863,25 @@ THE DECIDED WORK THAT FOLLOWS THE SWEEP, in order, all of it now unblocked:
     least one voice of six, dominated by `hf:zai-org/GLM-5.2` abandoned 60000 ms after quorum. Widen
     that deadline or seat a replacement, then re-measure the decline rate.
 
-    ITS SEQUENCING PRECONDITION IS MET: the cost run has reported, so a change here no longer
-    invalidates a run in flight. The old cache is already orphaned by the sweep's rebuild, so moving
-    the digest again costs nothing.
+    DONE 2026-08-17, recorded in `doc/decision/translation-repair-straggler-grace.md`. The window
+    moved from 60 to 180 seconds; no model was replaced.
 
-    ONE CONSTRAINT THE COST RUN ADDS, which discriminates widen from replace: widening the deadline
-    adds wall time per call on a pipeline where `XingZ60` already projects at 6.4 hours against a 3
-    hour cap. Widening pushes the wrong way on the number just measured. `roster-bench` and
-    `model-health` exist to vet a replacement instead. Not pre-decided here, but weigh it against
-    that number rather than in isolation.
+    WIDEN WON ON MEASUREMENT. Whole-call latency over 602 bench exchanges puts
+    `hf:zai-org/GLM-5.2` at p50 24.0 s, p95 74.0 s, max 85.5 s and `hf:zai-org/GLM-4.7-Flash` at p50
+    30.5 s, p95 72.9 s, max 88.6 s, so 60 seconds sat between those medians and their 95th
+    percentiles and cut working voices by construction. In the cost run 91 of 96 losses were this
+    window firing, 95 of 96 were the two GLM models, and `hf:zai-org/GLM-5.2` was still heard in 220
+    full panels. Replacing a model that answers in three quarters of its stages would have worked
+    around a mis-set constant by discarding a working voice.
+
+    ONE CLAIM I MADE HERE WAS WRONG and is corrected in that decision: widening does NOT push the
+    wrong way on entry cost. The window is only paid when a voice is late, so the added wall time is
+    about 21 minutes across a seven and a half hour run, under half a percent, against entries that
+    cost hours.
+
+    STILL OWED: re-measure the decline rate under the new window, which was always the second half
+    of this item. Every rate quoted in this handover, including the 0.413, describes the 60 second
+    window.
 
 2.  `#105`'s retry policy: retry a declining slate ONCE against the same panel, then record what
     still declines as `no-candidate-backed`. The delivery vocabulary already says WHERE such a slice

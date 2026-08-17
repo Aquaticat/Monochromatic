@@ -34,16 +34,34 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 /**
  * Time a voice still in flight is given once quorum stands.
  *
- * User decision 2026-08-14, asked as a choice between this and cutting at
- * quorum outright. Sixty seconds is their figure.
+ * SIXTY SECONDS ORIGINALLY, a user figure of 2026-08-14 chosen between this and
+ * cutting at quorum outright, and recorded then as not derived from the latency
+ * distribution and due a revisit against one. That revisit happened on
+ * 2026-08-17 and the window moved; see
+ * `doc/decision/translation-repair-straggler-grace.md`.
  *
- * Not derived from the latency distribution, and it should be revisited against
- * one: the surviving time-to-first-byte distribution measured on run 013 ran p50
- * 45_837 ms and p90 163_296 ms, so a slow-but-working voice can be later than
- * this window from the second answer. What the window is protecting against is
- * the model that answers NOTHING, and that one is unambiguous.
+ * THE WINDOW WAS BELOW THE TWO SLOWEST MODELS' ORDINARY RANGE, which is why it
+ * cut them and nothing else. Whole-call latency over 602 bench exchanges:
+ * `hf:openai/gpt-oss-120b` p50 4.4 s, `hf:moonshotai/Kimi-K3` p50 9.5 s,
+ * `hf:zai-org/GLM-5.2` p50 24.0 s with p95 74.0 s and max 85.5 s, and
+ * `hf:zai-org/GLM-4.7-Flash` p50 30.5 s with p95 72.9 s and max 88.6 s. Sixty
+ * seconds sits between the GLM medians and their 95th percentiles, so it cut
+ * working voices by construction.
+ *
+ * IT HAS NEVER CAUGHT WHAT IT EXISTS TO CATCH. Across those 602 exchanges the
+ * only non-ok outcomes were 8 straggler cuts, all on the two GLM models, and no
+ * timeout of any other kind. Not one hung call was recorded, so every voice the
+ * window has taken was a slow-but-working one.
+ *
+ * THREE MINUTES rather than the observed maximum, deliberately. A maximum over a
+ * few hundred samples is not a bound, which `STREAM_IDLE_MS` in
+ * `stream-idle-guard.ts` records this codebase learning the hard way, so this
+ * sits above the 88.6 s maximum by more than a factor of two. It remains well
+ * under `RUN_PER_CALL_TIMEOUT_MS` of 360_000, so the window still cuts a
+ * genuinely hung voice long before its own deadline would, which is the whole
+ * purpose the user's rule of 2026-08-14 gave it.
  */
-export const STRAGGLER_GRACE_MS = 60_000;
+export const STRAGGLER_GRACE_MS = 180_000;
 
 /**
  * One model's answer, or its silence, from one round.
