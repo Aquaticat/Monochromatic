@@ -13,7 +13,7 @@ import type { CreatedIssue, } from './publisher-model.ts';
 /**
  * Complete command help text with disclosure warnings.
  */
-export const HELP_TEXT = [
+export const HELP_TEXT: string = [
   'Usage:',
   '  open-code-review-issue --interactive [FILE] [--repo https://github.com/OWNER/NAME]',
   '  open-code-review-issue --non-interactive FILE [--repo https://github.com/OWNER/NAME]',
