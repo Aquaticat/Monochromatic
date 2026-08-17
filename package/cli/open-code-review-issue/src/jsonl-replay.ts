@@ -81,23 +81,31 @@ function applyCheckpoint({
    * Replacement group normalized from latest checkpoint.
    */
   const group: ReplayGroup = {
-    findings: checkpointFindings({ record, line, }),
+    findings: checkpointFindings({
+      record,
+      line,
+    }),
   };
   /**
    * Existing ordered slot for non-empty fingerprint.
    */
   const existingIndex = fingerprint === ''
     ? undefined
-    : state.groupByFingerprint.get(fingerprint,);
+    : state.groupByFingerprint
+      .get(fingerprint,);
   if (existingIndex !== undefined) {
     state.groups[existingIndex] = group;
     return;
   }
-  state.groups.push(group,);
+  state.groups
+    .push(group,);
   if (fingerprint !== '') {
-    state.groupByFingerprint.set(
+    state.groupByFingerprint
+      .set(
       fingerprint,
-      state.groups.length - 1,
+      state.groups
+        .length
+        - 1,
     );
   }
 }
@@ -138,7 +146,8 @@ function applyFailure({
    */
   const existingIndex = fingerprint === ''
     ? undefined
-    : state.groupByFingerprint.get(fingerprint,);
+    : state.groupByFingerprint
+      .get(fingerprint,);
   if (existingIndex !== undefined) {
     state.groups[existingIndex] = { findings: [], };
   }
@@ -169,20 +178,34 @@ export function replayJsonlRecords({
     groupByFingerprint: new Map(),
     resolvedHeadMetadata: {},
   };
-  records.forEach(function applyRecord({ record, line, },): void {
+  records.forEach(function applyRecord({
+    record,
+    line,
+  },): void {
     if ((record.type === 'review_item_done') || (record.type === 'review_item_reused')) {
-      applyCheckpoint({ state, record, line, });
+      applyCheckpoint({
+        state,
+        record,
+        line,
+      });
       return;
     }
     if (record.type === 'review_item_failed') {
-      applyFailure({ state, record, line, });
+      applyFailure({
+        state,
+        record,
+        line,
+      });
       return;
     }
     if (record.type === 'session_end') {
       /**
        * Head metadata from latest session-end event carrying one.
        */
-      const metadata = jsonlResolvedHeadMetadata({ record, line, });
+      const metadata = jsonlResolvedHeadMetadata({
+        record,
+        line,
+      });
       if (metadata.resolvedHead !== undefined) {
         state.resolvedHeadMetadata = metadata;
       }

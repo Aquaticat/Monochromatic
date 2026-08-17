@@ -72,11 +72,17 @@ function parseJsonlRecord({
   /**
    * Parsed line before event-object narrowing.
    */
-  const value = parseJsonlValue({ text, line, });
+  const value = parseJsonlValue({
+    text,
+    line,
+  });
   if ((!isRecord(value,)) || ((typeof value.type) !== 'string')) {
     throw new InputValidationError(`line ${String(line,)} must be an event object with string type`,);
   }
-  return { record: value, line, };
+  return {
+    record: value,
+    line,
+  };
 }
 
 /**
@@ -92,7 +98,10 @@ function parseJsonlRecord({
  * ```
  */
 function normalizePhysicalLine(text: string,): string {
-  return text.endsWith('\r',) ? text.slice(0, -1,) : text;
+  return text.endsWith('\r',) ? text.slice(
+    0,
+    -1,
+  ) : text;
 }
 
 /**

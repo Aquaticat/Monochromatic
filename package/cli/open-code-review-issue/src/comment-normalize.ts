@@ -215,7 +215,6 @@ function hasNonWhitespaceLine(text: string,): boolean {
  * });
  * ```
  */
-
 export function normalizeComment({
   value,
   position,
