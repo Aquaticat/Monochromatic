@@ -71,6 +71,15 @@ export {
   PublicationPreflightError,
 } from './preflight.ts';
 export type {
+  CreatedIssue,
+  PublicationResult,
+  PublicationWait,
+} from './publisher-model.ts';
+export {
+  IssuePublicationError,
+  publishIssues,
+} from './publisher.ts';
+export type {
   FindingCategory,
   FindingSeverity,
   InputPosition,
