@@ -7,8 +7,8 @@ Implementation has not started.
 No dependency has been added.
 
 The user requested a design grilling before implementation.
-Every identified design branch is now resolved;
-implementation waits for the user's explicit shared-understanding confirmation.
+Every identified design branch is resolved.
+The user confirmed shared understanding and authorized implementation on 2026-08-16.
 Follow the `grilling` skill:
 ask one decision question at a time,
 provide a recommended answer,
@@ -986,8 +986,9 @@ The following branches were resolved one at a time in dependency order:
 ## Immediate next action
 
 Do not add the umbrella package or a direct core dependency.
-Present the completed design summary and ask whether shared understanding has been reached.
-Do not implement until the user confirms it.
+Implement the adapter test-first,
+verify every exported path and built CLI boundary,
+then run live verification against only the authorized disposable repository.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -1218,6 +1219,8 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   selected abort deadline plus forceful kill after verifying that its timeout option is not a hard deadline.
   Rejected adding any alternative subprocess dependency;
   raw `node:child_process` is the sole fallback.
+- 2026-08-16:
+  confirmed shared understanding and authorized implementation.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
