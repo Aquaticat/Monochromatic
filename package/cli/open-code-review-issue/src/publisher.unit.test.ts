@@ -44,8 +44,8 @@ await describe({
           /**
            * Create request body required by publisher.
            */
-          const body = request.body;
-          if (body === undefined || typeof body.title !== 'string') {
+          const {body} = request;
+          if ((body === undefined) || ((typeof body.title) !== 'string')) {
             throw new Error('missing create title',);
           }
           createdTitles.push(body.title,);

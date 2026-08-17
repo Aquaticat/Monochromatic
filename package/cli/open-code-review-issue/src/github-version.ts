@@ -65,8 +65,8 @@ function isDecimalComponent(component: string,): boolean {
   if (component === '') {
     return false;
   }
-  return component.split('',).every(function isDigit(character,): boolean {
-    return character >= '0' && character <= '9';
+  return [...component].every(function isDigit(character,): boolean {
+    return (character >= '0') && (character <= '9');
   },);
 }
 
@@ -127,21 +127,23 @@ export function parseGitHubCliVersion({
   /**
    * Non-empty declaration tokens.
    */
-  const tokens = firstLine.split(' ',).filter(function nonEmpty(token,): boolean {
+  const tokens = firstLine.split(' ',)
+    .filter(function nonEmpty(token,): boolean {
     return token !== '';
   },);
   /**
    * Semantic version token after `gh version`.
    */
   const text = tokens[2];
-  if (tokens[0] !== 'gh' || tokens[1] !== 'version' || text === undefined) {
+  if ((tokens[0] !== 'gh') || (tokens[1] !== 'version')
+    || (text === undefined)) {
     throw new GitHubCliVersionError(`cannot parse GitHub CLI version output: ${firstLine}`,);
   }
   /**
    * Decimal semantic version components.
    */
   const components = text.split('.',);
-  if (components.length !== 3 || !components.every(isDecimalComponent,)) {
+  if ((components.length !== 3) || (!components.every(isDecimalComponent,))) {
     throw new GitHubCliVersionError(`cannot parse GitHub CLI version ${text}`,);
   }
   /**

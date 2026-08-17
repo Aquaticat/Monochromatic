@@ -71,14 +71,20 @@ export class IncludedResponseError extends Error {
  * splitIncludedOutput('HTTP/2 200 OK\n\n{}');
  * ```
  */
-function splitIncludedOutput(stdout: string,): readonly [headers: string, body: string] {
+function splitIncludedOutput(stdout: string,): readonly [
+  headers: string,
+  body: string
+] {
   /**
    * CRLF delimiter position used by HTTP wire-style output.
    */
   const crlfIndex = stdout.indexOf('\r\n\r\n',);
-  if (crlfIndex >= 0) {
+  if (crlfIndex !== (-1)) {
     return [
-      stdout.slice(0, crlfIndex,),
+      stdout.slice(
+        0,
+        crlfIndex,
+      ),
       stdout.slice(crlfIndex + '\r\n\r\n'.length,),
     ];
   }
@@ -86,9 +92,12 @@ function splitIncludedOutput(stdout: string,): readonly [headers: string, body: 
    * LF delimiter position used by normalized terminal output.
    */
   const lfIndex = stdout.indexOf('\n\n',);
-  if (lfIndex >= 0) {
+  if (lfIndex !== (-1)) {
     return [
-      stdout.slice(0, lfIndex,),
+      stdout.slice(
+        0,
+        lfIndex,
+      ),
       stdout.slice(lfIndex + '\n\n'.length,),
     ];
   }
@@ -113,7 +122,8 @@ function parseStatus(statusLine: string,): number {
   /**
    * Whitespace-separated status-line components.
    */
-  const parts = statusLine.split(' ',).filter(function nonEmpty(part,): boolean {
+  const parts = statusLine.split(' ',)
+    .filter(function nonEmpty(part,): boolean {
     return part !== '';
   },);
   /**
@@ -127,9 +137,9 @@ function parseStatus(statusLine: string,): number {
    * Parsed status candidate.
    */
   const status = Number(statusText,);
-  if (!Number.isInteger(status,)
-    || status < HTTP_STATUS_MINIMUM
-    || status > HTTP_STATUS_MAXIMUM)
+  if ((!Number.isInteger(status,))
+    || (status < HTTP_STATUS_MINIMUM)
+    || (status > HTTP_STATUS_MAXIMUM))
   {
     throw new IncludedResponseError(`gh api --include output has invalid HTTP status ${statusText}`,);
   }
@@ -166,11 +176,17 @@ function parseHeaders(lines: readonly string[],): Readonly<Record<string, string
     /**
      * Lowercase field name for case-insensitive lookup.
      */
-    const name = line.slice(0, separator,).trim().toLowerCase();
+    const name = line.slice(
+      0,
+      separator,
+    )
+      .trim()
+      .toLowerCase();
     /**
      * Trimmed field value.
      */
-    const value = line.slice(separator + 1,).trim();
+    const value = line.slice(separator + 1,)
+      .trim();
     headers[name] = value;
   },);
   return headers;
@@ -225,7 +241,11 @@ export function parseIncludedResponse({
   /**
    * Header lines normalized from CRLF or LF input.
    */
-  const lines = headerText.replaceAll('\r\n', '\n',).split('\n',);
+  const lines = headerText.replaceAll(
+    '\r\n',
+    '\n',
+  )
+    .split('\n',);
   /**
    * Required first status line.
    */

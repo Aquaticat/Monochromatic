@@ -48,6 +48,7 @@ export type GitHubApiRequest = {
  * @returns Parsed included response including non-success HTTP status.
  *
  * @throws {@link GitHubProcessError} when process output is not HTTP response.
+ *
  * @throws {@link IncludedResponseError} when successful output is malformed.
  *
  * @example
@@ -76,7 +77,7 @@ async function executeApi({
     return parseIncludedResponse({ stdout: result.stdout, },);
   }
   catch (error: unknown) {
-    if (!(error instanceof GitHubProcessError) || error.stdout === '') {
+    if ((!(error instanceof GitHubProcessError)) || (error.stdout === '')) {
       throw error;
     }
     try {
@@ -145,16 +146,26 @@ async function executeBodyRequest({
   /**
    * Private disposable directory owning request file cleanup.
    */
-  await using directory = await mkdtempDisposable(join(tmpdir(), 'ocr-issue-gh-',),);
+  await using directory = await mkdtempDisposable(join(
+    tmpdir(),
+    'ocr-issue-gh-',
+  ),);
   /**
    * Private named JSON input path.
    */
-  const inputPath = join(directory.path, 'request.json',);
-  await writeFile(inputPath, JSON.stringify(request.body,), {
+  const inputPath = join(
+    directory.path,
+    'request.json',
+  );
+  await writeFile(
+    inputPath,
+    JSON.stringify(request.body,),
+    {
     encoding: 'utf8',
     mode: 0o600,
     flag: 'wx',
-  },);
+  },
+  );
   return executeApi({
     runProcess,
     arguments: [

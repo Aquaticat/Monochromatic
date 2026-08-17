@@ -72,21 +72,31 @@ export async function readHighWater({
     method: 'GET',
     endpoint: `${repositoryEndpoint(repository,)}/issues?state=all&sort=created&direction=desc&per_page=1`,
   },);
-  if (response.status !== HTTP_OK || !Array.isArray(response.body,)) {
+  if ((response.status !== HTTP_OK) || (!Array.isArray(response.body,))) {
     throw new IssuePublicationError(
       `Issue high-water lookup failed with HTTP ${String(response.status,)}`,
     );
   }
-  return response.body.reduce(function greatestNumber(greatest, item,): number {
-    if (!isRecord(item,)
-      || (typeof item.number) !== 'number'
-      || !Number.isInteger(item.number,)
-      || item.number < 1)
+  return response.body
+    .reduce(
+      function greatestNumber(
+        greatest,
+        item,
+      ): number {
+    if ((!isRecord(item,))
+      || ((typeof item.number) !== 'number')
+      || (!Number.isInteger(item.number,))
+      || (item.number < 1))
     {
       throw new IssuePublicationError('Issue high-water response contains invalid number',);
     }
-    return Math.max(greatest, item.number,);
-  }, 0,);
+    return Math.max(
+      greatest,
+      item.number,
+    );
+  },
+      0,
+    );
 }
 
 /**
@@ -125,14 +135,19 @@ async function compareCandidate({
   if (response.status === HTTP_NOT_FOUND) {
     return { kind: 'none', };
   }
-  if (response.status !== HTTP_OK || !isRecord(response.body,)) {
+  if ((response.status !== HTTP_OK) || (!isRecord(response.body,))) {
     throw new IssuePublicationError(
       `reconciliation read for number ${String(number,)} failed with HTTP ${String(response.status,)}`,
     );
   }
-  if (response.body.title !== issue.title
-    || response.body.body !== issue.body
-    || (typeof response.body.html_url) !== 'string')
+  if ((response.body
+    .title
+    !== issue.title)
+    || (response.body
+      .body
+      !== issue.body)
+    || ((typeof response.body
+      .html_url) !== 'string'))
   {
     return { kind: 'none', };
   }
@@ -141,7 +156,8 @@ async function compareCandidate({
     created: {
       position: issue.position,
       number,
-      url: response.body.html_url,
+      url: response.body
+        .html_url,
     },
   };
 }
@@ -160,6 +176,7 @@ async function compareCandidate({
  * @returns No match or one confirmed created Issue.
  *
  * @throws {@link AmbiguousReconciliationError} when multiple exact matches exist.
+ *
  * @throws {@link IssuePublicationError} when any owning read fails.
  */
 export async function reconcileCreate({
@@ -176,7 +193,10 @@ export async function reconcileCreate({
   /**
    * Greatest number visible after ambiguous failure.
    */
-  const currentHighWater = await readHighWater({ repository, api, });
+  const currentHighWater = await readHighWater({
+    repository,
+    api,
+  });
   /**
    * Exact matches accumulated for multiple-match terminal handling.
    */
@@ -204,7 +224,10 @@ export async function reconcileCreate({
      */
     const [created,] = matches;
     if (created !== undefined) {
-      return { kind: 'match', created, };
+      return {
+        kind: 'match',
+        created,
+      };
     }
   }
   throw new AmbiguousReconciliationError({

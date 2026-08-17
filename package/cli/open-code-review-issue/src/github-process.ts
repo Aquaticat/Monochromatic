@@ -128,6 +128,7 @@ export class GitHubProcessError extends Error {
  * @returns Never because conversion always throws.
  *
  * @throws {@link GitHubProcessTimeoutError} for dedicated deadline abort.
+ *
  * @throws {@link GitHubProcessError} for every other child failure.
  *
  * @example
@@ -204,7 +205,10 @@ export async function runBoundedProcess({
   cwd,
 }: BoundedProcessRequest,): Promise<BoundedProcessResult> {
   try {
-    return await spawn(file, commandArguments, {
+    return await spawn(
+      file,
+      commandArguments,
+      {
       cwd,
       stdin: 'ignore',
       stdout: 'pipe',
@@ -215,9 +219,13 @@ export async function runBoundedProcess({
       signal: AbortSignal.timeout(GITHUB_CHILD_DEADLINE_MS,),
       killSignal: 'SIGKILL',
       windowsHide: true,
-    },);
+    },
+    );
   }
   catch (error: unknown) {
-    return throwProcessFailure({ error, file, });
+    return throwProcessFailure({
+      error,
+      file,
+    });
   }
 }

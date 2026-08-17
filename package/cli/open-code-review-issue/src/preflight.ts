@@ -130,8 +130,10 @@ async function verifySourceLink({
       `source commit lookup failed with HTTP ${String(response.status,)}`,
     );
   }
-  if (!isRecord(response.body,)
-    || response.body.sha !== resolvedHead)
+  if ((!isRecord(response.body,))
+    || (response.body
+      .sha
+      !== resolvedHead))
   {
     return {};
   }
@@ -171,12 +173,19 @@ export async function preflightPublication({
   /**
    * Confirmed existing-label state.
    */
-  const needsTriageLabel = await lookupNeedsTriageLabel({ repository, api, });
+  const needsTriageLabel = await lookupNeedsTriageLabel({
+    repository,
+    api,
+  });
   if (resolvedHead === undefined) {
     return { needsTriageLabel, };
   }
   return {
     needsTriageLabel,
-    ...await verifySourceLink({ repository, resolvedHead, api, }),
+    ...await verifySourceLink({
+      repository,
+      resolvedHead,
+      api,
+    }),
   };
 }

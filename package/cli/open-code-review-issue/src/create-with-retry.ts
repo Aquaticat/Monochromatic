@@ -105,10 +105,13 @@ async function attemptCreate({
     };
   }
   catch (error: unknown) {
-    if (error instanceof GitHubProcessError
-      || error instanceof GitHubProcessTimeoutError)
+    if ((error instanceof GitHubProcessError)
+      || (error instanceof GitHubProcessTimeoutError))
     {
-      return { kind: 'process-failure', error, };
+      return {
+        kind: 'process-failure',
+        error,
+      };
     }
     throw error;
   }
@@ -124,19 +127,26 @@ function parseCreatedIssue({
   readonly issue: RenderedIssue;
   readonly response: IncludedResponse;
 },): CreatedIssue {
-  if (response.status !== HTTP_CREATED
-    || !isRecord(response.body,)
-    || (typeof response.body.number) !== 'number'
-    || !Number.isInteger(response.body.number,)
-    || response.body.number < 1
-    || (typeof response.body.html_url) !== 'string')
+  if ((response.status !== HTTP_CREATED)
+    || (!isRecord(response.body,))
+    || ((typeof response.body
+      .number) !== 'number')
+    || (!Number.isInteger(response.body
+      .number,))
+    || (response.body
+      .number
+      < 1)
+    || ((typeof response.body
+      .html_url) !== 'string'))
   {
     throw new IssuePublicationError(`Issue creation failed with HTTP ${String(response.status,)}`,);
   }
   return {
     position: issue.position,
-    number: response.body.number,
-    url: response.body.html_url,
+    number: response.body
+      .number,
+    url: response.body
+      .html_url,
   };
 }
 
@@ -144,18 +154,18 @@ function parseCreatedIssue({
  * Determines whether response represents rate-limit rejection.
  */
 function isRateLimit(response: IncludedResponse,): boolean {
-  return response.status === HTTP_TOO_MANY_REQUESTS
-    || (response.status === HTTP_FORBIDDEN
-      && (response.headers['x-ratelimit-remaining'] === '0'
-        || response.headers['retry-after'] !== undefined));
+  return (response.status === HTTP_TOO_MANY_REQUESTS)
+    || ((response.status === HTTP_FORBIDDEN)
+      && ((response.headers['x-ratelimit-remaining'] === '0')
+        || (response.headers['retry-after'] !== undefined)));
 }
 
 /**
  * Determines whether response is ambiguous server failure.
  */
 function isServerError(response: IncludedResponse,): boolean {
-  return response.status >= HTTP_SERVER_ERROR_MINIMUM
-    && response.status <= HTTP_SERVER_ERROR_MAXIMUM;
+  return (response.status >= HTTP_SERVER_ERROR_MINIMUM)
+    && (response.status <= HTTP_SERVER_ERROR_MAXIMUM);
 }
 
 /**
@@ -175,7 +185,7 @@ function headerSeconds({
    * Numeric header candidate.
    */
   const parsed = Number(value,);
-  return Number.isFinite(parsed,) && parsed > 0 ? parsed * multiplier : 0;
+  return Number.isFinite(parsed,) && (parsed > 0) ? parsed * multiplier : 0;
 }
 
 /**
@@ -208,7 +218,10 @@ function rateDelay({
     multiplier: 1_000,
   });
   if (reset > 0) {
-    return Math.max(0, reset - now(),);
+    return Math.max(
+      0,
+      reset - now(),
+    );
   }
   return RATE_RETRY_BASE_MS * (2 ** retryIndex);
 }
@@ -232,19 +245,31 @@ export async function createIssueWithRetry({
   /**
    * Shared number boundary recorded before first create attempt.
    */
-  const highWater = await readHighWater({ repository, api, });
+  const highWater = await readHighWater({
+    repository,
+    api,
+  });
   for (let attemptIndex = 0; attemptIndex <= MAXIMUM_RETRIES; attemptIndex += 1) {
     /**
      * Current create response or process-level failure.
      */
-    const attempt = await attemptCreate({ repository, issue, api, });
-    if (attempt.kind === 'response' && attempt.response.status === HTTP_CREATED) {
-      return parseCreatedIssue({ issue, response: attempt.response, });
+    const attempt = await attemptCreate({
+      repository,
+      issue,
+      api,
+    });
+    if ((attempt.kind === 'response') && (attempt.response
+      .status
+      === HTTP_CREATED)) {
+      return parseCreatedIssue({
+        issue,
+        response: attempt.response,
+      });
     }
     /**
      * Whether current failure may have created remote Issue.
      */
-    const ambiguous = attempt.kind === 'process-failure'
+    const ambiguous = (attempt.kind === 'process-failure')
       || isServerError(attempt.response,);
     if (ambiguous) {
       /**
@@ -263,15 +288,17 @@ export async function createIssueWithRetry({
     /**
      * Whether current response qualifies for rate-aware retry.
      */
-    const rateLimited = attempt.kind === 'response' && isRateLimit(attempt.response,);
+    const rateLimited = (attempt.kind === 'response') && isRateLimit(attempt.response,);
     /**
      * Whether current failure belongs to settled retry classes.
      */
     const retryable = ambiguous || rateLimited;
-    if (!retryable || attemptIndex === MAXIMUM_RETRIES) {
+    if ((!retryable) || (attemptIndex === MAXIMUM_RETRIES)) {
       const status = attempt.kind === 'response'
-        ? `HTTP ${String(attempt.response.status,)}`
-        : attempt.error.message;
+        ? `HTTP ${String(attempt.response
+          .status,)}`
+        : attempt.error
+          .message;
       throw new IssuePublicationError(
         `Issue creation stopped after ${String(attemptIndex + 1,)} attempt(s): ${status}`,
       );
@@ -279,10 +306,17 @@ export async function createIssueWithRetry({
     /**
      * Settled delay before next mutative retry.
      */
-    const retryDelay = rateLimited && attempt.kind === 'response'
-      ? rateDelay({ response: attempt.response, retryIndex: attemptIndex, now, })
+    const retryDelay = rateLimited && (attempt.kind === 'response')
+      ? rateDelay({
+        response: attempt.response,
+        retryIndex: attemptIndex,
+        now,
+      })
       : TRANSIENT_RETRY_BASE_MS * (2 ** attemptIndex);
-    await wait(Math.max(TRANSIENT_RETRY_BASE_MS, retryDelay,),);
+    await wait(Math.max(
+      TRANSIENT_RETRY_BASE_MS,
+      retryDelay,
+    ),);
   }
   throw new IssuePublicationError('Issue creation retry loop reached an impossible state',);
 }
