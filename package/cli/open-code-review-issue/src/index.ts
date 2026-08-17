@@ -76,9 +76,10 @@ export type {
   PublicationWait,
 } from './publisher-model.ts';
 export {
+  AmbiguousReconciliationError,
   IssuePublicationError,
-  publishIssues,
-} from './publisher.ts';
+} from './publication-error.ts';
+export { publishIssues, } from './publisher.ts';
 export type {
   FindingCategory,
   FindingSeverity,
