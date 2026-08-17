@@ -592,14 +592,15 @@ scheduler still produces a mixed directory. The runs directory already takes an 
 (`lockRunsDir`), which covers our own passes; a foreign writer is out of scope of that lock and
 would need one shared with it.
 
-## The rendering audit is built, and unmeasured (`#85`)
+## What the rendering audit is for, and the design decisions inside it (`#85`)
 
 The absent-baseline instrument the translate lane needs, since a slice rendered from scratch has no
 BEFORE text for the differential probe to compare against.
-Three files, `rendering-audit-wire.ts`, `-screen.ts` and `rendering-audit.ts`, fourteen cases, and
-the self-corroboration guard shown to fail when stripped.
 It sits BESIDE the introduced-defect probe rather than replacing it: the repair lane still has a
 baseline and `#66` still measures the old instrument.
+The file inventory and the measured behaviour live under "The audit is rebuilt, run live, and
+measured"; this section keeps only the reasoning that survived the rebuild, so it is not
+re-litigated.
 
 Three decisions inside it are worth not re-litigating:
 
@@ -614,7 +615,8 @@ Three decisions inside it are worth not re-litigating:
     question is whether a defect is there, and a majority over six would discard a defect four of
     them missed. The rows keep the counts, so a stricter rule can be applied to an existing run.
 
-NOT WIRED TO ANYTHING and unmeasured.
+STILL WIRED TO NOTHING: no lane calls it, and where it should run is Question 8, which is the
+user's to answer. Measured, though, on its own fixtures.
 
 The second of those three decisions is now stated too strongly, and the code has been left as it is
 while the wording is corrected: nothing in the anchoring makes a voice reason independently of an

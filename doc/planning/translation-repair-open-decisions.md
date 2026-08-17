@@ -17,8 +17,10 @@ below was answered in between and nothing changed its answer.
 -   THE LAUNCH GATE IS LIFTED. The corpus pass was held only because the trial
     was competing for the same six models, and it is done.
 -   THE RENDERING AUDIT WORKS, and Question 8 asks where it should run. Both
-    live arms ran three times: the planted defect is found by every auditor
-    every time, and the faithful control drew no claims at all.
+    live arms ran three times: the planted defect was found in every run, by all
+    three auditors in two of them and by two of three in the last, where the
+    remaining voice's only claim failed to anchor. The faithful control drew no
+    claims at all, in any run.
 -   QUOTA WAS SPENT, deliberately and in small amounts: three runs of two audit
     arms against a three-model roster. Everything else was unit tests against
     the synthetic client.
@@ -1097,8 +1099,11 @@ DELEGATE
 ## Question 8: where the rendering audit runs, now that it works
 
 The absent-baseline instrument (`#85`) is built, tested, and MEASURED against
-its own planted defect: on the positive fixture every auditor finds the dropped
-negator, and on the faithful fixture every auditor claims nothing at all.
+its own planted defect, three runs of each arm. On the positive fixture the
+dropped negator was found in all three runs: by all three auditors twice, and by
+two of three once, where the remaining voice pointed at it but quoted wording
+that could not be anchored. On the faithful fixture every auditor claimed
+nothing at all, every time.
 
 It is wired to nothing. That is the last decision on it, and it is yours because
 the options differ in what they cost you rather than in whether they work.

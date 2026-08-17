@@ -40,11 +40,16 @@ import {
 //     This is about the AUDITORS.
 // -   DROPPED CLAIMS, per voice: did an auditor point at it and fail to anchor.
 //     This is about the PROMPT and the SCREEN.
-// -   CORROBORATED and NEAR MISSES: did the matcher bring two voices together.
-//     This is about the MATCHER.
+// -   CORROBORATED, AGREED and NEAR MISSES: did the matcher bring two voices
+//     together. This is about the MATCHER.
 //
-// A run that scores three oracle hits, zero drops and zero corroborated defects
-// is a matcher problem. One that scores zero oracle hits is not.
+// A run that scores three oracle hits, zero drops and zero agreement of either
+// tier is a matcher problem. One that scores zero oracle hits is not.
+//
+// `agreed` IS A SUPERSET OF `corroborated`, since exactly equal focus intervals
+// trivially overlap. So `corroborated=1 agreed=1` is ONE defect reported at two
+// strengths, not two findings, and `corroborated=0 agreed=1` is the loose tier
+// catching what the strict one missed.
 //
 // Inputs live in `audit-sensitivity-input.ts` and are cat-themed invention. NO
 // corpus text takes part, and this writes nothing.
@@ -350,13 +355,13 @@ async function auditOne(
 await auditOne({
   candidateText: FLIPPED_CANDIDATE,
   arm: 'flipped',
-  expectation: 'one corroborated defect at the oracle span',
+  expectation: 'agreement at either tier on the oracle span',
 },);
 
 await auditOne({
   candidateText: CLEAN_CANDIDATE,
   arm: 'clean',
-  expectation: 'no corroborated defect',
+  expectation: 'agreement at neither tier',
 },);
 
 //endregion Audit sensitivity
