@@ -242,6 +242,19 @@ async function main(): Promise<void> {
   const startedAt = new Date().toISOString();
 
   /**
+   * Digest over built output, which is the only identity that moves when the
+   * code moves but the commit does not.
+   *
+   * READ AT THE START, not at the end. A long run gives a developer plenty of
+   * time to rebuild, and `rendering-audit-settled` was caught doing exactly
+   * that: `dist` was rebuilt while a run was in flight, so the digest it was
+   * about to stamp described a build that had never probed anything. Node loads
+   * the code once, at startup; the identity that answers for a run is the one
+   * present THEN.
+   */
+  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
+
+  /**
    * Entry filter and candidate cap.
    */
   const {
@@ -408,11 +421,6 @@ async function main(): Promise<void> {
   }
   /* oxlint-enable no-await-in-loop */
 
-  /**
-   * Digest over built output, which is the only identity that moves when the
-   * code moves but the commit does not.
-   */
-  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
    * Where this run was kept, said out loud so the answers are findable without

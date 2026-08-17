@@ -137,36 +137,34 @@ async function auditOne(
 }
 
 /**
- * Picks the subjects a run will buy, in archive order.
+ * Every subject a run could buy, after the entry filter, in archive order.
+ *
+ * SEPARATE FROM THE CAP so the fraction a capped run reports is over what was
+ * SELECTABLE rather than over the whole archive. Reporting `5 of 40` where
+ * `--only` left 30 selectable overstates what was skipped and understates the
+ * coverage bought, and the line alone gives a reader no way to tell.
  *
  * @param readings - every artifact the archive holds
  *
  * @param onlyIds - entries to keep, empty for all
  *
- * @param cap - how many to buy, negative for all
- *
- * @returns Subjects to audit
+ * @returns Subjects the filter left
  *
  * @example
  * ```ts
- * const buying = selectSubjects({ readings, onlyIds, cap, },);
+ * const eligible = eligibleSubjects({ readings, onlyIds, },);
  * ```
  */
-function selectSubjects(
+function eligibleSubjects(
   {
     readings,
     onlyIds,
-    cap,
   }: {
     readonly readings: readonly SettledArtifactReading[];
     readonly onlyIds: readonly string[];
-    readonly cap: number;
   },
 ): readonly SettledAuditSubject[] {
-  /**
-   * Every subject the archive offers, in a stable order.
-   */
-  const offered = readings
+  return readings
     .flatMap(function subjectsOf(reading,): readonly SettledAuditSubject[] {
       return reading.subjects;
     },)
@@ -175,10 +173,34 @@ function selectSubjects(
         return true;
       return onlyIds.includes(subject.entryId,);
     },);
+}
 
+/**
+ * Takes the prefix a cap allows.
+ *
+ * @param eligible - subjects the filter left, in a stable order
+ *
+ * @param cap - how many to buy, negative for all
+ *
+ * @returns Subjects to audit
+ *
+ * @example
+ * ```ts
+ * const buying = capped({ eligible, cap, },);
+ * ```
+ */
+function capped(
+  {
+    eligible,
+    cap,
+  }: {
+    readonly eligible: readonly SettledAuditSubject[];
+    readonly cap: number;
+  },
+): readonly SettledAuditSubject[] {
   if (cap < 0)
-    return offered;
-  return offered.slice(
+    return eligible;
+  return eligible.slice(
     0,
     cap,
   );
@@ -310,6 +332,19 @@ async function main(): Promise<void> {
   const startedAt = new Date().toISOString();
 
   /**
+   * Digest over built output, which is the only identity that moves when the
+   * code moves but the commit does not.
+   *
+   * READ AT THE START, not at the end, and that ordering is the whole point.
+   * A long run gives a developer plenty of time to rebuild, and this probe was
+   * caught doing exactly that: `dist` was rebuilt while a 40-subject run was in
+   * flight, so the digest the run was about to stamp described a build that had
+   * never audited anything. Node loads the code once, at startup; the identity
+   * that answers for a run is the one present THEN.
+   */
+  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
+
+  /**
    * What the command line asked for.
    */
   const asked = readAuditArguments({ argv: process.argv, },);
@@ -321,37 +356,33 @@ async function main(): Promise<void> {
     archiveDir: asked.archiveDir,
     cloneDir: asked.cloneDir,
   },);
+
+  // BEFORE anything is printed. An archive with nothing in it means the run was
+  // pointed somewhere wrong, and a population report followed by `BUYING 0 of 0`
+  // reads like a clean archive right up until the throw.
+  if (readings.length === 0)
+    throw new Error(`no artifacts under ${asked.archiveDir}`,);
+
   printPopulation({ readings, },);
+
+  /**
+   * Subjects the entry filter left, which is what a capped buy is a fraction of.
+   */
+  const eligible = eligibleSubjects({
+    readings,
+    onlyIds: asked.onlyIds,
+  },);
 
   /**
    * Subjects this run will buy.
    */
-  const buying = selectSubjects({
-    readings,
-    onlyIds: asked.onlyIds,
+  const buying = capped({
+    eligible,
     cap: asked.cap,
   },);
-  /**
-   * Every subject the archive offers, which is what a capped buy is a fraction
-   * of.
-   */
-  const offeredCount = readings.reduce(
-    function total(
-      sum,
-      reading,
-    ): number {
-      /**
-       * Subjects this artifact offers.
-       */
-      const { subjects, } = reading;
-      return sum + subjects.length;
-    },
-    0,
+  console.log(
+    `\nBUYING ${String(buying.length,)} of ${String(eligible.length,)} selectable subjects\n`,
   );
-  console.log(`\nBUYING ${String(buying.length,)} of ${String(offeredCount,)} subjects\n`,);
-
-  if (readings.length === 0)
-    throw new Error(`no artifacts under ${asked.archiveDir}`,);
 
   /**
    * What the roster said about each, in order.
@@ -370,12 +401,6 @@ async function main(): Promise<void> {
     rows.push(row,);
     printRow({ row, },);
   }
-
-  /**
-   * Digest over built output, which is the only identity that moves when the
-   * code moves but the commit does not.
-   */
-  const { digest: pipelineDigest, } = await digestPipeline({ dir: import.meta.dirname, },);
 
   /**
    * Where this run was kept, said out loud so the answers are findable.
