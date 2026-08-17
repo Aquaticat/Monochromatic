@@ -728,10 +728,16 @@ of these calls the same six models.
     0.287 on a panel of five and 0.692 on a panel of four, so declines are mostly VOICE LOSS rather
     than passages. Retrying the same slate decided 21 of 37 declines. Only 8 slices of 109 declined
     under both identical judgings. `#105` carries it; the policy decision is still the user's.
-3.  **The coverage rerun question (`#106`)**: whether to add the source-sentence field to the
-    coverage wire and rerun. NOTE THE TRADE before doing it, since it is not obvious: option A of
-    question 28 is strong partly because it is built AND measured twice, and changing the wire makes
-    the measurements describe code that no longer exists.
+3.  ~~**The coverage rerun question (`#106`)**~~ ANSWERED, in
+    `doc/planning/coverage-wire-rerun-trade.md`, and the trade recorded here was stated backwards.
+    Ranked A > C > B > D: MEASURE the false-CARRIED rate first over the UNCHANGED wire, rather than
+    change the wire or do nothing. The correction is that a false CARRIED is what a permissive
+    evidence rule manufactures, so the block-scale null of ninety-six answers with no vote for
+    absence is the measurement MOST exposed to the defect, and it is the one question 28 leans on
+    against landing four. Section-scale verdicts are comparatively safe, since absence findings are
+    not what the defect produces. Correspondence cannot be scored over the existing runs at all: the
+    probe writes to stdout and nothing persists it. Not started, and must not start while `#114`
+    holds the roster.
 4.  **A few two-lane entries end to end**, to read the real per-entry cost against `HARD_CAP_MINUTES`
     of 180 before any full pass. `#92` measured the lane from bench calls; nothing has yet run both
     lanes over one document under the cap. LAUNCHED 2026-08-16, see "The two-lane cost run".
