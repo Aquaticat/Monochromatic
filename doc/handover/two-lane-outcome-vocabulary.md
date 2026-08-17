@@ -1504,10 +1504,17 @@ window carries 262 successful GLM answers against 24 abandons, and the abandons 
 the largest prompts (`#92`: 12119 tokens against a slate of 7), so the shape is a tail on the
 largest prompts rather than a slow model. It is a hypothesis, not a finding.
 
-IT CANNOT BE SETTLED WITH WHAT IS LOGGED, which is `#118`: an abandoned call leaves no output, no
-token count and no reasoning, so "never got a first byte" and "was mid-reasoning" are
-indistinguishable and have opposite remedies. `drainBody` also carries no model id, which is why
-that investigation had to reason from abandon counts and reached the wrong answer first.
+IT CANNOT BE SETTLED WITH WHAT IS LOGGED, which is `#118`, and the reason is better than first
+recorded. Streaming is always on, so an aborted call HAS ALREADY DELIVERED partial content:
+`drainBody` accumulates it in `parts`, then the catch rethrows and the accumulated text is dropped.
+The answer to "was it mid-reasoning" is sitting in memory at the moment of the cut and is thrown
+away.
+
+WORSE, AND IT INVALIDATES A MEASUREMENT: the `drainBody` progress line is emitted AFTER the
+try/catch, so an aborted stream logs nothing at all. Every latency figure read off a pass log
+therefore covers SURVIVING calls only. The "1349 streams, mean firstByte 1822ms" figure recorded
+earlier excluded every abandoned call by construction, which is survivorship bias; it should not be
+quoted, and it says nothing about the stragglers it was used to describe.
 
 ### When the freeze lifts, in order
 
