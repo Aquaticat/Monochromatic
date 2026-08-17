@@ -166,6 +166,24 @@ function commentPath({
  * });
  * ```
  */
+/**
+ * Detects at least one line containing non-whitespace text.
+ *
+ * @param text - Finding text field used as possible title summary source.
+ *
+ * @returns Whether title generation can obtain a meaningful line.
+ *
+ * @example
+ * ```ts
+ * hasNonWhitespaceLine('  \nvalue'); // true
+ * ```
+ */
+function hasNonWhitespaceLine(text: string,): boolean {
+  return text.split('\n',).some(function lineHasText(line,): boolean {
+    return line.trim() !== '';
+  },);
+}
+
 export function normalizeComment({
   value,
   position,
@@ -180,6 +198,12 @@ export function normalizeComment({
     throw new InputValidationError(`${positionLabel} must be an object`,);
   }
   const path = commentPath({ record: value, fallbackPath, positionLabel, });
+  const content = requiredString({ record: value, key: 'content', positionLabel, });
+  const existingCode = optionalString({ record: value, key: 'existing_code', positionLabel, });
+  const suggestionCode = optionalString({ record: value, key: 'suggestion_code', positionLabel, });
+  if (![content, existingCode, suggestionCode,].some(hasNonWhitespaceLine,)) {
+    throw new InputValidationError(`${positionLabel} must contain a non-whitespace line`,);
+  }
   const startLine = positiveLine({ record: value, key: 'start_line', positionLabel, });
   const endLine = positiveLine({ record: value, key: 'end_line', positionLabel, });
   if (endLine < startLine) {
@@ -190,9 +214,9 @@ export function normalizeComment({
   return {
     position,
     path,
-    content: requiredString({ record: value, key: 'content', positionLabel, }),
-    existingCode: optionalString({ record: value, key: 'existing_code', positionLabel, }),
-    suggestionCode: optionalString({ record: value, key: 'suggestion_code', positionLabel, }),
+    content,
+    existingCode,
+    suggestionCode,
     startLine,
     endLine,
     ...(category === undefined ? {} : { category, }),
