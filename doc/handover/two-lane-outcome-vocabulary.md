@@ -813,6 +813,17 @@ THE COST TELEMETRY DOES NOT APPLY TO THIS RUN. It was added after launch, so the
 emits no `SLICE-COST` lines. This run answers the ENTRY-scale slope, over four entries spanning 28
 times in size; the next run answers the per-slice question in `#92`.
 
+AFTER THAT, RUN THE COVERAGE MEASUREMENT, without asking. Option A of
+`doc/planning/coverage-wire-rerun-trade.md` needs no user answer and should not wait for one: it
+changes NOTHING that ships, leaving question 28's evidence intact, and the user has said quota is
+not a constraint. It was held back only because it calls the same six models the cost run holds.
+Its steps are listed in that document under "What A would consist of"; the first, persisting probe
+output into the runs directory instead of stdout only, is worth doing whichever option eventually
+wins and is the reason the 2026-08-16 numbers survive nowhere but a transcript.
+
+WHAT STILL NEEDS THE USER, unchanged by tonight: question 28, and Question 8 on where the rendering
+audit runs. Neither is unblocked by anything above.
+
 ## The launch gate has lifted
 
 The trial finished at 2026-08-16T23:58Z after 25622 seconds, so the reason for holding the corpus
