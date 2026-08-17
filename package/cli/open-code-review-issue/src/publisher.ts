@@ -28,7 +28,6 @@ const MUTATION_INTERVAL_MS = 1_000;
  *
  * @param milliseconds - Delay duration.
  *
- * @returns Completion after elapsed delay.
  */
 async function defaultWait(milliseconds: number,): Promise<void> {
   await delay(milliseconds,);
@@ -73,8 +72,10 @@ export async function publishIssues({
   const created: CreatedIssue[] = [];
   for (const issue of issues) {
     if (created.length > 0) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- Issue N+1 mutation waits for Issue N pacing boundary.
       await wait(MUTATION_INTERVAL_MS,);
     }
+    // oxlint-disable-next-line eslint/no-await-in-loop -- create-only publication is deliberately serial and stops at first failure.
     created.push(await createIssueWithRetry({
       repository,
       issue,

@@ -80,6 +80,14 @@ type CreateAttempt =
 
 /**
  * Creates one raw Issue request and captures retryable process failures.
+ *
+ * @param repository - Canonical destination identity.
+ *
+ * @param issue - Complete rendered Issue request.
+ *
+ * @param api - Authenticated GitHub API client.
+ *
+ * @returns HTTP response or retryable process failure.
  */
 async function attemptCreate({
   repository,
@@ -119,6 +127,12 @@ async function attemptCreate({
 
 /**
  * Parses successful Issue create response.
+ *
+ * @param issue - Requested Issue carrying input position.
+ *
+ * @param response - GitHub create response.
+ *
+ * @returns Confirmed created Issue identity.
  */
 function parseCreatedIssue({
   issue,
@@ -152,6 +166,10 @@ function parseCreatedIssue({
 
 /**
  * Determines whether response represents rate-limit rejection.
+ *
+ * @param response - GitHub create response.
+ *
+ * @returns Whether response belongs to rate-limit retry class.
  */
 function isRateLimit(response: IncludedResponse,): boolean {
   return (response.status === HTTP_TOO_MANY_REQUESTS)
@@ -162,6 +180,10 @@ function isRateLimit(response: IncludedResponse,): boolean {
 
 /**
  * Determines whether response is ambiguous server failure.
+ *
+ * @param response - GitHub create response.
+ *
+ * @returns Whether response belongs to server retry class.
  */
 function isServerError(response: IncludedResponse,): boolean {
   return (response.status >= HTTP_SERVER_ERROR_MINIMUM)
@@ -170,12 +192,18 @@ function isServerError(response: IncludedResponse,): boolean {
 
 /**
  * Reads positive numeric header as milliseconds.
+ *
+ * @param value - Header numeric text.
+ *
+ * @param multiplier - Unit conversion multiplier.
+ *
+ * @returns Positive converted value or zero for invalid header.
  */
 function headerSeconds({
   value,
   multiplier,
 }: {
-  readonly value?: string;
+  readonly value: string;
   readonly multiplier: number;
 },): number {
   if (value === undefined) {
@@ -190,6 +218,14 @@ function headerSeconds({
 
 /**
  * Calculates header-aware rate delay for one retry index.
+ *
+ * @param response - Rate-limited GitHub response.
+ *
+ * @param retryIndex - Zero-based retry index.
+ *
+ * @param now - Epoch-millisecond clock.
+ *
+ * @returns Header delay or exponential fallback.
  */
 function rateDelay({
   response,
@@ -201,33 +237,62 @@ function rateDelay({
   readonly now: () => number;
 },): number {
   /**
-   * Retry-after delay converted from seconds.
+   * Raw retry-after header when supplied.
    */
-  const retryAfter = headerSeconds({
-    value: response.headers['retry-after'],
-    multiplier: 1_000,
-  });
-  if (retryAfter > 0) {
-    return retryAfter;
+  const retryAfterHeader = response.headers['retry-after'];
+  if (retryAfterHeader !== undefined) {
+    /**
+     * Retry-after delay converted from seconds.
+     */
+    const retryAfter = headerSeconds({
+      value: retryAfterHeader,
+      multiplier: 1_000,
+    });
+    if (retryAfter > 0) {
+      return retryAfter;
+    }
   }
   /**
-   * Absolute reset instant converted from seconds.
+   * Raw absolute reset header when supplied.
    */
-  const reset = headerSeconds({
-    value: response.headers['x-ratelimit-reset'],
-    multiplier: 1_000,
-  });
-  if (reset > 0) {
-    return Math.max(
-      0,
-      reset - now(),
-    );
+  const resetHeader = response.headers['x-ratelimit-reset'];
+  if (resetHeader !== undefined) {
+    /**
+     * Absolute reset instant converted from seconds.
+     */
+    const reset = headerSeconds({
+      value: resetHeader,
+      multiplier: 1_000,
+    });
+    if (reset > 0) {
+      return Math.max(
+        0,
+        reset - now(),
+      );
+    }
   }
   return RATE_RETRY_BASE_MS * (2 ** retryIndex);
 }
 
 /**
  * Creates one Issue with three bounded retries and ambiguity reconciliation.
+ *
+ * @param repository - Canonical destination identity.
+ *
+ * @param issue - Complete rendered Issue request.
+ *
+ * @param api - Authenticated GitHub API client.
+ *
+ * @param wait - Retry delay implementation.
+ *
+ * @param now - Epoch-millisecond clock.
+ *
+ * @returns Confirmed created or reconciled Issue identity.
+ *
+ * @example
+ * ```ts
+ * await createIssueWithRetry({ repository, issue, api, wait, now: Date.now });
+ * ```
  */
 export async function createIssueWithRetry({
   repository,
@@ -253,6 +318,7 @@ export async function createIssueWithRetry({
     /**
      * Current create response or process-level failure.
      */
+    // oxlint-disable-next-line eslint/no-await-in-loop -- retry attempt N+1 depends on attempt N response and reconciliation.
     const attempt = await attemptCreate({
       repository,
       issue,
@@ -275,6 +341,7 @@ export async function createIssueWithRetry({
       /**
        * Exact post-failure reconciliation result.
        */
+      // oxlint-disable-next-line eslint/no-await-in-loop -- reconciliation must settle before retry decision for this attempt.
       const reconciliation = await reconcileCreate({
         repository,
         issue,
@@ -294,6 +361,9 @@ export async function createIssueWithRetry({
      */
     const retryable = ambiguous || rateLimited;
     if ((!retryable) || (attemptIndex === MAXIMUM_RETRIES)) {
+      /**
+       * Safe terminal status summary without Issue content.
+       */
       const status = attempt.kind === 'response'
         ? `HTTP ${String(attempt.response
           .status,)}`
@@ -313,6 +383,7 @@ export async function createIssueWithRetry({
         now,
       })
       : TRANSIENT_RETRY_BASE_MS * (2 ** attemptIndex);
+    // oxlint-disable-next-line eslint/no-await-in-loop -- retry N+1 must wait for retry N backoff and mutation pacing.
     await wait(Math.max(
       TRANSIENT_RETRY_BASE_MS,
       retryDelay,

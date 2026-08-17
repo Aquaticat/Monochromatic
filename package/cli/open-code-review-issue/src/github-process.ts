@@ -125,8 +125,6 @@ export class GitHubProcessError extends Error {
  *
  * @param file - Executable name used only in safe diagnostic.
  *
- * @returns Never because conversion always throws.
- *
  * @throws {@link GitHubProcessTimeoutError} for dedicated deadline abort.
  *
  * @throws {@link GitHubProcessError} for every other child failure.
@@ -165,25 +163,6 @@ function throwProcessFailure({
 }
 
 /**
- * Runs one child with ignored stdin, captured output, and forceful deadline.
- *
- * @param file - Executable path or command name.
- *
- * @param arguments - Exact argument vector without shell interpolation.
- *
- * @param cwd - Explicit child working directory.
- *
- * @returns Captured successful result.
- *
- * @throws {@link GitHubProcessTimeoutError} after fixed one-minute deadline.
- * @throws {@link GitHubProcessError} for launch or nonzero child failure.
- *
- * @example
- * ```ts
- * await runBoundedProcess({ file: 'gh', arguments: ['--version'], cwd: process.cwd() });
- * ```
- */
-/**
  * Exact subprocess request accepted by bounded runner.
  */
 export type BoundedProcessRequest = {
@@ -199,6 +178,26 @@ export type BoundedProcessRunner = (
   request: BoundedProcessRequest,
 ) => Promise<BoundedProcessResult>;
 
+/**
+ * Runs one child with ignored stdin, captured output, and forceful deadline.
+ *
+ * @param file - Executable path or command name.
+ *
+ * @param arguments - Exact argument vector without shell interpolation.
+ *
+ * @param cwd - Explicit child working directory.
+ *
+ * @returns Captured successful result.
+ *
+ * @throws {@link GitHubProcessTimeoutError} after fixed one-minute deadline.
+ *
+ * @throws {@link GitHubProcessError} for launch or nonzero child failure.
+ *
+ * @example
+ * ```ts
+ * await runBoundedProcess({ file: 'gh', arguments: ['--version'], cwd: process.cwd() });
+ * ```
+ */
 export async function runBoundedProcess({
   file,
   arguments: commandArguments,

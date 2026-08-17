@@ -5,6 +5,11 @@
  */
 
 /**
+ * Required semantic version component count.
+ */
+const SEMVER_COMPONENT_COUNT = 3;
+
+/**
  * Audited minimum GitHub CLI major version.
  */
 const MINIMUM_MAJOR = 2;
@@ -65,9 +70,16 @@ function isDecimalComponent(component: string,): boolean {
   if (component === '') {
     return false;
   }
-  return [...component].every(function isDigit(character,): boolean {
-    return (character >= '0') && (character <= '9');
-  },);
+  for (let index = 0; index < component.length; index += 1) {
+    /**
+     * Current UTF-16 code unit; version grammar is ASCII-only.
+     */
+    const character = component.charAt(index,);
+    if ((character < '0') || (character > '9')) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -120,7 +132,7 @@ export function parseGitHubCliVersion({
   /**
    * First output line containing version declaration.
    */
-  const firstLine = stdout.split('\n',)[0];
+  const [firstLine,] = stdout.split('\n',);
   if (firstLine === undefined) {
     throw new GitHubCliVersionError('GitHub CLI version output is empty',);
   }
@@ -134,8 +146,8 @@ export function parseGitHubCliVersion({
   /**
    * Semantic version token after `gh version`.
    */
-  const text = tokens[2];
-  if ((tokens[0] !== 'gh') || (tokens[1] !== 'version')
+  const [commandName, versionWord, text,] = tokens;
+  if ((commandName !== 'gh') || (versionWord !== 'version')
     || (text === undefined)) {
     throw new GitHubCliVersionError(`cannot parse GitHub CLI version output: ${firstLine}`,);
   }
@@ -143,7 +155,7 @@ export function parseGitHubCliVersion({
    * Decimal semantic version components.
    */
   const components = text.split('.',);
-  if ((components.length !== 3) || (!components.every(isDecimalComponent,))) {
+  if ((components.length !== SEMVER_COMPONENT_COUNT) || (!components.every(isDecimalComponent,))) {
     throw new GitHubCliVersionError(`cannot parse GitHub CLI version ${text}`,);
   }
   /**

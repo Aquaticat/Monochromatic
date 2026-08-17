@@ -12,6 +12,16 @@ import type {
 import { isRecord, } from './json-record.ts';
 
 /**
+ * Successful GitHub read status.
+ */
+const HTTP_OK = 200;
+
+/**
+ * Confirmed missing resource status.
+ */
+const HTTP_NOT_FOUND = 404;
+
+/**
  * Reports terminal destination preflight failure.
  */
 export class PublicationPreflightError extends Error {
@@ -77,10 +87,10 @@ async function lookupNeedsTriageLabel({
     method: 'GET',
     endpoint: `${repositoryEndpoint(repository,)}/labels/needs-triage`,
   },);
-  if (response.status === 200) {
+  if (response.status === HTTP_OK) {
     return true;
   }
-  if (response.status === 404) {
+  if (response.status === HTTP_NOT_FOUND) {
     return false;
   }
   throw new PublicationPreflightError(
@@ -122,10 +132,10 @@ async function verifySourceLink({
     method: 'GET',
     endpoint: `${repositoryEndpoint(repository,)}/commits/${encodeURIComponent(resolvedHead,)}`,
   },);
-  if (response.status === 404) {
+  if (response.status === HTTP_NOT_FOUND) {
     return {};
   }
-  if (response.status !== 200) {
+  if (response.status !== HTTP_OK) {
     throw new PublicationPreflightError(
       `source commit lookup failed with HTTP ${String(response.status,)}`,
     );

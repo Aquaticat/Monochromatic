@@ -193,7 +193,7 @@ async function executeBodyRequest({
  * await runGitHubApi({ request: { method: 'GET', endpoint: 'user' }, cwd: process.cwd() });
  * ```
  */
-export async function runGitHubApi({
+export function runGitHubApi({
   request,
   cwd,
   runProcess = runBoundedProcess,

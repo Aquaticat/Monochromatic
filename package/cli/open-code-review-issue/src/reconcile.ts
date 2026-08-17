@@ -57,6 +57,11 @@ function repositoryEndpoint(repository: GitHubRepository,): string {
  * @returns Current high-water number or zero for empty repository.
  *
  * @throws {@link IssuePublicationError} when response is not valid list.
+ *
+ * @example
+ * ```ts
+ * await readHighWater({ repository, api });
+ * ```
  */
 export async function readHighWater({
   repository,
@@ -77,8 +82,12 @@ export async function readHighWater({
       `Issue high-water lookup failed with HTTP ${String(response.status,)}`,
     );
   }
-  return response.body
-    .reduce(
+  /**
+   * Narrowed untrusted list values.
+   */
+  const items: readonly unknown[] = response.body;
+  return items
+    .reduce<number>(
       function greatestNumber(
         greatest,
         item,
@@ -178,6 +187,11 @@ async function compareCandidate({
  * @throws {@link AmbiguousReconciliationError} when multiple exact matches exist.
  *
  * @throws {@link IssuePublicationError} when any owning read fails.
+ *
+ * @example
+ * ```ts
+ * await reconcileCreate({ repository, issue, highWater: 0, api });
+ * ```
  */
 export async function reconcileCreate({
   repository,
@@ -205,6 +219,7 @@ export async function reconcileCreate({
     /**
      * Exact-comparison result for current candidate number.
      */
+    // oxlint-disable-next-line eslint/no-await-in-loop -- every newer number must be checked in ascending order before deciding match count.
     const result = await compareCandidate({
       repository,
       issue,

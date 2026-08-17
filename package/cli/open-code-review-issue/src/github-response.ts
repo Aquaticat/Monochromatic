@@ -129,7 +129,7 @@ function parseStatus(statusLine: string,): number {
   /**
    * Numeric status token when present.
    */
-  const statusText = parts[1];
+  const [, statusText,] = parts;
   if (statusText === undefined) {
     throw new IncludedResponseError('gh api --include output has no HTTP status',);
   }
@@ -193,20 +193,6 @@ function parseHeaders(lines: readonly string[],): Readonly<Record<string, string
 }
 
 /**
- * Parses complete captured `gh api --include` standard output.
- *
- * @param stdout - Captured output containing one HTTP response and JSON body.
- *
- * @returns Numeric status, normalized headers, and parsed JSON body.
- *
- * @throws {@link IncludedResponseError} when output or JSON body is malformed.
- *
- * @example
- * ```ts
- * parseIncludedResponse({ stdout: 'HTTP/2 200 OK\n\n{}' });
- * ```
- */
-/**
  * Parses JSON body text with response-specific diagnostic.
  *
  * @param bodyText - Captured text after included headers.
@@ -229,6 +215,20 @@ function parseBody(bodyText: string,): unknown {
   }
 }
 
+/**
+ * Parses complete captured `gh api --include` standard output.
+ *
+ * @param stdout - Captured output containing one HTTP response and JSON body.
+ *
+ * @returns Numeric status, normalized headers, and parsed JSON body.
+ *
+ * @throws {@link IncludedResponseError} when output or JSON body is malformed.
+ *
+ * @example
+ * ```ts
+ * parseIncludedResponse({ stdout: 'HTTP/2 200 OK\n\n{}' });
+ * ```
+ */
 export function parseIncludedResponse({
   stdout,
 }: {
@@ -249,7 +249,7 @@ export function parseIncludedResponse({
   /**
    * Required first status line.
    */
-  const statusLine = lines[0];
+  const [statusLine,] = lines;
   if (statusLine === undefined) {
     throw new IncludedResponseError('gh api --include output has no status line',);
   }
