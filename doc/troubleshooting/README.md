@@ -161,6 +161,7 @@ Bash shell and CLI tool quirks that cause confusing behavior:
 - [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
 - [GitHub REST Issue creation should be serial and paced](github-issue-creation-concurrency.md)
 - [GitHub REST omits its Issue title length limit](github-issue-title-length.md)
+- [nano-spawn timeout is not a hard child-process deadline](nano-spawn-timeout-is-not-a-hard-deadline.md)
 - [OpenCodeReview does not create regular GitHub Issues from findings](open-code-review-github-issue-routing.md)
 
 ### [CLI bin entries](cli-bin.md)

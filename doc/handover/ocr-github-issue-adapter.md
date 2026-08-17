@@ -246,13 +246,22 @@ or direct authenticated `fetch` calls.
 JSON request bodies use private named temporary files passed through `--input`.
 Neither adapter input nor GitHub request bodies pass through standard input or process arguments.
 The `gh` subprocess receives no inherited standard input.
-The adapter requests response status and headers through `--include`,
+The adapter launches `gh` through approved direct dependency `nano-spawn` 2.1.0 or newer,
+with standard input set to `ignore` and both output streams explicitly set to `pipe`.
+It requests response status and headers through `--include`,
 parses those plus the response JSON,
 and owns the explicit scheduling,
 rate-limit delay,
 ambiguous-failure reconciliation,
 and bounded-retry policy.
 Every `gh api` child receives a fixed one-minute deadline with no user override.
+Each invocation receives a fresh `AbortSignal.timeout(60_000)` and `killSignal: 'SIGKILL'` through nano-spawn.
+It passes no nano-spawn `timeout` option and shares no publication-interrupt signal with the deadline.
+It must not rely on nano-spawn's `timeout` option or on an abort with default `SIGTERM`:
+the first can resolve after its limit when a child handles termination,
+and the second can reject while leaving that child alive.
+The source trace and bounded reproduction are recorded in
+[`doc/troubleshooting/nano-spawn-timeout-is-not-a-hard-deadline.md`][nano-spawn-timeout].
 A timed-out creation is ambiguous and enters the settled reconciliation path;
 a timed-out read-only operation fails its owning preflight or reconciliation step.
 Temporary request files must be inaccessible to other users and removed after each invocation.
@@ -658,9 +667,13 @@ No new dependency may be added to the workspace until all of these steps occur f
 4. Wait for explicit approval for that dependency.
 5. Add it through the pnpm catalog and package manifest using repository dependency policy.
 
-Approval for one dependency does not approve another.
+Approval for one external dependency does not approve another.
 A transitive dependency does not require separate approval unless the implementation proposes making it direct.
-Record each approval or rejection in this handover.
+On 2026-08-16,
+the user granted standing approval for any workspace-owned dependency.
+Those packages no longer require individual approval,
+but each must still have a concrete role and remain direct only when imported by this package.
+Record each external approval or rejection and every selected workspace-owned dependency in this handover.
 
 The user initially approved `p-limit` as a direct adapter dependency for bounded issue creation.
 The workspace already catalogs `p-limit` at `>=7.3.1`,
@@ -671,6 +684,48 @@ and its adjacent `index.d.ts` confirms a concurrency cap and `clearQueue()`.
 With `rejectOnClear: true`,
 clearing rejects queued tasks with `AbortError`,
 but it cannot cancel tasks already running.
+
+The user separately approved these external runtime dependencies:
+
+- `@inquirer/checkbox` 5.2.1;
+- `@inquirer/input` 5.1.2;
+- `nano-spawn` 2.1.0 or newer through the existing catalog entry.
+
+The adapter uses these workspace-owned direct packages:
+
+- `@monochromatic-dev/module-logger` at runtime for tagged lifecycle,
+  retry,
+  interruption,
+  and error logging;
+- `@monochromatic-dev/config-rolldown` for the Node build;
+- `@monochromatic-dev/config-typescript` for type checking;
+- `@monochromatic-dev/module-test` for unit and integration tests.
+
+Logger calls must never contain finding content,
+titles,
+bodies,
+code,
+paths,
+or secrets.
+They may record branch names,
+counts,
+input positions,
+HTTP status classes,
+and retry attempts.
+Lifecycle logs use debug level so non-interactive standard output remains the single settled JSON object.
+
+No direct timing package is needed.
+Abortable pacing and retry delays use `node:timers/promises` with the publication interrupt signal.
+Nano-spawn owns subprocess promise and output capture behavior;
+Node `AbortSignal` supplies its forceful one-minute deadline.
+The user will not approve another subprocess dependency.
+The verified composition force-terminated the direct child,
+preserved partial stdout and stderr,
+and allowed a successful child to exit without waiting for its unused deadline timer.
+If nano-spawn fails a required supported-platform behavior despite that composition,
+the only fallback is direct `node:child_process` use.
+No direct command-line parser is needed because Node's argument-parsing API supplies that boundary.
+Additional workspace-owned packages may become direct only if implementation imports them for a demonstrated role.
 
 The user then selected provider-aligned serial creation after reviewing
 [GitHub's current REST best practices][github-rest-best-practices].
@@ -930,8 +985,8 @@ in dependency order:
 ## Immediate next action
 
 Do not add the umbrella package or a direct core dependency.
-Review remaining direct dependency roles,
-then confirm shared understanding before implementation.
+Present the completed design summary and ask whether shared understanding has been reached.
+Do not implement until the user confirms it.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -1151,10 +1206,22 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   with no adapter-specific color flag.
 - 2026-08-16:
   authorized the separate verification harness to close only synthetic Issues created during its own run.
+- 2026-08-16:
+  granted standing approval for any workspace-owned dependency;
+  selected logger,
+  build configuration,
+  TypeScript configuration,
+  and test harness packages for concrete adapter roles.
+- 2026-08-16:
+  approved nano-spawn as the direct process dependency;
+  selected abort deadline plus forceful kill after verifying that its timeout option is not a hard deadline.
+  Rejected adding any alternative subprocess dependency;
+  raw `node:child_process` is the sole fallback.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
 [github-issue-title-length]: ../troubleshooting/github-issue-title-length.md
+[nano-spawn-timeout]: ../troubleshooting/nano-spawn-timeout-is-not-a-hard-deadline.md
 [github-rest-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [ocr-routing]: ../troubleshooting/open-code-review-github-issue-routing.md
 [prompt-vet]: ../audit/tech-clack-versus-inquirer-for-a-standalone-type-vet-2026-08-16.md
