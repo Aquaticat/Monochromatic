@@ -85,6 +85,11 @@ description = "Ask whether the rendering audit can detect a planted defect at al
 depends = ["build"]
 run = "node dist/final/node/audit-sensitivity.mjs"
 
+[tasks."rendering-audit-settled"]
+description = "#115: run the rendering audit over every decided slice of every settled version 2 artifact in an archive, reading retained and replaced slices apart; TELEMETRY ONLY, nothing it says gates what ships; SPENDS QUOTA unless --cap 0 (pass --archive dir, --clone dir, --only ids, --cap n after --)"
+depends = ["build"]
+run = "node dist/final/node/rendering-audit-settled.mjs"
+
 [tasks."coverage-probe"]
 description = "PROTOTYPE for question 28: ask a roster whether the translation already carries each passage the aligners refuse to pair, at both scales; SPENDS QUOTA (pass --only ids and --cap n after --)"
 depends = ["build"]
