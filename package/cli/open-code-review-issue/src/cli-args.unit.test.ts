@@ -54,6 +54,7 @@ await describe({
           ['--interactive', '--non-interactive', 'review.json',],
           ['--non-interactive', '-',],
           ['--non-interactive',],
+          ['--interactive',],
           ['--interactive', '--apply', 'review.json',],
         ];
         for (const arguments_ of cases) {

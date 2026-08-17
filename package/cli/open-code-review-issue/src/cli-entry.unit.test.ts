@@ -91,7 +91,7 @@ await describe({
       },
     },),
     it({
-      name: 'rejects interactive mode without TTY streams',
+      name: 'requires named input before interactive TTY validation',
       fn: async () => {
         /**
          * Captured standard output.
@@ -102,7 +102,7 @@ await describe({
          */
         const stderr = new CaptureStreamElement();
         /**
-         * Non-TTY standard input.
+         * Non-TTY standard input that must never become an ingestion source.
          */
         const stdin = new PassThrough();
 
@@ -110,8 +110,9 @@ await describe({
           arguments: ['--interactive',],
           cwd: process.cwd(),
           streams: { stdin, stdout, stderr, },
-        },),).toBe(1,);
-        expect(stderr.text(),).toContain('requires TTY standard input',);
+        },),).toBe(2,);
+        expect(stdout.text(),).toBe('',);
+        expect(stderr.text(),).toContain('requires one positional named input file',);
       },
     },),
   ],
