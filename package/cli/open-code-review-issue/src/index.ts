@@ -7,6 +7,12 @@
 
 export { readStructuredInputFile, } from './file-input.ts';
 export {
+  GitHubProcessError,
+  GitHubProcessTimeoutError,
+  runBoundedProcess,
+  type BoundedProcessResult,
+} from './github-process.ts';
+export {
   IncludedResponseError,
   parseIncludedResponse,
   type IncludedResponse,
