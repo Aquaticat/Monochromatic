@@ -19,20 +19,16 @@ Newest first. Everything named here is COMMITTED and pushed unless it says other
     retry from settled artifacts. Both are in `doc/audit/straggler-grace-remeasure.md`.
 -   `fcc6a4b57`, `3a667a187` the re-measure write-up and `#105`'s retry, from the morning.
 
-IN FLIGHT AT THE TIME OF WRITING, and the one thing a REISUB would interrupt: a GFP strip of the
-retry wiring in `translate-stage.ts`. The file is MODIFIED IN THE WORKING TREE on purpose, with
-`judgeSlateWithRetry` replaced by a direct `judgeTranslateSlate` call, to prove the four retry cases
-fail without it.
+THE RETRY IS GFP'D AND THE STRIP IS RESTORED. `judgeSlateWithRetry` was replaced in
+`translate-stage.ts` by a direct `judgeTranslateSlate` call, rebuilt, and the suite reported
+`AggregateError: 4 children failed in suite "runTranslateStage"`, naming exactly the four retry
+cases: the twice-decline restamp, the second-ask accept, the evidence-into-refusal absent case, and
+the new raised-then-decided one.
 
-IF YOU FIND THAT STRIP IN PLACE, RESTORE IT AND REBUILD, in the `translation-repair` worktree:
-
-```bash
-git checkout -- package/module/translation-repair/src/translate-stage.ts
-mise run //package/module/translation-repair:build
-```
-
-A pristine copy is also at `scratchpad/translate-stage.ts.bak`. Nothing else in the tree is dirty,
-and `dist/` currently holds the STRIPPED build, so rebuild before trusting any run.
+THE FIFTH RETRY CASE STAYED GREEN ON PURPOSE. "BUYS NO SECOND ROUND when the first one decided"
+passes with the wiring stripped, because a decision buys no retry either way, so it is NOT strip
+evidence and must not be counted as any. Worth keeping straight: a guard suite where every case
+fails on a strip is usually a suite that is testing the wiring rather than the behaviour.
 
 WHAT IS NEXT, given item 3 is blocked: item 6, persisting `coverage-probe` output into the runs
 directory, which is decided and unblocked. The design settled on is a sibling
