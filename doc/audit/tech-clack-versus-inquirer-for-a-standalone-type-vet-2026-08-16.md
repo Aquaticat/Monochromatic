@@ -780,7 +780,7 @@ Inquirer 18.5 > Clack 16.5
 
 That order is not stable under the governing one-input-at-a-time matrix:
 
-- raising runtime dependency surface weight from `1` to `2`
+- rescoring both finalists with runtime dependency surface weight `2`
   changes the order to Clack 20.5 over Inquirer 19.5;
 - raising maintenance and provenance weight to `3` creates a tie,
   and weight `4` puts Clack first;
