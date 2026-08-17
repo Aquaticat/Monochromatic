@@ -48,7 +48,7 @@ import { writeFileAtomic, } from './atomic-write.ts';
  *
  * @example
  * ```ts
- * const run: ProbeRun = { startedAt, finishedAt, pipelineDigest, corpusPin, roster, subject, rows, };
+ * const run: ProbeRun = { startedAt, finishedAt, pipelineDigest, roster, subject, rows, };
  * ```
  */
 export type ProbeRun = {

@@ -38,8 +38,18 @@ import {
 // scales were probed on 2026-08-16 at real quota cost: `#106` records that
 // those numbers "survive only in session transcripts". Every run now lands in
 // the runs directory under `coverage-probe/` as well, carrying the corpus pin,
-// the roster and the pipeline digest that produced it. Standard output is
-// unchanged, so a caller already redirecting it loses nothing.
+// the roster and the pipeline digest that produced it.
+//
+// AND THAT REDIRECT WOULD NOT HAVE WORKED ANYWAY, which is worth knowing
+// because it is why the file is the answer rather than better discipline.
+// Measured at the boundary on 2026-08-17: this module's tagged logger writes to
+// STANDARD OUTPUT, the same stream the rows JSON goes to, and it logs a line
+// per candidate as it goes. So `coverage-probe > rows.json` yields progress
+// lines wrapped around a JSON document, which no parser accepts. The rows have
+// never been recoverable that way for any run that actually probed anything.
+//
+// STANDARD OUTPUT IS OTHERWISE UNCHANGED and gains only the line saying where
+// the file went, so nothing a caller does today breaks.
 
 /**
  * How many candidates one invocation asks about by default.
