@@ -2,11 +2,11 @@
 
 ## Status
 
-The user selected the local adapter design for turning OpenCodeReview findings into GitHub Issues.
-Implementation has not started.
-No dependency has been added.
+The local adapter is implemented at `package/cli/open-code-review-issue`.
+It builds the `open-code-review-issue` binary and exports its tested library seams.
+The approved direct dependencies are installed through the pnpm catalog and package manifest.
 
-The user requested a design grilling before implementation.
+The user requested and completed a design grilling before implementation.
 Every identified design branch is resolved.
 The user confirmed shared understanding and authorized implementation on 2026-08-16.
 Follow the `grilling` skill:
@@ -638,6 +638,53 @@ No repository text or executable on the current `PATH` uses
 or `open-code-review-issue`.
 No package naming decision has been made from this evidence yet.
 
+## Implementation and verification result
+
+The package implements the complete settled contract:
+
+- strict complete-result,
+  comment-array,
+  and JSONL ingestion;
+- atomic validation and strict BOM-free UTF-8 named files;
+- deterministic titles,
+  bodies,
+  category markers,
+  source references,
+  and security-redacted plans;
+- direct Inquirer checkbox and input prompts with red `SECURITY` styling,
+  square `☐` and `☑` indicators,
+  and disabled security bulk shortcuts;
+- bounded `gh api --include` process requests with private request files;
+- serial pacing,
+  retry classes,
+  high-water reconciliation,
+  and positioned partial results;
+- CLI-only explicit modes,
+  compact exit statuses,
+  and two-stage publication interruption.
+
+Verification completed on 2026-08-16:
+
+- `mise run //package/cli/open-code-review-issue:buildAndTest` passed all unit and fake-`gh` integration paths;
+- `mise run //package/cli/open-code-review-issue:lint:types` passed;
+- `mise run //package/cli/open-code-review-issue:lint:oxlint` reported zero warnings and zero errors;
+- package and design Markdown lint passed;
+- the built CLI emitted separate library and executable bundles with the required Node shebang;
+- PTY-driven ordinary and security flows exercised the actual Inquirer rendering,
+  explicit decisions,
+  red security picker,
+  square checkbox states,
+  absent security bulk shortcuts,
+  and final fake publication;
+- final live verification created
+  [`Aquaticat/issues-api#2`](https://github.com/Aquaticat/issues-api/issues/2),
+  verified its exact generated title and body,
+  then the separate harness closed it with reason `completed`.
+
+The disposable repository was empty and had no `needs-triage` label,
+so final live verification exercised plain source references and the title-prefix label fallback.
+Commit-pinned source links and existing-label behavior remain covered by artifact-importing unit tests.
+
 ## Repository state and commits
 
 The capability investigation and troubleshooting document landed in:
@@ -985,10 +1032,14 @@ The following branches were resolved one at a time in dependency order:
 
 ## Immediate next action
 
-Do not add the umbrella package or a direct core dependency.
-Implement the adapter test-first,
-verify every exported path and built CLI boundary,
-then run live verification against only the authorized disposable repository.
+No implementation action remains.
+Do not replace the direct Inquirer subpackages with the umbrella package,
+add a direct Inquirer core dependency,
+or add another subprocess dependency.
+Future behavior changes must update this contract and repeat package,
+built-CLI,
+interactive,
+and disposable live verification.
 Ask one question only,
 include the recommended answer with its pros and cons,
 and wait for the user's response.
@@ -1221,6 +1272,11 @@ Do not inspect or add candidate dependencies until the relevant design branch ma
   raw `node:child_process` is the sole fallback.
 - 2026-08-16:
   confirmed shared understanding and authorized implementation.
+- 2026-08-16:
+  implemented the adapter,
+  passed package lint and complete fake-`gh` suites,
+  exercised both interactive picker classes,
+  and created then closed final live verification Issue `Aquaticat/issues-api#2`.
 
 [clack-note-node-floor]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [github-issue-concurrency]: ../troubleshooting/github-issue-creation-concurrency.md
