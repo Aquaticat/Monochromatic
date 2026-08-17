@@ -18,14 +18,38 @@
  */
 export function escapeMarkdownInline(text: string,): string {
   return text
-    .replaceAll('\\', '\\\\',)
-    .replaceAll('`', '\\`',)
-    .replaceAll('*', '\\*',)
-    .replaceAll('_', '\\_',)
-    .replaceAll('[', '\\[',)
-    .replaceAll(']', '\\]',)
-    .replaceAll('<', '\\<',)
-    .replaceAll('>', '\\>',);
+    .replaceAll(
+      '\\',
+      String.raw`\\`,
+    )
+    .replaceAll(
+      '`',
+      '\\`',
+    )
+    .replaceAll(
+      '*',
+      String.raw`\*`,
+    )
+    .replaceAll(
+      '_',
+      String.raw`\_`,
+    )
+    .replaceAll(
+      '[',
+      String.raw`\[`,
+    )
+    .replaceAll(
+      ']',
+      String.raw`\]`,
+    )
+    .replaceAll(
+      '<',
+      String.raw`\<`,
+    )
+    .replaceAll(
+      '>',
+      String.raw`\>`,
+    );
 }
 
 /**
