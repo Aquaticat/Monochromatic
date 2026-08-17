@@ -197,6 +197,26 @@ function namedRun(
 }
 
 /**
+ * Counts slots in a phrase that reads correctly at one.
+ *
+ * @param count - how many slots
+ *
+ * @returns Phrase to open a sentence with
+ *
+ * @example
+ * ```ts
+ * console.log(`${slotsPhrase({ count: 1, },)} that cannot be checked`,);
+ * ```
+ */
+function slotsPhrase(
+  { count, }: { readonly count: number; },
+): string {
+  if (count === 1)
+    return 'One slot';
+  return `${String(count,)} slots`;
+}
+
+/**
  * Pairs this run against an earlier one and prints the spread.
  *
  * @param rows - rows of the run being reported
@@ -244,16 +264,15 @@ async function printAcross(
   // record what it saw would be a confident claim built from missing evidence.
   if (textMoved.length > 0)
     console.log(
-      `  ${String(textMoved.length,)} slots were recorded by BOTH runs and their text DISAGREES,`
-        + ` so the archive moved between them and these are left out: ${textMoved.join(', ',)}`,
+      `  ${slotsPhrase({ count: textMoved.length, },)} recorded by BOTH runs and the text`
+        + ` DISAGREES, so the archive moved between them and these are left out:`
+        + ` ${textMoved.join(', ',)}`,
     );
   if (unverifiable.length > 0)
     console.log(
-      `  ${
-        String(unverifiable.length,)
-      } slots cannot be checked, because one of the runs recorded no text identity.`
-        + ` That is a fact about the run and says NOTHING about the archive. No band is quotable`
-        + ` over them.`,
+      `  ${slotsPhrase({ count: unverifiable.length, },)} that cannot be checked, because one of`
+        + ` the runs recorded no text identity. That is a fact about the run and says NOTHING`
+        + ` about the archive. No band is quotable over them.`,
     );
 }
 
