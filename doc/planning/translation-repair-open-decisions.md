@@ -1098,6 +1098,11 @@ DELEGATE
 
 ## Question 8: where the rendering audit runs, now that it works
 
+ANSWERED 2026-08-16: option C, standalone over a SAMPLE of settled artifacts.
+Recorded with the other three answers of that date in
+`doc/decision/translation-repair-four-answers.md`. The options and reasoning are kept as written,
+because they are the record of what the answer was chosen against.
+
 The absent-baseline instrument (`#85`) is built, tested, and MEASURED against
 its own planted defect, three runs of each arm. On the positive fixture the
 dropped negator was found in all three runs: by all three auditors twice, and by

@@ -1,5 +1,16 @@
 # The window trial: what it measures, what it cost to make it measure that, and what it still cannot say
 
+CLOSED 2026-08-16 BY THE OWNER: the trial is DROPPED, and no fourth sham-context arm is bought.
+The effect was smaller than the noise band it was measured against,
+and the practical answer, do not widen the judge's context,
+is the same whether the null is real or the design is underpowered.
+Recorded in `doc/decision/translation-repair-four-answers.md`.
+WHAT DOES NOT LAPSE WITH IT:
+the negative control's finding that the per-slice preserve-or-replace decision
+is about 19 percent unstable between identical runs.
+That constrains how any single pass may be read,
+and it outlives the question it was collected for.
+
 Tracks `#108`, which exists because of `#107`:
 per-slice judging cannot tell a relocation from a fabrication,
 and condemns the archive for both.
