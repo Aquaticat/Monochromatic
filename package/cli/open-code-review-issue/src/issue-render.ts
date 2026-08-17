@@ -4,7 +4,10 @@
  * @module
  */
 
-import type { RenderedIssue, } from './issue-model.ts';
+import type {
+  RenderedIssue,
+  SourceLink,
+} from './issue-model.ts';
 import { renderIssueTitle, } from './issue-title.ts';
 import {
   escapeMarkdownInline,
@@ -13,19 +16,61 @@ import {
 import type { NormalizedFinding, } from './model.ts';
 
 /**
- * Builds plain source location line.
+ * Encodes source path segments for GitHub blob URL and Markdown destination.
+ *
+ * @param path - Untrusted repository-relative source path.
+ *
+ * @returns Slash-preserving URL path with Markdown parentheses encoded.
+ *
+ * @example
+ * ```ts
+ * encodeSourcePath('src/a b.ts'); // 'src/a%20b.ts'
+ * ```
+ */
+function encodeSourcePath(path: string,): string {
+  return path.split('/',)
+    .map(function encodeSegment(segment,): string {
+      return encodeURIComponent(segment,)
+        .replaceAll('(', '%28',)
+        .replaceAll(')', '%29',);
+    },)
+    .join('/',);
+}
+
+/**
+ * Builds plain or commit-pinned source location line.
  *
  * @param finding - Validated finding carrying source range.
+ *
+ * @param sourceLink - Verified repository and commit coordinates.
  *
  * @returns Markdown source location item.
  *
  * @example
  * ```ts
- * renderSourceLocation(finding); // '- Location: src/a.ts:1-2'
+ * renderSourceLocation({ finding });
  * ```
  */
-function renderSourceLocation(finding: NormalizedFinding,): string {
-  return `- Location: ${escapeMarkdownInline(finding.path,)}:${String(finding.startLine,)}-${String(finding.endLine,)}`;
+
+function renderSourceLocation({
+  finding,
+  sourceLink,
+}: {
+  readonly finding: NormalizedFinding;
+  readonly sourceLink?: SourceLink;
+},): string {
+  /**
+   * Escaped source location text displayed in either branch.
+   */
+  const location = `${escapeMarkdownInline(finding.path,)}:${String(finding.startLine,)}-${String(finding.endLine,)}`;
+  if (sourceLink === undefined) {
+    return `- Location: ${location}`;
+  }
+  /**
+   * Commit-pinned URL whose path is encoded at final interpolation.
+   */
+  const url = `https://github.com/${sourceLink.repository}/blob/${sourceLink.commit}/${encodeSourcePath(finding.path,)}#L${String(finding.startLine,)}-L${String(finding.endLine,)}`;
+  return `- Location: [${location}](${url})`;
 }
 
 /**
@@ -64,6 +109,8 @@ function renderCodeSection({
  *
  * @param finding - Validated normalized finding.
  *
+ * @param sourceLink - Verified repository and commit coordinates.
+ *
  * @returns Deterministic GitHub Flavored Markdown body.
  *
  * @example
@@ -71,7 +118,13 @@ function renderCodeSection({
  * renderIssueBody(finding);
  * ```
  */
-export function renderIssueBody(finding: NormalizedFinding,): string {
+export function renderIssueBody({
+  finding,
+  sourceLink,
+}: {
+  readonly finding: NormalizedFinding;
+  readonly sourceLink?: SourceLink;
+},): string {
   /**
    * Category metadata with explicit missing value.
    */
@@ -87,7 +140,10 @@ export function renderIssueBody(finding: NormalizedFinding,): string {
     '',
     '## Source',
     '',
-    renderSourceLocation(finding,),
+    renderSourceLocation({
+      finding,
+      ...(sourceLink === undefined ? {} : { sourceLink, }),
+    },),
     `- Category: \`${category}\``,
     `- Severity: \`${severity}\``,
     '',
@@ -112,6 +168,8 @@ export function renderIssueBody(finding: NormalizedFinding,): string {
  *
  * @param needsTriageLabel - Whether destination label exists.
  *
+ * @param sourceLink - Verified repository and commit coordinates.
+ *
  * @returns Deterministic title, body, labels, position, and security marker.
  *
  * @example
@@ -122,15 +180,20 @@ export function renderIssueBody(finding: NormalizedFinding,): string {
 export function renderIssue({
   finding,
   needsTriageLabel,
+  sourceLink,
 }: {
   readonly finding: NormalizedFinding;
   readonly needsTriageLabel: boolean;
+  readonly sourceLink?: SourceLink;
 },): RenderedIssue {
   return {
     position: finding.position,
     security: finding.category === 'security',
     title: renderIssueTitle({ finding, needsTriageLabel, }),
-    body: renderIssueBody(finding,),
+    body: renderIssueBody({
+      finding,
+      ...(sourceLink === undefined ? {} : { sourceLink, }),
+    },),
     labels: needsTriageLabel ? ['needs-triage',] : [],
   };
 }

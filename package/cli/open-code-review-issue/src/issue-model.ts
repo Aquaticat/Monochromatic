@@ -20,6 +20,22 @@ import type { InputPosition, } from './model.ts';
  * };
  * ```
  */
+/**
+ * Verified destination source-link coordinates.
+ *
+ * @example
+ * ```ts
+ * const sourceLink: SourceLink = {
+ *   repository: 'owner/repository',
+ *   commit: '0123456789abcdef0123456789abcdef01234567',
+ * };
+ * ```
+ */
+export type SourceLink = {
+  readonly repository: string;
+  readonly commit: string;
+};
+
 export type RenderedIssue = {
   readonly position: InputPosition;
   readonly security: boolean;

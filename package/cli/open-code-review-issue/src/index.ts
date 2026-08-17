@@ -7,7 +7,10 @@
 
 export { readStructuredInputFile, } from './file-input.ts';
 export { InputValidationError, } from './input-validation-error.ts';
-export type { RenderedIssue, } from './issue-model.ts';
+export type {
+  RenderedIssue,
+  SourceLink,
+} from './issue-model.ts';
 export {
   renderIssue,
   renderIssueBody,
