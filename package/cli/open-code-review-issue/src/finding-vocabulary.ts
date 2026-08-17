@@ -82,26 +82,36 @@ function isFindingSeverity(value: string,): value is FindingSeverity {
  * normalizeCategory({ record: { category: ' BUG ' }, positionLabel: 'record 1' });
  * ```
  */
-export function normalizeCategory({
+export function normalizeCategoryMetadata({
   record,
   positionLabel,
 }: {
   readonly record: Readonly<Record<string, unknown>>;
   readonly positionLabel: string;
-},): FindingCategory | undefined {
+},): { readonly category?: FindingCategory; } {
+  /**
+   * Untrusted optional category value.
+   */
   const value = record.category;
   if ((value === undefined) || (value === '')) {
-    return undefined;
+    return {};
   }
   if ((typeof value) !== 'string') {
-    throw new InputValidationError(`${positionLabel} property category must be a string`,);
+    throw new InputValidationError(
+      `${positionLabel} property category must be a string`,
+    );
   }
+  /**
+   * Case-folded category used by policy comparisons.
+   */
   const normalized = value.trim()
     .toLowerCase();
   if (!isFindingCategory(normalized,)) {
-    throw new InputValidationError(`${positionLabel} has unsupported category ${value}`,);
+    throw new InputValidationError(
+      `${positionLabel} has unsupported category ${value}`,
+    );
   }
-  return normalized;
+  return { category: normalized, };
 }
 
 /**
@@ -120,24 +130,34 @@ export function normalizeCategory({
  * normalizeSeverity({ record: { severity: ' HIGH ' }, positionLabel: 'record 1' });
  * ```
  */
-export function normalizeSeverity({
+export function normalizeSeverityMetadata({
   record,
   positionLabel,
 }: {
   readonly record: Readonly<Record<string, unknown>>;
   readonly positionLabel: string;
-},): FindingSeverity | undefined {
+},): { readonly severity?: FindingSeverity; } {
+  /**
+   * Untrusted optional severity value.
+   */
   const value = record.severity;
   if ((value === undefined) || (value === '')) {
-    return undefined;
+    return {};
   }
   if ((typeof value) !== 'string') {
-    throw new InputValidationError(`${positionLabel} property severity must be a string`,);
+    throw new InputValidationError(
+      `${positionLabel} property severity must be a string`,
+    );
   }
+  /**
+   * Case-folded severity used by display and policy.
+   */
   const normalized = value.trim()
     .toLowerCase();
   if (!isFindingSeverity(normalized,)) {
-    throw new InputValidationError(`${positionLabel} has unsupported severity ${value}`,);
+    throw new InputValidationError(
+      `${positionLabel} has unsupported severity ${value}`,
+    );
   }
-  return normalized;
+  return { severity: normalized, };
 }

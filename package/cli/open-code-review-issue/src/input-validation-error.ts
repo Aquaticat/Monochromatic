@@ -25,6 +25,6 @@ export class InputValidationError extends Error {
    */
   public constructor(message: string,) {
     super(message,);
-    this.name = InputValidationError.name;
+    this.name = 'InputValidationError';
   }
 }

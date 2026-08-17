@@ -5,8 +5,8 @@
  */
 
 import {
-  normalizeCategory,
-  normalizeSeverity,
+  normalizeCategoryMetadata,
+  normalizeSeverityMetadata,
 } from './finding-vocabulary.ts';
 import { InputValidationError, } from './input-validation-error.ts';
 import { isRecord, } from './json-record.ts';
@@ -42,6 +42,9 @@ function requiredString({
   readonly key: string;
   readonly positionLabel: string;
 },): string {
+  /**
+   * Untrusted property value at current validation boundary.
+   */
   const value = record[key];
   if ((typeof value) !== 'string') {
     throw new InputValidationError(`${positionLabel} property ${key} must be a string`,);
@@ -76,6 +79,9 @@ function optionalString({
   readonly key: string;
   readonly positionLabel: string;
 },): string {
+  /**
+   * Untrusted property value at current validation boundary.
+   */
   const value = record[key];
   if (value === undefined) {
     return '';
@@ -113,6 +119,9 @@ function positiveLine({
   readonly key: string;
   readonly positionLabel: string;
 },): number {
+  /**
+   * Untrusted property value at current validation boundary.
+   */
   const value = record[key];
   if (((typeof value) !== 'number') || (!Number.isInteger(value,))
     || (value < 1)) {
@@ -148,11 +157,17 @@ function commentPath({
   readonly fallbackPath?: string;
   readonly positionLabel: string;
 },): string {
+  /**
+   * Explicit comment path before JSONL inheritance.
+   */
   const suppliedPath = requiredString({
     record,
     key: 'path',
     positionLabel,
   });
+  /**
+   * Effective non-empty path after optional inheritance.
+   */
   const path = suppliedPath === '' ? fallbackPath ?? '' : suppliedPath;
   if (path.trim() === '') {
     throw new InputValidationError(`${positionLabel} property path must not be empty`,);
@@ -160,25 +175,6 @@ function commentPath({
   return path;
 }
 
-/**
- * Converts one OCR comment to adapter-owned naming and position metadata.
- *
- * @param value - Untrusted comment value.
- * @param position - Input position attached to normalized finding.
- * @param fallbackPath - Item path inherited by a pathless JSONL comment.
- *
- * @returns Validated normalized finding.
- *
- * @throws {@link InputValidationError} when comment violates OCR schema.
- *
- * @example
- * ```ts
- * normalizeComment({
- *   value: { path: 'a.ts', content: 'x', start_line: 1, end_line: 1 },
- *   position: { kind: 'record', value: 1 },
- * });
- * ```
- */
 /**
  * Detects at least one line containing non-whitespace text.
  *
@@ -198,6 +194,28 @@ function hasNonWhitespaceLine(text: string,): boolean {
   },);
 }
 
+/**
+ * Converts one OCR comment to adapter-owned naming and position metadata.
+ *
+ * @param value - Untrusted comment value.
+ *
+ * @param position - Input position attached to normalized finding.
+ *
+ * @param fallbackPath - Item path inherited by a pathless JSONL comment.
+ *
+ * @returns Validated normalized finding.
+ *
+ * @throws {@link InputValidationError} when comment violates OCR schema.
+ *
+ * @example
+ * ```ts
+ * normalizeComment({
+ *   value: { path: 'a.ts', content: 'x', start_line: 1, end_line: 1 },
+ *   position: { kind: 'record', value: 1 },
+ * });
+ * ```
+ */
+
 export function normalizeComment({
   value,
   position,
@@ -207,25 +225,40 @@ export function normalizeComment({
   readonly position: InputPosition;
   readonly fallbackPath?: string;
 },): NormalizedFinding {
+  /**
+   * Human-readable input position for validation diagnostics.
+   */
   const positionLabel = `${position.kind} ${String(position.value,)}`;
   if (!isRecord(value,)) {
     throw new InputValidationError(`${positionLabel} must be an object`,);
   }
+  /**
+   * Effective source path after JSONL inheritance.
+   */
   const path = commentPath({
     record: value,
-    fallbackPath,
+    ...(fallbackPath === undefined ? {} : { fallbackPath, }),
     positionLabel,
   });
+  /**
+   * Primary finding prose retained unchanged.
+   */
   const content = requiredString({
     record: value,
     key: 'content',
     positionLabel,
   });
+  /**
+   * Existing source text retained unchanged.
+   */
   const existingCode = optionalString({
     record: value,
     key: 'existing_code',
     positionLabel,
   });
+  /**
+   * Suggested source text retained unchanged.
+   */
   const suggestionCode = optionalString({
     record: value,
     key: 'suggestion_code',
@@ -238,11 +271,17 @@ export function normalizeComment({
   ].some(hasNonWhitespaceLine,)) {
     throw new InputValidationError(`${positionLabel} must contain a non-whitespace line`,);
   }
+  /**
+   * Inclusive first source line.
+   */
   const startLine = positiveLine({
     record: value,
     key: 'start_line',
     positionLabel,
   });
+  /**
+   * Inclusive last source line.
+   */
   const endLine = positiveLine({
     record: value,
     key: 'end_line',
@@ -251,11 +290,17 @@ export function normalizeComment({
   if (endLine < startLine) {
     throw new InputValidationError(`${positionLabel} end_line precedes start_line`,);
   }
-  const category = normalizeCategory({
+  /**
+   * Optional normalized category property.
+   */
+  const categoryMetadata = normalizeCategoryMetadata({
     record: value,
     positionLabel,
   });
-  const severity = normalizeSeverity({
+  /**
+   * Optional normalized severity property.
+   */
+  const severityMetadata = normalizeSeverityMetadata({
     record: value,
     positionLabel,
   });
@@ -267,7 +312,7 @@ export function normalizeComment({
     suggestionCode,
     startLine,
     endLine,
-    ...(category === undefined ? {} : { category, }),
-    ...(severity === undefined ? {} : { severity, }),
+    ...categoryMetadata,
+    ...severityMetadata,
   };
 }

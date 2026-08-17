@@ -25,7 +25,9 @@ import type {
  * readResolvedHead({ manifest: { input: { resolved_head: 'abc' } } }); // 'abc'
  * ```
  */
-function readResolvedHead(result: Readonly<Record<string, unknown>>,): string | undefined {
+function readResolvedHeadMetadata(
+  result: Readonly<Record<string, unknown>>,
+): { readonly resolvedHead?: string; } {
   if ((!isRecord(result.manifest,))
     || (!isRecord(result.manifest
       .input,))
@@ -37,11 +39,13 @@ function readResolvedHead(result: Readonly<Record<string, unknown>>,): string | 
       .resolved_head
       === ''))
   {
-    return undefined;
+    return {};
   }
-  return result.manifest
-    .input
-    .resolved_head;
+  return {
+    resolvedHead: result.manifest
+      .input
+      .resolved_head,
+  };
 }
 
 /**
@@ -98,10 +102,13 @@ function parseJsonDocument(parsed: unknown,): NormalizedInput {
   {
     throw new InputValidationError('input is not a complete OCR result or comment array',);
   }
-  const resolvedHead = readResolvedHead(parsed,);
+  /**
+   * Optional head provenance copied only from recognized manifest path.
+   */
+  const resolvedHeadMetadata = readResolvedHeadMetadata(parsed,);
   return {
     inputKind: 'result',
-    ...(resolvedHead === undefined ? {} : { resolvedHead, }),
+    ...resolvedHeadMetadata,
     findings: normalizeComments(parsed.comments,),
   };
 }
@@ -122,6 +129,9 @@ function parseJsonDocument(parsed: unknown,): NormalizedInput {
  */
 export function parseStructuredInput({ text, }: { readonly text: string; },): NormalizedInput {
   try {
+    /**
+     * Complete JSON document before envelope narrowing.
+     */
     const parsed: unknown = JSON.parse(text,);
     return parseJsonDocument(parsed,);
   }

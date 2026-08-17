@@ -45,6 +45,9 @@ function rejectByteOrderMark({
   readonly bytes: Uint8Array;
   readonly path: string;
 },): void {
+  /**
+   * Leading bytes encoded for prefix comparison.
+   */
   const leadingHex = Buffer.from(bytes.subarray(
     0,
     LONGEST_BOM_BYTES,
@@ -113,6 +116,9 @@ export async function readStructuredInputFile({
 }: {
   readonly path: string;
 },): Promise<NormalizedInput> {
+  /**
+   * Exact bytes read without implicit text decoding.
+   */
   const bytes = await readFile(path,);
   rejectByteOrderMark({
     bytes,
