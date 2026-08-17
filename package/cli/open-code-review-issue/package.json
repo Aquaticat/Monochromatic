@@ -7,7 +7,7 @@
   "main": "src/index.ts",
   "module": "dist/final/node/index.mjs",
   "bin": {
-    "open-code-review-issue": "dist/final/node/index.mjs"
+    "open-code-review-issue": "dist/final/node/cli.mjs"
   },
   "exports": {
     ".": {
