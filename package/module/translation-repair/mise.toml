@@ -90,6 +90,11 @@ description = "#115: run the rendering audit over every decided slice of every s
 depends = ["build"]
 run = "node dist/final/node/rendering-audit-settled.mjs"
 
+[tasks."rendering-audit-settled-report"]
+description = "#115: read a persisted settled-audit run: the archive and fresh halves apart, what each auditor thought was worth a claim, and the #107 relocation candidates; SPENDS NO QUOTA (pass --run path after -- to read a run other than the newest)"
+depends = ["build"]
+run = "node dist/final/node/rendering-audit-settled-report.mjs"
+
 [tasks."coverage-probe"]
 description = "PROTOTYPE for question 28: ask a roster whether the translation already carries each passage the aligners refuse to pair, at both scales; SPENDS QUOTA (pass --only ids and --cap n after --)"
 depends = ["build"]
