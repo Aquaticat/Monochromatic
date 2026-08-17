@@ -10,14 +10,17 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { parseCliArguments, } from './cli-args.ts';
 import {
   CliInvocationError,
-  parseCliArguments,
-} from './cli-args.ts';
+  MissingCliInputError,
+} from './cli-invocation-error.ts';
 import {
   HELP_TEXT,
   writeCancellation,
 } from './cli-output.ts';
+import { buildInputGuidance, } from './input-guidance.ts';
+import { CliInputNotFoundError, } from './input-source.ts';
 import { isPromptCancellation, } from './interactive-prompts.ts';
 import {
   executeRun,
@@ -104,8 +107,15 @@ export async function runCli({
      */
     const message = caughtValueText(error,);
     l.error(message,);
+    /**
+     * Actionable input acquisition guidance for omitted or absent positional input.
+     */
+    const guidance = error instanceof MissingCliInputError
+      || error instanceof CliInputNotFoundError
+      ? `\n\n${await buildInputGuidance()}`
+      : '';
     streams.stderr
-      .write(`${message}\n`,);
+      .write(`${message}${guidance}\n`,);
     return error instanceof CliInvocationError
       ? EXIT_INVOCATION_MISUSE
       : EXIT_RUNTIME_FAILURE;

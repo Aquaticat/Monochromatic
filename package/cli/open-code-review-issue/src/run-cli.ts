@@ -19,7 +19,6 @@ import {
   writeInteractiveSummary,
   writeJson,
 } from './cli-output.ts';
-import { readStructuredInputFile, } from './file-input.ts';
 import {
   checkGitHubCliVersion,
   createGitHubApiClient,
@@ -38,7 +37,7 @@ import { preflightPublication, } from './preflight.ts';
 import { promptForExplicitDecision, } from './interactive-prompts.ts';
 import { selectInteractiveIssues, } from './interactive-selection.ts';
 import type { PromptStreams, } from './interactive-model.ts';
-import { parseStructuredInput, } from './ingest.ts';
+import { loadCliInput, } from './input-source.ts';
 import { selectRepository, } from './repository.ts';
 
 /**
@@ -111,24 +110,6 @@ function assertInteractiveTty(streams: CliStreams,): void {
       'interactive mode requires TTY standard input and TTY standard output',
     );
   }
-}
-
-/**
- * Loads required named file or shell-quoted inline JSON.
- *
- * @param command - Validated run command carrying positional input.
- *
- * @returns Atomically normalized OCR input.
- */
-async function loadInput({
-  command,
-}: {
-  readonly command: RunCliArguments;
-},): Promise<NormalizedInput> {
-  if (command.input.kind === 'inline-json') {
-    return parseStructuredInput({ text: command.input.text, },);
-  }
-  return await readStructuredInputFile({ path: command.input.path, });
 }
 
 /**
@@ -307,7 +288,7 @@ async function executeRepositoryRun({
   /**
    * Validated OCR input loaded before GitHub operations.
    */
-  const input = await loadInput({ command, });
+  const input = await loadCliInput({ input: command.input, });
   if (input.findings
     .length
     === 0) {

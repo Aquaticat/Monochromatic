@@ -42,13 +42,13 @@ export type {
   AppliedResult,
 } from './cli-result.ts';
 export {
-  CliInvocationError,
   parseCliArguments,
   type CliArguments,
-  type CliInputArgument,
   type HelpCliArguments,
   type RunCliArguments,
 } from './cli-args.ts';
+export type { CliInputArgument, } from './cli-input.ts';
+export { CliInvocationError, } from './cli-invocation-error.ts';
 export {
   SecurityAuthorityError,
   selectApplyPlan,

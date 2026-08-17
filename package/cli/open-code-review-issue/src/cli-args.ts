@@ -6,6 +6,9 @@
 
 import { parseArgs, } from 'node:util';
 
+import type { CliInputArgument, } from './cli-input.ts';
+import { parsePositionalInput, } from './cli-input.ts';
+import { CliInvocationError, } from './cli-invocation-error.ts';
 import type { ApplyAuthority, } from './plan-model.ts';
 
 /**
@@ -14,19 +17,6 @@ import type { ApplyAuthority, } from './plan-model.ts';
 export type HelpCliArguments = {
   readonly kind: 'help';
 };
-
-/**
- * Required positional input interpreted without consulting standard input.
- */
-export type CliInputArgument =
-  | {
-    readonly kind: 'file';
-    readonly path: string;
-  }
-  | {
-    readonly kind: 'inline-json';
-    readonly text: string;
-  };
 
 /**
  * Validated adapter run command.
@@ -43,26 +33,6 @@ export type RunCliArguments = {
  * Complete validated command-line union.
  */
 export type CliArguments = HelpCliArguments | RunCliArguments;
-
-/**
- * Reports command invocation misuse mapped to exit status two.
- */
-export class CliInvocationError extends Error {
-  /**
-   * Creates invocation failure.
-   *
-   * @param message - User-facing flag or argument diagnostic.
-   *
-   * @example
-   * ```ts
-   * const error = new CliInvocationError('exactly one mode is required');
-   * ```
-   */
-  public constructor(message: string,) {
-    super(message,);
-    this.name = 'CliInvocationError';
-  }
-}
 
 /**
  * Raw parse result from Node argument parser.
@@ -113,50 +83,6 @@ function parseRaw(arguments_: readonly string[],): RawArguments {
   catch (error: unknown) {
     throw new CliInvocationError(`invalid command arguments: ${String(error,)}`,);
   }
-}
-
-/**
- * Validates exactly one positional input argument.
- *
- * @param positionals - Raw positional arguments.
- *
- * @param interactive - Whether inline structured JSON is accepted.
- *
- * @returns Named-file or shell-quoted inline JSON input.
- *
- * @throws {@link CliInvocationError} unless one supported positional is supplied.
- */
-function positionalInput({
-  positionals,
-  interactive,
-}: {
-  readonly positionals: readonly string[];
-  readonly interactive: boolean;
-},): CliInputArgument {
-  if (positionals.length !== 1) {
-    throw new CliInvocationError('every mode requires one positional input',);
-  }
-  /**
-   * Sole required positional value.
-   */
-  const value = positionals.at(0,);
-  if (value === undefined) {
-    throw new CliInvocationError('every mode requires one positional input',);
-  }
-  if (value === '-') {
-    throw new CliInvocationError('`-` is not an input source; pass a named file path',);
-  }
-  /**
-   * Leading-whitespace-insensitive syntax discriminator preserving original JSON text.
-   */
-  const candidate = value.trimStart();
-  const inlineJson = candidate.startsWith('{',) || candidate.startsWith('[',);
-  if (inlineJson && !interactive) {
-    throw new CliInvocationError('inline JSON positional input requires `--interactive`',);
-  }
-  return inlineJson
-    ? { kind: 'inline-json', text: value, }
-    : { kind: 'file', path: value, };
 }
 
 /**
@@ -272,7 +198,7 @@ export function parseCliArguments({
     return {
       kind: 'run',
       mode: 'interactive',
-      input: positionalInput({
+      input: parsePositionalInput({
         positionals: raw.positionals,
         interactive: true,
       }),
@@ -282,7 +208,7 @@ export function parseCliArguments({
   return {
     kind: 'run',
     mode: 'non-interactive',
-    input: positionalInput({
+    input: parsePositionalInput({
       positionals: raw.positionals,
       interactive: false,
     }),
