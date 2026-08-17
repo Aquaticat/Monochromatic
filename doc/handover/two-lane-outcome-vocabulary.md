@@ -113,6 +113,11 @@ roster size was computed from them and cannot be recomputed from the artifacts a
 
 OUTSIDE THE REPOSITORY ON PURPOSE: they carry corpus text, which does not enter this repo.
 
+THE DEFAULT RUNS DIRECTORY IS GENUINELY DURABLE, checked rather than worried about, because it sits
+under `node_modules/` and `resolveRunsDir` calls itself durable. The 56 settled artifacts there are
+dated 2026-08-06 to 08-11 and `node_modules/.modules.yaml` is dated 2026-08-13, so an install ran
+after they were written and did not remove them. Nothing to fix; recorded so it is not re-raised.
+
 ## The one sentence
 
 Every defect in this stretch is the same shape:
