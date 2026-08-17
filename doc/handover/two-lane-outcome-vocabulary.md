@@ -52,6 +52,29 @@ ALSO FOUND, and not yet fixed: `audit-sensitivity.ts` has NO `import.meta.main` 
 it runs both arms and spends quota. `coverage-probe.ts` carries that guard with a comment saying
 exactly why. Nothing imports it today except the bundler entry list, so the hole is latent.
 
+## Item 5's whole population is four files, and they were sitting in scratch
+
+THE ONLY VERSION 2 ARTIFACTS THAT EXIST are four, being two entries settled twice. Measured rather
+than assumed: the default runs directory holds 56 settled artifacts and NOT ONE carries an
+`artifactSchemaVersion` field, so every one of them predates version 2 and none can answer a
+two-lane question.
+
+That matters because queue item 5 is the rendering audit run "standalone over EVERY settled version
+2 artifact". Every is four, from two distinct entries. That is still worth running, being the
+instrument's first application to real output rather than fixtures, but it is not the census the
+phrase suggests, and nothing about particular entries can be settled from two of them.
+
+THEY WERE BOTH IN `~/temp/agent`, which is the agent scratch root and is named to be deleted. A
+cleanup or a REISUB would have destroyed item 5's entire input, and re-settling those two entries
+costs about 100 minutes of real quota. They are now copied, about 1.8 MB in total, to:
+
+```text
+~/translation-repair-v2-archive/grace-remeasure-2026-08-17/{Aniloviraw,zheermao101}.json
+~/translation-repair-v2-archive/two-lane-cost-2026-08-16/{Aniloviraw,zheermao101}.json
+```
+
+OUTSIDE THE REPOSITORY ON PURPOSE: they carry corpus text, which does not enter this repo.
+
 ## The one sentence
 
 Every defect in this stretch is the same shape:
