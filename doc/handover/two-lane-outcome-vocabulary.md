@@ -1491,10 +1491,23 @@ WHY NOT MORE: measured rate is about 86 minutes an entry (73, 139 and 45 for the
 spread being #114's size dependence). All 92 would take about 128 hours against a 72-hour soft
 budget, so the pass would have stopped near 50 anyway, and the freeze would have held for days.
 
-WHAT SIX ENTRIES BUYS, and it is worth being plain that it is less than #60 asked for: #60's bar was
-15+, set 2026-08-14, so its redraw is NOT unblocked by this. What six does buy is #115: the
-rendering audit's confound was two entries against two entries, and six settled under one pipeline
-is a real step even though it will not settle the archive-versus-fresh question either.
+### THE ACCUMULATION BAR IS NOW SIX, EVERYWHERE, AND IT IS PROVISIONAL
+
+Lowered by the user 2026-08-17 from the "15+" set on 2026-08-14, in their words low but defensible
+at this early stage, with an explicit instruction to flip it back to 15 "when we're more confident".
+So the trigger for raising it is CONFIDENCE and not any new measurement, and nobody should read a
+six-entry result as having met the older bar.
+
+It lives in prose only; there is no constant. `#60` carries the authoritative statement and the
+reason. Older passages in `doc/handover/translation-repair.md` still reason about fifteen (bands per
+draw, hours to accumulate, when a draw stops reproducing); those are correct FOR FIFTEEN and are
+kept as the record of what was computed then. Read them as superseded arithmetic rather than as the
+current bar.
+
+WHAT SIX BUYS, stated plainly so it is not read as more: it unblocks `#60`'s redraw under the new
+bar, and it is a real step for `#115`, whose confound was two entries against two. It does NOT make
+claims about particular entries safe, and it does not separate an effect from an entry, which is the
+confound `#115` measured and could not break at two.
 
 ### The GLM finding, corrected
 
