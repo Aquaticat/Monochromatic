@@ -171,6 +171,92 @@ Both are named rather than subtracted:
 this reading can say which pairs a human should look at,
 and cannot say whether either is really one move.
 
+### The archive-versus-fresh split is confounded with the entry split
+
+This is the finding that matters most,
+and it does not depend on the band at all.
+
+```text
+                       subjects   spoke on   claims   corroborated   agreed
+Aniloviraw   ARCHIVE          3          3        6              0        0
+Aniloviraw   FRESH            7          5       12              1        1
+zheermao101  ARCHIVE         13          7       24              5        7
+zheermao101  FRESH           17          9       13              0        0
+```
+
+EVERY corroborated archive defect is in `zheermao101`.
+The one corroborated fresh defect is in `Aniloviraw`.
+Neither entry shows the pattern the pooled table shows.
+
+So the headline reading,
+that archive text draws more corroborated defects than fresh text,
+is indistinguishable from the reading
+that `zheermao101` draws more corroborated defects than `Aniloviraw`,
+which would say nothing about archive text at all.
+Two entries cannot separate those,
+and no number of subjects inside two entries can either:
+adding slices makes each cell tighter
+without adding a single degree of freedom to the comparison.
+
+The denominators make it worse rather than better.
+The archive half's 16 subjects are 3 from one entry and 13 from the other,
+so the pooled archive figure is very nearly `zheermao101`'s archive figure.
+
+WHAT WOULD FIX IT: more ENTRIES, not more slices.
+The band from a second run answers a different question,
+which is whether one entry's reading is stable,
+and it is worth having for that.
+It cannot unconfound this.
+
+### Voice loss is not spread evenly
+
+Five subjects lost a voice and finished on two of three auditors.
+All five are `zheermao101`:
+
+```text
+two-lane-cost   zheermao101 #2   Qwen lost
+two-lane-cost   zheermao101 #8   Nemotron lost
+two-lane-cost   zheermao101 #13  Nemotron lost
+grace-remeasure zheermao101 #2   Qwen lost
+grace-remeasure zheermao101 #13  Nemotron lost
+```
+
+None on `Aniloviraw`,
+which is the entry with the shorter slices.
+Both entries were audited by the same roster under the same settings,
+so this is a fact about which subjects are hard to answer,
+not about which models were reachable that afternoon.
+
+It also means the two halves were not audited by equally complete panels.
+A subject heard by two voices cannot reach the strict corroborated tier
+as easily as one heard by three,
+and every one of these sits on the entry that carries the corroborated defects.
+Another reason the pooled comparison is not readable.
+
+### What gets claimed, by category
+
+```text
+   9  altered-referent   ARCHIVE        9  altered-referent   FRESH
+   7  omission           ARCHIVE        5  altered-time       FRESH
+   3  altered-modality   ARCHIVE        2  altered-number     FRESH
+   3  unsupported-addition ARCHIVE      2  omission           FRESH
+   3  altered-actor      ARCHIVE        2  altered-relation   FRESH
+   3  altered-time       ARCHIVE        2  altered-identity   FRESH
+   1  altered-identity   ARCHIVE        1  altered-actor      FRESH
+   1  altered-relation   ARCHIVE        1  altered-modality   FRESH
+                                        1  unsupported-addition FRESH
+```
+
+`altered-referent` is the most claimed category on both halves and by the same count,
+which is at least a sign the instrument is not simply louder about one half.
+
+`omission` is the category that separates them,
+seven on archive text against two on fresh.
+That is the category `#107` says per-slice judging cannot tell from a relocation,
+and both relocation candidates are archive-side omissions.
+So the one categorical difference between the halves
+sits precisely on the failure mode that is known to be unresolved.
+
 ### Both relocation candidates have the geometry `#107` predicts
 
 `#107` says a passage the archive carried across a slice boundary
