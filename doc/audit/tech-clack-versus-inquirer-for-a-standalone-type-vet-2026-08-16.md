@@ -1,9 +1,9 @@
 # Clack versus Inquirer for a standalone TypeScript CLI
 
 - Status:
-  in progress
+  complete without an unconditional recommendation
 - Lifecycle phase:
-  finalists cloned for validation
+  scored with sensitivity unresolved
 - Subject:
   Clack versus Inquirer for a standalone TypeScript CLI
 - Scope:
@@ -617,6 +617,13 @@ The exact default suite does not pass on Node 22.18.0,
 but every target interaction suite does.
 This reduces platform-confidence scoring rather than creating a target-path hard-gate failure.
 
+A disposable upstream prototype aligned `.nvmrc`,
+Volta,
+and both package engine ranges on Node 22.19.0.
+All 18 focused note tests then passed.
+The prototype and upstream filing analysis are recorded in
+[`doc/troubleshooting/clack-note-nested-styletext-node-floor.md`][clack-troubleshooting].
+
 ### Inquirer
 
 Dependency installation completed with lifecycle scripts disabled.
@@ -667,17 +674,212 @@ The published manifests confirmed JavaScript distribution entry points.
 Inquirer's installed manifest maps to the audited commit through `gitHead`.
 Clack's registry provenance maps its tarball to the audited commit.
 
+## Scoring
+
+Each criterion has weight `1` and maximum rating `4`.
+The total maximum is 24 points.
+
+### Clack ratings
+
+- Required interaction ergonomics:
+  `3`,
+  high confidence.
+  The target paths are direct and include grouped multiselect,
+  but high-level presentation and key behavior are opinionated.
+- Prompt-level styling and composition:
+  `1`,
+  high confidence.
+  Caller text can carry ANSI styling,
+  but high-level prompt state colors and icons are fixed.
+- Human auditability:
+  `2.5`,
+  medium confidence with range `2` to `3`.
+  The graph has two Clack package boundaries,
+  but 5,607 source lines and the global-output and `unpipe()` findings reduce confidence.
+- Runtime dependency and installation surface:
+  `4`,
+  high confidence.
+  The published subtree contains six package nodes with no install scripts or native artifacts.
+- Test and platform evidence:
+  `2`,
+  high confidence.
+  Target suites pass,
+  but the default suite fails on a declared runtime and upstream CI covers only Ubuntu.
+- Maintenance and release provenance:
+  `4`,
+  high confidence.
+  Activity is current and distributed,
+  with review and SLSA publish provenance.
+
+Clack earns:
+
+```text
+3 + 1 + 2.5 + 4 + 2 + 4 = 16.5
+16.5 / 24 * 100 = 68.8
+```
+
+Its auditability range produces 16 to 17 points,
+or 66.7 to 70.8.
+
+### Inquirer ratings
+
+- Required interaction ergonomics:
+  `4`,
+  high confidence.
+  Checkbox,
+  separators,
+  validation,
+  initial choices,
+  keymaps,
+  and stream context directly cover the target.
+- Prompt-level styling and composition:
+  `4`,
+  high confidence.
+  Deep per-prompt themes cover every relevant picker presentation role.
+- Human auditability:
+  `2.5`,
+  medium confidence with range `2` to `3`.
+  The relevant implementation is compact,
+  but the umbrella crosses 16 Inquirer package boundaries and installs unused editor code.
+- Runtime dependency and installation surface:
+  `1`,
+  high confidence.
+  The subtree contains 23 named package nodes before shared width dependencies.
+- Test and platform evidence:
+  `4`,
+  high confidence.
+  CI-equivalent,
+  ESM,
+  CommonJS,
+  custom-stream,
+  Linux,
+  and upstream Windows evidence pass.
+- Maintenance and release provenance:
+  `3`,
+  high confidence.
+  Releases and issue response are current,
+  but sampled human maintenance is concentrated and this release has no SLSA attestation.
+
+Inquirer earns:
+
+```text
+4 + 4 + 2.5 + 1 + 4 + 3 = 18.5
+18.5 / 24 * 100 = 77.1
+```
+
+Its auditability range produces 18 to 19 points,
+or 75.0 to 79.2.
+
+## Sensitivity
+
+The baseline order is:
+
+```text
+Inquirer 18.5 > Clack 16.5
+```
+
+That order is not stable under the governing one-input-at-a-time matrix:
+
+- raising runtime dependency surface weight from `1` to `2`
+  changes the order to Clack 20.5 over Inquirer 19.5;
+- raising maintenance and provenance weight to `3` creates a tie,
+  and weight `4` puts Clack first;
+- raising interaction,
+  styling,
+  or platform evidence weights preserves or increases Inquirer's lead;
+- moving either medium-confidence auditability rating by one point narrows but does not reverse the baseline order;
+- the low-signal range endpoints do not overlap,
+  but do not cure weight sensitivity.
+
+The deciding preference is therefore intrinsic flexibility and platform evidence
+versus installation surface and publish provenance.
+The user deliberately supplied no such prior context for this comparison.
+Per the governing skill,
+the formal result is conditional rather than an unconditional technology recommendation.
+
+## Pros and cons
+
+### Inquirer
+
+Pros:
+
+- strongest public theming and picker-composition API;
+- exact preselection,
+  validation,
+  separators,
+  and keymap support;
+- explicit custom-stream and catchable Ctrl+C boundary;
+- complete local CI-equivalent validation;
+- upstream Windows,
+  Node-version,
+  ESM,
+  and CommonJS coverage.
+
+Cons:
+
+- umbrella package installs ten prompt packages plus unused editor and encoding code;
+- 23 named package nodes before shared width dependencies;
+- sampled maintenance is concentrated in one human maintainer;
+- no npm SLSA attestation for 8.5.2.
+
+### Clack
+
+Pros:
+
+- cohesive,
+  polished high-level interaction flow;
+- six-package runtime subtree;
+- cancel sentinel avoids exception classification;
+- active multi-maintainer review;
+- npm SLSA provenance.
+
+Cons:
+
+- high-level picker state colors and icons are fixed;
+- custom rendering uses global stdout width and broad `input.unpipe()` cleanup;
+- upstream CI publishes no Windows matrix;
+- the default suite fails four note snapshots on supported Node 22.18.0;
+- a coherent nested-color contract requires a newer Node floor or another compatibility design.
+
+Baseline ranking:
+Inquirer > Clack,
+because its stronger interaction,
+styling,
+and platform evidence exceeds Clack's dependency and provenance advantage under equal weights.
+Clack outranks Inquirer when installation surface receives even one additional weight point.
+
+## Recommendation
+
+No unconditional no-context recommendation is evidence-stable.
+Choose Inquirer when prompt theming,
+composition,
+and platform assurance matter more.
+Choose Clack when a smaller runtime graph,
+opinionated presentation,
+and publish provenance matter more.
+
+For the OCR adapter that motivated this question,
+known requirements do supply context:
+a red security picker,
+pnpm-style checkbox behavior,
+and explicit custom presentation.
+Those requirements select Inquirer within this pairwise comparison.
+That contextual result still requires separate dependency approval before adoption.
+
 ## Evidence limits
 
-No candidate has been recommended yet.
-Source,
-upstream execution,
-and the shared consumer boundary are complete.
-The Clack runtime-floor prototype,
-score calculation,
-and sensitivity analysis remain pending.
+The consumer boundary ran on Linux x86_64 with Node 22.18.0.
+No local Windows or macOS host run was available.
+Inquirer's upstream CI supplies Windows evidence;
+Clack has no equivalent published matrix.
+The comparison is pairwise,
+not an ecosystem-wide claim that no third prompt library could rank higher.
+No product dependency,
+configuration,
+or decision record was changed.
 
 [clack-common]: https://github.com/bombshell-dev/clack/blob/dc5bce8/packages/prompts/src/common.ts#L69-L74
+[clack-troubleshooting]: ../troubleshooting/clack-note-nested-styletext-node-floor.md
 [clack-multiselect]: https://github.com/bombshell-dev/clack/blob/dc5bce8/packages/prompts/src/multi-select.ts#L18-L80
 [clack-prompt]: https://github.com/bombshell-dev/clack/blob/dc5bce8/packages/core/src/prompts/prompt.ts#L130-L286
 [clack-theme-pr]: https://github.com/bombshell-dev/clack/pull/426
