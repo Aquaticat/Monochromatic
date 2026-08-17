@@ -59,7 +59,6 @@ const BASE_RUN: ProbeRun = {
   startedAt: '2026-08-17T09:00:00.000Z',
   finishedAt: '2026-08-17T09:02:00.000Z',
   pipelineDigest: 'sha256-tree-v1:cafef00d',
-  corpusPin: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
   roster: ['hf:cat/Tabby-1', 'hf:cat/Calico-2',],
   subject: { fixtures: ['sunbeam-nap',], },
   rows: [{ verdict: 'no-defect-found', },],
@@ -272,7 +271,6 @@ await describe({
          */
         const read = await readRun({ path: at, },);
         expect(read.pipelineDigest,).toBe('sha256-tree-v1:cafef00d',);
-        expect(read.corpusPin,).toBe('a41fc607ea5a70d8a7625cc67d5ed8c444f53379',);
         expect(read.roster,).toContain('hf:cat/Tabby-1',);
         expect(read.startedAt,).toBe('2026-08-17T09:00:00.000Z',);
         expect(read.finishedAt,).toBe('2026-08-17T09:02:00.000Z',);

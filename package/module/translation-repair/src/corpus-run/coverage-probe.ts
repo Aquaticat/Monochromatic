@@ -415,12 +415,12 @@ async function main(): Promise<void> {
       startedAt,
       finishedAt: new Date().toISOString(),
       pipelineDigest,
-      // THE COMMIT, not the whole pin: the pin also carries a local clone
-      // directory, which names this machine rather than the corpus and is worth
-      // nothing to a later reader holding the file.
-      corpusPin: RUN_CORPUS_PIN.commitSha,
       roster: RUN_ROSTER,
       subject: {
+        // THE COMMIT, not the whole pin: the pin also carries a local clone
+        // directory, which names this machine rather than the corpus and is
+        // worth nothing to a later reader holding the file.
+        corpusPin: RUN_CORPUS_PIN.commitSha,
         entriesWalked: entryIds,
         entriesRequested: onlyIds,
         candidateCap: cap,

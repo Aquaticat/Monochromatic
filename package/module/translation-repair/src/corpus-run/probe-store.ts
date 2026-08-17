@@ -24,11 +24,20 @@ import { writeFileAtomic, } from './atomic-write.ts';
 // runs ACCUMULATE and a reader picks between them.
 //
 // WHY THE IDENTITY TRAVELS WITH THE ROWS. A verdict is worth keeping only if a
-// later reader can say what produced it: which corpus, which models, which
-// build. The version 2 artifact learned this the expensive way and a probe
-// result inherits it here, so a file found on disk months later answers for
-// itself instead of needing the transcript that this module exists to stop
+// later reader can say what produced it: what it was pointed at, which models,
+// which build. The version 2 artifact learned this the expensive way and a
+// probe result inherits it here, so a file found on disk months later answers
+// for itself instead of needing the transcript that this module exists to stop
 // depending on.
+//
+// WHY WHAT IT WAS POINTED AT LIVES IN `subject` rather than in a top-level
+// corpus pin, which is where it started. `audit-sensitivity` reads NO corpus:
+// its inputs are invented fixtures, and a required corpus field would have made
+// it record a commit that had nothing to do with its verdicts. Recording a
+// value that means "not applicable" as though it were a value is the exact
+// defect class this whole generation exists to stop, so the field went where it
+// is always true: every probe can say what it was pointed at, and only some of
+// them are pointed at a corpus.
 //
 // WHAT THIS DELIBERATELY DOES NOT DO: interpret rows. Every probe owns its own
 // row shape, they are all still prototypes, and a store that named their fields
@@ -62,19 +71,19 @@ export type ProbeRun = {
   readonly pipelineDigest: string;
 
   /**
-   * Corpus commit whose text was read.
-   */
-  readonly corpusPin: string;
-
-  /**
    * Models asked, in roster order, since a verdict over six voices is not
    * comparable to one over three.
    */
   readonly roster: readonly string[];
 
   /**
-   * What this invocation was pointed at, in the probe's own terms: entry ids,
-   * fixture names, a cap, whatever bounds what its rows can be read to say.
+   * What this invocation was pointed at, in the probe's own terms: a corpus
+   * commit and entry ids, fixture names, a cap, whatever bounds what its rows
+   * can be read to say.
+   *
+   * OPEN RATHER THAN NAMED because probes are pointed at different kinds of
+   * thing. Forcing a corpus commit here would make a fixture-only probe record
+   * one it never read.
    */
   readonly subject: Readonly<Record<string, unknown>>;
 
