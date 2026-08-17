@@ -114,6 +114,23 @@ When an `Edit` will not apply to text you just read,
 suspect the bytes before suspecting the tool.
 Run `od` on the line.
 
+## How widespread it was: measured, not guessed
+
+Every tracked text file in the repository was scanned after the fix,
+6870 of them across `.ts`, `.tsx`, `.js`, `.mjs`, `.rs`, `.md`, `.toml`, `.json`, `.yaml` and `.yml`,
+reading each one and counting `String.fromCharCode(0)`:
+
+```text
+scanned 6870 tracked text files
+no NUL bytes anywhere
+```
+
+So this was confined to the two files it was found in
+and is now gone.
+Run that scan before assuming a new one is isolated,
+because the count is the only way to tell an accident from a habit,
+and it costs one pass over the tree.
+
 ## Fixing a file that already has them
 
 Replace them from a script that never has to contain one,
