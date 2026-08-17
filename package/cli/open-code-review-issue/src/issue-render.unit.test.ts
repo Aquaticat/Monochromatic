@@ -5,7 +5,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  capIssueTitle,
   renderIssue,
+  renderIssueTitle,
   type NormalizedFinding,
 } from '../dist/final/node/index.mjs';
 
@@ -77,6 +79,52 @@ await describe({
           ].join('\n',),
           labels: [],
         },);
+      },
+    },),
+    it({
+      name: 'uses code fallback and caps complete UTF-8 title bytes',
+      fn: async () => {
+        /**
+         * Finding whose content is empty and existing code supplies summary.
+         */
+        const finding: NormalizedFinding = {
+          position: {
+            kind: 'record',
+            value: 2,
+          },
+          path: 'src/fallback.ts',
+          content: '\n',
+          existingCode: '  const secret = value;  ',
+          suggestionCode: '',
+          startLine: 1,
+          endLine: 1,
+        };
+
+        expect(renderIssueTitle({ finding, needsTriageLabel: true, }),).toBe(
+          '[uncategorized] src/fallback.ts: const secret = value;',
+        );
+
+        /**
+         * ASCII count that leaves exactly four bytes for final emoji.
+         */
+        const exactPrefixLength = 252;
+        /**
+         * Complete title at exact byte boundary.
+         */
+        const exactTitle = `${'x'.repeat(exactPrefixLength,)}😀`;
+        expect(capIssueTitle(exactTitle,),).toBe(exactTitle,);
+
+        /**
+         * ASCII count that forces emoji removal and ellipsis suffix.
+         */
+        const overPrefixLength = 253;
+        /**
+         * Deterministically truncated overlength title.
+         */
+        const capped = capIssueTitle(`${'x'.repeat(overPrefixLength,)}😀`,);
+        expect(new TextEncoder().encode(capped,)).toHaveLength(256,);
+        expect(capped.endsWith('…',),).toBe(true,);
+        expect(capped.slice(0, -1,),).toBe('x'.repeat(overPrefixLength,),);
       },
     },),
   ],
