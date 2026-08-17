@@ -1299,3 +1299,60 @@ TWO TRAPS FOUND, both worth carrying:
     the two differ is not established, so
     `doc/troubleshooting/barrel-star-export-drops-ambiguous-names.md` keeps its warning: a clean
     type-check does not prove there is no collision.
+
+### Where `#115` stands at 15:45Z
+
+RUN 2 IS FINISHING and RUN 3 IS CHAINED BEHIND IT, in background task `bls9hwlkq`, which waits for
+the audit process to exit, checks run 2 actually wrote `kept at`, and only then starts run 3 on the
+SAME `dist`. Logs: `~/temp/agent/audit-settled-run2.log`, `~/temp/agent/audit-settled-run3.log`.
+
+DO NOT REBUILD until run 3 has started. Run 2 and run 3 sharing one build is the whole point of
+chaining them; a rebuild between them would leave the band measured across two builds. Source edits
+and `lint:types` are safe (different output directory); anything that runs a unit test is not,
+because tests import `dist`.
+
+Why three runs and not two: run 1 has no recorded text identity, so pairing it against anything
+yields 40 subjects that match by position and cannot be vouched for. Run 2 alone supplies six
+digest-verified pairs from the character-identical subjects. Run 2 against run 3 supplies forty.
+
+WHEN RUN 3 LANDS:
+
+```sh
+cd /var/home/user/worktrees/translation-repair
+R=/var/home/user/worktrees/translation-repair/node_modules/.monochromatic/translation-repair-runs/rendering-audit-settled
+mise run //package/module/translation-repair:rendering-audit-settled-report -- \
+  --run $R/<run3>.json --against $R/<run2>.json
+```
+
+Paths must be ABSOLUTE. The mise task runs from the package directory, so a repo-relative path
+gives `ENOENT` naming a path that exists.
+
+Then write the band into `doc/audit/rendering-audit-settled-population.md`, which already fixes how
+to read it: the headline gap is a CORROBORATED gap, so the band on corroborated counts decides
+whether it survives, and the doc says in advance that about four means noise and nought or one
+means it stands. It also predicts `auditRepeatsWithin` will find exactly the six subjects the
+population count named, by a different route through different data.
+
+Landed since the last note:
+
+-   The three-way split in `auditRepeatsAcross`. It would have reported all 40 subjects of run 1 as
+    "the archive moved between the two runs" in exactly the `--against` command this handover
+    prescribes. The archive did not move; run 1 predates the field. Now `paired`, `textMoved` and
+    `unverifiable`, worded apart by the printer, with the new case shown to fail first.
+-   The relocation candidates measured structurally, no text: both anchor against their shared slice
+    boundary, which is the geometry `#107` predicts, and that is in the population doc.
+-   A double count found in the same data: on `zheermao101` slice 0, Qwen anchored BOTH an
+    `altered-actor` and an `unsupported-addition` to the identical candidate span. `claimed` counts
+    claims, not distinct problems.
+-   `#116`, a task: stamp runs with the runner's own dependency closure instead of a whole-tree
+    digest, since the closure is what a band actually needs and the built entry already names it.
+
+VERIFIED, so nobody re-does it: full unit suite green at HEAD, 371 passing describes, zero failures,
+`~/temp/agent/suite-at-head.log`. The positive control was checked, meaning all nine reading modules
+appear in the log as having run, rather than trusting an exit code. RE-RUN IT at the very end, since
+`ef8c1eb87` landed after that suite started.
+
+GFP was satisfied for the sharpest guard: removing the unrecorded-rows refusal from
+`sameAuditedText`, rebuilding and running gave `expected true to equal false`, and the guard was
+restored and re-verified. The run aborted at that describe, so the OTHER refusals in
+`auditRepeatsWithin` were not exercised under the broken guard and have not been shown to fail.
