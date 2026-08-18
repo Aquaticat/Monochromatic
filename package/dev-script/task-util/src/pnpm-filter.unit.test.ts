@@ -40,7 +40,7 @@ await describe({
           name: 'returns true regardless of monorepo root path',
           fn: async () => {
             expect(isAllowedCycleWarning(
-              `${WARN} There are cyclic workspace dependencies: /home/alice/projects/mono/packages/module/async-time, /home/alice/projects/mono/packages/module/test`,
+              `${WARN} There are cyclic workspace dependencies: /home/alice/projects/mono/package/module/async-time, /home/alice/projects/mono/package/module/test`,
             ),)
               .toBe(true,);
           },
@@ -87,7 +87,7 @@ await describe({
           name: 'removes the allowed cycle warning while keeping other lines',
           fn: async () => {
             const output = [
-              `${WARN} There are cyclic workspace dependencies: /abs/packages/config/tsdown, /abs/packages/module/test, /abs/packages/module/numeric-format, /abs/packages/module/or-throw`,
+              `${WARN} There are cyclic workspace dependencies: /abs/package/config/tsdown, /abs/package/module/test, /abs/package/module/numeric-format, /abs/package/module/or-throw`,
               `${WARN} deprecated package: old-pkg@1.0.0`,
               '',
             ]
@@ -115,7 +115,7 @@ await describe({
           name: 'does not filter unknown cycle warnings',
           fn: async () => {
             const output =
-              `${WARN} There are cyclic workspace dependencies: /abs/packages/foo, /abs/packages/bar\n`;
+              `${WARN} There are cyclic workspace dependencies: /abs/package/foo, /abs/package/bar\n`;
             expect(filterPnpmOutput(output,),).toBe(output,);
           },
         },),
