@@ -168,15 +168,26 @@ WHY 2 MATTERS MOST: a verdict needs about 131,000 GENERATED characters and produ
 raw ones. At a 10x envelope 45 of 347 streams reach the bar; at 1x, 282 of 347. The unmeasured
 ratio decides whether this guard judges one stream in eight or four in five.
 
-### A sol review is also running and may never return
+### Sol: three identical attempts all failed, and the failure is now localized
 
-`timeout 3000 pi --model openai-codex/gpt-5.6-sol` on `stream-degeneration.ts` alone, started about
-23 minutes ago, zero output so far. THE FIRST ATTEMPT, on all three stream modules at once, exited
-124 after the full hour with no output at all. The user's guidance is that sol's harness and API are
-far from perfect and this is expected, so relaunch rather than conclude anything from silence.
-Output lands at `~/temp/agent/sol-detector.txt`.
+THREE ATTEMPTS, all `exit 124` with ZERO bytes: all three stream modules at once, then
+`stream-degeneration.ts` alone twice. Do NOT fire a fourth identical run.
 
-The three stream modules have therefore had NO second-reviewer pass yet.
+THE MODEL IS REACHABLE. A smoke test, same model and same `--thinking xhigh`, returned `ALIVE` in
+well under its 600 s bound. So the failure is specific to a review-scale request rather than the
+provider being down, and relaunching the same command tests nothing new.
+
+TWO SINGLE-VARIABLE VARIANTS ARE RUNNING, each changing exactly one thing against the failing run:
+
+  A  `--thinking high` with the same 11 KB prompt   ->  ~/temp/agent/sol-effort-high.txt
+  B  `--thinking xhigh` with a 4 KB prompt          ->  ~/temp/agent/sol-short.txt
+
+If A returns and B does not, the effort budget is the cause; if B returns and A does not, prompt
+scale is. If BOTH exit 124, stop: sol cannot review this module and the second-reviewer pass has to
+come from somewhere else.
+
+THAT MATTERS LESS THAN IT DID. A boundary-driven review of the same modules this session found five
+defects, tracked as `#120`, which is more than sol has produced across three hours.
 
 ### Two settled pools, which must not be confused
 
