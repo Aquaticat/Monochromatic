@@ -155,6 +155,12 @@ export function regionIdOf(
 /**
  * Turns one lane's delivery ledger into the regions a damage draw can use.
  *
+ * EXPORTED FOR ITS TESTS, per `XPT`. Every judgement this module makes lives
+ * here: which rows count, which are set aside, and what identifies one. The
+ * reader around it only lists files and hands them to a parser that has its own
+ * tests, so testing it through the filesystem would exercise that parser again
+ * and this decision once.
+ *
  * @param entryId - corpus entry
  *
  * @param lane - lane the rows came from
@@ -168,7 +174,7 @@ export function regionIdOf(
  * const found = regionsOfLane({ entryId, lane: 'repair', rows, },);
  * ```
  */
-function regionsOfLane(
+export function regionsOfLane(
   {
     entryId,
     lane,
@@ -183,7 +189,11 @@ function regionsOfLane(
    * Rows where this lane's wording replaced something.
    */
   const shipped = rows.filter(function wasShipped(row,): boolean {
-    return row.delivery.kind === 'replacement-shipped';
+    /**
+     * What the lane did with this slice.
+     */
+    const { delivery, } = row;
+    return delivery.kind === 'replacement-shipped';
   },);
 
   /**
@@ -273,12 +283,17 @@ export async function collectShippedRegionsV2(
 
     DAMAGE_LANES.forEach(function perLane(lane,): void {
       /**
+       * This lane as the parser read it.
+       */
+      const laneRead = artifact.lanes[lane];
+
+      /**
        * What this lane delivered.
        */
       const census = regionsOfLane({
         entryId,
         lane,
-        rows: artifact.lanes[lane].delivery,
+        rows: laneRead.delivery,
       },);
       found.push(...census.regions,);
       skipped.count += census.filledWithoutIncumbent;

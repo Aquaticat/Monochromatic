@@ -11,6 +11,15 @@
 export { buildSettledArtifact, } from './corpus-run/artifact-build.ts';
 export { buildSettledArtifactV2, } from './corpus-run/artifact-v2-build.ts';
 export {
+  collectShippedRegionsV2,
+  DAMAGE_LANES,
+  type DamageLane,
+  regionIdOf,
+  regionsOfLane,
+  type ShippedRegionCensus,
+  type ShippedRegionV2,
+} from './corpus-run/damage-region-v2.ts';
+export {
   ARTIFACT_SCHEMA_VERSION_V2,
   type ArtifactJsonValue,
   type SettledArtifactV2,
