@@ -251,3 +251,67 @@ MERGING IS NOT A GUARANTEE.
 A run's own ends can still be offset,
 which is why the second sheet keeps an explicit way for a grader to report a mismatch
 rather than assuming the merge fixed every case.
+
+## The harm is visible in the finished document: `lintong` offers the same food twice
+
+Found 2026-08-18 while checking the second grading sheet by reading one merged item end to end.
+This is the first instance where the damage relocation causes
+is legible in the assembled output rather than inferred from a rate.
+
+The repair lane's `lintong` document ends:
+
+```text
+> Here's also a serving of Wuhan Re Gan noodles.
+>
+> Come here, drink this can of Monster Energy.
+>
+> Maybe you don't really like it, but it was the drink you chose while you were working.
+>
+> Eat this plate of Wuhan Re Gan noodles, too.
+> Even though it's definitely not authentic, for a true Wuhan native like you, it might make you angry, right?
+> But I don't have a better solution either.
+```
+
+The noodles are offered twice within four lines.
+The Monster invitation appears here as well,
+although the two paragraphs immediately above it,
+which are slice 2's shipped text,
+already say
+"Here, this can of Monster, a toast to you"
+and
+"You might not actually like it, but it was the thing you were always drinking while you worked".
+
+Counted over the whole assembled document:
+
+```text
+lane        "Monster Energy"   "Wuhan Re Gan"
+repair                     2                2
+translate                  1                1
+```
+
+## Why the repair lane produces it and the translate lane does not
+
+The archive had the whole farewell,
+four sentences of it,
+sitting in slice 3's incumbent,
+while slice 3's ORIGINAL is only the noodles sentence.
+
+The translate lane writes each slice from its source,
+so it produced one sentence for slice 3 and the duplication never arose.
+
+The repair lane edits the incumbent in place.
+Handed a one-sentence original and a four-sentence incumbent,
+it repaired the noodles sentence INSIDE the block and left the other three where they were,
+which is a defensible thing to do to the text in front of it
+and the wrong thing to do to the document.
+Slice 2's own new translation then supplied the Monster sentences a second time.
+
+NEITHER LANE DID ANYTHING UNREASONABLE WITH WHAT IT WAS SHOWN.
+That is the whole of `#107`:
+the pairing was wrong before either lane saw it,
+and per-slice work cannot recover from that
+because no slice has enough of the document in view to notice.
+
+A judge shown slices 2 through 4 together would see the repeat.
+The measured bound in this same document says three slices is enough,
+because the longest flagged run in the corpus is three.
