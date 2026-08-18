@@ -190,17 +190,67 @@ An empty `data:` payload is a keep-alive rather than an unreadable frame,
 so it no longer counts toward the tally that exists to make a changed wire
 format visible.
 
+## What the first production traffic showed
+
+The 2026-08-18 targeted pass is the first real traffic through this guard.
+Read over its first half hour,
+235 streams completed and NONE was ended by either guard:
+no `degenerate in` line and no `cut` line appears in the log.
+That is the expected healthy reading rather than a null result worth trusting on its own,
+since it says only that no runaway happened in that window.
+
+WATCH THE SEARCH ITSELF, because the obvious one lies.
+Grepping the pass log for `cut` returns matches on every reply containing the word "cute",
+which the models write often when rendering 撒娇.
+The pattern that answers the question is `stream .*: cut` or `degenerate in`,
+and a bare `cut` returned ten confident false positives here.
+
+## What the progress line still cannot say
+
+TWO FIELDS CARRY THE SAME NUMBER.
+`reportStreamProgress` prints `N raw chars` from the idle guard's counter
+and `N delivered chars` from `partialText.length`,
+and both count the raw event stream:
+`drainBody` accumulates undecoded chunks and returns the body itself,
+so the text it hands back IS the wire format.
+Measured across the pass log,
+235 of 235 progress lines have the two equal,
+with no line where they differ.
+
+THIS MATTERS BECAUSE THE SECOND FIELD READS AS THOUGH IT MEANT GENERATED TEXT,
+which is the figure every open question here needs and the one nothing records.
+The scanner already computes it:
+`watchRunaway` feeds each channel's detector exactly the generated characters,
+and the detectors already hold their own totals.
+Only the reporting stops short.
+
+THE OUTCOME LABEL ALSO CONFLATES TWO ENDINGS.
+`StreamOutcome` is `completed` or `cut`,
+and a call this guard deliberately terminates is reported as `cut`,
+the same word a stall gets.
+A reader counting cuts to measure stalls would count our own terminations among them,
+which is the same mistake the sub-kind item guards against,
+one layer further out.
+
 ## What is still owed
 
--   `#118`, so an aborted call keeps what it received.
-    Until then the detector is validated only against fixtures,
-    never against a real degenerate reply,
-    because no real one has ever been kept.
+-   REPORT GENERATED CHARACTERS PER CHANNEL on the progress line,
+    replacing the field that repeats the raw count.
+    Held until the targeted pass releases the producing path.
+-   NAME OUR OWN TERMINATION in `StreamOutcome` rather than filing it as a cut,
+    so a stall figure read off a log counts stalls.
 -   RECORD THE NEW LOSS CAUSE with its own sub-kind, per `#75`.
     A call ended this way must not be filed with a stall:
     a stall is worth retrying,
     and a model that has begun repeating itself will repeat itself again.
--   MEASURE THE ENVELOPE RATIO and revisit the 131000 character bar,
-    which is set from artifact evidence
-    because the only length telemetry in production counts raw event bytes
-    and relates to generated characters by a ratio never measured.
+-   MEASURE THE ENVELOPE RATIO and revisit the 131000 character bar.
+    The bar is set from artifact evidence
+    because the only length telemetry in production counts raw event bytes,
+    and the ratio to generated characters has never been measured.
+    It is measurable today without touching the frozen path,
+    by capturing one stream per model outside the pipeline
+    and counting both sides with this package's own scanner.
+-   VALIDATE AGAINST A REAL DEGENERATE REPLY.
+    `#118` landed and an aborted call now keeps what it received,
+    so the material exists as soon as one occurs,
+    but none has occurred yet and the detector is still fixture-validated only.
