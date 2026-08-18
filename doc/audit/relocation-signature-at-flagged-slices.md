@@ -121,6 +121,48 @@ which is a much smaller ask than a general damage sheet:
 the flagged slices in this pass number sixteen,
 against the twenty items the last damage sheet carried.
 
+## The critics are NOT what condemns the archive here
+
+`#107` is titled for per-slice JUDGING condemning the archive,
+and the natural reading is that critics file more claims where a relocation makes the incumbent
+look wrong.
+Counted from `chunkCritics[].claimAttributions` over the two settled entries,
+that reading FAILS:
+
+```text
+             slices   source chars   claims   per slice   per 100 chars
+flagged           6            559       71        11.8            12.7
+unflagged         9            778      118        13.1            15.2
+```
+
+FLAGGED SLICES ATTRACT FEWER CLAIMS, not more,
+on both denominators,
+while shipping a replacement 100 percent of the time against about 72 percent elsewhere.
+The busiest slice in either document is `GLaDOSister` slice 1, unflagged, with 30 claims.
+
+SO THE TWO THINGS COME APART, and that is the finding.
+Whatever makes a flagged slice always ship,
+it is not that the critic stage complains about it more.
+
+THE REMAINING CANDIDATE is the preserve-or-replace judgement in the translate lane,
+which weighs a fresh translation of the slice against the incumbent wording.
+A slice whose incumbent carries content its own source does not account for
+loses that comparison almost by construction,
+because the fresh translation matches the source and the incumbent visibly does not.
+That is a DIFFERENT MECHANISM from the one `#107`'s title names,
+and it predicts exactly what was observed:
+replacement without extra criticism.
+
+WHAT WOULD TEST IT: read the per-slice selection records rather than the critic claims,
+and ask whether the incumbent's margin of defeat is larger at flagged slices.
+That reading needs no new run.
+
+SIX FLAGGED SLICES IS NOT A RESULT.
+Both entries carry the same flag shape, at 2, 3 and 4,
+so this is close to two observations rather than fifteen.
+It is recorded now because it points the remaining analysis somewhere different,
+and because a story that only ever gains confirmation is not being tested.
+
 ## Read this against the replacement rate, not instead of it
 
 The rate reading on the same entry is
