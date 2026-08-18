@@ -44,6 +44,40 @@ and then the join `#107` waits on: replacement rate on the flagged slice indices
 the rest. The flag list comes from `displacement-probe`, which spends no quota and can be re-run at
 any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
 
+### A waiter is armed, so nothing idles waiting for someone to look
+
+A background command holds on pid `4116080` and reports when the pass exits, with the artifact count
+and the log tail. WHEN IT FIRES, in this order: check the count is 5 and the log ends cleanly, run
+`rendering-audit-settled`, run the join, update `#107`, then THE FREEZE LIFTS and `#120` can land.
+
+At 56 minutes the pass is still on its first entry, `GLaDOSister`, 0 of 5 artifacts, 410 streams so
+far. Ten slices at the previous pass's roughly eight minutes a slice puts that entry near 80 minutes
+and the whole run past 07:00Z rather than 06:00Z. The waiter makes the estimate unimportant.
+
+### The idle windows rest on a premise the current traffic contradicts
+
+TRACKED AS `#121`, measurement only, nothing decided and no constant changed.
+`doc/audit/stream-guards-first-production-traffic.md` holds it.
+
+`stream-idle-guard.ts` disables both windows at 600000 ms on the stated ground that first-byte
+silence is normal here, citing p50 95.6 s over 32 streams. Over 395 streams in this pass:
+
+  firstByte ms   p50 1174   p75 1349   p90 1726   p99 3091   max 9084
+  maxGap ms      p50  207   p75  257   p90  463   p99  989   max 11659
+
+About eighty times faster at the median. Every one of the 395 got a first byte: zero negative
+`firstByteMs` values, checked by re-grepping with the sign after the first pattern would have
+silently dropped them.
+
+TWO REASONS THIS SAMPLE BEATS THE ONE IT DISAGREES WITH: it is UNCENSORED, since neither window
+fired, where the old one was taken with a 150 s window live; and it is UNBIASED BY SURVIVORSHIP,
+since `#118` reports progress on the cut path, where the retracted "1349 streams, mean firstByte
+1822 ms" excluded abandoned calls by construction.
+
+IT DOES NOT SAY THE CONSTANTS ARE WRONG. One pass, one workload, and the gap between the two
+readings is unexplained. `#121` says re-measure on a differently shaped pass first, and the change
+itself is a decision-doc revision that belongs to the user.
+
 ### The `#107` join reader is built, validated, and waiting
 
 `~/temp/agent/join-107.mjs`. Outside the repository, no build, no quota, safe while the pass runs.
