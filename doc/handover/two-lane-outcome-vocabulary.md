@@ -64,16 +64,43 @@ rather than a rate of zero.
 Flag lists for the five entries, union of every flag kind, 16 flagged slices against 26 unflagged:
 lintong 2 3 4; wangzihao980 3 4; GLaDOSister 2 3 4; dogesir_ 2 3 8 9; saurikissa 3 4 8 9.
 
-### The guards have fired nothing, and the obvious grep lies
+### What the first production traffic showed, written up in full
 
-235 streams completed in the pass's first half hour and NEITHER guard ended one. The searches that
-answer this are `stream .*: cut` and `degenerate in`. A bare `cut` returns ten confident false
-positives, all of them the word "cute" inside a rationale about 撒娇.
+`doc/audit/stream-guards-first-production-traffic.md`. Read over the pass's first 48 minutes: 347
+streams, 219,574,656 raw characters, median 357,921, largest 5,558,524.
 
-TWO PROGRESS FIELDS CARRY THE SAME NUMBER, 235 of 235: `raw chars` and `delivered chars` both count
-the raw event stream, because `drainBody` returns the wire format itself. The generated-character
-count every open question needs is still unrecorded even though the scanner computes it. Written up
-in `doc/decision/translation-repair-runaway-call-termination.md`, held until the freeze lifts.
+BOTH NEW INSTRUMENTS WORKED. The first straggler abandonment now says why:
+`panel hf:zai-org/GLM-5.2: abandoned 180000ms after quorum (cut-mid-reply after 2915229 delivered
+chars, first byte at 2087ms), voice lost`. Before `#118` that line read only `voice lost`. Its
+companion progress line records `maxGap 460ms`, so the call was streaming steadily when the grace
+ended it, and the idle guard could never have seen it.
+
+NEITHER GUARD HAS REFUSED A CALL. The searches that answer this are `stream .*: cut` and
+`degenerate in`. A bare `cut` returns ten false positives, all the word "cute" in a rationale
+about 撒娇.
+
+THE CASE THE GUARDS EXIST FOR HAPPENED AND NOTHING CAN DIAGNOSE IT: GLM-4.7-Flash streamed
+2,052,766 raw characters, COMPLETED on its own, and delivered `raw=""`, an empty answer. Whether it
+thought usefully or cycled is unanswerable from the log.
+
+FIVE DEFECTS FOUND AND TRACKED AS `#120`, all held until the freeze lifts, all written up in
+`doc/decision/translation-repair-runaway-call-termination.md`:
+
+  1  long-period looping escapes the detector entirely: what decides a verdict is gcd(period, 32),
+     so a 501-character loop reads healthy at 0.1223 while a 500-character one is refused at 0.0305.
+     Probe at `~/temp/agent/degeneration-period-probe.mjs`, gcd prediction matched observation 15
+     of 15, control of never-repeating text scores 1.0000.
+  2  `raw chars` and `delivered chars` are the same number, 235 of 235, because `drainBody` returns
+     the wire format itself. The generated-character count nothing records.
+  3  a deliberate termination is filed as `cut`, the same word a stall gets.
+  4  the runaway error is built from `response.url` rather than `label`, so it names the endpoint
+     every model shares. Driven through the built drain, the message opens with a bare colon.
+  5  the cut excerpt shows `data: {"id":"chatcmpl-` in every case and never the model's words,
+     which is the one thing it was added to show.
+
+WHY 2 MATTERS MOST: a verdict needs about 131,000 GENERATED characters and production counts only
+raw ones. At a 10x envelope 45 of 347 streams reach the bar; at 1x, 282 of 347. The unmeasured
+ratio decides whether this guard judges one stream in eight or four in five.
 
 ### A sol review is also running and may never return
 
