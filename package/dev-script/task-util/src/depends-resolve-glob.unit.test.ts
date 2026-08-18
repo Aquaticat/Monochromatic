@@ -16,7 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { firstGlobMetaIndex, } from './depends-resolve-glob.ts';
+import { firstGlobMetaIndex, } from '../dist/final/node/testing.mjs';
 
 /** Iteration count for the long no-match run; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;

@@ -4,13 +4,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { buildTscArgs, } from './tsc-args.ts';
 import {
+  buildTscArgs,
   filterTscOutput,
   isContinuationLine,
   isDiagnosticLine,
   isNodeModulesDiagnostic,
-} from './tsc-filter.ts';
+} from '../dist/final/node/testing.mjs';
 
 /** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;

@@ -10,9 +10,9 @@ import {
   formatGuidanceLine,
   isHelpLine,
   NO_RULE,
+  RULE_GUIDANCE,
   stripAnsi,
-} from './oxlint-augment.ts';
-import { RULE_GUIDANCE, } from './oxlint-guidance.ts';
+} from '../dist/final/node/testing.mjs';
 
 /** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;

@@ -7,7 +7,7 @@ import {
 import {
   filterPnpmOutput,
   isAllowedCycleWarning,
-} from './pnpm-output-filter.ts';
+} from '../dist/final/node/testing.mjs';
 
 /** pnpm uses U+2009 THIN SPACE around "WARN" in formatted output. */
 const WARN = '\u2009WARN\u2009';

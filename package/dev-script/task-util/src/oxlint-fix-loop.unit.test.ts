@@ -9,7 +9,7 @@ import {
   MAX_AUTOFIX_PASSES,
   normalizeForConvergence,
   type OxlintRunResult,
-} from './oxlint-fix-loop.ts';
+} from '../dist/final/node/testing.mjs';
 
 /**
  * Builds a normalized run result; omitted optional fields stay absent.
