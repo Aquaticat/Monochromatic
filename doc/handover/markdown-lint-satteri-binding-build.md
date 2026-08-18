@@ -252,6 +252,14 @@ rejected paths,
 recommended module seam,
 and upstream-filing audit.
 Commit `e1e4d4b89` resolves its Markdown diagnostics.
+Commit `901053ee5` narrows the generic-externalization,
+package-publication,
+parser-scope,
+and release-tag claims after independent review.
+The troubleshooting commits are preserved on remote branch
+`docs/issue-447-satteri-loader-bundling`.
+This handover is preserved on remote branch
+`docs/markdown-lint-satteri-binding-investigation`.
 `mise run lint:markdown -- doc/troubleshooting/satteri-loader-bundled-out-of-package.md` passes.
 The root dprint task does not select Markdown files and reports `No files found` for this path;
 that result does not validate or invalidate the document.
