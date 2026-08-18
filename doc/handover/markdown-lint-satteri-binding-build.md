@@ -1,0 +1,127 @@
+# Markdown-lint Sätteri binding build investigation
+
+## User requirements
+
+- Work in a fresh worktree.
+- Explain how to prevent a successful markdown-lint build from implying that Sätteri's native binding is usable.
+- Read GitHub issue 447 and incorporate its consumer-bundling failure.
+- Investigate and recommend; do not implement an accepted design without a user decision.
+- Keep this handover current during the investigation.
+
+## Worktree and versions
+
+The disposable worktree is
+`/var/home/user/temp/agent/markdown-lint-satteri.TSb8L5IW`
+at Monochromatic commit `35d90771ce4bc1e74bddf7ccafb3d1cdc6e50c89`.
+
+The install uses pnpm `11.21.0`, Node `26.7.0`, Rolldown `1.2.3`, and Sätteri `0.9.5`.
+A fresh `mise run prepare:pnpm:install` installed the Linux x64 GNU binding normally.
+The missing-binding state was then made deterministically by moving only Sätteri's
+`@bruits/satteri-linux-x64-gnu` dependency link out of its virtual-store `node_modules`.
+
+The matching upstream Sätteri source is cloned at
+`/var/home/user/temp/agent/satteri-source.L3WiJZ6z`,
+origin `https://github.com/bruits/satteri.git`,
+commit `92d01ec4eee3a7284608f5a4974dca6d4aec836e`,
+tag `satteri-v0.9.5`.
+
+## Reproduction evidence
+
+With the binding present, this command built the package and ran the built CLI successfully:
+
+```console
+$ mise run //package/cli/markdown-lint:build
+✔ rolldown v1.2.3 Finished
+$ node package/cli/markdown-lint/dist/final/node/cli.mjs --format=json \
+    /var/home/user/temp/agent/satteri-repro-clean.md
+[]
+```
+
+With Sätteri's Linux binding link absent, the same build succeeded twice.
+Loading the resulting CLI then failed twice with:
+
+```text
+Error: Cannot find native binding. npm has a bug related to optional dependencies
+...
+[cause]: Error: Cannot find module '@bruits/satteri-linux-x64-gnu'
+```
+
+`mise run //package/cli/markdown-lint:test:unit` also fails in this state,
+because its test files import the parser.
+The existing `buildAndTest` task therefore catches the condition even though `build` does not.
+
+## Direct markdown-lint root cause
+
+`package/cli/markdown-lint/package.json` declares `satteri` as a dependency.
+`package/config/rolldown/src/package-externals.ts:189-238` externalizes dependencies from the consuming manifest.
+`package/config/rolldown/src/index.node.ts:82-90` installs that external list in the shared Node config.
+The generated `dist/final/node/{index,cli}.mjs` files consequently retain
+`import ... from "satteri"` rather than traversing or evaluating Sätteri during the build.
+
+Sätteri loads the binding at module evaluation time.
+Upstream `packages/satteri/index.js:287-299` tries the local binary and then
+`@bruits/satteri-linux-x64-gnu`.
+`packages/satteri/index.js:530-584` calls `requireNative()`, tries WASI and WebContainer fallbacks,
+and throws the quoted error when none resolves.
+The build and runtime are therefore checking different boundaries.
+
+A build cache is not involved: output timestamps changed on each fresh Rolldown run.
+Sätteri does not defer the check until parsing: importing its module reaches the loader.
+
+## Issue 447
+
+Issue 447 reports a second and more important shape.
+`@monochromatic-dev/module-translation-repair` imports markdown-lint rule functionality.
+The shared Node config always bundles `@monochromatic-dev/**`.
+If translation-repair does not declare `satteri`, Rolldown follows the inlined markdown-lint source and also copies
+Sätteri's loader into translation-repair's bundle.
+The copied loader resolves from `dist/final/node`, not from Sätteri's own package directory,
+so pnpm's binding link under Sätteri is invisible.
+
+The current workaround declares `satteri` directly in translation-repair.
+That makes Sätteri external at the consumer boundary and keeps its loader in its package directory.
+Issue 447 rejects this as a durable design because every source-level consumer must know about a transitive native dependency.
+
+Issue 447 asks first for a troubleshooting document and then for a proper migration.
+Its ranking is:
+
+1. Split a parser-free markdown-lint core from the Sätteri-backed CLI.
+2. Detect and externalize napi packages automatically in the Rolldown config.
+3. Special-case markdown-lint in the bundling policy.
+4. Keep and document the direct declaration workaround.
+
+## Validated candidate for the direct build signal
+
+A disposable edit changed markdown-lint's `build` task to depend on `build:js` and then run:
+
+```console
+$ node dist/final/node/cli.mjs --help
+```
+
+With the binding absent, bundling still finished but the overall build task failed at the smoke step.
+After restoring the binding link, the same task printed CLI help and exited successfully.
+This crosses the built-artifact consumer boundary and catches both import-time native-loader failure and an unusable CLI entry point.
+The edit is only a prototype and must be removed before finalizing the investigation.
+
+## Worktree tooling correction
+
+The first commit attempt could not start the ignored
+`package/cli/forbidden-strings/target/release/forbidden-strings` gate executable.
+Building that Rust package in the disposable worktree was unnecessary.
+The user directed copying the existing binary from the main worktree instead.
+The copied source and destination binaries have the same SHA-256 digest,
+`3b3ed2a93c458ae26b97533814493232e6b6d7b235e9217564b495df47ce1da2`.
+A separate GitHub issue will decide where this reusable-worktree-artifact guidance belongs.
+
+## Open design questions
+
+- A built-CLI smoke step fixes the misleading direct `build` result but does not remove issue 447's transitive-consumer trap.
+- The parser-free core addresses issue 447 at the dependency boundary but needs the exact export and package seam designed and validated.
+- The options can be complementary: split the core for consumers, and retain a built-CLI smoke step for the native CLI artifact.
+- The investigation still needs to inspect translation-repair's current source, manifest, Rolldown config, and bundle.
+- The issue's alternatives still need independent validation before a final ranking.
+
+## Next action
+
+Inspect issue 447's current translation-repair implementation and reproduce its pre-workaround bundle shape in the disposable worktree.
+Then validate the parser-free core seam and compare it with generic or special-case externalization.
