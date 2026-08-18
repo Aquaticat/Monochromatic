@@ -29,6 +29,7 @@ import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
   type ModelTransport,
+  StreamDegenerateError,
   SyntheticHttpError,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
@@ -426,6 +427,57 @@ await describe({
         ).toStrictEqual(OK_REPLY,);
         expect(calls.count,).toBe(2,);
         expect(DEFAULT_RETRY_POLICY.limit,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO RE-DISPATCH A CALL THIS SYSTEM ENDED ON PURPOSE, because a model that has '
+        + 'begun repeating itself will repeat itself again. Treating a runaway as weather turns one '
+        + 'of them into one per attempt the ladder grants, which multiplies the exact cost the '
+        + 'degeneration guard exists to avoid',
+      fn: async () => {
+        /**
+         * Attempt counter, which is the whole assertion: the error's identity
+         * would look right even if the transport had been called five times.
+         */
+        const calls = { count: 0, };
+
+        /**
+         * What the drain throws once it has cancelled a runaway reader. The
+         * caller's signal is NOT aborted on this path, because the termination
+         * is ours rather than the caller's steering, so nothing else in the
+         * retry loop marks it as permanent.
+         */
+        const runaway = new StreamDegenerateError({
+          label: 'hf:whiskers',
+          channel: 'reasoning',
+          distinctRatio: 0.0037,
+          charsSeen: 131_475,
+        },);
+
+        /**
+         * What the call did, as a value, so the assertion reads as an
+         * expectation rather than as control flow.
+         */
+        const raised = await (async function attempt(): Promise<unknown> {
+          try {
+            await exchangeWithRetry({
+              transport: scriptedTransport({
+                script: [runaway,],
+                calls,
+              },),
+              exchange: exchangeWith({ signal: new AbortController().signal, },),
+              policy: FAST_POLICY,
+            },);
+            return undefined;
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+
+        expect(raised,).toBeInstanceOf(StreamDegenerateError,);
+        expect(calls.count,).toBe(1,);
       },
     },),
   ],

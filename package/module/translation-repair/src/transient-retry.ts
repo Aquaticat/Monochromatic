@@ -4,6 +4,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { SyntheticHttpError, } from './completion-shape.ts';
+import { StreamDegenerateError, } from './stream-runaway-watch.ts';
 import type { ModelTransport, } from './synthetic-transport.ts';
 
 //region Transient retry
@@ -208,6 +209,19 @@ async function attemptExchange(
     if (exchange.signal
       .aborted)
       throw error;
+
+    // NEITHER IS A TERMINATION THIS SYSTEM CHOSE. `drainBody` ends a runaway by
+    // cancelling the reader and throwing, and it deliberately does NOT abort the
+    // caller's signal, because the decision was ours rather than the caller's.
+    // That leaves the check above blind to it, so without this the retry ladder
+    // re-dispatches the runaway once per remaining attempt: measured at five
+    // transport calls over twelve seconds of backoff under the production
+    // policy. A model that has begun repeating itself will repeat itself again,
+    // so every one of those attempts pays the same cost the guard exists to
+    // avoid, and the guard ends up multiplying the waste it was built to stop.
+    if (error instanceof StreamDegenerateError)
+      throw error;
+
     return {
       replied: false,
       thrown: Error.isError(error,)
