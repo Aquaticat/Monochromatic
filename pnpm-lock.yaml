@@ -397,6 +397,9 @@ importers:
       '@monochromatic-dev/cli-mvm':
         specifier: workspace:*
         version: link:package/cli/mvm
+      '@monochromatic-dev/cli-open-code-review-issue':
+        specifier: workspace:*
+        version: link:package/cli/open-code-review-issue
       '@monochromatic-dev/cli-terminal-exec':
         specifier: workspace:*
         version: link:package/cli/terminal-exec
