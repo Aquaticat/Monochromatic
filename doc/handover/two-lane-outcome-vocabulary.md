@@ -8,6 +8,40 @@ this file holds the WORKING STATE.
 Worktree: `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`.
 All commands below assume it, not the main worktree.
 
+## After the freeze lifted, 2026-08-17 night
+
+THE PASS STOPPED CLEANLY at exactly 6 entries, the watcher reporting
+`reached 6 entries, stopping pass 3768707` then `stopped`. Pool at
+`~/translation-repair-runs-20260817/artifacts`: Acheron, AkiraComplex, AmbeR_the_anpa, Anilovr,
+Arita, Chinatsu_Suzuki.
+
+THE RUNAWAY GUARD IS NOW WIRED AND PROVEN. Built, tested and linted once the producing path was
+free: `7aa4866fa` wires `drainBody`, and the strip test shows it fails without the guard
+(`expected 'drained' to equal 'raised'`, drain reads 3,060,000 characters). The healthy long call
+logs 1,652,574 in both runs, which is the control. `lint:types` and `lint:oxlint` clean.
+
+THE SOL REVIEW RETURNED NOTHING. `timeout 3600 pi --model openai-codex/gpt-5.6-sol` exited 124 with
+zero lines after the full hour, which is the documented "it may never return" case rather than a
+failure. So the three stream modules have had NO second-reviewer pass. Worth redoing with a smaller
+paste, one file rather than three, if a reviewer is wanted.
+
+### `#60` redraw: the pool was ready, the draw was not
+
+The draw failed on the settled pool with
+`artifact parse failed at artifact Acheron.issues: expected an array`. It read version 1's
+top-level issue list; these artifacts carry `lanes.repair` and `lanes.translate`.
+
+MOVING THE FIELD READ WOULD HAVE BEEN THE WRONG FIX, quietly. Both lanes ship replacement text.
+Measured over all six entries the population is 69 regions, 32 repair against 37 translate, so a
+repair-only draw would have covered 46 percent of the regions where this pipeline replaced text
+while calling itself a draw over the shipped regions.
+
+Fixed in `b71ea7328` and `0b6d9afb0`: `corpus-run/damage-region-v2.ts` reads both lanes' delivery
+ledgers, keeps `replacement-shipped` rows, records the lane per row, and counts rows that filled a
+passage with no incumbent rather than dropping them (0 such rows in this pool). Uses the artifact's
+own text rather than re-slicing, per `#115`, which also removed the old unplaceable-region failure.
+Draw domain bumped to `damage-sample/v2` so the two populations cannot claim one draw.
+
 ## Evening sitting, 2026-08-17: runaway calls
 
 WHY THIS EXISTS. The user reports that the provider does not auto-terminate token degeneration, so
