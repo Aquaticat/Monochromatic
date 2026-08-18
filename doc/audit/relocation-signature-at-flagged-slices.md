@@ -45,11 +45,22 @@ slice   incumbent   repair shipped   delta    translate shipped   delta
     4         207              458    +251                  434    +227
 ```
 
-ABOUT 240 CHARACTERS LEFT SLICE 3 AND ABOUT 240 ARRIVED IN SLICE 4.
-Both lanes did it,
-within a dozen characters of each other,
+Slice 3 lost about 240 characters and slice 4 gained about 240,
+in both lanes, within a dozen characters of each other,
 and they are separate judgements rather than one echoed twice:
 across the whole entry they disagree about slices 0 and 5.
+
+NO TEXT ACTUALLY MOVED, and the first reading of this document said it did.
+Checked by asking how many 40-character windows of the newly shipped text at slices 2 and 4
+also occur in slice 3's incumbent wording:
+the answer is ZERO, in both entries, in both lanes.
+The content at the deficit slices is NEWLY WRITTEN,
+not the surplus slice's wording carried across.
+Length arithmetic looked like movement and was not evidence of it.
+
+The test detects verbatim reuse rather than paraphrase,
+so it rules out relocation of the text
+and cannot rule out relocation of the meaning.
 
 Afterwards the ratios sit near the document baseline where they were far from it:
 
@@ -64,14 +75,37 @@ Slice 4 overshot,
 from well under to somewhat over,
 which is worth noticing rather than explaining away.
 
+## It replicates in the second entry, with the archive discarded rather than moved
+
+`lintong` settled next and the probe flagged the same shape,
+`high 3, low 2, surplus 281` and `high 3, low 4, surplus 281`:
+
+```text
+slice  source  incumbent  ratio   repair shipped  ratio   translate shipped  ratio
+    2      43         25   0.58              138   3.21                 131   3.05
+    3      55        439   7.98              449   8.16                 189   3.44
+    4      41         39   0.95              121   2.95                 115   2.80
+```
+
+THE DEFICIT SLICES WERE FILLED IN BOTH ENTRIES AND BOTH LANES,
+from ratios of 0.58 and 0.95 back to about 3, against a document baseline near 2.8.
+
+THE SURPLUS SLICE WAS TREATED DIFFERENTLY BY THE TWO LANES HERE.
+Translate rewrote it from 439 characters to 189, keeping ZERO of its 150 windows from the incumbent.
+Repair left it at 449, ten characters longer, keeping 167 of 410 windows.
+So after the repair lane, `lintong` still carries its surplus at slice 3
+AND newly written content at slices 2 and 4.
+On `GLaDOSister` both lanes drained the surplus, keeping 2 and 1 windows of about 85.
+Two entries are not a pattern; the difference is recorded so a third can confirm or refute it.
+
 ## What this does and does not settle
 
-IT SETTLES THAT THE MECHANISM IS REAL AND VISIBLE.
+IT SETTLES THAT THE FLAGGED SLICES ARE WHERE THE ARCHIVE IS DISCARDED.
 A structural probe that never sees the pipeline's output
-predicted which slices would move,
-and the pipeline moved them,
-in the predicted direction,
-in both lanes.
+predicted which slices would be replaced,
+and every one of them was,
+in both entries and both lanes,
+with the surplus slice's wording largely or entirely rewritten rather than carried anywhere.
 
 IT DOES NOT SETTLE WHETHER THE MOVE IS REPAIR OR DAMAGE,
 and that is the whole of `#107`.
