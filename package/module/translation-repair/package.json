@@ -15,6 +15,7 @@
     "./ts/*": "./src/*"
   },
   "dependencies": {
+    "@monochromatic-dev/cli-markdown-lint": "workspace:*",
     "@monochromatic-dev/git-policy-cli": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",

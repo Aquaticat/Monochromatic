@@ -12,6 +12,7 @@ import { repairLaneWordings, } from './repair-lane-wordings.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import { buildIssueRecords, } from './repair-record.ts';
 import { repairReplacements, } from './repair-replacements.ts';
+import { wrapRepairOutcomes, } from './repair-wrap.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';
 
 //region Repair assembly
@@ -47,7 +48,7 @@ export function assembleRepair(
   {
     targetText,
     slices,
-    outcomes,
+    outcomes: producedOutcomes,
     findings,
     l,
   }: {
@@ -58,6 +59,19 @@ export function assembleRepair(
     readonly l: Logger;
   },
 ): RepairTranslationResult {
+  /**
+   * Outcomes with produced wording wrapped at its semantic boundaries.
+   *
+   * BEFORE ANYTHING READS THEM, because the replacements, the wordings and the
+   * issue records all come out of this one list, and the delivery invariant
+   * requires the first two to agree byte for byte.
+   */
+  const outcomes = wrapRepairOutcomes({
+    slices,
+    outcomes: producedOutcomes,
+    l,
+  },);
+
   /**
    * What this lane wants written, checked before the guard sees it.
    *

@@ -15,6 +15,7 @@ import type {
   UnfilledSlice,
 } from './translate-document-contract.ts';
 import { translateLaneWordings, } from './translate-lane-wordings.ts';
+import { wrapTranslateRecords, } from './translate-wrap.ts';
 import { heardNobody, } from './translate-unheard.ts';
 
 //region Translate assembly
@@ -53,7 +54,7 @@ import { heardNobody, } from './translate-unheard.ts';
 export function assembleTranslation(
   {
     prepared,
-    settled,
+    settled: producedRecords,
     unfilled,
     resumedSliceCount,
     findings,
@@ -67,6 +68,19 @@ export function assembleTranslation(
     readonly l: Logger;
   },
 ): TranslateDocumentResult {
+  /**
+   * Records with produced wording wrapped at its semantic boundaries.
+   *
+   * BEFORE ANYTHING READS THEM, because the replacements, the wordings and the
+   * per-slice findings all come out of this one list, and the delivery
+   * invariant requires the first two to agree byte for byte.
+   */
+  const settled = wrapTranslateRecords({
+    slices: prepared.slices,
+    settled: producedRecords,
+    l,
+  },);
+
   /**
    * Slices whose accepted text differs from the archive's.
    */

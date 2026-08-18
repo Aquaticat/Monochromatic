@@ -2941,6 +2941,9 @@ importers:
 
   package/module/translation-repair:
     dependencies:
+      '@monochromatic-dev/cli-markdown-lint':
+        specifier: workspace:*
+        version: link:../../cli/markdown-lint
       '@monochromatic-dev/git-policy-cli':
         specifier: workspace:*
         version: link:../../git-policy/cli
