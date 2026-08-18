@@ -53,7 +53,10 @@ export function wrapTranslateRecords(
    * Archive wording per slice index, which decides whether a wrap left anything
    * to change.
    */
-  const incumbentByIndex = new Map(slices.map(function toEntry(slice,): readonly [number, string,] {
+  const incumbentByIndex = new Map(slices.map(function toEntry(slice,): readonly [
+    number,
+    string,
+  ] {
     return [
       slice.target
         .chunkIndex,

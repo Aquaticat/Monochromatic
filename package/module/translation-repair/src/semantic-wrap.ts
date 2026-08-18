@@ -1,8 +1,8 @@
 import {
   fixSource,
+  type Rule,
   rulesById,
 } from '@monochromatic-dev/cli-markdown-lint/ts';
-import type { Rule, } from '@monochromatic-dev/cli-markdown-lint/ts';
 
 //region Semantic wrap
 // PUTS THE LINE BREAKS BACK that a model does not emit.
