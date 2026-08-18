@@ -67,8 +67,11 @@ The package manager therefore has no `0.7` RPM it can select.
 
 ### The release arrived after the current deployment
 
-The booted deployment was composed on 2026-08-17 at 08:11:08 UTC.
-Contour `0.7.0.8982` was published later that day at 18:29:18 UTC.
+The booted layered deployment's commit timestamp is 2026-08-17 at 08:11:08 UTC.
+The human-readable `Version` date,
+2026-08-02,
+belongs to its base Bazzite image rather than the locally layered commit.
+Contour `0.7.0.8982` was published later on 2026-08-17 at 18:29:18 UTC.
 That deployment could not contain a release that did not yet exist.
 
 Fedora's Packit automation opened
@@ -76,7 +79,8 @@ Fedora's Packit automation opened
 at 19:00:09 UTC,
 shortly after the upstream release.
 The pull request changes the package version from `0.6.3.8249` to `0.7.0.8982`,
-but it remains open and has no comments as of 2026-08-18 at 19:32:33 UTC.
+It was observed open with no comments on 2026-08-18 at 19:40:18 UTC;
+the API reports its last update at 19:32:33 UTC.
 Until that change is merged,
 built,
 and published to Fedora 44 updates,
