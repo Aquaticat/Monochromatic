@@ -44,6 +44,32 @@ and then the join `#107` waits on: replacement rate on the flagged slice indices
 the rest. The flag list comes from `displacement-probe`, which spends no quota and can be re-run at
 any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
 
+### FIRST PARTIAL READING FOR `#107`, and the direction is the predicted one
+
+`GLaDOSister` settled at 02:53Z, 1 of 5, and the join reader runs on it unchanged:
+
+  repair    flagged 3 slices  3 shipped  rate 1.0000     unflagged 7 slices  5 shipped  rate 0.7143
+  translate flagged 3 slices  3 shipped  rate 1.0000     unflagged 7 slices  5 shipped  rate 0.7143
+  pooled    flagged 6 slices  6 shipped  rate 1.0000     unflagged 14 slices 10 shipped rate 0.7143
+
+On displacement-flagged slices this pipeline replaced the archive wording EVERY TIME, in both lanes.
+That is exactly what `#107` predicts: a relocation reads as an omission at the slice it left, so
+per-slice judging condemns the archive there.
+
+DO NOT QUOTE THIS AS THE ANSWER. Three flagged slices per lane, and 3 of 3 is the maximum the
+instrument can report. If flagged slices behaved exactly like unflagged ones at 0.714, three in a row
+happens 0.364 of the time in one lane, and the two lanes judge the SAME slices so they are not
+independent. The honest reading is direction only, magnitude unreadable, wait for five entries.
+
+WORTH NOTING SEPARATELY: the unflagged half of this hand-picked entry reads 0.7143, against the
+natural six-entry pool's 0.740. The hand picking moved the flagged slices, not the rest.
+
+### The pass is slower than estimated: expect about 09:00Z, not 07:00Z
+
+At 1h52m the first entry of ten slices completed, so about 11 minutes a slice rather than the 8 the
+previous pass suggested. The remaining four entries carry 32 slices, so roughly six more hours. The
+waiter makes the number unimportant; it is recorded so nobody concludes the run has hung.
+
 ### A waiter is armed, so nothing idles waiting for someone to look
 
 A background command holds on pid `4116080` and reports when the pass exits, with the artifact count
