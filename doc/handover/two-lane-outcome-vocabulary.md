@@ -27,24 +27,53 @@ WHAT DID DIFFER is contest availability, 16 of 16 flagged slices held a vote aga
 unflagged, which is about whether a candidate arrived rather than how judging went. Critic attention
 runs the OTHER way, 12.7 claims per hundred source characters at flagged slices against 15.2.
 
-### ONE THING IS WAITING FOR THE USER, AND IT IS NEW
+### SHEET ONE IS GRADED TO ITEM 7 AND SHEET TWO IS OPEN (2026-08-18 afternoon)
 
-`~/translation-repair-runs-flagged-20260818/relocation-sheet.md`, 30 items, 68 KB, ungraded, outside
-the repository. 15 displacement-flagged slices against 15 unflagged controls, so it asks whether one
-KIND of edit is worse rather than whether these edits are acceptable. Blinded: no lane, entry, index
-or flag appears. One item per slice, lane chosen by a recorded coin. Stratified order, one flagged
-with one control per pair. Neighbouring passages shown on every item, since a passage judged alone
-cannot be seen to repeat what sits beside it.
+The user graded items 1 to 7 of the first relocation sheet and said it was
+"once again, impossible to grade". Their comments, verbatim, are the requirements:
 
-A leakage grep returns six matches, all the string `wangzihao980` inside Twitter URLs in the corpus
-text itself. That is the document's own content rather than a label, and it does not reveal which
-items are flagged.
+  1 [N]  2 [N]
+  3 [? The matching might have been broken.]
+  4 [N, but 姐妹 obviously is better translated to "girl" or "woman" here, depending on the final age of the subject.]
+  5 [? Maybe there is a matching issue]
+  6 [? Semantic wrapping is paramount even when original Chinese text didn't, for maintainability. And I don't see an issue with the original translated text.]
+  7 [??? Once again, semantic wrapping, and I don't see an issue with the original passage.]
 
-`~/translation-repair-runs-flagged-20260818/relocation-manifest.json` holds the mapping and the seed.
+PRESERVED BEFORE ANYTHING WAS REGENERATED: `relocation-sheet.graded-v1.md` and
+`relocation-manifest.v1.json` are copies, and `relocation-grades-v1.json` holds the seven grades
+joined to entry, lane, slice and flag. The generator overwrites `relocation-sheet.md` wholesale, so
+that copy is the only record of their work.
+
+SHEET TWO IS BUILT AND OPEN IN GHOSTTY WITH HX:
+`~/translation-repair-runs-flagged-20260818/relocation-sheet.md`, items 8 to 21, 41 KB, built by
+`~/temp/agent/relocation-sheet-2.mjs`, zero quota. Seven flagged runs merged whole, seven controls,
+one rewrap-only item dropped. Three independent boxes per item, `damaged` / `unnecessary` /
+`mismatch`, plus free `notes`. Wrapping normalised away for display, blank lines kept. Blinding
+deliberately dropped. Full rationale in `#107`.
 
 STILL WAITING FROM BEFORE: `~/translation-repair-runs-20260817/damage-sheet.md`, 20 items, ungraded,
 which `#68` needs. And `#96`'s licence question, recommendation already written in
 `doc/planning/artifact-archive-text.md`.
+
+### TWO NEW MEASURED FINDINGS, BOTH COMMITTED
+
+RELOCATION IS LOCAL. Over all 92 probed entries, 1260 slices: 80 flagged, 51 contiguous runs,
+LONGEST RUN THREE, mean 1.57, and every relocation pair adjacent. `~/temp/agent/slide-shape.mjs`,
+written up in `doc/audit/relocation-signature-at-flagged-slices.md`. This bounds the `#107` fix:
+a judge shown n-1, n, n+1 would have the moved passage in view in every case measured.
+
+THE DAMAGE IS VISIBLE IN A FINISHED DOCUMENT. The repair lane's `lintong` output offers the same
+food twice within four lines and repeats a Monster invitation the paragraphs above already made:
+"Monster Energy" and "Wuhan Re Gan" each occur twice in the repair document and once in the
+translate one. The repair lane edits the incumbent in place, so a one-sentence original against a
+four-sentence incumbent leaves three sentences behind that slice 2 then supplies again. The
+translate lane, which writes each slice from its source, is clean here.
+
+LINE STRUCTURE LOSS, `doc/audit/line-structure-loss-when-a-replacement-ships.md`. Of 64 shipped
+replacements with an incumbent: 33 lose soft wrapping, 17 flatten to a single line, 9 lose a
+blank-line paragraph break, 2 are a rewrap and nothing else, 0 are byte-identical. The repository
+already owns the fix: `package/cli/markdown-lint`'s `semantic-line-breaks` rule is `fixable: true`
+and ADD-ONLY, so it cannot destroy a break the model got right. Tracked as `#122`.
 
 ### THE BIGGEST FINDING OF THE NIGHT IS NOT ABOUT `#107`
 
@@ -62,10 +91,14 @@ That bears on `#84`, on `#96`, and on whether this pipeline is described as repa
 
 ### WHAT TO DO NEXT, in order
 
-  1  land `#120` defect 6, the retry layer re-dispatching a runaway four more times, which is the
-     cheapest and most expensive of the six;
-  2  the rest of `#120`, then `#121`;
-  3  optionally `mise run //package/module/translation-repair:rendering-audit-settled -- --archive
+  1  `#120` defect 6 LANDED in `d0403c9f0`; the remaining five defects are open, then `#121`;
+  2  `#122`, wire `package/cli/markdown-lint`'s add-only `semantic-line-breaks` fix into the ship
+     path, then re-run `~/temp/agent/wrap-census.mjs` and confirm soft-wrapping loss goes to zero
+     with the paragraph counts unchanged;
+  3  the `#107` window widening the locality measurement bounds: show the judge n-1, n, n+1. Longest
+     flagged run anywhere is three and every relocation pair is adjacent, so that window is enough
+     in every case measured;
+  4  optionally `mise run //package/module/translation-repair:rendering-audit-settled -- --archive
      ~/translation-repair-runs-flagged-20260818/artifacts` which SPENDS QUOTA unless `--cap 0`, then
      `rendering-audit-settled-report` for `#107`'s reading A, the relocation pairs.
 
