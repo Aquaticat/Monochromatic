@@ -42,6 +42,8 @@ import {
 } from '@monochromatic-dev/cli-markdown-lint/ts';
 ```
 
+A scoped and broad search over all of `package/module/translation-repair` found this as the only source import.
+The other matches are the two manifest dependencies and an error-message string.
 The CLI package root re-exports the fixer,
 rule runner,
 and parser together at `package/cli/markdown-lint/src/index.ts:1-6`:
@@ -141,7 +143,11 @@ then continued into the undeclared Sätteri dependency and copied its generated 
 
 ### Sätteri resolves relative to the loader file
 
-The cloned Sätteri `0.9.5` source is `bruits/satteri@92d01ec4` (`satteri-v0.9.5`).
+The cloned Sätteri `0.9.5` source is `bruits/satteri@92d01ec4`,
+checked out by requested ref `satteri-v0.9.5`.
+That release commit carries several component tags;
+`git describe --tags --exact-match` selected `satteri-napi-v0.4.7`,
+while `git tag --points-at` also lists `satteri-v0.9.5`.
 Its generated loader creates a CommonJS resolver from its own module URL at
 `packages/satteri/index.js:1-8`:
 
@@ -222,8 +228,10 @@ the resolver base changes only after Rolldown copies the loader.
   `sha512-ZuWVl+vnM64y+/TtX8Kosv2c00W+hLQiiwnEL6H0UKVVrxFqMw4D2CJHHQaouVd89OAhtBBfjWLqhKi3TVUV4w==`.
 - Sätteri source:
   `bruits/satteri@92d01ec4eee3a7284608f5a4974dca6d4aec836e`.
-- Sätteri tag:
+- Requested Sätteri tag:
   `satteri-v0.9.5`.
+- Exact-match tag selected by `git describe`:
+  `satteri-napi-v0.4.7`.
 - Node:
   `26.7.0`.
 - pnpm:
@@ -335,7 +343,9 @@ it contradicts the self-contained workspace-bundle policy,
 keeps the unnecessary native dependency,
 special-cases one package rather than expressing a reusable design,
 and leaves a public package's artifact importing the currently private markdown-lint package.
-It is not suitable for publishing translation-repair.
+It is not suitable for translation-repair's self-contained publication design.
+Only the workspace layout was tested;
+no packed non-workspace consumer was verified.
 
 ## Recommended migration
 
@@ -384,8 +394,11 @@ Two adapters make this a real seam:
 - translation-repair injects its existing `parseMarkdownBody` remark/GFM parser and drops both
   `@monochromatic-dev/cli-markdown-lint` and `satteri` dependencies.
 
-The thirteen-fixture parity probe validates the seam,
-not the migration.
+The thirteen-fixture parity probe validates the seam for translation-repair's current
+frontmatter-free Markdown passage inputs,
+not the migration or general parser equivalence.
+`parseMarkdownBody` enables remark-parse and GFM but not frontmatter parsing;
+translation-repair's own interface says frontmatter has already been split away.
 Completion still requires the complete semantic-wrap suite,
 corpus parity,
 bundle marker checks,
@@ -393,6 +406,8 @@ a built translation-repair call with the native link hidden,
 and package installation in a disposable non-workspace consumer.
 
 Add a complementary markdown-lint build smoke that imports the built library and calls `parse` on a clean source.
+The exact task prototype completed with the binding present and made the overall build exit `1`
+with `Cannot find native binding` after only the binding link was removed.
 Calling the parser is stronger than checking `--help` because it remains effective
 if Sätteri ever defers native loading.
 The smoke detects a broken native artifact;
@@ -414,7 +429,10 @@ Adding links under Sätteri does not make them visible from translation-repair's
 
 ### Always externalizing detected NAPI packages
 
-A prototype always externalized bare `satteri` and removed the stale direct consumer link.
+The prototype hard-coded bare `satteri` into the always-external list,
+simulating the decision a detector would eventually make;
+it did not implement or validate a generic NAPI-detection heuristic.
+With the stale direct consumer link removed,
 The build emitted an external import,
 then runtime failed with:
 
@@ -426,6 +444,8 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'satteri' imported from
 Detection alone only changes the error.
 The output still needs an honest direct runtime dependency,
 which is the manual workaround the proposal intended to eliminate.
+This disproves externalizing an undeclared transitive as a complete fix;
+it does not assess every possible detection mechanism.
 
 ### Trusting a green Rolldown build
 
