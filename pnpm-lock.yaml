@@ -2980,6 +2980,9 @@ importers:
       remark-parse:
         specifier: 'catalog:'
         version: 11.0.0(supports-color@10.2.2)
+      satteri:
+        specifier: 'catalog:'
+        version: 0.9.5
       unified:
         specifier: 'catalog:'
         version: 11.0.5

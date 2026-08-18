@@ -155,5 +155,6 @@ export {
   type CoverageReportWire,
   isCoverageReportWire,
 } from './coverage-wire.ts';
+export { wrapTranslateRecords, } from './translate-wrap.ts';
 
 //endregion Translate barrel

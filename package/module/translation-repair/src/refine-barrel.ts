@@ -47,6 +47,8 @@ export {
   runRefinePhase,
 } from './refine-phase.ts';
 export { repairReplacements, } from './repair-replacements.ts';
+export { wrapRepairOutcomes, } from './repair-wrap.ts';
+export { wrapReplacementText, } from './semantic-wrap.ts';
 export {
   type SliceReplacement,
   spliceSlices,
