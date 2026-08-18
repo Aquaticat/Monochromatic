@@ -95,13 +95,24 @@ That is exactly what `#107` predicts: a relocation reads as an omission at the s
 per-slice judging condemns the archive there.
 
 THE LENGTHS SAY MORE THAN THE RATE DOES, and they are written up in
-`doc/audit/relocation-signature-at-flagged-slices.md`. At the flagged slices about 240 characters
-LEFT slice 3 and about 240 ARRIVED in slice 4, in both lanes within a dozen characters of each other,
-which is exactly the surplus-and-deficit pair the structural probe named before the pass ran. Slice
-3's ratio came back from 8.78 English characters per source character to about 2.9, against a
-document baseline of 2.739. Whether that is repair or damage is what `#107` asks and no per-slice
-instrument can answer, so it points at a SIXTEEN-ITEM human reading of the flagged slices rather than
-another general damage sheet.
+`doc/audit/relocation-signature-at-flagged-slices.md`. At the flagged slices slice 3 lost about 240
+characters and slice 4 gained about 240, in both lanes within a dozen characters of each other, at
+exactly the surplus-and-deficit pair the probe named before the pass ran. Slice 3's ratio came back
+from 8.78 English characters per source character to about 2.9, against a document baseline of 2.739.
+
+NO TEXT ACTUALLY MOVED, and an earlier version of this block said it did. Zero 40-character windows
+of the newly shipped text at slices 2 and 4 occur in slice 3's incumbent, in either entry, in either
+lane. The deficit slices are filled with NEWLY WRITTEN English and the surplus slice's wording is
+DISCARDED rather than carried across. The test catches verbatim reuse and not paraphrase, so it rules
+out relocation of the text and not of the meaning.
+
+IT REPLICATES ON `lintong`, with one difference worth watching: translate rewrote the surplus slice
+from 439 characters to 189 keeping zero of 150 windows, while REPAIR left it at 449 keeping 167 of
+410. So after the repair lane `lintong` carries both its surplus and the new content at slices 2 and
+4. On `GLaDOSister` both lanes drained it. Two entries are not a pattern; a third will say.
+
+Whether any of this is repair or damage is what `#107` asks and no per-slice instrument can answer,
+which is what the comparative sheet is for.
 
 DO NOT QUOTE THIS AS THE ANSWER. Three flagged slices per lane, and 3 of 3 is the maximum the
 instrument can report. If flagged slices behaved exactly like unflagged ones at 0.714, three in a row
