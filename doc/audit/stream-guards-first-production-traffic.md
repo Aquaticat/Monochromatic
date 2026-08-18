@@ -155,8 +155,14 @@ and that a first-byte window is worth re-deriving rather than assumed useless.
 
 The single-pass reading above is not enough to set a constant,
 so the same two columns were read from every pass log that carries them.
-`grace-remeasure-snapshot.log` is excluded as a copy of `corpus-pass-20260817.log`:
-same opening line, same maxima, not an independent workload.
+`grace-remeasure-snapshot.log` is excluded,
+and the exclusion is proven rather than inferred:
+`cmp` reports it byte for byte identical to the first 811723 bytes of `corpus-pass-20260817.log`,
+so it is a snapshot of that run taken while it was still going,
+and counting it would count 1677 of those streams twice.
+The two that remain are genuinely separate runs,
+one spanning 2026-08-13T17:15Z to 2026-08-14T02:03Z
+and the other 2026-08-17T17:59Z to 2026-08-18T00:41Z.
 
 ```text
 log                        streams   p50    p75    p90     p99      max
