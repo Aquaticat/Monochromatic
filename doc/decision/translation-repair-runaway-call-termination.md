@@ -294,8 +294,54 @@ and it complements the ratio rather than replacing it:
 the ratio catches short cycling on a small sample,
 the recurrence test catches the long periods the ratio cannot see.
 
+## Two more things the reporting gets wrong, both shown at the boundary
+
+DRIVEN THROUGH `drainBody` ITSELF rather than reasoned about,
+by importing the built artifact and feeding it a thinking runaway.
+What came back:
+
+```text
+[reportStreamProgress] stream hf:whiskers: cut, firstByte 12ms, maxGap 1ms,
+  1376256 raw chars, 0 unreadable frames, 1376256 delivered chars,
+  opening "data: {\"id\":\"chatcmpl-tabby\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index"
+
+error message : ": ended a runaway call, reasoning channel repeated itself at 0.0037 distinct over 131475 characters"
+carries label?: NO label property
+```
+
+THE RUNAWAY ERROR NAMES NOTHING.
+It is constructed with `response.url` where every other path uses the `label` parameter,
+and `label` exists precisely because `#118` found that attributing a stream to the endpoint
+rather than to the model makes a per-model figure unreadable.
+Here the message opens with a bare colon because a constructed `Response` has no url;
+in production it would open with the chat-completions endpoint,
+which is the same string for every model in the roster.
+`StreamCutShortError` carries `label` as a property and this one carries none,
+so which model ran away cannot be recovered from the error at all.
+
+THE OPENING EXCERPT CANNOT SHOW WHAT THE MODEL SAID.
+`stream-cut.ts` states the excerpt's purpose in as many words:
+the opening tells a thinking block from an answer from an empty cut,
+which is the whole diagnostic question.
+It shows `partialText`,
+and `partialText` is the raw event stream,
+so the first 80 characters are always `data: {"id":"chatcmpl-` and whatever envelope follows.
+Not usually, but in every case,
+because every server-sent event body begins that way.
+The model's words are in there,
+JSON-escaped and spread across frame boundaries,
+and none of them are in the excerpt.
+
+Both have the same root as the two equal counters:
+what the drain hands back is the wire format,
+and three separate readers treat it as though it were generated text.
+
 ## What is still owed
 
+-   NAME THE MODEL ON A RUNAWAY, which the error currently cannot do,
+    and carry `label` as a property as the cut error already does.
+-   SHOW GENERATED TEXT IN THE OPENING EXCERPT rather than the envelope,
+    so the excerpt answers the question it was added to answer.
 -   CATCH LONG-PERIOD LOOPING, which the distinct-window ratio cannot see.
     Held until the targeted pass releases the producing path.
 -   REPORT GENERATED CHARACTERS PER CHANNEL on the progress line,
