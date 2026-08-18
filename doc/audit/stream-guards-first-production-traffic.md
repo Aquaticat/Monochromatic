@@ -103,6 +103,66 @@ So the open question is not academic bookkeeping.
 It decides whether this guard judges one stream in eight or four in five,
 and today nobody knows which.
 
+## The idle windows rest on a premise the current traffic contradicts
+
+`stream-idle-guard.ts` sets both windows to 600000 ms so they never fire,
+and the reason it gives is that silence cannot discriminate on this provider:
+
+> Across 32 successful streams,
+> time to first byte ran p50 95.6 s, p75 123 s, p90 134 s, max 147.5 s.
+> A window cannot separate "stalled and silent" from "working and silent"
+> when working looks like that.
+
+MEASURED OVER THIS PASS, working no longer looks like that:
+
+```text
+                p50     p75     p90     p99      max
+firstByte ms    1174    1349    1726    3091     9084
+maxGap ms        207     257     463     989    11659
+```
+
+395 streams,
+which is every stream that reached the drain in the window,
+cut and completed alike.
+Time to first byte is about eighty times faster at the median
+than the figure the constant rests on.
+Every one of the 395 received a first byte:
+zero progress lines carry the negative `firstByteMs` that marks a call which never got one.
+
+THIS DISTRIBUTION IS UNCENSORED, which the old one was not.
+The old sample was taken with a 150 s window live,
+so anything slower was aborted instead of recorded,
+and the guard's own comment says so.
+Here both windows sit at 600000 ms and neither fired,
+so these maxima are maxima rather than the shadow of a guard.
+
+IT IS ALSO THE UNBIASED SUCCESSOR TO A RETRACTED FIGURE.
+A reading of "1349 streams, mean firstByte 1822 ms" was retracted for survivorship bias,
+because abandoned calls were excluded by construction.
+Since `#118`, progress is reported on the cut path too,
+so an abandoned call is in this sample rather than missing from it.
+
+WHAT IT DOES NOT SAY.
+It does not say the constants are wrong,
+and it does not explain the gap between the two readings:
+different stage shapes, provider capacity, routing and time of day are all unexcluded,
+and one pass over five entries is one workload.
+What it does say is that the stated reason for disabling the guard
+is not what the current traffic looks like,
+and that a first-byte window is worth re-deriving rather than assumed useless.
+For scale, a 30 s window would sit over three times above the largest first byte observed here
+and about ten times above the ninety-ninth percentile.
+
+IT ALSO RE-FRAMES WHAT THE STRAGGLER GRACE CUTS.
+If a call reaches its first byte in about a second,
+then one still running 180 s after quorum is not waiting to start;
+it is producing.
+The single abandonment in this window proves it directly:
+2915229 characters delivered, largest gap 460 ms.
+`doc/audit/straggler-grace-remeasure.md` measured what widening the grace did to voice loss
+and did not measure this,
+so the two readings sit beside each other rather than in conflict.
+
 ## What this changes
 
 -   `#120` gains production evidence rather than fixture evidence.
