@@ -173,3 +173,81 @@ three flagged slices per lane,
 and three of three is the largest number the instrument can print.
 The lengths above are the more informative half of the same observation,
 because they say WHAT changed rather than only that something did.
+
+## Relocation is LOCAL: the longest flagged run in the whole pool is three slices
+
+Measured 2026-08-18 over the 92 entries in `~/temp/agent/displacement.log`,
+1260 slices,
+by mapping every flag back onto its slice index and looking at where the marks fall.
+Script: `~/temp/agent/slide-shape.mjs`.
+
+```text
+entries probed                                   92
+entries carrying at least one flag               29
+slices                                         1260
+flagged slices                                   80   0.0635
+contiguous runs of flagged slices                51
+longest run                                       3
+mean run length                                1.57
+```
+
+The marks per entry,
+`R` the surplus side of a relocation pair,
+`r` its deficit side,
+`U` untranslated,
+`T` target-only,
+`S` transcription suspect,
+`M` markup donor,
+`O` other imbalance:
+
+```text
+Dethelly          2/24  [Rr......................]
+GLaDOSister       3/10  [..rRr.....]
+aiyysk            6/80  [...............Rr..........................Rr.............rR....................]
+dogesir_          4/10  [..rR....rR]
+lintong           3/5   [..rRr]
+saurikissa        4/11  [...OT...rR.]
+wangzihao980      2/6   [...rR.]
+windward0032      8/21  [...T....RrR...Rr.O.O.]
+zhangyubaka       3/31  [..........................rRr..]
+```
+
+EVERY RELOCATION PAIR IN THE POOL IS ADJACENT.
+`Rr`, `rR` and `rRr` are the only shapes that occur.
+Not once does a surplus slice pair with a deficit slice further than one position away.
+
+## Why the shape matters more than the count
+
+THIS IS NOT `#71`.
+The section aligner's failure slid a whole document by two,
+so every pairing in the entry was wrong and no local remedy could reach it.
+What the slice probe finds instead is a passage that crossed ONE boundary,
+leaving a hole on one side and a bulge on the other.
+
+That has three consequences.
+
+A WIDER JUDGING WINDOW WOULD SEE THE MOVED TEXT.
+A per-slice judge shown slice `n` alone cannot tell a relocation from a fabrication,
+which is what `#107` is about.
+A judge shown `n-1`, `n` and `n+1` would have the relocated passage in front of it in every case measured here,
+because the longest run is three and every pair is adjacent.
+This is a bounded change with a measured bound,
+not an open-ended widening.
+
+THE GRADING SHEET CAN RESTORE A COHERENT COMPARISON by merging a run.
+Asked about `lintong` slice 2 alone,
+a human is shown a Chinese passage about a can of Monster
+against an English line reading `-from her partner in life`,
+and there is no honest answer to "did the edit damage this".
+Asked about slices 2 through 4 together,
+the English does contain the translation of the Chinese,
+and the question means something again.
+Two graders' comments on the first sheet,
+at items 3 and 5,
+both said the matching looked broken,
+and both landed on flagged slices.
+
+MERGING IS NOT A GUARANTEE.
+A run's own ends can still be offset,
+which is why the second sheet keeps an explicit way for a grader to report a mismatch
+rather than assuming the merge fixed every case.
