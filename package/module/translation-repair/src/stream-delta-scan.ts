@@ -27,8 +27,22 @@
 
 /**
  * Prefix marking a line that carries a payload.
+ *
+ * NO TRAILING SPACE, deliberately. The space after the colon is OPTIONAL in
+ * server-sent events and a reader is required to strip one if present, so a
+ * provider may legitimately emit `data:{...}`. Spelling the prefix with the
+ * space would skip those lines as though they were comments, and skip them
+ * SILENTLY, since only `data:` lines are ever counted as unreadable. This
+ * repository has already paid for exactly this trap once: `runner-closure.ts`
+ * carries four import spellings because the tight form produced a false null
+ * that looked like a self-contained bundle.
  */
-const DATA_PREFIX = 'data: ';
+const DATA_PREFIX = 'data:';
+
+/**
+ * Single optional space a sender may put after the colon.
+ */
+const OPTIONAL_SPACE = ' ';
 
 /**
  * Payload the provider sends to mark the end of a stream, which is not JSON.
@@ -214,9 +228,16 @@ export function scanStreamDeltas(): DeltaScanner {
       return [];
 
     /**
-     * Payload after the prefix.
+     * Everything after the colon, which may begin with one optional space.
      */
-    const payload = clean.slice(DATA_PREFIX.length,);
+    const afterColon = clean.slice(DATA_PREFIX.length,);
+
+    /**
+     * Payload proper, with that one space removed if it was sent.
+     */
+    const payload = afterColon.startsWith(OPTIONAL_SPACE,)
+      ? afterColon.slice(OPTIONAL_SPACE.length,)
+      : afterColon;
     if (payload === DONE_PAYLOAD)
       return [];
 

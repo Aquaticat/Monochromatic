@@ -191,6 +191,42 @@ await describe({
     },),
 
     it({
+      name: 'READS THE FORM WITH NO SPACE AFTER THE COLON, which is valid and which a sender may '
+        + 'legitimately choose: spelling the prefix with the space would skip those lines as though '
+        + 'they were comments, and skip them silently, since only payload lines are ever counted as '
+        + 'unreadable',
+      fn: () => {
+        /**
+         * One frame, written tight.
+         */
+        const tight = `data:${
+          JSON.stringify({
+            choices: [{
+              index: 0,
+              delta: { content: 'A cat. ', },
+              finish_reason: null,
+            },],
+          },)
+        }\n\n`;
+
+        const {
+          deltas,
+          unreadable,
+        } = scanAll({ raw: tight, },);
+
+        expect(deltas.length,).toBe(1,);
+        expect(deltas[0]?.text,).toBe('A cat. ',);
+        expect(unreadable,).toBe(0,);
+
+        /**
+         * And the done marker in the same tight form, which must not read as a
+         * frame nobody could parse.
+         */
+        expect(scanAll({ raw: 'data:[DONE]\n\n', },).unreadable,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'COUNTS a frame it cannot read instead of throwing, because this runs on every chunk '
         + 'of every call and one unreadable frame must not end a stream that is working',
       fn: () => {

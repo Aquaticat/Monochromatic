@@ -187,6 +187,15 @@ export type DegenerationDetector = {
  * ```
  */
 export function watchForDegeneration(): DegenerationDetector {
+  // An unreachable verdict would leave this guard inert while still looking
+  // installed, which is the quietest way it could fail. The sample is capped at
+  // TRAILING_WINDOWS, so a larger minimum can never be met.
+  if (MIN_WINDOWS_FOR_VERDICT > TRAILING_WINDOWS)
+    throw new Error(
+      `degeneration guard is inert: a verdict needs ${String(MIN_WINDOWS_FOR_VERDICT,)} windows `
+        + `but the sample holds at most ${String(TRAILING_WINDOWS,)}`,
+    );
+
   /**
    * Text not yet consumed into a window, plus the running totals.
    *
