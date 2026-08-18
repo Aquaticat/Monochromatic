@@ -12,6 +12,7 @@ import {
   type StageVoice,
 } from './stage-call.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import { describeAbandon, } from './abandon-kind.ts';
 
 //region Stage round
 // ONE fan-out round, and the rule that a stage never finishes later than its
@@ -282,7 +283,7 @@ export async function runGatherRound<ValueT,>(
       l.warn(
         `${stage} ${modelId}: abandoned ${
           String(graceMs,)
-        }ms after quorum (${String(error,)}), voice lost`,
+        }ms after quorum (${describeAbandon({ error, },)}), voice lost`,
       );
 
       /**

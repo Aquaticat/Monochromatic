@@ -217,6 +217,7 @@ export {
   QuotaShapeError,
   type QuotaSnapshot,
 } from './synthetic-quota.ts';
+export { describeAbandon, } from './abandon-kind.ts';
 export { drainBody, } from './stream-drain.ts';
 export {
   reportStreamProgress,
