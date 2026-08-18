@@ -1,4 +1,5 @@
 import {
+  mkdir,
   open,
   readFile,
   rm,
@@ -288,6 +289,17 @@ async function claim(
 export async function lockRunsDir(
   { runsDir, }: { readonly runsDir: string; },
 ): Promise<AsyncDisposable> {
+  // The directory has to exist before anything in it can be opened, and this is
+  // the FIRST thing a pass touches. Without this a fresh runs directory fails
+  // outright with ENOENT on the lock file, which reads as a locking problem
+  // rather than as a missing directory and sends a reader to the wrong module.
+  // A pass pointed at a new directory is ordinary: it is how a run is kept to
+  // one pipeline generation.
+  await mkdir(
+    runsDir,
+    { recursive: true, },
+  );
+
   /**
    * Path of the lock file this pass competes for.
    */
