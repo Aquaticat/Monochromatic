@@ -63,9 +63,9 @@ written up in `doc/audit/relocation-signature-at-flagged-slices.md`. This bounds
 a judge shown n-1, n, n+1 would have the moved passage in view in every case measured.
 
 THE DAMAGE IS VISIBLE IN A FINISHED DOCUMENT. The repair lane's `lintong` output offers the same
-food twice within four lines and repeats a Monster invitation the paragraphs above already made:
-"Monster Energy" and "Wuhan Re Gan" each occur twice in the repair document and once in the
-translate one. The repair lane edits the incumbent in place, so a one-sentence original against a
+thing twice within four lines and repeats an invitation the paragraphs above already made: each of
+the two distinguishing noun phrases occurs twice in the repair document and once in the translate
+one. The repair lane edits the incumbent in place, so a one-sentence original against a
 four-sentence incumbent leaves three sentences behind that slice 2 then supplies again. The
 translate lane, which writes each slice from its source, is clean here.
 

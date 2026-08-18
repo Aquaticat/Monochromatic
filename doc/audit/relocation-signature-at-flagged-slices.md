@@ -236,13 +236,14 @@ not an open-ended widening.
 
 THE GRADING SHEET CAN RESTORE A COHERENT COMPARISON by merging a run.
 Asked about `lintong` slice 2 alone,
-a human is shown a Chinese passage about a can of Monster
-against an English line reading `-from her partner in life`,
+a human is shown a 43-character Chinese passage
+against a 25-character English line that is the ATTRIBUTION of the block above it
+rather than a translation of anything in that passage,
 and there is no honest answer to "did the edit damage this".
 Asked about slices 2 through 4 together,
 the English does contain the translation of the Chinese,
 and the question means something again.
-Two graders' comments on the first sheet,
+The grader's comments on the first sheet,
 at items 3 and 5,
 both said the matching looked broken,
 and both landed on flagged slices.
@@ -252,41 +253,29 @@ A run's own ends can still be offset,
 which is why the second sheet keeps an explicit way for a grader to report a mismatch
 rather than assuming the merge fixed every case.
 
-## The harm is visible in the finished document: `lintong` offers the same food twice
+## The harm is visible in the finished document: `lintong` says the same thing twice
 
 Found 2026-08-18 while checking the second grading sheet by reading one merged item end to end.
 This is the first instance where the damage relocation causes
 is legible in the assembled output rather than inferred from a rate.
 
-The repair lane's `lintong` document ends:
+NO CORPUS TEXT IS REPRODUCED HERE.
+The passages themselves are in the artifacts and in the sheet,
+both of which live outside this repository.
+What follows is a count and a description.
+
+The repair lane's `lintong` document ends with a four-line blockquote
+that offers the same dish twice within those four lines
+and that also repeats an invitation the two paragraphs immediately above it already made.
+Those two paragraphs are slice 2's shipped text.
+
+Counting the two distinguishing noun phrases across the whole assembled document,
+where each should occur once in the farewell:
 
 ```text
-> Here's also a serving of Wuhan Re Gan noodles.
->
-> Come here, drink this can of Monster Energy.
->
-> Maybe you don't really like it, but it was the drink you chose while you were working.
->
-> Eat this plate of Wuhan Re Gan noodles, too.
-> Even though it's definitely not authentic, for a true Wuhan native like you, it might make you angry, right?
-> But I don't have a better solution either.
-```
-
-The noodles are offered twice within four lines.
-The Monster invitation appears here as well,
-although the two paragraphs immediately above it,
-which are slice 2's shipped text,
-already say
-"Here, this can of Monster, a toast to you"
-and
-"You might not actually like it, but it was the thing you were always drinking while you worked".
-
-Counted over the whole assembled document:
-
-```text
-lane        "Monster Energy"   "Wuhan Re Gan"
-repair                     2                2
-translate                  1                1
+lane        dish phrase   drink phrase
+repair                2              2
+translate             1              1
 ```
 
 ## Why the repair lane produces it and the translate lane does not
@@ -294,17 +283,17 @@ translate                  1                1
 The archive had the whole farewell,
 four sentences of it,
 sitting in slice 3's incumbent,
-while slice 3's ORIGINAL is only the noodles sentence.
+while slice 3's ORIGINAL is one sentence long.
 
 The translate lane writes each slice from its source,
 so it produced one sentence for slice 3 and the duplication never arose.
 
 The repair lane edits the incumbent in place.
 Handed a one-sentence original and a four-sentence incumbent,
-it repaired the noodles sentence INSIDE the block and left the other three where they were,
+it repaired the matching sentence INSIDE the block and left the other three where they were,
 which is a defensible thing to do to the text in front of it
 and the wrong thing to do to the document.
-Slice 2's own new translation then supplied the Monster sentences a second time.
+Slice 2's own new translation then supplied those three a second time.
 
 NEITHER LANE DID ANYTHING UNREASONABLE WITH WHAT IT WAS SHOWN.
 That is the whole of `#107`:
@@ -327,14 +316,12 @@ excluding pairs the incumbent already carried.
 
 ONE TRUE POSITIVE IN THE POOL,
 `saurikissa` slice 7,
-repair lane,
-shipped verbatim:
+repair lane:
+a clause is cut off after its preposition
+and the next word begins an unrelated independent clause,
+so the two are spliced into one ungrammatical sentence.
+The text itself is in the artifact and on the sheet, not here.
 
-```text
-She eventually walked a path of She would go around showing off her cats to everyone too
-```
-
-The sentence is cut mid-phrase and spliced onto an unrelated one.
 The detector fired five other times,
 all ordinary prose where a pronoun follows `and`, `that` or a question mark,
 so this is one instance rather than a pattern:
@@ -342,10 +329,7 @@ so this is one instance rather than a pattern:
 
 Slice 7 is not itself flagged.
 It sits immediately beside the flagged run at 8 and 9,
-and its shipped text carries three passages that belong to neighbouring slices:
-the yearning-for-love line,
-the Dongguan cohabitation,
-and the gender dysphoria list.
+and its shipped text carries three passages that belong to neighbouring slices.
 The translate lane at the same slice is clean
 and renders only what the original says.
 
