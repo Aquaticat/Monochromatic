@@ -206,6 +206,8 @@ function ansiEscapeLength({
  * stripAnsi('\x1B[31merror\x1B[0m');
  * // 'error'
  * ```
+ *
+ * @internal
  */
 export function stripAnsi(text: string,): string {
   /**
@@ -269,6 +271,8 @@ export function stripAnsi(text: string,): string {
  * ```ts
  * extractRuleName('context line') === NO_RULE // true
  * ```
+ *
+ * @internal
  */
 export const NO_RULE: unique symbol = Symbol('diagnostic_header_absent',);
 
@@ -493,6 +497,8 @@ function matchHeaderAt({
  * extractRuleName('  92 |   const form = ...');
  * // NO_RULE
  * ```
+ *
+ * @internal
  */
 export function extractRuleName(line: string,): string | typeof NO_RULE {
   /**
@@ -534,6 +540,8 @@ export function extractRuleName(line: string,): string | typeof NO_RULE {
  * isHelpLine('  help: Expected void return type.');
  * // true
  * ```
+ *
+ * @internal
  */
 export function isHelpLine(line: string,): boolean {
   return stripAnsi(line,)
@@ -562,6 +570,8 @@ const GUIDANCE_PREFIX = '  ';
  * formatGuidanceLine('Wrap async logic in try/catch.');
  * // '  note: Wrap async logic in try/catch.'
  * ```
+ *
+ * @internal
  */
 export function formatGuidanceLine(guidance: string,): string {
   return `${GUIDANCE_PREFIX}note: ${guidance}`;
@@ -603,6 +613,8 @@ function formatHelpLine(guidance: string,): string {
  * ].join('\n'));
  * // Contains '  help: Expected void return type. Async callbacks silently drop ...'
  * ```
+ *
+ * @internal
  */
 export function augmentOxlintOutput(output: string,): string {
   if (output.length

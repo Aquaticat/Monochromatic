@@ -40,6 +40,8 @@ export const NO_DIAGNOSTIC_GUIDANCE: unique symbol = Symbol('diagnostic_guidance
  * RULE_GUIDANCE['no-misused-promises']?.guidance;
  * // 'Async callbacks silently drop ...'
  * ```
+ *
+ * @internal
  */
 export const RULE_GUIDANCE: Record<string, RuleGuidance> = {
   'no-misused-promises': {

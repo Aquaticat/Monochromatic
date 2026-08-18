@@ -32,5 +32,5 @@ extends = "format:oxlint"
 extends = "test:unit"
 
 [tasks.buildAndTest]
-description = "Build the six node bins, then run unit tests (internal-logic tests stay on source)"
+description = "Build the seven node entries, then run unit tests against the built testing seam"
 run = ["mise run build", "mise run test:unit"]

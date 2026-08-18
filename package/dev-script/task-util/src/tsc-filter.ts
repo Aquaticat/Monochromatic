@@ -150,6 +150,8 @@ function endOfDigitRun({
  * isDiagnosticLine('  Type "string" is not assignable to type "number".');
  * // false
  * ```
+ *
+ * @internal
  */
 export function isDiagnosticLine(line: string,): boolean {
   /**
@@ -249,6 +251,8 @@ export function isDiagnosticLine(line: string,): boolean {
  * isNodeModulesDiagnostic('src/index.ts(1,1): error TS2304: Cannot find name.');
  * // false
  * ```
+ *
+ * @internal
  */
 export function isNodeModulesDiagnostic(line: string,): boolean {
   return line.includes('node_modules/',)
@@ -331,6 +335,8 @@ export function isSuppressedDiagnostic(line: string,): boolean {
  * isContinuationLine('src/index.ts(1,1): error TS2304: Cannot find name.');
  * // false
  * ```
+ *
+ * @internal
  */
 export function isContinuationLine(line: string,): boolean {
   return (line.length
@@ -368,6 +374,8 @@ export function isContinuationLine(line: string,): boolean {
  * // result.filtered === 'src/app.ts(5,3): error TS2304: Cannot find name "foo".'
  * // result.hasRemainingErrors === true
  * ```
+ *
+ * @internal
  */
 export function filterTscOutput(output: string,): {
   readonly filtered: string;

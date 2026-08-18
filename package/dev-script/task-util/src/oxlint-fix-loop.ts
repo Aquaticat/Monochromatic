@@ -44,6 +44,8 @@ import {
  * (`oxlint-stylistic.unit.test.ts`). ESLint's analogous limit is ten; eight is
  * generous for the overlapping-fix and fix-induced-violation chains this
  * workspace produces and bounds worst-case work if two rules' fixes oscillate.
+ *
+ * @internal
  */
 export const MAX_AUTOFIX_PASSES = 8;
 
@@ -54,6 +56,8 @@ export const MAX_AUTOFIX_PASSES = 8;
  * into one object so the loop reads both uniformly. `exitCode` is absent on
  * signal termination; `executionError` is set only when oxlint could not be
  * spawned at all (e.g. binary missing), never for ordinary diagnostics exits.
+ *
+ * @internal
  */
 export type OxlintRunResult = {
   /**
@@ -156,6 +160,8 @@ const TIMING_PREFIX = 'Finished in ';
  * normalizeForConvergence(runA.stdout) === normalizeForConvergence(runB.stdout);
  * // true when A and B report the same diagnostics in any order
  * ```
+ *
+ * @internal
  */
 export function normalizeForConvergence(stdout: string,): string {
   return stdout
@@ -282,6 +288,8 @@ export type FixUntilStableOptions = {
  *   maxPasses: MAX_AUTOFIX_PASSES,
  * });
  * ```
+ *
+ * @internal
  */
 export async function fixUntilStable(
   {

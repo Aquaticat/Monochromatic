@@ -69,6 +69,8 @@ const CYCLE_WARNING_PREFIX = '\u2009WARN\u2009 There are cyclic workspace depend
  * isAllowedCycleWarning(' WARN  There are cyclic workspace dependencies: /home/user/Monochromatic/package/foo, /home/user/Monochromatic/package/bar');
  * // false
  * ```
+ *
+ * @internal
  */
 export function isAllowedCycleWarning(line: string,): boolean {
   if (!line.includes(CYCLE_WARNING_PREFIX,))
@@ -125,6 +127,8 @@ export function isAllowedCycleWarning(line: string,): boolean {
  * filterPnpmOutput(' WARN  There are cyclic workspace dependencies: /abs/packages/config/tsdown, /abs/packages/module/test\nother warning\n');
  * // 'other warning\n'
  * ```
+ *
+ * @internal
  */
 export function filterPnpmOutput(output: string,): string {
   if (output.length

@@ -195,6 +195,8 @@ function injectSingleThreadedFlag(args: readonly string[],): readonly string[] {
  * });
  * // ['--build', '--singleThreaded']
  * ```
+ *
+ * @internal
  */
 export function buildTscArgs({
   cliArgs,

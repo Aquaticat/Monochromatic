@@ -33,6 +33,8 @@ const GLOB_META_CHARS = '*?{[';
  * firstGlobMetaIndex('src/*.ts'); // 4
  * firstGlobMetaIndex('src/index.ts'); // -1
  * ```
+ *
+ * @internal
  */
 export function firstGlobMetaIndex(s: string,): number {
   // Single linear pass; returns at the first metacharacter, or -1 once the cursor runs past the end.
