@@ -64,11 +64,25 @@ independent. The honest reading is direction only, magnitude unreadable, wait fo
 WORTH NOTING SEPARATELY: the unflagged half of this hand-picked entry reads 0.7143, against the
 natural six-entry pool's 0.740. The hand picking moved the flagged slices, not the rest.
 
-### The pass is slower than estimated: expect about 09:00Z, not 07:00Z
+THE TWO LANES DID NOT AGREE SLICE FOR SLICE, which the equal counts hide. Repair shipped
+`1 2 3 4 5 6 7 8` and translate shipped `0 1 2 3 4 6 7 8`: they differ at index 0, which only
+translate replaced, and index 5, which only repair replaced. Both shipped all three flagged slices.
+So the matching 5-of-7 unflagged counts are a coincidence of arithmetic rather than agreement, and
+the lanes are genuinely separate judgements.
 
-At 1h52m the first entry of ten slices completed, so about 11 minutes a slice rather than the 8 the
-previous pass suggested. The remaining four entries carry 32 slices, so roughly six more hours. The
-waiter makes the number unimportant; it is recorded so nobody concludes the run has hung.
+### Pass timing, measured from the artifact rather than guessed: about 07:20Z
+
+`GLaDOSister.json` records `durationMs` 4966694, which is 82.8 minutes for ten slices, or 8.28
+minutes a slice. Wall clock agrees: the pass started 01:29Z and the artifact landed 02:53Z, 84
+minutes, so per-entry overhead is small. The remaining four entries carry 32 slices, about 4.4 hours,
+putting the finish near 07:20Z.
+
+An earlier note here said 11 minutes a slice and about 09:00Z. That divided elapsed session time by
+slices before the artifact existed; the artifact's own duration is the better number. The waiter
+makes the estimate unimportant either way, and it is recorded so nobody concludes the run has hung.
+
+`laneSelection` on this artifact reads `{"kind":"pending-human-decision"}`, so choosing between the
+two lanes is recorded as the user's call rather than settled by the pipeline.
 
 ### A waiter is armed, so nothing idles waiting for someone to look
 
