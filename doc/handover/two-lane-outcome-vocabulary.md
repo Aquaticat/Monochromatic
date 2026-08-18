@@ -72,6 +72,13 @@ the sheet deliberately does not show. Grading it is what `#68` needs.
 artifact size was measured and is false, at 0.6 to 0.9 percent. The remaining objection is a licence
 question, which is the user's call and not an agent's.
 
+### Concurrent work in the MAIN worktree, which is not mine and was not touched
+
+`/var/home/user/Monochromatic` carries uncommitted changes to `package.json` and `pnpm-lock.yaml`,
+adding `@monochromatic-dev/cli-open-code-review-issue` as a workspace dependency. Nothing in this
+session made them and nothing in this session touched them, per `EC1`. They were checked only to
+confirm they were not a side effect of building here. Leave them for whoever is doing that work.
+
 ### What landed tonight, newest first
 
   d39fb47a4  the two pools separated in this document

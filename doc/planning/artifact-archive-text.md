@@ -109,11 +109,18 @@ The hash stays:
 it is what proves the stored text is the text the run measured,
 and storing text without it would be a record nobody could check.
 
-## Not implementable right now
+## Implementable now, and still undecided
 
-Writing a new artifact field is `settleEntry`, which is the producing path,
-and a 92-entry corpus pass is running under a freeze recorded in
-`doc/handover/two-lane-outcome-vocabulary.md`.
-Changing what the pipeline runs and rebuilding would make that run unresumable.
+The freeze that blocked this has lifted and returned. The 92-entry pass stopped at six entries on
+2026-08-17, and a second, targeted pass over five flagged entries started at 01:29Z and holds the
+producing path again until it finishes.
 
-This also means the decision costs nothing to leave open a few more hours.
+So the obstacle is no longer capability, it is that this is the user's call and they have not made
+it. `settleEntry` is the producing path, and writing a new artifact field means rebuilding, which a
+running pass makes unresumable. Between passes it is a small change.
+
+WHAT IS STILL WAITING ON A PERSON: the licence question. Storing more licensed material in a file
+that gets copied between machines is a policy question rather than a size question, and it is the
+only remaining argument for a hash over the text. Everything measurable has been measured: the
+premise that storing it doubles artifact size is false, at 0.6 to 0.9 percent, and reconstruction
+from the corpus was verified against a preparation recomputed at HEAD.
