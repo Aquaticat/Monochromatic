@@ -5,7 +5,8 @@
 - Work in a fresh worktree.
 - Explain how to prevent a successful markdown-lint build from implying that Sätteri's native binding is usable.
 - Read GitHub issue 447 and incorporate its consumer-bundling failure.
-- Investigate and recommend; do not implement an accepted design without a user decision.
+- Investigate and recommend;
+   do not implement an accepted design without a user decision.
 - Keep this handover current during the investigation.
 
 ## Worktree and versions
@@ -14,7 +15,10 @@ The disposable worktree is
 `/var/home/user/temp/agent/markdown-lint-satteri.TSb8L5IW`
 at Monochromatic commit `35d90771ce4bc1e74bddf7ccafb3d1cdc6e50c89`.
 
-The install uses pnpm `11.21.0`, Node `26.7.0`, Rolldown `1.2.3`, and Sätteri `0.9.5`.
+The install uses pnpm `11.21.0`,
+ Node `26.7.0`,
+ Rolldown `1.2.3`,
+ and Sätteri `0.9.5`.
 A fresh `mise run prepare:pnpm:install` installed the Linux x64 GNU binding normally.
 The missing-binding state was then made deterministically by moving only Sätteri's
 `@bruits/satteri-linux-x64-gnu` dependency link out of its virtual-store `node_modules`.
@@ -27,7 +31,8 @@ tag `satteri-v0.9.5`.
 
 ## Reproduction evidence
 
-With the binding present, this command built the package and ran the built CLI successfully:
+With the binding present,
+ this command built the package and ran the built CLI successfully:
 
 ```console
 $ mise run //package/cli/markdown-lint:build
@@ -37,7 +42,8 @@ $ node package/cli/markdown-lint/dist/final/node/cli.mjs --format=json \
 []
 ```
 
-With Sätteri's Linux binding link absent, the same build succeeded twice.
+With Sätteri's Linux binding link absent,
+ the same build succeeded twice.
 Loading the resulting CLI then failed twice with:
 
 ```text
@@ -61,12 +67,15 @@ The generated `dist/final/node/{index,cli}.mjs` files consequently retain
 Sätteri loads the binding at module evaluation time.
 Upstream `packages/satteri/index.js:287-299` tries the local binary and then
 `@bruits/satteri-linux-x64-gnu`.
-`packages/satteri/index.js:530-584` calls `requireNative()`, tries WASI and WebContainer fallbacks,
+`packages/satteri/index.js:530-584` calls `requireNative()`,
+ tries WASI and WebContainer fallbacks,
 and throws the quoted error when none resolves.
 The build and runtime are therefore checking different boundaries.
 
-A build cache is not involved: output timestamps changed on each fresh Rolldown run.
-Sätteri does not defer the check until parsing: importing its module reaches the loader.
+A build cache is not involved:
+ output timestamps changed on each fresh Rolldown run.
+Sätteri does not defer the check until parsing:
+ importing its module reaches the loader.
 
 ## Issue 447
 
@@ -77,14 +86,17 @@ at `translation-repair-rebased` commit `3311e7bd9c8f7f037a7322e01b909870d2029400
 Issue 447 reports a second and more important shape.
 `@monochromatic-dev/module-translation-repair` imports markdown-lint rule functionality.
 The shared Node config always bundles `@monochromatic-dev/**`.
-If translation-repair does not declare `satteri`, Rolldown follows the inlined markdown-lint source and also copies
+If translation-repair does not declare `satteri`,
+ Rolldown follows the inlined markdown-lint source and also copies
 Sätteri's loader into translation-repair's bundle.
-The copied loader resolves from `dist/final/node`, not from Sätteri's own package directory,
+The copied loader resolves from `dist/final/node`,
+ not from Sätteri's own package directory,
 so pnpm's binding link under Sätteri is invisible.
 
 The current workaround declares `satteri` directly in translation-repair.
 That makes Sätteri external at the consumer boundary and keeps its loader in its package directory.
-A fresh build retained one `from"satteri"` import, contained no loader error string,
+A fresh build retained one `from"satteri"` import,
+ contained no loader error string,
 and imported `dist/final/node/index.mjs` successfully.
 
 Removing only that manifest declaration reproduced the issue exactly:
@@ -110,11 +122,13 @@ Its ranking is:
 A disposable edit changed markdown-lint's `build` task to depend on `build:js` and then run:
 
 ```console
-$ node dist/final/node/cli.mjs --help
+node dist/final/node/cli.mjs --help
 ```
 
-With the binding absent, bundling still finished but the overall build task failed at the smoke step.
-After restoring the binding link, the same task printed CLI help and exited successfully.
+With the binding absent,
+ bundling still finished but the overall build task failed at the smoke step.
+After restoring the binding link,
+ the same task printed CLI help and exited successfully.
 This crosses the built-artifact consumer boundary and catches both import-time native-loader failure and an unusable CLI entry point.
 The edit is only a prototype and must be removed before finalizing the investigation.
 
@@ -132,7 +146,8 @@ GitHub issue 448 now records the placement decision for this reusable-worktree-a
 
 ### Parser-free core
 
-Translation-repair already has `parseMarkdownBody`, a remark-parse plus GFM parser returning `mdast.Root`.
+Translation-repair already has `parseMarkdownBody`,
+ a remark-parse plus GFM parser returning `mdast.Root`.
 A parser-free core can accept a synchronous parser callback and keep the fixpoint loop,
 rule dispatch,
 fix application,
@@ -204,9 +219,12 @@ while the generic prototype produced an unresolvable bare import.
 ## Open design questions
 
 - A built-CLI smoke step fixes the misleading direct `build` result but does not remove issue 447's transitive-consumer trap.
-- The options are complementary: split the core for consumers, and retain a built-parser smoke step for the native CLI artifact.
+- The options are complementary:
+   split the core for consumers,
+   and retain a built-parser smoke step for the native CLI artifact.
 - The core parser callback must guarantee a root for the exact source with JavaScript UTF-16 offsets.
-- Complete semantic-wrap and corpus parity remain migration gates; the thirteen-fixture probe is not exhaustive.
+- Complete semantic-wrap and corpus parity remain migration gates;
+   the thirteen-fixture probe is not exhaustive.
 
 ## Troubleshooting document
 
