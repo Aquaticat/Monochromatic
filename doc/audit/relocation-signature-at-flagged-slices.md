@@ -315,3 +315,43 @@ because no slice has enough of the document in view to notice.
 A judge shown slices 2 through 4 together would see the repeat.
 The measured bound in this same document says three slices is enough,
 because the longest flagged run in the corpus is three.
+
+## One severed sentence shipped, at a slice beside a flagged run
+
+Found the same way,
+by reading a merged sheet item end to end,
+then scanned for across all 64 shipped rows with `~/temp/agent/severed-sentence-census.mjs`.
+The detector looks for a function word that cannot end a clause
+followed by a capitalised clause-starting pronoun,
+excluding pairs the incumbent already carried.
+
+ONE TRUE POSITIVE IN THE POOL,
+`saurikissa` slice 7,
+repair lane,
+shipped verbatim:
+
+```text
+She eventually walked a path of She would go around showing off her cats to everyone too
+```
+
+The sentence is cut mid-phrase and spliced onto an unrelated one.
+The detector fired five other times,
+all ordinary prose where a pronoun follows `and`, `that` or a question mark,
+so this is one instance rather than a pattern:
+1 of 30 shipped repair rows and 0 of 34 translate rows.
+
+Slice 7 is not itself flagged.
+It sits immediately beside the flagged run at 8 and 9,
+and its shipped text carries three passages that belong to neighbouring slices:
+the yearning-for-love line,
+the Dongguan cohabitation,
+and the gender dysphoria list.
+The translate lane at the same slice is clean
+and renders only what the original says.
+
+THE SAME LANE SPLIT AS `lintong`.
+Two entries now show the repair lane producing broken text at relocation-affected slices
+while the translate lane produces correct text,
+for the same reason:
+one edits an incumbent that belongs somewhere else,
+the other writes from the source.
