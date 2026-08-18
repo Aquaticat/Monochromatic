@@ -155,15 +155,45 @@ which is the harm the straggler-grace decision spent a whole document avoiding.
 Nothing observed falls between 0.1 and 0.99,
 so the threshold sits in empty space rather than at a fitted boundary.
 
+## What is wired, and what proves it
+
+LANDED 2026-08-17, once the corpus pass released the producing path.
+`drainBody` now asks the runaway watch about every chunk,
+and on a runaway it cancels the reader before reporting,
+so the socket is released rather than left feeding a model that will not stop.
+It then throws `StreamDegenerateError`,
+naming the channel, the ratio, and what the call had already cost.
+
+THE TEST ASSERTS THE CALL STOPS EARLY, not merely that it raises.
+A drain that read every byte and complained afterwards
+would satisfy every assertion about the error
+while leaving the socket open for the whole runaway,
+which is the entire cost this exists to avoid,
+so the test counts how much of the body was pulled.
+
+SHOWN TO FAIL BEFORE BEING TRUSTED, per `GFP`.
+With the verdict computed but not acted on,
+the suite reports
+`AssertionError: expected 'drained' to equal 'raised'`
+and the drain reads 1,652,574 characters of the runaway to its end.
+With the guard restored it stops well before that,
+and 378 tests pass with `lint:types` and `lint:oxlint` clean.
+
+An empty `data:` payload is a keep-alive rather than an unreadable frame,
+so it no longer counts toward the tally that exists to make a changed wire
+format visible.
+
 ## What is still owed
 
--   WIRE IT INTO THE DRAIN, fed by an incremental delta extractor.
-    That extractor belongs in its own module:
-    `stream-drain.ts` is 179 lines and `stream-idle-guard.ts` is 307.
 -   `#118`, so an aborted call keeps what it received.
     Until then the detector is validated only against fixtures,
     never against a real degenerate reply,
     because no real one has ever been kept.
-
-Both touch the producing path,
-which is frozen while the corpus pass holds it.
+-   RECORD THE NEW LOSS CAUSE with its own sub-kind, per `#75`.
+    A call ended this way must not be filed with a stall:
+    a stall is worth retrying,
+    and a model that has begun repeating itself will repeat itself again.
+-   MEASURE THE ENVELOPE RATIO and revisit the 131000 character bar,
+    which is set from artifact evidence
+    because the only length telemetry in production counts raw event bytes
+    and relates to generated characters by a ratio never measured.
