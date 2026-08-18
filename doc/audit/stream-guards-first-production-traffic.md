@@ -48,6 +48,32 @@ WHAT ENDED IT WAS THE STRAGGLER GRACE, exactly as designed,
 That is the first direct look at what the grace actually cuts,
 and it cut a call that was still producing.
 
+## The second abandonment proves the point of the first
+
+A second voice was lost the same way and it is a DIFFERENT SHAPE,
+which is the whole reason `#118` was worth building:
+
+```text
+panel  hf:zai-org/GLM-5.2: abandoned 180000ms after quorum
+  (cut-mid-reply after 2915229 delivered chars, first byte at 2087ms), voice lost
+select hf:zai-org/GLM-5.2: abandoned 180000ms after quorum
+  (cut-mid-reply after  123534 delivered chars, first byte at 1877ms), voice lost
+```
+
+Both were cut exactly 180000 ms after quorum,
+so both streams ran at least that long,
+and dividing delivered characters by that shared floor gives an upper bound on each rate
+computed the same way for both:
+at most 16196 characters a second for the first
+and at most 686 for the second.
+The second was therefore at least twenty three times slower per second than the first.
+
+ONE WAS PRODUCING AT FULL SPEED AND THE OTHER WAS CRAWLING,
+and they want opposite remedies:
+the first is a long reply the grace should probably have waited for,
+the second is a call worth ending sooner.
+Before tonight both printed the same three words and nothing else.
+
 ## Neither guard has refused a call
 
 No `degenerate in` line appears anywhere in the window.
