@@ -47,8 +47,24 @@ any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
 ### A waiter is armed, so nothing idles waiting for someone to look
 
 A background command holds on pid `4116080` and reports when the pass exits, with the artifact count
-and the log tail. WHEN IT FIRES, in this order: check the count is 5 and the log ends cleanly, run
-`rendering-audit-settled`, run the join, update `#107`, then THE FREEZE LIFTS and `#120` can land.
+and the log tail. WHEN IT FIRES, in this order:
+
+  1  check the count is 5 and the log ends cleanly;
+  2  `node ~/temp/agent/join-107.mjs --archive ~/translation-repair-runs-flagged-20260818/artifacts`
+     ZERO QUOTA, needs no build, so it runs first and answers `#107`'s comparison immediately;
+  3  `mise run //package/module/translation-repair:rendering-audit-settled -- --archive <that dir>`
+     THIS SPENDS QUOTA, per its own description, unless `--cap 0`, and it `depends = ["build"]`, so
+     it is also the step that ends the freeze. Decide the cap deliberately rather than by omission;
+  4  `mise run //package/module/translation-repair:rendering-audit-settled-report`
+     zero quota, reads what step 3 persisted, and prints the `#107` relocation pairs;
+  5  update `#107`, then land `#120` and `#121`.
+
+`#107` HAS TWO READINGS AND THEY ARE COMPLEMENTARY. `auditRelocationPairs` in
+`src/corpus-run/rendering-audit-settled-relocation.ts` already implements one: it names an omission
+on one slice sitting beside an unsupported addition on the next, adjacency fixed at ONE slice before
+any number existed, and it deliberately SUBTRACTS NOTHING. The join reader implements the other:
+replacement rate on displacement-flagged slices against the rest. The first reads auditor findings,
+the second reads the delivery ledger against a structural probe. Report both.
 
 At 56 minutes the pass is still on its first entry, `GLaDOSister`, 0 of 5 artifacts, 410 streams so
 far. Ten slices at the previous pass's roughly eight minutes a slice puts that entry near 80 minutes
