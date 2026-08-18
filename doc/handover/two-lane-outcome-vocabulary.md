@@ -1,5 +1,116 @@
 # Handover: the lane outcome vocabulary and what is mid-flight
 
+## READ THIS FIRST AFTER A COMPACTION (written 2026-08-17 21:33 local, 01:33Z)
+
+Everything below this block is older. Nothing here is uncommitted: the tree is clean and 0 commits
+are unpushed, 95 commits made in the last fourteen hours.
+
+### One thing is running and it is not finished
+
+A TARGETED CORPUS PASS, pid `4116080`, started 01:29Z, about four minutes in when this was written.
+
+  runs dir   ~/translation-repair-runs-flagged-20260818
+  command    mise run //package/module/translation-repair:corpus-pass -- \
+               --only lintong,wangzihao980,GLaDOSister,dogesir_,saurikissa
+  log        ~/temp/agent/flagged-pass-2.log
+  progress   0 of 5 artifacts, currently on GLaDOSister
+
+WHY IT IS RUNNING: `#107` needs the replacement rate ON displacement-flagged slices against the rate
+off them, and the six naturally accumulated entries carry ZERO flags, so that comparison could never
+have come from them. These five were picked because the probe flags them: 8 relocation candidates
+across 42 slices.
+
+SECOND PAYLOAD: it is built from the current tree, so it is the FIRST production traffic through the
+`#119` degeneration guard and the `#118` cut reporting. Neither has ever seen a real stream. Watch
+the log for `stream <model>: cut` lines and for `degenerate in reasoning`.
+
+HOW LONG: about four and a half to five and a half hours, so finishing around 06:00Z. That is from
+the previous pass's measured rate of 67 minutes an entry over six entries, scaled by this run's 42
+slices against that run's 50. One slice measured here so far took 70754 ms, but at 32 source
+characters it is the smallest possible and is a floor rather than an average.
+
+IT STOPS ON ITS OWN at five entries. No watcher is needed and none is running.
+
+THE PRODUCING PATH IS FROZEN while it runs: `assertResumableGeneration` refuses to resume a pool
+settled under another build, so DO NOT rebuild or change anything the pipeline runs until it stops.
+Docs, readers and analysis are all safe.
+
+WHEN IT FINISHES, the reading is:
+
+  mise run //package/module/translation-repair:rendering-audit-settled -- \
+    --archive ~/translation-repair-runs-flagged-20260818/artifacts
+
+and then the join `#107` waits on: replacement rate on the flagged slice indices against the rate on
+the rest. The flag list comes from `displacement-probe`, which spends no quota and can be re-run at
+any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
+
+### A sol review is also running and may never return
+
+`timeout 3000 pi --model openai-codex/gpt-5.6-sol` on `stream-degeneration.ts` alone, started about
+23 minutes ago, zero output so far. THE FIRST ATTEMPT, on all three stream modules at once, exited
+124 after the full hour with no output at all. The user's guidance is that sol's harness and API are
+far from perfect and this is expected, so relaunch rather than conclude anything from silence.
+Output lands at `~/temp/agent/sol-detector.txt`.
+
+The three stream modules have therefore had NO second-reviewer pass yet.
+
+### Two settled pools, which must not be confused
+
+`~/translation-repair-runs-20260817/artifacts`, SIX entries, NATURAL ACCUMULATION, may feed a draw.
+`~/translation-repair-runs-flagged-20260818/artifacts`, FIVE entries, HAND PICKED for carrying
+displacement flags, may serve `#107`'s comparison and may NOT feed any precision, damage or
+accumulation draw. `corpus-pass` warns about this itself whenever `--only` is used.
+
+### One thing is waiting on the user
+
+`#60`'s DAMAGE SHEET IS WRITTEN AND UNGRADED: `~/translation-repair-runs-20260817/damage-sheet.md`,
+20 items, 33 KB, outside the repository. The manifest beside it keeps the probe's verdicts, which
+the sheet deliberately does not show. Grading it is what `#68` needs.
+
+`#96` ALSO NEEDS A DECISION and the recommendation is already written in
+`doc/planning/artifact-archive-text.md`: store `targetText` whole, since the premise that it doubles
+artifact size was measured and is false, at 0.6 to 0.9 percent. The remaining objection is a licence
+question, which is the user's call and not an agent's.
+
+### What landed tonight, newest first
+
+  d39fb47a4  the two pools separated in this document
+  (lock fix)  runs directory is created before it is locked, so a fresh directory works at all
+  4149fb0d2  `describeAbandon`: a lost voice now says WHY, not just that it was lost
+  ada369720  `#118`: keep what a cut stream delivered, report it on both paths, name the model
+  0b6d9afb0  tests for which delivery rows a damage draw counts
+  b71ea7328  `#60`: damage draw reads the version 2 ledger, BOTH lanes
+  7aa4866fa  `#119`: end runaway calls in the drain, proven by strip
+  fd62d7b37  the runaway watch the drain calls
+  8517282c1  both channels scanned, so thinking runaways are caught
+  bf15afaf1  the verse false positive fixed by raising the bar for speaking
+  8eb62c0ac  the degeneration detector itself
+
+### Numbers measured tonight that should not be re-derived
+
+  replacement rate      0.740, 37 of 50 slices, six entries, translate lane, 0 withdrawn
+                        held from 0.739 at 23 slices, so it survived a doubled denominator
+  displacement flags    0 across the six settled entries; 29 of 92 entries flagged corpus-wide,
+                        66 flagged slices against 1260, about 5 percent
+  damage draw           69 shipped regions in the pool, 32 repair and 37 translate; 20 drawn;
+                        probe flagged 2, silent 18
+  degeneration          threshold 0.1 distinct; varied prose 0.9909, structured output 1.0000,
+                        a cycling phrase 0.0015, verse with a refrain 0.036
+  strip evidence        with the runaway guard inert the drain reads 3,060,000 characters;
+                        the healthy long call logs 1,652,574 in BOTH runs, which is the control
+
+### Retracted claims, so they are not repeated
+
+  "GLM is slow"                     retracted; it is a tail on this workload, not a slow model
+  "1349 streams, mean firstByte"    retracted; survivorship bias, `#118` was the cause
+  "an abandoned call leaves nothing" retracted; streaming means partial text always exists
+  "storing targetText doubles size"  retracted; measured at 0.6 to 0.9 percent
+  "the grace re-measure is owed"     retracted; it was delivered the same morning in
+                                     `doc/audit/straggler-grace-remeasure.md`, 0.039 against 0.138
+  "1,590,838 chars is degeneration"  retracted; `chars` counts raw event bytes, envelope included
+
+
+
 Written 2026-08-16 because the user's machine is stuttering and a hard reboot would otherwise lose the state.
 Updated after every step from here rather than at the end.
 Companion to `doc/planning/two-lane-corpus-pass.md`, which holds the design record;
