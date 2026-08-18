@@ -232,8 +232,72 @@ A reader counting cuts to measure stalls would count our own terminations among 
 which is the same mistake the sub-kind item guards against,
 one layer further out.
 
+## The detector catches short cycling and lets long cycling through
+
+FOUND 2026-08-18 by probing the built detector directly,
+with no rebuild and no quota.
+The probe is kept at `~/temp/agent/degeneration-period-probe.mjs`.
+
+WHAT DECIDES DETECTION IS ARITHMETIC, not how repetitive the text is.
+Windows are taken every 32 characters,
+so for text repeating with period P
+the sample can only ever hold P divided by the greatest common divisor of P and 32 distinct windows.
+The predicted count matched the observed one in all fifteen cases tried.
+A verdict of degenerate needs that count at or below about 409,
+which makes the effective rule
+"the repeated unit is shorter than roughly 410 characters",
+loosened only when the unit happens to be a multiple of 32.
+
+TWO NEIGHBOURING PERIODS LAND ON OPPOSITE SIDES:
+
+```text
+period  distinct  ratio   verdict
+   409       409  0.0999  degenerate
+   410       205  0.0500  degenerate
+   500       125  0.0305  degenerate
+   501       501  0.1223  healthy
+   503       503  0.1228  healthy
+  1001      1001  0.2444  healthy
+  5000       625  0.1526  healthy
+ 20000       625  0.1526  healthy
+```
+
+A model looping a 501-character paragraph forever is called healthy,
+while the same loop one character shorter is caught,
+and nothing about the text is different in kind.
+
+THE CONTROL RAN FIRST, per `QPC`.
+Text from the same generator that never repeats scores 1.0000 and reads healthy,
+so the low ratios above are the loop rather than the fixture.
+A first attempt at this probe padded a single sentence to length,
+which made the block internally repetitive
+and returned the same ratio for every period,
+proving nothing;
+that fixture was replaced before any of these numbers were read.
+
+WHAT IS STILL COVERED, and it is the case that was asked for:
+the thinking runaway of the form "I will output. I will output.",
+at period 15,
+scores 0.0037 and is refused.
+Paragraph-scale looping is the gap,
+and it costs exactly as much per hour as phrase-scale looping.
+
+A FIX THAT DOES NOT DEPEND ON THE PERIOD.
+Keep the trailing text itself,
+and ask whether the most recent few thousand characters occur EARLIER in it.
+A stream looping with any period shorter than the buffer answers yes,
+whatever the period's arithmetic,
+and ordinary prose never repeats a block that long verbatim.
+It is one native substring search over a bounded buffer,
+run occasionally rather than per chunk,
+and it complements the ratio rather than replacing it:
+the ratio catches short cycling on a small sample,
+the recurrence test catches the long periods the ratio cannot see.
+
 ## What is still owed
 
+-   CATCH LONG-PERIOD LOOPING, which the distinct-window ratio cannot see.
+    Held until the targeted pass releases the producing path.
 -   REPORT GENERATED CHARACTERS PER CHANNEL on the progress line,
     replacing the field that repeats the raw count.
     Held until the targeted pass releases the producing path.
