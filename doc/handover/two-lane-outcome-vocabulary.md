@@ -8,6 +8,32 @@ this file holds the WORKING STATE.
 Worktree: `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`.
 All commands below assume it, not the main worktree.
 
+## Two pools now exist, and they must not be confused
+
+READ THIS BEFORE ANY DRAW. There are two settled pools and only one of them may feed a sample.
+
+`~/translation-repair-runs-20260817/artifacts`, SIX ENTRIES, NATURAL ACCUMULATION. Acheron,
+AkiraComplex, AmbeR_the_anpa, Anilovr, Arita, Chinatsu_Suzuki. Drawn in the order the pass takes
+them, so a draw over it is a draw over the corpus. `#60`'s damage sheet came from here.
+
+`~/translation-repair-runs-flagged-20260818/artifacts`, FIVE ENTRIES, HAND PICKED. lintong,
+wangzihao980, GLaDOSister, dogesir_, saurikissa, chosen because the displacement probe flags them.
+`corpus-pass` warns about this itself when `--only` is used, in as many words: run it into a
+throwaway directory so a hand-picked entry never enters a pool later draws treat as natural
+accumulation. IT MAY BE USED for the flagged-versus-unflagged comparison `#107` waits on, and it
+MAY NOT be used for any precision, damage or accumulation draw, because its entries were selected
+for the property being measured.
+
+## What the six-entry pool measured
+
+REPLACEMENT RATE 0.740, 37 of 50 slices, 0 withdrawn, translate lane. The three-entry reading was
+0.739, so it held as the denominator doubled. Pooled figure quotable; per-entry rows are not, and
+six entries cannot separate an effect from an entry.
+
+ZERO DISPLACEMENT FLAGS across all six, which is why the flagged pool had to be made. That is a
+real zero rather than a dead instrument: the same probe run flags 29 of 92 entries, 66 flagged
+slices against 1260, about 5 percent, which over 50 slices predicts two or three.
+
 ## After the freeze lifted, 2026-08-17 night
 
 THE PASS STOPPED CLEANLY at exactly 6 entries, the watcher reporting
