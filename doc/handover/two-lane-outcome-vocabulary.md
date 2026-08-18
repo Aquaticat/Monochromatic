@@ -74,9 +74,25 @@ fired, where the old one was taken with a 150 s window live; and it is UNBIASED 
 since `#118` reports progress on the cut path, where the retracted "1349 streams, mean firstByte
 1822 ms" excluded abandoned calls by construction.
 
-IT DOES NOT SAY THE CONSTANTS ARE WRONG. One pass, one workload, and the gap between the two
-readings is unexplained. `#121` says re-measure on a differently shaped pass first, and the change
-itself is a decision-doc revision that belongs to the user.
+RE-READ ACROSS EVERY PASS LOG THAT CARRIES THE COLUMNS, 5470 streams over three workloads and five
+days (`grace-remeasure-snapshot.log` excluded as a copy of `corpus-pass-20260817.log`):
+
+  resume-run-output       2888 streams  p50 1032  p90 1477  p99  3955  max 183755
+  corpus-pass-20260817    2166 streams  p50 1237  p90 1951  p99 10163  max  91843
+  flagged-pass-2           416 streams  p50 1173  p90 1726  p99  2768  max   9084
+
+THE MIDDLE HOLDS EVERYWHERE and the TAIL IS REAL, which one pass could not have shown. Exceedances
+over all 5470: first byte over 30 s in 10 streams, over 60 s in 2, over 120 s in 1, over 300 s in
+NONE; largest gap over 30 s in 4, over 60 s in 1, over 120 s in none.
+
+SO A SMALL WINDOW IS RULED OUT rather than supported. A 30 s first-byte window would fire on about
+one call in 550, roughly one stage in ninety losing a voice to the guard itself. A 300 s one would
+have fired on none and would still end a dead call in five minutes rather than never. Both counts
+are LOWER BOUNDS, since two of the three logs predate `#118` and hold only completed streams.
+
+IT STILL DOES NOT SAY THE CONSTANTS ARE WRONG. The change is a decision-doc revision to
+`doc/decision/translation-repair-straggler-grace.md`, which owns the reasoning, and it belongs to
+the user.
 
 ### The `#107` join reader is built, validated, and waiting
 
