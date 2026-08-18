@@ -138,7 +138,7 @@ await describe({
     it({
       name: 'ENDS A THINKING RUNAWAY BEFORE THE STREAM DOES, naming the reasoning channel: this '
         + 'is the case that produces no answer at all, so nothing downstream would ever notice it',
-      fn: () => {
+      fn: async () => {
         /**
          * A model that thinks the same sentence forever.
          */
@@ -173,7 +173,7 @@ await describe({
     it({
       name: 'LETS A HEALTHY LONG CALL FINISH, thinking and answer alike, so a model that simply '
         + 'writes a great deal is never cut off for it',
-      fn: () => {
+      fn: async () => {
         /**
          * Long, varied thinking followed by a long, varied answer.
          */
@@ -208,7 +208,7 @@ await describe({
     it({
       name: 'NAMES THE ANSWER CHANNEL when that is the one repeating, since the two failures call '
         + 'for different reading and pooling them would let either excuse the other',
-      fn: () => {
+      fn: async () => {
         const raw = Array.from(
           { length: 30_000, },
           function repeat(): string {
@@ -233,7 +233,7 @@ await describe({
     it({
       name: 'CARRIES WHAT A LOG LINE NEEDS in its error: which channel, how repetitive, and what '
         + 'the call had already cost when it was ended',
-      fn: () => {
+      fn: async () => {
         /**
          * Error as the drain would raise it.
          */

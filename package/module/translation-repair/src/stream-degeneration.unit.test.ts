@@ -119,7 +119,7 @@ await describe({
     it({
       name: 'WITHHOLDS a verdict on an ordinary reply, because length is not the signal and a '
         + 'short answer carries too few windows for the ratio to mean anything',
-      fn: () => {
+      fn: async () => {
         expect(verdictAfter({ chunks: ['The cat naps. ',], },).kind,).toBe('undecided',);
         expect(verdictAfter({ chunks: [variedProse({ lines: 300, },),], },).kind,).toBe('undecided',);
       },
@@ -129,7 +129,7 @@ await describe({
       name: 'ACCEPTS long varied prose, the negative control: some models legitimately write a '
         + 'great deal, and if verbosity alone ever read as degenerate this guard would abort the '
         + 'most productive calls in the run',
-      fn: () => {
+      fn: async () => {
         expect(verdictAfter({ chunks: [variedProse({ lines: 2_000, },),], },).kind,).toBe('healthy',);
       },
     },),
@@ -137,7 +137,7 @@ await describe({
     it({
       name: 'REFUSES a stream cycling on one phrase, the failure the provider does not end and '
         + 'that no token cap bounds, since none is sent',
-      fn: () => {
+      fn: async () => {
         /**
          * A reply that says one thing forever.
          */
@@ -155,7 +155,7 @@ await describe({
     it({
       name: 'REFUSES a two-phrase cycle and a whitespace runaway, so the detector is not fooled '
         + 'by degeneration that never repeats a single phrase twice in a row',
-      fn: () => {
+      fn: async () => {
         expect(verdictAfter({ chunks: ['The cat sat. The mat sat. '.repeat(8_000,),], },).kind,)
           .toBe('degenerate',);
         expect(verdictAfter({ chunks: [`The cat naps.${' '.repeat(300_000,)}`,], },).kind,)
@@ -167,7 +167,7 @@ await describe({
       name: 'REFUSES a stream that degenerates only AFTER a healthy opening, which is why the '
         + 'sample trails: a cumulative ratio over a long good beginning can never fall far enough '
         + 'to trip, however long the model then cycles',
-      fn: () => {
+      fn: async () => {
         expect(
           verdictAfter({
             chunks: [
@@ -182,7 +182,7 @@ await describe({
     it({
       name: 'ACCEPTS structured output with repeated keys, a realistic false positive: stages ask '
         + 'for structured replies, so a reply full of identical field names is ordinary output',
-      fn: () => {
+      fn: async () => {
         /**
          * A structured reply shaped like the ones stages request, every value
          * different and every key the same.
@@ -207,7 +207,7 @@ await describe({
     it({
       name: 'ACCEPTS boilerplate repeated with one varying token, which scores far nearer the '
         + 'threshold than prose does and is the case that sets how much margin there really is',
-      fn: () => {
+      fn: async () => {
         /**
          * The same note over and over, differing only in its number.
          */
@@ -231,7 +231,7 @@ await describe({
       name: 'WITHHOLDS on verse carrying a refrain, the false positive this corpus would actually '
         + 'have suffered: a repeated line is content, and measured alone the ratio condemns it, so '
         + 'what protects it is that no slice translation is ever long enough to be judged',
-      fn: () => {
+      fn: async () => {
         /**
          * A poem whose refrain returns every stanza.
          */
@@ -264,7 +264,7 @@ await describe({
       name: 'READS THE SAME VERDICT however the text is split, since chunk boundaries are an '
         + 'accident of the network and a detector that saw them would report differently on '
         + 'identical output',
-      fn: () => {
+      fn: async () => {
         /**
          * One cycling reply.
          */
@@ -298,7 +298,7 @@ await describe({
     it({
       name: 'IGNORES empty arrivals, which a stream produces at its end and which must not count '
         + 'toward the sample',
-      fn: () => {
+      fn: async () => {
         /**
          * Detector fed nothing but empty strings.
          */
@@ -321,7 +321,7 @@ await describe({
       name: 'HOLDS MEMORY FLAT across a stream that never ends, which is the whole population this '
         + 'guard exists for: a detector that grew with the stream would fail on exactly the calls '
         + 'it is meant to stop',
-      fn: () => {
+      fn: async () => {
         /**
          * Detector fed far more text than the trailing sample can hold.
          */

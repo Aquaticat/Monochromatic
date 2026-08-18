@@ -1,3 +1,8 @@
+import {
+  isJsonArray,
+  isJsonRecord,
+} from './json-guard.ts';
+
 //region Stream delta scan
 // PULLS GENERATED TEXT OUT OF A STREAM AS IT ARRIVES, which is what makes
 // `watchForDegeneration` usable at all: the detector must be fed generated
@@ -101,9 +106,18 @@ export type DeltaScanner = {
 };
 
 /**
+ * One parsed frame's `delta` object, or an empty stand-in for a frame that
+ * carries none.
+ *
+ * READONLY, because a writable index signature is not deeply readonly and this
+ * value crosses a function boundary that has no business mutating it.
+ */
+type DeltaFields = Readonly<Record<string, unknown>>;
+
+/**
  * Reads one string field off a delta object, ignoring anything else.
  *
- * @param delta - parsed `delta` object from a frame
+ * @param fields - parsed `delta` object from a frame
  *
  * @param key - field to read
  *
@@ -111,27 +125,32 @@ export type DeltaScanner = {
  *
  * @example
  * ```ts
- * const text = textField({ delta, key: 'reasoning_content', },);
+ * const text = textField({ fields, key: 'reasoning_content', },);
  * ```
  */
 function textField(
   {
-    delta,
+    fields,
     key,
   }: {
-    readonly delta: Record<string, unknown>;
+    readonly fields: DeltaFields;
     readonly key: string;
   },
 ): string {
   /**
    * Whatever sits at that key, which may be absent or null.
    */
-  const value = delta[key];
+  const value = fields[key];
   return ((typeof value) === 'string') ? value : '';
 }
 
 /**
  * Reads the `delta` object out of a parsed frame.
+ *
+ * GUARDS RATHER THAN ASSERTIONS, using the package's own `isJsonRecord` and
+ * `isJsonArray`: this walks a value the provider controls, so every step has to
+ * be checked rather than declared. An assertion here would state a shape the
+ * wire never promised.
  *
  * @param frame - parsed payload of one `data:` line
  *
@@ -140,34 +159,89 @@ function textField(
  *
  * @example
  * ```ts
- * const delta = deltaOf({ frame, },);
+ * const fields = deltaOf({ frame, },);
  * ```
  */
-function deltaOf({ frame, }: { readonly frame: unknown; },): Record<string, unknown> {
-  if ((typeof frame) !== 'object' || (frame === null))
+function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
+  if (!isJsonRecord(frame,))
     return {};
 
   /**
    * Choices array, absent on the final usage frame.
    */
-  const choices = (frame as Record<string, unknown>).choices;
-  if (!Array.isArray(choices,))
+  const { choices, } = frame;
+  if (!isJsonArray(choices,))
     return {};
 
   /**
    * First choice, the only one requested.
    */
-  const first = choices[0];
-  if ((typeof first) !== 'object' || (first === null))
+  const [first,] = choices;
+  if (!isJsonRecord(first,))
     return {};
 
   /**
    * Its delta, absent when the choice carries only a finish reason.
    */
-  const delta = (first as Record<string, unknown>).delta;
-  if ((typeof delta) !== 'object' || (delta === null))
+  const { delta, } = first;
+  if (!isJsonRecord(delta,))
     return {};
-  return delta as Record<string, unknown>;
+  return delta;
+}
+
+/**
+ * What one payload line turned out to be.
+ *
+ * @example
+ * ```ts
+ * const read: ReadPayload = { ok: true, frame: { choices: [], }, };
+ * ```
+ */
+type ReadPayload = {
+  readonly ok: true;
+
+  /**
+   * Parsed frame, whose shape the provider controls and nothing here assumes.
+   */
+  readonly frame: unknown;
+} | {
+  readonly ok: false;
+
+  /**
+   * Why it could not be read, kept so the caught value is used rather than
+   * discarded and so a future caller can report it.
+   */
+  readonly reason: string;
+};
+
+/**
+ * Parses one payload, reporting failure as a value.
+ *
+ * NEVER THROWS, because this runs on every chunk of every call and one
+ * unreadable frame must leave a working stream working.
+ *
+ * @param payload - text after the `data:` prefix
+ *
+ * @returns Parsed frame, or why there is none
+ *
+ * @example
+ * ```ts
+ * const read = readPayload({ payload: '{"choices":[]}', },);
+ * ```
+ */
+function readPayload({ payload, }: { readonly payload: string; },): ReadPayload {
+  try {
+    return {
+      ok: true,
+      frame: JSON.parse(payload,),
+    };
+  }
+  catch (error) {
+    return {
+      ok: false,
+      reason: String(error,),
+    };
+  }
 }
 
 /**
@@ -244,21 +318,7 @@ export function scanStreamDeltas(): DeltaScanner {
     /**
      * Parsed frame, or a note that it could not be read.
      */
-    const parsed = ((): { readonly ok: true; readonly frame: unknown; } | { readonly ok: false; } => {
-      try {
-        return {
-          ok: true,
-          frame: JSON.parse(payload,),
-        };
-      }
-      catch (error) {
-        // Counted rather than thrown: this runs on every chunk of every call,
-        // and one unreadable frame must not end a stream that is working. The
-        // caught value is folded into the tally the caller reports.
-        void error;
-        return { ok: false, };
-      }
-    })();
+    const parsed = readPayload({ payload, },);
 
     if (!parsed.ok) {
       state.unreadable += 1;
@@ -268,13 +328,13 @@ export function scanStreamDeltas(): DeltaScanner {
     /**
      * Delta object this frame carried.
      */
-    const delta = deltaOf({ frame: parsed.frame, },);
+    const fields = deltaOf({ frame: parsed.frame, },);
 
     /**
      * Answer text, if any.
      */
     const content = textField({
-      delta,
+      fields,
       key: 'content',
     },);
 
@@ -282,7 +342,7 @@ export function scanStreamDeltas(): DeltaScanner {
      * Thinking text, if any.
      */
     const reasoning = textField({
-      delta,
+      fields,
       key: 'reasoning_content',
     },);
 
@@ -311,12 +371,17 @@ export function scanStreamDeltas(): DeltaScanner {
       const lines = buffer.split('\n',);
 
       // Hold the trailing fragment back until its newline arrives.
-      state.carry = lines[lines.length - 1] ?? '';
+      state.carry = lines.at(-1,) ?? '';
 
-      return lines.slice(
+      /**
+       * Lines that are complete, the trailing fragment excluded.
+       */
+      const complete = lines.slice(
         0,
         -1,
-      ).flatMap(function read(line,): readonly ChannelDelta[] {
+      );
+
+      return complete.flatMap(function read(line,): readonly ChannelDelta[] {
         return readLine({ line, },);
       },);
     },

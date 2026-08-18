@@ -125,7 +125,7 @@ await describe({
     it({
       name: 'SEPARATES the reasoning channel from the answer channel, which is what lets a '
         + 'degeneration verdict name where it happened',
-      fn: () => {
+      fn: async () => {
         const { deltas, } = scanAll({
           raw: frameOf({
             channel: 'reasoning',
@@ -146,7 +146,7 @@ await describe({
     it({
       name: 'REASSEMBLES frames split across chunks, since a chunk boundary lands wherever the '
         + 'network puts it and routinely falls inside a frame',
-      fn: () => {
+      fn: async () => {
         /**
          * Twenty frames, delivered in pieces far smaller than one frame.
          */
@@ -172,16 +172,16 @@ await describe({
     it({
       name: 'SKIPS what carries no generated text: keep-alive comments, the done marker, a '
         + 'usage-only closing frame, and a frame carrying only a finish reason',
-      fn: () => {
+      fn: async () => {
         const { deltas, unreadable, } = scanAll({
-          raw: ': keep-alive\n\n'
-            + frameOf({
+          raw: `: keep-alive\n\n${
+            frameOf({
               channel: 'content',
               text: 'A cat. ',
             },)
-            + 'data: {"choices":[{"index":0,"finish_reason":"stop"}]}\n\n'
-            + 'data: {"object":"chat.completion.chunk","usage":{"completion_tokens":20}}\n\n'
-            + 'data: [DONE]\n\n',
+          }data: {"choices":[{"index":0,"finish_reason":"stop"}]}\n\n`
+            + `data: {"object":"chat.completion.chunk","usage":{"completion_tokens":20}}\n\n`
+            + `data: [DONE]\n\n`,
         },);
 
         expect(deltas.length,).toBe(1,);
@@ -195,7 +195,7 @@ await describe({
         + 'legitimately choose: spelling the prefix with the space would skip those lines as though '
         + 'they were comments, and skip them silently, since only payload lines are ever counted as '
         + 'unreadable',
-      fn: () => {
+      fn: async () => {
         /**
          * One frame, written tight.
          */
@@ -229,12 +229,14 @@ await describe({
     it({
       name: 'COUNTS a frame it cannot read instead of throwing, because this runs on every chunk '
         + 'of every call and one unreadable frame must not end a stream that is working',
-      fn: () => {
+      fn: async () => {
         const { deltas, unreadable, } = scanAll({
-          raw: 'data: {not json at all\n\n' + frameOf({
-            channel: 'content',
-            text: 'still working ',
-          },),
+          raw: `data: {not json at all\n\n${
+            frameOf({
+              channel: 'content',
+              text: 'still working ',
+            },)
+          }`,
         },);
 
         expect(unreadable,).toBe(1,);
@@ -247,11 +249,11 @@ await describe({
         + 'the whole reason both channels are scanned: a model repeating one sentence forever '
         + 'inside its reasoning emits no answer, so an answer-only scan would see an empty string '
         + 'and read the worst case as the shortest reply',
-      fn: () => {
+      fn: async () => {
         /**
          * A model that thinks the same thing forever and never answers.
          */
-        const raw = Array.from(
+        const frames = Array.from(
           { length: 9_000, },
           function think(): string {
             return frameOf({
@@ -259,7 +261,13 @@ await describe({
               text: 'I will output. ',
             },);
           },
-        ).join('',) + 'data: [DONE]\n\n';
+        ).join('',);
+
+        /**
+         * The same stream with its closing marker, which must not be read as a
+         * frame nobody could parse.
+         */
+        const raw = `${frames}data: [DONE]\n\n`;
 
         /**
          * Scanner and one detector per channel, wired as the drain will wire them.

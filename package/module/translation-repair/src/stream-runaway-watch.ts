@@ -23,6 +23,14 @@ import {
 // connection rather than buried here.
 
 /**
+ * Decimal places the distinct ratio is reported to.
+ *
+ * Enough to distinguish the degenerate range, which runs near 0.001, from the
+ * threshold at 0.1.
+ */
+const RATIO_DIGITS = 4;
+
+/**
  * Channels watched, in the order a verdict is reported for them.
  *
  * REASONING FIRST, because a runaway there is the case that produces no answer
@@ -133,7 +141,12 @@ export function watchRunaway(): RunawayWatch {
       /**
        * What this channel's detector currently says.
        */
-      const verdict = detectors[channel].verdict();
+      const detector = detectors[channel];
+
+      /**
+       * What it currently says.
+       */
+      const verdict = detector.verdict();
       if (verdict.kind !== 'degenerate')
         return [];
 
@@ -150,8 +163,17 @@ export function watchRunaway(): RunawayWatch {
 
   return {
     notifyChunk({ chunk, },): RunawayVerdict {
-      scanner.feed({ chunk, },).forEach(function route(delta: ChannelDelta,): void {
-        detectors[delta.channel].notifyText({ text: delta.text, },);
+      /**
+       * Generated text this chunk completed, on either channel.
+       */
+      const deltas = scanner.feed({ chunk, },);
+
+      deltas.forEach(function route(delta: ChannelDelta,): void {
+        /**
+         * Detector owning the channel this text arrived on.
+         */
+        const detector = detectors[delta.channel];
+        detector.notifyText({ text: delta.text, },);
       },);
       return readChannels();
     },
@@ -225,7 +247,7 @@ export class StreamDegenerateError extends Error {
   ) {
     super(
       `${label}: ended a runaway call, ${channel} channel repeated itself at `
-        + `${distinctRatio.toFixed(4,)} distinct over ${String(charsSeen,)} characters`,
+        + `${distinctRatio.toFixed(RATIO_DIGITS,)} distinct over ${String(charsSeen,)} characters`,
     );
     this.name = 'StreamDegenerateError';
     this.channel = channel;
