@@ -129,6 +129,63 @@ So the open question is not academic bookkeeping.
 It decides whether this guard judges one stream in eight or four in five,
 and today nobody knows which.
 
+## The straggler grace is almost entirely a GLM-5.2 tax
+
+Read at 1148 completed-or-cut streams, four hours into the pass.
+Call counts are near enough equal across the roster that this is a RATE difference
+rather than a volume artefact:
+
+```text
+model                                              streams   cuts     rate
+hf:zai-org/GLM-5.2                                     186      9   0.0484
+hf:moonshotai/Kimi-K3                                  183      1   0.0055
+hf:zai-org/GLM-4.7-Flash                               183      0   0.0000
+hf:Qwen/Qwen3.6-27B                                    199      0   0.0000
+hf:openai/gpt-oss-120b                                 199      0   0.0000
+hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4      199      0   0.0000
+```
+
+NINE OF TEN CUTS ARE ONE MODEL,
+and four of the six models have never been cut at all.
+Every cut is a straggler abandonment at 180000 ms after quorum;
+no `degenerate in` line has appeared,
+so the degeneration guard has still never fired in production.
+
+NONE OF THEM WAS SLOW TO START.
+First byte across the ten runs from 751 ms to 2120 ms,
+which is the ordinary range for this pass.
+What they were is LONG,
+and their delivered sizes at the cut vary by more than twenty times,
+from 123534 characters to 2915229.
+
+THIS IS NOT A CLAIM THAT GLM-5.2 IS SLOW,
+a claim already retracted once in this work.
+It is verbose on this workload and the grace ends verbose calls.
+The reading that matters is that the window's cost falls on one voice,
+so the ensemble it protects loses the same member over and over.
+
+## Voice loss has two shapes and both are now legible
+
+Nine voices lost in the window,
+in two kinds that want different remedies:
+
+```text
+straggler abandonment  6   GLM-5.2 five, Kimi-K3 one
+schema mismatch        3   GLM-4.7-Flash two, gpt-oss-120b one
+```
+
+THE SCHEMA MISMATCHES ARE THE MORE INTERESTING HALF.
+Each reports `content is not valid JSON: SyntaxError: Unexpected end of JSON input` with `raw=""`,
+so the model completed its stream and delivered NO ANSWER,
+which for GLM-4.7-Flash once meant 2052766 characters of wire for nothing.
+
+THIS QUALIFIES AN EARLIER FINDING rather than overturning it.
+Previous work established that voice loss was GLM and never Kimi-K3.
+On this pass it is seven of nine GLM,
+one Kimi-K3 and one gpt-oss-120b,
+so the model is no longer alone even if it still dominates.
+Five hand-picked entries are not a corpus sample and this does not replace the earlier reading.
+
 ## The idle windows rest on a premise the current traffic contradicts
 
 `stream-idle-guard.ts` sets both windows to 600000 ms so they never fire,
