@@ -142,6 +142,28 @@ makes the estimate unimportant either way, and it is recorded so nobody conclude
 `laneSelection` on this artifact reads `{"kind":"pending-human-decision"}`, so choosing between the
 two lanes is recorded as the user's call rather than settled by the pipeline.
 
+### The pass prints a TALLY line per entry, which is the fastest read there is
+
+```text
+TALLY GLaDOSister status=SETTLED slices=10 repairIssues=61 repairAccepted=49 repairResolved=49
+  repairFindings=127 repairChanged=8 translateChanged=8 documentsDiffer=9 alignmentFindings=0
+  selection=pending-human-decision ms=4966694
+TALLY lintong status=SETTLED slices=5 repairIssues=34 repairAccepted=27 repairResolved=23
+  repairFindings=63 repairChanged=4 translateChanged=5 documentsDiffer=5 alignmentFindings=0
+  selection=pending-human-decision ms=2228228
+```
+
+`grep TALLY` on the log is the one-line-per-entry summary. `ms` is where the timing estimates come
+from: 8.3 and 7.4 minutes a slice.
+
+THE TWO LANES DIFFER AT NEARLY EVERY SLICE, `documentsDiffer` 9 of 10 and 5 of 5. Choosing between
+them is not a formality, and every artifact records `selection=pending-human-decision`, so it is the
+user's call and the pipeline correctly refuses to make it.
+
+NOTHING IS BEING SKIPPED, though the banner makes it look that way. The `ONLY` banner prints the set
+alphabetically (`GLaDOSister,dogesir_,lintong,saurikissa,wangzihao980`) while the run order is
+`GLaDOSister`, `lintong`, `dogesir_`, then the rest. At 04:29Z the third entry is in progress.
+
 ### A waiter is armed, so nothing idles waiting for someone to look
 
 A background command holds on pid `4116080` and reports when the pass exits, with the artifact count
