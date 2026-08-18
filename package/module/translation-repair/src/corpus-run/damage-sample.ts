@@ -6,12 +6,11 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
-import { readCorpusFile, } from '../corpus-source.ts';
+import type { RelabelCase, } from './probe-relabel-case.ts';
 import {
-  locateSlice,
-  type RelabelCase,
-} from './probe-relabel-case.ts';
-import { readArtifactRecords, } from './probe-relabel-artifact.ts';
+  collectShippedRegionsV2,
+  type ShippedRegionV2,
+} from './damage-region-v2.ts';
 import {
   formatVerifyManifest,
   formatVerifySheet,
@@ -20,7 +19,6 @@ import {
 import {
   createRunClient,
   resolveRunsDir,
-  RUN_CORPUS_PIN,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
@@ -58,8 +56,13 @@ const DAMAGE_SAMPLE_SIZE = 20;
 /**
  * Identity domain for this draw, so its digests can never collide with the
  * detection draw's.
+ *
+ * BUMPED WITH THE POPULATION. Version 1 drew envelopes out of a top-level issue
+ * list; this draws slices out of both lanes' delivery ledgers. The two are
+ * different populations addressed by different identities, so sharing a domain
+ * would let a version 1 sheet and a version 2 sheet claim the same draw.
  */
-const DAMAGE_DRAW_DOMAIN = 'damage-sample/v1';
+const DAMAGE_DRAW_DOMAIN = 'damage-sample/v2';
 
 /**
  * Separator between fields of a digest input.
@@ -76,50 +79,26 @@ const DAMAGE_DRAW_DOMAIN = 'damage-sample/v1';
 const FIELD_SEPARATOR = '\u0000';
 
 /**
- * One shipped region, before its texts are rebuilt.
- */
-type RegionRef = {
-  /**
-   * Corpus entry the region belongs to.
-   */
-  readonly entryId: string;
-
-  /**
-   * Envelope the edit replaced.
-   */
-  readonly envelopeId: string;
-
-  /**
-   * Replaced text, which also locates the slice.
-   */
-  readonly before: string;
-
-  /**
-   * Replacement text.
-   */
-  readonly editorAfter: string;
-
-  /**
-   * Accepted issues the region served.
-   */
-  readonly issueIds: readonly string[];
-};
-
-/**
- * Collects every distinct shipped region across the settled artifacts.
+ * Collects every shipped region across the settled artifacts.
+ *
+ * THE LISTING STAYS HERE and the reading moves out, because eligibility is a
+ * question about the POOL while shipping is a question about one artifact's
+ * ledger, and mixing them is what let the old reader describe a repair-lane-only
+ * population as the shipped regions.
  *
  * @param dir - runs directory holding the artifacts
  *
- * @returns One reference per distinct region, entry order
+ * @returns Regions the damage question can be asked about, and how many rows
+ * filled a passage that had no incumbent wording
  *
  * @example
  * ```ts
- * const regions = await collectShippedRegions({ dir, },);
+ * const { regions, } = await collectShippedRegions({ dir, },);
  * ```
  */
 async function collectShippedRegions(
   { dir, }: { readonly dir: string; },
-): Promise<readonly RegionRef[]> {
+): Promise<Awaited<ReturnType<typeof collectShippedRegionsV2>>> {
   /**
    * Directory the settled artifacts sit in, named once so the listing, the
    * census and the later reads cannot drift onto different paths.
@@ -129,62 +108,25 @@ async function collectShippedRegions(
   /**
    * One directory listing, shared with the census.
    *
-   * Taken once and threaded through, because the accumulation writes into this
-   * directory continuously: a second listing inside the census would classify a
-   * different set of files from the one this reader goes on to read.
+   * Taken once and threaded through, because a pass writes into this directory
+   * continuously: a second listing inside the census would classify a different
+   * set of files from the one this reader goes on to read.
    */
   const listed = (await readdirArtifacts({ artifactsDir, },))
     .filter(function isArtifact(name,) {
       return name.endsWith('.json',);
     },);
 
-  /**
-   * Artifact file names of the settled entries.
-   */
-  const files = keepEligible({
-    names: listed,
-    eligible: await resolvePool({
-      artifactsDir,
+  return await collectShippedRegionsV2({
+    artifactsDir,
+    files: keepEligible({
       names: listed,
+      eligible: await resolvePool({
+        artifactsDir,
+        names: listed,
+      },),
     },),
   },);
-
-  /**
-   * References gathered so far, keyed so one edit appears once.
-   */
-  const byKey = new Map<string, RegionRef>();
-  /* oxlint-disable no-await-in-loop -- sequential on purpose: one artifact at a time keeps peak memory flat across 56 files */
-  for (const file of files) {
-    /**
-     * Entry id, which is the artifact's own file name.
-     */
-    const entryId = file.slice(
-      0,
-      -'.json'.length,
-    );
-
-    /**
-     * Settled records of this entry.
-     */
-    const records = await readArtifactRecords({ entryId, },);
-    for (const record of records) {
-      for (const region of record.repairRegions) {
-        byKey.set(
-          `${entryId} ${region.envelopeId}`,
-          {
-            entryId,
-            envelopeId: region.envelopeId,
-            before: region.before,
-            editorAfter: region.editorAfter,
-            issueIds: region.issueIds,
-          },
-        );
-      }
-    }
-  }
-  /* oxlint-enable no-await-in-loop */
-
-  return [...byKey.values(),];
 }
 
 /**
@@ -198,7 +140,7 @@ type KeyedRegion = Readonly<{
   /**
    * Region that may be drawn.
    */
-  region: RegionRef;
+  region: ShippedRegionV2;
 
   /**
    * Seeded hash of the region's identity, the draw order.
@@ -229,10 +171,10 @@ function drawRegions(
     regions,
     seed,
   }: {
-    readonly regions: readonly RegionRef[];
+    readonly regions: readonly ShippedRegionV2[];
     readonly seed: string;
   },
-): readonly RegionRef[] {
+): readonly ShippedRegionV2[] {
   return regions
     .map(function withKey(region,): KeyedRegion {
       return {
@@ -243,7 +185,7 @@ function drawRegions(
               DAMAGE_DRAW_DOMAIN,
               seed,
               region.entryId,
-              region.envelopeId,
+              region.regionId,
             ].join(FIELD_SEPARATOR,),
           )
           .digest('hex',),
@@ -265,71 +207,45 @@ function drawRegions(
 }
 
 /**
- * Rebuilds the slice texts around one drawn region.
+ * Turns one drawn region into the case a sheet item is built from.
+ *
+ * NO CORPUS READ AND NO RE-SLICING, unlike the version 1 path. The delivery row
+ * already carries the original passage and the wording that was there before, as
+ * the judges saw them, and `#115` settled that re-sliced text is a different
+ * input from the one that was judged. That also removes a failure mode rather
+ * than moving it: the old builder could draw a region and then fail to place it
+ * again, quietly shortening the sheet.
+ *
+ * THE WHOLE SLICE IS THE REGION here, because version 2 delivers by slice rather
+ * than by envelope, so the wording that was there before and the baseline the
+ * probe reads are the same text.
  *
  * @param ref - drawn region
  *
- * @returns One case, or nothing when slicing cannot place the region
+ * @returns One case
  *
  * @example
  * ```ts
- * const built = await buildCase({ ref, },);
+ * const built = buildCase({ ref, },);
  * ```
  */
-async function buildCase(
-  { ref, }: { readonly ref: RegionRef; },
-): Promise<readonly RelabelCase[]> {
-  /**
-   * Original document at the pinned commit.
-   */
-  const sourceText = await readCorpusFile({
-    pin: RUN_CORPUS_PIN,
-    relPath: `people/${ref.entryId}/page.md`,
-  },);
-
-  /**
-   * Translation at the same commit.
-   */
-  const targetText = await readCorpusFile({
-    pin: RUN_CORPUS_PIN,
-    relPath: `people/${ref.entryId}/page.en.md`,
-  },);
-
-  try {
-    /**
-     * Slice texts surrounding the region.
-     */
-    const slice = locateSlice({
-      sourceText,
-      targetText,
-      before: ref.before,
-    },);
-
-    return [{
-      entryId: ref.entryId,
-      positions: [],
-      region: {
-        envelopeId: ref.envelopeId,
-        issueIds: ref.issueIds,
-        before: ref.before,
-        editorAfter: ref.editorAfter,
-      },
-      issues: [],
-      sourceText: slice.sourceText,
-      baselineText: slice.baselineText,
-      recorded: '',
-    },];
-  }
-  catch (error) {
-    // A region slicing can no longer place is dropped rather than fatal: the
-    // draw is a sample, and one unplaceable region costs one item where a throw
-    // would cost the sheet. The reason is logged so a systematic failure is
-    // visible rather than showing up as a quietly short sheet.
-    console.log(
-      `DAMAGE skipped ${ref.entryId} ${ref.envelopeId}: ${String(error,)}`,
-    );
-    return [];
-  }
+function buildCase(
+  { ref, }: { readonly ref: ShippedRegionV2; },
+): RelabelCase {
+  return {
+    entryId: ref.entryId,
+    positions: [],
+    region: {
+      envelopeId: ref.regionId,
+      issueIds: [],
+      before: ref.incumbentText,
+      editorAfter: ref.shippedText,
+    },
+    issues: [],
+    sourceText: ref.sourceText,
+    baselineText: ref.incumbentText,
+    recorded: '',
+  };
 }
 
 /**
@@ -359,9 +275,18 @@ async function main(): Promise<void> {
   /**
    * Every distinct shipped region in the settled artifacts.
    */
-  const pool = await collectShippedRegions({ dir, },);
+  const {
+    regions: pool,
+    filledWithoutIncumbent,
+  } = await collectShippedRegions({ dir, },);
   console.log(
-    `DAMAGE pool ${String(pool.length,)} distinct shipped regions, seed ${seed}`,
+    `DAMAGE pool ${String(pool.length,)} shipped regions across both lanes, seed ${seed}`,
+  );
+  // Reported rather than dropped: a slice filled where the archive had no
+  // English replaced nothing, so no edit could have damaged anything there, and
+  // the honest question about it belongs on a different sheet.
+  console.log(
+    `DAMAGE ${String(filledWithoutIncumbent,)} shipped rows had no incumbent wording and are not drawn from`,
   );
 
   /**
@@ -374,11 +299,9 @@ async function main(): Promise<void> {
     seed,
   },)) {
     /**
-     * Slice texts around this region.
+     * Case this region makes.
      */
-    const [built,] = await buildCase({ ref, },);
-    if (built === undefined)
-      continue;
+    const built = buildCase({ ref, },);
 
     /**
      * What the probe says about it, issues withheld as production now runs.
@@ -411,7 +334,7 @@ async function main(): Promise<void> {
         : 'probe-silent',
     },);
     console.log(
-      `DAMAGE ${ref.entryId} ${ref.envelopeId} probe=${
+      `DAMAGE ${ref.entryId} ${ref.regionId} probe=${
         ((tally?.corroborated ?? 0) + (tally?.removalCorroborated ?? 0)) > 0
           ? 'flagged'
           : 'silent'
