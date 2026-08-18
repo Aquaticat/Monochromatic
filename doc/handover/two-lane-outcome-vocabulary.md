@@ -56,6 +56,15 @@ On displacement-flagged slices this pipeline replaced the archive wording EVERY 
 That is exactly what `#107` predicts: a relocation reads as an omission at the slice it left, so
 per-slice judging condemns the archive there.
 
+THE LENGTHS SAY MORE THAN THE RATE DOES, and they are written up in
+`doc/audit/relocation-signature-at-flagged-slices.md`. At the flagged slices about 240 characters
+LEFT slice 3 and about 240 ARRIVED in slice 4, in both lanes within a dozen characters of each other,
+which is exactly the surplus-and-deficit pair the structural probe named before the pass ran. Slice
+3's ratio came back from 8.78 English characters per source character to about 2.9, against a
+document baseline of 2.739. Whether that is repair or damage is what `#107` asks and no per-slice
+instrument can answer, so it points at a SIXTEEN-ITEM human reading of the flagged slices rather than
+another general damage sheet.
+
 DO NOT QUOTE THIS AS THE ANSWER. Three flagged slices per lane, and 3 of 3 is the maximum the
 instrument can report. If flagged slices behaved exactly like unflagged ones at 0.714, three in a row
 happens 0.364 of the time in one lane, and the two lanes judge the SAME slices so they are not
