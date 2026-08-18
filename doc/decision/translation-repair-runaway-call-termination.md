@@ -289,8 +289,19 @@ A stream looping with any period shorter than the buffer answers yes,
 whatever the period's arithmetic,
 and ordinary prose never repeats a block that long verbatim.
 It is one native substring search over a bounded buffer,
-run occasionally rather than per chunk,
-and it complements the ratio rather than replacing it:
+run occasionally rather than per chunk.
+
+ONE HIT MUST NOT BE A VERDICT, and this is the part that would go wrong if written quickly.
+Reasoning traces in this pipeline restate whole source slices and whole candidates verbatim,
+so a model quoting a long candidate twice inside one thinking trace is ORDINARY WORK
+and a single recurrence would read as a loop.
+Aborting on that would cost a voice for doing its job,
+which is the harm the calibration section spent a whole document avoiding.
+The verdict has to require the recurrence to PERSIST,
+tripping on several consecutive checks as the stream grows,
+which a genuine loop does forever and a quotation does once.
+
+It complements the ratio rather than replacing it:
 the ratio catches short cycling on a small sample,
 the recurrence test catches the long periods the ratio cannot see.
 
@@ -325,9 +336,13 @@ the opening tells a thinking block from an answer from an empty cut,
 which is the whole diagnostic question.
 It shows `partialText`,
 and `partialText` is the raw event stream,
-so the first 80 characters are always `data: {"id":"chatcmpl-` and whatever envelope follows.
+so the first 80 characters are always `data: {"id":"` and whatever envelope follows.
 Not usually, but in every case,
 because every server-sent event body begins that way.
+The id itself varies by sender:
+the fixture above shows `chatcmpl-tabby`
+and production shows a bare hexadecimal string,
+so grep for the `data: {"id":` prefix rather than for either id.
 The model's words are in there,
 JSON-escaped and spread across frame boundaries,
 and none of them are in the excerpt.

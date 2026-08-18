@@ -81,7 +81,9 @@ because:
 -   the opening excerpt is shown only on a cut, and this stream completed;
 -   and had it been shown it would have carried envelope rather than words,
     since `partialText` is the raw event stream and every such body opens
-    `data: {"id":"chatcmpl-`.
+    `data: {"id":"`,
+    with a bare hexadecimal id in production
+    and `chatcmpl-tabby` in the fixture that demonstrated it.
 
 All three are recorded in `doc/decision/translation-repair-runaway-call-termination.md`.
 
