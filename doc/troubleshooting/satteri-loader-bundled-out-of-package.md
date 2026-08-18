@@ -217,10 +217,13 @@ the resolver base changes only after Rolldown copies the loader.
 - Workaround commit:
   `34f4320a8`.
 - Sätteri npm package:
-  `0.9.5`, lockfile integrity
+  `satteri@0.9.5`.
+- Lockfile integrity:
   `sha512-ZuWVl+vnM64y+/TtX8Kosv2c00W+hLQiiwnEL6H0UKVVrxFqMw4D2CJHHQaouVd89OAhtBBfjWLqhKi3TVUV4w==`.
 - Sätteri source:
-  `bruits/satteri@92d01ec4eee3a7284608f5a4974dca6d4aec836e`, tag `satteri-v0.9.5`.
+  `bruits/satteri@92d01ec4eee3a7284608f5a4974dca6d4aec836e`.
+- Sätteri tag:
+  `satteri-v0.9.5`.
 - Node:
   `26.7.0`.
 - pnpm:
@@ -390,7 +393,8 @@ a built translation-repair call with the native link hidden,
 and package installation in a disposable non-workspace consumer.
 
 Add a complementary markdown-lint build smoke that imports the built library and calls `parse` on a clean source.
-Calling the parser is stronger than checking `--help` because it remains effective if Sätteri ever defers native loading.
+Calling the parser is stronger than checking `--help` because it remains effective
+if Sätteri ever defers native loading.
 The smoke detects a broken native artifact;
 it does not replace the parser-free split.
 
@@ -450,7 +454,8 @@ Searches covered every open and closed Sätteri issue and pull request for
 `bundle`,
 and `napi`.
 Issue [bruits/satteri#163](https://github.com/bruits/satteri/issues/163) and merged pull request
-[bruits/satteri#136](https://github.com/bruits/satteri/pull/136) concern missing WASI runtime dependencies under browser bundling.
+[bruits/satteri#136](https://github.com/bruits/satteri/pull/136)
+concern missing WASI runtime dependencies under browser bundling.
 They do not describe a native loader copied out of its package.
 Issue [bruits/satteri#209](https://github.com/bruits/satteri/issues/209) concerns the generated loader's stale
 version check and is also not a duplicate.
