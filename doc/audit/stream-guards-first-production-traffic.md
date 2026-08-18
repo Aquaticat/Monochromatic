@@ -150,8 +150,54 @@ and one pass over five entries is one workload.
 What it does say is that the stated reason for disabling the guard
 is not what the current traffic looks like,
 and that a first-byte window is worth re-deriving rather than assumed useless.
-For scale, a 30 s window would sit over three times above the largest first byte observed here
-and about ten times above the ninety-ninth percentile.
+
+## Three workloads agree on the middle and disagree with any small window
+
+The single-pass reading above is not enough to set a constant,
+so the same two columns were read from every pass log that carries them.
+`grace-remeasure-snapshot.log` is excluded as a copy of `corpus-pass-20260817.log`:
+same opening line, same maxima, not an independent workload.
+
+```text
+log                        streams   p50    p75    p90     p99      max
+resume-run-output             2888  1032   1191   1477    3955   183755
+corpus-pass-20260817          2166  1237   1451   1951   10163    91843
+flagged-pass-2 (this one)      416  1173   1352   1726    2768     9084
+```
+
+THE MIDDLE IS STABLE ACROSS FIVE DAYS AND THREE WORKLOADS,
+at one to one and a third seconds,
+and none of them resembles the 95.6 second median the constant was set from.
+
+THE TAIL IS REAL, and it is the half a single pass could not have shown.
+One call waited 183 seconds for its first byte and another 92.
+Counted over the 5470 streams in the three logs:
+
+```text
+first byte over    30 s   10 streams   about 1 in 550
+                   60 s    2 streams
+                  120 s    1 stream
+                  180 s    1 stream
+                  300 s    0 streams
+
+largest gap over   30 s    4 streams
+                   60 s    1 stream
+                  120 s    0 streams
+```
+
+SO A SHORT WINDOW IS NOT FREE, which is the correction this second reading makes to the first.
+A 30 second first-byte window would have fired on about one call in 550,
+and at six voices a stage that is roughly one stage in ninety losing a voice to the guard itself.
+A 300 second window would have fired on none of the 5470
+and would still end a dead call in five minutes rather than never.
+
+THESE COUNTS ARE LOWER BOUNDS.
+Two of the three logs predate `#118`,
+so they record only streams that completed,
+and a call abandoned before completing is exactly the one most likely to have waited longest
+for a first byte.
+The true exceedance is at or above every figure above,
+which argues against the small windows rather than for them.
 
 IT ALSO RE-FRAMES WHAT THE STRAGGLER GRACE CUTS.
 If a call reaches its first byte in about a second,
