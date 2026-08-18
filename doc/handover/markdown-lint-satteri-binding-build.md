@@ -70,6 +70,10 @@ Sätteri does not defer the check until parsing: importing its module reaches th
 
 ## Issue 447
 
+The branch carrying issue 447's consumer is checked out in a second fresh disposable worktree,
+`/var/home/user/temp/agent/issue-447-satteri.Tpkzokt6`,
+at `translation-repair-rebased` commit `3311e7bd9c8f7f037a7322e01b909870d2029400`.
+
 Issue 447 reports a second and more important shape.
 `@monochromatic-dev/module-translation-repair` imports markdown-lint rule functionality.
 The shared Node config always bundles `@monochromatic-dev/**`.
@@ -80,7 +84,18 @@ so pnpm's binding link under Sätteri is invisible.
 
 The current workaround declares `satteri` directly in translation-repair.
 That makes Sätteri external at the consumer boundary and keeps its loader in its package directory.
-Issue 447 rejects this as a durable design because every source-level consumer must know about a transitive native dependency.
+A fresh build retained one `from"satteri"` import, contained no loader error string,
+and imported `dist/final/node/index.mjs` successfully.
+
+Removing only that manifest declaration reproduced the issue exactly:
+Rolldown still succeeded,
+the bundle retained no external Sätteri import,
+one generated file contained the loader error string and fifty-three binding-package references,
+and importing `index.mjs` threw from the generated `repair-translation-*.mjs` chunk.
+The actual Linux binding file remained installed,
+and markdown-lint's own built CLI still parsed a clean fixture successfully.
+
+Issue 447 rejects the declaration as a durable design because every source-level consumer must know about a transitive native dependency.
 
 Issue 447 asks first for a troubleshooting document and then for a proper migration.
 Its ranking is:
@@ -111,17 +126,20 @@ Building that Rust package in the disposable worktree was unnecessary.
 The user directed copying the existing binary from the main worktree instead.
 The copied source and destination binaries have the same SHA-256 digest,
 `3b3ed2a93c458ae26b97533814493232e6b6d7b235e9217564b495df47ce1da2`.
-A separate GitHub issue will decide where this reusable-worktree-artifact guidance belongs.
+GitHub issue 448 now records the placement decision for this reusable-worktree-artifact guidance.
 
 ## Open design questions
 
 - A built-CLI smoke step fixes the misleading direct `build` result but does not remove issue 447's transitive-consumer trap.
 - The parser-free core addresses issue 447 at the dependency boundary but needs the exact export and package seam designed and validated.
 - The options can be complementary: split the core for consumers, and retain a built-CLI smoke step for the native CLI artifact.
-- The investigation still needs to inspect translation-repair's current source, manifest, Rolldown config, and bundle.
+- Translation-repair already has `parseMarkdownBody`, a remark-parse plus GFM parser returning `mdast.Root`.
+  A parser-free core could inject that existing parser rather than introducing another parser dependency.
+- `fixSource` currently owns reparsing through `runRules`, so the split needs a parser callback or a lower-level tree API;
+  merely moving rules is insufficient.
 - The issue's alternatives still need independent validation before a final ranking.
 
 ## Next action
 
-Inspect issue 447's current translation-repair implementation and reproduce its pre-workaround bundle shape in the disposable worktree.
-Then validate the parser-free core seam and compare it with generic or special-case externalization.
+Validate the parser-free core seam and compare it with generic or special-case externalization.
+Write the required troubleshooting document with the fresh-worktree source trace and reproduction evidence.
