@@ -374,26 +374,24 @@ WHY 2 MATTERS MOST: a verdict needs about 131,000 GENERATED characters and produ
 raw ones. At a 10x envelope 45 of 347 streams reach the bar; at 1x, 282 of 347. The unmeasured
 ratio decides whether this guard judges one stream in eight or four in five.
 
-### Sol: three identical attempts all failed, and the failure is now localized
+### Sol is closed out: `#444` filed, corrected twice, no further effort
 
-THREE ATTEMPTS, all `exit 124` with ZERO bytes: all three stream modules at once, then
-`stream-degeneration.ts` alone twice. Do NOT fire a fourth identical run.
+THE CAUSE IS THE ROUTE, not the prompt. `openai-codex/gpt-5.6-sol` produced exactly ONE response, at
+02:02:53Z, and has produced nothing since: about eleven calls, every one hanging until killed with
+zero bytes on stdout and stderr, regardless of prompt size, content, argv or `@file` delivery,
+thinking level, or context-file discovery.
 
-THE MODEL IS REACHABLE. A smoke test, same model and same `--thinking xhigh`, returned `ALIVE` in
-well under its 600 s bound. So the failure is specific to a review-scale request rather than the
-provider being down, and relaunching the same command tests nothing new.
+TWO CONTROLS SETTLE IT. The exact 51-byte prompt that succeeded at 02:02Z now exits 124. And the
+DEFAULT provider, same flags and same `--thinking xhigh` and same prompt, answers `ALIVE` in seconds.
+So pi works, `--print` works, `xhigh` works, and the prompt works.
 
-TWO SINGLE-VARIABLE VARIANTS ARE RUNNING, each changing exactly one thing against the failing run:
+A PROMPT-SIZE STORY WAS BUILT AND RETRACTED. A ladder at 80, 120, 160, 200, 500, 1000, 2000 and 4000
+bytes all hung, and a 260-byte trivially-answerable prompt hung, which looked like a size threshold
+between 51 and 80 bytes. It was not: every one of those runs happened AFTER whatever changed, and
+the baseline was never re-run. A missing control. `#444` carries the retraction and was retitled.
 
-  A  `--thinking high` with the same 11 KB prompt   ->  ~/temp/agent/sol-effort-high.txt
-  B  `--thinking xhigh` with a 4 KB prompt          ->  ~/temp/agent/sol-short.txt
-
-If A returns and B does not, the effort budget is the cause; if B returns and A does not, prompt
-scale is. If BOTH exit 124, stop: sol cannot review this module and the second-reviewer pass has to
-come from somewhere else.
-
-THAT MATTERS LESS THAN IT DID. A boundary-driven review of the same modules this session found five
-defects, tracked as `#120`, which is more than sol has produced across three hours.
+DO NOT SPEND MORE ON THIS. The user's instruction is launch-and-forget and focus on the pipeline, and
+`--thinking` must stay `xhigh` or `max` for this use so lowering effort is not a workaround.
 
 ### Two settled pools, which must not be confused
 
