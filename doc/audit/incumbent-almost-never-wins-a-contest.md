@@ -41,6 +41,30 @@ is asked against a baseline of about 0.95, not 0.74,
 and a handful of slices all replacing is unremarkable against 0.95.
 Six consecutive replacements happen 0.73 of the time at that rate.
 
+## Two ways it could have been an artefact, both checked
+
+IT IS NOT A LABELLING ARTEFACT.
+`translate-judge.ts` puts the incumbent on the ballot ANONYMOUSLY,
+and the module says why in as many words:
+the existing translation deliberately does not travel as evidence,
+because showing it twice would tell the judges which candidate is the incumbent.
+Judges therefore cannot see which candidate is the archive's.
+
+IT IS NOT A POSITION ARTEFACT EITHER.
+Candidates reach judges in caller-fixed order rather than shuffled,
+so a fixed slot for the incumbent would have been a real confound.
+Counted over the 39 judged slices,
+the incumbent's position in the slate varies:
+
+```text
+slot      0   1   2   3   4   5
+slices   13  10   5   3   3   5
+```
+
+The archive's wording therefore competes blind,
+from a position that changes,
+and loses.
+
 ## What it does not say
 
 IT IS NOT EVIDENCE THAT THE JUDGES ARE WRONG.
@@ -62,6 +86,5 @@ and `#83` entered the incumbent into selection on the premise that it would some
     slice length, entry, which models backed them.
 -   Whether the same ratio holds in the flagged pool once it settles,
     which is a different population and must be read separately.
--   Whether `voteWeight` 0.42 against 3.31 means the incumbent is placed on the ballot
-    in a way that makes it hard to vote for,
-    which would be a defect rather than a result.
+-   What the two genuine wins look like beside the 37 losses,
+    which is the only place a human could calibrate whether the judges are right.
