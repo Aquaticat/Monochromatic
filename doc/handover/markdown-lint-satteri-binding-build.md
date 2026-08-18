@@ -128,18 +128,87 @@ The copied source and destination binaries have the same SHA-256 digest,
 `3b3ed2a93c458ae26b97533814493232e6b6d7b235e9217564b495df47ce1da2`.
 GitHub issue 448 now records the placement decision for this reusable-worktree-artifact guidance.
 
+## Option evaluation
+
+### Parser-free core
+
+Translation-repair already has `parseMarkdownBody`, a remark-parse plus GFM parser returning `mdast.Root`.
+A parser-free core can accept a synchronous parser callback and keep the fixpoint loop,
+rule dispatch,
+fix application,
+rules,
+and types behind one package interface.
+The Sätteri adapter keeps astral-offset correction in the CLI package;
+the remark adapter stays private to translation-repair.
+
+A scratch parser-free fix loop imported only the existing semantic rule and translation-repair parser.
+Its output matched the current Sätteri-backed `fixSource` on thirteen measured fixtures:
+run-on prose,
+blockquote,
+list,
+heading,
+bold,
+astral text,
+already-wrapped prose,
+inline code,
+raw HTML,
+braces,
+less-than prose,
+autolink,
+and frontmatter-shaped text.
+After removing Sätteri's native binding link,
+a direct Sätteri import failed while the parser-free probe still produced the expected fixed text.
+This validates the seam,
+not the complete package migration or corpus parity.
+
+### Generic napi externalization
+
+A prototype added `satteri` to the shared Node config's always-external list.
+With translation-repair's direct Sätteri declaration and stale node_modules link absent,
+the build emitted one external Sätteri import and no copied loader.
+Importing the bundle then failed with `ERR_MODULE_NOT_FOUND` because strict pnpm isolation had no
+`translation-repair/node_modules/satteri` link.
+Generic detection moves the failure unless it also manufactures an honest runtime dependency,
+so issue 447's candidate C is not a complete fix as stated.
+
+### Special-case markdown-lint externalization
+
+A prototype always externalized `@monochromatic-dev/cli-markdown-lint`.
+Without translation-repair declaring Sätteri,
+the bundle retained one markdown-lint import,
+contained no copied loader,
+and imported successfully in the workspace.
+It preserves the unnecessary native runtime dependency,
+violates the self-contained workspace-bundle policy,
+and would expose a runtime dependency on the currently private CLI package.
+It works locally but is not a sound package design.
+
+### Direct declaration and build smoke
+
+The current direct `satteri` declaration is a verified short-term workaround.
+A built-artifact smoke step is complementary:
+it makes a package build fail when the emitted artifact cannot load,
+but it does not remove the dependency trap.
+For markdown-lint,
+the permanent smoke should call the built parser on a clean source rather than rely only on `--help`,
+so a future lazy loader remains covered.
+
+Current ranking:
+parser-free core plus built-artifact smoke > direct declaration plus smoke > special-case markdown-lint externalization >
+generic napi externalization as currently proposed.
+The core ranks first because it removes the native dependency from translation-repair.
+The declaration ranks above the special case because its manifest honestly names the emitted runtime dependency.
+The special case ranks above generic napi externalization because it resolves through a declared direct package,
+while the generic prototype produced an unresolvable bare import.
+
 ## Open design questions
 
 - A built-CLI smoke step fixes the misleading direct `build` result but does not remove issue 447's transitive-consumer trap.
-- The parser-free core addresses issue 447 at the dependency boundary but needs the exact export and package seam designed and validated.
-- The options can be complementary: split the core for consumers, and retain a built-CLI smoke step for the native CLI artifact.
-- Translation-repair already has `parseMarkdownBody`, a remark-parse plus GFM parser returning `mdast.Root`.
-  A parser-free core could inject that existing parser rather than introducing another parser dependency.
-- `fixSource` currently owns reparsing through `runRules`, so the split needs a parser callback or a lower-level tree API;
-  merely moving rules is insufficient.
-- The issue's alternatives still need independent validation before a final ranking.
+- The options are complementary: split the core for consumers, and retain a built-parser smoke step for the native CLI artifact.
+- The core parser callback must guarantee a root for the exact source with JavaScript UTF-16 offsets.
+- Complete semantic-wrap and corpus parity remain migration gates; the thirteen-fixture probe is not exhaustive.
 
 ## Next action
 
-Validate the parser-free core seam and compare it with generic or special-case externalization.
 Write the required troubleshooting document with the fresh-worktree source trace and reproduction evidence.
+Then present the ranked recommendation and exact parser-core interface without landing the migration before user acceptance.
