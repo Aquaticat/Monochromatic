@@ -107,7 +107,8 @@ and importing `index.mjs` threw from the generated `repair-translation-*.mjs` ch
 The actual Linux binding file remained installed,
 and markdown-lint's own built CLI still parsed a clean fixture successfully.
 
-Issue 447 rejects the declaration as a durable design because every source-level consumer must know about a transitive native dependency.
+Issue 447 rejects the declaration as a durable design because every source-level consumer
+ must know about a transitive native dependency.
 
 Issue 447 asks first for a troubleshooting document and then for a proper migration.
 Its ranking is:
@@ -129,7 +130,8 @@ With the binding absent,
  bundling still finished but the overall build task failed at the smoke step.
 After restoring the binding link,
  the same task printed CLI help and exited successfully.
-This crosses the built-artifact consumer boundary and catches both import-time native-loader failure and an unusable CLI entry point.
+This crosses the built-artifact consumer boundary and catches both import-time native-loader failure
+ and an unusable CLI entry point.
 The edit is only a prototype and must be removed before finalizing the investigation.
 
 ## Worktree tooling correction
@@ -209,8 +211,10 @@ the permanent smoke should call the built parser on a clean source rather than r
 so a future lazy loader remains covered.
 
 Current ranking:
-parser-free core plus built-artifact smoke > direct declaration plus smoke > special-case markdown-lint externalization >
-generic napi externalization as currently proposed.
+parser-free core plus built-artifact smoke >
+ direct declaration plus smoke >
+ special-case markdown-lint externalization >
+ generic napi externalization as currently proposed.
 The core ranks first because it removes the native dependency from translation-repair.
 The declaration ranks above the special case because its manifest honestly names the emitted runtime dependency.
 The special case ranks above generic napi externalization because it resolves through a declared direct package,
@@ -218,7 +222,8 @@ while the generic prototype produced an unresolvable bare import.
 
 ## Open design questions
 
-- A built-CLI smoke step fixes the misleading direct `build` result but does not remove issue 447's transitive-consumer trap.
+- A built-CLI smoke step fixes the misleading direct `build` result
+   but does not remove issue 447's transitive-consumer trap.
 - The options are complementary:
    split the core for consumers,
    and retain a built-parser smoke step for the native CLI artifact.
@@ -243,4 +248,5 @@ that result does not validate or invalidate the document.
 ## Next action
 
 Obtain an independent review of the recommendation and troubleshooting evidence.
-Then present the ranked recommendation and exact parser-core interface without landing the migration before user acceptance.
+Then present the ranked recommendation and exact parser-core interface
+ without landing the migration before user acceptance.
