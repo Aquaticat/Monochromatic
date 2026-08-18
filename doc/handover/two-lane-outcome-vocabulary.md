@@ -44,6 +44,37 @@ and then the join `#107` waits on: replacement rate on the flagged slice indices
 the rest. The flag list comes from `displacement-probe`, which spends no quota and can be re-run at
 any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
 
+### The `#107` join reader is built, validated, and waiting
+
+`~/temp/agent/join-107.mjs`. Outside the repository, no build, no quota, safe while the pass runs.
+
+  node ~/temp/agent/join-107.mjs --archive ~/translation-repair-runs-flagged-20260818/artifacts
+
+THE INDEX SPACE WAS CHECKED, not assumed, because `#99` established that `chunkIndex` means three
+different things depending on who stamped it. Over all six settled entries the probe's `sliceCount`
+equals the artifact's delivery row count in BOTH lanes, and delivery indices run contiguously from
+zero. The reader re-checks per entry and THROWS on a mismatch rather than joining silently.
+
+VALIDATED against three already-recorded figures: translate 37 of 50 at 0.7400, repair 32 of 50 at
+0.6400, 69 shipped pooled. POSITIVE CONTROL passes, per `QPC`: with `--control shipped` it reports
+1.0000 flagged against 0.0000 unflagged, so it is shown able to display a difference before being
+trusted to report the absence of one. An empty flagged bucket prints `NO SLICES IN THIS BUCKET`
+rather than a rate of zero.
+
+Flag lists for the five entries, union of every flag kind, 16 flagged slices against 26 unflagged:
+lintong 2 3 4; wangzihao980 3 4; GLaDOSister 2 3 4; dogesir_ 2 3 8 9; saurikissa 3 4 8 9.
+
+### The guards have fired nothing, and the obvious grep lies
+
+235 streams completed in the pass's first half hour and NEITHER guard ended one. The searches that
+answer this are `stream .*: cut` and `degenerate in`. A bare `cut` returns ten confident false
+positives, all of them the word "cute" inside a rationale about 撒娇.
+
+TWO PROGRESS FIELDS CARRY THE SAME NUMBER, 235 of 235: `raw chars` and `delivered chars` both count
+the raw event stream, because `drainBody` returns the wire format itself. The generated-character
+count every open question needs is still unrecorded even though the scanner computes it. Written up
+in `doc/decision/translation-repair-runaway-call-termination.md`, held until the freeze lifts.
+
 ### A sol review is also running and may never return
 
 `timeout 3000 pi --model openai-codex/gpt-5.6-sol` on `stream-degeneration.ts` alone, started about
