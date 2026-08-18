@@ -102,3 +102,59 @@ The second sheet joins single newlines within a paragraph for display,
 keeps blank lines,
 drops the rewrap-only rows,
 and says in its preamble that wrapping is tracked separately.
+
+## The wrapper was run over every shipped passage before any of it was wired in
+
+Measured 2026-08-18,
+zero quota,
+`~/temp/agent/wrap-probe-2.mjs`,
+calling `fixSource` from the built `@monochromatic-dev/cli-markdown-lint` with exactly one rule.
+
+The first attempt asked the wrong question.
+"Does the passage carry fewer line breaks than the incumbent" is not the rule's question,
+because a shorter passage legitimately carries fewer breaks.
+The rule's own question is whether the passage still reports a finding,
+and that is what settles it:
+
+```text
+rows                                              64
+
+archive incumbents violating MD1                  50 of 64
+shipped text violating                            58 of 64,  326 findings
+shipped text violating AFTER the fix               0 of 64,    0 findings
+
+non-newline characters, grew                      10
+non-newline characters, unchanged                 54
+non-newline characters, SHRANK                     0
+second application changes nothing                64 of 64
+```
+
+THREE THINGS ARE NOW MEASURED RATHER THAN ASSUMED.
+The fix clears every finding in this pool.
+It is add-only in fact and not only in intent,
+since no passage lost a non-newline character
+and the ten that grew did so by continuation prefixes inside blockquotes and lists.
+It is idempotent,
+so applying it on a cache replay cannot drift.
+
+FRAGMENT SAFETY IS SETTLED THE SAME WAY.
+The concern was that a slice might be a piece of a block
+and parse as something else on its own.
+Every slice in the pool was passed through alone
+and none lost a character,
+so whatever the parser made of them, it removed nothing.
+
+## The archive is not innocent either
+
+50 of 64 incumbents already violate the rule,
+so this is a corpus-wide condition rather than something the pipeline invented.
+The pipeline still makes it worse,
+58 passages against 50 and 326 findings,
+and the grader saw the difference at the slices where a wrapped incumbent became an unwrapped replacement.
+
+THE RETAINED TEXT IS DELIBERATELY LEFT ALONE.
+A retention is not an edit,
+and wrapping one would manufacture a change out of a decision to change nothing,
+which both the delivery coherence check and the assembly assertion refuse by design.
+Bringing the archive itself up to the rule is a one-time `markdown-lint --fix` run over the corpus,
+not a job for a translation pass.
