@@ -8,6 +8,74 @@ this file holds the WORKING STATE.
 Worktree: `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`.
 All commands below assume it, not the main worktree.
 
+## Evening sitting, 2026-08-17: runaway calls
+
+WHY THIS EXISTS. The user reports that the provider does not auto-terminate token degeneration, so
+runaway calls must be ended by us. Decision recorded in
+`doc/decision/translation-repair-runaway-call-termination.md`; work tracked in `#119`.
+
+THE USER'S THREE CONSTRAINTS, all of which shaped the design:
+
+-   DO NOT SEND `max_tokens`. The provider is a two-person shop and a cap only helps if implemented
+    correctly; relying on one turns "runs too long" into "truncates silently", which is worse.
+    Keep the request body lean. No production stage sets it today, so this is a decision to keep
+    current behaviour deliberately rather than by omission.
+-   CATCH DEGENERATION IN THINKING TRACES, "I will output." repeating without end. This is the case
+    that escapes everything else, because such a model emits no answer and a content-only scan sees
+    an empty string, which reads as a short reply.
+-   SOME MODELS LEGITIMATELY WRITE A GREAT DEAL, and that is not bad. Length never condemns.
+
+BUILT AND COMMITTED, none of it wired into the drain yet, so nothing in the running pass changed:
+
+-   `stream-degeneration.ts` `watchForDegeneration`, `8eb62c0ac` and `bf15afaf1`
+-   `stream-delta-scan.ts` `scanStreamDeltas`, `8517282c1`
+-   `stream-runaway-watch.ts` `watchRunaway` plus `StreamDegenerateError`, `fd62d7b37`
+
+NOT BUILT OR LINTED YET. The worktree used for it had no `node_modules`, so everything was exercised
+by running `node` against the TypeScript source directly: 9 detector checks, 8 scanner checks driven
+end to end, 6 watch checks. Unit test files exist beside each module and import `dist`, so they have
+never run. RUN `mise run //package/module/translation-repair:test:unit` AND `lint:types` ONCE THE
+FREEZE LIFTS, and expect to fix things.
+
+THE ONE REAL FALSE POSITIVE FOUND AND FIXED: verse carrying a refrain scored 0.036 distinct, which
+the ratio alone condemns, and this corpus contains verse. The fix was to refuse to speak below about
+131000 characters of generated text, roughly fifteen times the longest model output in any of the 56
+settled artifacts. Do not lower that bar without re-checking verse.
+
+MISREAD ONCE, DO NOT REPEAT IT: `chars` in the drain progress line counts RAW server-sent-event
+bytes, envelope included, not generated text. A median of 324,995 is an ordinary reply.
+
+## What the evening measurement said, and what it did not
+
+`doc/decision/translation-repair-straggler-grace.md` now carries a second reading from the evening
+pass. IT DOES NOT REPLACE the morning's `doc/audit/straggler-grace-remeasure.md`, which already ran
+the named control and is the re-measure of record. An earlier draft of that section wrongly said the
+re-measure was still owed; corrected in `d2573ed7a`.
+
+Genuinely new from the evening data:
+
+-   THE DEFINITION CANNOT SEE THE TRANSLATE LANE. `translate-document.ts:391` logs selection only
+    when ZERO translators were heard, so partial loss in `select` leaves no `heard` line. Of 30
+    voices lost in the snapshot, 17 went in `select` and 1 in `refiner`. The instrument counts 10
+    of 30. Both sides of every comparison are measured the same way, so nothing is invalidated, but
+    the figures understate loss and the definition should be extended before the next comparison.
+-   EVERY ABANDONED VOICE IS A GLM, 29 of 29 attributed, and none is Kimi-K3, which appears more
+    often in the log than any other model. Supersedes `#77`.
+-   THE RESIDUAL IS CENSORED. An abandoned call is killed at quorum plus 180 s, so its duration is
+    unknown and strictly greater. It is not shown to be a latency finding, and if these calls are
+    degenerating then no window would ever have helped them.
+
+## Pass state as of 2026-08-17 evening
+
+-   Pass PID `3768707`, alive, cwd `package/module/translation-repair`, runs dir
+    `/home/user/translation-repair-runs-20260817` via `TRANSLATION_REPAIR_RUNS_DIR`.
+-   Watcher PID `3953196` polls that artifacts dir every 60 s and kills the pass at 6 entries.
+    VERIFIED to watch the same path the pass writes to.
+-   4 artifacts settled, 5th in flight. Frozen snapshot of the log at
+    `~/temp/agent/grace-remeasure-snapshot.log`.
+-   AUTO-PUSH IS FAILING with GitHub 500s as of 00:00Z; `d2573ed7a` is committed locally and not
+    pushed. Retry `git push` from this worktree.
+
 ## Where the 2026-08-17 afternoon sitting got to
 
 Newest first. Everything named here is COMMITTED and pushed unless it says otherwise.
