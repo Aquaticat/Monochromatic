@@ -21,6 +21,7 @@ import {
 import {
   armIdleGuard,
   drainBody,
+  StreamCutShortError,
   StreamDegenerateError,
 } from '../dist/final/node/index.mjs';
 
@@ -197,9 +198,11 @@ async function drainOutcome(
   {
     response,
     guard,
+    callerSignal = new AbortController().signal,
   }: {
     readonly response: Response;
     readonly guard: Parameters<typeof drainBody>[0]['guard'];
+    readonly callerSignal?: AbortSignal;
   },
 ): Promise<DrainOutcome> {
   try {
@@ -208,7 +211,8 @@ async function drainOutcome(
       body: await drainBody({
         response,
         guard,
-        callerSignal: new AbortController().signal,
+        callerSignal,
+        label: 'hf:whiskers',
       },),
     };
   }
@@ -274,6 +278,90 @@ await describe({
          */
         const whole = Math.ceil((30_000 * 60) / 4_096,);
         expect(pulled(),).toBeLessThan(whole,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS WHAT THE STREAM ALREADY DELIVERED when a call is cut, which used to be dropped '
+        + 'on the floor. This is the whole point: a call that never got a first byte leaves an '
+        + 'empty string and one cut off mid-reasoning leaves a truncated thinking block, and those '
+        + 'want opposite remedies. Nothing on disk could tell them apart before',
+      fn: async () => {
+        /**
+         * What the model manages to say before the plug is pulled.
+         */
+        const said = 'It is a cat. It did a backflip. It cras';
+
+        /**
+         * That much, framed as the wire carries it.
+         */
+        const delivered = frameOf({
+          channel: 'reasoning',
+          text: said,
+        },);
+
+        /**
+         * Caller's own steering.
+         */
+        const steering = new AbortController();
+
+        /**
+         * How many pieces have gone out.
+         */
+        const sent = { count: 0, };
+
+        /**
+         * Encoder, since a body carries bytes.
+         */
+        const encoder = new TextEncoder();
+
+        /**
+         * A body that delivers once and is then torn down, which is what an
+         * abort does to a fetch in production.
+         */
+        const body = new ReadableStream<Uint8Array>({
+          pull(controller,): void {
+            if (sent.count === 0) {
+              sent.count += 1;
+              controller.enqueue(encoder.encode(delivered,),);
+              return;
+            }
+            steering.abort();
+            controller.error(new Error('exchange torn down by abort',),);
+          },
+        },);
+
+        using guard = armIdleGuard({
+          label: 'hf:whiskers',
+          firstByteMs: ROOMY_MS,
+          idleMs: ROOMY_MS,
+        },);
+
+        /**
+         * What the drain did.
+         */
+        const outcome = await drainOutcome({
+          response: new Response(body,),
+          guard,
+          callerSignal: steering.signal,
+        },);
+
+        expect(outcome.kind,).toBe('raised',);
+        if (outcome.kind !== 'raised')
+          throw new Error('raised by construction',);
+        if (!(outcome.error instanceof StreamCutShortError))
+          throw new Error('a cut by construction',);
+
+        // The text survives the cut, which is the entire fix.
+        expect(outcome.error.partialText,).toBe(delivered,);
+        expect(outcome.error.partialText.includes(said,),).toBe(true,);
+
+        // And it is attributed to the model rather than to the endpoint, so a
+        // per-model latency figure is readable at all.
+        expect(outcome.error.label,).toBe('hf:whiskers',);
+
+        // The original failure is preserved rather than replaced.
+        expect(outcome.error.cause,).toBeInstanceOf(Error,);
       },
     },),
 

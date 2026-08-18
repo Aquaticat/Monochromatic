@@ -9,6 +9,7 @@ import {
   drainBody,
   STREAM_FIRST_BYTE_MS,
   STREAM_IDLE_MS,
+  StreamCutShortError,
   StreamStalledError,
 } from '../dist/final/node/index.mjs';
 
@@ -235,6 +236,7 @@ await describe({
                 encoder.encode('data: two\n',),
               ],),
               guard,
+            label: 'hf:whiskers',
               callerSignal: new AbortController().signal,
             },);
             expect(bodyText,).toBe('data: one\ndata: two\n',);
@@ -258,6 +260,7 @@ await describe({
                 new Uint8Array([0xAB,],),
               ],),
               guard,
+            label: 'hf:whiskers',
               callerSignal: new AbortController().signal,
             },);
             expect(bodyText,).toBe('猫',);
@@ -275,6 +278,7 @@ await describe({
             const bodyText = await drainBody({
               response: new Response(null,),
               guard,
+            label: 'hf:whiskers',
               callerSignal: new AbortController().signal,
             },);
             expect(bodyText,).toBe('',);
@@ -313,13 +317,20 @@ await describe({
               await drainBody({
                 response: stalled,
                 guard,
+            label: 'hf:whiskers',
                 callerSignal: new AbortController().signal,
               },);
             }
             catch (error) {
               caught = error;
             }
-            expect(caught,).toBeInstanceOf(StreamStalledError,);
+            // The stall is now the CAUSE of a cut rather than the thrown value
+        // itself, because the drain also has to hand back whatever the stream
+        // delivered before it stopped. The distinction this case exists for is
+        // unchanged: a stall must still be identifiable as a stall rather than
+        // as the platform abort that carried it out.
+        expect(caught,).toBeInstanceOf(StreamCutShortError,);
+        expect((caught as StreamCutShortError).cause,).toBeInstanceOf(StreamStalledError,);
           },
         },),
 
@@ -363,6 +374,7 @@ await describe({
               await drainBody({
                 response: steered,
                 guard,
+            label: 'hf:whiskers',
                 callerSignal: caller.signal,
               },);
             }

@@ -48,6 +48,7 @@ await describe({
 
         const reply = await fetchTransport({
           url: 'https://example.org/cat-chat',
+          label: 'hf:whiskers',
           method: 'POST',
           headers: callerHeaders,
           bodyJson: '{"model":"cat"}',
@@ -83,6 +84,7 @@ await describe({
 
         await fetchTransport({
           url: 'https://example.org/cat-quotas',
+          label: 'hf:whiskers',
           method: 'GET',
           headers: {},
           signal: new AbortController().signal,
@@ -110,6 +112,7 @@ await describe({
 
         const reply = await fetchTransport({
           url: 'https://example.org/cat-chat',
+          label: 'hf:whiskers',
           method: 'POST',
           headers: {},
           bodyJson: '{}',
@@ -150,6 +153,7 @@ await describe({
         try {
           await fetchTransport({
             url: 'https://example.org/cat-chat',
+            label: 'hf:whiskers',
             method: 'POST',
             headers: {},
             bodyJson: '{}',
@@ -178,6 +182,7 @@ await describe({
         const caller = new AbortController();
         await fetchTransport({
           url: 'https://example.org/cat-chat',
+          label: 'hf:whiskers',
           method: 'GET',
           headers: {},
           signal: caller.signal,

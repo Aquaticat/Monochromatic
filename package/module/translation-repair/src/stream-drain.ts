@@ -6,6 +6,10 @@ import {
   StreamDegenerateError,
   watchRunaway,
 } from './stream-runaway-watch.ts';
+import {
+  reportStreamProgress,
+  StreamCutShortError,
+} from './stream-cut.ts';
 
 //region Stream drain
 // Reads a response body chunk by chunk instead of in one `response.text()`
@@ -18,30 +22,6 @@ import {
  * Logger root for the stream drain.
  */
 const l = tagged({ tag: 'translation-repair', },);
-
-/**
- * Gap worth naming in the run log. Below it the stream is behaving and logging
- * every exchange would bury the run output; at or above it the sample is what
- * `STREAM_IDLE_MS` has to be tuned against.
- */
-const NOTABLE_GAP_MS = 0;
-
-/**
- * Time to first byte worth naming in the run log.
- *
- * Zero, meaning every exchange is sampled, because any positive threshold
- * censors the very distribution the sample exists to describe. A 60 s value
- * here produced a log in which every entry was slower than 60 s, which was then
- * briefly mistaken for the healthy range; a 30 s value would have made the same
- * mistake available at 30 s. The open question these samples must answer is
- * whether the 240 s per-call deadline truncates real work, and that question is
- * about the shape of the whole distribution, most of all its tail, so nothing
- * may be filtered out ahead of seeing it.
- *
- * The cost is one log line per model call. That is the price of an honest
- * denominator.
- */
-const NOTABLE_FIRST_BYTE_MS = 0;
 
 /**
  * Stops pulling from a stream that will not stop on its own.
@@ -98,6 +78,10 @@ async function stopReading(
  *
  * @param callerSignal - caller's own signal, to tell steering from a stall
  *
+ * @param label - model this call went to, so a latency figure can be read per
+ * model rather than per endpoint. Reasoning from abandon counts instead is what
+ * produced the retracted conclusion that one vendor's models were slow
+ *
  * @mutates guard - each chunk resets the guard's silence window via
  * guard.notify, and guard.progress reads the totals it accumulated
  *
@@ -107,7 +91,8 @@ async function stopReading(
  *
  * @returns Whole decoded body
  *
- * @throws `StreamStalledError` when the guard tripped on silence
+ * @throws `StreamCutShortError` when the stream was cut off, carrying whatever
+ * it had already delivered and wrapping the original failure as its cause
  *
  * @throws `StreamDegenerateError` when the model stopped saying anything new,
  * which no silence window can detect because such a stream is never silent
@@ -122,10 +107,12 @@ export async function drainBody(
     response,
     guard,
     callerSignal,
+    label,
   }: {
     readonly response: ForeignBorrowed<Response>;
     readonly guard: ForeignBorrowed<IdleGuard>;
     readonly callerSignal: AbortSignal;
+    readonly label: string;
   },
 ): Promise<string> {
   /**
@@ -217,44 +204,58 @@ export async function drainBody(
      */
     const guardSignal = guard.signal;
 
-    // A stall aborts the guard's own controller and never the caller's, so
-    // this ordering reports steering as steering and silence as silence.
-    if (guardSignal.aborted && (!callerSignal.aborted))
-      throw guardSignal.reason;
-    throw error;
+    /**
+     * What the stream had already delivered, which used to be discarded here.
+     */
+    const partialText = parts.join('',);
+
+    // Reported BEFORE the throw, and on this path as well as the other, because
+    // a figure computed only over streams that finished describes only streams
+    // that finished.
+    reportStreamProgress({
+      label,
+      progress: guard.progress(),
+      unreadableFrames: watch.unreadableFrames(),
+      outcome: 'cut',
+      partialText,
+    },);
+
+    // OUR OWN DELIBERATE TERMINATION PASSES THROUGH UNCHANGED. A runaway is
+    // thrown from inside this try, and it already carries the channel, the
+    // ratio and the cost. Wrapping it would bury a finished diagnosis inside a
+    // description of a cut, and every reader would have to unwrap it to learn
+    // what the drain already knew.
+    if (error instanceof StreamDegenerateError)
+      throw error;
+
+    // A stall aborts the guard's own controller and never the caller's, so this
+    // ordering keeps steering identifiable as steering and silence as silence.
+    // The chosen failure becomes the cause rather than being replaced.
+    throw new StreamCutShortError({
+      label,
+      partialText,
+      progress: guard.progress(),
+      cause: (guardSignal.aborted && (!callerSignal.aborted)) ? guardSignal.reason : error,
+    },);
   }
 
   // Flush any bytes the incremental decoder was still holding.
   parts.push(decoder.decode(),);
 
   /**
-   * What the stream did, sampled so the idle windows can be tuned against
-   * observed behavior instead of the guess they were first set to.
+   * Whole decoded body.
    */
-  const progress = guard.progress();
-  if ((progress.maxGapMs >= NOTABLE_GAP_MS)
-    || (progress.firstByteMs >= NOTABLE_FIRST_BYTE_MS)) {
-    /**
-     * Sample line, assembled before the call so the logger chain stays one
-     * step per line.
-     */
-    const sample = `stream ${response.url}: firstByte `
-      + `${String(progress.firstByteMs,)}ms, `
-      + `maxGap ${String(progress.maxGapMs,)}ms, `
-      + `${String(progress.chars,)} chars`
-      + `, ${String(watch.unreadableFrames(),)} unreadable frames`;
+  const bodyText = parts.join('',);
 
-    /**
-     * Logger tagged with this drain.
-     */
-    const dl = tagged({
-      tag: drainBody.name,
-      l,
-    },);
-    dl.info(sample,);
-  }
+  reportStreamProgress({
+    label,
+    progress: guard.progress(),
+    unreadableFrames: watch.unreadableFrames(),
+    outcome: 'completed',
+    partialText: bodyText,
+  },);
 
-  return parts.join('',);
+  return bodyText;
 }
 
 //endregion Stream drain

@@ -51,6 +51,17 @@ export type TransportExchange = {
   readonly url: string;
 
   /**
+   * What this call is FOR, in the caller's own vocabulary, which for a chat
+   * exchange is the model id.
+   *
+   * REQUIRED RATHER THAN OPTIONAL, so no call site can quietly fall back to the
+   * endpoint. Every chat exchange goes to one URL, so labelling by URL made
+   * per-model latency unreadable, and reasoning from abandon counts instead is
+   * what produced the retracted conclusion that one vendor's models were slow.
+   */
+  readonly label: string;
+
+  /**
    * HTTP method; the Synthetic surface needs only these two.
    */
   readonly method: 'GET' | 'POST';
@@ -114,6 +125,7 @@ export async function fetchTransport(
    */
   const {
     url,
+    label,
     method,
     headers,
     bodyJson,
@@ -124,7 +136,7 @@ export async function fetchTransport(
    * Silence guard for this exchange. Armed before the request so its window
    * also covers a provider that never sends response headers.
    */
-  using guard = armIdleGuard({ label: url, },);
+  using guard = armIdleGuard({ label, },);
 
   /**
    * Dependent signal derived locally so the platform request never holds the
@@ -164,6 +176,7 @@ export async function fetchTransport(
       response,
       guard,
       callerSignal: signal,
+      label,
     },),
   };
 }

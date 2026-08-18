@@ -56,6 +56,7 @@ const FAST_POLICY = {
 function exchangeWith({ signal, }: { readonly signal: AbortSignal; },) {
   return {
     url: 'https://example.invalid/chat',
+    label: 'hf:whiskers',
     method: 'POST' as const,
     headers: { 'content-type': 'application/json', },
     bodyJson: JSON.stringify({ prompt: 'Does the cat purr?', },),

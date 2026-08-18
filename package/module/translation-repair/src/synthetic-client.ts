@@ -218,6 +218,7 @@ export function createSyntheticClient(
         transport,
         exchange: {
           url: `${chatBaseUrl}/chat/completions`,
+          label: request.modelId,
           method: 'POST',
           headers,
           bodyJson: JSON.stringify({
@@ -459,6 +460,7 @@ export function createSyntheticClient(
       transport,
       exchange: {
         url: quotasUrl,
+        label: 'quotas',
         method: 'GET',
         headers,
         signal,

@@ -219,6 +219,11 @@ export {
 } from './synthetic-quota.ts';
 export { drainBody, } from './stream-drain.ts';
 export {
+  reportStreamProgress,
+  StreamCutShortError,
+  type StreamOutcome,
+} from './stream-cut.ts';
+export {
   type DegenerationDetector,
   type DegenerationVerdict,
   watchForDegeneration,
