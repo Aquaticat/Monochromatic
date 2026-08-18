@@ -33,14 +33,18 @@ import {
 /**
  * Prefix marking a line that carries a payload.
  *
- * NO TRAILING SPACE, deliberately. The space after the colon is OPTIONAL in
- * server-sent events and a reader is required to strip one if present, so a
- * provider may legitimately emit `data:{...}`. Spelling the prefix with the
- * space would skip those lines as though they were comments, and skip them
- * SILENTLY, since only `data:` lines are ever counted as unreadable. This
- * repository has already paid for exactly this trap once: `runner-closure.ts`
- * carries four import spellings because the tight form produced a false null
- * that looked like a self-contained bundle.
+ * NO TRAILING SPACE, deliberately, and this is a conformance requirement rather
+ * than a guess about any one sender. The event-stream parsing algorithm says of
+ * a field's value: "If value starts with a U+0020 SPACE character, remove it
+ * from value." So `data: {...}` and `data:{...}` are THE SAME MESSAGE, and a
+ * reader that accepts only the spaced form is simply wrong, whatever this
+ * provider happens to emit today.
+ *
+ * Spelling the prefix with the space would skip the tight form as though it
+ * were a comment, and skip it SILENTLY, since only `data:` lines are ever
+ * counted as unreadable. This repository has already paid for that shape of
+ * trap once: `runner-closure.ts` carries four import spellings because the tight
+ * form produced a false null that looked like a self-contained bundle.
  */
 const DATA_PREFIX = 'data:';
 
