@@ -44,6 +44,44 @@ and then the join `#107` waits on: replacement rate on the flagged slice indices
 the rest. The flag list comes from `displacement-probe`, which spends no quota and can be re-run at
 any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
 
+### TWO OF FIVE SETTLED, and the flagged rate is still 1.0000
+
+`lintong` settled about 03:36Z. Re-reading both entries together:
+
+  repair    flagged 6 slices  6 shipped  1.0000    unflagged  9 slices  6 shipped  0.6667
+  translate flagged 6 slices  6 shipped  1.0000    unflagged  9 slices  7 shipped  0.7778
+  pooled    flagged 12 slices 12 shipped 1.0000    unflagged 18 slices 13 shipped  0.7222
+
+Every displacement-flagged slice has shipped a replacement, twelve for twelve across both lanes. If
+flagged slices behaved like unflagged ones at 0.72, six in a row happens 0.139 of the time in ONE
+lane; the two lanes judge the same slices so they are not independent, which puts the pair somewhere
+between 0.139 and 0.019. Firming, still not the answer, still three entries to go.
+
+Timing holds: lintong's five slices took about 43 minutes, near the 8.28 minutes a slice the first
+artifact recorded. Twenty-seven slices remain, so about 07:30Z.
+
+### The human reading `#107` needs is built and dry-run
+
+`~/temp/agent/relocation-sheet.mjs`, zero quota, no build. It writes
+`~/translation-repair-runs-flagged-20260818/relocation-sheet.md` and a manifest beside it.
+
+IT ASKS A COMPARATIVE QUESTION, not an absolute one. Every flagged shipped slice enters, and an equal
+number of UNFLAGGED shipped slices is drawn beside them, so the sheet answers "is one kind of edit
+worse than the other" rather than "are these edits acceptable". The sheet names no lane, no entry, no
+index and no flag: a leakage grep returns zero. The manifest holds the mapping.
+
+ONE ITEM PER SLICE, lane chosen by a seeded coin and recorded, so a slice shipped by both lanes does
+not appear twice as near-duplicates and neither lane is favoured.
+
+ORDER IS STRATIFIED RATHER THAN FREELY SHUFFLED. A plain shuffle of twelve items put five of the six
+flagged ones in the back half, and a grader working in order would feel the sheet change character.
+Interleaving one flagged item with one control, coin-flipping which of each pair comes first, makes
+clustering impossible while leaving each pair unpredictable. Re-rolling the seed until a plain
+shuffle looked balanced would have been choosing the draw after seeing it, so it was not done.
+
+At two entries it yields 12 items. At five it should yield about 32, which is larger than the last
+damage sheet's 20, so the control count is worth a look before handing it over.
+
 ### FIRST PARTIAL READING FOR `#107`, and the direction is the predicted one
 
 `GLaDOSister` settled at 02:53Z, 1 of 5, and the join reader runs on it unchanged:
