@@ -26,8 +26,10 @@ The missing-binding state was then made deterministically by moving only Sätter
 The matching upstream Sätteri source is cloned at
 `/var/home/user/temp/agent/satteri-source.L3WiJZ6z`,
 origin `https://github.com/bruits/satteri.git`,
-commit `92d01ec4eee3a7284608f5a4974dca6d4aec836e`,
-tag `satteri-v0.9.5`.
+and commit `92d01ec4eee3a7284608f5a4974dca6d4aec836e`.
+It was checked out through `satteri-v0.9.5`;
+the commit carries several component tags,
+and `git describe --tags --exact-match` selected `satteri-napi-v0.4.7`.
 
 ## Reproduction evidence
 
@@ -159,7 +161,8 @@ The Sätteri adapter keeps astral-offset correction in the CLI package;
 the remark adapter stays private to translation-repair.
 
 A scratch parser-free fix loop imported only the existing semantic rule and translation-repair parser.
-Its output matched the current Sätteri-backed `fixSource` on thirteen measured fixtures:
+Its output matched the current Sätteri-backed `fixSource` on thirteen measured fixtures
+within translation-repair's frontmatter-free Markdown passage scope:
 run-on prose,
 blockquote,
 list,
@@ -185,7 +188,9 @@ With translation-repair's direct Sätteri declaration and stale node_modules lin
 the build emitted one external Sätteri import and no copied loader.
 Importing the bundle then failed with `ERR_MODULE_NOT_FOUND` because strict pnpm isolation had no
 `translation-repair/node_modules/satteri` link.
-Generic detection moves the failure unless it also manufactures an honest runtime dependency,
+This hard-coded external decision simulates a detector's output;
+it does not implement or validate generic NAPI-package detection.
+Externalizing an undeclared transitive moves the failure unless something also creates an honest runtime dependency,
 so issue 447's candidate C is not a complete fix as stated.
 
 ### Special-case markdown-lint externalization
@@ -199,6 +204,7 @@ It preserves the unnecessary native runtime dependency,
 violates the self-contained workspace-bundle policy,
 and would expose a runtime dependency on the currently private CLI package.
 It works locally but is not a sound package design.
+No packed non-workspace consumer was verified.
 
 ### Direct declaration and build smoke
 
@@ -209,6 +215,8 @@ but it does not remove the dependency trap.
 For markdown-lint,
 the permanent smoke should call the built parser on a clean source rather than rely only on `--help`,
 so a future lazy loader remains covered.
+That exact task prototype passed with the binding present and made the overall build exit `1`
+after only the binding link was removed.
 
 Current ranking:
 parser-free core plus built-artifact smoke >
@@ -228,6 +236,9 @@ while the generic prototype produced an unresolvable bare import.
    split the core for consumers,
    and retain a built-parser smoke step for the native CLI artifact.
 - The core parser callback must guarantee a root for the exact source with JavaScript UTF-16 offsets.
+- A complete package search found one markdown-lint source import,
+   `semantic-wrap.ts`,
+   plus the CLI and Sätteri manifest dependencies and an error-message string.
 - Complete semantic-wrap and corpus parity remain migration gates;
    the thirteen-fixture probe is not exhaustive.
 
