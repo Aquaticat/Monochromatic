@@ -89,6 +89,35 @@ position, and loses.
 That bears on `#84`, on `#96`, and on whether this pipeline is described as repairing or translating:
 `#83` entered the incumbent into selection on the premise it would sometimes win.
 
+### THE SEMANTIC WRAP LANDED, AND IT EXPOSED A BUNDLING TRAP (2026-08-18 evening)
+
+`#122` code is in. Four commits: `d8d3b933f` the wrap, `34f4320a8` the satteri external fix,
+`59384774c` the tests, `3c2b945e1` the lint warnings. Full suite exit 0, types clean,
+`lint:oxlint` 0 warnings 0 errors, 15 new cases.
+
+`src/semantic-wrap.ts` calls `fixSource` with exactly the `semantic-line-breaks` rule.
+`src/repair-wrap.ts` and `src/translate-wrap.ts` apply it at the top of `assembleRepair` and
+`assembleTranslation`, the one point per lane where both the replacements and the lane wordings
+read from the same list, because the delivery invariant demands those two agree byte for byte.
+Only text a lane PRODUCED is wrapped; `changed` is re-derived so a wrapping-only difference is
+recorded as the retention it is.
+
+MEASURED BEFORE WIRING, zero quota, over all 64 shipped passages: findings 326 to 0, no passage
+loses a non-newline character, ten gain continuation prefixes, second application changes nothing.
+GFP shown both ways and restored.
+
+STILL OWED: re-run `~/temp/agent/wrap-census.mjs` over a pool settled AFTER this landed. Needs a
+fresh pass, so it rides the next one.
+
+`#447` IS THE TRAP. Importing markdown-lint bundles it, because the rolldown config always bundles
+`@monochromatic-dev/**` and keeps only DECLARED dependencies external. That inlined Sätteri's napi
+loader into `dist/final/node/`, where its binding cannot be found, so every import of
+translation-repair threw before reaching pipeline code. Declaring `satteri: catalog:` in the
+consumer keeps it external. `packageExtensions` does NOT apply: nothing is missing from Sätteri's
+own location, the code was copied out of it by the bundler. The user asked for the writeup to live
+in the issue rather than in `doc/troubleshooting/`, so `de0aa4676` added a doc and `471966830`
+removed it again; the evidence is all in `#447`, which asks for the doc and then a migration.
+
 ### WHAT TO DO NEXT, in order
 
   1  `#120` defect 6 LANDED in `d0403c9f0`; the remaining five defects are open, then `#121`;
