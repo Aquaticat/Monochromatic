@@ -164,6 +164,23 @@ It is verbose on this workload and the grace ends verbose calls.
 The reading that matters is that the window's cost falls on one voice,
 so the ensemble it protects loses the same member over and over.
 
+AND NOTHING RE-ASKS IT, which is by design and worth stating so it is not mistaken for a bug.
+`stage-quorum.ts` runs three retry rounds after the initial fan-out,
+and the loop reads `if ((round > 0) && (collected.length >= quorumNeeded)) break`.
+A voice lost while quorum is already satisfied is therefore never re-asked.
+That is exactly what the straggler grace is for.
+The consequence is the part worth deciding on:
+on the stages where this happens the ensemble is effectively five of six,
+always missing the same member,
+rather than five of six missing a different one each time.
+
+CHECKED AND CLEARED while looking at this, so it is not re-investigated:
+`isRetryableAttempt` in `attempt-retry.ts` would call these truncated replies retryable,
+and its only caller is `benchmark.ts`.
+That is not a production gap.
+Production retries at the STAGE level through `stage-quorum.ts` rather than per attempt,
+and the two policies answer different questions.
+
 ## Voice loss has two shapes and both are now legible
 
 Nine voices lost in the window,
