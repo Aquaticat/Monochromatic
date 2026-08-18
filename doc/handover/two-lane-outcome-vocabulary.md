@@ -44,21 +44,48 @@ and then the join `#107` waits on: replacement rate on the flagged slice indices
 the rest. The flag list comes from `displacement-probe`, which spends no quota and can be re-run at
 any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
 
-### TWO OF FIVE SETTLED, and the flagged rate is still 1.0000
+### THREE OF FIVE SETTLED, and the one-entry signal did NOT hold
 
-`lintong` settled about 03:36Z. Re-reading both entries together:
+`dogesir_` settled and the effect that looked strong at one entry has largely dissolved. Current
+reading over `GLaDOSister`, `lintong` and `dogesir_`:
 
-  repair    flagged 6 slices  6 shipped  1.0000    unflagged  9 slices  6 shipped  0.6667
-  translate flagged 6 slices  6 shipped  1.0000    unflagged  9 slices  7 shipped  0.7778
-  pooled    flagged 12 slices 12 shipped 1.0000    unflagged 18 slices 13 shipped  0.7222
+  repair    flagged 10 slices  7 shipped  0.7000    unflagged 15 slices 10 shipped  0.6667
+  translate flagged 10 slices  9 shipped  0.9000    unflagged 15 slices 12 shipped  0.8000
+  pooled    flagged 20 slices 16 shipped  0.8000    unflagged 30 slices 22 shipped  0.7333
 
-Every displacement-flagged slice has shipped a replacement, twelve for twelve across both lanes. If
-flagged slices behaved like unflagged ones at 0.72, six in a row happens 0.139 of the time in ONE
-lane; the two lanes judge the same slices so they are not independent, which puts the pair somewhere
-between 0.139 and 0.019. Firming, still not the answer, still three entries to go.
+At one entry this read 1.0000 against 0.7143 and was recorded as direction-only with a note that
+three of three is the largest number the instrument can print. That caution was right: the third
+entry broke the perfect run and the gap is now small in both lanes.
 
-Timing holds: lintong's five slices took about 43 minutes, near the 8.28 minutes a slice the first
-artifact recorded. Twenty-seven slices remain, so about 07:30Z.
+### THE DENOMINATOR WAS WRONG, and correcting it REVERSES the direction
+
+A slice can retain the incumbent because the judges preferred it, or because nothing was offered
+against it. Measured over the six naturally accumulated entries, ELEVEN OF THIRTEEN retentions are
+the second kind, so the ledger rate reads 0.740 while the rate among slices that actually held a
+vote reads 0.9487, 37 of 39. Written up in `doc/audit/incumbent-almost-never-wins-a-contest.md`.
+
+Read on contested slices only, in the flagged pool:
+
+  translate flagged   10 slices  9 shipped  0.9000
+  translate unflagged 12 slices 12 shipped  1.0000
+
+The flagged slices replace LESS often than the rest, not more. The apparent effect was unflagged
+slices being dragged down by the retentions where no candidate arrived.
+
+WHAT IS ACTUALLY DIFFERENT AT FLAGGED SLICES IS CONTEST AVAILABILITY: 10 of 10 flagged slices held a
+vote against 12 of 15 unflagged. That is a real gap and it is about whether a candidate arrived, not
+about how the judging went.
+
+`join-107.mjs` now prints both cuts. The pre-registered ledger reading is unchanged and the contested
+cut is an AMENDMENT recorded before the pool settled, with its reason, rather than a replacement
+chosen after seeing a number.
+
+### The archive survives a contested vote about one time in twenty
+
+Over the six naturally accumulated entries, 39 slices held a real contest and the incumbent won 2.
+Mean winning weight 3.31 for a fresh candidate against 0.42 for the incumbent. That bears on `#84`,
+on `#96`, and on whether this pipeline is described as repairing or as translating: `#83` entered the
+incumbent into selection on the premise that it would sometimes win.
 
 ### The human reading `#107` needs is built and dry-run
 
