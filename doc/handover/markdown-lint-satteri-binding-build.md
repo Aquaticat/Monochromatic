@@ -208,7 +208,21 @@ while the generic prototype produced an unresolvable bare import.
 - The core parser callback must guarantee a root for the exact source with JavaScript UTF-16 offsets.
 - Complete semantic-wrap and corpus parity remain migration gates; the thirteen-fixture probe is not exhaustive.
 
+## Troubleshooting document
+
+`doc/troubleshooting/satteri-loader-bundled-out-of-package.md` now exists in the issue 447 worktree.
+Commit `e3394463b` adds the full source trace,
+reproduction,
+workarounds,
+rejected paths,
+recommended module seam,
+and upstream-filing audit.
+Commit `e1e4d4b89` resolves its Markdown diagnostics.
+`mise run lint:markdown -- doc/troubleshooting/satteri-loader-bundled-out-of-package.md` passes.
+The root dprint task does not select Markdown files and reports `No files found` for this path;
+that result does not validate or invalidate the document.
+
 ## Next action
 
-Write the required troubleshooting document with the fresh-worktree source trace and reproduction evidence.
+Obtain an independent review of the recommendation and troubleshooting evidence.
 Then present the ranked recommendation and exact parser-core interface without landing the migration before user acceptance.
