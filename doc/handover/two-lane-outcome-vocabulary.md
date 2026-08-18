@@ -1,241 +1,73 @@
 # Handover: the lane outcome vocabulary and what is mid-flight
 
-## READ THIS FIRST AFTER A COMPACTION (written 2026-08-17 21:33 local, 01:33Z)
+## READ THIS FIRST AFTER A COMPACTION (rewritten 2026-08-18 07:05Z)
 
-Everything below this block is older. Nothing here is uncommitted: the tree is clean and 0 commits
-are unpushed, 95 commits made in the last fourteen hours.
+### THE PASS IS FINISHED AND THE FREEZE IS LIFTED
 
-### One thing is running and it is not finished
+`DONE processed=5 of pending=5; artifacts=5/92 elapsed=19109264ms`, `Finished in 19111.45s`, exit 0.
+All five artifacts are in `~/translation-repair-runs-flagged-20260818/artifacts`. The producing path
+is free: builds, tests and `#120`/`#121` fixes can all land.
 
-A TARGETED CORPUS PASS, pid `4116080`, started 01:29Z, about four minutes in when this was written.
+### `#107` IS ANSWERED, AND THE ANSWER IS A NULL
 
-  runs dir   ~/translation-repair-runs-flagged-20260818
-  command    mise run //package/module/translation-repair:corpus-pass -- \
-               --only lintong,wangzihao980,GLaDOSister,dogesir_,saurikissa
-  log        ~/temp/agent/flagged-pass-2.log
-  progress   0 of 5 artifacts, currently on GLaDOSister
+`doc/audit/flagged-slice-replacement-rate.md`. Five entries, 42 slices.
 
-WHY IT IS RUNNING: `#107` needs the replacement rate ON displacement-flagged slices against the rate
-off them, and the six naturally accumulated entries carry ZERO flags, so that comparison could never
-have come from them. These five were picked because the probe flags them: 8 relocation candidates
-across 42 slices.
+  pre-registered ledger reading   flagged 26 of 32  0.8125    unflagged 38 of 52  0.7308
+  contested slices only           flagged 14 of 16  0.8750    unflagged 20 of 21  0.9524
 
-SECOND PAYLOAD: it is built from the current tree, so it is the FIRST production traffic through the
-`#119` degeneration guard and the `#118` cut reporting. Neither has ever seen a real stream. Watch
-the log for `stream <model>: cut` lines and for `degenerate in reasoning`.
+THE SIGN FLIPS WITH THE DENOMINATOR, which is what a difference smaller than the instrument looks
+like. As archive survival: flagged 2 of 16 at 0.125, unflagged 1 of 21 at 0.048, natural six-entry
+pool 2 of 39 at 0.051. The contested cut rests on two survivals against one; moving one slice changes
+the direction.
 
-HOW LONG: about four and a half to five and a half hours, so finishing around 06:00Z. That is from
-the previous pass's measured rate of 67 minutes an entry over six entries, scaled by this run's 42
-slices against that run's 50. One slice measured here so far took 70754 ms, but at 32 source
-characters it is the smallest possible and is a floor rather than an average.
+THE NULL COUNTS, per `QPC`: the same reader reports 1.0000 against 0.0000 under `--control shipped`,
+so it is shown able to display a difference and does not display one here.
 
-IT STOPS ON ITS OWN at five entries. No watcher is needed and none is running.
+WHAT DID DIFFER is contest availability, 16 of 16 flagged slices held a vote against 21 of 26
+unflagged, which is about whether a candidate arrived rather than how judging went. Critic attention
+runs the OTHER way, 12.7 claims per hundred source characters at flagged slices against 15.2.
 
-THE PRODUCING PATH IS FROZEN while it runs: `assertResumableGeneration` refuses to resume a pool
-settled under another build, so DO NOT rebuild or change anything the pipeline runs until it stops.
-Docs, readers and analysis are all safe.
+### ONE THING IS WAITING FOR THE USER, AND IT IS NEW
 
-WHEN IT FINISHES, the reading is:
+`~/translation-repair-runs-flagged-20260818/relocation-sheet.md`, 30 items, 68 KB, ungraded, outside
+the repository. 15 displacement-flagged slices against 15 unflagged controls, so it asks whether one
+KIND of edit is worse rather than whether these edits are acceptable. Blinded: no lane, entry, index
+or flag appears. One item per slice, lane chosen by a recorded coin. Stratified order, one flagged
+with one control per pair. Neighbouring passages shown on every item, since a passage judged alone
+cannot be seen to repeat what sits beside it.
 
-  mise run //package/module/translation-repair:rendering-audit-settled -- \
-    --archive ~/translation-repair-runs-flagged-20260818/artifacts
+A leakage grep returns six matches, all the string `wangzihao980` inside Twitter URLs in the corpus
+text itself. That is the document's own content rather than a label, and it does not reveal which
+items are flagged.
 
-and then the join `#107` waits on: replacement rate on the flagged slice indices against the rate on
-the rest. The flag list comes from `displacement-probe`, which spends no quota and can be re-run at
-any time; its output for all 92 entries is in `~/temp/agent/displacement.log`.
+`~/translation-repair-runs-flagged-20260818/relocation-manifest.json` holds the mapping and the seed.
 
-### THREE OF FIVE SETTLED, and the one-entry signal did NOT hold
+STILL WAITING FROM BEFORE: `~/translation-repair-runs-20260817/damage-sheet.md`, 20 items, ungraded,
+which `#68` needs. And `#96`'s licence question, recommendation already written in
+`doc/planning/artifact-archive-text.md`.
 
-`dogesir_` settled and the effect that looked strong at one entry has largely dissolved. Current
-reading over `GLaDOSister`, `lintong` and `dogesir_`:
+### THE BIGGEST FINDING OF THE NIGHT IS NOT ABOUT `#107`
 
-  repair    flagged 10 slices  7 shipped  0.7000    unflagged 15 slices 10 shipped  0.6667
-  translate flagged 10 slices  9 shipped  0.9000    unflagged 15 slices 12 shipped  0.8000
-  pooled    flagged 20 slices 16 shipped  0.8000    unflagged 30 slices 22 shipped  0.7333
+`doc/audit/incumbent-almost-never-wins-a-contest.md`. Over the six NATURALLY accumulated entries, not
+hand picked, the archive's wording survives a contested vote 2 times in 39. Mean winning weight 3.31
+for a fresh candidate against 0.42 for the incumbent. Eleven of thirteen retentions are defaults
+where nothing was offered against it.
 
-At one entry this read 1.0000 against 0.7143 and was recorded as direction-only with a note that
-three of three is the largest number the instrument can print. That caution was right: the third
-entry broke the perfect run and the gap is now small in both lanes.
+BOTH ARTEFACT EXPLANATIONS ARE RULED OUT: the incumbent is on the ballot anonymously by design, and
+its slot varies across the 39 judged slices, 13/10/5/3/3/5. It competes blind, from a moving
+position, and loses.
 
-### THE DENOMINATOR WAS WRONG, and correcting it REVERSES the direction
+That bears on `#84`, on `#96`, and on whether this pipeline is described as repairing or translating:
+`#83` entered the incumbent into selection on the premise it would sometimes win.
 
-A slice can retain the incumbent because the judges preferred it, or because nothing was offered
-against it. Measured over the six naturally accumulated entries, ELEVEN OF THIRTEEN retentions are
-the second kind, so the ledger rate reads 0.740 while the rate among slices that actually held a
-vote reads 0.9487, 37 of 39. Written up in `doc/audit/incumbent-almost-never-wins-a-contest.md`.
+### WHAT TO DO NEXT, in order
 
-Read on contested slices only, in the flagged pool:
-
-  translate flagged   10 slices  9 shipped  0.9000
-  translate unflagged 12 slices 12 shipped  1.0000
-
-The flagged slices replace LESS often than the rest, not more. The apparent effect was unflagged
-slices being dragged down by the retentions where no candidate arrived.
-
-WHAT IS ACTUALLY DIFFERENT AT FLAGGED SLICES IS CONTEST AVAILABILITY: 10 of 10 flagged slices held a
-vote against 12 of 15 unflagged. That is a real gap and it is about whether a candidate arrived, not
-about how the judging went.
-
-`join-107.mjs` now prints both cuts. The pre-registered ledger reading is unchanged and the contested
-cut is an AMENDMENT recorded before the pool settled, with its reason, rather than a replacement
-chosen after seeing a number.
-
-### The archive survives a contested vote about one time in twenty
-
-Over the six naturally accumulated entries, 39 slices held a real contest and the incumbent won 2.
-Mean winning weight 3.31 for a fresh candidate against 0.42 for the incumbent. That bears on `#84`,
-on `#96`, and on whether this pipeline is described as repairing or as translating: `#83` entered the
-incumbent into selection on the premise that it would sometimes win.
-
-### The human reading `#107` needs is built and dry-run
-
-`~/temp/agent/relocation-sheet.mjs`, zero quota, no build. It writes
-`~/translation-repair-runs-flagged-20260818/relocation-sheet.md` and a manifest beside it.
-
-IT ASKS A COMPARATIVE QUESTION, not an absolute one. Every flagged shipped slice enters, and an equal
-number of UNFLAGGED shipped slices is drawn beside them, so the sheet answers "is one kind of edit
-worse than the other" rather than "are these edits acceptable". The sheet names no lane, no entry, no
-index and no flag: a leakage grep returns zero. The manifest holds the mapping.
-
-ONE ITEM PER SLICE, lane chosen by a seeded coin and recorded, so a slice shipped by both lanes does
-not appear twice as near-duplicates and neither lane is favoured.
-
-ORDER IS STRATIFIED RATHER THAN FREELY SHUFFLED. A plain shuffle of twelve items put five of the six
-flagged ones in the back half, and a grader working in order would feel the sheet change character.
-Interleaving one flagged item with one control, coin-flipping which of each pair comes first, makes
-clustering impossible while leaving each pair unpredictable. Re-rolling the seed until a plain
-shuffle looked balanced would have been choosing the draw after seeing it, so it was not done.
-
-At two entries it yields 12 items. At five it should yield about 32, which is larger than the last
-damage sheet's 20, so the control count is worth a look before handing it over.
-
-### FIRST PARTIAL READING FOR `#107`, and the direction is the predicted one
-
-`GLaDOSister` settled at 02:53Z, 1 of 5, and the join reader runs on it unchanged:
-
-  repair    flagged 3 slices  3 shipped  rate 1.0000     unflagged 7 slices  5 shipped  rate 0.7143
-  translate flagged 3 slices  3 shipped  rate 1.0000     unflagged 7 slices  5 shipped  rate 0.7143
-  pooled    flagged 6 slices  6 shipped  rate 1.0000     unflagged 14 slices 10 shipped rate 0.7143
-
-On displacement-flagged slices this pipeline replaced the archive wording EVERY TIME, in both lanes.
-That is exactly what `#107` predicts: a relocation reads as an omission at the slice it left, so
-per-slice judging condemns the archive there.
-
-THE LENGTHS SAY MORE THAN THE RATE DOES, and they are written up in
-`doc/audit/relocation-signature-at-flagged-slices.md`. At the flagged slices slice 3 lost about 240
-characters and slice 4 gained about 240, in both lanes within a dozen characters of each other, at
-exactly the surplus-and-deficit pair the probe named before the pass ran. Slice 3's ratio came back
-from 8.78 English characters per source character to about 2.9, against a document baseline of 2.739.
-
-NO TEXT ACTUALLY MOVED, and an earlier version of this block said it did. Zero 40-character windows
-of the newly shipped text at slices 2 and 4 occur in slice 3's incumbent, in either entry, in either
-lane. The deficit slices are filled with NEWLY WRITTEN English and the surplus slice's wording is
-DISCARDED rather than carried across. The test catches verbatim reuse and not paraphrase, so it rules
-out relocation of the text and not of the meaning.
-
-IT REPLICATES ON `lintong`, with one difference worth watching: translate rewrote the surplus slice
-from 439 characters to 189 keeping zero of 150 windows, while REPAIR left it at 449 keeping 167 of
-410. So after the repair lane `lintong` carries both its surplus and the new content at slices 2 and
-4. On `GLaDOSister` both lanes drained it. Two entries are not a pattern; a third will say.
-
-Whether any of this is repair or damage is what `#107` asks and no per-slice instrument can answer,
-which is what the comparative sheet is for.
-
-DO NOT QUOTE THIS AS THE ANSWER. Three flagged slices per lane, and 3 of 3 is the maximum the
-instrument can report. If flagged slices behaved exactly like unflagged ones at 0.714, three in a row
-happens 0.364 of the time in one lane, and the two lanes judge the SAME slices so they are not
-independent. The honest reading is direction only, magnitude unreadable, wait for five entries.
-
-WORTH NOTING SEPARATELY: the unflagged half of this hand-picked entry reads 0.7143, against the
-natural six-entry pool's 0.740. The hand picking moved the flagged slices, not the rest.
-
-THE TWO LANES DID NOT AGREE SLICE FOR SLICE, which the equal counts hide. Repair shipped
-`1 2 3 4 5 6 7 8` and translate shipped `0 1 2 3 4 6 7 8`: they differ at index 0, which only
-translate replaced, and index 5, which only repair replaced. Both shipped all three flagged slices.
-So the matching 5-of-7 unflagged counts are a coincidence of arithmetic rather than agreement, and
-the lanes are genuinely separate judgements.
-
-### Pass timing, measured from the artifact rather than guessed: about 07:20Z
-
-`GLaDOSister.json` records `durationMs` 4966694, which is 82.8 minutes for ten slices, or 8.28
-minutes a slice. Wall clock agrees: the pass started 01:29Z and the artifact landed 02:53Z, 84
-minutes, so per-entry overhead is small. The remaining four entries carry 32 slices, about 4.4 hours,
-putting the finish near 07:20Z.
-
-An earlier note here said 11 minutes a slice and about 09:00Z. That divided elapsed session time by
-slices before the artifact existed; the artifact's own duration is the better number. The waiter
-makes the estimate unimportant either way, and it is recorded so nobody concludes the run has hung.
-
-`laneSelection` on this artifact reads `{"kind":"pending-human-decision"}`, so choosing between the
-two lanes is recorded as the user's call rather than settled by the pipeline.
-
-### The pass prints a TALLY line per entry, which is the fastest read there is
-
-```text
-TALLY GLaDOSister status=SETTLED slices=10 repairIssues=61 repairAccepted=49 repairResolved=49
-  repairFindings=127 repairChanged=8 translateChanged=8 documentsDiffer=9 alignmentFindings=0
-  selection=pending-human-decision ms=4966694
-TALLY lintong status=SETTLED slices=5 repairIssues=34 repairAccepted=27 repairResolved=23
-  repairFindings=63 repairChanged=4 translateChanged=5 documentsDiffer=5 alignmentFindings=0
-  selection=pending-human-decision ms=2228228
-```
-
-`grep TALLY` on the log is the one-line-per-entry summary. `ms` is where the timing estimates come
-from: 8.3 and 7.4 minutes a slice.
-
-THE TWO LANES DIFFER AT NEARLY EVERY SLICE, `documentsDiffer` 9 of 10 and 5 of 5. Choosing between
-them is not a formality, and every artifact records `selection=pending-human-decision`, so it is the
-user's call and the pipeline correctly refuses to make it.
-
-NOTHING IS BEING SKIPPED, though the banner makes it look that way. The `ONLY` banner prints the set
-alphabetically (`GLaDOSister,dogesir_,lintong,saurikissa,wangzihao980`) while the run order is
-`GLaDOSister`, `lintong`, `dogesir_`, then the rest. At 04:29Z the third entry is in progress.
-
-### A waiter is armed, so nothing idles waiting for someone to look
-
-A background command holds on pid `4116080` and reports when the pass exits, with the artifact count
-and the log tail. WHEN IT FIRES, in this order:
-
-  1  check the count is 5 and the log ends cleanly;
-  2  `node ~/temp/agent/join-107.mjs --archive ~/translation-repair-runs-flagged-20260818/artifacts`
-     ZERO QUOTA, needs no build, so it runs first and answers `#107`'s comparison immediately;
-  3  `mise run //package/module/translation-repair:rendering-audit-settled -- --archive <that dir>`
-     THIS SPENDS QUOTA, per its own description, unless `--cap 0`, and it `depends = ["build"]`, so
-     it is also the step that ends the freeze. Decide the cap deliberately rather than by omission;
-  4  `mise run //package/module/translation-repair:rendering-audit-settled-report`
-     zero quota, reads what step 3 persisted, and prints the `#107` relocation pairs;
-  5  update `#107`, then land `#120` and `#121`.
-
-`#107` HAS TWO READINGS AND THEY ARE COMPLEMENTARY. `auditRelocationPairs` in
-`src/corpus-run/rendering-audit-settled-relocation.ts` already implements one: it names an omission
-on one slice sitting beside an unsupported addition on the next, adjacency fixed at ONE slice before
-any number existed, and it deliberately SUBTRACTS NOTHING. The join reader implements the other:
-replacement rate on displacement-flagged slices against the rest. The first reads auditor findings,
-the second reads the delivery ledger against a structural probe. Report both.
-
-At 56 minutes the pass is still on its first entry, `GLaDOSister`, 0 of 5 artifacts, 410 streams so
-far. Ten slices at the previous pass's roughly eight minutes a slice puts that entry near 80 minutes
-and the whole run past 07:00Z rather than 06:00Z. The waiter makes the estimate unimportant.
-
-### The worst of the stream defects: the retry layer undoes the guard
-
-SIXTH DEFECT, added to `#120`, and the most expensive of them.
-
-`drainBody` ends a runaway by cancelling the reader and throwing `StreamDegenerateError`. It does NOT
-abort the caller's signal, because the termination is ours rather than steering. `attemptExchange`
-decides what is transient by reading `exchange.signal.aborted`, which is false, so the runaway is
-captured as weather and RE-DISPATCHED. Driven through the built `exchangeWithRetry` at the production
-policy:
-
-  transport called 5 times over 12242ms, ended as StreamDegenerateError
-
-Each attempt would run until the model degenerates again, which takes at least the 131000 generated
-characters a verdict needs. The guard built to stop wasted work MULTIPLIES IT BY FIVE. Probe kept at
-`~/temp/agent/runaway-retry-probe.mjs`.
-
-CHECKED AND CLEARED so it is not re-investigated: wrapping a failure in `StreamCutShortError` does
-NOT break caller-abort handling, because `attemptExchange` reads the SIGNAL rather than the error's
-identity. Straggler abandonment and user steering still propagate untouched.
+  1  land `#120` defect 6, the retry layer re-dispatching a runaway four more times, which is the
+     cheapest and most expensive of the six;
+  2  the rest of `#120`, then `#121`;
+  3  optionally `mise run //package/module/translation-repair:rendering-audit-settled -- --archive
+     ~/translation-repair-runs-flagged-20260818/artifacts` which SPENDS QUOTA unless `--cap 0`, then
+     `rendering-audit-settled-report` for `#107`'s reading A, the relocation pairs.
 
 ### Sol is closed out: issue `#444` filed, no further effort this session
 
