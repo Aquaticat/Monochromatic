@@ -351,12 +351,57 @@ Both have the same root as the two equal counters:
 what the drain hands back is the wire format,
 and three separate readers treat it as though it were generated text.
 
+## The guard ends one runaway and the retry layer starts four more
+
+FOUND 2026-08-18 by driving `exchangeWithRetry` from the built artifact
+with a transport that fails the way the drain fails.
+No quota and no network.
+
+`drainBody` cancels the reader and throws `StreamDegenerateError`.
+It does NOT abort the caller's signal,
+because the termination is ours rather than the caller's steering.
+`attemptExchange` decides what is transient by reading `exchange.signal.aborted`,
+which is false here,
+so the runaway is captured as weather and re-dispatched.
+
+AT THE PRODUCTION POLICY THAT IS FIVE CALLS, not one:
+
+```text
+transport failure: StreamDegenerateError: ... ; retrying in  669ms (attempt 1 of 5)
+transport failure: StreamDegenerateError: ... ; retrying in 1635ms (attempt 2 of 5)
+transport failure: StreamDegenerateError: ... ; retrying in 2988ms (attempt 3 of 5)
+transport failure: StreamDegenerateError: ... ; retrying in 6937ms (attempt 4 of 5)
+transport called 5 times over 12242ms, ended as StreamDegenerateError
+```
+
+Each of those attempts would run until the model degenerates again,
+which takes at least the 131000 generated characters a verdict needs,
+so the guard built to stop wasted work MULTIPLIES IT BY FIVE
+and adds twelve seconds of backoff on top.
+
+THE DECISION DOCUMENT ALREADY STATED THE RULE and the code does the opposite:
+a stall is worth retrying,
+and a model that has begun repeating itself will repeat itself again.
+That was written about how the loss is FILED.
+The retry layer was already retrying it,
+which is the same mistake one layer earlier and far more expensive.
+
+CHECKED AND CLEARED at the same time, so it is not re-investigated:
+wrapping a failure in `StreamCutShortError` does NOT break caller-abort handling.
+`attemptExchange` reads the SIGNAL rather than the error's identity,
+so straggler abandonment and user steering still propagate untouched
+however the drain has wrapped them.
+A fixture whose signal is not aborted does see a cut retried,
+but that is the fixture rather than production.
+
 ## What is still owed
 
 -   NAME THE MODEL ON A RUNAWAY, which the error currently cannot do,
     and carry `label` as a property as the cut error already does.
 -   SHOW GENERATED TEXT IN THE OPENING EXCERPT rather than the envelope,
     so the excerpt answers the question it was added to answer.
+-   STOP THE RETRY LAYER RE-DISPATCHING A RUNAWAY, which today turns one into five.
+    This is the most expensive of the open items and the cheapest to fix.
 -   CATCH LONG-PERIOD LOOPING, which the distinct-window ratio cannot see.
     Held until the targeted pass releases the producing path.
 -   REPORT GENERATED CHARACTERS PER CHANNEL on the progress line,
