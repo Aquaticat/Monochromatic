@@ -70,6 +70,45 @@ At 56 minutes the pass is still on its first entry, `GLaDOSister`, 0 of 5 artifa
 far. Ten slices at the previous pass's roughly eight minutes a slice puts that entry near 80 minutes
 and the whole run past 07:00Z rather than 06:00Z. The waiter makes the estimate unimportant.
 
+### The worst of the stream defects: the retry layer undoes the guard
+
+SIXTH DEFECT, added to `#120`, and the most expensive of them.
+
+`drainBody` ends a runaway by cancelling the reader and throwing `StreamDegenerateError`. It does NOT
+abort the caller's signal, because the termination is ours rather than steering. `attemptExchange`
+decides what is transient by reading `exchange.signal.aborted`, which is false, so the runaway is
+captured as weather and RE-DISPATCHED. Driven through the built `exchangeWithRetry` at the production
+policy:
+
+  transport called 5 times over 12242ms, ended as StreamDegenerateError
+
+Each attempt would run until the model degenerates again, which takes at least the 131000 generated
+characters a verdict needs. The guard built to stop wasted work MULTIPLIES IT BY FIVE. Probe kept at
+`~/temp/agent/runaway-retry-probe.mjs`.
+
+CHECKED AND CLEARED so it is not re-investigated: wrapping a failure in `StreamCutShortError` does
+NOT break caller-abort handling, because `attemptExchange` reads the SIGNAL rather than the error's
+identity. Straggler abandonment and user steering still propagate untouched.
+
+### Sol is closed out: issue `#444` filed, no further effort this session
+
+The user's instruction is launch-and-forget and focus on the pipeline. `Aquaticat/Monochromatic#444`
+carries the full report: three runs at `--thinking xhigh` exiting 124 with zero bytes and NO session
+file written, against a smoke test on the same model and level that answered in 2.2 seconds and wrote
+a five-record session. Three variants were launched and are forgotten; if any returns, add a comment
+to `#444` and move on.
+
+`--thinking` must stay `xhigh` or `max` for this use, per the user, so lowering effort is not a
+workaround.
+
+### The main-worktree `package.json` change is explained
+
+`~/.pi/agent/sessions/--var-home-user-Monochromatic--/2026-08-18T01-36-53-044Z_*.jsonl` is a
+concurrent `pi` session, model `gpt-5.3-codex-spark`, prompt "commit all", which ran
+`git add package.json pnpm-lock.yaml && git commit -m "chore(root): add open code review..."` at
+01:37Z. That is the `@monochromatic-dev/cli-open-code-review-issue` dependency. Not this session's
+work, correctly left alone per `EC1`, and no longer a mystery.
+
 ### The idle windows rest on a premise the current traffic contradicts
 
 TRACKED AS `#121`, measurement only, nothing decided and no constant changed.
