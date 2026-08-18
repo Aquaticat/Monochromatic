@@ -2,6 +2,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { IdleGuard, } from './stream-idle-guard.ts';
+import {
+  StreamDegenerateError,
+  watchRunaway,
+} from './stream-runaway-watch.ts';
 
 //region Stream drain
 // Reads a response body chunk by chunk instead of in one `response.text()`
@@ -40,6 +44,48 @@ const NOTABLE_GAP_MS = 0;
 const NOTABLE_FIRST_BYTE_MS = 0;
 
 /**
+ * Stops pulling from a stream that will not stop on its own.
+ *
+ * ITS OWN FUNCTION, and it swallows nothing: a cancel that fails is logged
+ * rather than allowed to replace the reason the stream is being abandoned,
+ * which is the more useful of the two errors.
+ *
+ * @param reader - reader to release
+ *
+ * @param url - stream being abandoned, for the log line
+ *
+ * @mutates reader - cancels it, so the body cannot be read further
+ *
+ * @example
+ * ```ts
+ * await stopReading({ reader, url: response.url, },);
+ * ```
+ */
+async function stopReading(
+  {
+    reader,
+    url,
+  }: {
+    readonly reader: ForeignBorrowed<ReadableStreamDefaultReader<Uint8Array>>;
+    readonly url: string;
+  },
+): Promise<void> {
+  try {
+    await reader.cancel();
+  }
+  catch (error) {
+    /**
+     * Logger tagged with this drain.
+     */
+    const cl = tagged({
+      tag: drainBody.name,
+      l,
+    },);
+    cl.warn(`could not cancel ${url}: ${String(error,)}`,);
+  }
+}
+
+/**
  * Drains a response body chunk by chunk, telling the guard about each arrival
  * so silence is measured rather than inferred from total elapsed time. The
  * decoded text is concatenated and handed back whole, so every parser above
@@ -62,6 +108,9 @@ const NOTABLE_FIRST_BYTE_MS = 0;
  * @returns Whole decoded body
  *
  * @throws `StreamStalledError` when the guard tripped on silence
+ *
+ * @throws `StreamDegenerateError` when the model stopped saying anything new,
+ * which no silence window can detect because such a stream is never silent
  *
  * @example
  * ```ts
@@ -105,6 +154,16 @@ export async function drainBody(
   const parts: string[] = [];
 
   /**
+   * Watches for a model that has stopped saying anything new, on either the
+   * answer channel or the thinking one.
+   *
+   * SEPARATE FROM THE IDLE GUARD because they detect opposite things. The idle
+   * guard asks whether bytes are arriving; a degenerating model answers yes
+   * forever. Neither can stand in for the other.
+   */
+  const watch = watchRunaway();
+
+  /**
    * Loop cursor, a named record so the body-root binding stays immutable.
    */
   const cursor = { done: false, };
@@ -129,6 +188,27 @@ export async function drainBody(
       );
       guard.notify(text.length,);
       parts.push(text,);
+
+      /**
+       * Whether this call has stopped producing anything new.
+       */
+      const runaway = watch.notifyChunk({ chunk: text, },);
+      if (runaway.kind === 'runaway') {
+        // Released before reporting, so the socket does not stay open feeding a
+        // model that will not stop. The provider ends neither, and no token cap
+        // bounds it, so this is the only place the call can end.
+        // oxlint-disable-next-line no-await-in-loop -- the loop ends on this branch
+        await stopReading({
+          reader,
+          url: response.url,
+        },);
+        throw new StreamDegenerateError({
+          label: response.url,
+          channel: runaway.channel,
+          distinctRatio: runaway.distinctRatio,
+          charsSeen: runaway.charsSeen,
+        },);
+      }
     }
   }
   catch (error) {
@@ -161,7 +241,8 @@ export async function drainBody(
     const sample = `stream ${response.url}: firstByte `
       + `${String(progress.firstByteMs,)}ms, `
       + `maxGap ${String(progress.maxGapMs,)}ms, `
-      + `${String(progress.chars,)} chars`;
+      + `${String(progress.chars,)} chars`
+      + `, ${String(watch.unreadableFrames(),)} unreadable frames`;
 
     /**
      * Logger tagged with this drain.

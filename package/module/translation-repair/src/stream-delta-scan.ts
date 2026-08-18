@@ -315,6 +315,12 @@ export function scanStreamDeltas(): DeltaScanner {
     if (payload === DONE_PAYLOAD)
       return [];
 
+    // An empty payload is a legitimate keep-alive rather than a frame nobody
+    // could read, and counting it would inflate the tally that exists to make a
+    // changed wire format visible.
+    if (payload === '')
+      return [];
+
     /**
      * Parsed frame, or a note that it could not be read.
      */
