@@ -902,24 +902,29 @@ consumer firewall CIDRs drifting after the repository moved.
 `syncthing/apt-web#31` concerned an upstream Kubernetes outage and is not a
 duplicate.
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?**
+    No.
    Syncthing publishes a stable hostname,
    and Hetzner accepts the IP/CIDR rules it documents.
    This repository incorrectly modeled a movable host as static Oracle
    provider ranges.
-2. **Can upstream fix it?** No upstream change is needed.
+2. **Can upstream fix it?**
+    No upstream change is needed.
    The consumer must refresh hostname destinations before sending CIDRs to
    hcloud.
-3. **Are they supporting this use case?** Syncthing supports its APT
+3. **Are they supporting this use case?**
+    Syncthing supports its APT
    hostname,
    and hcloud supports IP/CIDR firewall destinations,
    but neither promises that Syncthing will remain in one provider's
    ranges.
-4. **Would the repo welcome our contribution?** `syncthing/apt-web` has no
+4. **Would the repo welcome our contribution?**
+    `syncthing/apt-web` has no
    contribution policy or issue template prohibiting outside or
    AI-assisted reports,
    but that does not make a consumer configuration bug upstream.
-5. **Will they likely fix it?** Not applicable because no upstream defect
+5. **Will they likely fix it?**
+    Not applicable because no upstream defect
    was found.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
    Yes,

@@ -151,7 +151,9 @@ That run also rewrote
  on a machine where those directories were absent.
 
 This is the one place `WC2` in `AGENTS.md`,
- "managed -> edit source, run file-enforcer, commit output
+ "managed -> edit source,
+ run file-enforcer,
+ commit output
 as-is",
  needs a qualifier.
 Commit the generated file the edit was for.

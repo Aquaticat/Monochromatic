@@ -1,13 +1,16 @@
 # Fix `mvm` MCP and move `@monochromatic-dev/mcp-stdio` to protocol revision 2026-07-28
 
-Status: done.
+Status:
+ done.
 Opened 2026-08-16 after `/mcp` reported `Failed to reconnect to mvm: CONNECTION_CLOSED`.
 
 ## Defect 1: `mvm` server path was stale
 
 `~/.claude.json` registered the server as
 `/home/user/Monochromatic/packages/mcp/mvm/dist/final/node/index.mjs`.
-The path segment is `packages`, but the repo directory is `package` (rule `SGD`, singular segments):
+The path segment is `packages`,
+ but the repo directory is `package` (rule `SGD`,
+ singular segments):
 commit `ece5b7553` (2026-07-15) renamed `packages/` to `package/` and the registration was never updated.
 Reproduced directly:
 
@@ -16,9 +19,11 @@ Error: Cannot find module '/home/user/Monochromatic/packages/mcp/mvm/dist/final/
 code: 'MODULE_NOT_FOUND'
 ```
 
-Node exits before writing a single JSON-RPC frame, which Claude Code surfaces as `CONNECTION_CLOSED`.
+Node exits before writing a single JSON-RPC frame,
+ which Claude Code surfaces as `CONNECTION_CLOSED`.
 
-The built artifact also predated the rename: `dist/final/node/index.mjs` was built 2026-07-13,
+The built artifact also predated the rename:
+ `dist/final/node/index.mjs` was built 2026-07-13,
 while the last source change under `package/mcp/mvm/src` is the 2026-07-15 rename commit.
 
 Fixed by rebuilding and re-registering through the CLI rather than hand-editing the config,
@@ -32,8 +37,14 @@ claude mcp add --scope user mvm -- node /home/user/Monochromatic/package/mcp/mvm
 ## Defect 2: the library implemented a revision two eras behind
 
 `protocol.ts` pinned `PROTOCOL_VERSION = '2025-03-26'`.
-Released revisions, from `modelcontextprotocol/modelcontextprotocol` `schema/`:
-`2024-11-05`, `2025-03-26`, `2025-06-18`, `2025-11-25`, `2026-07-28`, plus `draft`.
+Released revisions,
+ from `modelcontextprotocol/modelcontextprotocol` `schema/`:
+`2024-11-05`,
+ `2025-03-26`,
+ `2025-06-18`,
+ `2025-11-25`,
+ `2026-07-28`,
+ plus `draft`.
 `https://modelcontextprotocol.io/specification/versioning` names **2026-07-28** the current revision.
 
 ### What changed in 2026-07-28
@@ -44,13 +55,22 @@ The spec calls handshake revisions (`2025-11-25` and earlier) **legacy** and the
 -   Every request carries `_meta["io.modelcontextprotocol/protocolVersion"]`,
     plus a required `_meta["io.modelcontextprotocol/clientCapabilities"]`
     and an optional `_meta["io.modelcontextprotocol/clientInfo"]`.
--   Servers **MUST** implement `server/discover`, returning `supportedVersions`, `capabilities`, `instructions`.
--   Unsupported versions get `UnsupportedProtocolVersionError`, JSON-RPC code `-32022`,
+-   Servers **MUST** implement `server/discover`,
+     returning `supportedVersions`,
+     `capabilities`,
+     `instructions`.
+-   Unsupported versions get `UnsupportedProtocolVersionError`,
+     JSON-RPC code `-32022`,
     with `data.supported` and `data.requested`.
 -   Every result **MUST** carry `resultType` (`'complete'` for ordinary results).
--   `server/discover` and `tools/list` results are `CacheableResult`: they also carry `ttlMs` and `cacheScope`.
+-   `server/discover` and `tools/list` results are `CacheableResult`:
+     they also carry `ttlMs` and `cacheScope`.
 -   Results **SHOULD** carry `_meta["io.modelcontextprotocol/serverInfo"]`.
--   `Tool.description` became optional and `Tool` gained `title`, `outputSchema`, `annotations`, `icons`, `_meta`.
+-   `Tool.description` became optional and `Tool` gained `title`,
+     `outputSchema`,
+     `annotations`,
+     `icons`,
+     `_meta`.
 -   `CallToolResult` gained `structuredContent`.
 -   `ping` was removed.
 
@@ -82,7 +102,8 @@ So this is now a decision made with the price known,
 Probed with a throwaway stdio server registered at local scope in a scratch directory,
 health-checked through `claude mcp list` and `claude mcp get`.
 
-When the probe answers `server/discover`, the client stays modern and sends `tools/list`
+When the probe answers `server/discover`,
+ the client stays modern and sends `tools/list`
 with the same `_meta`.
 Returning `{"tools":[]}` without `resultType` is rejected:
 
@@ -92,7 +113,8 @@ probe: ... - ! Connected - tools fetch failed - Invalid result for tools/list: m
 (the absent-means-complete bridge applies only to earlier-revision servers)
 ```
 
-When the probe rejects `server/discover` with `-32601`, the client falls back to `initialize`
+When the probe rejects `server/discover` with `-32601`,
+ the client falls back to `initialize`
 and asks for `2025-11-25`.
 
 Consequence:
@@ -128,21 +150,36 @@ The durable evidence is driving the built binary over stdio,
 
 ## Delivered
 
-Commits `b27a18322`, `8d0713ba9`, `08ade26bf`, `9e3fd6c6a`, `62a7cfed7`.
+Commits `b27a18322`,
+ `8d0713ba9`,
+ `08ade26bf`,
+ `9e3fd6c6a`,
+ `62a7cfed7`.
 
 Protocol work in `package/mcp/stdio`:
 
--   `server/discover`, per-request revision validation, `-32022` with its mandated `data`,
-    `resultType` on every result, `ttlMs`/`cacheScope` on the two cacheable results,
-    `serverInfo` in result `_meta`, and the `initialize` diagnostic.
--   Tool definitions gained `title`, `outputSchema`, `annotations`; results gained `structuredContent`.
+-   `server/discover`,
+     per-request revision validation,
+     `-32022` with its mandated `data`,
+    `resultType` on every result,
+     `ttlMs`/`cacheScope` on the two cacheable results,
+    `serverInfo` in result `_meta`,
+     and the `initialize` diagnostic.
+-   Tool definitions gained `title`,
+     `outputSchema`,
+     `annotations`;
+     results gained `structuredContent`.
 
-Defects corrected along the way, several surfaced by a source-bearing `sol` review:
+Defects corrected along the way,
+ several surfaced by a source-bearing `sol` review:
 
 -   Structurally invalid messages reported `-32700` where JSON-RPC requires `-32600`.
--   The message guard admitted `null`, boolean, and object ids that no response could echo.
+-   The message guard admitted `null`,
+     boolean,
+     and object ids that no response could echo.
 -   Malformed `tools/call` arguments were silently replaced with `{}`.
--   Tool failures surfaced as JSON-RPC errors the model cannot see; they are now `isError` results.
+-   Tool failures surfaced as JSON-RPC errors the model cannot see;
+     they are now `isError` results.
 -   Duplicate tool names silently overwrote each other in the registry.
 -   An unserializable result closed the connection instead of returning a frame.
 -   A multi-byte character split across the final stdin chunk was dropped.
@@ -150,16 +187,28 @@ Defects corrected along the way, several surfaced by a source-bearing `sol` revi
 
 ## Rejected along the way
 
--   **Dual-era server.** Planned first and supported by the spec, dropped when the user scoped
-    the work to the latest revision only. Revisit only if a client that opens with `initialize`
+-   **Dual-era server.**
+     Planned first and supported by the spec,
+     dropped when the user scoped
+    the work to the latest revision only.
+     Revisit only if a client that opens with `initialize`
     needs serving.
--   **Empty object as absent metadata.** `readRequestMeta` returned `{}` when `_meta` was unusable,
-    to escape a `no-nullish-union` report. The rule names an empty object outright as a banned
-    stand-in for absent, and the shape was wrong regardless: it made "client sent nothing"
-    indistinguishable from "client sent empty metadata". Replaced by failing loud at the boundary,
-    the rule's prescribed branch, which also deleted the helper.
--   **Testing `destroy_vm` by importing package source.** `require-eventual-artifact` requires tests
-    to exercise shipped output. The cases moved to the stdio boundary suite, which is stronger evidence.
+-   **Empty object as absent metadata.**
+     `readRequestMeta` returned `{}` when `_meta` was unusable,
+    to escape a `no-nullish-union` report.
+     The rule names an empty object outright as a banned
+    stand-in for absent,
+     and the shape was wrong regardless:
+     it made "client sent nothing"
+    indistinguishable from "client sent empty metadata".
+     Replaced by failing loud at the boundary,
+    the rule's prescribed branch,
+     which also deleted the helper.
+-   **Testing `destroy_vm` by importing package source.**
+     `require-eventual-artifact` requires tests
+    to exercise shipped output.
+     The cases moved to the stdio boundary suite,
+     which is stronger evidence.
 
 ## Verified at the user boundary
 

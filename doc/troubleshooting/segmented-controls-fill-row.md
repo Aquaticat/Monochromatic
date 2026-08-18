@@ -3,14 +3,17 @@
 ## Symptom
 
 A page label such as `Music` or `Text` should produce a segment sized to its label plus padding.
-Instead, each Android segment fills the phone width.
+Instead,
+ each Android segment fills the phone width.
 The desktop sections retain content widths,
 but a rounded frame extends through the unused row width and makes that space look like another segment.
 
 The trigger has two forms:
 
-- Compose: a decorative child inside a content-sized `Box` uses `Modifier.fillMaxWidth()`.
-- Slint: a visible frame uses `parent.width` around a wrapping `FlexboxLayout`.
+- Compose:
+   a decorative child inside a content-sized `Box` uses `Modifier.fillMaxWidth()`.
+- Slint:
+   a visible frame uses `parent.width` around a wrapping `FlexboxLayout`.
 
 ## Root cause
 
@@ -57,7 +60,8 @@ The text's natural width never gets to determine the `Box` width.
 The same mechanism affected the LED renderer introduced in commit `5b54692cc`.
 Its `SubcomposeLayout` tried to discover each target width by measuring the complete `ledCapTarget`.
 A visual cap descendant used `Modifier.fillMaxSize()`.
-The probe supplied a bounded row maximum, so that visual descendant consumed the maximum and made every cap its own full-width row.
+The probe supplied a bounded row maximum,
+ so that visual descendant consumed the maximum and made every cap its own full-width row.
 
 The corrected probe measures only the one-line `Text` legend.
 It derives target width as measured legend plus both 24-unit insets,
@@ -84,7 +88,7 @@ Binding that wrapper to the inner `FlexboxLayout` preferred width did not help u
 The installed `i-slint-compiler` version and crates.io checksum are recorded at
 `package/music-player/desktop-app/Cargo.lock:2562-2565`.
 
-Slint issue [#11936] identifies the relevant 1.17 layout-info defect.
+Slint issue [#11936][] identifies the relevant 1.17 layout-info defect.
 The merged fix is visible in Slint commit
 `c181dc45135c91e77a2694aed20c29e1aa9c62f7`.
 `internal/compiler/llr/lower_layout_expression.rs:1300-1333` now detects a nested wrapping flex layout and clamps its
@@ -106,14 +110,19 @@ The consumer-side workaround cannot rely on a wrapping flex layout reporting a c
 
 Versions under test:
 
-- Slint `1.17.0`, with `i-slint-compiler` checksum
+- Slint `1.17.0`,
+   with `i-slint-compiler` checksum
   `290c2247e87d3653b9b7c3bc1cbe19647b2f93a4b99a40aae6a7140717700d37`.
-- Compose BOM `2026.05.01`, resolving Foundation Layout Android `1.11.2`.
+- Compose BOM `2026.05.01`,
+   resolving Foundation Layout Android `1.11.2`.
 - Pixel 6 device `1C171FDF600KWW`.
 
 The desktop harness copies `ui/app.slint` to `target/segmented-repro.slint`,
-changes the default labels to `A`, `Abcdef`, and `Abcdefghijklmnopq`,
-selects style `3`, and renders it:
+changes the default labels to `A`,
+ `Abcdef`,
+ and `Abcdefghijklmnopq`,
+selects style `3`,
+ and renders it:
 
 ```sh
 cd package/music-player/desktop-app
@@ -147,7 +156,9 @@ The pre-fix image framed the unused width through the right edge of the 480 px r
 The fixed image ends the visible controls immediately after `Abcdefghijklmnopq`.
 A second render with enough labels to wrap confirms the final row ends immediately after `Final`.
 
-The Android boundary was rebuilt, installed, and launched with:
+The Android boundary was rebuilt,
+ installed,
+ and launched with:
 
 ```sh
 mise run //package/music-player/android-app:run:release
@@ -176,7 +187,8 @@ Patterns that fail:
 Commit `47ba628d7` replaces the two fill-sized divider children with a `0.5.dp` border modifier on each segment.
 The outer group also uses `wrapContentWidth(Alignment.Start)`.
 
-Tradeoff: adjacent half-pixel outlines compose into the visible internal divider,
+Tradeoff:
+ adjacent half-pixel outlines compose into the visible internal divider,
 so custom asymmetric divider colors would require a dedicated layout or drawing modifier.
 
 ### Keep Slint's unused flex width invisible
@@ -185,39 +197,56 @@ Commit `47ba628d7` removes the full-width outer frame and gives each naturally s
 The flex container can still use all available width for wrapping,
 but no paint makes unused width resemble a control.
 
-Tradeoff: Slint 1.17.0 cannot show one rounded frame around the exact used width while retaining dynamic wrapping.
-The workaround uses square section outlines until the package adopts a Slint release containing [PR #12129].
+Tradeoff:
+ Slint 1.17.0 cannot show one rounded frame around the exact used width while retaining dynamic wrapping.
+The workaround uses square section outlines until the package adopts a Slint release containing [PR #12129][].
 
 ## What does not work
 
 - `horizontal-stretch: 0` on the Slint wrapper produced a byte-identical screenshot.
-  When all layout children have zero stretch, Slint may still distribute available space among them.
+  When all layout children have zero stretch,
+   Slint may still distribute available space among them.
 - `preferred-width: segment-layout.preferred-width` plus the same `max-width` also produced a byte-identical screenshot.
   The installed flex layout did not provide the parent with the required content width.
 - Keeping the outer frame while only making labels content-width leaves a blank framed area.
-  The labels are correct, but the visible control still appears full-width.
+  The labels are correct,
+   but the visible control still appears full-width.
 - Adding `wrapContentWidth` alone on Android does not neutralize a descendant `fillMaxWidth()`.
   The descendant still receives and consumes the relaxed maximum width.
 - Measuring the full LED target before row packing still gives `fillMaxSize()` a bounded maximum.
-  Subcomposition changes when measurement happens, not how fill modifiers consume constraints.
+  Subcomposition changes when measurement happens,
+   not how fill modifiers consume constraints.
 
 ## Upstream filing decision
 
-No `.out-of-scope/` entry covers Slint, Compose, or layout behavior.
-Tracker searches found Slint issue [#11936] and merged [PR #12129].
-The issue comments already contain the corrected root cause, before and after evidence, and the merged fix.
+No `.out-of-scope/` entry covers Slint,
+ Compose,
+ or layout behavior.
+Tracker searches found Slint issue [#11936][] and merged [PR #12129][].
+The issue comments already contain the corrected root cause,
+ before and after evidence,
+ and the merged fix.
 There is nothing additive to post.
 
 The filing constraints resolve as follows:
 
-1. **Upstream fault:** Compose is not at fault because the consumer requested fill width.
+1. **Upstream fault:**
+    Compose is not at fault because the consumer requested fill width.
    Slint's preferred-size limitation is upstream and is already tracked.
-2. **Upstream can fix it:** yes for Slint, demonstrated by merged [PR #12129].
-3. **Supported use case:** yes, [#11936] uses a nested wrapping `FlexboxLayout` reproducer.
-4. **Contribution policy:** Slint's `CONTRIBUTING.md` welcomes issues and pull requests.
+2. **Upstream can fix it:**
+    yes for Slint,
+    demonstrated by merged [PR #12129][].
+3. **Supported use case:**
+    yes,
+    [#11936][] uses a nested wrapping `FlexboxLayout` reproducer.
+4. **Contribution policy:**
+    Slint's `CONTRIBUTING.md` welcomes issues and pull requests.
    Its `AGENTS.md` explicitly provides guidance for AI coding assistants and contains no filing ban.
-5. **Likely fix:** complete, because [PR #12129] merged on June 17, 2026.
-6. **Compatible prototype:** complete upstream.
+5. **Likely fix:**
+    complete,
+    because [PR #12129][] merged on June 17, 2026.
+6. **Compatible prototype:**
+    complete upstream.
    The merged change includes compiler and core fixes plus layout regression cases.
 
 Because the only upstream defect is already fixed and the Compose defect was consumer code,

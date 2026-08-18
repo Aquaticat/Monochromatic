@@ -2,11 +2,16 @@
 
 ## Research status
 
-- Status: complete; no full-contract replacement found
-- Started and completed: 2026-08-14
-- Scope: widely adopted TypeScript-authored parser APIs with native ESM runtimes,
+- Status:
+   complete;
+   no full-contract replacement found
+- Started and completed:
+   2026-08-14
+- Scope:
+   widely adopted TypeScript-authored parser APIs with native ESM runtimes,
   plus one token-stream semantic control
-- Product changes: forbidden by the review request
+- Product changes:
+   forbidden by the review request
 
 ## Question
 

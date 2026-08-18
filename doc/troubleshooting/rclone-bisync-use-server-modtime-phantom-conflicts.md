@@ -131,8 +131,12 @@ The distinction matters for anyone reasoning about cost or about bandwidth-trigg
 
 It becomes destructive only when the local file **also** changes before that heal runs:
 
-1.  Edit the file. Run N uploads it. Remote `LastModified` becomes run N's clock.
-2.  Keep editing. The local file changes again, genuinely.
+1.  Edit the file.
+     Run N uploads it.
+     Remote `LastModified` becomes run N's clock.
+2.  Keep editing.
+     The local file changes again,
+     genuinely.
 3.  Run N+1 sees Path1 newer (phantom) and Path2 newer and larger (real).
     Both sides changed,
      so bisync applies `--conflict-resolve` (default `none`),
@@ -309,7 +313,8 @@ Adding `--conflict-resolve` does **not** require a `--resync`,
  verified on a throwaway fixture by adding the flag mid-stream between two runs,
  which completed normally with exit 0.
 
-1.  **`--conflict-resolve newer`, on its own.**
+1.  **`--conflict-resolve newer`,
+     on its own.**
     Cheapest correct-in-practice fix,
      keeps the 3.1 s listing.
     Leave `--conflict-loser` at its default,
@@ -348,7 +353,8 @@ Adding `--conflict-resolve` does **not** require a `--resync`,
      that interaction needs rechecking before changing it.
     Ranked below the first because correctness is bought with a per-run cost of minutes,
      and the first option already prevents the observed loss.
-3.  **`--conflict-resolve path2`, local always wins.**
+3.  **`--conflict-resolve path2`,
+     local always wins.**
     Pro:
      simple,
      and correct for a single-writer setup.

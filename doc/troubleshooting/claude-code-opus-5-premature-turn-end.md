@@ -15,7 +15,9 @@ See the confounds section for what the comparison cannot support.
 ## Symptom
 
 A turn ends with a well-formed report whose final sentence announces the next action.
-Observed final sentences, verbatim, each immediately followed by the user typing `Continue.`:
+Observed final sentences,
+ verbatim,
+ each immediately followed by the user typing `Continue.`:
 
 - `Next: fixture and test, then the sweep with pre-registered reading criteria.`
 - `Next: implement #118, with the directory-candidate guard I traced beforehand.`
@@ -26,7 +28,8 @@ Observed final sentences, verbatim, each immediately followed by the user typing
 
 The last of those states in the present tense that the work is underway,
 then emits `end_turn` without starting it.
-Of the Opus 5 cases, all but one announce future work in the closing region of the message.
+Of the Opus 5 cases,
+ all but one announce future work in the closing region of the message.
 
 ## Measurement
 
@@ -35,14 +38,20 @@ Source:
 covering 2026-07-05 to 2026-08-06,
 474 human-typed turns.
 A turn counts as a restart nudge when a human-typed message under 200 characters
-asks the agent to resume (`continue`, `go on`, `keep going`, `are you working`, `you stopped`, and similar).
+asks the agent to resume (`continue`,
+ `go on`,
+ `keep going`,
+ `are you working`,
+ `you stopped`,
+ and similar).
 Model attribution comes from the `message.model` field of the assistant turn preceding the nudge.
 
 Two counting bases appear in this document and they do not agree,
 so every figure names which one it uses.
 Model-attributed counting keeps only the human turns whose preceding assistant turn ran the named model.
 Whole-session counting keeps every human turn in the transcript.
-Sessions switch models, so the same session yields different totals:
+Sessions switch models,
+ so the same session yields different totals:
 the longest Opus 5 session is 43 turns with 15 nudges model-attributed,
 and 50 turns with 16 nudges whole-session.
 Figures in this section are model-attributed.
@@ -60,27 +69,51 @@ Any rerun must exclude the session doing the rerunning.
 Restart-nudge rate with reasoning effort held constant at `xhigh`,
 Wilson 95% intervals:
 
-- `claude-opus-5`: 27 of 80 turns, 33.8%, CI [24.3, 44.6]
-- `claude-fable-5`: 4 of 119 turns, 3.4%, CI [1.3, 8.3]
-- `claude-opus-4-8`: 0 of 12 turns, 0.0%, CI [0.0, 24.3]
+- `claude-opus-5`:
+   27 of 80 turns,
+   33.8%,
+   CI [24.3,
+   44.6]
+- `claude-fable-5`:
+   4 of 119 turns,
+   3.4%,
+   CI [1.3,
+   8.3]
+- `claude-opus-4-8`:
+   0 of 12 turns,
+   0.0%,
+   CI [0.0,
+   24.3]
 
 The intervals for Opus 5 and Fable 5 do not overlap.
 This is a descriptive difference between two populations,
 not an isolated model effect.
 
-Session-level spread, which rules out a single unrepresentative session.
+Session-level spread,
+ which rules out a single unrepresentative session.
 A session counts for a model when any human turn in it was attributed to that model,
 so a session running several models counts for each and the totals overlap:
 
-- `claude-opus-5`: nudges appear in 5 of 8 sessions, 63%
-- `claude-fable-5`: nudges appear in 4 of 15 sessions, 27%
-- `claude-opus-4-8`: nudges appear in 2 of 15 sessions, 13%
+- `claude-opus-5`:
+   nudges appear in 5 of 8 sessions,
+   63%
+- `claude-fable-5`:
+   nudges appear in 4 of 15 sessions,
+   27%
+- `claude-opus-4-8`:
+   nudges appear in 2 of 15 sessions,
+   13%
 
 Session length alone does not explain the rate.
-The two longest Fable 5 sessions, 51 and 50 human turns,
+The two longest Fable 5 sessions,
+ 51 and 50 human turns,
 ran at 8% and 0%.
-The longest Opus 4.8 session, 62 turns, ran at 6%.
-Both long Opus 5 sessions, 43 and 14 turns, ran at 35% and 29% independently.
+The longest Opus 4.8 session,
+ 62 turns,
+ ran at 6%.
+Both long Opus 5 sessions,
+ 43 and 14 turns,
+ ran at 35% and 29% independently.
 Session length and task shape are distinct,
 and the confounds section shows the long sessions differ in shape,
 so this comparison bounds session length as an explanation without isolating the model.
@@ -103,12 +136,25 @@ Median length of the non-nudge human turns:
 Every model-attributed session of at least 14 turns is listed,
 so the comparison is not a selected subset:
 
-- `claude-opus-5`, 43-turn session: 33 characters, with turns like `finish the migration` and `Let's split the model.`
-- `claude-opus-5`, 15-turn session: 75 characters
-- `claude-opus-4-8`, 62-turn session: 58 characters
-- `claude-fable-5`, 50-turn session: 69 characters
-- `claude-fable-5`, 51-turn session: 120 characters
-- `claude-fable-5`, 27-turn session: 155 characters
+- `claude-opus-5`,
+   43-turn session:
+   33 characters,
+   with turns like `finish the migration` and `Let's split the model.`
+- `claude-opus-5`,
+   15-turn session:
+   75 characters
+- `claude-opus-4-8`,
+   62-turn session:
+   58 characters
+- `claude-fable-5`,
+   50-turn session:
+   69 characters
+- `claude-fable-5`,
+   51-turn session:
+   120 characters
+- `claude-fable-5`,
+   27-turn session:
+   155 characters
 
 Session sizes here are model-attributed.
 The gap between the bases is large for the second Opus 5 session,
@@ -137,7 +183,9 @@ the failure shape is real and reproducible,
 it is concentrated in queue-shaped work,
 and it persisted across every corrective this repository applied.
 An unconfounded rate comparison between models
-would need the same task shape, period, and instructions on both arms,
+would need the same task shape,
+ period,
+ and instructions on both arms,
 which this corpus does not contain.
 
 ## What was ruled out
@@ -176,24 +224,31 @@ Nudges continued afterward on 07-30 and 08-06.
 
 Hook friction:
 upstream issue 84007 hypothesizes that governance gates bias the agent toward safe turn endings.
-The same Stop hook, `ccsr`, was active across every model in this corpus,
+The same Stop hook,
+ `ccsr`,
+ was active across every model in this corpus,
 including the Fable 5 sessions measured at 3.4%,
 so gate friction does not account for the difference here.
 
 ## Upstream reports
 
-Two independent reporters, neither of them this repository's user:
+Two independent reporters,
+ neither of them this repository's user:
 
-- `anthropics/claude-code` issue 84007, opened 2026-08-05,
+- `anthropics/claude-code` issue 84007,
+   opened 2026-08-05,
   titled `Agent ends turns with 'continuing now' promises instead of continuing`.
   It describes the identical shape,
   including status turns that substitute for work turns
   and read-only turns that stop at the edit boundary.
-- `anthropics/claude-code` issue 81133, opened 2026-07-25,
+- `anthropics/claude-code` issue 81133,
+   opened 2026-07-25,
   titled `[Bug] Claude Opus 5 stops responding mid-task in auto mode`,
   against version 2.1.219.
 
-A third report, issue 69415, covers `API Error: Connection closed mid-response`.
+A third report,
+ issue 69415,
+ covers `API Error: Connection closed mid-response`.
 That is a distinct failure.
 In this corpus it accounts for the `<synthetic>` model rows,
 where the transcript records a truncated response rather than a completed turn.
@@ -201,10 +256,13 @@ where the transcript records a truncated response rather than a completed turn.
 ## Stop hook capacity, corrected
 
 The Stop hook is the repository's existing enforcement point,
-`ccsr`, from `package/claude-code-plugin/stop-reminder`,
+`ccsr`,
+ from `package/claude-code-plugin/stop-reminder`,
 whose handler lives in
 `package/claude-code-plugin/source/src/handler/stop-reminder/index.ts`.
-It already blocks stops for hedging language, uncited categorical dismissals, and trailing questions.
+It already blocks stops for hedging language,
+ uncited categorical dismissals,
+ and trailing questions.
 
 Measured hook behavior across the corpus:
 67 blocking events,
@@ -214,7 +272,9 @@ The cap of one block per turn was self-imposed.
 The handler returned `{}` unconditionally when `stop_hook_active` was set.
 
 The three turns carrying two blocks are not evidence that the hook re-armed.
-This repository runs two Stop hooks, `ccsr` and `cctt`, plus goal blocks,
+This repository runs two Stop hooks,
+ `ccsr` and `cctt`,
+ plus goal blocks,
 so two blocks in one turn is more readily two hooks than one hook firing twice.
 
 ### Measured on a throwaway
@@ -226,7 +286,8 @@ that logged its input and blocked unconditionally up to a self-imposed cap of 15
 
 Both runs behaved identically:
 
-- The CLI dispatched the Stop hook 9 times, then ended the turn
+- The CLI dispatched the Stop hook 9 times,
+   then ended the turn
   despite the ninth response being another block.
 - `stop_hook_active` was `false` on the first dispatch and `true` on all 8 after.
   It never cleared.
@@ -234,8 +295,10 @@ Both runs behaved identically:
   and ignoring it yields as many continuations as Claude Code allows,
   which is not a fixed number.
 
-A third run, of the shipped handler rather than a minimal probe,
-ended after 17 dispatches, all of them forced continuations.
+A third run,
+ of the shipped handler rather than a minimal probe,
+ended after 17 dispatches,
+ all of them forced continuations.
 So 9 is not a Claude Code constant.
 
 A fourth run refines the claim.
@@ -251,7 +314,8 @@ alongside the override message
 An earlier revision of this document concluded no cap existed,
 on the strength of the 31-dispatch run alone.
 
-The cap bounds an idle loop, not a busy one.
+The cap bounds an idle loop,
+ not a busy one.
 The runs overridden at 9 produced no tool calls and repeated a one-word reply;
 the run that reached 31 worked on every continuation.
 So a hook that keeps a busy agent blocked is not bounded by the platform,
@@ -260,9 +324,16 @@ That is the case that costs real money,
 which is why the depth guard stays even though the platform cap exists.
 
 The `Stop` input carried exactly these keys:
-`background_tasks`, `cwd`, `hook_event_name`, `last_assistant_message`,
-`permission_mode`, `prompt_id`, `session_crons`, `session_id`,
-`stop_hook_active`, `transcript_path`.
+`background_tasks`,
+ `cwd`,
+ `hook_event_name`,
+ `last_assistant_message`,
+`permission_mode`,
+ `prompt_id`,
+ `session_crons`,
+ `session_id`,
+`stop_hook_active`,
+ `transcript_path`.
 
 ### Undocumented Stop fields
 
@@ -311,11 +382,14 @@ this repository's own hook now emits Stop feedback on every turn.
 
 The corpus contains 94 Stop-hook feedback records on the main branch.
 Only 67 carry a `hook_blocking_error` attachment;
-the remaining 27 are goal-condition blocks, described in the goal feature section.
+the remaining 27 are goal-condition blocks,
+ described in the goal feature section.
 
 A block counts as a rescue when the forced continuation issues at least one tool call
 before the next stop boundary,
-where the boundary is the next human turn, the next block, or end of session.
+where the boundary is the next human turn,
+ the next block,
+ or end of session.
 
 Pooling every block hides the difference that matters,
 so the figures are given by block type.
@@ -331,21 +405,29 @@ and 7% were followed by a human restart nudge anyway.
 
 Split by what did the blocking:
 
-- Goal-condition blocks, 27:
+- Goal-condition blocks,
+   27:
   100% issued a tool call,
   100% issued a state-changing call,
   100% changed task state,
   and none was followed by a nudge.
-- `ccsr` text-detector blocks, 67:
+- `ccsr` text-detector blocks,
+   67:
   88% issued a tool call,
   84% issued a state-changing call,
   25% changed task state,
   and 10% were followed by a nudge anyway.
 
-Restricted to `claude-opus-5`, 49 blocks, the same split is sharper:
+Restricted to `claude-opus-5`,
+ 49 blocks,
+ the same split is sharper:
 
-- Goal-condition blocks, 27: 100% on every metric, none nudged again.
-- `ccsr` text-detector blocks, 22:
+- Goal-condition blocks,
+   27:
+   100% on every metric,
+   none nudged again.
+- `ccsr` text-detector blocks,
+   22:
   82% issued a tool call,
   82% issued a state-changing call,
   41% changed task state,
@@ -359,7 +441,8 @@ and the closer analogue in that it also fires without consulting task state.
 The one-shot guard is therefore not the main bottleneck,
 though it is not irrelevant either.
 A single block puts the agent back to work in the large majority of cases,
-and on the closest analogue, Opus 5 text-detector blocks,
+and on the closest analogue,
+ Opus 5 text-detector blocks,
 roughly one block in five produced no tool call
 and roughly one in four was followed by a nudge regardless.
 So bounded progress-rearmed re-blocking would recover something,
@@ -381,7 +464,9 @@ for example
 `The assistant explicitly states 'Remaining: #105, #109, ...'`.
 
 Per block it performs better than the phrase detectors:
-all 27 issued tool calls, state-changing calls, and task-state changes,
+all 27 issued tool calls,
+ state-changing calls,
+ and task-state changes,
 and none was immediately followed by a nudge.
 
 It did not prevent the session from needing nudges.
@@ -444,7 +529,10 @@ Gating became per-detector:
 the three response-quality detectors still run only on the first stop of a chain,
 while forced continuation re-arms on every stop.
 A trailing question keeps precedence over it.
-`MONOCHROMATIC_STOP_AUTO_CONTINUE` set to `off`, `0`, `false`, or `no` disables it.
+`MONOCHROMATIC_STOP_AUTO_CONTINUE` set to `off`,
+ `0`,
+ `false`,
+ or `no` disables it.
 
 ### What this does not achieve
 
@@ -453,7 +541,8 @@ Unconditional blocking does not reach that,
 and the gap is structural rather than a tuning problem.
 
 A Stop hook extends the current turn.
-When the chain ends, at the depth limit or because the agent stopped producing work,
+When the chain ends,
+ at the depth limit or because the agent stopped producing work,
 the session idles waiting for the user exactly as before.
 So the mechanism converts one user turn into many agent turns;
 it does not remove the need for the next user turn.
@@ -464,7 +553,10 @@ which is why this gap is structural rather than a matter of tuning.
 No hook can close that gap.
 All 16 hook events fire in reaction to something already happening,
 and every output field they carry
-(`decision`, `reason`, `additionalContext`, `systemMessage`)
+(`decision`,
+ `reason`,
+ `additionalContext`,
+ `systemMessage`)
 modifies the turn in progress.
 None starts a turn.
 The `prompt` field in `UserPromptSubmit` is input describing a prompt the user already submitted,
@@ -479,7 +571,9 @@ the model decides to start it.
 Its subsequent firings are scheduled by the harness rather than chosen by the model,
 so the rejection applies to starting the loop and not to sustaining it.
 
-**Decision, 2026-08-07: the gap is accepted and will not be closed.**
+**Decision,
+ 2026-08-07:
+ the gap is accepted and will not be closed.**
 The measured problem was 33.8% of Opus 5 turns needing a nudge,
 and that cost is now absorbed inside each turn.
 What remains is one prompt per chain end,
@@ -502,7 +596,8 @@ blocked on a long-running process with nothing else to do,
 the hook forced eleven turns that each restated the same blocker,
 until Claude Code's cap overrode it.
 
-Three releases now apply, each read from state rather than from the response text
+Three releases now apply,
+ each read from state rather than from the response text
 and none asking the agent whether it considers itself finished:
 
 - A background task is running,
@@ -514,11 +609,13 @@ and none asking the agent whether it considers itself finished:
   One push is the threshold because a second rarely recovers:
   of the blocks in this corpus whose push produced no tool call
   and were followed by another block,
-  only 2 of 9 second pushes produced work, 22%.
+  only 2 of 9 second pushes produced work,
+   22%.
   The sample is small,
   so that argues against pushing twice rather than establishing a rate.
   The accepted cost is that an agent answering a block with another announcement
-  is released, which is the original failure slipping through;
+  is released,
+   which is the original failure slipping through;
   the other two releases do not have that weakness
   and cover the cases this one was added for.
 - Every tracked task is finished,
@@ -551,13 +648,15 @@ both found by exercising the built hook rather than by unit tests:
   once as the feedback record fed back to the model
   and once inside a `hook_blocking_error` attachment.
   Counting both halves the effective limit.
-  Verified live at a limit of 4, which produced exactly 4 blocks.
+  Verified live at a limit of 4,
+   which produced exactly 4 blocks.
 - Making the handler asynchronous broke the kill-switch tests,
   which had mutated `process.env` and now raced across the await.
   The policy was split into a pure function taking its inputs as parameters,
   so no test touches process state.
 
-The cost falls on every session, not only queue-shaped ones.
+The cost falls on every session,
+ not only queue-shaped ones.
 A turn that genuinely had nothing left to do
 now receives forced continuations up to the depth limit,
 including on short question-and-answer turns.
@@ -593,7 +692,8 @@ every check it ran confirmed existing work was already correct.
 Yield therefore fell to zero once the session's unexamined surface was exhausted,
 after roughly a dozen blocks on an unusually deep backlog of unverified assertions.
 
-Read carefully, because this cuts both ways.
+Read carefully,
+ because this cuts both ways.
 The mechanism worked far better here than the disposable probe suggested,
 and the reason is that this session had genuine unexamined surface:
 a long analysis whose figures had been asserted from memory rather than re-derived.
@@ -642,14 +742,16 @@ and each carries its disposition.
 
 No option here had an established effect on this failure.
 The model comparison is confounded,
-and the one state-based mechanism actually deployed, the goal feature,
+and the one state-based mechanism actually deployed,
+ the goal feature,
 rescued every stop it caught while its session still needed 16 nudges.
 The ranking below weighed expected value against implementation cost,
 not proven results.
 It was written before the goal rate comparison was retracted,
 so where a bullet leans on that comparison the lean is noted rather than silently repaired.
 
-- **Rejected.** Run the goal feature deliberately across several queue-shaped sessions,
+- **Rejected.**
+   Run the goal feature deliberately across several queue-shaped sessions,
   and compare against matched sessions without it.
   Ranked first at the time because it was the cheapest remaining action,
   required no code,
@@ -660,14 +762,16 @@ so where a bullet leans on that comparison the lean is noted rather than silentl
   The 32% figure this bullet originally cited belongs to the retracted comparison
   and is not evidence for or against the option.
   Getting three or four matched sessions settles whether state-based blocking helps at all.
-- **Rejected.** Route long queue-shaped sessions to `claude-fable-5`,
+- **Rejected.**
+   Route long queue-shaped sessions to `claude-fable-5`,
   run as a deliberate comparison rather than adopted as a fix.
   Ranked below the goal experiment because it costs capability on the hard analysis work
   these sessions consist of,
   where the goal experiment costs nothing.
   Ranked above building a detector because it is still only a measurement,
   and the corpus lacks exactly this comparison at matched task shape and period.
-- **Superseded** by unconditional blocking, which needs no task state at all.
+- **Superseded** by unconditional blocking,
+   which needs no task state at all.
   Build tracked-task-state blocking into `ccsr`,
   with a high-confidence phrase detector only as fallback when task state is unavailable.
   Ranked below both measurements because it is the largest build here
@@ -699,7 +803,8 @@ so where a bullet leans on that comparison the lean is noted rather than silentl
   for a compaction boundary or a genuine blocker,
   needs an exact user-supplied marker consumed from `UserPromptSubmit`,
   never a marker the assistant can print to authorize itself.
-- **Rejected.** Drive continuation from the harness rather than from the user,
+- **Rejected.**
+   Drive continuation from the harness rather than from the user,
   using the `loop` skill's self-paced mode.
   Ranked last because it treats the symptom:
   it removes the typing cost without changing how often the agent stops,

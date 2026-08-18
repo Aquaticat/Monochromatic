@@ -349,7 +349,8 @@ QSP:
  Never bundle separable decisions into one option set,
  nor offer complements as alternatives.
 Split by what each actually decides;
- answering both "yes, in this order" must be reachable.
+ answering both "yes,
+ in this order" must be reachable.
 
 ### Present options with pros, cons, and a personal ranking
 
@@ -643,7 +644,9 @@ Alternate-worktree writes:
 ### Long-form flags
 
 CLH:
- Before automating CLI prompts with pipes, PTYs, or drivers,
+ Before automating CLI prompts with pipes,
+ PTYs,
+ or drivers,
  run `--help` and inspect current docs/source for native noninteractive flags.
  Prefer flags over terminal emulation.
 

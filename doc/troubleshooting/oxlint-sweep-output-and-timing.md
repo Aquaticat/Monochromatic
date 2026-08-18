@@ -136,7 +136,8 @@ mise run lint:oxlint > sweep.txt 2>&1 && rg --text '^\s+[x!]\s' sweep.txt | sort
 
 The sweep exits non-zero whenever it reports errors,
  and this repository's sweep always reports
-errors, currently 2893.
+errors,
+ currently 2893.
 `&&` therefore never fires.
 
 ### Verified workaround
@@ -160,8 +161,11 @@ A captured sweep contained the oxlint configuration build and then stopped:
 ✔ rolldown v1.2.0 Finished in 134.55 ms
 ```
 
-No diagnostics, no trailer, no error.
-`pgrep` found no oxlint or `tsc --api` process, and the journal recorded no out-of-memory kill.
+No diagnostics,
+ no trailer,
+ no error.
+`pgrep` found no oxlint or `tsc --api` process,
+ and the journal recorded no out-of-memory kill.
 
 ### Root cause
 
@@ -169,11 +173,13 @@ Not established.
 Observed once and not reproduced;
  an identical rerun completed normally.
 Recorded because the failure is silent and its output is indistinguishable from a sweep still
-running, which is what makes a blind rerun tempting.
+running,
+ which is what makes a blind rerun tempting.
 
 ### Verified workaround
 
-Before rerunning, establish that nothing survived,
+Before rerunning,
+ establish that nothing survived,
  rather than assuming it:
 
 ```sh
@@ -213,21 +219,27 @@ The band is 4.6s,
 Measure the band on an unchanged build first,
  then compare repeated runs of each configuration
 rather than one of each.
-Where a mechanism can be measured directly, prefer that over the sweep:
+Where a mechanism can be measured directly,
+ prefer that over the sweep:
  the decoded-source cache
 change was settled by a probe showing a project revisit at 98.6ms against 0.5ms,
  with a control,
 which is evidence a wall-clock difference of nine seconds could not have supplied on its own.
 
 This is recorded as `QNB` in `AGENTS.md`.
-Note that `QJ1`, which forbids a quantitative claim without a measurement, does not catch it:
+Note that `QJ1`,
+ which forbids a quantitative claim without a measurement,
+ does not catch it:
  the
-measurement was taken, and the comparison was still meaningless.
+measurement was taken,
+ and the comparison was still meaningless.
 
 ## Related
 
 - `doc/planning/oxlint-warm-sweep-attribution.md` holds the full measurement record,
  the pinned
-diagnostic digests, and six withdrawn claims.
+diagnostic digests,
+   and six withdrawn claims.
 - `doc/troubleshooting/oxlint.md` covers type-aware mode resolving the wrong configuration from
-the monorepo root, which is a different way for a sweep to look clean while checking nothing.
+the monorepo root,
+   which is a different way for a sweep to look clean while checking nothing.

@@ -97,7 +97,8 @@ Measured against 2.1.224,
  sessions producing no tool calls were overridden after nine blocks,
  while a session running one shell command per continuation
 reached thirty-one and was never overridden.
-The platform cap catches an idle loop, not a busy one,
+The platform cap catches an idle loop,
+ not a busy one,
  so this hook bounds the busy case itself.
 Counting reads the transcript rather than a sidecar,
 so there is no state to corrupt,

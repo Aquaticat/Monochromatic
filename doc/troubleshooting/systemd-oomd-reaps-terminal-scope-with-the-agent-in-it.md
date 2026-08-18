@@ -2,7 +2,9 @@
 
 ## Symptom
 
-A Claude Code session dies without warning, mid-turn, taking the terminal window with it.
+A Claude Code session dies without warning,
+ mid-turn,
+ taking the terminal window with it.
 No error appears in the session and no crash dump is written.
 The only record is in the journal:
 
@@ -11,17 +13,23 @@ systemd[2066]: app-ghostty-surface-transient-5181.scope: systemd-oomd killed som
 systemd[2066]: app-ghostty-surface-transient-5181.scope: Failed with result 'oom-kill'.
 ```
 
-The kernel out-of-memory killer is NOT involved, and looking for it is the first wrong turn:
-`free` reports plenty available at the time, and `dmesg` carries no `Out of memory: Killed process`.
-Long-running agent sessions are the population that hits this, because the trigger is accumulated
+The kernel out-of-memory killer is NOT involved,
+ and looking for it is the first wrong turn:
+`free` reports plenty available at the time,
+ and `dmesg` carries no `Out of memory: Killed process`.
+Long-running agent sessions are the population that hits this,
+ because the trigger is accumulated
 memory in one cgroup over days rather than a single large allocation.
 
 ## Root cause
 
-`systemd-oomd` kills by memory PRESSURE over a cgroup, not by an absolute limit, and the cgroup it
+`systemd-oomd` kills by memory PRESSURE over a cgroup,
+ not by an absolute limit,
+ and the cgroup it
 picked contains the whole terminal surface.
 
-The kill record names the threshold, the measurement and the target:
+The kill record names the threshold,
+ the measurement and the target:
 
 ```text
 systemd-oomd[1220]: Considered 1 cgroups for killing, top candidates were:
@@ -35,14 +43,23 @@ systemd-oomd[1220]: Killed /user.slice/.../app-ghostty-surface-transient-5181.sc
 
 Three facts in that record do the work.
 
-`Memory Pressure Limit: 0.00%` is the unit's OWN setting, and zero means unset, so the effective
+`Memory Pressure Limit: 0.00%` is the unit's OWN setting,
+ and zero means unset,
+ so the effective
 threshold came from the daemon's defaults rather than from anything about this scope.
-`Pressure: Avg10: 71.20` is a PSI figure: the share of the last ten seconds in which something in
-the cgroup stalled waiting on memory. It is a stall measure, not a usage measure, which is why
+`Pressure: Avg10: 71.20` is a PSI figure:
+ the share of the last ten seconds in which something in
+the cgroup stalled waiting on memory.
+ It is a stall measure,
+ not a usage measure,
+ which is why
 `free` showing headroom is consistent with the kill.
-`Current Memory Usage: 10.5G` is the whole scope, and this is the part that matters for an agent.
+`Current Memory Usage: 10.5G` is the whole scope,
+ and this is the part that matters for an agent.
 
-The scope is one terminal surface, and everything the session starts is inside it. The exit record
+The scope is one terminal surface,
+ and everything the session starts is inside it.
+ The exit record
 shows what that came to over the session's life:
 
 ```text
@@ -50,13 +67,22 @@ app-ghostty-surface-transient-5181.scope: Consumed 20h 54.147s CPU time over 2d 
   wall clock time, 18.4G memory peak, 9.7G memory swap peak.
 ```
 
-An 18.4 GiB peak in one terminal tab is not the agent process. It is the agent plus every build,
-test run, language server and long-lived child it spawned, all accounted to one cgroup, because a
-shell's children inherit its cgroup and nothing moved them out. The agent then competes for reclaim
-against work it started itself, and `systemd-oomd` kills the cgroup with the worst pressure, which is
-that one. The session is collateral damage from its own build.
+An 18.4 GiB peak in one terminal tab is not the agent process.
+ It is the agent plus every build,
+test run,
+ language server and long-lived child it spawned,
+ all accounted to one cgroup,
+ because a
+shell's children inherit its cgroup and nothing moved them out.
+ The agent then competes for reclaim
+against work it started itself,
+ and `systemd-oomd` kills the cgroup with the worst pressure,
+ which is
+that one.
+ The session is collateral damage from its own build.
 
-Swap makes it arrive sooner on this host, because zram is compressed RAM rather than disk:
+Swap makes it arrive sooner on this host,
+ because zram is compressed RAM rather than disk:
 
 ```text
 $ zramctl --output NAME,ALGORITHM,DISKSIZE,DATA,COMPR
@@ -64,15 +90,20 @@ NAME       ALGORITHM DISKSIZE  DATA COMPR
 /dev/zram0 zstd           16G 12.8G  4.2G
 ```
 
-Paging out does not free the machine's memory here, it only compresses it, so a working set that
-exceeds RAM produces reclaim churn rather than relief, and reclaim churn is exactly what PSI counts.
+Paging out does not free the machine's memory here,
+ it only compresses it,
+ so a working set that
+exceeds RAM produces reclaim churn rather than relief,
+ and reclaim churn is exactly what PSI counts.
 
 ### An earlier reading of the configuration was wrong
 
 Reading `/etc/systemd/oomd.conf.d/` after the fact reports `DefaultMemoryPressureLimit=80%` and
-`DefaultMemoryPressureDurationSec=20s`, which contradicts the 60 percent in the kill record and
+`DefaultMemoryPressureDurationSec=20s`,
+ which contradicts the 60 percent in the kill record and
 invites the conclusion that the record is misleading.
-It is not. The override postdates the kill:
+It is not.
+ The override postdates the kill:
 
 ```text
 $ stat --format='%y  %n' /etc/systemd/oomd.conf.d/20-freeze-hardening.conf
@@ -82,8 +113,12 @@ $ systemctl show systemd-oomd --property=ActiveEnterTimestamp
 ActiveEnterTimestamp=Sun 2026-08-16 21:19:04 EDT
 ```
 
-The kill was at 21:06:16 and the hardening landed at 21:19:03, thirteen minutes later, with the
-daemon restarting a second after that. What was in force at 21:06 were the built-in defaults, and
+The kill was at 21:06:16 and the hardening landed at 21:19:03,
+ thirteen minutes later,
+ with the
+daemon restarting a second after that.
+ What was in force at 21:06 were the built-in defaults,
+ and
 every ancestor confirms it declined to set its own:
 
 ```text
@@ -93,12 +128,17 @@ $ systemctl --user show user@1000.service --property=ManagedOOMMemoryPressureLim
 ManagedOOMMemoryPressureLimit=0
 ```
 
-Check timestamps on configuration before letting it overrule a journal record. The journal describes
-the moment; the configuration describes now.
+Check timestamps on configuration before letting it overrule a journal record.
+ The journal describes
+the moment;
+ the configuration describes now.
 
 ## Verification
 
-Under systemd 259 (259.7-1.fc44), ghostty 1.3.1-1.fc44, Claude Code 2.1.233, on Fedora 44.
+Under systemd 259 (259.7-1.fc44),
+ ghostty 1.3.1-1.fc44,
+ Claude Code 2.1.233,
+ on Fedora 44.
 
 Find the kill and its attribution:
 
@@ -107,7 +147,8 @@ journalctl --since '3 hours ago' --no-pager --output=short \
   | rg --context 2 'oomd|oom-kill'
 ```
 
-Read current usage and pressure per terminal scope, which shows whether one tab is carrying the
+Read current usage and pressure per terminal scope,
+ which shows whether one tab is carrying the
 whole session's history:
 
 ```bash
@@ -119,13 +160,15 @@ for d in /sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/*
 done | sort --reverse --numeric-sort | head
 ```
 
-Confirm which cgroup a spawned command actually lands in, which is the whole question:
+Confirm which cgroup a spawned command actually lands in,
+ which is the whole question:
 
 ```bash
 cat /proc/self/cgroup
 ```
 
-Two outcomes distinguish the states. `.../app.slice/app-ghostty-surface-transient-N.scope` means the
+Two outcomes distinguish the states.
+ `.../app.slice/app-ghostty-surface-transient-N.scope` means the
 command shares the session's cgroup and contributes to the pressure that can kill it.
 `.../app.slice/claude-code-bash` means it does not.
 
@@ -151,27 +194,41 @@ $ cat /sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/clau
 8000000000
 ```
 
-Tradeoff, and it is a real one: the limit is a HARD `memory.max`, so a build that legitimately needs
-more than the figure is killed by the kernel inside its own cgroup rather than throttled. That is the
-intended direction (the build dies, the session survives), but the number has to be set above the
+Tradeoff,
+ and it is a real one:
+ the limit is a HARD `memory.max`,
+ so a build that legitimately needs
+more than the figure is killed by the kernel inside its own cgroup rather than throttled.
+ That is the
+intended direction (the build dies,
+ the session survives),
+ but the number has to be set above the
 genuine peak of the heaviest build in the repo or it converts a rare session loss into a frequent
-build failure. `memory.high` is left at `max`, so there is no throttling tier before the wall.
+build failure.
+ `memory.high` is left at `max`,
+ so there is no throttling tier before the wall.
 
-This does not make the session immortal. It removes the session's OWN children as the source of
-pressure; a different process on the machine can still drive the terminal scope's pressure up.
+This does not make the session immortal.
+ It removes the session's OWN children as the source of
+pressure;
+ a different process on the machine can still drive the terminal scope's pressure up.
 
 ### Put long runs somewhere the terminal cannot take with it
 
 A multi-hour run started from the session should write its output to a file outside the terminal and
-have its identity recorded before it starts, so a killed session loses only the view:
+have its identity recorded before it starts,
+ so a killed session loses only the view:
 
 ```bash
 RUNS=$(mktemp --directory "${HOME}/temp/agent/<name>.XXXXXXXX")
 <command> > "${RUNS}/run.log" 2>&1
 ```
 
-Tradeoff: the harness's own captured output goes empty, so progress has to be read from the file.
-That is the point, since the file is what survives.
+Tradeoff:
+ the harness's own captured output goes empty,
+ so progress has to be read from the file.
+That is the point,
+ since the file is what survives.
 
 ### Raise the pressure threshold, knowing what it costs
 
@@ -181,28 +238,51 @@ DefaultMemoryPressureLimit=80%
 DefaultMemoryPressureDurationSec=20s
 ```
 
-Tradeoff: this is the setting that decides whether the desktop is killed or frozen. Raising the limit
-and lengthening the duration buys tolerance for bursty reclaim, and pays for it with longer periods
-of a machine that is stalling on memory before anything intervenes. It trades a killed session for a
-possibly unresponsive desktop, which is a preference rather than a fix.
+Tradeoff:
+ this is the setting that decides whether the desktop is killed or frozen.
+ Raising the limit
+and lengthening the duration buys tolerance for bursty reclaim,
+ and pays for it with longer periods
+of a machine that is stalling on memory before anything intervenes.
+ It trades a killed session for a
+possibly unresponsive desktop,
+ which is a preference rather than a fix.
 
 ## What does not work
 
-- Looking for the kernel OOM killer. It never ran. `dmesg` is silent, `free` shows headroom, and
+- Looking for the kernel OOM killer.
+   It never ran.
+   `dmesg` is silent,
+   `free` shows headroom,
+   and
   both readings are consistent with a PSI-based kill that neither one measures.
-- Reading `free` or `memory.current` to judge whether a kill was justified. The daemon reads
-  `memory.pressure`, so usage figures do not reproduce its decision. Read the PSI line.
-- Reading `/etc/systemd/oomd.conf.d/` and concluding the journal record must be wrong. Local
-  overrides may postdate the incident; check `stat` and the daemon's `ActiveEnterTimestamp`.
-- Trusting that a per-tool memory setting protects a session that was already running. The setting
-  here was configured after the session that later died had launched, and that session's children
-  were in its terminal scope when the kill came. Whether the setting is picked up at session start
-  or at each spawn was NOT established, so do not reason from either; check `/proc/self/cgroup` in
+- Reading `free` or `memory.current` to judge whether a kill was justified.
+   The daemon reads
+  `memory.pressure`,
+   so usage figures do not reproduce its decision.
+   Read the PSI line.
+- Reading `/etc/systemd/oomd.conf.d/` and concluding the journal record must be wrong.
+   Local
+  overrides may postdate the incident;
+   check `stat` and the daemon's `ActiveEnterTimestamp`.
+- Trusting that a per-tool memory setting protects a session that was already running.
+   The setting
+  here was configured after the session that later died had launched,
+   and that session's children
+  were in its terminal scope when the kill came.
+   Whether the setting is picked up at session start
+  or at each spawn was NOT established,
+   so do not reason from either;
+   check `/proc/self/cgroup` in
   the session you actually care about.
-- Concluding that isolation worked because some long-running process survived the kill. It is the
-  most inviting wrong answer available, and it was reached and discarded during this investigation.
-  A `pi` process with four hours of uptime outlived the reap, which looked like proof that spawned
-  children were safely elsewhere. It was not:
+- Concluding that isolation worked because some long-running process survived the kill.
+   It is the
+  most inviting wrong answer available,
+   and it was reached and discarded during this investigation.
+  A `pi` process with four hours of uptime outlived the reap,
+   which looked like proof that spawned
+  children were safely elsewhere.
+   It was not:
 
 ```text
 $ cat /proc/2919919/cgroup
@@ -211,23 +291,40 @@ $ ps --no-headers -o lstart= -p 2919919
 Sun Aug 16 16:48:19 2026
 ```
 
-  Scope `2894351` is a DIFFERENT terminal surface from the reaped `5181`. The process survived
-  because it was in another tab, and it is in no `claude-code-bash` cgroup at all despite starting
-  six hours after that setting was configured. Every surface is its own scope, so surviving
-  processes prove only that the kill was scoped, which was already known from its name.
+  Scope `2894351` is a DIFFERENT terminal surface from the reaped `5181`.
+   The process survived
+  because it was in another tab,
+   and it is in no `claude-code-bash` cgroup at all despite starting
+  six hours after that setting was configured.
+   Every surface is its own scope,
+   so surviving
+  processes prove only that the kill was scoped,
+   which was already known from its name.
 
 ## Upstream filing decision
 
-Nothing to file, and the audit stops at the first constraint.
+Nothing to file,
+ and the audit stops at the first constraint.
 
-1.  **Is it really upstream's fault?** NO, and this ends it. `systemd-oomd` did exactly what it is
-    documented to do: kill the cgroup whose memory pressure exceeded the configured threshold for the
-    configured duration. Ghostty placing each surface in its own transient scope is also correct, and
-    is what made the kill legible at all. The surprise is entirely in the interaction, namely that an
-    agent's children share its scope, which is ordinary cgroup inheritance rather than a defect in
+1.  **Is it really upstream's fault?**
+     NO,
+     and this ends it.
+     `systemd-oomd` did exactly what it is
+    documented to do:
+     kill the cgroup whose memory pressure exceeded the configured threshold for the
+    configured duration.
+     Ghostty placing each surface in its own transient scope is also correct,
+     and
+    is what made the kill legible at all.
+     The surprise is entirely in the interaction,
+     namely that an
+    agent's children share its scope,
+     which is ordinary cgroup inheritance rather than a defect in
     any of the three.
 
-Constraints 2 through 6 are not reached, since there is no upstream defect for them to be about.
+Constraints 2 through 6 are not reached,
+ since there is no upstream defect for them to be about.
 `.out-of-scope/claude-code-upstream-bugs.md` would in any case cover a report against Claude Code.
 
-No duplicate search was run against systemd or ghostty, because there is no behavior to report.
+No duplicate search was run against systemd or ghostty,
+ because there is no behavior to report.

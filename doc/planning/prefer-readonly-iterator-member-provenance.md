@@ -162,7 +162,8 @@ say.
    Measured:
    the same 3028 errors,
    3903 warnings,
-   1689 rule findings and 4 semantic failures, with the
+   1689 rule findings and 4 semantic failures,
+    with the
    finding sets identical line for line,
    so no verdict moved.
    What moved is the diagnosis:
@@ -211,7 +212,8 @@ say.
 
    Measured:
    3028 errors,
-   1689 rule findings and 4 semantic failures, finding sets identical line for line.
+   1689 rule findings and 4 semantic failures,
+    finding sets identical line for line.
 
    The blocker is not the relation.
    `drawEach` still names `items.entries` with the relation verifying,
@@ -230,7 +232,8 @@ say.
    which consumes its container by element access,
    does not.
 
-2.    Landed after a first pass was reverted on a misreading, which is worth recording because the
+2.    Landed after a first pass was reverted on a misreading,
+       which is worth recording because the
    misreading was mine and the evidence for it was available at the time.
 
    The change:
@@ -279,7 +282,8 @@ say.
    `spreadContainerWriteEffect` still reports,
    correctly:
    its spread builds a literal that is bound rather
-   than passed, and a stored literal is where tracking genuinely ends.
+   than passed,
+    and a stored literal is where tracking genuinely ends.
 
    Workspace effect:
    3028 errors to 3023,

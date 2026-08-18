@@ -186,11 +186,14 @@ but separating them from positionals requires cli-git's own unknown-consumption 
 
 The test used:
 
-- `jackspeak@4.2.3`, tag `v4.2.3`,
+- `jackspeak@4.2.3`,
+   tag `v4.2.3`,
   commit `a58b42f39e2fb04b28b8169005a5ddbc3302730e`;
-- `type-flag@4.5.0`, tag `v4.5.0`,
+- `type-flag@4.5.0`,
+   tag `v4.5.0`,
   commit `6e0c46911ea64c829459a27bfaf1b45e8e335869`;
-- `argue-cli@3.1.0`, tag `v3.1.0`,
+- `argue-cli@3.1.0`,
+   tag `v3.1.0`,
   commit `45db68f4acce979d0ba725ae83e320a0e906165a`.
 
 Each downloaded tarball matched npm's SHA-512 integrity.
