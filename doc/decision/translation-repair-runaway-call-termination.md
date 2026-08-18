@@ -174,10 +174,17 @@ so the test counts how much of the body was pulled.
 SHOWN TO FAIL BEFORE BEING TRUSTED, per `GFP`.
 With the verdict computed but not acted on,
 the suite reports
-`AssertionError: expected 'drained' to equal 'raised'`
-and the drain reads 1,652,574 characters of the runaway to its end.
-With the guard restored it stops well before that,
+`AssertionError: expected 'drained' to equal 'raised'`,
+and the drain reads the whole runaway,
+logging 3,060,000 characters.
+With the guard restored that line is absent entirely,
+because the call ends before the stream does,
 and 378 tests pass with `lint:types` and `lint:oxlint` clean.
+
+The healthy long call logs 1,652,574 characters in BOTH runs,
+which is the control that makes the other figure mean something:
+the guard removed only the runaway,
+and left the verbose call alone.
 
 An empty `data:` payload is a keep-alive rather than an unreadable frame,
 so it no longer counts toward the tally that exists to make a changed wire
