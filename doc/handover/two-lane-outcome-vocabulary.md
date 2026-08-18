@@ -278,9 +278,29 @@ chars, first byte at 2087ms), voice lost`. Before `#118` that line read only `vo
 companion progress line records `maxGap 460ms`, so the call was streaming steadily when the grace
 ended it, and the idle guard could never have seen it.
 
-NEITHER GUARD HAS REFUSED A CALL. The searches that answer this are `stream .*: cut` and
-`degenerate in`. A bare `cut` returns ten false positives, all the word "cute" in a rationale
-about 撒娇.
+THE DEGENERATION GUARD HAS STILL NEVER FIRED, and the straggler grace has cut ten calls. The
+searches that answer this are `stream .*: cut` and `degenerate in`. A bare `cut` returns false
+positives, all the word "cute" in a rationale about 撒娇.
+
+NINE OF TEN CUTS ARE `hf:zai-org/GLM-5.2`, at 1148 streams, on near-equal call counts:
+
+  GLM-5.2      186 streams  9 cuts  0.0484
+  Kimi-K3      183 streams  1 cut   0.0055
+  GLM-4.7-Flash 183 streams 0 cuts  0.0000
+  Qwen3.6-27B  199 streams  0 cuts  0.0000
+  gpt-oss-120b 199 streams  0 cuts  0.0000
+  Nemotron     199 streams  0 cuts  0.0000
+
+So the grace's cost falls on ONE VOICE and the ensemble loses the same member repeatedly. NOT a
+claim that GLM-5.2 is slow, which was retracted once already: first byte on the cut runs ran 751 to
+2120 ms, ordinary for this pass. They were long, not slow, and delivered sizes at the cut vary
+twenty-fold from 123534 to 2915229 characters.
+
+VOICE LOSS SPLITS INTO TWO SHAPES, nine so far: six straggler abandonments (GLM-5.2 five, Kimi-K3
+one) and three schema mismatches (GLM-4.7-Flash two, gpt-oss-120b one), each of the latter reporting
+`raw=""` after a stream that COMPLETED. That qualifies the earlier finding that voice loss was GLM
+and never Kimi-K3: on this pass it is seven of nine GLM but no longer GLM alone. Five hand-picked
+entries are not a corpus sample.
 
 THE CASE THE GUARDS EXIST FOR HAPPENED AND NOTHING CAN DIAGNOSE IT: GLM-4.7-Flash streamed
 2,052,766 raw characters, COMPLETED on its own, and delivered `raw=""`, an empty answer. Whether it
