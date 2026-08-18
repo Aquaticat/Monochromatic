@@ -1466,6 +1466,7 @@ Root keeps only `README.md`,
  `SECURITY.md`,
  `AGENTS.md`,
  `CLAUDE.md`,
+ `LICENSE`,
  `LICENSES/`,
  tidy subdirs;
  `CONTEXT.md` forbidden.

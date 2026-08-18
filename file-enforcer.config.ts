@@ -1666,6 +1666,12 @@ async function generateCargoManifests(): Promise<void> {
 await assertForbiddenRootContextAbsent();
 
 await Promise.all([
+  // GitHub detects the project license from a root file; synchronize it with the canonical REUSE text.
+  overwrite({
+    dest: './LICENSE',
+    content: await cat([PACKAGE_LICENSE_TEXT_SOURCES['LGPL-3.0-or-later'],],),
+  },),
+
   // CLAUDE.md must literally contain AGENTS.md content (Claude Code's @include is unreliable)
   overwrite({
     dest: './CLAUDE.md',

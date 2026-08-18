@@ -250,5 +250,6 @@ Development targets Linux (Fedora).
 
 ## License
 
-[LGPL-3.0-or-later](LGPL-3.0-or-later.txt) for code,
- with root package metadata also declaring CC-BY-SA-4.0 for shareable documentation/content.
+[LGPL-3.0-or-later](LICENSE) for code,
+ with root package metadata also declaring
+[CC-BY-SA-4.0](LICENSES/CC-BY-SA-4.0.txt) for shareable documentation and content.
