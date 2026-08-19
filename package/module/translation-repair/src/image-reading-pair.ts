@@ -5,10 +5,8 @@ import {
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { OcrReading, } from './image-ocr.ts';
-import {
-  type ImageReading,
-  readImageAsset,
-} from './image-reading-stage.ts';
+import { readPastRefusal, } from './image-reading-past-refusal.ts';
+import type { ImageReading, } from './image-reading-stage.ts';
 import { readingsCorroborate, } from './reading-corroboration.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -317,7 +315,7 @@ export async function readImagePair(
   }> {
     return {
       modelId,
-      reading: await readImageAsset({
+      reading: await readPastRefusal({
         client,
         modelId,
         bytes,

@@ -200,6 +200,10 @@ export {
   readImagePair,
 } from './image-reading-pair.ts';
 export {
+  readPastRefusal,
+  REFUSAL_ASK_LIMIT,
+} from './image-reading-past-refusal.ts';
+export {
   characterTrigrams,
   CORROBORATION_TRIGRAM_SHARE,
   type CorroborationVerdict,
