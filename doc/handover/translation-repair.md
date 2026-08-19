@@ -12741,3 +12741,47 @@ Both were caught by asking whether the probe could have shown a positive at all,
 and in both cases the answer took one command.
 The census now counts and reports the entries it could not read,
 so its zero can never again mean two different things.
+
+## The end-to-end corpus pass is RUNNING, and what that forbids
+
+Launched 2026-08-19 at 23:00Z, detached in its own session so it survives this agent
+session and a REISUB alike.
+
+```text
+runs dir   ~/temp/agent/corpus-pass-full-20260819
+log        ~/temp/agent/corpus-pass-full-20260819/pass.log
+tip        a7775e16b   pipeline sha256-tree-v1:db66e5ef...
+pending    92          soft budget 72h   hard per-entry cap 7h
+```
+
+Per-entry outcomes appear as `TALLY <id> status=...` lines.
+The pass holds `pass.lock` in that directory, so a second launch cannot start by accident.
+
+WHY IT IS RUNNING AT ALL, since a previous session recorded it as a cost decision to put
+to the user. That was wrong, and re-reading the standing instruction is what corrected it:
+"I saw your open decisions and I think they're not worth asking to me, again, under the
+principle of always pick whatever yields the best quality, if you don't know which will,
+prototype and measure."
+Cost is a non-constraint here, so the only real variable was wall clock,
+and the arithmetic settles it rather than the user:
+61 minutes for `wangzihao980`, 92 entries, about four days, against a 08-30 release.
+
+### The one thing that must not happen while it runs
+
+The run stamp is a digest over `dist/final/node`, and the generation guard says it in its
+own refusal text:
+"A documentation commit on its own does not reach here; an uncommitted edit does."
+
+So documentation work during the pass is free, and this section was written during it.
+Editing THIS worktree's package source is not, for a reason worth stating precisely,
+because the obvious version of it is wrong.
+The running node process already loaded its code and will not rebuild mid-pass,
+so a source edit cannot corrupt the run in flight.
+The damage is deferred: if the pass is ever interrupted and resumed,
+`corpus-pass` rebuilds through `depends = ["build"]`, stamps a different digest,
+and the guard then REFUSES to resume into the same pool rather than mixing generations.
+On a machine that may need a REISUB, an interruption is not hypothetical,
+so a source edit here converts a resume into a start-over.
+
+CODE WORK ON OTHER ITEMS THEREFORE HAPPENS IN A SEPARATE WORKTREE with its own `dist`,
+never in `/var/home/user/worktrees/translation-repair` until the pass reports `DONE`.
