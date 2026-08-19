@@ -932,21 +932,38 @@ The first option outranks the second because it removes work,
 while the second only accelerates work and remains unvalidated.
 The second outranks the third because a bounded trial can prove or reject the benefits before expanding the trust and billing boundary.
 
-## Immediate configuration directions
+## Post-evaluation implementation
 
-The two evidence-backed directions are:
+The user subsequently chose and confirmed the orchestration policy.
+Commit `000d58464dccc3088e8fd4476692e10bdcf64d2c`:
 
-- switch CodeQL from default setup to advanced setup so this repository can own branch triggers and add
-  `concurrency.cancel-in-progress`;
-- separately decide whether classic branch-protection pattern `*` should continue protecting every working branch.
+- added `.github/workflows/codeql.yml`;
+- replaced CodeQL push analysis with a daily `03:17 UTC` batch;
+- retained pull-request analysis targeting `main`;
+- added manual dispatch;
+- preserved the three prior language groups,
+  extended queries,
+  and remote-plus-local threat coverage;
+- added supersession cancellation to seven replaceable validation workflows;
+- left release,
+  publishing,
+  Scorecard,
+  Claude,
+  and branch-protection configuration unchanged.
 
-GitHub documents advanced setup as the option for custom schedules and workflow triggers
-(<https://docs.github.com/en/code-security/concepts/code-scanning/setup-types>).
-GitHub documents `cancel-in-progress: true` as the way to cancel a running member of the same concurrency group
-(<https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency>).
+GitHub recognized the advanced workflow as ID `338017899`.
+The default-setup API then accepted `state: not-configured`.
+Manual advanced run `32284761248` completed all three language jobs and uploaded their analyses successfully.
 
-Neither change was applied during this evaluation.
-The troubleshooting document includes a candidate shape and its unverified status.
+The CodeQL action emits `MissingPushHook` because the requested workflow has pull-request analysis without a push trigger.
+Pinned action source at `github/codeql-action` tag `v4.37.7`,
+`src/workflow.ts:190-199`,
+shows that this diagnostic ignores scheduled and manual default-branch analysis.
+The annotation is an accepted consequence of the chosen batching policy,
+not an analysis failure.
+
+The complete after-state evidence is maintained in
+`doc/troubleshooting/github-codeql-protected-branch-run-amplification.md`.
 
 ## Terminal result
 

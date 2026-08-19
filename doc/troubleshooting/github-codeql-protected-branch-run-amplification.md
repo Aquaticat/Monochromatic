@@ -1,5 +1,15 @@
 # GitHub CodeQL default setup on 2026-08-19 scans every wildcard-protected branch and amplifies push runs
 
+## Resolution status
+
+Resolved on 2026-08-19 by commit `000d58464dccc3088e8fd4476692e10bdcf64d2c` and a repository setting change.
+The repository now owns `.github/workflows/codeql.yml`,
+ and GitHub's default-setup API reports `state: not-configured`.
+The advanced workflow batches direct-main coverage daily,
+ scans pull requests targeting `main`,
+ permits manual recovery,
+ and has no `push` trigger.
+
 ## Symptom
 
 GitHub Actions shows repeated CodeQL runs named `Push on translation-repair-rebased` after each commit to that branch.
@@ -171,6 +181,12 @@ changes CodeQL default-setup triggers,
    `32204388026`.
 - Scheduled example run:
    `32250832355`.
+- Advanced workflow commit:
+   `000d58464dccc3088e8fd4476692e10bdcf64d2c`.
+- Advanced workflow database ID:
+   `338017899`.
+- Successful manual advanced run:
+   `32284761248`.
 
 ### Runnable probe
 
@@ -196,7 +212,7 @@ gh run view 32279201781 \
   --json workflowName,createdAt,updatedAt,conclusion,jobs,url
 ```
 
-### Expected patterns
+### Before-state positive controls
 
 - A push to `main` starts CodeQL because `main` is the default branch.
   Run `32204388026` is the positive control.
@@ -214,53 +230,63 @@ gh run view 32279201781 \
   to add a concurrency group.
 - Selecting a labeled runner routes the same generated jobs elsewhere and preserves their trigger count.
 
-## Verified workarounds
+## Verified remediation
 
-No workaround was applied to the live repository during this review.
-The request asked whether a provider migration would solve the problem,
- so changing repository security configuration would
-have exceeded the review scope.
+Commit `000d58464dccc3088e8fd4476692e10bdcf64d2c` added the advanced workflow and concurrency groups to
+seven replaceable validation workflows.
+The CodeQL workflow uses:
 
-GitHub documents two applicable configuration capabilities,
- but this repository has not exercised either after-state yet:
+- `pull_request` targeting `main`;
+- daily `schedule` at `03:17 UTC`;
+- `workflow_dispatch`;
+- no `push` trigger;
+- separate event-scoped concurrency so scheduled work cannot cancel a manual run;
+- `build-mode: none` for `actions`,
+  `c-cpp`,
+  and `javascript-typescript`;
+- `security-extended` queries;
+- local threat sources in addition to the default remote threat model.
 
-- Advanced setup permits defining workflow triggers
-  (`content/code-security/concepts/code-scanning/setup-types.md:68-74`).
-- Workflow-level `concurrency` can cancel a running member of the same group with `cancel-in-progress: true`
-  (`data/reusables/actions/actions-group-concurrency.md:7-20`).
+GitHub recognized `.github/workflows/codeql.yml` as active workflow ID `338017899` before default setup was disabled.
+The file fetched through GitHub's Contents API had the same SHA-256 as the local committed file.
+The default-setup endpoint then accepted `state: not-configured`.
 
-A candidate advanced-setup shape is therefore:
+Manual run `32284761248` crossed the consumer boundary:
 
-```yaml
-name: CodeQL
+- the workflow event was `workflow_dispatch`;
+- all three language jobs succeeded;
+- each initialization log showed `build-mode: none`,
+  `threat-models: local`,
+  and `security-extended`;
+- each analysis log reported a successful result upload and complete upload status;
+- the Code Scanning analyses API returned distinct advanced-workflow categories for all three languages.
 
-on:
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-    - main
-  schedule:
-  - cron: '0 12 * * 3'
+The commit that introduced the advanced workflow was pushed while default setup was still active,
+ so that commit intentionally has both dynamic default-setup analyses and advanced manual analyses.
+A later push made after default setup was disabled is the decisive duplicate-trigger probe.
 
-concurrency:
-  group: codeql-${{ github.ref }}
-  cancel-in-progress: true
+Classic branch-protection pattern `*` remains unchanged.
+The fix therefore preserves force-push,
+ deletion,
+ and conversation-resolution governance while decoupling CodeQL scheduling from protected-branch status.
+
+### Expected missing-push annotation
+
+Pinned `github/codeql-action` commit `ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd` emits coded workflow diagnostic
+`MissingPushHook`:
+
+```text
+Please specify an on.push hook to analyze and see code scanning alerts from the default branch on the Security tab.
 ```
 
-This is a documented configuration path,
- not a verified patch for this repository.
-It needs a disposable branch or other controlled rollout before adoption.
-Its tradeoff is ownership of the CodeQL workflow and trigger policy instead of GitHub's generated low-maintenance default.
+The emitting condition is `src/workflow.ts:190-199` in `github/codeql-action` tag `v4.37.7`.
+It reports whenever a workflow has `pull_request` but neither `push` nor `workflow_call`;
+the check does not account for `schedule` or `workflow_dispatch` default-branch analysis.
+Run `32284761248` nevertheless uploaded three `refs/heads/main` analyses,
+ and the Code Scanning API exposed alerts whose most recent instance uses that advanced-workflow commit.
 
-Narrowing classic branch-protection pattern `*` is another configuration direction.
-It would change force-push,
- deletion,
- and conversation-resolution policy for every matching branch.
-That semantic tradeoff makes it a separate repository-governance decision,
- not a CI-only workaround.
-Changing only Copilot review ruleset `9126851` is not a reliable remedy because classic protection pattern `*` would remain.
+The annotation is accepted because no `push` trigger is the requested batching policy.
+Adding a misleading no-op push trigger merely to silence the diagnostic would not improve analysis coverage.
 
 ## What does not work
 
