@@ -86,11 +86,11 @@ jobs:
       if: steps.scope.outputs.run == 'true'
       # toml-test feeds the conformance task (mise exec github:toml-lang/toml-test
       # inside test:conformance); with auto-install off it must be present.
-      run: mise install 'npm:pnpm' node 'github:toml-lang/toml-test@latest'
+      run: mise install node pnpm 'github:toml-lang/toml-test@latest'
 
     - name: Install dependencies
       if: steps.scope.outputs.run == 'true'
-      run: mise exec npm:pnpm node -- pnpm install --frozen-lockfile
+      run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
     - name: Build the bundle
       if: steps.scope.outputs.run == 'true'
