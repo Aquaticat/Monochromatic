@@ -179,7 +179,6 @@ export {
   readsAsRefusal,
 } from './reading-refusal.ts';
 export {
-  extensionOf,
   type OcrReading,
   readImageWithOcr,
   solidCharacters,

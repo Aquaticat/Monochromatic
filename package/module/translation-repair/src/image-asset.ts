@@ -99,7 +99,7 @@ export type EncodedAsset = {
  * const extension = extensionOf({ assetName: 'intro.webp', },);
  * ```
  */
-function extensionOf({ assetName, }: { readonly assetName: string; },): string {
+export function extensionOf({ assetName, }: { readonly assetName: string; },): string {
   /**
    * Where the extension begins, absent when the name carries no dot.
    */

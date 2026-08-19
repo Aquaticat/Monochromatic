@@ -14,6 +14,8 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { extensionOf, } from './image-asset.ts';
+
 //region Image OCR
 // READING A PICTURE WITHOUT ASKING A MODEL, which is the first thing to try and
 // on this corpus usually the last.
@@ -276,31 +278,6 @@ async function decodeToPng(
 }
 
 /**
- * Extension an asset name carries, empty when it carries none.
- *
- * TAKEN FROM THE LAST DOT rather than parsed, and used only to name a scratch
- * copy. A decoder that sniffs content ignores it; one that trusts it gets what
- * the corpus said.
- *
- * @param assetName - file name as the source referenced it
- *
- * @returns Extension including its dot, or an empty string
- *
- * @example
- * ```ts
- * const extension = extensionOf({ assetName: 'letter.webp', },);
- * ```
- */
-export function extensionOf({ assetName, }: { readonly assetName: string; },): string {
-  /**
-   * Where the extension begins, or minus one when there is none.
-   */
-  const dot = assetName.lastIndexOf('.',);
-
-  return (dot <= 0) ? '' : assetName.slice(dot,);
-}
-
-/**
  * Reads a picture with the deterministic OCR reader.
  *
  * @param bytes - picture as gathered from the corpus
@@ -350,7 +327,7 @@ export async function readImageWithOcr(
    */
   const source = join(
     scratch.path,
-    `asset${extensionOf({ assetName, },)}`,
+    `asset.${extensionOf({ assetName, },)}`,
   );
   await writeFile(
     source,
