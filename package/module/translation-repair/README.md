@@ -88,6 +88,75 @@ const result = await repairTranslation({
   are deliberately open;
   the system functions without them using conservative defaults.
 
+## Reading the pictures a document shows
+
+A document that shows a picture carrying text is a document whose translation
+cannot be judged from its text alone.
+The pipeline reads those pictures and puts the reading beside the source and the
+archive, as evidence a later stage may consult.
+Nothing in the reading decides what ships.
+
+### Deterministic first, and usually last
+
+`tesseract` runs before any model is asked, with `chi_sim+eng`.
+Under 16 solid characters the picture is recorded as carrying no text,
+no model is asked about it, and no finding calls that a shortfall,
+because it is the correct answer:
+119 of the 191 pictures in the reference corpus carry no text at all,
+most of them being photographs of people.
+
+It gates rather than votes, which was settled by measurement and is the opposite
+of what it looks like it should be.
+Its trigram overlap against the model readings is 0.019 and 0.023 on one asset
+and 0.096 and 0.111 on another, while those models agree with each other at
+0.643 and 0.785.
+It is not missing the text:
+on the first asset it returns 405 characters against their 390 and 394.
+It reads the same text and gets the GLYPHS wrong, which leaves length intact and
+destroys overlap, so letting it vote would refuse readings that are fine.
+What it is reliable at is PRESENCE, six of six against the models in both
+directions.
+
+### Two readers, and a reader asked again
+
+A reading may be used only when a second model, shown the same picture and not
+the first model's answer, agrees with the first at the corroboration threshold.
+A single reading is refused rather than passed along with a caveat.
+
+The vision sub-roster is exactly two because the provider offers exactly two
+models that read images.
+That makes the pair's success rate the weaker reader's read rate, which is why a
+declined reading is asked again, up to four asks.
+Measured on one text-bearing picture, asked six times per model with identical
+input:
+`hf:Qwen/Qwen3.6-27B` read it six times of six, at 376 to 397 characters, and
+`hf:moonshotai/Kimi-K3` read it twice of six, at 377 and 403.
+The refusal is a property of the roll, not of the picture, and one ask would
+discard four readings in five that a fourth ask keeps.
+
+### What is sent, and what is not
+
+Pictures are sent as they are.
+No re-encode, no format change, no downscaling, no tiling.
+An earlier byte ceiling was this package's own estimate of what a vision model
+would accept, derived from base64 length against context length, and it was
+wrong in kind:
+a vision model tokenizes a picture by resolution in tiles, not by base64 length.
+Sent unchanged, an asset four times that ceiling comes back read for 2631
+characters.
+A plain 8 MiB ceiling remains, which nothing in the reference corpus approaches.
+
+The provider accepts `image/jpeg`, `image/png`, `image/gif`, `image/webp`,
+`image/tiff` and `image/bmp`, and refuses AVIF with an HTTP 400.
+
+### Deployment dependency
+
+`tesseract` must be on the path, with the `chi_sim` and `eng` language data
+installed, or every picture is recorded as unreadable by the deterministic
+reader and every one of them is sent to two models.
+Decoding needs `dwebp` for webp assets;
+ImageMagick is tried as a fallback and cannot be relied on for that format.
+
 ## Design commitments
 
 - **No single model output is a decision point.**
