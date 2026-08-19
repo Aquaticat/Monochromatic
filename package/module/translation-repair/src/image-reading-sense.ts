@@ -32,6 +32,7 @@
 // second text.
 
 import { topLevelBlocks, } from './markdown-blocks.ts';
+import { readsAsRefusal, } from './reading-refusal.ts';
 
 /**
  * Shortest reading worth having, in characters after trimming.
@@ -52,9 +53,13 @@ const REFUSAL_WINDOW_CHARS = 200;
 /**
  * Wordings a model uses when it cannot read a picture, lowercased.
  *
- * A HEURISTIC, STATED AS ONE. It misses a refusal worded unusually, and the
- * anchor clause catches most of what it misses, since an apology shares no
- * anchors with a transcript.
+ * A HEURISTIC, STATED AS ONE, and NO LONGER THE ONLY ONE. It catches a refusal
+ * that opens with an apology however long the reply runs. It misses a refusal
+ * worded unusually, which is not hypothetical: `There is no text visible in this
+ * image.` and `No legible text is visible.` both slipped past this list by a
+ * single word on 2026-08-19 and then corroborated each other. `readsAsRefusal`
+ * in `reading-refusal.ts` covers that shape; this list covers the long ones it
+ * does not reach.
  */
 const REFUSAL_PHRASES: readonly string[] = [
   'i cannot',
@@ -288,6 +293,17 @@ export function readingMakesSense(
   if (REFUSAL_PHRASES.some(function announced(phrase,): boolean {
     return opening.includes(phrase,);
   },)) {
+    return {
+      kind: 'refused',
+      clause: 'reads-as-refusal',
+    };
+  }
+
+  // The shape test, which the phrase list above cannot subsume: a refusal worded
+  // in a way nobody wrote down still negates, still names the picture, and is
+  // still a sentence rather than a passage. Placed second because the phrase
+  // list reaches long apologies this one deliberately does not.
+  if (readsAsRefusal({ reading: trimmed, },)) {
     return {
       kind: 'refused',
       clause: 'reads-as-refusal',
