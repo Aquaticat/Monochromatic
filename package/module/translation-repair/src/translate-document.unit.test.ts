@@ -23,6 +23,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   makeInsertionChunk,
+  messageText,
   prepareDocumentPair,
   RosterConfigurationError,
   type SyntheticClient,
@@ -256,7 +257,7 @@ function laneClient(
        */
       const content = request.messages
         .map(function toContent(message,) {
-          return message.content;
+          return messageText({ message, },);
         },)
         .join('\n',);
       if (schema === 'translation_report') {

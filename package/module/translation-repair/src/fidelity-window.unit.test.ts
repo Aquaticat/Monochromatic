@@ -26,6 +26,7 @@ import {
   type ChatJsonRequest,
   type ChunkPair,
   type FidelityOutcome,
+  messageText,
   neighbouringIncumbent,
   neighbouringSource,
   runFidelityTrial,
@@ -279,7 +280,7 @@ function recordingClient(): SentSheets {
       ): Promise<ChatJsonOutcome<ValueT>> => {
         sheets.push(request.messages
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',),);
 

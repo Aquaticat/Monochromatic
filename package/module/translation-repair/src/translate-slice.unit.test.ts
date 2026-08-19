@@ -31,6 +31,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
+  messageText,
   type PreparedDocumentPair,
   settleTranslateSlice,
   type SyntheticClient,
@@ -187,7 +188,7 @@ function recordingClient(): SentRequests {
          */
         const content = request.messages
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',);
 

@@ -27,6 +27,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   judgeTranslateSlate,
+  messageText,
   produceTranslateSlate,
   type SyntheticClient,
   type SyntheticModelId,
@@ -162,7 +163,7 @@ function driftingClient(): {
 
         judgeSheets.push(request.messages
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',),);
 

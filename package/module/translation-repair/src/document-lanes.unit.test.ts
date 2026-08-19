@@ -23,6 +23,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkRepairOutcome,
+  messageText,
   prepareDocumentPair,
   type RepairModels,
   runDocumentLanes,
@@ -177,7 +178,7 @@ function lanesClient(
        */
       const content = request.messages
         .map(function toContent(message,) {
-          return message.content;
+          return messageText({ message, },);
         },)
         .join('\n',);
       served.push(schema,);

@@ -14,6 +14,7 @@ import {
   buildAdjudicationMessages,
   type ClaimCluster,
   hashContent,
+  messageText,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -181,7 +182,7 @@ await describe({
         const wholePrompt = plan
           .messages
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',);
         expect(wholePrompt.includes('GLM',),).toBe(false,);

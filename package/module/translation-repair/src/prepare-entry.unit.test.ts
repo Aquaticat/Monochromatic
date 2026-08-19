@@ -13,6 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  messageText,
   prepareBenchmarkEntry,
   type SeededErrorSpec,
 } from '../dist/final/node/index.mjs';
@@ -76,7 +77,7 @@ await describe({
         const promptText = prepared
           .messages
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',);
         expect(promptText,).toContain(SOURCE_TEXT.trim(),);

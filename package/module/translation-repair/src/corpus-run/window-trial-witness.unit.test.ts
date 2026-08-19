@@ -22,6 +22,7 @@ import {
   assertWindowReachedJudges,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  messageText,
   type SyntheticClient,
   WINDOW_LABEL,
   WindowEvidenceError,
@@ -61,7 +62,7 @@ function recordingClient(): {
       ): Promise<ChatJsonOutcome<ValueT>> => {
         served.push(request.messages
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',),);
         return {

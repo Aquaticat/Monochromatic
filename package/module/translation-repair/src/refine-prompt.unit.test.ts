@@ -30,6 +30,7 @@ import {
   buildRefineMessages,
   type EditableEnvelope,
   hashContent,
+  messageText,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -83,7 +84,7 @@ function userSheet({ plan, }: { readonly plan: ReturnType<typeof buildRefineMess
       return message.role === 'user';
     },)
     .map(function toContent(message,) {
-      return message.content;
+      return messageText({ message, },);
     },)
     .join('\n',);
 }
@@ -332,7 +333,7 @@ await describe({
             return message.role === 'system';
           },)
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',);
 

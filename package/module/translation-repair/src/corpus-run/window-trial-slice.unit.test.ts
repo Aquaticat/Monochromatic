@@ -29,6 +29,7 @@ import {
   type ChatJsonRequest,
   type ChunkPair,
   completedArms,
+  messageText,
   readTrialLedger,
   runSliceArms,
   type SyntheticClient,
@@ -194,7 +195,7 @@ function driftingClient(): {
 
         judgeSheets.push(request.messages
           .map(function toContent(message,) {
-            return message.content;
+            return messageText({ message, },);
           },)
           .join('\n',),);
 

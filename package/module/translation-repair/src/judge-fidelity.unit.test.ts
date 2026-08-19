@@ -22,6 +22,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type FidelityDirection,
+  messageText,
   runFidelityTrial,
   type SyntheticClient,
   type SyntheticModelId,
@@ -106,7 +107,7 @@ function judgesVoting(
        */
       const sheet = request.messages
         .map(function toContent(message,) {
-          return message.content;
+          return messageText({ message, },);
         },)
         .join('\n',);
 

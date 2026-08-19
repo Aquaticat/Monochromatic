@@ -25,6 +25,7 @@ import {
 import {
   buildRenderingAuditMessages,
   longestFenceRun,
+  messageText,
   RENDERING_AUDIT_CATEGORIES,
   RENDERING_AUDIT_VERDICTS,
 } from '../dist/final/node/index.mjs';
@@ -71,7 +72,7 @@ function turn(
       return message.role === role;
     },)
     .map(function toContent(message,): string {
-      return message.content;
+      return messageText({ message, },);
     },)
     .join('\n',);
 }

@@ -1,11 +1,15 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { encodeImageAsset, } from './image-asset.ts';
 import { readingMakesSense, } from './image-reading-sense.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
-import { SYNTHETIC_MODELS, } from './synthetic-catalog.ts';
+import {
+  SYNTHETIC_MODELS,
+  type SyntheticModelId,
+} from './synthetic-catalog.ts';
 
 //region Image reading stage
 // ONE CALL THAT READS A PICTURE, screened before anybody is allowed to use what
@@ -214,9 +218,11 @@ export async function readImageAsset(
     };
   }
 
-  rl.info(
-    `${modelId} read ${assetName}: ${String(reply.text.length,)} characters`,
-  );
+  /**
+   * How much was transcribed, for a line a reader can compare across pictures.
+   */
+  const { length, } = reply.text;
+  rl.info(`${modelId} read ${assetName}: ${String(length,)} characters`,);
   return {
     kind: 'read',
     text: reply.text,

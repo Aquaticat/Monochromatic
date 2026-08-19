@@ -36,6 +36,7 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  messageText,
   type PipelineDigest,
   settleEntry,
   type SyntheticClient,
@@ -243,7 +244,7 @@ function entryClient(
        */
       const content = request.messages
         .map(function toContent(message,) {
-          return message.content;
+          return messageText({ message, },);
         },)
         .join('\n',);
 

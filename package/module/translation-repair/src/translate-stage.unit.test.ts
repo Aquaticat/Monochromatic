@@ -30,6 +30,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type IncumbentKind,
+  messageText,
   runTranslateStage,
   type SyntheticClient,
   type SyntheticModelId,
@@ -230,7 +231,7 @@ function laneClient(
        */
       const content = request.messages
         .map(function toContent(message,) {
-          return message.content;
+          return messageText({ message, },);
         },)
         .join('\n',);
 

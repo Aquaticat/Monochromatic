@@ -1,9 +1,10 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  SyntheticClient,
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  messageText,
+  type SyntheticClient,
 } from '../chat-contract.ts';
 
 //region Window trial witness
@@ -126,17 +127,11 @@ export function witnessSheets(
       ): Promise<ChatJsonOutcome<ValueT>> {
         sheets.push(request.messages
           .map(function toContent(message,): string {
-            // A VISION MESSAGE CARRIES PARTS, and what a witness records is what
-            // the model was asked, which is the text of them. The picture itself
-            // is not recoverable from a sheet and is not what a window trial
-            // compares.
-            if ((typeof message.content) === 'string')
-              return message.content as string;
-            return (message.content as readonly { readonly type: string; readonly text?: string; }[])
-              .map(function partText(part,): string {
-                return part.text ?? `[${part.type}]`;
-              },)
-              .join('\n',);
+            // A VISION MESSAGE CARRIES PARTS, and what a witness records is
+            // what the model was ASKED. The picture is not recoverable from a
+            // sheet and is not what a window trial compares, so one shared
+            // reader names it rather than rendering it.
+            return messageText({ message, },);
           },)
           .join('\n',),);
         return await client.chatJson(request,);
