@@ -962,6 +962,19 @@ Manual final-newline run `32285688509` was cancelled by superseding run `3228569
 which then completed successfully;
 this exercises the new validation concurrency through GitHub Actions.
 
+Disposable draft pull request #450 exercised the remaining pull-request boundary.
+CodeQL run `32288000285` was cancelled after a new revision created run `32288031286` in the same PR-ref group.
+All three language jobs in the superseding run succeeded and uploaded analyses on `refs/pull/450/merge`.
+The first final-newline and forbidden-strings runs were likewise cancelled,
+and both superseding runs succeeded.
+The probe was closed without merging and its branches were deleted.
+
+Classic branch-protection patterns `main` and `*` retain required-check enforcement,
+but both return empty required check-context lists;
+disabling default CodeQL setup therefore left no stale required check name.
+The workflow was deployed after the day's scheduled window,
+so the next natural `03:17 UTC` event remains the runtime cron confirmation.
+
 The toml-edit-fuzz verification exposed and corrected an existing pnpm bootstrap cycle and stale coverage baseline.
 Final run `32286257673` passed installation,
 build,

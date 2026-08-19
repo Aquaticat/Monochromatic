@@ -247,6 +247,38 @@ The CodeQL workflow uses:
 - `security-extended` queries;
 - local threat sources in addition to the default remote threat model.
 
+The deployed trigger and concurrency shape is:
+
+```yaml
+on:
+  pull_request:
+    branches: ['main']
+  schedule:
+  - cron: '17 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+```
+
+The event component separates scheduled,
+pull-request,
+and manual groups.
+The ref component keeps distinct pull requests independent.
+The cancellation condition also prevents one manual dispatch from cancelling another.
+
+All seven replaceable validation workflows use this separate shape:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+Including `github.workflow` prevents cross-workflow cancellation,
+while `github.ref` limits supersession to work for the same branch or pull request.
+
 GitHub recognized `.github/workflows/codeql.yml` as active workflow ID `338017899` before default setup was disabled.
 The file fetched through GitHub's Contents API had the same SHA-256 as the local committed file.
 The default-setup endpoint then accepted `state: not-configured`.
@@ -280,8 +312,31 @@ Two manual final-newline dispatches exercised the shared validation concurrency 
 Run `32285688509` ended as `cancelled` after run `32285692427` entered the same workflow-and-ref group;
 the superseding run completed successfully with every step green.
 
+Disposable draft pull request
+[#450](https://github.com/Aquaticat/Monochromatic/pull/450)
+exercised the pull-request path and same-ref supersession:
+
+- CodeQL run `32288000285` started all three language jobs for the first revision;
+- a second revision created CodeQL run `32288031286` in the same
+  `CodeQL-pull_request-refs/pull/450/merge` group;
+- GitHub cancelled all three jobs in the first run with the higher-priority-request concurrency diagnostic;
+- all three jobs in the superseding run succeeded;
+- the Code Scanning API returned three successful `.github/workflows/codeql.yml:analyze` analyses on
+  `refs/pull/450/merge`;
+- first-revision final-newline run `32288000482` and forbidden-strings run `32288000457` were also cancelled;
+- their superseding runs `32288031268` and `32288031205` succeeded.
+
+The probe PR was closed without merging,
+and its local worktree and local and remote branches were deleted.
+The workflow was deployed after the day's `03:17 UTC` scheduled window,
+so only the next natural scheduled event can provide runtime evidence for the cron trigger.
+GitHub has already recognized the deployed schedule in the active workflow.
+
 Classic branch-protection pattern `*` remains unchanged.
-The fix therefore preserves force-push,
+A final GraphQL query returned classic patterns `main` and `*` with required-status-check enforcement enabled,
+but empty `requiredStatusCheckContexts` and `requiredStatusChecks` for both.
+Disabling default setup therefore did not leave a required dynamic-CodeQL check name that can block merging.
+The fix preserves force-push,
  deletion,
  and conversation-resolution governance while decoupling CodeQL scheduling from protected-branch status.
 
