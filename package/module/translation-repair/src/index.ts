@@ -123,6 +123,7 @@ export {
   type CorpusPin,
   CorpusReadError,
   listCorpusPeople,
+  readCorpusBytes,
   readCorpusFile,
 } from './corpus-source.ts';
 export { buildCriticMessages, } from './critic-prompt.ts';

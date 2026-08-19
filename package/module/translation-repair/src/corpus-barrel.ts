@@ -121,6 +121,15 @@ export {
   type CorpusPair,
   settleEntry,
 } from './corpus-run/pass-entry.ts';
+export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
+export { openPictureReadingCache, } from './corpus-run/reading-cache-store.ts';
+export {
+  belongsToNamespace,
+  PICTURE_READING_NAMESPACE,
+  REPAIR_SLICE_NAMESPACE,
+  type SliceNamespace,
+  TRANSLATE_SLICE_NAMESPACE,
+} from './corpus-run/slice-cache-namespace.ts';
 export { settledTallyLine, } from './corpus-run/settled-tally.ts';
 export {
   ArtifactPreparationMismatchError,

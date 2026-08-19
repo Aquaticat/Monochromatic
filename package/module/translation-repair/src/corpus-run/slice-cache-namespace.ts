@@ -33,8 +33,22 @@ const JSON_SUFFIX = '.json';
  *
  * The unprefixed namespace is defined as everything NOT in this list, so adding
  * a lane here is what keeps the older one from adopting its files.
+ *
+ * FORGETTING TO ADD ONE IS SILENT AND HAS NOW COST FOUR TIMES. The repair lane
+ * adopts the unregistered files, and its `discardNamespace` deletes them on the
+ * next generation change while logging that it discarded its own slices. The
+ * most recent was `picture.`, added to the store the same day it was added
+ * here: opening the repair cache removed a picture reading and reported
+ * "discarding 1 cached slices".
+ *
+ * SO: A NEW NAMESPACE IS NOT DONE UNTIL ITS PREFIX IS IN THIS LIST. Nothing
+ * else enforces it, which is why `slice-cache-namespace.unit.test.ts` asserts
+ * that every namespace this package defines appears here.
  */
-const CLAIMED_PREFIXES: readonly string[] = ['translate.',];
+const CLAIMED_PREFIXES: readonly string[] = [
+  'translate.',
+  'picture.',
+];
 
 /**
  * One lane's claim on a shared cache directory.
