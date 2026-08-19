@@ -12613,3 +12613,54 @@ Every runner in the chain reports success:
 The tell is that a test file produces NO output at all, not even a pass line.
 A positive control on a known-good sibling separates it from a genuine null in one command,
 which is the only reason it was caught here.
+
+## 2026-08-19, last: a declined reading is asked again
+
+The settle-path run discarded a good reading, and the reason was not the picture.
+`Word1.webp` carries text that the deterministic reader gets 205 characters out of.
+Asked six times per model with identical bytes and identical instruction:
+
+```text
+hf:Qwen/Qwen3.6-27B     6 of 6 read it, 376 to 397 characters
+hf:moonshotai/Kimi-K3   2 of 6 read it, 377 and 403 characters
+```
+
+A refusal is a property of the ROLL.
+That costs more than the rate suggests, because corroboration needs both readers
+and the provider offers exactly two models that read images,
+so the pair's success rate is the WEAKER reader's read rate rather than an average.
+A reader declining two asks in three costs two thirds of the readings, not one third.
+
+`readPastRefusal` asks the same model again, up to four asks, on the refusal clause alone.
+At the measured rate that retains four readings in five where one ask retained one in three,
+and it costs about 2.4 asks per picture because asking stops at the first reading.
+It fires only on pictures the gate already found text on.
+
+On the same entry afterwards, `Word1.webp` corroborated at 0.653,
+after Kimi-K3 declined once and read 403 characters on its second ask.
+
+WHY NOT A THIRD READER instead. There is no third to have:
+the catalog carries `readsImages: true` on exactly two models,
+and the vision aliases the provider lists are aliases of those same two.
+The two-model sub-roster was a design choice about judge disinterest;
+it is now also a fact about supply.
+
+### Resume, finally proved on the kind that needed it
+
+Stopping that run once its pictures were settled and starting it again into the same
+runs directory resumed all six, five `no-text` and one `corroborated`,
+with ZERO `readImageWithOcr` lines against six in the run that wrote them.
+The resume proof that existed before today predated the `no-text` kind,
+so the case the store had been silently rejecting had never actually been resumed.
+
+### What is left
+
+The README now describes the reading stage and names `tesseract` and `dwebp` as
+deployment dependencies, so package completeness is met for this lane.
+
+Still owed, and none of it blocks the lane:
+a settle-path witness for the size ceiling needs an entry carrying an asset past
+294912 bytes, which `wangzihao980` does not have (`gqt` does);
+and the corpus-wide re-run under the corrected pipeline has not been done,
+since every batch started before today's fixes carries picture verdicts
+produced by the estimate, the missing gate, and the missing retry.

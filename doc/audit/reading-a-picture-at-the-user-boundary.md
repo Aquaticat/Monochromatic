@@ -856,3 +856,87 @@ AssertionError: expected 'returned no-text' to equal 'AbortError'
 Which is the sharper reading of the defect.
 The cost of the subprocesses was the obvious complaint;
 the real one is that a stopped run was still producing answers.
+
+## A refusal is a roll, and it was costing two readings in three
+
+The settle-path run above ended `Word1.webp` at `one-reader-only`:
+the deterministic reader had found 205 characters on it,
+`hf:Qwen/Qwen3.6-27B` transcribed 384,
+and `hf:moonshotai/Kimi-K3` declined to read it,
+so nothing corroborated and a good transcription was discarded.
+
+An earlier probe had both models reading that same asset at 390 and 394 characters,
+corroborating at 0.643.
+Two runs, opposite outcomes, identical input.
+That is not a fact about the picture, so it was measured:
+six asks per model, same bytes, same instruction.
+
+```text
+hf:Qwen/Qwen3.6-27B     read read read read read read      6 of 6   376 to 397 characters
+hf:moonshotai/Kimi-K3   refused refused read read refused refused
+                                                            2 of 6   377 and 403 characters
+```
+
+The picture is not ambiguous and the readings are not marginal.
+One model transcribes it every time in a tight band,
+and the other transcribes the same thing when it does not decline.
+
+WHY THAT COSTS MORE THAN THE RATE SUGGESTS.
+Corroboration needs BOTH readers,
+and the vision sub-roster is exactly two because the provider offers exactly two models that read images,
+`syn:large:vision` and `syn:small:vision` being aliases of those same two.
+So the pair's success rate is the WEAKER reader's read rate, not an average of the two.
+A reader declining two asks in three does not cost a third of the readings.
+It costs two thirds of them.
+
+At the measured one-in-three, asking again is worth a great deal and costs little:
+one ask retains 33 readings in 100, two retain 56, three retain 70, four retain 80.
+Asking stops at the first reading, so the expected cost at a limit of four is about 2.4 asks,
+and it only ever fires on the pictures the deterministic gate already found text on,
+72 of 191 here.
+
+SCOPED TO THE REFUSAL CLAUSE ALONE.
+A model that does not read images, a picture too large to send, and an empty reply
+are properties of the input or the roster:
+asking again spends a call to be told the same thing.
+Only `reads-as-refusal` has been measured to vary between identical asks,
+so only it is re-asked.
+
+### The same entry, after the change
+
+```text
+readImageWithOcr   Word1.webp: read 205 characters without a model
+readImageAsset     hf:moonshotai/Kimi-K3 read Word1.webp but the reading was refused: reads-as-refusal
+readPastRefusal    hf:moonshotai/Kimi-K3 declined Word1.webp, asking again (2 of 4)
+readImageAsset     hf:Qwen/Qwen3.6-27B read Word1.webp: 389 characters
+readImageAsset     hf:moonshotai/Kimi-K3 read Word1.webp: 403 characters
+readImagePair      Word1.webp: corroborated by 2 readers at overlap 0.653
+```
+
+The reading the previous run threw away is the reading this run keeps.
+
+## Resume, proved on the store rather than on the type
+
+The `no-text` verdict is the kind the store used to reject,
+and the resume proof that existed predated the kind entirely,
+so the case that mattered had never been exercised on a real store.
+
+Stopping the run above once its pictures were settled and starting it again
+into the SAME runs directory:
+
+```text
+gatherEntryPictures   gathered 6 of 6 pictures for wangzihao980
+readDocumentPictures  reading 6 pictures for this document
+readDocumentPictures  picture1.webp: resumed, no-text
+readDocumentPictures  picture2.webp: resumed, no-text
+readDocumentPictures  picture3.webp: resumed, no-text
+readDocumentPictures  picture4.webp: resumed, no-text
+readDocumentPictures  picture5.webp: resumed, no-text
+readDocumentPictures  Word1.webp: resumed, corroborated
+```
+
+Zero `readImageWithOcr` lines in the whole run,
+against six in the run that produced these records.
+Before the guard learned the kind, those five would have re-decoded and re-read on every pass,
+written the same records back, and had them rejected again,
+while the log looked exactly like this one minus the six resumed lines.
