@@ -7,11 +7,12 @@ import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { imageReadingKey, } from './image-reading-key.ts';
 import {
+  type OcrReader,
   type PairedReading,
   readImagePair,
 } from './image-reading-pair.ts';
 import { photoReferences, } from './photo-reference.ts';
-import { readImageWithOcr, } from './image-ocr.ts';
+
 import type { SliceCache, } from './slice-cache.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -70,6 +71,7 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 export async function readDocumentPictures(
   {
     client,
+    readOcr,
     slices,
     assets,
     readerModelIds,
@@ -79,6 +81,7 @@ export async function readDocumentPictures(
     l,
   }: {
     readonly client: SyntheticClient;
+    readonly readOcr: OcrReader;
     readonly slices: readonly ChunkPair[];
     readonly assets: ReadonlyMap<string, Uint8Array>;
     readonly readerModelIds: readonly SyntheticModelId[];
@@ -161,7 +164,7 @@ export async function readDocumentPictures(
      * What the roster made of it now.
      */
     const paired = await readImagePair({
-      readOcr: readImageWithOcr,
+      readOcr,
       client,
       readerModelIds,
       bytes,

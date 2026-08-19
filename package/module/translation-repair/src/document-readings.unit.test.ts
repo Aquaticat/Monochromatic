@@ -44,6 +44,31 @@ import {
 const l = tagged({ tag: 'document-readings-test', },);
 
 /**
+ * Deterministic reader that always finds text, so every picture reaches the
+ * models and these cases keep asking what they were written to ask.
+ *
+ * SUPPLIED RATHER THAN LEFT TO THE REAL ONE, which shells out to `dwebp` and
+ * `tesseract`. A case that reached those would be asking what tools this
+ * machine carries, and would answer differently on one that carries none.
+ *
+ * @returns Reading with enough characters to clear the gate
+ *
+ * @example
+ * ```ts
+ * await readDocumentPictures({ readOcr: sawText, ... },);
+ * ```
+ */
+async function sawText(): Promise<{
+  readonly kind: 'read';
+  readonly text: string;
+}> {
+  return {
+    kind: 'read',
+    text: '走失猫咪 Mittens，虎斑，请电 555 0134。',
+  };
+}
+
+/**
  * Vision sub-roster, which is exactly these two models.
  */
 const READERS: readonly SyntheticModelId[] = [
@@ -257,6 +282,7 @@ await describe({
          * What the gather produced.
          */
         const readings = await readDocumentPictures({
+          readOcr: sawText,
           client,
           slices,
           assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
@@ -300,6 +326,7 @@ await describe({
          */
         const learning = recordingCache({ resumed: new Map(), },);
         await readDocumentPictures({
+          readOcr: sawText,
           client,
           slices: [sliceOf({
             text: showing({ assetName: 'noticeboard.webp', },),
@@ -333,6 +360,7 @@ await describe({
           resumed: new Map([[key, stored,],],),
         },);
         const readings = await readDocumentPictures({
+          readOcr: sawText,
           client,
           slices: [sliceOf({
             text: showing({ assetName: 'noticeboard.webp', },),
@@ -367,6 +395,7 @@ await describe({
         ].map(async function keyFor(seed,): Promise<string> {
           const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
           await readDocumentPictures({
+          readOcr: sawText,
             client,
             slices: [sliceOf({
               text: showing({ assetName: 'noticeboard.webp', },),
@@ -398,6 +427,7 @@ await describe({
          * Gather over a slice naming a picture the caller could not read.
          */
         const readings = await readDocumentPictures({
+          readOcr: sawText,
           client,
           slices: [sliceOf({
             text: showing({ assetName: 'missing.webp', },),
@@ -428,6 +458,7 @@ await describe({
          * Gather over ordinary prose.
          */
         const readings = await readDocumentPictures({
+          readOcr: sawText,
           client,
           slices: [sliceOf({
             text: '小猫在窗台上睡觉。\n',

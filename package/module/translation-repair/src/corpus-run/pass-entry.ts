@@ -5,6 +5,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { readDocumentPictures, } from '../document-readings.ts';
+import { readImageWithOcr, } from '../image-ocr.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
@@ -244,6 +245,7 @@ async function runEntryPipeline(
      * that can be sent one.
      */
     const pictureReadings = await readDocumentPictures({
+      readOcr: readImageWithOcr,
       client,
       slices: prepared.slices,
       assets,
