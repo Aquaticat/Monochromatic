@@ -619,3 +619,59 @@ models can be asked and can corroborate each other in the ordinary way.
 So the two pieces are not alternatives. The deterministic reading says whether a
 picture is worth any calls at all, and the re-encode is what lets the calls
 happen on the pictures too large to send.
+
+## The provider refuses AVIF, so the re-encode cannot use it
+
+The sweep above found a quality for almost every oversized picture and checked
+the text survived, which made AVIF look settled. It is not, for a reason no
+amount of local measurement could reach: the provider will not accept the
+format at all.
+
+Sent one small AVIF, built from a picture both readers had already transcribed
+successfully as webp:
+
+```text
+avif   hf:Qwen/Qwen3.6-27B     HTTP 400
+avif   hf:moonshotai/Kimi-K3   HTTP 400
+webp   hf:Qwen/Qwen3.6-27B     OK, 454 characters
+webp   hf:moonshotai/Kimi-K3   OK, 450 characters
+```
+
+The error names the whole accepted set:
+
+```text
+Image type image/avif not supported. Only image/jpeg, image/png, image/gif,
+image/webp, image/tiff, and image/bmp are supported.
+```
+
+Same picture, same models, same instruction, one call apart.
+So the format is the variable and nothing else is.
+
+WORTH KEEPING AS A METHOD NOTE. Every local measurement said AVIF was the
+answer: it fit 16 of 17 where webp fits 10, and it preserved the text on every
+asset that carried any. A module built on that would have been correct in every
+respect except the one that decides whether it works.
+
+### Webp is accepted and much weaker
+
+Re-running the same sweep with `cwebp`, which is the format the corpus already
+uses and the provider already takes:
+
+```text
+asset                          ocr before   fits at   bytes    ocr after
+Aniloviraw/photo0.webp               2965    NO QUALITY FITS DOWN TO q20
+gqt/photo1.webp                      2329    NO QUALITY FITS DOWN TO q20
+Aniloviraw/photo1.webp               1914      q50    275158      1895
+Zha_Ke/letter.webp                   1585    NO QUALITY FITS DOWN TO q20
+Chinatsu_Suzuki/photo2.webp           536      q40    293238       526
+MizuharaNagisa/letter.webp            446      q40    276904       390
+zhangyubaka/photo1.webp               298      q70    270548       359
+```
+
+Ten of seventeen fit, and the three carrying the most text are among the seven
+that never do. Those three are exactly the ones worth rescuing.
+
+WHAT STILL READS THEM. The deterministic reader has no cap and no format
+restriction, and gets 2965, 2329 and 1718 characters out of the three webp
+cannot shrink. So their text is not lost; what is lost is a second party to
+corroborate it.
