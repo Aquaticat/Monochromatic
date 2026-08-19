@@ -562,3 +562,60 @@ STATED PRECISELY: no reader threw during that run, so it does not re-exercise th
 containment. What it shows is that the wiring runs end to end and an entry with
 six pictures settles. The containment itself is held by the unit guards, which
 were shown to fail with it stripped.
+
+## OCR is a gate, not a third reader, and the measurement is why
+
+The obvious design was to let the deterministic reading join the corroboration
+as a third party: it cannot hallucinate, so anchoring the comparison to it
+looked strictly better.
+
+Measured against the model readings already on record, it does not work.
+
+```text
+picture                  OCR vs Kimi-K3   OCR vs Qwen3.6-27B   the two models
+zheermao101/photo3.webp       0.626             0.619              0.990
+dogesir_/intro.webp           0.096             0.111              0.785
+wangzihao980/Word1.webp       0.019             0.023              0.643
+```
+
+On two of three pictures the OCR reading fails the 0.30 threshold against BOTH
+models, while those same two models agree with each other comfortably.
+Wiring OCR into the comparison would therefore refuse readings that are fine.
+
+The reason is visible in the lengths rather than the scores.
+On `Word1.webp` the OCR returns 405 characters where the models return 390 and
+394, so it is not missing the text: it is reading the same text and getting the
+GLYPHS wrong. Tesseract on handwritten Chinese recovers the layout and the
+character count and substitutes lookalike characters, which destroys trigram
+overlap while leaving length untouched. `photo3.webp` scores 0.62 because it is
+cleanly printed, and that is the exception.
+
+### What it is reliable at
+
+Presence. Six of six agreement with the models on whether a picture has text at
+all, in both directions, which is exactly the question the ruling asked it to
+answer: "if something has no text, we can ignore it."
+
+So the deterministic reading is a GATE in front of the model calls:
+
+-   OCR finds no text, which is 119 of 191 assets:
+    the picture is settled as `no-text` and NO MODEL IS ASKED.
+-   OCR finds text: the two models are asked and corroborated against each
+    other exactly as before. The OCR reading does not enter that comparison.
+
+That keeps corroboration as strong as it was, spends nothing on two thirds of
+the corpus, and does not rest on a glyph-level agreement that OCR cannot supply.
+
+### Where the AVIF re-encode fits, now that this is settled
+
+`Zha_Ke/letter.webp` is 628180 bytes, past both readers' allowances, so no model
+can be sent it at all. The deterministic reading gets 1718 characters out of it,
+which is not usable on its own, since nothing corroborates it.
+
+Re-encoded at q40 it becomes 285611 bytes, inside both allowances, with its
+text intact at 1588 characters and its 1080 by 5645 pixels untouched. Then the
+models can be asked and can corroborate each other in the ordinary way.
+
+So the two pieces are not alternatives. The deterministic reading says whether a
+picture is worth any calls at all, and the re-encode is what lets the calls
+happen on the pictures too large to send.
