@@ -12512,3 +12512,104 @@ Remaining option if it does not: tiling. Cutting `Zha_Ke/letter.webp`, which is
 1080 by 5645, into vertical strips loses NO pixels, which is what "no
 downscaling" protects, and a letter's natural reading order is already
 top-to-bottom. Untried.
+
+## 2026-08-19, later still: the cap was ours, and two silent defects behind it
+
+### The probe answered: nothing needs to be lossy
+
+The probe named at the end of the previous section returned, and it overturned the section.
+The byte cap was never the provider's.
+Sent as they are, every oversized asset is accepted:
+`gqt/photo1.webp` is 1274028 bytes, four times the cap this package was enforcing,
+and it comes back read for 2631 characters.
+The corpus maximum, 1344454 bytes, is accepted too.
+
+So the cap is gone, along with `CONTEXT_SHARE`, `CHARS_PER_TOKEN`, `BASE64_INPUT_GROUP` and `BASE64_OUTPUT_GROUP`.
+`encodeImageAsset` now takes a plain `maxBytes`, set to 8 MiB in the reading stage,
+which nothing in this corpus approaches.
+45 of 191 pictures had been refused on our own arithmetic.
+
+No re-encode, no format change, no downscaling, no tiling.
+The tiling option recorded as "remaining, untried" is not needed:
+the three text-heaviest assets were only unreachable because of the cap that no longer exists.
+
+WORTH KEEPING AS A METHOD NOTE, and the reason this took a day to find.
+The estimate divided a context length by an assumed characters-per-token
+and compared the result against a base64 length.
+Every step of that arithmetic was correct.
+A vision model does not tokenize a picture by its base64 length:
+it tokenizes by resolution, in tiles.
+The quantity being measured was one this package had invented,
+so no amount of care in measuring it could have produced a right answer.
+The check that would have caught it on day one costs one call: send an oversized picture and see.
+
+### The store rejected every `no-text` reading on resume
+
+`isPairedReading` in `reading-cache-store.ts` checks the discriminant before the fields,
+and it knew two kinds.
+`no-text` was added to `PairedReading` the same afternoon and not to the guard.
+Consequence: every record carrying it was rejected on resume,
+so the picture read as never gathered,
+the deterministic reader ran again,
+the same record was written back,
+and the next pass rejected it again.
+119 of 191 pictures end at that kind, so two thirds of the picture work was re-done on every resume.
+
+Nothing reported anything.
+A run that silently re-does work is indistinguishable from a run that had nothing to resume,
+which is why this needed a test to find rather than a log to read.
+
+THE SHAPE OF THE MISTAKE IS THE SAME AS THE NAMESPACE ONE next door in the same directory:
+a second place that has to learn about a new kind, with nothing making it.
+`reading-cache-store.unit.test.ts` now persists one record of every kind through the real store
+and reads it back through a second open,
+so a kind added to the type without being added to the guard fails there.
+The same tests caught a second defect: the optional `readings` on an `unavailable` record
+were waved through unchecked for being optional.
+
+### A stopped run returned a verdict instead of throwing
+
+The OCR gate sits ahead of every model and consulted no signal of its own.
+Its early return for `no-text` sits ABOVE the fan-in that rethrows on an aborted signal,
+so a run already told to stop did not throw:
+it spawned a decoder and tesseract for every remaining picture
+and returned a `no-text` verdict that was then persisted.
+
+`signal.throwIfAborted()` now runs before the gate.
+The existing abort case could not have caught this,
+because the call throws either way and the only difference is what it spent getting there;
+the new case counts the asks and expects zero.
+Removing the check makes it fail with `expected 'returned no-text' to equal 'AbortError'`.
+
+### Verified at the settle path, not at the probe
+
+`sentinel-probe` cannot verify any of this: it calls `repairTranslation` directly and never reaches `settleEntry`.
+The honest check is `corpus-pass -- --only <id>` into a throwaway `TRANSLATION_REPAIR_RUNS_DIR`.
+
+On `wangzihao980`, at the tip of this work:
+
+```text
+gatherEntryPictures  gathered 6 of 6 pictures
+readImageWithOcr     picture1.webp: no text (0 characters, under 16)
+readImagePair        picture1.webp: no text to read, so no model was asked
+                     ... the same for picture2 through picture5 ...
+readImageWithOcr     Word1.webp: read 205 characters without a model
+readImageAsset       hf:moonshotai/Kimi-K3 read Word1.webp but the reading was refused: reads-as-refusal
+```
+
+Five pictures skipped both models in under a second,
+and those five are exactly the ones that had produced the corroborated refusals.
+The sixth passed the gate on 205 characters, went to the roster,
+and the shape screen caught a refusal from a real model on real content.
+
+### A test file shaped wrongly passes silently, and costs an afternoon
+
+This runner takes `describe({ name, children: [it({ name, fn, },),], },)`.
+A file written as `describe('name', function () { it('name', fn,); },)` registers nothing,
+prints nothing, and exits 0.
+Every runner in the chain reports success:
+`mise run ... :test:unit -- <file>` exits 0, and so does `node <file>`.
+
+The tell is that a test file produces NO output at all, not even a pass line.
+A positive control on a known-good sibling separates it from a genuine null in one command,
+which is the only reason it was caught here.

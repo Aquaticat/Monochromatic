@@ -473,6 +473,11 @@ the same picture corroborated at 0.643 in one probe and disagreed at 0.087 in a 
 
 ## The size cap, and why "best quality" cannot mean the highest number
 
+SUPERSEDED, and kept for the method rather than the conclusion.
+The allowance of 294912 bytes was this package's own estimate, not the provider's limit,
+and the provider accepts every one of these assets unchanged.
+Read "The cap was ours" below before acting on anything in this section.
+
 45 of 191 assets sit past the smaller reader's allowance of 294912 bytes.
 Re-encoding to AVIF at `--qcolor 100` fits ZERO of them,
 because it makes every one LARGER, by four to twelve times:
@@ -607,6 +612,9 @@ That keeps corroboration as strong as it was, spends nothing on two thirds of
 the corpus, and does not rest on a glyph-level agreement that OCR cannot supply.
 
 ### Where the AVIF re-encode fits, now that this is settled
+
+SUPERSEDED TWICE. The provider refuses AVIF outright, and there is no cap to fit under.
+Nothing in this subsection was built.
 
 `Zha_Ke/letter.webp` is 628180 bytes, past both readers' allowances, so no model
 can be sent it at all. The deterministic reading gets 1718 characters out of it,
@@ -756,3 +764,86 @@ measurement was real, the arithmetic was right, and the conclusion was wrong,
 because the quantity being measured was one this package had invented. A number
 carrying that much detail reads as evidence about the provider, and this one
 never was.
+
+## The settle path, exercised at the tip
+
+Everything above was measured either in a unit test or in a standalone probe.
+Neither reaches `settleEntry`, so neither can show that a picture reading arrives where the lanes read it.
+`corpus-pass -- --only wangzihao980` into a throwaway runs directory closes that gap
+for the gate, the ceiling and the shape screen at once.
+
+```text
+gatherEntryPictures  gathered 6 of 6 pictures for wangzihao980
+readImageWithOcr     picture1.webp: no text (0 characters, under 16)
+readImagePair        picture1.webp: no text to read, so no model was asked (0 characters)
+readImageWithOcr     picture2.webp: no text (0 characters, under 16)
+readImagePair        picture2.webp: no text to read, so no model was asked (0 characters)
+readImageWithOcr     picture3.webp: no text (0 characters, under 16)
+readImagePair        picture3.webp: no text to read, so no model was asked (0 characters)
+readImageWithOcr     picture4.webp: no text (0 characters, under 16)
+readImagePair        picture4.webp: no text to read, so no model was asked (0 characters)
+readImageWithOcr     picture5.webp: no text (0 characters, under 16)
+readImagePair        picture5.webp: no text to read, so no model was asked (0 characters)
+readImageWithOcr     Word1.webp: read 205 characters without a model
+readImageAsset       hf:moonshotai/Kimi-K3 read Word1.webp but the reading was refused: reads-as-refusal
+```
+
+The five textless pictures were decided in 0.9 seconds between them, with no model call at all.
+Under the previous order each would have gone to two vision models,
+and `picture1.webp` through `picture5.webp` are precisely the assets whose two refusals
+corroborated each other at 0.565 and would have been asserted to the translator and the judge
+as what the picture says.
+The gate and the screen now catch that case twice over, at different layers, on real content.
+
+`Word1.webp` is the counterexample that keeps the gate honest:
+it carries text, the deterministic reader found 205 characters of it,
+and the picture went to the roster exactly as before.
+A gate that refused it would be a gate that had learned the wrong lesson from the photographs.
+
+## Two defects the store and the stop were hiding
+
+### Resume rejected the verdict it had just written
+
+`isPairedReading` checks the discriminant first and knew `corroborated` and `unavailable`.
+The `no-text` kind was added to `PairedReading` and not to the guard,
+so every record carrying it was rejected on resume:
+read again, written back, rejected again on the pass after that, forever.
+
+The cost is bounded but the silence is not.
+119 of 191 pictures end at `no-text`,
+so two thirds of the picture work was re-done on every resume,
+and a run that re-does work reports exactly what a run with nothing to resume reports.
+No log line, no finding, no counter moved.
+
+It was found by writing the tests the package owed rather than by reading the code,
+and the twelve cases were committed red first so the record shows what they caught:
+
+```text
+RESUMES a no-text verdict
+  AssertionError: expected undefined to deeply equal { kind: 'no-text', characters: 3 }
+REFUSES an unavailable record whose kept readings are malformed
+  AssertionError: expected { kind: 'unavailable', ...(3) } to equal undefined
+```
+
+The second was unlooked for.
+The kept readings exist so a disagreement can be diagnosed rather than only counted,
+and the guard accepted any junk in that field because the field is optional.
+Optional is not unchecked.
+
+### The gate outran the stop
+
+`readImagePair` checked the abort at the fan-in, below the gate.
+The gate returns early for `no-text`, so that check was unreachable for exactly the two thirds
+of pictures the gate decides.
+A run told to stop therefore kept spawning a decoder and tesseract per picture,
+and returned verdicts that were then persisted.
+
+Removing the new `signal.throwIfAborted()` reproduces it:
+
+```text
+AssertionError: expected 'returned no-text' to equal 'AbortError'
+```
+
+Which is the sharper reading of the defect.
+The cost of the subprocesses was the obvious complaint;
+the real one is that a stopped run was still producing answers.
