@@ -35,32 +35,25 @@ const MEDIA_TYPES: Readonly<Record<string, string>> = {
   png: 'image/png',
 };
 
-/**
- * Base64 characters a token is taken to be worth.
- *
- * AN ESTIMATE, STATED AS ONE. Tokenizers split base64 into runs of three to
- * four characters, and the low end is used because the cost of being wrong is
- * a call refused by the provider for length, which wastes the whole slice.
- */
-const CHARS_PER_TOKEN = 3;
-
-/**
- * Fraction of a model's context a picture may occupy.
- *
- * HALF, so the prompt, the source, the archive wording and the reply all have
- * the other half. A picture filling its context leaves no room to ask about it.
- */
-const CONTEXT_SHARE = 0.5;
-
-/**
- * Bytes base64 packs into each group it emits.
- */
-const BASE64_INPUT_GROUP = 3;
-
-/**
- * Characters base64 emits per group, padding included.
- */
-const BASE64_OUTPUT_GROUP = 4;
+// THE OLD CEILING WAS DERIVED AND IT MEASURED THE WRONG THING. It took half a
+// model's context, converted tokens to characters at three each, and compared
+// that against the picture's base64 length. Every step is defensible for TEXT
+// and none of it describes an image: a vision model tokenizes by resolution, in
+// tiles, and base64 length is an artefact of the compressor that can vary
+// tenfold between two pictures of identical dimensions.
+//
+// MEASURED 2026-08-19, which is how it was caught. `gqt/photo1.webp` is 1274028
+// bytes, more than four times the 294912 that derivation allowed for
+// Qwen3.6-27B, and more than double that model's entire context once converted
+// the way the derivation converted it. The provider accepted it and returned
+// 2631 characters. Every asset in the corpus, up to the largest at 1344454
+// bytes, is accepted at its natural size. So 45 of 191 pictures were refused
+// here and never offered to any reader.
+//
+// A CEILING IS NOW THE CALLER'S TO SET, and its job is to stop a pathological
+// upload rather than to predict a provider. Where the provider genuinely
+// refuses, it says so, and that refusal costs one reading because
+// `readImagePair` contains it.
 
 /**
  * What encoding one asset produced.
@@ -111,55 +104,32 @@ export function extensionOf({ assetName, }: { readonly assetName: string; },): s
 }
 
 /**
- * Largest encoded picture a model of this context can be sent.
- *
- * @param contextLength - model's context window in tokens
- *
- * @returns Base64 characters that fit
- *
- * @example
- * ```ts
- * const room = encodedCharsThatFit({ contextLength: 262_144, },);
- * ```
- */
-export function encodedCharsThatFit({ contextLength, }: { readonly contextLength: number; },): number {
-  /**
-   * Tokens a picture may occupy.
-   */
-  const tokens = contextLength * CONTEXT_SHARE;
-
-  /**
-   * Characters those tokens are worth.
-   */
-  const room = tokens * CHARS_PER_TOKEN;
-  return Math.floor(room,);
-}
-
-/**
  * Encodes one picture for sending, or says why it cannot be sent.
  *
  * @param bytes - picture as read from disk
  *
  * @param assetName - its file name, which carries the media type
  *
- * @param contextLength - context of the model it would be sent to
+ * @param maxBytes - most bytes this picture may occupy, which the CALLER
+ * decides. Guessing what a provider accepts is not this function's job, and the
+ * note above records what happened when it was
  *
  * @returns Data URI, or the reason it was refused
  *
  * @example
  * ```ts
- * const encoded = encodeImageAsset({ bytes, assetName, contextLength, },);
+ * const encoded = encodeImageAsset({ bytes, assetName, maxBytes, },);
  * ```
  */
 export function encodeImageAsset(
   {
     bytes,
     assetName,
-    contextLength,
+    maxBytes,
   }: {
     readonly bytes: Uint8Array;
     readonly assetName: string;
-    readonly contextLength: number;
+    readonly maxBytes: number;
   },
 ): EncodedAsset {
   /**
@@ -173,12 +143,7 @@ export function encodeImageAsset(
     };
   }
 
-  /**
-   * How many base64 characters the picture becomes, which is four for every
-   * three bytes, rounded up to the padded quantum.
-   */
-  const encodedChars = Math.ceil(bytes.length / BASE64_INPUT_GROUP,) * BASE64_OUTPUT_GROUP;
-  if (encodedChars > encodedCharsThatFit({ contextLength, },)) {
+  if (bytes.length > maxBytes) {
     return {
       kind: 'refused',
       reason: 'too-large-for-model',

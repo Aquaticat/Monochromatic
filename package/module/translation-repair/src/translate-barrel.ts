@@ -164,7 +164,6 @@ export {
 } from './chat-contract.ts';
 export {
   type EncodedAsset,
-  encodedCharsThatFit,
   encodeImageAsset,
 } from './image-asset.ts';
 export {

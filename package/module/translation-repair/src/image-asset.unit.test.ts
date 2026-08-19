@@ -3,12 +3,16 @@
  * fit.
  *
  * WHAT THESE PIN is that refusing is a first-class outcome rather than an error
- * path. Measured over the 284 assets in the pinned corpus the median is 71 KiB
- * and the largest 1312 KiB, and base64 inflates by a third, so some pictures
- * cannot be sent to either model that reads images. Against the two vision
- * models' contexts, the pictures refused are the two handwritten letters, which
- * are also the hardest to read: downscaling them to fit would produce exactly
- * the confident wrong reading the whole rule exists to avoid.
+ * path, and that the CALLER decides the ceiling.
+ *
+ * THE CEILING USED TO BE DERIVED HERE and it measured the wrong thing: half a
+ * model's context, converted to characters, compared against base64 length. A
+ * vision model tokenizes by resolution rather than by encoded length, so that
+ * number was not conservative but unrelated. Measured on 2026-08-19, the
+ * provider accepted `gqt/photo1.webp` at 1274028 bytes, more than four times
+ * what the derivation allowed, and read 2631 characters from it. This file no
+ * longer asserts anything about contexts, because this module no longer knows
+ * about them.
  *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
@@ -21,15 +25,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  encodedCharsThatFit,
-  encodeImageAsset,
-} from '../dist/final/node/index.mjs';
+import { encodeImageAsset, } from '../dist/final/node/index.mjs';
 
 /**
- * Context of the smaller of the two models that read images.
+ * A ceiling a caller might set, standing in for whatever bound it chooses.
  */
-const SMALL_CONTEXT = 262_144;
+const CEILING = 1_000_000;
 
 /**
  * Bytes standing in for a picture, whose content is irrelevant to every rule
@@ -52,7 +53,7 @@ await describe({
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 64, },),
           assetName: 'tabby.webp',
-          contextLength: SMALL_CONTEXT,
+          maxBytes: CEILING,
         },);
 
         expect(encoded.kind,).toBe('usable',);
@@ -72,7 +73,7 @@ await describe({
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 64, },),
           assetName: 'mittens.jpg',
-          contextLength: SMALL_CONTEXT,
+          maxBytes: CEILING,
         },);
         if (encoded.kind !== 'usable')
           throw new Error('usable by construction',);
@@ -90,7 +91,7 @@ await describe({
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 64, },),
           assetName: 'sill.heic',
-          contextLength: SMALL_CONTEXT,
+          maxBytes: CEILING,
         },);
 
         expect(encoded.kind,).toBe('refused',);
@@ -111,7 +112,7 @@ await describe({
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 1_024 * 1_024, },),
           assetName: 'letter.webp',
-          contextLength: SMALL_CONTEXT,
+          maxBytes: CEILING,
         },);
 
         expect(encoded.kind,).toBe('refused',);
@@ -122,45 +123,39 @@ await describe({
     },),
 
     it({
-      name: 'ADMITS TO A LARGER MODEL WHAT IT REFUSES TO A SMALLER ONE, since the two that read '
-        + 'images differ in context by a factor of two and the same picture is not equally '
-        + 'sendable to both',
+      name: 'ADMITS UNDER ONE CEILING WHAT IT REFUSES UNDER ANOTHER, since the bound belongs to '
+        + 'whoever is sending rather than to this function. A picture is not large or small in '
+        + 'itself, only against a limit somebody chose',
       fn: async () => {
         /**
-         * A picture between the two models' limits.
+         * A picture between the two ceilings below.
          */
         const bytes = bytesOf({ length: 300 * 1_024, },);
 
         expect(encodeImageAsset({
           bytes,
           assetName: 'letter.webp',
-          contextLength: 262_144,
+          maxBytes: 200 * 1_024,
         },).kind,).toBe('refused',);
 
         expect(encodeImageAsset({
           bytes,
           assetName: 'letter.webp',
-          contextLength: 524_288,
+          maxBytes: 400 * 1_024,
         },).kind,).toBe('usable',);
       },
     },),
-  ],
-},);
 
-await describe({
-  name: encodedCharsThatFit.name,
-  children: [
     it({
-      name: 'LEAVES HALF THE CONTEXT FOR EVERYTHING ELSE, because a picture filling its context '
-        + 'leaves no room to ask about it',
+      name: 'ACCEPTS A PICTURE THE OLD DERIVATION WOULD HAVE REFUSED, which is the whole reason '
+        + 'the derivation is gone. Sent as it is, the provider read 2631 characters out of this '
+        + 'size while the derived ceiling for the same model stopped at 294912 bytes',
       fn: async () => {
-        /**
-         * Room in the smaller model.
-         */
-        const room = encodedCharsThatFit({ contextLength: SMALL_CONTEXT, },);
-
-        expect(room,).toBeLessThan(SMALL_CONTEXT * 3,);
-        expect(room,).toBeGreaterThan(0,);
+        expect(encodeImageAsset({
+          bytes: bytesOf({ length: 1_274_028, },),
+          assetName: 'photo1.webp',
+          maxBytes: 8_388_608,
+        },).kind,).toBe('usable',);
       },
     },),
   ],

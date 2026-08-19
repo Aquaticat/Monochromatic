@@ -58,12 +58,6 @@ const READERS: readonly SyntheticModelId[] = [
 const LARGER_READER: SyntheticModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
- * Bytes past the smaller reader's half-context allowance of 294912 and within
- * the larger reader's of 589824, so exactly one reader can be sent it.
- */
-const ONE_READER_BYTES = 400_000;
-
-/**
  * What one reader transcribed from a picture of a noticeboard.
  */
 const READING = '走失猫咪 Mittens，虎斑，2019 年出生，联系 @mittenspaw，请电 555 0134。';
@@ -339,21 +333,23 @@ await describe({
         + 'remember, and the passage it would qualify is already protected by the guards that hold '
         + 'every transcript in the corpus today',
       fn: async () => {
+        // ONE READER SAYING NOTHING, rather than a picture only one could be
+        // sent. That used to be a size case, and size no longer separates the
+        // two readers: the per-model ceiling was measuring base64 length
+        // against a context and predicting nothing, so both now share one
+        // ceiling far above anything in the corpus.
         const { client, } = scriptedClient({
-          byModel: {
-            'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
-          },
+          byModel: { 'hf:moonshotai/Kimi-K3': READING, },
         },);
 
         /**
-         * What the roster made of a picture past the smaller reader's context.
+         * What the roster made of a picture only one reader answered about.
          */
         const paired = await readImagePair({
           client,
           readOcr: found,
           readerModelIds: READERS,
-          bytes: bytesOf({ length: ONE_READER_BYTES, },),
+          bytes: bytesOf({ length: 64, },),
           assetName: 'noticeboard.webp',
           signal: AbortSignal.timeout(30_000,),
           perCallTimeoutMs: 30_000,

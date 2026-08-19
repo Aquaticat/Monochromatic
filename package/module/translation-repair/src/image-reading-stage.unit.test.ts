@@ -51,10 +51,16 @@ const READER: SyntheticModelId = 'hf:moonshotai/Kimi-K3';
 const TEXT_ONLY: SyntheticModelId = 'hf:openai/gpt-oss-120b';
 
 /**
- * Bytes larger than the reading model's half-context allowance, which is
- * 786432 base64 characters and therefore 589824 bytes.
+ * Bytes past the reading stage's own ceiling of 8388608.
+ *
+ * THE CEILING IS NO LONGER PER MODEL and no longer derived from a context. It
+ * used to be half a model's context converted to base64 characters, which
+ * measured the wrong thing: sent as they are, both readers accept every asset
+ * in the corpus, including one of 1274028 bytes that the old derivation refused
+ * to the smaller of them at 294912. What remains is a plain guard against a
+ * pathological upload, which nothing in the corpus approaches.
  */
-const OVERSIZED_BYTES = 600_000;
+const OVERSIZED_BYTES = 9_000_000;
 
 /**
  * Transcription a reader returns for the picture under test.
@@ -239,13 +245,15 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A PICTURE TOO LARGE FOR THE MODEL rather than downscaling it. A shrunk '
-        + 'photograph of handwriting is the exact input that produces a confident wrong reading',
+      name: 'REFUSES A PICTURE PAST THE STAGE CEILING rather than downscaling it. A shrunk '
+        + 'photograph of handwriting is the exact input that produces a confident wrong reading, '
+        + 'and the ceiling now guards against a pathological upload rather than predicting what '
+        + 'a provider will take, which it did badly',
       fn: async () => {
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
         /**
-         * Attempt with a picture past the half-context allowance.
+         * Attempt with a picture past the stage's ceiling.
          */
         const reading = await readImageAsset({
           client,

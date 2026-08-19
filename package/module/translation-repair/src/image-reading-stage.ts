@@ -52,6 +52,23 @@ export const READING_INSTRUCTION: string = 'Transcribe every word visible in thi
   + 'add any commentary. If you cannot read the image, say so plainly and say nothing else.';
 
 /**
+ * Most bytes a picture may occupy in a reading request.
+ *
+ * A GUARD AGAINST A PATHOLOGICAL UPLOAD, not a prediction of what the provider
+ * takes. The provider is the authority on that and says so plainly when asked:
+ * every asset in the pinned corpus is accepted at its natural size, including
+ * the largest at 1344454 bytes, and `gqt/photo1.webp` at 1274028 was read for
+ * 2631 characters. The derivation this replaced allowed 294912 for the same
+ * model, so it refused 45 of 191 pictures that nobody upstream had any trouble
+ * with.
+ *
+ * EIGHT MEBIBYTES, which is six times the corpus's largest asset. Nothing here
+ * meets it, which is the intent: a picture is refused by whoever actually
+ * decides, and that refusal now costs one reading rather than an entry.
+ */
+const READING_MAX_BYTES = 8_388_608;
+
+/**
  * What one reading attempt produced.
  *
  * @example
@@ -161,7 +178,7 @@ export async function readImageAsset(
   const encoded = encodeImageAsset({
     bytes,
     assetName,
-    contextLength: model.contextLength,
+    maxBytes: READING_MAX_BYTES,
   },);
   if (encoded.kind === 'refused') {
     rl.warn(`${assetName} cannot be sent to ${modelId}: ${encoded.reason}`,);
