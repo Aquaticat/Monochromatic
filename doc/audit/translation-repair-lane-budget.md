@@ -291,3 +291,76 @@ for, and they resume rather than restart.
     before.
 -   Anything about the repair lane under the new shape, which is a separate
     budget and is not measured here.
+
+## What drives a slice's cost, answered by a third possibility
+
+The open question was whether cost scales with slice SIZE or is a fixed per-slice OVERHEAD.
+The first entry priced under the two-lane pipeline answers neither, because it refutes the
+premise both share.
+
+Twelve cost lines from `wangzihao980`, both lanes, no resumed slices:
+
+```text
+repair     chunk 0   83 chars    9.46 min
+repair     chunk 1  208 chars    0.23 min
+repair     chunk 2  114 chars    6.02 min
+repair     chunk 3  102 chars    5.33 min
+repair     chunk 4  141 chars   11.31 min
+repair     chunk 5   31 chars    3.01 min
+translate  chunk 0   83 chars    7.07 min
+translate  chunk 1  208 chars    0.45 min
+translate  chunk 2  114 chars    4.47 min
+translate  chunk 3  102 chars    1.61 min
+```
+
+THE LARGEST SLICE IS THE CHEAPEST, in both lanes, by a factor of 48 against a slice
+two thirds its size.
+Size does not drive this and neither does a per-slice constant, since a constant cannot
+produce a 48-fold spread among slices of one order of magnitude.
+
+WHAT DOES DRIVE IT is legible in the run's own log:
+
+```text
+critic stage: 6/6 heard, 0 claims, 0 non-translation votes
+chunk 1: no validated claims, unchanged
+```
+
+Chunk 1 paid for its critic stage and stopped there.
+With no claims there is nothing for the editor, the panel, the judge, the checker or the
+refiner to do, so the slice costs one round instead of many.
+The slices that cost minutes raised 10, 11, 15 and 16 claims.
+
+So the cost of a slice is set by HOW MUCH IT TURNS OUT TO NEED, which is a property of the
+translation's quality rather than of the pipeline's configuration or the slicing.
+Neither remedy the original question offered follows:
+slicing differently changes nothing, and "ask fewer times" is not a free parameter either,
+because the rounds a slice spends are the ones its claims require.
+
+### The report now says this itself
+
+Reading twelve rows through size bands produced a clean-looking steep fall in ms/char,
+8726 to 3411 to 99, which is exactly the shape the question called evidence of fixed overhead.
+It was one zero-claim slice landing in the largest band, counted once per lane.
+
+`slice-cost-report` now prints the spread beside the bands:
+
+```text
+SPREAD, WHICH THE BANDS AVERAGE AWAY
+  cheapest   208 chars    0.23 min  repair
+  dearest    141 chars   11.31 min  repair
+  ratio     48.3x
+```
+
+A reader who sees the dearest slice is SMALLER than the cheapest cannot take the bands
+at face value, which is the point.
+Bands average away the variable that actually moves, and at small counts they invent a shape.
+
+### Lane split, for the first time with both lanes priced
+
+```text
+repair     6 slices   35.4 min
+translate  6 slices   24.4 min
+```
+
+Translate costs 69 percent of repair on this entry, consistent with the 67 to 75 percent
+`#114` measured for repair's share, and the first direct pricing of the translate lane.
