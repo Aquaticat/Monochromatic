@@ -3,8 +3,10 @@
 ## Symptom
 
 GitHub Actions shows repeated CodeQL runs named `Push on translation-repair-rebased` after each commit to that branch.
-At the 2026-08-19 observation point, the Actions API had reached its 1,000-run response cap for the week beginning
-2026-08-12, and the latest 1,000 runs contained 483 CodeQL push runs across `main` and
+At the 2026-08-19 observation point,
+ the Actions API had reached its 1,000-run response cap for the week beginning
+2026-08-12,
+ and the latest 1,000 runs contained 483 CodeQL push runs across `main` and
 `translation-repair-rebased`.
 
 The branch-specific symptom is not an error message.
@@ -34,7 +36,8 @@ It does not change when default setup creates them.
 ### The repository protects every branch
 
 The live GraphQL response on 2026-08-19 contains two classic branch-protection rules.
-Pattern `main` matches the default branch, while pattern `*` matches every listed non-default branch,
+Pattern `main` matches the default branch,
+ while pattern `*` matches every listed non-default branch,
 including `translation-repair-rebased`:
 
 ```console
@@ -143,23 +146,31 @@ That setting only selects a runner label.
 The trigger remains the protected-branch behavior in `setup-types.md:16-20`.
 Namespace's migration guide likewise describes changing the job's `runs-on` label,
 not changing GitHub event generation
-(https://namespace.so/docs/solutions/github-actions/migration).
+(<https://namespace.so/docs/solutions/github-actions/migration>).
 
 The earlier hypothesis that a faster runner provider could remove the run flood was wrong.
-A faster runner can shorten a generated job, but no cited Namespace feature suppresses the push event,
-changes CodeQL default-setup triggers, or cancels an older GitHub workflow run.
+A faster runner can shorten a generated job,
+ but no cited Namespace feature suppresses the push event,
+changes CodeQL default-setup triggers,
+ or cancels an older GitHub workflow run.
 
 ## Verification
 
 ### Versions and evidence points
 
 - GitHub.com service observed on 2026-08-19.
-- GitHub documentation commit: `a34bf588b9e6eff791e173fdd3a726dfab26f888`.
-- Classic wildcard branch-protection rule: `BPR_kwDOKlVnec4D4xsc`.
-- CodeQL default setup update timestamp: `2026-07-20T15:49:57Z`.
-- Working-branch example run: `32279201781`.
-- Default-branch example run: `32204388026`.
-- Scheduled example run: `32250832355`.
+- GitHub documentation commit:
+   `a34bf588b9e6eff791e173fdd3a726dfab26f888`.
+- Classic wildcard branch-protection rule:
+   `BPR_kwDOKlVnec4D4xsc`.
+- CodeQL default setup update timestamp:
+   `2026-07-20T15:49:57Z`.
+- Working-branch example run:
+   `32279201781`.
+- Default-branch example run:
+   `32204388026`.
+- Scheduled example run:
+   `32250832355`.
 
 ### Runnable probe
 
@@ -191,7 +202,9 @@ gh run view 32279201781 \
   Run `32204388026` is the positive control.
 - The weekly schedule starts CodeQL independently of pushes.
   Run `32250832355` is the positive control.
-- Each run contains separate `actions`, `c-cpp`, and `javascript-typescript` analysis jobs.
+- Each run contains separate `actions`,
+   `c-cpp`,
+   and `javascript-typescript` analysis jobs.
 
 ### Run-amplifying patterns
 
@@ -204,10 +217,12 @@ gh run view 32279201781 \
 ## Verified workarounds
 
 No workaround was applied to the live repository during this review.
-The request asked whether a provider migration would solve the problem, so changing repository security configuration would
+The request asked whether a provider migration would solve the problem,
+ so changing repository security configuration would
 have exceeded the review scope.
 
-GitHub documents two applicable configuration capabilities, but this repository has not exercised either after-state yet:
+GitHub documents two applicable configuration capabilities,
+ but this repository has not exercised either after-state yet:
 
 - Advanced setup permits defining workflow triggers
   (`content/code-security/concepts/code-scanning/setup-types.md:68-74`).
@@ -234,13 +249,17 @@ concurrency:
   cancel-in-progress: true
 ```
 
-This is a documented configuration path, not a verified patch for this repository.
+This is a documented configuration path,
+ not a verified patch for this repository.
 It needs a disposable branch or other controlled rollout before adoption.
 Its tradeoff is ownership of the CodeQL workflow and trigger policy instead of GitHub's generated low-maintenance default.
 
 Narrowing classic branch-protection pattern `*` is another configuration direction.
-It would change force-push, deletion, and conversation-resolution policy for every matching branch.
-That semantic tradeoff makes it a separate repository-governance decision, not a CI-only workaround.
+It would change force-push,
+ deletion,
+ and conversation-resolution policy for every matching branch.
+That semantic tradeoff makes it a separate repository-governance decision,
+ not a CI-only workaround.
 Changing only Copilot review ruleset `9126851` is not a reliable remedy because classic protection pattern `*` would remain.
 
 ## What does not work
@@ -254,9 +273,10 @@ Namespace also introduces a separate paid or sponsorship-gated compute allocatio
 ### Increasing concurrency alone
 
 More concurrent slots drain a burst faster but execute the same number of analyses.
-For this repository, GitHub's public standard runners are free,
+For this repository,
+ GitHub's public standard runners are free,
 while Namespace's standard pricing meters compute and gates Windows runners behind Team or higher
-(https://namespace.so/pricing.md).
+(<https://namespace.so/pricing.md>).
 
 ### Adding path filters to default setup
 
@@ -274,20 +294,28 @@ Changing repository topology is not required to change either input.
 
 ### Upstream filing decision
 
-- **Is it really upstream's fault?** No.
+- **Is it really upstream's fault?**
+   No.
   GitHub documents the protected-branch trigger explicitly.
   The surprising volume comes from this repository applying classic branch protection pattern `*` to non-default branches.
-- **Can upstream fix it?** GitHub could add default-setup concurrency controls,
+- **Can upstream fix it?**
+   GitHub could add default-setup concurrency controls,
   but no defect was established in the documented behavior.
-- **Are they supporting this use case?** Yes.
-  GitHub supports default setup, labeled runners, and advanced setup for custom triggers.
-- **Would the repository welcome the contribution?** No issue is needed.
+- **Are they supporting this use case?**
+   Yes.
+  GitHub supports default setup,
+   labeled runners,
+   and advanced setup for custom triggers.
+- **Would the repository welcome the contribution?**
+   No issue is needed.
   Searches of open and closed `github/docs` issues and pull requests for
   `default setup protected branch wildcard scans every push` found no duplicate,
   but the current documentation already states the decisive behavior.
-- **Will they likely fix it?** Not applicable.
+- **Will they likely fix it?**
+   Not applicable.
   There is no demonstrated documentation error or service defect to fix.
-- **Have we prototyped a minimal fix compatible with their architecture?** No.
+- **Have we prototyped a minimal fix compatible with their architecture?**
+   No.
   The relevant change belongs in this repository's CodeQL or branch-protection configuration,
   not in GitHub's documentation source.
 
