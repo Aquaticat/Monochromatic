@@ -174,3 +174,36 @@ That is the same adjacency the fidelity window was built for,
 measured on 2026-08-18 as every relocation pair in the corpus being adjacent,
 so the readings of a slice's NEIGHBOURS travel with it
 exactly as the neighbouring source and neighbouring archive already do.
+
+## A picture finding is telemetry, and the key deliberately omits it
+
+The slice cache key appends `['pictures', pictureContext]` only when a reading arrived.
+The findings do not enter the key at all.
+
+That asymmetry is intentional.
+The key must cover everything that changes WHAT THE MODELS ARE ASKED,
+and a finding changes nothing a model sees:
+`picture Word1.webp: no reading, readers-disagree` is a line in the stored record,
+never a line in a sheet.
+Feeding it into the key would evict every slice on a reason string
+that no model ever read.
+
+The consequence is worth naming so nobody rediscovers it as a defect.
+A slice settled on a run where nobody gathered a picture's bytes
+records `picture Word1.webp: not read`.
+A later run that DOES gather those bytes,
+but whose two readers disagree,
+computes the same empty picture context,
+so it hits the same key and resumes the old record with the old reason.
+The stored reason then describes the earlier run's gap rather than this run's disagreement.
+
+Both runs are correct about the thing that matters:
+no reading reached the models, so no reading should.
+Only the explanation is stale, and only in the direction of an older,
+less specific reason.
+A run that gathers bytes and CORROBORATES a reading computes a different context,
+so it misses the key and re-settles, which is exactly the behaviour required.
+
+The alternative, keying on findings, would trade an occasionally stale telemetry string
+for cache misses on every slice of every entry whose reader availability shifted.
+That is the wrong trade for a field nothing gates on.
