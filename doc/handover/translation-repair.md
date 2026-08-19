@@ -12384,3 +12384,79 @@ larger, more texts.
 NO WIDTH TREND. The repeated width returned 3 of 18 on both passes, which looks
 like a band of zero and is not one: sampling error at 18 rounds is around 0.09,
 so the 0.11 step at width five sits inside it.
+
+## 2026-08-19: what the first real CLI runs of the reading stage found
+
+Four defects, all fixed, all found by running `corpus-pass` rather than by reading code.
+Full evidence in `doc/audit/reading-a-picture-at-the-user-boundary.md`.
+
+### `sentinel-probe` cannot verify anything in the settle path
+
+It calls `repairTranslation` directly and never reaches `settleEntry`.
+A run over a picture-bearing entry completes green while proving nothing
+about picture gathering, because the code that gathers pictures is in `pass-entry.ts`.
+The honest CLI check is
+`corpus-pass -- --only <ids>` into a throwaway `TRANSLATION_REPAIR_RUNS_DIR`.
+Anything that claims to verify the two-lane path must go through `settleEntry`.
+
+### A failing picture reader killed the whole entry
+
+`readImageAsset` is the ONLY model-calling stage that calls `client.chatText` directly.
+Every other stage goes through `attemptStageCall`, which contains a failure as a lost
+voice and rethrows only on abort.
+So a reader that looped, and was cut off by the client's runaway guard, rejected
+`Promise.all` in `readImagePair`, and the rejection travelled into `settleEntry`:
+`status=ERROR`, `processed=0`, both lanes lost.
+Fixed with `Promise.allSettled` plus `signal.throwIfAborted()`, the same shape and order
+`attemptStageCall` and `runStageRound` use.
+
+WHEN A STAGE IS ADDED, ASK WHETHER IT CALLS THE CLIENT DIRECTLY.
+That one question would have caught this before a run did.
+
+### Two refusals corroborated each other and would have been asserted as fact
+
+`There is no text visible in this image.` and `No legible text is visible.`
+agreed at 0.565 trigram overlap and were marked `corroborated`,
+bound for the translator and judge sheets under
+"WHAT THE PICTURES HERE SAY, transcribed by two readers that agreed".
+Both had slipped the phrase list by a single word: one by word order,
+one because `legible` sat between `no` and `text`.
+The list had also silently lost its safety net,
+since its own comment claimed the anchor clause caught what it missed
+and the anchor clause had been deleted earlier the same day.
+
+Replaced with `src/reading-refusal.ts`, which tests SHAPE:
+at most 160 characters, containing a negation word, containing a picture word,
+all three required, whole-word matched from a linear scan.
+Six real transcriptions (390 to 632 characters) contain zero of either word list.
+
+### The repair lane was deleting picture readings
+
+`PICTURE_READING_NAMESPACE` was added to the store and not to `CLAIMED_PREFIXES`.
+The repair lane is defined by SUBTRACTION, as everything not claimed,
+so it adopted `picture.*.json` and its discard deleted them
+while logging that it discarded its own slices.
+
+This handover already warned about this exact class, and it had bitten three times.
+This was the fourth.
+The cure is now structural rather than a warning:
+`slice-cache-namespace.unit.test.ts` walks every namespace the package defines
+and fails if one is unregistered, so a fifth cannot be added silently.
+
+### Where the reading stage stands
+
+A picture in this corpus is usually a photograph of a person, not a document,
+so most produce no reading and that is CORRECT rather than a miss.
+Deterministic OCR confirms it: on a smoke test of six assets,
+tesseract read the three the models read, at comparable length,
+and found nothing in the three the models declined.
+
+WHAT IS NOT YET SETTLED, and the next thing to build:
+the owner ruled that deterministic OCR should be tried FIRST,
+that oversized assets should be re-encoded to AVIF at best quality rather than downscaled,
+and that a picture with no text can simply be ignored.
+`tesseract` (with `chi_sim`), `avifenc` and `magick` are all installed.
+An OCR-first order would also settle a real worry:
+the same picture corroborated at 0.643 in one probe and disagreed at 0.087 in a CLI run,
+so model readings are less repeatable than a five-pair sample suggested,
+and a deterministic party on one side of the comparison halves that variance.
