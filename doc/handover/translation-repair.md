@@ -13065,11 +13065,38 @@ critic <model>: abandoned 180000ms after quorum (cut-mid-reply after N delivered
 and N runs to 2,535,524 on one of them. The stage proceeds at quorum, waits the straggler
 window, and abandons whoever is still talking.
 
-IT IS FOUR DIFFERENT MODELS, which is what makes this look like the sheet rather than a flaky
-provider: `GLM-5.2`, `GLM-4.7-Flash`, `Qwen3.6-27B` and `Nemotron-3-Super-120B`. `#121`
-measured the previous cut population and found nine of ten cuts were ONE model. A cut spread
-evenly across four is a different phenomenon, and the thing that changed is that the critic
-sheet now carries two neighbouring passages.
+IT IS FOUR DIFFERENT MODELS: `GLM-5.2`, `GLM-4.7-Flash`, `Qwen3.6-27B` and
+`Nemotron-3-Super-120B`. `#121` measured the previous cut population and found nine of ten
+cuts were ONE model, so a cut spread evenly across four is a different phenomenon.
+
+AND THE SHEET SIZE IS NOT THE EXPLANATION, which corrects what this section said when it was
+first written. "The window roughly triples the sheet" was carried over as an estimate and
+never measured. Measured:
+
+```text
+critic sheet, no window   10485 chars
+critic sheet, windowed    11997 chars     1.14x
+of which fixed system prompt  9823 chars
+the varying half            662 -> 2174   3.28x
+```
+
+The VARYING half triples, as expected, but it is small against a system prompt that dominates
+the sheet, so the whole prompt grows fourteen percent. A fourteen percent longer prompt does
+not make a model deliver 2,535,524 characters and still be talking when the straggler window
+closes. That is RUNAWAY GENERATION, which is the phenomenon `#119`, `#120` and `#121` built
+guards for, and it is a different thing from a sheet too long to answer in time.
+
+SO THE HYPOTHESIS CHANGES, and the better one is testable. The critic prompt now carries two
+blocks it is told not to raise claims about. A model that starts echoing or re-quoting those
+blocks instead of reporting on them would produce exactly this shape: enormous output, cut
+mid-reply, across whichever models are most prone to it. The editor sheet already forbids
+copying the nearby blocks into output; the critic sheet forbids claiming about them but does
+not forbid reproducing them.
+
+HOW TO TELL, from evidence that will exist: the abandoned replies were cut mid-delivery, so
+their partial text is what `#118` made sure is kept rather than discarded. If those partials
+are the nearby blocks coming back, the fix is one sentence in the critic prompt, not a
+deadline change and not gating.
 
 WHAT IT IS NOT YET. One entry, three chunks, against a baseline run that is also a single
 sample, so run-to-run variance is not excluded and `QNB` applies. It is a signal to watch
@@ -13078,8 +13105,9 @@ across the remaining four entries, not a verdict.
 WHAT IT WOULD MEAN IF IT HOLDS, so the options are on the table before the data lands rather
 than invented to fit it:
 
--   raise the straggler window, or the per-call deadline, for windowed critic calls only.
-    The window is the thing that made the replies long, so it is the thing that should pay
+-   forbid REPRODUCING the nearby blocks in the critic sheet, not merely claiming about them,
+    if the cut partials turn out to be those blocks echoed back. Cheapest by far, and the
+    measurement above makes it the leading hypothesis rather than a guess
 -   gate the window to flagged slices plus or minus one, which cuts the number of windowed
     calls to roughly a sixth and bounds the exposure. This was already the measured fallback,
     and voice loss rather than claim inflation would be the trigger that selects it
