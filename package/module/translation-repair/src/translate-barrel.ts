@@ -179,6 +179,11 @@ export {
   readImageAsset,
 } from './image-reading-stage.ts';
 export {
+  type ModelReading,
+  type PairedReading,
+  readImagePair,
+} from './image-reading-pair.ts';
+export {
   characterTrigrams,
   CORROBORATION_TRIGRAM_SHARE,
   type CorroborationVerdict,

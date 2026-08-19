@@ -18,7 +18,18 @@
 //
 // THIS DOES NOT JUDGE TRANSLATION QUALITY. Whether the reading renders the
 // picture well is the judges' question and they are equipped for it. This
-// decides only whether the reading is about the right picture.
+// decides only whether the reading is a reading at all.
+//
+// WHETHER IT IS THE RIGHT PICTURE IS DECIDED ELSEWHERE, in
+// `reading-corroboration.ts`, by comparing the two readers' readings to each
+// other. A clause here used to compare the reading against the transcript the
+// archive already carried, and real traffic on 2026-08-19 measured it refusing
+// correct readings: every reading of `Mio/7`'s two pictures was refused while
+// the two readers agreed with each other at 0.967 and 1.000 character overlap.
+// It also could not work in principle, since a reading comes back in the
+// picture's language and the transcript is English, so the two can share only
+// names, handles and numbers. What survives here is per-reading and needs no
+// second text.
 
 import { topLevelBlocks, } from './markdown-blocks.ts';
 
@@ -68,11 +79,6 @@ const MIN_ANCHOR_WORD = 4;
  * Shortest run of digits that counts as an anchor.
  */
 const MIN_ANCHOR_DIGITS = 2;
-
-/**
- * Anchors two texts must share before they are taken to describe one picture.
- */
-const REQUIRED_SHARED_ANCHORS = 2;
 
 /**
  * Whether a character is an ASCII letter.
@@ -238,32 +244,27 @@ export type ReadingVerdict = {
    * Which clause of the stated rule refused it, for a finding a reader can act
    * on rather than a bare rejection.
    */
-  readonly clause: 'too-short' | 'reads-as-refusal' | 'describes-another-picture';
+  readonly clause: 'too-short' | 'reads-as-refusal';
 };
 
 /**
- * Whether a model's reading of a picture may be used as a source.
+ * Whether what a model returned for a picture is a reading at all.
  *
- * @param reading - what the model returned for the image
+ * PER-READING AND NOTHING MORE. Both clauses look only at the text in hand, so
+ * this can screen a reading before any second one exists, which is what lets the
+ * pair stage discard a refusal without paying for its partner.
  *
- * @param archiveTranscript - transcript the archive already carries for it,
- * empty when it carries none
+ * @param reading - what model returned for image
  *
- * @returns Whether the reading may be used, and which clause refused it
+ * @returns Whether reading may be used, and which clause refused it
  *
  * @example
  * ```ts
- * const verdict = readingMakesSense({ reading, archiveTranscript, },);
+ * const verdict = readingMakesSense({ reading, },);
  * ```
  */
 export function readingMakesSense(
-  {
-    reading,
-    archiveTranscript,
-  }: {
-    readonly reading: string;
-    readonly archiveTranscript: string;
-  },
+  { reading, }: { readonly reading: string; },
 ): ReadingVerdict {
   /**
    * Reading without its surrounding whitespace.
@@ -290,39 +291,6 @@ export function readingMakesSense(
     return {
       kind: 'refused',
       clause: 'reads-as-refusal',
-    };
-  }
-
-  // WITH NOTHING TO AGREE WITH, the reading stands on the clauses above.
-  // Refusing here would mean the pipeline could never add a transcript it does
-  // not already have, which is half of what `#111` is for.
-  if (archiveTranscript.trim() === '') {
-    return { kind: 'usable', };
-  }
-
-  /**
-   * Anchors the archive's own transcript carries.
-   */
-  const carried = readingAnchors({ text: archiveTranscript, },);
-
-  /**
-   * How many the transcript itself has, which sets how many it is fair to
-   * demand they share.
-   */
-  const available = carried.size;
-
-  /**
-   * How many they must share.
-   */
-  const required = (available < REQUIRED_SHARED_ANCHORS) ? 1 : REQUIRED_SHARED_ANCHORS;
-
-  if (sharedAnchorCount({
-    left: trimmed,
-    right: archiveTranscript,
-  },) < required) {
-    return {
-      kind: 'refused',
-      clause: 'describes-another-picture',
     };
   }
 

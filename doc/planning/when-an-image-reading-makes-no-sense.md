@@ -107,12 +107,21 @@ different pictures                40 pairs   trigram overlap 0.000 to 0.129
 The threshold of 0.30 sits between them
 with about a factor of two of margin on each side.
 
-### Five: where nothing corroborates, the reading stands on clause one and two alone
+### Five: where nothing corroborates, there is no reading
 
-A picture only one model can be sent has no second reading to agree with.
-Refusing every one of those would mean the pipeline could never add a transcript
-for the largest pictures, which is half of what `#111` is for.
-They pass clause one and two and are marked as uncorroborated where they are used.
+A picture only one model can be sent has no second reading to agree with,
+and an uncorroborated reading is UNAVAILABLE rather than usable with a caveat.
+This is the same asymmetry the whole stage is built on.
+Falling back costs nothing that exists today, since the passage is protected and left alone,
+while trusting a wrong reading licenses replacing a human's transcription
+with something derived from a misreading.
+A caveat travelling downstream is a caveat somebody has to remember.
+
+Measured over the 191 distinct assets a source-side reference names:
+146 fit both readers, 31 fit only the larger context, and 14 fit neither.
+So this refuses 31 pictures outright.
+Every transcript in the corpus is already held by a guard,
+so none of those 31 loses a protection it has today.
 
 ## What this rule does NOT do
 

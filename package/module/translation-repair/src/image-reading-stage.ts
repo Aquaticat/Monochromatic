@@ -74,7 +74,6 @@ export type ImageReading = {
     | 'too-large-for-model'
     | 'too-short'
     | 'reads-as-refusal'
-    | 'describes-another-picture'
     | 'empty-reply';
 };
 
@@ -88,9 +87,6 @@ export type ImageReading = {
  * @param bytes - picture as read from disk
  *
  * @param assetName - its file name, which carries the media type
- *
- * @param archiveTranscript - transcript the archive already carries for this
- * picture, empty when it carries none
  *
  * @param signal - abort honoured for the whole exchange
  *
@@ -106,7 +102,7 @@ export type ImageReading = {
  *
  * @example
  * ```ts
- * const reading = await readImageAsset({ client, modelId, bytes, assetName, archiveTranscript, signal, perCallTimeoutMs, l, },);
+ * const reading = await readImageAsset({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function readImageAsset(
@@ -115,7 +111,6 @@ export async function readImageAsset(
     modelId,
     bytes,
     assetName,
-    archiveTranscript,
     signal,
     perCallTimeoutMs,
     l,
@@ -124,7 +119,6 @@ export async function readImageAsset(
     readonly modelId: SyntheticModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;
-    readonly archiveTranscript: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -204,10 +198,7 @@ export async function readImageAsset(
   /**
    * Whether the reading may be used at all.
    */
-  const verdict = readingMakesSense({
-    reading: reply.text,
-    archiveTranscript,
-  },);
+  const verdict = readingMakesSense({ reading: reply.text, },);
   if (verdict.kind === 'refused') {
     rl.warn(
       `${modelId} read ${assetName} but the reading was refused: ${verdict.clause}`,

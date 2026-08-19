@@ -1,0 +1,305 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+
+import type { SyntheticClient, } from './chat-contract.ts';
+import {
+  type ImageReading,
+  readImageAsset,
+} from './image-reading-stage.ts';
+import { readingsCorroborate, } from './reading-corroboration.ts';
+import type { SyntheticModelId, } from './synthetic-catalog.ts';
+
+//region Image reading pair
+// READING ONE PICTURE TWICE, and letting the two readers decide whether either
+// reading may be used.
+//
+// WHY A SECOND READER IS THE CHECK. What a reading has to earn is not
+// plausibility but IDENTITY: is this a reading of the picture we sent. Nothing
+// in one reading answers that, and the archive's own transcript cannot answer
+// it either, for the two reasons `reading-corroboration.ts` records. Two models
+// shown the same picture, neither shown the other's answer, agree about what it
+// says when they can read it and do not when they cannot.
+//
+// THEY ARE NOT JUDGING EACH OTHER. Neither reader sees the other's reading and
+// neither is asked whether it is sensible. Both are asked the same question
+// about the same picture, blind, and the two answers are compared mechanically.
+// A model judging a model is another failure surface; two witnesses are not.
+//
+// AN UNCORROBORATED READING IS UNAVAILABLE, not usable-with-a-caveat. This
+// follows the rule the whole reading stage is built on: falling back costs
+// nothing that exists today, since the passage is protected and left alone,
+// while trusting a wrong reading licenses replacing a human's transcription
+// with something derived from a misreading. A caveat travelling downstream is a
+// caveat somebody has to remember.
+//
+// WHAT THAT COSTS, measured rather than glossed. Of the 191 distinct assets a
+// source-side reference names, 146 fit both readers, 31 fit only the larger
+// context and 14 fit neither. So 31 pictures can never be corroborated and are
+// refused here. They keep exactly the protections they have today, which for
+// every transcript in the corpus is already a guard: the split, the alignment
+// ratio, or the quote count.
+
+/**
+ * One model's reading of one picture.
+ *
+ * @example
+ * ```ts
+ * const reading: ModelReading = { modelId: 'hf:moonshotai/Kimi-K3', text: '喵。', };
+ * ```
+ */
+export type ModelReading = {
+  /**
+   * Model that produced it.
+   */
+  readonly modelId: SyntheticModelId;
+
+  /**
+   * What it transcribed.
+   */
+  readonly text: string;
+};
+
+/**
+ * What reading one picture with the whole sub-roster produced.
+ *
+ * @example
+ * ```ts
+ * const paired: PairedReading = { kind: 'corroborated', readings, overlap: 0.97, };
+ * ```
+ */
+export type PairedReading = {
+  /**
+   * Both readers read the picture and agree about what it says.
+   */
+  readonly kind: 'corroborated';
+
+  /**
+   * Every reading, labelled by its model, in roster order.
+   *
+   * BOTH RATHER THAN THE LONGER ONE. Corroboration establishes that the two
+   * describe the same picture, not that they describe the same AMOUNT of it: on
+   * `Mio/photo7.webp` one reader returned 178 characters and the other 590. The
+   * shorter vouches for what it carries and the longer carries more, so a stage
+   * shown both learns more than one shown either.
+   */
+  readonly readings: readonly ModelReading[];
+
+  /**
+   * How far above the threshold they agreed, recorded so a run can be read for
+   * how close its corroborations ran.
+   */
+  readonly overlap: number;
+} | {
+  /**
+   * No reading may be used, for a reason a finding can name.
+   */
+  readonly kind: 'unavailable';
+
+  /**
+   * Which of the ways it failed, so a reader can tell a picture nobody could
+   * send from one the readers disagreed about.
+   */
+  readonly reason:
+    | 'no-reader-available'
+    | 'one-reader-only'
+    | 'readers-disagree';
+
+  /**
+   * Why each reader produced nothing usable, in roster order, empty for a reader
+   * that did produce one.
+   */
+  readonly perReader: readonly string[];
+
+  /**
+   * Agreement measured between the readings, when there were two to compare.
+   * Absent when there were not, so a zero never reads as disagreement that was
+   * actually a missing reading.
+   */
+  readonly overlap?: number;
+};
+
+/**
+ * Reads one picture with every reader and settles whether either reading is
+ * usable.
+ *
+ * @param client - transport to the provider
+ *
+ * @param readerModelIds - vision sub-roster, asked in this order
+ *
+ * @param bytes - picture as read from disk
+ *
+ * @param assetName - its file name, which carries the media type
+ *
+ * @param signal - abort honoured for every exchange
+ *
+ * @param perCallTimeoutMs - deadline bounding each exchange
+ *
+ * @param l - lane logger
+ *
+ * @returns Corroborated readings, or why none may be used
+ *
+ * @throws Whatever a reading exchange throws, which is transport failure rather
+ * than an unreadable picture and is not this function's to interpret
+ *
+ * @example
+ * ```ts
+ * const paired = await readImagePair({ client, readerModelIds, bytes, assetName, signal, perCallTimeoutMs, l, },);
+ * ```
+ */
+export async function readImagePair(
+  {
+    client,
+    readerModelIds,
+    bytes,
+    assetName,
+    signal,
+    perCallTimeoutMs,
+    l,
+  }: {
+    readonly client: SyntheticClient;
+    readonly readerModelIds: readonly SyntheticModelId[];
+    readonly bytes: Uint8Array;
+    readonly assetName: string;
+    readonly signal: AbortSignal;
+    readonly perCallTimeoutMs: number;
+    readonly l: Logger;
+  },
+): Promise<PairedReading> {
+  /**
+   * Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: readImagePair.name,
+    l,
+  },);
+
+  /**
+   * What every reader made of the picture, asked concurrently.
+   *
+   * CONCURRENTLY BECAUSE THE LIMITER IS PER MODEL. Different models hold
+   * different slots, so asking them in sequence would double a reading's
+   * latency for nothing.
+   */
+  const outcomes = await Promise.all(readerModelIds.map(async function ask(modelId,): Promise<{
+    readonly modelId: SyntheticModelId;
+    readonly reading: ImageReading;
+  }> {
+    return {
+      modelId,
+      reading: await readImageAsset({
+        client,
+        modelId,
+        bytes,
+        assetName,
+        signal,
+        perCallTimeoutMs,
+        l,
+      },),
+    };
+  },),);
+
+  /**
+   * Readings that arrived, labelled by model.
+   */
+  const readings: readonly ModelReading[] = outcomes
+    .filter(function arrived(outcome,): boolean {
+      return outcome.reading
+        .kind === 'read';
+    },)
+    .map(function labelled(outcome,): ModelReading {
+      return {
+        modelId: outcome.modelId,
+        // Narrowed by the filter above, which a predicate cannot tell the
+        // compiler; the alternative is a type guard for a two-line map.
+        text: (outcome.reading.kind === 'read') ? outcome.reading.text : '',
+      };
+    },);
+
+  /**
+   * Why each reader produced nothing, empty for one that did.
+   */
+  const perReader: readonly string[] = outcomes.map(function reason(outcome,): string {
+    return (outcome.reading.kind === 'unavailable')
+      ? `${outcome.modelId}: ${outcome.reading.reason}`
+      : '';
+  },);
+
+  if (readings.length < 2) {
+    /**
+     * Which shortfall this is, since one reading and none are different
+     * situations for anyone reading the finding.
+     */
+    const reason = (readings.length === 1) ? 'one-reader-only' : 'no-reader-available';
+    rl.warn(
+      `${assetName}: ${String(readings.length,)} of ${
+        String(readerModelIds.length,)
+      } readers produced a reading, so nothing is corroborated (${
+        perReader.filter(function stated(entry,): boolean {
+          return entry !== '';
+        },)
+          .join('; ',)
+      })`,
+    );
+    return {
+      kind: 'unavailable',
+      reason,
+      perReader,
+    };
+  }
+
+  /**
+   * First two readings, which is the whole roster today and the first two of a
+   * larger one.
+   */
+  const pair = {
+    left: readings[0],
+    right: readings[1],
+  };
+  if ((pair.left === undefined) || (pair.right === undefined)) {
+    throw new Error(
+      `readImagePair counted ${String(readings.length,)} readings for ${assetName} `
+        + `and then could not index two of them`,
+    );
+  }
+
+  /**
+   * Whether they describe the same picture.
+   */
+  const verdict = readingsCorroborate({
+    left: pair.left
+      .text,
+    right: pair.right
+      .text,
+  },);
+  if (verdict.kind === 'disagree') {
+    rl.warn(
+      `${assetName}: ${pair.left
+        .modelId} and ${pair.right
+        .modelId} disagree about what it says, `
+        + `overlap ${verdict.overlap
+          .toFixed(3,)}`,
+    );
+    return {
+      kind: 'unavailable',
+      reason: 'readers-disagree',
+      perReader,
+      overlap: verdict.overlap,
+    };
+  }
+
+  rl.info(
+    `${assetName}: corroborated by ${String(readings.length,)} readers at overlap ${
+      verdict.overlap
+        .toFixed(3,)
+    }`,
+  );
+  return {
+    kind: 'corroborated',
+    readings,
+    overlap: verdict.overlap,
+  };
+}
+
+//endregion Image reading pair

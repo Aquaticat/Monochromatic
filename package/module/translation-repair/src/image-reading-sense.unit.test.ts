@@ -31,14 +31,6 @@ import {
   sharedAnchorCount,
 } from '../dist/final/node/index.mjs';
 
-/**
- * A transcript the archive already carries, dense in the parts that survive
- * paraphrase, as every measured transcript is.
- */
-const ARCHIVE_TRANSCRIPT = '> Name: Mittens, online and at home.\n'
-  + '> Adopted 2019. Vet visits every 6 months.\n'
-  + '> Contact tabbyhouse@example.org, handle @mittensdaily.';
-
 await describe({
   name: readingAnchors.name,
   children: [
@@ -115,35 +107,15 @@ await describe({
   name: readingMakesSense.name,
   children: [
     it({
-      name: 'ACCEPTS A READING THAT AGREES WITH THE TRANSCRIPT ALREADY THERE, which is the case '
-        + 'this exists to enable: the transcript now has a source that can be checked instead of '
-        + 'only preserved',
+      name: 'ACCEPTS A READING LONG ENOUGH TO BE A TRANSCRIPTION AND NOT ANNOUNCING A REFUSAL, '
+        + 'which is everything this decides now: whether the picture was read at all. Whether it '
+        + 'was the RIGHT picture is settled in `reading-corroboration.ts`, against a second '
+        + 'reader rather than against the archive',
       fn: async () => {
         expect(readingMakesSense({
           reading: 'Profile card. Name Mittens, adopted 2019, vet every 6 months, '
             + 'reachable at tabbyhouse@example.org or @mittensdaily.',
-          archiveTranscript: ARCHIVE_TRANSCRIPT,
         },).kind,).toBe('usable',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES A READING OF ANOTHER PICTURE, sharing no dates and no handles with the '
-        + 'transcript. Used, it would licence replacing a careful transcription with something '
-        + 'derived from a misreading, and no judge downstream could tell',
-      fn: async () => {
-        /**
-         * What the rule decided.
-         */
-        const verdict = readingMakesSense({
-          reading: 'A photograph of a railway timetable, platform 9, departures at 14:05 and 16:20.',
-          archiveTranscript: ARCHIVE_TRANSCRIPT,
-        },);
-
-        expect(verdict.kind,).toBe('refused',);
-        if (verdict.kind !== 'refused')
-          throw new Error('refused by construction',);
-        expect(verdict.clause,).toBe('describes-another-picture',);
       },
     },),
 
@@ -151,10 +123,11 @@ await describe({
       name: 'REFUSES A READING TOO SHORT TO BE A TRANSCRIPT, since an image nobody could read '
         + 'comes back as an apology or as nothing and both are shorter than any transcript',
       fn: async () => {
-        const verdict = readingMakesSense({
-          reading: '   a cat   ',
-          archiveTranscript: ARCHIVE_TRANSCRIPT,
-        },);
+        /**
+         * What the rule decided.
+         */
+        const verdict = readingMakesSense({ reading: '   a cat   ', },);
+
         expect(verdict.kind,).toBe('refused',);
         if (verdict.kind !== 'refused')
           throw new Error('refused by construction',);
@@ -166,11 +139,14 @@ await describe({
       name: 'REFUSES A READING THAT ANNOUNCES IT COULD NOT READ, even a long and fluent one, '
         + 'because a model apologising at length is still telling us it has nothing',
       fn: async () => {
+        /**
+         * What the rule decided about a fluent apology.
+         */
         const verdict = readingMakesSense({
           reading: 'I cannot make out the text in this image. The photograph appears to show a '
             + 'card of some kind, but the resolution is too low for me to transcribe it reliably.',
-          archiveTranscript: '',
         },);
+
         expect(verdict.kind,).toBe('refused',);
         if (verdict.kind !== 'refused')
           throw new Error('refused by construction',);
@@ -179,24 +155,25 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS A READING WHERE THE ARCHIVE TRANSCRIBED NOTHING, because refusing there would '
-        + 'mean this pipeline could never ADD a transcript it does not already have, which is half '
-        + 'of what the image is being sent for',
+      name: 'ACCEPTS A READING OF A PICTURE THE ARCHIVE TRANSCRIBED NOWHERE, because refusing '
+        + 'there would mean this pipeline could never ADD a transcript it does not already have, '
+        + 'which is half of what the image is being sent for',
       fn: async () => {
         expect(readingMakesSense({
           reading: 'A handwritten note reading: feed the cat at seven, she waits by the door.',
-          archiveTranscript: '',
         },).kind,).toBe('usable',);
       },
     },),
 
     it({
-      name: 'ASKS FOR ONE SHARED ANCHOR ONLY, where the transcript itself carries barely any, so a '
-        + 'sparse transcript is not made impossible to match by a threshold set for a dense one',
+      name: 'ACCEPTS A READING THAT SHARES NOTHING WITH THE ARCHIVE, the case the clause removed '
+        + 'on 2026-08-19 used to refuse. Real traffic measured it rejecting every reading of '
+        + 'Mio/7\'s two pictures while the two readers agreed with each other at 0.967 and 1.000 '
+        + 'character overlap: the slice\'s target-only English was simply not a transcription of '
+        + 'either picture',
       fn: async () => {
         expect(readingMakesSense({
-          reading: 'A card bearing a single word, Mittens, in a careful hand.',
-          archiveTranscript: '> Mittens.',
+          reading: 'A photograph of a railway timetable, platform 9, departures at 14:05 and 16:20.',
         },).kind,).toBe('usable',);
       },
     },),
