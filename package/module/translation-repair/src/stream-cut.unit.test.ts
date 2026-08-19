@@ -57,7 +57,7 @@ await describe({
           progress: SOME_PROGRESS,
           unreadableFrames: 0,
           outcome: 'cut',
-          partialText: 'It is a cat. It did a backflip. It cras',
+          openingText: 'It is a cat. It did a backflip. It cras',
           generatedChars: SOME_GENERATED_CHARS,
         },);
 
@@ -69,7 +69,7 @@ await describe({
           progress: SOME_PROGRESS,
           unreadableFrames: 0,
           outcome: 'degenerate',
-          partialText: 'The cat sat on the mat. '.repeat(20,),
+          openingText: 'The cat sat on the mat. '.repeat(20,),
           generatedChars: SOME_GENERATED_CHARS,
         },);
 
@@ -96,7 +96,7 @@ await describe({
           progress: SOME_PROGRESS,
           unreadableFrames: 0,
           outcome: 'degenerate',
-          partialText: 'The cat sat on the mat. '.repeat(20,),
+          openingText: 'The cat sat on the mat. '.repeat(20,),
           generatedChars: SOME_GENERATED_CHARS,
         },);
 
@@ -116,7 +116,7 @@ await describe({
           progress: SOME_PROGRESS,
           unreadableFrames: 0,
           outcome: 'completed',
-          partialText: 'A tabby naps in the window.',
+          openingText: 'A tabby naps in the window.',
           generatedChars: SOME_GENERATED_CHARS,
         },);
 
@@ -135,7 +135,7 @@ await describe({
           progress: SOME_PROGRESS,
           unreadableFrames: 0,
           outcome: 'completed',
-          partialText: 'whatever the wire actually sent, irrelevant to this count',
+          openingText: 'whatever the model actually said, irrelevant to this count',
           generatedChars: SOME_GENERATED_CHARS,
         },);
 
@@ -147,6 +147,31 @@ await describe({
         // a reader grepping for "delivered chars" must find nothing, not a
         // second copy of the raw count.
         expect(line.includes('delivered chars',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS EXACTLY THE OPENING TEXT IT WAS GIVEN, verbatim, in the excerpt: this function '
+        + 'no longer has a raw-text parameter to fall back to, so a caller passing generated text '
+        + 'is the only source the excerpt can possibly show',
+      fn: async () => {
+        /**
+         * Text that could not plausibly be mistaken for a server-sent-event
+         * envelope, so its presence in the excerpt is unambiguous.
+         */
+        const said = 'Whiskers considered the shelf at length before deciding against it.';
+
+        const line = reportStreamProgress({
+          label: 'hf:whiskers',
+          progress: SOME_PROGRESS,
+          unreadableFrames: 0,
+          outcome: 'cut',
+          openingText: said,
+          generatedChars: SOME_GENERATED_CHARS,
+        },);
+
+        expect(line.includes(said,),).toBe(true,);
+        expect(line.includes('data: {',),).toBe(false,);
       },
     },),
   ],

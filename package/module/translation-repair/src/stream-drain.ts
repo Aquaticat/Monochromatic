@@ -233,7 +233,7 @@ export async function drainBody(
       progress: guard.progress(),
       unreadableFrames: watch.unreadableFrames(),
       outcome: isDegenerate ? 'degenerate' : 'cut',
-      partialText,
+      openingText: watch.openingText(),
       generatedChars: watch.generatedChars(),
     },);
 
@@ -269,7 +269,7 @@ export async function drainBody(
     progress: guard.progress(),
     unreadableFrames: watch.unreadableFrames(),
     outcome: 'completed',
-    partialText: bodyText,
+    openingText: watch.openingText(),
     generatedChars: watch.generatedChars(),
   },);
 

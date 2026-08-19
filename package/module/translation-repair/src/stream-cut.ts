@@ -30,7 +30,7 @@ import type { StreamProgress, } from './stream-idle-guard.ts';
 const l = tagged({ tag: 'translation-repair', },);
 
 /**
- * Characters of the partial text to show in the log line.
+ * Characters of generated text to show in the log line.
  *
  * ENOUGH TO SEE WHAT KIND OF TEXT IT IS and no more. The opening tells a
  * thinking block from an answer from an empty cut, which is the whole diagnostic
@@ -136,11 +136,14 @@ export class StreamCutShortError extends Error {
  * only by capturing a logger's side effect. The caller is not expected to use
  * the return value; `void`-typed call sites remain valid.
  *
- * REPORTS GENERATED CHARACTERS, NOT RAW ONES, for the count that used to read
- * `partialText.length`. `progress.chars` already names itself `raw chars` and
- * keeps counting wire bytes, envelope included; the field beside it used to
- * repeat that exact number under a different name, which reads as though it
- * meant how much the model actually produced when it never did.
+ * REPORTS GENERATED CHARACTERS, NOT RAW ONES, both for the per-channel count
+ * and for the opening excerpt. `progress.chars` already names itself `raw
+ * chars` and keeps counting wire bytes, envelope included; nothing else here
+ * reads the raw stream at all. Fed the raw text instead, the excerpt would
+ * always open with the server-sent-event envelope, `data: {"id":"` and
+ * whatever follows, because every frame's JSON wrapper is identical by
+ * construction, and the count would repeat `progress.chars` under a new
+ * name rather than saying how much the model actually produced.
  *
  * @param label - model or endpoint
  *
@@ -151,7 +154,8 @@ export class StreamCutShortError extends Error {
  * @param outcome - whether the stream finished, was cut, or was ended by this
  * system's own degeneration guard
  *
- * @param partialText - raw stream text delivered, used only for its opening
+ * @param openingText - generated text delivered, combined across channels in
+ * arrival order, used only for its opening
  *
  * @param generatedChars - decoded characters produced on each channel, from
  * the same detectors the degeneration guard already keeps running totals in
@@ -165,7 +169,7 @@ export class StreamCutShortError extends Error {
  *   progress,
  *   unreadableFrames: 0,
  *   outcome: 'cut',
- *   partialText,
+ *   openingText: watch.openingText(),
  *   generatedChars: { content: 40, reasoning: 0, },
  * },);
  * ```
@@ -176,14 +180,14 @@ export function reportStreamProgress(
     progress,
     unreadableFrames,
     outcome,
-    partialText,
+    openingText,
     generatedChars,
   }: {
     readonly label: string;
     readonly progress: StreamProgress;
     readonly unreadableFrames: number;
     readonly outcome: StreamOutcome;
-    readonly partialText: string;
+    readonly openingText: string;
     readonly generatedChars: {
       readonly content: number;
       readonly reasoning: number;
@@ -191,9 +195,10 @@ export function reportStreamProgress(
   },
 ): string {
   /**
-   * Opening of what arrived, with newlines flattened so one stream is one line.
+   * Opening of what the model generated, with newlines flattened so one
+   * stream is one line.
    */
-  const opening = partialText
+  const opening = openingText
     .slice(
       0,
       OPENING_CHARS,

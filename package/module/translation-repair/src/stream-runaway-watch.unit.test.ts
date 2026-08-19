@@ -285,6 +285,53 @@ await describe({
     },),
 
     it({
+      name: 'SHOWS GENERATED TEXT IN THE OPENING, not the server-sent-event envelope: a raw '
+        + 'excerpt always opens with the JSON wrapper, because every frame carries an identical '
+        + 'envelope by construction, and none of the words the model generated are in that wrapper',
+      fn: async () => {
+        const watch = watchRunaway();
+
+        /**
+         * What the model actually said.
+         */
+        const said = 'Whiskers considered the shelf at length. ';
+
+        /**
+         * One frame as the wire actually sends it, `id` included. Production
+         * ids are a bare hexadecimal string; this fixture spells it
+         * `chatcmpl-tabby`, matching the shape recorded in the decision
+         * document, precisely so that the id would show up in the excerpt if
+         * this were reading the envelope rather than the generated text.
+         */
+        const raw = `data: ${
+          JSON.stringify({
+            id: 'chatcmpl-tabby',
+            object: 'chat.completion.chunk',
+            choices: [{
+              index: 0,
+              delta: { content: said, },
+              finish_reason: null,
+            },],
+          },)
+        }\n\n`;
+
+        watch.notifyChunk({ chunk: raw, },);
+
+        /**
+         * What the opening excerpt would show.
+         */
+        const opening = watch.openingText();
+
+        expect(opening.includes(said,),).toBe(true,);
+
+        // Neither the envelope's own prefix nor the id inside it survives:
+        // this reads generated text, not the wire.
+        expect(opening.includes('data: {',),).toBe(false,);
+        expect(opening.includes('chatcmpl',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'CARRIES WHAT A LOG LINE NEEDS in its error: which channel, how repetitive, what '
         + 'the call had already cost when it was ended, and which model ran away',
       fn: async () => {

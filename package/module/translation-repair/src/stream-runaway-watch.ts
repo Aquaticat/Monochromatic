@@ -31,6 +31,18 @@ import {
 const RATIO_DIGITS = 4;
 
 /**
+ * Generated characters kept for the opening excerpt, combined across both
+ * channels in arrival order.
+ *
+ * WELL PAST WHAT A LOG LINE SHOWS. `stream-cut.ts` slices its own excerpt
+ * down to a much narrower width; this cap only has to stop the kept text
+ * from growing with a stream that runs forever, so it is set with generous
+ * margin rather than tuned to that narrower width, and the two stay free to
+ * change independently.
+ */
+const OPENING_TEXT_CAP = 200;
+
+/**
  * Channels watched, in the order a verdict is reported for them.
  *
  * REASONING FIRST, because a runaway there is the case that produces no answer
@@ -105,6 +117,18 @@ export type RunawayWatch = {
     readonly content: number;
     readonly reasoning: number;
   };
+
+  /**
+   * Reads the first generated characters seen so far, combined across both
+   * channels in arrival order.
+   *
+   * GENERATED TEXT, NOT THE WIRE. A raw excerpt always opens with the
+   * server-sent-event envelope, `data: {"id":"` and whatever follows,
+   * because every frame's JSON wrapper is identical by construction; this
+   * reads whichever channel the model actually started producing, thinking
+   * or answering, which is the question an opening excerpt exists to answer.
+   */
+  readonly openingText: () => string;
 };
 
 /**
@@ -135,6 +159,15 @@ export function watchRunaway(): RunawayWatch {
     content: watchForDegeneration(),
     reasoning: watchForDegeneration(),
   };
+
+  /**
+   * First generated characters seen, combined across channels in arrival
+   * order and capped at {@link OPENING_TEXT_CAP}.
+   *
+   * A RECORD RATHER THAN A LOOSE BINDING so the factory root holds no mutable
+   * variable, matching the rest of this module's state.
+   */
+  const opening = { text: '', };
 
   /**
    * Reads whichever channel has gone wrong, if either has.
@@ -187,6 +220,18 @@ export function watchRunaway(): RunawayWatch {
          */
         const detector = detectors[delta.channel];
         detector.notifyText({ text: delta.text, },);
+
+        /**
+         * Characters kept so far, read once so the cap check names a single
+         * value rather than a member chain.
+         */
+        const keptSoFar = opening.text
+          .length;
+
+        // Stops appending once the cap is reached, so a call that never ends
+        // never grows this string past OPENING_TEXT_CAP.
+        if (keptSoFar < OPENING_TEXT_CAP)
+          opening.text += delta.text;
       },);
       return readChannels();
     },
@@ -205,6 +250,10 @@ export function watchRunaway(): RunawayWatch {
         reasoning: detectors.reasoning
           .charsSeen(),
       };
+    },
+
+    openingText(): string {
+      return opening.text;
     },
   };
 }
