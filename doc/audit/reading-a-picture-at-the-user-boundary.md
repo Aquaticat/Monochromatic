@@ -297,3 +297,75 @@ so the separation the threshold rests on is narrower here than in that sample.
 The verdict is still the right one at 0.30,
 and the figure is recorded because a future run that tightens the threshold
 must not do it without noticing what short readings look like.
+
+## Two refusals corroborated each other, and the fix is a shape rather than a list
+
+The corroborated pair recorded above was checked rather than trusted,
+and it was not a reading of anything.
+Both entries hold this:
+
+```text
+hf:Qwen/Qwen3.6-27B      "There is no text visible in this image."
+hf:moonshotai/Kimi-K3    "No legible text is visible."
+```
+
+Two models declining to read, agreeing with each other at 0.565 trigram overlap,
+and marked `corroborated`.
+Nothing downstream could tell:
+a corroborated reading travels to the translator and the judge
+under the heading `WHAT THE PICTURES HERE SAY, transcribed by two readers that agreed`,
+so both sheets would have asserted
+that the picture says `There is no text visible in this image.`
+
+That is worse than no reading.
+A refused picture is silent, and silence is what the design is built to fall back to.
+An asserted falsehood is evidence pointing the wrong way.
+
+### Why the existing screen missed it
+
+The per-reading screen carried a phrase list including
+`no text is visible` and `no visible text`.
+The first reply misses by WORD ORDER.
+The second misses because `legible` sits between `no` and `text`.
+Each slipped by exactly one word.
+
+The list had also lost its safety net without anyone noticing.
+Its own comment said "the anchor clause catches most of what it misses",
+and the anchor clause was deleted earlier the same day
+for refusing correct readings.
+Removing a clause left the clause that depended on it standing alone,
+which is the ordinary way a screen quietly narrows.
+
+### The replacement, and why it is not a longer list
+
+`src/reading-refusal.ts` tests SHAPE rather than wording.
+A refusal talks about the picture:
+it negates, it names the picture or its text, and it is a sentence rather than a passage.
+A transcription reproduces what the picture holds and does none of those.
+So a reading reads as a refusal when all three hold:
+at most 160 characters after trimming,
+containing a negation word,
+and containing a word for the picture or its text.
+
+All three are required because each alone refuses real readings.
+The word lists are compared against whole words from a linear scan,
+so `not` cannot fire inside `note`.
+
+### Measured, both directions
+
+Positive control, the two replies that caused this:
+both now refused, clause `reads-as-refusal`.
+
+Negative control, the six real transcriptions kept from the boundary probe:
+all six usable, at 390, 394, 448, 454, 590 and 632 characters.
+Between them they contain
+ZERO English negation words and ZERO picture words,
+so neither list can reach them even before the length bound is consulted.
+Their shortest is more than twice the bound.
+
+The separation is not marginal on this sample,
+and the sample is small enough to say so plainly:
+six real readings and two refusals.
+What makes it worth shipping is not the count
+but that the two populations differ in kind rather than in degree.
+A Chinese transcription has no occasion to write the English word `image`.
