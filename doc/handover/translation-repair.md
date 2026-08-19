@@ -12664,3 +12664,31 @@ a settle-path witness for the size ceiling needs an entry carrying an asset past
 and the corpus-wide re-run under the corrected pipeline has not been done,
 since every batch started before today's fixes carries picture verdicts
 produced by the estimate, the missing gate, and the missing retry.
+
+### The last guard bite, and the coupling it revealed
+
+The refusal shape clause had been added without its bite shown, because a subagent
+was rebuilding the shared dist at the time.
+Disabling the `readsAsRefusal` call in `image-reading-sense.ts` fails the screen-level case with
+
+```text
+AssertionError: expected 'usable' to equal 'refused'
+```
+
+which is the two production refusals passing as usable readings again.
+It also fails four cases in the re-ask suite,
+because that suite drives its refusal fixture through the real screen rather than stubbing the clause,
+so the clause is pinned from two directions and a rename cannot quietly detach it.
+
+### Where the lane stands
+
+Built, tested, and witnessed on the settle path: the gate, the shape screen, the re-ask,
+the ceiling, and resume.
+Unit suite 429 passing and 0 failing, lint 0 warnings 0 errors, types clean.
+
+NOT YET WITNESSED: one picture-bearing entry reaching `status=SETTLED` end to end under this build.
+Every run so far was stopped deliberately once its picture phase had been read,
+and the entry that did settle predates all of today's changes.
+That is the one thing standing between this lane and done, and it gates the corpus-wide pass,
+because a full pass is hours of quota and one settled entry is the cheap check
+that picture context flows through `slicePictures` into both lanes without a new surprise.
