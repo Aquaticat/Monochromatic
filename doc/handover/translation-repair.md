@@ -12993,3 +12993,44 @@ reproduces `#107`'s recorded contested-unflagged rate of 0.9524 on the same pool
 This is the third null-that-was-a-bug in two days, after the test file that registered
 nothing and the census that read 93 entries and 0 assets. All three were caught by the same
 question, asked before believing the answer: could this probe have shown a positive at all.
+
+### The window is proven to reach production, not just the prompt builders
+
+`~/temp/agent/window-reaches-production.mjs`, zero quota, no network.
+
+THE UNIT TEST COULD NOT ANSWER THIS. It asserts that `buildCriticMessages` renders a window
+it is HANDED. Whether `repairPreparedDocument` computes one and hands it over is a different
+question, and it is exactly the one `#107` records going wrong before: the translate lane's
+window sat unused for weeks because the call site never passed what the builder accepted.
+
+The probe drives the real `prepareDocumentPair` and `repairPreparedDocument` with a stub
+client that records every sheet and answers "no issues", so each slice raises zero claims and
+skips every later stage. Three invented cat-themed sections, each carrying a marker no other
+section uses, so a sheet can be attributed to the slice it was asked about.
+
+```text
+slices prepared 3, sheets asked 6, all 6 carrying a NEARBY fence
+
+middle slice   window carries the preceding neighbour   2 of 2
+               window carries the following neighbour   2 of 2
+first slice    window carries the following neighbour   2 of 2
+               window wrongly carries the last slice    0 of 2
+last slice     window carries the preceding neighbour   2 of 2
+               window wrongly carries the first slice   0 of 2
+```
+
+THE TWO ZEROES ARE THE POINT, more than the twos. They are the negative control: the window
+reaches exactly one slice each way and not the whole document, which is what
+`neighbouringSource` promises in its TSDoc and what keeps the cost bounded. A window that
+quietly widened would show here as the first slice seeing the last.
+
+IT REPORTED A FAILURE FIRST, and the probe was wrong rather than the code. The first version
+filtered sheets by "mentions the middle marker" and read 4 of 6, which looks like a partial
+forward. It is not: slice 0's sheet mentions the middle marker because the middle slice is
+ITS neighbour. What is under review and what is context sit on opposite sides of the NEARBY
+fence, so the sheet has to be split there before it can be attributed. Same lesson as the
+gate reader an hour earlier, in the opposite direction: that one called a broken probe a
+pass, this one called working code a failure.
+
+WORTH PROMOTING INTO THE PACKAGE as a driver-level test, since it covers the threading no
+builder test can. Source work, so it waits for the run.
