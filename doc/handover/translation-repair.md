@@ -13035,10 +13035,13 @@ pass, this one called working code a failure.
 WORTH PROMOTING INTO THE PACKAGE as a driver-level test, since it covers the threading no
 builder test can. Source work, so it waits for the run.
 
-### EARLY AND UNWELCOME: the window is costing critic voices
+### EARLY: the window is costing critic voices, and TWO of my explanations were wrong
 
-Read 23 minutes into the verify, on the first entry, and recorded immediately because it may
-change the design rather than merely the numbers.
+Read 23 minutes into the verify, on the first entry. The observation is solid; the cause is
+not established, and this section records both the falsified explanations rather than only
+the surviving question, because each was committed here before it was measured.
+
+#### The observation
 
 ```text
 GLaDOSister   baseline heard   new heard   baseline claims   new claims
@@ -13047,73 +13050,73 @@ chunk 1       6 of 6           5 of 6      30                17
 chunk 2       6 of 6           3 of 6      16                10
 ```
 
-The baseline heard SIX OF SIX on every chunk of this entry. The windowed run has already
-dropped to three.
-
-THE CLAIM COUNTS FALLING IS THEREFORE UNREADABLE AS IT STANDS, which is the immediate
-consequence. Gate E was watching for claim INFLATION as the cost trigger, and claims went the
-other way, but a stage that heard half the roster raises fewer claims whatever it was shown.
-Nothing here yet separates "better-informed critics complain less" from "fewer critics
-answered".
-
-THE MECHANISM IS LOGGED AND IS NOT AMBIGUOUS. Four critics were abandoned with
+The baseline heard SIX OF SIX on every chunk of this entry. The windowed run has dropped to
+three. Four critics were abandoned, across four different models:
 
 ```text
 critic <model>: abandoned 180000ms after quorum (cut-mid-reply after N delivered chars)
 ```
 
-and N runs to 2,535,524 on one of them. The stage proceeds at quorum, waits the straggler
-window, and abandons whoever is still talking.
+CLAIM COUNTS FALLING IS THEREFORE UNREADABLE AS IT STANDS. Gate E watched for claim
+INFLATION and claims went the other way, but a stage that heard half its roster raises fewer
+claims whatever it was shown. Nothing yet separates "better-informed critics complain less"
+from "fewer critics answered".
 
-IT IS FOUR DIFFERENT MODELS: `GLM-5.2`, `GLM-4.7-Flash`, `Qwen3.6-27B` and
-`Nemotron-3-Super-120B`. `#121` measured the previous cut population and found nine of ten
-cuts were ONE model, so a cut spread evenly across four is a different phenomenon.
+#### Not the sheet size
 
-AND THE SHEET SIZE IS NOT THE EXPLANATION, which corrects what this section said when it was
-first written. "The window roughly triples the sheet" was carried over as an estimate and
-never measured. Measured:
+"The window roughly triples the sheet" was an estimate carried in and never measured.
+Measured:
 
 ```text
 critic sheet, no window   10485 chars
 critic sheet, windowed    11997 chars     1.14x
-of which fixed system prompt  9823 chars
+of which fixed system prompt  9823
 the varying half            662 -> 2174   3.28x
 ```
 
-The VARYING half triples, as expected, but it is small against a system prompt that dominates
-the sheet, so the whole prompt grows fourteen percent. A fourteen percent longer prompt does
-not make a model deliver 2,535,524 characters and still be talking when the straggler window
-closes. That is RUNAWAY GENERATION, which is the phenomenon `#119`, `#120` and `#121` built
-guards for, and it is a different thing from a sheet too long to answer in time.
+The varying half does triple; it is small against a system prompt that dominates, so the
+whole prompt grows FOURTEEN PERCENT. That cannot explain a reply still arriving when the
+straggler window closes.
 
-SO THE HYPOTHESIS CHANGES, and the better one is testable. The critic prompt now carries two
-blocks it is told not to raise claims about. A model that starts echoing or re-quoting those
-blocks instead of reporting on them would produce exactly this shape: enormous output, cut
-mid-reply, across whichever models are most prone to it. The editor sheet already forbids
-copying the nearby blocks into output; the critic sheet forbids claiming about them but does
-not forbid reproducing them.
+#### Not runaway generation either
 
-HOW TO TELL, from evidence that will exist: the abandoned replies were cut mid-delivery, so
-their partial text is what `#118` made sure is kept rather than discarded. If those partials
-are the nearby blocks coming back, the fix is one sentence in the critic prompt, not a
-deadline change and not gating.
+The second explanation was that critics were echoing the two nearby blocks and running away,
+which would fit "2,535,524 delivered chars". It does not survive the conversion.
 
-WHAT IT IS NOT YET. One entry, three chunks, against a baseline run that is also a single
-sample, so run-to-run variance is not excluded and `QNB` applies. It is a signal to watch
-across the remaining four entries, not a verdict.
+DELIVERED CHARS ARE RAW STREAM BYTES, not produced text. Over 110 completed streams in this
+same run the raw-to-produced ratio has median 413:
 
-WHAT IT WOULD MEAN IF IT HOLDS, so the options are on the table before the data lands rather
-than invented to fit it:
+```text
+GLM-5.2         2535524 raw  ~=  6141 produced
+GLM-4.7-Flash   1718876 raw  ~=  4163 produced
+Nemotron         813057 raw  ~=  1969 produced
+Qwen             260739 raw  ~=   632 produced
+```
 
--   forbid REPRODUCING the nearby blocks in the critic sheet, not merely claiming about them,
-    if the cut partials turn out to be those blocks echoed back. Cheapest by far, and the
-    measurement above makes it the leading hypothesis rather than a guess
--   gate the window to flagged slices plus or minus one, which cuts the number of windowed
-    calls to roughly a sixth and bounds the exposure. This was already the measured fallback,
-    and voice loss rather than claim inflation would be the trigger that selects it
--   accept the loss, only if the surviving claims turn out to be the relocation-class ones,
-    which the artifacts can answer and the log cannot
+Those are ORDINARY REPLY SIZES. In the same run GLM-5.2 COMPLETED a reply of 50,572 produced
+characters, eight times the largest abandoned one. A model producing 6,141 characters is not
+running away.
 
-READ THE ARTIFACTS FOR THE THIRD OPTION when they land: if the claims that survive at a
-3-of-6 chunk are the relocation ones, a smaller better-aimed set is not a regression. If the
-survivors look like the baseline's claims minus a random half, it is.
+THE CONVERSION IS ROUGH AND SAYS SO: the ratio spreads from 28 to 93,910 with p90 at 3,290,
+so these are order-of-magnitude figures. They are wide enough to rule out runaway and not
+tight enough to rank the four against each other.
+
+#### What is left, and it is a question rather than an answer
+
+The abandoned replies were simply still arriving when the 180-second straggler window closed
+after quorum, which is the behaviour `#121` designed. Whether the window made replies slower,
+or this is ordinary run-to-run variance against a baseline that is itself one sample, is not
+established and cannot be from one entry. `QNB` applies: the run-to-run band was never
+measured for heard-count, so a single-run difference resolves nothing on its own.
+
+WHAT WOULD SETTLE IT, in preference order:
+
+-   the remaining four entries of this verify. If heard-counts stay depressed across all
+    five, variance is a poor explanation
+-   the baseline pool's own logs, if they survive, for whether it ever abandoned a critic
+-   a heard-count band measured over repeated runs of ONE unchanged entry, which is the only
+    thing that makes a single-run comparison meaningful
+
+WHAT NOT TO DO YET: change the deadline, change the straggler window, or gate the window to
+flagged slices. All three are responses to a cause that has not been established, and two of
+the three would have been adopted on explanations that turned out to be false.
