@@ -159,6 +159,11 @@ export {
   isCoverageReportWire,
 } from './coverage-wire.ts';
 export {
+  photoPath,
+  type PhotoReference,
+  photoReferences,
+} from './photo-reference.ts';
+export {
   quoteBlockCount,
   topLevelBlocks,
 } from './markdown-blocks.ts';
