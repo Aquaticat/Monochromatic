@@ -421,3 +421,98 @@ The containment is what matters and it is now stated in both places.
 
 WHAT TO CHECK IF ANOTHER STAGE IS ADDED: whether it calls the client directly.
 That question, asked once, would have caught both of these before a run did.
+
+## What the corpus's pictures actually hold, measured deterministically
+
+Every figure above about readings was a figure about MODELS.
+None of them said how many corpus pictures carry text at all,
+so none of them could say whether a picture producing no reading was a miss
+or the correct answer.
+
+Tesseract 5.5.3 with `chi_sim` and `eng`, over all 191 distinct
+source-referenced assets, no model involved and no quota spent:
+
+```text
+CARRY TEXT          72
+NO TEXT AT ALL     119
+missing on disk      0
+undecodable          0
+
+text length over the 72 that carry any:
+  min 1   p50 122   p90 759   max 2965
+```
+
+So 119 of 191 pictures, close to two thirds, are photographs with nothing to transcribe.
+A reader declining those is RIGHT, and every earlier reading of "no usable reading"
+as a shortfall was reading a correct answer as a failure.
+
+The `min 1` matters as much as the maximum.
+Tesseract on a photograph returns a few characters of noise rather than a clean zero,
+so "carries no text" needs a floor taken from this distribution
+rather than a strict comparison against zero.
+
+### Deterministic OCR agrees with the models, in both directions
+
+On the six assets where a model reading is on record, six of six agree:
+
+```text
+wangzihao980/Word1.webp       675x1200   tesseract  205   models read 390 / 394
+zheermao101/photo3.webp      1225x533    tesseract  388   models read 448 / 454
+dogesir_/intro.webp          1080x984    tesseract  540   models read 590 / 632
+wangzihao980/picture4.webp    313x679    tesseract    0   both models: no text
+wangzihao980/picture2.webp    270x360    tesseract    0   both models refused
+Uekawakuyuurei/img231.webp   2024x1492   tesseract    0   both models refused
+```
+
+Tesseract reads what they read, at comparable length,
+and finds nothing exactly where they found nothing.
+
+It also has NO CONTEXT CAP, so it reads the 45 assets no model can be sent at all,
+and it is deterministic, which the models are not:
+the same picture corroborated at 0.643 in one probe and disagreed at 0.087 in a CLI run.
+
+## The size cap, and why "best quality" cannot mean the highest number
+
+45 of 191 assets sit past the smaller reader's allowance of 294912 bytes.
+Re-encoding to AVIF at `--qcolor 100` fits ZERO of them,
+because it makes every one LARGER, by four to twelve times:
+
+```text
+Uekawakuyuurei/IMG_1308.webp   1344454 -> 12302890 at q100
+gqt/photo1.webp                1274028 ->  7929946 at q100
+Mio/photo5.webp                1129330 ->  8224189 at q100
+```
+
+The source is lossy webp and near-lossless AVIF is not,
+so "the best quality setting" has to mean the highest quality that FITS,
+found by sweeping rather than assumed.
+
+Only 17 of the 45 carry any text, so only those 17 are worth rescuing.
+Sweeping `--qcolor` downward until the re-encode fits,
+then decoding it back and re-reading it to check the text survived:
+
+```text
+asset                          ocr before   fits at   bytes    ocr after
+Aniloviraw/photo0.webp               2965      q30    230558      3015
+gqt/photo1.webp                      2329      q30    267639      2258
+Aniloviraw/photo1.webp               1914      q60    288031      1926
+Zha_Ke/letter.webp                   1585      q40    285611      1588
+Chinatsu_Suzuki/photo2.webp           536      q50    273734       530
+MizuharaNagisa/letter.webp            446      q40    213174       335
+zhangyubaka/photo1.webp               298      q60    273039       298
+Uekawakuyuurei/IMG_1308.webp           24    NO QUALITY FITS DOWN TO q30
+```
+
+Sixteen of seventeen fit, and on every asset carrying substantial text
+the re-encode preserves it: `Zha_Ke/letter.webp` reads 1585 characters before
+and 1588 after, `zhangyubaka/photo1.webp` exactly 298 both times.
+
+NO RESIZING IS INVOLVED. `Zha_Ke/letter.webp` stays 1080 by 5645 pixels.
+The bytes come down by re-encoding, which is what was asked for,
+rather than by discarding resolution, which was not.
+
+The one that never fits, `Uekawakuyuurei/IMG_1308.webp` at 5737 by 3970,
+carries 24 characters, and the sweep's own read-back shows why that number
+is noise rather than text: the low-yield assets swing wildly across the
+re-encode, 45 to 25, 18 to 43, 1 to 11, while the text-bearing ones hold steady.
+Nothing is lost by leaving it unread.
