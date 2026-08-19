@@ -26,6 +26,10 @@ on:
     - 'pnpm-lock.yaml'
     - '.github/workflows/readonly-semantic-bridge.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

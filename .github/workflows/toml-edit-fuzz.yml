@@ -31,6 +31,10 @@ on:
     - 'doc/decision/toml-edit-fuzzing.md'
     - '.github/workflows/toml-edit-fuzz.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

@@ -20,6 +20,10 @@ on:
     - 'pnpm-lock.yaml'
     - '.github/workflows/cli-git-trust.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
