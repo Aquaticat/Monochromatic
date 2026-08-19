@@ -12951,3 +12951,45 @@ source-only window and an incumbent-only window carrying the same text hash iden
 `translateSliceKey` avoids this by spreading NAMED properties. Tracked as task `#126` with
 the labelled-entry fix. It re-keys every windowed slice, so it lands AFTER this verify and
 BEFORE the 92-entry relaunch, while no cache is worth keeping.
+
+### The gate reader, and the false pass it produced first
+
+`~/temp/agent/window-gates.mjs --new <dir> [--baseline <dir>]`. Zero quota, reads settled
+artifacts only, and turns the verify's completion into one command:
+
+```text
+GATE A  duplicated phrases, derived from the baseline, counted in the new repair document
+GATE E  critic claims per slice, flagged against unflagged, baseline against new
+GATE B  delegated to severed-sentence-census.mjs
+GATE C  delegated to join-107.mjs, both cuts
+```
+
+GATE A DERIVES ITS PHRASES INSTEAD OF HOLDING THEM, which is what lets it live in a file at
+all: no corpus text is written into the repo, the tracker or the instrument. `#107` recorded
+that the distinguishing phrases occur TWICE in the baseline repair document and ONCE in the
+baseline translate one, and that is a machine-checkable signature, so the phrases are
+recovered by searching for it and then counted in the new document. Output names a phrase by
+word count and a short hash, never by its wording.
+
+EXACTLY ONCE IS THE TEST, not at most once, and the reader says `LOST` rather than `ok` at
+zero. Removal at slice n is only correct if the content really does ship at n plus or minus
+one, and a document that quietly dropped the passage is worse off than one that says it
+twice.
+
+IT REPORTED A CLEAN PASS ON ITS FIRST RUN, and both halves of that were wrong. The two lanes
+name their assembled text differently, `repairedText` against `translatedText`, so reading
+one field for both compared every phrase against an empty string and found nothing. The
+reader then printed that nothing as PASS. Two fixes, and the second matters more than the
+first: the field is now read per lane and a missing one THROWS rather than defaulting to
+empty, and a derivation that finds no phrase is no longer a pass. In `lintong` it is an
+INSTRUMENT FAULT, because that duplication was found by hand and an instrument that cannot
+see it is broken; elsewhere it is inconclusive, which is also not a pass.
+
+VALIDATED BY POSITIVE CONTROL, which is the only reason to trust it: run with the baseline
+as its own `--new`, it reports STILL DUPLICATED for every phrase it derived and Gate A reads
+FAULT. An instrument that cannot fail on known damage cannot clear anything either. Gate C
+reproduces `#107`'s recorded contested-unflagged rate of 0.9524 on the same pool.
+
+This is the third null-that-was-a-bug in two days, after the test file that registered
+nothing and the census that read 93 entries and 0 assets. All three were caught by the same
+question, asked before believing the answer: could this probe have shown a positive at all.
