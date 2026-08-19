@@ -41,8 +41,16 @@ const OPENING_CHARS = 80;
 
 /**
  * How a stream ended.
+ *
+ * THREE VALUES rather than two, so a termination THIS SYSTEM CHOSE reads as
+ * its own outcome rather than as `cut`. A stall and a runaway call for
+ * opposite responses, a stall is worth retrying and a model that has begun
+ * repeating itself will repeat itself again, and a reader counting `cut`
+ * lines to measure stalls would otherwise count every deliberate termination
+ * among them, which is the same conflation `StreamDegenerateError` was given
+ * its own class to avoid, one layer further out.
  */
-export type StreamOutcome = 'completed' | 'cut';
+export type StreamOutcome = 'completed' | 'cut' | 'degenerate';
 
 /**
  * Raised when a stream was cut off, carrying what it had already delivered.
@@ -124,15 +132,22 @@ export class StreamCutShortError extends Error {
  * ONE FUNCTION FOR BOTH, which is the point: two call sites drifted before, and
  * the one that never logged was the one carrying the calls worth measuring.
  *
+ * RETURNS THE LINE IT LOGS, so the formatting is testable directly rather than
+ * only by capturing a logger's side effect. The caller is not expected to use
+ * the return value; `void`-typed call sites remain valid.
+ *
  * @param label - model or endpoint
  *
  * @param progress - what the stream did
  *
  * @param unreadableFrames - payload lines the scanner could not read
  *
- * @param outcome - whether the stream finished
+ * @param outcome - whether the stream finished, was cut, or was ended by this
+ * system's own degeneration guard
  *
  * @param partialText - text delivered, used only for its length and opening
+ *
+ * @returns The line that was logged
  *
  * @example
  * ```ts
@@ -153,7 +168,7 @@ export function reportStreamProgress(
     readonly outcome: StreamOutcome;
     readonly partialText: string;
   },
-): void {
+): string {
   /**
    * Opening of what arrived, with newlines flattened so one stream is one line.
    */
@@ -166,9 +181,12 @@ export function reportStreamProgress(
     .join(' ',);
 
   /**
-   * Opening excerpt, shown only on a cut, where what arrived is the diagnosis.
+   * Opening excerpt, shown on anything but a clean finish, where what arrived
+   * is the diagnosis. A degenerate ending gets one for the same reason a cut
+   * does: seeing what the model was saying when it started repeating is as
+   * diagnostic as seeing what it was saying when the connection dropped.
    */
-  const excerpt = (outcome === 'cut') ? `, opening ${JSON.stringify(opening,)}` : '';
+  const excerpt = (outcome === 'completed') ? '' : `, opening ${JSON.stringify(opening,)}`;
 
   /**
    * Sample line, assembled before the call so the logger chain stays one step
@@ -187,6 +205,7 @@ export function reportStreamProgress(
     l,
   },);
   rl.info(sample,);
+  return sample;
 }
 
 //endregion Stream cut

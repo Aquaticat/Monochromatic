@@ -215,14 +215,24 @@ export async function drainBody(
      */
     const partialText = parts.join('',);
 
+    /**
+     * Whether this catch is a termination THIS SYSTEM CHOSE rather than a
+     * stall or steering, decided once so the logged outcome and the rethrow
+     * below agree with each other by construction rather than by staying in
+     * sync across two separate checks.
+     */
+    const isDegenerate = error instanceof StreamDegenerateError;
+
     // Reported BEFORE the throw, and on this path as well as the other, because
     // a figure computed only over streams that finished describes only streams
-    // that finished.
+    // that finished. A degenerate ending is reported as its own outcome rather
+    // than as `cut`, so a stall figure read off this line counts stalls and not
+    // every deliberate termination alongside them.
     reportStreamProgress({
       label,
       progress: guard.progress(),
       unreadableFrames: watch.unreadableFrames(),
-      outcome: 'cut',
+      outcome: isDegenerate ? 'degenerate' : 'cut',
       partialText,
     },);
 
@@ -231,7 +241,7 @@ export async function drainBody(
     // ratio and the cost. Wrapping it would bury a finished diagnosis inside a
     // description of a cut, and every reader would have to unwrap it to learn
     // what the drain already knew.
-    if (error instanceof StreamDegenerateError)
+    if (isDegenerate)
       throw error;
 
     // A stall aborts the guard's own controller and never the caller's, so this
