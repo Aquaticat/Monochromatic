@@ -98,6 +98,23 @@ export type SyntheticModelInfo = {
   readonly family: SyntheticVendorFamily;
 
   /**
+   * Whether this model can be sent an image alongside its text.
+   *
+   * READ FROM THE PROVIDER RATHER THAN ASSUMED. `GET
+   * https://api.synthetic.new/openai/v1/models` reports `input_modalities` per
+   * model, and the values here are that response as of 2026-08-16: two of the
+   * six in the production roster read images, and the provider's only other
+   * vision entries, `syn:large:vision` and `syn:small:vision`, are aliases of
+   * those same two. The vision sub-roster is EXACTLY TWO, so widening it needs
+   * a different provider rather than a different configuration.
+   *
+   * WHY IT IS A FIELD RATHER THAN A FETCH: the rest of this catalog is static,
+   * a build that reached the network would fail closed on a provider outage,
+   * and a wrong value here fails loudly at the first call rather than quietly.
+   */
+  readonly readsImages: boolean;
+
+  /**
    * Context window in tokens.
    */
   readonly contextLength: number;
@@ -134,6 +151,7 @@ export type SyntheticModelInfo = {
 export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelInfo>> = {
   'hf:zai-org/GLM-5.2': {
     id: 'hf:zai-org/GLM-5.2',
+    readsImages: false,
     family: 'zai',
     contextLength: 524_288,
     maxOutputLength: 65_536,
@@ -142,6 +160,7 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
   },
   'hf:zai-org/GLM-4.7-Flash': {
     id: 'hf:zai-org/GLM-4.7-Flash',
+    readsImages: false,
     family: 'zai',
     contextLength: 196_608,
     maxOutputLength: 65_536,
@@ -150,6 +169,7 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
   },
   'hf:Qwen/Qwen3.6-27B': {
     id: 'hf:Qwen/Qwen3.6-27B',
+    readsImages: true,
     family: 'qwen',
     contextLength: 262_144,
     maxOutputLength: 65_536,
@@ -158,6 +178,7 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
   },
   'hf:moonshotai/Kimi-K3': {
     id: 'hf:moonshotai/Kimi-K3',
+    readsImages: true,
     family: 'moonshot',
     contextLength: 524_288,
     maxOutputLength: 65_536,
@@ -166,6 +187,7 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
   },
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': {
     id: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+    readsImages: false,
     family: 'nvidia',
     contextLength: 262_144,
     maxOutputLength: 65_536,
@@ -174,6 +196,7 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
   },
   'hf:openai/gpt-oss-120b': {
     id: 'hf:openai/gpt-oss-120b',
+    readsImages: false,
     family: 'openai',
     contextLength: 131_072,
     maxOutputLength: 65_536,
