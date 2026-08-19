@@ -54,31 +54,65 @@ This clause is a heuristic and it is stated as one.
 It is safe in the direction that matters,
 because a false positive here costs only the fallback.
 
-### Three: where the archive already transcribed the image, the two have to agree on something
+### Three: the two readers have to agree about what the picture says
 
-This is the clause that does the work,
-and it applies only when a transcript already exists.
+This is the clause that does the work.
+The vision sub-roster is exactly two models,
+so a picture is read TWICE, independently, and the two readings are compared to each other.
 
-Extract ANCHORS from both texts:
-runs of digits of length two or more,
-Latin word tokens of length four or more, lowercased,
-and any `@handle` or bare domain.
-Anchors are the parts of a transcription that survive translation and paraphrase:
-a date, a username, a version number, an email address.
+Compare CHARACTER TRIGRAM sets.
+Take every run of three consecutive characters in each reading, whitespace collapsed,
+and require the smaller set to share at least 30 percent of its trigrams with the larger.
 
-Require the reading and the archive transcript to share at least two distinct anchors,
-or, where the archive transcript itself carries fewer than two,
-at least one.
+Trigrams rather than anchors, and rather than single characters.
+Anchors are Latin words, digit runs and handles,
+so a picture of pure Chinese prose produces two readings carrying none,
+and an anchor rule would refuse both however correctly they were read.
+Single characters fail the other way:
+two unrelated English texts share most of the alphabet,
+so single-character overlap runs near one on a wrong pair.
+Trigrams are starved by neither.
 
-A reading of a DIFFERENT picture shares none.
-A reading of the same picture shares its dates and handles
-even when every sentence around them is worded differently.
+A reading that no second reader corroborates is UNAVAILABLE rather than usable-with-a-caveat.
+That costs the 31 assets that fit one reader's context and not the other's,
+and those keep exactly the protections they have today.
 
-### Four: where the archive has not transcribed the image, the reading stands on clause one and two alone
+### Four: what this replaced, and why
 
-There is nothing to agree with,
-and refusing on that basis would mean the pipeline could never add a transcript it does not already have,
-which is half of what `#111` is for.
+An earlier version of this clause compared the reading against the transcript the archive already carried,
+requiring two shared anchors.
+It was measured against real traffic on 2026-08-19 and refuses correct readings.
+
+Every reading of `Mio/7`'s two pictures was refused,
+four attempts across two assets and two readers,
+while the two readers agreed with each other at 0.967 and 1.000 character overlap.
+The clause assumed a slice's target-only English transcribes that slice's pictures.
+Where it is some other kind of addition, every correct reading of every picture there fails.
+
+The comparison was also structurally starved.
+A reading comes back in the picture's own language, usually Chinese,
+and the archive transcript is English,
+so the only tokens that can be shared are names, handles and numbers.
+Measured overlap was 2, 2, 4, 5, 5, 5 against a floor of 2:
+two of six sat exactly on it.
+
+Cross-model agreement has no such ceiling.
+Over five pictures read by both models, and every cross-pair as the control:
+
+```text
+same picture, different models     5 pairs   trigram overlap 0.643 to 1.000
+different pictures                40 pairs   trigram overlap 0.000 to 0.129
+```
+
+The threshold of 0.30 sits between them
+with about a factor of two of margin on each side.
+
+### Five: where nothing corroborates, the reading stands on clause one and two alone
+
+A picture only one model can be sent has no second reading to agree with.
+Refusing every one of those would mean the pipeline could never add a transcript
+for the largest pictures, which is half of what `#111` is for.
+They pass clause one and two and are marked as uncorroborated where they are used.
 
 ## What this rule does NOT do
 
@@ -91,37 +125,38 @@ IT DOES NOT SCORE CONFIDENCE.
 There is no threshold to tune between "probably fine" and "probably not",
 because the branch is binary and the costs are lopsided.
 
-IT DOES NOT ASK A MODEL.
-A second model deciding whether the first model's reading is sensible
-is another call, another failure surface,
-and it would need the picture too.
+IT DOES NOT ASK A MODEL TO JUDGE ANOTHER MODEL.
+The second reader is not shown the first reading and is not asked whether it is sensible.
+It is asked the same question about the same picture, blind,
+and the two answers are compared mechanically.
+A judge would be another failure surface;
+two independent witnesses are not.
 
 ## Two things a reader should be suspicious of
 
-THE ANCHOR CLAUSE ASSUMES TRANSCRIPTS CARRY ANCHORS,
-and they do, by a wide margin.
-Measured with the shipped extractor over every known target-only transcript
-the block splitter can see:
+THE CORROBORATION CLAUSE ASSUMES THE TWO READERS FAIL INDEPENDENTLY.
+Two models that share a training lineage could agree on the same misreading,
+and nothing here would catch it.
+That is a real limit and it is not measurable from this corpus.
+What the sample does show is that they do not agree indiscriminately:
+over 40 pairs of different pictures the overlap never exceeded 0.129.
 
-```text
-zheermao101   2115 chars   131 anchors      MizuharaNagisa  1969 chars   142
-zheermao101   1071 chars    73               dogesir_       1487 chars   125
-Mio           2052 chars   119               wangzihao980   1098 chars    79
-Mio           1882 chars   132               shihai4h       1678 chars   112
-Mio            477 chars    37               shihai4h       1350 chars    91
-```
+THE SAMPLE IS FIVE PICTURES.
+Five same-picture pairs is enough to show the separation exists
+and not enough to place the threshold precisely.
+It is drawn from the only corpus slices carrying both a protected target-only run
+and a source-side picture reference,
+so widening it means reading pictures no transcript describes,
+which gives no ground truth to check against.
 
-The floor is 37 against a requirement of 2,
-because these transcribe profiles, letters and chat logs,
-which are dense in handles, dates and addresses.
-
-ONE CASE CANNOT BE MEASURED THIS WAY.
-`Zha_Ke` wraps its transcript in a disclosure container with no blank line inside,
-so the blank-line splitter does not see a quoted block there at all
-and neither this measurement nor the transcript guard reaches it.
-That is a gap in the splitter rather than in this rule,
-and it is recorded here because a reader checking the table would otherwise
-wonder why the entry is absent.
+AN EARLIER VERSION OF THIS SECTION reported 37 to 142 anchors per known transcript
+against a requirement of two, and read that as a wide margin.
+It counted the ENGLISH archive transcripts,
+which carry 73 to 142 anchors each because every English word of four or more letters is one.
+The number that governed the clause was never that count
+but the OVERLAP a Chinese reading could reach against it, which is 2 to 5.
+The correction is recorded rather than deleted
+because the mistake was reading a measurement of the wrong quantity as a safety margin.
 
 A transcript of a handwritten note with no names, dates or numbers
 would carry no anchors,
