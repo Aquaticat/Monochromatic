@@ -98,13 +98,33 @@ and it would need the picture too.
 
 ## Two things a reader should be suspicious of
 
-THE ANCHOR CLAUSE ASSUMES TRANSCRIPTS CARRY ANCHORS.
-Measured over the ten known target-only transcripts before this was written:
-each carries at least two anchors,
-and most carry many more, since they transcribe profiles, letters and chat logs,
+THE ANCHOR CLAUSE ASSUMES TRANSCRIPTS CARRY ANCHORS,
+and they do, by a wide margin.
+Measured with the shipped extractor over every known target-only transcript
+the block splitter can see:
+
+```text
+zheermao101   2115 chars   131 anchors      MizuharaNagisa  1969 chars   142
+zheermao101   1071 chars    73               dogesir_       1487 chars   125
+Mio           2052 chars   119               wangzihao980   1098 chars    79
+Mio           1882 chars   132               shihai4h       1678 chars   112
+Mio            477 chars    37               shihai4h       1350 chars    91
+```
+
+The floor is 37 against a requirement of 2,
+because these transcribe profiles, letters and chat logs,
 which are dense in handles, dates and addresses.
+
+ONE CASE CANNOT BE MEASURED THIS WAY.
+`Zha_Ke` wraps its transcript in a disclosure container with no blank line inside,
+so the blank-line splitter does not see a quoted block there at all
+and neither this measurement nor the transcript guard reaches it.
+That is a gap in the splitter rather than in this rule,
+and it is recorded here because a reader checking the table would otherwise
+wonder why the entry is absent.
+
 A transcript of a handwritten note with no names, dates or numbers
-would have none,
+would carry no anchors,
 and the rule would fall back on it every time.
 That is the safe direction, and it is a real limit rather than a hypothetical one.
 
