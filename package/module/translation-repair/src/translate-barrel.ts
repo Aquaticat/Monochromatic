@@ -155,6 +155,11 @@ export {
   type CoverageReportWire,
   isCoverageReportWire,
 } from './coverage-wire.ts';
+export {
+  restoreTargetOnlyRun,
+  splitTargetOnlyRun,
+  type TargetOnlySplit,
+} from './target-only-run.ts';
 export { wrapTranslateRecords, } from './translate-wrap.ts';
 
 //endregion Translate barrel
