@@ -136,3 +136,52 @@ Where no transcript exists, an unusual refusal would pass,
 and the result is a bad transcript added where none was before.
 That is the one path where this rule can make things worse rather than merely
 leave them as they are, and it is the one worth watching in the first run.
+
+## Where the reading comes from, and why it is its own stage
+
+`#111` warns that the vision sub-roster is exactly two,
+that selection needs a minimum weight of two,
+and that a producer's ballot for its own work counts half,
+so where both vision models produce, no disinterested judge remains.
+That is a real problem for one design and not for another.
+
+READING IS SEPARATED FROM TRANSLATING, which dissolves it.
+A vision model is asked only to READ the picture, producing text.
+That text is then evidence, like the source and the archive are evidence,
+and the ordinary six-model roster translates and judges from it
+without any of them needing to see the picture.
+
+This costs one or two calls per image and buys three things.
+The roster is untouched, so selection keeps its weights and its disinterested judges.
+The reading is a value that can be screened,
+which is what the rule above does and what it presupposes.
+And the reading is cacheable per asset,
+where a translation carrying an inline image would be cacheable only per slice.
+
+THE ALTERNATIVE, attaching the image to every translate and judge call,
+was rejected on the roster arithmetic rather than on cost:
+it puts the two vision models on both sides of their own work
+and leaves four models judging text they cannot check.
+
+## Image size, and when to give up on one
+
+Measured over the 284 assets in the pinned corpus:
+median 71 KiB, mean 154 KiB, largest 1312 KiB.
+Base64 inflates by a third,
+so the largest asset would arrive as roughly 1.75 MiB of prompt,
+which is around 450 thousand tokens and does not fit the context of either vision model.
+
+The images the known transcripts describe are smaller,
+`Zha_Ke/letter.webp` at 613 KiB being the largest of them,
+which is about 817 KiB encoded and does fit,
+expensively.
+
+THE RULE: an asset above a stated encoded size is not sent,
+and the block falls back to structural protection.
+`sharp` is already in this workspace and downscaling is therefore available,
+but it is deliberately NOT the first move:
+a downscaled photograph of handwriting is exactly the input
+that produces a confident wrong reading,
+which is the failure this whole rule exists to avoid.
+Refusing a picture too large to send is honest;
+shrinking it until it fits and then trusting what comes back is not.
