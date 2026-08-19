@@ -55,7 +55,11 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * @returns What reading produced per asset name, including refusals
  *
- * @throws Whatever a reading exchange throws, and the caller's abort reason
+ * @throws {@link DOMException} on the caller's abort, and whatever the reading
+ * cache raises, which is a disk failure rather than an unreadable picture. A
+ * READER THAT FAILS IS NOT AMONG THESE: `readImagePair` contains it as an
+ * unavailable reading, because nothing downstream requires a reading and an
+ * entry must not be lost to one
  *
  * @example
  * ```ts
