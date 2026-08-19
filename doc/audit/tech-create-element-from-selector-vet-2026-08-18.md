@@ -1,7 +1,7 @@
 # Create element from selector technology vet
 
 - Status: in progress
-- Lifecycle phase: repository fit validated
+- Lifecycle phase: discovery saturated and screening complete
 - Subject: create element from selector package
 - Scope: whether to resurrect `Aquaticat/createElementFromSelector` as a new Monochromatic package
 - Start date: 2026-08-18
@@ -123,21 +123,158 @@ Search active packages, paused packages, audits, decisions, planning documents, 
 - `@monochromatic-dev/module-dom`
 - `@monochromatic-dev/module-hyperscript`
 
-## Initial candidate ledger
+## Discovery results
+
+Discovery ended saturated with at least two screening survivors.
+The survivors are internal package-topology options, not external dependency adoptions.
+
+### npm registry query log
+
+The provider was the npm registry search API, with no include or exclude filter and registry relevance order.
+Every inspected page returned 20 entries.
+A page was counted as adding a survivor only when an entry could produce a live browser element
+or materially change the internal seam choice.
+
+- `create element selector`: pages 1 through 6 inspected;
+  new entries were `hast-util-parse-selector`, `hast-util-from-selector`, and `put-selector`.
+  Pages 5 and 6 added no survivor.
+- `element from selector`: pages 1 through 5 inspected;
+  the only new entry beyond the first query was `hast-util-from-selector`.
+  Pages 4 and 5 added no survivor.
+- `css selector dom create`: pages 1 through 3 inspected;
+  no new survivor appeared, and pages 2 and 3 added none.
+- `hyperscript selector`: pages 1 through 5 inspected;
+  new entries were `parse-sel`, `hyperscript`, and `hyposcript`.
+  Pages 4 and 5 added no survivor.
+
+The de-duplicated expansion round used taxonomy discovered in those results:
+
+- `put selector`: pages 1 through 3 inspected;
+  `put-selector` was already known, and pages 2 and 3 added no survivor.
+- `selector based DOM creation`: pages 1 through 3 inspected;
+  `crelt` was a new structured DOM-builder precedent, and pages 2 and 3 added no survivor.
+- `simple CSS selector element`: pages 1 through 3 inspected;
+  only already-known HAST utilities appeared, and pages 2 and 3 added no survivor.
+
+Registry totals were too broad to represent category size because npm token search matches millions of unrelated packages.
+The recorded two-page survivor rule, rather than the unstable total, controlled saturation.
+
+### GitHub query log
+
+The provider was GitHub repository search, with the literal language filters shown,
+no exclusions, best-match order, and 30 entries requested per page.
+Three pages were requested for every query, including empty pages after exhaustion.
+
+- `"createElementFromSelector" language:JavaScript`: one result,
+  `Aquaticat/createElementFromSelector`.
+- `"create element from selector" language:JavaScript`: two results,
+  the user-named repository and `egoist/create-element-from-selector`.
+- `"element from selector" DOM language:JavaScript`: zero results.
+- `"parse element selector" language:JavaScript`: one result,
+  `hville/parse-element-selector`.
+- Expansion `"put selector" DOM language:JavaScript`: one result,
+  `kriszyp/put-selector`.
+- Expansion `"selector-based syntax" "DOM elements" language:JavaScript`: one result,
+  the same `put-selector` repository.
+- Expansion `"simple CSS selector" element language:JavaScript`: two results,
+  `syntax-tree/hast-util-parse-selector` and category-mismatched `cosmoslabs/selement`.
+
+Every query was exhausted on page 1; pages 2 and 3 were empty.
+
+### Broader web query log
+
+The provider was Exa fast search with Linkup standard fallback, no include or exclude filter,
+and provider-default ordering.
+The initial queries returned the following result counts and new category-relevant candidates:
+
+- `npm package "create element from CSS selector" JavaScript DOM`: 10 results;
+  `dom-create-element-query-selector`, `dom-create-node`, `put-selector`, and HAST utilities.
+- `npm "selector to element" DOM package`: 10 results;
+  `dom111/element-from-selector`.
+- `GitHub "createElementFromSelector" JavaScript`: seven results;
+  no new package candidate.
+- `GitHub "create element from selector" "document.createElement" JavaScript`: 10 results;
+  `egoist/create-element-from-selector` and `dom-create-node`.
+- `JavaScript CSS selector shorthand hyperscript create DOM element library`: 10 results;
+  `hyperscript` and Mithril as framework precedent.
+- `npm selector hyperscript DOM element package`: 10 results;
+  `parse-sel` and `parse-element-selector`.
+- `"@aquaticat/create-element-from-selector" alternative`: five results;
+  no new candidate.
+- `TypeScript CSS selector create DOM element library browser`: 10 results;
+  HAST utilities and unrelated typed query tools.
+
+The one permitted expansion round returned:
+
+- `JavaScript "selector-based syntax" creating DOM elements`: 10 results;
+  `put-selector` and `GilchristTech/make-element`.
+- `JavaScript "simple CSS selector" create HTMLElement`: 10 results;
+  `dom-create-element-query-selector`, `put-selector`, and `padolsey/satisfy`.
+- `hyperscript selector strings DOM`: 10 results;
+  no new creation-library candidate.
+
+The fixed schedule and expansion round are complete.
+Later taxonomy was recorded without recursively expanding discovery.
+
+## Candidate ledger
 
 ### Keep `@monochromatic-dev/module-hyperscript` and add no selector parser
 
 - Discovery source: Monochromatic repository search.
 - Base category: inspectable open-source local technology.
-- Screening result: pending targeted validation.
+- Screening result: pass.
 - Category fit: creates live DOM elements, but intentionally uses structured options rather than selector strings.
+- Lifecycle: finalist.
 
-### Build a clean selector-shorthand implementation
+### Add a clean descriptor helper to `module-hyperscript`
+
+- Discovery source: Monochromatic’s existing `hDom` seam plus external hyperscript precedent.
+- Base category: inspectable open-source local technology.
+- Screening result: pass.
+- Category fit: provides the shorthand without creating another package seam.
+- Lifecycle: finalist.
+
+### Build a clean standalone selector-shorthand package
 
 - Discovery source: user-named package idea, illustrated by `Aquaticat/createElementFromSelector`.
 - Base category: inspectable open-source local technology.
-- Screening result: pending category-fit and consumer-boundary validation.
+- Screening result: pass.
 - Evaluation unit: fresh Monochromatic code, not upstream source or package artifacts.
+- Lifecycle: finalist.
+
+### External live-DOM selector constructors
+
+- Candidates: `create-element-from-selector`, `element-from-selector`, `dom-create-element-query-selector`,
+  `dom-create-node`, `put-selector`, `hyperscript`, and `make-element`.
+- Discovery sources: npm, GitHub, and broader web queries.
+- Base category: inspectable open-source local technology.
+- Screening result: excluded from finalist adoption as a decision-scope mismatch.
+- Reason: these are useful precedent, but the user asked whether an owned capability deserves a new Monochromatic
+  package seam; adopting an external package does not answer that topology question.
+- Evidence effect: confirms that selector-like element descriptors are an established idea,
+  with successful designs ranging from tag, ID, and class sugar to full tree builders.
+
+### Parser-only and non-DOM utilities
+
+- Candidates: `parse-sel`, `parse-element-selector`, `hast-util-parse-selector`,
+  `hast-util-from-selector`, and `hyposcript`.
+- Base category: inspectable open-source local technology.
+- Screening result: hard-gate category mismatch.
+- Reason: they return parsed metadata, HAST nodes, or server-rendered strings rather than a browser-native `HTMLElement`.
+
+### Multi-element selector satisfiers
+
+- Candidate: `satisfy`.
+- Base category: inspectable open-source local technology.
+- Screening result: hard-gate category mismatch.
+- Reason: it creates selector-described trees and returns a `NodeList`, not exactly one `HTMLElement`.
+
+### Structured external DOM builders
+
+- Candidate: `crelt` and the object interface of `make-element`.
+- Base category: inspectable open-source local technology.
+- Screening result: excluded as duplicated by the existing `hDom` interface.
+- Reason: existing-tools precedence favors the zero-runtime-dependency Monochromatic implementation already in use.
 
 ## Repository fit
 
