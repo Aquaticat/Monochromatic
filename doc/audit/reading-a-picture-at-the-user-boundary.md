@@ -770,7 +770,16 @@ never was.
 Everything above was measured either in a unit test or in a standalone probe.
 Neither reaches `settleEntry`, so neither can show that a picture reading arrives where the lanes read it.
 `corpus-pass -- --only wangzihao980` into a throwaway runs directory closes that gap
-for the gate, the ceiling and the shape screen at once.
+for the gate and for the shape screen.
+
+NOT FOR THE CEILING, and the claim that it did was wrong when first written here.
+This entry's largest asset is `Word1.webp` at 71288 bytes,
+and every other one is smaller,
+so nothing in this run comes near the 294912 the old estimate enforced
+and nothing in it could have been refused by that estimate either way.
+The ceiling's evidence remains the direct `readImageAsset` calls recorded above,
+which sent `gqt/photo1.webp` at 1274028 bytes and got 2631 characters back.
+A settle-path witness for the ceiling needs an entry that actually carries an oversized asset.
 
 ```text
 gatherEntryPictures  gathered 6 of 6 pictures for wangzihao980
