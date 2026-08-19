@@ -15,8 +15,15 @@
 ## Context
 
 The proposed package would turn a constructible subset of CSS selector syntax into a live browser `HTMLElement`.
-The question is whether that capability deserves a separate package in Monochromatic now.
+The question is whether a clean Monochromatic implementation of that capability deserves a separate package now.
 Recommendation is not adoption, so this audit may change documentation only.
+
+## Scope correction
+
+The user clarified on 2026-08-18 that the upstream repository is known to be broken and is their own work.
+This audit uses upstream only to identify the intended capability and example syntax.
+Upstream implementation defects, packaging, tests, age, release history, and maintenance do not count against the idea.
+A candidate called “clean selector-shorthand implementation” means a fresh implementation meeting current Monochromatic standards.
 
 Measured repository context:
 
@@ -36,6 +43,8 @@ Measured repository context:
 - Native, Wasm, and prebuilt overlay: not applicable and prohibited by a hard constraint.
 - Sensitive-data overlay: not applicable because selectors are application data and no data leaves the browser.
 - Replacement overlay: not applicable because the proposal does not replace an external incumbent.
+- Custom-implementation gate: applicable because the decision is about a fresh local implementation;
+  existing internal and external mechanisms must fail a named requirement before custom code is recommended.
 - Multi-platform overlay: not activated because no browser support matrix was requested.
 
 ## Hard constraints
@@ -122,12 +131,12 @@ Search active packages, paused packages, audits, decisions, planning documents, 
 - Screening result: pending targeted validation.
 - Category fit: creates live DOM elements, but intentionally uses structured options rather than selector strings.
 
-### Resurrect `Aquaticat/createElementFromSelector`
+### Build a clean selector-shorthand implementation
 
-- Discovery source: user-named repository.
-- Candidate revision: `401fabb884ab31e1267be3c517a88a6d7fb7d54a`.
+- Discovery source: user-named package idea, illustrated by `Aquaticat/createElementFromSelector`.
 - Base category: inspectable open-source local technology.
-- Screening result: pending source, license, provenance, test, and runtime validation.
+- Screening result: pending category-fit and consumer-boundary validation.
+- Evaluation unit: fresh Monochromatic code, not upstream source or package artifacts.
 
 ## Evidence records
 
@@ -143,17 +152,15 @@ Search active packages, paused packages, audits, decisions, planning documents, 
   and `package/module/hyperscript/README.md`, accessed 2026-08-18.
 - Outcome: keep as a serious internal alternative.
 
-### Original upstream provenance
+### Package-idea definition
 
-- Candidate: `Aquaticat/createElementFromSelector` revision
-  `401fabb884ab31e1267be3c517a88a6d7fb7d54a`.
-- Claim: source is available under Apache-2.0 and contains no runtime dependency.
-- Decision relevance: it passes initial inspectability and license screening.
-- Gate: provenance, inspectability, and license.
-- Status: pending targeted source validation.
-- Primary source: <https://github.com/Aquaticat/createElementFromSelector>, accessed 2026-08-18.
-- Clone: `/home/user/temp/agent/create-element-from-selector-2026-03-12`.
-- Outcome: keep as a serious alternative until source and runtime validation finish.
+- Candidate: clean selector-shorthand implementation.
+- Claim: the intended capability creates one live element from tag, ID, class, and constructible attribute syntax.
+- Decision relevance: this defines the feature being evaluated without inheriting upstream implementation quality.
+- Gate: category fit.
+- Status: pending consumer-boundary validation.
+- Primary source: <https://github.com/Aquaticat/createElementFromSelector>, README usage example accessed 2026-08-18.
+- Outcome: keep as a serious conceptual alternative while excluding upstream artifact health from scoring.
 
 ## Evidence limits
 
