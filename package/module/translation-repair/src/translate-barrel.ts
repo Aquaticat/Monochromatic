@@ -179,6 +179,13 @@ export {
   readImageAsset,
 } from './image-reading-stage.ts';
 export {
+  characterTrigrams,
+  CORROBORATION_TRIGRAM_SHARE,
+  type CorroborationVerdict,
+  readingsCorroborate,
+  trigramOverlap,
+} from './reading-corroboration.ts';
+export {
   photoPath,
   type PhotoReference,
   photoReferences,
