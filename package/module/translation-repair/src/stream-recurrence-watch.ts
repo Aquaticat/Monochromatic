@@ -101,19 +101,28 @@ const CHECK_INTERVAL_CHARS = 512;
  * Consecutive positive checks required before a recurrence reads as a
  * verdict rather than a coincidence.
  *
- * ONE PAST THE MEASURED MAXIMUM A BOUNDED RE-QUOTE CAN PRODUCE, not one past
- * a naive formula. Per the geometry documented on {@link TAIL_CHARS}, a
- * block recurring exactly once, immediately back-to-back, produces hits only
- * while its length L stays within `[TAIL_CHARS, BUFFER_CHARS - TAIL_CHARS]`.
- * Dividing that window's width by {@link CHECK_INTERVAL_CHARS} suggests a cap
- * of 4, but a closed interval counts both endpoints: simulated directly
- * against this detector, sweeping every check phase against every L in that
- * range, the true maximum is 5 consecutive hits, reached only at `L =
- * BUFFER_CHARS - TAIL_CHARS` with the check phase landing on both ends, and
- * never 6 at any L or phase tried. Six is set past that measured figure
- * rather than the narrower formula, while an indefinitely repeating loop
- * keeps matching every check for as long as it keeps looping and so always
- * eventually reaches it regardless of where this constant is set.
+ * PAST THE PROVEN MAXIMUM A BOUNDED RE-QUOTE CAN PRODUCE, not past a naive
+ * formula. Per the geometry documented on {@link TAIL_CHARS}, a block
+ * recurring exactly once, immediately back-to-back, produces hits only while
+ * its length L stays within `[TAIL_CHARS, BUFFER_CHARS - TAIL_CHARS]`
+ * (`[1024, 3072]` at these constants), and only for checks landing in a
+ * charsSeen window of width `L - TAIL_CHARS`. Dividing that width by
+ * {@link CHECK_INTERVAL_CHARS} suggests a cap of 4, but a closed interval
+ * counts both endpoints, so `k` consecutive hits need width at least `(k -
+ * 1) * CHECK_INTERVAL_CHARS`. Reaching 6 would need `L >= TAIL_CHARS + 5 *
+ * CHECK_INTERVAL_CHARS`, 3584 at these constants, already past the 3072
+ * upper bound where the earlier copy has scrolled out of the buffer
+ * entirely and every hit stops. Reaching 5 needs `L >= 3072` exactly, which
+ * is that same upper bound, so 5 is reachable only at that one boundary
+ * length, with the check phase landing on both ends of the window, and
+ * never above it. Simulated directly against this detector at every
+ * 512-character step boundary from `TAIL_CHARS` to `BUFFER_CHARS -
+ * TAIL_CHARS` and at every check phase, the measured hit count matched this
+ * formula exactly at each one (1, 2, 3, 4, 5), and one character past the
+ * upper bound produced zero, confirming the cutoff. Six is set past that
+ * proven ceiling, while an indefinitely repeating loop keeps matching every
+ * check for as long as it keeps looping and so always eventually reaches it
+ * regardless of where this constant is set.
  */
 const REQUIRED_CONSECUTIVE_HITS = 6;
 

@@ -478,10 +478,11 @@ await describe({
          * A candidate of exactly 3072 characters: BUFFER_CHARS (4096) minus
          * TAIL_CHARS (1024) in `stream-recurrence-watch.ts`, the one length
          * at which a back-to-back requote's consecutive-hit count reaches
-         * its measured maximum rather than staying below it. Quoted twice
-         * back to back and delivered one character per frame, so every
-         * possible check phase across the requote is exercised rather than
-         * only whatever phase a larger frame size happens to land on.
+         * its proven maximum rather than staying below it. Quoted twice back
+         * to back and delivered one character per frame, so the checks stay
+         * locked to the exact 512-character grid the whole-frame prefix
+         * above established, landing on that worst-case alignment rather
+         * than being blurred by a coarser frame size that could skip past it.
          */
         const candidate = variedBlock({
           length: 3_072,
