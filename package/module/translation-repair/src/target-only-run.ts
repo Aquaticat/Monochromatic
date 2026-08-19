@@ -1,3 +1,5 @@
+import { topLevelBlocks, } from './markdown-blocks.ts';
+
 //region Target-only run
 // ENGLISH THE ARCHIVE CARRIES THAT THE CHINESE NEVER SAID, held out of
 // translation and spliced back unchanged.
@@ -120,28 +122,6 @@ function collapsed({ block, }: { readonly block: string; },): string {
 }
 
 /**
- * Splits text into top-level blocks, keeping no empty ones.
- *
- * @param text - passage to split
- *
- * @returns Its blocks, in order
- *
- * @example
- * ```ts
- * const blocks = blocksOf({ text: 'One.\n\nTwo.', },);
- * ```
- */
-function blocksOf({ text, }: { readonly text: string; },): readonly string[] {
-  return text.split(BLOCK_SEPARATOR,)
-    .map(function trimmed(block,): string {
-      return block.trim();
-    },)
-    .filter(function present(block,): boolean {
-      return block !== '';
-    },);
-}
-
-/**
  * Separates the archive wording a source can account for from what follows it.
  *
  * REQUIRES THE ANCHOR TO BE THE SOURCE'S LAST BLOCK. An identical block in the
@@ -185,12 +165,12 @@ export function splitTargetOnlyRun(
   /**
    * Source blocks, whose last one is the only possible anchor.
    */
-  const source = blocksOf({ text: sourceText, },);
+  const source = topLevelBlocks({ text: sourceText, },);
 
   /**
    * Archive blocks, among which the anchor is looked for.
    */
-  const archive = blocksOf({ text: incumbentText, },);
+  const archive = topLevelBlocks({ text: incumbentText, },);
 
   /**
    * Source's final block, which the archive must reproduce exactly for any of

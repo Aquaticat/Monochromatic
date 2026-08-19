@@ -159,6 +159,14 @@ export {
   isCoverageReportWire,
 } from './coverage-wire.ts';
 export {
+  quoteBlockCount,
+  topLevelBlocks,
+} from './markdown-blocks.ts';
+export {
+  dropsQuotedPassage,
+  quoteLossRefusalFinding,
+} from './quote-preservation.ts';
+export {
   restoreTargetOnlyRun,
   splitTargetOnlyRun,
   type TargetOnlySplit,

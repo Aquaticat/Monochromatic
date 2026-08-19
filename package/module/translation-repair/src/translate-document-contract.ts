@@ -79,7 +79,12 @@ export type TranslateDisposition =
    * Stage wanted to replace the incumbent and the alignment guard refused,
    * because the source cannot account for the text being replaced.
    */
-  | 'refused-alignment';
+  | 'refused-alignment'
+  /**
+   * Stage wanted to replace the incumbent and the quote guard refused, because
+   * the replacement carried fewer quoted passages than the archive does.
+   */
+  | 'refused-quote-loss';
 
 /**
  * Settled record for one translate slice.

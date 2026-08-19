@@ -82,7 +82,8 @@ function isTranslateSliceRecord(
     && ((typeof value.outputText) === 'string')
     && ((typeof value.changed) === 'boolean')
     && ((value.disposition === 'stage-result')
-      || (value.disposition === 'refused-alignment'))
+      || (value.disposition === 'refused-alignment')
+      || (value.disposition === 'refused-quote-loss'))
     && isJsonRecord(value.stageResult,)
     && isJsonRecord(value.alignment,)
     && Array.isArray(value.findings,);

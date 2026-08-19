@@ -1,3 +1,4 @@
+import { quoteLossRefusalFinding, } from './quote-preservation.ts';
 import { alignmentRefusalFinding, } from './translate-alignment.ts';
 import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 
@@ -31,14 +32,27 @@ export function alignmentRefusals(
   { records, }: { readonly records: readonly TranslateSliceRecord[]; },
 ): readonly string[] {
   return records
-    .filter(function wasRefused(record,): boolean {
-      return record.disposition === 'refused-alignment';
-    },)
-    .map(function toFinding(record,): string {
-      return alignmentRefusalFinding({
-        chunkIndex: record.chunkIndex,
-        assessment: record.alignment,
-      },);
+    .flatMap(function toFinding(record,): readonly string[] {
+      if (record.disposition === 'refused-alignment') {
+        return [alignmentRefusalFinding({
+          chunkIndex: record.chunkIndex,
+          assessment: record.alignment,
+        },),];
+      }
+
+      // A QUOTE-LOSS REFUSAL IS NAMED TOO, and named differently. Both keep the
+      // archive and both are worth counting, but a run whose refusals are all
+      // one kind is a different run from one whose refusals are all the other,
+      // and a single label would hide that.
+      if (record.disposition === 'refused-quote-loss') {
+        return [quoteLossRefusalFinding({
+          chunkIndex: record.chunkIndex,
+          incumbentText: record.outputText,
+          shippedText: record.stageResult
+            .text,
+        },),];
+      }
+      return [];
     },);
 }
 

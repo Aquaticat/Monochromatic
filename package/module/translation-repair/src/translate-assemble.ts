@@ -92,7 +92,8 @@ export function assembleTranslation(
    * Slices where the guard refused a replacement the judges chose.
    */
   const refused = settled.filter(function wasRefused(record,): boolean {
-    return record.disposition === 'refused-alignment';
+    return (record.disposition === 'refused-alignment')
+      || (record.disposition === 'refused-quote-loss');
   },);
 
   /**

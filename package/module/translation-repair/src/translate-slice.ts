@@ -10,6 +10,10 @@ import {
   type IncumbentKind,
 } from './translate-absence.ts';
 import {
+  dropsQuotedPassage,
+  quoteLossRefusalFinding,
+} from './quote-preservation.ts';
+import {
   restoreTargetOnlyRun,
   splitTargetOnlyRun,
 } from './target-only-run.ts';
@@ -212,6 +216,45 @@ export async function settleTranslateSlice(
   const refused = (incumbentKind === 'present')
     && wantsReplacement
     && (alignment.kind === 'incumbent-dominates-source');
+
+  /**
+   * Whether the replacement would leave the document with fewer quoted
+   * passages than the archive carries.
+   *
+   * A SEPARATE GUARD FROM THE ALIGNMENT ONE, because a ratio and a structure
+   * catch different things. The alignment guard refuses above sixteen times the
+   * source length, and the two transcripts measured on 2026-08-18 sat at 15.49
+   * and 8.71: a near miss and nowhere near. Counting quoted passages catches
+   * both, and over sixty-nine natural rows it caught nothing else.
+   */
+  const losesQuote = (incumbentKind === 'present')
+    && wantsReplacement
+    && (!refused)
+    && dropsQuotedPassage({
+      incumbentText,
+      shippedText: stageResult.text,
+    },);
+  if (losesQuote) {
+    l.warn(
+      quoteLossRefusalFinding({
+        chunkIndex,
+        incumbentText,
+        shippedText: stageResult.text,
+      },),
+    );
+    return {
+      kind: 'translate-slice',
+      schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
+      chunkIndex,
+      stageResult,
+      // The whole archive, for the reason the alignment refusal gives.
+      outputText: archiveText,
+      changed: false,
+      disposition: 'refused-quote-loss',
+      alignment,
+      findings: stageResult.findings,
+    };
+  }
   if (refused) {
     l.warn(
       `translate slice ${String(chunkIndex,)}: keeping the archive text, `
