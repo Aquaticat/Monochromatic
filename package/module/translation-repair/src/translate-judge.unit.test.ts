@@ -24,10 +24,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  BlankSelectionError,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   judgeTranslateSlate,
   messageText,
+  type ProducedSlate,
   produceTranslateSlate,
   type SyntheticClient,
   type SyntheticModelId,
@@ -424,6 +426,107 @@ await describe({
           return sheet.includes('back beside the stove',);
         },)
           .length,).toBe(JUDGES.length,);
+      },
+    },),
+    it({
+      name: 'THROWS BlankSelectionError WHEN A JUDGED WINNER SAYS NOTHING FOR A SOURCE THAT SAYS '
+        + 'SOMETHING, the invariant the branch calls unreachable in its own comment while the slate '
+        + 'is built the way it is. Nothing in `produceTranslateSlate` can place a blank candidate on '
+        + 'a slate, so this places one by hand: the only way to ask what judging does the day that '
+        + 'invariant stops holding, rather than trusting it to hold forever',
+      fn: async () => {
+        /**
+         * Model this hand-built candidate is credited to, disjoint from every
+         * judge so its win is a plain majority rather than a discounted
+         * self-vote.
+         */
+        const soleProposer = 'hf:cat/Cat-D' as unknown as SyntheticModelId;
+
+        /**
+         * Client whose one judge call always names the sole candidate.
+         * `produceTranslateSlate` is never called in this case, so no
+         * translator schema request ever reaches this client.
+         */
+        const client: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused by the translate lane',);
+          },
+          quotas: async () => {
+            throw new Error('quotas unused by the translate lane',);
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            /**
+             * Ballot naming the only candidate on the hand-built slate.
+             */
+            const ballot: unknown = {
+              best: 1,
+              reason: 'the only candidate on this hand-built slate',
+            };
+            if (!request.validate(ballot,)) {
+              return {
+                kind: 'schema-mismatch',
+                rawText: JSON.stringify(ballot,),
+                detail: 'reply failed the wire guard',
+              };
+            }
+            return {
+              kind: 'ok',
+              value: ballot as ValueT,
+              rawText: JSON.stringify(ballot,),
+            };
+          },
+        };
+
+        /**
+         * Slate built by hand rather than bought from `produceTranslateSlate`,
+         * since that producer is exactly what keeps a blank candidate off a
+         * real slate. Its sole candidate says nothing at all.
+         */
+        const produced: ProducedSlate = {
+          candidates: [
+            {
+              producer: {
+                kind: 'model',
+                modelId: soleProposer,
+              },
+              value: {
+                text: '   ',
+                origin: 'fresh',
+              },
+              rendered: '   ',
+            },
+          ],
+          heardTranslators: 1,
+          findings: ['translate-blank-fixture-marker',],
+        };
+
+        /**
+         * Failure the judging half raised.
+         */
+        let caught: unknown;
+        try {
+          await judgeTranslateSlate({
+            client,
+            produced,
+            judgeModelIds: JUDGES,
+            sourceText: SOURCE_TEXT,
+            incumbentText: INCUMBENT_TEXT,
+            incumbentKind: 'present',
+            signal: AbortSignal.timeout(30_000,),
+            perCallTimeoutMs: 5_000,
+            l,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(BlankSelectionError,);
+        // Carries what the round had already found rather than a fresh empty
+        // list, so a caller reading the failure sees the evidence gathered
+        // before the winner came back blank.
+        expect((caught as BlankSelectionError).findings,).toContain('translate-blank-fixture-marker',);
       },
     },),
   ],
