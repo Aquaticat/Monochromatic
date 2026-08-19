@@ -955,6 +955,13 @@ GitHub recognized the advanced workflow as ID `338017899`.
 The default-setup API then accepted `state: not-configured`.
 Manual advanced run `32284761248` completed all three language jobs and uploaded their analyses successfully.
 
+Three later main pushes created their path-matched non-CodeQL workflows but no CodeQL run.
+This provides a positive control for event processing and a negative result for both the retired dynamic workflow and
+advanced workflow.
+Manual final-newline run `32285688509` was cancelled by superseding run `32285692427`,
+which then completed successfully;
+this exercises the new validation concurrency through GitHub Actions.
+
 The CodeQL action emits `MissingPushHook` because the requested workflow has pull-request analysis without a push trigger.
 Pinned action source at `github/codeql-action` tag `v4.37.7`,
 `src/workflow.ts:190-199`,

@@ -263,7 +263,22 @@ Manual run `32284761248` crossed the consumer boundary:
 
 The commit that introduced the advanced workflow was pushed while default setup was still active,
  so that commit intentionally has both dynamic default-setup analyses and advanced manual analyses.
-A later push made after default setup was disabled is the decisive duplicate-trigger probe.
+Three later pushes made after default setup was disabled provide the negative trigger probe:
+
+- `7560d3ab9f6665d750cd1ca39ae6167f4267ae06` created Scorecard and forbidden-strings runs;
+- `d29a9dd263019e294d312e457b28c9598a2a5b3f` created Scorecard,
+  forbidden-strings,
+  and toml-edit-fuzz runs;
+- `4e2e0e65e87949e46b7475a3802cde3cc3c2b1e2` created Scorecard,
+  forbidden-strings,
+  and toml-edit-fuzz runs.
+
+The Actions API returned no CodeQL run for any of those commit SHAs.
+The other runs are positive controls proving that GitHub processed each push event.
+
+Two manual final-newline dispatches exercised the shared validation concurrency shape.
+Run `32285688509` ended as `cancelled` after run `32285692427` entered the same workflow-and-ref group;
+the superseding run completed successfully with every step green.
 
 Classic branch-protection pattern `*` remains unchanged.
 The fix therefore preserves force-push,
@@ -287,6 +302,14 @@ Run `32284761248` nevertheless uploaded three `refs/heads/main` analyses,
 
 The annotation is accepted because no `push` trigger is the requested batching policy.
 Adding a misleading no-op push trigger merely to silence the diagnostic would not improve analysis coverage.
+
+Closed upstream issue
+[github/codeql-action#1339](https://github.com/github/codeql-action/issues/1339)
+requested suppression for intentional no-push layouts.
+The maintainer's suggested workaround adds a push trigger and skips every job on push.
+That would recreate an Actions run record for every main push,
+which directly conflicts with this repository's run-volume objective.
+No current suppression input exists in pinned source.
 
 ## What does not work
 
