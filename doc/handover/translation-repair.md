@@ -12757,11 +12757,29 @@ uses a FRESH directory, because the rebuilt `dist` stamps a different digest any
 ### Why it was stopped four minutes in
 
 Reading `#107` immediately after launching turned up a fix that is measured, bounded,
-specified, and explicitly NOT YET BUILT, for damage that is legible in shipped output:
+specified, and NOT BUILT WHERE IT IS NEEDED, for damage that is legible in shipped output:
 `lintong` ships a farewell offering the same thing twice, and `saurikissa` slice 7 ships a
 sentence severed after its preposition. The bound is measured over 1260 slices: 80 flagged,
 51 contiguous runs, longest run 3, and every relocation pair adjacent, so showing the judge
 slices n-1, n and n+1 provably covers every case in the pool.
+
+WHAT IS AND IS NOT ALREADY BUILT, established by reading the source rather than the tracker,
+which says "not yet built" without the qualifier:
+
+-   the judge's `neighbouringSourceText` and `neighbouringIncumbentText` parameters EXIST,
+    and their own TSDoc names `#107` as the reason
+-   the TRANSLATE lane is fully wired: `translate-document.ts` computes both with
+    `neighbouringSource` and `neighbouringIncumbent` and feeds the call AND the slice-cache
+    key from one value
+-   the REPAIR lane has NO neighbour wiring at all: `translate-repair.ts` and the repair
+    stages contain no occurrence of `neighbour`
+
+That split is exactly the lane split the damage shows, which is the confirmation that this
+is the right target: `lintong` counts 2 and 2 in the repair lane against 1 and 1 in the
+translate lane, and the severed sentence at `saurikissa` slice 7 is repair-lane too.
+Do not confuse `translate-repair.ts`, which is the translate lane's conversation with a
+model whose candidate failed validation, with the repair LANE, whose entry point is
+`repairPreparedDocument` in `repair-translation.ts`.
 
 Measuring a pipeline corpus-wide for four days, when a known defect in it already has a
 specified fix, spends the time to learn the rate of something we were about to remove.
