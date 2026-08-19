@@ -962,6 +962,16 @@ Manual final-newline run `32285688509` was cancelled by superseding run `3228569
 which then completed successfully;
 this exercises the new validation concurrency through GitHub Actions.
 
+The toml-edit-fuzz verification exposed and corrected an existing pnpm bootstrap cycle and stale coverage baseline.
+Final run `32286257673` passed installation,
+build,
+type checking,
+unit tests,
+fuzz smoke,
+TOML conformance,
+and the deterministic coverage gate.
+The diagnosis and fixes are recorded in `doc/troubleshooting/toml-edit-fuzz-workflow.md`.
+
 The CodeQL action emits `MissingPushHook` because the requested workflow has pull-request analysis without a push trigger.
 Pinned action source at `github/codeql-action` tag `v4.37.7`,
 `src/workflow.ts:190-199`,
