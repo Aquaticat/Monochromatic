@@ -159,6 +159,11 @@ export {
   isCoverageReportWire,
 } from './coverage-wire.ts';
 export {
+  type EncodedAsset,
+  encodedCharsThatFit,
+  encodeImageAsset,
+} from './image-asset.ts';
+export {
   quotedTranscript,
   readingAnchors,
   readingMakesSense,
