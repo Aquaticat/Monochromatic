@@ -12833,3 +12833,79 @@ flag stays.
 
 `pgrep --full 'corpus-pass.mjs'` MATCHES ITS OWN COMMAND LINE and will report a live runner
 that is really the pgrep. Use `pgrep --full '^node .*corpus-pass\.mjs'`.
+
+## `#107`'s window is wired into the repair lane, and the 5-entry verify is RUNNING
+
+Landed in `711497365`. What it changed, and the shape of it matters more than the diff:
+
+```text
+driver   repair-translation.ts   window computed per slice, BY POSITION
+key      repair-slice-key.ts     folded in; version stays 27, deliberately
+fan-out  repair-chunk.ts         one windowFragment spread into all three stages
+critic   critic-prompt.ts        + chunk-critic-phase.ts + repair-stages.ts
+panel    adjudicate-prompt.ts    + repair-stages.ts
+editor   edit-prompt.ts          + repair-editor-stage.ts
+```
+
+THE CRITIC IS IN IT BECAUSE OF CLAIM FLOW, not because it seemed thorough. A slice
+raising zero claims skips every downstream stage, so a surplus passage can only ever be
+removed if a CLAIM names it, and only a critic that can see next door will name it. The
+panel and editor follow necessarily: a panel that cannot see the neighbour must reject a
+claim about text outside the slice as unfounded, so widening the critic alone would have
+manufactured exactly the claims the panel is guaranteed to throw away.
+
+ONE FRAGMENT, THREE SPREADS. `windowFragment` is built once in `repairChunk` because the
+three stages must see the SAME window or they contradict each other. Three separate
+arguments can drift; three spreads of one value cannot.
+
+THE VERSION CONSTANT STAYS AT 27 and the reasoning is recorded in the key's own history.
+The window is folded into the KEY, so a slice that has a neighbour keys anew and
+recomputes, which is correct because it is being asked a different question, while a lone
+slice keys identically and resumes, which is also correct because there was no window to
+show it. A bump would have discarded both, including the lone slices whose question never
+changed.
+
+### The trap that was avoided, and it is the one `#99` named
+
+`neighbouringSource` takes a POSITION and throws on anything else. The repair loop's
+`chunkIndex` is a STAMPED index, and passing it would either throw or, worse, address some
+other slice's neighbours. The loop now runs `for (const [sliceIndex, slice,] of
+slices.entries())` so the position is correct by construction rather than by lookup.
+
+### Why a test file exists for something the type checker should catch
+
+TypeScript does NOT excess-property-check a spread. Every one of the five call sites passes
+the window as an optional property spread into an object literal, so a stage that silently
+dropped the parameter would compile, lint, and pass every existing test while sending the
+models exactly the sheet they got before. The failure mode is a change that looks landed
+and does nothing, so `nearby-window-reaches-the-models.unit.test.ts` asserts against the
+RENDERED TEXT of all three sheets.
+
+SHOWN TO FAIL BEFORE BEING TRUSTED, per `GFP`, and after being committed so restoring could
+not discard it: dropping `${nearbyBlock}` from the critic template alone turns the suite
+red at exactly that case. Restored, and 430 pass with 0 failures.
+
+### What is running and what it has to show
+
+Five flagged entries into `~/temp/agent/win107-verify-20260819`, detached, about five hours.
+The `~/translation-repair-runs-flagged-20260818/artifacts` pool is the BASELINE and must not
+be overwritten: the damage is already recorded there, so it is the positive control and
+re-spending to reproduce it would be waste.
+
+Gates, none of them a feeling:
+
+-   `lintong` repair lane: each distinguishing noun phrase appears EXACTLY ONCE in the
+    assembled document. Not at-most-once. Removal here is only safe if the content really
+    does ship next door, and zero occurrences is a worse failure than two
+-   `saurikissa` slice 7 no longer ships the severed sentence
+-   the contested-cut replacement rate at UNFLAGGED slices does not fall away from about 0.95
+-   claim counts at unflagged slices do not inflate materially. `#92` found cost tracks
+    claim count, so this is the trigger that would send the window from always-on to gated
+    at flagged slices plus or minus one
+
+Instruments already exist: `~/temp/agent/join-107.mjs` and
+`~/temp/agent/severed-sentence-census.mjs`.
+
+SOURCE EDITS ARE OFF AGAIN WHILE THIS RUNS, for the reason recorded above: the process in
+flight is safe, but any interruption plus a rebuild stamps a new digest and the guard
+refuses to resume into this pool.
