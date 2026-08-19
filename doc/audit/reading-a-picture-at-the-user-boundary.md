@@ -377,3 +377,47 @@ six real readings and two refusals.
 What makes it worth shipping is not the count
 but that the two populations differ in kind rather than in degree.
 A Chinese transcription has no occasion to write the English word `image`.
+
+## Why the reading stage alone could fail an entry
+
+Both CLI defects share a root, and naming it is worth more than either fix.
+
+Every other model-calling stage in the pipeline goes through `attemptStageCall`
+(`src/stage-call.ts`), which wraps the exchange and ends with:
+
+```ts
+  catch (error) {
+    // Aborts must always win so user steering can stop a fan-out.
+    if (signal.aborted)
+      throw error;
+    l.warn(`${stage} ${modelId}: ${String(error,)}, voice lost`,);
+    return { heard: false, };
+  }
+```
+
+A model that fails loses its voice; the stage carries on with the voices it has;
+an abort still travels.
+That is why `translate-repair.ts` can call `Promise.all` over its candidates
+without any of the exposure the reading stage had:
+each call inside it is already contained.
+
+`readImageAsset` calls `client.chatText` DIRECTLY.
+It is the only stage that does.
+So it inherited none of that, and a reader that threw
+took its partner's reading, the picture, the document and the entry with it.
+
+The fix places the same two rules at `readImagePair`,
+which is the reading stage's own fan-in:
+`Promise.allSettled` so a failure costs one reading,
+then `signal.throwIfAborted()` so a stop still wins.
+Deliberately the same shape and the same order as `attemptStageCall`
+and as `runStageRound`, rather than a third way of saying it.
+
+Routing readings THROUGH `attemptStageCall` was considered and not done.
+It is built around a JSON response format and a validator,
+and a transcription is neither, so the fit would be a parameter that means
+"skip most of this function".
+The containment is what matters and it is now stated in both places.
+
+WHAT TO CHECK IF ANOTHER STAGE IS ADDED: whether it calls the client directly.
+That question, asked once, would have caught both of these before a run did.
