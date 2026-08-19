@@ -1,0 +1,79 @@
+# Reading a picture at the user boundary
+
+First real vision traffic for `#111`, run 2026-08-19 against the production provider
+from a clean worktree at `778cda3ad`,
+built and exercised through `dist/final/node/index.mjs` rather than through source.
+
+Everything before this was verified against invented fixtures.
+Nothing had crossed the artifact-consumer boundary,
+so nothing had established that the provider accepts the message shape at all.
+
+## What the provider accepts
+
+The endpoint takes a content-parts array.
+Both models the catalog marks as reading images accepted it on the first attempt,
+with no transcoding and no shape negotiation:
+
+-   `hf:Qwen/Qwen3.6-27B`, 262144 context
+-   `hf:moonshotai/Kimi-K3`, 524288 context
+
+Both accepted `data:image/webp;base64,` directly.
+That matters more than it sounds:
+187 of the 191 distinct assets a source-side photo reference names are `.webp`,
+so a webp rejection would have forced a transcoding stage into the pipeline.
+It did not.
+
+Ten calls were made across four entries.
+First-byte latency ran 2.8 to 4.2 seconds and whole exchanges 5 to 51 seconds,
+which puts a reading in the same cost band as an ordinary translation call rather than in a band of its own.
+
+## What the readings are
+
+The instruction asks for transcription in the picture's own language,
+so a reading of a Chinese picture comes back in Chinese
+while the transcript the archive carries is the English a human translator wrote.
+The two are never comparable by length:
+`dogesir_/intro.webp` reads as 590 to 632 characters against a 1538-character English transcript,
+which is the ordinary Chinese-to-English expansion rather than a truncated reading.
+
+## Where the screen stands, measured
+
+`readingMakesSense` refuses a reading sharing fewer than two anchors
+with the transcript the archive already carries.
+Over the four corpus slices that carry both a protected target-only run and a source-side photo reference,
+five assets, two readers, ten attempts:
+
+-   six attempts produced a usable reading, with shared anchors of 2, 2, 4, 5, 5, 5
+-   four attempts were refused, all four `describes-another-picture`, all four on `Mio/7`
+
+Two of the six sit exactly on the floor.
+One anchor more lost to paraphrase and `zheermao101/photo3.webp` fails for both readers.
+
+## The margin is not what an earlier note claimed
+
+`doc/planning/when-an-image-reading-makes-no-sense.md` recorded 37 to 142 anchors per known transcript
+against a requirement of two,
+and read that as a wide margin.
+That measurement was of the English archive transcripts,
+which carry 77 to 130 anchors each because every English word of four letters or more is one.
+The operative number is not that count but the OVERLAP with a Chinese reading,
+and the overlap is 2 to 5.
+
+The ceiling is set by how many Latin-script and digit tokens the picture itself contains,
+since those are the only tokens that survive into both a Chinese reading and an English transcript.
+The source side of these five slices carries 3 to 11 anchors in total.
+A picture of pure Chinese prose carrying no names, handles or dates
+cannot clear a floor of two however correctly it is read.
+
+## Cross-model corroboration is far stronger
+
+Two models reading the SAME picture agree with each other in the same script,
+so nothing is lost to translation.
+On `dogesir_/intro.webp`:
+
+-   cross-model shared anchors 8 of 9
+-   distinct-character overlap 245 of 246, ratio 0.996
+
+Against 4 and 5 shared anchors for the same two readings measured against the archive transcript.
+The vision sub-roster is exactly two models and both are already being asked,
+so this signal costs nothing that is not already spent.
