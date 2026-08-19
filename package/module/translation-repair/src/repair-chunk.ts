@@ -58,6 +58,17 @@ import { settleChunkVerdict, } from './repair-chunk-verdict.ts';
  * passed down from the whole document because chunk text carries no front
  * matter of its own
  *
+ * @param neighbouringSourceText - original of the passages either side, shown to
+ * the critic, panel and editor as CONTEXT they may neither quote against nor
+ * edit. `#107` is why it exists: shown one slice alone, a critic reads a passage
+ * the archive carried in from next door as an addition with no source, and the
+ * editor then removes wording that the document does need, just not here
+ *
+ * @param neighbouringIncumbentText - archive English of those same two passages,
+ * which is the half that shows the relocation rather than merely the subject:
+ * the original says each thing once in its own place while the archive says it
+ * next door
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -81,6 +92,8 @@ export async function repairChunk(
     models,
     adjudicationConfig,
     identityContext,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -93,6 +106,8 @@ export async function repairChunk(
     readonly models: RepairModels;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -102,6 +117,20 @@ export async function repairChunk(
     editorModelIds: models.editorModelIds,
     checkerModelIds: models.checkerModelIds,
   },);
+
+  /**
+   * Neighbouring evidence, spread into every stage that has to reason about it.
+   *
+   * BUILT ONCE RATHER THAN PASSED THREE TIMES. The critic, the panel and the
+   * editor must see the SAME window or they contradict each other: a critic that
+   * can see next door raises a relocation claim, and a panel that cannot see it
+   * rejects that claim as unfounded. Three call sites spreading one value cannot
+   * drift the way three separate arguments can.
+   */
+  const windowFragment = {
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+  };
 
   /**
    * Parsed chunk pair claims anchor against.
@@ -121,6 +150,7 @@ export async function repairChunk(
     targetText,
     documents,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...windowFragment,
     chunkIndex,
     signal,
     perCallTimeoutMs,
@@ -192,6 +222,7 @@ export async function repairChunk(
     panelModelIds: models.panelModelIds,
     sourceText,
     targetText,
+    ...windowFragment,
     clusters,
     ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
     signal,
@@ -273,6 +304,7 @@ export async function repairChunk(
     ...((editorAddendum === '') ? {} : { editorRuleAddendum: editorAddendum, }),
     sourceText,
     targetText,
+    ...windowFragment,
     envelopes,
     issues: deduped.issues,
     signal,

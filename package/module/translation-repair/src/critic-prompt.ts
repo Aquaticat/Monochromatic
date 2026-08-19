@@ -18,6 +18,19 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 const FENCE = '=====';
 
 /**
+ * What the neighbouring blocks are for, stated inside the prompt.
+ *
+ * SAID IN THE PROMPT RATHER THAN ASSUMED, because the failure it prevents is
+ * the one the window itself creates: a critic handed more text can start
+ * reporting the neighbours as untranslated or as surplus, which would turn one
+ * relocation into claims against passages that are perfectly correct where they
+ * are. The blocks exist to be RECOGNISED IN, never judged.
+ */
+const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT. Do not raise any claim '
+  + 'about them. Use them only to tell whether wording that seems unsupported '
+  + 'here, or seems missing here, belongs to a neighbouring passage instead';
+
+/**
  * System instructions shared by every critic call.
  */
 const CRITIC_SYSTEM_PROMPT = `You are a strict bilingual translation reviewer.
@@ -93,10 +106,14 @@ export function buildCriticMessages(
     sourceText,
     targetText,
     identityContext,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly identityContext?: string;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
   },
 ): readonly ChatMessage[] {
   /**
@@ -110,6 +127,37 @@ export function buildCriticMessages(
 ${identityContext}
 `;
 
+  /**
+   * The passages either side, or nothing when this slice stands alone.
+   *
+   * PLACED AFTER THE PAIR BEING JUDGED, unlike the identity block, and the
+   * order carries meaning. Identity is a given fact and is read first; this is
+   * evidence ABOUT the pair, and putting it first would invite a critic to
+   * treat the neighbours as part of what it was asked to judge.
+   *
+   * WHY A CRITIC NEEDS IT AT ALL, from `#107`: where the archive carried a
+   * passage across a section boundary, the translation here holds English with
+   * no original to support it, and the original next door holds Chinese with no
+   * English. Shown this slice alone, the only available readings are invention
+   * and omission, both of which are wrong and both of which lead the editor to
+   * damage text. Shown the neighbours, the passage is locatable.
+   *
+   * BOTH SIDES OR THE WINDOW IS HALF BLIND. The neighbouring original says what
+   * the passage next door is ABOUT; the neighbouring archive says where the
+   * English actually went. A relocation is only visible in the second.
+   */
+  const nearbyBlock = ((neighbouringSourceText === undefined)
+      || (neighbouringSourceText === ''))
+      && ((neighbouringIncumbentText === undefined)
+        || (neighbouringIncumbentText === ''))
+    ? ''
+    : `${FENCE} NEARBY ORIGINAL, CONTEXT ONLY ${FENCE}
+${neighbouringSourceText ?? ''}
+${FENCE} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${FENCE}
+${neighbouringIncumbentText ?? ''}
+${FENCE} ${NEARBY_RULE} ${FENCE}
+`;
+
   return [
     {
       role: 'system',
@@ -121,7 +169,7 @@ ${identityContext}
 ${sourceText}
 ${FENCE} TRANSLATION ${FENCE}
 ${targetText}
-${FENCE} END ${FENCE}`,
+${nearbyBlock}${FENCE} END ${FENCE}`,
     },
   ];
 }

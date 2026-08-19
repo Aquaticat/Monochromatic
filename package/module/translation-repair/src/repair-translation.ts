@@ -7,6 +7,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import {
+  neighbouringIncumbent,
+  neighbouringSource,
+} from './fidelity-window.ts';
 import { notApplicableRepair, } from './repair-not-applicable.ts';
 import {
   type PreparedDocumentPair,
@@ -237,13 +241,41 @@ export async function repairPreparedDocument(
    * same document settled differently depending on whether a cache existed.
    */
   const settledByKey = new Map<string, ChunkRepairOutcome>();
-  for (const slice of slices) {
+  for (const [sliceIndex, slice,] of slices.entries()) {
     /**
      * Global index of this slice, which every outcome and every replacement
      * names. NOT part of the cache key since version 26: a key says what the
      * stages are asked, and where a slice sits is not part of that question.
      */
     const { chunkIndex, } = slice.target;
+
+    /**
+     * Original of the passages either side, and the archive English of the same
+     * two, which is the half a relocation shows: the Chinese says each thing
+     * once in its own place while the English says it next door.
+     *
+     * ITERATED BY POSITION RATHER THAN READ FROM `chunkIndex`, which is the trap
+     * `#99` named and {@link neighbouringSource} throws on. `chunkIndex` is
+     * STAMPED, so on any entry where the two spaces differ it would either throw
+     * or, worse, address someone else's neighbours.
+     *
+     * COMPUTED HERE RATHER THAN INSIDE THE STAGES, so the cache key and the
+     * calls are provably given the same window. `#107` records that this exact
+     * separation let the translate lane's key and call disagree for weeks while
+     * nothing failed.
+     */
+    const neighbouringSourceText = neighbouringSource({
+      slices,
+      sliceIndex,
+    },);
+
+    /**
+     * {@inheritDoc neighbouringSourceText}
+     */
+    const neighbouringIncumbentText = neighbouringIncumbent({
+      slices,
+      sliceIndex,
+    },);
 
     /**
      * What this slice cost, reported however this loop body is left.
@@ -287,6 +319,8 @@ export async function repairPreparedDocument(
       targetText: slice.target
         .text,
       lineStructured: lineStructuredSlices.has(chunkIndex,),
+      neighbouringIncumbentText,
+      neighbouringSourceText,
     },);
 
     /**
@@ -370,6 +404,8 @@ export async function repairPreparedDocument(
           targetText: slice.target
             .text,
           lineStructured: lineStructuredSlices.has(chunkIndex,),
+          neighbouringIncumbentText,
+          neighbouringSourceText,
           models,
           ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
           ...identityFragment,

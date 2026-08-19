@@ -17,6 +17,20 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 const ADJUDICATION_FENCE = '=====';
 
 /**
+ * What the neighbouring blocks are for, stated inside the panel sheet.
+ *
+ * THE PANEL NEEDS THIS MORE THAN THE CRITIC DOES, because it decides claims
+ * rather than raises them. A critic that can see next door may raise a claim
+ * saying a passage belongs to a neighbouring section; a panel that CANNOT see
+ * next door has no way to check that and must reject it as unfounded. Widening
+ * the critic without widening the panel would therefore produce exactly the
+ * claims the panel is guaranteed to throw away.
+ */
+const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT, not text under review. '
+  + 'Use them to decide whether a claim about wording unsupported here, or '
+  + 'missing here, is explained by a neighbouring passage holding it instead';
+
+/**
  * System instructions shared by every panelist call.
  */
 const ADJUDICATION_SYSTEM_PROMPT = `You are an impartial bilingual adjudicator.
@@ -129,12 +143,35 @@ export function buildAdjudicationMessages(
     sourceText,
     targetText,
     clusters,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly clusters: readonly ClaimCluster[];
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
   },
 ): AdjudicationPromptPlan {
+  /**
+   * The passages either side, or nothing when this slice stands alone.
+   *
+   * PLACED BEFORE THE CLAIMS AND AFTER THE PAIR, so a panelist reads the
+   * evidence in the order the question needs it: what is under review, then
+   * what sits beside it, then what is alleged about the first.
+   */
+  const nearbyBlock = ((neighbouringSourceText === undefined)
+      || (neighbouringSourceText === ''))
+      && ((neighbouringIncumbentText === undefined)
+        || (neighbouringIncumbentText === ''))
+    ? ''
+    : `${ADJUDICATION_FENCE} NEARBY ORIGINAL, CONTEXT ONLY ${ADJUDICATION_FENCE}
+${neighbouringSourceText ?? ''}
+${ADJUDICATION_FENCE} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${ADJUDICATION_FENCE}
+${neighbouringIncumbentText ?? ''}
+${ADJUDICATION_FENCE} ${NEARBY_RULE} ${ADJUDICATION_FENCE}
+`;
+
   /**
    * Claim ids in numbering order, filled while rendering.
    */
@@ -202,7 +239,7 @@ ${evidence}`;
 ${sourceText}
 ${ADJUDICATION_FENCE} TRANSLATION ${ADJUDICATION_FENCE}
 ${targetText}
-${ADJUDICATION_FENCE} CLAIMS ${ADJUDICATION_FENCE}
+${nearbyBlock}${ADJUDICATION_FENCE} CLAIMS ${ADJUDICATION_FENCE}
 ${groupBlocks.join('\n\n',)}
 ${ADJUDICATION_FENCE} END ${ADJUDICATION_FENCE}`,
       },

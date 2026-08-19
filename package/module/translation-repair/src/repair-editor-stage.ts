@@ -108,6 +108,8 @@ export async function runEditorStage(
     targetText,
     envelopes,
     issues,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -116,6 +118,8 @@ export async function runEditorStage(
     readonly editorModelIds: readonly SyntheticModelId[];
     readonly judgeModelIds: readonly SyntheticModelId[];
     readonly editorRuleAddendum?: string;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
     readonly sourceText: string;
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
@@ -140,6 +144,8 @@ export async function runEditorStage(
     envelopes,
     issues,
     ...(editorRuleAddendum === undefined ? {} : { editorRuleAddendum, }),
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
   },);
 
   /**

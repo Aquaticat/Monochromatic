@@ -135,6 +135,8 @@ export async function runCriticStage(
     targetText,
     documents,
     identityContext,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -145,6 +147,8 @@ export async function runCriticStage(
     readonly targetText: string;
     readonly documents: Readonly<Record<DocumentSide, AnchorTarget>>;
     readonly identityContext?: string;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -157,6 +161,8 @@ export async function runCriticStage(
     sourceText,
     targetText,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
   },);
 
   /**
@@ -331,6 +337,8 @@ export async function runPanelStage(
     targetText,
     clusters,
     adjudicationConfig,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -341,6 +349,8 @@ export async function runPanelStage(
     readonly targetText: string;
     readonly clusters: readonly ClaimCluster[];
     readonly adjudicationConfig?: AdjudicationConfig;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -353,6 +363,8 @@ export async function runPanelStage(
     sourceText,
     targetText,
     clusters,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
   },);
 
   /**

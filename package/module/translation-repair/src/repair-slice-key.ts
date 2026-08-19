@@ -227,6 +227,23 @@ import type { RepairModels, } from './repair-contract.ts';
  * anyway rather than spending a corpus of its own. Version 27 is that bump, and
  * no run had resumed under it when the literal went in, so it cost nothing
  * beyond what was already spent.
+ *
+ * VERSION 27 STAYS PUT FOR `#107`'s REPAIR-LANE WINDOW, and this file's own rule
+ * is that a version holding still owes the same account as one that moves.
+ *
+ * The window is folded into the key BELOW rather than ridden on the version,
+ * and that is what makes the version unnecessary. A slice that has a neighbour
+ * now keys on its window, so it misses whatever it was worth and recomputes,
+ * which is correct: the stages are being asked a different question. A slice
+ * with NO neighbour, meaning a document of one slice, keys exactly as it did,
+ * and resuming it is also correct, because there is no window to have shown it
+ * and the question is byte-for-byte the one that was already answered.
+ *
+ * A VERSION BUMP WOULD BE STRICTLY WORSE HERE, not merely redundant. It would
+ * discard every settled slice in the corpus including the lone-slice ones whose
+ * question did not change, which is the cost version 26 paid deliberately and
+ * once. Folding the evidence into the key spends only the slices whose evidence
+ * actually moved.
  */
 export const SLICE_CACHE_VERSION = 27;
 /**
@@ -318,6 +335,14 @@ export function repairRunShape(
  *
  * @param lineStructured - whether the enclosing chunk is line-structured
  *
+ * @param neighbouringSourceText - original of the passages either side, shown to
+ * the critic, panel and editor as context they may not edit. In the key because
+ * a slice judged against its neighbours was asked a different question from the
+ * same slice judged alone, and nothing else records which it was
+ *
+ * @param neighbouringIncumbentText - archive English of those same two, which is
+ * the half that shows a relocation
+ *
  * @returns Hash keying this slice's outcome
  *
  * @example
@@ -331,11 +356,15 @@ export function repairSliceKey(
     sourceText,
     targetText,
     lineStructured,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
     readonly targetText: string;
     readonly lineStructured: boolean;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
   },
 ): string {
   return hashContent({
@@ -355,6 +384,17 @@ export function repairSliceKey(
       // because the verdict belongs to the enclosing chunk. It has to sit in
       // the key rather than ride on the version alone.
       lineStructured,
+      // ABSENT AND EMPTY KEY ALIKE, and deliberately so, mirroring
+      // `translateSliceKey`. A slice with no neighbours has no window to be
+      // shown, so it is asked the same question a caller that never had the
+      // parameter asked, and it should resume rather than be recomputed to
+      // reach the identical answer.
+      ...(((neighbouringSourceText === undefined) || (neighbouringSourceText === ''))
+        ? []
+        : [neighbouringSourceText,]),
+      ...(((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === ''))
+        ? []
+        : [neighbouringIncumbentText,]),
     ],),
   },);
 }

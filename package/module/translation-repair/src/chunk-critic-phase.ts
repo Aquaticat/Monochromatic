@@ -123,6 +123,8 @@ export async function runChunkCriticPhase(
     targetText,
     documents,
     identityContext,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
     chunkIndex,
     signal,
     perCallTimeoutMs,
@@ -137,6 +139,8 @@ export async function runChunkCriticPhase(
       readonly target: RepairDocument;
     };
     readonly identityContext?: string;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
     readonly chunkIndex: number;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -153,6 +157,8 @@ export async function runChunkCriticPhase(
     targetText,
     documents,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     signal,
     perCallTimeoutMs,
     l,

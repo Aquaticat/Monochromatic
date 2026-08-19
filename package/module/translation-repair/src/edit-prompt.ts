@@ -17,6 +17,29 @@ import type { EditableEnvelope, } from './patch-model.ts';
 const EDITOR_FENCE = '=====';
 
 /**
+ * What the neighbouring blocks are for, stated inside the editor sheet.
+ *
+ * THE EDITOR IS WHERE THE WINDOW EITHER PAYS OR DOES HARM, so its rule is the
+ * strictest of the three. `#107`'s `lintong` damage is an editor outcome: handed
+ * a one-sentence original against a four-sentence incumbent, it repaired the
+ * sentence it could match and left the other three in place, and the neighbour's
+ * own new translation then said them a second time. Seeing next door is what
+ * lets it recognise that case.
+ *
+ * THE OPPOSITE FAILURE IS WORSE AND IS NAMED HERE TOO. An editor that removes a
+ * passage because it can see it next door, when the neighbouring slice does not
+ * in fact keep it, deletes content the document had. Removal is therefore
+ * allowed only against wording the NEARBY EXISTING TRANSLATION already carries,
+ * which is text that is already in the document rather than text some other
+ * stage might yet produce.
+ */
+const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT AND MUST NOT BE EDITED. '
+  + 'Never copy them into your output. If a region here repeats wording the '
+  + 'NEARBY EXISTING TRANSLATION already carries, that repetition is the defect '
+  + 'and removing it here is correct. Remove nothing on the grounds that a '
+  + 'neighbour OUGHT to carry it';
+
+/**
  * Characters of surrounding document shown on each side of a region,
  * so editors locate it even when the base text recurs elsewhere.
  */
@@ -198,14 +221,33 @@ export function buildEditorMessages(
     envelopes,
     issues,
     editorRuleAddendum,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
     readonly issues: readonly AdjudicatedIssue[];
     readonly editorRuleAddendum?: string;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
   },
 ): EditorPromptPlan {
+  /**
+   * The passages either side, or nothing when this slice stands alone.
+   */
+  const nearbyBlock = ((neighbouringSourceText === undefined)
+      || (neighbouringSourceText === ''))
+      && ((neighbouringIncumbentText === undefined)
+        || (neighbouringIncumbentText === ''))
+    ? ''
+    : `${EDITOR_FENCE} NEARBY ORIGINAL, CONTEXT ONLY ${EDITOR_FENCE}
+${neighbouringSourceText ?? ''}
+${EDITOR_FENCE} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${EDITOR_FENCE}
+${neighbouringIncumbentText ?? ''}
+${EDITOR_FENCE} ${NEARBY_RULE} ${EDITOR_FENCE}
+`;
+
   /**
    * Rendered region blocks in envelope order.
    */
@@ -244,7 +286,7 @@ ${EDITOR_REPLY_BLOCK}`;
 ${sourceText}
 ${EDITOR_FENCE} TRANSLATION ${EDITOR_FENCE}
 ${targetText}
-${EDITOR_FENCE} EDIT REGIONS ${EDITOR_FENCE}
+${nearbyBlock}${EDITOR_FENCE} EDIT REGIONS ${EDITOR_FENCE}
 ${blocks.join('\n\n',)}
 ${EDITOR_FENCE} END ${EDITOR_FENCE}`,
       },
