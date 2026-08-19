@@ -737,3 +737,22 @@ THAT ORDERING MATTERS. Letting the provider be the authority on what it accepts
 is only safe once a refusal cannot take an entry down with it. Before the
 containment fix, replacing a conservative guess with a real request would have
 traded 45 unread pictures for lost entries.
+
+## A figure this document reported is now void
+
+Earlier here, and in the tracker, and in the module's own comment:
+
+> Of the 191 distinct assets a source-side reference names, 146 fit both
+> readers, 31 fit only the larger context and 14 fit neither. So 31 pictures can
+> never be corroborated.
+
+That was measured carefully against `encodedCharsThatFit`, and it described that
+function rather than the world. With the derivation gone, all 191 assets can be
+offered to both readers, so the count of pictures that cannot be corroborated
+FOR REASONS OF SIZE is zero.
+
+It is recorded rather than deleted because the mistake is the reusable part. The
+measurement was real, the arithmetic was right, and the conclusion was wrong,
+because the quantity being measured was one this package had invented. A number
+carrying that much detail reads as evidence about the provider, and this one
+never was.

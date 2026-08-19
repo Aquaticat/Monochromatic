@@ -45,12 +45,20 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // check is the containment; the abort still travels, because a stop is not a
 // failure to absorb.
 //
-// WHAT THAT COSTS, measured rather than glossed. Of the 191 distinct assets a
-// source-side reference names, 146 fit both readers, 31 fit only the larger
-// context and 14 fit neither. So 31 pictures can never be corroborated and are
-// refused here. They keep exactly the protections they have today, which for
-// every transcript in the corpus is already a guard: the split, the alignment
-// ratio, or the quote count.
+// WHAT THAT COSTS. It used to be 31 pictures: the ones that fit the larger
+// reader's allowance and not the smaller one's, which could therefore never be
+// corroborated. THAT FIGURE IS VOID, and it is worth saying why rather than
+// quietly deleting it, because it was measured carefully from a premise that
+// was wrong.
+//
+// The allowance it measured against was derived here, from half a model's
+// context converted to base64 characters. A vision model does not tokenize an
+// image that way. Sent as they are, both readers accept every asset in the
+// corpus, up to the largest at 1344454 bytes. So the 31 were refused by this
+// package and by nothing else, and the number described an estimate rather than
+// the world. Every picture can now be offered to both readers, and the only
+// ones that go uncorroborated are the ones the readers themselves cannot agree
+// on.
 
 /**
  * Decimal places an agreement figure is logged to.
