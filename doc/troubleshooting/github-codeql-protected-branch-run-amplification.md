@@ -1,4 +1,4 @@
-# GitHub CodeQL default setup on 2026-08-19 scans every ruleset-protected branch and amplifies push runs
+# GitHub CodeQL default setup on 2026-08-19 scans every wildcard-protected branch and amplifies push runs
 
 ## Symptom
 
@@ -20,9 +20,11 @@ Analyze (actions)
 The surface pattern that triggers it is:
 
 - a push to any branch;
-- repository ruleset `9126851` targets `~ALL` branches;
-- that ruleset makes the branch protected;
+- classic branch protection pattern `*` matches every non-default branch;
 - CodeQL default setup scans each push to every protected branch.
+
+A separate Copilot review ruleset also targets `~ALL` branches.
+It is not needed to explain the CodeQL trigger.
 
 Changing from a GitHub-hosted runner to a Namespace labeled runner changes where these jobs execute.
 It does not change when default setup creates them.
@@ -31,33 +33,46 @@ It does not change when default setup creates them.
 
 ### The repository protects every branch
 
-The live ruleset response on 2026-08-19 identifies ruleset `9126851` as `Copilot review` and includes every branch:
+The live GraphQL response on 2026-08-19 contains two classic branch-protection rules.
+Pattern `main` matches the default branch, while pattern `*` matches every listed non-default branch,
+including `translation-repair-rebased`:
 
 ```console
-$ gh api repos/Aquaticat/Monochromatic/rulesets/9126851 \
-  --jq '{name,enforcement,conditions,rules}'
+$ gh api graphql --raw-field query='query {
+  repository(owner: "Aquaticat", name: "Monochromatic") {
+    branchProtectionRules(first: 100) {
+      nodes { id pattern matchingRefs(first: 100) { nodes { name } } }
+    }
+  }
+}'
 {
-  "conditions": {
-    "ref_name": {
-      "exclude": [],
-      "include": ["~ALL"]
+  "data": {
+    "repository": {
+      "branchProtectionRules": {
+        "nodes": [
+          {
+            "id": "BPR_kwDOKlVnec4CkrWH",
+            "pattern": "main",
+            "matchingRefs": {"nodes": [{"name": "main"}]}
+          },
+          {
+            "id": "BPR_kwDOKlVnec4D4xsc",
+            "pattern": "*",
+            "matchingRefs": {
+              "nodes": [
+                {"name": "translation-repair-rebased"}
+              ]
+            }
+          }
+        ]
+      }
     }
-  },
-  "enforcement": "active",
-  "name": "Copilot review",
-  "rules": [
-    {
-      "parameters": {
-        "review_draft_pull_requests": true,
-        "review_on_push": true
-      },
-      "type": "copilot_code_review"
-    }
-  ]
+  }
 }
 ```
 
-The branch API confirms that both the default branch and the working branch are protected:
+The REST branch API confirms that both the default branch and the working branch are protected.
+A complete branch listing returned 25 protected branches and no unprotected branches:
 
 ```console
 $ gh api repos/Aquaticat/Monochromatic/branches/translation-repair-rebased \
@@ -104,12 +119,14 @@ $ gh api repos/Aquaticat/Monochromatic/code-scanning/default-setup
 
 The resulting chain is:
 
-1. Ruleset `9126851` applies to `~ALL` branches.
-2. `translation-repair-rebased` becomes protected.
-3. A commit is auto-pushed to that branch.
-4. CodeQL default setup creates one workflow run because the push target is protected.
-5. The run fans out into the detected language jobs.
-6. Another pushed commit starts another run without canceling the prior run.
+1. Classic branch-protection pattern `*` matches `translation-repair-rebased`.
+2. A commit is auto-pushed to that protected branch.
+3. CodeQL default setup creates one workflow run because the push target is protected.
+4. The run fans out into the detected language jobs.
+5. Another pushed commit starts another run without canceling the prior run.
+
+The earlier reading that Copilot review ruleset `9126851` made the branch protected was unsupported.
+The classic `*` branch-protection rule is direct evidence and independently explains the protected status.
 
 ### A runner-provider change does not alter the chain
 
@@ -138,7 +155,7 @@ changes CodeQL default-setup triggers, or cancels an older GitHub workflow run.
 
 - GitHub.com service observed on 2026-08-19.
 - GitHub documentation commit: `a34bf588b9e6eff791e173fdd3a726dfab26f888`.
-- Repository ruleset: `9126851`.
+- Classic wildcard branch-protection rule: `BPR_kwDOKlVnec4D4xsc`.
 - CodeQL default setup update timestamp: `2026-07-20T15:49:57Z`.
 - Working-branch example run: `32279201781`.
 - Default-branch example run: `32204388026`.
@@ -151,8 +168,13 @@ Run from this repository with a GitHub CLI identity that can read Actions and re
 ```console
 cd -- /var/home/user/Monochromatic
 
-gh api repos/Aquaticat/Monochromatic/rulesets/9126851 \
-  --jq '{name,enforcement,conditions,rules}'
+gh api graphql --raw-field query='query {
+  repository(owner: "Aquaticat", name: "Monochromatic") {
+    branchProtectionRules(first: 100) {
+      nodes { id pattern matchingRefs(first: 100) { nodes { name } } }
+    }
+  }
+}'
 
 gh api repos/Aquaticat/Monochromatic/branches/translation-repair-rebased \
   --jq '{name,protected}'
@@ -173,7 +195,7 @@ gh run view 32279201781 \
 
 ### Run-amplifying patterns
 
-- A push to `translation-repair-rebased` starts CodeQL because the all-branch ruleset marks it protected.
+- A push to `translation-repair-rebased` starts CodeQL because classic protection pattern `*` matches it.
   Run `32279201781` is a completed example.
 - Closely spaced pushes create overlapping workflow runs because default setup exposes no repository workflow file in which
   to add a concurrency group.
@@ -216,9 +238,10 @@ This is a documented configuration path, not a verified patch for this repositor
 It needs a disposable branch or other controlled rollout before adoption.
 Its tradeoff is ownership of the CodeQL workflow and trigger policy instead of GitHub's generated low-maintenance default.
 
-Narrowing ruleset `9126851` from `~ALL` to selected branches is another documented configuration direction,
-but it would also narrow Copilot review policy.
+Narrowing classic branch-protection pattern `*` is another configuration direction.
+It would change force-push, deletion, and conversation-resolution policy for every matching branch.
 That semantic tradeoff makes it a separate repository-governance decision, not a CI-only workaround.
+Changing only Copilot review ruleset `9126851` is not a reliable remedy because classic protection pattern `*` would remain.
 
 ## What does not work
 
@@ -253,19 +276,19 @@ Changing repository topology is not required to change either input.
 
 - **Is it really upstream's fault?** No.
   GitHub documents the protected-branch trigger explicitly.
-  The surprising volume comes from this repository applying a protection-producing ruleset to `~ALL` branches.
+  The surprising volume comes from this repository applying classic branch protection pattern `*` to non-default branches.
 - **Can upstream fix it?** GitHub could add default-setup concurrency controls,
   but no defect was established in the documented behavior.
 - **Are they supporting this use case?** Yes.
   GitHub supports default setup, labeled runners, and advanced setup for custom triggers.
 - **Would the repository welcome the contribution?** No issue is needed.
   Searches of open and closed `github/docs` issues and pull requests for
-  `default setup protected branch ruleset scans every push` found no duplicate,
+  `default setup protected branch wildcard scans every push` found no duplicate,
   but the current documentation already states the decisive behavior.
 - **Will they likely fix it?** Not applicable.
   There is no demonstrated documentation error or service defect to fix.
 - **Have we prototyped a minimal fix compatible with their architecture?** No.
-  The relevant change belongs in this repository's CodeQL or ruleset configuration,
+  The relevant change belongs in this repository's CodeQL or branch-protection configuration,
   not in GitHub's documentation source.
 
 `.out-of-scope/` contains no GitHub Actions or CodeQL exemption.
