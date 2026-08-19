@@ -13101,29 +13101,46 @@ THE CONVERSION IS ROUGH AND SAYS SO: the ratio spreads from 28 to 93,910 with p9
 so these are order-of-magnitude figures. They are wide enough to rule out runaway and not
 tight enough to rank the four against each other.
 
-#### The matched baseline exists, and the anomaly survives it
+#### The matched baseline exists, and it SHRINKS the anomaly
 
 `~/temp/agent/flagged-pass-2.log` covers exactly these five entries under the same rosters,
-which makes it the matched baseline rather than a general one:
+so it is the matched baseline. Read properly it makes the signal much weaker than the first
+reading of it here claimed.
 
 ```text
-                    critic stages   6 of 6   5 of 6   below 5 of 6
-baseline (5 entries)           42       39        3              0
-this run (so far)               4        2        1              1
+                        stages   abandoned   rate     stream retries
+baseline (5 entries)       115          15   13.0%                52
+this run (so far)           11           4   36.4%                 0
 ```
 
-THE BASELINE NEVER WENT BELOW FIVE OF SIX across 42 stages. This run reached THREE of six
-inside its first four. That is outside the baseline's entire observed range rather than at
-the edge of it, which is a stronger statement than the rates: 3 of 42 short against 2 of 4
-short could still be a burst, but a value the baseline never produced at all is harder to
-call variance.
+```text
+critic stage, roster 6      stages   short   min heard
+baseline                        42       3           5
+this run                         5       2           3
+```
 
-THE WIDER BASE RATE AGREES. Across 242 logs in the agent scratch carrying 9,161 critic
-stages, 12 critics were abandoned in total, 0.13 percent, and 90 stages heard under six of
-six, 0.98 percent. This run abandoned four in four stages.
+THE 0.13 PERCENT BASE RATE PREVIOUSLY RECORDED HERE WAS WRONG and is withdrawn. It came from
+pooling all 242 logs in the agent scratch, most of which are unit-test runs with small
+rosters and no real fan-out. Against the matched baseline the real figure is 13 percent of
+stages, a hundred times higher, and 36 percent against it is elevated rather than
+extraordinary. At a 13 percent base rate, four abandonments in eleven stages is roughly a one
+in fifteen outcome: uncommon, not remarkable.
 
-STILL A SMALL SAMPLE, and four stages is four stages. What it justifies is watching closely
-and NOT concluding, which is what the rest of this section says.
+WHAT STILL STANDS is narrower and worth keeping: the baseline's critic stage never went
+below FIVE of six across 42 stages, and this run reached THREE of six. That single value is
+outside the baseline's observed range. One observation.
+
+TWO THINGS ARGUE AGAINST THE WINDOW as the cause, and both were missed on the first pass:
+
+-   THE PANEL IS WINDOWED TOO and is clean: 3 stages, none short, minimum six of six. If
+    carrying two extra passages degraded a six-model fan-out, the panel should show it as
+    well. It does not, though three stages is little to conclude from
+-   STREAM RETRIES ARE ZERO this run against 52 in the baseline. Whatever else is true, the
+    provider is not obviously having a worse night than it had on 08-18
+
+AND ONE READING WAS SIMPLY AN ARTEFACT: `checker` and `probe` report a minimum heard of 3 in
+both runs, which looked like degradation next to the critic's 6 until the denominators were
+checked. Their roster IS three, so three of three is a full house.
 
 #### What is left, and it is a question rather than an answer
 
