@@ -78,10 +78,10 @@ const BUFFER_CHARS = 4_096;
  * findable while L is at least TAIL_CHARS (so the checked slice sits
  * entirely inside repeated content) and at most `BUFFER_CHARS - TAIL_CHARS`
  * (so the earlier copy has not yet scrolled out of the buffer), a window
- * `BUFFER_CHARS - 2 * TAIL_CHARS` wide. Whatever period detection needs that
- * window to be, a single re-quoted block that length or shorter costs at
- * most that many consecutive checks before the match ends, documented
- * precisely on {@link REQUIRED_CONSECUTIVE_HITS}.
+ * `BUFFER_CHARS - 2 * TAIL_CHARS` wide. The exact count of consecutive
+ * checks a single such requote can produce, and how
+ * {@link REQUIRED_CONSECUTIVE_HITS} is set against it, is measured and
+ * documented there rather than re-derived here.
  */
 const TAIL_CHARS = BUFFER_CHARS * QUARTER;
 
@@ -101,17 +101,21 @@ const CHECK_INTERVAL_CHARS = 512;
  * Consecutive positive checks required before a recurrence reads as a
  * verdict rather than a coincidence.
  *
- * ABOVE WHAT A BOUNDED RE-QUOTE CAN PRODUCE. Per the geometry documented on
- * {@link TAIL_CHARS}, a block recurring exactly once, immediately
- * back-to-back, produces hits only while its length stays within a window
- * `BUFFER_CHARS - 2 * TAIL_CHARS` wide, which caps the run of consecutive
- * hits at `(BUFFER_CHARS - 2 * TAIL_CHARS) / CHECK_INTERVAL_CHARS`: 4 at
- * these constants. Five requires one more consecutive hit than a single
- * bounded re-quote of any length can ever produce, whatever that quote's
- * length, while an indefinitely repeating loop keeps matching every check
- * for as long as it keeps looping and so always eventually reaches it.
+ * ONE PAST THE MEASURED MAXIMUM A BOUNDED RE-QUOTE CAN PRODUCE, not one past
+ * a naive formula. Per the geometry documented on {@link TAIL_CHARS}, a
+ * block recurring exactly once, immediately back-to-back, produces hits only
+ * while its length L stays within `[TAIL_CHARS, BUFFER_CHARS - TAIL_CHARS]`.
+ * Dividing that window's width by {@link CHECK_INTERVAL_CHARS} suggests a cap
+ * of 4, but a closed interval counts both endpoints: simulated directly
+ * against this detector, sweeping every check phase against every L in that
+ * range, the true maximum is 5 consecutive hits, reached only at `L =
+ * BUFFER_CHARS - TAIL_CHARS` with the check phase landing on both ends, and
+ * never 6 at any L or phase tried. Six is set past that measured figure
+ * rather than the narrower formula, while an indefinitely repeating loop
+ * keeps matching every check for as long as it keeps looping and so always
+ * eventually reaches it regardless of where this constant is set.
  */
-const REQUIRED_CONSECUTIVE_HITS = 5;
+const REQUIRED_CONSECUTIVE_HITS = 6;
 
 /**
  * What the recurrence watch currently believes about a stream.

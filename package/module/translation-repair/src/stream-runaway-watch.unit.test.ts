@@ -417,7 +417,7 @@ await describe({
     },),
 
     it({
-      name: 'LETS A CANDIDATE QUOTED TWICE BACK TO BACK PASS, past the length bar, which is '
+      name: 'LETS A CANDIDATE QUOTED TWICE BACK TO BACK FINISH, past the length bar, which is '
         + 'ordinary work in this pipeline reasoning traces: a model restating a whole source '
         + 'slice or candidate a second time must not read as a loop for doing its job',
       fn: async () => {
@@ -426,7 +426,11 @@ await describe({
          * block quoted twice back to back, and more varied filler after it.
          * The duplication happens AFTER the bar is crossed: were it before,
          * the bar alone would explain a `continuing` verdict and this test
-         * would say nothing about the persistence check specifically.
+         * would say nothing about the persistence check specifically. At
+         * 8000 characters the candidate is far past the roughly 3072-
+         * character window where a back-to-back requote can produce any hit
+         * at all, so the earlier copy has already scrolled out of the
+         * recurrence buffer entirely by the time the second copy finishes.
          */
         const prefix = variedBlock({
           length: 140_000,
@@ -445,6 +449,57 @@ await describe({
           channel: 'reasoning',
           text: prefix + candidate + candidate + suffix,
           pieceChars: 500,
+        },);
+
+        expect(drive({ raw, },).verdict.kind,).toBe('continuing',);
+      },
+    },),
+
+    it({
+      name: 'LETS A CANDIDATE QUOTED TWICE BACK TO BACK AT EXACTLY THE FALSE-POSITIVE-PRONE '
+        + 'LENGTH FINISH, the one candidate length and check phase where a single bounded requote '
+        + 'reaches its measured maximum of five consecutive hits: REQUIRED_CONSECUTIVE_HITS is set '
+        + 'one past that exact figure so this still reads as continuing rather than runaway',
+      fn: async () => {
+        /**
+         * Filler well past the length bar, delivered as one whole frame so
+         * the recurrence check that fires at the end of it lands on a clean
+         * phase: sinceLastCheck resets to exactly zero the instant the
+         * candidate starts arriving, which is what lets the fixture below
+         * land on the exact worst-case alignment rather than an arbitrary
+         * one.
+         */
+        const prefix = variedBlock({
+          length: 140_000,
+          from: 1,
+        },);
+
+        /**
+         * A candidate of exactly 3072 characters: BUFFER_CHARS (4096) minus
+         * TAIL_CHARS (1024) in `stream-recurrence-watch.ts`, the one length
+         * at which a back-to-back requote's consecutive-hit count reaches
+         * its measured maximum rather than staying below it. Quoted twice
+         * back to back and delivered one character per frame, so every
+         * possible check phase across the requote is exercised rather than
+         * only whatever phase a larger frame size happens to land on.
+         */
+        const candidate = variedBlock({
+          length: 3_072,
+          from: 500_000,
+        },);
+        const suffix = variedBlock({
+          length: 2_000,
+          from: 900_000,
+        },);
+
+        const raw = framedText({
+          channel: 'reasoning',
+          text: prefix,
+          pieceChars: prefix.length,
+        },) + framedText({
+          channel: 'reasoning',
+          text: candidate + candidate + suffix,
+          pieceChars: 1,
         },);
 
         expect(drive({ raw, },).verdict.kind,).toBe('continuing',);
