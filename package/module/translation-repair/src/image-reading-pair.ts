@@ -265,6 +265,13 @@ export async function readImagePair(
     l,
   },);
 
+  // BEFORE THE GATE, not only before the models. The deterministic reader
+  // spawns a decoder and tesseract per picture and consults no signal of its
+  // own, so a run already told to stop would spend that on every remaining
+  // asset and then persist verdicts that outlive the stop. Nothing downstream
+  // distinguishes a verdict reached after the stop from one reached before it.
+  signal.throwIfAborted();
+
   /**
    * What the deterministic reader made of the picture, asked before any model.
    *

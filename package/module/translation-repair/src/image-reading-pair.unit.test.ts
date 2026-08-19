@@ -556,6 +556,81 @@ await describe({
     },),
 
     it({
+      name: 'ASKS THE DETERMINISTIC READER NOTHING WHEN THE RUN HAS ALREADY STOPPED, which the '
+        + 'abort case above cannot show because it throws either way. The gate shells out to a '
+        + 'decoder and to tesseract per picture and consults no signal of its own, so a stopped '
+        + 'run that reached it would spend that on every remaining asset and then persist verdicts '
+        + 'that beat the stop',
+      fn: async () => {
+        /**
+         * Roster that must never be reached, since the gate sits before it.
+         */
+        const { client, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': READING,
+            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+          },
+        },);
+
+        /**
+         * How many times the deterministic reader was asked. Counted rather
+         * than asserted inside the stub so a call that does happen reads as a
+         * number in the failure rather than as a thrown assertion from a place
+         * the test does not name.
+         */
+        let asked = 0;
+
+        /**
+         * Deterministic reader that records being asked, and would otherwise
+         * return the verdict two thirds of this corpus reaches.
+         */
+        async function counting(): Promise<{
+          readonly kind: 'no-text';
+          readonly characters: number;
+        }> {
+          asked += 1;
+          return {
+            kind: 'no-text',
+            characters: 0,
+          };
+        }
+
+        /**
+         * Stop that arrived before the picture did.
+         */
+        const stopped = new AbortController();
+        stopped.abort();
+
+        /**
+         * Name of whatever escaped, kept so a verdict slipping past the stop
+         * reads as its own value.
+         */
+        let escaped = 'nothing thrown';
+        try {
+          /**
+           * What the roster made of a picture a stopped run asked about.
+           */
+          const paired = await readImagePair({
+            client,
+            readOcr: counting,
+            readerModelIds: READERS,
+            bytes: bytesOf({ length: 64, },),
+            assetName: 'noticeboard.webp',
+            signal: stopped.signal,
+            perCallTimeoutMs: 30_000,
+            l,
+          },);
+          escaped = `returned ${paired.kind}`;
+        } catch (error) {
+          escaped = Error.isError(error,) ? error.name : String(error,);
+        }
+
+        expect(escaped,).toBe('AbortError',);
+        expect(asked,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'ASKS NO MODEL ABOUT A PICTURE WITH NO TEXT, and reports that as its own verdict rather '
         + 'than as a failure. Measured over the corpus, 119 of 191 pictures carry no text at all, '
         + 'so this is the common case and every model call it would have spent is spent on being '
