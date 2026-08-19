@@ -79,7 +79,8 @@ export type ImageReading = {
     | 'too-large-for-model'
     | 'too-short'
     | 'reads-as-refusal'
-    | 'empty-reply';
+    | 'empty-reply'
+    | 'reader-failed';
 };
 
 /**

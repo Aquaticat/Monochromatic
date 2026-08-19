@@ -34,6 +34,16 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // with something derived from a misreading. A caveat travelling downstream is a
 // caveat somebody has to remember.
 //
+// A FAILING READER COSTS ITS OWN READING AND NOTHING ELSE. Reading is the only
+// stage in the pipeline whose output nothing requires, so it is also the only
+// one that must never be able to fail an entry. It could, until the first real
+// CLI run said so: `wangzihao980`, six pictures gathered, one reader looping on
+// `picture1.webp` until the client's runaway guard ended the call, and the
+// entry finishing `status=ERROR` with `processed=0`. Both lanes were lost to a
+// transcription nobody needed. `Promise.allSettled` plus an explicit abort
+// check is the containment; the abort still travels, because a stop is not a
+// failure to absorb.
+//
 // WHAT THAT COSTS, measured rather than glossed. Of the 191 distinct assets a
 // source-side reference names, 146 fit both readers, 31 fit only the larger
 // context and 14 fit neither. So 31 pictures can never be corroborated and are
@@ -148,8 +158,10 @@ export type PairedReading = {
  *
  * @returns Corroborated readings, or why none may be used
  *
- * @throws Whatever a reading exchange throws, which is transport failure rather
- * than an unreadable picture and is not this function's to interpret
+ * @throws {@link DOMException} when `signal` aborts, since a run told to stop
+ * must not settle a document on the readings that beat the stop. Every other
+ * failure a reader raises is contained as an unavailable reading for that
+ * reader alone
  *
  * @example
  * ```ts
@@ -184,13 +196,13 @@ export async function readImagePair(
   },);
 
   /**
-   * What every reader made of the picture, asked concurrently.
+   * How each reader's exchange ended, asked concurrently.
    *
    * CONCURRENTLY BECAUSE THE LIMITER IS PER MODEL. Different models hold
    * different slots, so asking them in sequence would double a reading's
    * latency for nothing.
    */
-  const outcomes = await Promise.all(readerModelIds.map(async function ask(modelId,): Promise<{
+  const settled = await Promise.allSettled(readerModelIds.map(async function ask(modelId,): Promise<{
     readonly modelId: SyntheticModelId;
     readonly reading: ImageReading;
   }> {
@@ -207,6 +219,67 @@ export async function readImagePair(
       },),
     };
   },),);
+
+  // The entry's own abort has to stay a FAILURE rather than become two
+  // unreadable pictures. `allSettled` swallows every ask a teardown rejected,
+  // so a stop arriving mid-reading would otherwise return `no-reader-available`
+  // and let the document settle without the readings the run was told to stop
+  // gathering. This is the guard `runStageRound` places after its own
+  // `allSettled`, for the same reason.
+  signal.throwIfAborted();
+
+  /**
+   * What every reader made of the picture, with a reader that failed outright
+   * carrying its failure rather than taking the others down with it.
+   *
+   * A READING IS EVIDENCE, NEVER A GATE, so a reader that throws costs its own
+   * reading and nothing else. Measured on `wangzihao980` before this changed:
+   * one reader looped on `picture1.webp`, the client's runaway guard ended the
+   * call, `Promise.all` rejected, and the rejection travelled through
+   * `readDocumentPictures` into `settleEntry`. The entry finished
+   * `status=ERROR` with `processed=0`, so BOTH LANES were lost to a
+   * transcription nobody needed. Nothing downstream reads a picture as
+   * required, which is what makes containing it here correct rather than
+   * merely convenient.
+   */
+  const outcomes: readonly {
+    readonly modelId: SyntheticModelId;
+    readonly reading: ImageReading;
+  }[] = settled.map(function contained(
+    result,
+    index,
+  ): {
+    readonly modelId: SyntheticModelId;
+    readonly reading: ImageReading;
+  } {
+    if (result.status === 'fulfilled') {
+      return result.value;
+    }
+
+    /**
+     * Reader whose exchange threw, taken by position because a rejected
+     * settlement carries no label of its own.
+     */
+    const modelId = readerModelIds[index];
+    if (modelId === undefined) {
+      throw new Error(
+        `readImagePair settled ${String(settled.length,)} readers for ${assetName} `
+          + `and then could not name the one at index ${String(index,)}`,
+      );
+    }
+    rl.warn(
+      `${assetName}: ${modelId} failed outright, so it contributes no reading (${
+        String(result.reason,)
+      })`,
+    );
+    return {
+      modelId,
+      reading: {
+        kind: 'unavailable',
+        reason: 'reader-failed',
+      },
+    };
+  },);
 
   /**
    * Readings that arrived, labelled by model.
