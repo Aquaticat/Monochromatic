@@ -339,6 +339,14 @@ Single-file lint,
  wrong assertion:
  each answers a different question than asked.
 
+FQV:
+ Trigger-policy design combines allowed refs with measured event frequency.
+High-churn refs need supersession,
+ cancellation,
+ debounce,
+ or batching;
+branch filters alone do not control volume.
+
 QNB:
  Comparing timings:
  measure the run-to-run band on one unchanged build first.
