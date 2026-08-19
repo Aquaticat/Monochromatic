@@ -207,3 +207,93 @@ so it misses the key and re-settles, which is exactly the behaviour required.
 The alternative, keying on findings, would trade an occasionally stale telemetry string
 for cache misses on every slice of every entry whose reader availability shifted.
 That is the wrong trade for a field nothing gates on.
+
+## The paired-quote ratio guard is refused on its own measurement
+
+The fallback half of this work was specified as two pieces:
+keep every target-only block out of translation, which is built and wired,
+and add a paired-quote ratio guard "for the one merged case",
+a paired blockquote whose English side runs over five times its Chinese side.
+
+Measured over the whole pinned corpus rather than the entry that raised it,
+that second piece protects nothing and costs eight slices.
+
+There are 211 aligned blockquote pairs.
+Their growth band is p50 2.89, p90 4.00, p99 8.49, max 26.20.
+Nine pairs sit over 5.0:
+
+```text
+Susiethegamer/15    src 76   tgt 382    ratio 5.0
+shihai4h/18         src 70   tgt 364    ratio 5.2
+CutOceanHeyFis1/4   src 15   tgt 83     ratio 5.5
+mikaela_khara/0     src 16   tgt 98     ratio 6.1
+a2581911655/3       src 12   tgt 78     ratio 6.5
+Weideriche_/0       src 11   tgt 73     ratio 6.6
+shihai4h/46         src 55   tgt 467    ratio 8.5
+shihai4h/14         src 98   tgt 1649   ratio 16.8
+Rentable_A/0        src 10   tgt 262    ratio 26.2
+```
+
+Three things follow, and each on its own is enough.
+
+The outlier the guard was designed around is `shihai4h/14`,
+not `shihai4h/3`.
+The earlier note named the entry rather than the slice,
+and the two are different slices with different shapes.
+`shihai4h/14` already carries both an alignment guard and a quote guard,
+so the ratio test would be its third.
+
+The slice that actually needs covering cannot be reached by any quote rule.
+`shihai4h/3` is 70 source characters against 284 of target, ratio 4.1,
+and it carries NO BLOCKQUOTE ON EITHER SIDE.
+A guard that fires on paired blockquotes over five times their source
+misses it twice over: wrong shape, and under the threshold anyway.
+
+The remaining eight firings are ordinary text.
+Five of them have source quotes of 10 to 16 characters,
+where a ratio is arithmetic on almost nothing:
+`Rentable_A/0` reaches 26.2 because ten Chinese characters became a sentence.
+Freezing those out of translation is a cost with no matching benefit.
+
+So the guard is refused, on the population it was meant to serve.
+What covers `shihai4h/3` is the reading, which is what the ruling asked for first:
+the slice names `photo3.webp`, 18550 bytes,
+comfortably inside the smaller reader's allowance of 294912,
+so both readers can be sent it and a corroborated reading can reach the sheets.
+The structural half of the fallback that DOES earn its place,
+keeping target-only runs out of translation,
+is built, wired into `translate-slice.ts`, and unaffected by this.
+
+## What the first real CLI run showed
+
+`corpus-pass --only wangzihao980` into a throwaway runs directory,
+which is the pipeline as it actually ships rather than a probe around it.
+
+The wiring reaches production:
+`gathered 6 of 6 pictures`, then `reading 6 pictures for this document`,
+then five distinct readings persisted under the `picture.` namespace.
+Their verdicts:
+
+```text
+corroborated       overlap 0.565   reading lengths 41/27
+corroborated       overlap 0.565   reading lengths 41/27
+unavailable        one-reader-only      (Qwen3.6-27B: too-short)
+unavailable        no-reader-available  (both readers: reads-as-refusal)
+unavailable        no-reader-available  (too-short; reads-as-refusal)
+```
+
+Two observations worth keeping.
+
+The screen is doing real work rather than passing everything.
+Three of five pictures produced no usable reading,
+and each refusal names which reader failed and how.
+
+The corroborated pair sits at 0.565,
+between the 0.129 ceiling measured for different pictures
+and the 0.643 floor measured for the same picture.
+Both readings are short, 41 and 27 characters,
+and a short reading has few trigrams for an overlap to be computed over,
+so the separation the threshold rests on is narrower here than in that sample.
+The verdict is still the right one at 0.30,
+and the figure is recorded because a future run that tightens the threshold
+must not do it without noticing what short readings look like.
