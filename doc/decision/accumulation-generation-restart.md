@@ -9,6 +9,14 @@ Do not let a running pass finish first.
 Stated by the repository owner on 2026-08-13:
 "Always kill and restart. We'll actually run out of actionable items at some point."
 
+RESTATED BY THE OWNER ON 2026-08-19, unprompted and mid-action, as
+"Always stop and restart."
+It arrived while a 92-entry pass launched minutes earlier was being killed,
+because reading `#107` immediately after launching turned up a measured and specified fix for
+damage that ships in the output.
+A rule restated a second time under a live instance of the case it governs is a settled rule,
+so an agent facing this choice again should act rather than deliberate.
+
 ## What this replaces
 
 The alternative under consideration was to freeze a pipeline commit,
