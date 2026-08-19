@@ -12909,3 +12909,45 @@ Instruments already exist: `~/temp/agent/join-107.mjs` and
 SOURCE EDITS ARE OFF AGAIN WHILE THIS RUNS, for the reason recorded above: the process in
 flight is safe, but any interruption plus a rebuild stamps a new digest and the guard
 refuses to resume into this pool.
+
+### The checker is deliberately NOT windowed, and that is a decision rather than an omission
+
+Recorded because the code and the tracker would otherwise disagree, and a later session
+would read the gap as unfinished work and thread it for nothing.
+
+The first sketch of this change listed the checker beside the panel, on the reasoning that a
+stage verifying a removal cannot tell a fix from a deletion without seeing the neighbour.
+That is overstated for what the checker actually does. A removal claim quotes the surplus
+AS IT APPEARS IN THIS SLICE, and the checker verifies that the quoted text is gone from this
+slice. That question is answerable within the slice, and the same holds for additions on the
+deficit side. Handing it the window would spend context on evidence it has no question for.
+
+WHAT WOULD REOPEN IT, stated so the decision is falsifiable: if the verify artifacts show
+`resolved` failing to fire on relocation-class issues, the checker is being asked something
+it cannot answer and the window follows. That is a thing to read in the artifacts when they
+land, not a thing to assume either way now.
+
+### Three effects to expect in the verify results, none of which is damage
+
+Named in advance so they are not misread as regressions when the run lands.
+
+CRITICS MAY QUOTE FROM THE NEARBY BLOCKS despite the rule forbidding it. Those claims die at
+anchoring, because a quote taken from next door cannot anchor in this slice, so the outcome
+is safe. They are still spent quota, so COUNT THE DROPS: a high count is the signal that the
+rule needs strengthening or that the blocks need a stronger separator.
+
+THE INTRODUCED-DEFECT PROBE IS WINDOWLESS and will therefore read a legitimate surplus
+removal as dropped content. Expect `removal`-class findings to rise on relocation slices,
+and do not book them as damage without reading them.
+
+`ISSUE_CATEGORIES` IS A CLOSED VOCABULARY WITH NO RELOCATION KIND, so these claims must ride
+an existing category. Note which one they land in. That is evidence about whether the
+vocabulary wants a kind; it is not a decision to take from this run.
+
+### One defect already found in what just landed, fix scheduled rather than rushed
+
+`repairSliceKey` spreads the two window sides as BARE values into a positional array, so a
+source-only window and an incumbent-only window carrying the same text hash identically.
+`translateSliceKey` avoids this by spreading NAMED properties. Tracked as task `#126` with
+the labelled-entry fix. It re-keys every windowed slice, so it lands AFTER this verify and
+BEFORE the 92-entry relaunch, while no cache is worth keeping.
