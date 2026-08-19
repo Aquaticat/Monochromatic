@@ -12,6 +12,12 @@
  * same amount of it, so a stage handed only the longer would lose the shorter's
  * vouching and a stage handed only the shorter would lose content.
  *
+ * A FAILING READER IS CONTAINED, which three of these pin from both sides. A
+ * reading is the one output nothing downstream requires, so a reader that
+ * throws must cost its own reading and nothing else. An ABORT is not such a
+ * failure and must still travel, because a run told to stop must not settle a
+ * document on the readings that beat the stop.
+ *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
@@ -121,6 +127,69 @@ function scriptedClient(
          */
         const { modelId, } = request as ChatTextRequest;
         asked.push(modelId,);
+        return { text: byModel[modelId] ?? '', };
+      },
+      chatJson: async () => {
+        throw new Error('chatJson unused by the reading stage',);
+      },
+      quotas: async () => {
+        throw new Error('quotas unused by the reading stage',);
+      },
+    },
+  };
+}
+
+/**
+ * Client that throws for named models and answers the rest from a script.
+ *
+ * THROWS RATHER THAN RETURNING AN ERROR SHAPE, because that is what the
+ * production client does: the runaway guard, the retry ceiling and a transport
+ * failure all leave `chatText` by rejecting.
+ *
+ * @param failing - models whose exchange throws, and the message it throws with
+ *
+ * @param byModel - reply per model that does not throw
+ *
+ * @returns Client and models it was asked, in the order asks arrived
+ *
+ * @example
+ * ```ts
+ * const { client, } = failingClient({ failing: { [LARGER_READER]: 'runaway', }, byModel: {}, },);
+ * ```
+ */
+function failingClient(
+  {
+    failing,
+    byModel,
+  }: {
+    readonly failing: Readonly<Record<string, string>>;
+    readonly byModel: Readonly<Record<string, string>>;
+  },
+): {
+  readonly client: SyntheticClient;
+  readonly asked: SyntheticModelId[];
+} {
+  /**
+   * Models a reading was requested from.
+   */
+  const asked: SyntheticModelId[] = [];
+
+  return {
+    asked,
+    client: {
+      chatText: async (request,) => {
+        /**
+         * Request as this package's own contract describes it.
+         */
+        const { modelId, } = request as ChatTextRequest;
+        asked.push(modelId,);
+
+        /**
+         * Message this model is scripted to fail with, absent when it succeeds.
+         */
+        const failure = failing[modelId];
+        if (failure !== undefined)
+          throw new Error(failure,);
         return { text: byModel[modelId] ?? '', };
       },
       chatJson: async () => {
@@ -310,6 +379,130 @@ await describe({
         if (paired.kind !== 'unavailable')
           throw new Error('unavailable by construction',);
         expect(paired.reason,).toBe('one-reader-only',);
+      },
+    },),
+
+    it({
+      name: 'CONTAINS A READER THAT THROWS and keeps the other reader\'s reading, rather than '
+        + 'failing the picture. Measured on a real run before this held: one reader looped, the '
+        + 'client\'s runaway guard ended the call, the rejection reached the entry driver, and the '
+        + 'entry finished with nothing settled, so both lanes were lost to a transcription nobody '
+        + 'downstream requires',
+      fn: async () => {
+        const { client, asked, } = failingClient({
+          failing: { 'hf:Qwen/Qwen3.6-27B': 'ended a runaway call, reasoning channel repeated itself', },
+          byModel: { 'hf:moonshotai/Kimi-K3': READING, },
+        },);
+
+        /**
+         * What the roster made of a picture one reader could not finish reading.
+         */
+        const paired = await readImagePair({
+          client,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'noticeboard.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(asked.length,).toBe(2,);
+        expect(paired.kind,).toBe('unavailable',);
+        if (paired.kind !== 'unavailable')
+          throw new Error('unavailable by construction',);
+
+        // The surviving reader is short of corroboration, which is a
+        // one-reader shortfall rather than a picture nobody could send.
+        expect(paired.reason,).toBe('one-reader-only',);
+        expect(paired.perReader
+          .some(function named(entry,): boolean {
+            return entry.includes('reader-failed',);
+          },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'CONTAINS BOTH READERS THROWING and reports a picture nobody could read, rather than '
+        + 'propagating either failure. The pipeline reads pictures to gain evidence, so the worst '
+        + 'a reading stage may cost is the evidence it failed to gather',
+      fn: async () => {
+        const { client, } = failingClient({
+          failing: {
+            'hf:moonshotai/Kimi-K3': 'HTTP 500 after every retry',
+            'hf:Qwen/Qwen3.6-27B': 'ended a runaway call',
+          },
+          byModel: {},
+        },);
+
+        /**
+         * What the roster made of a picture neither reader could finish.
+         */
+        const paired = await readImagePair({
+          client,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'noticeboard.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(paired.kind,).toBe('unavailable',);
+        if (paired.kind !== 'unavailable')
+          throw new Error('unavailable by construction',);
+        expect(paired.reason,).toBe('no-reader-available',);
+        expect(paired.perReader
+          .filter(function named(entry,): boolean {
+            return entry.includes('reader-failed',);
+          },).length,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'FORWARDS AN ABORT rather than absorbing it, even where both readings beat the stop. '
+        + 'Absorbed, a run told to halt would return two usable readings, the document would '
+        + 'settle on them, and the driver would cache a decision the run was told not to make',
+      fn: async () => {
+        const { client, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': READING,
+            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+          },
+        },);
+
+        /**
+         * Stop that has already arrived, standing in for one that lands while
+         * the readings are in flight.
+         */
+        const stopped = new AbortController();
+        stopped.abort();
+
+        /**
+         * Name of whatever escaped the call, or what it returned instead.
+         * Recorded rather than asserted inline so a verdict slipping past the
+         * stop reads as its own value rather than as a missing throw.
+         */
+        let escaped = 'nothing thrown';
+        try {
+          /**
+           * What the roster made of a picture a stopped run asked about.
+           */
+          const paired = await readImagePair({
+            client,
+            readerModelIds: READERS,
+            bytes: bytesOf({ length: 64, },),
+            assetName: 'noticeboard.webp',
+            signal: stopped.signal,
+            perCallTimeoutMs: 30_000,
+            l,
+          },);
+          escaped = `returned ${paired.kind}`;
+        } catch (error) {
+          escaped = (error instanceof Error) ? error.name : String(error,);
+        }
+
+        expect(escaped,).toBe('AbortError',);
       },
     },),
   ],
