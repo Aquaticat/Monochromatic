@@ -675,3 +675,65 @@ WHAT STILL READS THEM. The deterministic reader has no cap and no format
 restriction, and gets 2965, 2329 and 1718 characters out of the three webp
 cannot shrink. So their text is not lost; what is lost is a second party to
 corroborate it.
+
+## The size cap was ours, not the provider's
+
+Before building any re-encode, the premise it rests on was tested: that the
+oversized pictures are refused at all. They are not.
+
+Sent unchanged, in their original webp, to both readers:
+
+```text
+Zha_Ke/letter.webp        628180 bytes   Kimi-K3  ACCEPTED, 1623 characters
+Zha_Ke/letter.webp        628180 bytes   Qwen     ACCEPTED, 1613 characters
+Aniloviraw/photo0.webp    547484 bytes   Kimi-K3  ACCEPTED, 3094 characters
+Aniloviraw/photo0.webp    547484 bytes   Qwen     ACCEPTED, 3329 characters
+gqt/photo1.webp          1274028 bytes   Kimi-K3  ACCEPTED,  625 characters
+gqt/photo1.webp          1274028 bytes   Qwen     ACCEPTED, 2631 characters
+```
+
+`gqt/photo1.webp` is 1274028 bytes. The pipeline's own cap for Qwen is 294912.
+The provider took a picture more than FOUR TIMES the size this package refuses
+to send it, and read 2631 characters out of it.
+
+So every `too-large-for-model` in every run so far was OUR GUARD REFUSING, not
+the provider. 45 of 191 assets, a quarter of the corpus's pictures, were never
+offered to a reader because of an estimate made here.
+
+### Why the estimate is wrong in kind, not by a factor
+
+`encodedCharsThatFit` takes half the model's context, converts tokens to
+characters at three each, and compares that against the picture's base64 length.
+Every step is defensible for TEXT. None of it describes an image.
+
+A vision model does not tokenize an image by the length of its base64. It
+tokenizes by resolution, in tiles. The base64 length is an artefact of the
+compressor and can vary by a factor of ten between two pictures of identical
+dimensions. Measuring an image's cost that way is not conservative; it is
+unrelated.
+
+The arithmetic shows how unrelated. `gqt/photo1.webp` at 1274028 bytes is
+1698704 base64 characters, which at three characters a token is 566234 tokens,
+which is more than DOUBLE Qwen's entire 262144-token context. It was accepted
+and answered. Whatever the provider counts, it is not this.
+
+The half-share is separately wrong for this call in particular. Its own comment
+justifies it as leaving room for "the prompt, the source, the archive wording
+and the reply". A reading call carries a 200-character instruction and nothing
+else. There is no source and no archive wording to leave room for.
+
+### What replaces it
+
+Nothing lossy, which is the point. No re-encode, no format change, no
+downscaling, no tiling. The pictures go as they are.
+
+The reading stage stops deriving a byte ceiling from a context length and
+applies a plain one instead, set above the corpus's largest asset. A picture the
+provider genuinely will not take now announces itself as an HTTP error, and that
+error costs one reading and nothing else, because a reader that throws was
+contained earlier today.
+
+THAT ORDERING MATTERS. Letting the provider be the authority on what it accepts
+is only safe once a refusal cannot take an entry down with it. Before the
+containment fix, replacing a conservative guess with a real request would have
+traded 45 unread pictures for lost entries.
