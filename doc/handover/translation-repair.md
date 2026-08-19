@@ -12460,3 +12460,55 @@ An OCR-first order would also settle a real worry:
 the same picture corroborated at 0.643 in one probe and disagreed at 0.087 in a CLI run,
 so model readings are less repeatable than a five-pair sample suggested,
 and a deterministic party on one side of the comparison halves that variance.
+
+## 2026-08-19, later: the deterministic reader, and what the provider will not take
+
+### OCR is a gate in front of the model calls, not a third reader
+
+`src/image-ocr.ts` reads a picture with `tesseract -l chi_sim+eng` before any
+model is asked. `readImagePair` takes it as an injected `readOcr` collaborator,
+required rather than defaulted, so a unit test that forgets to supply a stub is
+a TYPE ERROR instead of a slow test that shells out to whatever the machine has.
+
+It gates rather than votes, and that was settled by measurement rather than
+preference. Against the model readings already on record its trigram overlap is
+0.019 and 0.023 on `Word1.webp` and 0.096 and 0.111 on `intro.webp`, while those
+same models agree with each other at 0.643 and 0.785. It is not missing the
+text: on `Word1.webp` it returns 405 characters against their 390 and 394. It
+reads the same text and gets the GLYPHS wrong, which leaves length intact and
+destroys overlap. Letting it vote would refuse readings that are fine.
+
+What it is reliable at is PRESENCE, six of six against the models in both
+directions. So: no text found, no model asked, and the verdict is a new
+`no-text` kind rather than an `unavailable`. That is 119 of 191 assets.
+
+### The provider refuses AVIF
+
+`HTTP 400: Image type image/avif not supported. Only image/jpeg, image/png,
+image/gif, image/webp, image/tiff, and image/bmp are supported.`
+
+Every local measurement had said AVIF was the answer for the oversized assets:
+it fit 16 of 17 under the cap with the text intact, where webp fits 10 and
+misses the three carrying the most text. None of that mattered. Verified by
+sending the same picture twice, one call apart, as AVIF and as webp: the AVIF
+calls returned 400 and the webp calls returned 454 and 450 characters.
+
+WHAT IS OPEN. Without downscaling, which the owner ruled out, the three
+text-heaviest oversized assets (`Aniloviraw/photo0.webp` 2965 characters,
+`gqt/photo1.webp` 2329, `Zha_Ke/letter.webp` 1718) cannot be put in front of a
+model in any accepted format. The deterministic reader reads all three, so
+their text is not lost; what is missing is a second party to corroborate it.
+
+A probe was in flight at the time of writing to test whether the byte cap is the
+real obstacle at all. The cap is SELF-IMPOSED: `CONTEXT_SHARE = 0.5` in
+`image-asset.ts`, justified as leaving room for "the prompt, the source, the
+archive wording and the reply". A READING call carries none of those but a
+200-character instruction, so half a context is far more conservative than that
+call needs. If the provider accepts the pictures as they are, the whole
+re-encode problem dissolves and nothing needs to be lossy. Read the probe's
+result before building any re-encode.
+
+Remaining option if it does not: tiling. Cutting `Zha_Ke/letter.webp`, which is
+1080 by 5645, into vertical strips loses NO pixels, which is what "no
+downscaling" protects, and a letter's natural reading order is already
+top-to-bottom. Untried.
