@@ -998,3 +998,90 @@ behave like `photo3.webp` or carry real text that a higher threshold would throw
 Raising `MIN_OCR_CHARS` on one observation would be trading a measured cost for an unmeasured loss.
 The corpus-wide re-run records the outcome of each of those nine,
 which decides it on evidence rather than on this one case.
+
+## The whole corpus, read through the production call
+
+Everything above is one entry at a time. The reading lane runs before either translation lane
+and takes nothing from them, so it can be measured on its own:
+`~/temp/agent/reading-census.mjs` walks all 93 entries, prepares each pair, gathers its pictures
+and reads them through the same `readDocumentPictures` call the pass uses.
+47 entries carry pictures, 191 distinct assets, one entry lacks a complete pair.
+
+```text
+no-text        131
+corroborated    54
+unavailable      6   no-reader-available 4, one-reader-only 1, readers-disagree 1
+```
+
+THE 131 RECONCILES WITH THE 119 recorded earlier rather than contradicting it.
+That figure came from a standalone tesseract sweep counting assets with zero characters.
+The gate's own verdict adds the 12 assets that returned 1 to 15 characters,
+which are below `MIN_OCR_CHARS` and therefore textless as far as the pipeline is concerned.
+
+CORROBORATION OVERLAPS, over all 54:
+
+```text
+min 0.544   p10 0.727   median 0.930   max 1.000
+below 0.50: 0     below 0.40: 0
+```
+
+The threshold is 0.30 and nothing lands within 0.24 of it.
+The gap between the threshold and the weakest real corroboration is wider than the threshold itself,
+so the number is not doing marginal work on this corpus and moving it would change nothing.
+
+## The marginal band decides itself, and the answer is to leave it alone
+
+Nine assets return 16 to 31 characters from the deterministic reader,
+the band `gqt/photo3.webp` sits in after costing eight calls for nothing:
+
+```text
+Chinatsu_Suzuki/photo4.webp   17   corroborated 1.000
+Chinatsu_Suzuki/photo6.webp   23   corroborated 0.924
+Susiethegamer/photo9.webp     22   corroborated 0.616
+Uekawakuyuurei/IMG_1308.webp  24   unavailable  no-reader-available
+Uekawakuyuurei/img197.webp    18   unavailable  no-reader-available
+Uekawakuyuurei/img370.webp    24   unavailable  no-reader-available
+gqt/photo3.webp               19   unavailable  one-reader-only
+hakureico/photo2.webp         24   corroborated 0.767
+mone/messages2.webp           17   corroborated 0.727
+```
+
+Five of nine corroborate, one at 1.000.
+Raising `MIN_OCR_CHARS` to clear the four failures would throw away five real readings,
+including a perfect one, so the threshold stays where it is.
+The eight wasted calls on `gqt/photo3.webp` are the price of the five that work.
+
+## The re-ask, measured at corpus scale, refutes what one picture suggested
+
+`REFUSAL_ASK_LIMIT` was set from six asks on `Word1.webp`, where one reader declined four times
+in six. Over the corpus that rate does not hold:
+
+```text
+reader and picture pairs that reached a model   119
+  read on the first ask                         110
+  recovered by a re-ask                           1
+  declined every ask                              8
+```
+
+SO A DECLINE IS USUALLY ABOUT THE PICTURE, not the roll, which is the reverse of the conclusion
+drawn from one asset.
+Eight of the nine first-ask declines declined every subsequent ask too,
+and the four `no-reader-available` verdicts are pictures BOTH readers refused four times each.
+The single recovery, `gqt/photo3.webp` on its third ask, moved that asset from
+`no-reader-available` to `one-reader-only`, which is not a usable reading either.
+
+`Word1.webp` is genuinely a roll: it declined into `one-reader-only` on one run,
+corroborated at 0.653 after a re-ask on the next, and corroborated at 0.597 on first asks
+during this census. It is the exception rather than the sample.
+
+WHAT THAT COSTS AND WHY THE LIMIT STAYS. Re-asking spent 20 extra calls across the whole corpus,
+against 119 first asks. That is cheap enough to keep for the roll case,
+which does occur and did produce a corroboration on a real settle-path run.
+The projection it replaced, "four asks retain four readings in five",
+is refuted and has been removed from the source comment and the README.
+
+THE METHOD LESSON IS THE SAME ONE AS THE BYTE CAP, one layer up.
+Six asks on one picture is a real measurement of that picture and not of the corpus,
+and the arithmetic done on it was correct.
+A rate measured on a single item cannot be multiplied out to a population,
+however carefully the item was measured.

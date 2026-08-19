@@ -127,12 +127,16 @@ The vision sub-roster is exactly two because the provider offers exactly two
 models that read images.
 That makes the pair's success rate the weaker reader's read rate, which is why a
 declined reading is asked again, up to four asks.
-Measured on one text-bearing picture, asked six times per model with identical
-input:
-`hf:Qwen/Qwen3.6-27B` read it six times of six, at 376 to 397 characters, and
-`hf:moonshotai/Kimi-K3` read it twice of six, at 377 and 403.
-The refusal is a property of the roll, not of the picture, and one ask would
-discard four readings in five that a fourth ask keeps.
+
+Measured over the whole corpus, 119 reader and picture pairs reached a model and
+110 read on the first ask.
+Of the 9 that declined, 8 declined every ask and 1 read on its third.
+So a decline is usually about the picture, and sometimes about the roll:
+on one text-bearing asset asked six times per model,
+`hf:Qwen/Qwen3.6-27B` read it six times of six and
+`hf:moonshotai/Kimi-K3` twice of six, transcribing the same text either way.
+Re-asking costs about 20 extra calls over a corpus pass and recovers the roll
+case when it happens.
 
 ### What is sent, and what is not
 

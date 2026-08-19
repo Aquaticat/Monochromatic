@@ -27,11 +27,24 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // ends `one-reader-only` with a perfectly good transcription thrown away. That
 // is what happened to `Word1.webp` on the run that found this.
 //
-// WHAT THE LIMIT BUYS, at the measured one-in-three success rate: one ask
-// retains 33 of 100 readings, two retain 56, three retain 70, four retain 80.
-// The expected cost is far below the limit, because asking stops at the first
-// reading: about 2.4 asks per picture at four. This only fires on pictures the
-// deterministic gate already found text on, 72 of 191 in this corpus.
+// AND THEN MEASURED AGAIN, OVER THE WHOLE CORPUS, WHICH CORRECTED THAT.
+// `Word1.webp` is an outlier, not a sample. Across all 191 assets, 119 reader
+// and picture pairs reached a model and 110 read on the FIRST ask: the
+// first-ask refusal rate is 9 in 119, not 2 in 3. Of those 9 refusals, 8
+// refused every one of their asks and 1 read on its third. So most refusals are
+// about the PICTURE and only some are about the roll, which is the reverse of
+// what one picture suggested.
+//
+// WHAT THE LIMIT ACTUALLY BUYS, therefore, is small and worth having: 20 extra
+// calls over a whole corpus pass, against 119 first asks, to recover the roll
+// case whenever it occurs. An earlier version of this comment projected "four
+// asks retain four readings in five" from six asks on one picture. That
+// projection is refuted here and must not be quoted.
+//
+// THE LIMIT STAYS AT FOUR rather than dropping to three, even though the single
+// recovery arrived on the third ask. Fitting the bound to one observation is the
+// error that produced the wrong projection in the first place, and the cost of
+// the fourth ask is a handful of calls per corpus.
 //
 // SCOPED TO REFUSAL ALONE, deliberately. A model that does not read images, a
 // picture too large to send, an empty reply, and a reading that fails the screen
