@@ -403,6 +403,61 @@ await describe({
       },
     },),
     it({
+      name: 'attaches a target-only run FORWARD, as the LEADING blocks of the paired unit that '
+        + 'follows it, when no paired unit precedes it in its region: a note opening a passage has '
+        + 'nothing earlier to trail, so it has to join whatever paired unit comes next, the mirror of '
+        + 'the backward case above and the one direction neither of the other orphan cases exercises',
+      fn: async () => {
+        /** One source paragraph. */
+        const sourceNodes = blocksOf({ text: '猫猫在窗台上打盹。\n', },);
+
+        /** Translation carrying a note of its own BEFORE the paragraph it introduces. */
+        const targetNodes = blocksOf({
+          text: 'Translator`s note: this paragraph resisted a literal rendering.\n\n'
+            + 'The cat naps on the windowsill.\n',
+        },);
+
+        /**
+         * Budget narrow enough that the note closes its own group before the
+         * paired step opens a new one. That is what leaves the note an orphan
+         * with no paired predecessor: `kept` is still empty when its group
+         * closes, since nothing has been pushed yet.
+         */
+        const units = groupAlignedSteps({
+          steps: [
+            {
+              kind: 'target-only',
+              targetIndex: 0,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 0,
+              targetIndex: 1,
+            },
+          ],
+          sourceNodes,
+          targetNodes,
+          sourceBudget: 1,
+          targetBudget: 1,
+        },);
+        // ONE UNIT, not a dropped note beside a bare paragraph: the region
+        // has a paired unit AFTER the orphan, and that is the neighbour it
+        // joins rather than being left uncovered.
+        expect(kindsOf({ units, },),).toEqual(['paired',],);
+
+        const [only,] = units;
+        if ((only === undefined) || (only.kind !== 'paired'))
+          throw new Error('expected one paired unit',);
+        // LEADING, not trailing: the note sits FIRST in the shipped order,
+        // matching where it sits in the document, which is the opposite edge
+        // of the unit from what the backward case above pins.
+        expect(only.targetRun,).toEqual([
+          targetNodes[0],
+          targetNodes[1],
+        ],);
+      },
+    },),
+    it({
       name: 'anchors a paragraph the translation MERGED into its neighbour, which is the limit that '
         + 'holds this grouping out of the pipeline: the aligner cannot say two source blocks became '
         + 'one, so a merge and an omission reach here as the same step',
