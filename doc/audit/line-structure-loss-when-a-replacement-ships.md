@@ -158,3 +158,45 @@ and wrapping one would manufacture a change out of a decision to change nothing,
 which both the delivery coherence check and the assembly assertion refuse by design.
 Bringing the archive itself up to the rule is a one-time `markdown-lint --fix` run over the corpus,
 not a job for a translation pass.
+
+## Re-measured on output settled after the wrapper landed
+
+The measurement above was taken on a pool settled BEFORE `semantic-wrap.ts` was wired in.
+The check it asked for was the same census over a pool settled after,
+and `wangzihao980` settling on 2026-08-19 provides one.
+
+Nine shipped replacements with an incumbent present:
+
+```text
+MD1 VIOLATIONS
+  archive incumbents violating          5 of 9
+  shipped text violating                0 of 9,  0 findings
+  shipped text violating AFTER the fix  0 of 9,  0 findings
+
+ADD-ONLY, non-newline character count
+  grew 0   unchanged 9   shrank 0
+
+PARAGRAPH BREAKS (blank lines)
+  fewer after the edit 0   more 0   same 9
+
+SOFT WRAPPING (single newlines)
+  fewer after the edit 0   more 9   same 0
+  multi-line incumbent flattened to one line: 0
+```
+
+WHAT CHANGED, read against the earlier pool of 64:
+shipped text used to violate in 58 of 64 rows carrying 326 findings,
+and 17 incumbents were flattened to a single line.
+Both are now zero, and the "after the fix" column is zero for the same reason as the column
+before it rather than for a different one:
+the text ships already wrapped, so there is nothing left for a fix to do.
+
+THE INCUMBENTS ARE UNTOUCHED, deliberately: 5 of these 9 violate MD1 in the archive and still do.
+A retention keeps the archive's bytes, and wrapping one would report a change nobody decided on.
+That remains a one-time `markdown-lint --fix` over the corpus rather than a job for a translation pass.
+
+READ THE SIZE OF THIS HONESTLY. Nine rows from one entry is a small pool,
+and it confirms a direction rather than establishing a rate.
+What makes it worth recording is that the earlier pool's failure mode was not marginal:
+58 of 64 with 326 findings does not become 0 of 9 by luck.
+The corpus-wide confirmation rides the end-to-end pass whenever that runs.
