@@ -77,3 +77,46 @@ On `dogesir_/intro.webp`:
 Against 4 and 5 shared anchors for the same two readings measured against the archive transcript.
 The vision sub-roster is exactly two models and both are already being asked,
 so this signal costs nothing that is not already spent.
+
+## The archive-transcript clause refuses correct readings
+
+Every reading of `Mio/7`'s two pictures was refused as `describes-another-picture`,
+four attempts across two assets and two readers.
+Calling the transport directly, bypassing the screen, shows what was thrown away:
+
+-   `photo6.webp` reads as 100 and 98 characters, 7 anchors each, 0 shared with the archive transcript
+-   `photo7.webp` reads as 590 and 178 characters, 10 and 7 anchors, 0 shared with the archive transcript
+
+The readings are real.
+The two models agree with each other almost exactly,
+1.000 and 0.967 distinct-character overlap.
+What they do not agree with is the 2066-character target-only English on that slice,
+which is simply not a transcription of either picture.
+
+So the clause fires on a premise it cannot check.
+It assumes a slice's target-only English transcribes that slice's pictures,
+and where the target-only English is some other kind of addition,
+every correct reading of every picture there is refused.
+
+## Cross-model corroboration separates cleanly, on a small sample
+
+Over the ten readings saved by these probes, five pictures across four entries,
+comparing every reading against every other:
+
+-   5 pairs of the same picture read by different models: shared anchors 5, 6, 7, 8, 9;
+    character overlap 0.829 to 1.000
+-   40 pairs of different pictures: shared anchors 0 to 2;
+    character overlap 0.326 to 0.667
+
+Both criteria separate with a gap and no overlap.
+A shared-anchor floor of 3 keeps 5 of 5 same-picture pairs and admits 0 of 40 different ones.
+A character-overlap threshold of 0.75 does the same.
+
+The different-picture group is the positive control:
+it is the case that must move, and it moves.
+
+STATED AS THE SMALL SAMPLE IT IS.
+Five same-picture pairs is enough to show the separation exists
+and not enough to place the threshold precisely.
+It is drawn from the only corpus slices carrying both a protected target-only run and a source-side photo,
+so it cannot be widened without reading pictures that no transcript describes.
