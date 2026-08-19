@@ -13034,3 +13034,58 @@ pass, this one called working code a failure.
 
 WORTH PROMOTING INTO THE PACKAGE as a driver-level test, since it covers the threading no
 builder test can. Source work, so it waits for the run.
+
+### EARLY AND UNWELCOME: the window is costing critic voices
+
+Read 23 minutes into the verify, on the first entry, and recorded immediately because it may
+change the design rather than merely the numbers.
+
+```text
+GLaDOSister   baseline heard   new heard   baseline claims   new claims
+chunk 0       6 of 6           6 of 6      4                 0
+chunk 1       6 of 6           5 of 6      30                17
+chunk 2       6 of 6           3 of 6      16                10
+```
+
+The baseline heard SIX OF SIX on every chunk of this entry. The windowed run has already
+dropped to three.
+
+THE CLAIM COUNTS FALLING IS THEREFORE UNREADABLE AS IT STANDS, which is the immediate
+consequence. Gate E was watching for claim INFLATION as the cost trigger, and claims went the
+other way, but a stage that heard half the roster raises fewer claims whatever it was shown.
+Nothing here yet separates "better-informed critics complain less" from "fewer critics
+answered".
+
+THE MECHANISM IS LOGGED AND IS NOT AMBIGUOUS. Four critics were abandoned with
+
+```text
+critic <model>: abandoned 180000ms after quorum (cut-mid-reply after N delivered chars)
+```
+
+and N runs to 2,535,524 on one of them. The stage proceeds at quorum, waits the straggler
+window, and abandons whoever is still talking.
+
+IT IS FOUR DIFFERENT MODELS, which is what makes this look like the sheet rather than a flaky
+provider: `GLM-5.2`, `GLM-4.7-Flash`, `Qwen3.6-27B` and `Nemotron-3-Super-120B`. `#121`
+measured the previous cut population and found nine of ten cuts were ONE model. A cut spread
+evenly across four is a different phenomenon, and the thing that changed is that the critic
+sheet now carries two neighbouring passages.
+
+WHAT IT IS NOT YET. One entry, three chunks, against a baseline run that is also a single
+sample, so run-to-run variance is not excluded and `QNB` applies. It is a signal to watch
+across the remaining four entries, not a verdict.
+
+WHAT IT WOULD MEAN IF IT HOLDS, so the options are on the table before the data lands rather
+than invented to fit it:
+
+-   raise the straggler window, or the per-call deadline, for windowed critic calls only.
+    The window is the thing that made the replies long, so it is the thing that should pay
+-   gate the window to flagged slices plus or minus one, which cuts the number of windowed
+    calls to roughly a sixth and bounds the exposure. This was already the measured fallback,
+    and voice loss rather than claim inflation would be the trigger that selects it
+-   accept the loss, only if the surviving claims turn out to be the relocation-class ones,
+    which the artifacts can answer and the log cannot
+
+READ THE ARTIFACTS FOR THE THIRD OPTION when they land: if the claims that survive at a
+3-of-6 chunk are the relocation ones, a smaller better-aimed set is not a regression. If the
+survivors look like the baseline's claims minus a random half, it is.
