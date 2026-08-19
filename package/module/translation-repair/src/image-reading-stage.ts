@@ -35,13 +35,18 @@ import {
 /**
  * What the reader is asked to do.
  *
+ * EXPORTED SO THE CACHE KEY CAN FOLD IT IN. A stored reading was produced by
+ * ASKING something, and an edit to this sentence changes what was asked. A key
+ * that ignored it would serve a reading of the old question as an answer to the
+ * new one.
+ *
  * TRANSCRIBE RATHER THAN DESCRIBE, and in the picture's own language. A
  * description ("a screenshot of a profile card") shares no anchors with a
  * transcript and would be refused by the screen anyway, having cost a call. The
  * house policy is deliberately absent: those rules govern how this corpus is
  * WRITTEN, and reading what a picture already says is not writing.
  */
-const READING_INSTRUCTION = 'Transcribe every word visible in this image, in the language it is '
+export const READING_INSTRUCTION: string = 'Transcribe every word visible in this image, in the language it is '
   + 'written in, preserving line breaks and the order things appear. Include names, handles, dates, '
   + 'numbers and addresses exactly as written. Do not translate, summarise, describe the image, or '
   + 'add any commentary. If you cannot read the image, say so plainly and say nothing else.';

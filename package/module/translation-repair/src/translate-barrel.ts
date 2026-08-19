@@ -178,6 +178,13 @@ export {
   type ImageReading,
   readImageAsset,
 } from './image-reading-stage.ts';
+export { readDocumentPictures, } from './document-readings.ts';
+export { imageReadingKey, } from './image-reading-key.ts';
+export {
+  slicePictureNames,
+  slicePictures,
+  type SlicePictures,
+} from './slice-pictures.ts';
 export {
   type ModelReading,
   type PairedReading,
