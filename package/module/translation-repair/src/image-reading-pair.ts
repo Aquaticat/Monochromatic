@@ -136,6 +136,22 @@ export type PairedReading = {
    * actually a missing reading.
    */
   readonly overlap?: number;
+
+  /**
+   * What the readers said, kept even though none of it may be used.
+   *
+   * SO A DISAGREEMENT CAN BE DIAGNOSED RATHER THAN ONLY COUNTED. Discarding
+   * these left a run reporting `readers-disagree` at some number and nothing
+   * else, and the first time that happened on a picture already known to read
+   * well, no evidence survived to say whether the models had genuinely differed
+   * or something had gone wrong upstream of them. The number alone cannot tell
+   * those apart.
+   *
+   * NOTHING DOWNSTREAM READS THIS. `slicePictures` builds its context from
+   * corroborated readings only, so these travel into the stored record and no
+   * further. Absent when no reading arrived at all.
+   */
+  readonly readings?: readonly ModelReading[];
 };
 
 /**
@@ -336,6 +352,7 @@ export async function readImagePair(
       kind: 'unavailable',
       reason,
       perReader,
+      ...(readings.length > 0) ? { readings, } : {},
     };
   }
 
@@ -373,6 +390,7 @@ export async function readImagePair(
       reason: 'readers-disagree',
       perReader,
       overlap: verdict.overlap,
+      readings,
     };
   }
 
