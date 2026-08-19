@@ -271,32 +271,40 @@ which is the pipeline as it actually ships rather than a probe around it.
 
 The wiring reaches production:
 `gathered 6 of 6 pictures`, then `reading 6 pictures for this document`,
-then five distinct readings persisted under the `picture.` namespace.
+then six distinct readings persisted under the `picture.` namespace.
 Their verdicts:
 
 ```text
-corroborated       overlap 0.565   reading lengths 41/27
-corroborated       overlap 0.565   reading lengths 41/27
-unavailable        one-reader-only      (Qwen3.6-27B: too-short)
-unavailable        no-reader-available  (both readers: reads-as-refusal)
-unavailable        no-reader-available  (too-short; reads-as-refusal)
+corroborated                          overlap 0.565   reading lengths 39/27
+corroborated                          overlap 0.565   reading lengths 39/27
+unavailable   readers-disagree        overlap 0.087
+unavailable   one-reader-only         (Qwen3.6-27B: too-short)
+unavailable   no-reader-available     (both readers: reads-as-refusal)
+unavailable   no-reader-available     (too-short; reads-as-refusal)
 ```
 
-Two observations worth keeping.
+Three observations worth keeping.
 
 The screen is doing real work rather than passing everything.
-Three of five pictures produced no usable reading,
+Four of six pictures produced no usable reading,
 and each refusal names which reader failed and how.
 
-The corroborated pair sits at 0.565,
-between the 0.129 ceiling measured for different pictures
-and the 0.643 floor measured for the same picture.
-Both readings are short, 41 and 27 characters,
-and a short reading has few trigrams for an overlap to be computed over,
-so the separation the threshold rests on is narrower here than in that sample.
-The verdict is still the right one at 0.30,
-and the figure is recorded because a future run that tightens the threshold
-must not do it without noticing what short readings look like.
+Corroboration is doing real work too.
+One pair was compared and REFUSED at 0.087,
+which sits inside the 0.000 to 0.129 band measured for readings of different pictures.
+That is the mechanism separating on live traffic rather than on a sample.
+
+THE TWO CORROBORATED ROWS WERE NOT READINGS.
+Both readers had declined, in different words, and the two declines agreed.
+That finding and its fix have their own section;
+what belongs here is that the figure alone did not reveal it.
+An overlap of 0.565 sits between the two measured bands
+and reads like a weak but real agreement,
+which is exactly what it is: two short texts that genuinely resemble each other.
+The number was right and the conclusion drawn from it was wrong,
+because agreement about a picture presumes both parties were describing one.
+Reading the stored text was what settled it,
+and no threshold could have.
 
 ## Two refusals corroborated each other, and the fix is a shape rather than a list
 
