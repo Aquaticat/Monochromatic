@@ -262,7 +262,16 @@ THE DEGENERATION GUARD HAS STILL NEVER FIRED, and the straggler grace has cut te
 searches that answer this are `stream .*: cut` and `degenerate in`. A bare `cut` returns false
 positives, all the word "cute" in a rationale about 撒娇.
 
-NINE OF TEN CUTS ARE `hf:zai-org/GLM-5.2`, at 1148 streams, on near-equal call counts:
+SUPERSEDED, and the figure below was a MID-FLIGHT FLOOR read before the pass finished. Read to
+the end of the log by `#121`: SIXTEEN OF NINETEEN cuts, 84%, are `hf:zai-org/GLM-5.2`.
+
+  GLM-5.2       328 streams  16 cuts
+  Qwen3.6-27B   354 streams   2 cuts   (its two largest deliveries, absent from the earlier read)
+  Kimi-K3       322 streams   1 cut
+  the other three            0 cuts
+
+The earlier reading, kept because two numbers moved rather than one and a reader comparing them
+should see both:
 
   GLM-5.2      186 streams  9 cuts  0.0484
   Kimi-K3      183 streams  1 cut   0.0055
@@ -270,6 +279,9 @@ NINE OF TEN CUTS ARE `hf:zai-org/GLM-5.2`, at 1148 streams, on near-equal call c
   Qwen3.6-27B  199 streams  0 cuts  0.0000
   gpt-oss-120b 199 streams  0 cuts  0.0000
   Nemotron     199 streams  0 cuts  0.0000
+
+Qwen moving from zero to two matters more than GLM's count rising: a model with no cuts at all is
+a different claim from one whose largest deliveries get cut.
 
 So the grace's cost falls on ONE VOICE and the ensemble loses the same member repeatedly. NOT a
 claim that GLM-5.2 is slow, which was retracted once already: first byte on the cut runs ran 751 to
