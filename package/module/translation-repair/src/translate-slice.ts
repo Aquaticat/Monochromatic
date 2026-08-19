@@ -9,6 +9,10 @@ import {
   BlankSelectionError,
   type IncumbentKind,
 } from './translate-absence.ts';
+import {
+  restoreTargetOnlyRun,
+  splitTargetOnlyRun,
+} from './target-only-run.ts';
 import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
   type TranslateModels,
@@ -90,9 +94,9 @@ export async function settleTranslateSlice(
   const { chunkIndex, } = slice.target;
 
   /**
-   * Translation already in the archive for this slice.
+   * Translation already in the archive for this slice, whole.
    */
-  const incumbentText = slice.target
+  const archiveText = slice.target
     .text;
 
   /**
@@ -100,6 +104,35 @@ export async function settleTranslateSlice(
    */
   const sourceText = slice.source
     .text;
+
+  /**
+   * Archive wording split into the part this source can account for and the
+   * part it cannot.
+   *
+   * ENGLISH THE CHINESE NEVER SAID IS HELD OUT OF THE WHOLE STAGE, not merely
+   * spliced back at the end. A translator shown a transcript it has no source
+   * for is being asked to reproduce text it cannot check, and an incumbent
+   * carrying one enters the ballot several times longer than every fresh
+   * candidate, which is not a comparison. Both sides see the same passage, and
+   * the run is restored to whichever wording wins.
+   */
+  const { judgedText, protectedText, } = splitTargetOnlyRun({
+    sourceText,
+    incumbentText: archiveText,
+  },);
+
+  /**
+   * Archive wording the stage sees, judges and may replace.
+   */
+  const incumbentText = judgedText;
+
+  if (protectedText !== '')
+    l.info(
+      `translate slice ${String(chunkIndex,)}: holding ${
+        String(protectedText.length,)
+      } characters of target-only English out of translation, `
+      + `judging ${String(incumbentText.length,)} of ${String(archiveText.length,)}`,
+    );
 
   /**
    * Whether the archive holds a translation for this slice at all.
@@ -178,7 +211,10 @@ export async function settleTranslateSlice(
       schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
       chunkIndex,
       stageResult,
-      outputText: incumbentText,
+      // THE WHOLE ARCHIVE, protected run included, rather than the judged part.
+      // A retention has to leave the document byte-identical, and the judged
+      // part is a slice of the archive rather than the archive.
+      outputText: archiveText,
       changed: false,
       disposition: 'refused-alignment',
       alignment,
@@ -206,12 +242,27 @@ export async function settleTranslateSlice(
     throw new BlankSelectionError({ findings: stageResult.findings, },);
   }
 
+  /**
+   * What this slice leaves the document with.
+   *
+   * THE ARCHIVE'S OWN BYTES WHEN NOTHING CHANGED, rather than a reconstruction
+   * of them. Restoring a protected run onto an unchanged judged part rebuilds
+   * the same passage, and a rebuild that differs by so much as a trailing
+   * newline reports a change nobody made.
+   */
+  const outputText = wantsReplacement
+    ? restoreTargetOnlyRun({
+      text: stageResult.text,
+      protectedText,
+    },)
+    : archiveText;
+
   return {
     kind: 'translate-slice',
     schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
     chunkIndex,
     stageResult,
-    outputText: stageResult.text,
+    outputText,
     changed: wantsReplacement,
     disposition: 'stage-result',
     alignment,
