@@ -560,6 +560,21 @@ yours to set.
 
 B, but best effort, fallback to A whenever an image's OCR doesn't make sense.
 
+RULED, AND HALF-REFUSED ON MEASUREMENT. B is built: two blind readers per
+picture, compared on character trigrams, with an uncorroborated reading refused
+rather than caveated. A's first half, keeping target-only runs out of
+translation, is built and wired into `translate-slice.ts`.
+
+A's second half, the paired-quote ratio guard, is REFUSED. Measured over all 211
+aligned blockquote pairs it fires nine times: once on `shihai4h/14`, which two
+guards already hold, and eight times on ordinary text, five of those on source
+quotes of 10 to 16 characters where a ratio is arithmetic on almost nothing. It
+never reaches the slice it was meant for. `shihai4h/3` carries no blockquote on
+either side and sits at ratio 4.1, so both the shape test and the threshold miss
+it. The reading covers that slice instead: it names `photo3.webp`, 18550 bytes,
+inside both readers' allowances. Evidence in
+`doc/audit/reading-a-picture-at-the-user-boundary.md`.
+
 ## Question 3: does the critic stage survive
 
 BLOCKS `#86`, and the answer changes the cost of every entry.
