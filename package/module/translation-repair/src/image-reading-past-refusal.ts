@@ -29,11 +29,17 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 //
 // AND THEN MEASURED AGAIN, OVER THE WHOLE CORPUS, WHICH CORRECTED THAT.
 // `Word1.webp` is an outlier, not a sample. Across all 191 assets, 119 reader
-// and picture pairs reached a model and 110 read on the FIRST ask: the
-// first-ask refusal rate is 9 in 119, not 2 in 3. Of those 9 refusals, 8
-// refused every one of their asks and 1 read on its third. So most refusals are
-// about the PICTURE and only some are about the roll, which is the reverse of
-// what one picture suggested.
+// and picture pairs reached a model, 109 read on the FIRST ask, and 1 more read
+// only after a re-ask. Seven pairs ever returned `reads-as-refusal` and six of
+// them refused through all four asks, so the first-ask refusal rate is 7 in 119,
+// not 2 in 3. Most refusals are about the PICTURE and only some are about the
+// roll, which is the reverse of what one picture suggested.
+//
+// COUNT THE CLAUSE, NOT THE SENTENCE. Three more pairs produced no reading
+// without ever being re-asked: two exited on `too-short` and one on an empty
+// reply. An earlier tally keyed on the log sentence, which reads "the reading
+// was refused: <clause>" for every screen, and so reported those three as
+// stubborn refusals and this loop as more exhausted than it is.
 //
 // WHAT THE LIMIT ACTUALLY BUYS, therefore, is small and worth having: 20 extra
 // calls over a whole corpus pass, against 119 first asks, to recover the roll

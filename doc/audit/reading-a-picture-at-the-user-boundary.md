@@ -892,8 +892,8 @@ It costs two thirds of them.
 At the measured one-in-three, asking again is worth a great deal and costs little:
 one ask retains 33 readings in 100, two retain 56, three retain 70, four retain 80.
 Asking stops at the first reading, so the expected cost at a limit of four is about 2.4 asks,
-and it only ever fires on the pictures the deterministic gate already found text on,
-72 of 191 here.
+and it only ever fires on the pictures the deterministic gate already passed,
+60 of 191 here.
 
 SCOPED TO THE REFUSAL CLAUSE ALONE.
 A model that does not read images, a picture too large to send, and an empty reply
@@ -1058,17 +1058,34 @@ in six. Over the corpus that rate does not hold:
 
 ```text
 reader and picture pairs that reached a model   119
-  read on the first ask                         110
-  recovered by a re-ask                           1
-  declined every ask                              8
+  read on the first ask                         109
+  read only after a re-ask                        1
+  never produced a reading                        9
+
+the 9, by the clause each pair exited on:
+  reads-as-refusal, through all four asks        6
+  empty reply, never re-asked                    1
+  too-short, never re-asked                      2
 ```
 
 SO A DECLINE IS USUALLY ABOUT THE PICTURE, not the roll, which is the reverse of the conclusion
 drawn from one asset.
-Eight of the nine first-ask declines declined every subsequent ask too,
-and the four `no-reader-available` verdicts are pictures BOTH readers refused four times each.
+Seven pairs ever returned `reads-as-refusal` and six of them refused through all four asks.
 The single recovery, `gqt/photo3.webp` on its third ask, moved that asset from
 `no-reader-available` to `one-reader-only`, which is not a usable reading either.
+
+ONLY TWO OF THE FOUR `no-reader-available` VERDICTS ARE STUBBORN REFUSALS.
+`Uekawakuyuurei/IMG_1308.webp` and `dogesir_/photo2.webp` are:
+both readers refused all four asks on each.
+The other two never exercised the re-ask at all.
+One reader of `Uekawakuyuurei/img197.webp` returned an empty reply while the other refused four times,
+and both readers of `Uekawakuyuurei/img370.webp` exited on `too-short` after a single ask.
+Neither clause is a refusal, so `readPastRefusal` was right not to ask again.
+The distinction matters because the log line reads
+"read X but the reading was refused: <clause>" for every screen,
+so a tally that keys on the sentence rather than the clause
+counts length screens and empty replies as refusals,
+and reports the roster as more stubborn than it is.
 
 `Word1.webp` is genuinely a roll: it declined into `one-reader-only` on one run,
 corroborated at 0.653 after a re-ask on the next, and corroborated at 0.597 on first asks
