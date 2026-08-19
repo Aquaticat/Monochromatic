@@ -99,4 +99,87 @@ export function neighbouringSource(
     .join('\n\n',);
 }
 
+/**
+ * Archive wording of the sections either side of one slice.
+ *
+ * THE OTHER HALF OF THE SAME WINDOW, and the half that carries the signal. A
+ * relocation leaves a hole on one side of a boundary and a bulge on the other,
+ * and the bulge is in the ARCHIVE rather than in the original: the Chinese says
+ * each thing once, in its own place, while the English says it next door.
+ * Showing a judge the neighbouring original tells it what the neighbour is
+ * ABOUT; showing it the neighbouring archive tells it where the missing English
+ * actually went.
+ *
+ * MEASURED 2026-08-18 over 92 entries and 1260 slices: every relocation pair in
+ * the corpus is ADJACENT, and the longest run of flagged slices anywhere is
+ * three. So one section each way is not a guess at a useful width, it is the
+ * width the phenomenon has.
+ *
+ * WHY NOT THE SETTLED OUTPUT, which would be the sharper signal for a
+ * duplication: it depends on which slices have settled, so the same slice would
+ * be judged against different context depending on resume order, and the cache
+ * key could not name it. The archive is index-stable and it is where the
+ * displacement sits.
+ *
+ * A DETERMINISTIC GUARD WAS TRIED FIRST AND CANNOT DO THIS. The duplication in
+ * `lintong` shares 29 characters between the two passages that say the same
+ * thing, against the 60 a shingle guard needs, because the repeat is a
+ * paraphrase rather than a copy. Over both settled pools, 162 adjacent pairs,
+ * a lexical guard fires zero times including on the pair that is visibly
+ * duplicated. Only a reader can see it, so a reader has to be shown it.
+ *
+ * @param slices - prepared slice pairs of one entry
+ *
+ * @param sliceIndex - POSITION IN `slices`, never a stamped `chunkIndex`
+ *
+ * @returns Neighbouring archive text, empty when the slice stands alone
+ *
+ * @throws {@link RangeError} when `sliceIndex` is not a position in `slices`,
+ * for the reason {@link neighbouringSource} throws
+ *
+ * @example
+ * ```ts
+ * const besideText = neighbouringIncumbent({ slices, sliceIndex, },);
+ * ```
+ */
+export function neighbouringIncumbent(
+  {
+    slices,
+    sliceIndex,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly sliceIndex: number;
+  },
+): string {
+  if ((!Number.isInteger(sliceIndex,))
+    || (sliceIndex < 0)
+    || (sliceIndex >= slices.length)) {
+    throw new RangeError(
+      `neighbouringIncumbent asked for slice ${String(sliceIndex,)} of `
+        + `${String(slices.length,)}: not a position in this entry. An index `
+        + `stamped elsewhere would return an empty window here, which reads as `
+        + `a slice with no neighbours and would report a measured null.`,
+    );
+  }
+
+  return [
+    sliceIndex - 1,
+    sliceIndex + 1,
+  ]
+    .map(function toText(neighbour,): string {
+      /**
+       * That slice, absent at either end of the document.
+       */
+      const beside = slices[neighbour];
+      if (beside === undefined)
+        return '';
+      return beside.target
+        .text;
+    },)
+    .filter(function present(text,): boolean {
+      return text !== '';
+    },)
+    .join('\n\n',);
+}
+
 //endregion Fidelity window

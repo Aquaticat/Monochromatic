@@ -98,6 +98,10 @@ export function translateRunShape(
  * serialized as though this parameter did not exist, so a settled corpus keyed
  * before it existed stays valid
  *
+ * @param neighbouringIncumbentText - archive English of the sections either
+ * side, shown so a passage missing here can be recognised next door rather than
+ * read as one the archive never had
+ *
  * @returns Hash keying this slice's record
  *
  * @example
@@ -112,6 +116,7 @@ export function translateSliceKey(
     incumbentText,
     incumbentKind,
     lineStructured,
+    neighbouringIncumbentText,
     neighbouringSourceText,
   }: {
     readonly runShape: string;
@@ -119,6 +124,7 @@ export function translateSliceKey(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly lineStructured: boolean;
+    readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
   },
 ): string {
@@ -157,6 +163,12 @@ export function translateSliceKey(
         : [
           'neighbouring',
           neighbouringSourceText,
+        ]),
+      ...((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === '')
+        ? []
+        : [
+          'neighbouring-incumbent',
+          neighbouringIncumbentText,
         ]),
     ],),
   },);

@@ -344,5 +344,86 @@ await describe({
           .length,).toBe(JUDGES.length,);
       },
     },),
+    it({
+      name: 'CARRIES THE ARCHIVE EITHER SIDE when one is supplied, which is the half of the window '
+        + 'that shows a relocation. The Chinese says each thing once in its own place, so wording '
+        + 'this passage calls for that is already sitting next door was carried across a boundary '
+        + 'rather than invented, and a judge shown only the original condemns the archive for both',
+      fn: async () => {
+        const rig = driftingClient();
+        const produced = await produceTranslateSlate({
+          client: rig.client,
+          translatorModelIds: TRANSLATORS,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          lineStructured: false,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        /**
+         * Where the narrow arm's sheets begin.
+         */
+        const beforeNarrow = rig.judgeSheets.length;
+        await judgeTranslateSlate({
+          client: rig.client,
+          produced,
+          judgeModelIds: JUDGES,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          incumbentKind: 'present',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        /**
+         * Where the narrow arm's sheets end and the wide arm's begin.
+         */
+        const betweenArms = rig.judgeSheets.length;
+        await judgeTranslateSlate({
+          client: rig.client,
+          produced,
+          judgeModelIds: JUDGES,
+          sourceText: SOURCE_TEXT,
+          incumbentText: INCUMBENT_TEXT,
+          incumbentKind: 'present',
+          neighbouringIncumbentText: 'By evening she was back beside the stove, whose fire had almost gone out.',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+
+        /**
+         * Narrow arm's sheets.
+         */
+        const narrow = rig.judgeSheets.slice(
+          beforeNarrow,
+          betweenArms,
+        );
+
+        /**
+         * Wide arm's sheets.
+         */
+        const wide = rig.judgeSheets.slice(betweenArms,);
+
+        expect(narrow.filter(function carries(sheet,) {
+          return sheet.includes('SURROUNDING EXISTING TRANSLATION',);
+        },)
+          .length,).toBe(0,);
+        expect(wide.filter(function carries(sheet,) {
+          return sheet.includes('SURROUNDING EXISTING TRANSLATION',);
+        },)
+          .length,).toBe(JUDGES.length,);
+
+        // The wording travels, not only its label: a sheet naming the section
+        // and carrying none of it would pass a label-only assertion.
+        expect(wide.filter(function carries(sheet,) {
+          return sheet.includes('back beside the stove',);
+        },)
+          .length,).toBe(JUDGES.length,);
+      },
+    },),
   ],
 },);

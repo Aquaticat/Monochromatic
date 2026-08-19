@@ -7,6 +7,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import {
+  neighbouringIncumbent,
+  neighbouringSource,
+} from './fidelity-window.ts';
 import { assembleTranslation, } from './translate-assemble.ts';
 import {
   absenceFinding,
@@ -233,6 +237,40 @@ export async function translateDocument(
       : 'present';
 
     /**
+     * This slice's POSITION in the preparation, which the window is addressed
+     * by.
+     *
+     * BY IDENTITY RATHER THAN BY `chunkIndex`, per `#99`: a stamped index names
+     * three different things depending on who stamped it, and both window
+     * helpers throw on one that is not a position so the mistake cannot pass
+     * quietly. The slice object came out of this array, so identity settles it.
+     */
+    const sliceIndex = prepared.slices
+      .indexOf(slice,);
+
+    /**
+     * Original of the passages either side.
+     *
+     * COMPUTED HERE RATHER THAN INSIDE THE ATTEMPT, so the cache key and the
+     * call are provably given the same window. A key that did not name the
+     * evidence would let a narrow run's answer be resumed for a wide one.
+     */
+    const neighbouringSourceText = neighbouringSource({
+      slices: prepared.slices,
+      sliceIndex,
+    },);
+
+    /**
+     * Archive English of the passages either side, which is the half that shows
+     * a relocation: the Chinese says each thing once in its own place, while
+     * the English says it next door.
+     */
+    const neighbouringIncumbentText = neighbouringIncumbent({
+      slices: prepared.slices,
+      sliceIndex,
+    },);
+
+    /**
      * Cross-run key for it.
      */
     const key = translateSliceKey({
@@ -244,6 +282,8 @@ export async function translateDocument(
       incumbentKind,
       lineStructured: prepared.lineStructuredSliceIndices
         .has(chunkIndex,),
+      neighbouringIncumbentText,
+      neighbouringSourceText,
     },);
 
     /**
@@ -324,6 +364,8 @@ export async function translateDocument(
       slice,
       prepared,
       models,
+      neighbouringIncumbentText,
+      neighbouringSourceText,
       signal,
       perCallTimeoutMs,
       l: tl,

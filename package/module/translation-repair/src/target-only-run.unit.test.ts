@@ -34,7 +34,7 @@ import {
  * Component ending a source slice, which the archive repeats because markup is
  * not prose.
  */
-const COMPONENT = '<PhotoScroll photos={[ \'${path}/photos/tabby.webp\' ]} />';
+const COMPONENT = '<PhotoScroll photos={[ \'/photos/tabby.webp\' ]} />';
 
 await describe({
   name: splitTargetOnlyRun.name,
@@ -75,7 +75,7 @@ await describe({
         /**
          * Source spelling the component with two spaces before its closer.
          */
-        const spaced = '<PhotoScroll photos={[ \'${path}/photos/tabby.webp\'  ]} />';
+        const spaced = '<PhotoScroll photos={[ \'/photos/tabby.webp\'  ]} />';
 
         const split = splitTargetOnlyRun({
           sourceText: `窗台上的猫。\n\n${spaced}`,

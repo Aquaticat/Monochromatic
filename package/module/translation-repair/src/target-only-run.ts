@@ -45,6 +45,17 @@ const BLOCK_SEPARATOR = '\n\n';
 const QUOTE_MARKER = '>';
 
 /**
+ * Characters that count as whitespace between blocks, named as a set so the
+ * test reads as membership rather than as a chain of comparisons.
+ */
+const WHITESPACE: ReadonlySet<string> = new Set([
+  ' ',
+  '\t',
+  '\n',
+  '\r',
+],);
+
+/**
  * One slice split into the part a lane may rewrite and the part it may not.
  *
  * @example
@@ -96,7 +107,7 @@ function collapsed({ block, }: { readonly block: string; },): string {
   const run = { open: false, };
 
   for (const character of block) {
-    if ((character === ' ') || (character === '\t') || (character === '\n') || (character === '\r')) {
+    if (WHITESPACE.has(character,)) {
       run.open = true;
       continue;
     }
@@ -190,14 +201,18 @@ export function splitTargetOnlyRun(
     return whole;
 
   /**
-   * Where the archive reproduces it, searched from the end so a component
-   * repeated in one slice anchors on its last occurrence.
+   * Archive blocks reduced to comparison keys, one per block.
    */
-  const anchorAt = archive.map(function key(block,): string {
+  const keys = archive.map(function key(block,): string {
     return collapsed({ block, },);
-  },)
-    .lastIndexOf(collapsed({ block: anchor, },),);
-  if (anchorAt === -1)
+  },);
+
+  /**
+   * Where the archive repeats the source's last block, searched from the end so
+   * a component appearing twice in one slice anchors on its last occurrence.
+   */
+  const anchorAt = keys.lastIndexOf(collapsed({ block: anchor, },),);
+  if (anchorAt === (-1))
     return whole;
 
   /**

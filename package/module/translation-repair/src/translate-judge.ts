@@ -81,6 +81,10 @@ import {
  * on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
  * the same trial was given exactly this
  *
+ * @param neighbouringIncumbentText - archive English of the sections either
+ * side, shown so a passage missing here can be recognised next door rather than
+ * read as one the archive never had
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -111,6 +115,7 @@ export async function judgeTranslateSlate(
     incumbentText,
     incumbentKind,
     identityContext,
+    neighbouringIncumbentText,
     neighbouringSourceText,
     signal,
     perCallTimeoutMs,
@@ -123,6 +128,7 @@ export async function judgeTranslateSlate(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
+    readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -307,6 +313,24 @@ export async function judgeTranslateSlate(
           {
             label: 'SURROUNDING ORIGINAL (Chinese), context only: the candidates are not expected to render this',
             text: neighbouringSourceText,
+          },
+        ]),
+      // THE OTHER HALF OF THE SAME WINDOW, and the half that names the failure
+      // `#107` is about. A judge shown only this slice cannot tell a passage
+      // the archive INVENTED from one it carried across a boundary, and it
+      // condemns the archive for both. Measured over 92 entries and 1260
+      // slices, every relocation pair is adjacent, so the passage it is looking
+      // for is in this block whenever it is anywhere.
+      ...((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === '')
+        ? []
+        : [
+          {
+            label: 'SURROUNDING EXISTING TRANSLATION (English), context only: '
+              + 'wording that belongs to the passages either side of this one. A '
+              + 'candidate is not expected to render any of it. Where wording the '
+              + 'ORIGINAL of THIS passage calls for is already sitting here, the '
+              + 'archive carried it across a boundary rather than inventing it.',
+            text: neighbouringIncumbentText,
           },
         ]),
       // Declared names travel as evidence rather than as part of a candidate,

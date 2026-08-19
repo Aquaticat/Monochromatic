@@ -26,6 +26,7 @@ import {
   type ChatJsonRequest,
   type ChunkPair,
   type FidelityOutcome,
+  neighbouringIncumbent,
   neighbouringSource,
   runFidelityTrial,
   type SyntheticClient,
@@ -422,6 +423,145 @@ await describe({
             },)
             .length,).toBe(ROSTER.length,);
         }
+      },
+    },),
+  ],
+},);
+
+/**
+ * Pairs carrying wording on BOTH sides, which `SLICES` deliberately does not:
+ * that fixture leaves the target empty because the source window is all it
+ * needs, and reusing it here would assert against the empty string and pass for
+ * a function that returned nothing.
+ *
+ * @param text - original of this slice
+ *
+ * @param wording - archive English of this slice
+ *
+ * @param chunkIndex - slice index
+ *
+ * @returns Pair with both sides populated
+ *
+ * @example
+ * ```ts
+ * const pair = pairOf({ text: '猫。', wording: 'A cat.', chunkIndex: 0, },);
+ * ```
+ */
+function pairOf(
+  {
+    text,
+    wording,
+    chunkIndex,
+  }: {
+    readonly text: string;
+    readonly wording: string;
+    readonly chunkIndex: number;
+  },
+): ChunkPair {
+  return {
+    source: {
+      chunkIndex,
+      nodes: [],
+      startOffset: 0,
+      endOffset: text.length,
+      text,
+    },
+    target: {
+      chunkIndex,
+      nodes: [],
+      startOffset: 0,
+      endOffset: wording.length,
+      text: wording,
+    },
+  };
+}
+
+/**
+ * Three slices with an archive translation on every one.
+ */
+const TRANSLATED: readonly ChunkPair[] = [
+  {
+    text: '小猫在窗台上睡觉。',
+    wording: 'The kitten sleeps on the window sill.',
+  },
+  {
+    text: '她看着外面的鸟。',
+    wording: 'She watches the birds outside.',
+  },
+  {
+    text: '傍晚她回到炉火旁。',
+    wording: 'By evening she is back beside the stove.',
+  },
+].map(function toPair(
+  { text, wording, },
+  chunkIndex,
+): ChunkPair {
+  return pairOf({
+    text,
+    wording,
+    chunkIndex,
+  },);
+},);
+
+await describe({
+  name: neighbouringIncumbent.name,
+  children: [
+    it({
+      name: 'TAKES THE ARCHIVE ONE SECTION EACH WAY, which is the half of the window that shows a '
+        + 'relocation: the original says each thing once in its own place, while the English can '
+        + 'say it next door, and only the English side reveals where a missing passage went',
+      fn: async () => {
+        /**
+         * Archive wording either side of the middle slice.
+         */
+        const beside = neighbouringIncumbent({
+          slices: TRANSLATED,
+          sliceIndex: 1,
+        },);
+
+        expect(beside.includes('window sill',),).toBe(true,);
+        expect(beside.includes('the stove',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'GIVES THE FIRST SLICE ONLY ITS FOLLOWER, since asking for index minus one at the '
+        + 'start of a document must not read the end of the array',
+      fn: async () => {
+        /**
+         * Archive wording beside the opening slice.
+         */
+        const beside = neighbouringIncumbent({
+          slices: TRANSLATED,
+          sliceIndex: 0,
+        },);
+
+        expect(beside.includes('the stove',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES AN INDEX THAT IS NOT A POSITION rather than returning nothing, because empty '
+        + 'means a lone slice with no neighbours and a stamped index arriving here would report a '
+        + 'measured null instead of the mistake it is',
+      fn: async () => {
+        /**
+         * What the call did, as a value, since the throw is what is asserted.
+         */
+        const outcome = (() => {
+          try {
+            neighbouringIncumbent({
+              slices: TRANSLATED,
+              sliceIndex: TRANSLATED.length,
+            },);
+            return 'returned';
+          }
+          catch (error) {
+            return (error instanceof RangeError) ? 'refused' : `threw ${String(error,)}`;
+          }
+        })();
+
+        expect(outcome,).toBe('refused',);
       },
     },),
   ],

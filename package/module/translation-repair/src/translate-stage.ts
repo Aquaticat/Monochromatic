@@ -64,6 +64,10 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  * on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
  * the same trial was given exactly this
  *
+ * @param neighbouringIncumbentText - archive English of the sections either
+ * side, shown so a passage missing here can be recognised next door rather than
+ * read as one the archive never had
+ *
  * @param lineStructured - whether the enclosing CHUNK's original is
  * line-structured, decided by the caller
  *
@@ -101,6 +105,7 @@ export async function runTranslateStage(
     incumbentText,
     incumbentKind,
     identityContext,
+    neighbouringIncumbentText,
     neighbouringSourceText,
     lineStructured,
     signal,
@@ -114,6 +119,7 @@ export async function runTranslateStage(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
+    readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
@@ -159,6 +165,7 @@ export async function runTranslateStage(
       incumbentKind,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+      ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       signal,
       perCallTimeoutMs,
       l,

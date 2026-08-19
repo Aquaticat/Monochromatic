@@ -49,6 +49,10 @@ import { runTranslateStage, } from './translate-stage.ts';
  * screen flags, to read whether the replacement rate falls when a judge can see
  * that the archive put this slice's content next door
  *
+ * @param neighbouringIncumbentText - archive English of the sections either
+ * side, shown so a passage missing here can be recognised next door rather than
+ * read as one the archive never had
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -73,6 +77,7 @@ export async function settleTranslateSlice(
     slice,
     prepared,
     models,
+    neighbouringIncumbentText,
     neighbouringSourceText,
     signal,
     perCallTimeoutMs,
@@ -82,6 +87,7 @@ export async function settleTranslateSlice(
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
+    readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -116,7 +122,10 @@ export async function settleTranslateSlice(
    * candidate, which is not a comparison. Both sides see the same passage, and
    * the run is restored to whichever wording wins.
    */
-  const { judgedText, protectedText, } = splitTargetOnlyRun({
+  const {
+    judgedText,
+    protectedText,
+  } = splitTargetOnlyRun({
     sourceText,
     incumbentText: archiveText,
   },);
@@ -163,6 +172,9 @@ export async function settleTranslateSlice(
     ...((neighbouringSourceText === undefined)
       ? {}
       : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined)
+      ? {}
+      : { neighbouringIncumbentText, }),
     lineStructured: prepared.lineStructuredSliceIndices
       .has(chunkIndex,),
     signal,

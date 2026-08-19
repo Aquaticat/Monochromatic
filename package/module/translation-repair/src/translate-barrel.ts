@@ -117,7 +117,10 @@ export {
   sharedNumber,
   unsupportedVariant,
 } from './fidelity-alteration.ts';
-export { neighbouringSource, } from './fidelity-window.ts';
+export {
+  neighbouringIncumbent,
+  neighbouringSource,
+} from './fidelity-window.ts';
 export {
   type ClassifiedSlice,
   classifyDisplacement,

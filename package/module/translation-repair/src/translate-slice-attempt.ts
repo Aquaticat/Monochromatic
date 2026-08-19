@@ -102,6 +102,8 @@ export async function attemptTranslateSlice(
     slice,
     prepared,
     models,
+    neighbouringIncumbentText,
+    neighbouringSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -110,6 +112,17 @@ export async function attemptTranslateSlice(
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
+
+    /**
+     * Archive English either side of this slice, computed once by the driver so
+     * the cache key and the call provably name the same window.
+     */
+    readonly neighbouringIncumbentText: string;
+
+    /**
+     * Original either side of this slice, computed the same way.
+     */
+    readonly neighbouringSourceText: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -123,6 +136,8 @@ export async function attemptTranslateSlice(
         slice,
         prepared,
         models,
+        neighbouringIncumbentText,
+        neighbouringSourceText,
         signal,
         perCallTimeoutMs,
         l,
