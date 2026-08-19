@@ -16,6 +16,7 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  messageText,
   EMPTY_INTRODUCED_DEFECT_REPORT,
   type RepairRegion,
   runIntroducedDefectProbe,
@@ -85,12 +86,11 @@ function catClient(
     chatJson: async <ValueT,>(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
-      prompts.push(
-        request.messages
-          .at(-1,)
-          ?.content
-          ?? '',
-      );
+      /**
+       * Last message, whose text the probe records.
+       */
+      const asked = request.messages.at(-1,);
+      prompts.push((asked === undefined) ? '' : messageText({ message: asked, },),);
       if (silentModelIds.includes(request.modelId,)) {
         return {
           kind: 'schema-mismatch',

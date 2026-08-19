@@ -17,10 +17,11 @@ import {
   type ChatJsonRequest,
   type ChunkRepairOutcome,
   makeInsertionChunk,
+  messageText,
   notApplicableFinding,
   prepareDocumentPair,
-  repairPreparedDocument,
   type RepairModels,
+  repairPreparedDocument,
   repairTranslation,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -80,7 +81,11 @@ function countMarker(
   /**
    * User prompt content of the request.
    */
-  const content = request.messages.at(-1,)?.content ?? '';
+  /**
+   * Last message, whose text the fixture branches on.
+   */
+  const last = request.messages.at(-1,);
+  const content = (last === undefined) ? '' : messageText({ message: last, },);
 
   return content.split(marker,).length - 1;
 }
@@ -459,7 +464,7 @@ await describe({
               stage: request.responseFormat?.json_schema.name ?? '',
               text: request.messages
                 .map(function toText(message,) {
-                return message.content;
+                return messageText({ message, },);
               },)
                 .join('\n',),
             },);
@@ -944,10 +949,8 @@ Meow meow meow meow.
               /**
                * User sheet of this critic call.
                */
-              const sheet = request.messages
-                .at(-1,)
-                ?.content
-                ?? '';
+              const last = request.messages.at(-1,);
+              const sheet = (last === undefined) ? '' : messageText({ message: last, },);
               if (sheet.includes('Meow meow meow',)) {
                 return [
                   {

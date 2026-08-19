@@ -159,6 +159,10 @@ export {
   isCoverageReportWire,
 } from './coverage-wire.ts';
 export {
+  messageText,
+  type VisionMessage,
+} from './chat-contract.ts';
+export {
   type EncodedAsset,
   encodedCharsThatFit,
   encodeImageAsset,

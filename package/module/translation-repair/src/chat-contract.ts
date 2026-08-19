@@ -91,6 +91,42 @@ export type VisionMessage = {
 };
 
 /**
+ * Text of a message, whichever shape it carries.
+ *
+ * ONE READER RATHER THAN A CAST AT EVERY SITE. Widening `content` to carry
+ * picture parts left several readers expecting a string, and a cast at each of
+ * them would be five places to get wrong rather than one. A picture is not
+ * recoverable as text and is named by its part type instead, which is what a
+ * witness or a test assertion wants: what the model was ASKED, not the bytes it
+ * was shown.
+ *
+ * @param message - message to read
+ *
+ * @returns Its text, with any non-text part named
+ *
+ * @example
+ * ```ts
+ * const asked = messageText({ message, },);
+ * ```
+ */
+export function messageText({ message, }: { readonly message: ChatMessage | VisionMessage; },): string {
+  /**
+   * Content as the message carries it.
+   */
+  const { content, } = message;
+  if ((typeof content) === 'string')
+    return content;
+
+  /**
+   * Text of each part, with a picture named rather than rendered.
+   */
+  const parts = content.map(function partText(part,): string {
+    return (part.type === 'text') ? part.text : `[${part.type}]`;
+  },);
+  return parts.join('\n',);
+}
+
+/**
  * One chat exchange request.
  *
  * @example

@@ -25,6 +25,8 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  messageText,
+  type VisionMessage,
   repairInvalidCandidates,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -78,7 +80,7 @@ const PRIOR_MESSAGES: readonly ChatMessage[] = [
  */
 type RepairLog = {
   calls: number;
-  messages: readonly ChatMessage[];
+  messages: readonly (ChatMessage | VisionMessage)[];
 };
 
 /**
@@ -276,8 +278,20 @@ await describe({
         expect(log.calls,).toBe(1,);
         expect(log.messages,).toHaveLength(PRIOR_MESSAGES.length + 2,);
         expect(log.messages[PRIOR_MESSAGES.length]?.role,).toBe('assistant',);
-        expect(log.messages[PRIOR_MESSAGES.length]?.content,).toContain(MERGED_TEXT,);
-        expect(log.messages.at(-1,)?.content,).toContain('heading (level 2)',);
+        /**
+         * The merged assistant turn, whose text carries the candidate.
+         */
+        const merged = log.messages[PRIOR_MESSAGES.length];
+        if (merged === undefined)
+          throw new Error('a merged turn by construction',);
+        expect(messageText({ message: merged, },),).toContain(MERGED_TEXT,);
+        /**
+         * The final turn, whose text names the structure being asked about.
+         */
+        const asked = log.messages.at(-1,);
+        if (asked === undefined)
+          throw new Error('a final turn by construction',);
+        expect(messageText({ message: asked, },),).toContain('heading (level 2)',);
       },
     },),
 

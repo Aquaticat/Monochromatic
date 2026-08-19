@@ -17,6 +17,7 @@ import {
   type ChatJsonRequest,
   type ChunkPair,
   type ChunkRepairOutcome,
+  messageText,
   type RepairModels,
   runRefinePhase,
   type SyntheticClient,
@@ -171,10 +172,8 @@ function scriptedPhase(
       /**
        * User prompt, for counting the issues a checker sheet lists.
        */
-      const content = request.messages
-        .at(-1,)
-        ?.content
-        ?? '';
+      const asked = request.messages.at(-1,);
+      const content = (asked === undefined) ? '' : messageText({ message: asked, },);
 
       /**
        * Scripted reply for the stage.
