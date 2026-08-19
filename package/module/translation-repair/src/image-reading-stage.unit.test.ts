@@ -28,12 +28,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type {
-  ChatTextRequest,
-  SyntheticClient,
-} from './chat-contract.ts';
-import { readImageAsset, } from '../dist/final/node/index.mjs';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import {
+  type ChatTextRequest,
+  readImageAsset,
+  type SyntheticClient,
+  type SyntheticModelId,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Logger the stage writes its progress to.
@@ -171,7 +171,10 @@ await describe({
          * Picture part, whose data URI declares the media type it was encoded
          * under.
          */
-        const picture = content[1];
+        const [
+          ,
+          picture,
+        ] = content;
         if (picture?.type !== 'image_url')
           throw new Error('image part by construction',);
         expect(picture.image_url
@@ -376,7 +379,10 @@ await describe({
         /**
          * That part, narrowed to the picture it is.
          */
-        const picture = content[1];
+        const [
+          ,
+          picture,
+        ] = content;
         if (picture?.type !== 'image_url')
           throw new Error('image part by construction',);
         expect(picture.image_url

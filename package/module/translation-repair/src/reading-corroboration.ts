@@ -105,41 +105,55 @@ export type CorroborationVerdict = {
  */
 function collapsedWhitespace({ text, }: { readonly text: string; },): string {
   /**
-   * Characters kept so far, and whether the last one emitted was a space.
+   * Characters kept so far.
    */
-  const out = {
-    chars: [] as string[],
-    spaced: true,
-  };
+  const kept: string[] = [];
+
+  /**
+   * Whether the last character emitted was a space, which is what stops a run
+   * of whitespace producing more than one.
+   */
+  const run = { spaced: true, };
 
   for (const character of text) {
-    /**
-     * Whether this character is whitespace of any kind, including the ideographic
-     * space the corpus uses.
-     */
-    const blank = (character.trim() === '');
-    if (blank) {
-      if (!out.spaced) {
-        out.chars.push(' ',);
-        out.spaced = true;
+    if (character.trim() === '') {
+      if (!run.spaced) {
+        kept.push(' ',);
+        run.spaced = true;
       }
       continue;
     }
-    out.chars.push(character,);
-    out.spaced = false;
+    kept.push(character,);
+    run.spaced = false;
   }
 
-  return out.chars
-    .join('',)
-    .trim();
+  /**
+   * Those characters as one string, whose leading and trailing space is an
+   * artefact of the collapse rather than content.
+   */
+  const joined = kept.join('',);
+  return joined.trim();
 }
 
 /**
- * Distinct character trigrams of one reading.
+ * Segmenter cutting text into user-perceived characters.
  *
- * CODE POINTS RATHER THAN UTF-16 UNITS, so a picture transcribed with emoji or
- * with characters outside the basic plane cuts into the same grams both readers
- * would produce. Iterating a string yields code points; indexing does not.
+ * GRAPHEMES RATHER THAN UTF-16 UNITS OR CODE POINTS. Indexing a string splits a
+ * character outside the basic plane in half, and code points split a flag or a
+ * modified emoji into its parts, so both would cut grams neither reader would
+ * produce. A grapheme is what a person reading the picture would call one
+ * character, which is the unit the comparison is about.
+ *
+ * BUILT ONCE, because constructing a segmenter is far more expensive than using
+ * one and every reading is cut the same way.
+ */
+const GRAPHEMES = new Intl.Segmenter(
+  undefined,
+  { granularity: 'grapheme', },
+);
+
+/**
+ * Distinct character trigrams of one reading.
  *
  * @param text - reading to cut
  *
@@ -152,9 +166,24 @@ function collapsedWhitespace({ text, }: { readonly text: string; },): string {
  */
 export function characterTrigrams({ text, }: { readonly text: string; },): ReadonlySet<string> {
   /**
-   * Reading as a flat run of code points.
+   * Reading with its whitespace flattened, which is what gets cut.
    */
-  const points = [...collapsedWhitespace({ text, },)];
+  const flat = collapsedWhitespace({ text, },);
+
+  /**
+   * Its graphemes, in order.
+   */
+  const segments = [...GRAPHEMES.segment(flat,)];
+
+  /**
+   * Each grapheme as a plain string, since a segment carries an index and an
+   * input alongside the characters themselves.
+   */
+  const points = segments.map(function ofSegment(
+    { segment, }: { readonly segment: string; },
+  ): string {
+    return segment;
+  },);
 
   /**
    * Grams found so far.
@@ -162,11 +191,14 @@ export function characterTrigrams({ text, }: { readonly text: string; },): Reado
   const grams = new Set<string>();
 
   for (let at = 0; (at + GRAM_LENGTH) <= points.length; at += 1) {
-    grams.add(points.slice(
+    /**
+     * Graphemes this gram spans.
+     */
+    const span = points.slice(
       at,
       at + GRAM_LENGTH,
-    )
-      .join('',),);
+    );
+    grams.add(span.join('',),);
   }
 
   return grams;
@@ -202,33 +234,35 @@ export function trigramOverlap(
   },
 ): number {
   /**
-   * Grams of each side.
+   * Grams of one side.
    */
-  const grams = {
-    left: characterTrigrams({ text: left, },),
-    right: characterTrigrams({ text: right, },),
-  };
-  if ((grams.left.size === 0) || (grams.right.size === 0))
+  const leftGrams = characterTrigrams({ text: left, },);
+
+  /**
+   * Grams of the other.
+   */
+  const rightGrams = characterTrigrams({ text: right, },);
+  if ((leftGrams.size === 0) || (rightGrams.size === 0))
     return 0;
 
   /**
    * Smaller side, whose grams are the ones asked about.
    */
-  const smaller = (grams.left.size <= grams.right.size) ? grams.left : grams.right;
+  const smaller = (leftGrams.size <= rightGrams.size) ? leftGrams : rightGrams;
 
   /**
    * Larger side, which is asked whether it carries them.
    */
-  const larger = (grams.left.size <= grams.right.size) ? grams.right : grams.left;
+  const larger = (leftGrams.size <= rightGrams.size) ? rightGrams : leftGrams;
 
   /**
-   * How many of the smaller side's grams the larger carried.
+   * Grams of the smaller side the larger also carries.
    */
-  const shared = [...smaller].filter(function carried(gram,): boolean {
+  const carried = [...smaller].filter(function inBoth(gram,): boolean {
     return larger.has(gram,);
-  },).length;
+  },);
 
-  return shared / smaller.size;
+  return carried.length / smaller.size;
 }
 
 /**

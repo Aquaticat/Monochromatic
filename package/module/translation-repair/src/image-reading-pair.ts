@@ -42,6 +42,14 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // ratio, or the quote count.
 
 /**
+ * Decimal places an agreement figure is logged to.
+ *
+ * THREE, because the measured gap runs from 0.129 to 0.643 and two places would
+ * round several distinct readings to the same line.
+ */
+const LOGGED_OVERLAP_PLACES = 3;
+
+/**
  * One model's reading of one picture.
  *
  * @example
@@ -204,25 +212,34 @@ export async function readImagePair(
    * Readings that arrived, labelled by model.
    */
   const readings: readonly ModelReading[] = outcomes
-    .filter(function arrived(outcome,): boolean {
-      return outcome.reading
-        .kind === 'read';
+    .filter(function arrived({ reading, },): boolean {
+      return reading.kind === 'read';
     },)
-    .map(function labelled(outcome,): ModelReading {
+    .map(function labelled(
+      {
+        modelId,
+        reading,
+      },
+    ): ModelReading {
       return {
-        modelId: outcome.modelId,
+        modelId,
         // Narrowed by the filter above, which a predicate cannot tell the
         // compiler; the alternative is a type guard for a two-line map.
-        text: (outcome.reading.kind === 'read') ? outcome.reading.text : '',
+        text: (reading.kind === 'read') ? reading.text : '',
       };
     },);
 
   /**
    * Why each reader produced nothing, empty for one that did.
    */
-  const perReader: readonly string[] = outcomes.map(function reason(outcome,): string {
-    return (outcome.reading.kind === 'unavailable')
-      ? `${outcome.modelId}: ${outcome.reading.reason}`
+  const perReader: readonly string[] = outcomes.map(function reason(
+    {
+      modelId,
+      reading,
+    },
+  ): string {
+    return (reading.kind === 'unavailable')
+      ? `${modelId}: ${reading.reason}`
       : '';
   },);
 
@@ -253,11 +270,11 @@ export async function readImagePair(
    * First two readings, which is the whole roster today and the first two of a
    * larger one.
    */
-  const pair = {
-    left: readings[0],
-    right: readings[1],
-  };
-  if ((pair.left === undefined) || (pair.right === undefined)) {
+  const [
+    left,
+    right,
+  ] = readings;
+  if ((left === undefined) || (right === undefined)) {
     throw new Error(
       `readImagePair counted ${String(readings.length,)} readings for ${assetName} `
         + `and then could not index two of them`,
@@ -268,18 +285,15 @@ export async function readImagePair(
    * Whether they describe the same picture.
    */
   const verdict = readingsCorroborate({
-    left: pair.left
-      .text,
-    right: pair.right
-      .text,
+    left: left.text,
+    right: right.text,
   },);
   if (verdict.kind === 'disagree') {
     rl.warn(
-      `${assetName}: ${pair.left
-        .modelId} and ${pair.right
-        .modelId} disagree about what it says, `
-        + `overlap ${verdict.overlap
-          .toFixed(3,)}`,
+      `${assetName}: ${left.modelId} and ${right.modelId} disagree about what it says, `
+        + `overlap ${verdict
+          .overlap
+          .toFixed(LOGGED_OVERLAP_PLACES,)}`,
     );
     return {
       kind: 'unavailable',
@@ -291,8 +305,9 @@ export async function readImagePair(
 
   rl.info(
     `${assetName}: corroborated by ${String(readings.length,)} readers at overlap ${
-      verdict.overlap
-        .toFixed(3,)
+      verdict
+        .overlap
+        .toFixed(LOGGED_OVERLAP_PLACES,)
     }`,
   );
   return {
