@@ -12692,3 +12692,52 @@ and the entry that did settle predates all of today's changes.
 That is the one thing standing between this lane and done, and it gates the corpus-wide pass,
 because a full pass is hours of quota and one settled entry is the cheap check
 that picture context flows through `slicePictures` into both lanes without a new surprise.
+
+## 2026-08-19, closing: the entry settles, and the reading lane is measured separately
+
+### One picture-bearing entry settled end to end
+
+```text
+TALLY wangzihao980 status=SETTLED slices=6
+  repairStatus=repaired repairIssues=43 repairAccepted=35 repairResolved=35
+  repairFindings=78 repairChanged=5
+  translateStatus=complete translateChanged=4 documentsDiffer=4
+  alignmentFindings=0 selection=pending-human-decision ms=3660309
+DONE processed=1 of pending=1
+```
+
+That was the gate. Both lanes completed on a document whose picture context came from the
+gate, the shape screen and the re-ask, and the aligner raised nothing.
+
+READ THE COST FIGURE BEFORE PLANNING A CORPUS PASS: 3660309 ms is 61 minutes for ONE entry,
+and the corpus holds 93.
+A serial end-to-end pass is days of wall clock, not hours.
+
+### So the reading lane is measured on its own
+
+The reading lane is separable: it runs before either translation lane and takes nothing from them.
+`~/temp/agent/reading-census.mjs` walks every entry, prepares its pair, gathers its pictures,
+and reads them through the same `readDocumentPictures` production call,
+recording the verdict per asset into `~/temp/agent/reading-census.json`.
+That buys the corpus-wide picture rates for the price of the vision calls alone,
+instead of waiting days behind two translation lanes that no picture question depends on.
+
+It answers three things the single-entry runs cannot:
+how many pictures reach each verdict corpus-wide;
+how the nine assets in the 16 to 31 character band behave, which is what decides whether
+`MIN_OCR_CHARS` sits in the right place;
+and how many re-asks the refusal roll actually costs, which is what the ask limit should be
+set from rather than from one picture.
+
+### A null result that was a bug, twice in one session
+
+The census printed `entries listed: 93` and `assets read: 0` on its first run, in under a second.
+Not a corpus without pictures:
+`readCorpusFile` takes `relPath` and had been passed `path`,
+so every read threw and a bare `catch { continue; }` turned 93 failures into a clean zero.
+
+This is the same shape as the test file that registered nothing and exited 0 earlier today.
+Both were caught by asking whether the probe could have shown a positive at all,
+and in both cases the answer took one command.
+The census now counts and reports the entries it could not read,
+so its zero can never again mean two different things.
