@@ -21,41 +21,64 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 // of the stall escalating into another whole stage round.
 
 /**
- * Silence allowed before the first body byte, set ABOVE the 240 s per-call
- * deadline so it never fires. The guard measures; the total deadline is what
- * kills.
+ * Silence allowed before the first body byte, set ABOVE
+ * `RUN_PER_CALL_TIMEOUT_MS` (360_000 in `corpus-run/run-config.ts`) so it
+ * never fires. The guard measures; the total deadline is what kills.
  *
- * A full sentinel probe settled why. Of the stalls it recorded, 34 of 34 were
- * `first-byte` and NOT ONE was `body`, so silence-based aborting has no
- * discriminating power against the failure mode that actually occurs: on this
- * provider, long first-byte silence IS normal operation. Across 32 successful
- * streams, time to first byte ran p50 95.6 s, p75 123 s, p90 134 s, max 147.5 s.
- * A window cannot separate "stalled and silent" from "working and silent" when
- * working looks like that.
+ * THE MEDIAN THIS WAS ORIGINALLY SET FROM IS SUPERSEDED, by about eighty
+ * times, and `#121` re-derived it from first production traffic rather than
+ * retiring the finding. A full sentinel probe once found 34 of 34 recorded
+ * stalls were `first-byte` and NOT ONE was `body`, and across 32 successful
+ * streams then, time to first byte ran p50 95.6 s, p75 123 s, p90 134 s, max
+ * 147.5 s (the max itself censored: the window was 150 s live while those
+ * samples were collected, so anything slower was aborted instead of
+ * recorded). `doc/audit/stream-guards-first-production-traffic.md` read
+ * three separate workloads spanning five days; this file's own re-count
+ * against the same three logs puts the median at 1032, 1207, and 1237 ms,
+ * a band the 95.6 s figure sits 77 to 93 times above. Working no longer
+ * looks anything like stalled at the median.
  *
- * The 147.5 s maximum is also the guard's own shadow rather than the true tail,
- * because the window was 150 s while those samples were collected, so anything
- * slower was aborted instead of recorded. The probe took 45.8 minutes against
- * the 23.9 minutes the same entry took without a guard, which is what killing
- * 34 in-progress calls and re-dispatching them costs.
+ * THE TAIL DOES NOT AGREE WITH THE MEDIAN, which is why this constant is
+ * corrected rather than lowered. The same re-count found a completed (not
+ * cut) `hf:zai-org/GLM-5.2` stream whose first byte took 183_755 ms, and a
+ * separate uncensored 2026-07-26 run (`doc/handover/translation-repair.md`,
+ * "PASS 7 RUN 014", a different roster and three weeks earlier) recorded a
+ * completed call at 347_099 ms, within 3.6 percent of the deadline this
+ * constant sits above today. Both were healthy completions, not
+ * abandonments, so any window tight enough to meaningfully beat the
+ * deadline would have killed at least one of them on the evidence
+ * available. See
+ * `doc/decision/translation-repair-runaway-call-termination.md` for the
+ * full arithmetic and the re-arming question this leaves for the owner.
  */
 export const STREAM_FIRST_BYTE_MS = 600_000;
 
 /**
- * Silence allowed between body bytes once flowing, also set above the per-call
- * deadline so it never fires, for two independent reasons.
+ * Silence allowed between body bytes once flowing, also set above
+ * `RUN_PER_CALL_TIMEOUT_MS` so it never fires, for two independent reasons,
+ * both narrowed rather than reversed by the `#121` re-derivation.
  *
- * First, it has nothing to catch: 34 of 34 recorded stalls were `first-byte`
- * and none were `body`, so mid-stream death was not a failure mode that
- * occurred at all.
+ * First, it still has almost nothing to catch. The original probe found 34
+ * of 34 recorded stalls were `first-byte` and none were `body`. Re-counted
+ * against the three logs
+ * `doc/audit/stream-guards-first-production-traffic.md` reads, pooled
+ * across 7079 streams, exactly one legitimate mid-stream gap exceeded 120 s,
+ * and it was not a stall: a completed
+ * `hf:zai-org/GLM-5.2` stream (first byte 794 ms, otherwise ordinary)
+ * carried one internal gap of 124_992 ms before finishing normally. Rare is
+ * no longer zero, and a window anywhere near that size would have cost a
+ * working voice.
  *
- * Second, an earlier 30 s value here was justified by a six-stream sample whose
- * largest gap was 733 ms, called forty times the worst observation. At 32
- * streams that reads p50 86 ms, p90 3833 ms, and max 24_673 ms, with three
- * streams past 20 s. The real margin was about 1.2x, not 40x, so the window was
- * close to killing healthy streams rather than comfortably clear of them. The
- * lesson generalizes past this constant: a maximum over a handful of samples is
- * not a bound, and treating it as one turned a safety claim upside down.
+ * Second, this constant has already been raised once on exactly this
+ * mistake, and the pattern repeated a third time on re-measurement. An
+ * earlier 30 s value here was justified by a six-stream sample whose largest
+ * gap was 733 ms, called forty times the worst observation; at 32 streams
+ * that read p50 86 ms, p90 3833 ms, max 24_673 ms; the `#121` re-count above
+ * puts the observed max at 124_992 ms. Each larger sample found a larger
+ * gap, 733 ms then 24_673 ms then 124_992 ms, so treating any one of them as
+ * a bound has been wrong every time it was tried. See
+ * `doc/decision/translation-repair-runaway-call-termination.md` for the
+ * full arithmetic and the re-arming question this leaves for the owner.
  */
 export const STREAM_IDLE_MS = 600_000;
 

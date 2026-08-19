@@ -78,13 +78,34 @@ await describe({
         it({
           name: 'keeps both windows above the per-call deadline so the guard measures without killing',
           fn: async () => {
-            // 240_000 is the corpus run's per-call total deadline. The probe
-            // found 34 of 34 stalls were first-byte and none mid-stream, and
-            // that healthy first-byte silence reaches at least 147.5s, so a
-            // silence window cannot tell a stalled call from a working one.
-            // Windows above the deadline leave the deadline as the only kill.
-            expect(STREAM_FIRST_BYTE_MS,).toBeGreaterThan(240_000,);
-            expect(STREAM_IDLE_MS,).toBeGreaterThan(240_000,);
+            // 360_000 is RUN_PER_CALL_TIMEOUT_MS in
+            // corpus-run/run-config.ts (raised from 240_000 once that value
+            // was measured to clip real work), not imported here because it
+            // is not re-exported through the package barrel this test
+            // builds against. Both windows must stay above it so the total
+            // deadline is what ends a genuinely dead call, never this
+            // guard.
+            expect(STREAM_FIRST_BYTE_MS,).toBeGreaterThan(360_000,);
+            expect(STREAM_IDLE_MS,).toBeGreaterThan(360_000,);
+          },
+        },),
+
+        it({
+          name: 'keeps both windows above the highest first-byte wait and mid-stream gap observed in production so far',
+          fn: async () => {
+            // 347_099 is PASS 7 RUN 014's uncensored first-byte maximum
+            // (doc/handover/translation-repair.md), a completed call within
+            // 3.6 percent of the current deadline. 124_992 is the largest
+            // mid-stream gap `#121` found pooling
+            // doc/audit/stream-guards-first-production-traffic.md's three
+            // logs (7079 streams); also a completed hf:zai-org/GLM-5.2 call
+            // rather than a stall. A future re-arming attempt that lowers
+            // either constant below its own history would silently start
+            // killing healthy calls; see
+            // doc/decision/translation-repair-runaway-call-termination.md
+            // for the full arithmetic.
+            expect(STREAM_FIRST_BYTE_MS,).toBeGreaterThan(347_099,);
+            expect(STREAM_IDLE_MS,).toBeGreaterThan(124_992,);
           },
         },),
       ],
