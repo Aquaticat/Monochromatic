@@ -98,6 +98,11 @@ export function translateRunShape(
  * serialized as though this parameter did not exist, so a settled corpus keyed
  * before it existed stays valid
  *
+ * @param pictureContext - what the pictures this slice and its neighbours show
+ * were read as, appended only when a reading was corroborated. A slice judged
+ * with a picture's text in front of it can reach a different answer than one
+ * judged without, so the two are not the same question and must not share a key
+ *
  * @param neighbouringIncumbentText - archive English of the sections either
  * side, shown so a passage missing here can be recognised next door rather than
  * read as one the archive never had
@@ -118,6 +123,7 @@ export function translateSliceKey(
     lineStructured,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    pictureContext,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -126,6 +132,7 @@ export function translateSliceKey(
     readonly lineStructured: boolean;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly pictureContext?: string;
   },
 ): string {
   return hashContent({
@@ -169,6 +176,18 @@ export function translateSliceKey(
         : [
           'neighbouring-incumbent',
           neighbouringIncumbentText,
+        ]),
+      // THE READING'S TEXT RATHER THAN ITS KEY, deliberately, even though the
+      // readings are stored under a key of their own. What changes a judge's
+      // answer is the words it was shown, and two runs that read one picture
+      // into different words asked different questions however identical their
+      // inputs were. The reading store is what stops that happening on a
+      // RESUME; this is what makes it honest when it does.
+      ...((pictureContext === undefined) || (pictureContext === '')
+        ? []
+        : [
+          'pictures',
+          pictureContext,
         ]),
     ],),
   },);

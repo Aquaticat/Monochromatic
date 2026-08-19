@@ -104,6 +104,8 @@ export async function attemptTranslateSlice(
     models,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    pictureContext,
+    pictureFindings,
     signal,
     perCallTimeoutMs,
     l,
@@ -123,6 +125,18 @@ export async function attemptTranslateSlice(
      * Original either side of this slice, computed the same way.
      */
     readonly neighbouringSourceText: string;
+
+    /**
+     * What the pictures this slice and its neighbours show were read as,
+     * gathered once per document so every slice showing one picture is shown
+     * the same words about it.
+     */
+    readonly pictureContext: string;
+
+    /**
+     * One line per picture no reading is available for.
+     */
+    readonly pictureFindings: readonly string[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -138,6 +152,8 @@ export async function attemptTranslateSlice(
         models,
         neighbouringIncumbentText,
         neighbouringSourceText,
+        pictureContext,
+        pictureFindings,
         signal,
         perCallTimeoutMs,
         l,

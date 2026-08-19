@@ -16,6 +16,8 @@ import {
   absenceFinding,
   type IncumbentKind,
 } from './translate-absence.ts';
+import type { PairedReading, } from './image-reading-pair.ts';
+import { slicePictures, } from './slice-pictures.ts';
 import { attemptTranslateSlice, } from './translate-slice-attempt.ts';
 import {
   assertSettledRecordAgrees,
@@ -116,6 +118,7 @@ export async function translateDocument(
     client,
     prepared,
     models,
+    pictureReadings = new Map(),
     signal,
     perCallTimeoutMs,
     sliceCache,
@@ -124,6 +127,18 @@ export async function translateDocument(
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
+
+    /**
+     * What each of this document's pictures was read as, gathered once by
+     * `readDocumentPictures` before any slice is translated.
+     *
+     * HANDED IN AS DATA rather than gathered here, for the reason every other
+     * input is: this driver is a function of its arguments and its injected
+     * client, and reading a picture needs bytes off a disk whose layout is the
+     * corpus layer's business. Empty by default, so a caller that gathers none
+     * runs exactly the lane that ran before pictures existed.
+     */
+    readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly sliceCache?: SliceCache<TranslateSliceRecord>;
@@ -261,6 +276,21 @@ export async function translateDocument(
     },);
 
     /**
+     * What the pictures this slice and its neighbours show were read as, and
+     * which of them nobody could read.
+     *
+     * COMPUTED HERE FOR THE SAME REASON THE WINDOW IS. `#107`'s judging window
+     * existed for weeks while production never passed it, and nothing failed,
+     * because the key and the call were free to disagree about what evidence
+     * this slice was judged on. One value feeds both.
+     */
+    const pictures = slicePictures({
+      slices: prepared.slices,
+      sliceIndex,
+      readings: pictureReadings,
+    },);
+
+    /**
      * Archive English of the passages either side, which is the half that shows
      * a relocation: the Chinese says each thing once in its own place, while
      * the English says it next door.
@@ -284,6 +314,7 @@ export async function translateDocument(
         .has(chunkIndex,),
       neighbouringIncumbentText,
       neighbouringSourceText,
+      pictureContext: pictures.context,
     },);
 
     /**
@@ -366,6 +397,8 @@ export async function translateDocument(
       models,
       neighbouringIncumbentText,
       neighbouringSourceText,
+      pictureContext: pictures.context,
+      pictureFindings: pictures.findings,
       signal,
       perCallTimeoutMs,
       l: tl,

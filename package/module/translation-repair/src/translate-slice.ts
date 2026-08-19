@@ -57,6 +57,14 @@ import { runTranslateStage, } from './translate-stage.ts';
  * side, shown so a passage missing here can be recognised next door rather than
  * read as one the archive never had
  *
+ * @param pictureContext - what the pictures this slice and its neighbours show
+ * were read as, shown to translators and judges as source evidence they could
+ * otherwise not see
+ *
+ * @param pictureFindings - one line per picture no reading is available for,
+ * carried into the record so a run says which pictures went unread rather than
+ * leaving their absence indistinguishable from a slice showing none
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -83,6 +91,8 @@ export async function settleTranslateSlice(
     models,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    pictureContext,
+    pictureFindings = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -93,6 +103,8 @@ export async function settleTranslateSlice(
     readonly models: TranslateModels;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly pictureContext?: string;
+    readonly pictureFindings?: readonly string[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -179,12 +191,29 @@ export async function settleTranslateSlice(
     ...((neighbouringIncumbentText === undefined)
       ? {}
       : { neighbouringIncumbentText, }),
+    ...((pictureContext === undefined)
+      ? {}
+      : { pictureContext, }),
     lineStructured: prepared.lineStructuredSliceIndices
       .has(chunkIndex,),
     signal,
     perCallTimeoutMs,
     l,
   },);
+
+  /**
+   * What this slice reports, the stage's own findings plus one line per picture
+   * nobody could read.
+   *
+   * A PICTURE THAT WENT UNREAD IS NOT THE SAME AS A SLICE SHOWING NONE, and
+   * without this line the two are identical in every artifact. The reading is
+   * evidence the translators and judges were promised and did not get, so a
+   * reader asking why a slice decided as it did needs to know it was missing.
+   */
+  const findings: readonly string[] = [
+    ...stageResult.findings,
+    ...pictureFindings,
+  ];
 
   /**
    * Whether this slice's two sides can be the same passage.
@@ -252,7 +281,7 @@ export async function settleTranslateSlice(
       changed: false,
       disposition: 'refused-quote-loss',
       alignment,
-      findings: stageResult.findings,
+      findings,
     };
   }
   if (refused) {
@@ -281,7 +310,7 @@ export async function settleTranslateSlice(
       // by leaving it out: `disposition` and `alignment` are both here, so the
       // driver derives the sentence from them and from the index the record was
       // actually stamped with.
-      findings: stageResult.findings,
+      findings,
     };
   }
 
@@ -321,7 +350,7 @@ export async function settleTranslateSlice(
     changed: wantsReplacement,
     disposition: 'stage-result',
     alignment,
-    findings: stageResult.findings,
+    findings,
   };
 }
 

@@ -104,6 +104,7 @@ export async function produceTranslateSlate(
     sourceText,
     incumbentText,
     identityContext,
+    pictureContext,
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -114,6 +115,7 @@ export async function produceTranslateSlate(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly identityContext?: string;
+    readonly pictureContext?: string;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -136,6 +138,7 @@ export async function produceTranslateSlate(
     sourceText,
     existingText: incumbentText,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((pictureContext === undefined) ? {} : { pictureContext, }),
     lineStructured,
   },);
 

@@ -151,6 +151,7 @@ export async function readDocumentPictures(
       continue;
     }
 
+    /* oxlint-disable no-await-in-loop -- sequential by design, matching `translateDocument`: the client's limiter grants one stream per model, so reading two pictures at once queues behind the same slot rather than doubling throughput, and settling one picture before starting the next is what makes an aborted run resumable to the picture it reached */
     /**
      * What the roster made of it now.
      */
@@ -171,6 +172,7 @@ export async function readDocumentPictures(
       key,
       serialized: JSON.stringify(paired,),
     },);
+    /* oxlint-enable no-await-in-loop */
   }
 
   return readings;

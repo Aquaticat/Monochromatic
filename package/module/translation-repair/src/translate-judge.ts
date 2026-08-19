@@ -117,6 +117,7 @@ export async function judgeTranslateSlate(
     identityContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    pictureContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -130,6 +131,7 @@ export async function judgeTranslateSlate(
     readonly identityContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly pictureContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -302,6 +304,19 @@ export async function judgeTranslateSlate(
         label: 'ORIGINAL (Chinese)',
         text: sourceText,
       },
+      // WHAT THE PICTURES SAY, placed beside the original because that is what
+      // it is: a passage showing a picture has a source a judge cannot read,
+      // and English transcribing that picture looks like invention until this
+      // block exists. Only corroborated readings appear here; a picture nobody
+      // could read is a finding rather than a hedge for a judge to weigh.
+      ...((pictureContext === undefined) || (pictureContext === '')
+        ? []
+        : [
+          {
+            label: 'WHAT THE PICTURES HERE SAY, transcribed by two readers that agreed',
+            text: pictureContext,
+          },
+        ]),
       // Neighbouring sections travel as CONTEXT, never as something to render,
       // and only when a caller asked for them, so a run that does not want the
       // wider window renders the sheet this stage has always sent. The label

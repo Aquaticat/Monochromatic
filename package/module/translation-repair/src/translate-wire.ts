@@ -120,11 +120,13 @@ export function buildTranslateMessages(
     sourceText,
     existingText,
     identityContext = '',
+    pictureContext = '',
     lineStructured = false,
   }: {
     readonly sourceText: string;
     readonly existingText: string;
     readonly identityContext?: string;
+    readonly pictureContext?: string;
     readonly lineStructured?: boolean;
   },
 ): TranslatePromptPlan {
@@ -137,6 +139,7 @@ export function buildTranslateMessages(
       sourceText,
       existingText,
       identityContext,
+      pictureContext,
     ],
   },);
 
@@ -163,7 +166,13 @@ export function buildTranslateMessages(
       {
         role: 'user',
         content: `${fence} ORIGINAL ${fence}
-${sourceText}
+${sourceText}${
+          pictureContext === ''
+            ? ''
+            : `
+${fence} WHAT THE PICTURES HERE SAY ${fence}
+${pictureContext}`
+        }
 ${fence} EXISTING TRANSLATION ${fence}
 ${existingText === '' ? '(none: this passage has no translation yet)' : existingText}${
           identityContext === ''

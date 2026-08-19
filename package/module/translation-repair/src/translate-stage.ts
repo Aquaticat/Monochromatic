@@ -107,6 +107,7 @@ export async function runTranslateStage(
     identityContext,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    pictureContext,
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -121,6 +122,7 @@ export async function runTranslateStage(
     readonly identityContext?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly pictureContext?: string;
     readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -145,6 +147,7 @@ export async function runTranslateStage(
     sourceText,
     incumbentText,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((pictureContext === undefined) ? {} : { pictureContext, }),
     lineStructured,
     signal,
     perCallTimeoutMs,
@@ -166,6 +169,7 @@ export async function runTranslateStage(
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+      ...((pictureContext === undefined) ? {} : { pictureContext, }),
       signal,
       perCallTimeoutMs,
       l,
