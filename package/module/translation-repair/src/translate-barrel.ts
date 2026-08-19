@@ -197,6 +197,7 @@ export {
 } from './slice-pictures.ts';
 export {
   type ModelReading,
+  type OcrReader,
   type PairedReading,
   readImagePair,
 } from './image-reading-pair.ts';

@@ -173,6 +173,14 @@ export function slicePictures(
       findings.push(`picture ${assetName}: no reading, ${reading.reason}`,);
       continue;
     }
+    if (reading.kind === 'no-text') {
+      // WORDED AS A FACT ABOUT THE PICTURE, not about the pipeline. Two thirds
+      // of this corpus's pictures are photographs, so a slice showing one is
+      // not missing evidence and whoever reads the finding should not go
+      // looking for it.
+      findings.push(`picture ${assetName}: carries no text`,);
+      continue;
+    }
 
     /**
      * Each reader's transcription, named by the model that produced it, since

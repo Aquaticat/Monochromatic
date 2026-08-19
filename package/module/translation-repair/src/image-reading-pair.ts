@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { OcrReading, } from './image-ocr.ts';
 import {
   type ImageReading,
   readImageAsset,
@@ -60,6 +61,27 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 const LOGGED_OVERLAP_PLACES = 3;
 
 /**
+ * Reads a picture without a model, which is what gates the model calls.
+ *
+ * PASSED IN RATHER THAN REACHED FOR, because the real one shells out to
+ * `dwebp` and `tesseract`. Injecting it keeps this function testable on a
+ * machine that has neither, and keeps a test that forgets to supply one a TYPE
+ * ERROR rather than a slow, machine-dependent pass.
+ *
+ * @example
+ * ```ts
+ * const readOcr: OcrReader = async () => ({ kind: 'no-text', characters: 0, });
+ * ```
+ */
+export type OcrReader = (
+  input: {
+    readonly bytes: Uint8Array;
+    readonly assetName: string;
+    readonly l: Logger;
+  },
+) => Promise<OcrReading>;
+
+/**
  * One model's reading of one picture.
  *
  * @example
@@ -109,6 +131,25 @@ export type PairedReading = {
    * how close its corroborations ran.
    */
   readonly overlap: number;
+} | {
+  /**
+   * The picture carries no text, so there was nothing to read and no model was
+   * asked.
+   *
+   * A VERDICT RATHER THAN A FAILURE, and the distinction is not cosmetic. Two
+   * thirds of this corpus's pictures are photographs of people: 119 of 191
+   * assets return nothing from the deterministic reader. Recording those as
+   * `unavailable` would report a correct answer as a shortfall, and would leave
+   * anyone reading a run unable to tell a picture nobody could read from one
+   * with nothing on it.
+   */
+  readonly kind: 'no-text';
+
+  /**
+   * How much the deterministic reader did return, so a clean nothing is
+   * distinguishable from a few characters below the line.
+   */
+  readonly characters: number;
 } | {
   /**
    * No reading may be used, for a reason a finding can name.
@@ -162,6 +203,9 @@ export type PairedReading = {
  *
  * @param readerModelIds - vision sub-roster, asked in this order
  *
+ * @param readOcr - deterministic reader consulted before any model, which
+ * decides whether the picture is worth asking about at all
+ *
  * @param bytes - picture as read from disk
  *
  * @param assetName - its file name, which carries the media type
@@ -181,13 +225,14 @@ export type PairedReading = {
  *
  * @example
  * ```ts
- * const paired = await readImagePair({ client, readerModelIds, bytes, assetName, signal, perCallTimeoutMs, l, },);
+ * const paired = await readImagePair({ client, readerModelIds, readOcr, bytes, assetName, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function readImagePair(
   {
     client,
     readerModelIds,
+    readOcr,
     bytes,
     assetName,
     signal,
@@ -196,6 +241,7 @@ export async function readImagePair(
   }: {
     readonly client: SyntheticClient;
     readonly readerModelIds: readonly SyntheticModelId[];
+    readonly readOcr: OcrReader;
     readonly bytes: Uint8Array;
     readonly assetName: string;
     readonly signal: AbortSignal;
@@ -210,6 +256,38 @@ export async function readImagePair(
     tag: readImagePair.name,
     l,
   },);
+
+  /**
+   * What the deterministic reader made of the picture, asked before any model.
+   *
+   * A GATE RATHER THAN A THIRD READER, which is the opposite of what it looks
+   * like it should be and was settled by measurement. Its readings do not
+   * corroborate the models': on `Word1.webp` it returns 405 characters against
+   * their 390 and 394, so it reads the same text, and still scores 0.019 and
+   * 0.023 against them while they score 0.643 against each other. Tesseract on
+   * handwritten Chinese recovers the layout and substitutes lookalike glyphs,
+   * which leaves length intact and destroys trigram overlap. Letting it vote
+   * would refuse readings that are fine.
+   *
+   * WHAT IT IS RELIABLE AT IS PRESENCE, six of six against the models in both
+   * directions, which is the question worth asking first.
+   */
+  const ocr = await readOcr({
+    bytes,
+    assetName,
+    l,
+  },);
+  if (ocr.kind === 'no-text') {
+    rl.info(
+      `${assetName}: no text to read, so no model was asked (${
+        String(ocr.characters,)
+      } characters from the deterministic reader)`,
+    );
+    return {
+      kind: 'no-text',
+      characters: ocr.characters,
+    };
+  }
 
   /**
    * How each reader's exchange ended, asked concurrently.

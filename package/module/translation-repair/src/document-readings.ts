@@ -11,6 +11,7 @@ import {
   readImagePair,
 } from './image-reading-pair.ts';
 import { photoReferences, } from './photo-reference.ts';
+import { readImageWithOcr, } from './image-ocr.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -160,6 +161,7 @@ export async function readDocumentPictures(
      * What the roster made of it now.
      */
     const paired = await readImagePair({
+      readOcr: readImageWithOcr,
       client,
       readerModelIds,
       bytes,

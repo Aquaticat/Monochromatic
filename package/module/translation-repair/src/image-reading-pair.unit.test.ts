@@ -32,6 +32,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type ChatTextRequest,
+  type OcrReader,
   readImagePair,
   type SyntheticClient,
   type SyntheticModelId,
@@ -77,6 +78,50 @@ const AGREEING_READING = '走失猫咪 Mittens，虎斑，2019 年出生，联�
  * What a reader transcribed from some other picture entirely.
  */
 const OTHER_PICTURE = '兽医诊所营业时间：周一至周五上午九点到下午六点，周六休息。';
+
+/**
+ * Deterministic reader that finds text, which is what lets the models be asked.
+ *
+ * THE REAL ONE SHELLS OUT to `dwebp` and `tesseract`, so every case here supplies
+ * a stub instead. That is the point of the seam: a test must not depend on which
+ * command-line tools a machine happens to carry.
+ */
+async function found(): Promise<{
+  readonly kind: 'read';
+  readonly text: string;
+}> {
+  return {
+    kind: 'read',
+    text: '走失猫咪 Mittens',
+  };
+}
+
+/**
+ * Deterministic reader that finds nothing, which is two thirds of the corpus.
+ */
+async function empty(): Promise<{
+  readonly kind: 'no-text';
+  readonly characters: number;
+}> {
+  return {
+    kind: 'no-text',
+    characters: 3,
+  };
+}
+
+/**
+ * Deterministic reader that could not run, standing in for a machine without
+ * the tools installed.
+ */
+async function missing(): Promise<{
+  readonly kind: 'unavailable';
+  readonly reason: 'ocr-tool-missing';
+}> {
+  return {
+    kind: 'unavailable',
+    reason: 'ocr-tool-missing',
+  };
+}
 
 /**
  * Bytes standing in for a picture, whose content no rule here reads.
@@ -222,6 +267,7 @@ await describe({
          */
         const paired = await readImagePair({
           client,
+          readOcr: found,
           readerModelIds: READERS,
           bytes: bytesOf({ length: 64, },),
           assetName: 'noticeboard.webp',
@@ -270,6 +316,7 @@ await describe({
          */
         const paired = await readImagePair({
           client,
+          readOcr: found,
           readerModelIds: READERS,
           bytes: bytesOf({ length: 64, },),
           assetName: 'noticeboard.webp',
@@ -304,6 +351,7 @@ await describe({
          */
         const paired = await readImagePair({
           client,
+          readOcr: found,
           readerModelIds: READERS,
           bytes: bytesOf({ length: ONE_READER_BYTES, },),
           assetName: 'noticeboard.webp',
@@ -331,6 +379,7 @@ await describe({
          */
         const paired = await readImagePair({
           client,
+          readOcr: found,
           readerModelIds: READERS,
           bytes: bytesOf({ length: 64, },),
           assetName: 'noticeboard.webp',
@@ -366,6 +415,7 @@ await describe({
          */
         const paired = await readImagePair({
           client,
+          readOcr: found,
           readerModelIds: [LARGER_READER,],
           bytes: bytesOf({ length: 64, },),
           assetName: 'noticeboard.webp',
@@ -399,6 +449,7 @@ await describe({
          */
         const paired = await readImagePair({
           client,
+          readOcr: found,
           readerModelIds: READERS,
           bytes: bytesOf({ length: 64, },),
           assetName: 'noticeboard.webp',
@@ -440,6 +491,7 @@ await describe({
          */
         const paired = await readImagePair({
           client,
+          readOcr: found,
           readerModelIds: READERS,
           bytes: bytesOf({ length: 64, },),
           assetName: 'noticeboard.webp',
@@ -490,6 +542,7 @@ await describe({
            */
           const paired = await readImagePair({
             client,
+            readOcr: found,
             readerModelIds: READERS,
             bytes: bytesOf({ length: 64, },),
             assetName: 'noticeboard.webp',
@@ -503,6 +556,74 @@ await describe({
         }
 
         expect(escaped,).toBe('AbortError',);
+      },
+    },),
+
+    it({
+      name: 'ASKS NO MODEL ABOUT A PICTURE WITH NO TEXT, and reports that as its own verdict rather '
+        + 'than as a failure. Measured over the corpus, 119 of 191 pictures carry no text at all, '
+        + 'so this is the common case and every model call it would have spent is spent on being '
+        + 'told there is nothing there',
+      fn: async () => {
+        const { client, asked, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': READING,
+            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+          },
+        },);
+
+        /**
+         * What the roster made of a picture the deterministic reader found bare.
+         */
+        const paired = await readImagePair({
+          client,
+          readOcr: empty,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'noticeboard.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        // The gate, which is the whole point: nothing was asked.
+        expect(asked.length,).toBe(0,);
+        expect(paired.kind,).toBe('no-text',);
+        if (paired.kind !== 'no-text')
+          throw new Error('no-text by construction',);
+        expect(paired.characters,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'ASKS THE MODELS ANYWAY WHEN THE DETERMINISTIC READER CANNOT RUN, since a machine '
+        + 'without the tools installed must degrade to the behaviour it had before them rather '
+        + 'than report every picture as bare. A missing tool and an empty picture are opposite '
+        + 'facts and must not produce the same verdict',
+      fn: async () => {
+        const { client, asked, } = scriptedClient({
+          byModel: {
+            'hf:moonshotai/Kimi-K3': READING,
+            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+          },
+        },);
+
+        /**
+         * What the roster made of a picture nothing could pre-screen.
+         */
+        const paired = await readImagePair({
+          client,
+          readOcr: missing,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'noticeboard.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(asked.length,).toBe(2,);
+        expect(paired.kind,).toBe('corroborated',);
       },
     },),
   ],
