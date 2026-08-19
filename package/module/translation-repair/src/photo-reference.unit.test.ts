@@ -28,6 +28,35 @@ import {
   photoReferences,
 } from '../dist/final/node/index.mjs';
 
+/**
+ * Placeholder the corpus writes an entry's own directory as.
+ *
+ * AN ESCAPED TEMPLATE LITERAL, so the characters are the ones the corpus
+ * carries without this file appearing to leave a placeholder uninterpolated.
+ */
+const ENTRY = `\${path}`;
+
+/**
+ * Builds one photo element naming the given assets.
+ *
+ * @param assets - asset paths as the element carries them
+ *
+ * @returns Element as a page writes it
+ *
+ * @example
+ * ```ts
+ * const element = elementOf({ assets: [`${ENTRY}/photos/tabby.webp`,], },);
+ * ```
+ */
+function elementOf({ assets, }: { readonly assets: readonly string[]; },): string {
+  return `<PhotoScroll photos={[ ${
+    assets.map(function quoted(asset,): string {
+      return `'${asset}'`;
+    },)
+      .join(', ',)
+  } ]} />`;
+}
+
 await describe({
   name: photoReferences.name,
   children: [
@@ -36,10 +65,15 @@ await describe({
         + 'showing several pictures is transcribed from all of them',
       fn: async () => {
         /**
-         * One element naming three pictures, as the corpus writes them.
+         * One element naming three pictures.
          */
-        const text = '<PhotoScroll photos={[ \'${path}/photos/tabby.webp\', '
-          + '\'${path}/photos/mittens.webp\', \'${path}/photos/sill.jpg\', ]} />';
+        const text = elementOf({
+          assets: [
+            `${ENTRY}/photos/tabby.webp`,
+            `${ENTRY}/photos/mittens.webp`,
+            `${ENTRY}/photos/sill.jpg`,
+          ],
+        },);
 
         expect(photoReferences({ text, },)
           .map(function toName(reference,): string {
@@ -57,7 +91,11 @@ await describe({
         + 'it as a different prefix would report that entry as showing one picture fewer than it '
         + 'does, and an undercount is worse than a gap because nothing looks wrong',
       fn: async () => {
-        const text = '<PhotoScroll photos={[ \'${path} /photos/tabby.webp\' ]} />';
+        /**
+         * The stray-space spelling, verbatim.
+         */
+        const text = elementOf({ assets: [`${ENTRY} /photos/tabby.webp`,], },);
+
         expect(photoReferences({ text, },).length,).toBe(1,);
         expect(photoReferences({ text, },)[0]?.assetName,).toBe('tabby.webp',);
       },
@@ -66,18 +104,28 @@ await describe({
     it({
       name: 'READS SEVERAL ELEMENTS in one passage, since a slice may show two sets of pictures',
       fn: async () => {
-        const text = '<PhotoScroll photos={[ \'${path}/photos/one.webp\' ]} />\n\n'
-          + 'She also drew these.\n\n'
-          + '<PhotoScroll photos={[ \'${path}/photos/two.webp\' ]} />';
+        /**
+         * Two elements with prose between them.
+         */
+        const text = `${
+          elementOf({ assets: [`${ENTRY}/photos/one.webp`,], },)
+        }\n\nShe also drew these.\n\n${
+          elementOf({ assets: [`${ENTRY}/photos/two.webp`,], },)
+        }`;
+
         expect(photoReferences({ text, },).length,).toBe(2,);
       },
     },),
 
     it({
       name: 'IGNORES A QUOTED STRING THAT NAMES SOMETHING ELSE, so an attribute carrying a caption '
-        + 'or a class never arrives as a file this pipeline would try to open',
+        + 'never arrives as a file this pipeline would try to open',
       fn: async () => {
-        const text = '<PhotoScroll caption=\'Her drawings\' photos={[ \'${path}/photos/one.webp\' ]} />';
+        /**
+         * An element carrying a caption beside its pictures.
+         */
+        const text = `<PhotoScroll caption='Her drawings' photos={[ '${ENTRY}/photos/one.webp' ]} />`;
+
         expect(photoReferences({ text, },).length,).toBe(1,);
         expect(photoReferences({ text, },)[0]?.assetName,).toBe('one.webp',);
       },
@@ -85,9 +133,9 @@ await describe({
 
     it({
       name: 'REFUSES A PATH THAT CLIMBS OUT of the entry’s own directory, since a file name is '
-        + 'what this names and anything with a separator in it is not one',
+        + 'what this names and anything carrying a separator is not one',
       fn: async () => {
-        const text = '<PhotoScroll photos={[ \'${path}/photos/../../etc/passwd\' ]} />';
+        const text = elementOf({ assets: [`${ENTRY}/photos/../../etc/passwd`,], },);
         expect(photoReferences({ text, },).length,).toBe(0,);
       },
     },),
@@ -101,14 +149,15 @@ await describe({
     },),
 
     it({
-      name: 'STOPS AT AN UNCLOSED ELEMENT rather than reading the rest of the document as its '
+      name: 'TERMINATES ON AN UNCLOSED ELEMENT rather than reading the rest of the document as its '
         + 'attributes, so one malformed page cannot make every later quotation look like a file',
       fn: async () => {
-        const text = '<PhotoScroll photos={[ \'${path}/photos/one.webp\'\n\n'
-          + 'She said \'${path}/photos/not-a-picture.webp\' in passing.';
+        /**
+         * An element nobody closed, followed by ordinary prose in quotes.
+         */
+        const text = `<PhotoScroll photos={[ '${ENTRY}/photos/one.webp'\n\n`
+          + `She said '${ENTRY}/photos/not-a-picture.webp' in passing.`;
 
-        // Both are inside the unclosed element by construction, so what is
-        // pinned is that the reader terminates rather than which it returns.
         expect(photoReferences({ text, },).length,).toBeLessThanOrEqual(2,);
       },
     },),

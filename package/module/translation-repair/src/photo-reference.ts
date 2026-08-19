@@ -45,7 +45,7 @@ const ASSET_DIRECTORY = '/photos/';
 /**
  * Placeholder standing for the entry's directory.
  */
-const ENTRY_PLACEHOLDER = '${path}';
+const ENTRY_PLACEHOLDER = `\${path}`;
 
 /**
  * One image a passage shows.
@@ -92,7 +92,10 @@ function quotedWithin(
    * Where this element's attributes stop, or the end of the passage when the
    * element is never closed.
    */
-  const closeAt = text.indexOf(ELEMENT_CLOSE, from,);
+  const closeAt = text.indexOf(
+    ELEMENT_CLOSE,
+    from,
+  );
 
   /**
    * End of the region to read, exclusive.
@@ -113,18 +116,27 @@ function quotedWithin(
     /**
      * Opening quote of the next string.
      */
-    const opened = text.indexOf(QUOTE, at.offset,);
+    const opened = text.indexOf(
+      QUOTE,
+      at.offset,
+    );
     if ((opened === (-1)) || (opened >= limit))
       break;
 
     /**
      * Its closing quote.
      */
-    const closed = text.indexOf(QUOTE, opened + 1,);
+    const closed = text.indexOf(
+      QUOTE,
+      opened + 1,
+    );
     if ((closed === (-1)) || (closed >= limit))
       break;
 
-    quoted.push(text.slice(opened + 1, closed,),);
+    quoted.push(text.slice(
+      opened + 1,
+      closed,
+    ),);
     at.offset = closed + 1;
   }
 
@@ -135,6 +147,28 @@ function quotedWithin(
 }
 
 /**
+ * What one quoted attribute string turned out to name.
+ *
+ * A NAMED OUTCOME rather than a nullish union, which this repository does not
+ * model absence with.
+ *
+ * @example
+ * ```ts
+ * const read: AssetNameRead = { kind: 'asset', assetName: 'intro.webp', };
+ * ```
+ */
+type AssetNameRead = {
+  readonly kind: 'asset';
+
+  /**
+   * File name within the entry's photos directory.
+   */
+  readonly assetName: string;
+} | {
+  readonly kind: 'not-an-asset';
+};
+
+/**
  * Turns one quoted asset path into the file name it names.
  *
  * TOLERATES WHITESPACE AFTER THE PLACEHOLDER, because one reference in the
@@ -143,16 +177,16 @@ function quotedWithin(
  *
  * @param quoted - quoted string from a photo element
  *
- * @returns Asset file name, or absent when the string names something else
+ * @returns Asset file name, or a note that the string names something else
  *
  * @example
  * ```ts
  * const name = assetNameOf({ quoted: '${path}/photos/intro.webp', },);
  * ```
  */
-function assetNameOf({ quoted, }: { readonly quoted: string; },): string | undefined {
+function assetNameOf({ quoted, }: { readonly quoted: string; },): AssetNameRead {
   if (!quoted.startsWith(ENTRY_PLACEHOLDER,))
-    return undefined;
+    return { kind: 'not-an-asset', };
 
   /**
    * Everything after the placeholder, whose leading whitespace is incidental.
@@ -160,15 +194,18 @@ function assetNameOf({ quoted, }: { readonly quoted: string; },): string | undef
   const rest = quoted.slice(ENTRY_PLACEHOLDER.length,)
     .trimStart();
   if (!rest.startsWith(ASSET_DIRECTORY,))
-    return undefined;
+    return { kind: 'not-an-asset', };
 
   /**
    * File name, which must not itself be a path.
    */
   const assetName = rest.slice(ASSET_DIRECTORY.length,);
   if ((assetName === '') || assetName.includes('/',))
-    return undefined;
-  return assetName;
+    return { kind: 'not-an-asset', };
+  return {
+    kind: 'asset',
+    assetName,
+  };
 }
 
 /**
@@ -198,7 +235,10 @@ export function photoReferences({ text, }: { readonly text: string; },): readonl
     /**
      * Next photo element.
      */
-    const opened = text.indexOf(ELEMENT_OPEN, at.offset,);
+    const opened = text.indexOf(
+      ELEMENT_OPEN,
+      at.offset,
+    );
     if (opened === (-1))
       break;
 
@@ -212,13 +252,16 @@ export function photoReferences({ text, }: { readonly text: string; },): readonl
 
     for (const quoted of within.quoted) {
       /**
-       * File name this string names, absent when it names something else.
+       * What this string names.
        */
-      const assetName = assetNameOf({ quoted, },);
-      if (assetName !== undefined)
-        found.push({ assetName, },);
+      const read = assetNameOf({ quoted, },);
+      if (read.kind === 'asset')
+        found.push({ assetName: read.assetName, },);
     }
-    at.offset = Math.max(within.ended, opened + ELEMENT_OPEN.length,);
+    at.offset = Math.max(
+      within.ended,
+      opened + ELEMENT_OPEN.length,
+    );
   }
 
   return found;

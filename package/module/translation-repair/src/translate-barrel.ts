@@ -159,6 +159,13 @@ export {
   isCoverageReportWire,
 } from './coverage-wire.ts';
 export {
+  quotedTranscript,
+  readingAnchors,
+  readingMakesSense,
+  type ReadingVerdict,
+  sharedAnchorCount,
+} from './image-reading-sense.ts';
+export {
   photoPath,
   type PhotoReference,
   photoReferences,
