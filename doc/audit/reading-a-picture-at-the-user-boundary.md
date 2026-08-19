@@ -516,3 +516,49 @@ carries 24 characters, and the sweep's own read-back shows why that number
 is noise rather than text: the low-yield assets swing wildly across the
 re-encode, 45 to 25, 18 to 43, 1 to 11, while the text-bearing ones hold steady.
 Nothing is lost by leaving it unread.
+
+## The store, proven on the real thing
+
+A settled entry RETIRES its own caches, so the settled path can never show a
+resumed reading: after `wangzihao980` settled, its `slice-cache/wangzihao980/`
+directory was gone and only the artifact remained.
+The case the store exists for is therefore an entry CUT OFF mid-run,
+which is what a deadline, a crash, or the owner's REISUB produces.
+
+Run twice over `DarlinChit`, the first interrupted after its reading landed,
+the second identical and into the same runs directory:
+
+```text
+FIRST RUN
+  19:58:19.997  gathered 1 of 1 pictures for DarlinChit
+  19:58:19.997  reading 1 pictures for this document
+  19:58:28.113  hf:Qwen/Qwen3.6-27B read photo1.webp: 168 characters
+  19:58:35.034  hf:moonshotai/Kimi-K3 read photo1.webp: 163 characters
+  19:58:35.034  photo1.webp: corroborated by 2 readers at overlap 0.866
+
+SECOND RUN
+  19:58:39.959  gathered 1 of 1 pictures for DarlinChit
+  19:58:39.959  reading 1 pictures for this document
+  19:58:39.960  photo1.webp: resumed, corroborated
+```
+
+Zero `readImageAsset` lines in the second run, against two in the first.
+The resume lands one millisecond after the gather, where the first run spent
+eight seconds and then fifteen.
+
+Two things worth keeping beyond the resume itself.
+
+This is the first CORROBORATED READING OF REAL CORPUS CONTENT on record here:
+168 and 163 characters of the same picture, agreeing at 0.866,
+which sits inside the 0.643 to 1.000 band measured for readings of one picture
+and far outside the 0.000 to 0.129 band measured for readings of different ones.
+Every earlier "corroborated" row in this document turned out to be two refusals.
+
+The entry that used to die now settles.
+`corpus-pass --only wangzihao980` finished `status=SETTLED slices=6`,
+`processed=1 of pending=1`, `artifacts=1/92`, where the same command before the
+containment fix finished `status=ERROR` with `processed=0`.
+STATED PRECISELY: no reader threw during that run, so it does not re-exercise the
+containment. What it shows is that the wiring runs end to end and an entry with
+six pictures settles. The containment itself is held by the unit guards, which
+were shown to fail with it stripped.
