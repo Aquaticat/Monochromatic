@@ -12960,6 +12960,7 @@ artifacts only, and turns the verify's completion into one command:
 ```text
 GATE A  duplicated phrases, derived from the baseline, counted in the new repair document
 GATE E  critic claims per slice, flagged against unflagged, baseline against new
+GATE E2 claims per HEARD critic, with the roster each reading rests on
 GATE B  delegated to severed-sentence-census.mjs
 GATE C  delegated to join-107.mjs, both cuts
 ```
@@ -12975,6 +12976,13 @@ EXACTLY ONCE IS THE TEST, not at most once, and the reader says `LOST` rather th
 zero. Removal at slice n is only correct if the content really does ship at n plus or minus
 one, and a document that quietly dropped the passage is worse off than one that says it
 twice.
+
+GATE E2 EXISTS BECAUSE CLAIMS PER SLICE BECAME UNREADABLE. A stage that heard three of six
+raises fewer claims than one that heard six whatever it was shown, so while heard-counts are
+moving, claims per slice cannot be attributed to the window at all. Claims per HEARD CRITIC
+survives that, and the reader now prints the average and minimum roster beside every rate so
+no gate verdict is read without the roster it rests on. The baseline reference is 1.70 claims
+per heard critic at flagged slices and 1.74 at unflagged, average roster 5.9, minimum 5.
 
 IT REPORTED A CLEAN PASS ON ITS FIRST RUN, and both halves of that were wrong. The two lanes
 name their assembled text differently, `repairedText` against `translatedText`, so reading
