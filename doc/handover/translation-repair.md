@@ -13101,6 +13101,30 @@ THE CONVERSION IS ROUGH AND SAYS SO: the ratio spreads from 28 to 93,910 with p9
 so these are order-of-magnitude figures. They are wide enough to rule out runaway and not
 tight enough to rank the four against each other.
 
+#### The matched baseline exists, and the anomaly survives it
+
+`~/temp/agent/flagged-pass-2.log` covers exactly these five entries under the same rosters,
+which makes it the matched baseline rather than a general one:
+
+```text
+                    critic stages   6 of 6   5 of 6   below 5 of 6
+baseline (5 entries)           42       39        3              0
+this run (so far)               4        2        1              1
+```
+
+THE BASELINE NEVER WENT BELOW FIVE OF SIX across 42 stages. This run reached THREE of six
+inside its first four. That is outside the baseline's entire observed range rather than at
+the edge of it, which is a stronger statement than the rates: 3 of 42 short against 2 of 4
+short could still be a burst, but a value the baseline never produced at all is harder to
+call variance.
+
+THE WIDER BASE RATE AGREES. Across 242 logs in the agent scratch carrying 9,161 critic
+stages, 12 critics were abandoned in total, 0.13 percent, and 90 stages heard under six of
+six, 0.98 percent. This run abandoned four in four stages.
+
+STILL A SMALL SAMPLE, and four stages is four stages. What it justifies is watching closely
+and NOT concluding, which is what the rest of this section says.
+
 #### What is left, and it is a question rather than an answer
 
 The abandoned replies were simply still arriving when the 180-second straggler window closed
@@ -13113,7 +13137,8 @@ WHAT WOULD SETTLE IT, in preference order:
 
 -   the remaining four entries of this verify. If heard-counts stay depressed across all
     five, variance is a poor explanation
--   the baseline pool's own logs, if they survive, for whether it ever abandoned a critic
+-   MORE OF THE SAME COMPARISON. The matched baseline above is already read; what it cannot
+    do is separate the window from run-to-run drift in the provider between 08-18 and today
 -   a heard-count band measured over repeated runs of ONE unchanged entry, which is the only
     thing that makes a single-run comparison meaningful
 
