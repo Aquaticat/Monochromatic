@@ -1,7 +1,7 @@
 # Create element from selector technology vet
 
 - Status: in progress
-- Lifecycle phase: context and rubric frozen
+- Lifecycle phase: repository fit validated
 - Subject: create element from selector package
 - Scope: whether to resurrect `Aquaticat/createElementFromSelector` as a new Monochromatic package
 - Start date: 2026-08-18
@@ -28,9 +28,10 @@ A candidate called “clean selector-shorthand implementation” means a fresh i
 Measured repository context:
 
 - `package/module/hyperscript` already exports `hDom`, a typed live-DOM element factory.
-- Seventeen active or paused package manifests reference `@monochromatic-dev/module-hyperscript`.
-- Active packages contain 45 `document.createElement` calls across 21 TypeScript files.
-- No active or paused source references `createElementFromSelector`.
+- Ten active and seven paused package manifests reference `@monochromatic-dev/module-hyperscript`.
+- Forty active TypeScript files import `hDom` and contain 234 `h({ ... })` calls.
+- Eighteen active non-test TypeScript files still call `document.createElement` directly.
+- No active or paused source requests or implements selector-string element creation.
 - No prior selector-to-element audit or decision document was found.
 
 ## Classification
@@ -138,6 +139,60 @@ Search active packages, paused packages, audits, decisions, planning documents, 
 - Screening result: pending category-fit and consumer-boundary validation.
 - Evaluation unit: fresh Monochromatic code, not upstream source or package artifacts.
 
+## Repository fit
+
+### Capability overlap
+
+`hDom` already owns the live-element construction seam.
+Its structured options cover tag, class, text, HTML, attributes, styles, listeners, and children.
+The proposed shorthand covers only tag, ID, classes, and constructible attributes before callers return to ordinary DOM mutation.
+A separate package would therefore overlap an established interface while providing less end-to-end construction behavior.
+
+The deletion test is unfavorable for a separate package.
+Deleting a selector parser would replace each call with a slightly longer `hDom` object;
+it would also delete the parser and its grammar tests rather than distribute equivalent complexity among callers.
+That is a shallow package seam, not leverage.
+
+### Existing caller evidence
+
+The 234 active `hDom` calls demonstrate that structured element construction is already normal in this repository.
+The remaining direct `document.createElement` sites mostly need behavior a selector string cannot carry:
+
+- canvas contexts and dimensions;
+- custom-element class methods and explicit type assertions;
+- text, children, listeners, and dynamic properties;
+- generated download anchors;
+- style-node text;
+- dynamic classes and state.
+
+A selector shorthand could shorten literal class, ID, and attribute setup within some of those sites,
+but none currently contains a selector-to-element workaround or request.
+
+### Interface semantics
+
+CSS selectors answer whether an existing element matches.
+Element construction can interpret only a subset unambiguously.
+Combinators, selector lists, pseudo-classes, pseudo-elements, negation, universal selectors,
+and non-equality attribute operators do not uniquely specify one element to create.
+The interface would therefore need callers to learn a new descriptor grammar that resembles CSS but is not CSS.
+
+Structured `hDom` options preserve TypeScript inference from `tag`, allow editor completion for named fields,
+and keep dynamic values outside a string grammar.
+A selector string is concise for fixed literals but requires CSS identifier and attribute-value escaping when values are composed.
+Runtime parsing can return a tag-specific element type only with a parallel template-literal type parser or a caller assertion.
+
+### Seam placement if demand appears
+
+The dependency is in-process browser DOM state, so no adapter or new seam is needed.
+If a real caller later requires selector shorthand, the coherent location is an additional helper inside
+`package/module/hyperscript/src/dom/`, beside `hDom`.
+It should use a name such as element descriptor rather than claim full CSS-selector construction,
+and its accepted grammar should be intentionally narrow and tested at the exported interface.
+
+A standalone package becomes justified only if independent consumers need the shorthand without the rest of
+`module-hyperscript`, or if the parser grows into a reusable, independently versioned grammar module.
+No current repository evidence establishes either condition.
+
 ## Evidence records
 
 ### Monochromatic incumbent surface
@@ -162,7 +217,41 @@ Search active packages, paused packages, audits, decisions, planning documents, 
 - Primary source: <https://github.com/Aquaticat/createElementFromSelector>, README usage example accessed 2026-08-18.
 - Outcome: keep as a serious conceptual alternative while excluding upstream artifact health from scoring.
 
+### Active caller adoption
+
+- Candidate: keep the existing `hDom` construction seam.
+- Claim: 40 active TypeScript files import `hDom` and contain 234 `h({ ... })` calls.
+- Decision relevance: repository callers already use the structured interface at material scale.
+- Gate: existing-tools precedence and demonstrated demand.
+- Status: pass.
+- Primary source: `package/`, searched 2026-08-18 with
+  `rg --files-with-matches 'import .*hDom|hDom as' package --glob '*.ts'` and per-file `h({` counts.
+- Outcome: retain as a finalist.
+
+### Selector-shorthand demand
+
+- Candidate: clean selector-shorthand implementation.
+- Claim: no active or paused source contains selector-to-element code, requests, or workarounds.
+- Decision relevance: a new package has no measured consumer yet.
+- Gate: scored concern, not a hard failure.
+- Status: low-signal range 0 through 1 for demonstrated demand.
+- Primary source: `package/`, `package-paused/`, and `doc/`, searched 2026-08-18 for
+  `createElementFromSelector`, `elementFromSelector`, `fromSelector`, and selector-shorthand terms.
+- Counterevidence: the user’s question itself establishes interest in the capability, but not a consumer requirement.
+- Outcome: keep as a finalist because absent current demand does not make the idea invalid.
+
+### Package-seam depth
+
+- Candidate: standalone clean selector-shorthand package.
+- Claim: deleting the package removes its parser complexity and leaves callers with structured `hDom` objects.
+- Decision relevance: the package would be shallow unless independent consumers or an independently reusable grammar appear.
+- Gate: package cohesion.
+- Status: scored concern.
+- Primary source: `package/module/hyperscript/src/dom/index.ts` and 234 active `hDom` call sites,
+  inspected 2026-08-18.
+- Outcome: penalize the standalone package seam, not the underlying shorthand idea.
+
 ## Evidence limits
 
 The audit is not yet complete.
-External discovery, equal-depth finalist validation, scoring, sensitivity analysis, and recommendation remain pending.
+External discovery, finalist concept validation, scoring, sensitivity analysis, and recommendation remain pending.
