@@ -499,7 +499,7 @@ await describe({
           },);
           escaped = `returned ${paired.kind}`;
         } catch (error) {
-          escaped = (error instanceof Error) ? error.name : String(error,);
+          escaped = Error.isError(error,) ? error.name : String(error,);
         }
 
         expect(escaped,).toBe('AbortError',);
