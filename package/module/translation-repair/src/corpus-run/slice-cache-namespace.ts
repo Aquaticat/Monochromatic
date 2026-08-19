@@ -77,6 +77,18 @@ export const TRANSLATE_SLICE_NAMESPACE: SliceNamespace = {
 };
 
 /**
+ * Picture readings' claim.
+ *
+ * NOT A LANE, and named as one anyway because the store is the same. A reading
+ * is neither a repair outcome nor a translated slice; it is evidence gathered
+ * before either lane runs, keyed by the picture rather than by any slice.
+ */
+export const PICTURE_READING_NAMESPACE: SliceNamespace = {
+  prefix: 'picture.',
+  marker: 'picture-generation.txt',
+};
+
+/**
  * Whether a file in a shared cache directory belongs to one lane.
  *
  * @param name - file name as `readdir` returned it

@@ -4,7 +4,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { armCallDeadline, } from '../call-deadline.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { readDocumentPictures, } from '../document-readings.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
+import { gatherEntryPictures, } from './entry-pictures.ts';
+import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
@@ -18,6 +21,7 @@ import {
 import {
   RUN_CALL_CONFIG,
   RUN_CORPUS_PIN,
+  RUN_READER_MODELS,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_TRANSLATE_MODELS,
@@ -192,6 +196,18 @@ async function runEntryPipeline(
     },);
 
     /**
+     * Store for what this entry's pictures were read as.
+     *
+     * ITS OWN NAMESPACE beside the two lanes', because a reading is neither
+     * lane's slice: it is evidence keyed by the picture, gathered before either
+     * lane runs and shown to one of them.
+     */
+    const readingCache = await openPictureReadingCache({
+      dir: entryCacheDir,
+      generation: pipelineDigest,
+    },);
+
+    /**
      * Slicing BOTH lanes run over, prepared once here rather than inside
      * either.
      *
@@ -210,6 +226,35 @@ async function runEntryPipeline(
     },);
 
     /**
+     * Pictures this entry's slices show, read off the pinned corpus.
+     *
+     * BEFORE THE LANES, not during them: a reading has to be in the cache key
+     * of every slice that sees it, so it must exist before the first slice is
+     * keyed.
+     */
+    const assets = await gatherEntryPictures({
+      pin: RUN_CORPUS_PIN,
+      entryId: entry.id,
+      slices: prepared.slices,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    /**
+     * What each of those pictures says, corroborated across the two readers
+     * that can be sent one.
+     */
+    const pictureReadings = await readDocumentPictures({
+      client,
+      slices: prepared.slices,
+      assets,
+      readerModelIds: RUN_READER_MODELS,
+      cache: readingCache,
+      signal: deadline.callSignal,
+      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    /**
      * What both lanes made of that slicing, with neither preferred.
      */
     const lanes = await runDocumentLanes({
@@ -217,6 +262,7 @@ async function runEntryPipeline(
       prepared,
       repairModels: RUN_MODELS,
       translateModels: RUN_TRANSLATE_MODELS,
+      pictureReadings,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       repairSliceCache: sliceCache,

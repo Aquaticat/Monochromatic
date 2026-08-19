@@ -240,6 +240,73 @@ export async function readCorpusFile(
 }
 
 /**
+ * Reads one corpus blob as BYTES at the pinned commit.
+ *
+ * THE BINARY SIBLING of {@link readCorpusFile}, and the reason it exists is
+ * that a picture is not text: decoding one as UTF-8 maps every byte sequence
+ * that is not valid UTF-8 onto the replacement character, which silently
+ * corrupts the asset and produces a data URI no model can decode.
+ *
+ * @param pin - corpus clone and commit
+ *
+ * @param relPath - repository-relative path, e.g. `people/<id>/photos/<name>`
+ *
+ * @returns Blob bytes exactly as committed
+ *
+ * @throws {@link CorpusReadError} when git cannot produce that blob
+ *
+ * @example
+ * ```ts
+ * const bytes = await readCorpusBytes({ pin, relPath: 'people/whiskers/photos/intro.webp', },);
+ * ```
+ */
+export async function readCorpusBytes(
+  {
+    pin,
+    relPath,
+  }: {
+    readonly pin: CorpusPin;
+    readonly relPath: string;
+  },
+): Promise<Uint8Array> {
+  /**
+   * Git object spec pinning path to commit.
+   */
+  const spec = `${pin.commitSha}:${relPath}`;
+
+  /**
+   * Real git binary, resolved when the pin does not name one.
+   */
+  const gitPath = pin.gitPath ?? await resolveGit();
+
+  try {
+    /**
+     * Blob bytes exactly as committed.
+     */
+    const { stdout, } = await execFileAsync(
+      gitPath,
+      [
+        '-C',
+        pin.cloneDir,
+        'show',
+        spec,
+      ],
+      {
+        encoding: 'buffer',
+        maxBuffer: MAX_BLOB_BYTES,
+      },
+    );
+    return stdout;
+  }
+  catch (error) {
+    throw new CorpusReadError({
+      detail: spec,
+      cause: error,
+    },);
+  }
+}
+
+/**
  * Lists person entry ids under `people/` at the pinned commit.
  *
  * @param pin - clone and commit the listing resolves against

@@ -14,7 +14,10 @@ import {
   STREAM_FIRST_BYTE_MS,
   STREAM_IDLE_MS,
 } from '../stream-idle-guard.ts';
-import type { SyntheticModelId, } from '../synthetic-catalog.ts';
+import {
+  SYNTHETIC_MODELS,
+  type SyntheticModelId,
+} from '../synthetic-catalog.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import { resolveGit, } from './git-command.ts';
 
@@ -211,6 +214,35 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
   translatorModelIds: RUN_ROSTER,
   judgeModelIds: RUN_ROSTER,
 };
+
+/**
+ * Models that read this run's pictures.
+ *
+ * DERIVED FROM THE CATALOG rather than listed by hand, so the roster is
+ * whatever the provider's own `input_modalities` says can be sent an image. A
+ * hand-written list would go stale the day a model gains or loses the
+ * capability, and it would go stale silently: a text-only model sent a picture
+ * answers about nothing, and the call is spent either way.
+ *
+ * READING IS ITS OWN STAGE, and the roster's narrowness is why. Exactly two
+ * models read images, selection needs a minimum weight of two, and a producer's
+ * ballot for its own work counts half, so if these two also translated then no
+ * disinterested judge would remain on any slice carrying a picture. Asking them
+ * only to READ turns the picture into text, and the ordinary six-model roster
+ * translates and judges from that text with its weights untouched.
+ *
+ * @example
+ * ```ts
+ * const readings = await readDocumentPictures({ readerModelIds: RUN_READER_MODELS, ... },);
+ * ```
+ */
+export const RUN_READER_MODELS: readonly SyntheticModelId[] = Object.values(SYNTHETIC_MODELS,)
+  .filter(function reads(model,): boolean {
+    return model.readsImages;
+  },)
+  .map(function toId(model,): SyntheticModelId {
+    return model.id;
+  },);
 
 /**
  * Deadline granted to one model exchange during a corpus run.

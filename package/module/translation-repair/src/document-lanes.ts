@@ -9,6 +9,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { assertDeliveryAgreesWithDocument, } from './delivery-invariants.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import type { PairedReading, } from './image-reading-pair.ts';
 import type { IdentifiedDeliveryLedger, } from './lane-comparison.ts';
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import { preparationIdentity, } from './preparation-identity.ts';
@@ -239,6 +240,7 @@ export async function runDocumentLanes(
     repairModels,
     translateModels,
     adjudicationConfig,
+    pictureReadings,
     signal,
     perCallTimeoutMs,
     repairSliceCache,
@@ -250,6 +252,17 @@ export async function runDocumentLanes(
     readonly repairModels: RepairModels;
     readonly translateModels: TranslateModels;
     readonly adjudicationConfig?: AdjudicationConfig;
+
+    /**
+     * What each of this document's pictures was read as, gathered before either
+     * lane starts.
+     *
+     * THE TRANSLATE LANE ONLY, today. The repair lane edits the archive in
+     * place against critic claims, and none of its stages asks what a picture
+     * says; the translate lane writes each slice fresh from the source, which is
+     * where a passage transcribing a picture has no source without this.
+     */
+    readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly repairSliceCache?: SliceCache<ChunkRepairOutcome>;
@@ -322,6 +335,9 @@ export async function runDocumentLanes(
     client,
     prepared,
     models: translateModels,
+    ...((pictureReadings === undefined)
+      ? {}
+      : { pictureReadings, }),
     signal,
     perCallTimeoutMs,
     ...((translateSliceCache === undefined)
