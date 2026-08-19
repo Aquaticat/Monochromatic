@@ -175,6 +175,10 @@ export {
   sharedAnchorCount,
 } from './image-reading-sense.ts';
 export {
+  type ImageReading,
+  readImageAsset,
+} from './image-reading-stage.ts';
+export {
   photoPath,
   type PhotoReference,
   photoReferences,
