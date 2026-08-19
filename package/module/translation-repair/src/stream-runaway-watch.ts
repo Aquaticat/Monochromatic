@@ -199,6 +199,16 @@ export function watchRunaway(): RunawayWatch {
  */
 export class StreamDegenerateError extends Error {
   /**
+   * Model or endpoint whose stream ran away.
+   *
+   * CARRIED AS A PROPERTY, not only baked into the message, for the same
+   * reason `StreamCutShortError` carries it: attributing a stream to the
+   * endpoint rather than the model makes a per-model figure unreadable, and
+   * every chat-completions call shares one endpoint across the whole roster.
+   */
+  readonly label: string;
+
+  /**
    * Channel that stopped saying anything new.
    */
   readonly channel: StreamChannel;
@@ -250,6 +260,7 @@ export class StreamDegenerateError extends Error {
         + `${distinctRatio.toFixed(RATIO_DIGITS,)} distinct over ${String(charsSeen,)} characters`,
     );
     this.name = 'StreamDegenerateError';
+    this.label = label;
     this.channel = channel;
     this.distinctRatio = distinctRatio;
     this.charsSeen = charsSeen;

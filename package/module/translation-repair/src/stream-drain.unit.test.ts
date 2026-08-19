@@ -271,6 +271,12 @@ await describe({
           throw new Error('a degeneration error by construction',);
         expect(outcome.error.channel,).toBe('reasoning',);
 
+        // Attributed to the model rather than to the endpoint: every
+        // chat-completions call shares one URL across the whole roster, and a
+        // constructed Response's `url` is the empty string, so a per-model
+        // latency figure would be unreadable if this fell back to it.
+        expect(outcome.error.label,).toBe('hf:whiskers',);
+
         // Stopped early rather than after the fact. Reading every piece would
         // mean the socket stayed open for the whole runaway.
         /**

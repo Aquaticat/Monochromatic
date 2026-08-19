@@ -190,7 +190,13 @@ export async function drainBody(
           url: response.url,
         },);
         throw new StreamDegenerateError({
-          label: response.url,
+          // The MODEL'S label, not `response.url`: every chat-completions call
+          // shares one endpoint across the whole roster, so attributing a
+          // runaway to the endpoint makes a per-model latency figure
+          // unreadable. `stopReading` above still logs `response.url`,
+          // because releasing the right socket is a URL question and naming
+          // the runaway is a model question.
+          label,
           channel: runaway.channel,
           distinctRatio: runaway.distinctRatio,
           charsSeen: runaway.charsSeen,

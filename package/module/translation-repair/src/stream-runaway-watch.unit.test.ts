@@ -231,8 +231,8 @@ await describe({
     },),
 
     it({
-      name: 'CARRIES WHAT A LOG LINE NEEDS in its error: which channel, how repetitive, and what '
-        + 'the call had already cost when it was ended',
+      name: 'CARRIES WHAT A LOG LINE NEEDS in its error: which channel, how repetitive, what '
+        + 'the call had already cost when it was ended, and which model ran away',
       fn: async () => {
         /**
          * Error as the drain would raise it.
@@ -249,6 +249,11 @@ await describe({
         expect(error.message.includes('reasoning',),).toBe(true,);
         expect(error.message.includes('0.0021',),).toBe(true,);
         expect(error.message.includes('412000',),).toBe(true,);
+
+        // Carried as a property, not only baked into the message: a per-model
+        // figure has to read `.label` off every error in a batch, and the
+        // message is prose meant for one line of a log rather than for that.
+        expect(error.label,).toBe('critic hf:zai-org/GLM-5.2',);
       },
     },),
   ],
