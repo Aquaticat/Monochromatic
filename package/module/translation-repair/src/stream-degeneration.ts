@@ -80,6 +80,21 @@ const TRAILING_WINDOWS = 4_096;
 const MIN_WINDOWS_FOR_VERDICT = 4_096;
 
 /**
+ * The bar above in characters rather than windows, exported so a second
+ * detector fed the same generated text can be gated on the identical
+ * artifact-evidence bar rather than defining an independent one that could
+ * drift from it.
+ *
+ * DELIBERATELY THE SAME BAR, not merely a similar one. The reasoning that
+ * keeps verse and ordinary replies unjudged below {@link MIN_WINDOWS_FOR_VERDICT}
+ * windows applies unchanged to any other measure of the same generated text:
+ * no slice translation this pipeline produces approaches roughly 131000
+ * characters, so nothing legitimate is ever long enough to reach either
+ * detector's verdict.
+ */
+export const MIN_CHARS_FOR_VERDICT: number = MIN_WINDOWS_FOR_VERDICT * WINDOW_STRIDE;
+
+/**
  * Share of distinct windows at or below which the sample is called degenerate.
  *
  * SET WITH A WIDE MARGIN, deliberately. Scanned across all 56 settled

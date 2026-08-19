@@ -63,6 +63,159 @@ function frameOf(
 }
 
 /**
+ * Builds internally varied cat-themed text of exactly `length` characters,
+ * so a block built from it is never itself internally repetitive.
+ *
+ * THE BLOCK MUST BE VARIED or a test built from it measures the block's own
+ * repetition rather than whatever pattern the test arranges around it: this
+ * mirrors the probe kept at `~/temp/agent/degeneration-period-probe.mjs`,
+ * whose first attempt padded a single sentence and proved nothing for
+ * exactly this reason.
+ *
+ * @param length - exact character count to build
+ *
+ * @param from - starting index the generator counts up from, so two blocks
+ * built from different `from` values share no content
+ *
+ * @returns Varied text of exactly `length` characters
+ *
+ * @example
+ * ```ts
+ * const block = variedBlock({ length: 501, from: 1, },);
+ * ```
+ */
+function variedBlock(
+  {
+    length,
+    from,
+  }: {
+    readonly length: number;
+    readonly from: number;
+  },
+): string {
+  /**
+   * Sentences built so far, joined once at the end.
+   */
+  const parts: string[] = [];
+
+  /**
+   * Generator's own counter and how many characters it has produced.
+   */
+  const cursor = {
+    at: from,
+    sized: 0,
+  };
+
+  while (cursor.sized < length) {
+    /**
+     * One varied sentence, built from the current counter.
+     */
+    const piece = `Cat ${String(cursor.at,)} inspected shelf ${String((cursor.at * 7) % 991,)} at hour `
+      + `${String(cursor.at % 24,)} and reported nothing of note to cat ${String((cursor.at * 13) % 877,)}. `;
+    parts.push(piece,);
+    cursor.sized += piece.length;
+    cursor.at += 1;
+  }
+
+  return parts.join('',).slice(
+    0,
+    length,
+  );
+}
+
+/**
+ * Builds text that cycles a varied block of the given period, for exactly
+ * `total` characters.
+ *
+ * @param period - length of the repeating block
+ *
+ * @param total - exact character count of the whole cycling text
+ *
+ * @returns Text repeating a `period`-character varied block for `total`
+ * characters
+ *
+ * @example
+ * ```ts
+ * const cycling = cyclingText({ period: 501, total: 200_000, },);
+ * ```
+ */
+function cyclingText(
+  {
+    period,
+    total,
+  }: {
+    readonly period: number;
+    readonly total: number;
+  },
+): string {
+  /**
+   * One period's worth of varied text, repeated to cover the whole length.
+   */
+  const block = variedBlock({
+    length: period,
+    from: 1,
+  },);
+
+  return block.repeat(Math.ceil(total / block.length,),).slice(
+    0,
+    total,
+  );
+}
+
+/**
+ * Wraps long text as many small frames rather than one, so the scanner
+ * reading complete lines sees it progressively.
+ *
+ * ONE FRAME CANNOT CARRY ARBITRARILY LONG TEXT AND STILL BE READ AS IT
+ * ARRIVES. `scanStreamDeltas` only extracts a frame's text once it has seen
+ * that frame's whole line, so a single frame carrying an entire long reply
+ * would hand every detector the whole reply in one `notifyText` call at the
+ * very end, which is not how a real stream delivers it and not what any of
+ * these detectors are checked against. This is the same reason every other
+ * fixture in this file builds many small frames rather than one large one.
+ *
+ * @param channel - which channel the text arrives on
+ *
+ * @param text - whole text to frame
+ *
+ * @param pieceChars - characters carried by each frame
+ *
+ * @returns Raw stream body, one frame per piece
+ *
+ * @example
+ * ```ts
+ * const raw = framedText({ channel: 'reasoning', text, pieceChars: 501, },);
+ * ```
+ */
+function framedText(
+  {
+    channel,
+    text,
+    pieceChars,
+  }: {
+    readonly channel: 'content' | 'reasoning';
+    readonly text: string;
+    readonly pieceChars: number;
+  },
+): string {
+  return Array.from(
+    { length: Math.ceil(text.length / pieceChars,), },
+    function piece(
+      _unused,
+      at,
+    ): string {
+      return frameOf({
+        channel,
+        text: text.slice(
+          at * pieceChars,
+          (at + 1) * pieceChars,
+        ),
+      },);
+    },
+  ).join('',);
+}
+
+/**
  * Feeds a raw stream chunk by chunk, stopping at the first runaway verdict.
  *
  * @param raw - whole stream body
@@ -200,6 +353,99 @@ await describe({
             },);
           },
         ).join('',);
+
+        expect(drive({ raw, },).verdict.kind,).toBe('continuing',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A LONG-PERIOD LOOP PAST THE LENGTH BAR, which the windowed ratio detector '
+        + 'cannot see: period 501 measures 0.1223 distinct on that detector alone, above its 0.1 '
+        + 'threshold, because gcd(501, 32) leaves only 205 of the trailing sample windows '
+        + 'distinct. This is the escape the ratio detector window arithmetic cannot close alone',
+      fn: async () => {
+        /**
+         * A model looping a 501-character paragraph forever, well past the
+         * length bar both detectors share, delivered as many small frames
+         * so the checks run progressively rather than all at once.
+         */
+        const raw = framedText({
+          channel: 'reasoning',
+          text: cyclingText({
+            period: 501,
+            total: 200_000,
+          },),
+          pieceChars: 501,
+        },);
+
+        const {
+          verdict,
+          readBytes,
+        } = drive({ raw, },);
+
+        expect(verdict.kind,).toBe('runaway',);
+        if (verdict.kind !== 'runaway')
+          throw new Error('runaway by construction',);
+        expect(verdict.channel,).toBe('reasoning',);
+
+        // Ended early rather than only diagnosed after the fact, the same
+        // property the ratio-based runaway tests assert.
+        expect(readBytes,).toBeLessThan(raw.length,);
+      },
+    },),
+
+    it({
+      name: 'LETS A PERIOD-501 LOOP FINISH WHEN IT NEVER CROSSES THE LENGTH BAR, the same '
+        + 'verse-safety guarantee the ratio detector carries: no slice translation this pipeline '
+        + 'produces approaches the bar, so a reply this short is never judged by either detector',
+      fn: async () => {
+        /**
+         * The same period-501 pattern as the refused case, kept well under
+         * the length bar.
+         */
+        const raw = framedText({
+          channel: 'reasoning',
+          text: cyclingText({
+            period: 501,
+            total: 100_000,
+          },),
+          pieceChars: 501,
+        },);
+
+        expect(drive({ raw, },).verdict.kind,).toBe('continuing',);
+      },
+    },),
+
+    it({
+      name: 'LETS A CANDIDATE QUOTED TWICE BACK TO BACK PASS, past the length bar, which is '
+        + 'ordinary work in this pipeline reasoning traces: a model restating a whole source '
+        + 'slice or candidate a second time must not read as a loop for doing its job',
+      fn: async () => {
+        /**
+         * Varied filler well past the length bar, an 8000-character varied
+         * block quoted twice back to back, and more varied filler after it.
+         * The duplication happens AFTER the bar is crossed: were it before,
+         * the bar alone would explain a `continuing` verdict and this test
+         * would say nothing about the persistence check specifically.
+         */
+        const prefix = variedBlock({
+          length: 140_000,
+          from: 1,
+        },);
+        const candidate = variedBlock({
+          length: 8_000,
+          from: 500_000,
+        },);
+        const suffix = variedBlock({
+          length: 10_000,
+          from: 900_000,
+        },);
+
+        const raw = framedText({
+          channel: 'reasoning',
+          text: prefix + candidate + candidate + suffix,
+          pieceChars: 500,
+        },);
 
         expect(drive({ raw, },).verdict.kind,).toBe('continuing',);
       },

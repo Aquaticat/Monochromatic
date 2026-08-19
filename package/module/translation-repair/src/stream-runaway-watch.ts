@@ -7,16 +7,25 @@ import {
   type DegenerationDetector,
   watchForDegeneration,
 } from './stream-degeneration.ts';
+import {
+  type RecurrenceDetector,
+  watchForRecurrence,
+} from './stream-recurrence-watch.ts';
 
 //region Stream runaway watch
 // ONE THING THE DRAIN CAN CALL, so that reading a raw chunk and deciding
 // whether the call has run away is a single step at the transport seam rather
 // than three of them spread through the read loop.
 //
-// It owns the scanner and one detector per channel. Per channel, because a
-// model that thinks in circles while writing a fine answer and one that writes
-// in circles after thinking clearly are different failures, and pooling them
-// would let either excuse the other.
+// It owns the scanner and two detectors per channel: the windowed ratio from
+// `stream-degeneration.ts` and the buffered recurrence check from
+// `stream-recurrence-watch.ts`. Per channel, because a model that thinks in
+// circles while writing a fine answer and one that writes in circles after
+// thinking clearly are different failures, and pooling them would let either
+// excuse the other. Per detector kind, because the two catch different
+// periods: the ratio catches short cycling on a small sample, and the
+// recurrence check catches the longer periods the ratio's window arithmetic
+// is blind to.
 //
 // THE VERDICT IS A VALUE, not an exception. The drain decides what to do with
 // it, which keeps the decision to end a call in the place that owns the
@@ -153,11 +162,21 @@ export function watchRunaway(): RunawayWatch {
   const scanner = scanStreamDeltas();
 
   /**
-   * One detector per channel, judged separately.
+   * One windowed-ratio detector per channel, judged separately.
    */
-  const detectors: Record<StreamChannel, DegenerationDetector> = {
+  const ratioDetectors: Record<StreamChannel, DegenerationDetector> = {
     content: watchForDegeneration(),
     reasoning: watchForDegeneration(),
+  };
+
+  /**
+   * One buffered-recurrence detector per channel, fed the same text as its
+   * ratio counterpart and judged separately from it: this catches the
+   * periods the ratio detector's window arithmetic is blind to.
+   */
+  const recurrenceDetectors: Record<StreamChannel, RecurrenceDetector> = {
+    content: watchForRecurrence(),
+    reasoning: watchForRecurrence(),
   };
 
   /**
@@ -170,7 +189,8 @@ export function watchRunaway(): RunawayWatch {
   const opening = { text: '', };
 
   /**
-   * Reads whichever channel has gone wrong, if either has.
+   * Reads whichever channel has gone wrong, if either has, by either
+   * detector.
    *
    * @returns Verdict for the first watched channel that has run away
    *
@@ -185,23 +205,41 @@ export function watchRunaway(): RunawayWatch {
      */
     const failing = WATCHED_CHANNELS.flatMap(function judge(channel,): readonly RunawayVerdict[] {
       /**
-       * What this channel's detector currently says.
+       * What this channel's ratio detector currently says.
        */
-      const detector = detectors[channel];
+      const ratioVerdict = ratioDetectors[channel]
+        .verdict();
+      if (ratioVerdict.kind === 'degenerate')
+        return [{
+          kind: 'runaway' as const,
+          channel,
+          distinctRatio: ratioVerdict.distinctRatio,
+          charsSeen: ratioVerdict.charsSeen,
+        },];
 
       /**
-       * What it currently says.
+       * What this channel's recurrence detector currently says, read only
+       * when the ratio detector found nothing: a channel already flagged
+       * has nothing left to decide.
        */
-      const verdict = detector.verdict();
-      if (verdict.kind !== 'degenerate')
-        return [];
+      const recurrenceVerdict = recurrenceDetectors[channel]
+        .verdict();
+      if (recurrenceVerdict.kind === 'degenerate')
+        return [{
+          kind: 'runaway' as const,
+          channel,
+          // NOT A SAMPLED RATIO. This verdict comes from a verbatim
+          // recurrence rather than window sampling, so no distinct-window
+          // share was ever computed. Reported as 0, the most repetitive
+          // value the field can hold, since the checked span IS a complete
+          // duplicate of an earlier one: honest within the field's existing
+          // meaning (lower reads as more repetitive) without inventing a
+          // second field only this path would ever populate.
+          distinctRatio: 0,
+          charsSeen: recurrenceVerdict.charsSeen,
+        },];
 
-      return [{
-        kind: 'runaway' as const,
-        channel,
-        distinctRatio: verdict.distinctRatio,
-        charsSeen: verdict.charsSeen,
-      },];
+      return [];
     },);
 
     return failing[0] ?? { kind: 'continuing', };
@@ -215,11 +253,13 @@ export function watchRunaway(): RunawayWatch {
       const deltas = scanner.feed({ chunk, },);
 
       deltas.forEach(function route(delta: ChannelDelta,): void {
-        /**
-         * Detector owning the channel this text arrived on.
-         */
-        const detector = detectors[delta.channel];
-        detector.notifyText({ text: delta.text, },);
+        // Both detector kinds owning this channel see every piece of text,
+        // in the same arrival order: each judges independently, and a
+        // channel neither detector has flagged is still continuing.
+        ratioDetectors[delta.channel]
+          .notifyText({ text: delta.text, },);
+        recurrenceDetectors[delta.channel]
+          .notifyText({ text: delta.text, },);
 
         /**
          * Characters kept so far, read once so the cap check names a single
@@ -245,9 +285,9 @@ export function watchRunaway(): RunawayWatch {
       readonly reasoning: number;
     } {
       return {
-        content: detectors.content
+        content: ratioDetectors.content
           .charsSeen(),
-        reasoning: detectors.reasoning
+        reasoning: ratioDetectors.reasoning
           .charsSeen(),
       };
     },
