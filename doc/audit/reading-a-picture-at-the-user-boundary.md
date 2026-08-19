@@ -120,3 +120,57 @@ Five same-picture pairs is enough to show the separation exists
 and not enough to place the threshold precisely.
 It is drawn from the only corpus slices carrying both a protected target-only run and a source-side photo,
 so it cannot be widened without reading pictures that no transcript describes.
+
+## What a reading is actually for, checked rather than assumed
+
+The wiring was going to be justified as protection:
+a transcript the source cannot account for gets deleted,
+and a reading gives it a source.
+Checking that premise against the nine known transcripts shows it is already false.
+Every one of them is held by a guard today:
+
+```text
+wangzihao980/4     split(1138) + quotes
+zheermao101/8      alignment + quotes
+zheermao101/11     split(1129) + quotes
+dogesir_/3         split(1538) + quotes
+Zha_Ke/1           alignment
+MizuharaNagisa/3   alignment + quotes
+Mio/7              split(2066) + quotes
+Mio/16             alignment + quotes
+shihai4h/14        alignment + quotes
+shihai4h/52        alignment
+shihai4h/53        split(10736) + quotes
+```
+
+Exactly one corpus slice sits in the gap the reading was supposed to fill:
+`shihai4h/3`, ratio 4.1, 284 characters of target, no quote block, no protected run.
+The remaining unguarded rows are ordinary slices at ratios of 2.3 to 4.4,
+which is the ordinary Chinese-to-English expansion rather than a transcript.
+
+So the reading does not buy protection.
+It buys the three things protection cannot:
+
+-   CHECKING a transcript against the picture it claims to transcribe,
+    which is what the owner asked for and what no guard does
+-   ADDING a transcript where the archive carries none,
+    which is half of what reading pictures is for
+-   giving translators and judges the picture's content as evidence
+    rather than a hole in the source they must translate around
+
+The acceptance test for the wiring follows from that.
+It is not "a transcript survives", since they already do.
+It is that a reading reaches the models and changes what they can check.
+
+## Where a reading attaches
+
+Source-side references reach 79 of 1260 slices,
+and no slice names a picture on the target side without naming it on the source,
+so the source's own references are the whole attachment surface.
+
+They do not reach `Zha_Ke/1`, whose 3652 characters transcribe a letter
+named one slice later, in `Zha_Ke/2`.
+That is the same adjacency the fidelity window was built for,
+measured on 2026-08-18 as every relocation pair in the corpus being adjacent,
+so the readings of a slice's NEIGHBOURS travel with it
+exactly as the neighbouring source and neighbouring archive already do.
