@@ -126,7 +126,17 @@ export function witnessSheets(
       ): Promise<ChatJsonOutcome<ValueT>> {
         sheets.push(request.messages
           .map(function toContent(message,): string {
-            return message.content;
+            // A VISION MESSAGE CARRIES PARTS, and what a witness records is what
+            // the model was asked, which is the text of them. The picture itself
+            // is not recoverable from a sheet and is not what a window trial
+            // compares.
+            if ((typeof message.content) === 'string')
+              return message.content as string;
+            return (message.content as readonly { readonly type: string; readonly text?: string; }[])
+              .map(function partText(part,): string {
+                return part.text ?? `[${part.type}]`;
+              },)
+              .join('\n',);
           },)
           .join('\n',),);
         return await client.chatJson(request,);

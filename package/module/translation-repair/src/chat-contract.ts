@@ -1,6 +1,7 @@
 import type {
   ChatMessage,
   CompletionUsage,
+  ContentPart,
 } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -58,6 +59,38 @@ export type JsonSchemaResponseFormat = {
 };
 
 /**
+ * One message carrying parts rather than a plain string.
+ *
+ * FOR IMAGES, and only images so far. `#111` sends a picture so a transcribed
+ * passage has a source that can be CHECKED rather than only preserved, and the
+ * provider takes that as an OpenAI-compatible content-part array. The part type
+ * is the shared one from `@monochromatic-dev/module-llm-type`, so nothing here
+ * invents a protocol.
+ *
+ * @example
+ * ```ts
+ * const message: VisionMessage = {
+ *   role: 'user',
+ *   content: [
+ *     { type: 'text', text: 'Read this picture.', },
+ *     { type: 'image_url', image_url: { url: dataUri, }, },
+ *   ],
+ * };
+ * ```
+ */
+export type VisionMessage = {
+  /**
+   * Author of the message, the same roles a text message uses.
+   */
+  readonly role: ChatMessage['role'];
+
+  /**
+   * Parts this message is composed of, in the order the model reads them.
+   */
+  readonly content: readonly ContentPart[];
+};
+
+/**
  * One chat exchange request.
  *
  * @example
@@ -77,8 +110,16 @@ export type ChatTextRequest = {
 
   /**
    * Conversation sent as-is.
+   *
+   * TEXT OR VISION, in one field rather than in two request shapes. The body is
+   * a pass-through, `messages: request.messages` inside a `JSON.stringify`, and
+   * the provider is OpenAI-compatible, so a message whose content is an array of
+   * parts serialises correctly with no other change. Widening the union leaves
+   * every existing caller valid, where a second request type and a second client
+   * method would have duplicated the limiter, the deadline, the retry ladder and
+   * the drain for one field's sake.
    */
-  readonly messages: readonly ChatMessage[];
+  readonly messages: readonly (ChatMessage | VisionMessage)[];
 
   /**
    * Abort signal honored for the whole exchange, wait included.
