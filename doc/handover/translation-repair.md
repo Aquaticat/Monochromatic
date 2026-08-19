@@ -13150,6 +13150,53 @@ AND ONE READING WAS SIMPLY AN ARTEFACT: `checker` and `probe` report a minimum h
 both runs, which looked like degradation next to the critic's 6 until the denominators were
 checked. Their roster IS three, so three of three is a full house.
 
+#### Two more readings, and both say the window is behaving
+
+CLAIMS PER STAGE ARE UNCHANGED, which is the null that matters most:
+
+```text
+              critic stages   claims raised   claims per stage
+baseline                 42             429              10.21
+this run                  5              51              10.20
+```
+
+Identical to two decimal places. Whatever the window is doing to the roster, it is not
+changing how much critics find per stage.
+
+ANCHORING DISCARDS ARE DOWN, NOT UP, which refutes the pre-registered worry directly. The
+expectation was that critics would quote from the NEARBY blocks, that those claims would die
+at anchoring because a quote from next door cannot anchor here, and that the discard count
+would spike:
+
+```text
+              claims raised   unanchored   rate
+baseline                429           39   9.1%
+this run                 51            3   5.9%
+```
+
+It did not spike. On five stages that is weak, but it is weak in the direction of the window
+being harmless rather than in the direction of the worry.
+
+#### Where this leaves the alarm, honestly
+
+Raised loudly, then dismantled by better measurement, three times. What survives is ONE
+critic stage at three of six, a value the matched baseline never produced in 42 stages.
+Everything else that looked like corroboration has evaporated:
+
+-   sheet size: 1.14x, not 3x
+-   runaway generation: abandoned replies convert to ordinary sizes, and a much larger reply
+    completed in the same run
+-   an extraordinary base rate: withdrawn, the matched baseline abandons 13 percent of stages
+-   generic windowing damage: the panel is windowed too and is clean
+-   provider having a bad night: stream retries are 0 against 52
+-   critics quoting the neighbours: anchoring discards went down
+-   claims suppressed: claims per stage identical to two decimals
+
+THE RIGHT POSTURE IS TO FINISH THE RUN AND READ THE GATES. The remaining four entries will
+produce roughly forty more critic stages, which is the sample that decides whether one 3-of-6
+was a burst. Nothing should change in the pipeline before then, and the reason is now on the
+record: six of the seven things that would have justified a change turned out not to be true.
+
 #### What is left, and it is a question rather than an answer
 
 The abandoned replies were simply still arriving when the 180-second straggler window closed
