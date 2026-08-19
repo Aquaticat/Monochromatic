@@ -12742,46 +12742,76 @@ and in both cases the answer took one command.
 The census now counts and reports the entries it could not read,
 so its zero can never again mean two different things.
 
-## The end-to-end corpus pass is RUNNING, and what that forbids
+## The end-to-end corpus pass was launched, then STOPPED ON PURPOSE, and why
 
-Launched 2026-08-19 at 23:00Z, detached in its own session so it survives this agent
-session and a REISUB alike.
+STATE AS OF 2026-08-19 23:08Z: NO PASS IS RUNNING. Nothing to monitor, nothing to resume,
+and no restriction on editing package source. If a recovery session reads only one line
+of this section, that is the line.
+
+It was launched at 23:00Z over 92 entries and killed at 23:08Z with four minutes of work
+and ZERO settled artifacts, so the discarded cost is one partial entry.
+The dead directory `~/temp/agent/corpus-pass-full-20260819` holds a stale `pass.lock`,
+a generation-keyed slice cache and that partial work. It is worth nothing; the relaunch
+uses a FRESH directory, because the rebuilt `dist` stamps a different digest anyway.
+
+### Why it was stopped four minutes in
+
+Reading `#107` immediately after launching turned up a fix that is measured, bounded,
+specified, and explicitly NOT YET BUILT, for damage that is legible in shipped output:
+`lintong` ships a farewell offering the same thing twice, and `saurikissa` slice 7 ships a
+sentence severed after its preposition. The bound is measured over 1260 slices: 80 flagged,
+51 contiguous runs, longest run 3, and every relocation pair adjacent, so showing the judge
+slices n-1, n and n+1 provably covers every case in the pool.
+
+Measuring a pipeline corpus-wide for four days, when a known defect in it already has a
+specified fix, spends the time to learn the rate of something we were about to remove.
+The arithmetic favours stopping and it is not close:
 
 ```text
-runs dir   ~/temp/agent/corpus-pass-full-20260819
-log        ~/temp/agent/corpus-pass-full-20260819/pass.log
-tip        a7775e16b   pipeline sha256-tree-v1:db66e5ef...
-pending    92          soft budget 72h   hard per-entry cap 7h
+run then fix   baseline 08-23 describing a superseded pipeline,
+               fix plus verification plus a second pass lands 08-28 or 08-29, no slack
+stop then run  fix in hours, 5 flagged entries verify overnight,
+               relaunch 08-20, full pass done 08-24 or 08-25, real slack before 08-30
 ```
 
-Per-entry outcomes appear as `TALLY <id> status=...` lines.
-The pass holds `pass.lock` in that directory, so a second launch cannot start by accident.
+THE USER RATIFIED THIS AS A STANDING RULE while it was happening, in three words:
+"Always stop and restart." So this is not a one-off judgement call to re-litigate. When a
+fix ought to land before a long measurement, kill the measurement and restart it after.
+Do not let a multi-day run finish on code that is already superseded.
 
-WHY IT IS RUNNING AT ALL, since a previous session recorded it as a cost decision to put
-to the user. That was wrong, and re-reading the standing instruction is what corrected it:
-"I saw your open decisions and I think they're not worth asking to me, again, under the
-principle of always pick whatever yields the best quality, if you don't know which will,
-prototype and measure."
-Cost is a non-constraint here, so the only real variable was wall clock,
-and the arithmetic settles it rather than the user:
-61 minutes for `wangzihao980`, 92 entries, about four days, against a 08-30 release.
+### What gates the relaunch, and what does not
 
-### The one thing that must not happen while it runs
+ONLY `#107` GATES IT. The fix list does not grow while the pass waits.
+`#98` was already measured to have zero instances on this corpus under a validated positive
+control, so it changes no pairing here and is correctly gated on heading scoring instead.
+`#90`, `#91`, `#94` and `#96` have no measured shipped damage and stay post-pass.
 
-The run stamp is a digest over `dist/final/node`, and the generation guard says it in its
-own refusal text:
-"A documentation commit on its own does not reach here; an uncommitted edit does."
+HARD RELAUNCH DEADLINE 2026-08-21. If the window fix has not cleared its gates by then,
+relaunch on the current tip and land the fix afterwards. A perfect pipeline that never gets
+measured is worth less than a measured one.
 
-So documentation work during the pass is free, and this section was written during it.
-Editing THIS worktree's package source is not, for a reason worth stating precisely,
-because the obvious version of it is wrong.
-The running node process already loaded its code and will not rebuild mid-pass,
-so a source edit cannot corrupt the run in flight.
-The damage is deferred: if the pass is ever interrupted and resumed,
-`corpus-pass` rebuilds through `depends = ["build"]`, stamps a different digest,
-and the guard then REFUSES to resume into the same pool rather than mixing generations.
-On a machine that may need a REISUB, an interruption is not hypothetical,
-so a source edit here converts a resume into a start-over.
+The gates are checkable rather than felt:
 
-CODE WORK ON OTHER ITEMS THEREFORE HAPPENS IN A SEPARATE WORKTREE with its own `dist`,
-never in `/var/home/user/worktrees/translation-repair` until the pass reports `DONE`.
+-   `lintong` repair lane drops from 2 to 1 for each of the two distinguishing noun phrases
+-   `saurikissa` slice 7 no longer ships the severed sentence
+-   the contested-cut replacement rate at unflagged slices does not fall away from about 0.95
+-   suite, lint and types stay green
+-   judged-context cost is read, not assumed: n plus or minus 1 roughly triples the context,
+    and `#92` found cost tracks CLAIM COUNT rather than size, so confirm claim counts hold
+
+The instruments already exist: `~/temp/agent/join-107.mjs`,
+`~/temp/agent/severed-sentence-census.mjs`, and the current code reproducing the `lintong`
+duplication is the positive control. Run the five flagged entries with `--only` into a
+throwaway `TRANSLATION_REPAIR_RUNS_DIR`.
+
+### Mechanics worth not rediscovering
+
+The runner installs no signal handler, so a plain TERM ends it and it died in two seconds.
+The first TERM appeared to be ignored for a much dumber reason: bash's BUILTIN `kill` has no
+`--signal` long option, so `kill --signal TERM <pid>` fails with "invalid signal
+specification", and the failure was invisible because stderr had been sent to `/dev/null`.
+Use `kill -s TERM <pid>`. This is the `LF2` case where no long form exists and the short
+flag stays.
+
+`pgrep --full 'corpus-pass.mjs'` MATCHES ITS OWN COMMAND LINE and will report a live runner
+that is really the pgrep. Use `pgrep --full '^node .*corpus-pass\.mjs'`.
