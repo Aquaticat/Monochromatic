@@ -940,3 +940,61 @@ against six in the run that produced these records.
 Before the guard learned the kind, those five would have re-decoded and re-read on every pass,
 written the same records back, and had them rejected again,
 while the log looked exactly like this one minus the six resumed lines.
+
+## The ceiling, witnessed at the settle path on the asset that needed it
+
+The withdrawal above said a settle-path witness for the ceiling needs an entry that carries an oversized asset.
+`gqt` does: `photo1.webp` is 1274028 bytes, 4.3 times the 294912 the old estimate enforced.
+
+WHAT COUNTS AS THE WITNESS, since the cap was removed rather than raised.
+The absence of a `too-large-for-model` line proves nothing: it is true by construction now.
+The discriminating evidence is a MODEL-PRODUCED reading of that asset through the settle machinery,
+and there is one:
+
+```text
+readImageWithOcr  photo1.webp: read 2329 characters without a model
+readImageAsset    hf:Qwen/Qwen3.6-27B read photo1.webp: 2718 characters
+readImageAsset    hf:moonshotai/Kimi-K3 read photo1.webp: 2748 characters
+readImagePair     photo1.webp: corroborated by 2 readers at overlap 0.989
+```
+
+At 0.989 this is the strongest corroboration recorded anywhere in this audit,
+on the single largest text-bearing asset in the corpus,
+which the pipeline used to refuse without asking anyone.
+
+## The gate's marginal band, and what the re-ask costs there
+
+The same run turned up the case that the re-ask makes expensive.
+`photo3.webp` cleared the gate on 19 characters, one above `MIN_OCR_CHARS`,
+and both readers declined every one of their four asks:
+
+```text
+readImageWithOcr  photo3.webp: read 19 characters without a model
+readImageAsset    hf:Qwen/Qwen3.6-27B ... reads-as-refusal        (four times)
+readImageAsset    hf:moonshotai/Kimi-K3 ... reads-as-refusal      (four times)
+readImagePair     photo3.webp: 0 of 2 readers produced a reading, so nothing is corroborated
+```
+
+Eight calls, no reading.
+That is not the re-ask misbehaving:
+two readers refusing eight asks between them is strong evidence the picture carries nothing worth reading,
+and the deterministic reader's 19 characters were noise.
+It is the GATE letting a marginal picture through, and the re-ask multiplying what that costs
+from two calls to eight.
+
+HOW MANY PICTURES SIT IN THAT BAND, over the whole corpus:
+
+```text
+0 characters        119
+1 to 15              12   below the gate, never sent
+16 to 31              9   the marginal band
+32 to 63              8
+64 to 127            11
+128 or more          32
+```
+
+So the exposure is nine assets, and the question the number cannot answer is whether they
+behave like `photo3.webp` or carry real text that a higher threshold would throw away.
+Raising `MIN_OCR_CHARS` on one observation would be trading a measured cost for an unmeasured loss.
+The corpus-wide re-run records the outcome of each of those nine,
+which decides it on evidence rather than on this one case.
