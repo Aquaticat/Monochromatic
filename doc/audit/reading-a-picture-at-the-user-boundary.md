@@ -1029,6 +1029,32 @@ The threshold is 0.30 and nothing lands within 0.24 of it.
 The gap between the threshold and the weakest real corroboration is wider than the threshold itself,
 so the number is not doing marginal work on this corpus and moving it would change nothing.
 
+THE ONE DISAGREEMENT IS NOT A NEAR MISS EITHER, which is the other half of that claim
+and the half a distribution over corroborations cannot show.
+`noname3031/postcard8.webp` is the corpus's only `readers-disagree`.
+The kept-readings field exists so a case like it can be diagnosed rather than merely counted,
+and read for shape alone it says this:
+
+```text
+deterministic reader   122 characters
+hf:Qwen/Qwen3.6-27B     50 characters
+hf:moonshotai/Kimi-K3   31 characters
+overlap                  0.069
+```
+
+0.069 sits inside the 0.000 to 0.129 band measured for readings of DIFFERENT pictures.
+The two readers agreed with each other about as much as they would have
+had they been shown unrelated images, so the refusal is the threshold doing exactly its job
+rather than a boundary case it decided arbitrarily.
+
+The shape also says why. The deterministic reader found 122 characters,
+so the picture is not blank and the gate was right to pass it,
+yet both models returned readings far shorter than that and unrelated to each other.
+That is the signature of text present but hard to read,
+where each reader guesses differently instead of failing outright.
+A single reading here would have been shipped with no sign anything was wrong,
+which is the entire argument for requiring two.
+
 ## The marginal band decides itself, and the answer is to leave it alone
 
 Nine assets return 16 to 31 characters from the deterministic reader,
