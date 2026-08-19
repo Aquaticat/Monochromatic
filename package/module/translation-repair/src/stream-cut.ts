@@ -136,6 +136,12 @@ export class StreamCutShortError extends Error {
  * only by capturing a logger's side effect. The caller is not expected to use
  * the return value; `void`-typed call sites remain valid.
  *
+ * REPORTS GENERATED CHARACTERS, NOT RAW ONES, for the count that used to read
+ * `partialText.length`. `progress.chars` already names itself `raw chars` and
+ * keeps counting wire bytes, envelope included; the field beside it used to
+ * repeat that exact number under a different name, which reads as though it
+ * meant how much the model actually produced when it never did.
+ *
  * @param label - model or endpoint
  *
  * @param progress - what the stream did
@@ -145,13 +151,23 @@ export class StreamCutShortError extends Error {
  * @param outcome - whether the stream finished, was cut, or was ended by this
  * system's own degeneration guard
  *
- * @param partialText - text delivered, used only for its length and opening
+ * @param partialText - raw stream text delivered, used only for its opening
+ *
+ * @param generatedChars - decoded characters produced on each channel, from
+ * the same detectors the degeneration guard already keeps running totals in
  *
  * @returns The line that was logged
  *
  * @example
  * ```ts
- * reportStreamProgress({ label, progress, unreadableFrames: 0, outcome: 'cut', partialText, },);
+ * reportStreamProgress({
+ *   label,
+ *   progress,
+ *   unreadableFrames: 0,
+ *   outcome: 'cut',
+ *   partialText,
+ *   generatedChars: { content: 40, reasoning: 0, },
+ * },);
  * ```
  */
 export function reportStreamProgress(
@@ -161,12 +177,17 @@ export function reportStreamProgress(
     unreadableFrames,
     outcome,
     partialText,
+    generatedChars,
   }: {
     readonly label: string;
     readonly progress: StreamProgress;
     readonly unreadableFrames: number;
     readonly outcome: StreamOutcome;
     readonly partialText: string;
+    readonly generatedChars: {
+      readonly content: number;
+      readonly reasoning: number;
+    };
   },
 ): string {
   /**
@@ -195,7 +216,8 @@ export function reportStreamProgress(
   const sample = `stream ${label}: ${outcome}, firstByte ${String(progress.firstByteMs,)}ms, `
     + `maxGap ${String(progress.maxGapMs,)}ms, ${String(progress.chars,)} raw chars, `
     + `${String(unreadableFrames,)} unreadable frames, `
-    + `${String(partialText.length,)} delivered chars${excerpt}`;
+    + `${String(generatedChars.content,)} content chars, `
+    + `${String(generatedChars.reasoning,)} reasoning chars${excerpt}`;
 
   /**
    * Logger tagged with this report.

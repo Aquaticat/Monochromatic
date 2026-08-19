@@ -92,6 +92,19 @@ export type RunawayWatch = {
    * stream that simply produced nothing.
    */
   readonly unreadableFrames: () => number;
+
+  /**
+   * Reads how many generated characters have arrived on each channel so far.
+   *
+   * READS THE DETECTORS' OWN TOTALS rather than keeping a second tally: they
+   * already count every character `notifyChunk` routes to them, and a
+   * progress line asking the same question a second way would only invite the
+   * two counts to drift.
+   */
+  readonly generatedChars: () => {
+    readonly content: number;
+    readonly reasoning: number;
+  };
 };
 
 /**
@@ -180,6 +193,18 @@ export function watchRunaway(): RunawayWatch {
 
     unreadableFrames(): number {
       return scanner.unreadableFrames();
+    },
+
+    generatedChars(): {
+      readonly content: number;
+      readonly reasoning: number;
+    } {
+      return {
+        content: detectors.content
+          .charsSeen(),
+        reasoning: detectors.reasoning
+          .charsSeen(),
+      };
     },
   };
 }

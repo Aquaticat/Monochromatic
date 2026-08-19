@@ -231,6 +231,60 @@ await describe({
     },),
 
     it({
+      name: 'COUNTS GENERATED CHARACTERS PER CHANNEL, independent of any verdict, so a progress '
+        + 'line can report how much the model actually produced rather than repeating the raw '
+        + 'stream byte count under a different name',
+      fn: async () => {
+        const watch = watchRunaway();
+
+        /**
+         * Two channels' worth of ordinary, non-repeating text, well short of
+         * anything a verdict would notice.
+         */
+        const said = 'Whiskers dozed on the windowsill. ';
+        const thought = 'Considering whether the shelf holds. ';
+
+        expect(watch.generatedChars(),).toEqual({
+          content: 0,
+          reasoning: 0,
+        },);
+
+        watch.notifyChunk({
+          chunk: frameOf({
+            channel: 'content',
+            text: said,
+          },),
+        },);
+        watch.notifyChunk({
+          chunk: frameOf({
+            channel: 'reasoning',
+            text: thought,
+          },),
+        },);
+
+        // Counted separately, and neither channel's arrival moves the other's
+        // total: pooling them would let a verbose thinking trace hide a silent
+        // answer channel, or the reverse.
+        expect(watch.generatedChars(),).toEqual({
+          content: said.length,
+          reasoning: thought.length,
+        },);
+
+        watch.notifyChunk({
+          chunk: frameOf({
+            channel: 'content',
+            text: said,
+          },),
+        },);
+
+        expect(watch.generatedChars(),).toEqual({
+          content: said.length * 2,
+          reasoning: thought.length,
+        },);
+      },
+    },),
+
+    it({
       name: 'CARRIES WHAT A LOG LINE NEEDS in its error: which channel, how repetitive, what '
         + 'the call had already cost when it was ended, and which model ran away',
       fn: async () => {

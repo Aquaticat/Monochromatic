@@ -162,6 +162,15 @@ export type DegenerationDetector = {
    * Reads what the trailing sample currently says.
    */
   readonly verdict: () => DegenerationVerdict;
+
+  /**
+   * Reads the running total of generated characters fed so far, unconditional
+   * on any verdict. `DegenerationVerdict` only carries this count on its
+   * `degenerate` case, which is silent on a stream that never trips it, and a
+   * progress line needs a figure for every stream rather than only for the
+   * ones this guard ends.
+   */
+  readonly charsSeen: () => number;
 };
 
 /**
@@ -328,6 +337,10 @@ export function watchForDegeneration(): DegenerationDetector {
         windows,
         charsSeen: state.charsSeen,
       };
+    },
+
+    charsSeen(): number {
+      return state.charsSeen;
     },
   };
 }

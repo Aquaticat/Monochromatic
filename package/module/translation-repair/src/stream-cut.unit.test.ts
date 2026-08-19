@@ -30,6 +30,16 @@ const SOME_PROGRESS = {
   chars: 512,
 };
 
+/**
+ * Generated character totals a call made before it stopped, deliberately
+ * unequal to `SOME_PROGRESS.chars` and to each other, so no assertion below
+ * could pass by two counts coinciding.
+ */
+const SOME_GENERATED_CHARS = {
+  content: 40,
+  reasoning: 7,
+};
+
 await describe({
   name: reportStreamProgress.name,
   children: [
@@ -48,6 +58,7 @@ await describe({
           unreadableFrames: 0,
           outcome: 'cut',
           partialText: 'It is a cat. It did a backflip. It cras',
+          generatedChars: SOME_GENERATED_CHARS,
         },);
 
         /**
@@ -59,6 +70,7 @@ await describe({
           unreadableFrames: 0,
           outcome: 'degenerate',
           partialText: 'The cat sat on the mat. '.repeat(20,),
+          generatedChars: SOME_GENERATED_CHARS,
         },);
 
         expect(cutLine.includes('hf:whiskers: cut,',),).toBe(true,);
@@ -85,6 +97,7 @@ await describe({
           unreadableFrames: 0,
           outcome: 'degenerate',
           partialText: 'The cat sat on the mat. '.repeat(20,),
+          generatedChars: SOME_GENERATED_CHARS,
         },);
 
         expect(line.includes('opening',),).toBe(true,);
@@ -104,9 +117,36 @@ await describe({
           unreadableFrames: 0,
           outcome: 'completed',
           partialText: 'A tabby naps in the window.',
+          generatedChars: SOME_GENERATED_CHARS,
         },);
 
         expect(line.includes('opening',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REPORTS GENERATED CHARACTERS PER CHANNEL rather than repeating the raw byte count '
+        + 'under a new name: `progress.chars` and `generatedChars` are given deliberately unequal '
+        + 'values here, and the line must show the generated ones, not the raw one, for the count '
+        + 'beside `raw chars`',
+      fn: async () => {
+        const line = reportStreamProgress({
+          label: 'hf:whiskers',
+          progress: SOME_PROGRESS,
+          unreadableFrames: 0,
+          outcome: 'completed',
+          partialText: 'whatever the wire actually sent, irrelevant to this count',
+          generatedChars: SOME_GENERATED_CHARS,
+        },);
+
+        expect(line.includes(`${String(SOME_PROGRESS.chars,)} raw chars`,),).toBe(true,);
+        expect(line.includes(`${String(SOME_GENERATED_CHARS.content,)} content chars`,),).toBe(true,);
+        expect(line.includes(`${String(SOME_GENERATED_CHARS.reasoning,)} reasoning chars`,),).toBe(true,);
+
+        // The old field is gone rather than renamed alongside the new ones:
+        // a reader grepping for "delivered chars" must find nothing, not a
+        // second copy of the raw count.
+        expect(line.includes('delivered chars',),).toBe(false,);
       },
     },),
   ],

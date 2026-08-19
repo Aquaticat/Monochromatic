@@ -352,5 +352,32 @@ await describe({
         expect(verdict.windows,).toBe(4_096,);
       },
     },),
+
+    it({
+      name: 'REPORTS CHARACTERS SEEN UNCONDITIONALLY, before any verdict is reachable and after a '
+        + 'healthy one, because a progress line needs a figure for every stream and `verdict` only '
+        + 'carries this count on its degenerate case, which is silent on every stream that never '
+        + 'trips it',
+      fn: async () => {
+        /**
+         * Detector fed too little text for `verdict` to say anything but
+         * `undecided`.
+         */
+        const short = watchForDegeneration();
+        expect(short.charsSeen(),).toBe(0,);
+        short.notifyText({ text: 'The cat naps. ', },);
+        expect(short.charsSeen(),).toBe(14,);
+        expect(short.verdict().kind,).toBe('undecided',);
+
+        /**
+         * Detector fed enough varied text to read healthy.
+         */
+        const long = watchForDegeneration();
+        const prose = variedProse({ lines: 2_000, },);
+        long.notifyText({ text: prose, },);
+        expect(long.charsSeen(),).toBe(prose.length,);
+        expect(long.verdict().kind,).toBe('healthy',);
+      },
+    },),
   ],
 },);

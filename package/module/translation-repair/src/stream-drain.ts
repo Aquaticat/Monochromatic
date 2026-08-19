@@ -234,6 +234,7 @@ export async function drainBody(
       unreadableFrames: watch.unreadableFrames(),
       outcome: isDegenerate ? 'degenerate' : 'cut',
       partialText,
+      generatedChars: watch.generatedChars(),
     },);
 
     // OUR OWN DELIBERATE TERMINATION PASSES THROUGH UNCHANGED. A runaway is
@@ -269,6 +270,7 @@ export async function drainBody(
     unreadableFrames: watch.unreadableFrames(),
     outcome: 'completed',
     partialText: bodyText,
+    generatedChars: watch.generatedChars(),
   },);
 
   return bodyText;
