@@ -13282,3 +13282,57 @@ their own reasoning at the time, so the waste is about forty minutes of one entr
 `#126` LANDED FIRST AND ON PURPOSE, which is the one piece of sequencing that still mattered
 under the new scope: it re-keys every windowed slice, so any run started before it would have
 had its slice cache invalidated the moment it landed.
+
+## The damage instruments now see past one slice
+
+Three changes landed 2026-08-20, all from `#66`, and the ordering among them is the finding
+rather than a preference.
+
+```text
+assembly-repetition.ts      NEW    document-scale repetition, no model and no quota
+repair-assemble.ts          wired  emits the finding where the footnote guard runs
+translate-assemble.ts       wired  same, because the check found damage in that lane too
+introduced-defect-wire.ts   window the probe now sees the neighbours, fence included
+introduced-defect-probe.ts  window forwards them
+repair-chunk.ts             window one windowFragment now feeds four stages
+```
+
+WHY REPETITION IS CHECKED AT ASSEMBLY and not inside a stage: `repair-assemble.ts` already
+carries the argument in its own words, for footnotes. "A footnote is a relation BETWEEN
+slices, and every stage works inside one, so this is the only layer that can see it."
+Repetition is the same shape, which is why `#66` found the probe structurally unable to
+report `lintong`'s duplication however it was tuned.
+
+THE ARCHIVE IS WHAT MAKES IT DECIDABLE, and `#128` put it in the artifact hours earlier.
+A phrase the archive says once and the shipped document says twice is a repetition this
+pipeline added. Counting against the archive rather than against a rule about prose inherits
+the author's own judgement about acceptable repetition, so refrains and repeated names never
+fire.
+
+BOTH LANES, and that was not the plan. The damage was found in `lintong`'s REPAIR lane, and
+running the check over the settled pool immediately produced one finding in `saurikissa`'s
+translate lane and one in `dogesir_`'s, where the archive never carried the wording at all and
+the document says it twice. Writing a slice from its source rather than editing an incumbent
+does not stop a lane repeating itself.
+
+### What is verified, and what is only predicted
+
+VERIFIED: the function, by six cases including the three it must NOT fire on. Its behaviour on
+real data, by running it over the five settled artifacts, where it reproduces both the known
+`lintong` duplication and the known lane split without being told what to look for. That the
+call ships in the same built chunk as the assembler.
+
+NOT VERIFIED: that a finding actually lands in an artifact written by a live run. The unit
+tests cover the function and the dist check covers the call's presence, but neither is an
+artifact carrying `introduced-repetition`. THE CHECKABLE PREDICTION: the next run that
+settles `lintong` must produce an artifact whose repair-lane findings include at least one
+`introduced-repetition`. If it does not, the wiring is wrong however green the suite is, and
+that is exactly the failure mode `#107` recorded for the judging window.
+
+### A trap hit twice in one session
+
+Inserting a new declaration between an existing TSDoc block and the declaration it documents
+orphans the doc, and `tsdoc(require-tsdoc)` then reports the ORIGINAL declaration as
+undocumented, which reads like an unrelated regression. It happened in
+`artifact-v2-read-contract.ts` and again in `introduced-defect-wire.ts`. Put a new constant
+ABOVE the whole doc-plus-declaration pair, never between them.
