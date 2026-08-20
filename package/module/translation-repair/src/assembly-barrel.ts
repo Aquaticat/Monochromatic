@@ -27,12 +27,13 @@ export {
   type AdjacentSliceText,
   findAdjacentRepetitions,
 } from './assembly-adjacent-repetition.ts';
+// `wordsOf` and `countPhrases` are exported from their own module so the
+// adjacency check can share them, and deliberately NOT re-exported here: they
+// are shared internals, not public API, and a barrel is what decides which.
 export {
-  countPhrases,
   findIntroducedRepetitions,
   repetitionFindings,
   type RepetitionFinding,
-  wordsOf,
 } from './assembly-repetition.ts';
 
 //endregion Assembly barrel
