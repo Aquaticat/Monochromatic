@@ -263,6 +263,7 @@ export {
   validateIssueClaim,
 } from './validate-issue.ts';
 
+export * from './assembly-barrel.ts';
 export * from './corpus-barrel.ts';
 export * from './document-barrel.ts';
 export * from './pipeline-barrel.ts';

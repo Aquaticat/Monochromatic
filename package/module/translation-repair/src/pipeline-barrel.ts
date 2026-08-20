@@ -146,13 +146,6 @@ export {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 export {
-  AssemblyContractError,
-  assertReplacementsChange,
-  deriveShippedIndices,
-  type OrderedChangeSets,
-  orderedChangeSets,
-} from './assembly-invariant.ts';
-export {
   compareDocumentLanes,
   type DecisionComparison,
   type IdentifiedDeliveryLedger,
@@ -184,12 +177,6 @@ export {
   SLICE_CACHE_VERSION,
 } from './repair-slice-key.ts';
 export { footnoteIdentifiers, } from './footnote-mentions.ts';
-export {
-  guardFootnoteAssembly,
-  type GuardedAssembly,
-  introducedFootnoteFindings,
-  introducedStructuralRegressions,
-} from './assembly-integrity.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,
