@@ -155,8 +155,30 @@ function mergeOneSidedRuns(
     heldTarget.length = 0;
   }
 
-  // Anything still held had no two-sided run anywhere: one side of the
-  // section is empty, and the caller's own fallback owns that case.
+  // ANYTHING STILL HELD BELONGS TO A SECTION WHOSE RUNS WERE ALL ONE-SIDED,
+  // which is NOT the same as a section with an empty side. The caller only
+  // reaches here when both sides carry blocks, so this is what a supplied
+  // pairing that pairs nothing produces once the budget splits the unpaired
+  // blocks into separate runs: source-only and target-only runs, alternating,
+  // and never a two-sided one to flush into.
+  //
+  // Discarding them dropped the whole section. It was silent, because every
+  // later reader works from the runs, and it took `assertSliceCoverage` to see
+  // it: 10 of 920 randomised in-range pairings over the corpus lost a section
+  // this way.
+  //
+  // BOTH SIDES, NOT EITHER. When only one side is held the section genuinely
+  // has an empty side, which is the module's stated exception: a one-sided run
+  // is a slice nobody can review, so the caller's fallback owns that case and
+  // this still returns nothing.
+  if ((heldSource.length > 0) && (heldTarget.length > 0))
+    return [
+      ...merged,
+      {
+        sourceRun: [ ...heldSource, ],
+        targetRun: [ ...heldTarget, ],
+      },
+    ];
   return merged;
 }
 

@@ -422,5 +422,56 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'KEEPS a section whose every run came out one-sided, which a supplied '
+        + 'pairing that pairs nothing produces once the budget splits the unpaired blocks',
+      fn: async () => {
+        /**
+         * Original blocks.
+         */
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+
+        /**
+         * Translation blocks.
+         */
+        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
+
+        // NOTHING PAIRED, and a budget no block fits inside, so every run holds
+        // one block and none holds both sides. The merger held those blocks
+        // waiting for a two-sided run to fold them into, and none ever came, so
+        // it returned nothing and the section left the document. Both sides
+        // carry blocks here, so the caller's empty-side fallback never fires.
+        const runs = groupNodesAligned({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: 1,
+          targetBudget: 1,
+          steps: [
+            ...[ ...sourceNodes.keys(), ].map(function toSourceOnly(
+              sourceIndex,
+            ): { readonly kind: 'source-only'; readonly sourceIndex: number; } {
+              return {
+                kind: 'source-only',
+                sourceIndex,
+              };
+            },),
+            ...[ ...targetNodes.keys(), ].map(function toTargetOnly(
+              targetIndex,
+            ): { readonly kind: 'target-only'; readonly targetIndex: number; } {
+              return {
+                kind: 'target-only',
+                targetIndex,
+              };
+            },),
+          ],
+        },);
+
+        expectCoversEveryBlockOnce({
+          runs,
+          sourceNodes,
+          targetNodes,
+        },);
+      },
+    },),
   ],
 },);
