@@ -13413,3 +13413,84 @@ whether their baseline repairs were improvements or damage. That is a reading of
 artifacts and needs no further quota. It is the next thing to do and it is not done.
 
 DO NOT TUNE THE WINDOW ON THIS. One entry, and the two readings have opposite remedies.
+
+## What the 17 lost resolutions were, and what the re-run should do to them
+
+Owed since `saurikissa` settled under the window, and done now, before the re-run settles,
+so the reading is a prediction rather than a rationalisation.
+
+Zero quota: two settled artifacts.
+No corpus text: categories, severities, slice indices and counts only.
+Note that `quote-not-found` findings carry the NEEDLE, which is corpus text,
+so they can be counted but never quoted into a document.
+
+### What was lost
+
+```text
+resolved issues            baseline 23   window 6
+
+by category
+  accuracy/addition               10 ->  0
+  accuracy/omission                8 ->  4
+  accuracy/non-translation         4 ->  1
+  accuracy/mistranslation          2 ->  0
+  style/register                   1 ->  0
+  extension/interpretive-ambiguity 1 ->  0
+  fluency/grammar                  1 ->  1
+
+by severity
+  critical  5 -> 1      major  9 -> 1      minor  9 -> 4
+
+by slice
+  1: 5->4   2: 3->1   3: 1->0   4: 5->0   5: 1->1
+  7: 2->0   8: 2->0   9: 2->0  10: 2->0
+```
+
+THE WHOLE TAIL STOPPED BEING REPAIRED.
+Slices 7 through 10 resolved eight issues between them in the baseline and none under the
+window.
+
+### The mechanism, localised
+
+Claims were still raised at a similar rate, 94 against 83, so the critics did not go quiet.
+What changed is what happened to a claim after it was raised:
+
+```text
+                no-region      not-selected    shipped
+TOTAL           16 -> 37        1 -> 4         26 -> 7
+
+slice 8          2 -> 14        0 -> 0          2 -> 0
+slice 4          4 ->  7        0 -> 0          5 -> 0
+slice 3          0 ->  4        0 -> 1          1 -> 0
+```
+
+Slice 8 alone accounts for twelve of the twenty-one added `no-region` issues,
+and its critics raised MORE claims under the window, fourteen against eighteen.
+More to say and nowhere to put it is the signature of a critic quoting the nearby blocks:
+a quote copied from next door cannot be located in the passage under review,
+so the claim is discarded whole and the issue gets no region.
+That is what `afc7854b4` forbids.
+
+### What the re-run should show, recorded in advance
+
+The fixed build forbids quoting the nearby blocks while keeping the window itself.
+Three outcomes, each meaning something different:
+
+```text
+no-region stays near 37            the quote rule did not take; cause is NOT anchoring
+no-region falls toward 16 AND
+  additions return to about 10     the window buys nothing for additions; reconsider #107
+no-region falls AND additions
+  return only part of the way      the window works and the hole was anchoring
+```
+
+The third is what the fix predicts.
+`accuracy/addition` is the class the window exists for: wording that looks added here
+because it belongs to a neighbouring passage.
+Suppressing SOME addition claims is the window doing its job.
+Suppressing all ten, alongside a collapse in every other category, is the anchoring failure
+dragging them down with it.
+
+ONE STOCHASTIC RUN PER ARM, so read direction and magnitude, never a single number.
+A rerun that moves `no-region` from 37 to 30 has not shown much;
+one that returns it near 16 has.
