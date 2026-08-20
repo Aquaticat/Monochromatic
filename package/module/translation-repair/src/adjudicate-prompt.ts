@@ -25,10 +25,37 @@ const ADJUDICATION_FENCE = '=====';
  * next door has no way to check that and must reject it as unfounded. Widening
  * the critic without widening the panel would therefore produce exactly the
  * claims the panel is guaranteed to throw away.
+ *
+ * THE RULE MUST DEMAND THE EVIDENCE, NOT JUST INVITE THE HYPOTHESIS. Its first
+ * wording said only to decide whether a claim "is explained by a neighbouring
+ * passage holding it instead", which a panelist can answer yes to without ever
+ * finding such a passage. Measured on `saurikissa` against the same roster, 65
+ * voices heard in the baseline and 64 under the window, never fewer than five
+ * per stage:
+ *
+ * ```text
+ * panel votes           supported   unsupported   supported share
+ *   baseline                  402           124              76%
+ *   under the window          230           212              52%
+ *
+ * rejections decided by ONE vote    baseline 1 of 14    window 8 of 32
+ * most common rejection margin      baseline 2-4        window 2-3
+ * ```
+ *
+ * A read of what those marginal rejections contain found four critics
+ * independently reporting one inserted clause, rejected two votes to three,
+ * where NEITHER neighbouring block mentions the inserted content at all. There
+ * was no relocation to find, and the rule still supplied the excuse. Requiring
+ * the panelist to point at the neighbouring wording is the same shape of fix as
+ * forbidding the critic to quote from next door.
  */
 const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT, not text under review. '
   + 'Use them to decide whether a claim about wording unsupported here, or '
-  + 'missing here, is explained by a neighbouring passage holding it instead';
+  + 'missing here, is explained by a neighbouring passage holding it instead. '
+  + 'TO VOTE UNSUPPORTED ON THAT GROUND YOU MUST QUOTE THE NEARBY WORDING THAT '
+  + 'HOLDS IT. If you cannot find and quote it, the nearby blocks explain '
+  + 'nothing here: judge the claim on the original and translation alone, '
+  + 'exactly as you would if no nearby block had been shown to you';
 
 /**
  * System instructions shared by every panelist call.
