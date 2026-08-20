@@ -972,8 +972,13 @@ The probe was closed without merging and its branches were deleted.
 Classic branch-protection patterns `main` and `*` retain required-check enforcement,
 but both return empty required check-context lists;
 disabling default CodeQL setup therefore left no stale required check name.
-The workflow was deployed after the day's scheduled window,
-so the next natural `03:17 UTC` event remains the runtime cron confirmation.
+The first natural scheduled CodeQL run,
+`32330328949`,
+completed successfully on 2026-08-20.
+It started at `04:01:16 UTC`,
+44 minutes and 16 seconds after the configured `03:17 UTC` trigger.
+All three language jobs succeeded and uploaded analyses on `refs/heads/main`;
+the only annotations were the documented `MissingPushHook` warnings.
 
 The toml-edit-fuzz verification exposed and corrected an existing pnpm bootstrap cycle and stale coverage baseline.
 Final run `32286257673` passed installation,

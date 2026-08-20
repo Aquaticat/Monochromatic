@@ -328,9 +328,17 @@ exercised the pull-request path and same-ref supersession:
 
 The probe PR was closed without merging,
 and its local worktree and local and remote branches were deleted.
-The workflow was deployed after the day's `03:17 UTC` scheduled window,
-so only the next natural scheduled event can provide runtime evidence for the cron trigger.
-GitHub has already recognized the deployed schedule in the active workflow.
+The first natural scheduled run,
+[32330328949](https://github.com/Aquaticat/Monochromatic/actions/runs/32330328949),
+completed successfully on 2026-08-20.
+GitHub created it at `04:01:16 UTC`,
+44 minutes and 16 seconds after the configured `03:17 UTC` trigger.
+All three language jobs succeeded,
+used `build-mode: none`,
+`threat-models: local`,
+and `security-extended`,
+and uploaded successful analyses on `refs/heads/main`.
+The only annotations were the documented `MissingPushHook` warnings.
 
 Classic branch-protection pattern `*` remains unchanged.
 A final GraphQL query returned classic patterns `main` and `*` with required-status-check enforcement enabled,
