@@ -274,11 +274,25 @@ export function groupNodesAligned(
      * Run currently accepting blocks, absent before the first step.
      */
     const current = runs.at(-1,);
-    if (
-      (current === undefined)
+
+    /**
+     * Whether this step may not be cut away from the one before it.
+     *
+     * A continuation renders the SAME original as the step before it, so
+     * starting a new run here would hand the critics a passage with no source
+     * beside it. Cohesion outranks the budget, which is a sizing heuristic
+     * rather than a correctness bound, and the overrun is one block wide.
+     */
+    const cohesive = (step.kind === 'target-only')
+      && (step.continuesPairing === true)
+      && (current !== undefined);
+    /**
+     * Whether this step no longer fits the run being filled.
+     */
+    const overBudget = (current === undefined)
       || ((open.sourceChars + sourceChars) > sourceBudget)
-        || ((open.targetChars + targetChars) > targetBudget)
-    ) {
+      || ((open.targetChars + targetChars) > targetBudget);
+    if ((!cohesive) && overBudget) {
       runs.push({
         sourceRun: [ ...sourceNode, ],
         targetRun: [ ...targetNode, ],

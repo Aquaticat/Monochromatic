@@ -125,9 +125,11 @@ export function blockPairingToSteps(
         }
         : {
           // THE SECOND AND LATER RENDERINGS of one original. They carry their
-          // own text and must not re-count the original's characters.
+          // own text and must not re-count the original's characters, and they
+          // must not be cut away from the original they render.
           kind: 'target-only',
           targetIndex: target,
+          continuesPairing: true,
         },);
       emittedTargets = target + 1;
     }

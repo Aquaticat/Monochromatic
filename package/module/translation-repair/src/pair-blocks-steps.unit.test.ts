@@ -84,6 +84,16 @@ await describe({
         // The SECOND rendering carries its own text and must not re-count the
         // original's characters.
         expect(steps[1]?.kind,).toBe('target-only',);
+
+        /**
+         * The continuation step, narrowed so its own field is readable.
+         */
+        const continuation = steps.find(function isContinuation(step,) {
+          return (step.kind === 'target-only') && (step.targetIndex === 1);
+        },);
+        // IT MUST NOT BE CUT AWAY from the original it renders, or the critics
+        // see a passage with no source beside it.
+        expect((continuation?.kind === 'target-only') && continuation.continuesPairing,).toBe(true,);
       },
     },),
     it({
@@ -137,6 +147,32 @@ await describe({
         expect(steps.some(function isSourceOnly(step,) {
           return (step.kind === 'source-only') && (step.sourceIndex === 0);
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'MARKS an unpaired translation as standing alone, not continuing a pairing',
+      fn: async () => {
+        const steps = blockPairingToSteps({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+          ],
+          sourceCount: 1,
+          targetCount: 2,
+        },);
+
+        /**
+         * The genuinely unpaired translation block.
+         */
+        const lone = steps.find(function isLast(step,) {
+          return (step.kind === 'target-only') && (step.targetIndex === 1);
+        },);
+        expect(lone,).toBeDefined();
+        // A block nothing renders stands alone, so the grouper may cut before
+        // it. Marking it cohesive would glue unrelated text into one slice.
+        expect((lone?.kind === 'target-only') && (lone.continuesPairing === true),).toBe(false,);
       },
     },),
     it({

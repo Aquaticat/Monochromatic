@@ -68,6 +68,21 @@ export type AlignmentStep =
      * Translation-side block index.
      */
     readonly targetIndex: number;
+
+    /**
+     * Whether this block CONTINUES the pairing of the step before it, rather
+     * than standing alone.
+     *
+     * Set only by `blockPairingToSteps`, where one original rendered by several
+     * translation blocks becomes a `paired` step followed by continuations. The
+     * grouper must not cut between them: separating a rendering from the
+     * original it renders puts a passage in front of the critics with no source
+     * beside it, which is the mispairing this whole path exists to end.
+     *
+     * The deterministic walk never sets it, because a block it skips genuinely
+     * stands alone.
+     */
+    readonly continuesPairing?: true;
   };
 
 /**
