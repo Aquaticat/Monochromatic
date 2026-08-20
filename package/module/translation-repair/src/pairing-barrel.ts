@@ -24,3 +24,16 @@ export {
 } from './pair-blocks-wire.ts';
 
 //endregion Pairing barrel
+export {
+  contestLaneSlice,
+  type LaneContestOutcome,
+} from './lane-contest-stage.ts';
+export {
+  buildLaneContestMessages,
+  isLaneContestWire,
+  type LaneChoice,
+  type LaneContestBallot,
+  type LaneContestSubject,
+  type LaneContestWire,
+  readLaneContestBallot,
+} from './lane-contest-wire.ts';
