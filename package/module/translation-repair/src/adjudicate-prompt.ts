@@ -25,6 +25,22 @@ const ADJUDICATION_FENCE = '=====';
  * next door has no way to check that and must reject it as unfounded. Widening
  * the critic without widening the panel would therefore produce exactly the
  * claims the panel is guaranteed to throw away.
+ *
+ * DEMANDING A QUOTE WAS TRIED AND MEASURED WORSE, 2026-08-20, and reverted in
+ * `2c93f49bb`. The stronger wording required a panelist voting unsupported on
+ * relocation grounds to quote the nearby wording holding the content, on the
+ * reasoning that the rule otherwise invites the hypothesis without demanding
+ * evidence. That reasoning is sound and the result contradicted it:
+ *
+ * ```text
+ * supported votes            lintong 72% -> 65%   saurikissa 52% -> 51%
+ * distinctive words kept     saurikissa repair lane 89.4% -> 83.8%
+ * ```
+ *
+ * It lowered the panel support it was added to raise, and lowered retention of
+ * the archive's specifics, which is the damage the window exists to prevent.
+ * `doc/audit/the-damage-no-instrument-was-catching.md` carries the measurement.
+ * Do not re-add it without evidence that beats the plain wording.
  */
 const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT, not text under review. '
   + 'Use them to decide whether a claim about wording unsupported here, or '
