@@ -98,3 +98,47 @@ This is a floor on the false-negative rate rather than an estimate of it,
 and the pool is five hand-picked entries that may serve this comparison only.
 What it establishes is that the probe misses damage that ships,
 and that one of the two misses is structural rather than a matter of tuning.
+
+## The document-scale check is built, and it catches the case that shipped
+
+`findIntroducedRepetitions` in `src/assembly-repetition.ts`, landed 2026-08-20.
+No model, no roster, no quota.
+A phrase the archive says once and the shipped document says twice is a repetition this
+pipeline added, which is a fact about two strings.
+
+Run over the five settled artifacts, taking the archive from the comparison rows'
+`incumbentText` since these predate the stored archive field:
+
+```text
+entry            lane        introduced repetitions
+lintong          repair                           3     longest 6 words, archive 1, shipped 2
+lintong          translate                        0
+saurikissa       repair                           0
+saurikissa       translate                        1     4 words, archive 1, shipped 2
+GLaDOSister      repair                           0
+GLaDOSister      translate                        0
+dogesir_         repair                           0
+dogesir_         translate                        1     5 words, archive 0, shipped 2
+wangzihao980     repair                           0
+wangzihao980     translate                        0
+```
+
+IT REPRODUCES THE KNOWN CASE AND THE KNOWN LANE SPLIT. `lintong`'s repair lane is the
+document that ships the duplicated farewell, and its translate lane is the one that does not.
+That split was found by reading the finished text; the check now derives it from the
+artifacts without being told what to look for.
+
+TWO FINDINGS NOBODY HAD, both in the translate lane, which had not been suspected of this at
+all. `dogesir_`'s is the more interesting shape: the archive never carried the wording and
+the shipped document says it twice, so the lane invented a passage and then said it again.
+
+`saurikissa`'s REPAIR lane reads zero, correctly. Its defect is a severed sentence rather
+than a repetition, so this check is silent on it by design, and that remains the in-scope
+false negative belonging to the probe.
+
+### What is still owed
+
+The check is a function with tests, not yet a stage. Nothing calls it during a run, so it
+reports on artifacts after the fact rather than putting a finding in one. Wiring it into the
+document driver, beside the existing assembly guards, is the remaining step, and it is cheap
+because it needs nothing from the network.
