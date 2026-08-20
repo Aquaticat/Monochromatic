@@ -71,3 +71,60 @@ question from this one.
 TWO OF SIX JUDGES DECLINED on one trial, holding that neither candidate covered the
 original. That is conservatism rather than failure, and the ensemble verdict was still
 correct, but a lane contest where both candidates are imperfect will meet it more often.
+
+## The same judge on a REAL lane contest: it declines
+
+Measured the same day, and it corrects the reading above.
+
+The fidelity result made a per-slice contest between the lanes look viable,
+so the contest was run: both lanes' renderings of one slice on one ballot,
+labelled by which retains more of the ARCHIVE SLICE's distinctive words,
+so neither lane is favoured by name.
+
+```text
+contests with a retention difference       6
+  the ensemble DECLINED                    5
+  the ensemble decided                     1
+  of those decided, it chose the
+    higher-retention rendering             0
+```
+
+The one decision went to the rendering that kept LESS of what the archive said.
+
+## Why the two results differ, and which one describes production
+
+A CONSTRUCTED TWIN differs from its clean original by exactly one moved sentence
+and is otherwise word for word identical.
+One candidate is then unambiguously complete, and the sheet's first criterion,
+complete coverage, picks it out cleanly.
+
+TWO REAL LANE RENDERINGS are independently written.
+Both paraphrase, both drop something, neither is complete.
+The declining reasons recorded in the fidelity run say exactly this in the judges'
+own words: both candidates omit propositions, so neither satisfies the criterion,
+so the ensemble declines rather than ranking two imperfect texts.
+
+PRODUCTION IS THE SECOND CASE.
+So `16 of 16` says the judges can detect an omission,
+and it does NOT say they will choose between two flawed renderings.
+Those are different questions and only the first was measured before.
+
+## What this does to `#130`
+
+THE PER-SLICE OPTION IS NOT VIABLE AS SPECIFIED.
+Handing the judge the repair lane's text as one more candidate produces a decline on
+five slices in six, which leaves the lane question exactly where it was
+while spending a judging round per slice to get there.
+
+What would have to change for it to work is a different question from the one the
+judge is asked today: not "which candidate is complete", which neither is,
+but "which of these two is closer to the original",
+which the selection sheet does not currently pose.
+Whether that question can be posed without inviting the register-and-fluency
+preferences the sheet exists to suppress is unmeasured, and is the next thing to
+settle if this route is pursued.
+
+A DETERMINISTIC FALLBACK IS THE CHEAPER ALTERNATIVE, since retention is already
+computed with no quota at all: on a decline, keep the rendering that retains more of
+the archive's specifics. That needs no judge and no round trip, and on this evidence
+it would have decided all six.
