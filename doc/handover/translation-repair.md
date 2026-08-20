@@ -13555,3 +13555,30 @@ a judgement about meaning, which telemetry cannot settle.
 WHAT WOULD SETTLE IT: reading a sample of claims the baseline ACCEPTED and the
 windowed run REJECTED, and asking whether the neighbouring passage really does
 explain them. That is a reading of settled artifacts and needs no quota.
+
+### The panel's own votes, with the roster controlled
+
+The acceptance change is not a threshold artifact.
+The individual panellists vote differently:
+
+```text
+saurikissa panel votes    supported   unsupported   supported share
+  baseline                      402           124              76%
+  fixed                         230           212              52%
+```
+
+ROSTER CONTROLLED FIRST, because a rate read over a shrunken roster says nothing:
+
+```text
+                    critic stages   voices heard   min per stage   claims   claims per voice
+  baseline                     11             65               5       94               1.45
+  window                       11             65               5       83               1.28
+  fixed                        11             64               5       79               1.23
+```
+
+Sixty-five, sixty-five and sixty-four voices, never fewer than five at any stage.
+The critics raise slightly fewer claims, and the panel supports far fewer of them.
+The second effect is much the larger.
+
+So the window acts where it was aimed: on the judgement of whether a claim is supported,
+made by panellists who can now see the neighbouring passage.
