@@ -1,0 +1,91 @@
+# Which lane ships
+
+Status: PROPOSAL. Nothing is decided here.
+`artifact-v2-build.ts` records `laneSelection: pending-human-decision` and says why:
+which lane ships is the owner's question.
+This document supplies the measurement that question needs,
+and reports that the obvious automatic answers do not work.
+
+Date: 2026-08-20.
+Zero quota: every number comes from settled artifacts and the pinned corpus.
+
+## Why it matters now
+
+The pipeline cannot emit a finished document for an entry until one lane is chosen.
+Everything else can be production ready and this would still block delivery.
+
+## The damage instruments cannot separate the lanes
+
+Every zero-quota damage check, over every settled artifact carrying a delivery ledger:
+
+```text
+lane       entries  slices  shipped  adjacent  document  severed  unfilled
+repair          11      92       62         1         0        1         0
+translate       11      92       71         0         1        0         0
+```
+
+The repair lane carries two damage events and the translate lane one.
+That is not a difference.
+Three events across one hundred and thirty-three shipped slices cannot rank two lanes,
+and any ratio computed from them ("half the damage rate") is one event wide.
+
+RECORDED SO IT IS NOT RE-DERIVED AS A FINDING:
+these instruments are built to catch specific, rare defects.
+Their rarity is the good news about the pipeline
+and the reason they are useless as a lane discriminator.
+
+## The verdict the pipeline already computes
+
+Each comparison row carries a `verdict`, over ninety-two rows:
+
+```text
+both-differ       51   55.4%    both lanes changed the slice, and differently
+translate-only    18   19.6%    only the translate lane changed it
+archive-stands    12   13.0%    neither changed it
+repair-only        9    9.8%    only the repair lane changed it
+both-agree         2    2.2%    both produced the same text
+```
+
+Two things follow.
+
+FIRST, the translate lane acts where the repair lane declines twice as often,
+eighteen slices against nine.
+That is a coverage difference, not a quality one,
+and it is the strongest signal available without judging text.
+
+SECOND, and decisively:
+on more than half of all slices both lanes produced different text.
+No count, ratio or guard can say which of two different renderings is better.
+That is a judgement about meaning.
+
+## So a whole-document lane choice is the wrong shape
+
+Picking one lane for the corpus discards the better rendering on roughly half the slices,
+whichever lane is picked.
+The verdict distribution says the decision is PER SLICE or it is arbitrary.
+
+## The option that fits what already exists
+
+The translate lane already judges: `judgeTranslateSlate` picks among candidate renderings,
+with the incumbent entered as one of them,
+and records who won.
+
+The same stage could be handed the repair lane's text as one more candidate.
+That turns `both-differ` from an unanswerable question into the question that stage
+already answers, and it needs no new judging concept, roster or prompt shape.
+
+WHAT IT COSTS: one judging round per `both-differ` slice, which is about 55% of slices.
+Not free, and not measured here, because the shape has to be agreed before it is priced.
+
+WHAT WOULD HAVE TO BE CHECKED FIRST, since `#84` measured this judge on
+preserve-or-replace and not on choose-between-two-rewrites:
+whether it can rank two candidate rewrites at all,
+or whether it only recognises an incumbent worth keeping.
+That is a measurable question and it gates the whole option.
+
+## What is NOT proposed
+
+Choosing a lane by damage counts.
+The measurement above shows those counts cannot carry the decision,
+and a rule built on three events would be overfitting to noise
+rather than to this corpus.
