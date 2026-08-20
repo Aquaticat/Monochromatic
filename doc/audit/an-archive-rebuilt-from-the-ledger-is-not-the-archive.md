@@ -226,3 +226,55 @@ That run also carried the `NEARBY_RULE` hole,
 which changed which slices were edited at all,
 so this measures the window plus the hole rather than the window.
 The re-run on the fixed build is what separates them.
+
+## The same mistake in a second instrument, found by reading its hits
+
+Gate B counts sentences severed mid-phrase and spliced onto an unrelated one.
+Its detector looks for a function word that cannot end a clause,
+immediately followed by a capitalised clause-starting pronoun,
+with no punctuation on the left word.
+
+Its pronoun list contained `I`.
+
+English capitalises `I` in every position,
+so it carries no sentence-start signal whatsoever,
+and the rule fired on `and I`, `but I` and `that I`.
+Those are ordinary prose.
+
+Reading the hits rather than the count separates them at once:
+
+```text
+saurikissa repair, slice 7   a dangling `of` followed by `She`   REAL
+lintong    repair, slice 3   `But` followed by `I`               false positive
+GLaDOSister both lanes       `that` and `and` followed by `I`    false positives
+```
+
+Corrected, with the known-severed case held as a positive control so the fix is not just
+a quieter instrument:
+
+```text
+                     repair        translate
+flagged-20260818     1 of 30       0 of 34
+20260817             0 of 32       0 of 37
+windowed run         0 of  7       0 of 10
+```
+
+One severed join in one hundred and thirty-three shipped rows,
+rather than the twelve the broken detector reported.
+
+WHAT THIS CORRECTS: an earlier reading of the windowed run recorded a severed join at
+`lintong` slice 3 and treated it as a regression the window introduced.
+There is no such join.
+The only real one is in the BASELINE, at `saurikissa` slice 7,
+and the windowed run does not edit that slice at all,
+so its zero there remains the lane declining to touch the passage
+rather than evidence that editing it became safe.
+
+## The rule this leaves behind, restated
+
+Both instruments failed the same way:
+a count was trusted without reading what produced it.
+An instrument that reconstructs an input,
+or that classifies by a hand-written list,
+owes a positive control and a look at its own hits
+before any verdict rests on its total.
