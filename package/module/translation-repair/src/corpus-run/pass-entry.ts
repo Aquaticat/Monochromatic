@@ -9,7 +9,7 @@ import { readImageWithOcr, } from '../image-ocr.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
-import { prepareDocumentPair, } from '../document-preparation.ts';
+import { prepareDocumentPairWithRoster, } from '../prepare-with-pairing.ts';
 import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
@@ -25,6 +25,7 @@ import {
   RUN_READER_MODELS,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
+  RUN_ROSTER,
   RUN_TRANSLATE_MODELS,
 } from './run-config.ts';
 
@@ -220,10 +221,27 @@ async function runEntryPipeline(
      * `prepareDocumentPair` defaults to the same `SLICE_CHAR_BUDGET` that
      * `repairTranslation` passed down when it did this itself, so entries
      * settled before and after this change were sliced the same way.
+     *
+     * THE ROSTER DECIDES WHICH PARAGRAPH RENDERS WHICH, per
+     * `doc/decision/llm-assisted-block-pairing.md`, because the deterministic
+     * scorer is exhausted on this corpus: block kind is constant across
+     * paragraphs, Chinese and English prose share no Latin tokens, and length
+     * alone reached four correct pairings in eight on `saurikissa` and went no
+     * further at any weight. Six of eleven slices there paired unrelated
+     * paragraphs, and every stage downstream then behaved correctly on wrong
+     * input. A section the roster cannot pair keeps the scorer and says so.
      */
-    const prepared = prepareDocumentPair({
+    const {
+      prepared,
+      findings: pairingFindings,
+    } = await prepareDocumentPairWithRoster({
+      client,
+      modelIds: RUN_ROSTER,
       sourceText: entry.sourceText,
       targetText: entry.targetText,
+      signal: deadline.callSignal,
+      exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      l: tagged({ tag: entry.id, },),
     },);
 
     /**
