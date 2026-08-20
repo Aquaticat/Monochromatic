@@ -237,3 +237,106 @@ memorial page rather than a rounding error.
 Neither observation generalises from one passage. What it does establish is that
 the question is now ANSWERABLE by reading, which it was not while the critics
 were shown the wrong paragraph.
+
+## Reading `lintong` complete, both lanes against the Chinese
+
+`lintong` is three slices, short enough to judge entirely rather than in part.
+Read at corpus `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`, against the run in
+`~/temp/agent/pairing2-20260820`.
+
+### The repair lane corrects a factual claim about the person
+
+The archive opens the partner's message with "Lin Tong is a girl who is a bit
+insecure."
+The Chinese says 占有欲比较强烈:
+strongly possessive.
+Insecure and possessive are not the same claim about someone,
+and the archive's is not what her partner wrote.
+The repair lane returns "a girl with a rather strong possessive streak".
+
+Four more in the same passage:
+
+-   粘人 is absent from the archive.
+    The repair lane restores it as "she was clingy, always wanting to be close".
+
+-   可能是因为我吧 is absent from the archive.
+    The repair lane restores it as "Maybe that's because of me",
+    which is the partner taking responsibility and the most personal clause in
+    the passage.
+
+-   喜欢逼着你干不喜欢的事情 is 逼, to force or compel.
+    The archive softens it to "her tendency to ask others to do things when they
+    are not in the mood for it".
+    The repair lane returns "loved to force you into doing things you didn't
+    like".
+
+-   熟人 is acquaintances, not friends.
+    The archive says "not her friends", which reverses who she was willing to
+    trouble.
+    The repair lane returns "not mere acquaintances".
+
+### The translate lane preserved every one of them
+
+On both prose slices the translate lane returned the incumbent unchanged:
+`changedSliceCount` is 1, and the one slice it changed is the `## 简介` heading.
+So on this entry the two lanes are not close.
+The lane built to re-translate from the original kept an archive sentence that
+misdescribes the person,
+and the lane built to repair the archive is the one that caught it.
+
+This is the concrete evidence `#130` was missing.
+It does not settle `#130`:
+one entry is not a corpus,
+and the reading in `## Reading the paired output against the Chinese` shows the
+repair lane losing register on `saurikissa`.
+It does refute the simplest framing, that the translate lane is the safer
+default because it owes the archive nothing.
+
+### Costs, stated
+
+TENSE IS INCONSISTENT ACROSS ONE PASSAGE:
+"Lin Tong **is** a girl",
+"**were** her favorites",
+"she **was** clingy",
+"**Likes** to trouble her partner".
+Chinese is tenseless so the choice is the renderer's,
+and on a memorial page the present tense for a deceased person is a decision
+rather than a slip.
+Nothing in the pipeline checks tense consistency within a passage,
+and the archive was not consistent either.
+
+瓶 IS A BOTTLE, rendered "can".
+Minor, and the archive says "can" too.
+
+### One paragraph never reached a slice at all
+
+The closing Chinese paragraph,
+愿你在天堂安好，我的朋友，有时间给我托梦……（生前好友于 2022 年 10 月）,
+appears in no slice's source,
+while its English rendering sits in the incumbent of slice 2.
+The repair lane, shown English with no original behind it,
+deleted the rendering of 有时间给我托梦 and left a bare `> ` line in the shipped
+text.
+
+This is not a judgement call the lane got wrong.
+It is `blockPairingToSteps` losing a block:
+an original whose first rendering an earlier original already claimed,
+and which also renders further blocks of its own,
+was never placed on either side.
+A sweep over 20000 admissible monotone pairings lost a source block in 6.8% of
+them.
+Fixed in `4434618ea`, with the sweep reporting zero violations after.
+
+### The stray space in every wrapped line is ours
+
+The shipped blockquotes carry `>  she was clingy,` where the archive carries
+`> `.
+It is not a model artefact:
+the `semantic-line-breaks` fixer inserted its break in FRONT of the space that
+separated the two clauses,
+so the space opened the continuation line.
+The same defect put a three-space indent under every `- ` marker it wrapped.
+Fixed in `9a4643877`.
+Passages settled before that keep the older shape,
+which the rule now leaves untouched rather than re-wrapping,
+so a cache replay cannot return wording no lane produced.
