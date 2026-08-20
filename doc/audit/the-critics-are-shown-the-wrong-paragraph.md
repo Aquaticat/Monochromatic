@@ -362,3 +362,38 @@ Fixed in `9a4643877`.
 Passages settled before that keep the older shape,
 which the rule now leaves untouched rather than re-wrapping,
 so a cache replay cannot return wording no lane produced.
+
+## The instrument that would have caught it
+
+Nothing reported the missing paragraph.
+The entry settled with `alignmentFindings: 0`,
+every stage behaved correctly on the input it was given,
+and the only reason it was found is that somebody read the whole entry against
+its Chinese.
+
+WHY THE EXISTING CHECK COULD NOT SEE IT.
+`assertSpanContiguity` compares a slice against the range it claims,
+which catches a slice carrying fewer blocks than its own offsets cover.
+A block that reached NO slice has no range covering it,
+so no range disagrees with itself and the check passes.
+
+`assertSliceCoverage` closes that,
+comparing the carving against the chunk pair that went in,
+per side, and refusing three distinct faults:
+a block placed nowhere,
+a block placed twice, which inflates a run past its budget,
+and blocks placed out of document order,
+which gathers text from two places into one slice.
+
+MEASURED BEFORE IT WAS ALLOWED TO THROW,
+because a guard that fires on a legitimate case breaks production rather than
+protecting it:
+all 92 corpus pairs prepare cleanly on the deterministic path.
+Landed in `38af0a261`.
+
+CORPUS-WIDE CHECK OF WHAT ALREADY SHIPPED:
+of 26 settled two-lane artifacts,
+four carry a body paragraph that reached no slice.
+Three of those are HTML contribution-credit comments,
+which the pipeline masks by design.
+`lintong` is the only genuine loss.
