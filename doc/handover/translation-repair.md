@@ -13494,3 +13494,64 @@ dragging them down with it.
 ONE STOCHASTIC RUN PER ARM, so read direction and magnitude, never a single number.
 A rerun that moves `no-region` from 37 to 30 has not shown much;
 one that returns it near 16 has.
+
+## CORRECTION: `no-region` means the panel said no, not that a quote failed to anchor
+
+The fixed-build re-run settled on 2026-08-20 and refuted the mechanism recorded above.
+
+THE EQUIVALENCE, over every settled artifact carrying issues:
+
+```text
+issue rows examined                     574
+no-region rows                          251
+accepted rows                           323
+accepted AND no-region                    0
+not accepted AND carrying a region        0
+```
+
+`no-region` is exactly `status !== 'accepted'`, with no exception in either direction.
+It is not a downstream consequence of anything.
+An issue the adjudication panel does not accept has no repair region
+because nothing should repair it.
+
+SO THE CHAIN RECORDED EARLIER IS WRONG IN ITS MIDDLE.
+It read: critic quotes a nearby block, the quote cannot anchor, `quote-not-found` doubles,
+`no-region` more than doubles, nothing is left to edit.
+The first two steps are real and the quote fix addressed them.
+The step from `quote-not-found` to `no-region` does not exist.
+
+WHAT ACTUALLY MOVED, and it moves the same way on both entries:
+
+```text
+panel acceptance     baseline   window   fixed
+  saurikissa            63%       35%      28%
+  lintong               79%       70%      57%
+```
+
+The window makes the adjudication panel accept fewer claims,
+which is what the window is FOR:
+it tells the panel that wording explained by a neighbouring passage is not a defect.
+
+THE QUOTE FIX DID NOT RESTORE ACCEPTANCE, it lowered it further.
+That is coherent rather than surprising.
+With the critic no longer quoting next door, its claims are better formed and survive
+to be judged, and the panel then rejects them on the merits
+instead of their dying earlier and invisibly at anchoring.
+
+`quote-not-found` did respond to the fix, at `saurikissa` 16 down to 7,
+below the baseline's 9.
+It is a real but much smaller effect than the acceptance change,
+and it was never the thing driving the collapse.
+
+### What this leaves open, stated plainly
+
+Whether the rejections are RIGHT.
+Acceptance falling from 63% to 28% is the window working as designed
+or the window suppressing real defects,
+and no count distinguishes those.
+It is the same shape of question as `doc/planning/which-lane-ships.md`:
+a judgement about meaning, which telemetry cannot settle.
+
+WHAT WOULD SETTLE IT: reading a sample of claims the baseline ACCEPTED and the
+windowed run REJECTED, and asking whether the neighbouring passage really does
+explain them. That is a reading of settled artifacts and needs no quota.
