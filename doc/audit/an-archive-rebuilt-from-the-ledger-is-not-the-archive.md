@@ -363,3 +363,57 @@ not the assembler by reverting a slice wholesale.
 Recorded here so the guard is not proposed again without new evidence:
 what would change the answer is a finding whose repetition is a large fraction
 of the slice that introduced it, which none of the three are.
+
+## Could a neighbour have explained any rejection? By exact wording, no
+
+The panel rejects a claim on relocation grounds when it judges that a neighbouring passage
+holds the content the claim says is unsupported here.
+That is checkable, in one direction, without any model.
+
+For every REJECTED issue, take the claim's target-side quoted wording
+and ask whether it appears in either adjacent ARCHIVE slice,
+matching on three-word runs:
+
+```text
+                       rejected   neighbour holds the wording
+baseline saurikissa          14                             0
+baseline lintong              2                             0
+window   saurikissa          18                             0
+window   lintong               5                            0
+fixed    saurikissa          32                             0
+fixed    lintong               5                            0
+```
+
+CONTROLS FIRST, because a probe that answers the same way every time is usually broken:
+
+```text
+a slice shares three-word runs with ITSELF   10 of 11
+  the miss is a two-word heading, which cannot form a three-word run
+target quotes on rejected issues             34
+  word counts, min / median / max             1 / 9 / 40
+  shorter than the three-word window          1
+```
+
+The probe can report a match and the quotes are long enough to match with.
+
+### What this does and does not establish
+
+DOES: in the windowed runs, no rejected claim's wording is present in either neighbouring
+archive passage. So any rejection that rested on relocation rested on a passage that is
+not there. That is the same conclusion the four-critic inserted-clause case reached by
+hand, now over every rejection rather than one.
+
+DOES NOT: prove every rejection was wrong. Two limits, both real.
+
+FIRST, the artifact records vote tallies and not per-panelist reasons,
+so which rejections invoked relocation at all is unknown.
+Rejections on other grounds are counted here and should not be.
+
+SECOND, and more importantly, this tests EXACT WORDING.
+A neighbouring passage holding the same content in different words is exactly what a
+translation produces, and a three-word-run test cannot see it.
+So the zero is a lower bound on what relocation could explain, not a proof of none.
+
+The baseline rows are the reminder of that: its panel could not see the neighbours at all,
+so its rejections were never relocation-grounded,
+and the probe reports zero there for a reason that has nothing to do with the window.
