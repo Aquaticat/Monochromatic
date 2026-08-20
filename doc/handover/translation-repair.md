@@ -13328,10 +13328,27 @@ against a RECONSTRUCTED archive rather than the real one. See
 
 NOT VERIFIED: that a finding actually lands in an artifact written by a live run. The unit
 tests cover the function and the dist check covers the call's presence, but neither is an
-artifact carrying `introduced-repetition`. THE CHECKABLE PREDICTION: the next run that
-settles `lintong` must produce an artifact whose repair-lane findings include at least one
-`introduced-repetition`. If it does not, the wiring is wrong however green the suite is, and
-that is exactly the failure mode `#107` recorded for the judging window.
+artifact carrying `introduced-repetition`.
+
+THE CHECKABLE PREDICTION, RE-RECORDED 2026-08-19 because the first wording was unsound. It
+said the next run settling `lintong` MUST produce a repair-lane `introduced-repetition`, and
+that rested on the belief that the archive says the duplicated phrase once. The archive says
+it twice, so a `lintong` artifact carrying NO finding is now the expected good outcome, and
+the old wording would have told the next reader to call a healthy run broken wiring.
+
+The sound test is a CONSISTENCY test, and it needs no prediction about the corpus at all.
+Run `findIntroducedRepetitions` offline over the artifact's OWN `archiveText` and assembled
+text, then compare against the findings the artifact recorded:
+
+```text
+offline fires, artifact records it        wiring is good
+offline fires, artifact silent            WIRING IS BROKEN
+offline silent, artifact silent           consistent, and says nothing about wiring
+offline silent, artifact records one      the shipped path sees something offline cannot
+```
+
+Only the second row is a defect. Reading the third as one is the mistake the first wording
+would have caused.
 
 ### A trap hit twice in one session
 

@@ -85,6 +85,9 @@ NEW RUN, true archives
 `29296d3a` is new.
 The baseline repair document contains it once.
 The run under the relocation window contains it twice.
+That run also carried the anchoring hole,
+so the same attribution caveat applies:
+the difference is measured, the cause is not yet isolated.
 
 ## Gate A was answering a different question
 
@@ -101,13 +104,22 @@ Measured against the archive, every phrase gate A derived is faithful in the new
 ```text
 phrase             archive  base-repair  new-repair   gate A said        truth
 6w/33ch:90bddeb5      2          2           2        STILL DUPLICATED   faithful
-4w/15ch:00abe124      1          2           1        ok                 window fixed it
-3w/13ch:8e291bbe      1          2           1        ok                 window fixed it
+4w/15ch:00abe124      1          2           1        ok                 no longer repeated
+3w/13ch:8e291bbe      1          2           1        ok                 no longer repeated
 ```
 
 So the gate's single FAULT is a false alarm,
 and its two passes understate what happened:
-the window removed two genuine duplications rather than merely leaving the document alone.
+two genuine duplications are gone rather than the document merely being left alone.
+
+ATTRIBUTION, STATED CAREFULLY.
+The run these numbers come from carried the relocation window AND the `NEARBY_RULE` hole
+fixed in `afc7854b4`,
+and that hole changed WHICH SLICES were edited at all by collapsing quote anchoring.
+So "the window removed two duplications and added one" is more than one confounded
+A/B over two entries can support.
+What is established is that the documents differ in this way.
+Isolating the window needs the re-run on the fixed build.
 
 Both phrases the window fixed sit below the production content-word gate,
 which requires two words of at least five letters.
