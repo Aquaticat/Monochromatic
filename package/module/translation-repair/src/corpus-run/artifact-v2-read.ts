@@ -171,6 +171,7 @@ function parsePreparationV2(
     record,
     allowed: [
       'identity',
+      'archiveText',
       'sliceCount',
       'sourceChars',
       'targetChars',
@@ -185,6 +186,21 @@ function parsePreparationV2(
       value: record.identity,
       path: `${path}.identity`,
     },),
+
+    // ABSENT AND EMPTY ARE DIFFERENT ANSWERS. A file written before this field
+    // existed carries no archive text and cannot claim one; an entry whose
+    // English really is empty would carry the empty string. Reading absence as
+    // '' would turn "nobody recorded it" into "the entry had none", which is a
+    // claim about the corpus rather than about the file.
+    archiveText: ((record.archiveText) === undefined)
+      ? { kind: 'unrecorded' as const, }
+      : {
+        kind: 'stored' as const,
+        text: requireString({
+          value: record.archiveText,
+          path: `${path}.archiveText`,
+        },),
+      },
     sliceCount: requireCount({
       value: record.sliceCount,
       path: `${path}.sliceCount`,

@@ -72,6 +72,24 @@ export type SettledPreparationV2 = {
   readonly identity: PreparationIdentity;
 
   /**
+   * Archive English of the whole entry, as it stood before either lane ran.
+   *
+   * STORED BECAUSE IT COSTS ALMOST NOTHING AND BUYS THE FILE ITS OWN MEANING.
+   * Measured over the archived artifacts it adds 0.6 and 0.9 percent: an
+   * artifact is judge exchanges, findings and ledger rows, not text. The
+   * alternative, a hash plus the corpus commit, saves that fraction by charging
+   * every future reader a checkout pinned to the right commit, which is the
+   * dependency generation identity exists to remove.
+   *
+   * IT TRAVELS WITH {@link SettledPreparationV2.identity} OR NOT AT ALL. Stored
+   * text nobody can check against the slicing that produced it is a record with
+   * no standing, so the hash is what makes the text evidence rather than a copy.
+   *
+   * Decided in `doc/decision/artifact-stores-the-archive-text.md`.
+   */
+  readonly archiveText: string;
+
+  /**
    * Slices it produced, which every per-slice list here is out of.
    */
   readonly sliceCount: number;

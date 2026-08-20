@@ -207,6 +207,33 @@ export type ParsedLaneV2<TEvidence,> = {
 };
 
 /**
+ * Archive English an artifact carries, or a positive statement that it carries
+ * none.
+ *
+ * A TAGGED ABSENCE RATHER THAN AN OPTIONAL STRING, for the reason
+ * `sample-manifest.ts` gives for the same shape: a file written before the
+ * field existed cannot claim a value, and reading its silence as the empty
+ * string would say the entry HAD no English, which is a different and false
+ * claim. `unrecorded` says the file predates the field; `stored` says what it
+ * held.
+ *
+ * @example
+ * ```ts
+ * const archive: ParsedArchiveTextV2 = { kind: 'unrecorded', };
+ * ```
+ */
+export type ParsedArchiveTextV2 = {
+  readonly kind: 'stored';
+
+  /**
+   * Archive English of the whole entry, verbatim.
+   */
+  readonly text: string;
+} | {
+  readonly kind: 'unrecorded';
+};
+
+/**
  * The slicing both lanes ran over, as a reader gets it.
  *
  * @example
@@ -215,6 +242,11 @@ export type ParsedLaneV2<TEvidence,> = {
  * ```
  */
 export type ParsedPreparationV2 = {
+  /**
+   * Archive English this file carries, or a statement that it carries none.
+   */
+  readonly archiveText: ParsedArchiveTextV2;
+
   /**
    * Name this slicing gives itself, checked for SYNTAX and nothing more: the
    * inputs it hashes are not in the file, so a standalone reader cannot

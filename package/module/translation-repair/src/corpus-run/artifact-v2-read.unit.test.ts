@@ -429,6 +429,71 @@ await describe({
   children: [
     it({
       name:
+        'reports an artifact written before archiveText existed as UNRECORDED rather than as empty, '
+        + 'since a file that never carried the field cannot say the entry had no English',
+      fn: async () => {
+        const parsed = parseSettledArtifactV2({ value: artifactWith(), },);
+        expect(parsed.preparation
+          .archiveText
+          .kind,).toBe('unrecorded',);
+      },
+    },),
+    it({
+      name: 'ROUND-TRIPS the archive text an artifact does carry',
+      fn: async () => {
+        /**
+         * Invented archive English, cat-themed, standing in for an entry's whole
+         * translation.
+         */
+        const held = '## A cat\'s day\n\nThe kitten dozes on the windowsill.\n';
+        /**
+         * The fixture's own preparation, extended through the helper's field
+         * escape hatch rather than by spreading its `unknown` value.
+         */
+        const preparation = artifactWith()
+          .preparation as Record<string, unknown>;
+        const parsed = parseSettledArtifactV2({
+          value: artifactWith({
+            preparation: {
+              ...preparation,
+              archiveText: held,
+            },
+          },),
+        },);
+        expect(parsed.preparation
+          .archiveText
+          .kind,).toBe('stored',);
+        expect((parsed.preparation
+          .archiveText
+          .kind === 'stored')
+          ? parsed.preparation
+            .archiveText
+            .text
+          : '',).toBe(held,);
+      },
+    },),
+    it({
+      name: 'REFUSES an archiveText that is not a string, rather than coercing it',
+      fn: async () => {
+        /**
+         * {@inheritDoc preparation}
+         */
+        const preparation = artifactWith()
+          .preparation as Record<string, unknown>;
+        expect(function readWrong() {
+          parseSettledArtifactV2({
+            value: artifactWith({
+              preparation: {
+                ...preparation,
+                archiveText: 42,
+              },
+            },),
+          },);
+        },).toThrow('archiveText',);
+      },
+    },),
+    it({
+      name:
         'reads a whole artifact, RECOMPUTES its comparison, and hands back each raw lane result unread: '
         + 'a reader wanting a field this version does not check gets it from the artifact rather than '
         + 'from a later generation of this parser',

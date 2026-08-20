@@ -219,6 +219,12 @@ export function buildSettledArtifactV2(
     timestamp: new Date().toISOString(),
     preparation: {
       identity,
+
+      // The archive as it stood before either lane ran, which is what every
+      // later reading of "what changed" is a change FROM. Stored whole because
+      // it costs under one percent of the file and removes the reader's
+      // dependency on a checkout pinned to the right corpus commit.
+      archiveText: prepared.targetText,
       sliceCount: prepared.slices
         .length,
 
