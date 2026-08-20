@@ -179,3 +179,61 @@ So the pairing work establishes that every stage now reads the paragraph it
 should. It does not establish that the output is better, because that is a
 source-anchored judgement and nothing here makes one. It is the same wall
 `doc/planning/which-lane-ships.md` reaches.
+
+## Reading the paired output against the Chinese
+
+The measurements above cannot say whether the OUTPUT is better, because they
+compare against the incumbent. This is a reading against the original, which is
+the decided standard.
+
+`saurikissa` slice 1, the opening of the story.
+
+WHAT THE ARCHIVE SAID: that she stepped into the internet under her present name
+and was met with suspicion; that she was transparent about her missteps "when she
+was a child"; and that "after she realized the dangers of Esu culture" she hoped
+to use her experience to help friends.
+
+WHAT THE PAIRED RUN SHIPS: that she reappeared online under her present name A
+SECOND TIME and was initially not trusted; that she did not shy away from
+discussing her participation during her MINOR YEARS; and that she hoped to use
+her experience to help friends.
+
+THREE GAINS, each checkable against the Chinese:
+
+```text
+第二次        "a second time"    the archive dropped it entirely; restored
+未成年        "minor years"      the archive said "when she was a child"
+                                 which is vaguer and slightly wrong
+"After she realized the dangers of Esu culture"
+                                 GONE. The Chinese carries no such clause
+```
+
+THE THIRD IS THE ONE THAT MATTERS. That inserted clause is the defect four
+critics independently reported under the mispaired build, which the panel
+rejected two votes to three, and which
+`doc/audit/the-judge-can-see-a-candidate-saying-less.md` recorded as a rejection
+with no relocation available to justify it. With the paragraph paired correctly
+the claim survives and the clause is gone from shipped text.
+
+### What is worse, stated too
+
+REGISTER SLIPS IN PLACES. 哎呀，真是让人感到头疼的孩子呢 becomes "Ah, what a
+headache of a child she is", where the archive had "Oh, you troublesome,
+endearing soul". The paired rendering is closer to the words and further from the
+voice, and it uses the present tense of someone who has died.
+
+SPACING ARTEFACTS appear inside sentences, two spaces where one belongs, which no
+stage currently checks.
+
+### The verdict this supports
+
+ON FIDELITY TO THE ORIGINAL, which is the decided standard, the paired output is
+better than the archive on this passage: it restores a dropped fact, sharpens a
+vague one, and removes an invention.
+
+ON VOICE it is somewhat worse in at least one place, and that is a real cost on a
+memorial page rather than a rounding error.
+
+Neither observation generalises from one passage. What it does establish is that
+the question is now ANSWERABLE by reading, which it was not while the critics
+were shown the wrong paragraph.
