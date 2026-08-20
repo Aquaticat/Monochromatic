@@ -11,6 +11,7 @@ import {
 import type { BlockPair, } from './pair-blocks-wire.ts';
 import { parseDocument, } from './parse-document.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
+import { assertSliceCoverage, } from './slice-coverage.ts';
 import { assertSpanContiguity, } from './span-contiguity.ts';
 import {
   assertSliceIndexing,
@@ -198,6 +199,14 @@ export function prepareDocumentPair(
         : {
           blockPairing: blockPairings.get(pairIndex,) ?? [],
         }),
+    },);
+
+    // BEFORE ANYTHING READS THEM. A block that reached no slice leaves the
+    // document silently, and every later check works from the slices, so this
+    // is the last point where the blocks it was given are still in hand.
+    assertSliceCoverage({
+      pair,
+      carved,
     },);
 
     /**

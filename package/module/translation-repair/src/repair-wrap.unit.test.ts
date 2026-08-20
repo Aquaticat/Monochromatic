@@ -142,7 +142,7 @@ await describe({
           l,
         },);
 
-        expect(wrapped[0]?.repairedText,).toBe('The tabby naps on the sill.\n It wakes at dusk.',);
+        expect(wrapped[0]?.repairedText,).toBe('The tabby naps on the sill.\nIt wakes at dusk.',);
         expect(wrapped[0]?.changed,).toBe(true,);
       },
     },),
@@ -183,7 +183,7 @@ await describe({
         /**
          * Archive wording, already written as the rule would write it.
          */
-        const incumbentText = 'It naps.\n It wakes.';
+        const incumbentText = 'It naps.\nIt wakes.';
 
         const wrapped = wrapRepairOutcomes({
           slices: [pairOf({
@@ -221,7 +221,7 @@ await describe({
         },);
 
         expect(wrapped[0]?.changed,).toBe(true,);
-        expect(wrapped[0]?.repairedText,).toBe('The tabby naps.\n It wakes.',);
+        expect(wrapped[0]?.repairedText,).toBe('The tabby naps.\nIt wakes.',);
       },
     },),
 

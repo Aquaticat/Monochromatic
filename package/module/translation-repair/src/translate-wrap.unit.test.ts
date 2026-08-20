@@ -135,7 +135,7 @@ await describe({
           l,
         },);
 
-        expect(wrapped[0]?.outputText,).toBe('The tabby naps on the sill.\n It wakes at dusk.',);
+        expect(wrapped[0]?.outputText,).toBe('The tabby naps on the sill.\nIt wakes at dusk.',);
         expect(wrapped[0]?.changed,).toBe(true,);
       },
     },),
@@ -175,7 +175,7 @@ await describe({
         /**
          * Archive wording, already written as the rule would write it.
          */
-        const incumbentText = 'It naps.\n It wakes.';
+        const incumbentText = 'It naps.\nIt wakes.';
 
         const wrapped = wrapTranslateRecords({
           slices: [pairOf({
@@ -225,8 +225,8 @@ await describe({
           l,
         },);
 
-        expect(wrapped[0]?.outputText,).toBe('A tabby naps.\n A tabby wakes.',);
-        expect(wrapped[1]?.outputText,).toBe('A bowl fills.\n A bowl empties.',);
+        expect(wrapped[0]?.outputText,).toBe('A tabby naps.\nA tabby wakes.',);
+        expect(wrapped[1]?.outputText,).toBe('A bowl fills.\nA bowl empties.',);
       },
     },),
 

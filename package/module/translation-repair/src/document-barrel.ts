@@ -22,6 +22,10 @@ export {
   PlacementLayoutError,
 } from './placement-layout.ts';
 export {
+  assertSliceCoverage,
+  SliceCoverageError,
+} from './slice-coverage.ts';
+export {
   assertSpanContiguity,
   SpanContiguityError,
 } from './span-contiguity.ts';

@@ -43,6 +43,37 @@ function withoutBreaks({ text, }: { readonly text: string; },): number {
     .join('',).length;
 }
 
+/**
+ * Reads a passage as content alone, with spacing and block markers discounted.
+ *
+ * WHITESPACE GOES because a break replaces the space that separated two
+ * sentences, so comparing spaces would call that replacement a deletion.
+ * `>` GOES because a break inside a blockquote carries the marker onto the new
+ * line, which is a character the wrapper legitimately ADDS. What is left is the
+ * content, and content must survive wrapping exactly.
+ *
+ * @param text - passage to reduce
+ *
+ * @returns Content characters, spacing and blockquote markers removed
+ *
+ * @example
+ * ```ts
+ * const content = contentOnly({ text: '> It naps.', },);
+ * ```
+ */
+function contentOnly({ text, }: { readonly text: string; },): string {
+  return text.split('\n',)
+    .join('',)
+    .split('\r',)
+    .join('',)
+    .split('\t',)
+    .join('',)
+    .split(' ',)
+    .join('',)
+    .split('>',)
+    .join('',);
+}
+
 await describe({
   name: wrapReplacementText.name,
   children: [
@@ -75,9 +106,9 @@ await describe({
     },),
 
     it({
-      name: 'ADDS ONLY, never removing a character that is not a line break. Every produced passage '
-        + 'goes through this without review, so a fix that could delete would be an unreviewed '
-        + 'editor standing after every judge in the pipeline',
+      name: 'KEEPS EVERY VISIBLE CHARACTER, removing only the space each break replaces. Every '
+        + 'produced passage goes through this without review, so a fix that could delete content '
+        + 'would be an unreviewed editor standing after every judge in the pipeline',
       fn: async () => {
         /**
          * A passage carrying punctuation the rule looks at, in several shapes.
@@ -95,9 +126,18 @@ await describe({
            * Wrapped form of this passage.
            */
           const wrapped = wrapReplacementText({ text, },);
-          expect(withoutBreaks({ text: wrapped, },),).toBeGreaterThanOrEqual(
-            withoutBreaks({ text, },),
-          );
+          // EQUALITY RATHER THAN A FLOOR. The older form counted characters
+          // other than breaks and asked only that the total not fall, which a
+          // fix deleting a letter while adding two prefix characters would
+          // satisfy. Discounting spacing and blockquote markers leaves exactly
+          // the content, and the content must come back identical.
+          expect(contentOnly({ text: wrapped, },),).toBe(contentOnly({ text, },),);
+          // AND NO LINE ENDS IN WHITESPACE, which is the other half of putting
+          // a break where a space was: one trailing space reads as rubbish and
+          // two are a CommonMark hard break, so a wrapper that stepped over the
+          // space instead of consuming it would show up here.
+          for (const line of wrapped.split('\n',))
+            expect(line,).toBe(line.trimEnd(),);
         }
       },
     },),
