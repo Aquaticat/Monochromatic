@@ -1,4 +1,7 @@
-import { scorePairing, } from './align-blocks.ts';
+import {
+  estimateExpansion,
+  scorePairing,
+} from './align-blocks.ts';
 import type { DocumentNode, } from './document-node.ts';
 
 //region Block alignment walk
@@ -103,6 +106,19 @@ function buildTable(
   },
 ): readonly (readonly Cell[])[] {
   /**
+   * How far THIS translation expands, estimated once over both whole lists.
+   *
+   * Per document rather than per pair, and per pair is impossible anyway: the
+   * pairing is what the table is deciding. A fixed constant made every correct
+   * pair look implausible on entries whose translator writes long, which is what
+   * `doc/audit/the-critics-are-shown-the-wrong-paragraph.md` measured.
+   */
+  const expansion = estimateExpansion({
+    sourceNodes,
+    targetNodes,
+  },);
+
+  /**
    * Mutable table under construction; rows are built in order and never
    * revisited once complete.
    */
@@ -157,6 +173,7 @@ function buildTable(
         + scorePairing({
           source: sourceNode,
           target: targetNode,
+          expansion,
         },);
 
       /**

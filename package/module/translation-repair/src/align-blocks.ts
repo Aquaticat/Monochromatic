@@ -52,11 +52,24 @@ const LENGTH_PLAUSIBILITY_WEIGHT = 1;
 const GAP_PENALTY = -1.5;
 
 /**
- * Characters a Chinese block typically becomes in English. Chinese is written
- * without spaces and packs more meaning per character, so an English rendering
- * runs longer; this is only used to judge plausibility, never to reject.
+ * Characters a Chinese block typically becomes in English, used only when the
+ * pair itself gives no better estimate. Chinese is written without spaces and
+ * packs more meaning per character, so an English rendering runs longer; this
+ * judges plausibility and never rejects.
+ *
+ * A FIXED CONSTANT IS WRONG FOR THIS CORPUS, measured 2026-08-20. Entry medians
+ * of English characters per Chinese character run from 1.49 to 4.10, because how
+ * far a translation expands is a property of the TRANSLATOR, not of the language
+ * pair: a plain rendering stays close and a literary one runs long.
+ *
+ * On `saurikissa`, whose median is 4.10, every CORRECT pair scored as implausible
+ * against 1.8, which destroyed the only signal the walk had. Chinese and English
+ * prose share no Latin tokens, and block kind is constant when every block is a
+ * paragraph, so length was carrying the alignment alone and pointing the wrong
+ * way. Six of eleven slices then paired unrelated paragraphs.
+ * `doc/audit/the-critics-are-shown-the-wrong-paragraph.md` records the reading.
  */
-const TYPICAL_EXPANSION = 1.8;
+const FALLBACK_EXPANSION = 1.8;
 
 /**
  * Shortest token worth comparing. Single characters collide constantly across
@@ -237,36 +250,40 @@ function tokenOverlap(
 
 /**
  * How plausible the two blocks' lengths are as a translation pair, from zero
- * to one. Peaks when the target runs about {@link TYPICAL_EXPANSION} times the
- * source and decays smoothly, so it nudges rather than decides.
+ * to one. Peaks when the target runs about `expansion` times the source and
+ * decays smoothly, so it nudges rather than decides.
  *
  * @param sourceLength - original block's character count
  *
  * @param targetLength - translation block's character count
  *
+ * @param expansion - characters this translation produces per source character
+ *
  * @returns Plausibility from zero to one
  *
  * @example
  * ```ts
- * const fit = lengthPlausibility({ sourceLength: 10, targetLength: 18, },);
+ * const fit = lengthPlausibility({ sourceLength: 10, targetLength: 18, expansion: 1.8, },);
  * ```
  */
 function lengthPlausibility(
   {
     sourceLength,
     targetLength,
+    expansion,
   }: {
     readonly sourceLength: number;
     readonly targetLength: number;
+    readonly expansion: number;
   },
 ): number {
   if ((sourceLength === 0) || (targetLength === 0))
     return 0;
 
   /**
-   * Observed ratio against the ratio a faithful rendering tends to produce.
+   * Observed ratio against the ratio THIS translation tends to produce.
    */
-  const ratio = targetLength / (sourceLength * TYPICAL_EXPANSION);
+  const ratio = targetLength / (sourceLength * expansion);
 
   /**
    * Symmetric distance from the ideal, so twice as long and half as long are
@@ -279,11 +296,83 @@ function lengthPlausibility(
 }
 
 /**
+ * Estimates how far THIS translation expands, in characters per source
+ * character.
+ *
+ * Measured over the whole block lists rather than per pair, because a single
+ * block is exactly the thing whose pairing is in question and cannot be used to
+ * judge itself.
+ *
+ * @param sourceNodes - original blocks
+ *
+ * @param targetNodes - translation blocks
+ *
+ * @returns Characters produced per source character, or
+ * {@link FALLBACK_EXPANSION} when either side is empty
+ *
+ * @example
+ * ```ts
+ * const expansion = estimateExpansion({ sourceNodes, targetNodes, },);
+ * ```
+ */
+export function estimateExpansion(
+  {
+    sourceNodes,
+    targetNodes,
+  }: {
+    readonly sourceNodes: readonly DocumentNode[];
+    readonly targetNodes: readonly DocumentNode[];
+  },
+): number {
+  /**
+   * Total characters on the original side.
+   */
+  const sourceChars = sourceNodes
+    .reduce(
+      function addChars(
+        sum,
+        node,
+      ): number {
+        /**
+         * This block's own characters.
+         */
+        const { text, } = node;
+        return sum + text.length;
+      },
+      0,
+    );
+
+  /**
+   * Total characters on the translation side.
+   */
+  const targetChars = targetNodes
+    .reduce(
+      function addChars(
+        sum,
+        node,
+      ): number {
+        /**
+         * This block's own characters.
+         */
+        const { text, } = node;
+        return sum + text.length;
+      },
+      0,
+    );
+  if ((sourceChars === 0) || (targetChars === 0))
+    return FALLBACK_EXPANSION;
+  return targetChars / sourceChars;
+}
+
+/**
  * Scores one candidate pairing. Higher is a better partnership.
  *
  * @param source - original block
  *
  * @param target - translation block
+ *
+ * @param expansion - characters this translation produces per source character,
+ * defaulting to {@link FALLBACK_EXPANSION} when the caller has no estimate
  *
  * @returns Pairing score, unbounded below and above
  *
@@ -296,9 +385,11 @@ export function scorePairing(
   {
     source,
     target,
+    expansion = FALLBACK_EXPANSION,
   }: {
     readonly source: DocumentNode;
     readonly target: DocumentNode;
+    readonly expansion?: number;
   },
 ): number {
   /**
@@ -326,6 +417,7 @@ export function scorePairing(
         .length,
       targetLength: target.text
         .length,
+      expansion,
     },);
   return kindScore + overlapScore
     + lengthScore;
