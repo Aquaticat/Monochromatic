@@ -13217,3 +13217,29 @@ WHAT WOULD SETTLE IT, in preference order:
 WHAT NOT TO DO YET: change the deadline, change the straggler window, or gate the window to
 flagged slices. All three are responses to a cause that has not been established, and two of
 the three would have been adopted on explanations that turned out to be false.
+
+### The separate-worktree escape hatch does not work cheaply, so code work really is blocked
+
+Tried 2026-08-19 while the verify ran, because "do code work in another worktree" had been
+floated as the way to keep moving without touching the running pool's digest.
+
+`git worktree add --detach` succeeds instantly and the tree is correct, but it carries no
+`node_modules`, at the root or in the package, so `mise run //package/module/translation-repair:build`
+there needs a full workspace install first. It was still going after two minutes and was
+stopped. The reasoning behind the idea holds: a build in another worktree cannot move the
+running worktree's `dist/final/node`, and the main tree's `dist` timestamp was unchanged
+afterwards. It is the setup cost that makes it not worth it for a short wait.
+
+SO CODE WORK IS GENUINELY BLOCKED until the run finishes, rather than blocked by caution.
+What front-loads well instead, and did:
+
+-   prepare the patch as a script that applies later, as `~/temp/agent/apply-126-key-labels.mjs` does
+-   validate the instruments that will read the results, in BOTH directions
+-   do the read-only audits, which need no build at all
+
+The worktree was removed with `git worktree remove --force` and the running verify was
+confirmed healthy immediately after.
+
+ONE TRAP WORTH REPEATING, since it fired twice today: `pgrep --full '<pattern>'` matches its
+OWN command line, so a check for processes under `wt-126` reports the pgrep itself. Anchor
+the pattern to the binary, as in `pgrep --full '^node .*corpus-pass\.mjs'`.
