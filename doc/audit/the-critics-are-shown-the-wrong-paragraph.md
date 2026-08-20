@@ -397,3 +397,38 @@ four carry a body paragraph that reached no slice.
 Three of those are HTML contribution-credit comments,
 which the pipeline masks by design.
 `lintong` is the only genuine loss.
+
+## Verified at the artifact, not at the unit test
+
+A fresh single-entry run of `lintong` into `~/temp/agent/pairfix-20260820`,
+on the fixed build, settling 3 slices with zero alignment findings:
+
+-   The closing Chinese paragraph now reaches slice 2's source.
+
+-   有时间给我托梦 ships, as "Visit me in my dreams when you have time...",
+    where the previous run deleted it.
+
+-   The date ships, as "October 2022."
+
+-   No continuation opens with a stray space, and no line ends in whitespace.
+
+-   No blockquote stump remains.
+    Counting only a `>` line NOT followed by more blockquote, since a `>` line
+    between two paragraphs INSIDE a blockquote is ordinary and the archive
+    carries several:
+    archive 0, before the fix 1, after the fix 0.
+    A first count that flagged every bare `>` reported a failure that was not
+    one, which is why the discriminator is stated here rather than the verdict
+    alone.
+
+WHAT THE REPAIR LANE RETURNED THIS TIME, on the passage read earlier:
+"a girl who is quite possessive" for 占有欲比较强烈,
+"She was clingy, too." for 粘人,
+"Maybe it's because of me." for 可能是因为我吧,
+"her tendency to force you to do things you don't like" for 喜欢逼着你干不喜欢的事情,
+and "not her acquaintances" for 不喜欢麻烦熟人.
+Every correction the earlier reading identified survives a re-run with a
+different sample, which is worth more than any one of them appearing once.
+
+STILL UNCHECKED BY ANY STAGE: the tense is still mixed within the passage,
+"Lin Tong **is** a girl" beside "she **was** clingy" and "**Likes** to trouble".
