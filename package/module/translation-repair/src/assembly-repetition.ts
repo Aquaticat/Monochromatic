@@ -121,7 +121,7 @@ export type RepetitionFinding = {
  * const words = wordsOf({ text: 'the kitten dozes', },);
  * ```
  */
-function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
+export function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
   /**
    * Words closed so far.
    */
@@ -206,7 +206,7 @@ function carriesContent({ phrase, }: { readonly phrase: string; },): boolean {
  * const counts = countPhrases({ words, length: 4, },);
  * ```
  */
-function countPhrases(
+export function countPhrases(
   {
     words,
     length,

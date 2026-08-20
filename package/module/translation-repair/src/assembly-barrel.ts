@@ -22,9 +22,17 @@ export {
   introducedStructuralRegressions,
 } from './assembly-integrity.ts';
 export {
+  type AdjacentRepetition,
+  adjacentRepetitionFindings,
+  type AdjacentSliceText,
+  findAdjacentRepetitions,
+} from './assembly-adjacent-repetition.ts';
+export {
+  countPhrases,
   findIntroducedRepetitions,
   repetitionFindings,
   type RepetitionFinding,
+  wordsOf,
 } from './assembly-repetition.ts';
 
 //endregion Assembly barrel

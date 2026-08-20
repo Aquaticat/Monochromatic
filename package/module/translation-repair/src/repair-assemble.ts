@@ -1,6 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
+import {
+  adjacentRepetitionFindings,
+  type AdjacentSliceText,
+} from './assembly-adjacent-repetition.ts';
 import { repetitionFindings, } from './assembly-repetition.ts';
 import {
   assertReplacementsChange,
@@ -115,6 +119,38 @@ export function assembleRepair(
   }
 
   /**
+   * What each slice contributed to the assembled document, in document order.
+   *
+   * Read off the SURVIVING replacements rather than the lane's wishes, so a
+   * repair the footnote guard took back is not counted as wording that shipped.
+   */
+  const shippedSlices: readonly AdjacentSliceText[] = slices
+    .map(function shippedFor(slice,): AdjacentSliceText {
+      /**
+       * This slice's index and the wording the archive had there.
+       */
+      const {
+        chunkIndex,
+        text: incumbentText,
+      } = slice.target;
+
+      /**
+       * Surviving replacement for this slice, absent when the incumbent stood.
+       */
+      const replacement = guarded
+        .replacements
+        .find(function atSlice(candidate,): boolean {
+          return candidate.chunkIndex === chunkIndex;
+        },);
+      return {
+        chunkIndex,
+        text: (replacement === undefined)
+          ? incumbentText
+          : replacement.replacementText,
+      };
+    },);
+
+  /**
    * How many slices the document CARRIES a repair for.
    *
    * Read off the guard's surviving replacements rather than recomputed from the
@@ -209,6 +245,14 @@ export function assembleRepair(
       ...repetitionFindings({
         archiveText: targetText,
         shippedText: guarded.assembledText,
+      },),
+      // ADJACENCY IS A SEPARATE CHECK because the document-scale one above
+      // cannot see `#107`'s own example: that duplication carries no word of
+      // five letters, so the content gate drops it. Two neighbouring slices
+      // shipping the same wording is specific enough to need no such gate.
+      ...adjacentRepetitionFindings({
+        archiveText: targetText,
+        shippedSlices,
       },),
     ],
   };

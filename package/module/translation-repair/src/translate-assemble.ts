@@ -1,6 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
+import {
+  adjacentRepetitionFindings,
+  type AdjacentSliceText,
+} from './assembly-adjacent-repetition.ts';
 import { repetitionFindings, } from './assembly-repetition.ts';
 import {
   assertReplacementsChange,
@@ -172,6 +176,40 @@ export function assembleTranslation(
   },);
 
   /**
+   * What each slice contributed to the assembled document, in document order.
+   *
+   * Read off the SURVIVING replacements rather than the lane's wishes, so a
+   * translation the footnote guard took back is not counted as wording that
+   * shipped.
+   */
+  const shippedSlices: readonly AdjacentSliceText[] = prepared
+    .slices
+    .map(function shippedFor(slice,): AdjacentSliceText {
+      /**
+       * This slice's index and the wording the archive had there.
+       */
+      const {
+        chunkIndex,
+        text: incumbentText,
+      } = slice.target;
+
+      /**
+       * Surviving replacement for this slice, absent when the incumbent stood.
+       */
+      const replacement = guarded
+        .replacements
+        .find(function atSlice(candidate,): boolean {
+          return candidate.chunkIndex === chunkIndex;
+        },);
+      return {
+        chunkIndex,
+        text: (replacement === undefined)
+          ? incumbentText
+          : replacement.replacementText,
+      };
+    },);
+
+  /**
    * Both index sets, checked against each other and put in document order.
    *
    * The guard returns each in the order it worked, and a reader comparing two
@@ -234,14 +272,20 @@ export function assembleTranslation(
       ...alignmentRefusals({ records: settled, },),
       ...guarded.findings,
       // BOTH LANES, not only the one whose damage was found first. `#66`
-      // established the repetition in `lintong`'s repair lane, and running the
-      // check over the settled pool immediately found one in `saurikissa`'s
-      // TRANSLATE lane and one in `dogesir_`'s, which nobody had suspected.
-      // Writing a slice from its source rather than editing an incumbent does
-      // not stop a lane saying the same thing twice.
+      // established the repetition in `lintong`'s repair lane, and reading the
+      // settled pool against each entry's true archive finds one in
+      // `saurikissa`'s TRANSLATE lane too. Writing a slice from its source
+      // rather than editing an incumbent does not stop a lane saying the same
+      // thing twice.
       ...repetitionFindings({
         archiveText: prepared.targetText,
         shippedText: guarded.assembledText,
+      },),
+      // Adjacency, for the reason `assembly-adjacent-repetition.ts` gives: the
+      // check above needs content words this lane's duplications may not have.
+      ...adjacentRepetitionFindings({
+        archiveText: prepared.targetText,
+        shippedSlices,
       },),
       ...unheard.map(function toUnheardFinding(record,): string {
         return `translate-heard-no-translator chunk ${
