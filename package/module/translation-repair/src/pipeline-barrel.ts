@@ -294,6 +294,10 @@ export {
 } from './tally-votes.ts';
 
 export {
+  type BlockPairingOutcome,
+  pairBlocksWithRoster,
+} from './pair-blocks-stage.ts';
+export {
   type BlockPair,
   BlockPairingError,
   type BlockPairingWire,
