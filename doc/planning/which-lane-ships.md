@@ -127,3 +127,42 @@ The measurement therefore rewards the repair lane for a property that is not qua
 WHAT A REAL VERSION NEEDS: an actual named-entity list rather than a capitalisation
 heuristic, or the corpus's own structured fields, which carry names directly.
 Until then `#130` stands where it did: no telemetry here ranks the lanes.
+
+## What reading a whole entry showed, which no telemetry did
+
+`lintong` was read complete against its Chinese,
+both lanes, three slices.
+Written up in `doc/audit/the-critics-are-shown-the-wrong-paragraph.md` under
+`## Reading lintong complete, both lanes against the Chinese`.
+
+THE REPAIR LANE CAUGHT A FACTUAL ERROR ABOUT THE PERSON.
+The archive says her partner called her "a bit insecure";
+the Chinese says 占有欲比较强烈, strongly possessive.
+It also restored 粘人 and 可能是因为我吧, both absent from the archive,
+un-softened 逼着 from "ask others" back to "force you",
+and corrected 熟人 from "friends" to "acquaintances", which had reversed who she
+was willing to trouble.
+
+THE TRANSLATE LANE PRESERVED EVERY ONE OF THEM.
+On this entry it changed exactly one slice, the `## 简介` heading;
+both prose slices came back as the incumbent unchanged.
+
+WHY THIS MATTERS FOR THE DECISION.
+The reasoning that makes the translate lane look like the safe default is that
+it owes the archive nothing and so cannot inherit its mistakes.
+On this entry the opposite happened:
+the lane that owes the archive nothing kept an archive sentence that
+misdescribes a dead person,
+and the lane that edits the archive is the one that read the Chinese closely
+enough to catch it.
+
+WHAT IT DOES NOT SETTLE.
+One entry is not a corpus.
+The `saurikissa` reading in the same document shows the repair lane losing
+register, which is a real cost on a memorial page.
+Both readings together say the lanes fail differently rather than one dominating,
+which is what makes a per-slice contest the right shape and a whole-document
+lane choice the wrong one.
+That was already the recommendation here;
+it now rests on read passages rather than on telemetry that could not separate
+the lanes.
