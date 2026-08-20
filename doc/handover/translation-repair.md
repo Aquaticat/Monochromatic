@@ -13336,3 +13336,59 @@ orphans the doc, and `tsdoc(require-tsdoc)` then reports the ORIGINAL declaratio
 undocumented, which reads like an unrelated regression. It happened in
 `artifact-v2-read-contract.ts` and again in `introduced-defect-wire.ts`. Put a new constant
 ABOVE the whole doc-plus-declaration pair, never between them.
+
+## `saurikissa` settled under the window, and the repair lane got much quieter
+
+First entry of the minimal validation, settled 2026-08-20 at 01:51Z after 102 minutes.
+The roster is identical on both sides, 11 critic stages and 65 critic voices heard, so none
+of what follows is a voice-loss artefact.
+
+```text
+saurikissa repair lane      baseline    new
+critic claims raised              94     83
+issues surviving adjudication     43     48
+issues RESOLVED                   23      6
+slices shipped                     9      3
+```
+
+```text
+repair shipped slices   baseline  1,2,3,4,5,7,8,9,10
+                        new       1,2,5
+translate shipped       baseline  1,2,3,5,6,7,8,9
+                        new       1,2,3,5,6,7,8,9,10
+```
+
+THE TRANSLATE LANE IS UNMOVED, which is the control: the window was wired into the repair
+lane only, and the translate lane shipped 8 slices before and 9 now.
+
+### Gate B is NOT the clean pass it first reads as
+
+The severed-sentence census returns 0 of 3 repair rows, against 1 of 30 in the baseline pool.
+That looks like the defect is fixed. It is not evidence of that.
+
+THE SEVERED SENTENCE WAS AT SLICE 7, AND SLICE 7 IS NO LONGER EDITED. The baseline shipped a
+repair there; this run does not. So the census reads zero because the lane declined to touch
+the slice, not because it edited it without severing anything. A gate that cannot tell those
+apart has not cleared the defect.
+
+WHICH IS NOT NOTHING, and may be the point. Slice 7 is unflagged but sits beside the flagged
+run at 8 and 9, and `#107` recorded that its shipped text carried three passages belonging to
+neighbouring slices. A lane shown its neighbours declining to edit exactly there is the
+behaviour the window was built to produce. But "declined to edit" and "edited safely" are
+different claims and only the first is evidenced.
+
+### The number that needs a decision: resolved fell 23 to 6
+
+More issues now survive adjudication, 43 to 48, and far fewer are resolved, 23 to 6, with
+slices shipped falling 9 to 3. Two readings fit and this entry cannot separate them:
+
+-   THE LANE STOPPED MAKING EDITS IT COULD NOT JUSTIFY. The editor sheet now forbids removing
+    wording on the grounds that a neighbour ought to carry it, and much of what it used to
+    "resolve" at relocation-adjacent slices was exactly that. Fewer and safer changes.
+-   THE LANE LOST REAL REPAIR CAPACITY, failing to fix seventeen issues it previously fixed.
+
+WHAT WOULD SEPARATE THEM: read the 17 issues resolved in the baseline and not now, and ask
+whether their baseline repairs were improvements or damage. That is a reading of two settled
+artifacts and needs no further quota. It is the next thing to do and it is not done.
+
+DO NOT TUNE THE WINDOW ON THIS. One entry, and the two readings have opposite remedies.
