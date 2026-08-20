@@ -89,3 +89,41 @@ Choosing a lane by damage counts.
 The measurement above shows those counts cannot carry the decision,
 and a rule built on three events would be overfitting to noise
 rather than to this corpus.
+
+## A lane discriminator that looked decisive and was not
+
+Tried 2026-08-20, refuted the same hour, recorded so it is not retried naively.
+
+THE IDEA: a rare-word test cannot tell the translate lane's legitimate re-wording from
+deletion, but NAMES AND NUMBERS survive any faithful translation.
+A lane that drops a person, a place or a figure is damaging the page in either lane,
+so counting those should make the two comparable.
+
+THE PROXY: a token capitalised in the archive whose lowercase form never appears
+lowercase there, plus any token containing a digit.
+Sentence-initial common words were supposed to be excluded
+because they appear lowercase elsewhere in the document.
+
+IT PRODUCED A CLEAN-LOOKING SPLIT:
+
+```text
+POOLED repair      kept 362 / 389   93.1%
+POOLED translate   kept 303 / 389   77.9%
+```
+
+READING WHAT IT COUNTED KILLED IT.
+The supposedly lost names are dominated by ordinary words that happen to appear only
+capitalised in a short document, at sentence starts, in headings and in list items,
+together with list markers counted as numbers.
+Genuine names are a small minority of the total.
+
+AND THE FAILURE IS BIASED, which is what makes it dangerous rather than merely noisy.
+The repair lane EDITS the incumbent, so it keeps the archive's sentence openings and
+scores well on those false positives by construction.
+The translate lane writes fresh prose and starts sentences differently,
+so it loses them without losing any content at all.
+The measurement therefore rewards the repair lane for a property that is not quality.
+
+WHAT A REAL VERSION NEEDS: an actual named-entity list rather than a capitalisation
+heuristic, or the corpus's own structured fields, which carry names directly.
+Until then `#130` stands where it did: no telemetry here ranks the lanes.
