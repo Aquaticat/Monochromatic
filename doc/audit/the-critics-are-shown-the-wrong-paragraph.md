@@ -327,6 +327,28 @@ A sweep over 20000 admissible monotone pairings lost a source block in 6.8% of
 them.
 Fixed in `4434618ea`, with the sweep reporting zero violations after.
 
+CONFIRMED AGAINST THE ROSTER'S ACTUAL PAIRING, not inferred from the shape of
+the output.
+A settled run discards its pairing cache by design,
+so a fresh single-entry run was read mid-flight, before settlement:
+
+```json
+[{"source":0,"target":0},{"source":1,"target":1},{"source":1,"target":2},
+ {"source":2,"target":3},{"source":3,"target":3},{"source":4,"target":3},
+ {"source":5,"target":3},{"source":6,"target":3},{"source":6,"target":4}]
+```
+
+Original 6 is paired with translation block 3,
+which originals 2 through 5 already claimed,
+AND with block 4, which nothing had claimed:
+exactly the merge-then-split shape.
+Under the old rule it matched neither branch and was placed nowhere.
+Under the fix all seven originals are placed,
+and slice 2 carries `block/6` beside the incumbent it belongs to.
+
+So the incident is this defect rather than `#90`/`#100` one-sided slicing,
+which was the other candidate and would have needed a different fix.
+
 ### The stray space in every wrapped line is ours
 
 The shipped blockquotes carry `>  she was clingy,` where the archive carries
