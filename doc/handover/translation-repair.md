@@ -13582,3 +13582,50 @@ The second effect is much the larger.
 
 So the window acts where it was aimed: on the judgement of whether a claim is supported,
 made by panellists who can now see the neighbouring passage.
+
+## Pre-registered reading for the panel-rule run
+
+Recorded 2026-08-20 BEFORE the run settles, so the reading cannot be fitted afterwards.
+Build under test carries `3da812110`, which makes a panelist voting unsupported on
+relocation grounds quote the nearby wording that holds the content.
+
+### The state it has to move
+
+```text
+lintong      accepted   79%  70%  57%      supported votes  85%  74%  72%
+saurikissa   accepted   63%  35%  28%      supported votes  76%  58%  52%
+                     baseline window fixed                baseline window fixed
+
+rosters, read first    lintong  30 / 29 / 30 heard, min 6 / 5 / 6
+                    saurikissa  65 / 65 / 64 heard, min 5 / 5 / 5
+```
+
+The supported-vote share is the metric, not the acceptance share:
+it is the panelists' own judgement rather than the threshold applied to it,
+and it declines monotonically on BOTH entries across all three arms.
+
+### What each outcome means
+
+```text
+supported share rises toward baseline on both entries   the rule wording was the cause
+rises on one entry only                                 not enough; one entry is one sample
+flat or falling                                         wording is NOT what drives the
+                                                        rejections; next suspect is the
+                                                        non-literal translation policy (#44)
+```
+
+### One claim to correct while recording this
+
+The marginal-rejection finding is `saurikissa` ONLY.
+That entry has eight of thirty-two rejections decided by a single vote,
+against one of fourteen in its baseline.
+`lintong` has ZERO one-vote rejections in every arm.
+So "a quarter of rejections turn on one vote" describes one entry, not the pipeline,
+and a reading of the new run must check both entries before repeating it.
+
+### Still true regardless of how this run lands
+
+`no-region` is `status != accepted`, over 574 rows with no exception,
+so nothing about this run can revive the anchoring story.
+The question is only whether the panel's judgement is right,
+and the four-critic inserted-clause case says it is sometimes wrong.
