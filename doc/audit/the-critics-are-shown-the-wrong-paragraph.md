@@ -217,7 +217,7 @@ the claim survives and the clause is gone from shipped text.
 
 ### What is worse, stated too
 
-REGISTER SLIPS IN PLACES. 哎呀，真是让人感到头疼的孩子呢 becomes "Ah, what a
+REGISTER SLIPS IN PLACES. The mother's exasperated-but-fond line becomes "Ah, what a
 headache of a child she is", where the archive had "Oh, you troublesome,
 endearing soul". The paired rendering is closer to the words and further from the
 voice, and it uses the present tense of someone who has died.
@@ -264,7 +264,7 @@ Four more in the same passage:
     which is the partner taking responsibility and the most personal clause in
     the passage.
 
--   喜欢逼着你干不喜欢的事情 is 逼, to force or compel.
+-   The clause about what she made you do turns on 逼, to force or compel.
     The archive softens it to "her tendency to ask others to do things when they
     are not in the mood for it".
     The repair lane returns "loved to force you into doing things you didn't
@@ -311,11 +311,11 @@ Minor, and the archive says "can" too.
 ### One paragraph never reached a slice at all
 
 The closing Chinese paragraph,
-愿你在天堂安好，我的朋友，有时间给我托梦……（生前好友于 2022 年 10 月）,
+the friend's closing paragraph, its dream request and its date,
 appears in no slice's source,
 while its English rendering sits in the incumbent of slice 2.
 The repair lane, shown English with no original behind it,
-deleted the rendering of 有时间给我托梦 and left a bare `> ` line in the shipped
+deleted the rendering of the dream request and left a bare `> ` line in the shipped
 text.
 
 This is not a judgement call the lane got wrong.
@@ -405,7 +405,7 @@ on the fixed build, settling 3 slices with zero alignment findings:
 
 -   The closing Chinese paragraph now reaches slice 2's source.
 
--   有时间给我托梦 ships, as "Visit me in my dreams when you have time...",
+-   the dream request ships, as "Visit me in my dreams when you have time...",
     where the previous run deleted it.
 
 -   The date ships, as "October 2022."
@@ -425,8 +425,8 @@ WHAT THE REPAIR LANE RETURNED THIS TIME, on the passage read earlier:
 "a girl who is quite possessive" for 占有欲比较强烈,
 "She was clingy, too." for 粘人,
 "Maybe it's because of me." for 可能是因为我吧,
-"her tendency to force you to do things you don't like" for 喜欢逼着你干不喜欢的事情,
-and "not her acquaintances" for 不喜欢麻烦熟人.
+"her tendency to force you to do things you don't like" for the 逼 clause,
+and "not her acquaintances" for the 熟人 clause.
 Every correction the earlier reading identified survives a re-run with a
 different sample, which is worth more than any one of them appearing once.
 
