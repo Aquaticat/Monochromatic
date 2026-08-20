@@ -2,6 +2,7 @@ import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { isJsonRecord, } from '../json-guard.ts';
+import type { BlockPair, } from '../pair-blocks-wire.ts';
 import type { ChunkRepairOutcome, } from '../repair-contract.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import {
@@ -12,6 +13,7 @@ import {
   belongsToNamespace,
   openNamespacedCache,
   readDirectoryNames,
+  PAIRING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
   TRANSLATE_SLICE_NAMESPACE,
 } from './slice-cache-namespace.ts';
@@ -179,6 +181,81 @@ export async function openSliceCache(
     generation,
     namespace: REPAIR_SLICE_NAMESPACE,
     isValue: isChunkRepairOutcome,
+  },);
+}
+
+/**
+ * Whether a cached value is a usable pairing.
+ *
+ * SHAPE ONLY. What a pairing must satisfy against the blocks it describes is
+ * `readBlockPairing`'s question, and a cached pairing is re-read through it.
+ *
+ * @param value - parsed cache entry
+ *
+ * @returns Whether it is a list of correspondences
+ *
+ * @example
+ * ```ts
+ * const ok = isCachedPairing([{ source: 0, target: 0, },],);
+ * ```
+ */
+function isCachedPairing(value: unknown,): value is readonly BlockPair[] {
+  if (!Array.isArray(value,))
+    return false;
+  return value.every(function isPair(entry: unknown,): boolean {
+    if ((typeof entry) !== 'object')
+      return false;
+    if (entry === null)
+      return false;
+    if (!('source' in entry))
+      return false;
+    if (!('target' in entry))
+      return false;
+
+    /**
+     * Candidate indices, still unknown in type.
+     */
+    const {
+      source,
+      target,
+    } = entry;
+    return Number.isInteger(source,) && Number.isInteger(target,);
+  },);
+}
+
+/**
+ * Opens an entry's block-pairing cache.
+ *
+ * PAIRING IS BOUGHT ONCE PER DOCUMENT PAIR AND NEVER AGAIN. Without this a
+ * resumed entry that buys nothing else still spends a round per section, which
+ * `pass-entry`'s own test caught: it asserts a fully cached resume makes no
+ * calls at all.
+ *
+ * @param dir - per-entry slice-cache directory
+ *
+ * @param generation - digest of the built pipeline this pass runs
+ *
+ * @returns Cache resuming settled pairings and persisting new ones
+ *
+ * @example
+ * ```ts
+ * const pairingCache = await openPairingCache({ dir: entryCacheDir, generation, },);
+ * ```
+ */
+export async function openPairingCache(
+  {
+    dir,
+    generation,
+  }: {
+    readonly dir: string;
+    readonly generation: string;
+  },
+): Promise<SliceCache<readonly BlockPair[]>> {
+  return await openNamespacedCache({
+    dir,
+    generation,
+    namespace: PAIRING_NAMESPACE,
+    isValue: isCachedPairing,
   },);
 }
 

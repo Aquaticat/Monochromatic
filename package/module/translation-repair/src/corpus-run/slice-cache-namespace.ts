@@ -91,6 +91,18 @@ export const TRANSLATE_SLICE_NAMESPACE: SliceNamespace = {
 };
 
 /**
+ * Block pairing's claim.
+ *
+ * NOT A LANE either. A pairing is bought once per document pair and read by both
+ * lanes, so it retires with the entry like everything else here and can never be
+ * mistaken for a settled slice.
+ */
+export const PAIRING_NAMESPACE: SliceNamespace = {
+  prefix: 'pairing.',
+  marker: 'pairing-generation.txt',
+};
+
+/**
  * Picture readings' claim.
  *
  * NOT A LANE, and named as one anyway because the store is the same. A reading

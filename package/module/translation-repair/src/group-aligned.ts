@@ -283,7 +283,7 @@ export function groupNodesAligned(
      * beside it. Cohesion outranks the budget, which is a sizing heuristic
      * rather than a correctness bound, and the overrun is one block wide.
      */
-    const cohesive = (step.kind === 'target-only')
+    const cohesive = (step.kind !== 'paired')
       && (step.continuesPairing === true)
       && (current !== undefined);
     /**

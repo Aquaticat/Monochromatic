@@ -182,6 +182,13 @@ function replyFor(
     readonly content: string;
   },
 ): unknown {
+  // THE PAIRING ROUND RUNS BEFORE EITHER LANE, so the script has to serve it or
+  // every entry falls back to scoring and, worse, a resumed entry re-buys the
+  // round it could not cache. An empty pairing is a legal answer meaning nothing
+  // corresponds, which keeps this fixture's slicing exactly as it was before the
+  // stage existed.
+  if (schema === 'block_pairing')
+    return { pairs: [], };
   if (schema === 'critic_report')
     return { issues: [], };
   if (schema === 'refine_report')

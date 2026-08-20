@@ -16,6 +16,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import {
   discardSliceCache,
+  openPairingCache,
   openSliceCache,
   openTranslateSliceCache,
 } from './slice-cache-store.ts';
@@ -237,6 +238,14 @@ async function runEntryPipeline(
     } = await prepareDocumentPairWithRoster({
       client,
       modelIds: RUN_ROSTER,
+      // BOUGHT ONCE PER DOCUMENT PAIR. Without this a resumed entry that buys
+      // nothing else still spends a pairing round per section, which this
+      // module's own test catches: it asserts a fully cached resume makes no
+      // calls at all.
+      pairingCache: await openPairingCache({
+        dir: entryCacheDir,
+        generation: pipelineDigest,
+      },),
       sourceText: entry.sourceText,
       targetText: entry.targetText,
       signal: deadline.callSignal,

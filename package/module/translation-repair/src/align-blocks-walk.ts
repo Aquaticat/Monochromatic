@@ -57,6 +57,15 @@ export type AlignmentStep =
      * Original-side block index.
      */
     readonly sourceIndex: number;
+
+    /**
+     * Whether this block CONTINUES the pairing of the step before it.
+     *
+     * Set when a translation MERGES several originals into one block, so the
+     * second and later originals ride along with the rendering that covers
+     * them. The mirror of the same field on `target-only`.
+     */
+    readonly continuesPairing?: true;
   }
   | {
     /**

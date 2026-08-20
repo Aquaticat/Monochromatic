@@ -319,20 +319,22 @@ export function readBlockPairing(
       },);
   }
 
-  /**
-   * Translation blocks already spoken for, since each renders one place.
-   */
-  const claimedTargets = new Set<number>();
-  for (const pair of pairs) {
-    if (claimedTargets.has(pair.target,))
-      throw new BlockPairingError({
-        message: `translation block ${String(pair.target,)} is paired twice, and a passage renders one place`,
-      },);
-    claimedTargets.add(pair.target,);
-  }
-
-  // MONOTONE ON BOTH SIDES. Both documents say things in the same order, so a
-  // pairing that moves backwards is describing a document neither side is.
+  // MONOTONE ON BOTH SIDES, AND A REPEAT ON EITHER IS A REAL CORRESPONDENCE.
+  //
+  // A translation may SPLIT one original across several blocks, which repeats
+  // the original, and it may MERGE several originals into one block, which
+  // repeats the translation. Both happen in this corpus.
+  //
+  // AN EARLIER VERSION REFUSED THE MERGE, on the reasoning that a passage
+  // renders one place. A live run refuted it: on `lintong` all six models
+  // independently paired one translation block with two originals, every reply
+  // was refused, and the entry fell back to scoring and collapsed to a single
+  // slice. Six voices agreeing on a structure is evidence about the documents,
+  // not six identical mistakes.
+  //
+  // What stays forbidden is going BACKWARDS, since both documents say things in
+  // the same order, and standing still on BOTH sides at once, which repeats a
+  // correspondence already made rather than describing a new one.
   for (const [at, pair,] of pairs.entries()) {
     /**
      * Pair before this one, absent at the first position.
@@ -344,9 +346,13 @@ export function readBlockPairing(
       throw new BlockPairingError({
         message: `pairing moves backwards on the original side at position ${String(at,)}`,
       },);
-    if (pair.target <= previous.target)
+    if (pair.target < previous.target)
       throw new BlockPairingError({
         message: `pairing moves backwards on the translation side at position ${String(at,)}`,
+      },);
+    if ((pair.source === previous.source) && (pair.target === previous.target))
+      throw new BlockPairingError({
+        message: `pairing repeats the same correspondence at position ${String(at,)}`,
       },);
   }
   return pairs;

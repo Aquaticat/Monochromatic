@@ -203,14 +203,42 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES one translation block paired twice, since a passage renders one place',
+      name: 'ACCEPTS one translation block rendering TWO originals, which is a merge',
       fn: async () => {
-        expect(function readsDoubleClaim() {
+        // AN EARLIER VERSION REFUSED THIS, holding that a passage renders one
+        // place. A live run refuted it: on `lintong` all six models
+        // independently paired one translation block with two originals, every
+        // reply was refused, and the entry fell back to scoring and collapsed
+        // to a single slice. A translation may merge two paragraphs exactly as
+        // it may split one.
+        const pairs = readBlockPairing({
+          value: {
+            pairs: [
+              {
+                source: 0,
+                target: 1,
+              },
+              {
+                source: 1,
+                target: 1,
+              },
+            ],
+          },
+          sourceCount: 3,
+          targetCount: 4,
+        },);
+        expect(pairs.length,).toBe(2,);
+      },
+    },),
+    it({
+      name: 'REFUSES the same correspondence twice, which describes nothing new',
+      fn: async () => {
+        expect(function readsRepeat() {
           readBlockPairing({
             value: {
               pairs: [
                 {
-                  source: 0,
+                  source: 1,
                   target: 1,
                 },
                 {

@@ -1,3 +1,5 @@
+import { createHash, } from 'node:crypto';
+
 import {
   type Logger,
   tagged,
@@ -11,8 +13,12 @@ import {
   type PreparedDocumentPair,
 } from './document-preparation.ts';
 import { pairBlocksWithRoster, } from './pair-blocks-stage.ts';
-import type { BlockPair, } from './pair-blocks-wire.ts';
+import type {
+  BlockPair,
+  NumberedBlock,
+} from './pair-blocks-wire.ts';
 import { parseDocument, } from './parse-document.ts';
+import type { SliceCache, } from './slice-cache.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Preparation with roster pairing
@@ -88,6 +94,7 @@ export async function prepareDocumentPairWithRoster(
     exchangeTimeoutMs,
     l,
     sliceCharBudget,
+    pairingCache,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly SyntheticModelId[];
@@ -97,6 +104,7 @@ export async function prepareDocumentPairWithRoster(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly sliceCharBudget?: number;
+    readonly pairingCache?: SliceCache<readonly BlockPair[]>;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -141,7 +149,7 @@ export async function prepareDocumentPairWithRoster(
       .map(function toNumbered(
         node,
         index,
-      ) {
+      ): NumberedBlock {
         return {
           index,
           text: node.text,
@@ -156,7 +164,7 @@ export async function prepareDocumentPairWithRoster(
       .map(function toNumbered(
         node,
         index,
-      ) {
+      ): NumberedBlock {
         return {
           index,
           text: node.text,
@@ -169,6 +177,45 @@ export async function prepareDocumentPairWithRoster(
       continue;
     if ((sourceBlocks.length === 0) || (targetBlocks.length === 0))
       continue;
+
+    /**
+     * This section's identity, over the text both sides actually carry.
+     *
+     * The pairing is a question about THESE blocks, so two entries whose
+     * sections happen to match share the answer and a resumed entry buys
+     * nothing.
+     */
+    const key = createHash('sha256',)
+      .update(
+        [
+          ...sourceBlocks.map(function toText(block,): string {
+            return block.text;
+          },),
+          '\u0000',
+          ...targetBlocks.map(function toText(block,): string {
+            return block.text;
+          },),
+        ].join('\u0000',),
+        'utf8',
+      )
+      .digest('hex',);
+
+    /**
+     * A pairing an earlier run already bought for these blocks.
+     */
+    const cached = pairingCache?.resumed
+      .get(key,);
+    if (cached !== undefined) {
+      // AN EMPTY CACHED PAIRING IS AN ANSWER: the roster was asked about these
+      // blocks and agreed on nothing, so the section keeps the scorer without
+      // the round being bought again.
+      if (cached.length > 0)
+        blockPairings.set(
+          pairIndex,
+          cached,
+        );
+      continue;
+    }
 
     /**
      * What the roster agreed on for this section.
@@ -188,7 +235,22 @@ export async function prepareDocumentPairWithRoster(
     /**
      * Correspondences this section's round agreed on.
      */
-    const { pairs, } = outcome;
+    const {
+      pairs,
+      usable,
+    } = outcome;
+
+    // A ROUND NOBODY ANSWERED IS NOT AN ANSWER, and must not be cached: the
+    // roster was unreachable, not undecided, and caching that would make one
+    // bad minute permanent for this entry. A round that WAS answered caches
+    // even when it agreed on nothing, because that is a stable fact about these
+    // blocks and re-buying it on every resume is what the cache exists to stop.
+    if (usable > 0)
+      // eslint-disable-next-line no-await-in-loop -- writing this section's answer before the next one is asked is the point: a batched write at the end loses everything an abort interrupts
+      await pairingCache?.persist({
+        key,
+        serialized: JSON.stringify(pairs,),
+      },);
     if (pairs.length === 0) {
       findings.push(`block-pairing section ${String(pairIndex,)} fell back to scoring`,);
       pl.warn(`section ${String(pairIndex,)}: no agreed pairing, keeping the deterministic aligner`,);

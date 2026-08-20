@@ -97,6 +97,15 @@ export function blockPairingToSteps(
     }
   }
 
+  /**
+   * Translation blocks already carried by an earlier original.
+   *
+   * A translation that MERGES several originals into one block names that block
+   * against each of them. The first original pairs with it; the rest ride along
+   * as continuations, so their text reaches the same slice without the
+   * translation block being counted again.
+   */
+  const carriedTargets = new Set<number>();
   for (let source = 0; source < sourceCount; source += 1) {
     /**
      * Translation blocks this original renders as, in order.
@@ -115,7 +124,25 @@ export function blockPairingToSteps(
       },);
       continue;
     }
+
+    /**
+     * Whether every block this original renders as is already carried, which is
+     * the merge case: this original rides along with the rendering.
+     */
+    const allCarried = targets.every(function isCarried(target,): boolean {
+      return carriedTargets.has(target,);
+    },);
+    if (allCarried) {
+      steps.push({
+        kind: 'source-only',
+        sourceIndex: source,
+        continuesPairing: true,
+      },);
+      continue;
+    }
     for (const [at, target,] of targets.entries()) {
+      if (carriedTargets.has(target,))
+        continue;
       emitUnclaimedTargetsBefore(target,);
       steps.push((at === 0)
         ? {
@@ -131,6 +158,7 @@ export function blockPairingToSteps(
           targetIndex: target,
           continuesPairing: true,
         },);
+      carriedTargets.add(target,);
       emittedTargets = target + 1;
     }
   }
