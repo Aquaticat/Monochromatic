@@ -25,10 +25,33 @@ const FENCE = '=====';
  * reporting the neighbours as untranslated or as surplus, which would turn one
  * relocation into claims against passages that are perfectly correct where they
  * are. The blocks exist to be RECOGNISED IN, never judged.
+ *
+ * THE QUOTE SENTENCE WAS ADDED AFTER MEASURING, and it is the half that was
+ * missing. Forbidding claims ABOUT the neighbours does not forbid QUOTING them
+ * as evidence for a claim about this slice, and a quote from next door cannot
+ * anchor here, so the claim is discarded whole. Measured on `saurikissa`
+ * settled with the window against the same entry without it, at an identical
+ * roster of 11 critic stages and 65 voices heard:
+ *
+ * ```text
+ *                        without window   with window
+ * quote-not-found                     9            16
+ * findings in total                 112            98
+ * issues with no region              16            37
+ * issues shipped                     26             7
+ * issues resolved                    23             6
+ * ```
+ *
+ * A claim that cannot anchor costs everything downstream of it, so nearly
+ * doubling the unanchorable share is what took the lane from nine shipped
+ * slices to three.
  */
 const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT. Do not raise any claim '
   + 'about them. Use them only to tell whether wording that seems unsupported '
-  + 'here, or seems missing here, belongs to a neighbouring passage instead';
+  + 'here, or seems missing here, belongs to a neighbouring passage instead. '
+  + 'EVERY QUOTE YOU GIVE MUST BE COPIED FROM THE ORIGINAL OR TRANSLATION BLOCK '
+  + 'ABOVE, never from a nearby block: a quote taken from next door cannot be '
+  + 'located in the passage under review and the whole claim is discarded';
 
 /**
  * System instructions shared by every critic call.
