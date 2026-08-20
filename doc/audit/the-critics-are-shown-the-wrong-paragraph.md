@@ -124,3 +124,58 @@ That makes transliteration-aware scoring a shared dependency of `#71`, `#98` and
 rather than three separate alignment tasks, and it moves it ahead of every stage-tuning
 question: no prompt, window, panel rule or lane choice can be judged on runs whose
 critics were shown the wrong paragraph.
+
+## Settled with correct pairing
+
+Two runs on the corrected build, 2026-08-20.
+
+FIRST RUN found two defects in the pairing code itself, which is what a live run
+is for. `saurikissa` paired 16 of 16 and settled cleanly; `lintong` collapsed
+from five slices to one, because all six models paired one translation block
+with two originals and the reader refused every reply. A translation may MERGE
+paragraphs exactly as it may split them, and the reader forbade the mirror of the
+case it allowed. Separately, pairing was bought on every resume, which
+`pass-entry`'s own test caught.
+
+SECOND RUN, with merges carried and the pairing cached:
+
+```text
+                    slices   alignment findings   pairing
+  saurikissa             9                    0   16 pairs, 6 of 6 voices usable
+  lintong                3                    0    9 pairs, 6 of 6 voices usable
+```
+
+`lintong`'s nine pairs over seven original and five translation blocks is more
+pairs than target blocks, which only a merge can produce.
+
+### What moved
+
+```text
+                    resolved   accepted   archive retention
+  saurikissa
+    baseline              23       63%          55.1%
+    window                 6       35%          91.2%
+    paired                34       44%          78.2%
+  lintong
+    baseline              23       79%          71.4%
+    window                18       70%          77.1%
+    paired                18       83%          71.4%
+```
+
+`saurikissa` resolves more than any earlier arm, and `lintong`'s panel accepts a
+larger share than any earlier arm.
+
+### What this does NOT show
+
+ARCHIVE RETENTION FELL against the window arm, and that is not evidence either
+way. `doc/decision/translation-repair-output-goal.md` decides the output is
+judged against the ORIGINAL, never against the input translation, and retention
+counts archive words. The window scores 91% partly by resolving six issues: an
+arm that resolves thirty-four necessarily diverges more from the incumbent, and
+a rare-word test cannot separate "removed what it should not have" from
+"repaired a great deal correctly".
+
+So the pairing work establishes that every stage now reads the paragraph it
+should. It does not establish that the output is better, because that is a
+source-anchored judgement and nothing here makes one. It is the same wall
+`doc/planning/which-lane-ships.md` reaches.
