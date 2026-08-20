@@ -18,7 +18,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { findIntroducedRepetitions, } from '../dist/final/node/index.mjs';
+import {
+  findIntroducedRepetitions,
+  repetitionFindings,
+} from '../dist/final/node/index.mjs';
 
 /**
  * A passage long enough to be reported, standing in for the farewell the repair
@@ -95,6 +98,23 @@ await describe({
         },);
         expect(findings.length,).toBe(1,);
         expect(findings[0]?.archiveCount,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'renders a finding NAMING THE SHAPE and never the passage itself',
+      fn: async () => {
+        // Findings are counted and compared across runs. A passage of prose
+        // inside one would make every tally depend on the text it happened to
+        // find, so the finding carries the shape and the counts only.
+        const rendered = repetitionFindings({
+          archiveText: `The kitten dozes. ${PASSAGE}.`,
+          shippedText: `The kitten dozes. ${PASSAGE}. Again: ${PASSAGE}.`,
+        },);
+        expect(rendered.length,).toBe(1,);
+        expect(rendered[0],).toContain('introduced-repetition',);
+        expect(rendered[0],).toContain('archive 1',);
+        expect(rendered[0],).toContain('shipped 2',);
+        expect(rendered[0],).not.toContain('tabby',);
       },
     },),
     it({

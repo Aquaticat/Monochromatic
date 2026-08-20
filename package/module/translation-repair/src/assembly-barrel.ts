@@ -23,6 +23,7 @@ export {
 } from './assembly-integrity.ts';
 export {
   findIntroducedRepetitions,
+  repetitionFindings,
   type RepetitionFinding,
 } from './assembly-repetition.ts';
 

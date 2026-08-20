@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
+import { repetitionFindings, } from './assembly-repetition.ts';
 import {
   assertReplacementsChange,
   deriveShippedIndices,
@@ -232,6 +233,16 @@ export function assembleTranslation(
       // only where the sentence is built moved.
       ...alignmentRefusals({ records: settled, },),
       ...guarded.findings,
+      // BOTH LANES, not only the one whose damage was found first. `#66`
+      // established the repetition in `lintong`'s repair lane, and running the
+      // check over the settled pool immediately found one in `saurikissa`'s
+      // TRANSLATE lane and one in `dogesir_`'s, which nobody had suspected.
+      // Writing a slice from its source rather than editing an incumbent does
+      // not stop a lane saying the same thing twice.
+      ...repetitionFindings({
+        archiveText: prepared.targetText,
+        shippedText: guarded.assembledText,
+      },),
       ...unheard.map(function toUnheardFinding(record,): string {
         return `translate-heard-no-translator chunk ${
           String(record.chunkIndex,)

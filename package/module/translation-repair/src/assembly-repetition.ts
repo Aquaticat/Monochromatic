@@ -257,4 +257,46 @@ export function findIntroducedRepetitions(
   return found;
 }
 
+/**
+ * Renders introduced repetitions as scorecard-stable findings.
+ *
+ * THE PHRASE ITSELF IS NOT IN THE FINDING, and that is deliberate. Findings are
+ * short tokens that get counted and compared across runs, and a passage of
+ * corpus prose inside one would make every tally depend on the text it happened
+ * to find. The shape is enough to locate it: rerun the check over the artifact
+ * and the phrase is right there.
+ *
+ * @param archiveText - translation as it stood before the lane ran
+ *
+ * @param shippedText - assembled document the lane produced
+ *
+ * @returns One finding per introduced repetition, longest first
+ *
+ * @example
+ * ```ts
+ * const findings = repetitionFindings({ archiveText, shippedText, },);
+ * ```
+ */
+export function repetitionFindings(
+  {
+    archiveText,
+    shippedText,
+  }: {
+    readonly archiveText: string;
+    readonly shippedText: string;
+  },
+): readonly string[] {
+  return findIntroducedRepetitions({
+    archiveText,
+    shippedText,
+  },)
+    .map(function toFinding(found,): string {
+      return `introduced-repetition (${
+        String(found.phrase
+          .split(' ',)
+          .length,)
+      } words, archive ${String(found.archiveCount,)}, shipped ${String(found.shippedCount,)})`;
+    },);
+}
+
 //endregion Assembly repetition
