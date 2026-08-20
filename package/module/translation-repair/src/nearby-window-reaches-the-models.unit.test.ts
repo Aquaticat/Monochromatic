@@ -208,6 +208,28 @@ await describe({
       },
     },),
     it({
+      name: 'repair slice key SEPARATES a source-only window from an incumbent-only one',
+      fn: async () => {
+        // Without a label the two sides are one positional slot, so these two
+        // different questions would share a cached answer.
+        const sourceOnly = repairSliceKey({
+          runShape: 'shape',
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          lineStructured: false,
+          neighbouringSourceText: NEARBY_SOURCE,
+        },);
+        const incumbentOnly = repairSliceKey({
+          runShape: 'shape',
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          lineStructured: false,
+          neighbouringIncumbentText: NEARBY_SOURCE,
+        },);
+        expect(sourceOnly,).not.toEqual(incumbentOnly,);
+      },
+    },),
+    it({
       name: 'repair slice key HOLDS STILL for a slice with no neighbours',
       fn: async () => {
         // A lone slice has no window to be shown, so it is asked the same

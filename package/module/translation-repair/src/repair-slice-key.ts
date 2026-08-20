@@ -389,12 +389,26 @@ export function repairSliceKey(
       // shown, so it is asked the same question a caller that never had the
       // parameter asked, and it should resume rather than be recomputed to
       // reach the identical answer.
+      // LABELLED, because the two sides are otherwise INDISTINGUISHABLE once
+      // spread into a positional array: a source-only window and an
+      // incumbent-only window carrying the same text would hash identically and
+      // one cached answer would serve two different questions. Asymmetric
+      // windows are real here, since a neighbour that is an insertion anchor has
+      // source text and no target text. `translateSliceKey` never had this
+      // because it spreads NAMED properties, and mirroring its shape rather than
+      // its effect is what introduced it.
       ...(((neighbouringSourceText === undefined) || (neighbouringSourceText === ''))
         ? []
-        : [neighbouringSourceText,]),
+        : [
+          'nearby-source',
+          neighbouringSourceText,
+        ]),
       ...(((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === ''))
         ? []
-        : [neighbouringIncumbentText,]),
+        : [
+          'nearby-incumbent',
+          neighbouringIncumbentText,
+        ]),
     ],),
   },);
 }
