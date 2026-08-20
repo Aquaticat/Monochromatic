@@ -135,3 +135,63 @@ When an instrument reconstructs one of its own inputs,
 check the reconstruction against the real input before trusting any verdict built on it,
 and prefer a length equality that must hold if the reconstruction is complete.
 Here `targetChars` was in the artifact the whole time and would have caught it at once.
+
+## The shipped check cannot see the damage it was built for
+
+Found the same day, while checking the correction above.
+
+`#107` describes a positional defect:
+one slice shipping wording the NEXT slice also ships,
+which the archive said once.
+Deriving that signature directly, rather than by the baseline heuristic gate A used,
+finds it immediately:
+
+```text
+baseline lintong    repair     slices 2+3   6w/23ch:0a157876   archive 1   both newly shipped
+new      lintong    repair     slices 2+3   4w/23ch:189cdc15   archive 1   both newly shipped
+new      saurikissa translate  slices 7+8   5w/22ch:ab9538c8   archive 0   both newly shipped
+```
+
+The damage is still there at the same slice pair in the run under the window,
+and `saurikissa`'s translate lane has one the archive never carried at all.
+
+THE PROBLEM: `findIntroducedRepetitions` reports NONE of the first or third.
+The content-word gate requires two words of at least five letters,
+and those phrases do not have them:
+
+```text
+0a157876   word lengths [4,3,3,2,3,3]   content words 0   gate BLOCKS
+189cdc15   word lengths [5,3,4,8]       content words 2   gate PASSES
+ab9538c8   word lengths [3,4,2,6,3]     content words 1   gate BLOCKS
+```
+
+So the instrument built to catch `lintong`'s duplication structurally cannot catch it.
+The gate that removed the noise removed the target with it.
+
+## Why the answer is scope, not a lower threshold
+
+The content gate is doing real work at DOCUMENT scale,
+where any two distant sentences may share ordinary phrasing,
+and lowering it took an earlier reading back to mostly noise.
+
+ADJACENCY is a much narrower claim,
+so it does not need the gate to be specific.
+Measured over every settled artifact that carries a delivery ledger:
+
+```text
+lane readings with a ledger                22
+adjacent-slice repetitions, no gate         1
+of those, both sides newly shipped          1
+of those, clearing the content gate         0
+```
+
+One hit in twenty-two lane readings,
+and it is the documented damage.
+Older pools cannot be measured this way at all:
+196 lane readings predate the ledger and carry no per-slice text.
+
+So the shape to build is a SECOND check scoped to adjacent slices,
+with no content gate,
+beside the document-scale one that keeps its gate unchanged.
+That leaves the measured noise trade alone
+rather than reopening a threshold that is doing its job.
