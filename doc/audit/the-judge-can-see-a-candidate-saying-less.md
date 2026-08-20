@@ -124,7 +124,58 @@ Whether that question can be posed without inviting the register-and-fluency
 preferences the sheet exists to suppress is unmeasured, and is the next thing to
 settle if this route is pursued.
 
-A DETERMINISTIC FALLBACK IS THE CHEAPER ALTERNATIVE, since retention is already
-computed with no quota at all: on a decline, keep the rendering that retains more of
-the archive's specifics. That needs no judge and no round trip, and on this evidence
-it would have decided all six.
+A DETERMINISTIC FALLBACK LOOKED LIKE THE CHEAPER ALTERNATIVE, since retention is
+already computed with no quota: on a decline, keep the rendering that retains more of
+the archive's specifics. The wider run below shows why that is not the free win it
+appears to be.
+
+## The wide run: thirty-four contests, and a lane preference
+
+Six contests could not settle this, so the older pools supplied thirty-four.
+
+```text
+contests with a retention difference      34
+  the ensemble DECLINED                   28      82%
+  the ensemble decided                     6
+
+of the six decided
+  chose the higher-retention rendering     1
+  went to the TRANSLATE lane               6
+  went to the REPAIR lane                  0
+```
+
+THE LAST LINE IS THE FINDING.
+Every contest the judge decided went to the translate lane,
+and in five of those six the translate rendering was the one keeping LESS of what
+the archive said.
+
+That is not an arbiter between two lanes.
+It is the same preference `doc/audit/incumbent-almost-never-wins-a-contest.md` already
+recorded, where the archive's own wording loses thirty-seven contests in thirty-nine:
+the judges prefer a freshly written rendering.
+Given repair-lane text, which is an EDITED incumbent, they treat it the way they treat
+an incumbent.
+
+So a per-slice cross-lane judge would decline four times in five,
+and on the fifth would hand the slice to the translate lane
+regardless of which rendering kept more of the page.
+
+## Why the deterministic fallback is not free either
+
+Retention favours the repair lane BY CONSTRUCTION, for the same reason the judge
+disfavours it: the repair lane edits the incumbent, so it keeps the archive's
+vocabulary unless it deliberately removes it, while the translate lane writes fresh
+English and may say the same thing in different words.
+
+Across these thirty-four contests the higher-retention lane was
+repair twenty-four times and translate ten.
+
+A rule that always keeps the higher-retention rendering therefore ships the repair
+lane about seven times in ten, and it does so partly because of how each lane is
+built rather than because of which text is better. That is the SAME structural bias
+that killed the names-and-numbers discriminator in
+`doc/planning/which-lane-ships.md`, and it has to be stated wherever the rule is
+proposed.
+
+It remains the cheapest thing that decides every slice, at zero quota.
+It is not evidence about which lane is better.
