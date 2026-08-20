@@ -374,6 +374,11 @@ export async function repairChunk(
     baselineText: targetText,
     regions: repairRegions,
     issues: acceptedIssues,
+    // The auditor gets the same window as the stages it audits. Without it,
+    // `#66` measured this probe reporting nothing about a duplication whose
+    // other half sits in the slice next door, which no setting could have
+    // fixed.
+    ...windowFragment,
     // Withheld on purpose: rendering the accepted issues into the prompt was
     // measured to silence this stage, and `introduced-defect-screen.ts` now
     // dismisses a claim that merely restates one.

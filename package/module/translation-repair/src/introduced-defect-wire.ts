@@ -294,6 +294,19 @@ function renderPriorIssues(
 }
 
 /**
+ * What the neighbouring blocks are for, stated inside the probe sheet.
+ *
+ * THE PROBE IS AN AUDITOR, so its rule differs from the editor's: it is not
+ * being asked to change anything, only to say what the edit broke. What the
+ * neighbours buy it is the ability to tell a passage that MOVED from one that
+ * was invented or lost, which is the distinction `#66` found it making wrongly
+ * by never making it at all.
+ */
+const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT, not text under review. '
+  + 'Use them to tell whether wording that looks added or dropped here belongs '
+  + 'to a neighbouring passage instead of being new or lost';
+
+/**
  * Builds the prober sheet: the original, the baseline translation, and every
  * replaced region with the pre-existing defects it was meant to fix.
  *
@@ -326,6 +339,8 @@ export function buildIntroducedDefectMessages(
     issues,
     editKind = 'accuracy-repair',
     disclosure = 'rendered',
+    neighbouringIncumbentText,
+    neighbouringSourceText,
   }: {
     readonly sourceText: string;
     readonly baselineText: string;
@@ -333,6 +348,8 @@ export function buildIntroducedDefectMessages(
     readonly issues: readonly AdjudicatedIssue[];
     readonly editKind?: ProbedEditKind;
     readonly disclosure?: PriorIssueDisclosure;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
   },
 ): IntroducedDefectPromptPlan {
   /**
@@ -348,6 +365,14 @@ export function buildIntroducedDefectMessages(
     texts: [
       sourceText,
       baselineText,
+      // THE NEIGHBOURS COUNT TOWARDS THE FENCE like every other text this sheet
+      // carries. They are arbitrary corpus prose, so a fence chosen without
+      // them could be one a neighbouring paragraph reproduces, and that
+      // paragraph would close its own block and have the rest read as sheet
+      // structure. Adding text to the sheet without adding it here is exactly
+      // the hole the dynamic fence exists to close.
+      neighbouringSourceText ?? '',
+      neighbouringIncumbentText ?? '',
       ...regions.flatMap(function toTexts(region,) {
         return [
           region.before,
@@ -356,6 +381,27 @@ export function buildIntroducedDefectMessages(
       },),
     ],
   },);
+
+  /**
+   * The passages either side, or nothing when this slice stands alone.
+   *
+   * `#66` MEASURED WHY THIS IS HERE. Probed against `lintong`'s duplicated
+   * farewell, this stage reported nothing, and it could not have reported
+   * otherwise: it compares one region against itself, and the wording it should
+   * have objected to sits in the slice next door. A prober that can see the
+   * neighbour can at least recognise a passage that has moved.
+   */
+  const nearbyBlock = ((neighbouringSourceText === undefined)
+      || (neighbouringSourceText === ''))
+      && ((neighbouringIncumbentText === undefined)
+        || (neighbouringIncumbentText === ''))
+    ? ''
+    : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
+${neighbouringSourceText ?? ''}
+${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
+${neighbouringIncumbentText ?? ''}
+${fence} ${NEARBY_RULE} ${fence}
+`;
 
   /**
    * Rendered region blocks in numbering order.
@@ -392,7 +438,7 @@ ${region.editorAfter}`;
 ${sourceText}
 ${fence} BASELINE TRANSLATION ${fence}
 ${baselineText}
-${fence} REPLACED REGIONS ${fence}
+${nearbyBlock}${fence} REPLACED REGIONS ${fence}
 ${blocks.join('\n\n',)}
 ${fence} END ${fence}`,
       },

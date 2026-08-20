@@ -153,6 +153,8 @@ export async function runIntroducedDefectProbe(
     issues,
     editKind = 'accuracy-repair',
     disclosure = 'withheld',
+    neighbouringIncumbentText,
+    neighbouringSourceText,
     signal,
     perCallTimeoutMs,
     l,
@@ -165,6 +167,8 @@ export async function runIntroducedDefectProbe(
     readonly issues: readonly AdjudicatedIssue[];
     readonly editKind?: ProbedEditKind;
     readonly disclosure?: PriorIssueDisclosure;
+    readonly neighbouringIncumbentText?: string;
+    readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -183,6 +187,8 @@ export async function runIntroducedDefectProbe(
     issues,
     editKind,
     disclosure,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
   },);
 
   /**
