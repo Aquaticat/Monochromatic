@@ -78,3 +78,49 @@ worth preserving where it is right, which is what
 `doc/decision/translation-repair-output-goal.md` already decided.
 The defect here is that the pipeline cannot currently tell where it IS right,
 because it is comparing it against the wrong paragraph.
+
+## It is not stale artifacts, and it is not `#98`
+
+TWO CANDIDATE EXPLANATIONS, both checked and both wrong.
+
+NOT STALE. `align-blocks.ts` landed 2026-07-26, nearly a month before these runs, and
+it is wired into subdivision through `group-aligned.ts` and `slice-pair.ts`, whose own
+comment says pairing by shared index "was tried and is wrong". The run settled TODAY
+mispairs `saurikissa` exactly as the older ones do.
+
+NOT `#98`. That holds the SECTION-level shortcut, where equal chunk counts pair by
+index and report nothing. `saurikissa` has one section on each side, so its section
+pairing is correct. The drift is INSIDE the section, between paragraphs, which is
+`alignBlocks`' job.
+
+## Why the block aligner cannot see it
+
+Its scoring is, by design, language-neutral: block kind, shared script-neutral tokens,
+and a plausible length ratio. On this entry:
+
+KIND CARRIES NOTHING, because every block on both sides is a paragraph, so the
+kind-match score is constant across every candidate pairing.
+
+TOKEN OVERLAP CARRIES ALMOST NOTHING, because the tokens it counts are Latin words,
+digit runs and component names. Chinese and English paragraphs of ordinary prose share
+none. `AirPods` is the rare exception.
+
+LENGTH RATIO IS ALL THAT REMAINS, and one weak signal cannot hold a monotone walk on
+course across eleven blocks.
+
+THE ANCHORS EXIST AND IT CANNOT READ THEM. This entry carries transliterated names on
+both sides throughout: a friend's name, three place names, a subculture's name, and a
+person referred to by a Latin initialism. Every one is a strong pairing signal and
+every one is invisible to a matcher comparing Latin tokens, because the Chinese side
+is not Latin.
+
+## The fix is one already written down for headings
+
+`#71` proposed exactly this for the section aligner: "a matcher that scored heading
+similarity, including transliteration and shared Latin substrings". The same matcher is
+what the BLOCK aligner needs, and for the same reason.
+
+That makes transliteration-aware scoring a shared dependency of `#71`, `#98` and this,
+rather than three separate alignment tasks, and it moves it ahead of every stage-tuning
+question: no prompt, window, panel rule or lane choice can be judged on runs whose
+critics were shown the wrong paragraph.
