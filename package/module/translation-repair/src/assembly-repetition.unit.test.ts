@@ -118,6 +118,20 @@ await describe({
       },
     },),
     it({
+      name: 'IGNORES a repeated run of function words, which any two paragraphs may share',
+      fn: async () => {
+        // Six words, none longer than four letters. Measured on the settled
+        // artifacts, findings of this shape were the false positives: the
+        // documented damage carries three substantial words, these carry none.
+        const thin = 'and so it was that the';
+        const findings = findIntroducedRepetitions({
+          archiveText: `A cat sat. ${thin} day ended.`,
+          shippedText: `A cat sat. ${thin} day ended. ${thin} night came.`,
+        },);
+        expect(findings.length,).toBe(0,);
+      },
+    },),
+    it({
       name: 'stays quiet on an untouched document',
       fn: async () => {
         const findings = findIntroducedRepetitions({

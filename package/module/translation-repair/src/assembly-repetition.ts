@@ -30,6 +30,40 @@
 const MIN_PHRASE_WORDS = 4;
 
 /**
+ * Letters a word needs before it counts as carrying content.
+ *
+ * Function words are short and they cluster, so a run of them says nothing
+ * about whether a passage repeated.
+ */
+const CONTENT_WORD_LETTERS = 5;
+
+/**
+ * Content words a phrase needs before it is worth reporting.
+ *
+ * MEASURED RATHER THAN CHOSEN, on the five settled artifacts. Counting by words
+ * alone, this returned five findings, and their content-word counts separate
+ * them sharply: the duplication `#66` established by reading `lintong`'s
+ * finished text carries THREE content words in 33 characters, while two of the
+ * others carry ZERO and ONE. Six words with no word longer than four letters is
+ * an ordinary English collocation that any two paragraphs may share, not a
+ * passage a document said twice.
+ *
+ * WHAT TWO ACTUALLY COSTS, measured rather than predicted, because the first
+ * version of this comment guessed and guessed wrong. It takes the five findings
+ * to two: `lintong`'s documented duplication survives at 3 content words, and
+ * `saurikissa`'s translate-lane repeat survives at 3. Dropped are two runs of
+ * function words at 0 and 1, and `dogesir_`'s invented-and-repeated passage,
+ * which carries only 1 content word in 21 characters.
+ *
+ * DROPPING `dogesir_` IS ACCEPTED rather than worked around. A five-word phrase
+ * with one substantial word is short enough that two paragraphs sharing it is
+ * unremarkable, and a stage emitting on every run should be quiet enough that a
+ * finding means something. If document-scale damage is later found that this
+ * threshold hid, lower it and say so here.
+ */
+const MIN_CONTENT_WORDS = 2;
+
+/**
  * Longest phrase considered, in words.
  *
  * A longer repeat is still reported, because a maximal match is grown from its
@@ -115,6 +149,48 @@ function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
     words.push(held,);
   return words;
 }
+
+/**
+ * Whether a phrase carries enough substantial words to be worth reporting.
+ *
+ * Letters are counted with an index scan rather than a pattern, per `RG1`: the
+ * rule is "how many letters does this word have", which a scan states directly.
+ *
+ * @param phrase - candidate repeated wording
+ *
+ * @returns Whether it clears {@link MIN_CONTENT_WORDS}
+ *
+ * @example
+ * ```ts
+ * const worth = carriesContent({ phrase: 'the tabby waits by the gate', },);
+ * ```
+ */
+function carriesContent({ phrase, }: { readonly phrase: string; },): boolean {
+  /**
+   * Words long enough to carry meaning rather than grammar.
+   *
+   * LENGTH RATHER THAN A LETTER COUNT, and the reason is a rule conflict rather
+   * than a preference. Counting letters needs the word walked character by
+   * character, and this package's linters refuse both spellings of that:
+   * spreading a string is refused for splitting graphemes, and `Array.from` is
+   * refused in favour of spread. `LN1` says an apparent conflict gets a
+   * structural answer rather than one rule's surface reshaped to quiet the
+   * other, so the character walk goes away.
+   *
+   * WHAT IT COSTS is punctuation counting toward length, so a four-letter word
+   * carrying a comma reads as five. Measured on the five settled artifacts this
+   * changes nothing: the same two findings survive and the same three are
+   * dropped.
+   */
+  const substantial = phrase
+    .split(' ',)
+    .filter(function longEnough(word,): boolean {
+      return word.length >= CONTENT_WORD_LETTERS;
+    },);
+
+  return substantial.length >= MIN_CONTENT_WORDS;
+}
+
 
 /**
  * Counts every phrase of one length in a word list.
@@ -240,6 +316,8 @@ export function findIntroducedRepetitions(
       // The archive's own repetition is the author's, not ours. Only an
       // INCREASE is something this pipeline did.
       if (shippedCount <= archiveCount)
+        continue;
+      if (!carriesContent({ phrase, },))
         continue;
       if (found.some(function contains(longer,): boolean {
         return longer.phrase
