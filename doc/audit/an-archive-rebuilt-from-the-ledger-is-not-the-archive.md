@@ -278,3 +278,50 @@ An instrument that reconstructs an input,
 or that classifies by a hand-written list,
 owes a positive control and a look at its own hits
 before any verdict rests on its total.
+
+## Validating the adjacency check against the source, and the limit it exposes
+
+The archive is a LOOSE incumbent translation.
+The source decides content.
+So if the Chinese repeats across two adjacent sections,
+a translation repeating it is faithful,
+and a check comparing only against the archive would call that damage.
+
+Tested on all three findings, by character n-grams because Chinese does not split on
+whitespace:
+
+```text
+baseline  lintong     repair     slices 2+3   source 8-gram overlap 0   stands
+window    lintong     repair     slices 2+3   source 8-gram overlap 0   stands
+window    saurikissa  translate  slices 7+8   source 8-gram overlap 0   stands
+```
+
+POSITIVE CONTROL FIRST, because a zero from a probe that cannot report non-zero says
+nothing:
+
+```text
+adjacent source pairs examined            95
+pairs with non-zero 8-gram overlap         8      largest 42 shingles
+```
+
+The probe reports overlap where overlap exists,
+so the zeros above are real and all three findings are genuine damage.
+
+THE LIMIT THIS EXPOSES.
+Eight of ninety-five adjacent source pairs DO repeat,
+some substantially.
+For those pairs a faithful translation must repeat too,
+and if the archive happened not to,
+the shipped check would report damage that is not there.
+
+No such false positive has occurred:
+the check fires three times across every artifact carrying a ledger,
+and none of the three is one of those eight pairs.
+So this is recorded rather than built against,
+on the same reasoning that leaves the document-scale content gate alone:
+a guard with no driving defect is speculation.
+
+IF IT EVER FIRES, the fix is known.
+Pass the two slices' source text alongside their shipped text
+and drop any repeat whose source sides overlap,
+which is exactly the measurement above.
