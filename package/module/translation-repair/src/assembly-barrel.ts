@@ -22,6 +22,12 @@ export {
   introducedStructuralRegressions,
 } from './assembly-integrity.ts';
 export {
+  type ContentSurvival,
+  contentSurvivalFindings,
+  distinctiveWords,
+  measureContentSurvival,
+} from './assembly-content-survival.ts';
+export {
   type AdjacentRepetition,
   adjacentRepetitionFindings,
   type AdjacentSliceText,

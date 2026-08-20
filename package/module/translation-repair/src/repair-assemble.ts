@@ -5,6 +5,7 @@ import {
   adjacentRepetitionFindings,
   type AdjacentSliceText,
 } from './assembly-adjacent-repetition.ts';
+import { contentSurvivalFindings, } from './assembly-content-survival.ts';
 import { repetitionFindings, } from './assembly-repetition.ts';
 import {
   assertReplacementsChange,
@@ -253,6 +254,14 @@ export function assembleRepair(
       ...adjacentRepetitionFindings({
         archiveText: targetText,
         shippedSlices,
+      },),
+      // THE DAMAGE CLASS NOTHING ELSE HERE SEES. A slice rewritten into generic
+      // prose keeps the document's length and structure and loses what it was
+      // about. Measured on `saurikissa`, where one baseline slice went from 136
+      // words to 21 and the whole document shrank by 70 characters of 4479.
+      ...contentSurvivalFindings({
+        archiveText: targetText,
+        shippedText: guarded.assembledText,
       },),
     ],
   };
