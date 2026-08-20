@@ -8,6 +8,7 @@ import {
   type ChunkSlice,
   governedSliceIndices,
 } from './line-structure-inherit.ts';
+import type { BlockPair, } from './pair-blocks-wire.ts';
 import { parseDocument, } from './parse-document.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertSpanContiguity, } from './span-contiguity.ts';
@@ -113,10 +114,12 @@ export function prepareDocumentPair(
     sourceText,
     targetText,
     sliceCharBudget = SLICE_CHAR_BUDGET,
+    blockPairings,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly sliceCharBudget?: number;
+    readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
   },
 ): PreparedDocumentPair {
   /**
@@ -176,7 +179,11 @@ export function prepareDocumentPair(
    * it exists for.
    */
   const governance: ChunkGovernance[] = [];
-  for (const pair of alignment.pairs) {
+  for (
+    const [pairIndex, pair,] of alignment
+      .pairs
+      .entries()
+  ) {
     /**
      * Slices carved from this chunk.
      */
@@ -186,6 +193,11 @@ export function prepareDocumentPair(
       targetText,
       baseIndex: slices.length,
       budget: sliceCharBudget,
+      ...((blockPairings === undefined)
+        ? {}
+        : {
+          blockPairing: blockPairings.get(pairIndex,) ?? [],
+        }),
     },);
 
     /**

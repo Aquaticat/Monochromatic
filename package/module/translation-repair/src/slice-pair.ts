@@ -4,6 +4,8 @@ import type {
 } from './chunk-document.ts';
 import type { DocumentNode, } from './document-node.ts';
 import { groupNodesAligned, } from './group-aligned.ts';
+import { blockPairingToSteps, } from './pair-blocks-steps.ts';
+import type { BlockPair, } from './pair-blocks-wire.ts';
 import { groupNodes, } from './group-nodes.ts';
 
 //region Paragraph slicing
@@ -159,12 +161,14 @@ export function subdivideChunkPair(
     targetText,
     baseIndex,
     budget = SLICE_CHAR_BUDGET,
+    blockPairing,
   }: {
     readonly pair: ChunkPair;
     readonly sourceText: string;
     readonly targetText: string;
     readonly baseIndex: number;
     readonly budget?: number;
+    readonly blockPairing?: readonly BlockPair[];
   },
 ): readonly ChunkPair[] {
   /**
@@ -217,6 +221,23 @@ export function subdivideChunkPair(
         .nodes,
       sourceBudget,
       targetBudget: budget,
+      // A ROSTER'S PAIRING WHEN THE CALLER HAS ONE, and the scorer otherwise.
+      // Indices are chunk-local, which is what the caller asked about. Spread
+      // rather than passed as undefined, since `exactOptionalPropertyTypes`
+      // separates an absent option from one explicitly unset.
+      ...((blockPairing === undefined)
+        ? {}
+        : {
+          steps: blockPairingToSteps({
+            pairs: blockPairing,
+            sourceCount: pair.source
+              .nodes
+              .length,
+            targetCount: pair.target
+              .nodes
+              .length,
+          },),
+        }),
     },)
       .map(function toSlice(
         run,
