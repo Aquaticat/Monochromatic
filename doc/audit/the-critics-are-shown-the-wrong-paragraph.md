@@ -432,3 +432,48 @@ different sample, which is worth more than any one of them appearing once.
 
 STILL UNCHECKED BY ANY STAGE: the tense is still mixed within the passage,
 "Lin Tong **is** a girl" beside "she **was** clingy" and "**Likes** to trouble".
+
+## The guard immediately found a second way to lose text
+
+Within an hour of being wired in,
+`assertSliceCoverage` caught a defect nobody had looked for.
+
+`mergeOneSidedRuns` folds a run that ended up with nothing on one side into a
+neighbour,
+holding leading one-sided runs until a two-sided run arrives to carry them.
+If none ever arrived it discarded them,
+justified by a comment:
+"anything still held had no two-sided run anywhere:
+one side of the section is empty,
+and the caller's own fallback owns that case."
+
+THAT PREMISE IS FALSE.
+A supplied pairing that pairs NOTHING makes every step one-sided,
+and a budget no single block fits inside then puts each in its own run.
+Both sides carry blocks,
+so the caller's empty-side fallback never fires,
+and the entire section left the document with nothing recording it.
+
+MEASURED by fuzzing the whole slicing path with randomised in-range pairings
+over all 92 corpus pairs:
+10 of 920 lost a section,
+zero after the fix.
+The deterministic path was 92 of 92 before and after,
+which is why nothing had ever seen this:
+it needs a pairing only the roster produces.
+
+THE FIX FLUSHES held blocks into a final run when BOTH sides are held,
+not either.
+With only one side held the section really does have an empty side,
+a one-sided run is a slice nobody can review,
+and the module's stated exception survives untouched.
+Landed in `73e37c83d`.
+
+WHAT THIS SAYS ABOUT THE FIRST FUZZ ROUND.
+An earlier sweep with indices drawn without regard to a section's real block
+counts reported 378 of 920 failing.
+That number is meaningless:
+`readBlockPairing` refuses an out-of-range pair, so production never produces
+one, and the sweep was measuring a shape that cannot occur.
+Bounding the indices by each section's actual counts is what turned a scary
+number into the one real defect.
