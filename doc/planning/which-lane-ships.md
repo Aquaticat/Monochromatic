@@ -166,3 +166,45 @@ lane choice the wrong one.
 That was already the recommendation here;
 it now rests on read passages rather than on telemetry that could not separate
 the lanes.
+
+## Eight entries read complete: the lanes fail in opposite directions
+
+Full reading in `doc/audit/eight-entries-read-against-the-original.md`.
+Thirteen slices where the lanes produced meaningfully different text:
+four to the repair lane, six to the translate lane, three tied.
+
+THE COUNTS ARE NOT THE FINDING.
+They are one reader's judgement and several calls are close.
+The finding is that the two lanes fail in ways that do not trade off against
+each other:
+
+-   THE REPAIR LANE FAILS BY INHERITANCE.
+    It edits the archive, so an invention no critic flagged ships untouched.
+    Two entire fabricated sentences shipped this way in six entries, including
+    an invented characterisation of what a dead person did with her community.
+
+-   THE TRANSLATE LANE FAILS BY DISCARD.
+    It owes the archive nothing, so accurate detail the archive knew and the
+    source does not carry is lost, and on a page whose content lives in
+    pictures it has nothing to translate and cannot improve the English at all.
+
+WHY THIS MATTERS FOR THE DECISION.
+A rule preferring one lane, on any measurable property of a slice, is choosing
+which of the two failures to accept everywhere.
+That explains the record above better than anything already written here:
+every automatic discriminator was indefensible because the discriminating fact
+is not a property of the slice at all.
+It is a question about the archive's text:
+does this passage contain English the source does not support?
+
+Where the answer is yes, the translate lane is right.
+Where the archive carries accurate detail beyond the source, or the source is
+not in the document text at all, the repair lane is.
+Both are per-slice judgements about evidence, which is exactly what the panel
+already does.
+
+THE RECOMMENDATION IN `## The option that fits what already exists` therefore
+stands, and now rests on read passages rather than on telemetry that could not
+separate the lanes.
+It was the recommendation before this reading; the reading is why it is the
+right one rather than merely the available one.
