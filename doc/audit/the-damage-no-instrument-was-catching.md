@@ -138,3 +138,64 @@ and what left was what she wore and what she collected.
 
 So treat a HIGH retention figure as reassuring and a LOW one as a place to look,
 never as a verdict on its own.
+
+## CORRECTION: this measures against the archive, which is not the standard
+
+Written the same day, after the owner rejected a lane question built on the same mistake.
+
+`doc/decision/translation-repair-output-goal.md`, taken 2026-08-12, decides:
+
+> the output is judged against the ORIGINAL, not against how far it improved on the
+> input translation. An input translation is EVIDENCE about what the original says and
+> a starting point worth preserving where it is right, never the standard the result is
+> measured by.
+
+EVERYTHING ABOVE COUNTS ARCHIVE WORDS.
+"Distinctive archive words kept" makes the incumbent English the yardstick,
+which is the framing that record supersedes.
+So the numbers are a PROXY and the language around them was wrong:
+retention is not quality, and a lane retaining more is not thereby better.
+
+### Checking the headline case against the actual standard
+
+`saurikissa` slice 4, where the baseline replaced 136 words with 21.
+The Chinese for that slice is one short line, and the English the baseline shipped
+renders it closely. On the slice alone the deletion looks CORRECT.
+
+Reading the whole Chinese document changes it again:
+
+```text
+磁带  cassette      present in the source
+硬盘  hard drive    present in the source
+贴纸  sticker       present in the source
+手机  phone         present in the source
+水手服 sailor uniform  NOT in the source
+丝带  ribbon          NOT in the source
+```
+
+So the archive's slice-4 text was two things at once:
+content the Chinese carries ELSEWHERE in the document,
+and detail the translator added with no source behind it.
+
+The baseline deleted both, and only one of eight probe terms survives anywhere in its
+finished document. Content the ORIGINAL supports left the page. That is damage on the
+decided standard, not merely on the archive proxy, and it is precisely the relocation
+defect `#107`'s window exists to prevent.
+
+The translator's additions are covered by the second decision of 2026-08-12:
+accurate detail a translator added is KEPT, not stripped to match the original.
+
+### What stands and what does not
+
+STANDS: the baseline repair lane lost source-supported content, the window arm kept it,
+and `#107` is right for that reason.
+
+DOES NOT STAND: "distinctive archive words kept" as a measure of quality, and every
+sentence here that treated a higher figure as a better document. A lane could score
+well by preserving translator additions the source never had, and badly by correctly
+removing them.
+
+WHAT THE INSTRUMENT SHOULD MEASURE is whether content the ORIGINAL carries has some
+English representation in the output. That is a cross-language question, and the
+archive-word check is a cheap proxy for it that will mislead wherever the archive and
+the original disagree, which is the interesting case every time.
