@@ -293,18 +293,4 @@ export {
   tallyVotes,
 } from './tally-votes.ts';
 
-export {
-  type BlockPairingOutcome,
-  pairBlocksWithRoster,
-} from './pair-blocks-stage.ts';
-export {
-  type BlockPair,
-  BlockPairingError,
-  type BlockPairingWire,
-  buildBlockPairingMessages,
-  isBlockPairingWire,
-  type NumberedBlock,
-  readBlockPairing,
-} from './pair-blocks-wire.ts';
-
 //endregion Pipeline barrel

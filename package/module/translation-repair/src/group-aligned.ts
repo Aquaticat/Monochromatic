@@ -1,4 +1,7 @@
-import { alignBlocks, } from './align-blocks-walk.ts';
+import {
+  alignBlocks,
+  type AlignmentStep,
+} from './align-blocks-walk.ts';
 import type { DocumentNode, } from './document-node.ts';
 
 //region Aligned run grouping
@@ -188,11 +191,13 @@ export function groupNodesAligned(
     targetNodes,
     sourceBudget,
     targetBudget,
+    steps,
   }: {
     readonly sourceNodes: readonly DocumentNode[];
     readonly targetNodes: readonly DocumentNode[];
     readonly sourceBudget: number;
     readonly targetBudget: number;
+    readonly steps?: readonly AlignmentStep[];
   },
 ): readonly AlignedRun[] {
   /**
@@ -208,11 +213,18 @@ export function groupNodesAligned(
     sourceChars: 0,
     targetChars: 0,
   };
+  // A SUPPLIED PAIRING WINS, because it came from models that read both texts
+  // while `alignBlocks` scores kind, script-neutral tokens and length. On this
+  // corpus those three are exhausted: kind is constant across paragraphs,
+  // Chinese and English prose share no Latin tokens, and length alone reaches
+  // four correct pairings in eight on `saurikissa` and goes no further.
+  // `doc/decision/llm-assisted-block-pairing.md` decides it; the scorer remains
+  // the fallback when the roster cannot be reached or cannot agree.
   for (
-    const step of alignBlocks({
+    const step of (steps ?? alignBlocks({
       sourceNodes,
       targetNodes,
-    },)
+    },))
   ) {
     /**
      * Original block this step contributes, when it contributes one.
