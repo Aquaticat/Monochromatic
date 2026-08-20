@@ -16,11 +16,17 @@ import {
 // the Chinese original had it. `MD1` says the same thing.
 //
 // THE RULE IS THIS REPOSITORY'S OWN, and it is chosen rather than reimplemented
-// for one property: its fix is ADD-ONLY. It inserts a newline plus the block's
-// continuation prefix after a break-point character that ends a written word,
-// and it never joins, moves or deletes anything. So it cannot destroy a break a
-// model got right, which is what makes running it over every shipped passage
-// safe without inspecting them first.
+// for one property: it only ever ADDS BREAKS. It turns the space after a
+// break-point character that ends a written word into a newline plus the
+// block's continuation prefix, and it never joins, moves or removes a break. So
+// it cannot destroy a break a model got right, which is what makes running it
+// over every shipped passage safe without inspecting them first.
+//
+// THE SPACE WAS ONCE LEFT IN PLACE, which opened every inserted continuation
+// with a stray one: `>  text` inside a blockquote, and a three-space indent
+// under a `- ` marker. Passages settled before 2026-08-20 carry that shape, and
+// the rule leaves it exactly as it is rather than re-wrapping it, which is what
+// keeps a cache replay from returning text no lane produced.
 //
 // MEASURED BEFORE IT WAS WIRED IN, over all 64 shipped passages of that pool:
 // findings go from 326 to 0, no passage loses a non-newline character, the ten

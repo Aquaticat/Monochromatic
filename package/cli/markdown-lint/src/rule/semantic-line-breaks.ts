@@ -224,8 +224,8 @@ function continuationPrefix({
 
 /**
  * Flag prose break-point characters not already followed by a line break, and
- * attach an add-only fix that inserts a newline plus the block's continuation
- * prefix after each. Operates on `text` nodes inside paragraphs (excluding
+ * attach a fix that replaces the separating space with a newline plus the
+ * block's continuation prefix. Operates on `text` nodes inside paragraphs (excluding
  * headings, tables, links, definitions, HTML, footnotes, and MDX), with the
  * structural and abbreviation/decimal guards in {@link breakOffsets}. Add-only
  * insertions at distinct points never overlap, so `--fix` converges in one pass.
@@ -366,6 +366,19 @@ function checkSemanticLineBreaks({
       },)) {
         continue;
       }
+      /**
+       * Whether a space separates the two sentences here, which the break now
+       * separates instead.
+       *
+       * CONSUMED RATHER THAN STEPPED OVER. Leaving it opened every inserted
+       * continuation with a stray space: `>  text` inside a blockquote, and a
+       * three-space indent under a `- ` marker where the content column is two.
+       * A break at the very end of a slice has no space after it, which is why
+       * this is a test rather than an assumption.
+       */
+      const separator = (source[at] === ' ')
+        ? 1
+        : 0;
       diagnostics.push(diagnose({
         ruleId: ID,
         message: 'A line break belongs here, after a prose break-point character.',
@@ -376,7 +389,7 @@ function checkSemanticLineBreaks({
         },),
         fix: {
           start: at,
-          end: at,
+          end: at + separator,
           insertText: `${lineEnding}${prefix}`,
         },
       },),);
@@ -387,8 +400,9 @@ function checkSemanticLineBreaks({
 
 /**
  * semantic-line-breaks: enforce a line break after each prose break-point
- * character. Fixable, add-only: inserts a newline plus the block's continuation
- * prefix, converging in a single pass.
+ * character. Fixable: turns the separating space into a newline plus the
+ * block's continuation prefix, converging in a single pass. It adds breaks and
+ * never removes one, so a break the author already made survives untouched.
  */
 export const semanticLineBreaks: Rule = {
   id: ID,

@@ -147,16 +147,16 @@ await describe({
         // The sentence has not ended at the period, so a break there strands the
         // delimiter at the head of the next line with nothing to close.
         expect(fix('called "same concept." Two hosts differ here.\n',).source,)
-          .toBe('called "same concept."\n Two hosts differ here.\n',);
-        expect(fix('- (the user chose rules only.) Execution follows here.\n',).source
-          .includes('only.)\n',),).toBe(true,);
+          .toBe('called "same concept."\nTwo hosts differ here.\n',);
+        expect(fix('- (the user chose rules only.) Execution follows here.\n',).source,)
+          .toBe('- (the user chose rules only.)\n  Execution follows here.\n',);
         // Already written that way is correct, so reporting it would be a false
         // positive: the status is read from past the delimiter too.
         expect(count('called "same concept."\nTwo hosts differ here.\n',),).toBe(0,);
         // The run ends where the sentence does, so a comma outside the quote is
         // its own break point and gets its own break.
-        expect(fix('asked "which rule?", and then moved on here.\n',).source
-          .includes('rule?",\n and then',),).toBe(true,);
+        expect(fix('asked "which rule?", and then moved on here.\n',).source,)
+          .toBe('asked "which rule?",\nand then moved on here.\n',);
         // Nothing ends a word past the run, so nothing breaks.
         expect(count('a call to fn(arg.value) reads it here.\n',),).toBe(0,);
       },
@@ -183,8 +183,10 @@ await describe({
          * Fixed list item.
          */
         const fixed = fix('- first, second word.\n',);
-        expect(fixed.source.includes('- first,\n',),).toBe(true,);
-        expect(fixed.source.includes('  second',),).toBe(true,);
+        // THE WHOLE STRING, not a substring: `includes('  second',)` passed
+        // just as happily on the three-space indent this used to emit, which
+        // is how a stray space rode along in every wrapped list for months.
+        expect(fixed.source,).toBe('- first,\n  second word.\n',);
         expect(fixed.diagnostics.length,).toBe(0,);
       },
     },),
@@ -195,7 +197,10 @@ await describe({
          * Fixed blockquote.
          */
         const fixed = fix('> first, second word.\n',);
-        expect(fixed.source.includes('> first,\n>',),).toBe(true,);
+        // ONE SPACE AFTER THE MARKER. `includes('> first,\n>',)` admitted the
+        // `>  second` this used to emit, so the assertion could not see the
+        // defect it was closest to.
+        expect(fixed.source,).toBe('> first,\n> second word.\n',);
         expect(fixed.diagnostics.length,).toBe(0,);
       },
     },),
@@ -273,7 +278,7 @@ await describe({
         // one, which is a blank line and splits the paragraph in two.
         expect(count('First sentence.\r\nSecond sentence here.\r\n',),).toBe(0,);
         expect(fix('First. Second sentence here.\r\n',).source,)
-          .toBe('First.\r\n Second sentence here.\r\n',);
+          .toBe('First.\r\nSecond sentence here.\r\n',);
       },
     },),
     it({
@@ -288,14 +293,17 @@ await describe({
     it({
       name: 'never steps over a space the author wrote',
       fn: async function noTrailingSpace() {
-        // The break goes in front of the space, so the space opens the
-        // continuation line the way it does for every mid-line break. Stepping
-        // over it left it at the line's end, where one reads as trailing
-        // rubbish and two are a CommonMark hard break.
+        // The break CONSUMES the one space that separated the sentences, so
+        // the character before the newline is always the break-point character
+        // itself. Leaving it at the line's end is what this forbids: one there
+        // reads as trailing rubbish and two are a CommonMark hard break.
+        //
+        // A SECOND space is the author's, not a separator, so it survives and
+        // opens the continuation line.
         expect(fix('Sentence. `code` follows here.\n',).source,)
-          .toBe('Sentence.\n `code` follows here.\n',);
+          .toBe('Sentence.\n`code` follows here.\n',);
         expect(fix('Sentence.  `code` follows here.\n',).source,)
-          .toBe('Sentence.\n  `code` follows here.\n',);
+          .toBe('Sentence.\n `code` follows here.\n',);
         expect(fix('Sentence.  `code` follows here.\n',).source
           .includes('  \n',),).toBe(false,);
       },
@@ -349,11 +357,11 @@ await describe({
         // hash with no space after it is a word, and prose is prose.
         expect(count('Intro sentence. #nothashheading here.\n',),).toBe(1,);
         expect(fix('Intro sentence. ordinary prose, here.\n',).source,)
-          .toBe('Intro sentence.\n ordinary prose,\n here.\n',);
+          .toBe('Intro sentence.\nordinary prose,\nhere.\n',);
       },
     },),
     it({
-      name: 'the add-only fix is clean and idempotent in one pass',
+      name: 'the fix is clean and idempotent in one pass',
       fn: async function idempotent() {
         /**
          * First fixpoint result.
@@ -365,6 +373,30 @@ await describe({
          */
         const twice = fix(once.source,);
         expect(twice.source,).toBe(once.source,);
+      },
+    },),
+    it({
+      name: 'LEAVES a continuation that already carries the older stray space',
+      fn: async function olderShape() {
+        // WHAT THIS PROTECTS: passages settled before the space was consumed
+        // carry `>  text` and a three-space list indent, and the translation
+        // pipeline re-wraps a cached passage on the way OUT of the cache. If
+        // this rule touched the older shape, a resumed slice would come back
+        // carrying text no lane produced, which the delivery coherence check
+        // refuses outright. Both shapes are already broken, so neither has a
+        // break left to insert, and the older one must stay exactly as it is.
+        for (const settled of [
+          '> Personalitywise,\n>  she was clingy.\n',
+          '- A list item,\n   with a comma.\n',
+          'Plain prose,\n with a comma.\n',
+        ]) {
+          /**
+           * That already-settled passage, offered to the fixer again.
+           */
+          const again = fix(settled,);
+          expect(again.source,).toBe(settled,);
+          expect(again.diagnostics.length,).toBe(0,);
+        }
       },
     },),
   ],
