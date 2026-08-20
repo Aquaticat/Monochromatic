@@ -236,5 +236,79 @@ await describe({
         expect(steps.length,).toBe(4,);
       },
     },),
+    it({
+      name: 'KEEPS an original that merges into a claimed block and then splits',
+      fn: async () => {
+        // THE SHAPE THAT DELETED A CLOSING MESSAGE IN PRODUCTION: the second
+        // original shares the first block with the original before it, AND
+        // renders further blocks of its own. Placing an original only at its
+        // first rendering never placed this one, so its text left the document.
+        const steps = blockPairingToSteps({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 1,
+            },
+            {
+              source: 1,
+              target: 2,
+            },
+          ],
+          sourceCount: 2,
+          targetCount: 3,
+        },);
+
+        /**
+         * Appearances of each original among the steps.
+         */
+        const sources = appearances({
+          steps,
+          side: 'source',
+        },);
+        expect(sources.get(0,),).toBe(1,);
+        expect(sources.get(1,),).toBe(1,);
+
+        /**
+         * Appearances of each translation block among the steps.
+         */
+        const targets = appearances({
+          steps,
+          side: 'target',
+        },);
+        expect(targets.get(0,),).toBe(1,);
+        expect(targets.get(1,),).toBe(1,);
+        expect(targets.get(2,),).toBe(1,);
+      },
+    },),
+    it({
+      name: 'KEEPS a trailing original the roster left unpaired',
+      fn: async () => {
+        // AN ORIGINAL NOBODY RENDERED is evidence of untranslated text, so it
+        // has to reach a slice rather than vanish between alignment and the
+        // lanes.
+        const steps = blockPairingToSteps({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+          ],
+          sourceCount: 2,
+          targetCount: 1,
+        },);
+        expect(appearances({
+          steps,
+          side: 'source',
+        },).get(1,),).toBe(1,);
+      },
+    },),
   ],
 },);

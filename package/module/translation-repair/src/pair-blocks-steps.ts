@@ -126,18 +126,38 @@ export function blockPairingToSteps(
     }
 
     /**
-     * Whether every block this original renders as is already carried, which is
-     * the merge case: this original rides along with the rendering.
+     * Whether an earlier original already claimed one of this original's
+     * renderings, which makes this original part of a merge however many
+     * further renderings it also has.
+     *
+     * Testing ANY rather than EVERY is what keeps a merge that then splits from
+     * losing its original: such an original's first rendering is carried, so a
+     * first-rendering-wins test never places it and the block leaves the
+     * document. That reached production once, deleting a closing message.
      */
-    const allCarried = targets.every(function isCarried(target,): boolean {
+    const anyCarried = targets.some(function isCarried(target,): boolean {
       return carriedTargets.has(target,);
     },);
-    if (allCarried) {
+    if (anyCarried) {
       steps.push({
         kind: 'source-only',
         sourceIndex: source,
         continuesPairing: true,
       },);
+      for (const target of targets) {
+        if (carriedTargets.has(target,))
+          continue;
+        emitUnclaimedTargetsBefore(target,);
+        steps.push({
+          // A FURTHER RENDERING of an original that already rides along. It
+          // carries its own text and belongs in the same run as the merge.
+          kind: 'target-only',
+          targetIndex: target,
+          continuesPairing: true,
+        },);
+        carriedTargets.add(target,);
+        emittedTargets = target + 1;
+      }
       continue;
     }
     for (const [at, target,] of targets.entries()) {
