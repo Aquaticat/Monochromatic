@@ -325,3 +325,41 @@ IF IT EVER FIRES, the fix is known.
 Pass the two slices' source text alongside their shipped text
 and drop any repeat whose source sides overlap,
 which is exactly the measurement above.
+
+## Why the repetition checks REPORT and do not withdraw
+
+`guardFootnoteAssembly` withdraws a replacement that would damage the footnote graph,
+so the obvious next step is a guard that withdraws a slice introducing a repetition.
+Measured on every finding available, before building it, that guard is the wrong shape.
+
+WHICH SIDE TO WITHDRAW IS NOT FIXED:
+
+```text
+lintong     repair     slices 2+3   withdraw earlier   1 -> 0 repetitions
+                                    withdraw later     1 -> 1
+saurikissa  translate  slices 7+8   withdraw earlier   1 -> 1
+                                    withdraw later     1 -> 0
+```
+
+A rule that always withdrew the later slice would fail on `lintong`,
+and one that always withdrew the earlier would fail on `saurikissa`.
+That much is solvable: try each side and keep whichever removes the repeat.
+
+THE COST IS NOT SOLVABLE:
+
+```text
+lintong     removing a 23-character repetition costs a 118-character translation
+saurikissa  removing a 22-character repetition costs a 638-character translation
+```
+
+Withdrawing means shipping the incumbent instead,
+and at `saurikissa` slice 8 the incumbent is 638 characters shorter than what the lane wrote.
+Discarding a whole slice's translation to delete a five-word duplication
+produces a worse document, not a better one.
+
+SO THE CHECKS STAY TELEMETRY.
+The right place to remove an introduced repetition is the editor, in place,
+not the assembler by reverting a slice wholesale.
+Recorded here so the guard is not proposed again without new evidence:
+what would change the answer is a finding whose repetition is a large fraction
+of the slice that introduced it, which none of the three are.
