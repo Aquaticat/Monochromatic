@@ -163,6 +163,54 @@ reader and every one of them is sent to two models.
 Decoding needs `dwebp` for webp assets;
 ImageMagick is tried as a fallback and cannot be relied on for that format.
 
+## What a slice is judged beside
+
+The repair lane works one slice at a time,
+and a slice alone is not always enough to judge itself.
+
+Where the archive carried a passage across a section boundary,
+the translation at one slice holds English no original there accounts for,
+while the original next door holds Chinese with no English.
+A critic shown that slice on its own has only two readings available,
+invention and omission,
+and both are wrong.
+Acting on either damages text that is correct where it actually sits.
+
+So the critic, the adjudication panel and the editor are each shown
+the passages on either side of the slice under review,
+in their original and in the translation as it stands,
+fenced and labelled as context they may not raise claims about or edit.
+
+### One section each way, and no more
+
+The width is measured rather than chosen.
+Over the reference corpus, 80 of 1260 slices carry a displacement flag,
+those flags form 51 contiguous runs,
+the longest run anywhere is three,
+and every relocation pair is adjacent.
+One section each way therefore covers every case the corpus contains,
+and a wider window would cost context on every call to reach material that is not there.
+
+A slice with no neighbour, meaning a document of one slice, is shown nothing extra
+and is asked exactly what it was asked before this existed.
+
+### Removal is allowed only against what the neighbour already carries
+
+The window creates a second way to do harm, and the editor sheet names it.
+Removing a repetition that the neighbouring translation already holds is correct.
+Removing anything on the grounds that a neighbour OUGHT to hold it is not,
+because the neighbour may never produce it and the document then loses the passage entirely.
+Zero occurrences is a worse outcome than two.
+
+### What this changes about caching
+
+The window is part of the question a slice is asked,
+so it is folded into the slice cache key,
+with each side labelled so that a source-only window
+and a translation-only window carrying the same text cannot collide.
+A slice whose neighbours change is asked a new question and is recomputed;
+a slice with no neighbours keys exactly as before and resumes.
+
 ## Design commitments
 
 - **No single model output is a decision point.**
