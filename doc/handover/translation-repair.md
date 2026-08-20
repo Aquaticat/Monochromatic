@@ -13317,10 +13317,14 @@ does not stop a lane repeating itself.
 
 ### What is verified, and what is only predicted
 
-VERIFIED: the function, by six cases including the three it must NOT fire on. Its behaviour on
-real data, by running it over the five settled artifacts, where it reproduces both the known
-`lintong` duplication and the known lane split without being told what to look for. That the
-call ships in the same built chunk as the assembler.
+VERIFIED: the function, by six cases including the three it must NOT fire on. That the call
+ships in the same built chunk as the assembler.
+
+CORRECTED 2026-08-19, and the correction is the important part: the sentence that used to
+stand here claimed the check "reproduces both the known `lintong` duplication and the known
+lane split" on real data. It does not, and the reading that produced that claim was made
+against a RECONSTRUCTED archive rather than the real one. See
+`doc/audit/an-archive-rebuilt-from-the-ledger-is-not-the-archive.md`.
 
 NOT VERIFIED: that a finding actually lands in an artifact written by a live run. The unit
 tests cover the function and the dist check covers the call's presence, but neither is an
