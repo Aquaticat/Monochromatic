@@ -195,3 +195,34 @@ with no content gate,
 beside the document-scale one that keeps its gate unchanged.
 That leaves the measured noise trade alone
 rather than reopening a threshold that is doing its job.
+
+## Gate A, rewritten
+
+The signature derivation is gone.
+Gate A now runs the two PRODUCTION checks against the archive read from the pinned corpus,
+and reports both scales per lane.
+
+It also asserts the equality that would have caught the original mistake at once:
+the archive length against `preparation.targetChars`.
+A mismatch is an INSTRUMENT FAULT rather than a finding,
+because the corpus moved under the artifact and every count below it is then suspect.
+
+On the two entries settled under the window, before the quote fix:
+
+```text
+lintong     repair     adjacent 1 -> 1    document 0 -> 1    WORSE
+lintong     translate  adjacent 0 -> 0    document 0 -> 0    ok
+saurikissa  repair     adjacent 0 -> 0    document 0 -> 0    ok
+saurikissa  translate  adjacent 0 -> 1    document 1 -> 0    WORSE
+```
+
+So the window did NOT fix the duplication it was built for.
+`lintong`'s slices 2 and 3 still repeat, with the archive stating the wording once,
+and `saurikissa`'s translate lane gained a repeat across slices 7 and 8
+that the archive never carried at all.
+
+THE ATTRIBUTION CAVEAT STILL APPLIES.
+That run also carried the `NEARBY_RULE` hole,
+which changed which slices were edited at all,
+so this measures the window plus the hole rather than the window.
+The re-run on the fixed build is what separates them.
