@@ -117,9 +117,27 @@ export function wrapConsolidation(
   const rewrapped = wrapped !== consolidatedText;
 
   /**
-   * Whether anything but the wrapping still separates it from what stands.
+   * Standing text as the rule would have written it, COMPARED AND NEVER
+   * SHIPPED.
+   *
+   * The standing text is not always lane output. Where a lane contest settled
+   * on the incumbent, what stands is the archive's own wording, which nothing
+   * has ever wrapped, because wrapping a retained passage would report a
+   * change nobody decided on. A consolidation that is a pure re-wrapping of
+   * THAT text matches neither `standingText` nor anything else this function
+   * holds, so without this key it escapes demotion and ships as a change.
+   *
+   * Only the comparison uses it. The demoted branch below returns
+   * `standingText` itself, so the retained wording still leaves here byte for
+   * byte and `wrapReplacementText`'s contract holds.
    */
-  const demoted = wrapped === standingText;
+  const standingAsWritten = wrapReplacementText({ text: standingText, },);
+
+  /**
+   * Whether anything but the wrapping still separates it from what stands,
+   * against a standing text that may itself be wrapped or unwrapped.
+   */
+  const demoted = (wrapped === standingText) || (wrapped === standingAsWritten);
 
   if (demoted) {
     l.info(

@@ -159,6 +159,36 @@ await describe({
     },),
 
     it({
+      name: 'DEMOTES AGAINST AN UNWRAPPED STANDING TEXT TOO, which is the case the standing text '
+        + 'itself creates: where a lane contest settled on the incumbent, what stands is the archive '
+        + 'wording, and nothing has ever wrapped that. A consolidation that is a pure re-wrapping of '
+        + 'the archive matches no key this stage holds unless the standing text is wrapped to compare',
+      fn: async () => {
+        /**
+         * What stands, as the archive carries it: one line, never wrapped.
+         */
+        const standingText = ONE_LONG_LINE;
+
+        /**
+         * The same wording, wrapped, which is what a producer handed back.
+         */
+        const consolidatedText = 'The cat naps in the window.\nShe wakes at four.\nShe asks for nothing at all.';
+
+        const shipped = wrapConsolidation({
+          outcome: gateSettling({ ships: 'consolidated', },),
+          consolidatedText,
+          standingText,
+          l,
+        },);
+
+        expect(shipped.ships,).toBe('standing',);
+        expect(shipped.text,).toBe(standingText,);
+        expect(shipped.demoted,).toBe(true,);
+        expect(shipped.rewrapped,).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'STILL REPORTS THE REWRAP ON A DEMOTED SLICE, since the two facts answer different '
         + 'questions: whether the rule had to correct the producer, and whether anything survived it',
       fn: async () => {
