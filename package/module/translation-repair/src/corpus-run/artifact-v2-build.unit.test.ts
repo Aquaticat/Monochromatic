@@ -637,5 +637,66 @@ await describe({
         expect(written.includes('replacement-shipped',),).toBe(true,);
       },
     },),
+    it({
+      name:
+        'OMITS the pairing where the preparation carries none, rather than writing an empty list: no '
+        + 'roster asked and a roster that agreed nothing are different facts, and an empty list is the second',
+      fn: async () => {
+        expect(Object.hasOwn(
+          catArtifact().preparation,
+          'blockPairing',
+        ),).toBe(false,);
+      },
+    },),
+    it({
+      name:
+        'WRITES the pairing the preparation was built on, section indices and all, so the decision no '
+        + 'later stage can repair survives the slice cache being discarded at settlement',
+      fn: async () => {
+        /**
+         * Preparation carrying a pairing, as the roster shell returns one.
+         */
+        const paired = {
+          ...catPreparation(),
+          blockPairing: [{
+            sectionIndex: 1,
+            pairs: [
+              {
+                source: 0,
+                target: 0,
+              },
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+          },],
+        } as unknown as PreparedDocumentPair;
+        expect(buildSettledArtifactV2({
+          entryId: 'CatEntry1',
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          corpusSha: 'b'.repeat(40,),
+          callConfig: {},
+          durationMs: 1,
+          prepared: paired,
+          lanes: catLanes(),
+          laneSelection: { kind: 'pending-human-decision', },
+        },).preparation
+          .blockPairing,).toEqual([{
+          sectionIndex: 1,
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 0,
+            },
+          ],
+        },],);
+      },
+    },),
   ],
 },);

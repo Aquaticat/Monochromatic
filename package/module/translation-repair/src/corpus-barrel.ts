@@ -83,6 +83,10 @@ export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
 export { verifyArtifactV2AgainstPreparation, } from './corpus-run/artifact-v2-corpus-verify.ts';
 export { parseLanesV2, } from './corpus-run/artifact-v2-read-lanes.ts';
 export {
+  parseBlockPairingV2,
+  type ParsedBlockPairingV2,
+} from './corpus-run/artifact-v2-read-pairing.ts';
+export {
   parseRepairEvidenceV2,
   parseTranslateEvidenceV2,
 } from './corpus-run/artifact-v2-read-evidence.ts';

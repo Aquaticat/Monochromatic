@@ -15,9 +15,17 @@ export {
 } from './declined-target-runs.ts';
 export { blockPairingToSteps, } from './pair-blocks-steps.ts';
 export {
+  type PairedPreparation,
+  prepareDocumentPairWithRoster,
+} from './prepare-with-pairing.ts';
+export {
   type BlockPairingOutcome,
   pairBlocksWithRoster,
 } from './pair-blocks-stage.ts';
+export {
+  type SectionBlockPairing,
+  sectionPairingsOf,
+} from './section-pairing.ts';
 export {
   type BlockPair,
   BlockPairingError,
