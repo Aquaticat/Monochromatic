@@ -217,37 +217,63 @@ The cat comes home
     it({
       name: 'KEEPS THE SCORER for a section the roster agreed nothing for',
       fn: async () => {
-        // What `prepare-with-pairing` produces for a document whose every
-        // section came back unpaired: a map that is present and holds nothing.
-        // It records that as "fell back to scoring", so this must slice exactly
-        // as the scorer does rather than reading the miss as an empty pairing.
-        const scorer = prepareDocumentPair({
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TEXT,
-        },);
-        const unpaired = prepareDocumentPair({
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TEXT,
-          blockPairings: new Map(),
-        },);
+        // ONE section, long enough that the 400-character budget subdivides it.
+        // The shared fixture cannot show this: its sections each fit in a
+        // single slice, so a collapsed section and a properly sliced one look
+        // identical and the case would pass however the code read an empty map.
+        const source = '## 一节\n\n'
+          + `${'猫猫在窗台上看鸟，看了整整一个下午，尾巴一直轻轻摆动。'.repeat(3,)}\n\n`
+          + `${'傍晚的时候，猫猫跳下窗台，走到门口等着有人回家。'.repeat(3,)}\n\n`
+          + `${'第二天早上，猫猫又回到窗台，那只鸟已经不在那里了。'.repeat(3,)}\n`;
+        const target = '## One\n\n'
+          + `${'The cat watched the birds from the sill all afternoon, her tail moving. '.repeat(3,)}\n\n`
+          + `${'Towards evening she jumped down and waited by the door for someone. '.repeat(3,)}\n\n`
+          + `${'Next morning she returned to the sill, and the bird had gone. '.repeat(3,)}\n`;
 
         /**
          * Reads a slicing as the spans it carries, which is what a later stage
          * sees; counts alone would pass a slicing that moved every boundary.
+         *
+         * @param prepared - preparation to read
+         *
+         * @returns One span per slice, in slice order
+         *
+         * @example
+         * ```ts
+         * const spans = spansOf(prepared,);
+         * ```
          */
-        const spansOf = function spansOf(prepared,): readonly string[] {
+        function spansOf(prepared: ReturnType<typeof prepareDocumentPair>,): readonly string[] {
           return prepared.slices
             .map(function toSpan(slice,): string {
               return `${String(slice.target.startOffset,)}..${String(slice.target.endOffset,)}`;
             },);
-        };
+        }
+
+        /**
+         * How the deterministic aligner slices this pair.
+         */
+        const scorer = prepareDocumentPair({
+          sourceText: source,
+          targetText: target,
+        },);
+
+        // POSITIVE CONTROL, and the reason the fixture is this long: the ONE
+        // section has to subdivide, or a collapse into a single slice is
+        // indistinguishable from correct slicing.
+        expect(scorer.slices.length,).toBeGreaterThan(1,);
+
+        // What the roster agreeing nothing for a section produces: a map that
+        // is present and holds no entry for it. The pairing stage records that
+        // as falling back to scoring, so it has to slice exactly as the scorer
+        // does rather than reading the miss as an empty pairing.
+        const unpaired = prepareDocumentPair({
+          sourceText: source,
+          targetText: target,
+          blockPairings: new Map(),
+        },);
 
         expect(spansOf(unpaired,),).toStrictEqual(spansOf(scorer,),);
-
-        // POSITIVE CONTROL. An empty pairing read as a pairing collapses the
-        // section into one slice, so a document that slices into several is
-        // what makes the comparison capable of failing at all.
-        expect(scorer.slices.length,).toBeGreaterThan(1,);
       },
     },),
   ],
