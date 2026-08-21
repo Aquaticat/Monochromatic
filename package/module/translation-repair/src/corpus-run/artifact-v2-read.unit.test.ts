@@ -1197,6 +1197,7 @@ await describe({
               best: 2,
               reason: 'the alias has no basis in the original',
               weight: 1,
+              selfVote: false,
             },
           ],
           tally: {
