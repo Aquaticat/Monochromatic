@@ -682,3 +682,58 @@ Finding `#144` and `#145` by reading ballots cost two bed restarts.
 A sweep of the same kind belongs at the front of any measurement that depends on
 what models were told, and this one is now recorded so the next measurement can
 start with it.
+
+## Two checks run before run 6 could pay for them
+
+Both were run while the bed was in flight, so a hit would have cost one slice rather than ten.
+
+### The overturned wording exists nowhere but the tests that pin it
+
+The sweep that found #146 to #148 checked whether each sheet carried the policy block.
+It could not have found #147, which was a stale copy of wording #143 had already overturned,
+sitting in a sheet that did carry its policy.
+So the second sweep looked for the overturned phrasings themselves across every file under `src/`:
+`HAS dropped`, `has left something out`, `of the ORIGINAL preserved`, `are authoritative`,
+`compared against the ORIGINAL by a mechanical`, `omitting one`.
+
+Every hit is either a test asserting the phrase is absent, a comment recording why it was removed,
+or the one live site that now carries the precedence clause after it
+(`src/translate-wire.ts`, where `are authoritative` is immediately followed by
+`WHERE DECLARED NAMES IS SHOWN AND SPELLS THE SAME PERSON OR PLACE DIFFERENTLY, THE DECLARED SPELLING WINS`).
+No sheet the bed exercises carries an overturned claim.
+
+The sweep was widened past `role: 'system'` to the two files that build model-facing text without one.
+`src/consolidate-brief.ts` renders judge findings under `Says what the original does not`
+and `Omits what the original says`; those are labels on ballot output,
+and the ballots are now produced under the corrected policy,
+so the labels describe what the judges were asked for.
+`src/line-structure-addendum.ts` is the one open question and is recorded under its own heading.
+
+### The findings recording is proven at runtime, not by reading the edit
+
+`validityBefore` and `validityAfter` were widened from a bare validation kind to
+`{validation, findings, unknownDetail}` several runs ago, and nothing had ever shown the wider shape populated.
+Run 3's archive (`consolidate-calibrate.jsonl.before-spelling-precedence-fix`) was written under the widened harness
+and carries an invalid row, so it is a positive control that costs nothing to read.
+
+Its `lintong` slice 1 row records four models' verdicts, and the invalid ones carry the check's own words:
+
+- `The PAGE AS IT STANDS is 2 blocks (blockquote, paragraph) and your translation is 1 (blockquote).`
+
+The harness records findings. A `kind: 'invalid'` in run 6 will say what failed, not merely that something did.
+
+## The verse addendum still speaks for the original, and no bed slice can show it
+
+`LINE_STRUCTURE_RULE` in `src/line-structure-addendum.ts` opens
+`This region's ORIGINAL IS line-structured: each original line is a unit`,
+then asks the editor to keep every existing line in place.
+The second clause is the floor rule; the first names the ORIGINAL as the authority on how many lines there are.
+On the case the rule exists for, `Toka_ls`, the two disagree:
+the Chinese chunk is 21 blocks at median 22 and the English rendering is 18 blocks at median 101.
+An editor reading the first clause as licence may re-split the merged rendering,
+which is the shape claim #144 removed from three other sheets.
+
+It cannot affect run 6.
+`isLineStructured` was run over all thirteen bed slices and returned false for every one,
+so the addendum is empty on every call the bed makes.
+It is a production follow-up, filed with the other unswept sheets rather than restarting the bed.
