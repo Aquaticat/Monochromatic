@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { RootContent, } from 'mdast';
 
@@ -12,9 +13,17 @@ import type { RootContent, } from 'mdast';
 //
 // Flattening promotes a container's block children to peers so both sides
 // expose comparable structure. Offsets are untouched: a promoted child keeps
-// its own absolute span, and the container's opening and closing tags simply
-// fall outside every promoted span, so they survive as inter-block text and
-// offset-based splicing keeps working.
+// its own absolute span, and the container's opening and closing tags fall
+// outside every promoted span.
+//
+// THOSE TAGS THEN BELONG TO NO BLOCK, which is why this walk also reports them.
+// Surviving as inter-block text is safe only while both tags sit on the same
+// side of every slice boundary. `Zha_Ke` showed what happens otherwise: a slice
+// range held the `<details>` opener and stopped eleven characters before its
+// closer, so assembly replaced the opener away and copied the closer through,
+// losing 3708 characters of will and leaving markup that closes nothing. No
+// invariant could see it, because all of them reason over blocks and a tag in
+// no block is not one. `#154` has the measurements.
 //
 // Thirty of the pinned corpus's pages carry a disclosure element, so this is
 // ordinary structure rather than one document's quirk.
@@ -46,21 +55,108 @@ const BLOCK_TYPES: ReadonlySet<string> = new Set([
 const CONTAINER_TYPE = 'mdxJsxFlowElement';
 
 /**
- * A JSX flow element carrying block children. mdast's own `RootContent` union
- * has no member for JSX elements (they arrive from the MDX extension), so the
- * shape is named structurally, which is also all the walk needs.
+ * Where a dissolved container's two tags sit, in body-relative offsets.
+ *
+ * BOTH HALVES ARE REPORTED SEPARATELY rather than as one whole-element span,
+ * because the damage they permit is asymmetric: a range covering one tag and
+ * not the other destroys the element, while a range covering both or neither
+ * leaves it intact. Only the halves can express that.
  *
  * @example
  * ```ts
- * const container = node as BlockContainer;
+ * const span: ContainerSpan = {
+ *   name: 'details',
+ *   openerStartOffset: 325,
+ *   openerEndOffset: 335,
+ *   closerStartOffset: 3987,
+ *   closerEndOffset: 3998,
+ * };
  * ```
  */
-type BlockContainer = {
+export type ContainerSpan = {
   /**
-   * Blocks the container packages, in source order.
+   * Element name as written, empty for a fragment, so a diagnostic can say
+   * which element would break.
    */
-  readonly children: readonly ForeignBorrowed<RootContent>[];
+  readonly name: string;
+
+  /**
+   * Body-relative start of opening tag, which is where the element starts.
+   */
+  readonly openerStartOffset: number;
+
+  /**
+   * Body-relative exclusive end of opening tag, which is where its first
+   * promoted child starts.
+   */
+  readonly openerEndOffset: number;
+
+  /**
+   * Body-relative start of closing tag, which is where its last promoted child
+   * ends.
+   */
+  readonly closerStartOffset: number;
+
+  /**
+   * Body-relative exclusive end of closing tag, which is where the element
+   * ends.
+   */
+  readonly closerEndOffset: number;
 };
+
+/**
+ * Blocks a walk produced, beside the containers it dissolved to get them.
+ *
+ * @example
+ * ```ts
+ * const { blocks, containers, } = flattenContainers({ children: root.children, },);
+ * ```
+ */
+export type FlattenedBlocks = {
+  /**
+   * Blocks in source order with containers replaced by their children.
+   */
+  readonly blocks: readonly ForeignBorrowed<RootContent>[];
+
+  /**
+   * Every container dissolved along the way, in source order.
+   */
+  readonly containers: readonly ContainerSpan[];
+};
+
+/**
+ * Raised when a container due to be dissolved carries no offsets.
+ *
+ * Parsed trees always carry positions, so this means a constructed tree reached
+ * a walk that reports spans. Reporting nothing for it would be worse than
+ * refusing: the tags would go back to belonging to no block and being guarded
+ * by nothing, which is the defect this walk exists to close.
+ *
+ * @example
+ * ```ts
+ * throw new UnpositionedContainerError({ name: 'details', },);
+ * ```
+ */
+export class UnpositionedContainerError extends Error {
+  /**
+   * Builds the failure naming which element could not be located.
+   *
+   * @param name - element name as written, empty for a fragment
+   *
+   * @example
+   * ```ts
+   * throw new UnpositionedContainerError({ name: 'BlurBlock', },);
+   * ```
+   */
+  public constructor({ name, }: { readonly name: string; },) {
+    super(
+      `container ${name === '' ? '<>' : name} carries block children and no position offsets, `
+        + 'so its opening and closing tags cannot be located and nothing downstream could keep '
+        + 'a slice boundary from falling between them',
+    );
+    this.name = 'UnpositionedContainerError';
+  }
+}
 
 /**
  * Whether a node carries the position offsets every later stage anchors
@@ -86,6 +182,27 @@ function isPositioned(node: ForeignBorrowed<RootContent>,): boolean {
       .offset)
       !== undefined);
 }
+/**
+ * A JSX flow element carrying block children. mdast's own `RootContent` union
+ * has no member for JSX elements (they arrive from the MDX extension), so the
+ * shape is named structurally, which is also all the walk needs.
+ *
+ * @example
+ * ```ts
+ * const container = node as BlockContainer;
+ * ```
+ */
+type BlockContainer = {
+  /**
+   * Element name as written, absent on a fragment.
+   */
+  readonly name?: string | null;
+
+  /**
+   * Blocks the container packages, in source order.
+   */
+  readonly children: readonly ForeignBorrowed<RootContent>[];
+};
 
 /**
  * Whether a node is a container whose children should be promoted: a JSX flow
@@ -122,23 +239,93 @@ function isUnwrappableContainer(
 }
 
 /**
+ * Reads where a container's two tags sit, from its own span and its children's.
+ *
+ * The tags are never nodes of their own, so they can only be named as what is
+ * left of the element once its promoted children are taken out of it: the head
+ * before the first child, and the tail after the last.
+ *
+ * @param container - container about to be dissolved, children positioned
+ *
+ * @returns Both tag spans, body-relative
+ *
+ * @throws {@link UnpositionedContainerError} when the element carries no
+ * offsets of its own
+ *
+ * @example
+ * ```ts
+ * const span = containerSpanOf({ container, },);
+ * ```
+ */
+function containerSpanOf(
+  {
+    container,
+  }: {
+    readonly container: ForeignBorrowed<RootContent> & BlockContainer;
+  },
+): ContainerSpan {
+  /**
+   * Element name as written, normalised so a fragment reads as empty rather
+   * than as an absent property.
+   */
+  const name = container.name ?? '';
+  if (!isPositioned(container,))
+    throw new UnpositionedContainerError({ name, },);
+
+  /**
+   * First promoted child, present because an unwrappable container has one.
+   */
+  const first = nonNullishOrThrow(container.children
+    .at(0,),);
+
+  /**
+   * Last promoted child, which is the first one again on a single-child
+   * container.
+   */
+  const last = nonNullishOrThrow(container.children
+    .at(-1,),);
+  return {
+    name,
+    openerStartOffset: nonNullishOrThrow(container.position
+      ?.start
+      .offset,),
+    openerEndOffset: nonNullishOrThrow(first.position
+      ?.start
+      .offset,),
+    closerStartOffset: nonNullishOrThrow(last.position
+      ?.end
+      .offset,),
+    closerEndOffset: nonNullishOrThrow(container.position
+      ?.end
+      .offset,),
+  };
+}
+
+/**
  * Promotes container children to top-level blocks, repeatedly, so a
  * disclosure nested inside a disclosure also flattens. Walks with an explicit
  * work stack rather than recursion, and preserves document order: a
  * container's children take its place exactly where it stood.
  *
+ * REPORTS WHAT IT DISSOLVED, because after this walk nothing else can. The tags
+ * belong to no promoted block, so a later reader handed only the blocks cannot
+ * tell a page carrying containers from one that never had any.
+ *
  * @param children - top-level mdast blocks in source order
  *
- * @returns Blocks in source order with containers replaced by their children
+ * @returns Blocks in source order beside every container dissolved to get them
+ *
+ * @throws {@link UnpositionedContainerError} when a dissolved container carries
+ * no offsets of its own
  *
  * @example
  * ```ts
- * const blocks = flattenContainers({ children: root.children, },);
+ * const { blocks, containers, } = flattenContainers({ children: root.children, },);
  * ```
  */
 export function flattenContainers(
   { children, }: { readonly children: ForeignBorrowed<readonly RootContent[]>; },
-): readonly ForeignBorrowed<RootContent>[] {
+): FlattenedBlocks {
   /**
    * Blocks still to inspect, in reverse so popping yields document order.
    */
@@ -148,6 +335,11 @@ export function flattenContainers(
    * Flattened blocks in document order.
    */
   const flattened: ForeignBorrowed<RootContent>[] = [];
+
+  /**
+   * Containers dissolved along the way, in the order they were met.
+   */
+  const dissolved: ContainerSpan[] = [];
   while (pending.length > 0) {
     /**
      * Next block in document order, present by the loop condition.
@@ -158,6 +350,7 @@ export function flattenContainers(
       break;
 
     if (isUnwrappableContainer(node,)) {
+      dissolved.push(containerSpanOf({ container: node, },),);
       // Children replace the container in place, and go back through the
       // stack so a nested container flattens on a later turn.
       pending.push(...node.children
@@ -166,7 +359,14 @@ export function flattenContainers(
     }
     flattened.push(node,);
   }
-  return flattened;
+  return {
+    blocks: flattened,
+    // Sorted, because a nested container is met before its parent's later
+    // siblings and would otherwise report out of document order.
+    containers: dissolved.toSorted(function byOpener(left, right,) {
+      return left.openerStartOffset - right.openerStartOffset;
+    },),
+  };
 }
 
 //endregion Container unwrapping

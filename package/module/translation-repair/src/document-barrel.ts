@@ -22,6 +22,14 @@ export {
   PlacementLayoutError,
 } from './placement-layout.ts';
 export {
+  assertContainerIntegrity,
+  ContainerIntegrityError,
+} from './container-integrity.ts';
+export {
+  type ContainerSpan,
+  UnpositionedContainerError,
+} from './unwrap-container.ts';
+export {
   assertSliceCoverage,
   SliceCoverageError,
 } from './slice-coverage.ts';

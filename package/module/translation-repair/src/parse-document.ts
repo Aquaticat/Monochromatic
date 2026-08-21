@@ -18,7 +18,7 @@ import {
   parseMarkdownBody,
   parseMdxBody,
 } from './parse-mdx.ts';
-import { flattenContainers, } from './unwrap-container.ts';
+import { type ContainerSpan, flattenContainers, } from './unwrap-container.ts';
 
 //region Document parsing
 // Composition of the deterministic core: front matter split, tolerant parse
@@ -103,6 +103,17 @@ export type RepairDocument = {
    * Block-level nodes in source order with absolute offsets and hashes.
    */
   readonly nodes: readonly DocumentNode[];
+
+  /**
+   * Every container dissolved to produce those nodes, in source order, with
+   * absolute offsets for both of its tags.
+   *
+   * CARRIED BECAUSE THE NODES CANNOT SHOW IT. Container tags belong to none of
+   * the promoted children, so a reader handed only nodes sees inter-block text
+   * it has no reason to protect, and a slice range covering one tag and not the
+   * other destroys the element. Empty on a page using no containers.
+   */
+  readonly containers: readonly ContainerSpan[];
 
   /**
    * Reference-to-definition graph across both footnote conventions,
@@ -280,7 +291,7 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
    * One corpus translation reported all ten of its references unresolved while
    * carrying all ten definitions, because every definition sat inside one.
    */
-  const blocks = flattenContainers({
+  const { blocks, containers, } = flattenContainers({
     children: parsed
       .root
       .children,
@@ -303,6 +314,18 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
       children: blocks,
       bodyText: split.body,
       bodyOffset: split.bodyOffset,
+    },),
+    // Shifted to absolute offsets here rather than at the walk, which sees only
+    // body-relative positions, so every consumer reads container tags in the
+    // same frame as the node offsets beside them.
+    containers: containers.map(function toAbsolute(container,): ContainerSpan {
+      return {
+        name: container.name,
+        openerStartOffset: split.bodyOffset + container.openerStartOffset,
+        openerEndOffset: split.bodyOffset + container.openerEndOffset,
+        closerStartOffset: split.bodyOffset + container.closerStartOffset,
+        closerEndOffset: split.bodyOffset + container.closerEndOffset,
+      };
     },),
     // The footnote graph scans the MASKED body so commented-out marker
     // look-alikes never become phantom references or definitions.

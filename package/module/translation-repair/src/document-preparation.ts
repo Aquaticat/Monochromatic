@@ -15,6 +15,7 @@ import {
 import type { BlockPair, } from './pair-blocks-wire.ts';
 import { parseDocument, } from './parse-document.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
+import { assertContainerIntegrity, } from './container-integrity.ts';
 import { assertSliceCoverage, } from './slice-coverage.ts';
 import { assertSpanContiguity, } from './span-contiguity.ts';
 import {
@@ -293,6 +294,15 @@ export function prepareDocumentPair(
   assertSpanContiguity({
     slices,
     targetNodes: targetDocument.nodes,
+  },);
+
+  // AND WHAT LIES BETWEEN THE BLOCKS, which none of the checks above can reach.
+  // A dissolved container leaves its opening and closing tags in no node at
+  // all, so a range holding one of them and not the other passes every
+  // node-level rule while assembly deletes the element around its contents.
+  assertContainerIntegrity({
+    slices,
+    containers: targetDocument.containers,
   },);
 
   return {
