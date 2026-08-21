@@ -1,4 +1,5 @@
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 
 //region Contest ballot wire
 // The parts every two-way contest shares: the question, the reply schema, and
@@ -48,8 +49,11 @@ export const CONTEST_POLICY: string = [
   'A clause, a qualifier, a named object, a speaker aside: all dropped.',
   '',
   'DECLARED NAMES ARE ATTESTED FACTS about this person, taken from the documents\' own front matter.',
-  'A candidate carrying one is NOT unsupported, even where the passage itself never spells it out.',
-  'A candidate omitting one HAS dropped something.',
+  'Where the passage refers to this person, a candidate carrying a declared name or handle is NOT unsupported, even where the Chinese only says "she".',
+  'They settle HOW to spell a name the passage already refers to, and they OUTRANK the archive rendering where the two spell the same person or place differently.',
+  'They are NOT content a passage owes: a candidate that does not name this person has dropped nothing, and a line attributing the passage to someone ELSE never takes this person\'s name.',
+  '',
+  JUDGE_POLICY_BLOCK,
   '',
   'THEN CHOOSE. Prefer the candidate with no unsupported statements. If both are clean, prefer the one that drops nothing.',
   `Answer "${CONTEST_REFUSAL}" when they differ only in wording and neither is more faithful, which is a real verdict rather than a failure to answer.`,

@@ -208,8 +208,16 @@ await describe({
       },
     },),
     it({
-      name: 'TELLS the judge that dropping a declared name is a dropped detail',
+      name: 'REFUSES to call a passage that names nobody a dropped detail',
       fn: async () => {
+        // THIS ASSERTION WAS REVERSED, deliberately. It used to require the
+        // opposite, that a candidate omitting a declared name HAS dropped
+        // something, and that wording was measured causing two failures: a
+        // judge abstained from a whole slate because no candidate carried the
+        // declared LOCATION, and a shipped rendering signed a note left by a
+        // FRIEND of the deceased with the deceased's own name, alias and city.
+        // The selection sheet was corrected then; this sheet, which decides
+        // which LANE ships, kept the old wording and this test held it there.
         const policy = buildLaneContestMessages({
           subject: {
             sourceText: '猫睡了。',
@@ -219,7 +227,8 @@ await describe({
           },
         },).at(0,)?.content ?? '';
         expect(policy.includes('DECLARED NAMES ARE ATTESTED FACTS',),).toBe(true,);
-        expect(policy.includes('HAS dropped something',),).toBe(true,);
+        expect(policy.includes('HAS dropped something',),).toBe(false,);
+        expect(policy.includes('has dropped nothing',),).toBe(true,);
       },
     },),
   ],

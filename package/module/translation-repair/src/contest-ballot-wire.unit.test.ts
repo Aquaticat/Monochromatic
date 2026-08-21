@@ -51,6 +51,34 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES to call an unnamed person a dropped proposition',
+      fn: async () => {
+        // The claim this replaced said a candidate omitting a declared name HAS
+        // dropped something, which is the wording that made a judge abstain
+        // over a declared location the passage never mentions and let a note
+        // left by a FRIEND be signed with the dead person's name. The selection
+        // sheet dropped it; this sheet kept it, and both decide what ships.
+        expect(CONTEST_POLICY.includes('omitting one HAS dropped something',),).toBe(false,);
+        expect(CONTEST_POLICY.includes('has dropped nothing',),).toBe(true,);
+        expect(CONTEST_POLICY.includes('attributing the passage to someone ELSE',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'RANKS the declared spelling above the archive rendering',
+      fn: async () => {
+        expect(CONTEST_POLICY.includes('OUTRANK the archive rendering',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'TELLS both deciders what this corpus is written under',
+      fn: async () => {
+        // These two stages choose what ships and neither had the house rules.
+        expect(CONTEST_POLICY.includes('Reader protection outranks completeness',),).toBe(true,);
+        expect(CONTEST_POLICY.includes('Chinese marks no tense',),).toBe(true,);
+        expect(CONTEST_POLICY.includes('THE HOUSE RULE WINS',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'states that a declared name is not an unsupported statement',
       fn: async () => {
         expect(CONTEST_POLICY,).toContain('DECLARED NAMES ARE ATTESTED FACTS',);
