@@ -11,6 +11,11 @@
  * stop the loop rather than burn the remaining attempts, and it must surface
  * the failure that actually happened rather than a generic one.
  *
+ * The two guard errors, degeneration and overrun, are both ends this system
+ * chose rather than weather. They ride one predicate instead of two separate
+ * class checks, so both get a case here: a check that named only one of them
+ * would pass this whole suite while the ladder re-bought every overrun.
+ *
  * Every case uses a tiny backoff base so the suite stays fast; the delay
  * arithmetic is jittered and is not what these assert.
  *
@@ -30,6 +35,7 @@ import {
   exchangeWithRetry,
   type ModelTransport,
   StreamDegenerateError,
+  StreamOverrunError,
   SyntheticHttpError,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
@@ -477,6 +483,58 @@ await describe({
         })();
 
         expect(raised,).toBeInstanceOf(StreamDegenerateError,);
+        expect(calls.count,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO RE-DISPATCH A CALL THIS SYSTEM ENDED FOR VOLUME, because the ladder cannot '
+        + 'tell one guard error from the other by class. A bound that stops a runaway at ten '
+        + 'thousand characters, then grants the ladder four more attempts at it, costs more than '
+        + 'the unbounded call it replaced',
+      fn: async () => {
+        /**
+         * Attempt counter, which is the whole assertion: the error's identity
+         * arrives unchanged whether the ladder re-dispatched or not, so only
+         * the count separates a guard that holds from one that does not.
+         */
+        const calls = { count: 0, };
+
+        /**
+         * What the drain throws once it has cancelled a reader that crossed the
+         * content bound. The caller's signal is NOT aborted on this path, the
+         * termination being ours rather than the caller's steering, so nothing
+         * else in the retry loop marks it permanent.
+         */
+        const overrun = new StreamOverrunError({
+          label: 'hf:whiskers',
+          channel: 'content',
+          charsSeen: 10_000,
+          cap: 10_000,
+        },);
+
+        /**
+         * What the call did, as a value, so the assertion reads as an
+         * expectation rather than as control flow.
+         */
+        const raised = await (async function attempt(): Promise<unknown> {
+          try {
+            await exchangeWithRetry({
+              transport: scriptedTransport({
+                script: [overrun,],
+                calls,
+              },),
+              exchange: exchangeWith({ signal: new AbortController().signal, },),
+              policy: FAST_POLICY,
+            },);
+            return undefined;
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+
+        expect(raised,).toBeInstanceOf(StreamOverrunError,);
         expect(calls.count,).toBe(1,);
       },
     },),
