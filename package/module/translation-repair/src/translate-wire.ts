@@ -85,11 +85,14 @@ const TRANSLATE_REPLY_RULE =
  * 21. Both rules arrive in one system prompt and neither used to defer, so a
  * producer met a contradiction and resolved it however it liked.
  *
- * THE GUARD DOES NOT DECIDE THIS. `validateTranslatedSlice` is a kind-sequence
- * floor: a candidate carrying MORE blocks than the page passes, and only a
- * candidate missing one fails. Measured, with the archived two-block finding as
- * a positive control. So precedence had to be stated in the sheet; nothing
- * downstream would have caught the wrong choice.
+ * THE GUARD AGREES WITH THIS RULE AND CANNOT ENFORCE IT.
+ * `validateTranslatedSlice` refuses a candidate that MERGES the page's blocks,
+ * and allows extra blocks only where the ORIGINAL has them: measured, a
+ * three-block candidate against a one-block page is valid when the source is
+ * verse and invalid when it is prose. So the unmerge this rule asks for is
+ * licensed rather than punished, and a producer that instead kept the page's
+ * merge is equally valid. Nothing downstream would have caught the wrong
+ * choice, which is why precedence is stated here.
  */
 export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-structured: each '
   + 'original line is a unit. THIS RULE OUTRANKS THE STANDING RULE ASKING YOU TO '
