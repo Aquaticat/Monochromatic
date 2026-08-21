@@ -288,5 +288,82 @@ await describe({
         ],);
       },
     },),
+
+    it({
+      name: 'KEEPS a block sandwiched between two halves of one rendering',
+      fn: async () => {
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
+
+        // One original rendered as TWO translation blocks, with a third block
+        // nobody claims sitting between them. Declining that middle block would
+        // ask grouping to close a run inside a rendering, and the span would
+        // then cover the declined bytes anyway or cut the original away from
+        // half its own translation.
+        const pairs = [
+          { source: 0, target: 0, },
+          { source: 1, target: 1, },
+          { source: 1, target: 3, },
+          { source: 2, target: 4, },
+          { source: 3, target: 5, },
+        ];
+        const steps = blockPairingToSteps({
+          pairs,
+          sourceCount: sourceNodes.length,
+          targetCount: targetNodes.length,
+        },);
+
+        expect(declinedTargetBlocks({ steps, targetNodes, },),).toStrictEqual([],);
+
+        /**
+         * Ids of every translation block any run carries.
+         */
+        const carried = new Set(groupNodesAligned({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+          steps,
+        },).flatMap(function toIds(run,): readonly string[] {
+          return run.targetNodes.map(function toId(node,): string {
+            return node.id;
+          },);
+        },),);
+        expect(carried.has(targetNodes[2].id,),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'NAMES declined blocks when the pairing MERGES two originals',
+      fn: async () => {
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
+
+        // A merge arrives as a `source-only` step carrying `continuesPairing`,
+        // and that original IS placed. Reading it as an unplaced original would
+        // switch the decline off for every entry that merges anywhere.
+        const declined = declinedTargetBlocks({
+          steps: blockPairingToSteps({
+            pairs: [
+              { source: 0, target: 0, },
+              { source: 1, target: 1, },
+              { source: 2, target: 1, },
+              { source: 3, target: 5, },
+            ],
+            sourceCount: sourceNodes.length,
+            targetCount: targetNodes.length,
+          },),
+          targetNodes,
+        },);
+
+        expect(declined.map(function toId(node,): string {
+          return node.id;
+        },),).toStrictEqual([
+          targetNodes[2].id,
+          targetNodes[3].id,
+          targetNodes[4].id,
+        ],);
+      },
+    },),
   ],
 },);

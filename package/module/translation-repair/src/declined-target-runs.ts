@@ -87,8 +87,14 @@ export function declinedTargetBlocks(
 ): readonly DocumentNode[] {
   // A pairing that left an original block unplaced did not finish reading the
   // pair, so nothing here is a decision about the translation side.
+  //
+  // A MERGE CONTINUATION IS NOT THAT. Two originals rendered as one translation
+  // block arrive as a `paired` step and a `source-only` step carrying
+  // `continuesPairing`, and the second original IS placed, against a block an
+  // earlier original already claimed. Reading it as unplaced would switch the
+  // decline off for every entry that merges anywhere.
   if (steps.some(function leavesOriginal(step,): boolean {
-    return step.kind === 'source-only';
+    return (step.kind === 'source-only') && (step.continuesPairing !== true);
   },))
     return [];
 
@@ -114,11 +120,49 @@ export function declinedTargetBlocks(
       },),
   );
 
+  /**
+   * Blocks that sit BETWEEN two halves of one rendering.
+   *
+   * A pairing may name one original against translation blocks 1 and 3, which
+   * leaves block 2 claimed by nobody and yet inside a rendering. Declining it
+   * asks grouping to close a run in the middle of that rendering, and the span
+   * then either stretches back over the declined bytes or cuts the original
+   * away from half its own translation, which is the shape
+   * `span-contiguity.ts` refuses. Inside a rendering, staying in the slice is
+   * the lesser cost.
+   *
+   * READ BACKWARDS because that is what makes the question local: a block is
+   * inside a rendering exactly when a further rendering follows it with no new
+   * pairing in between.
+   */
+  const insideRendering = new Set<number>();
+
+  /**
+   * Whether a further rendering follows the step being read, with no pairing
+   * opened since.
+   */
+  let renderingContinues = false;
+  for (const step of steps.toReversed()) {
+    if (step.kind === 'paired') {
+      renderingContinues = false;
+      continue;
+    }
+    if (step.kind !== 'target-only')
+      continue;
+    if (step.continuesPairing === true) {
+      renderingContinues = true;
+      continue;
+    }
+    if (renderingContinues)
+      insideRendering.add(step.targetIndex,);
+  }
+
   return steps
     .filter(function isDeclined(step,): boolean {
       return (step.kind === 'target-only')
         && (step.continuesPairing !== true)
-        && (!claimed.has(step.targetIndex,));
+        && (!claimed.has(step.targetIndex,))
+        && (!insideRendering.has(step.targetIndex,));
     },)
     .flatMap(function toNode(step,): readonly DocumentNode[] {
       /**

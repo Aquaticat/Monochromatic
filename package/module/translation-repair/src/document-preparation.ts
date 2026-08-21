@@ -196,9 +196,13 @@ export function prepareDocumentPair(
    * nowhere, so the decision is legible from the artifact alone.
    *
    * `Zha_Ke` settled with this list EMPTY while two of its six English blocks,
-   * 2943 characters of them, had been declined. Reconstructing that took the
-   * pairing cache and the parser. Recording it here is what `#135` asks for,
-   * at the one place that already knows both the pairing and the blocks.
+   * 2943 characters of dense text between them, had been declined.
+   * Reconstructing that took the pairing cache and the parser. Recording it
+   * here is what `#135` asks for, at the one place that already knows both the
+   * pairing and the blocks.
+   *
+   * The finding itself counts OFFSET SPANS, which run wider than dense text
+   * because they carry the markdown a block is written in.
    */
   const declinedFindings: string[] = [];
 
