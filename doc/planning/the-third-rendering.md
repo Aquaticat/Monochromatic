@@ -1360,3 +1360,44 @@ The third is #90 and #100: a page region with no counterpart in the original,
 such as this `<details>` block, is one-sided content. It should be recognised
 and held out of pairing, not handed proportionally to whichever source chunk
 happens to sit nearby.
+
+### The census: mid-element boundaries are not a fallback problem
+
+Sizing #154's structural invariant meant asking how often a real slice boundary
+lands inside an element. Every settled artifact carrying slice regions was
+scanned, which is 18 unique entries and 124 slices, by walking each region's
+tags and asking whether every opener it holds is closed inside it and every
+closer it holds was opened inside it.
+
+Three slices of 124 cut an element, across two entries of 18. That eighth-of-
+the-corpus figure matches the earlier page-level count, where 12 of 92 English
+pages use `<details>` and 18 of 92 carry block HTML.
+
+The important result is the second entry. `AkiraComplex` splits a `<BlurBlock>`
+across its two slices, with the opener in one and the closer in the other, and
+its `alignmentFindings` is empty. No pairing was declared unusable, no fallback
+ran, and the asymmetry is a mild 451 source characters against 714 target
+characters. The accepted pairing placed that boundary itself.
+
+So the fallback is not the cause of mid-element boundaries, only the cause of
+the `Zha_Ke` one. Fixing the fallback would have left `AkiraComplex` exactly as
+it is. The structural invariant is required on its own account rather than as
+a second line behind the pairing fix, and it is the only one of the three fixes
+that catches both cases.
+
+Damage did not land on `AkiraComplex`, but not because anything prevented it.
+Both lanes reproduced the tag they were handed, so the element survived. Nothing
+required them to. Each slice on its own carries unbalanced markup, so the page
+grammar refuses it exactly as it refuses the `Zha_Ke` region, and a candidate
+that simply translates the prose it was given drops the tag without being wrong
+about anything it was asked.
+
+That failure mode is worse than markup corruption here. `BlurBlock` is the
+content-blurring component from #49, so an opener dropped while its closer
+survives renders as sensitive content with the blur removed. It is latent rather
+than realised, and it is a reader-protection failure rather than a rendering
+one.
+
+One limit on the census: it reads regions that were assigned to a slice, so a
+page region no slice covers cannot appear in it. It therefore undercounts
+exposure rather than overcounting it.
