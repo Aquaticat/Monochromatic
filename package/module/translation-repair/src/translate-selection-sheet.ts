@@ -42,6 +42,24 @@ const DECLARED_NAME_IS_NOT_OWED_CONTENT =
   'It is not content a passage owes: a candidate that does not name this person has left nothing out, and a line attributing the passage to someone ELSE never takes this person\'s name.';
 
 /**
+ * What the names rule says when every candidate spells a name the same wrong way.
+ *
+ * MEASURED, at `lintong` slice 1, twice. The identity block declares one
+ * spelling of the handle and the archive's own passage writes another, so both
+ * lanes and every consolidation built from them carried the archive's form. A
+ * judge read criterion three literally, found that NO candidate complied, and
+ * abstained from the entire slate; the slice kept its incumbent and the round
+ * bought nothing.
+ *
+ * A FAULT EVERY CANDIDATE SHARES CANNOT ORDER THEM. Refusing the slate over it
+ * does not fix the spelling, because the incumbent that survives the decline is
+ * where the spelling came from. The producers are told separately that the
+ * declared spelling outranks the archive's, which is where that gets fixed.
+ */
+const A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES =
+  'Prefer a candidate using a DECLARED spelling over one that does not; where NO candidate uses one, that fault is shared and cannot separate them, so decide on the other criteria rather than declining.';
+
+/**
  * What the shape rule can ask of a judge that is never shown the page.
  *
  * WHAT THIS REPLACED, and why. The rule used to read "Markdown structure of the
@@ -85,7 +103,7 @@ const SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE =
 export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
   'Complete coverage: every proposition of the ORIGINAL is rendered, nothing left out.',
   `Faithfulness: nothing added, and no change to who acts, what is referred to, negation, certainty, time, number, or how things relate. ${DECLARED_NAME_IS_NOT_AN_ADDITION}`,
-  `Declared names, handles and archive terminology used exactly as given. ${DECLARED_NAME_IS_NOT_OWED_CONTENT}`,
+  `Declared names, handles and archive terminology used exactly as given. ${DECLARED_NAME_IS_NOT_OWED_CONTENT} ${A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES}`,
   SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE,
   'Natural, idiomatic English reading as one coherent passage.',
 ];

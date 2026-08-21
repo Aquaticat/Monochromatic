@@ -65,6 +65,17 @@ await describe({
       },
     },),
     it({
+      name: 'RANKS the declared spelling above the archive\'s own usage',
+      fn: async () => {
+        // Without a stated precedence the translator is told the archive's
+        // spelling is authoritative while the judge is told the declared one
+        // is, and a page that contradicts its own front matter costs the slice
+        // its whole judged decision.
+        expect(system.includes('THE DECLARED SPELLING WINS',),).toBe(true,);
+        expect(system.includes('Never invent a third spelling',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'KEEPS every Markdown marker the source uses',
       fn: async () => {
         // The other half of the guard: markers are counted against the

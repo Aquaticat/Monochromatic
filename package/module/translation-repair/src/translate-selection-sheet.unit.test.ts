@@ -89,6 +89,17 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES to let a spelling every candidate shares decide the slate',
+      fn: async () => {
+        // Measured twice at one slice: the identity block declares one form,
+        // the archive's passage writes another, every candidate inherits it,
+        // and a judge abstained from the whole slate. The incumbent that
+        // survives that decline is where the spelling came from.
+        expect(sheet.includes('cannot separate them',),).toBe(true,);
+        expect(sheet.includes('rather than declining',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'REFUSES to make the original the authority on shape',
       fn: async () => {
         // Producers are floored on the page, which splits, merges and quotes

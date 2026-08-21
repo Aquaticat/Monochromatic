@@ -122,6 +122,20 @@ await describe({
   name: buildConsolidateMessages.name,
   children: [
     it({
+      name: 'RANKS the declared spelling above the archive rendering',
+      fn: async () => {
+        // MEASURED at one slice, twice: the identity block declares one form of
+        // a handle, the archive's passage writes another, and every producer
+        // copied the text in front of it rather than the block. A rule that
+        // says declared names settle spelling, without saying they outrank the
+        // rendering being consolidated, loses to the rendering.
+        expect(sheetFor({ subject: bare, },),)
+          .toContain('OUTRANK THE ARCHIVE RENDERING',);
+        expect(sheetFor({ subject: bare, },),)
+          .toContain('copying the archive\'s spelling is not a defence',);
+      },
+    },),
+    it({
       name: 'tells the producer that agreement between candidates can be wrong',
       fn: async () => {
         // THE INHERITED-INVENTION CASE. Where the archive invented something no
