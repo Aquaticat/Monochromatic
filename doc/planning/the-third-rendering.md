@@ -407,3 +407,57 @@ THE CONSOLIDATION BED STAYS VALID UNDER THIS RULE.
 Its first slice is a disagreement record, and what the six producers returned
 matched the archive's sequence, which the proposed rule accepts.
 Nothing measured so far would have to be bought again.
+
+## The bed stopped at five slices, and why
+
+`lintong` slice 2 shipped a consolidation that signs a friend's note with the
+DEAD PERSON'S name, alias and city.
+The Chinese signs it as left by a friend; the standing text had that right; the
+consolidation put the archive's declared identity into the attribution line.
+
+THE CAUSE IS A SHEET RULE, and it is production's, not the bed's.
+`src/translate-selection-sheet.ts` gives every slate judge a criterion saying a
+candidate dropping a declared name "has left something out", and the
+consolidation sheet says carrying one is correct "even where the passage never
+spells it out".
+Read literally, both instruct a model to put the archive's identity block into
+any passage, and one judge had already abstained at the previous slice for the
+stated reason that no candidate carried the declared location.
+Recorded as `#143`, with the measurement that put the rule there, which the fix
+has to keep satisfying.
+
+THE RUN WAS STOPPED RATHER THAN FINISHED.
+Five of thirteen slices were bought, every one of them under the defective
+wording, so scoring them would measure the defect.
+The owner's standing instruction is to fix and restart rather than to score
+around a defect, and this is the second time this bed has earned it.
+
+## The shape rule, settled: the page is a floor, not a ceiling
+
+Two candidate rules survived the measurement, and the bed's own rejections
+separate them.
+
+MATCH EITHER REFERENCE is too weak.
+At `lintong` slice 2 the Chinese is five paragraphs and the page is a block
+quote plus an attribution line, so a candidate matching the Chinese exactly
+would be accepted with the quotation marks gone, and the passage is a note
+somebody left, which is what the block quote says about it.
+
+THE PAGE IS A FLOOR.
+A candidate is structurally valid when the ARCHIVE'S BLOCK SEQUENCE APPEARS IN
+IT IN ORDER, and it carries no more blocks than the longer of the archive and
+the Chinese.
+Where the archive has no text for the slice, the check falls back to today's
+exact match against the Chinese.
+
+WHAT THAT DECIDES, on every case measured so far:
+
+-   `lintong` slice 1, where the source anchor called six good renderings
+    invalid: the archive's two blocks appear in each, so all six pass.
+-   `Aniloviraw` slice 0, where the archive is missing a whole block quote: a
+    rendering that restores it still contains the archive's one block in order
+    and has no more blocks than the Chinese, so the restoration is no longer
+    deleted.
+-   The three rejections the bed actually produced, one rendering of six
+    paragraphs and two that swallowed the attribution line into the quote: all
+    three still fail, because the archive's sequence is not inside them.
