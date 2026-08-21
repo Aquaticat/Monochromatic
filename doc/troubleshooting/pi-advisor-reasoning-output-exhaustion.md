@@ -336,6 +336,18 @@ export function filterAdvisorScopeByOutputCapacity(
 Default selection requires a non-empty eligible scope.
 Explicit selection resolves the requested model against authenticated scope first,
  then rejects it before provider dispatch when its endpoint advertises less than the configured value.
+`package/pi-plugin/advisor/src/advisor-client.ts:219-226` repeats the assertion at the final provider boundary:
+
+```typescript
+assertAdvisorEndpointOutputCapacity({
+  endpointSlug: modelSlug,
+  advertisedOutputTokens: options.model
+    .maxTokens,
+  maxAdvisorOutputTokens: options.config
+    .maxAdvisorOutputTokens,
+},);
+```
+
 The main-model prompt and tool result details list eligible slugs,
  while `/advisor status` reports both raw scoped models and eligible Advisor models.
 
@@ -345,7 +357,8 @@ Targeted tests prove:
 - an explicit endpoint below the requirement is rejected;
 - a model advertising exactly 32,000 remains eligible;
 - an all-ineligible scope fails with endpoint capacities;
-- provider dispatch count remains zero after an eligibility rejection;
+- provider dispatch count remains zero after default and explicit eligibility rejection;
+- direct provider-client calls repeat the same capacity assertion;
 - status and main-model guidance omit ineligible slugs from allowed candidates.
 
 Focused continuations remain the verified recovery for a response that reaches `stopReason: "length"`.

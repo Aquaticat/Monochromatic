@@ -129,6 +129,7 @@ Provider `error`,
 Advisor requests that response budget and excludes every model endpoint whose advertised `maxTokens` is lower.
 A model advertising exactly the configured value remains eligible.
 Explicit model requests receive an eligibility diagnostic before provider dispatch.
+The provider client repeats the assertion at its final dispatch boundary.
 
 `maxContextChars` is optional.
 When omitted,
