@@ -73,8 +73,12 @@ const TRANSLATE_REPLY_RULE =
  * translation already merged the lines. A translator shown that translation and
  * told nothing would keep reproducing the merge, since the only shape in front
  * of it is the merged one.
+ *
+ * SHARED WITH THE CONSOLIDATE WIRE, whose producer is a translator too. A
+ * second wording of the same rule would drift from the one `Toka_ls` was
+ * measured against.
  */
-const TRANSLATE_LINE_STRUCTURE_RULE = 'The ORIGINAL is line-structured: each '
+export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-structured: each '
   + 'original line is a unit. Produce one output line per original line, in the '
   + 'same order. Never merge two original '
   + 'lines into one output line, never split one across two, and never invent or '

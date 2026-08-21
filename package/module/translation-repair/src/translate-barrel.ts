@@ -96,10 +96,16 @@ export {
 export {
   buildTranslateMessages,
   isTranslateReportWire,
+  TRANSLATE_LINE_STRUCTURE_RULE,
   TRANSLATE_RESPONSE_FORMAT,
   type TranslatePromptPlan,
   type TranslateReportWire,
 } from './translate-wire.ts';
+export { renderConsolidationBrief, } from './consolidate-brief.ts';
+export {
+  buildConsolidateMessages,
+  type ConsolidateSubject,
+} from './consolidate-wire.ts';
 export {
   type CoverageAnswer,
   runCoverageStage,
