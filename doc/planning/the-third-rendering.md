@@ -737,3 +737,85 @@ It cannot affect run 6.
 `isLineStructured` was run over all thirteen bed slices and returned false for every one,
 so the addendum is empty on every call the bed makes.
 It is a production follow-up, filed with the other unswept sheets rather than restarting the bed.
+
+## The measuring sheets now carry the rules too, and one of them needed a fourth verdict it did not get
+
+The four sheets of #149 grade rather than write, so nothing ships from any of them.
+What they decide is which defects get worked on next,
+and an instrument that penalises a page for obeying the rules it was written under reports damage where the pipeline was right.
+
+`JUDGE_POLICY_BLOCK` could not simply be spliced into them.
+Its closing paragraph reads
+`WHERE A CRITERION AND A HOUSE RULE DISAGREE`
+and speaks of a candidate,
+and a checker has neither: it has issues, regions, verdicts and a text under review.
+So the two shared paragraphs were lifted out
+(`HOUSE_POLICY_BLOCK` and `FORCED_DIFFERENCES`)
+and each consumer supplies its own close.
+`JUDGE_POLICY_BLOCK` recomposes from the pieces and is byte-identical to what the running bed's judges see,
+3037 bytes, checked against a snapshot taken before the edit.
+
+### What the resolution checker could not be told, and why it was not given a fourth verdict
+
+`RESOLUTION_VERDICTS` is `fixed`, `not-fixed`, `worse`.
+An issue asking an editor to restore a detail reader protection keeps out is an issue that should never have been filed,
+and none of the three verdicts says that.
+`checker-sensitivity.ts` already names the case,
+its fabricated `ABSENT_ISSUE` is labelled `not-fixed-defect-was-never-there`,
+and that harness exists to catch a checker answering `fixed` by agreeing with the sheet instead of reading the text.
+
+Whether a fourth verdict was owed turned on one measurable fact: what an unresolved issue costs.
+It re-fires nothing.
+`runCheckerStage` is called once in `repair-chunk.ts`, after the editor's rounds,
+`resolvedIssueIds` is credit-only,
+and `notFixed` is read nowhere but `tally-resolution.ts` and the sensitivity probe.
+The one real consequence is in `refine-phase.ts`,
+where a previously confirmed issue going unresolved rolls the refinement back, which is the conservative direction.
+So the checker is told to answer `not-fixed` and told outright that the issue itself is wrong,
+and the known limit is recorded here rather than papered over:
+the tally cannot distinguish an unfixed defect from an issue that was never a defect,
+so a protected-detail issue reaching the checker understates repair quality by one.
+
+The splice bought something the sheet could not do before.
+Where an editor DID restore a protected detail, `worse` is the correct existing verdict,
+and until now nothing gave the checker any reason to cast it.
+
+### The prober had an active contradiction, not merely a gap
+
+`PROBE_RULES_HEAD` says content the AFTER text drops is damage only if the ORIGINAL supports it.
+On a protected detail the ORIGINAL does support it, which is the entire reason the rule exists.
+A block spliced beside that bullet would have left two live rules disagreeing, with the older one written as a numbered rule.
+`PROBE_HOUSE_RULE_CLAUSE` names the interaction in as many words.
+
+### The restoration grader keeps its anchor
+
+The 2026-07-17 directive grades restoration against the Chinese source, and the block does not move that anchor.
+An anchor on the source is what makes the bias possible:
+a repair rendered vaguer than the Chinese because reader protection asks for it reads as a partial restoration.
+The added line says such a repair is `restored`, and that carrying a detail the rules keep out raises no verdict.
+
+### A guard that reported success without running
+
+The first version of `measuring-sheets-carry-house-rules.unit.test.ts` called `describe` without `await`.
+The file registered nothing, printed nothing, and exited zero;
+the whole suite then reported `exit=0` with no failing line while six cases had never run.
+This was caught only by grepping the log for the suite's own name rather than trusting the exit code.
+Every other test file in the repo already awaits its `describe`, so this is a trap rather than a defect:
+a suite is proven to exist by finding its name in the output, never by the run's exit status.
+
+## The verse rule tells two producing sheets to ignore the page
+
+`TRANSLATE_LINE_STRUCTURE_RULE` reads
+`The ORIGINAL is line-structured: each original line is a unit. Produce one output line per original line, in the same order.`
+It is spliced into `translate-wire.ts` for the producing translator and into `consolidate-wire.ts` for the consolidating producer.
+Both are bed-path sheets, and both are told to take their line count from the ORIGINAL
+while the structural guard floors on the page as it stands.
+On `Toka_ls`, the entry the rule was written for,
+those two authorities disagree by three blocks and by a factor of four in median block length.
+`LINE_STRUCTURE_RULE` in `line-structure-addendum.ts` is a third wording of the same claim, given to the editor.
+
+It cannot reach run 6.
+The bed computes `lineStructured` with `isLineStructured` over each slice's source text,
+and that predicate was run over all thirteen bed slices and returned false for every one,
+so none of the three sheets emits the rule on any slice this run buys.
+A string that is never emitted cannot change an output, so this is a fix to make rather than a reason to restart.
