@@ -178,3 +178,58 @@ Nothing in the settled artifact records any of this.
 and the only place the declined pairing survives is a cache file beside the run.
 That is `#135`, and it is what made this take a pairing cache and a parser to reconstruct
 rather than a single read of the artifact.
+
+## The sweep is deliberate, and that constrains the fix
+
+`group-aligned.ts`, which is the grouper production actually uses through `slice-pair.ts`,
+states the rule in its own region header:
+
+> Unpartnered blocks are NOT dropped.
+> A block the counterpart lacks joins the run being built, so the slice still covers it
+> and a critic still reads it in context.
+> Dropping it would hide whatever it contains, trading a false positive for a silent false negative,
+> which is the worse failure:
+> the run's text is sliced from first to last offset,
+> so leaving a block out of the run would not even remove it from the text,
+> only from the record of what the slice was built from.
+
+That last clause is the constraint.
+A run's text is the span from its first offset to its last,
+so removing a block from the run's LIST changes only the record, never the text.
+Any fix that just filters the list makes the artifact lie
+while the judge still sees the same characters.
+
+The unwired `group-source-first.ts` and `reflow-orphans.ts` already carry the concept the fix needs,
+and state the cost honestly:
+
+> A REGION WITH NO PAIRED UNIT LEAVES ITS BLOCKS UNCOVERED.
+> That is text the archive has and the original does not, so no slice NEEDS it:
+> assembly writes nothing there and the document keeps it byte for byte.
+> What it costs is review, since no lane ever reads it.
+
+So uncovered is not the same as deleted.
+`splice-slices.ts` writes replacements over slice spans in offset-descending order,
+and text between spans is never touched.
+
+## The fix that follows from those two facts
+
+Close the run at the unpaired block rather than extending across it.
+
+At `Zha_Ke`, the run for source block 1 would end at `en[1]`,
+the next run would begin at `en[4]`,
+and `en[2]` and `en[3]` would fall between runs: covered by no slice, written by no lane, kept byte for byte.
+The judges would then be shown 41 characters of source against 180 characters of standing English,
+a ratio of 4.4, which sits inside the corpus band.
+
+What this costs is exactly what `reflow-orphans.ts` already names:
+the letter is never read by any lane, so nothing improves it and nothing checks it.
+That is the right trade for a memorial letter the source never mentions.
+Improving it is not what this pipeline was asked to do;
+preserving it is.
+
+WHAT STILL HAS TO BE DECIDED, and it is not settled by this document:
+whether to close the run at EVERY unpaired target block
+or only at ones above some size,
+since a one-block orphan of thirty characters joining its neighbour is harmless
+and closing the run there produces more slices than the budget wants.
+`Zha_Ke`'s `en[2]` is 34 characters and its `en[3]` is 2909.
