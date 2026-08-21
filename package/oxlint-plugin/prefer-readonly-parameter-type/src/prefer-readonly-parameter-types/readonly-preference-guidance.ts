@@ -1,3 +1,7 @@
+import {
+  mutableClassificationHasExternalDeclaration,
+  type ReadonlyClassification,
+} from './readonly-classification-model.ts';
 import type { ReadonlySuggestion, } from './readonly-suggestion.ts';
 import type { ReadonlyTypeOrigin, } from './readonly-type-origin-location.ts';
 import type { ReadonlyTypeOriginEvidence, } from './readonly-type-origin.ts';
@@ -35,7 +39,7 @@ function originSubject(origin: ReadonlyTypeOrigin,): string {
       ? 'an unnamed type declaration'
       : `type "${origin.name}"`;
   }
-  return 'an inferred object expression';
+  return 'an inferred local expression';
 }
 
 /**
@@ -119,6 +123,8 @@ function verifiedSuggestionGuidance(
  *
  * @param originEvidence - Authored or inferred semantic type origin evidence.
  *
+ * @param classification - Structured mutable paths and declaration ownership.
+ *
  * @returns exact,
  * likely,
  * multi-origin,
@@ -126,15 +132,17 @@ function verifiedSuggestionGuidance(
  *
  * @example
  * ```ts
- * readonlyPreferenceGuidance({ suggestions, originEvidence });
+ * readonlyPreferenceGuidance({ suggestions, originEvidence, classification });
  * ```
  */
 export function readonlyPreferenceGuidance({
   suggestions,
   originEvidence,
+  classification,
 }: {
   readonly suggestions: readonly ReadonlySuggestion[];
   readonly originEvidence: ReadonlyTypeOriginEvidence;
+  readonly classification: Extract<ReadonlyClassification, { readonly kind: 'mutable'; }>;
 },): string {
   /**
    * Exact local transformation when suggestion builder proved one.
@@ -142,8 +150,11 @@ export function readonlyPreferenceGuidance({
   const verified = verifiedSuggestionGuidance(suggestions,);
   if ((typeof verified) !== 'symbol')
     return verified;
+  if (mutableClassificationHasExternalDeclaration(classification,)) {
+    return 'At least one reported writable path is declared outside this workspace. Introduce a project-owned deep readonly projection at the annotated or producing boundary, then run type checking. `Readonly<T>` is shallow and can only move the finding to a nested path. If the value actually enters through an externally owned mutable boundary, mark that boundary `ForeignBorrowed`; do not repeat the marker on descendants.';
+  }
   if (originEvidence.kind === 'authored') {
-    return 'No exact syntax replacement was proved for this authored type. Make the reported writable path deeply readonly in its declaration or replace the annotation with a deeply readonly projection, then run type checking.';
+    return 'No exact syntax replacement was proved for this authored type. Make every reported writable path deeply readonly in its declaration or replace the annotation with a deeply readonly projection, then run type checking. `Readonly<T>` is shallow and can only move the finding to a nested path.';
   }
   if (originEvidence.kind === 'unique')
     return uniqueOriginGuidance(originEvidence.origin,);
@@ -153,5 +164,5 @@ export function readonlyPreferenceGuidance({
   if (originEvidence.kind === 'multiple') {
     return 'Its inferred parameter type has multiple workspace-owned origins, so no single producer edit was proved. Establish one common deeply readonly element type at their merge boundary, then annotate every producer to satisfy it.';
   }
-  return 'No workspace-owned source origin was proved for this inferred parameter type. Introduce an explicit deeply readonly type at the nearest project-owned boundary that supplies this callback value, then run type checking.';
+  return 'No workspace-owned source origin was proved for this inferred parameter type. Introduce an explicit deeply readonly type at the nearest project-owned boundary that supplies this callback value, then run type checking. `Readonly<T>` is shallow and can only move the finding to a nested path.';
 }

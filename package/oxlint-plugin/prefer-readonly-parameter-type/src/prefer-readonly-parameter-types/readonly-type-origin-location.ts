@@ -8,10 +8,15 @@ import {
 
 import type { Node, } from 'typescript/unstable/ast';
 import {
+  isArrayLiteralExpression,
+  isArrowFunction,
+  isBlock,
   isClassDeclaration,
   isFunctionLikeDeclaration,
   isIdentifier,
   isInterfaceDeclaration,
+  isObjectLiteralExpression,
+  isReturnStatement,
   isTypeAliasDeclaration,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -97,8 +102,9 @@ function displayRoot(configFileName: string,): string {
  *
  * @param declaration - Semantic type declaration.
  *
- * @returns nearest callable or named type owner,
- * otherwise original declaration.
+ * @returns named type owner,
+ * proved returning callable,
+ * or exact original declaration.
  *
  * @example
  * ```ts
@@ -107,18 +113,37 @@ function displayRoot(configFileName: string,): string {
  */
 function originOwner(declaration: Node,): Node {
   /**
-   * Ancestor cursor beginning at semantic declaration.
+   * Ancestor cursor retaining nearest actionable local aggregate.
    */
   const cursor = {
     current: declaration,
+    localProducer: declaration,
     pending: true,
+    returned: false,
   };
   while (cursor.pending) {
-    if (isFunctionLikeDeclaration(cursor.current,)
-      || isTypeAliasDeclaration(cursor.current,)
+    if (isTypeAliasDeclaration(cursor.current,)
       || isInterfaceDeclaration(cursor.current,)
       || isClassDeclaration(cursor.current,))
       return cursor.current;
+    if (isFunctionLikeDeclaration(cursor.current,)) {
+      /**
+       * Whether concise arrow body returns declaration without return statement.
+       */
+      const conciseArrow = isArrowFunction(cursor.current,)
+        && (!isBlock(cursor.current
+          .body,));
+      if ((cursor.current === declaration)
+        || cursor.returned
+        || conciseArrow)
+        return cursor.current;
+      return cursor.localProducer;
+    }
+    if (isObjectLiteralExpression(cursor.current,)
+      || isArrayLiteralExpression(cursor.current,))
+      cursor.localProducer = cursor.current;
+    if (isReturnStatement(cursor.current,))
+      cursor.returned = true;
     /**
      * Next owner candidate in semantic source tree.
      */
@@ -127,7 +152,7 @@ function originOwner(declaration: Node,): Node {
     if (parent !== undefined)
       cursor.current = parent;
   }
-  return declaration;
+  return cursor.localProducer;
 }
 
 /**

@@ -31,8 +31,12 @@ import { ancestorDirectories, } from './ancestor-directories.ts';
  *
  * Schema 5 keys every effect by slot rather than by parameter and persists the slot
  * ownership beside them, because the numbers mean nothing without it.
+ *
+ * Schema 6 persists callable identities deliberately omitted after direct-summary failures.
+ * Without them a warm process rejects caller edges that the cold process accepted as
+ * fail-closed omissions.
  */
-export const EFFECT_CACHE_SCHEMA = 5;
+export const EFFECT_CACHE_SCHEMA = 6;
 
 /**
  * Process memo for analyzer implementation digest.

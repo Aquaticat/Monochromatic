@@ -29,6 +29,19 @@ import {
   combineClassifications,
   DEEP_READONLY,
 } from './readonly-classification-combine.ts';
+import {
+  classifyReadonlyCollection,
+  READONLY_COLLECTION_CLASSIFICATION_UNAVAILABLE,
+} from './readonly-collection-classification.ts';
+import {
+  mutableReadonlyClassification,
+  prefixReadonlyClassification,
+  type ReadonlyClassification,
+} from './readonly-classification-model.ts';
+import {
+  writableIndexOwners,
+  writablePropertyOwners,
+} from './readonly-writable-declaration.ts';
 
 /**
  * Bit position of hidden TypeScript 7 mapped-property readonly state.
@@ -45,39 +58,7 @@ const CHECK_FLAGS_READONLY = 1 << CHECK_FLAGS_READONLY_BIT;
  */
 const CLASSIFICATION_ACTIVE: unique symbol = Symbol('ReadonlyClassification traversal active for type',);
 
-/**
- * Standard readonly generic collections classified through reachable type arguments.
- */
-const READONLY_GENERIC_COLLECTION_OWNERS: ReadonlySet<string> = new Set([
-  'ReadonlyMap',
-  'ReadonlySet',
-]);
-
-/**
- * Semantic readonly classification used by rule diagnostics.
- *
- * @example
- * ```ts
- * const result: ReadonlyClassification = {
- *   kind: 'mutable',
- *   reason: 'property value is writable',
- * };
- * ```
- */
-export type ReadonlyClassification =
-  | { readonly kind: 'deep-readonly'; }
-  | {
-    readonly kind: 'mutable';
-    readonly reason: string;
-  }
-  | {
-    readonly kind: 'opaque-capability';
-    readonly reason: string;
-  }
-  | {
-    readonly kind: 'projected-readonly-capability';
-    readonly reason: string;
-  };
+export type { ReadonlyClassification, } from './readonly-classification-model.ts';
 
 /**
  * Determines whether property symbol is declared or mapped readonly.
@@ -334,45 +315,17 @@ export function classifyReadonlyType({
      * Declared owner identity used by standard projection policy.
      */
     const currentOwner = readonlyOwnerName(current,);
-    if (checker.isArrayType(current,) && (currentOwner === 'Array')) {
-      return finish({
-        kind: 'mutable',
-        reason: 'mutable Array has ReadonlyArray projection',
-      },);
-    }
-    if (READONLY_GENERIC_COLLECTION_OWNERS.has(currentOwner,)
-      && current.isTypeReference()) {
-      /**
-       * Deep classifications for keys and values reachable through collection iteration.
-       */
-      const readonlyCollectionTypeArguments = checker.getTypeArguments(current,)
-        .map(classify,);
-      return finish(combineClassifications(readonlyCollectionTypeArguments,),);
-    }
-    if (currentOwner === 'ReadonlyArray') {
-      /**
-       * Deep classifications for values reachable through readonly array index.
-       */
-      const readonlyArrayValueResults = checker.getIndexInfosOfType(current,)
-        .map(function classifyReadonlyArrayValue(indexInfo,): ReadonlyClassification {
-          return classify(indexInfo.valueType,);
-        },);
-      return finish(combineClassifications(readonlyArrayValueResults,),);
-    }
-    if (current.isTupleType()) {
-      if (!current.readonly) {
-        return finish({
-          kind: 'mutable',
-          reason: 'tuple is not readonly',
-        },);
-      }
-      /**
-       * Readonly tuple element classifications.
-       */
-      const tupleElementResults = checker.getTypeArguments(current,)
-        .map(classify,);
-      return finish(combineClassifications(tupleElementResults,),);
-    }
+    /**
+     * Collection-specific mutability and reachable element classification.
+     */
+    const collectionClassification = classifyReadonlyCollection({
+      checker,
+      type: current,
+      owner: currentOwner,
+      classify,
+    },);
+    if (collectionClassification !== READONLY_COLLECTION_CLASSIFICATION_UNAVAILABLE)
+      return finish(collectionClassification,);
 
     /**
      * Whether authored type claims readonly projection semantics.
@@ -443,29 +396,57 @@ export function classifyReadonlyType({
               reason: `${currentOwner}.${property.name} has unresolved callable effect`,
             };
         }
+        /**
+         * Access segment retained whether property itself or nested state is writable.
+         */
+        const segment = {
+          kind: 'property' as const,
+          name: property.name,
+        };
         if (!propertyIsReadonly({
           project,
           property,
         },)) {
-          return {
-            kind: 'mutable',
-            reason: `property ${property.name} is writable`,
-          };
+          return mutableReadonlyClassification({
+            kind: 'property',
+            segments: [segment,],
+            declarationOwners: writablePropertyOwners({
+              property,
+              project,
+            },),
+          },);
         }
-        return classify(propertyType,);
+        return prefixReadonlyClassification({
+          classification: classify(propertyType,),
+          segment,
+        },);
       },);
     /**
      * Classification of every reachable index signature.
      */
     const indexResults = checker.getIndexInfosOfType(current,)
       .map(function classifyIndex(indexInfo,): ReadonlyClassification {
+        /**
+         * Access segment for index key type rendered by semantic checker.
+         */
+        const segment = {
+          kind: 'index' as const,
+          keyType: checker.typeToString(indexInfo.keyType,),
+        };
         if (!indexInfo.isReadonly) {
-          return {
-            kind: 'mutable',
-            reason: 'index signature is writable',
-          };
+          return mutableReadonlyClassification({
+            kind: 'index',
+            segments: [segment,],
+            declarationOwners: writableIndexOwners({
+              indexInfo,
+              project,
+            },),
+          },);
         }
-        return classify(indexInfo.valueType,);
+        return prefixReadonlyClassification({
+          classification: classify(indexInfo.valueType,),
+          segment,
+        },);
       },);
     return finish(combineClassifications([
       ...propertyResults,

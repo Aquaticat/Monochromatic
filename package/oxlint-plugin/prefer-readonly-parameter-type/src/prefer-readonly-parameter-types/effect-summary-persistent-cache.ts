@@ -105,6 +105,7 @@ export type PersistentEffectCacheHit = {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly dependenciesResolved: boolean;
   readonly directDependencies: readonly string[];
+  readonly omittedCallableKeys: readonly string[];
 };
 
 /**
@@ -242,6 +243,7 @@ export function readPersistentEffectSummaries({
       summaries: deserializeEffectSummaries(envelope.payload,),
       dependenciesResolved: envelope.dependenciesResolved,
       directDependencies: envelope.directDependencies,
+      omittedCallableKeys: envelope.omittedCallableKeys,
     };
   }
   catch (error) {
@@ -265,9 +267,17 @@ export function readPersistentEffectSummaries({
  *
  * @param closure - Dependency-closure snapshot for exact source.
  *
+ * @param omittedCallableKeys - Direct summaries deliberately omitted for this source.
+ *
  * @example
  * ```ts
- * writePersistentEffectSummaries({ address, summaries, surfaces, closure });
+ * writePersistentEffectSummaries({
+ *   address,
+ *   summaries,
+ *   surfaces,
+ *   closure,
+ *   omittedCallableKeys,
+ * });
  * ```
  */
 export function writePersistentEffectSummaries({
@@ -275,11 +285,13 @@ export function writePersistentEffectSummaries({
   summaries,
   surfaces,
   closure,
+  omittedCallableKeys,
 }: {
   readonly address: PersistentEffectCacheAddress;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly surfaces: EffectProjectSurfaces;
   readonly closure: EffectDependencyClosure;
+  readonly omittedCallableKeys: readonly string[];
 },): void {
   /**
    * Current content-addressed cache path.
@@ -301,6 +313,7 @@ export function writePersistentEffectSummaries({
     dependenciesResolved: closure.resolved,
     directDependencies: closure.directDependencies,
     dependencyDigests: closure.dependencyDigests,
+    omittedCallableKeys: [...omittedCallableKeys,].toSorted(),
     payload: serializeEffectSummaries(summaries,),
   };
   /**

@@ -163,29 +163,21 @@ function readonlyDeepSuggestions({
   },))
     return [];
   /**
-   * Semantic parameter type used to reject collection projection guesses.
+   * Semantic parameter type whose complete graph must be mutable data rather than capability.
    */
   const parameterType = project.checker
     .getTypeFromTypeNode(parameter.type,);
-  if ((parameterType === undefined)
-    || project.checker
-    .isArrayType(parameterType,)
-    || project.checker
-    .isTupleType(parameterType,))
+  if (parameterType === undefined)
     return [];
   /**
-   * Mutable structural classification with no opaque capability branch.
+   * Mutable data classification with no opaque capability branch.
    */
   const classification = classifyReadonlyType({
     checker: project.checker,
     project,
     type: parameterType,
   },);
-  if ((classification.kind !== 'mutable')
-    || ((!classification.reason
-      .startsWith('property ',))
-      && (!classification.reason
-        .startsWith('index signature',))))
+  if (classification.kind !== 'mutable')
     return [];
   /**
    * Source file owning authored type text.
@@ -274,7 +266,10 @@ export function readonlyParameterSuggestions({
   readonly parameter: ParameterDeclaration;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
 }>,): ReadonlySuggestion[] {
-  return [
+  /**
+   * Narrow standard-library projections preferred when they prove complete deep readonly.
+   */
+  const collectionSuggestions = [
     ...readonlyArraySuggestions({
       context,
       parameter,
@@ -285,10 +280,12 @@ export function readonlyParameterSuggestions({
       parameter,
       project,
     },),
-    ...readonlyDeepSuggestions({
-      context,
-      parameter,
-      project,
-    },),
   ];
+  if (collectionSuggestions.length > 0)
+    return collectionSuggestions;
+  return readonlyDeepSuggestions({
+    context,
+    parameter,
+    project,
+  },);
 }

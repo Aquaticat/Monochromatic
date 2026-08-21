@@ -31,14 +31,18 @@ type CachedSourceSummaries = {
   readonly sourceText: string;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
+  readonly omittedCallableKeys: readonly string[];
 };
 
 /**
- * Layered hit: cloned summaries plus recorded closure edges.
+ * Layered hit: cloned summaries,
+ * recorded closure edges,
+ * and deliberate direct-summary omissions.
  */
 export type LayeredSummaryCacheHit = {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
+  readonly omittedCallableKeys: readonly string[];
 };
 
 /**
@@ -172,15 +176,19 @@ function cloneSummaries(
  * @param summaries - Summaries retained as independent clones.
  *
  * @param edges - Closure edges recorded beside summaries.
+ *
+ * @param omittedCallableKeys - Deliberately omitted direct summaries for this source.
  */
 function storeMemoryLayer({
   identity,
   summaries,
   edges,
+  omittedCallableKeys,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
+  readonly omittedCallableKeys: readonly string[];
 },): void {
   /**
    * Project-local cache bounded by configured source paths.
@@ -194,6 +202,7 @@ function storeMemoryLayer({
       sourceText: identity.sourceText,
       summaries: cloneSummaries(summaries,),
       edges,
+      omittedCallableKeys: [...omittedCallableKeys,],
     },
   );
   summariesByProject.set(
@@ -236,6 +245,7 @@ export function readCachedSummariesForSource({
     return {
       summaries: cloneSummaries(cached.summaries,),
       edges: cached.edges,
+      omittedCallableKeys: [...cached.omittedCallableKeys,],
     };
   }
   /**
@@ -266,10 +276,12 @@ export function readCachedSummariesForSource({
     identity,
     summaries: persistent.summaries,
     edges,
+    omittedCallableKeys: persistent.omittedCallableKeys,
   },);
   return {
     summaries: cloneSummaries(persistent.summaries,),
     edges,
+    omittedCallableKeys: [...persistent.omittedCallableKeys,],
   };
 }
 
@@ -284,9 +296,17 @@ export function readCachedSummariesForSource({
  *
  * @param closure - Dependency-closure snapshot for exact source.
  *
+ * @param omittedCallableKeys - Direct summaries deliberately omitted for this source.
+ *
  * @example
  * ```ts
- * storeCreatedSummariesForSource({ identity, summaries, surfaces, closure });
+ * storeCreatedSummariesForSource({
+ *   identity,
+ *   summaries,
+ *   surfaces,
+ *   closure,
+ *   omittedCallableKeys,
+ * });
  * ```
  */
 export function storeCreatedSummariesForSource({
@@ -294,11 +314,13 @@ export function storeCreatedSummariesForSource({
   summaries,
   surfaces,
   closure,
+  omittedCallableKeys,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly surfaces: EffectProjectSurfaces;
   readonly closure: EffectDependencyClosure;
+  readonly omittedCallableKeys: readonly string[];
 },): void {
   counters.directSummaryBuildCount += summaries.size;
   storeMemoryLayer({
@@ -308,6 +330,7 @@ export function storeCreatedSummariesForSource({
       resolved: closure.resolved,
       directDependencies: closure.directDependencies,
     },
+    omittedCallableKeys,
   },);
   writePersistentEffectSummaries({
     address: {
@@ -321,6 +344,7 @@ export function storeCreatedSummariesForSource({
     summaries,
     surfaces,
     closure,
+    omittedCallableKeys,
   },);
   counters.persistentCacheWriteCount++;
 }

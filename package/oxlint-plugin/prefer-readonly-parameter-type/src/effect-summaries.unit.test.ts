@@ -3047,6 +3047,88 @@ await describe({
       },
     },),
     it({
+      name: 'restores deliberate callable omissions from persistent cache',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Disposable persistent cache root separated from TypeScript input. */
+        const cacheRoot = join(projectRoot.path, '.effect-cache',);
+        /** Source reproducing direct-summary tuple serialization failure. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        /** Minimal generic tuple instantiation that TypeScript 7.0.2 cannot serialize. */
+        const inputSource = `export function take<Fn extends (...args: never[]) => unknown,>(
+  fn: Fn,
+  args: Parameters<Fn>,
+): void {
+  void fn;
+  void args;
+}
+
+export function use(): void {
+  take(
+    function render(): string {
+      return '';
+    },
+    [],
+  );
+}
+`;
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
+        );
+        writeFileSync(inputPath, inputSource,);
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const coldSession = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({
+          project: coldSession.project,
+          activeSourceFile: coldSession.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Relative persistent entries written by incomplete cold scan. */
+        const cacheEntries = readdirSync(cacheRoot, {
+          recursive: true,
+          encoding: 'utf8',
+        },)
+          .filter(function jsonEntry(entry,): boolean {
+            return entry.endsWith('.json',);
+          },);
+        const [cacheEntry,] = cacheEntries;
+        if (cacheEntry === undefined)
+          throw new Error('Expected persistent summary cache entry.',);
+        /** Persisted JSON carrying explicit omission metadata. */
+        const cached = JSON.parse(readFileSync(
+          join(cacheRoot, cacheEntry,),
+          'utf8',
+        ),) as { readonly omittedCallableKeys?: readonly string[]; };
+        expect(cached.omittedCallableKeys?.length,).toBeGreaterThan(0,);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const warmSession = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({
+          project: warmSession.project,
+          activeSourceFile: warmSession.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Warm counters proving source restored rather than rescanned. */
+        const warmStats = effectSummaryCacheStats();
+        expect(warmStats.directSummaryBuildCount,).toBe(0,);
+        expect(warmStats.persistentSourceCacheHitCount,).toBeGreaterThan(0,);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'does not reuse an index that excluded the next active external-classified source',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();

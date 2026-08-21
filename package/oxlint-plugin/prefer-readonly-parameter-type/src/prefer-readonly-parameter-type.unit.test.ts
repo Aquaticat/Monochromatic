@@ -68,7 +68,7 @@ async function lintReadonly(fixturePath: string,): Promise<readonly OxlintDiagno
  *
  * @example
  * ```ts
- * preferenceClaim('Parameter "x" can be deeply readonly: property x is writable. Guidance.');
+ * preferenceClaim('Parameter "x" can be deeply readonly: `x` is writable. Guidance.');
  * ```
  */
 function preferenceClaim(message: string,): string {
@@ -181,13 +181,15 @@ children: [
     name: 'rejects former catalog and contract exemptions',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
-      /* Back to sixteen. Four programs were added here for the returned-result discharge's
-       * ownership guards and all four were removed again, because each was charged through
-       * the foreign-borrowed opaque boundary and never reached the discharge at all: removing
-       * every guard left their diagnostics byte-identical. A fixture that answers the same
-       * with and without the code it was written for tests that code not at all, and keeping
-       * it would have recorded a passing count as evidence of a guard it never exercised. */
-      expect(diagnostics.length,).toBe(16,);
+      /* Eleven after position-aware foreign observer inbounds removed five preference
+       * findings on callback formals receiving elements or receiver collections from marked
+       * boundaries. The remaining two preferences have mixed owned and foreign inbounds,
+       * while every unresolved implementation finding remains.
+       *
+       * Four programs were previously added here for returned-result discharge ownership
+       * guards and removed because each was charged through the foreign-borrowed opaque
+       * boundary without reaching that discharge. */
+      expect(diagnostics.length,).toBe(11,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return preferenceClaim(diagnostic.message,);
       },);
@@ -379,6 +381,58 @@ children: [
     },
   },),
   it({
+    name: 'propagates foreign ownership through exact collection observer positions',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-foreign-observer-invalid.ts',);
+      /**
+       * Preference findings isolated from separately tested effect categories.
+       */
+      const preferences = diagnostics.filter(function preference(diagnostic,): boolean {
+        return diagnostic.code
+          === 'prefer-readonly-parameter-type(prefer-readonly-parameter-types)';
+      },);
+      /**
+       * Preference messages for ordinary fold seed and mixed-inbound observer controls.
+       */
+      const messages = preferences.map(function diagnosticMessage(diagnostic,): string {
+        return preferenceClaim(diagnostic.message,);
+      },);
+      expect(messages.filter(function ordinarySeed(message,): boolean {
+        return message.startsWith('Parameter "seededAccumulator" can be deeply readonly:',);
+      },).length,).toBe(1,);
+      expect(messages.filter(function mixedObserver(message,): boolean {
+        return message.startsWith('Parameter "child" can be deeply readonly:',);
+      },).length,).toBe(1,);
+      [
+        'mapChild',
+        'mapValues',
+        'forEachChild',
+        'forEachValues',
+        'filterChild',
+        'filterValues',
+        'findChild',
+        'findValues',
+        'findLastChild',
+        'findLastValues',
+        'everyChild',
+        'everyValues',
+        'someChild',
+        'someValues',
+        'flatMapChild',
+        'flatMapValues',
+        'seededChild',
+        'seededValues',
+        'noSeedAccumulator',
+        'noSeedChild',
+        'noSeedValues',
+      ].forEach(function receiverDerivedParameter(parameterName,): void {
+        expect(messages.some(function matchingParameter(message,): boolean {
+          return message.startsWith(`Parameter "${parameterName}" can be deeply readonly:`,);
+        },),).toBe(false,);
+      },);
+    },
+  },),
+  it({
     name: 'keeps state reachable through a member result out of every discharge',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-member-channel-invalid.ts',);
@@ -513,7 +567,7 @@ children: [
       expect(messages.filter(function readonlyOffers(message,): boolean {
         return message.includes('can be deeply readonly',);
       },),).toEqual([
-        'Parameter "kept" can be deeply readonly: mutable Array has ReadonlyArray projection.',
+        'Parameter "kept" can be deeply readonly: parameter type uses mutable `Array`.',
       ],);
       /* The indexed control must stay silent: the alias records a mutation of the
        * parameter, so there is nothing to offer and nothing unresolved. Both
@@ -891,7 +945,8 @@ children: [
        * refusing them was a property of how the return was spelled rather than of what the
        * callable does. */
       expect(messages.filter(function offersReturningReceiver(message,): boolean {
-        return message.includes('"rows" can be deeply readonly: property',);
+        return message.includes('"rows" can be deeply readonly: `',)
+          && (!message.includes('parameter type uses mutable `Array`',));
       },).length,).toBe(6,);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
@@ -925,10 +980,9 @@ children: [
          * that exists because a wrong mutation was withdrawn rather than because a call was
          * discharged. `heldContainerRestructureEffect` pops an array it built around `box`,
          * so it writes nothing the caller owns. */
-        'Parameter "box" can be deeply readonly: property label is writable.',
-        'Parameter "held" can be deeply readonly: property label is writable.',
-        'Parameter "held" can be deeply readonly: property label is writable.',
-        'Parameter "rows" can be deeply readonly: mutable Array has ReadonlyArray projection.',
+        'Parameter "box" can be deeply readonly: `label` is writable.',
+        'Parameter "held" can be deeply readonly: `label` is writable.',
+        'Parameter "held" can be deeply readonly: `label` is writable.',
         /* Three offers from the returned-result discharge stood here, on the callables that
          * hand a container of the caller's rows back, and all three are gone. Removed rather
          * than left with a note, because a list that names offers the rule no longer makes
@@ -953,17 +1007,18 @@ children: [
          * able to show one, and these are that proof: they are offered, they were not offered
          * while every program here was exported, and they go quiet if the discharge is
          * disabled. Any future probe of this feature belongs beside them. */
-        'Parameter "rows" can be deeply readonly: property label is writable.',
-        'Parameter "rows" can be deeply readonly: property label is writable.',
+        'Parameter "rows" can be deeply readonly: `[number].label` is writable.',
+        'Parameter "rows" can be deeply readonly: `[number].label` is writable.',
         /* Four more once returning stopped having to be spelled outright: a call bound to a
          * `const` and one wrapped in an assertion, each with its caller. Listed rather than
          * counted for the same reason as the pair above, so a change that turns any of them
          * into a defect has to edit this list and say why. */
-        'Parameter "rows" can be deeply readonly: property label is writable.',
-        'Parameter "rows" can be deeply readonly: property label is writable.',
-        'Parameter "rows" can be deeply readonly: property label is writable.',
-        'Parameter "rows" can be deeply readonly: property label is writable.',
-        'Parameter "second" can be deeply readonly: property label is writable.',
+        'Parameter "rows" can be deeply readonly: `[number].label` is writable.',
+        'Parameter "rows" can be deeply readonly: `[number].label` is writable.',
+        'Parameter "rows" can be deeply readonly: `[number].label` is writable.',
+        'Parameter "rows" can be deeply readonly: `[number].label` is writable.',
+        'Parameter "rows" can be deeply readonly: `[number].label` is writable; parameter type uses mutable `Array`.',
+        'Parameter "second" can be deeply readonly: `label` is writable.',
       ],);
     },
   },),
@@ -1158,7 +1213,7 @@ children: [
       expect(messages.filter(function namesNeitherAssigned(message,): boolean {
         return message.includes('"neitherAssignedGotten"',);
       },),).toEqual([
-        'Parameter "neitherAssignedGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "neitherAssignedGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The promise pair, and this one is the reverse of every other pair here: the subject must be OFFERED
        * because the fix recovers precision, and the control must be withheld. A fix that looked through the
@@ -1166,7 +1221,7 @@ children: [
       expect(messages.filter(function namesAsyncLabel(message,): boolean {
         return message.includes('"asyncLabelGotten"',);
       },),).toEqual([
-        'Parameter "asyncLabelGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "asyncLabelGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesAsyncRow(message,): boolean {
         return message.includes('"asyncRowGotten"',)
@@ -1181,7 +1236,7 @@ children: [
       expect(messages.filter(function namesNeitherDecorated(message,): boolean {
         return message.includes('"neitherDecoratedGotten"',);
       },),).toEqual([
-        'Parameter "neitherDecoratedGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "neitherDecoratedGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The construction pair, asserted as agreement for the same reason the tag pair is. */
       expect(messages.filter(function namesBodyStored(message,): boolean {
@@ -1191,7 +1246,7 @@ children: [
       expect(messages.filter(function namesNeitherBodyStored(message,): boolean {
         return message.includes('"neitherBodyStoredGotten"',);
       },),).toEqual([
-        'Parameter "neitherBodyStoredGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "neitherBodyStoredGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The tag pair, asserted as agreement. Seeing a tag as an invocation must charge the one storing
        * caller state and spare the one storing a fresh row, and only the pair separates that from a
@@ -1203,7 +1258,7 @@ children: [
       expect(messages.filter(function namesNeitherTagStored(message,): boolean {
         return message.includes('"neitherTagStoredGotten"',);
       },),).toEqual([
-        'Parameter "neitherTagStoredGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "neitherTagStoredGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* Both held-callable subjects charged and the shared control offered. Asserted as agreement,
        * because following a receiver too eagerly would charge all three and following nothing charges
@@ -1220,7 +1275,7 @@ children: [
       expect(messages.filter(function namesNeitherHeld(message,): boolean {
         return message.includes('"neitherHeldGotten"',);
       },),).toEqual([
-        'Parameter "neitherHeldGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "neitherHeldGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* One pair per handoff syntax, asserted as agreement across all six at once. The three subjects
        * must draw no offer and the three controls must each draw exactly one, and only the pairing tells
@@ -1256,7 +1311,7 @@ children: [
       expect(messages.filter(function namesLabelledGotten(message,): boolean {
         return message.includes('"labelledGotten"',);
       },),).toEqual([
-        'Parameter "labelledGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "labelledGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The void-slot subject is charged and its control is not, which is the whole scope of that fix.
        * Asserted as agreement between the two rather than as a count, because a fallback that
@@ -1270,7 +1325,7 @@ children: [
       expect(messages.filter(function namesReportedGotten(message,): boolean {
         return message.includes('"reportedGotten"',);
       },),).toEqual([
-        'Parameter "reportedGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "reportedGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
@@ -1289,12 +1344,12 @@ children: [
       expect(messages.filter(function namesUntouched(message,): boolean {
         return message.includes('"untouched"',);
       },),).toEqual([
-        'Parameter "untouched" can be deeply readonly: property rows is writable.',
+        'Parameter "untouched" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesInspected(message,): boolean {
         return message.includes('"inspected"',);
       },),).toEqual([
-        'Parameter "inspected" can be deeply readonly: property rows is writable.',
+        'Parameter "inspected" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The forwarded capture speaks, and that is right rather than a leak. Its callee could
        * not account for the callable and named the boundary it handed it to, so the caller
@@ -1313,7 +1368,7 @@ children: [
       expect(messages.filter(function namesUnnamed(message,): boolean {
         return message.includes('"unnamed"',);
       },),).toEqual([
-        'Parameter "unnamed" can be deeply readonly: property rows is writable.',
+        'Parameter "unnamed" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The returned closure, withheld and silent. Its cause is the same retention the stores
        * above carry, because there is no call to name and no boundary a reader could inspect,
@@ -1329,12 +1384,12 @@ children: [
       expect(messages.filter(function namesUnreturned(message,): boolean {
         return message.includes('"unreturned"',);
       },),).toEqual([
-        'Parameter "unreturned" can be deeply readonly: property rows is writable.',
+        'Parameter "unreturned" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesDirect(message,): boolean {
         return message.includes('"direct"',);
       },),).toEqual([
-        'Parameter "direct" can be deeply readonly: property rows is writable.',
+        'Parameter "direct" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The transitive shapes on all three paths, withheld and silent, because each cause is
        * an escape rather than a call a reader could inspect. */
@@ -1348,7 +1403,7 @@ children: [
       expect(messages.filter(function namesRelayedFresh(message,): boolean {
         return message.includes('"relayedFresh"',);
       },),).toEqual([
-        'Parameter "relayedFresh" can be deeply readonly: property rows is writable.',
+        'Parameter "relayedFresh" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The conditional, the coalescence and the container, all withheld and all silent. */
       expect(messages.filter(function namesPossibleValues(message,): boolean {
@@ -1387,7 +1442,7 @@ children: [
       expect(messages.filter(function namesFreshGetter(message,): boolean {
         return message.includes('"freshGotten"',);
       },),).toEqual([
-        'Parameter "freshGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "freshGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesGottenThrough(message,): boolean {
         return message.includes('"gottenThrough"',)
@@ -1411,12 +1466,12 @@ children: [
       expect(messages.filter(function namesUntouchedByProducer(message,): boolean {
         return message.includes('"untouchedByProducer"',);
       },),).toEqual([
-        'Parameter "untouchedByProducer" can be deeply readonly: property rows is writable.',
+        'Parameter "untouchedByProducer" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesCountedByProducer(message,): boolean {
         return message.includes('"countedByProducer"',);
       },),).toEqual([
-        'Parameter "countedByProducer" can be deeply readonly: property rows is writable.',
+        'Parameter "countedByProducer" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The concise-body group. General rather than default-specific: the direct scan recorded a
        * returned effect under `isReturnStatement` alone, and a concise arrow body is the callable's
@@ -1434,12 +1489,12 @@ children: [
       expect(messages.filter(function namesConciseFreshStored(message,): boolean {
         return message.includes('"conciseFreshStored"',);
       },),).toEqual([
-        'Parameter "conciseFreshStored" can be deeply readonly: property rows is writable.',
+        'Parameter "conciseFreshStored" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesConciseCountedStored(message,): boolean {
         return message.includes('"conciseCountedStored"',);
       },),).toEqual([
-        'Parameter "conciseCountedStored" can be deeply readonly: property rows is writable.',
+        'Parameter "conciseCountedStored" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The callback-parameter capture group. A relation names which caller-owned value reached which
        * callback argument position, and the caller can reconstruct that because the caller chose the
@@ -1464,12 +1519,12 @@ children: [
       expect(messages.filter(function namesFreshHandedToCallback(message,): boolean {
         return message.includes('"freshHandedToCallback"',);
       },),).toEqual([
-        'Parameter "freshHandedToCallback" can be deeply readonly: property rows is writable.',
+        'Parameter "freshHandedToCallback" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesForwardedToCallback(message,): boolean {
         return message.includes('"forwardedToCallback"',);
       },),).toEqual([
-        'Parameter "forwardedToCallback" can be deeply readonly: property rows is writable.',
+        'Parameter "forwardedToCallback" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The named-default group. The value walk hands back the identifier a default names, and an
        * identifier is not a callable declaration, so the syntax filter that answered for an inline
@@ -1486,7 +1541,7 @@ children: [
       expect(messages.filter(function namesNamedFreshStored(message,): boolean {
         return message.includes('"namedFreshStored"',);
       },),).toEqual([
-        'Parameter "namedFreshStored" can be deeply readonly: property rows is writable.',
+        'Parameter "namedFreshStored" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The source-order pair, which adds no offer and is asserted for agreement rather than for a
        * count. Both defaults resolve to the same two callables and differ only in which branch is
@@ -1525,7 +1580,7 @@ children: [
       expect(messages.filter(function namesNeitherReached(message,): boolean {
         return message.includes('"neitherReached"',);
       },),).toEqual([
-        'Parameter "neitherReached" can be deeply readonly: property rows is writable.',
+        'Parameter "neitherReached" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The callback call-result group, and the second thing the callback branch returned before doing.
        * A relation cannot see through an inner call result, because a callee's summary does not exist
@@ -1544,7 +1599,7 @@ children: [
       expect(messages.filter(function namesFreshResultHanded(message,): boolean {
         return message.includes('"freshResultHanded"',);
       },),).toEqual([
-        'Parameter "freshResultHanded" can be deeply readonly: property rows is writable.',
+        'Parameter "freshResultHanded" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The accessor-forms group. Only plain property access was recognised, and three other spellings
        * run a getter just as surely: element access, a destructuring pattern, and a getter declared by a
@@ -1563,7 +1618,7 @@ children: [
       expect(messages.filter(function namesNeitherClassGotten(message,): boolean {
         return message.includes('"neitherClassGotten"',);
       },),).toEqual([
-        'Parameter "neitherClassGotten" can be deeply readonly: property rows is writable.',
+        'Parameter "neitherClassGotten" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,
@@ -1661,7 +1716,7 @@ children: [
       expect(messages.filter(function namesInvokedThrough(message,): boolean {
         return message.includes('"invokedThrough"',);
       },),).toEqual([
-        'Parameter "invokedThrough" can be deeply readonly: property rows is writable.',
+        'Parameter "invokedThrough" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesStoredInvoked(message,): boolean {
         return message.includes('"storedInvoked"',);
@@ -1694,7 +1749,7 @@ children: [
       expect(messages.filter(function namesUnreachedDefault(message,): boolean {
         return message.includes('"unreachedDefault"',);
       },),).toEqual([
-        'Parameter "unreachedDefault" can be deeply readonly: property rows is writable.',
+        'Parameter "unreachedDefault" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesPackagedDefaults(message,): boolean {
         return message.includes('"reachedDefault"',)
@@ -1711,7 +1766,7 @@ children: [
       expect(messages.filter(function namesFreshHolder(message,): boolean {
         return message.includes('"freshHolder"',);
       },),).toEqual([
-        'Parameter "freshHolder" can be deeply readonly: property rows is writable.',
+        'Parameter "freshHolder" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The two pass-three controls, carrying the count from thirty-six to thirty-eight. A thrown
        * message retains nothing writable, and a destructuring default that allocates names nothing
@@ -1724,7 +1779,7 @@ children: [
       expect(messages.filter(function namesFreshLocal(message,): boolean {
         return message.includes('"viaFreshLocal"',);
       },),).toEqual([
-        'Parameter "viaFreshLocal" can be deeply readonly: property rows is writable.',
+        'Parameter "viaFreshLocal" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       /* The two pass-two controls, carrying the count from thirty-three to thirty-five. A tag
        * handed a label retains nothing writable, and a returned iterator whose closure allocates
@@ -1740,7 +1795,7 @@ children: [
       expect(messages.filter(function namesCountedArgument(message,): boolean {
         return message.includes('"countedArgument"',);
       },),).toEqual([
-        'Parameter "countedArgument" can be deeply readonly: property rows is writable.',
+        'Parameter "countedArgument" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.filter(function namesHandedBack(message,): boolean {
         return message.includes('"handedBack"',)
@@ -1750,7 +1805,7 @@ children: [
       expect(messages.filter(function namesNeither(message,): boolean {
         return message.includes('"neither"',);
       },),).toEqual([
-        'Parameter "neither" can be deeply readonly: property rows is writable.',
+        'Parameter "neither" can be deeply readonly: `row` is writable; `rows` is writable.',
       ],);
       expect(messages.some(function forwardedNamesBoundary(message,): boolean {
         return message.includes('"forwarded"',)
@@ -1837,7 +1892,7 @@ children: [
        * three messages instead of one, adding offers for `second` and `shadowed`.
        * The `second` offer is the unsound one, whose annotation fails to compile. */
       expect(messages,).toEqual([
-        'Parameter "values" can be deeply readonly: mutable Array has ReadonlyArray projection.',
+        'Parameter "values" can be deeply readonly: `[number].label` is writable; parameter type uses mutable `Array`.',
       ],);
       /* Neither candidate may be offered, because either can be what the alias holds
        * when the mutation runs. Overwriting credits the mutation to whichever branch
@@ -1995,12 +2050,15 @@ children: [
       expect(messages.some(function verifiedAuthored(message,): boolean {
         return message.includes('Verified edit: Prefix the authored array type with `readonly`.');
       },),).toBe(true,);
-      expect(messages.some(function cautiousAuthored(message,): boolean {
-        return message.includes('No exact syntax replacement was proved for this authored type.');
+      expect(messages.some(function deepAuthored(message,): boolean {
+        return message.includes(
+          'Verified edit: Wrap the complete authored parameter type with `import(\'type-fest\').ReadonlyDeep<...>`.',
+        );
       },),).toBe(true,);
-      expect(messages.some(function noWorkspaceOrigin(message,): boolean {
+      expect(messages.some(function externalDeclaration(message,): boolean {
         return message.startsWith('Parameter "error" can be deeply readonly:')
-          && message.includes('No workspace-owned source origin was proved');
+          && message.includes('At least one reported writable path is declared outside this workspace.')
+          && message.includes('`Readonly<T>` is shallow');
       },),).toBe(true,);
       /**
        * Multi-origin guidance preserving uncertainty without location dump.
@@ -2045,6 +2103,73 @@ children: [
       },),).toBe(true,);
       expect(messages.every(function oneLine(message,): boolean {
         return (!message.includes('\n',)) && (!message.includes('\r',));
+      },),).toBe(true,);
+    },
+  },),
+  it({
+    name: 'reports every distinct writable path without a presentation budget',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-writable-paths-invalid.ts',);
+      expect(diagnostics.length,).toBe(1,);
+      /**
+       * Sole complete preference diagnostic for multi-branch type.
+       */
+      const message = diagnostics[0]?.message ?? '';
+      [
+        '`alpha.value` is writable',
+        '`beta.value` is writable',
+        '`byName[string].status` is writable',
+        '`children[number].type` is writable',
+        '`delta.value` is writable',
+        '`epsilon.value` is writable',
+        '`eta.value` is writable',
+        '`gamma.value` is writable',
+        '`zeta.value` is writable',
+      ].forEach(function containsCompletePath(path,): void {
+        expect(message,).toContain(path,);
+      },);
+      expect(message.includes('omitted',),).toBe(false,);
+      expect(message.includes('\n',),).toBe(false,);
+      expect(message.includes('\r',),).toBe(false,);
+    },
+  },),
+  it({
+    name: 'distinguishes local expressions from genuine callable return producers',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-local-origin-invalid.ts',);
+      /**
+       * Preference messages emitted by local producer matrix.
+       */
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      [
+        'localArrayRow',
+        'localPromiseRow',
+        'localSeedRow',
+      ].forEach(function localExpressionParameter(parameterName,): void {
+        /**
+         * Finding for exact local-expression control.
+         */
+        const message = messages.find(function matchingParameter(candidate,): boolean {
+          return candidate.startsWith(`Parameter "${parameterName}" can be deeply readonly:`,);
+        },);
+        expect(message,).toBeDefined();
+        expect(message,).toContain('originates in an inferred local expression at ');
+        expect(message?.includes('give that callable an explicit deeply readonly return type',),).toBe(false,);
+        expect(message?.includes('localOriginControls',),).toBe(false,);
+      },);
+      expect(messages.some(function genericCapabilityWithheld(message,): boolean {
+        return message.includes('localGenericRow',);
+      },),).toBe(false,);
+      expect(messages.some(function distinctUnionOrigins(message,): boolean {
+        return message.startsWith('Parameter "localUnionRow" can be deeply readonly:')
+          && message.includes('has multiple workspace-owned origins');
+      },),).toBe(true,);
+      expect(messages.some(function genuineReturnProducer(message,): boolean {
+        return message.startsWith('Parameter "returnedRow" can be deeply readonly:')
+          && message.includes('originates in callable "makeProducedRow" at ')
+          && message.includes('give that callable an explicit deeply readonly return type');
       },),).toBe(true,);
     },
   },),

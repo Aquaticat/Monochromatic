@@ -5,8 +5,12 @@
  */
 
 import type { EffectProjectSurfaces, } from './effect-project-fingerprint.ts';
-import { isSerializedEffectSummaries, } from './effect-summary-cache-validation.ts';
 import { EFFECT_CACHE_SCHEMA, } from './effect-summary-cache-identity.ts';
+import {
+  isCacheString,
+  MAX_CALLABLE_ARITY,
+} from './effect-summary-cache-primitive.ts';
+import { isSerializedEffectSummaries, } from './effect-summary-cache-validation.ts';
 import type { SerializedEffectSummaries, } from './effect-summary-serialization.ts';
 
 /**
@@ -39,6 +43,7 @@ export type PersistentEffectCacheEnvelope = {
   readonly dependenciesResolved: boolean;
   readonly directDependencies: readonly string[];
   readonly dependencyDigests: Readonly<Record<string, string>>;
+  readonly omittedCallableKeys: readonly string[];
   readonly payload: SerializedEffectSummaries;
 };
 
@@ -76,6 +81,58 @@ function isStringRecord(value: unknown,): value is Readonly<Record<string, strin
   return Object.values(value,)
     .every(function stringValue(entry,): boolean {
       return (typeof entry) === 'string';
+    },);
+}
+
+/**
+ * Tests whether parsed omission identities are bounded unique cache strings.
+ *
+ * @param value - Parsed omission list.
+ *
+ * @param fileName - Source identity every omitted callable must belong to.
+ *
+ * @param payload - Validated summaries that omissions must not duplicate.
+ *
+ * @returns whether every identity belongs to source,
+ * is absent from payload,
+ * and appears once.
+ *
+ * @example
+ * ```ts
+ * isOmittedCallableKeys({
+ *   value: ['source.ts:1:2:3'],
+ *   fileName: 'source.ts',
+ *   payload: [],
+ * });
+ * ```
+ */
+function isOmittedCallableKeys({
+  value,
+  fileName,
+  payload,
+}: {
+  readonly value: readonly unknown[];
+  readonly fileName: string;
+  readonly payload: SerializedEffectSummaries;
+}): boolean {
+  if (value.length > MAX_CALLABLE_ARITY)
+    return false;
+  /**
+   * Validated string identities rejecting cache amplification through duplicates.
+   */
+  const keys = value.filter(function cacheString(entry,): entry is string {
+    return isCacheString(entry,);
+  },);
+  /**
+   * Persisted summary identities that cannot also be deliberate omissions.
+   */
+  const summaryKeys = new Set(payload.map(function summaryKey([key,],): string {
+    return key;
+  },),);
+  return (keys.length === value.length)
+    && (new Set(keys,).size === keys.length)
+    && keys.every(function validOmissionKey(key,): boolean {
+      return key.startsWith(`${fileName}:`,) && (!summaryKeys.has(key,));
     },);
 }
 
@@ -176,7 +233,13 @@ export function validatePersistentEnvelope({
       dependencyDigests: value.dependencyDigests,
       sourceDigests: state.sourceDigests,
     },))
-    || (!isSerializedEffectSummaries(value.payload,)))
+    || (!Array.isArray(value.omittedCallableKeys,))
+    || (!isSerializedEffectSummaries(value.payload,))
+    || (!isOmittedCallableKeys({
+      value: value.omittedCallableKeys,
+      fileName: identity.fileName,
+      payload: value.payload,
+    },)))
     return ENVELOPE_INVALID;
   return {
     schema: EFFECT_CACHE_SCHEMA,
@@ -191,6 +254,10 @@ export function validatePersistentEnvelope({
         return (typeof entry) === 'string';
       },),
     dependencyDigests: value.dependencyDigests,
+    omittedCallableKeys: value.omittedCallableKeys
+      .filter(function omittedKey(entry,): entry is string {
+        return (typeof entry) === 'string';
+      },),
     payload: value.payload,
   };
 }

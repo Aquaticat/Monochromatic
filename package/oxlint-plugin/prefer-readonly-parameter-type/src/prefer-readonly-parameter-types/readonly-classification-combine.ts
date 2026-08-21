@@ -1,22 +1,34 @@
 /**
- * Readonly classification singleton and constituent combination.
+ * Readonly classification combination by diagnostic priority.
  *
  * @module
  */
 
-import type { ReadonlyClassification, } from './readonly-classifier.ts';
+import {
+  DEEP_READONLY,
+  normalizeWritablePaths,
+  type ReadonlyClassification,
+} from './readonly-classification-model.ts';
 
-/**
- * Deep-readonly singleton result.
- */
-export const DEEP_READONLY: ReadonlyClassification = { kind: 'deep-readonly', };
+export { DEEP_READONLY, } from './readonly-classification-model.ts';
 
 /**
  * Combines constituent classifications by diagnostic priority.
  *
- * @param classifications - Results from union or intersection constituents.
+ * Projected and opaque capability evidence withhold preference reporting,
+ * so either outranks mutable data paths.
+ * When every non-readonly branch is mutable,
+ * every distinct writable path is retained without a presentation budget.
  *
- * @returns highest-priority non-readonly classification or sound readonly.
+ * @param classifications - Results from union,
+ * intersection,
+ * property,
+ * element,
+ * or index constituents.
+ *
+ * @returns highest-priority capability classification,
+ * complete mutable evidence,
+ * or sound readonly.
  *
  * @example
  * ```ts
@@ -26,14 +38,34 @@ export const DEEP_READONLY: ReadonlyClassification = { kind: 'deep-readonly', };
 export function combineClassifications(
   classifications: readonly ReadonlyClassification[],
 ): ReadonlyClassification {
-  return classifications.find(function projectedCapability(result,): boolean {
+  /**
+   * First projected capability preserving established diagnostic priority.
+   */
+  const projected = classifications.find(function projectedCapability(result,): boolean {
     return result.kind === 'projected-readonly-capability';
-  },)
-    ?? classifications.find(function opaque(result,): boolean {
-      return result.kind === 'opaque-capability';
-    },)
-    ?? classifications.find(function mutable(result,): boolean {
-      return result.kind === 'mutable';
-    },)
-    ?? DEEP_READONLY;
+  },);
+  if (projected !== undefined)
+    return projected;
+  /**
+   * First unresolved capability preserving fail-closed preference behavior.
+   */
+  const opaque = classifications.find(function opaqueCapability(result,): boolean {
+    return result.kind === 'opaque-capability';
+  },);
+  if (opaque !== undefined)
+    return opaque;
+  /**
+   * Every writable path from otherwise compatible mutable branches.
+   */
+  const writablePaths = normalizeWritablePaths(
+    classifications.flatMap(function mutablePaths(result,) {
+      return result.kind === 'mutable' ? result.writablePaths : [];
+    },),
+  );
+  return writablePaths.length === 0
+    ? DEEP_READONLY
+    : {
+      kind: 'mutable',
+      writablePaths,
+    };
 }

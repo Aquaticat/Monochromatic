@@ -78,9 +78,13 @@ so a bare `Array.sort()`,
 and `clear` are each mutated and opaque rather than accepted.
 
 What remains to prove is which user code the member can run over receiver state.
-The member's instantiated signature answers that:
+The member's instantiated signature answers effect propagation:
 it names the argument positions receiving the receiver or its type arguments,
 and an observer at such a position is analyzed as ordinary owned source whose effects propagate to the receiver.
+Foreign ownership uses a stricter position relation for each supported observer member,
+so element and receiver positions inherit provenance while indexes,
+`thisArg`,
+and independent fold seeds do not.
 A member handing receiver state to no caller-supplied observer proves nothing this way and stays opaque,
 which covers `join`,
 `toLocaleString`,
@@ -124,15 +128,19 @@ semantic rewrites remain suggestion-only.
 Every readonly-preference finding includes one complete action branch:
 
 - a mechanically verified local replacement names the exact transformation;
-- one workspace-owned inferred origin names its callable or type and repository-relative `path:line`,
+- one workspace-owned inferred origin names its proved callable,
+  named type,
+  or exact local expression plus repository-relative `path:line`,
   then identifies a likely producer edit and states that no exact producer syntax was proved;
 - several origins state that no single edit site was proved and direct the reader to establish one common deeply
   readonly element type at their merge boundary;
 - incomplete semantic declaration resolution withholds unique-origin advice;
+- an external writable declaration prioritizes a project-owned deep projection and explains that `Readonly<T>` is
+  shallow;
 - no workspace-owned origin directs the reader to introduce an explicit deeply readonly type at the nearest
   project-owned boundary supplying the callback value;
-- an authored type with no verified syntax replacement names the writable path and requires type checking after
-  changing its declaration or projection.
+- an authored type with no verified syntax replacement names every distinct reachable writable path and requires
+  type checking after changing its declaration or projection.
 
 Origin declarations are resolved eagerly in the active TypeScript snapshot.
 The evidence cache stores immutable source identity,
@@ -141,8 +149,13 @@ repository-relative path,
 and line,
 not a semantic handle tied to a replaceable project object.
 Default-library and external-library declarations never become editable producer origins.
-Distinct producers on one source line retain distinct full-offset identities,
-while union constituents produced by one callable normalize to that one callable.
+Distinct producers on one source line retain distinct full-offset identities.
+Local arrays,
+object literals,
+generic arguments,
+promise values,
+and fold seeds remain local expression producers rather than inheriting an enclosing callable.
+Union constituents normalize to one callable only when return flow proves that callable produced them.
 
 Oxlint's JS plugin API supports one current-file primary range and no cross-file related range.
 The consumer therefore remains the underlined location,
@@ -168,6 +181,8 @@ and stale-contract reports.
 
 Each active source expands analysis through exact owned callee and callback identities only.
 A reached `ForeignBorrowed` candidate asks TypeScript for exact signature usages and walks backwards through callable owners.
+Inline collection observers use their containing call directly,
+and referenced observers use their argument reference when TypeScript correctly reports no direct invocation.
 Non-call escapes,
 top-level or excluded callers,
 unavailable usage queries,
@@ -181,12 +196,16 @@ When several split rules are enabled in one Oxlint worker,
 the first rule computes callable and parameter evidence,
 and sibling reporters reuse the completed immutable result.
 Failed or partial computations are never cached.
-Schema-4 persistent entries validate exact source,
+Schema-6 persistent entries validate exact source,
 module,
 semantic call,
 compiler-option,
 declaration-surface,
 and lockfile identities across later processes.
+They also persist validated source-local callable omissions,
+so a warm process preserves the cold process's narrow fail-closed state.
+Cold and restored omissions emit concise `warn` records,
+while caught stacks remain available only at debug level.
 `closeSemanticBridge()` clears every process cache.
 
 CLI diagnostics are authoritative because Oxlint's language server does not execute JavaScript plugins.

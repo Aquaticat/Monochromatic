@@ -5,17 +5,12 @@
  */
 
 import type { SourceFile, } from 'typescript/unstable/ast';
-import type { Project, } from 'typescript/unstable/sync';
-
-import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
+import type { DemandDrivenEffectIndexOptions, } from './effect-demand-index-options.ts';
 import { sourceIdentity, } from './effect-source-identity.ts';
-import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import { createDependencyClosureResolver, } from './effect-dependency-closure.ts';
 import { propagateEffects, } from './effect-fixed-point-propagation.ts';
-import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import { effectPublicSummary, } from './effect-public-summary.ts';
 import type { ParameterIndex, } from './effect-slot-identity.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
@@ -30,6 +25,11 @@ import {
   storeCreatedSummariesForSource,
 } from './effect-summary-cache.ts';
 import {
+  recordDirectSummaryOmission,
+  reportDirectSummaryOmissions,
+  restoreCachedSummaryOmissions,
+} from './effect-summary-omission.ts';
+import {
   callableKey,
   collectAstNodes,
   type EffectCallableDeclaration,
@@ -42,35 +42,12 @@ import {
   type EffectSummaryIndex,
   NO_EFFECT_SUMMARY,
 } from './effect-summary-index.ts';
-import {
-  externalCallableEffect,
-  type ExternalEffectIndexBuilder,
-} from './external-callable-effect.ts';
+import { externalCallableEffect, } from './external-callable-effect.ts';
 import { completeForeignBorrowedGraph, } from './foreign-borrowed-complete-graph.ts';
 import {
   provenRootEntry,
   scopeNamesOwnershipMarker,
 } from './foreign-borrowed-demand.ts';
-
-/**
- * Tagged logger for effect index construction.
- */
-const dl = tagged({ tag: 'effect-demand-index', },);
-
-/**
- * Inputs needed to construct one exact-snapshot demand index.
- */
-type DemandDrivenEffectIndexOptions = {
-  readonly project: Project;
-  readonly indexedSourceFiles: ReadonlyMap<string, SourceFile>;
-  readonly projectFingerprint: EffectProjectFingerprint;
-  readonly scopeKey: string;
-  readonly projectDigest: string;
-  readonly cacheRootOverride?: string;
-  readonly analysisRoot?: string;
-  readonly buildIndex: ExternalEffectIndexBuilder;
-  readonly analysisBudget: EffectAnalysisBudget;
-};
 
 /**
  * Creates mutable index that expands only from requested callable sources.
@@ -156,6 +133,7 @@ export function createDemandDrivenEffectIndex(
   const pendingStores = new Map<string, {
     readonly sourceFile: SourceFile;
     readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
+    readonly omittedCallableKeys: readonly string[];
   }>();
   /**
    * Whether a proof could find any marker to anchor on in this scope.
@@ -210,6 +188,11 @@ export function createDemandDrivenEffectIndex(
         fileName: sourceFile.fileName,
         edges: hit.edges,
       },);
+      restoreCachedSummaryOmissions({
+        allOmittedKeys: omittedCallableKeys,
+        restoredKeys: hit.omittedCallableKeys,
+        sourceFileName: sourceFile.fileName,
+      },);
       return {
         fileSummaries: hit.summaries,
         dependencies: reachedSourceFileNames({
@@ -225,6 +208,10 @@ export function createDemandDrivenEffectIndex(
       .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
         return isEffectCallableDeclaration(node,);
       },);
+    /**
+     * Callable identities omitted while scanning this exact source.
+     */
+    const sourceOmittedCallableKeys = new Set<string>();
     /**
      * Fresh direct summaries for reached source.
      */
@@ -263,13 +250,19 @@ export function createDemandDrivenEffectIndex(
          * cannot act on it. The live cause is an upstream panic recorded in
          * `doc/troubleshooting/typescript-go-tuple-type-panic.md`, which no ordering of API
          * calls avoids. */
-        omittedCallableKeys.add(callableKey(declaration,),);
-        dl.warn(
-          `omitting ${callableKey(declaration,)} from the effect index: ${caughtValueStack(error,)}`,
-        );
+        recordDirectSummaryOmission({
+          allOmittedKeys: omittedCallableKeys,
+          sourceOmittedKeys: sourceOmittedCallableKeys,
+          key: callableKey(declaration,),
+          error,
+        },);
         return [];
       }
     },),);
+    reportDirectSummaryOmissions({
+      omittedKeys: sourceOmittedCallableKeys,
+      sourceFileName: sourceFile.fileName,
+    },);
     /**
      * Owned source dependencies discovered through semantic call edges.
      */
@@ -286,6 +279,7 @@ export function createDemandDrivenEffectIndex(
       {
         sourceFile,
         summaries: fileSummaries,
+        omittedCallableKeys: [...sourceOmittedCallableKeys,].toSorted(),
       },
     );
     return {
@@ -380,6 +374,7 @@ export function createDemandDrivenEffectIndex(
         summaries: pendingStore.summaries,
         surfaces: projectFingerprint.surfaces,
         closure,
+        omittedCallableKeys: pendingStore.omittedCallableKeys,
       },);
     },);
     pendingStores.clear();
