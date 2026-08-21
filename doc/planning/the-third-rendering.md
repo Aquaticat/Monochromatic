@@ -1158,3 +1158,29 @@ The source arm of the same check was probed and left alone. It returns `unknown`
 on a strict refusal, `translate-repair.ts` already records that as
 `translate-unvalidated`, and zero of the thirteen bed slices reach it. A
 recorded fail-open with no live case is not worth changing without one.
+
+## How much of the corpus the mid-element cut puts at risk
+
+Measured while run 7 was in flight, since it needs no quota. Counts only: no
+passage is reproduced.
+
+    -   18 of 92 English pages carry block-level HTML.
+    -   12 of 92 entries use `<details>` specifically, which is the multi-line
+        wrapper a slice boundary can land inside. `XingZ60` uses six of them.
+    -   Of the sixth bed's thirteen slices, exactly one page needed the relaxed
+        grammar, and it is `Zha_Ke#1`.
+
+The probe that produced the first two numbers was validated against a positive
+control before it was believed: an earlier version asked
+`validateTranslatedSlice` for the grammar behind a pass, which cannot work,
+because the floor refuses such a page before any verdict carries a grammar. It
+reported zero, including for `Zha_Ke#1`, whose page is known to refuse the
+strict grammar. Reading `readPageSkeleton` directly reports `Zha_Ke#1` and one
+other nothing, which is the answer.
+
+So `Zha_Ke#1` is not a one-off. Roughly one entry in eight carries an element a
+slice boundary can cut, several of those pages run to hundreds of lines, and
+after the floor fix a slice cut through one ships nothing at all. That makes
+#154 a shipping blocker for that fraction of the corpus rather than a tidiness
+issue, and it should be read alongside #71, which found a different defect on
+the same `XingZ60` entry.
