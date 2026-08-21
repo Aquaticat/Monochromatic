@@ -23,6 +23,19 @@ import type { DocumentNode, } from './document-node.ts';
 // each is worth naming: a block placed nowhere, a block placed twice, which
 // inflates a run past its budget, and blocks placed out of document order,
 // which gathers text from two places into one slice.
+//
+// ONE TRANSLATION BLOCK MAY LEGITIMATELY REACH NO SLICE, and only one kind:
+// one the roster's pairing accounted for nowhere. `declined-target-runs.ts`
+// states why such a block has to leave every slice span rather than ride inside
+// a neighbouring one, and `#157` records the letter that was nearly deleted
+// because it did not.
+//
+// THIS DOES NOT WEAKEN THE RULE, it sharpens it. The enemy here was never
+// absence, it was SILENCE: the 2026-08-20 incident was a block vanishing with
+// nothing recording it. So a target block must now be in a slice OR in the
+// declined list, a block in NEITHER still fails, and a declined block that
+// turns up in a slice anyway fails too, because then two parts of the
+// preparation disagree about where it went.
 
 /**
  * Raised when carving a chunk pair loses, repeats or reorders its blocks.
@@ -139,11 +152,37 @@ export function assertSliceCoverage(
   {
     pair,
     carved,
+    declined = new Set<string>(),
   }: {
     readonly pair: ChunkPair;
     readonly carved: readonly ChunkPair[];
+    readonly declined?: ReadonlySet<string>;
   },
 ): void {
+  /**
+   * Translation blocks the slices carry, needed before the sides are built so a
+   * declined block turning up in one can be named as its own fault.
+   */
+  const placedTargets = idsOf({
+    runs: carved.map(function toRun(slice,): readonly DocumentNode[] {
+      return slice.target
+        .nodes;
+    },),
+  },);
+
+  /**
+   * Declined blocks a slice carries anyway, which contradicts the decline.
+   */
+  const contradicted = placedTargets.filter(function isDeclined(id,): boolean {
+    return declined.has(id,);
+  },);
+  if (contradicted.length > 0)
+    throw new SliceCoverageError({
+      message: `slicing chunk ${String(pair.source
+        .chunkIndex,)}: target ${String(contradicted.length,)} declined blocks reached a slice: ${
+        contradicted.join(', ',)
+      }`,
+    },);
   /**
    * Both sides, each with the blocks it was given and the blocks it placed.
    */
@@ -163,16 +202,15 @@ export function assertSliceCoverage(
     },
     {
       name: 'target',
+      // Declined blocks are not expected in a slice, so they drop out of the
+      // comparison entirely rather than reading as losses.
       expected: idsOf({
         runs: [ pair.target
           .nodes, ],
+      },).filter(function isNotDeclined(id,): boolean {
+        return !declined.has(id,);
       },),
-      placed: idsOf({
-        runs: carved.map(function toRun(slice,): readonly DocumentNode[] {
-          return slice.target
-            .nodes;
-        },),
-      },),
+      placed: placedTargets,
     },
   ];
   for (const side of sides) {

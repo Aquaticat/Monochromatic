@@ -16,6 +16,7 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 import { parseDocument, } from './parse-document.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertContainerIntegrity, } from './container-integrity.ts';
+import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
 import { assertSliceCoverage, } from './slice-coverage.ts';
 import { assertSpanContiguity, } from './span-contiguity.ts';
 import {
@@ -228,12 +229,32 @@ export function prepareDocumentPair(
         }),
     },);
 
+    /**
+     * Translation blocks this chunk's pairing accounted for nowhere.
+     *
+     * Derived here rather than returned by subdivision, from the same pairing
+     * subdivision was handed, so the assertion and the carving cannot drift.
+     */
+    const declined = (blockPairings === undefined)
+      ? new Set<string>()
+      : declinedTargetIdsOfPairing({
+        pairs: blockPairings.get(pairIndex,) ?? [],
+        sourceNodes: pair.source
+          .nodes,
+        targetNodes: pair.target
+          .nodes,
+      },);
+
     // BEFORE ANYTHING READS THEM. A block that reached no slice leaves the
     // document silently, and every later check works from the slices, so this
     // is the last point where the blocks it was given are still in hand.
+    // A DECLINED block is the one exception, and it is passed in rather than
+    // inferred so the assertion still fails on every block that went missing
+    // without a decision behind it.
     assertSliceCoverage({
       pair,
       carved,
+      declined,
     },);
 
     /**

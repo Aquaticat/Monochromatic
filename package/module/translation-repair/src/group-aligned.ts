@@ -2,6 +2,7 @@ import {
   alignBlocks,
   type AlignmentStep,
 } from './align-blocks-walk.ts';
+import { declinedTargetIds, } from './declined-target-runs.ts';
 import type { DocumentNode, } from './document-node.ts';
 
 //region Aligned run grouping
@@ -235,6 +236,18 @@ export function groupNodesAligned(
     sourceChars: 0,
     targetChars: 0,
   };
+
+  /**
+   * Whether a declined block just ended the run being filled.
+   *
+   * A DECLINED BLOCK MUST CLOSE THE RUN, not merely be skipped. A run's text is
+   * cut from its first offset to its last, so a run holding the blocks either
+   * side of a declined one still contains the declined bytes, and
+   * `span-contiguity.ts` refuses that shape for exactly this reason. Closing
+   * here is what puts the block BETWEEN two slices, where `splice-slices.ts`
+   * leaves it untouched.
+   */
+  let closedByDecline = false;
   // A SUPPLIED PAIRING WINS, because it came from models that read both texts
   // while `alignBlocks` scores kind, script-neutral tokens and length. On this
   // corpus those three are exhausted: kind is constant across paragraphs,
@@ -242,12 +255,43 @@ export function groupNodesAligned(
   // four correct pairings in eight on `saurikissa` and goes no further.
   // `doc/decision/llm-assisted-block-pairing.md` decides it; the scorer remains
   // the fallback when the roster cannot be reached or cannot agree.
-  for (
-    const step of (steps ?? alignBlocks({
-      sourceNodes,
+  /**
+   * Steps the grouping walks, the roster's when it supplied them.
+   */
+  const walk = steps ?? alignBlocks({
+    sourceNodes,
+    targetNodes,
+  },);
+
+  /**
+   * Blocks no original claims, EMPTY when the scorer produced the walk.
+   *
+   * The scorer cannot abstain, so its `target-only` steps report where its
+   * heuristic ran out rather than a decision that nothing renders this block.
+   * Dropping those would hide content on the strength of length and token
+   * overlap, which is the evidence `llm-assisted-block-pairing.md` found
+   * insufficient in the first place.
+   */
+  const declined = (steps === undefined)
+    ? new Set<string>()
+    : declinedTargetIds({
+      steps,
       targetNodes,
-    },))
-  ) {
+    },);
+  for (const step of walk) {
+    /**
+     * Block this step would contribute on the translation side, absent when it
+     * contributes none, read before anything else so a declined one can end the
+     * run without entering it.
+     */
+    const declinedHere = (step.kind === 'target-only')
+      && (targetNodes[step.targetIndex] !== undefined)
+      && declined.has(targetNodes[step.targetIndex].id,);
+    if (declinedHere) {
+      closedByDecline = true;
+      continue;
+    }
+
     /**
      * Original block this step contributes, when it contributes one.
      */
@@ -314,13 +358,18 @@ export function groupNodesAligned(
     const overBudget = (current === undefined)
       || ((open.sourceChars + sourceChars) > sourceBudget)
       || ((open.targetChars + targetChars) > targetBudget);
-    if ((!cohesive) && overBudget) {
+    // A DECLINE OUTRANKS COHESION, because cohesion is about which slice a
+    // block belongs to and this is about which bytes a slice's span covers.
+    // Keeping a continuation attached across a declined block would put the
+    // declined bytes back inside the span.
+    if (closedByDecline || ((!cohesive) && overBudget)) {
       runs.push({
         sourceRun: [ ...sourceNode, ],
         targetRun: [ ...targetNode, ],
       },);
       open.sourceChars = sourceChars;
       open.targetChars = targetChars;
+      closedByDecline = false;
       continue;
     }
     current.sourceRun

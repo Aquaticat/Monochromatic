@@ -8,6 +8,11 @@
 // round that gathers agreement, and the conversion into the vocabulary the
 // grouper already reads all answer one question no other stage can.
 
+export {
+  declinedTargetBlocks,
+  declinedTargetIds,
+  declinedTargetIdsOfPairing,
+} from './declined-target-runs.ts';
 export { blockPairingToSteps, } from './pair-blocks-steps.ts';
 export {
   type BlockPairingOutcome,
