@@ -23,6 +23,7 @@ import type {
 import { completeAdvisorAttempts, } from './advisor-completion.ts';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
+import { assertAdvisorEndpointOutputCapacity, } from './output-eligibility.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -210,6 +211,19 @@ export async function completeAdvisor(
   const mutableModel = options.model as ForeignHostCapability<Model<Api>>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /**
+   * Canonical selected model slug used in eligibility and attempt diagnostics.
+   */
+  const modelSlug = `${options.model
+    .provider}/${options.model
+      .id}`;
+  assertAdvisorEndpointOutputCapacity({
+    endpointSlug: modelSlug,
+    advertisedOutputTokens: options.model
+      .maxTokens,
+    maxAdvisorOutputTokens: options.config
+      .maxAdvisorOutputTokens,
+  },);
+  /**
    * Request auth resolved through pi's model registry.
    */
   const auth = await options
@@ -302,12 +316,6 @@ export async function completeAdvisor(
     ...(providerHeaders
       === undefined ? {} : { headers: providerHeaders, }),
   };
-  /**
-   * Canonical selected model slug used in attempt diagnostics.
-   */
-  const modelSlug = `${options.model
-    .provider}/${options.model
-      .id}`;
 
   return await completeAdvisorAttempts({
     modelSlug,

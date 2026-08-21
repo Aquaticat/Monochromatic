@@ -7,7 +7,6 @@
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
-  AdvisorModelSelection,
   EffectiveModelScope,
   ScopedAdvisorModel,
 } from './types.ts';
@@ -119,49 +118,41 @@ export function requireAdvisorScopeWithOutputCapacity(
 }
 
 /**
- * Refuse explicit Advisor selection whose endpoint advertises insufficient output capacity.
+ * Refuse Advisor endpoint whose advertised output capacity is insufficient.
  *
- * @param selection - explicit scoped Advisor selection
+ * @param endpointSlug - canonical provider and model endpoint identity
+ *
+ * @param advertisedOutputTokens - endpoint's advertised maximum output
  *
  * @param maxAdvisorOutputTokens - configured minimum advertised output capacity
  *
- * @throws when selected endpoint advertises less than configured requirement
+ * @throws when endpoint advertises less than configured requirement
  *
  * @example
  * ```typescript
- * assertAdvisorModelOutputCapacity({
- *   selection,
+ * assertAdvisorEndpointOutputCapacity({
+ *   endpointSlug: 'provider/model',
+ *   advertisedOutputTokens: 16_000,
  *   maxAdvisorOutputTokens: 32_000,
  * });
  * ```
  */
-export function assertAdvisorModelOutputCapacity(
+export function assertAdvisorEndpointOutputCapacity(
   {
-    selection,
+    endpointSlug,
+    advertisedOutputTokens,
     maxAdvisorOutputTokens,
   }: ForeignBorrowed<Readonly<{
-    selection: AdvisorModelSelection;
+    endpointSlug: string;
+    advertisedOutputTokens: number;
     maxAdvisorOutputTokens: number;
   }>>,
 ): void {
-  /**
-   * Output capacity advertised by selected model endpoint.
-   */
-  const advertisedOutputTokens = selection
-    .selected
-    .model
-    .maxTokens;
   if (advertisedOutputTokens >= maxAdvisorOutputTokens)
     return;
 
-  /**
-   * Canonical endpoint identity used in rejection diagnostic.
-   */
-  const selectedSlug = selection
-    .selected
-    .canonicalSlug;
   throw new Error(
-    `advisor: requested model "${selectedSlug}" is ineligible because Advisor requires ${String(maxAdvisorOutputTokens,)} output tokens but its endpoint advertises ${String(advertisedOutputTokens,)} output tokens`,
+    `advisor: requested model "${endpointSlug}" is ineligible because Advisor requires ${String(maxAdvisorOutputTokens,)} output tokens but its endpoint advertises ${String(advertisedOutputTokens,)} output tokens`,
   );
 }
 

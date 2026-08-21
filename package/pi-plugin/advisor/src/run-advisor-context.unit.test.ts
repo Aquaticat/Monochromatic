@@ -173,6 +173,74 @@ await describe({
       },
     },),
     it({
+      name: 'refuses explicit insufficient endpoint before provider dispatch',
+      fn: async function testExplicitOutputCapacityBeforeProviderDispatch() {
+        /** Faux provider exposing eligible and ineligible endpoints in one scope. */
+        const providerFixture = fauxProvider({
+          api: 'faux',
+          provider: 'mixed-provider',
+          models: [
+            {
+              id: 'eligible-reviewer',
+              reasoning: false,
+              maxTokens: advisorConfig.maxAdvisorOutputTokens,
+            },
+            {
+              id: 'limited-reviewer',
+              reasoning: false,
+              maxTokens: advisorConfig.maxAdvisorOutputTokens - 1,
+            },
+          ],
+        },);
+        providerFixture.setResponses([
+          fauxAssistantMessage('unexpected advisor answer',),
+        ],);
+        /** Extension context exposing both endpoints through live scope. */
+        const ctx = {
+          cwd: '/repo',
+          scopedModels: providerFixture.models,
+          modelRegistry: {
+            getAll() {
+              return providerFixture.models;
+            },
+            async getApiKeyAndHeaders() {
+              return {
+                ok: true,
+                apiKey: 'test-key',
+              };
+            },
+            getProvider() {
+              return providerFixture.provider;
+            },
+          },
+          sessionManager: {
+            buildContextEntries() {
+              return [];
+            },
+          },
+        } as unknown as ExtensionContext;
+        /** Explicit eligibility error returned before provider invocation. */
+        const caught = await captureAsyncError(
+          async function runExplicitIneligibleAdvisor() {
+            return await runAdvisor({
+              ctx,
+              config: advisorConfig,
+              requestedSlug: 'mixed-provider/limited-reviewer',
+            },);
+          },
+        );
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          `requires ${String(advisorConfig.maxAdvisorOutputTokens,)} output tokens`,
+        );
+        expect((caught as Error).message,).toContain(
+          `advertises ${String(advisorConfig.maxAdvisorOutputTokens - 1,)} output tokens`,
+        );
+        expect(providerFixture.state.callCount,).toBe(0,);
+      },
+    },),
+    it({
       name: 'uses compaction-aware session entries instead of full branch',
       fn: async function testCompactionAwareBoundary() {
         /** Faux provider and selected model. */
@@ -182,6 +250,7 @@ await describe({
           models: [{
             id: 'reviewer',
             reasoning: false,
+            maxTokens: advisorConfig.maxAdvisorOutputTokens,
           },],
         },);
         /** Provider contexts captured by response callback. */
@@ -201,6 +270,9 @@ await describe({
           cwd: '/repo',
           scopedModels: [providerFixture.getModel(),],
           modelRegistry: {
+            getAll() {
+              return providerFixture.models;
+            },
             async getApiKeyAndHeaders() {
               return {
                 ok: true,
@@ -226,6 +298,7 @@ await describe({
         await runAdvisor({
           ctx,
           config: advisorConfig,
+          requestedSlug: 'faux-provider/reviewer',
         },);
 
         expect(contextCalls,).toEqual(['buildContextEntries',],);

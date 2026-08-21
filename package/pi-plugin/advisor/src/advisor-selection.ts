@@ -10,7 +10,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
 import {
-  assertAdvisorModelOutputCapacity,
+  assertAdvisorEndpointOutputCapacity,
   requireAdvisorScopeWithOutputCapacity,
 } from './output-eligibility.ts';
 import type {
@@ -80,8 +80,12 @@ export function selectAdvisorModel(
       requestedSlug,
       modelRegistry,
     },);
-    assertAdvisorModelOutputCapacity({
-      selection,
+    assertAdvisorEndpointOutputCapacity({
+      endpointSlug: selection.selected
+        .canonicalSlug,
+      advertisedOutputTokens: selection.selected
+        .model
+        .maxTokens,
       maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
     },);
     return selection;
