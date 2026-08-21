@@ -357,6 +357,18 @@ and refuses to decline any block a further rendering follows
 with no new pairing opened in between.
 Inside a rendering, staying in the slice is the lesser cost.
 
+HOW OFTEN EITHER SHAPE OCCURS, measured over every cached roster pairing there is,
+which is six files across five entries.
+No pairing merges anything.
+One splits: `Weideriche_` renders source block 2 as target blocks 2 and 3,
+which are adjacent, so nothing unclaimed sits between them
+and that entry declines nothing either way.
+So both rules are preventive on this evidence rather than curative.
+That is the honest reading, and it does not lower their value:
+the merge rule guards a silent loss of the whole decline for a chunk,
+and the sandwich rule guards a throw at preparation on a legal pairing,
+neither of which would announce itself as coming from here.
+
 NEITHER SHAPE IS `Zha_Ke`'S.
 Its recorded pairing is `0->0, 1->1, 2->4, 3->5`,
 read straight out of the cache file the run used,
