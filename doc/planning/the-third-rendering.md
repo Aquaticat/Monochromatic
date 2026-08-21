@@ -612,3 +612,44 @@ separate them, so it decides on the other criteria rather than declining.
 WHY THIS WAS WORTH A THIRD RESTART. One row had landed. The alternative was
 thirteen slices measured through an instrument that had already been observed
 failing a slate for obeying its own guard.
+
+### What the four refused slates were actually refusing
+
+The archived bed rows carry 114 ballots.
+FOUR OF THEM REFUSED AN ENTIRE SLATE, and reading all four is what turned two
+hand-found defects into a class:
+
+-   `lintong` slice 1, twice, on the declared spelling and on the source's block
+    shape, which are `#145` and `#144`.
+-   `gaoyanger` slice 1, on tense: every candidate was said to have altered the
+    time reference by rendering a tenseless Chinese copula in the past.
+-   `keyword233` slice 0, on tense together with a declared location the passage
+    does not mention, which is the `#143` direction.
+
+TENSE IS IN THREE OF THE FOUR, and the rule that settles it already existed.
+`critic-prompt.ts` tells its critics that supplying what English requires and the
+original can omit, a pronoun, a number, an article, A TENSE, is required rather
+than added.
+No judge had ever been shown that sentence.
+Judges were split in both directions on the same question: one refused a slate
+for rendering the present in the past, another marked a candidate down for
+keeping the present as awkward for a memorial page.
+
+THE GAP WAS WIDER THAN TENSE.
+Every producing sheet in the package splices `HOUSE_POLICY_BLOCK`; no judging
+sheet did.
+The stages that decide what SHIPS were the only stages never told that reader
+protection outranks completeness, while criterion one asks them for every
+proposition of the original with nothing left out.
+A rendering that keeps a suicide method vague, which is the corpus's own rule,
+reads as an omission to a judge holding only the numbered list.
+
+SETTLED as `JUDGE_POLICY_BLOCK`, spliced once into `buildCandidateSelectMessages`
+so all five judge panels get the same text and none can drift from the producers.
+It states precedence outright, because three of the four refusals came from
+judges applying a numbered criterion literally against everything beside it.
+
+FOUR DEFECTS, ONE SHAPE. `#143`, `#144`, `#145` and `#146` are all the same
+failure: a rule given to the models that WRITE and withheld from, or contradicted
+for, the models that CHOOSE. The bed has been bought five times, and every
+restart was paid for by a defect that would otherwise have decided the corpus.
