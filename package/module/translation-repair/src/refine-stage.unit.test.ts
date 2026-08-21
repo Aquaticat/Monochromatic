@@ -275,6 +275,81 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a rewrite that dropped a DECLARED name, which no protected atom covers: an '
+        + 'alias is ordinary English, so the atom gate lets it through and the judges measured six '
+        + 'times out of six prefer the shorter wording that leaves it out',
+      fn: async () => {
+        /**
+         * Repaired text carrying a declared alias, and a rewrite that loses it.
+         */
+        const withAlias = `${REPAIRED_TEXT} Everyone called her Dumpling.`;
+
+        /** Refinable slice of the aliased fixture. */
+        const slice = deriveRefinableEnvelopes({
+          document: parseDocument({ text: withAlias, },),
+        },);
+
+        /** Run whose rewrite reads better and drops the alias. */
+        const result = await runRefineStage({
+          declaredNames: ['Dumpling',],
+          chunkIndex: 0,
+          client: scriptedRefiner({
+            newText: `${SMOOTH_TEXT} Everyone called her that.`,
+            ballot: 1,
+          },),
+          refinerModelIds: REFINERS,
+          judgeModelIds: JUDGES,
+          sourceText: SOURCE_TEXT,
+          repairedText: withAlias,
+          envelopes: slice.envelopes,
+          definitions: slice.definitions,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect(result.changed,).toBe(false,);
+        expect(result.refinedText,).toBe(withAlias,);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS that same rewrite when nothing is declared, so the refusal above is '
+        + 'attributable to the declared list rather than to the atom gate or to a rewrite the '
+        + 'judges would have turned down anyway',
+      fn: async () => {
+        /**
+         * Same text and same rewrite, with no declaration behind the alias.
+         */
+        const withAlias = `${REPAIRED_TEXT} Everyone called her Dumpling.`;
+
+        /** Refinable slice of the aliased fixture. */
+        const slice = deriveRefinableEnvelopes({
+          document: parseDocument({ text: withAlias, },),
+        },);
+
+        /** Run whose rewrite reads better and drops an undeclared word. */
+        const result = await runRefineStage({
+          declaredNames: [],
+          chunkIndex: 0,
+          client: scriptedRefiner({
+            newText: `${SMOOTH_TEXT} Everyone called her that.`,
+            ballot: 1,
+          },),
+          refinerModelIds: REFINERS,
+          judgeModelIds: JUDGES,
+          sourceText: SOURCE_TEXT,
+          repairedText: withAlias,
+          envelopes: slice.envelopes,
+          definitions: slice.definitions,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+        expect(result.changed,).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'refuses a roster that could never reach the minimum weight, '
         + 'since two refiners grading only each other can award one vote '
         + 'between them and every round would decline in silence',

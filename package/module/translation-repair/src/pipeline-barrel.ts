@@ -66,6 +66,10 @@ export {
 } from './chunk-critic-phase.ts';
 export { repairChunk, } from './repair-chunk.ts';
 export {
+  type ChunkVerdict,
+  settleChunkVerdict,
+} from './repair-chunk-verdict.ts';
+export {
   notApplicableFinding,
   notApplicableRepair,
 } from './repair-not-applicable.ts';
