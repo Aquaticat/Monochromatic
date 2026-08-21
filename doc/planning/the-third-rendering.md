@@ -370,6 +370,13 @@ is at least visible.
 
 ## What the guard should check instead
 
+SUPERSEDED by "The shape rule, settled: the page is a floor, not a ceiling".
+What follows is the match-either rule as it was proposed and its two recorded
+limits, kept because the measurement that produced it still stands and because
+the reason it was dropped is only legible beside it.
+The rule that shipped treats the page as a floor rather than as one of two
+acceptable sequences.
+
 WHERE THE TWO REFERENCES AGREE, which is 48 of 67 parseable records, the guard
 stays exactly as strict as it is now.
 Both texts say the same thing about the shape and a candidate departing from it
@@ -491,3 +498,41 @@ THE GATE STOPPED CHECKING ONE QUORUM TWICE (`9261c8efd`), which the GFP pass
 found: removing the repeated conjunct failed no test, because
 `settleGateBallots` cannot answer `consolidated` on fewer voices than the
 quorum. A condition no case can reach reads as a second guard and is not one.
+
+## What the floor rule dissolves, and what #144 cost
+
+THE LIMIT THAT DISAPPEARED. Match-either recorded a case it could not serve: an
+archive that both reshapes what it keeps AND drops a trailing block leaves the
+ideal rendering, reshaped prefix plus restored tail, matching neither reference
+entire.
+The floor rule serves it outright.
+A source of three paragraphs against an archive that merged two of them into one
+block quote and dropped the third gives a floor of one block quote and a ceiling
+of three, so the ideal rendering, block quote plus restored paragraph, sits
+inside both bounds and is valid.
+The rule that shipped is therefore not merely simpler than the one it replaced;
+it accepts a rendering the earlier proposal would have sent back.
+
+WHAT #144 FOUND, one slice into the second bed run.
+Three sheets still told their models the ORIGINAL was the shape standard while
+the guard floored candidates on the page.
+The judge criteria were the dangerous one: judges apply these criteria literally,
+which run 1 proved when one abstained from a whole slate over the declared-names
+wording, so at every reshaped slice an archive-shaped consolidation could be
+marked down by the very stage that is supposed to choose it.
+The translator sheet and the repair follow-up were the expensive ones: each buys
+a return round at every reshaped slice by construction, one by asking for the
+source's shape and the other by announcing the check compared against the source
+alone.
+
+WHY THE JUDGE CRITERION NAMES NEITHER TEXT.
+The existing translation reaches these judges anonymously, as one candidate among
+the others, and never travels as labelled evidence.
+A criterion naming the page would name a text the judge cannot see, so the
+criterion now asks only what is checkable from a candidate alone, and says
+outright that a shape the ORIGINAL does not have is not a fault.
+
+THE BED WAS BOUGHT AGAIN, for the second time in a day.
+One row had landed under the old criteria and it was discarded rather than
+scored, on the standing instruction to fix and restart rather than to score
+around a defect.
