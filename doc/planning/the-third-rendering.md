@@ -227,3 +227,73 @@ NOTHING HERE IS SCOPED DOWN FOR THE RELEASE DATE, by the owner's instruction of
 2026-08-21.
 The invalid-candidate return to its own author, the line-structure addendum and
 the control arm are all part of the first build rather than of a later one.
+
+## What the bed can and cannot show
+
+Three confounds were checked against the artifacts before the bed was scored,
+because each would have made the readout mean something other than what it
+claims.
+
+NO SLICE IN THE BED CARRIES A PICTURE.
+The translate lane is shown `pictureContext` in production and the calibration
+arm passes none, so a bed slice whose passage transcribes an image would put
+blind consolidation producers against a candidate that could see.
+Measured: no bed slice source carries image syntax, and no settled artifact for
+the six entries records a picture reading at all.
+The readout is clean on that axis, and the wiring is still owed the day a bed
+includes one.
+
+AT 5 OF 13 SLICES ONE CANDIDATE IS THE ARCHIVE, CHARACTER FOR CHARACTER.
+The translate lane returned the archive verbatim at `lintong` slices 1 and 2 and
+at `Zha_Ke` slice 1; the repair lane returned it verbatim at `Acheron` slices 0
+and 1.
+The sheet renders that text twice, once as ARCHIVE RENDERING and once as a
+CANDIDATE, and a producer weighing the apparent agreement of two sources is
+counting one source twice.
+This is production's behaviour and not the bed's, since a lane declining to
+change the incumbent means the archive was already right there.
+Recorded as `#142`, to be fixed after the bed rather than during it.
+
+THE BED CANNOT SHOW THE SHEET AND THE GUARD DISAGREEING.
+The sheet asks for the archive's shape and the guard checks the standing text's,
+which diverge only where a lane wins with a reshaped slice.
+No bed slice does, so this readout says nothing about that case.
+Recorded as `#140`.
+
+## The scorecard, and what it refuses to decide
+
+`consolidate-score.mjs` reads the run's log and buys nothing, so it can be run
+against a partial bed while the run is still in flight.
+
+It COUNTS measurements 1 and 2:
+how often the gate ships a consolidation over the standing text, with the ballot
+split at each slice, and how many consolidations were structurally valid before
+any return round.
+
+It REFUSES to count measurements 3 and 4, which ask whether a text is BETTER.
+It prints those slices with the original, both candidates and what shipped, side
+by side, and names what to read for at each: at the tied slices, whether the
+shipped text is one the reading would prefer to both lanes; at the ten decided
+slices, whether anything the winning lane carried is gone.
+The reading is the measurement, and the sheet is its worksheet.
+
+It also names a case the counters would otherwise bury: slices where a return
+round ran AND the contest ballots said a candidate DROPPED something.
+A consolidation restoring what the standing text is missing is, to a guard
+anchored on the standing text, a surplus to be deleted.
+Nothing in the bed has hit that yet, and the scorecard prints the ballots
+whenever it does.
+
+## First slice, and the tripwire it had to clear
+
+`lintong` slice 1 was the slice that exposed the source anchor, so it is the one
+the restarted run had to clear before the other twelve were worth buying.
+
+Under the page anchor all six consolidations were structurally valid with no
+return round, against none under the source anchor, and every one of them kept
+the block quote and its attribution line rather than flattening them.
+The gate settled on the consolidation, three of six ballots naming it and three
+calling the pair equivalent.
+What shipped is the winning lane's text with one unsupported word removed, which
+is measurement 4's criterion met rather than merely not violated: nothing the
+winner carried is gone.
