@@ -879,3 +879,56 @@ Rendering auditor:
 - the flipped rendering draws an agreed `altered-polarity` finding on two voices.
 - the clean rendering agrees at neither tier, which is the expectation; one voice filed a lone claim and no agreement formed on it.
 - two degraded lines on the flipped arm are infrastructure rather than sheet: one voice lost and a 2-of-3 roster.
+
+## Measurement 3, read on the three slices the reading called tied
+
+Read while the run was still buying its last slices, because the reading is the slow half and these three were already settled.
+The question fixed in advance was whether a consolidation gives these slices a text the reading would prefer to BOTH lanes.
+
+### keyword233 slice 0: no consolidation, and that passes
+
+The judges declined and the standing text shipped.
+By the rule fixed for this slice, where the reading recorded two good texts, a tie passes.
+The lanes differed on two words: the repair lane wrote `opened her own channel` and `heartfelt reflections`,
+the translate lane `set up her own channel` and `spiritual reflections`.
+`心灵感悟` is reflection of the heart, and `spiritual` invites a religious reading the Chinese does not carry,
+so the standing text that shipped is the better of the two.
+
+### keyword233 slice 1: better than either lane
+
+The consolidation took `坚强不屈` as `unyielding` from the repair lane,
+where the translate lane's `resilient` drops the `不屈` half outright.
+It took `这在我看来很棒` as `which I find wonderful` from the translate lane,
+where the repair lane's `I thought` moves a present-tense judgement into the past.
+And on `她用她的智慧和热情` it wrote `She used her wisdom and passion to add a touch of brightness`,
+restoring an agent that the repair lane dropped (`Her wisdom and passion brought`)
+and that the translate lane demoted to an adverbial (`With her wisdom and passion`).
+Nothing in either lane is missing from it.
+
+### Weideriche_ slice 0: better than either lane, and one of the wins is a house rule
+
+The original's block quote ends `有伤口不要用酒精x`, where the trailing `x` is a typed flourish that says nothing in English.
+The repair lane copied it across as its own line.
+The translate lane dropped it.
+The consolidation dropped it, and one contest ballot cited the rule by name,
+saying the translate candidate `adheres to the house rule for omitting meaningless punctuation`.
+That is the punctuation rule of `HOUSE_POLICY_BLOCK` deciding a live ballot.
+
+It also kept `伤口` singular, `a wound`, where the translate lane had pluralised it, which another ballot had flagged.
+And it kept the recipient in `也会向其他人表达自己的关心`, which the translate lane dropped;
+the shipped `to them` resolves an ambiguity the Chinese leaves open, but preserving the recipient beats dropping it.
+
+So two of the three tied slices got a text better than both lanes, and the third correctly changed nothing.
+
+## The consolidation has no assembly step, so nothing wraps it
+
+Every SHIPPED consolidation in this run is one long line per paragraph while both lane texts are semantically wrapped.
+The cause is structural rather than a stray setting:
+`wrapReplacementText` is called from exactly two places,
+`wrapTranslateRecords` in `translate-assemble.ts` and `wrapRepairOutcomes` in `repair-assemble.ts`,
+and both are lane assembly steps.
+A third rendering that no lane assembles inherits neither.
+
+Nothing in production is wrong today, because consolidation is not wired.
+Wired as it stands, every consolidated slice would ship unwrapped into a corpus #122 converted to semantic wrapping.
+Filed as its own task, blocking the wiring half of this work.
