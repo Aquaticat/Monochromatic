@@ -969,3 +969,100 @@ Consistency with the page is a different claim from whether a forced choice is a
 
 This is the run reporting a behavioural finding rather than an instrument defect,
 which is what a swept instrument is supposed to produce.
+
+## The sixth run scored complete, at 13 of 13 slices
+
+Run 6 finished every slice. The four measurements fixed in advance are answered
+below. No passage is quoted here: findings are described structurally, and the
+texts stay in the run artifacts.
+
+### Measurement 1: how often the roster backs a consolidation
+
+The gate ran at 7 of 13 slices and shipped the consolidation at 7 of 7.
+
+The other six never reached the gate. Five declined at the judging step with
+`declined-indecision` and shipped the incumbent (`lintong#2`, `keyword233#0`,
+`Weideriche_#1`, `Acheron#1`, `Acheron#2`), and `Zha_Ke#0` has no standing text
+at all, so there was nothing to contest.
+
+The 7 of 7 needs one qualification before it reads as endorsement. Three of the
+seven shipped on a minority of decisive ballots, with refusals at or above the
+winning count: `keyword233#1` at two consolidated against four `neither`,
+`Acheron#0` at two against four, `Weideriche_#0` at three against three. A
+`neither` ballot means the two texts differ only in wording and neither is more
+faithful, which is the churn case the sheet elsewhere warns against. Whether a
+plurality of refusals should keep the standing text is a counting-rule question
+this run raises and does not settle.
+
+### Measurement 2: structural validity without a repair round
+
+63 of 78 candidate renderings were valid on the first attempt, and 6 of the 13
+slices were clean at 6 of 6. The failures cluster on two shapes: pages whose
+standing text is a block quote, where producers flatten or multiply the quote,
+and `Zha_Ke#1`, where three producers emitted text that would not parse as MDX
+at all.
+
+### Measurement 4: damage where the contest already agreed with the reading
+
+The answer is no, in two different ways, and both are real.
+
+#### `gaoyanger#1`: the tense finding, with the ballots behind it
+
+Recorded already as issue #152 and fixed since. The scorecard supplies the
+mechanism the earlier reading could only infer. The panel split three to three.
+Three judges preferred the past-tense candidate, one of them saying outright
+that the present tense wrongly implies the person is alive, which in a memorial
+is a defect of dignity rather than of style. Two of the three judges who
+preferred the present-tense candidate justified it by appealing to the
+original's unmarked tense and its present copula, which is exactly the reading
+the forced-differences paragraph invites when nothing names the English as the
+authority. The present-tense candidate won and shipped.
+
+This is a positive control for the #152 fix rather than an argument against
+#146: the judges who were right were already right, and lost the vote to a
+reading the fix now removes.
+
+#### `Zha_Ke#1`: the consolidation deleted a person's will from the page
+
+The most serious finding of the run, and it outranks everything else open under
+#138.
+
+The slice's ORIGINAL is a single parenthetical content warning. Its standing
+English is that warning FOLLOWED BY the entire will: a `<details>` and
+`<summary>` wrapper, dozens of lines, a numbered list of final wishes. The
+shipped consolidation is the warning alone. Everything after it is gone, and
+the gate voted six to nil to ship it.
+
+Three separate defects compose to produce that, and each is independently
+actionable.
+
+    1.  The slice pairs one line of Chinese against a span of English many times
+        its size. Whatever the pairing intended, the consolidation was asked to
+        render a note and handed a will as the text it replaces.
+    2.  The structural floor could not stop it. The scorecard's floor section
+        reports `Zha_Ke#1` as `shipped=valid` while `standing=INVALID:1`: the
+        standing text does not parse, so the guard has no block list to floor
+        on, and a one-paragraph candidate passes against a page it cannot read.
+        The floor is disabled exactly where it mattered most.
+    3.  The faithfulness criterion then rewards the deletion. One ballot
+        objected to candidates that "add an entire 'My Will' document not
+        present in the ORIGINAL", reasoning correctly from the criterion it was
+        given. Another ballot objected in the opposite direction, that rival
+        candidates "omit the body of the will". The panel had no rule telling it
+        which of those two readings governs.
+
+Nothing here is specific to consolidation. A selection between two lanes would
+face the same three defects; the third rendering is what made them visible.
+
+### Two findings about the wrapper, pointing opposite ways
+
+Every one of the seven shipped consolidations is unwrapped: a single long line
+per paragraph, where both lane candidates arrive semantically wrapped. This is
+#151 observed live rather than inferred from the call graph.
+
+The second finding constrains how #151 may be fixed. Judges actively penalise
+semantic wrapping in their ballots, calling it arbitrary line breaks,
+unnecessary line breaks, and breaking mid-sentence in a way that undermines
+coherent reading. At least five ballots across four slices demote a candidate
+for it. So the wrapper must run AFTER selection and never on a candidate a judge
+is shown, or fixing #151 will cost the wrapped lane its votes.
