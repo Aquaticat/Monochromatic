@@ -19,7 +19,8 @@ and every repository GitHub issue that directly concerns the rule or plugin.
 Keep this handover current whenever work changes:
 
 - `prefer-readonly-parameter-types` or one of its extracted effect rules;
-- a GitHub issue listed in the issue ledger;
+- a listed GitHub issue changes,
+  or a new issue or comment concerns this rule family;
 - an implementation decision or recommendation recorded here;
 - verification evidence or an acceptance baseline recorded here.
 
@@ -286,8 +287,12 @@ Implement the repair through one coherent cache shape:
 - merge it into the build's `omittedCallableKeys` before `assertReachedCallSummaries`;
 - rotate the current schema 5 cache identity;
 - reject entries from the prior schema instead of inferring omissions from missing edges;
-- expose a bounded omission count and source identity through an integrity signal,
-  and make it affect the authoritative lint result rather than only the plugin logger.
+- expose a bounded omission count and source identity through an authoritative integrity signal.
+
+Logger-only reporting is insufficient because Oxlint can still report a clean run.
+My preferred outcome is a failing diagnostic or task status,
+but #427 does not settle that behavior and the upstream tuple panic can occur during an ordinary scan.
+Obtain owner confirmation for the authoritative signal before implementing it.
 
 #### Cache options
 
@@ -328,7 +333,8 @@ Completion criteria:
 - Separate cold and warm processes emit identical `(rule, file, range, message)` fingerprints.
 - One-worker and default-worker runs emit the same fingerprint.
 - A schema 5 payload without omission metadata is a cache miss after the schema rotation.
-- A run with omitted coverage cannot report a clean authoritative integrity result while only logging stderr warnings.
+- The owner-ratified integrity mechanism makes omitted coverage visible in the authoritative lint result;
+  stderr logger warnings are not the only signal.
 
 ### Separate retention from unresolved effects
 
@@ -510,7 +516,11 @@ and diagnostic evidence increments land:
    reject changed sites,
    and report stale entries;
 6. extend the plugin self-hosting override to all extracted rules;
-7. change all three shared configuration entries directly from `off` to `error`;
+7. change the three currently disabled extracted entries,
+   `no-readonly-parameter-mutations`,
+   `no-opaque-parameter-effects`,
+   and `no-invalid-parameter-effect-contracts`,
+   directly from `off` to `error`;
 8. run affected package lint and the complete workspace lint.
 
 Keep `JSON.stringify` opaque for unproved object graphs.
@@ -600,21 +610,24 @@ When a maintenance trigger fires:
 
 1. fetch all current issue records and comments,
    not only open issues;
-2. search title,
+2. exclude API records carrying a `pull_request` field;
+3. search title,
    body,
-   and comment text for both the singular package name and plural rule name;
-3. read every new comment on the direct issue set;
-4. classify incidental matches explicitly rather than silently dropping them;
-5. compare open-issue claims with current source and tests;
-6. update the review date,
+   and comment text for the singular package name,
+   the plural rule name,
+   and `readonly parameter`;
+4. read every new comment on the direct issue set;
+5. classify incidental matches explicitly rather than silently dropping them;
+6. compare open-issue claims with current source and tests;
+7. update the review date,
    source commit,
    issue states,
    issue dispositions,
    current seams,
    improvement order,
    and verification evidence;
-7. remove superseded advice instead of appending a second truth;
-8. commit the handover update with the related implementation or issue-tracker work.
+8. remove superseded advice instead of appending a second truth;
+9. commit the handover update with the related implementation or issue-tracker work.
 
 Useful complete-repository retrieval commands:
 
