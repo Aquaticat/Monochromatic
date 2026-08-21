@@ -60,7 +60,7 @@ export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
  */
 export const DEFAULT_JUDGE_MODEL_IDS: readonly SyntheticModelId[] = [
   'hf:zai-org/GLM-5.2',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ];
 

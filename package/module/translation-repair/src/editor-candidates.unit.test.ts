@@ -75,7 +75,7 @@ const ENVELOPES: readonly EditableEnvelope[] = [
 const ROSTER = [
   'hf:zai-org/GLM-5.2',
   'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
 ] as const;
 
 /**

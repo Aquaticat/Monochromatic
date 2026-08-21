@@ -143,7 +143,7 @@ function claimOf(
  * First voice's claim about the two cats becoming three.
  */
 const TWO_TO_THREE_A = claimOf({
-  modelId: 'hf:Qwen/Qwen3.6-27B',
+  modelId: 'hf:Qwen/Qwen3.8-27B',
   category: 'altered-number',
   sourceLocator: COUNT_SENTENCE_SOURCE,
   sourceFocus: '两',
@@ -298,7 +298,7 @@ await describe({
          */
         const claims = [
           claimOf({
-            modelId: 'hf:Qwen/Qwen3.6-27B',
+            modelId: 'hf:Qwen/Qwen3.8-27B',
             category: 'altered-polarity',
             sourceLocator: '她们不吃罐头',
             sourceFocus: '不吃',
@@ -390,7 +390,7 @@ await describe({
               return member.modelId;
             },),
         ).toEqual([
-          'hf:Qwen/Qwen3.6-27B',
+          'hf:Qwen/Qwen3.8-27B',
           'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
         ],);
       },
@@ -525,7 +525,7 @@ await describe({
       fn: async () => {
         const claims = [
           claimOf({
-            modelId: 'hf:Qwen/Qwen3.6-27B',
+            modelId: 'hf:Qwen/Qwen3.8-27B',
             category: 'altered-polarity',
             sourceLocator: '她们不吃罐头',
             sourceFocus: '不吃',

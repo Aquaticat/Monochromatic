@@ -49,7 +49,7 @@ const SMOOTH_TEXT =
  */
 const JUDGES: readonly SyntheticModelId[] = [
   'hf:zai-org/GLM-5.2',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
 ];
@@ -282,11 +282,11 @@ await describe({
             client: scriptedRefiner({ ballot: 1, },),
             refinerModelIds: [
               'hf:zai-org/GLM-5.2',
-              'hf:Qwen/Qwen3.6-27B',
+              'hf:Qwen/Qwen3.8-27B',
             ],
             judgeModelIds: [
               'hf:zai-org/GLM-5.2',
-              'hf:Qwen/Qwen3.6-27B',
+              'hf:Qwen/Qwen3.8-27B',
             ],
             sourceText: SOURCE_TEXT,
             repairedText: REPAIRED_TEXT,

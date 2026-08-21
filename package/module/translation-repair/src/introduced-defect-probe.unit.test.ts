@@ -33,7 +33,7 @@ const l = tagged({ tag: 'introduced-defect-probe-test', },);
  * Probers the fixtures configure.
  */
 const PROBERS: readonly SyntheticModelId[] = [
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',
 ];
@@ -216,7 +216,7 @@ await describe({
 
         await runIntroducedDefectProbe({
           client: catClient({ prompts, },),
-          proberModelIds: ['hf:Qwen/Qwen3.6-27B',],
+          proberModelIds: ['hf:Qwen/Qwen3.8-27B',],
           sourceText: '猫在睡觉。',
           baselineText: REGION.before,
           regions: [REGION,],
@@ -245,7 +245,7 @@ await describe({
 
         await runIntroducedDefectProbe({
           client: catClient({ prompts, },),
-          proberModelIds: ['hf:Qwen/Qwen3.6-27B',],
+          proberModelIds: ['hf:Qwen/Qwen3.8-27B',],
           sourceText: '猫在睡觉。',
           baselineText: REGION.before,
           regions: [REGION,],

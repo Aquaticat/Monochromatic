@@ -39,7 +39,7 @@ const TABBY = 'hf:openai/gpt-oss-120b';
 /**
  * Critic that is heard everywhere and rarely raises anything.
  */
-const QUIET = 'hf:Qwen/Qwen3.6-27B';
+const QUIET = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Claim both critics can propose.

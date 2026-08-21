@@ -55,7 +55,7 @@ const TARGET = [
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.2',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
 ] as const;
 
 /**

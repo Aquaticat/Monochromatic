@@ -95,7 +95,7 @@ const CANNED: Readonly<Record<string, {
     json: HIT_REPORT,
   },
   'hf:zai-org/GLM-4.7-Flash': { kind: 'refusal', },
-  'hf:Qwen/Qwen3.6-27B': { kind: 'mismatch', },
+  'hf:Qwen/Qwen3.8-27B': { kind: 'mismatch', },
   'hf:moonshotai/Kimi-K3': { kind: 'http', },
 };
 
@@ -173,7 +173,7 @@ await describe({
           modelIds: [
             'hf:zai-org/GLM-5.2',
             'hf:zai-org/GLM-4.7-Flash',
-            'hf:Qwen/Qwen3.6-27B',
+            'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
           ],
           signal: new AbortController().signal,

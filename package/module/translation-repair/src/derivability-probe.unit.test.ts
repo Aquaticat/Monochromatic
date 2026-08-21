@@ -107,7 +107,7 @@ function probingClient(
  */
 const JUDGES: readonly SyntheticModelId[] = [
   'hf:zai-org/GLM-5.2',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ];
 
@@ -165,7 +165,7 @@ await describe({
           client: probingClient({
             verdictsByModel: {
               'hf:zai-org/GLM-5.2': ['derivable', 'derivable',],
-              'hf:Qwen/Qwen3.6-27B': ['partially-derivable', 'derivable',],
+              'hf:Qwen/Qwen3.8-27B': ['partially-derivable', 'derivable',],
               'hf:moonshotai/Kimi-K3': ['not-derivable', 'derivable',],
             },
           },),
@@ -191,7 +191,7 @@ await describe({
           client: probingClient({
             verdictsByModel: {
               'hf:zai-org/GLM-5.2': ['derivable', 'derivable',],
-              'hf:Qwen/Qwen3.6-27B': ['not-derivable', 'derivable',],
+              'hf:Qwen/Qwen3.8-27B': ['not-derivable', 'derivable',],
             },
             silent: new Set(['hf:moonshotai/Kimi-K3',],),
           },),
@@ -216,7 +216,7 @@ await describe({
         const derivability = await runDerivabilityProbe({
           client: probingClient({
             verdictsByModel: { 'hf:zai-org/GLM-5.2': ['not-derivable', 'not-derivable',], },
-            silent: new Set(['hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],),
+            silent: new Set(['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],),
           },),
           judgeModelIds: JUDGES,
           sourceText: '猫猫黎明追蝴蝶。碗是满的。',

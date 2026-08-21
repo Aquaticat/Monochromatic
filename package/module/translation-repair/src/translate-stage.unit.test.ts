@@ -66,7 +66,7 @@ const TRANSLATORS: readonly SyntheticModelId[] = [
  */
 const JUDGES: readonly SyntheticModelId[] = [
   ...TRANSLATORS,
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',
 ];

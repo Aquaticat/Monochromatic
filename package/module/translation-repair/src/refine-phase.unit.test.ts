@@ -54,13 +54,13 @@ const MODELS: RepairModels = {
   editorModelIds: ['hf:zai-org/GLM-5.2',],
   judgeModelIds: [
     'hf:zai-org/GLM-5.2',
-    'hf:Qwen/Qwen3.6-27B',
+    'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   ],
   refinerModelIds: ['hf:zai-org/GLM-5.2',],
   checkerModelIds: [
-    'hf:Qwen/Qwen3.6-27B',
+    'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   ],

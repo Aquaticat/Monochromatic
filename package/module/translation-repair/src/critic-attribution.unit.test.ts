@@ -44,7 +44,7 @@ const CALICO = 'hf:zai-org/GLM-5.2';
 /**
  * Third critic, ordered before both by model id so sorting is observable.
  */
-const BENGAL = 'hf:Qwen/Qwen3.6-27B';
+const BENGAL = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Claim the cases attribute.
@@ -338,16 +338,16 @@ await describe({
           outcomes: [
             {
               chunkIndex: 1,
-              heardCriticIds: ['hf:Qwen/Qwen3.6-27B', 'hf:openai/gpt-oss-120b',],
+              heardCriticIds: ['hf:Qwen/Qwen3.8-27B', 'hf:openai/gpt-oss-120b',],
               claimAttributions: [
                 {
                   claimId: 'issue/aaa',
                   proposers: [
-                    { modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },
+                    { modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },
                     { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, },
                   ],
                 },
-                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },], },
+                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },], },
               ],
             },
             { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], },
@@ -362,14 +362,14 @@ await describe({
             { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], },
             {
               chunkIndex: 1,
-              heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:Qwen/Qwen3.6-27B',],
+              heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:Qwen/Qwen3.8-27B',],
               claimAttributions: [
-                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },], },
+                { claimId: 'issue/bbb', proposers: [{ modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },], },
                 {
                   claimId: 'issue/aaa',
                   proposers: [
                     { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, },
-                    { modelId: 'hf:Qwen/Qwen3.6-27B', emissionCount: 1, },
+                    { modelId: 'hf:Qwen/Qwen3.8-27B', emissionCount: 1, },
                   ],
                 },
               ],

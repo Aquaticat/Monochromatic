@@ -855,7 +855,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the schema-validated exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:Qwen/Qwen3.6-27B',
+          modelId: 'hf:Qwen/Qwen3.8-27B',
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -949,7 +949,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the API-refused exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:Qwen/Qwen3.6-27B',
+          modelId: 'hf:Qwen/Qwen3.8-27B',
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,

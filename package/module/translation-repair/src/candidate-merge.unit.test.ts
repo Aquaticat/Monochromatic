@@ -83,7 +83,7 @@ await describe({
               text: SHARED,
             },),
             from({
-              modelId: 'hf:Qwen/Qwen3.6-27B',
+              modelId: 'hf:Qwen/Qwen3.8-27B',
               text: SHARED,
             },),
           ],
@@ -96,7 +96,7 @@ await describe({
           },),)
           .toEqual([
             'hf:zai-org/GLM-5.2',
-            'hf:Qwen/Qwen3.6-27B',
+            'hf:Qwen/Qwen3.8-27B',
           ],);
       },
     },),
@@ -113,7 +113,7 @@ await describe({
               text: OTHER,
             },),
             from({
-              modelId: 'hf:Qwen/Qwen3.6-27B',
+              modelId: 'hf:Qwen/Qwen3.8-27B',
               text: SHARED,
             },),
             from({

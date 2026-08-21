@@ -92,7 +92,7 @@ const EDITORS = [
  * Judges with no stake in either editor's output.
  */
 const JUDGES = [
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:openai/gpt-oss-120b',
 ] as const;
 

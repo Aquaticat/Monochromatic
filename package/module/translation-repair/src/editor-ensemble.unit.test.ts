@@ -114,13 +114,13 @@ await describe({
           },
           right: {
             kind: 'model',
-            modelId: 'hf:Qwen/Qwen3.6-27B',
+            modelId: 'hf:Qwen/Qwen3.8-27B',
           },
         },);
         expect(both.kind,).toBe('composite',);
         expect([...producerModelIds(both,),],).toEqual([
           'hf:zai-org/GLM-5.2',
-          'hf:Qwen/Qwen3.6-27B',
+          'hf:Qwen/Qwen3.8-27B',
         ],);
 
         // One model named twice is still one stakeholder, not a pair.
@@ -144,7 +144,7 @@ await describe({
             kind: 'composite',
             contributors: [
               'hf:zai-org/GLM-5.2',
-              'hf:Qwen/Qwen3.6-27B',
+              'hf:Qwen/Qwen3.8-27B',
             ],
           },
           right: {
@@ -154,7 +154,7 @@ await describe({
         },);
         expect([...producerModelIds(widened,),],).toEqual([
           'hf:zai-org/GLM-5.2',
-          'hf:Qwen/Qwen3.6-27B',
+          'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
         ],);
       },
@@ -168,11 +168,11 @@ await describe({
           kind: 'composite',
           contributors: [
             'hf:zai-org/GLM-5.2',
-            'hf:Qwen/Qwen3.6-27B',
+            'hf:Qwen/Qwen3.8-27B',
           ],
         };
         expect(describeProducer(producer,),).toBe(
-          'composite(hf:zai-org/GLM-5.2 + hf:Qwen/Qwen3.6-27B)',
+          'composite(hf:zai-org/GLM-5.2 + hf:Qwen/Qwen3.8-27B)',
         );
         expect(
           describeProducer({
@@ -199,7 +199,7 @@ await describe({
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
-              modelId: 'hf:Qwen/Qwen3.6-27B',
+              modelId: 'hf:Qwen/Qwen3.8-27B',
               newText: 'The cat loves chasing butterflies.',
             },),
           ],
@@ -268,7 +268,7 @@ await describe({
             },),
           ],
           composite,
-          contributors: ['hf:Qwen/Qwen3.6-27B',],
+          contributors: ['hf:Qwen/Qwen3.8-27B',],
         },);
         expect(set.candidates.length,).toBe(1,);
         expect(set.collapsed,).toBe(1,);
@@ -288,7 +288,7 @@ await describe({
         // contributor must stay barred; dropping either lets that model judge
         // text it wrote.
         expect(stakes.has('hf:zai-org/GLM-5.2',),).toBe(true,);
-        expect(stakes.has('hf:Qwen/Qwen3.6-27B',),).toBe(true,);
+        expect(stakes.has('hf:Qwen/Qwen3.8-27B',),).toBe(true,);
       },
     },),
   ],
@@ -308,7 +308,7 @@ await describe({
 
         /** Editor landing a real replacement. */
         const working = candidateFor({
-          modelId: 'hf:Qwen/Qwen3.6-27B',
+          modelId: 'hf:Qwen/Qwen3.8-27B',
           newText: 'The cat chases butterflies.',
         },);
         expect(idle.patch
@@ -336,7 +336,7 @@ await describe({
 
         /** Later editor in roster order. */
         const second = candidateFor({
-          modelId: 'hf:Qwen/Qwen3.6-27B',
+          modelId: 'hf:Qwen/Qwen3.8-27B',
           newText: 'The cat loves chasing butterflies.',
         },);
         expect(
@@ -373,7 +373,7 @@ await describe({
           judgeModelIds: [
             'hf:moonshotai/Kimi-K3',
             'hf:zai-org/GLM-5.2',
-            'hf:Qwen/Qwen3.6-27B',
+            'hf:Qwen/Qwen3.8-27B',
           ],
         },);
       },
@@ -394,7 +394,7 @@ await describe({
             judgeModelIds: [
               'hf:moonshotai/Kimi-K3',
               'hf:zai-org/GLM-5.2',
-              'hf:Qwen/Qwen3.6-27B',
+              'hf:Qwen/Qwen3.8-27B',
             ],
           },);
         },).not.toThrow();
@@ -440,7 +440,7 @@ await describe({
             ],
             judgeModelIds: [
               'hf:zai-org/GLM-5.2',
-              'hf:Qwen/Qwen3.6-27B',
+              'hf:Qwen/Qwen3.8-27B',
             ],
           },);
         },).toThrow(ProducerRosterError,);
@@ -450,7 +450,7 @@ await describe({
             editorModelIds: [],
             judgeModelIds: [
               'hf:zai-org/GLM-5.2',
-              'hf:Qwen/Qwen3.6-27B',
+              'hf:Qwen/Qwen3.8-27B',
             ],
           },);
         },).toThrow(ProducerRosterError,);
@@ -469,7 +469,7 @@ await describe({
           editorModelIds: ['hf:moonshotai/Kimi-K3',],
           checkerModelIds: [
             'hf:zai-org/GLM-5.2',
-            'hf:Qwen/Qwen3.6-27B',
+            'hf:Qwen/Qwen3.8-27B',
           ],
         },);
 

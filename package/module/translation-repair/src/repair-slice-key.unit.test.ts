@@ -35,11 +35,11 @@ const MODELS: RepairModels = {
     'hf:moonshotai/Kimi-K3',
     'hf:zai-org/GLM-5.2',
   ],
-  panelModelIds: ['hf:Qwen/Qwen3.6-27B',],
+  panelModelIds: ['hf:Qwen/Qwen3.8-27B',],
   editorModelIds: ['hf:openai/gpt-oss-120b',],
   judgeModelIds: ['hf:zai-org/GLM-4.7-Flash',],
   refinerModelIds: ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
-  checkerModelIds: ['hf:Qwen/Qwen3.6-27B',],
+  checkerModelIds: ['hf:Qwen/Qwen3.8-27B',],
 };
 
 /**
@@ -77,12 +77,21 @@ await describe({
       name:
         'produces a KNOWN hash for known inputs, which is the only thing standing between a change '
         + 'to this derivation and every settled slice in the corpus silently missing the cache. '
-        + 'Update this hash only together with SLICE_CACHE_VERSION, and only when the change is '
-        + 'meant to invalidate what is on disk',
+        + 'A DERIVATION change moves this hash and needs SLICE_CACHE_VERSION moved with it; a '
+        + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
+        + 'already part of the key and invalidate their own entries',
       fn: async () => {
         expect(SLICE_CACHE_VERSION,).toBe(27,);
+
+        // MOVED 2026-08-20 WITHOUT A VERSION BUMP, and the distinction is the
+        // whole reason this note exists. The fixture roster was renamed when
+        // the provider replaced one model, so the INPUT moved and the
+        // derivation did not. Real entries on disk carry the old roster inside
+        // their own key, so they stop matching on their own; bumping the
+        // version would additionally discard every entry whose roster never
+        // changed, which is a corpus of work thrown away for nothing.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('1b3acfaddf27aff5190d1009a4d711f2855cf98965558c0537457e86e582a1dd',);
+          .toBe('cb751bddd9927c26b2cc04b4ca7d8815dd186c6268595178733e9c9d1b543cbb',);
       },
     },),
     it({

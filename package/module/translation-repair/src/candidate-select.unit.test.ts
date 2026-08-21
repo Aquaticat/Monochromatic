@@ -133,7 +133,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: 'hf:Qwen/Qwen3.6-27B',
+      modelId: 'hf:Qwen/Qwen3.8-27B',
     },
     value: 'second',
     rendered: 'The cat loves chasing butterflies.',
@@ -145,7 +145,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
  */
 const JUDGES: readonly SyntheticModelId[] = [
   'hf:zai-org/GLM-5.2',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',
@@ -311,7 +311,7 @@ await describe({
           ballots: {
             'hf:zai-org/GLM-5.2': 1,
             'hf:moonshotai/Kimi-K3': 1,
-            'hf:Qwen/Qwen3.6-27B': 2,
+            'hf:Qwen/Qwen3.8-27B': 2,
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 2,
             'hf:openai/gpt-oss-120b': 2,
           },
@@ -331,7 +331,7 @@ await describe({
         // readable from artifacts instead of argued about.
         expect(outcome.tally.selfVotes,).toBe(2,);
         expect(outcome.findings,).toContain('select-self-vote (hf:zai-org/GLM-5.2)',);
-        expect(outcome.findings,).toContain('select-self-vote (hf:Qwen/Qwen3.6-27B)',);
+        expect(outcome.findings,).toContain('select-self-vote (hf:Qwen/Qwen3.8-27B)',);
       },
     },),
 
@@ -347,7 +347,7 @@ await describe({
         const { outcome, } = await runCollapsedSelection({
           contributors: [
             'hf:zai-org/GLM-5.2',
-            'hf:Qwen/Qwen3.6-27B',
+            'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
           ],
@@ -368,7 +368,7 @@ await describe({
         const { outcome, } = await runCollapsedSelection({
           contributors: [
             'hf:zai-org/GLM-5.2',
-            'hf:Qwen/Qwen3.6-27B',
+            'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
           ],
         },);
@@ -391,7 +391,7 @@ await describe({
             'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': 0,
             'hf:openai/gpt-oss-120b': 0,
             'hf:zai-org/GLM-5.2': 0,
-            'hf:Qwen/Qwen3.6-27B': 0,
+            'hf:Qwen/Qwen3.8-27B': 0,
           },
         },);
         expect(outcome.kind,).toBe('declined',);
@@ -613,7 +613,7 @@ await describe({
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
-              modelId: 'hf:Qwen/Qwen3.6-27B',
+              modelId: 'hf:Qwen/Qwen3.8-27B',
               newText: 'The cat loves chasing butterflies.',
             },),
           ],
@@ -774,7 +774,7 @@ await describe({
                 kind: 'composite',
                 contributors: [
                   'hf:zai-org/GLM-5.2',
-                  'hf:Qwen/Qwen3.6-27B',
+                  'hf:Qwen/Qwen3.8-27B',
                 ],
               },
               value: agreed,

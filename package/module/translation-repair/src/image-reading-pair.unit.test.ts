@@ -48,7 +48,7 @@ const l = tagged({ tag: 'image-reading-pair-test', },);
  */
 const READERS: readonly SyntheticModelId[] = [
   'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
 ];
 
 /**
@@ -252,7 +252,7 @@ await describe({
         const { client, asked, } = scriptedClient({
           byModel: {
             'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
           },
         },);
 
@@ -301,7 +301,7 @@ await describe({
         const { client, } = scriptedClient({
           byModel: {
             'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.6-27B': OTHER_PICTURE,
+            'hf:Qwen/Qwen3.8-27B': OTHER_PICTURE,
           },
         },);
 
@@ -436,7 +436,7 @@ await describe({
         + 'downstream requires',
       fn: async () => {
         const { client, asked, } = failingClient({
-          failing: { 'hf:Qwen/Qwen3.6-27B': 'ended a runaway call, reasoning channel repeated itself', },
+          failing: { 'hf:Qwen/Qwen3.8-27B': 'ended a runaway call, reasoning channel repeated itself', },
           byModel: { 'hf:moonshotai/Kimi-K3': READING, },
         },);
 
@@ -477,7 +477,7 @@ await describe({
         const { client, } = failingClient({
           failing: {
             'hf:moonshotai/Kimi-K3': 'HTTP 500 after every retry',
-            'hf:Qwen/Qwen3.6-27B': 'ended a runaway call',
+            'hf:Qwen/Qwen3.8-27B': 'ended a runaway call',
           },
           byModel: {},
         },);
@@ -515,7 +515,7 @@ await describe({
         const { client, } = scriptedClient({
           byModel: {
             'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
           },
         },);
 
@@ -568,7 +568,7 @@ await describe({
         const { client, } = scriptedClient({
           byModel: {
             'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
           },
         },);
 
@@ -639,7 +639,7 @@ await describe({
         const { client, asked, } = scriptedClient({
           byModel: {
             'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
           },
         },);
 
@@ -675,7 +675,7 @@ await describe({
         const { client, asked, } = scriptedClient({
           byModel: {
             'hf:moonshotai/Kimi-K3': READING,
-            'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+            'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
           },
         },);
 

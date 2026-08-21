@@ -27,7 +27,7 @@ import {
 /**
  * Model standing in for whichever one a stage seated.
  */
-const CAT_MODEL = 'hf:Qwen/Qwen3.6-27B' as const;
+const CAT_MODEL = 'hf:Qwen/Qwen3.8-27B' as const;
 
 /**
  * Signal no fixture here ever aborts.

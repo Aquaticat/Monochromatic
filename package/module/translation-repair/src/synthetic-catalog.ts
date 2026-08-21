@@ -53,10 +53,33 @@ export type SyntheticVendorFamily =
  * alias onto a model already listed, which the endpoint states in its own
  * `hugging_face_id` field (`syn:large:text` is GLM-5.2, `syn:large:vision` is
  * Kimi-K3, `syn:small:text` is GLM-4.7-Flash, `syn:small:vision` is
- * Qwen3.6-27B). Admitting an alias would let one model occupy two seats on a
- * voting panel, so a single opinion would be counted as two independent
- * confirmations and the adjudication tally would silently overstate agreement.
- * Any future roster edit must dedupe on `hugging_face_id`, never on id.
+ * Qwen/Qwen3-point-6-27B, spelled out here for the reason the replacement note
+ * below gives).
+ *
+ * TWO REASONS, AND THE SECOND IS THE SERIOUS ONE.
+ *
+ * Admitting an alias would let one model occupy two seats on a voting panel,
+ * so a single opinion would be counted as two independent confirmations and
+ * the adjudication tally would silently overstate agreement. Any future roster
+ * edit must dedupe on `hugging_face_id`, never on id.
+ *
+ * Worse, an alias is a promise the provider can move. This one is a very small
+ * operation with no service level agreement, no guaranteed support window, and
+ * partial support for the API surface it advertises. A repointed alias changes
+ * WHICH MODEL VOTES with nothing in this repository changing, no build failing
+ * and no log line saying so, which is the one class of roster change no guard
+ * here can catch. Naming models outright makes a retirement an HTTP 404 we can
+ * see rather than a substitution we cannot.
+ *
+ * One id was REPLACED 2026-08-20, `Qwen/Qwen3-point-6-27B` by
+ * `hf:Qwen/Qwen3.8-27B`, on notice that the provider would retire the older one
+ * shortly and offers no service level agreement, so a retirement lands without
+ * warning. The two are identical on every field this catalog records and on
+ * every capability flag the endpoint reports: context, output ceiling,
+ * modalities, features, quantization, always-on and price. The alias
+ * `syn:small:vision` still resolved to the OLDER id when this was written, so
+ * that alias breaks or repoints when the retirement lands; nothing here calls
+ * it, and the dedupe rule above is what keeps that from mattering.
  *
  * Two ids were REMOVED 2026-08-05, `moonshotai/Kimi-K2.7-Code` and
  * `MiniMaxAI/MiniMax-M3` (written without the `hf:` prefix here so a future
@@ -73,7 +96,7 @@ export type SyntheticVendorFamily =
 export type SyntheticModelId =
   | 'hf:zai-org/GLM-5.2'
   | 'hf:zai-org/GLM-4.7-Flash'
-  | 'hf:Qwen/Qwen3.6-27B'
+  | 'hf:Qwen/Qwen3.8-27B'
   | 'hf:moonshotai/Kimi-K3'
   | 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4'
   | 'hf:openai/gpt-oss-120b';
@@ -167,8 +190,8 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
     promptDollarsPerToken: 0.0000001,
     completionDollarsPerToken: 0.0000005,
   },
-  'hf:Qwen/Qwen3.6-27B': {
-    id: 'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B': {
+    id: 'hf:Qwen/Qwen3.8-27B',
     readsImages: true,
     family: 'qwen',
     contextLength: 262_144,

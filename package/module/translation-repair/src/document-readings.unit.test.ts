@@ -73,7 +73,7 @@ async function sawText(): Promise<{
  */
 const READERS: readonly SyntheticModelId[] = [
   'hf:moonshotai/Kimi-K3',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
 ];
 
 /**
@@ -195,7 +195,7 @@ function agreeingClient(): {
    */
   const scripted: Readonly<Record<string, string>> = {
     'hf:moonshotai/Kimi-K3': READING,
-    'hf:Qwen/Qwen3.6-27B': AGREEING_READING,
+    'hf:Qwen/Qwen3.8-27B': AGREEING_READING,
   };
 
   return {

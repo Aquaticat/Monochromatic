@@ -53,7 +53,7 @@ const PRODUCER_TWO = 'hf:moonshotai/Kimi-K3';
 /**
  * Judge with no stake in either producer's output.
  */
-const JUDGE_ONE = 'hf:Qwen/Qwen3.6-27B';
+const JUDGE_ONE = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Second disinterested judge, so a roster can meet the vote minimum.

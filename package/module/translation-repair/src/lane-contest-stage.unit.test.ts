@@ -38,7 +38,7 @@ const SUBJECT = {
  */
 const ROSTER = [
   'hf:zai-org/GLM-5.2',
-  'hf:Qwen/Qwen3.6-27B',
+  'hf:Qwen/Qwen3.8-27B',
   'hf:moonshotai/Kimi-K3',
 ] as const;
 

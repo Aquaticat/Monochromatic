@@ -48,7 +48,7 @@ const CANDIDATES: readonly Candidate<TranslateCandidateValue>[] = [
   {
     producer: {
       kind: 'incumbent',
-      matched: ['hf:Qwen/Qwen3.6-27B',],
+      matched: ['hf:Qwen/Qwen3.8-27B',],
     },
     value: {
       text: INCUMBENT,
@@ -100,7 +100,7 @@ await describe({
         expect(slate[0]?.origin,).toBe('incumbent',);
         expect(slate[0]?.producer,).toEqual({
           kind: 'incumbent',
-          matched: ['hf:Qwen/Qwen3.6-27B',],
+          matched: ['hf:Qwen/Qwen3.8-27B',],
         },);
         expect(slate[2]?.producer,).toEqual({
           kind: 'model',
