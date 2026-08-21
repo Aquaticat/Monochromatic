@@ -104,11 +104,27 @@ wire uses.
 Verse slices are line-structured, and a producer not told so merges lines,
 which `validateTranslatedSlice` then refuses on every attempt.
 
-STRUCTURE IS CHECKED DETERMINISTICALLY, by that same validator,
-which is the guard the translate lane's candidates already pass.
+STRUCTURE IS CHECKED DETERMINISTICALLY, by `validateTranslatedSlice`.
 A consolidation that changes the block skeleton goes back to its own author
 through `repairInvalidCandidates`,
 exactly as an invalid translated slice does by the decision of 2026-08-14.
+
+AGAINST THE PAGE, NOT AGAINST THE ORIGINAL, and that correction was measured
+rather than reasoned.
+The first calibration slice is one Chinese paragraph that the archive renders as
+a block quote followed by an attribution line.
+Checked against the original, all six consolidations were invalid, five were
+sent back, and the rendering that then won had flattened the quote and its
+attribution into one plain paragraph:
+damage this stage authored itself.
+Over the nineteen comparison rows of the eight read entries the archive's shape
+differs from its source slice's at four.
+What a consolidation replaces is the text on the page, so the page is what it
+has to match, and the sheet says so in the same words the guard uses.
+
+THE TRANSLATE LANE IS STILL ANCHORED TO THE SOURCE, recorded as `#139`.
+It is a separate decision with a separate blast radius, and this stage does not
+wait on it.
 
 THE REPLY SHAPE IS THE TRANSLATE LANE'S OWN, `{"translation": "..."}`.
 That is not a convenience: it means `isTranslateReportWire`,
