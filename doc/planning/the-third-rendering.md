@@ -2206,3 +2206,46 @@ and a line break reads to it as a difference.
 It is done, tested, and verified on the measured population.
 The second, a stated policy for the roughly one candidate in ten that never validates,
 is what remains.
+
+## The second blocker, measured: a slate with no valid candidate shipped anyway
+
+The policy owed for candidates that never validate is not a preference to be chosen.
+Two rules already in `translate-produce.ts` determine it between them.
+
+The stage comment says invalid renderings go back to their authors
+and THE DISTINCT SURVIVORS become a slate with the incumbent among them,
+so a candidate that did not survive validation is not a slate member.
+The incumbent is separately exempt from the validity check,
+because a check that could drop it would be a check that could delete the archive.
+
+Together those give one answer.
+When no proposal survives validation the slate is the incumbent alone,
+so the standing text ships and nothing else can.
+
+### It is not hypothetical, and it fired in both runs
+
+`Zha_Ke#1` finished the repair round with FIVE candidates and ZERO valid ones,
+in run 8 and again in run 9,
+and a consolidation shipped at both, recorded as `judged`.
+
+The guard was right to refuse them.
+The page as it stands is two blocks, a paragraph and an html block.
+Two candidates produced one block, one produced a paragraph and an `mdxJsxFlowElement`,
+and the rest did not parse as MDX at all.
+Every candidate was structurally wrong about the page it was writing into,
+the guard said so five times, and the slice shipped one of them regardless.
+
+THAT IS THE WORST PLACE FOR THIS HOLE TO SIT.
+The one slice in the pair whose input was corrupt
+is the one slice where the machinery overrode its own structural refusal.
+
+### What the wiring owes
+
+A slate carrying no valid proposal must settle on the standing text
+without putting the question to the gate at all.
+The gate answers which of two renderings is more faithful,
+and that question is meaningless when one of them is structurally not the page.
+
+This is adopted rather than asked, per the settled-decision rule:
+both halves come from policy already in the lane this stage reuses verbatim.
+Veto invited.
