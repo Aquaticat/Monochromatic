@@ -230,6 +230,10 @@ export {
   longestBacktickRun,
 } from './markdown-fence.ts';
 export {
+  declaredNameForms,
+  findDroppedDeclaredNames,
+} from './declared-name-survival.ts';
+export {
   collectIdentityLines,
   type DeclaredIdentity,
   extractDeclaredIdentity,
