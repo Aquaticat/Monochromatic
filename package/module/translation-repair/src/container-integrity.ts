@@ -80,7 +80,15 @@ type Range = {
  * if (covers({ outer: span, inner: opener, },)) { }
  * ```
  */
-function covers({ outer, inner, }: { readonly outer: Range; readonly inner: Range; },): boolean {
+function covers(
+  {
+    outer,
+    inner,
+  }: {
+    readonly outer: Range;
+    readonly inner: Range;
+  },
+): boolean {
   return (inner.startOffset >= outer.startOffset)
     && (inner.endOffset <= outer.endOffset);
 }
@@ -103,7 +111,15 @@ function covers({ outer, inner, }: { readonly outer: Range; readonly inner: Rang
  * if (touches({ outer: span, inner: closer, },)) { }
  * ```
  */
-function touches({ outer, inner, }: { readonly outer: Range; readonly inner: Range; },): boolean {
+function touches(
+  {
+    outer,
+    inner,
+  }: {
+    readonly outer: Range;
+    readonly inner: Range;
+  },
+): boolean {
   return (inner.startOffset < outer.endOffset)
     && (inner.endOffset > outer.startOffset);
 }
@@ -124,11 +140,26 @@ function touches({ outer, inner, }: { readonly outer: Range; readonly inner: Ran
  * ```
  */
 function standing(
-  { span, tag, }: { readonly span: Range; readonly tag: Range; },
-): { readonly held: boolean; readonly reached: boolean; } {
+  {
+    span,
+    tag,
+  }: {
+    readonly span: Range;
+    readonly tag: Range;
+  },
+): {
+  readonly held: boolean;
+  readonly reached: boolean;
+} {
   return {
-    held: covers({ outer: span, inner: tag, },),
-    reached: touches({ outer: span, inner: tag, },),
+    held: covers({
+      outer: span,
+      inner: tag,
+    },),
+    reached: touches({
+      outer: span,
+      inner: tag,
+    },),
   };
 }
 
@@ -177,7 +208,10 @@ export function assertContainerIntegrity(
        */
       const opener = standing({
         span,
-        tag: { startOffset: container.openerStartOffset, endOffset: container.openerEndOffset, },
+        tag: {
+          startOffset: container.openerStartOffset,
+          endOffset: container.openerEndOffset,
+        },
       },);
 
       /**
@@ -185,7 +219,10 @@ export function assertContainerIntegrity(
        */
       const closer = standing({
         span,
-        tag: { startOffset: container.closerStartOffset, endOffset: container.closerEndOffset, },
+        tag: {
+          startOffset: container.closerStartOffset,
+          endOffset: container.closerEndOffset,
+        },
       },);
 
       /**

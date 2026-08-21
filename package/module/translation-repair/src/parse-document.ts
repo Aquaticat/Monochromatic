@@ -18,7 +18,10 @@ import {
   parseMarkdownBody,
   parseMdxBody,
 } from './parse-mdx.ts';
-import { type ContainerSpan, flattenContainers, } from './unwrap-container.ts';
+import {
+  type ContainerSpan,
+  flattenContainers,
+} from './unwrap-container.ts';
 
 //region Document parsing
 // Composition of the deterministic core: front matter split, tolerant parse
@@ -291,7 +294,10 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
    * One corpus translation reported all ten of its references unresolved while
    * carrying all ten definitions, because every definition sat inside one.
    */
-  const { blocks, containers, } = flattenContainers({
+  const {
+    blocks,
+    containers,
+  } = flattenContainers({
     children: parsed
       .root
       .children,

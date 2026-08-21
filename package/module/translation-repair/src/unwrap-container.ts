@@ -194,9 +194,14 @@ function isPositioned(node: ForeignBorrowed<RootContent>,): boolean {
  */
 type BlockContainer = {
   /**
-   * Element name as written, absent on a fragment.
+   * Element name as written.
+   *
+   * DECLARED OPTIONAL RATHER THAN NULLABLE, though the MDX extension does write
+   * null here for a fragment. The property is foreign, so its absence is read
+   * at the boundary with a type check rather than modelled as a union this repo
+   * does not use.
    */
-  readonly name?: string | null;
+  readonly name?: string;
 
   /**
    * Blocks the container packages, in source order.
@@ -229,6 +234,12 @@ function isUnwrappableContainer(
 
   /**
    * Child blocks the container holds, empty for a self-closing element.
+   *
+   * ASSERTED RATHER THAN NARROWED, and the assertion is load-bearing. Reading
+   * the property through the `in` check instead loses the borrowed-foreign
+   * marking, so the callback below infers a writable parameter and
+   * `prefer-readonly-parameter-types` refuses it. mdast has no member for JSX
+   * elements at all, which is why the shape has to be named here.
    */
   const { children, } = node as BlockContainer;
   return (children.length > 0)
@@ -266,9 +277,11 @@ function containerSpanOf(
 ): ContainerSpan {
   /**
    * Element name as written, normalised so a fragment reads as empty rather
-   * than as an absent property.
+   * than as absent or as the null the MDX extension writes for one.
    */
-  const name = container.name ?? '';
+  const name = ((typeof container.name) === 'string')
+    ? container.name
+    : '';
   if (!isPositioned(container,))
     throw new UnpositionedContainerError({ name, },);
 
@@ -363,7 +376,10 @@ export function flattenContainers(
     blocks: flattened,
     // Sorted, because a nested container is met before its parent's later
     // siblings and would otherwise report out of document order.
-    containers: dissolved.toSorted(function byOpener(left, right,) {
+    containers: dissolved.toSorted(function byOpener(
+      left,
+      right,
+    ) {
       return left.openerStartOffset - right.openerStartOffset;
     },),
   };
