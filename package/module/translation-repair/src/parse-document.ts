@@ -1,5 +1,6 @@
 import type { Root, } from 'mdast';
 
+import { widenNodesToContainers, } from './container-extents.ts';
 import {
   buildDocumentNodes,
   type DocumentNode,
@@ -303,6 +304,21 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
       .children,
   },);
 
+  /**
+   * Container spans shifted to absolute offsets, so every consumer reads
+   * container tags in the same frame as the node offsets beside them. The walk
+   * itself sees only body-relative positions and cannot do this.
+   */
+  const absoluteContainers = containers.map(function toAbsolute(container,): ContainerSpan {
+    return {
+      name: container.name,
+      openerStartOffset: split.bodyOffset + container.openerStartOffset,
+      openerEndOffset: split.bodyOffset + container.openerEndOffset,
+      closerStartOffset: split.bodyOffset + container.closerStartOffset,
+      closerEndOffset: split.bodyOffset + container.closerEndOffset,
+    };
+  },);
+
   return {
     text,
     documentHash: hashContent({ content: text, },),
@@ -311,28 +327,28 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
     ...(split.frontMatter === undefined
       ? {}
       : { frontMatter: split.frontMatter, }),
-    // Node text stays sliced from the ORIGINAL body, keeping every quote,
-    // hash, and anchor consistent with the document's canonical text.
+    // Node text stays sliced from the ORIGINAL document, keeping every quote,
+    // hash, and anchor consistent with its canonical text.
     // Disclosure containers flatten first so a page nesting blocks exposes the
     // same top-level structure as a counterpart that does not; chunking and
     // alignment walk top-level blocks only.
-    nodes: buildDocumentNodes({
-      children: blocks,
-      bodyText: split.body,
-      bodyOffset: split.bodyOffset,
+    //
+    // THEN THE EDGE BLOCKS TAKE THE TAGS THAT FLATTENING ORPHANED. Dissolving
+    // a container leaves its two tags belonging to no node, and every range in
+    // this package is minted from node offsets, so a boundary could fall
+    // between an opening tag and its closing one and delete half a disclosure
+    // block. Widening here rather than at the two sites that mint ranges is
+    // what makes both of them correct at once.
+    nodes: widenNodesToContainers({
+      nodes: buildDocumentNodes({
+        children: blocks,
+        bodyText: split.body,
+        bodyOffset: split.bodyOffset,
+      },),
+      text,
+      containers: absoluteContainers,
     },),
-    // Shifted to absolute offsets here rather than at the walk, which sees only
-    // body-relative positions, so every consumer reads container tags in the
-    // same frame as the node offsets beside them.
-    containers: containers.map(function toAbsolute(container,): ContainerSpan {
-      return {
-        name: container.name,
-        openerStartOffset: split.bodyOffset + container.openerStartOffset,
-        openerEndOffset: split.bodyOffset + container.openerEndOffset,
-        closerStartOffset: split.bodyOffset + container.closerStartOffset,
-        closerEndOffset: split.bodyOffset + container.closerEndOffset,
-      };
-    },),
+    containers: absoluteContainers,
     // The footnote graph scans the MASKED body so commented-out marker
     // look-alikes never become phantom references or definitions.
     footnoteGraph: buildFootnoteGraph({

@@ -26,6 +26,11 @@ export {
   ContainerIntegrityError,
 } from './container-integrity.ts';
 export {
+  type BlockExtent,
+  widenExtentsToContainers,
+  widenNodesToContainers,
+} from './container-extents.ts';
+export {
   type ContainerSpan,
   UnpositionedContainerError,
 } from './unwrap-container.ts';

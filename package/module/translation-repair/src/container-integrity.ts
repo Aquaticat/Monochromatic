@@ -1,48 +1,57 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import type { DocumentNode, } from './document-node.ts';
 import type { ContainerSpan, } from './unwrap-container.ts';
 
 //region Container integrity
-// The thing no block-level check can see, because the thing at risk is not a
-// block.
+// What this guards changed once the defect it was built for was fixed at its
+// origin, so read the current shape rather than the history.
 //
 // `flattenContainers` promotes a disclosure element's children to top-level
-// blocks so both language sides expose comparable structure. The element's own
-// opening and closing tags are left behind: they belong to none of the promoted
-// children, so they appear in no node, and every other invariant here reasons
-// over nodes. `assertSpanContiguity` asks whether a range cuts a block,
-// `assertSliceCoverage` asks whether a block reached a slice, and a tag is not
-// a block for either of them.
+// blocks so both language sides expose comparable structure. That USED to leave
+// the element's own opening and closing tags belonging to no block at all, and
+// since every range in this package is minted from block offsets, a slice range
+// could hold one tag and stop short of the other. Assembly replaces a range and
+// copies the rest through, so such a range deleted the opener, kept the closer,
+// and produced a page that lost the element's contents and carried markup
+// closing nothing. Measured once on a corpus entry: 4388 characters became 680.
 //
-// Assembly replaces a slice's RANGE and copies everything else through. So a
-// range holding the opening tag and stopping short of the closing one deletes
-// the opener, keeps the closer, and produces a page that both loses the
-// element's contents and carries markup closing nothing.
+// `container-extents.ts` fixed that at the origin: the block carrying a
+// container's opening tag now owns it, and the block carrying its closing tag
+// owns that one. A tag is therefore inside some block, a range is a union of
+// whole blocks, and a range that holds half a tag cannot be minted.
 //
-// THE RULE IS BOTH TAGS OR NEITHER, not "no tag inside a range". An element
-// wholly inside one slice puts both tags in that range, which is the ordinary
-// healthy case: the slice text carries them, and a candidate that drops them is
-// caught downstream where the page grammar refuses it. Refusing that case would
-// refuse most of the pages that use containers at all.
+// SO THE RULE IS NO LONGER "BOTH TAGS OR NEITHER". That rule described a world
+// where tags floated between blocks, and enforcing it now would refuse the
+// ordinary healthy case: a container whose blocks fall in different slices puts
+// its opening tag in the first slice's own text and its closing tag in the
+// last's, each lane sees its tag and reproduces it, and the page stays
+// balanced. A lane that drops one is a CANDIDATE fault, caught where the page
+// grammar is read, not a preparation fault.
+//
+// What is checked instead is the property the origin fix establishes: every tag
+// of a container that holds blocks lies wholly inside one of them, and no slice
+// range ends part way through a tag. Both fire only on a regression in how
+// extents or ranges are derived, which is exactly what they are for.
 
 /**
- * Raised when one slice range holds one of a container's tags and not the
- * other.
+ * Raised when a container tag is not wholly owned by the block or range that
+ * reaches it.
  *
  * @example
  * ```ts
- * throw new ContainerIntegrityError({ message: 'slice 1 holds the opening tag of details', },);
+ * throw new ContainerIntegrityError({ message: 'no block owns the opening tag of details', },);
  * ```
  */
 export class ContainerIntegrityError extends Error {
   /**
-   * Builds the failure naming which element a range would break.
+   * Builds the failure naming which element is not owned whole.
    *
-   * @param message - which slice holds which half of which element
+   * @param message - which tag of which element is unowned or cut
    *
    * @example
    * ```ts
-   * throw new ContainerIntegrityError({ message: 'slice 1 splits details', },);
+   * throw new ContainerIntegrityError({ message: 'slice 1 cuts the closing tag of details', },);
    * ```
    */
   public constructor({ message, }: { readonly message: string; },) {
@@ -125,64 +134,145 @@ function touches(
 }
 
 /**
- * Reads how a range stands towards one tag: holding it, ignoring it, or cutting
- * it.
+ * Names a container in a form a reader can find on the page.
  *
- * @param span - slice range assembly would replace
+ * @param container - container being reported
  *
- * @param tag - one container tag
- *
- * @returns Whether the range holds it, and whether it reaches it at all
+ * @returns Element name in angle brackets, or a neutral phrase when unnamed
  *
  * @example
  * ```ts
- * const { held, reached, } = standing({ span, tag, },);
+ * const named = nameOf({ container, },);
  * ```
  */
-function standing(
-  {
-    span,
-    tag,
-  }: {
-    readonly span: Range;
-    readonly tag: Range;
-  },
-): {
-  readonly held: boolean;
-  readonly reached: boolean;
-} {
-  return {
-    held: covers({
-      outer: span,
-      inner: tag,
-    },),
-    reached: touches({
-      outer: span,
-      inner: tag,
-    },),
-  };
+function nameOf({ container, }: { readonly container: ContainerSpan; },): string {
+  return container.name === ''
+    ? 'a fragment'
+    : `<${container.name}>`;
 }
 
 /**
- * Refuses any slice whose range would break a container it does not own whole.
+ * Reads both tags of a container as ranges, in document order.
  *
- * CALLED AT PREPARATION, where the parsed document still remembers which
- * containers were dissolved. Nothing later can: the slices carry nodes and
- * offsets, and the tags are in neither.
+ * @param container - container whose tags are wanted
+ *
+ * @returns Opening tag range then closing tag range, each labelled
+ *
+ * @example
+ * ```ts
+ * for (const { label, range, } of tagsOf({ container, },)) { }
+ * ```
+ */
+function tagsOf(
+  { container, }: { readonly container: ContainerSpan; },
+): readonly { readonly label: string; readonly range: Range; }[] {
+  return [
+    {
+      label: 'opening',
+      range: {
+        startOffset: container.openerStartOffset,
+        endOffset: container.openerEndOffset,
+      },
+    },
+    {
+      label: 'closing',
+      range: {
+        startOffset: container.closerStartOffset,
+        endOffset: container.closerEndOffset,
+      },
+    },
+  ];
+}
+
+/**
+ * Refuses a document whose container tags are owned by no block.
+ *
+ * A container holding no blocks is left alone deliberately: its tags belong to
+ * nothing, but no range can reach them either, so assembly copies the region
+ * through untouched.
+ *
+ * @param blocks - document blocks carrying absolute offsets
+ *
+ * @param containers - every container the parse dissolved, absolute offsets
+ *
+ * @throws {@link ContainerIntegrityError} when a tag of a container holding
+ * blocks is owned by no block, or is only partly covered by one
+ *
+ * @example
+ * ```ts
+ * assertTagsRideInBlocks({ blocks, containers, },);
+ * ```
+ */
+function assertTagsRideInBlocks(
+  {
+    blocks,
+    containers,
+  }: {
+    readonly blocks: readonly DocumentNode[];
+    readonly containers: readonly ContainerSpan[];
+  },
+): void {
+  for (const container of containers) {
+    /**
+     * Whether any block lies within this container's whole span, which is what
+     * separates a container with contents from an empty one.
+     */
+    const holdsBlocks = blocks.some(function isInside(block,): boolean {
+      return (block.startOffset >= container.openerStartOffset)
+        && (block.endOffset <= container.closerEndOffset);
+    },);
+    for (const { label, range, } of tagsOf({ container, },)) {
+      /**
+       * Whether some block owns this tag whole.
+       */
+      const owned = blocks.some(function ownsTag(block,): boolean {
+        return covers({
+          outer: block,
+          inner: range,
+        },);
+      },);
+      if (owned)
+        continue;
+
+      /**
+       * Whether some block covers part of this tag without owning it.
+       */
+      const cut = blocks.some(function cutsTag(block,): boolean {
+        return touches({
+          outer: block,
+          inner: range,
+        },);
+      },);
+      if (cut)
+        throw new ContainerIntegrityError({
+          message: `a block covers part of the ${label} tag of ${nameOf({ container, },)} without `
+            + 'covering all of it, so every range minted from that block would carry half a tag',
+        },);
+      if (holdsBlocks)
+        throw new ContainerIntegrityError({
+          message: `no block owns the ${label} tag of ${nameOf({ container, },)}, though the `
+            + 'container holds blocks: extents were derived without widening onto container tags, '
+            + 'so a range boundary can fall between this tag and its partner',
+        },);
+    }
+  }
+}
+
+/**
+ * Refuses any slice whose range ends part way through a container tag.
  *
  * @param slices - prepared slice pairs
  *
  * @param containers - every container the parse dissolved, absolute offsets
  *
- * @throws {@link ContainerIntegrityError} when one range holds one tag of a
- * container without the other, or ends part way through a tag
+ * @throws {@link ContainerIntegrityError} when a range covers part of a tag
  *
  * @example
  * ```ts
- * assertContainerIntegrity({ slices, containers: targetDocument.containers, },);
+ * assertNoSliceCutsATag({ slices, containers, },);
  * ```
  */
-export function assertContainerIntegrity(
+function assertNoSliceCutsATag(
   {
     slices,
     containers,
@@ -198,75 +288,70 @@ export function assertContainerIntegrity(
     const span = slice.target;
 
     // An insertion names a place rather than a range, so it replaces nothing
-    // and can break no element. Where it lands inside a container is a question
-    // about placement, which `span-contiguity.ts` already answers.
+    // and can cut no tag. Where it lands inside a container is a question about
+    // placement, which `span-contiguity.ts` already answers.
     if (isInsertionChunk(span,))
       continue;
     for (const container of containers) {
-      /**
-       * How this range stands towards the opening tag.
-       */
-      const opener = standing({
-        span,
-        tag: {
-          startOffset: container.openerStartOffset,
-          endOffset: container.openerEndOffset,
-        },
-      },);
-
-      /**
-       * How this range stands towards the closing tag.
-       */
-      const closer = standing({
-        span,
-        tag: {
-          startOffset: container.closerStartOffset,
-          endOffset: container.closerEndOffset,
-        },
-      },);
-
-      /**
-       * Element name in a form a reader can find on the page.
-       */
-      const named = container.name === ''
-        ? 'a fragment'
-        : `<${container.name}>`;
-      if (opener.reached !== opener.held) {
-        throw new ContainerIntegrityError({
-          message: `slice ${String(span.chunkIndex,)} ends part way through the opening tag of ${named}, `
-            + 'so assembly would replace half of it and leave the rest beside text written without it',
-        },);
+      for (const { label, range, } of tagsOf({ container, },)) {
+        if (touches({
+          outer: span,
+          inner: range,
+        },)
+          && !covers({
+            outer: span,
+            inner: range,
+          },))
+          throw new ContainerIntegrityError({
+            message: `slice ${String(span.chunkIndex,)} ends part way through the ${label} tag of `
+              + `${nameOf({ container, },)}, so assembly would replace half of it and leave the `
+              + 'rest beside text written without it',
+          },);
       }
-      if (closer.reached !== closer.held) {
-        throw new ContainerIntegrityError({
-          message: `slice ${String(span.chunkIndex,)} ends part way through the closing tag of ${named}, `
-            + 'so assembly would replace half of it and leave the rest beside text written without it',
-        },);
-      }
-      if (opener.held === closer.held)
-        continue;
-
-      /**
-       * Which half this range holds, which is the half assembly would delete.
-       */
-      const kept = opener.held
-        ? 'opening'
-        : 'closing';
-
-      /**
-       * Which half it leaves behind, which is the half that would be orphaned.
-       */
-      const orphaned = opener.held
-        ? 'closing'
-        : 'opening';
-      throw new ContainerIntegrityError({
-        message: `slice ${String(span.chunkIndex,)} covers the ${kept} tag of ${named} and not its `
-          + `${orphaned} tag: assembly replaces the range, so that tag would be deleted while its `
-          + 'partner survives, leaving the element without its contents and the page with markup '
-          + 'that closes nothing',
-      },);
     }
   }
+}
+
+/**
+ * Refuses a prepared pair whose container tags are not owned whole.
+ *
+ * CALLED AT PREPARATION, where the parsed document still remembers which
+ * containers were dissolved. Nothing later can: the slices carry blocks and
+ * offsets, and a tag is neither.
+ *
+ * @param slices - prepared slice pairs
+ *
+ * @param containers - every container the parse dissolved, absolute offsets
+ *
+ * @param blocks - target document blocks carrying absolute offsets
+ *
+ * @throws {@link ContainerIntegrityError} when a tag is owned by no block, or a
+ * range ends part way through one
+ *
+ * @example
+ * ```ts
+ * assertContainerIntegrity({ slices, containers: doc.containers, blocks: doc.nodes, },);
+ * ```
+ */
+export function assertContainerIntegrity(
+  {
+    slices,
+    containers,
+    blocks,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly containers: readonly ContainerSpan[];
+    readonly blocks: readonly DocumentNode[];
+  },
+): void {
+  assertTagsRideInBlocks({
+    blocks,
+    containers,
+  },);
+  assertNoSliceCutsATag({
+    slices,
+    containers,
+  },);
 }
 
 //endregion Container integrity
