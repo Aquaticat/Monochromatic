@@ -1623,3 +1623,69 @@ and a deleted region is a named fault bounded to a silent original.
 Expected steady state, committed in advance: a container defect that used to stop preparation
 now appears as a contest-visible fault on one candidate, and a different candidate ships.
 No new machinery is to be built for it in this task.
+
+### What the widening measured, including where the pre-commit was wrong
+
+Landed 2026-08-21 as `fdfeb1108`, with tests in `d081efb91`.
+
+The census reports 92 of 92 pairs preparing clean, 0 `ContainerIntegrityError` and 0 other failures.
+That is the pre-committed number exactly, `XingZ60`'s target-only ninth container included.
+
+One pre-committed expectation was stated wrong and is corrected here rather than quietly restated.
+It said 76 entries carry no container and all 76 must produce byte-identical slices.
+That count came from parsing the English side only.
+Measuring both sides, 75 entries carry no container anywhere and 17 carry one on some side.
+All 75 are byte-identical.
+The entry that exposed the miscount is `interrgned`, which carries a `<blockquote>` container
+on its Chinese side and none on its English side, so widening correctly changed its source-side slices
+while its English side has no container at all.
+There is no unexplained drift.
+
+The guard fails when the widening is removed, which is what makes it evidence rather than decoration.
+Neutering `widenNodesToContainers` to return its input and rebuilding takes the refusals from 0 to 16,
+naming every entry whose English side carries a container and leaving the other 76 untouched.
+Restoring it returns the census to 0.
+
+### The old rule was measured wrong, not reasoned wrong
+
+Worth recording because the sequence is the useful part.
+The widening landed first while the guard still enforced its original rule,
+that one slice range must hold both of a container's tags or neither.
+The census then reported 12 refusals rather than 0:
+`SevenBird` and `Zha_Ke` were fixed, and `Chinatsu_Suzuki`, `Huasheng` and `LCG_Akiball` were newly refused.
+
+That is the fix working and the guard disagreeing with it.
+Once tags ride inside blocks, a container whose blocks fall in different slices is the healthy case:
+the first slice carries the opening tag in its own text, the last carries the closing tag in its own,
+each lane sees the tag it must reproduce, and the page stays balanced.
+The old rule called that a defect because it was written for a world where tags floated between blocks.
+
+So the rule became two narrower ones.
+Every tag of a container that holds blocks must lie wholly inside one of them,
+and no slice range may end part way through a tag.
+Both fire only on a regression in how extents or ranges are derived, which is what the guard is now for.
+A lane dropping a tag from its own candidate is a candidate fault,
+carried by the floor that reads a page the strict grammar refuses and by the named deleted-region fault.
+
+### Verification state
+
+Suite exits 0 with zero failing cases.
+Lint reports 0 errors and 1 warning, the inherited `no-unsafe-type-assertion` on `unwrap-container.ts`,
+already shown to be load-bearing: removing the assertion loses the borrowed-foreign marking
+and `prefer-readonly-parameter-types` errors in its place.
+
+Two documents that told the old story were corrected rather than left standing.
+The `unwrap-container.ts` header said the tags "fall outside every promoted span" and that this was safe;
+it now says where they go instead and that a caller reading blocks while dropping containers
+reintroduces the defect in full.
+Its test case asserting that no promoted block contains a container tag was asserting the defect itself,
+so it is reversed rather than deleted.
+
+### Run 7, the pre-committed slice
+
+`Zha_Ke#1` was pre-committed to ship nothing, with the will preserved.
+It shipped nothing and the incumbent was retained, so the outcome held.
+The mechanism did not: the pre-commit predicted every candidate refused by the floor,
+and what happened was `declined-indecision` at the judge, with the incumbent kept for want of agreement.
+Recording the difference because a right outcome reached by an unpredicted route
+is weaker evidence than one reached by the predicted mechanism, and the distinction should not be lost.
