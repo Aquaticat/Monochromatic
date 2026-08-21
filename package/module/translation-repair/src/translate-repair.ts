@@ -59,7 +59,9 @@ export type RepairOutcome = {
  *
  * @param sourceText - original slice the candidate renders
  *
- * @param incumbentText - translation as it stands
+ * @param incumbentText - translation as it stands, which is both what a
+ * matching candidate collapses into and the page whose block shape a candidate
+ * has to carry
  *
  * @param priorMessages - exact messages that produced the candidate
  *
@@ -86,7 +88,6 @@ async function repairOneCandidate(
     signal,
     perCallTimeoutMs,
     l,
-    referenceName,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly voice: HeardVoice<TranslateReportWire>;
@@ -96,7 +97,6 @@ async function repairOneCandidate(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
-    readonly referenceName: string;
   }>,
 ): Promise<RepairOutcome> {
   // A candidate that reproduced the incumbent is about to COLLAPSE into it, and
@@ -120,7 +120,7 @@ async function repairOneCandidate(
     sourceText,
     candidateText: voice.value
       .translation,
-    referenceName,
+    pageText: incumbentText,
   },);
   if (validation.kind === 'valid')
     return {
@@ -197,7 +197,7 @@ async function repairOneCandidate(
   const rechecked = validateTranslatedSlice({
     sourceText,
     candidateText: translation,
-    referenceName,
+    pageText: incumbentText,
   },);
 
   // A revision that still fails is NOT taken. The model was asked to fix these
@@ -237,11 +237,10 @@ async function repairOneCandidate(
  *
  * @param voices - heard translator replies
  *
- * @param sourceText - text every candidate must match structurally, which is
- * the original for a translator and the page as it stands for a consolidator
+ * @param sourceText - original every candidate renders
  *
- * @param incumbentText - translation as it stands, so a candidate that already
- * reproduces it is left alone
+ * @param incumbentText - translation as it stands, so a candidate reproducing
+ * it is left alone, and the page whose blocks a candidate has to carry
  *
  * @param priorMessages - exact messages every translator was given
  *
@@ -250,9 +249,6 @@ async function repairOneCandidate(
  * @param perCallTimeoutMs - deadline per exchange
  *
  * @param l - stage logger
- *
- * @param referenceName - what a finding calls `sourceText`, defaulting to the
- * translator's own word for it
  *
  * @returns Final voices in the order given, plus every finding
  *
@@ -271,7 +267,6 @@ export async function repairInvalidCandidates(
     signal,
     perCallTimeoutMs,
     l,
-    referenceName = 'ORIGINAL',
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
@@ -281,7 +276,6 @@ export async function repairInvalidCandidates(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
-    readonly referenceName?: string;
   }>,
 ): Promise<{
   readonly voices: readonly HeardVoice<TranslateReportWire>[];
@@ -301,7 +295,6 @@ export async function repairInvalidCandidates(
         signal,
         perCallTimeoutMs,
         l,
-        referenceName,
       },);
     },),
   );

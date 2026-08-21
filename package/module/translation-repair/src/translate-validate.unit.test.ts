@@ -173,5 +173,129 @@ In the morning it dozes on the windowsill.
         ).toContain('could not be parsed',);
       },
     },),
+
+    it({
+      name: 'ACCEPTS a rendering shaped like the PAGE where the page merges '
+        + 'what the original splits, which is the case that made the source '
+        + 'anchor send six good renderings back to their authors',
+      fn: async () => {
+        expect(
+          validateTranslatedSlice({
+            sourceText: '猫猫在窗台上打盹。\n\n（邻居留）',
+            pageText: '> The cat dozes on the windowsill.\n\n—left by a neighbour',
+            candidateText: '> The cat naps on the windowsill.\n\n—left by a neighbour',
+          },).kind,
+        ).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a rendering shaped like the ORIGINAL when the page it '
+        + 'replaces is shaped otherwise, since the block quote is what says '
+        + 'somebody left this passage rather than wrote it',
+      fn: async () => {
+        /**
+         * Verdict where the candidate keeps the original's shape and loses the
+         * page's.
+         */
+        const validation = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。\n\n（邻居留）',
+          pageText: '> The cat dozes on the windowsill.\n\n—left by a neighbour',
+          candidateText: 'The cat naps on the windowsill.\n\nLeft by a neighbour.',
+        },);
+        expect(validation.kind,).toBe('invalid',);
+        expect(
+          (validation.kind === 'invalid') ? validation.findings.join('\n',) : '',
+        ).toContain('PAGE AS IT STANDS',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS a rendering that RESTORES a block the page left out, '
+        + 'which the page-as-ceiling rule deleted again on the next round',
+      fn: async () => {
+        expect(
+          validateTranslatedSlice({
+            sourceText: '猫猫在窗台上打盹。\n\n> 邻居说它每天都来。',
+            pageText: 'The cat dozes on the windowsill.',
+            candidateText: 'The cat dozes on the windowsill.\n\n> The neighbour '
+              + 'says it comes every day.',
+          },).kind,
+        ).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a block neither the page nor the original carries, so '
+        + 'restoring stays restoring rather than becoming licence to invent',
+      fn: async () => {
+        /**
+         * Verdict where the candidate adds a block from nowhere.
+         */
+        const validation = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: 'The cat dozes on the windowsill.',
+          candidateText: 'The cat dozes on the windowsill.\n\nIt is a tabby.',
+        },);
+        expect(validation.kind,).toBe('invalid',);
+        expect(
+          (validation.kind === 'invalid') ? validation.findings.join('\n',) : '',
+        ).toContain('Add a block only to carry',);
+      },
+    },),
+
+    it({
+      name: 'KEEPS a footnote the PAGE carries and the original never had, '
+        + 'because accurate detail the archive added is not a candidate\'s to '
+        + 'drop',
+      fn: async () => {
+        /**
+         * Verdict where the candidate carries the page's own footnote.
+         */
+        const validation = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: 'The cat dozes on the windowsill[^1].\n\n[^1]: The sill '
+            + 'faces east.',
+          candidateText: 'The cat naps on the windowsill[^1].\n\n[^1]: The sill '
+            + 'faces east.',
+        },);
+        expect(validation.kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'REPORTS a footnote the page carries and the candidate dropped, '
+        + 'naming both references so the model knows which text asked for it',
+      fn: async () => {
+        /**
+         * Verdict where the candidate drops the page's footnote.
+         */
+        const validation = validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: 'The cat dozes on the windowsill[^1].\n\n[^1]: The sill '
+            + 'faces east.',
+          candidateText: 'The cat naps on the windowsill.',
+        },);
+        expect(validation.kind,).toBe('invalid',);
+        expect(
+          (validation.kind === 'invalid') ? validation.findings.join('\n',) : '',
+        ).toContain('ORIGINAL or the PAGE AS IT STANDS',);
+      },
+    },),
+
+    it({
+      name: 'FALLS BACK to the original alone when the page refuses the strict '
+        + 'grammar, since an archive written before this grammar existed is '
+        + 'not the candidate\'s fault',
+      fn: async () => {
+        expect(
+          validateTranslatedSlice({
+            sourceText: '猫猫在窗台上打盹。',
+            pageText: 'The cat dozes {unclosed on the windowsill.',
+            candidateText: 'The cat naps on the windowsill.',
+          },).kind,
+        ).toBe('valid',);
+      },
+    },),
   ],
 },);

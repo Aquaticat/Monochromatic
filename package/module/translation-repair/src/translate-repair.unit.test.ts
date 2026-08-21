@@ -250,7 +250,11 @@ await describe({
       fn: async () => {
         const { log, } = await runRepair({
           translation: MERGED_TEXT,
-          incumbentText: `${MERGED_TEXT} It naps.`,
+          // CARRIES THE HEADING the candidate merged away, so the page the
+          // candidate is checked against still reports it. An incumbent that
+          // merged it too would make this candidate valid, and the case would
+          // stop testing the collapse rule it was written for.
+          incumbentText: `## A Day in the Cat's Life\n\n${MERGED_TEXT} It naps.`,
           answer: {
             resolution: 'unable',
             translation: '',
