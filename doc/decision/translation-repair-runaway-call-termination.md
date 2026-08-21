@@ -764,3 +764,57 @@ The consolidation bed is the heaviest emitter measured anywhere,
 and its 4,278 is already counted in raw stream content characters rather than parsed length,
 which is the unit the guard reads.
 A 10,000 character content bound keeps better than twice that margin.
+
+## The census, re-measured over 602 calls, and the bound as shipped
+
+The earlier census undercounted. Its pattern required the whole progress line to
+match in one piece, so 44 completed lines whose tail differed were dropped
+silently, and two `degenerate` endings never entered any figure at all.
+Reading each field separately gives 602 rows across the two complete runs:
+589 completed, 11 cut, 2 degenerate, none missing a channel count.
+
+Content characters on the 589 completed calls:
+p50 334, p90 703, p99 3,969, maximum 4,278.
+
+The 11 cut calls: 9 emitted nothing, 2 emitted 25,482 and 28,026.
+
+The 2 degenerate calls were both `hf:zai-org/GLM-4.7-Flash`,
+at 131,078 and 131,077 content characters.
+
+### Why 131,072 is the number that matters
+
+The recurrence detector fires at exactly 2^17 characters, measured directly by
+feeding it a repeated sentence at several chunk widths: it reports nothing at
+120,000 characters and reports a runaway at 131,072 every time.
+That is why the two real degenerate calls got as far as they did.
+Repetition detection is not free, and what it costs is 131,072 characters.
+
+### What the bound does to this population
+
+A content bound at 10,000 characters:
+
+- Ends ZERO of the 589 completed calls early.
+- Catches the 2 speaking cuts, which the wall clock would otherwise have taken.
+- Reaches both degenerate calls THIRTEEN TIMES EARLIER, at 10,000 instead of 131,072.
+
+It sits between the largest legitimate emission at 4,278 and the nearest runaway
+at 25,482, with better than twice the margin on the safe side.
+The corrected silent-reasoning figure is 25 completed calls ended early at 40,000,
+not the 22 the first census reported, and still zero at 70,000.
+
+### The contract this changes, stated rather than slipped in
+
+Two tests asserted that a model which simply writes a great deal is never cut off,
+with fixtures of roughly 420,000 content characters.
+`SLICE_CHAR_BUDGET` is 400, and the largest slice text measured anywhere in the
+settled artifacts is 1,766, so those fixtures describe output this system cannot
+produce. Their answer side now sits inside the bound.
+
+THEIR THINKING SIDE WAS LEFT ALONE, at 6,000 frames and roughly 420,000 reasoning
+characters, because no volume bound applies to reasoning and that fixture is now
+what pins the refusal recorded above.
+
+A repetitive ANSWER now reports `overrun` where it would once have reported
+`degenerate`, because the bound reaches it first. The same call is ended either
+way and far sooner. Any census that groups by outcome across this change is
+counting two different partitions of the same population.
