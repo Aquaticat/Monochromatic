@@ -196,13 +196,13 @@ When several split rules are enabled in one Oxlint worker,
 the first rule computes callable and parameter evidence,
 and sibling reporters reuse the completed immutable result.
 Failed or partial computations are never cached.
-Schema-7 persistent entries validate exact source,
+Schema-8 persistent entries validate exact source,
 module,
 semantic call,
 compiler-option,
 declaration-surface,
 and lockfile identities across later processes.
-They also persist validated source-local callable omissions and a bounded reason category,
+They also persist validated source-local callable omissions and every distinct bounded reason category,
 so a warm process preserves the cold process's narrow fail-closed state and explains why coverage narrowed.
 Cold and restored omissions emit concise `warn` records,
 while caught stacks remain available only at debug level.

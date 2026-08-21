@@ -107,7 +107,7 @@ export type PersistentEffectCacheHit = {
   readonly dependenciesResolved: boolean;
   readonly directDependencies: readonly string[];
   readonly omittedCallableKeys: readonly string[];
-  readonly omissionReason: EffectSummaryOmissionReason;
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 };
 
 /**
@@ -246,7 +246,7 @@ export function readPersistentEffectSummaries({
       dependenciesResolved: envelope.dependenciesResolved,
       directDependencies: envelope.directDependencies,
       omittedCallableKeys: envelope.omittedCallableKeys,
-      omissionReason: envelope.omissionReason,
+      omissionReasons: envelope.omissionReasons,
     };
   }
   catch (error) {
@@ -272,6 +272,8 @@ export function readPersistentEffectSummaries({
  *
  * @param omittedCallableKeys - Direct summaries deliberately omitted for this source.
  *
+ * @param omissionReasons - Bounded reasons encountered while scanning source.
+ *
  * @example
  * ```ts
  * writePersistentEffectSummaries({
@@ -280,6 +282,7 @@ export function readPersistentEffectSummaries({
  *   surfaces,
  *   closure,
  *   omittedCallableKeys,
+ *   omissionReasons,
  * });
  * ```
  */
@@ -289,12 +292,14 @@ export function writePersistentEffectSummaries({
   surfaces,
   closure,
   omittedCallableKeys,
+  omissionReasons,
 }: {
   readonly address: PersistentEffectCacheAddress;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly surfaces: EffectProjectSurfaces;
   readonly closure: EffectDependencyClosure;
   readonly omittedCallableKeys: readonly string[];
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 },): void {
   /**
    * Current content-addressed cache path.
@@ -317,9 +322,7 @@ export function writePersistentEffectSummaries({
     directDependencies: closure.directDependencies,
     dependencyDigests: closure.dependencyDigests,
     omittedCallableKeys: [...omittedCallableKeys,].toSorted(),
-    omissionReason: omittedCallableKeys.length === 0
-      ? 'none'
-      : 'direct-summary-construction-failed',
+    omissionReasons: [...omissionReasons,].toSorted(),
     payload: serializeEffectSummaries(summaries,),
   };
   /**

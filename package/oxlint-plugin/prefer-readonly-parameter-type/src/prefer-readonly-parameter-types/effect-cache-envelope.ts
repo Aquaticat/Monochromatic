@@ -21,21 +21,21 @@ export const ENVELOPE_INVALID: unique symbol = Symbol(
 );
 
 /**
- * Reason category when direct-summary scan omitted no callable.
+ * Reason category for an unclassified direct-summary construction failure.
  */
-const NO_OMISSION_REASON = 'none';
+export const DIRECT_SUMMARY_FAILURE_REASON = 'direct-summary-construction-failed';
 
 /**
- * Reason category when direct-summary construction failed.
+ * Reason category for known TypeScript instantiated-tuple serialization panic.
  */
-const DIRECT_SUMMARY_FAILURE_REASON = 'direct-summary-construction-failed';
+export const TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON = 'typescript-tuple-serialization-failed';
 
 /**
  * Bounded persisted reason for source-local summary coverage.
  */
 export type EffectSummaryOmissionReason =
   | typeof DIRECT_SUMMARY_FAILURE_REASON
-  | typeof NO_OMISSION_REASON;
+  | typeof TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON;
 
 /**
  * Validated incremental JSON cache envelope.
@@ -61,7 +61,7 @@ export type PersistentEffectCacheEnvelope = {
   readonly directDependencies: readonly string[];
   readonly dependencyDigests: Readonly<Record<string, string>>;
   readonly omittedCallableKeys: readonly string[];
-  readonly omissionReason: EffectSummaryOmissionReason;
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
   readonly payload: SerializedEffectSummaries;
 };
 
@@ -155,27 +155,42 @@ function isOmittedCallableKeys({
 }
 
 /**
- * Tests whether omission reason category agrees with omission list presence.
+ * Tests whether unknown value is one bounded omission reason category.
+ *
+ * @param value - Parsed reason candidate.
+ *
+ * @returns whether candidate names supported category.
+ */
+function isOmissionReason(value: unknown,): value is EffectSummaryOmissionReason {
+  return (value === DIRECT_SUMMARY_FAILURE_REASON)
+    || (value === TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON);
+}
+
+/**
+ * Tests whether omission reason categories agree with omission list presence.
  *
  * @param keys - Parsed omission identities.
  *
- * @param reason - Parsed bounded reason category.
+ * @param reasons - Parsed bounded reason categories.
  *
- * @returns whether category is known and matches empty state.
+ * @returns whether categories are unique,
+ * known,
+ * and match empty state.
  */
-function omissionReasonMatches({
+function omissionReasonsMatch({
   keys,
-  reason,
+  reasons,
 }: {
   readonly keys: unknown;
-  readonly reason: unknown;
+  readonly reasons: unknown;
 }): boolean {
-  if (!Array.isArray(keys,))
+  if ((!Array.isArray(keys,)) || (!Array.isArray(reasons,)))
     return false;
-  if ((reason !== NO_OMISSION_REASON)
-    && (reason !== DIRECT_SUMMARY_FAILURE_REASON))
+  if (new Set(reasons,).size !== reasons.length)
     return false;
-  return (keys.length === 0) === (reason === NO_OMISSION_REASON);
+  if (!reasons.every(isOmissionReason,))
+    return false;
+  return (keys.length === 0) === (reasons.length === 0);
 }
 
 /**
@@ -275,11 +290,12 @@ export function validatePersistentEnvelope({
       dependencyDigests: value.dependencyDigests,
       sourceDigests: state.sourceDigests,
     },))
-    || (!omissionReasonMatches({
+    || (!omissionReasonsMatch({
       keys: value.omittedCallableKeys,
-      reason: value.omissionReason,
+      reasons: value.omissionReasons,
     },))
     || (!Array.isArray(value.omittedCallableKeys,))
+    || (!Array.isArray(value.omissionReasons,))
     || (!isSerializedEffectSummaries(value.payload,))
     || (!isOmittedCallableKeys({
       value: value.omittedCallableKeys,
@@ -287,13 +303,6 @@ export function validatePersistentEnvelope({
       payload: value.payload,
     },)))
     return ENVELOPE_INVALID;
-  /**
-   * Bounded reason narrowed after complete relation validation.
-   */
-  const omissionReason: EffectSummaryOmissionReason = value.omissionReason
-    === DIRECT_SUMMARY_FAILURE_REASON
-    ? DIRECT_SUMMARY_FAILURE_REASON
-    : NO_OMISSION_REASON;
   return {
     schema: EFFECT_CACHE_SCHEMA,
     analyzerDigest: identity.analyzerDigest,
@@ -311,7 +320,10 @@ export function validatePersistentEnvelope({
       .filter(function omittedKey(entry,): entry is string {
         return (typeof entry) === 'string';
       },),
-    omissionReason,
+    omissionReasons: value.omissionReasons
+      .filter(function omissionReason(entry,): entry is EffectSummaryOmissionReason {
+        return isOmissionReason(entry,);
+      },),
     payload: value.payload,
   };
 }

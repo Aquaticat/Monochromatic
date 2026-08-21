@@ -409,6 +409,7 @@ children: [
         'referencedChild',
         'thisChild',
         'thisValues',
+        'wrappedChild',
         'forEachChild',
         'forEachValues',
         'filterChild',

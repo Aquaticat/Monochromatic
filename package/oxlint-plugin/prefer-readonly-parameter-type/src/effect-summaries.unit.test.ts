@@ -3108,10 +3108,12 @@ export function use(): void {
           'utf8',
         ),) as {
           readonly omittedCallableKeys?: readonly string[];
-          readonly omissionReason?: string;
+          readonly omissionReasons?: readonly string[];
         };
         expect(cached.omittedCallableKeys?.length,).toBeGreaterThan(0,);
-        expect(cached.omissionReason,).toBe('direct-summary-construction-failed',);
+        expect(cached.omissionReasons,).toEqual([
+          'typescript-tuple-serialization-failed',
+        ],);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
@@ -3140,7 +3142,7 @@ export function use(): void {
         /** Legacy envelope without omission metadata and with prior schema identity. */
         const legacyEnvelope = Object.fromEntries(Object.entries(currentEnvelope,)
           .filter(function nonOmissionField([field,],): boolean {
-            return (field !== 'omittedCallableKeys') && (field !== 'omissionReason');
+            return (field !== 'omittedCallableKeys') && (field !== 'omissionReasons');
           },),);
         writeFileSync(
           cacheEntryPath,
@@ -3506,8 +3508,12 @@ closeSemanticBridge();
         expect(warmResult.directSummaryBuildCount,).toBe(0,);
         expect(warmResult.persistentSourceCacheHitCount,).toBeGreaterThan(0,);
         expect(warmResult.fingerprint,).toEqual(coldResult.fingerprint,);
-        expect(cold.stderr,).toContain('omitted 1 callable summaries for');
-        expect(warm.stderr,).toContain('restored 1 omitted callable summaries for');
+        expect(cold.stderr,).toContain(
+          ': typescript-tuple-serialization-failed; debug logging contains causes',
+        );
+        expect(warm.stderr,).toContain(
+          'from effect cache: typescript-tuple-serialization-failed',
+        );
       },
     },),
     it({

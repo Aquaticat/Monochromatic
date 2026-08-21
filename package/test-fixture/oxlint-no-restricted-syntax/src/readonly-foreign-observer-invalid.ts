@@ -5,6 +5,11 @@ type Child = {
   value: string;
 };
 
+/** Readonly array wrapper preserving inherited default-library observer declarations. */
+type WrappedReadonlyChildren = ReadonlyArray<Child> & {
+  readonly wrapperTag: string;
+};
+
 /** Mutable explicit callback `this` state supplied independently. */
 type ThisState = {
   label: string;
@@ -30,6 +35,21 @@ function referencedForeignObserver(referencedChild: Child,): boolean {
  */
 function reusedObserver(child: Child,): boolean {
   return child.value.length > 0;
+}
+
+/**
+ * Reads observer element through array wrapper type.
+ *
+ * @param values - Foreign-owned wrapped readonly collection.
+ *
+ * @returns observed primitive values.
+ */
+export function inspectWrappedForeignObserver(
+  values: ForeignBorrowed<WrappedReadonlyChildren>,
+): readonly string[] {
+  return values.map(function wrappedForeignObserver(wrappedChild,) {
+    return wrappedChild.value;
+  },);
 }
 
 /**

@@ -35,7 +35,7 @@ type CachedSourceSummaries = {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
   readonly omittedCallableKeys: readonly string[];
-  readonly omissionReason: EffectSummaryOmissionReason;
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 };
 
 /**
@@ -47,7 +47,7 @@ export type LayeredSummaryCacheHit = {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
   readonly omittedCallableKeys: readonly string[];
-  readonly omissionReason: EffectSummaryOmissionReason;
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 };
 
 /**
@@ -184,20 +184,20 @@ function cloneSummaries(
  *
  * @param omittedCallableKeys - Deliberately omitted direct summaries for this source.
  *
- * @param omissionReason - Bounded reason category for omission state.
+ * @param omissionReasons - Bounded reason categories for omission state.
  */
 function storeMemoryLayer({
   identity,
   summaries,
   edges,
   omittedCallableKeys,
-  omissionReason,
+  omissionReasons,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
   readonly omittedCallableKeys: readonly string[];
-  readonly omissionReason: EffectSummaryOmissionReason;
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 },): void {
   /**
    * Project-local cache bounded by configured source paths.
@@ -212,7 +212,7 @@ function storeMemoryLayer({
       summaries: cloneSummaries(summaries,),
       edges,
       omittedCallableKeys: [...omittedCallableKeys,],
-      omissionReason,
+      omissionReasons: [...omissionReasons,],
     },
   );
   summariesByProject.set(
@@ -256,7 +256,7 @@ export function readCachedSummariesForSource({
       summaries: cloneSummaries(cached.summaries,),
       edges: cached.edges,
       omittedCallableKeys: [...cached.omittedCallableKeys,],
-      omissionReason: cached.omissionReason,
+      omissionReasons: [...cached.omissionReasons,],
     };
   }
   /**
@@ -288,13 +288,13 @@ export function readCachedSummariesForSource({
     summaries: persistent.summaries,
     edges,
     omittedCallableKeys: persistent.omittedCallableKeys,
-    omissionReason: persistent.omissionReason,
+    omissionReasons: persistent.omissionReasons,
   },);
   return {
     summaries: cloneSummaries(persistent.summaries,),
     edges,
     omittedCallableKeys: [...persistent.omittedCallableKeys,],
-    omissionReason: persistent.omissionReason,
+    omissionReasons: [...persistent.omissionReasons,],
   };
 }
 
@@ -311,6 +311,8 @@ export function readCachedSummariesForSource({
  *
  * @param omittedCallableKeys - Direct summaries deliberately omitted for this source.
  *
+ * @param omissionReasons - Bounded reasons encountered while scanning source.
+ *
  * @example
  * ```ts
  * storeCreatedSummariesForSource({
@@ -319,6 +321,7 @@ export function readCachedSummariesForSource({
  *   surfaces,
  *   closure,
  *   omittedCallableKeys,
+ *   omissionReasons,
  * });
  * ```
  */
@@ -328,20 +331,16 @@ export function storeCreatedSummariesForSource({
   surfaces,
   closure,
   omittedCallableKeys,
+  omissionReasons,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly surfaces: EffectProjectSurfaces;
   readonly closure: EffectDependencyClosure;
   readonly omittedCallableKeys: readonly string[];
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 },): void {
   counters.directSummaryBuildCount += summaries.size;
-  /**
-   * Bounded reason category matching source omission state.
-   */
-  const omissionReason: EffectSummaryOmissionReason = omittedCallableKeys.length === 0
-    ? 'none'
-    : 'direct-summary-construction-failed';
   storeMemoryLayer({
     identity,
     summaries,
@@ -350,7 +349,7 @@ export function storeCreatedSummariesForSource({
       directDependencies: closure.directDependencies,
     },
     omittedCallableKeys,
-    omissionReason,
+    omissionReasons,
   },);
   writePersistentEffectSummaries({
     address: {
@@ -365,6 +364,7 @@ export function storeCreatedSummariesForSource({
     surfaces,
     closure,
     omittedCallableKeys,
+    omissionReasons,
   },);
   counters.persistentCacheWriteCount++;
 }

@@ -7,7 +7,11 @@
 import type { SourceFile, } from 'typescript/unstable/ast';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
-import type { DemandDrivenEffectIndexOptions, } from './effect-demand-index-options.ts';
+import type { EffectSummaryOmissionReason, } from './effect-cache-envelope.ts';
+import type {
+  DemandDrivenEffectIndexOptions,
+  PendingEffectSummaryStore,
+} from './effect-demand-index-options.ts';
 import { sourceIdentity, } from './effect-source-identity.ts';
 import { createDependencyClosureResolver, } from './effect-dependency-closure.ts';
 import { propagateEffects, } from './effect-fixed-point-propagation.ts';
@@ -105,10 +109,7 @@ export function createDemandDrivenEffectIndex(
   /**
    * Current program state validating persistent entries.
    */
-  const dependencyState = {
-    surfaces: projectFingerprint.surfaces,
-    sourceDigests: projectFingerprint.sourceDigests,
-  };
+  const dependencyState = projectFingerprint;
   /**
    * Direct and propagated summaries reached in current snapshot.
    */
@@ -130,11 +131,7 @@ export function createDemandDrivenEffectIndex(
   /**
    * Fresh summaries awaiting complete semantic-edge closure before persistence.
    */
-  const pendingStores = new Map<string, {
-    readonly sourceFile: SourceFile;
-    readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
-    readonly omittedCallableKeys: readonly string[];
-  }>();
+  const pendingStores = new Map<string, PendingEffectSummaryStore>();
   /**
    * Whether a proof could find any marker to anchor on in this scope.
    *
@@ -192,7 +189,7 @@ export function createDemandDrivenEffectIndex(
         allOmittedKeys: omittedCallableKeys,
         restoredKeys: hit.omittedCallableKeys,
         sourceFileName: sourceFile.fileName,
-        reason: hit.omissionReason,
+        reasons: hit.omissionReasons,
       },);
       return {
         fileSummaries: hit.summaries,
@@ -213,6 +210,10 @@ export function createDemandDrivenEffectIndex(
      * Callable identities omitted while scanning this exact source.
      */
     const sourceOmittedCallableKeys = new Set<string>();
+    /**
+     * Bounded reasons for every omission encountered in current source.
+     */
+    const sourceOmissionReasons = new Set<EffectSummaryOmissionReason>();
     /**
      * Fresh direct summaries for reached source.
      */
@@ -254,6 +255,7 @@ export function createDemandDrivenEffectIndex(
         recordDirectSummaryOmission({
           allOmittedKeys: omittedCallableKeys,
           sourceOmittedKeys: sourceOmittedCallableKeys,
+          sourceOmissionReasons,
           key: callableKey(declaration,),
           error,
         },);
@@ -263,6 +265,7 @@ export function createDemandDrivenEffectIndex(
     reportDirectSummaryOmissions({
       omittedKeys: sourceOmittedCallableKeys,
       sourceFileName: sourceFile.fileName,
+      reasons: sourceOmissionReasons,
     },);
     /**
      * Owned source dependencies discovered through semantic call edges.
@@ -281,6 +284,7 @@ export function createDemandDrivenEffectIndex(
         sourceFile,
         summaries: fileSummaries,
         omittedCallableKeys: [...sourceOmittedCallableKeys,].toSorted(),
+        omissionReasons: [...sourceOmissionReasons,].toSorted(),
       },
     );
     return {
@@ -376,6 +380,7 @@ export function createDemandDrivenEffectIndex(
         surfaces: projectFingerprint.surfaces,
         closure,
         omittedCallableKeys: pendingStore.omittedCallableKeys,
+        omissionReasons: pendingStore.omissionReasons,
       },);
     },);
     pendingStores.clear();
