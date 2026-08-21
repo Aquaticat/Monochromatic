@@ -1745,3 +1745,78 @@ A lane dropping a container tag should now surface as a contest-visible candidat
 carried by the floor and the deleted-region rule.
 Nothing has exercised that path since the widening landed,
 so it stays an expectation until the first post-widening run touches a container entry.
+
+## Run 7 scored, and the one slice that shipped a deletion
+
+### What the headline did, and why it cannot yet be credited to anything
+
+Counting the same way for both runs over the same 13 slices:
+
+- Run 6: the gate ran at 7 slices, shipped consolidated at all 7, and 5 slices ended `declined-indecision`.
+- Run 7: the gate ran at 10 slices, shipped consolidated at all 10, and 2 slices ended `declined-indecision`.
+
+The fixes that landed between the two runs were aimed squarely at judges who could not agree,
+so the direction is the one they were built to produce.
+That is not evidence they produced it.
+Twelve of the 13 slices moved between the runs,
+including slices where nothing changed but the wording,
+because the models are redrawn on every run and the bed buys every call fresh.
+A shift from 7 to 10 out of 13 is well inside the spread two draws of that size can produce on their own,
+and nothing here has measured that spread.
+Run 8 is the third point and the first that can begin to bound it.
+Until then the honest reading is that the gate reached more slices in run 7 and the reason is unmeasured.
+
+### `Zha_Ke#1` shipped a 96 percent deletion, and every judge backed it
+
+Run 6 replaced 3875 characters of standing text with 164 characters, and the gate ballots were 6 for consolidated, 0 against.
+Every other slice in both runs shipped between 90 and 111 percent of what stood.
+This one shipped 4 percent.
+
+The cause is not the judges.
+Their own recorded reason is that the standing candidate
+"includes the entire letter body and a metadata sentence not present in the original passage",
+which is true, and which they were right to notice.
+They were shown 41 characters of source against 3875 characters of standing English and asked which was faithful.
+Given that pairing the short answer IS the faithful one.
+
+The pairing is the defect.
+Every other slice in the bed has a source-to-standing ratio between 2.1 and 4.0, which is what a Chinese to English pair looks like.
+`Zha_Ke#1` sits at 94.5.
+
+`Zha_Ke`'s English page carries ONE container spanning offsets 372 to 4045, a span of 3673 characters,
+and its Chinese source carries none at all.
+The letter is content the English page has and the Chinese does not,
+and the slicing paired it against a note of 41 characters.
+
+### The structural check filtered in the wrong direction
+
+Three of the six candidates at that slice reproduced the letter at about 3800 characters, and all three were marked `invalid`,
+every one of them for the same reason:
+`MdxParseError: MDX body refused to parse`.
+The three candidates marked `valid` were 136, 161 and 164 characters, all of them deletions.
+
+So at this slice the structural check refused exactly the candidates that preserved the content
+and admitted only the candidates that dropped it.
+The floor did not fail to protect the letter.
+It selected against it.
+
+That parse failure has a named cause, and it is `#154`:
+these slices were cut before the container widening,
+so the container's tags belonged to no node and the slice text carried a letter body without its opening and closing tags.
+A candidate faithfully reproducing that text reproduces the imbalance, and unbalanced MDX does not parse.
+A candidate that rewrites it into a short clean note parses fine.
+
+### What run 8 tests, and what it cannot fix
+
+Run 8 is the first run whose slices are cut after the widening,
+so it is the live test of the residual expectation this document already recorded as unobserved.
+If the widening holds, the faithful candidates at `Zha_Ke#1` parse,
+the structural check stops selecting for deletion,
+and the deleting candidate has to win on its merits rather than by being the last one standing.
+
+The widening does not fix the pairing.
+Forty-one characters of source against a 3673-character letter is a slice no judge should be shown at all,
+whatever parses.
+That is `#157`, and this is the strongest evidence for it in the corpus so far:
+not a pairing that produced a confidently wrong answer in the abstract,
+but one that came within a single unanimous ballot of deleting a letter someone wrote about a person who died.
