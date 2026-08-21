@@ -1722,3 +1722,26 @@ It claims that both tags of a container are now decided by the same authority,
 so dropping one is a candidate fault visible to the contest
 rather than a structural certainty invisible to every invariant.
 The residual exposure is named in the section on what the guard is for, and it is unchanged by this.
+
+### Three things the widening changes that are not defects
+
+Recorded so a later session does not read any of them as a regression.
+
+Run 7's slices were cut BEFORE the widening, from the cached bed state.
+Scoring run 7 against run 6 stays valid, because both read the same slices,
+but per-slice comparison on the container entries ends at run 7:
+any freshly prepared run re-slices them.
+Run 7 must not be credited with the container fix, which landed after its slices were cut.
+
+Seventeen entries will re-buy, not sixteen.
+The source side widens too, so `interrgned` re-buys on its Chinese-side `<blockquote>`,
+and the five container entries that previously settled clean
+(`Huasheng`, `Chinatsu_Suzuki`, `LCG_Akiball`, `NIGHT81473140`, `hakureico`)
+re-buy against new content hashes.
+Cache misses on those 17 are invalidation, because the slice text genuinely changed.
+
+The residual expectation is recorded and NOT yet observed.
+A lane dropping a container tag should now surface as a contest-visible candidate fault,
+carried by the floor and the deleted-region rule.
+Nothing has exercised that path since the widening landed,
+so it stays an expectation until the first post-widening run touches a container entry.
