@@ -23,16 +23,29 @@ import {
 // streaming call per model on 2026-08-21 counted the frames each spelling
 // arrives in:
 //
-//   zai-org/GLM-5.2         328 of  329 frames carried `reasoning_content`
-//   zai-org/GLM-4.7-Flash   871 of 1029 frames carried `reasoning`
-//   nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
-//                            43 of  232 frames carried `reasoning`
+// HALF THE ROSTER USES EACH SPELLING. Measured one call per model:
+//
+//   `reasoning_content`, which this scanner already read:
+//     zai-org/GLM-5.2         328 of 329 frames
+//     Qwen/Qwen3.6-27B        463 of 511 frames
+//     moonshotai/Kimi-K3       79 of 148 frames
+//
+//   `reasoning`, which it did not:
+//     zai-org/GLM-4.7-Flash   871 of 1029 frames
+//     openai/gpt-oss-120b      46 of  206 frames
+//     nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
+//                              43 of  232 frames
 //
 // Reading only `reasoning_content`, as this scanner did, handed the detector an
-// empty string for every thinking token the last two models produced. The third
-// shape is a `<think>` block embedded in `content`, which `model-content.ts`
-// strips after the fact and which needs nothing special here, since such text
-// arrives as content and is scanned as content.
+// empty string for every thinking token those last three models produced. Across
+// every stream record on disk before the fix, 2731 of 5864 calls came from them,
+// so this was not an edge of the roster: it was 47% of all traffic, thinking
+// invisible from end to end. After the fix all six report thinking on every call,
+// and the largest median belongs to a model that had reported none at all.
+//
+// The third shape is a `<think>` block embedded in `content`, which
+// `model-content.ts` strips after the fact and which needs nothing special here,
+// since such text arrives as content and is scanned as content.
 //
 // A RENAMED FIELD IS INVISIBLE TO THE UNREADABLE TALLY, which is why this went
 // unseen for so long. That counter rises only when a payload fails to parse.
