@@ -17,12 +17,27 @@ import {
 // reply rather than a runaway one, so the very worst case would be the one
 // case nothing caught.
 //
-// TWO DELIVERY SHAPES EXIST HERE and both are covered. This provider sends
-// reasoning in separate `reasoning_content` fields, verified live and recorded
-// in `completion-shape.ts`; some models instead embed `<think>` blocks inside
-// `content`, which `model-content.ts` strips after the fact. The second shape
-// needs nothing special, since such text arrives as content and is scanned as
-// content.
+// THREE DELIVERY SHAPES EXIST HERE and all three are covered. THE PROVIDER DOES
+// NOT SPELL THE THINKING CHANNEL THE SAME WAY FOR EVERY MODEL, which cost this
+// scanner two models' entire thinking channels until it was measured. One
+// streaming call per model on 2026-08-21 counted the frames each spelling
+// arrives in:
+//
+//   zai-org/GLM-5.2         328 of  329 frames carried `reasoning_content`
+//   zai-org/GLM-4.7-Flash   871 of 1029 frames carried `reasoning`
+//   nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
+//                            43 of  232 frames carried `reasoning`
+//
+// Reading only `reasoning_content`, as this scanner did, handed the detector an
+// empty string for every thinking token the last two models produced. The third
+// shape is a `<think>` block embedded in `content`, which `model-content.ts`
+// strips after the fact and which needs nothing special here, since such text
+// arrives as content and is scanned as content.
+//
+// A RENAMED FIELD IS INVISIBLE TO THE UNREADABLE TALLY, which is why this went
+// unseen for so long. That counter rises only when a payload fails to parse.
+// These frames parsed perfectly and simply were not read, so the number built to
+// make a changed wire format visible sat at zero throughout.
 //
 // NOTHING HERE THROWS. It runs inside the drain loop for every chunk of every
 // call, so a frame it cannot read must not take down a stream that is working.
@@ -57,6 +72,28 @@ const OPTIONAL_SPACE = ' ';
  * Payload the provider sends to mark the end of a stream, which is not JSON.
  */
 const DONE_PAYLOAD = '[DONE]';
+
+/**
+ * Field the answer channel arrives in, which every model observed here spells
+ * the same way.
+ */
+const CONTENT_KEY = 'content';
+
+/**
+ * Fields the thinking channel arrives in, in precedence order.
+ *
+ * ORDERED RATHER THAN MERGED, so a provider that begins sending both spellings
+ * as aliases of one another contributes that text ONCE. Merging them would
+ * double every thinking character on such a model and push the degeneration
+ * detector toward a verdict on volume the model never produced.
+ *
+ * `reasoning_content` comes first because it is the spelling this repository's
+ * own notes already name, so a model sending both stays counted as before.
+ */
+const REASONING_KEYS = [
+  'reasoning_content',
+  'reasoning',
+] as const;
 
 /**
  * Which channel a piece of generated text arrived on.
@@ -146,6 +183,40 @@ function textField(
    */
   const value = fields[key];
   return ((typeof value) === 'string') ? value : '';
+}
+
+/**
+ * Reads the thinking channel off a delta object, whichever field this model
+ * spells it in.
+ *
+ * FIRST NON-EMPTY WINS rather than first present: a model sending
+ * `reasoning_content` as an empty string alongside a populated `reasoning`
+ * would otherwise read as having produced no thinking at all, which is the
+ * failure this function exists to end.
+ *
+ * @param fields - parsed `delta` object from a frame
+ *
+ * @returns Thinking text, or empty when this frame carried none under any
+ * spelling
+ *
+ * @example
+ * ```ts
+ * const thinking = reasoningField({ fields, },);
+ * ```
+ */
+function reasoningField({ fields, }: { readonly fields: DeltaFields; },): string {
+  for (const key of REASONING_KEYS) {
+    /**
+     * Thinking text under this spelling, empty when absent.
+     */
+    const text = textField({
+      fields,
+      key,
+    },);
+    if (text !== '')
+      return text;
+  }
+  return '';
 }
 
 /**
@@ -345,16 +416,13 @@ export function scanStreamDeltas(): DeltaScanner {
      */
     const content = textField({
       fields,
-      key: 'content',
+      key: CONTENT_KEY,
     },);
 
     /**
-     * Thinking text, if any.
+     * Thinking text, if any, under whichever field this model spells it in.
      */
-    const reasoning = textField({
-      fields,
-      key: 'reasoning_content',
-    },);
+    const reasoning = reasoningField({ fields, },);
 
     return [
       ...((content === '') ? [] : [{

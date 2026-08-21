@@ -127,8 +127,11 @@ export type ExtractedCompletion = {
   /**
    * Verbatim `message.content` of the first choice;
    * empty when the API refused and returned no content.
-   * Reasoning arrives in separate `reasoning_content` fields (verified live),
-   * so content is the answer channel.
+   * Reasoning arrives in a separate field, so content is the answer channel.
+   * THAT FIELD'S NAME VARIES BY MODEL on this provider, `reasoning_content` on
+   * some and `reasoning` on others, measured 2026-08-21; `stream-delta-scan.ts`
+   * carries the per-model counts. Nothing here has to choose between them,
+   * because this path reads the answer and never the thinking.
    */
   readonly text: string;
 

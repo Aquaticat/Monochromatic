@@ -61,9 +61,11 @@ const THINK_CLOSE = '</think>';
 
 /**
  * Splits an embedded thinking block off the answer.
- * Synthetic delivers reasoning in separate `reasoning_content` fields
- * (verified live), but per-model chat templates may still embed
- * `<think>` blocks in content, and a tight token cap truncates mid-thinking;
+ * This provider delivers reasoning in a separate field, spelled
+ * `reasoning_content` on some models and `reasoning` on others, measured
+ * 2026-08-21 and counted per model in `stream-delta-scan.ts`. Either way it does
+ * not reach content. But per-model chat templates may still embed `<think>`
+ * blocks in content, and a tight token cap truncates mid-thinking;
  * both cases must be handled deterministically.
  *
  * @param text - model content possibly opening with a thinking block
