@@ -130,7 +130,7 @@ export function isTranslateRepairWire(value: unknown,): value is TranslateRepair
  * thing at fault, which is an answer worth having.
  */
 const REPAIR_RULES =
-  `The translation you just produced was compared against the ORIGINAL by a mechanical structural check, not by a reader. The check compares Markdown block structure, footnote markers, link and image destinations, and inline code. It knows nothing about wording, and it can be wrong about what this passage needed.
+  `The translation you just produced went through a mechanical structural check, not a reader. The check compares Markdown block structure, footnote markers, link and image destinations, and inline code against the ORIGINAL and against the PAGE AS IT STANDS, and every finding names which of the two it came from. It knows nothing about wording, and it can be wrong about what this passage needed.
 
 Answer in one of exactly three ways:
 

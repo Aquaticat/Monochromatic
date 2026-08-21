@@ -42,6 +42,27 @@ const DECLARED_NAME_IS_NOT_OWED_CONTENT =
   'It is not content a passage owes: a candidate that does not name this person has left nothing out, and a line attributing the passage to someone ELSE never takes this person\'s name.';
 
 /**
+ * What the shape rule can ask of a judge that is never shown the page.
+ *
+ * WHAT THIS REPLACED, and why. The rule used to read "Markdown structure of the
+ * ORIGINAL preserved". Producers are now floored on the PAGE AS IT STANDS
+ * (`translate-validate.ts`), and that page splits blocks, merges them, and
+ * quotes lines the ORIGINAL runs as prose, so a rendering that keeps the page's
+ * shape departs from the ORIGINAL's BY DESIGN. A judge told the ORIGINAL is the
+ * standard marks down the very candidates the guard demands, at exactly the
+ * reshaped slices this stage exists for.
+ *
+ * WHY IT DOES NOT NAME THE PAGE INSTEAD. The existing translation reaches these
+ * judges anonymously, as one candidate among the others, and never travels as
+ * labelled evidence; `translate-judge.ts` says so where it assembles the
+ * evidence list. A criterion naming a text the judge cannot see is a criterion
+ * it has to guess at. What is left is what a judge CAN check from a candidate
+ * alone.
+ */
+const SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE =
+  'Markdown that holds together: block quotes, list markers, headings, footnote markers and links used consistently, with breaks between blocks. A SHAPE THE ORIGINAL DOES NOT HAVE IS NOT A FAULT, because this archive\'s pages split, merge and quote passages of their own accord.';
+
+/**
  * Decision rules the judges apply, most important first.
  *
  * COVERAGE AND FAITHFULNESS LEAD, and fluency comes last, which is the ordering
@@ -65,8 +86,7 @@ export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
   'Complete coverage: every proposition of the ORIGINAL is rendered, nothing left out.',
   `Faithfulness: nothing added, and no change to who acts, what is referred to, negation, certainty, time, number, or how things relate. ${DECLARED_NAME_IS_NOT_AN_ADDITION}`,
   `Declared names, handles and archive terminology used exactly as given. ${DECLARED_NAME_IS_NOT_OWED_CONTENT}`,
-  'Markdown structure of the ORIGINAL preserved: block quotes, list markers, '
-  + 'headings, footnote markers, links, and the breaks between blocks.',
+  SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE,
   'Natural, idiomatic English reading as one coherent passage.',
 ];
 

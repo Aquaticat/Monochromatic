@@ -89,6 +89,26 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES to make the original the authority on shape',
+      fn: async () => {
+        // Producers are floored on the page, which splits, merges and quotes
+        // blocks the original runs as prose. A judge told the original is the
+        // standard marks down exactly the renderings the guard demands.
+        expect(sheet.includes('structure of the ORIGINAL',),).toBe(false,);
+        expect(sheet.includes('A SHAPE THE ORIGINAL DOES NOT HAVE IS NOT A FAULT',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'KEEPS a shape rule a judge can check from the candidate alone',
+      fn: async () => {
+        // The existing translation is on the ballot anonymously and never
+        // travels as labelled evidence, so a criterion naming the page would
+        // name a text the judge cannot see.
+        expect(sheet.includes('PAGE AS IT STANDS',),).toBe(false,);
+        expect(sheet.includes('used consistently',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'KEEPS coverage and faithfulness ahead of fluency',
       fn: async () => {
         // The ordering the whole lane rests on: a candidate that reads better

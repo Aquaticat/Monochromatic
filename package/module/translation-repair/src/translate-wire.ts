@@ -44,7 +44,7 @@ An EXISTING TRANSLATION may be shown. It may be complete, partial, wrong, or abs
 Rules:
 - Translate everything the ORIGINAL says. Content the existing translation never covered is the point of this call, not an optional extra.
 - Keep wording from the existing translation wherever it is already a good rendering. Reaching the same English by different words is not an improvement, and a reader who knows this archive should not see it churn.
-- Preserve every Markdown structure the ORIGINAL uses: block quotes, list markers, headings, footnote markers, links, and the paragraph breaks between blocks.
+- Preserve every Markdown structure the ORIGINAL uses: block quotes, list markers, headings, footnote markers, links, and the paragraph breaks between blocks. WHERE THE EXISTING TRANSLATION SHAPES THE PASSAGE DIFFERENTLY, splitting one block into two, merging two into one, or quoting a line the ORIGINAL runs as prose, KEEP THE EXISTING TRANSLATION'S SHAPE. It is the shape the archive's page already has, and a rendering that drops one of its blocks deletes that block from the page.
 - Names, handles and place names already used by the existing translation are authoritative. Keep them exactly, even where they match the original neither phonetically nor semantically.
 - Accurate detail the existing translation ADDS, a citation's translator or publisher, a contributor credit, a gloss identifying someone the original assumes known, is kept. It is correct information a reader benefits from, and the ORIGINAL not carrying it is not a reason to drop it.
 - Do not add content the ORIGINAL does not support and the existing translation does not already carry.
