@@ -128,17 +128,31 @@ await describe({
         },),
 
         it({
-          name: 'leaves the disclosure tags outside every promoted span',
+          name: 'hands the disclosure tags to the promoted blocks beside them, which is the '
+            + 'REVERSAL of what this case once asserted',
           fn: async () => {
             /**
-             * Wrapper tags must survive as inter-block text so splicing keeps
-             * the document well formed.
+             * Wrapper tags used to survive only as inter-block text, and that
+             * is precisely what let a range boundary fall between an opening
+             * tag and its closing one: every range here is minted from block
+             * offsets, so a tag belonging to no block belonged to no range
+             * either. Each tag now rides inside the block beside it, so a
+             * range built from whole blocks cannot separate the two.
              */
-            const { nodes, } = parseDocument({ text: NESTED_PAGE, },);
-
-            for (const node of nodes) {
-              expect(node.text,).not.toContain('<details>',);
-              expect(node.text,).not.toContain('</details>',);
+            const { nodes, containers, } = parseDocument({ text: NESTED_PAGE, },);
+            if (containers.length === 0)
+              throw new Error('fixture reported no container, so this case would pass for the wrong reason',);
+            for (const container of containers) {
+              expect(nodes
+                .some(function ownsOpener(node,): boolean {
+                  return (node.startOffset <= container.openerStartOffset)
+                    && (node.endOffset >= container.openerEndOffset);
+                },),).toBe(true,);
+              expect(nodes
+                .some(function ownsCloser(node,): boolean {
+                  return (node.startOffset <= container.closerStartOffset)
+                    && (node.endOffset >= container.closerEndOffset);
+                },),).toBe(true,);
             }
           },
         },),

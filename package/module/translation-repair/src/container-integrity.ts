@@ -152,6 +152,21 @@ function nameOf({ container, }: { readonly container: ContainerSpan; },): string
 }
 
 /**
+ * One container tag, named so a message can say which half is at fault.
+ */
+type LabelledTag = {
+  /**
+   * Which half of the element this is, in a word a message can use.
+   */
+  readonly label: string;
+
+  /**
+   * Range that tag occupies.
+   */
+  readonly range: Range;
+};
+
+/**
  * Reads both tags of a container as ranges, in document order.
  *
  * @param container - container whose tags are wanted
@@ -160,12 +175,12 @@ function nameOf({ container, }: { readonly container: ContainerSpan; },): string
  *
  * @example
  * ```ts
- * for (const { label, range, } of tagsOf({ container, },)) { }
+ * for (const tag of tagsOf({ container, },)) { }
  * ```
  */
 function tagsOf(
   { container, }: { readonly container: ContainerSpan; },
-): readonly { readonly label: string; readonly range: Range; }[] {
+): readonly LabelledTag[] {
   return [
     {
       label: 'opening',
@@ -221,14 +236,14 @@ function assertTagsRideInBlocks(
       return (block.startOffset >= container.openerStartOffset)
         && (block.endOffset <= container.closerEndOffset);
     },);
-    for (const { label, range, } of tagsOf({ container, },)) {
+    for (const tag of tagsOf({ container, },)) {
       /**
        * Whether some block owns this tag whole.
        */
       const owned = blocks.some(function ownsTag(block,): boolean {
         return covers({
           outer: block,
-          inner: range,
+          inner: tag.range,
         },);
       },);
       if (owned)
@@ -240,17 +255,17 @@ function assertTagsRideInBlocks(
       const cut = blocks.some(function cutsTag(block,): boolean {
         return touches({
           outer: block,
-          inner: range,
+          inner: tag.range,
         },);
       },);
       if (cut)
         throw new ContainerIntegrityError({
-          message: `a block covers part of the ${label} tag of ${nameOf({ container, },)} without `
+          message: `a block covers part of the ${tag.label} tag of ${nameOf({ container, },)} without `
             + 'covering all of it, so every range minted from that block would carry half a tag',
         },);
       if (holdsBlocks)
         throw new ContainerIntegrityError({
-          message: `no block owns the ${label} tag of ${nameOf({ container, },)}, though the `
+          message: `no block owns the ${tag.label} tag of ${nameOf({ container, },)}, though the `
             + 'container holds blocks: extents were derived without widening onto container tags, '
             + 'so a range boundary can fall between this tag and its partner',
         },);
@@ -293,17 +308,22 @@ function assertNoSliceCutsATag(
     if (isInsertionChunk(span,))
       continue;
     for (const container of containers) {
-      for (const { label, range, } of tagsOf({ container, },)) {
-        if (touches({
+      for (const tag of tagsOf({ container, },)) {
+        /**
+         * Whether this range reaches the tag without owning all of it, which is
+         * the only way a range built from whole blocks could carry half a tag.
+         */
+        const cuts = (touches({
           outer: span,
-          inner: range,
-        },)
-          && !covers({
+          inner: tag.range,
+        },))
+          && (!covers({
             outer: span,
-            inner: range,
-          },))
+            inner: tag.range,
+          },));
+        if (cuts)
           throw new ContainerIntegrityError({
-            message: `slice ${String(span.chunkIndex,)} ends part way through the ${label} tag of `
+            message: `slice ${String(span.chunkIndex,)} ends part way through the ${tag.label} tag of `
               + `${nameOf({ container, },)}, so assembly would replace half of it and leave the `
               + 'rest beside text written without it',
           },);

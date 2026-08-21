@@ -1,17 +1,20 @@
 /**
- * Tests for the check that no slice range breaks a container it does not own
- * whole.
+ * Tests for the check that every container tag is owned whole by the block and
+ * range that reach it.
  *
- * The failure this exists for is invisible to every other invariant here.
- * A dissolved container leaves its opening and closing tags in no block, so a
- * range holding one of them and not the other satisfies every node-level rule
- * while assembly deletes that tag and keeps its partner.
+ * A dissolved container leaves its opening and closing tags belonging to no
+ * block, and every range here is minted from block offsets, so a boundary could
+ * fall between an opener and its closer while satisfying every node-level rule.
+ * `container-extents.ts` fixes that by handing each tag to the block beside it;
+ * this check asks whether that still happened, and is expected to fire only on
+ * a regression in how extents or ranges are derived.
  *
  * Fixtures are cat-themed invention mirroring corpus structure only.
  *
  * @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -22,13 +25,14 @@ import {
   type ChunkPair,
   ContainerIntegrityError,
   type ContainerSpan,
+  type DocumentNode,
   makeInsertionChunk,
   parseDocument,
 } from '../dist/final/node/index.mjs';
 
 /**
  * Translation packaging two of its four blocks inside a disclosure element, so
- * the element's tags land between blocks rather than in one.
+ * the element's tags are handed to the outer two of those blocks.
  */
 const TARGET_TEXT = `The cat sleeps on the windowsill.
 
@@ -44,14 +48,67 @@ She purrs at nothing in particular.
 `;
 
 /**
- * Blocks of that translation, with the container already dissolved.
+ * Parsed fixture, read once so blocks and containers describe the same parse.
  */
-const TARGET_NODES = parseDocument({ text: TARGET_TEXT, },).nodes;
+const TARGET = parseDocument({ text: TARGET_TEXT, },);
+
+/**
+ * Blocks of that translation, each already owning any tag it carries.
+ */
+const TARGET_NODES = TARGET.nodes;
 
 /**
  * Container spans the parse reported, which is the whole point of the fixture.
  */
-const TARGET_CONTAINERS = parseDocument({ text: TARGET_TEXT, },).containers;
+const TARGET_CONTAINERS = TARGET.containers;
+
+/**
+ * Single container of the fixture, which every case is stated against.
+ *
+ * @returns Its two tag spans
+ *
+ * @throws {@link Error} when the fixture parsed no container, which would make
+ * every case here pass for the wrong reason
+ *
+ * @example
+ * ```ts
+ * const container = onlyContainer();
+ * ```
+ */
+function onlyContainer(): ContainerSpan {
+  const [container,] = TARGET_CONTAINERS;
+  if ((container === undefined) || (TARGET_CONTAINERS.length !== 1))
+    throw new Error(`fixture reported ${String(TARGET_CONTAINERS.length,)} containers, expected one`,);
+  return container;
+}
+
+/**
+ * Finds the block that owns one offset, which is how each case names a slice
+ * boundary without hard-coding a number the fixture could drift away from.
+ *
+ * @param offset - absolute offset the wanted block covers
+ *
+ * @returns Block covering that offset
+ *
+ * @throws {@link Error} when no block covers it
+ *
+ * @example
+ * ```ts
+ * const node = blockAt({ offset: container.openerStartOffset, },);
+ * ```
+ */
+function blockAt({ offset, }: { readonly offset: number; },): DocumentNode {
+  /**
+   * First block whose range holds the offset.
+   */
+  const found = TARGET_NODES.find(function holds(node,): boolean {
+    return (node.startOffset <= offset)
+      && (node.endOffset > offset);
+  },);
+  if (found === undefined)
+    throw new Error(`fixture has no block covering offset ${String(offset,)}`,);
+  return found;
+}
 
 /**
  * Builds one pair whose target side covers the given range.
@@ -101,71 +158,72 @@ function rangeOf(
 }
 
 /**
- * Single container of the fixture, which every case is stated against.
+ * Rebuilds the fixture's blocks as they looked BEFORE tags were handed out, so
+ * one case can state the regression this check exists to catch.
  *
- * @returns Its two tag spans
- *
- * @throws {@link Error} when the fixture parsed no container, which would make
- * every case below pass for the wrong reason
+ * @returns Blocks whose edges stop at the container's tags instead of covering them
  *
  * @example
  * ```ts
- * const container = onlyContainer();
+ * const orphaning = blocksWithoutTags();
  * ```
  */
-function onlyContainer(): ContainerSpan {
-  const [container,] = TARGET_CONTAINERS;
-  if ((container === undefined) || (TARGET_CONTAINERS.length !== 1))
-    throw new Error(`fixture reported ${String(TARGET_CONTAINERS.length,)} containers, expected one`,);
-  return container;
+function blocksWithoutTags(): readonly DocumentNode[] {
+  /**
+   * Container whose tags are about to be taken back off the blocks.
+   */
+  const container = onlyContainer();
+  return TARGET_NODES.map(function shrink(node,): DocumentNode {
+    return {
+      ...node,
+      startOffset: (node.startOffset === container.openerStartOffset)
+        ? container.openerEndOffset
+        : node.startOffset,
+      endOffset: (node.endOffset === container.closerEndOffset)
+        ? container.closerStartOffset
+        : node.endOffset,
+    };
+  },);
 }
 
 await describe({
   name: assertContainerIntegrity.name,
   children: [
     it({
-      name: 'REFUSES a range holding the opening tag and stopping before the closing one, which is '
-        + 'the shape that deleted a will: assembly replaces the range, so the opener goes and the '
-        + 'closer stays behind with nothing to close',
+      name: 'ACCEPTS a container whose blocks fall in DIFFERENT slices, which the earlier rule '
+        + 'refused: each tag rides inside its own slice text, so both lanes see the tag they must '
+        + 'reproduce and the page stays balanced',
       fn: async () => {
-        /** Container whose halves the range will straddle. */
+        /** Container whose two tags this pair of slices will separate. */
         const container = onlyContainer();
-        expect(function checkOpenerOnly(): void {
+
+        /** Block owning the opening tag, which ends the first slice. */
+        const opening = blockAt({ offset: container.openerStartOffset, },);
+
+        /** Block owning the closing tag, which starts the second. */
+        const closing = blockAt({ offset: container.closerStartOffset, },);
+        expect(function checkSplitContainer(): void {
           assertContainerIntegrity({
             slices: [
               rangeOf({
                 startOffset: 0,
-                endOffset: container.closerStartOffset,
+                endOffset: opening.endOffset,
               },),
-            ],
-            containers: TARGET_CONTAINERS,
-          },);
-        },).toThrow(ContainerIntegrityError,);
-      },
-    },),
-    it({
-      name: 'REFUSES the mirror, a range holding the closing tag without the opening one, since the '
-        + 'element is destroyed either way and two corpus entries fail in this direction',
-      fn: async () => {
-        /** Container whose halves the range will straddle from the other side. */
-        const container = onlyContainer();
-        expect(function checkCloserOnly(): void {
-          assertContainerIntegrity({
-            slices: [
               rangeOf({
-                startOffset: container.openerEndOffset,
+                startOffset: closing.startOffset,
                 endOffset: TARGET_TEXT.length,
               },),
             ],
             containers: TARGET_CONTAINERS,
+            blocks: TARGET_NODES,
           },);
-        },).toThrow(ContainerIntegrityError,);
+        },).not.toThrow();
       },
     },),
     it({
-      name: 'ACCEPTS a range holding BOTH tags, which is the ordinary healthy case and the majority '
-        + 'of pages using containers at all: the slice text carries them, so a candidate dropping '
-        + 'them is refused later by the page grammar rather than here',
+      name: 'ACCEPTS a range holding BOTH tags, which is the ordinary healthy case: the slice text '
+        + 'carries them, so a candidate dropping them is refused later by the page grammar rather '
+        + 'than here',
       fn: async () => {
         expect(function checkWholeContainer(): void {
           assertContainerIntegrity({
@@ -176,27 +234,28 @@ await describe({
               },),
             ],
             containers: TARGET_CONTAINERS,
+            blocks: TARGET_NODES,
           },);
         },).not.toThrow();
       },
     },),
     it({
-      name: 'ACCEPTS a range holding NEITHER tag, so a slice landing wholly outside a container is '
-        + 'left alone rather than refused for being near one',
+      name: 'REFUSES blocks that stop at a container tag instead of covering it, which is the '
+        + 'regression the widening exists to prevent: with tags in no block, a range boundary can '
+        + 'fall between an opener and its closer and assembly deletes one of them',
       fn: async () => {
-        /** Container the range will stay clear of. */
-        const container = onlyContainer();
-        expect(function checkOutsideContainer(): void {
+        expect(function checkOrphanedTags(): void {
           assertContainerIntegrity({
             slices: [
               rangeOf({
                 startOffset: 0,
-                endOffset: container.openerStartOffset,
+                endOffset: TARGET_TEXT.length,
               },),
             ],
             containers: TARGET_CONTAINERS,
+            blocks: blocksWithoutTags(),
           },);
-        },).not.toThrow();
+        },).toThrow(ContainerIntegrityError,);
       },
     },),
     it({
@@ -214,8 +273,29 @@ await describe({
               },),
             ],
             containers: TARGET_CONTAINERS,
+            blocks: TARGET_NODES,
           },);
         },).toThrow(ContainerIntegrityError,);
+      },
+    },),
+    it({
+      name: 'ACCEPTS a range holding NEITHER tag, so a slice landing wholly outside a container is '
+        + 'left alone rather than refused for being near one',
+      fn: async () => {
+        /** Container the range will stay clear of. */
+        const container = onlyContainer();
+        expect(function checkOutsideContainer(): void {
+          assertContainerIntegrity({
+            slices: [
+              rangeOf({
+                startOffset: 0,
+                endOffset: container.openerStartOffset,
+              },),
+            ],
+            containers: TARGET_CONTAINERS,
+            blocks: TARGET_NODES,
+          },);
+        },).not.toThrow();
       },
     },),
     it({
@@ -231,13 +311,14 @@ await describe({
               },),
             ],
             containers: [],
+            blocks: TARGET_NODES,
           },);
         },).not.toThrow();
       },
     },),
     it({
-      name: 'says nothing about an ANCHOR, which replaces no range and so can break no element: '
-        + 'where an insertion lands inside a container is a placement question answered elsewhere',
+      name: 'says nothing about an ANCHOR, which replaces no range and so can cut no tag: where an '
+        + 'insertion lands inside a container is a placement question answered elsewhere',
       fn: async () => {
         expect(function checkAnchor(): void {
           assertContainerIntegrity({
@@ -252,12 +333,13 @@ await describe({
                 },
                 target: makeInsertionChunk({
                   chunkIndex: 0,
-                  offset: onlyContainer()
-                    .openerEndOffset,
+                  offset: nonNullishOrThrow(onlyContainer()
+                    .openerEndOffset,),
                 },),
               },
             ],
             containers: TARGET_CONTAINERS,
+            blocks: TARGET_NODES,
           },);
         },).not.toThrow();
       },

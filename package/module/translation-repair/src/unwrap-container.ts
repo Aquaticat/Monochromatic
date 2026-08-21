@@ -12,18 +12,24 @@ import type { RootContent, } from 'mdast';
 // result as omissions of content that was present all along, merely nested.
 //
 // Flattening promotes a container's block children to peers so both sides
-// expose comparable structure. Offsets are untouched: a promoted child keeps
-// its own absolute span, and the container's opening and closing tags fall
-// outside every promoted span.
+// expose comparable structure. This walk leaves offsets untouched: a promoted
+// child keeps its own absolute span, and the container's opening and closing
+// tags fall outside every promoted span.
 //
-// THOSE TAGS THEN BELONG TO NO BLOCK, which is why this walk also reports them.
-// Surviving as inter-block text is safe only while both tags sit on the same
-// side of every slice boundary. `Zha_Ke` showed what happens otherwise: a slice
-// range held the `<details>` opener and stopped eleven characters before its
-// closer, so assembly replaced the opener away and copied the closer through,
-// losing 3708 characters of will and leaving markup that closes nothing. No
-// invariant could see it, because all of them reason over blocks and a tag in
-// no block is not one. `#154` has the measurements.
+// THOSE TAGS WOULD THEN BELONG TO NO BLOCK, which is why this walk also reports
+// them, and why `container-extents.ts` hands each one to the block beside it
+// before anything downstream reads a block offset. Leaving them as inter-block
+// text was safe only while both tags sat on the same side of every slice
+// boundary. `Zha_Ke` showed what happens otherwise: a slice range held the
+// `<details>` opener and stopped eleven characters before its closer, so
+// assembly replaced the opener away and copied the closer through, losing 3708
+// characters of will and leaving markup that closes nothing. No invariant could
+// see it, because all of them reason over blocks and a tag in no block is not
+// one. `#154` has the measurements.
+//
+// SO THE SPANS REPORTED HERE ARE NOT DECORATION. They are the input that makes
+// a tag reachable by the block beside it, and a caller that reads `blocks` and
+// drops `containers` reintroduces the defect in full.
 //
 // Thirty of the pinned corpus's pages carry a disclosure element, so this is
 // ordinary structure rather than one document's quirk.
