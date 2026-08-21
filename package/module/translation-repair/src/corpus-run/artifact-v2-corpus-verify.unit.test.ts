@@ -200,6 +200,7 @@ function writeAndRead(
     durationMs: 1_234,
     prepared,
     lanes,
+    laneSelection: { kind: 'pending-human-decision', },
   },);
 
   // THROUGH THE SERIALIZED FORM, deliberately, rather than a structured clone:

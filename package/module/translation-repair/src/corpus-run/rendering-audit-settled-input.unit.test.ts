@@ -545,6 +545,7 @@ async function writeArtifact(
         durationMs: 1_234,
         prepared,
         lanes,
+        laneSelection: { kind: 'pending-human-decision', },
       },),
       undefined,
       2,

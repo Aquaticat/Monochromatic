@@ -9,7 +9,6 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   requireArtifactJsonRecord,
   requireExactKeys,
-  requireOneOf,
 } from '../artifact-exact-guard.ts';
 import {
   assertPreparationIdentity,
@@ -17,6 +16,7 @@ import {
 } from '../preparation-identity.ts';
 import { ARTIFACT_SCHEMA_VERSION_V2, } from './artifact-v2-contract.ts';
 import { assertRecordedComparisonMatches, } from './artifact-v2-read-comparison.ts';
+import { parseLaneSelectionV2, } from './artifact-v2-read-contest.ts';
 import type {
   ParsedArtifactV2,
   ParsedPreparationV2,
@@ -320,16 +320,30 @@ export function parseSettledArtifactV2(
   },);
 
   /**
-   * Which lane should ship, which nobody has decided.
+   * The two lanes compared, RECOMPUTED from the ledgers and returned only once
+   * it matched the copy the file carries. Named here rather than built inline,
+   * because the contest is checked against it: a selection may only answer the
+   * slices this comparison says the two lanes left differently worded.
    */
-  const laneSelection = requireRecord({
-    value: artifact.laneSelection,
-    path: `${id}.laneSelection`,
-  },);
-  requireExactKeys({
-    record: laneSelection,
-    allowed: ['kind',],
-    path: `${id}.laneSelection`,
+  const comparison = assertRecordedComparisonMatches({
+    recorded: requireArray({
+      value: artifact.comparison,
+      path: `${id}.comparison`,
+    },)
+      .map(function readRow(
+        row,
+        position,
+      ) {
+        return parseComparisonRowV2({
+          value: row,
+          path: `${id}.comparison[${String(position,)}]`,
+        },);
+      },),
+    repair: lanes.repair
+      .delivery,
+    translate: lanes.translate
+      .delivery,
+    path: `${id}.comparison`,
   },);
   return {
     id,
@@ -359,35 +373,16 @@ export function parseSettledArtifactV2(
     },),
     preparation,
     lanes,
+    comparison,
 
-    // THE DERIVED COMPARISON, returned only once it matched the recorded one.
-    comparison: assertRecordedComparisonMatches({
-      recorded: requireArray({
-        value: artifact.comparison,
-        path: `${id}.comparison`,
-      },)
-        .map(function readRow(
-          row,
-          position,
-        ) {
-          return parseComparisonRowV2({
-            value: row,
-            path: `${id}.comparison[${String(position,)}]`,
-          },);
-        },),
-      repair: lanes.repair
-        .delivery,
-      translate: lanes.translate
-        .delivery,
-      path: `${id}.comparison`,
+    // WHICH LANE SHIPS, checked against both the ballots recorded beside it and
+    // the comparison above, so a selection answering the wrong slices is
+    // refused rather than read.
+    laneSelection: parseLaneSelectionV2({
+      value: artifact.laneSelection,
+      comparison,
+      path: `${id}.laneSelection`,
     },),
-    laneSelection: {
-      kind: requireOneOf({
-        value: laneSelection.kind,
-        allowed: ['pending-human-decision',],
-        path: `${id}.laneSelection.kind`,
-      },),
-    },
   };
 }
 

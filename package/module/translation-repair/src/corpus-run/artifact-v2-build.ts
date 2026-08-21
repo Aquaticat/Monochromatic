@@ -3,6 +3,7 @@ import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { compareDocumentLanes, } from '../lane-comparison.ts';
 import { preparationIdentity, } from '../preparation-identity.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
+import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V2,
   type ArtifactJsonValue,
@@ -83,6 +84,7 @@ export function buildSettledArtifactV2(
     durationMs,
     prepared,
     lanes,
+    laneSelection,
   }: {
     readonly entryId: string;
     readonly tip: string;
@@ -92,6 +94,14 @@ export function buildSettledArtifactV2(
     readonly durationMs: number;
     readonly prepared: PreparedDocumentPair;
     readonly lanes: DocumentLanesResult;
+
+    /**
+     * Which lane ships, which the caller states rather than the builder
+     * assuming. A pass that has not run the contest says so out loud here, so
+     * the pending state is a decision somebody made rather than a default
+     * nobody chose.
+     */
+    readonly laneSelection: ArtifactLaneSelectionV2;
   },
 ): SettledArtifactV2 {
   /**
@@ -260,10 +270,10 @@ export function buildSettledArtifactV2(
     },
     comparison: frozen,
 
-    // NOBODY HAS PICKED ONE, said out loud. Which lane ships is the user's
-    // question, and an artifact that left the field out would make "not decided
-    // yet" indistinguishable from "written before anyone asked".
-    laneSelection: { kind: 'pending-human-decision', },
+    // WHAT THE CALLER SAID, said out loud. Which lane ships is answered by the
+    // roster or by nobody, and an artifact that left the field out would make
+    // "not decided yet" indistinguishable from "written before anyone asked".
+    laneSelection,
   };
 }
 

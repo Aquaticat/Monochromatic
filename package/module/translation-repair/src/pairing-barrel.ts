@@ -26,7 +26,9 @@ export {
 //endregion Pairing barrel
 export {
   contestLaneSlice,
+  LANE_CONTEST_QUORUM,
   type LaneContestOutcome,
+  settleLaneContestBallots,
 } from './lane-contest-stage.ts';
 export {
   buildLaneContestMessages,

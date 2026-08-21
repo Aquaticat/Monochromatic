@@ -257,6 +257,7 @@ function catArtifact(): ReturnType<typeof buildSettledArtifactV2> {
     durationMs: 1_234,
     prepared: catPreparation(),
     lanes: catLanes(),
+    laneSelection: { kind: 'pending-human-decision', },
   },);
 }
 
@@ -409,6 +410,7 @@ await describe({
               ...catLanes(),
               repairDelivery: incoherent,
             },
+            laneSelection: { kind: 'pending-human-decision', },
           },);
         },).toThrow();
       },
@@ -447,6 +449,7 @@ await describe({
             durationMs: 1,
             prepared: catPreparation(),
             lanes: bothShort,
+            laneSelection: { kind: 'pending-human-decision', },
           },);
         },).toThrow('1 rows for a preparation of 2 slices',);
       },
@@ -487,6 +490,7 @@ await describe({
             durationMs: 1,
             prepared: foreign,
             lanes: catLanes(),
+            laneSelection: { kind: 'pending-human-decision', },
           },);
         },).toThrow('was built over',);
       },
@@ -540,6 +544,7 @@ await describe({
               repairDelivery: renumbered({ records: repairLedger(), },),
               translateDelivery: renumbered({ records: translateLedger(), },),
             },
+            laneSelection: { kind: 'pending-human-decision', },
           },);
         },).toThrow('names slice 7 at position 1',);
       },
@@ -566,6 +571,7 @@ await describe({
                 sliceCount: 9,
               },
             } as unknown as DocumentLanesResult,
+            laneSelection: { kind: 'pending-human-decision', },
           },);
         },).toThrow('counts 9 slices',);
       },
@@ -615,6 +621,7 @@ await describe({
           durationMs: 1,
           prepared: catPreparation(),
           lanes: overgrown,
+          laneSelection: { kind: 'pending-human-decision', },
         },),);
 
         for (const invented of [

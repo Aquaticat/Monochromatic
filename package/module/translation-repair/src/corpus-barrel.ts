@@ -27,6 +27,14 @@ export {
   type SettledPreparationV2,
 } from './corpus-run/artifact-v2-contract.ts';
 export {
+  type ArtifactContestSliceV2,
+  type ArtifactContestVerdictV2,
+  type ArtifactLaneSelectionV2,
+  contestEligibleIndexes,
+  describeContestSlice,
+} from './corpus-run/artifact-v2-contest.ts';
+export { parseLaneSelectionV2, } from './corpus-run/artifact-v2-read-contest.ts';
+export {
   ArtifactComparisonV2Error,
   assertDerivationsAgree,
   compareLanesV2,

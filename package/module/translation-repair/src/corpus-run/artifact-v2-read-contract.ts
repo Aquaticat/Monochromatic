@@ -1,4 +1,5 @@
 import type { PreparationIdentity, } from '../preparation-identity.ts';
+import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import type { ArtifactJsonValue, } from './artifact-v2-contract.ts';
 import type {
   ArtifactComparisonRowV2,
@@ -361,9 +362,10 @@ export type ParsedArtifactV2 = {
   readonly comparison: readonly ArtifactComparisonRowV2[];
 
   /**
-   * Which lane should ship, which nobody has decided.
+   * Which lane ships, proven to agree with the ballots recorded beside it and
+   * with the comparison this reader recomputed.
    */
-  readonly laneSelection: { readonly kind: 'pending-human-decision'; };
+  readonly laneSelection: ArtifactLaneSelectionV2;
 };
 
 //endregion Artifact version 2 read contract

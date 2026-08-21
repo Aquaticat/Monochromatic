@@ -1,6 +1,7 @@
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { RepairTranslationResult, } from '../repair-result.ts';
 import type { TranslateDocumentResult, } from '../translate-document-contract.ts';
+import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import type {
   ArtifactComparisonRowV2,
   ArtifactDeliveryRowV2,
@@ -240,13 +241,13 @@ export type SettledArtifactV2 = {
   readonly comparison: readonly ArtifactComparisonRowV2[];
 
   /**
-   * Which lane should ship, which nobody has decided.
+   * Which lane ships, as the roster settled it or as nobody having asked.
    *
    * A STATED PENDING STATE rather than an absent field. Leaving it out would
    * make "no decision yet" and "this artifact predates the question" the same
    * absence, which is the defect class this whole generation exists to end.
    */
-  readonly laneSelection: { readonly kind: 'pending-human-decision'; };
+  readonly laneSelection: ArtifactLaneSelectionV2;
 };
 
 //endregion Artifact version 2 contract

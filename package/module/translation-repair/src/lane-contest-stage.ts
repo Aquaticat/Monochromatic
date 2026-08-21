@@ -37,7 +37,7 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  * TWO, matching every other agreement rule in this package. One judge is an
  * opinion; two reaching the same reading of the same original is corroboration.
  */
-const AGREEMENT_NEEDED = 2;
+export const LANE_CONTEST_QUORUM = 2;
 
 /**
  * Voices the round waits for before it starts timing out stragglers.
@@ -165,11 +165,33 @@ function settleVotes(
    * Votes for the translate candidate.
    */
   const translate = votes.get('translate',) ?? 0;
-  if ((repair >= AGREEMENT_NEEDED) && (repair > translate))
+  if ((repair >= LANE_CONTEST_QUORUM) && (repair > translate))
     return 'repair';
-  if ((translate >= AGREEMENT_NEEDED) && (translate > repair))
+  if ((translate >= LANE_CONTEST_QUORUM) && (translate > repair))
     return 'translate';
   return 'neither';
+}
+
+/**
+ * Reads the winner out of a set of ballots, or `neither`.
+ *
+ * SHARED WITH THE ARTIFACT READER rather than kept private, so a stored verdict
+ * can be recomputed from the ballots stored beside it and refused when the two
+ * disagree, exactly as the recorded lane comparison already is.
+ *
+ * @param ballots - usable ballots
+ *
+ * @returns Candidate to ship, or `neither`
+ *
+ * @example
+ * ```ts
+ * const choice = settleLaneContestBallots({ ballots, },);
+ * ```
+ */
+export function settleLaneContestBallots(
+  { ballots, }: { readonly ballots: readonly LaneContestBallot[]; },
+): LaneChoice {
+  return settleVotes({ votes: countChoices({ ballots, },), },);
 }
 
 /**
@@ -256,7 +278,7 @@ export async function contestLaneSlice(
   /**
    * Candidate enough voices backed.
    */
-  const choice = settleVotes({ votes: countChoices({ ballots, },), },);
+  const choice = settleLaneContestBallots({ ballots, },);
   cl.info(
     `lane contest: ${String(ballots.length,)}/${String(outcomes.length,)} usable, settled on ${choice}`,
   );
@@ -264,8 +286,8 @@ export async function contestLaneSlice(
     choice,
     ballots,
     usable: ballots.length,
-    findings: (ballots.length < AGREEMENT_NEEDED)
-      ? [ `lane-contest heard ${String(ballots.length,)} usable ballots, below the ${String(AGREEMENT_NEEDED,)} needed to settle`, ]
+    findings: (ballots.length < LANE_CONTEST_QUORUM)
+      ? [ `lane-contest heard ${String(ballots.length,)} usable ballots, below the ${String(LANE_CONTEST_QUORUM,)} needed to settle`, ]
       : [],
   };
 }

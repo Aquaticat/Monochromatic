@@ -330,6 +330,11 @@ async function runEntryPipeline(
       durationMs,
       prepared,
       lanes,
+
+      // NOBODY HAS PICKED ONE, said out loud. The contest does not run in this
+      // pass, so the artifact records the question as open rather than
+      // recording an answer no roster gave.
+      laneSelection: { kind: 'pending-human-decision', },
     },);
     await writeFileAtomic({
       path: join(
