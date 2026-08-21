@@ -4,7 +4,10 @@ import {
   readSliceSkeleton,
   type SliceSkeleton,
 } from './translate-skeleton.ts';
-import { readPageSkeleton, } from './translate-skeleton-page.ts';
+import {
+  type PageGrammar,
+  readPageSkeleton,
+} from './translate-skeleton-page.ts';
 
 //region Translate validation
 // Compares a candidate translation against its ORIGINAL on everything that
@@ -29,11 +32,24 @@ import { readPageSkeleton, } from './translate-skeleton-page.ts';
  *
  * @example
  * ```ts
- * const validation: SliceValidation = { kind: 'valid', };
+ * const validation: SliceValidation = { kind: 'valid', pageGrammar: 'strict', };
  * ```
  */
 export type SliceValidation =
-  | { readonly kind: 'valid'; }
+  | {
+    readonly kind: 'valid';
+
+    /**
+     * Grammar that read the page behind this pass.
+     *
+     * ON THE PASS AND NOT THE REFUSAL, because a refusal already names the
+     * blocks it compared and shows which reading produced them, while a pass
+     * carries no evidence at all. A pass resting on the relaxed grammar is
+     * weaker than one resting on the strict grammar, and the repo's parser
+     * policy is that a downgrade never happens silently.
+     */
+    readonly pageGrammar: PageGrammar;
+  }
   | {
     readonly kind: 'invalid';
 
@@ -558,7 +574,10 @@ export function validateTranslatedSlice(
   /**
    * Reading of the text this candidate would replace.
    */
-  const replaced = readPageSkeleton({ text: pageText, },);
+  const {
+    read: replaced,
+    grammar: pageGrammar,
+  } = readPageSkeleton({ text: pageText, },);
 
   /**
    * Page's shape, empty only where there is no page or NEITHER grammar reads
@@ -634,7 +653,10 @@ export function validateTranslatedSlice(
     },),
   ];
   if (findings.length === 0)
-    return { kind: 'valid', };
+    return {
+      kind: 'valid',
+      pageGrammar,
+    };
   return {
     kind: 'invalid',
     findings,

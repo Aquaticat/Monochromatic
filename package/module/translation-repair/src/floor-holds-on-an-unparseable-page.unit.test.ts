@@ -158,6 +158,30 @@ await describe({
     },),
 
     it({
+      name: 'NAMES the grammar behind a pass, so a downgrade is never silent',
+      fn: async () => {
+        // A pass carries no findings to inspect, so without this the reader of
+        // a valid verdict cannot tell a strict reading from a relaxed one.
+        const relaxed = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: CUT_PAGE,
+          pageText: CUT_PAGE,
+        },);
+        const strict = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: NOTE_ONLY,
+          pageText: '',
+        },);
+
+        // The relaxed case is a refusal for other reasons; what matters is that
+        // a pass on a strictly read page says so.
+        expect(relaxed.kind,).toBe('invalid',);
+        expect(strict.kind,).toBe('valid',);
+        expect(strict.kind === 'valid' ? strict.pageGrammar : 'not-valid',).toBe('absent',);
+      },
+    },),
+
+    it({
       name: 'REFUSES a well-formed candidate too, so nothing ships at a cut slice',
       fn: async () => {
         // The two grammars disagree about what the same element IS: the page,

@@ -130,7 +130,14 @@ async function repairOneCandidate(
   if (validation.kind === 'valid')
     return {
       voice,
-      findings: [],
+      // A PASS ON A DOWNGRADED PAGE IS RECORDED, never silent. The strict
+      // grammar refuses a span cut through an element, and the page side falls
+      // back to plain markdown so the floor still has blocks to compare. That
+      // reading is looser than the one a candidate is held to, so a pass under
+      // it is weaker evidence and says so here.
+      findings: (validation.pageGrammar === 'relaxed')
+        ? ['translate-page-downgraded (page read as plain markdown; strict MDX refused it)',]
+        : [],
     };
 
   // Nothing to compare against says nothing about the candidate, so it stands
