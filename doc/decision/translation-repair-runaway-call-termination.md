@@ -670,3 +670,70 @@ A second such call arriving higher would move it.
 Re-measure before treating 40,000 as settled,
 and prefer raising it over lowering it,
 since a false positive costs a voice and a false negative costs 180 seconds.
+
+## Correction: the silent-reasoning bound at 40,000 is unsound, and measured to be so
+
+The two claims made for the 40,000 bound are wrong,
+and the error is in which number they compare against.
+
+WHAT THE CENSUS MEASURED was end-of-stream totals.
+WHAT THE PREDICATE READS is mid-stream state.
+Every thinking model on this roster emits its reasoning before it emits any content,
+so a call that finishes with 69,847 reasoning characters and 417 content characters
+passed through the state "40,000 reasoning characters, no content" on its way to speaking.
+A guard that fires on silent reasoning above 40,000 kills that call before it ever says anything.
+
+The comparator in the committed text is the largest silent COMPLETION, 32,646.
+The correct comparator is the largest reasoning on ANY completion, 69,847.
+
+### What the counts are, re-measured over both complete runs
+
+Over 545 completed calls and 11 cut calls, of which 9 emitted no content at all,
+the count of completed calls a silent-reasoning bound would kill:
+
+- At 30,000: 61 completed calls killed, 7 of 9 silent cuts caught.
+- At 40,000: 22 completed calls killed, 7 of 9 caught.
+- At 56,730: 5 completed calls killed, 4 of 9 caught.
+- At 69,847: 1 completed call killed, 2 of 9 caught.
+- At 70,000: no completed call killed, 2 of 9 caught.
+- At 110,821: no completed call killed, none caught.
+
+So "zero false positives over 508 observed completions" should read
+TWENTY-TWO LOST VOICES OUT OF 545, and "no observed completion trips it" is simply false.
+
+### What survives
+
+The only window with no observed false positive runs from just above 69,847
+to the largest reasoning any cut call reached, 110,820.
+That ceiling is not a property of runaways: it is where the 180 second deadline stopped them.
+A bound inside that window catches 2 of 9 silent cuts at a margin under 1.3 times.
+
+THE DEADLINE IS ALREADY THE SILENT-RUNAWAY INSTRUMENT.
+A reasoning cap that clears every observed legitimate call
+cannot catch much that the clock does not already catch a few seconds later.
+Either set it as a far backstop well above anything reachable in 180 seconds,
+and document it as unreachable under the current deadline,
+or do not add it at all.
+
+### The content bound still stands
+
+Content characters are monotone in the same way, and the largest completed call emitted 4,278.
+No completed call ever crossed 10,000 content characters mid-stream, because none ever reached it.
+The two content-producing cuts emitted 25,482 and 28,026.
+That bound is sound in-sample.
+
+TWO CONDITIONS BEFORE IT IS WIRED.
+All 556 calls here are consolidation-bed traffic,
+so editors, critics and the translate lane are outside the sample,
+and their largest legitimate emission must be read off the settled artifacts before 10,000 is called global.
+And the cap must be passed per call site the way the exchange timeout is,
+defaulting to the measured value rather than freezing a constant into the guard.
+
+### What the guard must not repeat
+
+Whatever error a cap throws has to carry the same retry classification as `StreamDegenerateError`.
+`#120` recorded the exact defect: a guard that stops a runaway
+and then hands a retryable error to the retry layer buys the same runaway four more times.
+The outcome also needs its own label in `reportStreamProgress`,
+which means the census pattern gains a fourth alternative and every earlier scan of that log
+counts a population that did not include it.
