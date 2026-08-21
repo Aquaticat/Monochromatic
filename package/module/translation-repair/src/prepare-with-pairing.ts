@@ -233,12 +233,33 @@ export async function prepareDocumentPairWithRoster(
     findings.push(...outcome.findings,);
 
     /**
-     * Correspondences this section's round agreed on.
+     * Correspondences this section's round agreed on, beside how many voices
+     * stood behind them.
      */
     const {
       pairs,
       usable,
+      heard,
     } = outcome;
+
+    // HOW MANY VOICES AGREED, recorded rather than only logged. A section two
+    // voices paired and one six voices paired are different evidence about the
+    // same slicing, and the artifact carried neither until this line. Emitted
+    // HERE rather than in the stage because the stage is asked one section at a
+    // time and cannot say which, so a run of unattributed counts down a long
+    // document names no section at all.
+    //
+    // A ROUND NOBODY ANSWERED SAYS SO ELSEWHERE. At no usable voice the stage
+    // has already filed `no-usable-voice`, and a count of zero out of zero
+    // beside it would be a second wording for one fact.
+    if (usable > 0)
+      findings.push(
+        `block-pairing section ${String(pairIndex,)} paired ${String(pairs.length,)} of ${
+          String(sourceBlocks.length,)
+        } original and ${String(targetBlocks.length,)} translation blocks, from ${
+          String(usable,)
+        } usable voices of ${String(heard,)} heard`,
+      );
 
     // A ROUND NOBODY ANSWERED IS NOT AN ANSWER, and must not be cached: the
     // roster was unreachable, not undecided, and caching that would make one

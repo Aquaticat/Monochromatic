@@ -125,6 +125,69 @@ export type SettledPreparationV2 = {
    * the archive twice.
    */
   readonly alignmentFindings: readonly string[];
+
+  /**
+   * Which original block the roster said each translation block renders, per
+   * aligned section.
+   *
+   * THE MOST CONSEQUENTIAL DECISION IN A RUN, and until this field the only one
+   * a settled entry did not keep. It decides which original each slice is
+   * judged against, no later stage can repair a wrong one, and the cache that
+   * held it is discarded once the entry settles. Recovering it meant racing a
+   * live run before it settled.
+   *
+   * OPTIONAL WITHIN VERSION 2 rather than a version 3, on the precedent
+   * {@link SettledPreparationV2.archiveText} set: a reader that meets it
+   * unrecorded understands the artifact completely, so refusing the whole
+   * generation over an added field would buy nothing. Recorded in
+   * `doc/decision/artifact-stores-the-block-pairing.md`.
+   *
+   * ABSENT MEANS NOBODY WAS ASKED, which in practice means the artifact was
+   * written before this field existed: every production entry runs through the
+   * roster shell. Present and EMPTY means the roster was asked and agreed
+   * nothing anywhere, which is a different fact. A section missing from a
+   * present list had no pairing consumed for it, and which reason applies is
+   * legible from {@link SettledPreparationV2.alignmentFindings} rather than
+   * from here: it may have been trivial enough that nobody was asked, it may
+   * have fallen back to scoring, or its round may have gone unanswered.
+   */
+  readonly blockPairing?: readonly ArtifactSectionPairingV2[];
+};
+
+/**
+ * One aligned section's pairing, as version 2 records it.
+ *
+ * FROZEN UNDER A VERSION 2 NAME rather than reusing the live `BlockPair`, which
+ * is the rule everywhere in this schema that is not evidence: a later field on
+ * the live type would otherwise silently change what an artifact claiming
+ * version 2 means. Drift makes the writer stop compiling, which is the moment
+ * the version question should be asked.
+ *
+ * @example
+ * ```ts
+ * const pairing: ArtifactSectionPairingV2 = { sectionIndex: 0, pairs: [{ source: 0, target: 0, },], };
+ * ```
+ */
+export type ArtifactSectionPairingV2 = {
+  /**
+   * Aligned section this answers about, which every index below is local to.
+   */
+  readonly sectionIndex: number;
+
+  /**
+   * Correspondences the roster agreed on, in document order.
+   */
+  readonly pairs: readonly {
+    /**
+     * Original-side block index within this section.
+     */
+    readonly source: number;
+
+    /**
+     * Translation-side block index within this section.
+     */
+    readonly target: number;
+  }[];
 };
 
 /**

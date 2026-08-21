@@ -45,6 +45,26 @@ import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.t
  * since either landed. They are named anyway, because a reader that meets one
  * must not read it as the generation before.
  *
+ * COMPATIBLE ADDITIONS WITHIN VERSION 2, which the rule above requires saying
+ * here rather than only at the field. Each adds an OPTIONAL key to
+ * `preparation` and each parses to a named absence, so a reader that meets the
+ * key missing understands the artifact completely and refusing the generation
+ * would buy nothing:
+ *
+ * -   `archiveText`, the entry's English before either lane ran, so a reader
+ *     needs no checkout pinned to the corpus commit. Decided in
+ *     `doc/decision/artifact-stores-the-archive-text.md`.
+ * -   `blockPairing`, which original block the roster said each translation
+ *     block renders. Decided in
+ *     `doc/decision/artifact-stores-the-block-pairing.md`.
+ *
+ * BOTH ARE EMPTY POPULATIONS on disk: measured 2026-08-21 over the 11 settled
+ * artifacts in the two run directories, every one is version 2 and carries
+ * neither key. So the absence branch of each is the only branch any stored
+ * artifact exercises today, which is a fact about this corpus rather than about
+ * the format, and is why both branches are tested rather than only the one a
+ * fixture happens to reach.
+ *
  * @example
  * ```ts
  * const artifact = { artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1, };

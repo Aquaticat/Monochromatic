@@ -13,6 +13,10 @@ import {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
+import {
+  type SectionBlockPairing,
+  sectionPairingsOf,
+} from './section-pairing.ts';
 import { parseDocument, } from './parse-document.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertContainerIntegrity, } from './container-integrity.ts';
@@ -109,6 +113,17 @@ export type PreparedDocumentPair = {
    * count: a document with far more slices than pairs subdivided heavily.
    */
   readonly alignmentPairCount: number;
+
+  /**
+   * Pairing this slicing was built on, echoed back so what gets recorded is the
+   * object slicing consumed rather than a second copy assembled beside it.
+   *
+   * ABSENT WHEN NOBODY WAS ASKED, present and possibly empty when somebody was.
+   * A section missing from a present list had no pairing consumed for it, and
+   * which of the several reasons applies is legible from
+   * {@link PreparedDocumentPair.alignmentFindings}, not from here.
+   */
+  readonly blockPairing?: readonly SectionBlockPairing[];
 };
 
 /**
@@ -401,6 +416,11 @@ export function prepareDocumentPair(
     ],
     alignmentPairCount: alignment.pairs
       .length,
+
+    // OMITTED WHEN NO PAIRING WAS SUPPLIED, because a caller that asked nobody
+    // and a roster that agreed nothing are different facts, and both would read
+    // as an empty list if absence were spelled that way.
+    ...((blockPairings === undefined) ? {} : { blockPairing: sectionPairingsOf({ blockPairings, },), }),
   };
 }
 
