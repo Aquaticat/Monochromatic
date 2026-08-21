@@ -26,7 +26,8 @@ advisor hyper/kimi-k3 278.5s hyper 665231/4126512 chars 166616 tokens full
 
 ### Advisor requested a 16,384-token response
 
-`package/pi-plugin/advisor/src/constants.ts:38-41` defines the default:
+At incident commit `3ef6fed29514fe2bad0728c9228f623f7d2516c7`,
+`package/pi-plugin/advisor/src/constants.ts:38-41` defined the default:
 
 ```typescript
 /**
@@ -35,7 +36,7 @@ advisor hyper/kimi-k3 278.5s hyper 665231/4126512 chars 166616 tokens full
 export const DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS = 16_384;
 ```
 
-The user configuration selected the same value:
+The user configuration selected the same value at incident time:
 
 ```json
 {
@@ -291,24 +292,70 @@ Tradeoff:
   `hyper/kimi-k3` advertises a 1.0M context window and a separate 16K output maximum.
 - The current plugin does not reserve a minimum visible answer after reasoning for OpenAI-compatible models.
 
-## Recommended correction
+## Resolution and remaining work
 
-Keep the global value at 16,384 while `hyper/kimi-k3` remains eligible for default selection.
-Use focused continuation calls for an immediate recovery.
+The Advisor default and user-level configuration now request 32,000 output tokens.
+`package/pi-plugin/advisor/src/constants.ts:38-41` defines:
 
-A permanent plugin correction should:
+```typescript
+/**
+ * Default maximum output tokens requested from the advisor model.
+ */
+export const DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS = 32_000;
+```
 
-- derive the dispatched output cap from both configuration and selected-model metadata;
-- show `stopReason: "length"` distinctly from serialized-context truncation;
-- recover from a length-limited response with a focused continuation or lower supported reasoning level;
-- rank models with their effective output cap rather than applying one configured cap to every candidate.
+`package/pi-plugin/advisor/src/output-eligibility.ts:34-55` filters each provider-specific model entry against
+that configured requirement:
 
-A 65,536-token cap is appropriate only for an explicitly selected model that advertises at least that output
-maximum,
+```typescript
+export function filterAdvisorScopeByOutputCapacity(
+  {
+    scope,
+    maxAdvisorOutputTokens,
+  }: ForeignBorrowed<Readonly<{
+    scope: ReadonlyDeep<EffectiveModelScope>;
+    maxAdvisorOutputTokens: number;
+  }>>,
+): EffectiveModelScope {
+  return {
+    ...scope,
+    entries: scope
+      .entries
+      .filter(function supportsConfiguredOutputCapacity(
+        entry: ReadonlyDeep<ScopedAdvisorModel>,
+      ): boolean {
+        return entry
+          .model
+          .maxTokens
+          >= maxAdvisorOutputTokens;
+      },),
+  };
+}
+```
+
+Default selection requires a non-empty eligible scope.
+Explicit selection resolves the requested model against authenticated scope first,
+ then rejects it before provider dispatch when its endpoint advertises less than the configured value.
+The main-model prompt and tool result details list eligible slugs,
+ while `/advisor status` reports both raw scoped models and eligible Advisor models.
+
+Targeted tests prove:
+
+- a higher-cost endpoint below the requirement cannot win default selection;
+- an explicit endpoint below the requirement is rejected;
+- a model advertising exactly 32,000 remains eligible;
+- an all-ineligible scope fails with endpoint capacities;
+- provider dispatch count remains zero after an eligibility rejection;
+- status and main-model guidance omit ineligible slugs from allowed candidates.
+
+Focused continuations remain the verified recovery for a response that reaches `stopReason: "length"`.
+The eligibility correction prevents configured output requests from exceeding model metadata,
+ but it does not yet display response-length exhaustion in the collapsed header or automatically continue a
+partial answer.
+
+A 65,536-token cap would require every selected endpoint to advertise at least that value,
  followed by a real provider-boundary verification.
- In the current scope,
-`synthetic/hf:moonshotai/Kimi-K3` advertises 65.5K,
- but that 64K path was not executed during this diagnosis.
+That 64K path was not executed during this diagnosis.
 
 ## Upstream filing decision
 

@@ -26,8 +26,8 @@ pi -e ./packages/pi-plugin/advisor/src/index.ts
 
 ## Tool usage
 
-Use empty params to select the scoped model with the highest expected Advisor call cost,
-excluding the current main model when another scoped model is available:
+Use empty params to select the output-eligible scoped model with the highest expected Advisor call cost,
+excluding the current main model when another eligible scoped model is available:
 
 ```json
 {}
@@ -67,8 +67,9 @@ Accepted explicit forms are:
 
 Advisor throws when a slug is ambiguous,
  unknown,
- or present in the global registry but outside the effective scope.
-The error lists allowed scoped slugs.
+ present in the global registry but outside the effective scope,
+ or backed by an endpoint advertising fewer output tokens than `maxAdvisorOutputTokens`.
+The error lists allowed eligible scoped slugs.
 
 ## Slash commands
 
@@ -80,6 +81,7 @@ The error lists allowed scoped slugs.
    show enablement,
    scope source,
    scoped slugs,
+   output-eligible slugs,
    default model,
    and config paths.
 - `/advisor off`:
@@ -110,7 +112,7 @@ Example:
 {
   "enabled": true,
   "timeoutMs": 600000,
-  "maxAdvisorOutputTokens": 16384,
+  "maxAdvisorOutputTokens": 32000,
   "includePriorAdvisorResults": true,
   "systemPrompt": "Focus on test coverage gaps and incorrect assumptions."
 }
@@ -122,6 +124,11 @@ Provider `error`,
  provider `aborted`,
  caller cancellation,
  and deadline expiry do not receive an identical retry.
+
+`maxAdvisorOutputTokens` defaults to `32000`.
+Advisor requests that response budget and excludes every model endpoint whose advertised `maxTokens` is lower.
+A model advertising exactly the configured value remains eligible.
+Explicit model requests receive an eligibility diagnostic before provider dispatch.
 
 `maxContextChars` is optional.
 When omitted,
@@ -145,6 +152,11 @@ Advisor resolves scope in this order:
 3. Merged Pi `enabledModels` settings from global and project settings.
 4. `ctx.modelRegistry.getAvailable()` when no restricted scope exists.
 
+Advisor then keeps only entries whose endpoint advertises
+`model.maxTokens >= maxAdvisorOutputTokens`.
+Provider-specific entries are evaluated independently,
+so one endpoint for a model can remain eligible while another endpoint for the same model is excluded.
+
 Pi 0.74 does not expose live session-only `/scoped-models` changes in the typed extension context.
 Advisor probes for a future runtime API,
  but first delivery reconstructs startup and settings scope when that API is absent.
@@ -153,8 +165,10 @@ Exact live `/scoped-models` support needs a Pi API such as `ctx.getScopedModels(
 ## Default model ranking
 
 For `advisor({})`,
- Advisor first removes the current main model from default candidates when another scoped model remains.
-It then estimates input tokens for the serialized request and computes:
+ Advisor first excludes endpoints below the configured output requirement.
+It then removes the current main model from default candidates when another eligible scoped model remains,
+ estimates input tokens for the serialized request,
+ and computes:
 
 ```text
 expectedCost = inputTokens * model.cost.input + maxAdvisorOutputTokens * model.cost.output
@@ -213,6 +227,15 @@ Change the tool argument to one of the listed scoped slugs,
 
 Auth errors come from `ctx.modelRegistry.getApiKeyAndHeaders()`.
 Log in to the provider or configure the provider's API key in Pi.
+
+### Insufficient output capacity
+
+`advisor: no scoped models advertise at least ... output tokens` means every scoped endpoint advertises a
+`maxTokens` value below `maxAdvisorOutputTokens`.
+Lower the configured budget or add an endpoint advertising enough output capacity.
+
+An explicit ineligible model reports both configured requirement and endpoint advertisement.
+Use an eligible slug from `/advisor status`.
 
 ### Context truncation
 

@@ -73,14 +73,14 @@ export function createAdvisorTool(
     name: ADVISOR_TOOL_NAME,
     label: 'Advisor',
     description:
-      'Consult an independent advisor model using the current conversation context. Empty params select the highest expected-cost scoped model other than the current main model when possible. Optional model selects a scoped model, and optional question asks Advisor to answer a focused review question.',
+      'Consult an independent advisor model using the current conversation context. Empty params select the highest expected-cost output-eligible scoped model other than the current main model when possible. Optional model selects an eligible scoped model, and optional question asks Advisor to answer a focused review question.',
     promptSnippet:
       'Consult an independent advisor model. Use advisor({}) for default non-current scoped model, advisor({ "question": "..." }) for a focused question, or advisor({ "model": "provider/model", "question": "..." }) for both.',
     promptGuidelines: [
       'Advisor receives the conversation context automatically and returns review feedback as a tool result.',
       'Call advisor when a secondary review can catch flawed assumptions, missing verification, risky changes, or overlooked files.',
       'Use advisor({ "question": "..." }) when Advisor should answer a focused uncertainty from the main model instead of only giving general review feedback.',
-      'Do not request models outside the scoped model set; out-of-scope slugs fail and list allowed slugs.',
+      'Do not request models outside the eligible scoped model set; out-of-scope or output-ineligible slugs fail and list allowed slugs.',
     ],
     parameters: AdvisorToolParametersSchema,
     executionMode: 'sequential',
