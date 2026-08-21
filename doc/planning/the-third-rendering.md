@@ -653,3 +653,32 @@ FOUR DEFECTS, ONE SHAPE. `#143`, `#144`, `#145` and `#146` are all the same
 failure: a rule given to the models that WRITE and withheld from, or contradicted
 for, the models that CHOOSE. The bed has been bought five times, and every
 restart was paid for by a defect that would otherwise have decided the corpus.
+
+### The sweep that should have come first
+
+Two of these were found by hand, in ballots.
+The rest were found in one pass that asked a different question: which system
+prompts in this package carry the corpus's rules, and which do not.
+
+    - Producing sheets carrying them: the translator, the consolidator, the
+      critic, the coverage reader, the refiner, the adjudicator.
+    - Deciding sheets carrying them: none.
+    - The editor, which REWRITES text rather than judging it: none, though
+      `house-policy.ts` names it as a consumer in its own comment.
+
+THE EDITOR IS THE SERIOUS ONE.
+The block's header states the failure it exists to stop: a page keeps a suicide
+method vague because the corpus's rule says to, a critic ignorant of the rule
+files it as an omission, and the editor restores the detail.
+The critic was given the rule and the editor was not, so exactly half of that
+sentence was guarded.
+Its own sheet told it five separate times that every detail of the original must
+survive and that an omission must be filled in full sentences with nothing
+dropped.
+
+WHAT THE SWEEP COST, and what finding these one at a time cost.
+The sweep is one `rg` over `role: 'system'` and one grep for the block name.
+Finding `#144` and `#145` by reading ballots cost two bed restarts.
+A sweep of the same kind belongs at the front of any measurement that depends on
+what models were told, and this one is now recorded so the next measurement can
+start with it.
