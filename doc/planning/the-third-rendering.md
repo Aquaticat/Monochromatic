@@ -651,7 +651,7 @@ judges applying a numbered criterion literally against everything beside it.
 
 FOUR DEFECTS, ONE SHAPE. `#143`, `#144`, `#145` and `#146` are all the same
 failure: a rule given to the models that WRITE and withheld from, or contradicted
-for, the models that CHOOSE. The bed has been bought five times, and every
+for, the models that CHOOSE. The bed has been started six times, and every
 restart was paid for by a defect that would otherwise have decided the corpus.
 
 ### The sweep that should have come first
@@ -660,11 +660,11 @@ Two of these were found by hand, in ballots.
 The rest were found in one pass that asked a different question: which system
 prompts in this package carry the corpus's rules, and which do not.
 
-    - Producing sheets carrying them: the translator, the consolidator, the
-      critic, the coverage reader, the refiner, the adjudicator.
-    - Deciding sheets carrying them: none.
-    - The editor, which REWRITES text rather than judging it: none, though
-      `house-policy.ts` names it as a consumer in its own comment.
+-   Producing sheets carrying them: the translator, the consolidator, the
+    critic, the coverage reader, the refiner, the adjudicator.
+-   Deciding sheets carrying them: none.
+-   The editor, which REWRITES text rather than judging it: none, though
+    `house-policy.ts` names it as a consumer in its own comment.
 
 THE EDITOR IS THE SERIOUS ONE.
 The block's header states the failure it exists to stop: a page keeps a suicide
