@@ -217,6 +217,50 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS every block when the pairing left an original unplaced',
+      fn: async () => {
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
+
+        // Original 3 is placed nowhere, so this reply did not finish reading
+        // the pair and its silence about the letter is a gap, not a decision.
+        const declined = declinedTargetBlocks({
+          steps: blockPairingToSteps({
+            pairs: [
+              { source: 0, target: 0, },
+              { source: 1, target: 1, },
+              { source: 2, target: 4, },
+            ],
+            sourceCount: sourceNodes.length,
+            targetCount: targetNodes.length,
+          },),
+          targetNodes,
+        },);
+        expect(declined,).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'KEEPS every block when the pairing placed nothing at all',
+      fn: async () => {
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
+
+        // What `pairBlocksAcrossRoster` returns when no voice was usable. The
+        // caller passes it straight through, so this is a live shape.
+        const declined = declinedTargetBlocks({
+          steps: blockPairingToSteps({
+            pairs: [],
+            sourceCount: sourceNodes.length,
+            targetCount: targetNodes.length,
+          },),
+          targetNodes,
+        },);
+        expect(declined,).toStrictEqual([],);
+      },
+    },),
+
+    it({
       name: 'NAMES exactly the blocks no original claims',
       fn: async () => {
         const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
