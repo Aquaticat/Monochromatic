@@ -91,10 +91,50 @@ states nothing the original does not,
 keeps whichever candidate's wording is already right clause by clause,
 and reads as English rather than as a repair of English.
 
-STRUCTURE IS CHECKED DETERMINISTICALLY, by `validateTranslatedSlice`,
-which is the same guard the translate lane's candidates pass.
-A consolidation that changes the block skeleton goes back to its own author,
+THE FINDINGS ARE CLAIMS, NOT FACTS, and the sheet says so.
+They are judge output, and judge output is what `M3 fix D` had to teach the
+critic policy not to treat as golden.
+A producer that obeys a false finding introduces a defect this pipeline authored
+itself, which is worse than the one it was sent to fix.
+So each finding is shown as something to CHECK against the original before
+acting on it, and a finding the original does not support is to be ignored.
+
+THE LINE STRUCTURE ADDENDUM IS CARRIED, on the same conditional the translate
+wire uses.
+Verse slices are line-structured, and a producer not told so merges lines,
+which `validateTranslatedSlice` then refuses on every attempt.
+
+STRUCTURE IS CHECKED DETERMINISTICALLY, by that same validator,
+which is the guard the translate lane's candidates already pass.
+A consolidation that changes the block skeleton goes back to its own author
+through `repairInvalidCandidates`,
 exactly as an invalid translated slice does by the decision of 2026-08-14.
+
+THE REPLY SHAPE IS THE TRANSLATE LANE'S OWN, `{"translation": "..."}`.
+That is not a convenience: it means `isTranslateReportWire`,
+`repairInvalidCandidates`, `buildTranslateCandidates` and `judgeTranslateSlate`
+are reused rather than reimplemented,
+and the only new thing in the producing half is the sheet.
+
+## How one consolidation is picked out of six
+
+SIX PRODUCERS YIELD SIX RENDERINGS, and free prose almost never collides,
+so deduplication will not reduce them to one.
+
+`judgeTranslateSlate` is the selector, with the STANDING text as its incumbent.
+Task `#109` split the translate stage into a producing half and a judging half
+precisely so one slate could be judged on its own, and this is that caller.
+It brings the self-vote discount, the identical-candidate collapse, the
+candidate rotation and the blank-selection guard with it, none of which is worth
+reimplementing.
+
+ITS QUESTION IS A PREFERENCE, and a preference question measured worse than the
+contest's question on the lane pair, 8 of 13 against 10 of 13.
+It is nonetheless the right question HERE.
+What made the general question fail on the lane pair was the asymmetry between
+a candidate that inherits and a candidate that discards.
+Six consolidations and the standing text are all renderings of the same original
+written with the same evidence, so that asymmetry is absent.
 
 ## How it is decided
 
@@ -102,26 +142,39 @@ THE CONSOLIDATION IS NOT TRUSTED BECAUSE IT IS NEWEST.
 It is a third candidate produced by the same kind of instrument that produced
 the first two, and it can be worse.
 
-So it faces the standing text in a second contest,
-asking the same two questions the lane contest asks,
+So when the selector prefers a consolidation to the standing text,
+that consolidation then faces the standing text on the CONTEST's question,
+the one that asks what the original supports,
 over a vocabulary naming this pair:
 `consolidated`, `standing`, `neither`.
-The standing text is whatever the lane contest settled on,
-which is a lane at `lane-won` and is undefined at the other two verdicts.
 
-WHAT THE OTHER TWO VERDICTS STAND ON is the part this proposal leaves open,
-and is the one place the owner's answer is still needed:
-at `settled-neither` and `quorum-not-met` there is no standing text to face,
-so either the consolidation ships unopposed,
-or the contest runs against both lanes in turn,
-or the slice reaches the terminal state directly.
+CHANGING THE SHIPPED TEXT NEEDS MORE EVIDENCE THAN KEEPING IT.
+The standing text ships on `standing` and on `neither` alike.
+That is not caution for its own sake: the translate wire already records the
+reason, that a reader who knows this archive should not see it churn, and a tie
+means the evidence does not carry a preference.
+
+WHERE THERE IS NO STANDING TEXT, at `settled-neither` and `quorum-not-met`,
+the consolidation faces EACH LANE in turn and ships only if it loses to neither.
+Adopted here rather than put to the owner:
+"must be good" determines the answer, and facing both also dissolves an
+ambiguity in the contest prompt, whose `neither` covers both "both are clean"
+and "both are equally unfaithful" without saying which.
+A veto is welcome; a question would have been rubber-stamping.
+This branch went unexercised in calibration, where the treatment arm declined on
+none of thirteen slices, so it is a recorded rule rather than a measured one.
 
 ## The terminal state
 
-A slice whose consolidation loses, and whose standing text carries corroborated
-findings, has no text this pipeline can call good.
+A slice where the consolidation lost AND the second contest's own ballots blame
+the standing text has no text this pipeline can call good.
 That is a real outcome and it gets its own recorded kind rather than a silent
 fallback.
+
+THE EVIDENCE IS THE TWO CONTESTS' BALLOTS, never the rendering audit.
+Deriving it from the audit would re-import the instrument this proposal rejects
+as a trigger, at the one place where being wrong costs the most.
+
 The release names those slices in a list.
 
 THAT LIST IS THE OWNER'S QUESTION, RESUBMITTED WITH EVIDENCE:
@@ -140,6 +193,21 @@ bed, because each carries a reading against the Chinese.
 4.  Whether consolidation damages the slices where the contest already agreed
     with the reading, which is the risk that would refuse this whole shape.
 
-Measurement 4 is the control.
+MEASUREMENT 3 HAS A KNOWN ANSWER TO CHECK AGAINST.
+The reading names which clause each lane got right at `keyword233` slice 1,
+so whether a consolidation carried both is legible rather than a matter of
+taste.
+
+MEASUREMENT 4 IS THE CONTROL, and it is read per slice rather than in aggregate.
+At `keyword233` slice 0 and `Weideriche_` slice 0 the reading recorded two GOOD
+texts, both lanes having corrected everything the archive got wrong, so a
+consolidation that ties there has passed rather than failed.
+On the ten slices where the reading named a lane, the criterion is that nothing
+the winner carried is lost.
 A stage that improves the hard slices and degrades the easy ones is a loss,
 and nothing in this proposal survives that finding.
+
+NOTHING HERE IS SCOPED DOWN FOR THE RELEASE DATE, by the owner's instruction of
+2026-08-21.
+The invalid-candidate return to its own author, the line-structure addendum and
+the control arm are all part of the first build rather than of a later one.
