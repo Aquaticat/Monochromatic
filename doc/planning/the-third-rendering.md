@@ -1492,3 +1492,50 @@ shipped page, so those 11 entries now stop at preparation. That is the right
 trade against deleting a will, and it is why the slicer still owes a treatment:
 binding a container's blocks into one slice where its interior is paired
 content, and holding the region out where it is not.
+
+### The guard fails when removed, per GFP
+
+The invariant was neutered with an early return, rebuilt, and the suite run.
+Exactly the three refusal cases failed and the four acceptance cases still
+passed, which is the expected shape: an acceptance case passes vacuously against
+a check that does nothing, so only the refusals carry the proof. The invariant
+was then restored from the commit and the suite is green again at `exit=0` with
+no failing lines.
+
+### Run 7 at seven of thirteen slices
+
+Reading the run against the expectations recorded before it, on the seven
+slices settled so far.
+
+The #155 tripwire is not tripped. On these same seven slices run 6 settled four
+contests to translate and three to repair, and run 7 settles three and four.
+One slice moved, `keyword233#1` from translate to repair. That is a single
+change rather than the collapse toward two or three that would have meant the
+DROPPED criterion overshot.
+
+Decisions moved more than contests did. Two slices, `keyword233#0` and
+`Weideriche_#1`, went from `declined-indecision` to a settled judgement and now
+ship, and `Weideriche_#0` did the same earlier. So the changed sheets are
+resolving panels that previously could not agree. That is #130 evidence and it
+points the same way the decline classification did: the declines were behaviour
+rather than infrastructure, and changing what the judges were told changed the
+behaviour.
+
+`gaoyanger#1` and `Zha_Ke#1`, the two slices the run exists to check, are one
+settled and one still pending.
+
+### A runaway shape the guard was not built for
+
+The run log carries three `StreamCutShortError` events, two of them at 1089815
+and 2014974 characters, both from the same model, both ended by the 180-second
+deadline rather than by any guard.
+
+That matters because the client-side runaway guard from #119 and #120 is a
+degeneracy detector: it looks for repetition and raises
+`StreamDegenerateError`. Neither of these is that error, so the guard never
+fired. The premise that a runaway repeats itself does not cover a model emitting
+two million characters the scanner does not read as degenerate, and nothing else
+caps output size.
+
+Filed as #156 rather than folded into #154, with the cap left to be derived from
+the observed distribution of completed responses rather than guessed.
