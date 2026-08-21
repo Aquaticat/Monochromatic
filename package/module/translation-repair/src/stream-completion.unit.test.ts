@@ -92,3 +92,52 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'finish reason folding',
+  children: [
+    it({
+      name: 'READS the reason off the closing event, whose delta is empty',
+      fn: async () => {
+        // THE ORDERING THIS PINS. An OpenAI-compatible stream closes with an
+        // event carrying an EMPTY delta beside the reason. A fold that checked
+        // the delta first and returned early would discard exactly the event
+        // worth reading, and every stream would report no reason at all.
+        const body = [
+          String.raw`data: {"choices":[{"delta":{"content":"{\"a\":"}}]}`,
+          'data: {"choices":[{"delta":{},"finish_reason":"length"}]}',
+          'data: [DONE]',
+          '',
+        ].join('\n\n',);
+        const extracted = extractStreamedCompletion({ bodyText: body, },);
+        expect(extracted.finishReason,).toBe('length',);
+        expect(extracted.text,).toBe('{"a":',);
+      },
+    },),
+    it({
+      name: 'KEEPS the LAST reason, since that event closes the stream',
+      fn: async () => {
+        const body = [
+          'data: {"choices":[{"delta":{"content":"x"},"finish_reason":null}]}',
+          'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}',
+          'data: [DONE]',
+          '',
+        ].join('\n\n',);
+        expect(extractStreamedCompletion({ bodyText: body, },).finishReason,).toBe('stop',);
+      },
+    },),
+    it({
+      name: 'REPORTS no reason at all when the provider sends none',
+      fn: async () => {
+        // ABSENT RATHER THAN DEFAULTED. Reading a missing field as `stop`
+        // would assert the very thing this exists to establish.
+        const body = [
+          'data: {"choices":[{"delta":{"content":"x"}}]}',
+          'data: [DONE]',
+          '',
+        ].join('\n\n',);
+        expect(extractStreamedCompletion({ bodyText: body, },).finishReason,).toBe(undefined,);
+      },
+    },),
+  ],
+},);

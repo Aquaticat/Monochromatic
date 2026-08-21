@@ -395,11 +395,23 @@ export function createSyntheticClient(
           ...usageSpread,
         };
       }
-      rl.debug(`${request.modelId}: schema-mismatch (unparseable)`,);
+      /**
+       * Why the model stopped, when the provider said, named in the detail.
+       *
+       * A REPLY THAT STOPPED EARLY IS NOT A MALFORMED ONE, and the two need
+       * opposite remediation: a schema mismatch sends a reader to the prompt
+       * and the guard, while `length` sends them to the token ceiling. Both
+       * arrive here as content that does not parse, and until this the message
+       * said only the second thing.
+       */
+      const stopped = (reply.finishReason === undefined)
+        ? ''
+        : ` (model stopped with finish_reason=${reply.finishReason})`;
+      rl.debug(`${request.modelId}: schema-mismatch (unparseable)${stopped}`,);
       return {
         kind: 'schema-mismatch',
         rawText: reply.text,
-        detail: `content is not valid JSON: ${attempt.detail}`,
+        detail: `content is not valid JSON: ${attempt.detail}${stopped}`,
         ...usageSpread,
       };
     }

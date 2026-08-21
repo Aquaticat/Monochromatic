@@ -3,6 +3,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   type ExtractedCompletion,
   MalformedCompletionError,
+  readFinishReason,
   readUsage,
 } from './completion-shape.ts';
 import {
@@ -46,6 +47,11 @@ type StreamFold = {
    * Usage blocks seen; the last one wins.
    */
   readonly usageParts: ExtractedCompletion['usage'][];
+
+  /**
+   * Finish reasons seen; the last one wins, as it closes the stream.
+   */
+  readonly finishReasons: string[];
 };
 
 /**
@@ -92,6 +98,20 @@ function foldChunk(
   const [first,] = choices;
   if (!isJsonRecord(first,))
     return;
+
+  /**
+   * Why the model stopped, on the event that closes the stream.
+   *
+   * READ BEFORE THE DELTA CHECK, because the closing event of an
+   * OpenAI-compatible stream carries an EMPTY delta beside the reason. Folding
+   * it after that check would discard exactly the event worth reading.
+   */
+  const { finishReason, } = readFinishReason({ choice: first, },);
+  if (finishReason !== undefined) {
+    fold
+      .finishReasons
+      .push(finishReason,);
+  }
 
   /**
    * Delta block of the first choice.
@@ -163,6 +183,7 @@ export function extractStreamedCompletion(
     contentParts: [],
     refusalParts: [],
     usageParts: [],
+    finishReasons: [],
   };
 
   /**
@@ -234,6 +255,13 @@ export function extractStreamedCompletion(
     .usageParts
     .at(-1,);
 
+  /**
+   * Reason closing the stream, when the provider sent one.
+   */
+  const finishReason = fold
+    .finishReasons
+    .at(-1,);
+
   return {
     text,
     // Conditional spreads keep absent channels absent.
@@ -243,6 +271,9 @@ export function extractStreamedCompletion(
     ...(lastUsage === undefined
       ? {}
       : { usage: nonNullishOrThrow(lastUsage,), }),
+    ...(finishReason === undefined
+      ? {}
+      : { finishReason, }),
   };
 }
 

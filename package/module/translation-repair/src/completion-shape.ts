@@ -144,7 +144,47 @@ export type ExtractedCompletion = {
    * which dominate output on these models.
    */
   readonly usage?: CompletionUsage;
+
+  /**
+   * Why the model stopped, verbatim from `choices[0].finish_reason`.
+   *
+   * READ BECAUSE A COMPLETION THAT STOPPED EARLY IS INDISTINGUISHABLE FROM A
+   * MALFORMED ONE WITHOUT IT. A model cut off mid-answer delivers a whole,
+   * well-formed stream with no unreadable frames, and the only symptom
+   * downstream is that its content does not parse. Reported as a schema
+   * mismatch, that sends a reader to the prompt and the schema; reported as
+   * `length`, it sends them to the token ceiling instead. Measured on a live
+   * lane-contest round where one voice stopped mid-string at 287 characters.
+   *
+   * ABSENT RATHER THAN DEFAULTED when the provider omits it, since guessing
+   * `stop` would assert the very thing this exists to establish.
+   */
+  readonly finishReason?: string;
 };
+
+/**
+ * Reads why one choice stopped, when the provider said.
+ *
+ * @param choice - one entry of the choices array
+ *
+ * @returns Spreadable fragment carrying the reason, or nothing
+ *
+ * @example
+ * ```ts
+ * const fragment = readFinishReason({ choice, },);
+ * ```
+ */
+export function readFinishReason(
+  { choice, }: { readonly choice: Readonly<Record<string, unknown>>; },
+): { readonly finishReason?: string; } {
+  /**
+   * Reason as delivered, which providers may omit or send as null.
+   */
+  const reason = choice.finish_reason;
+  return (((typeof reason) === 'string') && (reason !== ''))
+    ? { finishReason: reason, }
+    : {};
+}
 
 /**
  * Reads optional usage block when both component counts are numbers.
@@ -293,6 +333,7 @@ export function extractCompletion(
       ? {}
       : { refusal: refusalText, }),
     ...readUsage({ parsed, },),
+    ...readFinishReason({ choice: first, },),
   };
 }
 

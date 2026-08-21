@@ -210,6 +210,16 @@ export type ChatTextReply = {
    * completion counts include thinking tokens.
    */
   readonly usage?: CompletionUsage;
+
+  /**
+   * Why the model stopped, verbatim from the provider, when it said.
+   *
+   * CARRIED SO A CALLER CAN TELL A CUT-OFF REPLY FROM A MALFORMED ONE. Those
+   * arrive identically, as content that will not parse, and they need opposite
+   * remediation: one points at the token ceiling, the other at the prompt and
+   * the guard.
+   */
+  readonly finishReason?: string;
 };
 
 /**
