@@ -98,6 +98,41 @@ precisely because agent calls drift, and several of the thirteen are close.
 Agreement with that reading is a signal, not correctness, and the owner
 reversing individual calls would move the score.
 
+## What calibration found before it finished scoring
+
+THE GUARD WAS STRICTER THAN ITS OWN CONTRACT, and it cost voices.
+
+`isLaneContestWire` documented itself as checking shape only, and then demanded
+that every member of `unsupported` and `dropped` name a candidate.
+Judges do not always answer that way.
+Two of the first sixty calibration voices filled the findings with the offending
+phrases instead, or annotated a candidate name with what was wrong:
+
+-   `unsupported: ["at peace", "this one's for you", "even angry"]`,
+    alongside `choice: "repair"`.
+
+-   `unsupported: ["repair (changes ... and alters the dream request ...)"]`,
+    alongside `choice: "neither"`.
+
+Both replies carried a usable choice, and both were discarded whole.
+One slice settled on four ballots rather than six because of it.
+
+THE CHOICE IS THE THING THE CONTEST COUNTS, so no wording of a finding may cost
+a voice.
+The guard now checks shape.
+The reader narrows the findings to the candidates they blame, reading an
+annotated name as naming that candidate and a longer word that merely begins
+with one, `repairing`, as naming nobody.
+The ballot keeps the findings verbatim beside the narrowed list, so a judge
+answering in phrases leaves an audit trail rather than reading as a judge that
+found nothing.
+
+WHY THE ROUNDS ALREADY SETTLED WERE KEPT.
+The change only ever turns a lost voice into a kept one, never the reverse,
+which was checked case by case against the old predicate.
+A round that settled on a full roster therefore settles identically under the
+fix, and only the one short round was re-run.
+
 ## What is still owed after this
 
 Wiring the contest into the pass, which changes what an artifact records and so
