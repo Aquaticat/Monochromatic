@@ -1763,8 +1763,18 @@ including slices where nothing changed but the wording,
 because the models are redrawn on every run and the bed buys every call fresh.
 A shift from 7 to 10 out of 13 is well inside the spread two draws of that size can produce on their own,
 and nothing here has measured that spread.
-Run 8 is the third point and the first that can begin to bound it.
-Until then the honest reading is that the gate reached more slices in run 7 and the reason is unmeasured.
+Run 8 does NOT bound it either, and saying so here corrects a line this document briefly carried.
+A run-to-run band has to be measured on ONE UNCHANGED BUILD.
+Run 8 carries two changes run 7 did not:
+the `#154` container widening, which re-slices `Zha_Ke` and changes its standing text structurally,
+and the `#158` scanner fix, which is not telemetry-only.
+Arming the degeneration detector on 47 percent of traffic that was previously invisible to it
+can change outcomes on its own,
+because a call whose thinking repeats past 131072 characters is now cut where run 7 let it complete.
+So run 8 against run 7 carries exactly the confound run 7 against run 6 carried.
+
+The first pair that can measure the band is run 9 against run 8, on the identical build, with nothing touched between them.
+Until that exists the honest reading is that the gate reached more slices in run 7 and the reason is unmeasured.
 
 ### `Zha_Ke#1` shipped a 96 percent deletion, and every judge backed it
 
