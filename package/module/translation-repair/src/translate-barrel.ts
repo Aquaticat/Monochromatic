@@ -118,6 +118,11 @@ export {
   settleGateBallots,
 } from './consolidate-gate-stage.ts';
 export {
+  floorConsolidateSlate,
+  type ProposalValidity,
+  type SlateFloor,
+} from './consolidate-validity-floor.ts';
+export {
   wrapConsolidation,
   type WrappedConsolidation,
 } from './consolidate-wrap.ts';
