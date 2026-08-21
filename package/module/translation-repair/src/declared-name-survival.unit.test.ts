@@ -132,5 +132,62 @@ await describe({
         },),).toEqual([],);
       },
     },),
+    it({
+      name: 'SEES a handle the archive escaped for Markdown, which a raw substring comparison '
+        + 'cannot: the underscores are written back-slashed and the declaration is not, so the '
+        + 'guard would have called the name absent and skipped it entirely',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Mittens_the_Cat', ],
+          baseText: String.raw`Mittens\_the\_Cat naps on the sill.`,
+          candidateText: 'The cat naps on the sill.',
+        },),).toEqual([ 'Mittens_the_Cat', ],);
+      },
+    },),
+    it({
+      name: 'SEES a handle the two sides separate differently, one writing a space where the other '
+        + 'writes an underscore, since a handle is one name however it is punctuated',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Mittens Cat', ],
+          baseText: 'Everyone called her Mittens_Cat back then.',
+          candidateText: 'Everyone called her that back then.',
+        },),).toEqual([ 'Mittens Cat', ],);
+      },
+    },),
+    it({
+      name: 'SEES a handle the archive spaces and the declaration runs together, which is the same '
+        + 'disagreement in the other direction',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'MittensCat', ],
+          baseText: 'Mittens Cat slept through it.',
+          candidateText: 'She slept through it.',
+        },),).toEqual([ 'MittensCat', ],);
+      },
+    },),
+    it({
+      name: 'ACCEPTS a handle whose diacritic is spelled the other way, since a combining mark is '
+        + 'neither letter nor digit and would otherwise vanish from one side only, reporting a '
+        + 'name lost that is sitting right there',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Mitt\u00EBns', ],
+          baseText: 'Mitte\u0308ns naps.',
+          candidateText: 'Mitte\u0308ns naps in the sun.',
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REPORTS that same handle as lost when it really goes, so the case above is the '
+        + 'comparison working rather than the comparison never firing',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Mitt\u00EBns', ],
+          baseText: 'Mitte\u0308ns naps.',
+          candidateText: 'The cat naps in the sun.',
+        },),).toEqual([ 'Mitt\u00EBns', ],);
+      },
+    },),
   ],
 },);

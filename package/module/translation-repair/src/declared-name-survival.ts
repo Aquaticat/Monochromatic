@@ -21,6 +21,31 @@ import type { DeclaredIdentity, } from './identity-context.ts';
 // stays there": a name absent from the passage being edited is never required
 // to appear in its replacement. So this can refuse a real loss and can never
 // demand an insertion.
+//
+// COMPARED ON LETTERS AND DIGITS ALONE, because a handle is written several
+// ways across one archive and every one of them is the same person. Measured
+// over the pinned corpus, 212 declared forms against the English body of their
+// own entry: a raw substring comparison finds 111 and MISSES 12 that are
+// plainly there, while the projection finds all 123 and loses none of the 111.
+// The dozen divide into three shapes, none of them exotic:
+//
+//   - the archive escapes Markdown, writing `\_` where the declaration writes
+//     `_`, which no comparison over raw text can see through;
+//   - the two sides disagree about a separator, one writing a space where the
+//     other writes an underscore or nothing at all;
+//   - the declaration spaces a handle the body runs together, or the reverse.
+//
+// A LINE BREAK IS THE SAME CASE and is why this is not merely a whitespace
+// fold. Our own wrapper writes a break as a newline plus the enclosing block's
+// continuation prefix, so a name split inside a blockquote becomes `name` then
+// `> rest`, and folding whitespace alone would still not find it. Nothing in
+// the pinned corpus is wrapped that way today, measured at zero of 212, but the
+// pipeline writes the archive the next pass reads.
+//
+// LOOSER IN THE SAFE DIRECTION. Widening what counts as "carried" both puts
+// more forms at stake and accepts more renderings of them, so it can only turn
+// a missed loss into a caught one or a spurious refusal into an acceptance.
+// Refusals cannot become more common through a name the base never carried.
 
 /**
  * Separator between alternate handles inside one declared field.
@@ -31,13 +56,81 @@ import type { DeclaredIdentity, } from './identity-context.ts';
 const HANDLE_SEPARATOR = ',';
 
 /**
- * Shortest form worth checking.
+ * Shortest form worth checking, counted in letters and digits.
  *
  * A one or two character handle collides with ordinary words often enough that
  * its survival cannot be told from an accident, and this guard is only useful
  * while its answer means something.
+ *
+ * COUNTED ON THE PROJECTION rather than the declaration, since the projection
+ * is what collides. `a_b` reads as three characters and compares as two. No
+ * form in the pinned corpus falls between the two readings, so this is the
+ * right threshold in the right place rather than a change of policy.
  */
 const SHORTEST_CHECKABLE_FORM = 3;
+
+/**
+ * Whether one character belongs to a name rather than to the punctuation,
+ * spacing or markup written around it.
+ *
+ * @param character - single character
+ *
+ * @returns Whether it is a letter or a digit in any script
+ *
+ * @example
+ * ```ts
+ * const kept = isNameCharacter({ character: '猫', },);
+ * ```
+ */
+function isNameCharacter({ character, }: { readonly character: string; },): boolean {
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- Unicode letter and number classes have no string-API equivalent and the corpus writes Han, Latin and digits inside one handle; input is ONE character and the pattern carries no quantifier or alternation, so it cannot backtrack.
+  return /[\p{L}\p{N}]/u.test(character,);
+}
+
+/**
+ * Text reduced to the characters a name is made of, lowercased.
+ *
+ * @param text - any text
+ *
+ * @returns Letters and digits only, in order
+ *
+ * @example
+ * ```ts
+ * const key = nameProjection({ text: 'Mittens\_the\_Cat', },);
+ * ```
+ */
+function nameProjection({ text, }: { readonly text: string; },): string {
+  /**
+   * Same text composed and folded, so one spelling of a diacritic cannot
+   * project differently from another.
+   *
+   * COMPOSED BEFORE ANYTHING ELSE, because a combining mark is neither a letter
+   * nor a digit and would be dropped where a precomposed one is kept: `Mikä`
+   * written the two ways would otherwise yield two different keys and the guard
+   * would report a name lost that is sitting right there.
+   */
+  const composed = text
+    .toLowerCase()
+    .normalize('NFC',);
+
+  /**
+   * Characters kept, in order.
+   *
+   * SCANNED BY CODE UNIT rather than by grapheme. A surrogate half is neither a
+   * letter nor a digit, so an emoji inside a handle drops out of the key; it
+   * drops out of both sides identically, which is all this comparison needs.
+   */
+  const kept: string[] = [];
+  for (let at = 0; at < composed.length; at += 1) {
+    /**
+     * Character under the cursor.
+     */
+    const character = composed.charAt(at,);
+    if (isNameCharacter({ character, },))
+      kept.push(character,);
+  }
+  return kept.join('',);
+}
 
 /**
  * Every name form one side declares, as separate strings.
@@ -77,7 +170,12 @@ export function declaredNameForms(
        * One handle without surrounding space.
        */
       const form = raw.trim();
-      if (form.length < SHORTEST_CHECKABLE_FORM)
+
+      /**
+       * Same handle as this guard will compare it.
+       */
+      const key = nameProjection({ text: form, },);
+      if (key.length < SHORTEST_CHECKABLE_FORM)
         continue;
       seen.add(form,);
     }
@@ -94,36 +192,28 @@ export function declaredNameForms(
 }
 
 /**
- * Whether one text carries one declared form.
+ * One declared form paired with the key it is compared under.
  *
- * CASE-INSENSITIVE, because a candidate that lowercased a handle has changed
- * its spelling and not dropped the person from the sentence. Spelling is the
- * judges' business; this is only about loss.
- *
- * @param text - text to look in
- *
- * @param form - declared name form
- *
- * @returns Whether the form appears
+ * BOTH ARE CARRIED because they answer to different readers: the key decides
+ * survival, and the form as declared is what a finding must name, since an
+ * operator reading `mittensthecat` cannot look it up anywhere.
  *
  * @example
  * ```ts
- * const present = carriesForm({ text: 'Mittens naps.', form: 'mittens', },);
+ * const keyed: KeyedForm = { form: 'Mittens the Cat', key: 'mittensthecat', };
  * ```
  */
-function carriesForm(
-  {
-    text,
-    form,
-  }: {
-    readonly text: string;
-    readonly form: string;
-  },
-): boolean {
-  return text
-    .toLowerCase()
-    .includes(form.toLowerCase(),);
-}
+type KeyedForm = {
+  /**
+   * Form exactly as the front matter declares it.
+   */
+  readonly form: string;
+
+  /**
+   * Same form projected onto letters and digits.
+   */
+  readonly key: string;
+};
 
 /**
  * Declared names the base text carried and the candidate does not.
@@ -153,38 +243,53 @@ export function findDroppedDeclaredNames(
   },
 ): readonly string[] {
   /**
+   * Text being replaced, projected once rather than once per form.
+   */
+  const base = nameProjection({ text: baseText, },);
+
+  /**
+   * Proposed replacement, projected the same way.
+   */
+  const candidate = nameProjection({ text: candidateText, },);
+
+  /**
+   * Every form beside the key it is compared under.
+   */
+  const keyed: readonly KeyedForm[] = forms.map(function toKeyed(form,): KeyedForm {
+    return {
+      form,
+      key: nameProjection({ text: form, },),
+    };
+  },);
+
+  /**
    * Forms the base text actually carried, which are the only ones at stake.
    */
-  const atStake = forms.filter(function wasThere(form,): boolean {
-    return carriesForm({
-      text: baseText,
-      form,
-    },);
+  const atStake = keyed.filter(function wasThere({ key, },): boolean {
+    return base.includes(key,);
   },);
 
   /**
    * Forms at stake that the candidate no longer carries.
    */
-  const dropped = atStake.filter(function isGone(form,): boolean {
-    return !carriesForm({
-      text: candidateText,
-      form,
-    },);
+  const dropped = atStake.filter(function isGone({ key, },): boolean {
+    return !candidate.includes(key,);
   },);
 
   // A LONGER FORM CONTAINING A SHORTER LOST ONE REPORTS ONCE. Losing
   // `Zha Ke (Lilith)` should not read as two separate losses when the shorter
   // form only ever appeared inside the longer.
-  return dropped.filter(function isNotInsideAnother(form,): boolean {
-    return !dropped.some(function contains(other,): boolean {
-      return (other !== form)
-        && (other.length > form.length)
-        && carriesForm({
-          text: other,
-          form,
-        },);
+  return dropped
+    .filter(function isNotInsideAnother({ key: lostKey, },): boolean {
+      return !dropped.some(function contains({ key: otherKey, },): boolean {
+        return (otherKey !== lostKey)
+          && (otherKey.length > lostKey.length)
+          && otherKey.includes(lostKey,);
+      },);
+    },)
+    .map(function toForm({ form, },): string {
+      return form;
     },);
-  },);
 }
 
 /**

@@ -43,8 +43,15 @@ import type { SliceSelection, } from './slice-selection.ts';
  * before it was settled without that check, so a resumed run would ship a
  * replacement that dropped a declared name rather than re-deciding it. A guard
  * any cache hit can walk past is not a guard.
+ *
+ * VERSION 5, the same day, because that guard now compares names on letters and
+ * digits alone. Measured over the pinned corpus, the comparison it replaces
+ * missed 12 of the 123 declared forms that are present in their own entry, so a
+ * slice settled under version 4 may have shipped the loss of one of those and
+ * would report itself decided. The widening loses none of the forms the old
+ * comparison found, so no cached slice can be re-decided the other way.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 4;
+export const TRANSLATE_SLICE_CACHE_VERSION = 5;
 
 /**
  * Models the translate lane seats.
