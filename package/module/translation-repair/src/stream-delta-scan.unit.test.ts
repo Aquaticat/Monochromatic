@@ -119,6 +119,37 @@ function scanAll({ raw, }: { readonly raw: string; },): {
   };
 }
 
+/**
+ * Builds one frame whose delta carries exactly the fields given, so a test can
+ * spell the thinking channel the way a particular model spells it.
+ *
+ * SEPARATE FROM `frameOf` because that one encodes a choice this helper exists
+ * to vary. Folding the spelling into it would make every existing case depend
+ * on a parameter none of them cares about.
+ *
+ * @param delta - delta fields exactly as the wire carries them
+ *
+ * @returns Frame, newline-terminated as the wire sends it
+ *
+ * @example
+ * ```ts
+ * const raw = frameSpelled({ delta: { reasoning: 'The cat considers. ', }, },);
+ * ```
+ */
+function frameSpelled({ delta, }: { readonly delta: Readonly<Record<string, string>>; },): string {
+  return `data: ${
+    JSON.stringify({
+      id: 'chatcmpl-tabby',
+      object: 'chat.completion.chunk',
+      choices: [{
+        index: 0,
+        delta,
+        finish_reason: null,
+      },],
+    },)
+  }\n\n`;
+}
+
 await describe({
   name: scanStreamDeltas.name,
   children: [
@@ -277,6 +308,98 @@ await describe({
         const answering = watchForDegeneration();
 
         scanner.feed({ chunk: raw, },).forEach(function route(delta,): void {
+          if (delta.channel === 'reasoning')
+            thinking.notifyText({ text: delta.text, },);
+          else
+            answering.notifyText({ text: delta.text, },);
+        },);
+
+        expect(thinking.verdict().kind,).toBe('degenerate',);
+        expect(answering.verdict().kind,).toBe('undecided',);
+      },
+    },),
+
+    it({
+      name: 'READS the thinking channel when a model spells it `reasoning`, which is how '
+        + 'GLM-4.7-Flash and Nemotron send every thinking token they produce: reading only '
+        + '`reasoning_content` handed the detector an empty string for those two models, and the '
+        + 'unreadable tally could not show it because such frames parse perfectly',
+      fn: async () => {
+        const { deltas, unreadable, } = scanAll({
+          raw: frameSpelled({ delta: { reasoning: 'The cat considers the jar. ', }, },),
+        },);
+
+        expect(deltas.length,).toBe(1,);
+        expect(deltas[0]?.channel,).toBe('reasoning',);
+        expect(deltas[0]?.text,).toBe('The cat considers the jar. ',);
+        expect(unreadable,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS ONCE when a frame carries both spellings, so a provider that begins sending '
+        + 'them as aliases does not double every thinking character and push the detector toward '
+        + 'a verdict on volume the model never produced',
+      fn: async () => {
+        const { deltas, } = scanAll({
+          raw: frameSpelled({
+            delta: {
+              reasoning_content: 'The cat considers. ',
+              reasoning: 'The cat considers. ',
+            },
+          },),
+        },);
+
+        expect(deltas.length,).toBe(1,);
+        expect(deltas[0]?.text,).toBe('The cat considers. ',);
+      },
+    },),
+
+    it({
+      name: 'FALLS THROUGH to `reasoning` when `reasoning_content` is present but empty, since '
+        + 'first-present rather than first-non-empty would read such a frame as carrying no '
+        + 'thinking at all',
+      fn: async () => {
+        const { deltas, } = scanAll({
+          raw: frameSpelled({
+            delta: {
+              reasoning_content: '',
+              reasoning: 'The cat naps anyway. ',
+            },
+          },),
+        },);
+
+        expect(deltas.length,).toBe(1,);
+        expect(deltas[0]?.channel,).toBe('reasoning',);
+        expect(deltas[0]?.text,).toBe('The cat naps anyway. ',);
+      },
+    },),
+
+    it({
+      name: 'CATCHES A THINKING-TRACE RUNAWAY SPELLED `reasoning` TOO, which is the case that '
+        + 'was live and unguarded: the same loop spelled `reasoning_content` was caught, and this '
+        + 'one produced no text for the detector to read at all, so the model was neither silent '
+        + 'nor repetitive and ran to the wall clock',
+      fn: async () => {
+        /**
+         * A model that thinks the same thing forever, spelling its channel the
+         * way the two affected models spell it.
+         */
+        const frames = Array.from(
+          { length: 9_000, },
+          function think(): string {
+            return frameSpelled({ delta: { reasoning: 'I will output. ', }, },);
+          },
+        ).join('',);
+
+        /**
+         * Scanner and one detector per channel, wired as the drain wires them.
+         */
+        const scanner = scanStreamDeltas();
+        const thinking = watchForDegeneration();
+        const answering = watchForDegeneration();
+
+        scanner.feed({ chunk: `${frames}data: [DONE]\n\n`, },).forEach(function route(delta,): void {
           if (delta.channel === 'reasoning')
             thinking.notifyText({ text: delta.text, },);
           else
