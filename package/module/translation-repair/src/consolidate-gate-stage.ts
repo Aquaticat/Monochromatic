@@ -250,9 +250,13 @@ export async function gateConsolidatedSlice(
 
   /**
    * Rendering that ships, after the rule that only a clear win replaces.
+   *
+   * THE QUORUM IS NOT CHECKED TWICE. It used to be repeated here, and removing
+   * that repetition failed no test, because `settleGateBallots` cannot answer
+   * `consolidated` on fewer than `CONSOLIDATE_GATE_QUORUM` voices naming it.
+   * A condition no case can reach reads as a second guard and is not one.
    */
-  const ships: GateShipped = ((ballots.length >= CONSOLIDATE_GATE_QUORUM)
-      && (choice === 'consolidated'))
+  const ships: GateShipped = (choice === 'consolidated')
     ? 'consolidated'
     : 'standing';
   gl.info(
