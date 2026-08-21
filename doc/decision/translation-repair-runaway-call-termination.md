@@ -581,3 +581,92 @@ which is the largest median of any model on the roster and had been recorded as 
 
 Anything read off the character columns for those three before 2026-08-21 is wrong by roughly that much,
 including the reading that they were the cheap models on the roster.
+
+## The size a cap should read, measured over 515 calls, `#156`
+
+`#156` asked for an absolute output-size cap with a bound taken from the observed distribution
+rather than guessed.
+The distribution now exists,
+because `reportStreamProgress` reports on the completed path as well as the cut one,
+and it refutes the obvious instrument.
+
+Measured 2026-08-21 over the consolidation bed's run 8 (complete) and run 9 (partial),
+515 calls carrying a progress line,
+read from the runs' stdout rather than their `.log`,
+which is where those lines land:
+
+```text
+completed  502 calls   generated  p50    10992   p90    31430   p99    56730   max     70264
+                       raw        p50   515866   p90  2086176   p99  4302244   max   5992537
+                       content    p50      335   p90      719   p99     3969   max      4278
+cut         11 calls   generated  min    16488   p50    50207                  max    110820
+                       raw                                                     max  10811236
+degenerate   2 calls   content    both around 131077, which the degeneracy detector caught
+```
+
+### A raw-character cap cannot work
+
+Raw characters are SSE wire text, and they inflate the generated text by 22 to 103 times,
+median 70,
+because every token arrives inside its own JSON frame.
+
+The two populations overlap almost exactly on that measure.
+The largest COMPLETED call carries 5,992,537 raw characters.
+The 6,495,103-character cut this task was filed over is 8 percent above it.
+Any raw cap low enough to have stopped that runaway also kills legitimate completions,
+so the figure `#156` was filed with is the wrong number to build a bound from.
+
+### What separates them is silence, not size
+
+Of the 11 cut calls, 9 had emitted ZERO content characters.
+They had reasoned for 16,488 to 110,820 characters and said nothing.
+
+Of the 508 completed calls, 507 emitted content.
+Exactly one finished silent, at 32,646 reasoning characters.
+
+```text
+   16488 reasoning +      0 content   GLM-5.2
+   20122 reasoning +  25482 content   Nemotron-3-Super
+   22181 reasoning +  28026 content   GLM-4.7-Flash
+   27870 reasoning +      0 content   GLM-5.2
+   43014 reasoning +      0 content   GLM-5.2
+   48836 reasoning +      0 content   GLM-5.2
+   53899 reasoning +      0 content   GLM-5.2
+   61601 reasoning +      0 content   GLM-5.2
+   62229 reasoning +      0 content   GLM-5.2
+   84615 reasoning +      0 content   GLM-4.7-Flash
+  110820 reasoning +      0 content   Nemotron-3-Super
+```
+
+This also confirms `#156`'s reading that no per-model allowance can bound it:
+three models appear, and the largest silent runaway is Nemotron's.
+
+### The two bounds the numbers support
+
+A SILENT-REASONING BOUND at 40,000 characters.
+Above the single silent completion at 32,646, so no observed completion trips it,
+and below 7 of the 9 silent cuts, which it ends early instead of paying 180 seconds for.
+The two silent cuts at 16,488 and 27,870 stay under it and are not addressed by this bound.
+
+A CONTENT BOUND at 10,000 characters.
+The largest legitimate completion emitted 4,278 content characters,
+and the two content-producing cuts emitted 25,482 and 28,026.
+Ten thousand sits between them with better than twice the margin over observed legitimate use.
+
+Together they name all 11 cuts as reachable except the two smallest silent ones,
+against zero false positives over 508 observed completions.
+
+### What this does not establish
+
+CUT SIZE IS A LOWER BOUND, not a runaway's size.
+A cut call was stopped by the clock at 180 seconds, so its recorded characters say how far it got,
+not how far it would have gone.
+The cut column above therefore understates the population it describes,
+which makes both bounds conservative rather than tight.
+
+ONE SILENT COMPLETION IS A THIN MARGIN.
+The 40,000 bound rests on a single observed silent completion at 32,646.
+A second such call arriving higher would move it.
+Re-measure before treating 40,000 as settled,
+and prefer raising it over lowering it,
+since a false positive costs a voice and a false negative costs 180 seconds.
