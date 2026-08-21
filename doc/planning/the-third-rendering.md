@@ -1291,3 +1291,72 @@ mean the criterion overshot, and it would need the bounding pass #143 got.
 Decline counts and `neither` counts may move in either direction, because the
 sheets themselves changed. That is #130 data rather than noise, and it should be
 read as a fresh measurement rather than compared for stability.
+
+### #152 holds in production
+
+Run 7 shipped a fresh consolidation at `gaoyanger#1`, the same slice run 6
+damaged. Run 6's rendering opened in the present tense and then switched to the
+past inside a single sentence, which is the exact pair of faults the #152 rule
+names. Run 7's rendering holds the past throughout and no longer disagrees with
+itself.
+
+The expectation was recorded before the run was read, so it is evidence rather
+than a reading fitted to a result.
+
+### #154 is document-level data loss, and the pairing already knew
+
+Two questions were open on #154: where the boundary came from, and whether the
+assembly recovers what a slice drops. Both are answered from archived state, at
+no quota cost.
+
+The boundary came from a fallback, and the pairing had already refused the job.
+The `Zha_Ke` artifact records `alignmentPairCount: 1` against `sliceCount: 4`,
+with two findings, one per model asked:
+
+```text
+block-pairing unusable (hf:zai-org/GLM-4.7-Flash: pairing moves backwards on the translation side at position 3)
+block-pairing unusable (hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4: pairing moves backwards on the translation side at position 3)
+```
+
+So the LLM-assisted pairing of #131 was asked, both answers were rejected as
+non-monotone, and the run then fell back to assigning boundaries by character
+fraction. The entry carries 303 source characters against 4388 target
+characters, because the page holds a long `<details>` block the Chinese never
+transcribes. Splitting a 14-to-1 asymmetry proportionally hands a 41-character
+Chinese content warning a 3875-character English region.
+
+That region is mid-element. It contains `<details>`, `<summary>` and
+`</summary>`, and it stops before `</details>`. This is why the page fails the
+strict grammar, and why #153 mattered: the floor used to read the refusal as
+"no page" and skip the check entirely.
+
+Assembly does not recover it. Splicing the run-6 slices back over the archive
+text gives a page of 680 characters where the archive had 4388, losing 3708.
+The tag counts show the shape of the damage:
+
+```text
+<details>   archive x1   assembled x0
+</details>  archive x1   assembled x1
+<summary>   archive x1   assembled x0
+```
+
+The opening tag and the whole body are gone and the closing tag survives with
+nothing to close. So the assembled document both deletes the will and emits
+unbalanced markup. This settles #154 as urgent before release rather than
+urgent eventually.
+
+It also names three separate fixes rather than one.
+
+The first is the fallback itself, which is #71's unfinished half: a pairing the
+roster declared unusable must not be replaced by a confident wrong answer. The
+signal is recorded in the artifact and nothing reads it, which is now the third
+time that pattern has been found.
+
+The second is that a slice boundary must never fall inside an element,
+whoever chose it. That is a structural invariant the assembler can enforce
+regardless of pairing quality.
+
+The third is #90 and #100: a page region with no counterpart in the original,
+such as this `<details>` block, is one-sided content. It should be recognised
+and held out of pairing, not handed proportionally to whichever source chunk
+happens to sit nearby.
