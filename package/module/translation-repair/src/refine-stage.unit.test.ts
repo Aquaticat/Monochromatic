@@ -309,6 +309,15 @@ await describe({
         },);
         expect(result.changed,).toBe(false,);
         expect(result.refinedText,).toBe(withAlias,);
+
+        // THE BALLOTS OF A REFUSED REWRITE ARE THE ONES WORTH KEEPING. The
+        // refusal is a deterministic guard overruling a panel that voted for
+        // the shorter wording, and without the round the artifact would record
+        // only that the text stayed put, which reads identically to a slice
+        // nobody proposed anything for.
+        expect(result.rounds.length,).toBe(1,);
+        expect(result.rounds.at(0,)?.kind,).toBe('selected',);
+        expect(result.rounds.at(0,)?.slate.length,).toBeGreaterThan(0,);
       },
     },),
 
