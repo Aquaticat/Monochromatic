@@ -1446,3 +1446,49 @@ reason, since it asks whether every block reached a slice.
 This also explains why `AkiraComplex` needed no fallback to reach the same
 state. Nothing about a bad pairing is required. An ordinary boundary between two
 ordinary blocks does it, whenever a container happens to open between them.
+
+### The guard, and what it finds across the whole corpus
+
+The parse now reports what it dissolves. `flattenContainers` returns the
+container spans beside the blocks, `parseDocument` shifts them to absolute
+offsets and carries them on `RepairDocument`, and a new
+`assertContainerIntegrity` runs at preparation beside the checks that already
+guard blocks.
+
+The rule is both tags or neither, rather than no tag inside a range. An element
+wholly inside one slice puts both of its tags in that range, which is the
+ordinary healthy case: the slice text carries them and a candidate that drops
+them is caught downstream where the page grammar refuses it. A rule against any
+tag in a range would refuse those pages too, and they are the majority of the
+pages that use containers at all.
+
+Running preparation over all 92 pairs, with no pairings supplied:
+
+```text
+pairs read: 92
+pages carrying a container: 16  (containers in total: 24)
+ContainerIntegrityError fired on 11
+other preparation failures: 0
+```
+
+So 11 entries of 92 currently produce a page that loses an element and emits
+markup closing nothing. Five of the 16 container-carrying pages are clean, which
+is the measurement that says the predicate discriminates rather than simply
+refusing everything it sees.
+
+The elements involved are `<details>` on seven entries, and one each of
+`<BlurBlock>`, `<div>`, `<Hexagon>` and `<p>`. `XingZ60` carries nine containers
+by itself. Two entries, `hulicaijia` and `lin10104`, fire the mirror case, where
+a range holds the closing tag without the opening one.
+
+Zero other preparation failures means the change refuses nothing it did not aim
+at.
+
+Two honest limits. The dry run supplies no block pairings, so production
+subdivides differently and the slice indices above will not match it; what
+carries over is the exposure and the fact that the invariant runs in production
+too. And the guard converts silent loss into a loud refusal rather than into a
+shipped page, so those 11 entries now stop at preparation. That is the right
+trade against deleting a will, and it is why the slicer still owes a treatment:
+binding a container's blocks into one slice where its interior is paired
+content, and holding the region out where it is not.
