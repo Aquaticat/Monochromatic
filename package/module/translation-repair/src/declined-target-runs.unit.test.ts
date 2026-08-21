@@ -19,6 +19,7 @@
  * @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -113,10 +114,10 @@ await describe({
               return node.id;
             },);
         },),);
-        expect(carried.has(targetNodes[2].id,),).toBe(false,);
-        expect(carried.has(targetNodes[3].id,),).toBe(false,);
-        expect(carried.has(targetNodes[1].id,),).toBe(true,);
-        expect(carried.has(targetNodes[4].id,),).toBe(true,);
+        expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(false,);
+        expect(carried.has(nonNullishOrThrow(targetNodes.at(3,),).id,),).toBe(false,);
+        expect(carried.has(nonNullishOrThrow(targetNodes.at(1,),).id,),).toBe(true,);
+        expect(carried.has(nonNullishOrThrow(targetNodes.at(4,),).id,),).toBe(true,);
 
         // THE SPAN CHECK. Some run must end at the paired block before the
         // letter, and the next must begin at the paired block after it, or the
@@ -132,16 +133,16 @@ await describe({
           },)
           .map(function toSpan(run,): { readonly start: number; readonly end: number; } {
             return {
-              start: run.targetRun[0].startOffset,
-              end: run.targetRun[run.targetRun.length - 1].endOffset,
+              start: nonNullishOrThrow(run.targetRun.at(0,),).startOffset,
+              end: nonNullishOrThrow(run.targetRun.at(-1,),).endOffset,
             };
           },);
         /**
          * Whether any span covers a byte the letter occupies.
          */
         const overlapsLetter = spans.some(function covers(span,): boolean {
-          return (span.start < targetNodes[3].endOffset)
-            && (span.end > targetNodes[3].startOffset);
+          return (span.start < nonNullishOrThrow(targetNodes.at(3,),).endOffset)
+            && (span.end > nonNullishOrThrow(targetNodes.at(3,),).startOffset);
         },);
         expect(overlapsLetter,).toBe(false,);
       },
@@ -182,8 +183,8 @@ await describe({
               return node.id;
             },);
         },),);
-        expect(carried.has(targetNodes[2].id,),).toBe(true,);
-        expect(carried.has(targetNodes[3].id,),).toBe(false,);
+        expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(true,);
+        expect(carried.has(nonNullishOrThrow(targetNodes.at(3,),).id,),).toBe(false,);
       },
     },),
 
@@ -283,8 +284,8 @@ await describe({
         expect(declined.map(function toId(node,): string {
           return node.id;
         },),).toStrictEqual([
-          targetNodes[2].id,
-          targetNodes[3].id,
+          nonNullishOrThrow(targetNodes.at(2,),).id,
+          nonNullishOrThrow(targetNodes.at(3,),).id,
         ],);
       },
     },),
@@ -329,7 +330,7 @@ await describe({
             return node.id;
           },);
         },),);
-        expect(carried.has(targetNodes[2].id,),).toBe(true,);
+        expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(true,);
       },
     },),
 
@@ -359,9 +360,9 @@ await describe({
         expect(declined.map(function toId(node,): string {
           return node.id;
         },),).toStrictEqual([
-          targetNodes[2].id,
-          targetNodes[3].id,
-          targetNodes[4].id,
+          nonNullishOrThrow(targetNodes.at(2,),).id,
+          nonNullishOrThrow(targetNodes.at(3,),).id,
+          nonNullishOrThrow(targetNodes.at(4,),).id,
         ],);
       },
     },),
