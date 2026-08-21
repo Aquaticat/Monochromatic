@@ -35,6 +35,11 @@ export {
 } from './corpus-run/artifact-v2-contest.ts';
 export { parseLaneSelectionV2, } from './corpus-run/artifact-v2-read-contest.ts';
 export {
+  projectLanesV2,
+  type ProjectedLanesV2,
+} from './corpus-run/artifact-v2-derive.ts';
+export { openLaneContestCache, } from './corpus-run/lane-contest-cache-store.ts';
+export {
   ArtifactComparisonV2Error,
   assertDerivationsAgree,
   compareLanesV2,

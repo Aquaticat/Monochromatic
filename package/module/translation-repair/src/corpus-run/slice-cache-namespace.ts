@@ -23,6 +23,20 @@ import type { SliceCache, } from '../slice-cache.ts';
 // exist on disk from earlier passes, and renaming them would discard real work
 // to gain nothing.
 
+import type { SliceNamespace, } from './slice-cache-claims.ts';
+
+// RE-EXPORTED rather than moved out of sight: every consumer already imports
+// its claim from here, and a split made for the line cap is not a reason to
+// rewrite call sites that were never wrong.
+export {
+  LANE_CONTEST_NAMESPACE,
+  PAIRING_NAMESPACE,
+  PICTURE_READING_NAMESPACE,
+  REPAIR_SLICE_NAMESPACE,
+  type SliceNamespace,
+  TRANSLATE_SLICE_NAMESPACE,
+} from './slice-cache-claims.ts';
+
 /**
  * File suffix every persisted slice carries.
  */
@@ -50,69 +64,6 @@ const CLAIMED_PREFIXES: readonly string[] = [
   'picture.',
 ];
 
-/**
- * One lane's claim on a shared cache directory.
- *
- * @example
- * ```ts
- * const namespace: SliceNamespace = { prefix: 'translate.', marker: 'translate-generation.txt', };
- * ```
- */
-export type SliceNamespace = {
-  /**
-   * File-name prefix this lane's slices carry; empty for the repair lane, which
-   * owns the unprefixed names already on disk.
-   */
-  readonly prefix: string;
-
-  /**
-   * File recording which pipeline filled this lane's slices.
-   *
-   * Deliberately not a `.json` name, so a slice loader cannot mistake a marker
-   * for a settled slice.
-   */
-  readonly marker: string;
-};
-
-/**
- * Repair lane's claim: the unprefixed names written by every pass so far.
- */
-export const REPAIR_SLICE_NAMESPACE: SliceNamespace = {
-  prefix: '',
-  marker: 'generation.txt',
-};
-
-/**
- * Translate lane's claim.
- */
-export const TRANSLATE_SLICE_NAMESPACE: SliceNamespace = {
-  prefix: 'translate.',
-  marker: 'translate-generation.txt',
-};
-
-/**
- * Block pairing's claim.
- *
- * NOT A LANE either. A pairing is bought once per document pair and read by both
- * lanes, so it retires with the entry like everything else here and can never be
- * mistaken for a settled slice.
- */
-export const PAIRING_NAMESPACE: SliceNamespace = {
-  prefix: 'pairing.',
-  marker: 'pairing-generation.txt',
-};
-
-/**
- * Picture readings' claim.
- *
- * NOT A LANE, and named as one anyway because the store is the same. A reading
- * is neither a repair outcome nor a translated slice; it is evidence gathered
- * before either lane runs, keyed by the picture rather than by any slice.
- */
-export const PICTURE_READING_NAMESPACE: SliceNamespace = {
-  prefix: 'picture.',
-  marker: 'picture-generation.txt',
-};
 
 /**
  * Whether a file in a shared cache directory belongs to one lane.

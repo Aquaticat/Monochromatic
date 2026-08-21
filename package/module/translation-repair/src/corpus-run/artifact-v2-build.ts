@@ -4,6 +4,7 @@ import { compareDocumentLanes, } from '../lane-comparison.ts';
 import { preparationIdentity, } from '../preparation-identity.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
 import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
+import { projectLanesV2, } from './artifact-v2-derive.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V2,
   type ArtifactJsonValue,
@@ -173,39 +174,16 @@ export function buildSettledArtifactV2(
   },);
 
   /**
-   * Both ledgers rebuilt as version 2 rows.
+   * Both ledgers as version 2 rows, beside the comparison they derive.
    *
-   * PROJECTED rather than assigned, because assignment freezes only half of
-   * what the frozen vocabulary claims: a live union that gains a MEMBER fails
-   * to assign, and a live row that gains a FIELD assigns cleanly and then gets
-   * serialized, into artifacts the version 2 parser refuses for carrying keys
-   * the schema does not name.
+   * SHARED WITH THE CONTEST DRIVER, which needs the same comparison to know
+   * which slices are worth asking a roster about. Two derivations here would
+   * let the writer and the driver disagree about which slices those are.
    */
-  const delivery: Readonly<Record<'repair' | 'translate', readonly ArtifactDeliveryRowV2[]>> = {
-    repair: lanes.repairDelivery
-      .records
-      .map(function projectRepair(record,): ArtifactDeliveryRowV2 {
-        return toArtifactRowV2({ record, },);
-      },),
-    translate: lanes.translateDelivery
-      .records
-      .map(function projectTranslate(record,): ArtifactDeliveryRowV2 {
-        return toArtifactRowV2({ record, },);
-      },),
-  };
-  /**
-   * The comparison as VERSION 2 derives it, from the rows the artifact carries.
-   *
-   * The projection above froze the words; this freezes the rules. Deriving the
-   * persisted comparison from the live comparator alone would let a later
-   * change to how a verdict is decided reinterpret every artifact on disk,
-   * under an unchanged version number and with nothing in the file recording
-   * which rules produced it.
-   */
-  const frozen = compareLanesV2({
-    repair: delivery.repair,
-    translate: delivery.translate,
-  },);
+  const {
+    delivery,
+    comparison: frozen,
+  } = projectLanesV2({ lanes, },);
 
   // AND THE TWO DERIVATIONS AGAINST EACH OTHER. The live comparator is what
   // refuses ledger pairs that cannot be compared at all, and the frozen rules

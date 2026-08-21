@@ -201,6 +201,20 @@ function replyFor(
       reason: 'scripted',
     };
   }
+
+  // THE CONTEST RUNS AFTER BOTH LANES, over the slices they worded differently.
+  // Serving it is what makes this fixture exercise a DECIDED contest rather than
+  // an unheard one: without a script every voice is lost, the roster never
+  // reaches quorum, and the artifact records the pass reaching the stage instead
+  // of the stage reaching an answer.
+  if (schema === 'lane_contest') {
+    return {
+      choice: 'translate',
+      unsupported: [],
+      dropped: [],
+      reason: 'scripted',
+    };
+  }
   throw new Error(`no script for ${schema}`,);
 }
 
@@ -470,9 +484,37 @@ await describe({
           'repair',
           'translate',
         ],);
-        expect((artifact as { laneSelection: object; }).laneSelection,).toEqual({
-          kind: 'pending-human-decision',
+        // A CONTEST THAT RAN AND DECIDED, end to end through the pass. The two
+        // lanes disagree at one slice by construction, so exactly one is worth
+        // asking about, and the scripted roster backs the translate candidate.
+        /**
+         * Contest as the file records it, read structurally like the rest.
+         */
+        const selection = (artifact as {
+          laneSelection: {
+            kind: string;
+            slices: readonly {
+              verdict: object;
+              ballots: readonly unknown[];
+            }[];
+          };
+        }).laneSelection;
+        expect(selection.kind,).toBe('contested',);
+        expect(selection.slices
+          .length,).toBe(1,);
+        expect(selection.slices
+          .at(0,)
+          ?.verdict,).toEqual({
+          kind: 'lane-won',
+          lane: 'translate',
         },);
+        // AND THE BALLOTS REACHED THE FILE, which is the half a verdict alone
+        // does not prove: a reader asking why this slice went to the translate
+        // lane needs the reasons the judges gave, not just the count.
+        expect(selection.slices
+          .at(0,)
+          ?.ballots
+          .length,).toBeGreaterThan(1,);
 
         // One preparation, recorded once, which both ledgers are out of.
         expect((artifact as { preparation: { sliceCount: number; }; }).preparation

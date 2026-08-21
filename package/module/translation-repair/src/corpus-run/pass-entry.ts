@@ -11,6 +11,9 @@ import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { prepareDocumentPairWithRoster, } from '../prepare-with-pairing.ts';
 import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
+import { projectLanesV2, } from './artifact-v2-derive.ts';
+import { contestDocumentLanes, } from '../lane-contest-driver.ts';
+import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { settledTallyLine, } from './settled-tally.ts';
@@ -308,7 +311,35 @@ async function runEntryPipeline(
       .throwIfAborted();
 
     /**
-     * Wall time this entry took, both lanes included.
+     * Both ledgers as version 2 rows, beside the comparison they derive.
+     *
+     * DERIVED HERE AND HANDED TO THE BUILDER`S OWN CALL rather than passed
+     * along, because the builder derives it again from the same function. The
+     * contest needs it first, to know which slices are worth asking about.
+     */
+    const projected = projectLanesV2({ lanes, },);
+
+    /**
+     * What the roster said at every slice the two lanes worded differently.
+     */
+    const contestSlices = await contestDocumentLanes({
+      client,
+      projected,
+      modelIds: RUN_ROSTER,
+      ...((prepared.identityContext === undefined)
+        ? {}
+        : { identityContext: prepared.identityContext, }),
+      cache: await openLaneContestCache({
+        dir: entryCacheDir,
+        generation: pipelineDigest,
+      },),
+      signal: deadline.callSignal,
+      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    /**
+     * Wall time this entry took, both lanes and the contest included.
      */
     const durationMs = Date.now() - t0;
 
@@ -331,10 +362,14 @@ async function runEntryPipeline(
       prepared,
       lanes,
 
-      // NOBODY HAS PICKED ONE, said out loud. The contest does not run in this
-      // pass, so the artifact records the question as open rather than
-      // recording an answer no roster gave.
-      laneSelection: { kind: 'pending-human-decision', },
+      // A CONTEST THAT RAN, whatever it found. A document whose two lanes never
+      // differed records an empty contest rather than the pending kind: "the
+      // roster was asked and nothing differed" and "nobody has asked" are
+      // different facts, and the pending kind now means only the second.
+      laneSelection: {
+        kind: 'contested',
+        slices: contestSlices,
+      },
     },);
     await writeFileAtomic({
       path: join(

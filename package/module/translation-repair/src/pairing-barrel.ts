@@ -30,6 +30,12 @@ export {
   type LaneContestOutcome,
   settleLaneContestBallots,
 } from './lane-contest-stage.ts';
+export { contestDocumentLanes, } from './lane-contest-driver.ts';
+export {
+  LANE_CONTEST_CACHE_VERSION,
+  laneContestRunShape,
+  laneContestSliceKey,
+} from './lane-contest-key.ts';
 export {
   buildLaneContestMessages,
   isLaneContestWire,
