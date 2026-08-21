@@ -28,8 +28,12 @@
  * Reader-protection and voice rules shared by every stage that judges or
  * rewrites this corpus.
  *
- * Written as prompt-ready lines because all three consumers (critic,
- * adjudicator, editor) splice it into a system prompt.
+ * Written as prompt-ready lines because every consumer splices it into a system
+ * prompt. THE LIST OF CONSUMERS IS NOT STATED HERE ANY MORE: it used to name
+ * the critic, the adjudicator and the editor, and the editor was not one of
+ * them, which is exactly the stage this block's own header says it exists to
+ * stop. A comment naming consumers is a claim nothing checks; `rg` on this
+ * symbol answers it correctly.
  *
  * @example
  * ```ts

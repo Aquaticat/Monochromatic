@@ -2,6 +2,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
+import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 
 //region Editor prompt
 // One prompt per editor model per chunk: the document pair plus numbered
@@ -46,10 +47,10 @@ const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT AND MUST NOT BE EDITED. '
 const REGION_CONTEXT_CHARS = 40;
 
 /**
- * Rule block of the editor system prompt; a calibration addendum splices
- * after its last rule line.
+ * Rule list of the editor system prompt; a calibration addendum splices after
+ * its last rule line, which is why the house rules are NOT part of it.
  */
-const EDITOR_RULES_BLOCK = `You are a careful bilingual translation editor.
+const EDITOR_RULES_HEAD = `You are a careful bilingual translation editor.
 Reviewers confirmed the numbered issues below in the TRANSLATION of the ORIGINAL document.
 Fix them by rewriting ONLY the numbered edit regions.
 
@@ -66,7 +67,24 @@ Rules, strictly enforced by a machine:
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
 - When the CURRENT TEXT is line-structured, meaning short lines separated by blank lines rather than paragraphs, the line is the unit: keep one output line per input line, in the same order, and recast only within a line. Never merge, split, reorder or invent lines.
-- Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.`;
+- Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.
+- THE HOUSE RULES BELOW OUTRANK EVERY RULE IN THIS LIST. Where a detail is absent from the TRANSLATION because reader protection asks for it, the region is not an omission to fill and the issue reporting it is wrong: omit that region entirely rather than restoring the detail.`;
+
+/**
+ * Rule list followed by the rules this corpus is written under.
+ *
+ * WHY THE EDITOR NEEDED THEM, and why this is the stage that needed them most.
+ * `house-policy.ts` names the failure it exists to stop: a critic ignorant of
+ * reader protection reports a deliberately vague passage as an omission, and
+ * the editor RESTORES the detail the rule exists to remove. The critic was
+ * given the block. The editor never was, though the block's own comment claims
+ * it as a consumer, so the second half of that sentence ran unguarded while
+ * five separate rules here told the editor that every detail of the original
+ * must survive and that an omission must be filled in full.
+ */
+const EDITOR_RULES_BLOCK = `${EDITOR_RULES_HEAD}
+
+${HOUSE_POLICY_BLOCK}`;
 
 /**
  * Reply-shape block closing the editor system prompt.
@@ -269,8 +287,10 @@ ${EDITOR_FENCE} ${NEARBY_RULE} ${EDITOR_FENCE}
    */
   const systemPrompt = editorRuleAddendum === undefined
     ? EDITOR_SYSTEM_PROMPT
-    : `${EDITOR_RULES_BLOCK}
+    : `${EDITOR_RULES_HEAD}
 - ${editorRuleAddendum}
+
+${HOUSE_POLICY_BLOCK}
 
 ${EDITOR_REPLY_BLOCK}`;
 
