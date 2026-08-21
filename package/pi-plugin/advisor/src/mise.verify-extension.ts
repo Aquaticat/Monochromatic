@@ -10,6 +10,7 @@ import {
   type ExecResult,
   type ExtensionAPI,
   type ExtensionFactory,
+  type MarkdownTransformer,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 
@@ -240,6 +241,9 @@ function fakePiApi(): {
     },
     registerMessageRenderer(customType: string,) {
       registrations.push(`renderer:${customType}`,);
+    },
+    registerMarkdownTransformer(transformer: MarkdownTransformer,) {
+      void transformer;
     },
     registerEntryRenderer(customType: string,) {
       registrations.push(`entry-renderer:${customType}`,);

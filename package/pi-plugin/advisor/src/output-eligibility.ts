@@ -90,7 +90,10 @@ export function requireAdvisorScopeWithOutputCapacity(
     scope,
     maxAdvisorOutputTokens,
   },);
-  if (eligibleScope.entries.length > 0)
+  if (eligibleScope
+    .entries
+    .length
+    > 0)
     return eligibleScope;
 
   /**
@@ -101,7 +104,13 @@ export function requireAdvisorScopeWithOutputCapacity(
     .map(function formatAdvertisedCapacity(
       entry: ReadonlyDeep<ScopedAdvisorModel>,
     ): string {
-      return `${entry.canonicalSlug}=${String(entry.model.maxTokens,)}`;
+      /**
+       * Output capacity advertised by current scoped endpoint.
+       */
+      const advertisedOutputTokens = entry
+        .model
+        .maxTokens;
+      return `${entry.canonicalSlug}=${String(advertisedOutputTokens,)}`;
     },)
     .join(', ',);
   throw new Error(
@@ -145,8 +154,14 @@ export function assertAdvisorModelOutputCapacity(
   if (advertisedOutputTokens >= maxAdvisorOutputTokens)
     return;
 
+  /**
+   * Canonical endpoint identity used in rejection diagnostic.
+   */
+  const selectedSlug = selection
+    .selected
+    .canonicalSlug;
   throw new Error(
-    `advisor: requested model "${selection.selected.canonicalSlug}" requires ${String(maxAdvisorOutputTokens,)} output tokens but advertises ${String(advertisedOutputTokens,)} output tokens`,
+    `advisor: requested model "${selectedSlug}" is ineligible because Advisor requires ${String(maxAdvisorOutputTokens,)} output tokens but its endpoint advertises ${String(advertisedOutputTokens,)} output tokens`,
   );
 }
 

@@ -343,7 +343,7 @@ export async function runAdvisor(
       scopeSource: scope.source,
       scopedSlugs: eligibleScope.entries
         .map(function mapEntry(
-          entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+          entry: ReadonlyDeep<(typeof eligibleScope.entries)[number]>,
         ) {
         return entry.canonicalSlug;
       },),

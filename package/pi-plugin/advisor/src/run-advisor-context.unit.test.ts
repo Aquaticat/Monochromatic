@@ -89,6 +89,30 @@ function providerUserText(context: Readonly<Context>,): string {
     .join('\n',);
 }
 
+/**
+ * Capture rejection from async test action.
+ *
+ * @param action - async operation expected to reject
+ *
+ * @returns caught rejection value
+ *
+ * @example
+ * ```typescript
+ * const error = await captureAsyncError(async function fail() { throw new Error('x'); });
+ * ```
+ */
+async function captureAsyncError(
+  action: () => Promise<unknown>,
+): Promise<unknown> {
+  try {
+    await action();
+  }
+  catch (error) {
+    return error;
+  }
+  throw new Error('expected async action to throw',);
+}
+
 //endregion Fixtures
 
 await describe({
@@ -132,16 +156,14 @@ await describe({
           },
         } as unknown as ExtensionContext;
         /** Eligibility error returned before provider invocation. */
-        let caught: unknown;
-        try {
-          await runAdvisor({
-            ctx,
-            config: advisorConfig,
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
+        const caught = await captureAsyncError(
+          async function runIneligibleAdvisor() {
+            return await runAdvisor({
+              ctx,
+              config: advisorConfig,
+            },);
+          },
+        );
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(

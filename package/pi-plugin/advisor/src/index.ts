@@ -270,7 +270,7 @@ async function buildMainModelGuidance(
 
 //endregion Prompt guidance
 
-export { buildAdvisorStatus, } from './commands.ts';
+export { buildAdvisorStatus, } from './status.ts';
 export { buildMainModelGuidance, };
 
 /**
