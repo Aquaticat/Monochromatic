@@ -803,19 +803,74 @@ This was caught only by grepping the log for the suite's own name rather than tr
 Every other test file in the repo already awaits its `describe`, so this is a trap rather than a defect:
 a suite is proven to exist by finding its name in the output, never by the run's exit status.
 
-## The verse rule tells two producing sheets to ignore the page
+## The verse rule and the page rule contradict each other, and the guard settles nothing
 
-`TRANSLATE_LINE_STRUCTURE_RULE` reads
-`The ORIGINAL is line-structured: each original line is a unit. Produce one output line per original line, in the same order.`
-It is spliced into `translate-wire.ts` for the producing translator and into `consolidate-wire.ts` for the consolidating producer.
-Both are bed-path sheets, and both are told to take their line count from the ORIGINAL
-while the structural guard floors on the page as it stands.
-On `Toka_ls`, the entry the rule was written for,
-those two authorities disagree by three blocks and by a factor of four in median block length.
-`LINE_STRUCTURE_RULE` in `line-structure-addendum.ts` is a third wording of the same claim, given to the editor.
+This section replaces a first reading that was wrong, kept here because the wrong reading is the instructive part.
 
-It cannot reach run 6.
+### What was claimed, and what refuted it
+
+The claim was that `TRANSLATE_LINE_STRUCTURE_RULE` tells a producer to emit one line per ORIGINAL line
+while the structural guard floors on the page as it stands,
+so every verse candidate would be rejected on any page that had merged lines.
+
+Measured, and refuted.
+`validateTranslatedSlice` is a kind-sequence FLOOR, not an equality check.
+A candidate unmerged into three blocks against a one-block page returns `valid`;
+only a candidate MISSING a block of the page fails.
+
+The probe was positive-controlled before its null was trusted, per QPC.
+The control reproduces the archived finding verbatim:
+
+- `The PAGE AS IT STANDS is 2 blocks (blockquote, paragraph) and your translation is 1 (blockquote).`
+
+So the null on the verse cases is a real null, and the guard has nothing to say about unmerging.
+
+### What is actually wrong
+
+On a line-structured chunk the producer's system prompt carries two rules that point opposite ways,
+and until now neither deferred to the other.
+
+- `TRANSLATE_RULES`, from #144: where the existing translation shapes the passage differently, keep the existing translation's shape.
+- `TRANSLATE_LINE_STRUCTURE_RULE`, from #79: produce one output line per original line, and where the existing translation has merged lines, unmerge them.
+
+On `Toka_ls`, the entry the verse rule was written for,
+the Chinese chunk is 21 blocks at median 22 against the English rendering's 18 blocks at median 101.
+One rule says keep 18 and the other says restore 21.
+Both arrive in one prompt, and a producer meeting a contradiction resolves it however it likes.
+
+The verse rule wins, and now says so.
+It rests on a measured failure and its own recorded decision, while #144's bullet was written about prose reshaping.
+Because the guard is a floor, nothing downstream would ever have caught the wrong choice,
+which is why the precedence had to be stated in the sheet rather than left to the check.
+
+`LINE_STRUCTURE_RULE` in `line-structure-addendum.ts` is NOT the same defect.
+It is given to an editor working on the standing text, where keeping every existing line is the anti-reflow rule #79 built,
+and its own documentation states the distinction.
+
+### It could not have reached run 6 either way
+
 The bed computes `lineStructured` with `isLineStructured` over each slice's source text,
-and that predicate was run over all thirteen bed slices and returned false for every one,
-so none of the three sheets emits the rule on any slice this run buys.
-A string that is never emitted cannot change an output, so this is a fix to make rather than a reason to restart.
+and that predicate returned false for all thirteen bed slices,
+so neither producing sheet emits the rule on any slice this run buys.
+
+## The three instruments still discriminate under the longer prompt
+
+A static guard proves the rules ARRIVE.
+It does not prove a checker still tells a fix from a non-fix with several kilobytes more in front of it,
+so all three sensitivity probes were run live against their pre-built fixtures.
+
+Resolution checker, every arm where the harness expects it:
+
+- a genuine fix reads `fixed` on all three voices, an untouched text reads `not-fixed` on all three, and a fix that damaged its slice splits two `fixed` against one `worse`.
+- on the mixed sheet the tense issue resolves, the meaning issue does not, and the FABRICATED issue draws two `not-fixed` against one `fixed`, so the majority still refuses to agree with a sheet describing something absent from the text.
+
+Introduced-defect prober:
+
+- `deletion/mislabelled`, where real damage sits under a false accepted issue, draws three removal-corroborated claims.
+- `deletion/licensed`, the negative control where silence is correct, draws `none-found` on all three.
+
+Rendering auditor:
+
+- the flipped rendering draws an agreed `altered-polarity` finding on two voices.
+- the clean rendering agrees at neither tier, which is the expectation; one voice filed a lone claim and no agreement formed on it.
+- two degraded lines on the flipped arm are infrastructure rather than sheet: one voice lost and a 2-of-3 roster.
