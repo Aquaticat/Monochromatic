@@ -9,6 +9,13 @@
  * guidance while `nothing added` reads as a rule. Losing the carve-out again
  * would cost accurate detail on memorial pages and nothing here would fail.
  *
+ * AND THE CARVE-OUT HAS ITS OWN FAILURE MODE, measured on the consolidation
+ * bed once it was written without a scope: a judge abstained from a whole slate
+ * because no candidate carried the declared LOCATION, and a shipped rendering
+ * signed a note left by a friend of the deceased with the deceased's own name,
+ * alias and city. Both directions are pinned here, because a sheet edit that
+ * fixes one by reopening the other would otherwise pass.
+ *
  * @module
  */
 
@@ -47,9 +54,38 @@ await describe({
       },
     },),
     it({
-      name: 'STATES that dropping a declared name is leaving something out',
+      name: 'SCOPES the carve-out to a passage that refers to the person',
       fn: async () => {
-        expect(sheet.includes('has left something out',),).toBe(true,);
+        /**
+         * Criterion carrying the prohibition judges actually applied.
+         */
+        const faithfulness = TRANSLATE_SELECTION_CRITERIA
+          .find(function forbidsAdditions(line,): boolean {
+            return line.includes('nothing added',);
+          },) ?? '';
+        // WITHOUT THE SCOPE the carve-out reads as a licence to put the
+        // archive's identity block into any passage at all.
+        expect(faithfulness.includes('Where the passage refers to this person',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES to make a declared name content the passage owes',
+      fn: async () => {
+        /**
+         * Whether the sheet still tells a judge an unnamed person is a gap.
+         */
+        const owes = sheet.includes('has left something out',);
+        expect(owes,).toBe(false,);
+        expect(sheet.includes('has left nothing out',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES to let an attribution line take this person\'s name',
+      fn: async () => {
+        // A note left BY A FRIEND of the deceased was signed with the dead
+        // person's name, alias and city, and the sheet is where that was
+        // licensed.
+        expect(sheet.includes('attributing the passage to someone ELSE',),).toBe(true,);
       },
     },),
     it({
