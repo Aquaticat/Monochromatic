@@ -45,4 +45,35 @@ export const HOUSE_POLICY_BLOCK = `House rules this corpus is written under. The
 - Refer to a passage, image or section by NAMING it, never by its position on the page. Do not write "below", "above", "the following" or "earlier" in English prose. Where the ORIGINAL uses such a word, render what it points AT instead: an original reading "the picture below is her last self-description" becomes "this is her last self-description", not "below is her last self-description". A screen reader gives its listener no page to look down, so a positional reference tells them nothing.
 - Do not carry punctuation that means nothing in English. A trailing emoticon, a bare pair of empty brackets, or a run of full-width marks that carried tone in Chinese is not rendered by copying the characters across; render the tone in words or leave it out.`;
 
+/**
+ * House rules plus the two things a JUDGE needs that a producer does not.
+ *
+ * WHY JUDGES NEEDED THEIR OWN BLOCK. Every producing sheet splices
+ * `HOUSE_POLICY_BLOCK`; no judging sheet did. So the stages that decide what
+ * SHIPS were the only ones that had never been told what this corpus is written
+ * under, and criterion one, "every proposition of the ORIGINAL is rendered,
+ * nothing left out", contradicts reader protection outright.
+ *
+ * AND THE TENSE RULE, which existed only in `critic-prompt.ts`. Chinese leaves
+ * tense unmarked and English cannot. Measured on the consolidation bed: of the
+ * four slates a judge refused ENTIRELY, three were refused for tense, one of
+ * them saying every candidate had altered the time reference by rendering a
+ * tenseless copula as "was". The rule that answers that was in the codebase and
+ * out of reach.
+ *
+ * PRECEDENCE IS STATED, because a numbered list reads as the standard and
+ * anything beside it reads as background. Three measured refusals came from
+ * judges applying a numbered criterion literally.
+ *
+ * @example
+ * ```ts
+ * const system = `${task}\n\n${JUDGE_POLICY_BLOCK}`;
+ * ```
+ */
+export const JUDGE_POLICY_BLOCK: string = `${HOUSE_POLICY_BLOCK}
+
+Obligatory differences between the two languages are never faults. Each language forces choices the other leaves open, and meeting English's own requirements is not an addition or an alteration: supplying a pronoun, a number, an article or A TENSE that the ORIGINAL leaves unmarked is REQUIRED. Chinese marks no tense, so rendering it in past or present is a choice English forces, never a change to the time the ORIGINAL refers to. Hold it against a candidate only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports.
+
+WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. A candidate vaguer than the ORIGINAL because reader protection asks for it has left nothing out, and a candidate naming what it points at rather than where it sits on the page is obeying a rule rather than departing from the text.`;
+
 //endregion House policy

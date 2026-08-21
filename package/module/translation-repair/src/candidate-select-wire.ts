@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
 
@@ -237,6 +238,7 @@ export function buildCandidateSelectMessages(
       content:
         `You are an impartial judge choosing between candidate rewrites. ${task}\n\n`
         + `Decide by these criteria, earlier ones outranking later ones:\n${rules}\n\n`
+          + `${JUDGE_POLICY_BLOCK}\n\n`
           + `You do not know which system produced which candidate, and must not guess. `
           + `Judge only the text in front of you.\n\n`
           + `Every block below opens and closes with a line of ${String(fence.length,)} equals signs. `
