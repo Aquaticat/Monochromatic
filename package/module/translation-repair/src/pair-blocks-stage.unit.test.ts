@@ -32,7 +32,7 @@ const SOURCE = [
   },
   {
     index: 1,
-    text: '牠喜欢盒子。',
+    text: '它喜欢盒子。',
   },
 ];
 

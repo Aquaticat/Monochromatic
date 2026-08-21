@@ -31,7 +31,7 @@ import {
 /**
  * Original side, two blocks so the section is worth a question.
  */
-const SOURCE_TEXT = '猫睡在盒子里。\n\n牠整个下午都没有动。';
+const SOURCE_TEXT = '猫睡在盒子里。\n\n它整个下午都没有动。';
 
 /**
  * Translation side, two blocks against the two originals.

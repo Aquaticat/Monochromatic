@@ -34,11 +34,11 @@ const SOURCE = [
   },
   {
     index: 1,
-    text: '牠喜欢盒子。',
+    text: '它喜欢盒子。',
   },
   {
     index: 2,
-    text: '牠不喜欢水。',
+    text: '它不喜欢水。',
   },
 ];
 
