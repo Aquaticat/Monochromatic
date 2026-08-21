@@ -219,7 +219,11 @@ At `Zha_Ke`, the run for source block 1 would end at `en[1]`,
 the next run would begin at `en[4]`,
 and `en[2]` and `en[3]` would fall between runs: covered by no slice, written by no lane, kept byte for byte.
 The judges would then be shown 41 characters of source against 180 characters of standing English,
-a ratio of 4.4, which sits inside the corpus band.
+a ratio of 4.4.
+That is just ABOVE the 2.1 to 4.0 slice band the bed showed, not inside it,
+and the difference matters:
+a legitimate pair sitting above the band top is why any size fence built on this
+needs margin rather than being set at the band edge.
 
 What this costs is exactly what `reflow-orphans.ts` already names:
 the letter is never read by any lane, so nothing improves it and nothing checks it.
@@ -233,3 +237,57 @@ or only at ones above some size,
 since a one-block orphan of thirty characters joining its neighbour is harmless
 and closing the run there produces more slices than the budget wants.
 `Zha_Ke`'s `en[2]` is 34 characters and its `en[3]` is 2909.
+
+## The pairing schema already distinguishes a split from page-only content
+
+The obvious worry about closing the run at every unpaired target block is a translation
+that renders one Chinese paragraph as two English ones.
+Freeze the second half and a lane rewriting the first half duplicates the content.
+
+`readBlockPairing` in `pair-blocks-wire.ts` settles it.
+Repeats are legal on both sides, and the comment says why:
+
+> A translation may SPLIT one original across several blocks, which repeats the original,
+> and it may MERGE several originals into one block, which repeats the translation.
+> Both happen in this corpus.
+>
+> AN EARLIER VERSION REFUSED THE MERGE, on the reasoning that a passage renders one place.
+> A live run refuted it: on `lintong` all six models independently paired one translation block
+> with two originals, every reply was refused, and the entry fell back to scoring
+> and collapsed to a single slice.
+
+So a split rendering is expressible as `{source:1,target:1},{source:1,target:2}`,
+and the roster has the vocabulary to say it.
+A target block left unpaired is therefore a statement that no source block accounts for it,
+not an artifact of a schema that could not express the split.
+No size threshold is needed for correctness.
+
+## The invariant this fix has to amend, deliberately
+
+`assertSliceCoverage` in `slice-coverage.ts` checks BOTH sides,
+and it exists because of a real incident:
+
+> WHAT IT COST ON 2026-08-20: `lintong`'s closing paragraph, a friend's last message and its date,
+> reached no slice while its English sat in a slice's incumbent.
+> The repair lane, shown English with no original behind it,
+> deleted the rendering of one clause and left a bare blockquote marker in the shipped text.
+> Nothing reported anything; the entry settled with zero alignment findings.
+
+Leaving target blocks uncovered would throw `SliceCoverageError` today, and it should.
+The enemy that invariant was built against is SILENCE, not absence.
+
+So the fix does not weaken it, it sharpens it.
+Today a target block must be in some slice.
+After, a target block must be in some slice OR in an explicit declined-by-pairing list,
+and anything in neither still throws.
+That turns "reached no slice" from a silent loss into a recorded decision,
+and it is the same list the artifact finding needs, which is `#135`.
+
+## Scope, stated so the next session does not widen it
+
+TARGET SIDE ONLY.
+Unpaired SOURCE blocks, which is `XIEPT2`'s direction,
+keep being swept exactly as they are today.
+Their correct treatment is the anchored unit,
+and `#106` holds that pending evidence telling omission apart from merging.
+Nothing measured here changes that.
