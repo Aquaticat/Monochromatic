@@ -167,6 +167,44 @@ function renderBlock(
 }
 
 /**
+ * Label for one candidate block, saying so where the candidate IS the archive.
+ *
+ * WHY IT HAS TO SAY SO. A lane declining to change the incumbent is a
+ * legitimate outcome meaning the archive was already right, and it happened at
+ * 5 of the 13 bed slices. Unlabelled, the sheet shows one text twice under two
+ * headings, and a producer weighing the agreement of the archive with a
+ * candidate is counting one source twice.
+ *
+ * @param name - candidate's name in this contest
+ *
+ * @param text - what that lane returned
+ *
+ * @param archiveText - rendering already on the page
+ *
+ * @returns Label, carrying the identity where there is one
+ *
+ * @example
+ * ```ts
+ * const label = candidateLabel({ name: 'repair', text, archiveText, },);
+ * ```
+ */
+function candidateLabel(
+  {
+    name,
+    text,
+    archiveText,
+  }: {
+    readonly name: string;
+    readonly text: string;
+    readonly archiveText: string;
+  },
+): string {
+  return (text === archiveText)
+    ? `CANDIDATE "${name}", which is the ARCHIVE RENDERING unchanged: this lane found nothing to change`
+    : `CANDIDATE "${name}"`;
+}
+
+/**
  * Builds the sheet asking one producer to consolidate one slice.
  *
  * @param subject - passage, archive rendering, both candidates and the ballots
@@ -263,12 +301,20 @@ export function buildConsolidateMessages(
         },),
         ...renderBlock({
           fence,
-          label: 'CANDIDATE "repair"',
+          label: candidateLabel({
+            name: 'repair',
+            text: subject.repairText,
+            archiveText: subject.incumbentText,
+          },),
           text: subject.repairText,
         },),
         ...renderBlock({
           fence,
-          label: 'CANDIDATE "translate"',
+          label: candidateLabel({
+            name: 'translate',
+            text: subject.translateText,
+            archiveText: subject.incumbentText,
+          },),
           text: subject.translateText,
         },),
         ...renderBlock({

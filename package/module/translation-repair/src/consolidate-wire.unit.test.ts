@@ -255,5 +255,33 @@ await describe({
         expect(shown,).toContain('======',);
       },
     },),
+
+    it({
+      name: 'SAYS SO where a candidate is the archive rendering unchanged, so '
+        + 'a producer counting how many texts agree counts one source once',
+      fn: async () => {
+        /**
+         * Slice where the translate lane kept the incumbent, which happened at
+         * 5 of the 13 bed slices across both lanes.
+         */
+        const kept: ConsolidateSubject = {
+          ...bare,
+          translateText: bare.incumbentText,
+        };
+        const shown = shownFor({ subject: kept, },);
+        expect(shown,).toContain('CANDIDATE "translate", which is the ARCHIVE RENDERING unchanged',);
+        // AND ONLY THAT ONE: the lane that did change something is named
+        // plainly, or the note would say nothing.
+        expect(shown,).toContain('CANDIDATE "repair" =',);
+      },
+    },),
+
+    it({
+      name: 'NAMES both candidates plainly where neither reproduces the archive',
+      fn: async () => {
+        const shown = shownFor({ subject: bare, },);
+        expect(shown.includes('ARCHIVE RENDERING unchanged',),).toBe(false,);
+      },
+    },),
   ],
 },);
