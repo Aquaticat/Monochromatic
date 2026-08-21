@@ -569,9 +569,46 @@ DOES, and the guard requires it: the page's blocks are the floor.
 So the slate was refused for obeying the guard, by a criterion that had not been
 told the guard had changed, and the refusal cost that slice its whole judged
 decision.
-Both halves of that sentence are now closed, criterion 3 by `#143` and criterion
-4 by `#144`.
+Criterion 4 is closed by `#144`.
+The criterion 3 half was NOT closed by `#143`, which settled whether a declared
+name is content a passage owes and said nothing about how to spell one; the
+spelling half is `#145`, and the check that decided it is recorded in "Two
+spelling authorities, no precedence".
 
 A tripwire in the scorecard prints any ballot whose stated reason reaches for the
 source's shape or for a declared name, and it was shown firing on this archived
 row before being trusted on a live one.
+
+### Two spelling authorities, no precedence
+
+READ RATHER THAN ASSUMED, through the package's own `collectIdentityLines`
+against the corpus page and against the archived rows.
+At `lintong`, the identity block declares one romanised form of the handle and a
+second as an alias.
+The English page uses THREE forms across its length, one of which the block
+declares nowhere, and that undeclared form is the one standing in the slice both
+lanes worked from.
+Every consolidation copied it. So did both lanes. So did the shipped text.
+
+THE TWO SHEETS DISAGREED, and neither said which wins.
+The translator sheet said names already used by the existing translation are
+authoritative and are kept exactly.
+The judge sheet said declared names are used exactly as given.
+Where an archive contradicts its own front matter, producers were instructed to
+write the form the judge was instructed to penalise, and every candidate on the
+slate inherits it at once, so the fault cannot order them: the judge's only
+literal move is to refuse the whole slate, which it did, twice at the same slice.
+The incumbent that survives that refusal is where the spelling came from.
+
+SETTLED. The declared spelling outranks the archive's usage, in both producing
+sheets, because the front matter is what the archive DECLARES and its prose is
+demonstrably inconsistent with itself.
+Where the block offers more than one form, any declared form is right; where the
+block is silent, the archive's usage stands as before; and inventing a third
+spelling is forbidden as it always was.
+The judge is separately told that a spelling every candidate shares cannot
+separate them, so it decides on the other criteria rather than declining.
+
+WHY THIS WAS WORTH A THIRD RESTART. One row had landed. The alternative was
+thirteen slices measured through an instrument that had already been observed
+failing a slate for obeying its own guard.
