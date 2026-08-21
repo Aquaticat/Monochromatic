@@ -38,6 +38,20 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 // when a pairing came back from the roster, and only then does a target-only
 // step mean nobody claimed this.
 //
+// ONLY A PAIRING THAT PLACED EVERY ORIGINAL DECLINES ANYTHING. A reply that
+// leaves an original block unaccounted for did not finish reading the pair, and
+// its silences are gaps rather than decisions. The empty pairing is the case
+// that forces this: `pairBlocksAcrossRoster` returns no pairs when no voice was
+// usable, the caller passes that straight through, and without this gate EVERY
+// translation block would count as declined and the whole section would leave
+// review at once.
+//
+// WHAT IT COSTS is that an entry with a genuinely untranslated passage gets no
+// declines at all, since that passage arrives as a `source-only` step. The fix
+// simply does not apply there. That is the conservative direction: the harm
+// this exists to stop is a memorial letter being deleted, and the harm of not
+// applying it is a slice staying as wide as it is today.
+//
 // A SPLIT RENDERING IS NOT THIS. `readBlockPairing` permits repeats on both
 // sides precisely so one original rendered as two translation blocks can say
 // so, and the second block then arrives as a `target-only` step carrying
@@ -71,6 +85,19 @@ export function declinedTargetBlocks(
     readonly targetNodes: readonly DocumentNode[];
   },
 ): readonly DocumentNode[] {
+  // A pairing that left an original block unplaced did not finish reading the
+  // pair, so nothing here is a decision about the translation side.
+  if (steps.some(function leavesOriginal(step,): boolean {
+    return step.kind === 'source-only';
+  },))
+    return [];
+
+  // Nor does a pairing that placed nothing at all decline everything.
+  if (!steps.some(function pairsSomething(step,): boolean {
+    return step.kind === 'paired';
+  },))
+    return [];
+
   /**
    * Indices reached by a step that continues a pairing or pairs outright, so a
    * later `target-only` step naming the same block cannot decline it.
