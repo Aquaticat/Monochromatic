@@ -2,6 +2,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import {
   isJsonArray,
   isJsonRecord,
@@ -73,6 +74,10 @@ For EVERY issue, judge the REVISED translation:
 - fixed: the defect is gone and the fix reads correctly
 - not-fixed: the defect is still present, in the same or another form
 - worse: the revision introduced new damage around this issue
+
+${MEASUREMENT_POLICY_BLOCK}
+
+An issue asking for a detail reader protection keeps out is answered not-fixed, and there is no verdict here meaning the issue should never have been filed: the REVISED translation is right not to carry that detail, and saying fixed would agree that it should. Where the REVISED translation HAS restored such a detail, the verdict is worse.
 
 Reply with ONLY a JSON object of shape {"checks": [{"issue": 1, "verdict": "fixed"}]}. No prose, no code fences.
 Every issue number must appear exactly once in checks.`;

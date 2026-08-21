@@ -6,6 +6,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import type { RepairRegion, } from './repair-region.ts';
 
@@ -180,6 +181,24 @@ Reply with ONLY a JSON object of shape {"checks": [{"region": 1, "verdict": "no-
 Every region number must appear exactly once in checks.`;
 
 /**
+ * How the house rules land on this sheet's own verdicts.
+ *
+ * NAMED SEPARATELY FROM `PROBE_RULES_HEAD` because it CONTRADICTS one of its
+ * bullets on purpose. That bullet says content the AFTER text drops is damage
+ * only if the ORIGINAL supports it, and on a protected detail the ORIGINAL does
+ * support it, which is the whole reason the rule exists. Left unqualified the
+ * prober has two live rules that disagree, and the older one is the one written
+ * as a numbered rule.
+ *
+ * @example
+ * ```ts
+ * const clause = PROBE_HOUSE_RULE_CLAUSE;
+ * ```
+ */
+const PROBE_HOUSE_RULE_CLAUSE =
+  `WHERE THE AFTER TEXT IS VAGUER THAN THE ORIGINAL BECAUSE A HOUSE RULE ASKS FOR IT, the verdict is no-introduced-defect-found, even though the ORIGINAL supports the wording that went missing. Where the AFTER text RESTORED a detail a house rule keeps out, the verdict is introduced-defect and the reason says which rule.`;
+
+/**
  * Composes the prober's system prompt for one edit kind.
  *
  * Composed rather than substituted into a placeholder: the framing is prose
@@ -202,7 +221,11 @@ function probeSystemPrompt(
 ${PROBE_FRAMING[editKind]}
 ${PROBE_RULES_HEAD}
 ${PROBE_CREATED_CLAUSE[editKind]}
-${PROBE_RULES_TAIL}`;
+${PROBE_RULES_TAIL}
+
+${MEASUREMENT_POLICY_BLOCK}
+
+${PROBE_HOUSE_RULE_CLAUSE}`;
 }
 
 /**

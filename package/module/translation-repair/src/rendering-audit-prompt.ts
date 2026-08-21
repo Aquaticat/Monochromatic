@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import {
   CANDIDATE_ONLY_CATEGORIES,
@@ -139,6 +140,10 @@ function auditInstructions(): string {
     ...EVIDENCE_GUIDE,
     '',
     ...REASON_GUIDE,
+    '',
+    MEASUREMENT_POLICY_BLOCK,
+    'A passage vaguer than the ORIGINAL because a house rule asks for it is not a defect of any category,',
+    'so where it is the only thing you found, the verdict is no-defect-found.',
     '',
     `verdict is one of: ${RENDERING_AUDIT_VERDICTS.join(', ',)}.`,
     'Cast uncertain ONLY when the passage could not be audited at all: it is truncated mid-sentence,',
