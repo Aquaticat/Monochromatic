@@ -95,6 +95,10 @@ await describe({
         for (const system of [systemFor({},), systemFor({ addendum: 'Keep verse lines intact.', },),]) {
           const reply = system.indexOf('Reply with ONLY a JSON object',);
           const policy = system.indexOf('Reader protection outranks completeness',);
+          // BOTH BOUNDS, because an absent policy is index -1 and any reply
+          // index beats it: the ordering assertion would pass on a sheet that
+          // carries no policy at all.
+          expect(policy,).toBeGreaterThan(-1,);
           expect(reply,).toBeGreaterThan(policy,);
         }
       },
