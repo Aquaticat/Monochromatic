@@ -31,14 +31,11 @@ import { buildEditorMessages, } from '../dist/final/node/index.mjs';
  * One region the editor is asked to fix, standing in for a real envelope.
  */
 const ENVELOPE = {
-  chunkIndex: 0,
-  envelopeIndex: 0,
-  side: 'target' as const,
-  start: 0,
-  end: 4,
-  currentText: 'naps',
-  contextBefore: 'The cat ',
-  contextAfter: ' on the sill.',
+  envelopeId: 'cat-region-1',
+  startOffset: 8,
+  endOffset: 12,
+  baseText: 'naps',
+  baseHash: 'not-checked-by-the-prompt-builder',
   issueIds: [],
 };
 
