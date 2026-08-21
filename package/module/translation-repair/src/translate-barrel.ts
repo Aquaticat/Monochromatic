@@ -123,6 +123,12 @@ export {
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
 export {
+  type ConsolidationSettlement,
+  type ConsolidationSubject,
+  type ConsolidationTerminal,
+  settleConsolidation,
+} from './consolidate-settle.ts';
+export {
   wrapConsolidation,
   type WrappedConsolidation,
 } from './consolidate-wrap.ts';
