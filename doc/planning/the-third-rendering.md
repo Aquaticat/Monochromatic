@@ -461,3 +461,33 @@ WHAT THAT DECIDES, on every case measured so far:
 -   The three rejections the bed actually produced, one rendering of six
     paragraphs and two that swallowed the attribution line into the quote: all
     three still fail, because the archive's sequence is not inside them.
+
+## What landed before the bed was bought again
+
+Five changes, each with its guard shown failing when removed, and the bed
+restarted from zero afterwards because every earlier row was produced under the
+wording being fixed.
+
+THE PAGE IS A FLOOR (`3ca134e57`).
+`validateTranslatedSlice` takes the original AND the text a candidate replaces,
+requires the page's block sequence to appear in the candidate in order, and
+allows no more blocks than the longer of the two references.
+Protected atoms take the larger demand of the two, so a footnote the archive
+added is kept and one the archive dropped is restored.
+
+THE PAGE IS NOT ALWAYS THE INCUMBENT (`3accdf27d`).
+`repairInvalidCandidates` takes `pageText` separately, because a consolidator's
+incumbent is the lane that won the contest while the page it replaces is the
+archive.
+It defaults to the incumbent, so the translate lane is unchanged.
+
+A DECLARED NAME IS A SPELLING AUTHORITY (`e0e822733`).
+Both sheets said a candidate dropping one had left something out, which is what
+signed a friend's note with the dead person's name.
+
+A CANDIDATE THAT IS THE ARCHIVE SAYS SO (`60f8d97ae`).
+
+THE GATE STOPPED CHECKING ONE QUORUM TWICE (`9261c8efd`), which the GFP pass
+found: removing the repeated conjunct failed no test, because
+`settleGateBallots` cannot answer `consolidated` on fewer voices than the
+quorum. A condition no case can reach reads as a second guard and is not one.
