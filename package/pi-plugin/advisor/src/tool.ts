@@ -23,6 +23,7 @@ import {
   renderAdvisorResult,
 } from './rendering.ts';
 import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import { selectAdvisorRunContext, } from './tool-context-selection.ts';
 import {
   AdvisorToolParametersSchema,
@@ -253,6 +254,14 @@ export async function runAdvisor(
       'advisor: no scoped models with configured auth. Check --models, enabledModels, /scoped-models, or provider login.',
     );
   }
+  /**
+   * Scoped models whose endpoints advertise configured output capacity.
+   */
+  const eligibleScope = filterAdvisorScopeByOutputCapacity({
+    scope,
+    maxAdvisorOutputTokens: options.config
+      .maxAdvisorOutputTokens,
+  },);
 
   /**
    * Advisor model system prompt.
@@ -332,7 +341,7 @@ export async function runAdvisor(
         .model
         .provider,
       scopeSource: scope.source,
-      scopedSlugs: scope.entries
+      scopedSlugs: eligibleScope.entries
         .map(function mapEntry(
           entry: ReadonlyDeep<(typeof scope.entries)[number]>,
         ) {

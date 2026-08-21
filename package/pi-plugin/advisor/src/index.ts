@@ -33,6 +33,7 @@ import {
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
 import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
@@ -220,14 +221,21 @@ async function buildMainModelGuidance(
     errorPrefix: 'advisor',
   },);
   /**
+   * Scoped models whose endpoints advertise configured output capacity.
+   */
+  const eligibleScope = filterAdvisorScopeByOutputCapacity({
+    scope,
+    maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+  },);
+  /**
    * Default model for empty Advisor params.
    */
-  const defaultSelection = scope.entries
+  const defaultSelection = eligibleScope.entries
     .length
     === 0
     ? undefined
     : selectAdvisorModel({
-      scope,
+      scope: eligibleScope,
       config,
       estimatedInputTokens: 0,
       modelRegistry: ctx.modelRegistry,
@@ -238,9 +246,9 @@ async function buildMainModelGuidance(
   /**
    * Canonical slugs available to Advisor.
    */
-  const scopedSlugs = scope.entries
+  const scopedSlugs = eligibleScope.entries
     .map(function mapEntry(
-      entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+      entry: ReadonlyDeep<(typeof eligibleScope.entries)[number]>,
     ) {
     return entry.canonicalSlug;
   },);

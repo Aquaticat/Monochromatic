@@ -17,6 +17,7 @@ import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { maxContextCharsForAdvisorModel, } from './context.ts';
 import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
 import { runAdvisor, } from './tool.ts';
 import type { AdvisorConfig, } from './types.ts';
@@ -229,14 +230,21 @@ export async function buildAdvisorStatus(
     errorPrefix: 'advisor',
   },);
   /**
+   * Scoped models whose endpoints advertise configured output capacity.
+   */
+  const eligibleScope = filterAdvisorScopeByOutputCapacity({
+    scope,
+    maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+  },);
+  /**
    * Empty-context default ranking for status display.
    */
-  const defaultSelection = scope.entries
+  const defaultSelection = eligibleScope.entries
     .length
     === 0
     ? undefined
     : selectAdvisorModel({
-      scope,
+      scope: eligibleScope,
       config,
       estimatedInputTokens: 0,
       modelRegistry: ctx.modelRegistry,
@@ -283,6 +291,20 @@ export async function buildAdvisorStatus(
         .entries
           .map(function mapEntry(
             entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+          ) {
+          return entry.canonicalSlug;
+        },)
+          .join(', ',)
+    }`,
+    `Eligible Advisor models (>=${
+      String(config.maxAdvisorOutputTokens,)
+    } output tokens): ${
+      eligibleScope.entries
+        .length
+        === 0 ? 'none' : eligibleScope
+        .entries
+          .map(function mapEligibleEntry(
+            entry: ReadonlyDeep<(typeof eligibleScope.entries)[number]>,
           ) {
           return entry.canonicalSlug;
         },)

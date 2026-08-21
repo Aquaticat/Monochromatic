@@ -9,6 +9,10 @@ import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
+import {
+  assertAdvisorModelOutputCapacity,
+  requireAdvisorScopeWithOutputCapacity,
+} from './output-eligibility.ts';
 import type {
   AdvisorConfig,
   AdvisorModelSelection,
@@ -68,18 +72,33 @@ export function selectAdvisorModel(
 ): AdvisorModelSelection {
   if ((requestedSlug !== undefined) && (requestedSlug.trim()
     !== '')) {
-    return resolveAdvisorRequestedModel({
+    /**
+     * Explicit model resolved against authenticated scope before output eligibility validation.
+     */
+    const selection = resolveAdvisorRequestedModel({
       scope,
       requestedSlug,
       modelRegistry,
     },);
+    assertAdvisorModelOutputCapacity({
+      selection,
+      maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+    },);
+    return selection;
   }
 
+  /**
+   * Scoped models whose endpoints advertise configured output capacity.
+   */
+  const eligibleScope = requireAdvisorScopeWithOutputCapacity({
+    scope,
+    maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+  },);
   /**
    * Default-selection scope with current main model removed when alternatives exist.
    */
   const defaultScope = scopeAvoidingCurrentMainModel({
-    scope,
+    scope: eligibleScope,
     ...(currentMainModel
       === undefined ? {} : { currentMainModel, }),
   },);

@@ -15,11 +15,12 @@ import {
   maxContextCharsForAdvisorModel,
 } from './context.ts';
 import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/pi-shared-model-selection/ts';
-import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
 import {
   type CurrentMainModelIdentity,
   scopeAvoidingCurrentMainModel,
+  selectAdvisorModel,
 } from './advisor-selection.ts';
+import { requireAdvisorScopeWithOutputCapacity, } from './output-eligibility.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -195,10 +196,14 @@ export function selectAdvisorRunContext(
     /**
      * Explicit Advisor model selection.
      */
-    const selection = resolveAdvisorRequestedModel({
+    const selection = selectAdvisorModel({
       scope: options.scope,
       requestedSlug: options.requestedSlug,
+      config: options.config,
+      estimatedInputTokens: 0,
       modelRegistry: options.modelRegistry,
+      ...(options.currentMainModel
+        === undefined ? {} : { currentMainModel: options.currentMainModel, }),
     },);
     return {
       selection,
@@ -216,10 +221,18 @@ export function selectAdvisorRunContext(
   }
 
   /**
+   * Scoped models whose endpoints advertise configured output capacity.
+   */
+  const eligibleScope = requireAdvisorScopeWithOutputCapacity({
+    scope: options.scope,
+    maxAdvisorOutputTokens: options.config
+      .maxAdvisorOutputTokens,
+  },);
+  /**
    * Default-selection scope with current main model removed when alternatives exist.
    */
   const defaultScope = scopeAvoidingCurrentMainModel({
-    scope: options.scope,
+    scope: eligibleScope,
     ...(options.currentMainModel
       === undefined ? {} : { currentMainModel: options.currentMainModel, }),
   },);
