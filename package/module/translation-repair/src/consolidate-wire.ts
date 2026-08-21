@@ -64,6 +64,7 @@ Rules:
 - You may take one clause from one candidate and the next from the other. Neither candidate has to be right about the whole passage, and that is the point of this call.
 - Write English, not a repair of English. The result must read as prose a person wrote, carrying the original's voice: its warmth, grief, humour or anger. A stiff literal rendering that loses the feeling is not a good rendering.
 - KEEP THE SHAPE OF THE PAGE. Every block of the ARCHIVE RENDERING appears in your rendering, of the same kind and in the same order, carrying the same block quotes, list markers, headings, footnote markers and links. Where the Chinese is shaped differently, the page's shape wins: a passage the archive sets as a block quote followed by an attribution line stays a block quote followed by an attribution line. ADD A BLOCK ONLY to carry something the ORIGINAL has and the archive left out.
+- KEEP THE TENSE OF THE PAGE. The Chinese marks no tense, so the ARCHIVE RENDERING is what settles which one this passage is in, and your rendering holds that tense throughout. Moving a passage the archive tells in the past into the present is a change you made, not a reading the ORIGINAL asked for. Never let one sentence start in one tense and finish in another.
 
 THE JUDGE FINDINGS ARE CLAIMS, NOT FACTS. Other models wrote them about these two candidates, and they can be wrong. Check each one against the ORIGINAL before you act on it, and ignore any the ORIGINAL does not support. A finding you obey that the original does not support is a defect you introduced yourself.
 

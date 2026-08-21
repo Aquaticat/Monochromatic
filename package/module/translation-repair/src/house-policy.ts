@@ -44,6 +44,7 @@ export const HOUSE_POLICY_BLOCK = `House rules this corpus is written under. The
 - Reader protection outranks completeness. When a death was by suicide, the specific method is deliberately kept vague, and when it involved medication, drug names and dosages are deliberately absent. A TRANSLATION that omits, softens, or generalizes such a detail is OBEYING this rule. Never report that as an omission, and never restore the detail, even when the ORIGINAL states it plainly. If the ORIGINAL is more specific than this rule allows, the TRANSLATION is right to be vaguer.
 - These pages are a small memorial, not an encyclopedia. Both overwrought writing and clinical detachment are wrong for them, so a rendering that carries warmth is closer to correct than one that reads like a reference work.
 - Entries are written in the third person.
+- Tense is chosen once and held. Chinese marks no tense, so English forces a choice, and that choice belongs to the passage rather than to each sentence: a sentence that opens in one tense and finishes in another is wrong however each half reads on its own. Where the English already on the page has settled on a tense, whether in the surrounding text or in the passage being replaced, that is the tense, and switching away from it without the ORIGINAL marking a change in time is wrong.
 - Pronouns follow the person's own stated wishes. Where a person was non-binary, agender, or did not specify, the ORIGINAL uses a neutral pronoun or avoids pronouns entirely, and the TRANSLATION should preserve that choice rather than resolving it to he or she. Never "correct" a neutral pronoun into a gendered one.
 - Community and in-group vocabulary is expected. A term rendered by its conventional community meaning is correct even when a literal reading of the characters says otherwise.
 - Refer to a passage, image or section by NAMING it, never by its position on the page. Do not write "below", "above", "the following" or "earlier" in English prose. Where the ORIGINAL uses such a word, render what it points AT instead: an original reading "the picture below is her last self-description" becomes "this is her last self-description", not "below is her last self-description". A screen reader gives its listener no page to look down, so a positional reference tells them nothing.
@@ -79,7 +80,7 @@ const FORCED_DIFFERENCES =
  * const tail = JUDGE_POLICY_TAIL;
  * ```
  */
-const JUDGE_POLICY_TAIL = `Hold it against a candidate only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports.
+const JUDGE_POLICY_TAIL = `Hold it against a candidate only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports. WHERE THE FORCED CHOICE IS TENSE, THE ORIGINAL SUPPORTS NEITHER READING AND THE ENGLISH IS THE AUTHORITY INSTEAD: the tense the rest of the passage holds, and the tense the text being replaced had already chosen. Name that instead of the ORIGINAL, and a candidate that disagrees with itself inside one sentence is wrong with no further evidence needed.
 
 WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. A candidate vaguer than the ORIGINAL because reader protection asks for it has left nothing out, and a candidate naming what it points at rather than where it sits on the page is obeying a rule rather than departing from the text.`;
 
@@ -108,7 +109,7 @@ WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. A candidate va
  * const tail = MEASUREMENT_POLICY_TAIL;
  * ```
  */
-const MEASUREMENT_POLICY_TAIL = `Hold a forced choice against the text under review only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports.
+const MEASUREMENT_POLICY_TAIL = `Hold a forced choice against the text under review only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports. WHERE THE FORCED CHOICE IS TENSE, THE ORIGINAL SUPPORTS NEITHER READING AND THE ENGLISH IS THE AUTHORITY INSTEAD: the tense the rest of the passage holds, and the tense the text under review had before the edit. Name that instead of the ORIGINAL, and a passage that disagrees with itself inside one sentence is wrong with no further evidence needed.
 
 WHERE A RULE YOU HAVE BEEN GIVEN AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. You are measuring, and a measurement that penalises a page for obeying the rules it was written under reports damage where there is none.
 
