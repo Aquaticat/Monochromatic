@@ -186,10 +186,21 @@ export function prepareDocumentPair(
   /**
    * Alignment findings in scorecard-stable wording.
    */
-  const alignmentFindings = alignment.findings
+  const sectionFindings = alignment.findings
     .map(function toText(finding,): string {
       return `alignment ${finding.kind} (pair ${String(finding.pairIndex,)}: ${finding.detail})`;
     },);
+
+  /**
+   * One finding per chunk whose pairing accounted for translation blocks
+   * nowhere, so the decision is legible from the artifact alone.
+   *
+   * `Zha_Ke` settled with this list EMPTY while two of its six English blocks,
+   * 2943 characters of them, had been declined. Reconstructing that took the
+   * pairing cache and the parser. Recording it here is what `#135` asks for,
+   * at the one place that already knows both the pairing and the blocks.
+   */
+  const declinedFindings: string[] = [];
 
   /**
    * Slice pairs accumulated across every aligned section.
@@ -244,6 +255,27 @@ export function prepareDocumentPair(
         targetNodes: pair.target
           .nodes,
       },);
+    if (declined.size > 0) {
+      /**
+       * Declined blocks of this chunk, for the characters they hold.
+       */
+      const blocks = pair.target
+        .nodes
+        .filter(function isDeclined(node,): boolean {
+          return declined.has(node.id,);
+        },);
+      declinedFindings.push(
+        `alignment target-unclaimed (pair ${String(pairIndex,)}: ${
+          String(blocks.length,)
+        } translation blocks no original claims, ${
+          String(blocks.reduce(function addChars(sum, node,): number {
+            return sum + (node.endOffset - node.startOffset);
+          }, 0,),)
+        } characters: ${blocks.map(function toId(node,): string {
+          return node.id;
+        },).join(', ',)})`,
+      );
+    }
 
     // BEFORE ANYTHING READS THEM. A block that reached no slice leaves the
     // document silently, and every later check works from the slices, so this
@@ -339,7 +371,10 @@ export function prepareDocumentPair(
       ? {}
       : { identityContext: identityLines.join('\n',), }),
     declaredNames,
-    alignmentFindings,
+    alignmentFindings: [
+      ...sectionFindings,
+      ...declinedFindings,
+    ],
     alignmentPairCount: alignment.pairs
       .length,
   };
