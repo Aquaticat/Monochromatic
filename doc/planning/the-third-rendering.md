@@ -1105,3 +1105,56 @@ correctly and the one-paragraph candidate is refused.
 
 This reframes the slicing task: not "one line of Chinese paired against a large
 English span" alone, but a slicer that splits inside an HTML element.
+
+## The fail-open floor, fixed
+
+Issue #153, landed in `0cf2f759b` and `393ee5486`, GFP-proven.
+
+`validateTranslatedSlice` turned a page the strict grammar refused into no page
+at all, so the floor had no block list and fell back to comparing the candidate
+against the original alone. A check that could not run answered yes.
+
+The page side now downgrades to plain markdown; the candidate side stays strict.
+That split is what the two decisions already in the code imply rather than a
+reversal of either: `inspect-paragraph.ts` refuses the fallback for a CANDIDATE,
+which this pipeline asked for and may refuse, while `parse-document.ts`
+downgrades a whole PAGE, which is archive text nobody here wrote.
+
+The relaxed reading deliberately claims no atoms. Plain markdown collapses an
+html region into one opaque node, so the references and code inside it are
+invisible, and reporting an empty atom list as complete would make the atom
+check pass by ignorance. Only the block sequence is claimed.
+
+### What the regression diff showed
+
+The floor section was rerun over all thirteen bed slices with the patched
+validator. `Zha_Ke#1` shipped flips from valid to invalid, with the finding
+naming a page of two blocks against a candidate of one. No other verdict
+anywhere in the scorecard moved.
+
+### Nothing ships at a slice cut through an element, and that is correct
+
+Two guard cases pin this, because it is a consequence worth knowing rather than
+an oversight. A candidate reproducing the cut page exactly is refused at the
+CANDIDATE parse, which stays strict. A candidate that writes the element
+correctly is refused at the FLOOR, because the two grammars disagree about what
+the same element is: the page read loosely calls it an html block, a candidate
+read strictly calls it an `mdxJsxFlowElement`, and the kinds never match.
+
+Fail-closed both ways is the safe answer for a span that is not a well-formed
+fragment. Every candidate is refused, the incumbent stays, and the content
+survives. It is not shipping, and making such slices shippable belongs to the
+slicer, which is #154.
+
+### The downgrade is recorded, and the source-side twin is not a live problem
+
+The fallback was itself silent at first, which the repo's own parser policy
+forbids. A refusal already shows which reading produced it, since the finding
+names the blocks compared, but a pass carried no evidence at all. The verdict
+now carries the grammar that read the page, and `translate-repair.ts` records
+`translate-page-downgraded` beside the existing `translate-unvalidated`.
+
+The source arm of the same check was probed and left alone. It returns `unknown`
+on a strict refusal, `translate-repair.ts` already records that as
+`translate-unvalidated`, and zero of the thirteen bed slices reach it. A
+recorded fail-open with no live case is not worth changing without one.
