@@ -2152,3 +2152,57 @@ that it touches.
 The shape survives its own controls, on both runs, including the one slice designed to fail it.
 Two things stand between it and wiring, and both are named above:
 `#151` for the line structure, and a stated policy for the candidates that never validate.
+
+## `#151` landed, and it corrects the first measurement above
+
+`consolidate-wrap.ts` gives the stage the assembly step it never had.
+It calls the same `wrapReplacementText` both lanes call,
+never touches a slice the gate settled on its standing text,
+and re-derives whether a wrapped consolidation still differs from what stands.
+
+### Verified against the rows the defect was measured on
+
+Applied to the 24 shipped consolidations of the band pair,
+not to a fixture written to agree with it.
+
+Raw line counts are the wrong instrument for the after-state,
+because a consolidation is often shorter than the lanes it was built from
+and would read as under-wrapped against their line count.
+Characters per line is the honest metric.
+
+Before the fix, shipped consolidations ran at 138, 140, 155, 174, 176, 184 and 272
+characters per line, which is prose on one line.
+After it, every shipped consolidation lands between 20 and 44,
+against a lane density of 20 to 58 on the same slices.
+The rule corrected 10 of the 11 real consolidations in run 8 and 8 of the 9 in run 9.
+
+`Acheron#1` is the one that stays above its lanes, at 88 and 92 against 58.
+It is also the shortest consolidation in the pair at 176 and 184 characters,
+and the rule found one semantic boundary in it.
+That is the rule applied, not the rule skipped.
+
+### The correction: two of those consolidations were only re-wrappings
+
+Re-deriving demotion found slices the gate had called a change
+where the only difference from the standing text was where the lines break.
+
+`gaoyanger#1` in BOTH runs, and `keyword233#0` in run 8.
+All three ship 198 or 221 characters against a standing text of the same length,
+and once wrapped they are the standing text exactly.
+
+So measurement one above overstates.
+The roster backed a consolidation carrying a real content change
+at 9 of 11 decided slices in run 8, not 11 of 11,
+and at 8 of 9 in run 9, not 9 of 9.
+
+That rate is still high, and it is now a rate about content rather than about whitespace.
+Nothing in either contest could have told those apart,
+because the gate compares an unwrapped consolidation against the standing text
+and a line break reads to it as a difference.
+
+### What this does to the blocker
+
+`#151` was the first of the two things standing between this shape and wiring.
+It is done, tested, and verified on the measured population.
+The second, a stated policy for the roughly one candidate in ten that never validates,
+is what remains.
