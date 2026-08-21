@@ -4,6 +4,7 @@ import {
   readSliceSkeleton,
   type SliceSkeleton,
 } from './translate-skeleton.ts';
+import { readPageSkeleton, } from './translate-skeleton-page.ts';
 
 //region Translate validation
 // Compares a candidate translation against its ORIGINAL on everything that
@@ -557,14 +558,21 @@ export function validateTranslatedSlice(
   /**
    * Reading of the text this candidate would replace.
    */
-  const replaced = readSliceSkeleton({ text: pageText, },);
+  const replaced = readPageSkeleton({ text: pageText, },);
 
   /**
-   * Page's shape, empty where there is none or the grammar refuses it.
+   * Page's shape, empty only where there is no page or NEITHER grammar reads
+   * it.
    *
-   * A PAGE THE STRICT GRAMMAR REFUSES IS NOT A CANDIDATE'S FAULT EITHER, and an
-   * archive written before this grammar existed can be one, so the check falls
-   * back to the original alone rather than refusing the candidate.
+   * A PAGE THE STRICT GRAMMAR REFUSES IS NOT A CANDIDATE'S FAULT, and an archive
+   * written before this grammar existed can be one, so {@link readPageSkeleton}
+   * downgrades the page to plain markdown rather than refusing the candidate.
+   *
+   * IT NO LONGER FALLS BACK TO THE ORIGINAL ALONE, which was a check answering
+   * yes to a question it had never evaluated. Measured on the sixth
+   * consolidation bed: a slice boundary between an opening details tag and its
+   * closing tag made the page unparseable, the floor lost its block list, and a
+   * 164-character rendering passed against a 3875-character page.
    */
   const page: SliceSkeleton = (replaced.kind === 'read')
     ? replaced.skeleton

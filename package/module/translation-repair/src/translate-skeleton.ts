@@ -149,7 +149,7 @@ type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
  * const detail = blockDetail({ node, },);
  * ```
  */
-function blockDetail({ node, }: { readonly node: ReadonlyMdastContent; },): string {
+export function blockDetail({ node, }: { readonly node: ReadonlyMdastContent; },): string {
   if (node.type === 'heading')
     return `level ${String(node.depth,)}`;
   if (node.type === 'list')
