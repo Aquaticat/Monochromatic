@@ -14,6 +14,7 @@ import {
   type ProposalValidity,
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
+import type { SliceValidation, } from './translate-validate.ts';
 import { wrapConsolidation, } from './consolidate-wrap.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import { buildTranslateCandidates, } from './translate-candidates.ts';
@@ -71,6 +72,37 @@ export type ConsolidationTerminal =
   | 'consolidated';
 
 /**
+ * One voice's structural verdict WITHOUT its text, which is what a record of
+ * this stage may carry.
+ *
+ * The proposals themselves are corpus renderings and do not belong in a
+ * settlement a run writes out. Who was refused and why does: run 8 carried 7
+ * invalid candidates across slices that all shipped normally, and nothing
+ * downstream could see them.
+ *
+ * @example
+ * ```ts
+ * const verdict: ProposalVerdict = { modelId: 'hf:cat/Cat-A', kind: 'valid', findings: [], };
+ * ```
+ */
+export type ProposalVerdict = {
+  /**
+   * Voice that wrote the proposal.
+   */
+  readonly modelId: string;
+
+  /**
+   * What the structural guard made of it.
+   */
+  readonly kind: SliceValidation['kind'];
+
+  /**
+   * Why it was refused, empty when it was not.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
  * The slice this stage is deciding about, in the archive's terms.
  *
  * @example
@@ -119,10 +151,19 @@ export type ConsolidationSettlement = {
   readonly text: string;
 
   /**
-   * What the validity floor made of the slate, kept even when it passed, so a
-   * run records which voices were refused rather than only how many survived.
+   * What the validity floor made of the slate, kept even when it passed.
+   *
+   * NAMES REFUSALS ONLY WHEN NOTHING SURVIVED. A slate with one survivor and
+   * five refusals reports the survivor and says nothing about the five, which
+   * is right for the floor's own question and wrong for a record of the run.
+   * `verdicts` is what carries the rest.
    */
   readonly floor: SlateFloor;
+
+  /**
+   * Every voice's verdict, survivors and refusals alike, without their text.
+   */
+  readonly verdicts: readonly ProposalVerdict[];
 
   /**
    * What the slate judges settled, absent when no slate reached them.
@@ -158,6 +199,9 @@ export type ConsolidationSettlement = {
  *
  * @param validity - each voice's structural verdict, keyed by the same model id
  *
+ * @param producedFindings - what gathering and repairing recorded, which every
+ * exit reports ahead of its own by `ProducedSlate`'s contract
+ *
  * @param standingText - wording in place when this stage began, which is what a
  * consolidation has to beat and what ships whenever it does not
  *
@@ -173,7 +217,7 @@ export type ConsolidationSettlement = {
  *
  * @example
  * ```ts
- * const settled = await settleConsolidation({ client, roster, subject, voices, validity, standingText, signal, perCallTimeoutMs, l, },);
+ * const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function settleConsolidation(
@@ -183,6 +227,7 @@ export async function settleConsolidation(
     subject,
     voices,
     validity,
+    producedFindings,
     standingText,
     signal,
     perCallTimeoutMs,
@@ -193,6 +238,7 @@ export async function settleConsolidation(
     readonly subject: ConsolidationSubject;
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly validity: readonly ProposalValidity[];
+    readonly producedFindings: readonly string[];
     readonly standingText: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -223,6 +269,46 @@ export async function settleConsolidation(
     l: sl,
   },);
 
+  /**
+   * Every voice's verdict without its text, which is what a run may record.
+   */
+  const verdicts: readonly ProposalVerdict[] = validity.map(
+    function toVerdict(
+      {
+        modelId,
+        validation,
+      }: ProposalValidity,
+    ): ProposalVerdict {
+      return {
+        modelId,
+        kind: validation.kind,
+        findings: (validation.kind === 'invalid') ? validation.findings : [],
+      };
+    },
+  );
+
+  // NO STANDING TEXT IS CHECKED FIRST, and the order is the whole point.
+  // A slice with nothing to consolidate against and a slate of refusals is
+  // both things at once, and a census counting terminal states has to be told
+  // which one it is. The absent standing text is the older and larger fact:
+  // the floor would have refused a slate this slice was never going to use.
+  //
+  // `buildTranslateCandidates` offers a blank incumbent as no candidate at all,
+  // which is right for a passage nobody translated and wrong for a contest that
+  // declined, so this records the consolidations and stops rather than putting
+  // "ship nothing" on the ballot.
+  if (standingText === '') {
+    sl.warn('consolidation: no standing text to judge against, so the slice keeps what it had',);
+    return {
+      terminal: 'no-standing-text',
+      text: standingText,
+      floor,
+      verdicts,
+      rewrapped: false,
+      demoted: false,
+    };
+  }
+
   // A SLATE WITH NOTHING VALID ON IT ENDS HERE, before either round is bought.
   // The gate's question is which rendering is more faithful, and that has no
   // meaning when the only proposals are structurally not the page.
@@ -231,24 +317,10 @@ export async function settleConsolidation(
       terminal: 'incumbent-only',
       text: standingText,
       floor,
+      verdicts,
       rewrapped: false,
       demoted: false,
     };
-
-  // NO STANDING TEXT MEANS NO SLATE JUDGE. `buildTranslateCandidates` offers a
-  // blank incumbent as no candidate at all, which is right for a passage nobody
-  // translated and wrong for a contest that declined, so this records the
-  // consolidations and stops rather than putting "ship nothing" on the ballot.
-  if (standingText === '') {
-    sl.warn('consolidation: no standing text to judge against, so the slice keeps what it had',);
-    return {
-      terminal: 'no-standing-text',
-      text: standingText,
-      floor,
-      rewrapped: false,
-      demoted: false,
-    };
-  }
 
   /**
    * Model ids the floor passed, read off the floor so the filter below takes
@@ -279,8 +351,17 @@ export async function settleConsolidation(
     client,
     produced: {
       candidates: built.candidates,
+
+      // SURVIVORS RATHER THAN VOICES HEARD, because this number exists to tell
+      // the judges how thin the slate they are deciding over is, and a refused
+      // proposal is not on it. A census reading this for transport health would
+      // misread a refusal as a lost voice; `verdicts` is what separates them.
       heardTranslators: survivingVoices.length,
-      findings: built.findings,
+
+      findings: [
+        ...producedFindings,
+        ...built.findings,
+      ],
     },
     judgeModelIds: roster,
     sourceText: subject.sourceText,
@@ -300,6 +381,7 @@ export async function settleConsolidation(
       terminal: 'slate-kept-standing',
       text: standingText,
       floor,
+      verdicts,
       decided,
       rewrapped: false,
       demoted: false,
@@ -345,6 +427,7 @@ export async function settleConsolidation(
     terminal,
     text: wrapped.text,
     floor,
+    verdicts,
     decided,
     gate,
     rewrapped: wrapped.rewrapped,

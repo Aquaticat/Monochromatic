@@ -126,6 +126,7 @@ export {
   type ConsolidationSettlement,
   type ConsolidationSubject,
   type ConsolidationTerminal,
+  type ProposalVerdict,
   settleConsolidation,
 } from './consolidate-settle.ts';
 export {
