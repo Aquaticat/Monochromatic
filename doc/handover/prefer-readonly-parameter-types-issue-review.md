@@ -7,7 +7,7 @@ Last reviewed:
 2026-08-21.
 
 Source snapshot:
-`d921d2c1b63e5bc0de0ebae55f61386b83aa62c1`.
+`f850dd98f`.
 
 Scope:
 `package/oxlint-plugin/prefer-readonly-parameter-type`,
@@ -34,34 +34,31 @@ Root `AGENTS.md` remains unchanged while that placement question is open.
 
 ## Executive direction
 
-Start with the cache-integrity defect in
-[#427](https://github.com/Aquaticat/Monochromatic/issues/427#issuecomment-5288804471).
-A warm persistent-cache hit can forget deliberately omitted callables,
-lose diagnostics,
-and vary by worker count.
-Every later baseline depends on repairing that first.
+Implement observer-return retention as a fact distinct from unresolved-call opacity under
+[#427](https://github.com/Aquaticat/Monochromatic/issues/427).
+This is the remaining rule-ergonomics prerequisite:
+identity observers must continue withholding readonly offers without producing unnamed-call opacity diagnostics.
 
-Then improve the shared collection relation in two separate dimensions:
-
-1. distinguish observer-return retention from unresolved-call opacity;
-2. add position-aware foreign-ownership edges for collection observers.
-
-After those relations are trustworthy,
-replace flat diagnostic strings with structured writable-path and producer evidence.
-That work completes the actionable guidance requested by
-[#427](https://github.com/Aquaticat/Monochromatic/issues/427) and
-[#430](https://github.com/Aquaticat/Monochromatic/issues/430).
-
-Only then take the stable workspace fingerprint required by
-[#423](https://github.com/Aquaticat/Monochromatic/issues/423#issuecomment-5288807256)
-and consider enabling the three extracted rules.
-They must move directly from `off` to `error` after remediation or reviewed acceptance.
+Then take the stable full-workspace fingerprint required by
+[#423](https://github.com/Aquaticat/Monochromatic/issues/423#issuecomment-5288807256).
+The package now proves cold,
+warm,
+one-worker,
+and default-worker diagnostic equality on a disposable tuple-panic project,
+but that is not the workspace acceptance sweep.
+After remediation or reviewed acceptance,
+move the three extracted rules directly from `off` to `error`.
 There is no warning phase.
 
 Treat [#441](https://github.com/Aquaticat/Monochromatic/issues/441#issuecomment-5308861506) as a separate semantic
 snapshot design track.
 The accepted direction is a run-frozen filesystem view,
 not repeated live-filesystem freshness checks.
+
+Issue [#453](https://github.com/Aquaticat/Monochromatic/issues/453) records every item intentionally deferred from the
+ergonomic implementation session.
+Issues [#451](https://github.com/Aquaticat/Monochromatic/issues/451) and
+[#452](https://github.com/Aquaticat/Monochromatic/issues/452) retain the two narrow documentation-placement decisions.
 
 ## Evidence boundary
 
@@ -81,16 +78,23 @@ Every body and every comment for the direct issue set was read.
 
 The current source was then checked against the open issues.
 That reconciliation matters because issue comments contain withdrawn measurements,
-and the cache issue calls the format schema 4 while current source declares schema 5.
-The omission-loss mechanism still exists in schema 5:
+and the original cache investigation describes schemas 4 and 5 while current source declares schema 8.
 
-- `effect-demand-index.ts` keeps `omittedCallableKeys` only in the current process;
-- `effect-cache-envelope.ts` has no omission metadata;
-- `effect-summary-persistent-cache.ts` returns summaries and dependency edges only;
-- `effect-summary-cache.ts` cannot restore omitted identities on a persistent hit.
+The 2026-08-21 implementation session added issues #451 through #453 after the original inventory.
+They concern living-handover placement,
+no-budget path-guidance placement,
+and deferred session work respectively.
+They are tracked explicitly rather than being folded into the original candidate count.
 
-No implementation or performance experiment was run for this handover.
-The recommendations use published issue measurements and a current source audit.
+Implementation evidence now includes package lint,
+the complete unit suite,
+external packed-consumer execution,
+semantic bridge host execution,
+default-worker external implementation execution,
+and a disposable Oxlint project comparing exact cold,
+warm,
+fixed-worker,
+and default-worker diagnostics.
 
 ## Current architecture and confirmed open seams
 
@@ -107,31 +111,44 @@ The extracted rules remain `off` with links to #423.
 `package/config/oxlint/src/overrides.ts` exempts only the preference rule at the plugin's self-hosting boundary,
 so #423 correctly requires parity before enabling the extracted rules.
 
-The following #427 mechanisms remain visible in current source:
+The following implementation state is current:
 
-- `ElementApplication` carries receiver slot,
-  callback identity,
-  and broad observer parameter positions,
-  but no collection call identity or retention provenance;
-- `propagateElementApplications` adds opacity when an observer returns receiver state,
-  then copies opacity provenance from an observer that can have none;
-- `foreignBorrowedOwnershipSeed` and the completed foreign graph initialize `elementApplications` as empty;
-- `ReadonlyClassification` stores writable causes as strings such as `property type is writable`;
-- `originOwner` walks lexically to an enclosing callable or named type,
-  even when a local seed expression is the real producer.
+- schema 8 persists validated source-local omission identities and bounded reason categories;
+- cold and restored omissions log at `warn`,
+  while caught stacks remain at debug level;
+- exact lint diagnostic records match across cold,
+  warm,
+  fixed-worker,
+  and default-worker processes in the tuple-panic regression;
+- structured classifications retain every distinct reachable writable path without character or item budgets;
+- path evidence retains workspace,
+  default-library,
+  external-library,
+  and unresolved declaration ownership;
+- local arrays,
+  object literals,
+  promise values,
+  generic values,
+  fold seeds,
+  conditional branches,
+  direct returns,
+  and binding-mediated returns retain distinct producer evidence;
+- position-aware foreign observer inbounds cover supported array observers,
+  seeded and no-seed folds,
+  referenced observers,
+  explicit callback `this`,
+  mixed inbounds,
+  and inherited readonly-array surfaces.
 
-The package README currently says callback elements can inherit `ForeignBorrowed` provenance.
-That is true for owned helper calls and supported binding paths,
-but false for default-library collection callbacks while #427 remains open.
-Do not use that README sentence as evidence that collection observer propagation is implemented.
-Correct it when the corresponding implementation or documentation increment lands.
+The remaining #427 mechanism is retention conflation:
+`propagateElementApplications` still adds opacity when an observer returns receiver state,
+then copies opacity provenance from an observer that can have none.
+That can withhold the preference correctly while producing an incorrect unnamed-call opacity diagnostic.
 
-The #430 diagnostic gaps also remain:
-
-- property names are unquoted;
-- the classifier reports one leaf name rather than a complete reachable path;
-- inferred no-origin guidance does not warn that `Readonly<T>` is shallow;
-- external declaration ownership is not available to guidance as structured evidence.
+Issue #430 is resolved and closed by `3ef6fed29`.
+The classifier now renders complete quoted paths,
+explains shallow `Readonly<T>`,
+and selects external or mixed declaration guidance from structured evidence.
 
 The #441 bridge state remains as reported:
 `openSemanticFile` checks deletion only for the previously active source,
@@ -222,12 +239,16 @@ and `semantic-overlay-filesystem.ts` delegates every unknown path to the live fi
 - [#423](https://github.com/Aquaticat/Monochromatic/issues/423),
   open:
   enable the extracted rules after workspace remediation.
-  Its current baseline is intentionally invalidated by #427's warm-cache and false-opacity defects.
+  The prior baseline is obsolete after schema-8 cache repair,
+  foreign observer propagation,
+  and diagnostic changes.
+  Take a fresh baseline only after retention is separated from opacity.
 - [#424](https://github.com/Aquaticat/Monochromatic/issues/424),
   closed:
   diagnostics pointed at consumers and rendered multiline binding patterns.
   The implementation adds one-line parameter subjects and workspace-owned semantic type origins.
-  #427 later proved that lexical owner normalization still misattributes local seeds and expressions.
+  Commit `3ef6fed29` and follow-up `b2078262d` remove lexical owner attribution for local expressions while preserving
+  direct and binding-mediated callable returns.
 - [#427](https://github.com/Aquaticat/Monochromatic/issues/427),
   open:
   composite implementation issue covering foreign observer provenance,
@@ -236,19 +257,40 @@ and `semantic-overlay-filesystem.ts` delegates every unknown path to the live fi
   persistent omission loss,
   false unnamed-call opacity,
   and integrity reporting.
-  Its final investigation comment and `doc/planning/prefer-readonly-issue-427.md` are the current implementation
-  specification.
+  Commits `3ef6fed29`,
+  `b2078262d`,
+  and `f850dd98f` land every listed item except observer-return retention versus opacity and remaining named-boundary
+  guidance such as `flat`.
+  `doc/planning/prefer-readonly-issue-427.md` remains the rationale,
+  while issue #453 is the current remainder checklist.
 - [#430](https://github.com/Aquaticat/Monochromatic/issues/430),
-  open:
-  diagnostics still omit the complete writable path,
-  leave property names unquoted,
-  and do not explain that `Readonly<T>` is shallow.
+  closed:
+  complete quoted writable paths,
+  external and mixed ownership guidance,
+  shallow `Readonly<T>` warning,
+  and deep projection fallback landed in `3ef6fed29`.
 - [#436](https://github.com/Aquaticat/Monochromatic/issues/436),
   closed:
   a package lint failure exposed #427's callback-provenance gap.
   Commit `abd3d3f5d` changes `.some()` to `for...of`,
   a verified local workaround.
-  It does not fix provenance and must not be treated as closing #427.
+  Commit `3ef6fed29` later fixes position-aware collection callback provenance itself.
+
+### Maintenance and session follow-up
+
+- [#451](https://github.com/Aquaticat/Monochromatic/issues/451),
+  open:
+  decide where event-driven living-handover maintenance pointers belong.
+- [#452](https://github.com/Aquaticat/Monochromatic/issues/452),
+  open:
+  decide where the rule-specific prohibition on character and path-count budgets belongs.
+  Root `AGENTS.md` remains unchanged.
+- [#453](https://github.com/Aquaticat/Monochromatic/issues/453),
+  open:
+  records observer-retention work,
+  #423 rollout,
+  #441 snapshots,
+  and both placement decisions intentionally deferred from the ergonomic implementation session.
 
 ### Incidental and historical exact-text matches
 
@@ -270,31 +312,29 @@ and `semantic-overlay-filesystem.ts` delegates every unknown path to the live fi
 
 ## Improvement sequence
 
-### Repair persistent omission completeness
+### Completed: repair persistent omission completeness
 
-Current failure boundary:
-`effect-demand-index.ts` adds an omitted callable key after direct-summary construction throws.
-Fresh-process completeness accepts that omission and lets callers fail closed.
-The persistent entry stores neither the key nor a bounded reason,
-so a warm process restores the edge and summaries without the omission that explains the missing callee.
-
-Implement the repair through one coherent cache shape:
+Commits `3ef6fed29`,
+`b2078262d`,
+and `f850dd98f` implement one coherent cache shape:
 
 - associate omitted callable identities with the source whose scan omitted them;
 - persist validated omission metadata in `effect-cache-envelope.ts`;
 - return it through `PersistentEffectCacheHit` and `LayeredSummaryCacheHit`;
 - retain it in the process memory layer;
 - merge it into the build's `omittedCallableKeys` before `assertReachedCallSummaries`;
-- rotate the current schema 5 cache identity;
-- reject entries from the prior schema instead of inferring omissions from missing edges;
-- expose a bounded omission count and source identity through an authoritative integrity signal.
+- rotate the cache identity through schema 8;
+- reject entries from prior schemas instead of inferring omissions from missing edges;
+- retain specific bounded reason categories,
+  including the TypeScript tuple serializer panic;
+- emit concise cold and restored `warn` records,
+  with full caught stacks available at debug level.
 
-Logger-only reporting is insufficient because Oxlint can still report a clean run.
-My preferred outcome is a failing diagnostic or task status,
-but #427 does not settle that behavior and the upstream tuple panic can occur during an ordinary scan.
-Obtain owner confirmation for the authoritative signal before implementing it.
+The user selected non-failing visible logging for incomplete analysis.
+The rule fails closed locally by withholding affected offers,
+but omission logs do not become Oxlint diagnostics or fail the lint task.
 
-#### Cache options
+#### Chosen cache option
 
 Persist validated omissions:
 
@@ -326,15 +366,14 @@ persist validated omissions > refuse incomplete-source caching > infer omissions
 Persistence beats refusal because it preserves both correctness and reuse.
 Refusal beats inference because explicit failure remains distinguishable from corrupt state.
 
-Completion criteria:
+Verified controls:
 
-- A deterministic injected summary failure covers ordinary callee and callback edges without relying on the TypeScript
-  tuple panic.
-- Separate cold and warm processes emit identical `(rule, file, range, message)` fingerprints.
-- One-worker and default-worker runs emit the same fingerprint.
-- A schema 5 payload without omission metadata is a cache miss after the schema rotation.
-- The owner-ratified integrity mechanism makes omitted coverage visible in the authoritative lint result;
-  stderr logger warnings are not the only signal.
+- the minimal TypeScript tuple panic writes an explicit source-local omission;
+- separate cold and warm Oxlint processes emit identical diagnostic records;
+- one-worker and default-worker runs emit the same diagnostic records;
+- a schema 5 payload without omission metadata is a cache miss under schema 8;
+- cold and restored warnings both name `typescript-tuple-serialization-failed`;
+- corrupted keys must belong to the envelope source and cannot duplicate a persisted summary.
 
 ### Separate retention from unresolved effects
 
@@ -367,13 +406,13 @@ Completion criteria:
 - A persistent round trip preserves the verdict and exact provenance.
 - The diagnostic never falls back to “a call whose name this rule could not determine” for known collection retention.
 
-### Add position-aware foreign observer edges
+### Completed: add position-aware foreign observer edges
 
 Do not reuse broad effect reachability as ownership proof.
 The effect relation may over-approximate observer positions safely because it adds mutation or uncertainty.
 Foreign ownership suppresses a preference and therefore needs exact value flow.
 
-Add a separate collection-observer inbound relation that states which callback formal receives:
+The implementation adds a separate collection-observer inbound relation that states which callback formal receives:
 
 - a receiver element;
 - the receiver collection;
@@ -382,14 +421,14 @@ Add a separate collection-observer inbound relation that states which callback f
 - an index;
 - `thisArg` or another independent call argument.
 
-Feed only receiver-derived positions into the existing conjunctive foreign-ownership fixed point.
+Only receiver-derived positions feed the existing conjunctive foreign-ownership fixed point.
 One ordinary,
 mixed,
 or unresolved inbound must still remove inferred foreign provenance.
 Do not repeat `ForeignBorrowed` on callback descendants,
 and do not add type-name or member-name ownership allow-lists.
 
-#### Foreign ownership options
+#### Chosen foreign ownership option
 
 Position-aware virtual inbound edges:
 
@@ -418,7 +457,7 @@ Exact value flow beats repeated assertions.
 Repeated assertions beat global exemptions only because they remain local,
 but neither fallback is recommended.
 
-Completion criteria:
+Verified controls:
 
 - Cover `map`,
   `forEach`,
@@ -432,16 +471,20 @@ Completion criteria:
   and `reduceRight`.
 - Seeded folds keep independent accumulators ordinary.
 - No-seed folds derive accumulator ownership only from receiver elements.
-- Index and `thisArg` positions never inherit receiver ownership.
+- Index,
+  explicit callback `this`,
+  and `thisArg` positions never inherit receiver ownership.
+- Referenced observers used only by a foreign receiver are proved.
 - Reusable observers with one ordinary inbound remain unproved.
+- Inherited readonly-array surfaces retain the default-library method authority.
 - Explicit foreign ownership changes preference eligibility only;
   mutation,
   opacity,
   and contract evidence remain effect-driven.
 
-### Replace diagnostic strings with structured evidence
+### Completed: replace diagnostic strings with structured evidence
 
-Make classification evidence carry what reporting needs instead of parsing or extending `reason` strings.
+The classifier carries what reporting needs instead of parsing or extending `reason` strings.
 For writable data,
 retain:
 
@@ -460,7 +503,7 @@ External declaration ownership changes the remediation,
 not the mutable classification.
 A workspace-created value with an external type still needs ordinary readonly analysis.
 
-Replace lexical `originOwner` normalization with explicit producer kinds:
+Producer evidence now distinguishes:
 
 - proved callable return producer;
 - named type producer;
@@ -475,16 +518,17 @@ or conditional branch must keep its expression or binding location.
 A genuine returned object may still normalize to its producing callable.
 Keep full offsets in identity so distinct expressions on one line do not collapse.
 
-Use the suggestion engine's existing verified
+The suggestion engine uses its verified
 `import('type-fest').ReadonlyDeep<...>` rewrite when `type-fest` resolves at the authored boundary.
 For inferred external values,
 name a local deep projection as the available action.
 State explicitly that `Readonly<T>` is shallow and can move a finding inward without resolving it.
 Do not add an external-type allow-list.
 
-Completion criteria:
+Verified controls:
 
-- Diagnostics render complete quoted paths for nested properties and index signatures.
+- Diagnostics render every complete distinct quoted path for nested properties and index signatures without a display
+  budget.
 - Unique external,
   mixed,
   merged,
@@ -492,18 +536,16 @@ Completion criteria:
   multiple,
   and incomplete declaration cases choose non-misleading guidance.
 - Reduce seeds and comparable local expressions never receive callable-return advice based only on lexical containment.
-- Genuine callable-return controls continue to name the callable.
+- Direct and binding-mediated callable-return controls continue to name the callable.
 - Every offered exact projection is resolvable and type-checks at the user-owned annotation boundary.
-- `flat` uses collection guidance rather than the generic method message.
+
+Collection-specific guidance for `flat` remains deferred under #427 and #453.
 
 ### Establish the rollout fingerprint and enable extracted rules
 
 Do not use the #427 counts as a current baseline.
 They were measured to demonstrate cache and attribution defects.
-After the cache,
-retention,
-foreign ownership,
-and diagnostic evidence increments land:
+After observer-return retention is separated from opacity:
 
 1. run the extracted rules over the full workspace from a clean persistent cache;
 2. repeat warm and worker-count controls in separate processes;
