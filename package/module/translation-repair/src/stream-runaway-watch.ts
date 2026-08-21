@@ -52,6 +52,22 @@ const RATIO_DIGITS = 4;
 const OPENING_TEXT_CAP = 200;
 
 /**
+ * Answer characters one call may produce before the watch calls it a runaway.
+ *
+ * MEASURED, NOT CHOSEN. Over 545 completed calls the largest legitimate
+ * emission was 4,278 content characters, and the two content-producing cuts
+ * emitted 25,482 and 28,026. Ten thousand sits between them with better than
+ * twice the margin over observed legitimate use.
+ *
+ * A DEFAULT RATHER THAN A CONSTANT THE GUARD FREEZES IN: the measurement
+ * behind it comes from one bed, so a call site that knows its own role emits
+ * more should be able to say so, the way the exchange timeout already can.
+ * `doc/decision/translation-repair-runaway-call-termination.md` records what
+ * the number rests on.
+ */
+const CONTENT_OVERRUN_CAP = 10_000;
+
+/**
  * Channels watched, in the order a verdict is reported for them.
  *
  * REASONING FIRST, because a runaway there is the case that produces no answer
@@ -90,6 +106,24 @@ export type RunawayVerdict = {
    * call cost before it was stopped.
    */
   readonly charsSeen: number;
+} | {
+  readonly kind: 'overrun';
+
+  /**
+   * Channel that exceeded its bound.
+   */
+  readonly channel: StreamChannel;
+
+  /**
+   * Characters that channel produced before the verdict.
+   */
+  readonly charsSeen: number;
+
+  /**
+   * Bound that was exceeded, carried so a caller reports what was expected
+   * rather than only what arrived.
+   */
+  readonly cap: number;
 };
 
 /**
@@ -155,7 +189,13 @@ export type RunawayWatch = {
  * }
  * ```
  */
-export function watchRunaway(): RunawayWatch {
+export function watchRunaway(
+  {
+    contentCap = CONTENT_OVERRUN_CAP,
+  }: {
+    readonly contentCap?: number;
+  } = {},
+): RunawayWatch {
   /**
    * Turns raw server-sent events into generated text, per channel.
    */
@@ -190,7 +230,17 @@ export function watchRunaway(): RunawayWatch {
 
   /**
    * Reads whichever channel has gone wrong, if either has, by either
-   * detector.
+   * detector, and then whether the answer channel has simply produced too
+   * much.
+   *
+   * REPETITION IS READ FIRST, but that ordering only decides a stream both
+   * checks have already flagged, which measurement says is rare. The two
+   * observed repetition endings on the ANSWER channel were called degenerate
+   * only after 131,078 content characters, so the volume bound at 10,000 now
+   * reaches them thirteen times earlier and they report `overrun` where they
+   * used to report `degenerate`. That is a deliberate trade: the same call is
+   * ended either way, far sooner, and the reasoning channel is untouched
+   * because no volume bound applies to it.
    *
    * @returns Verdict for the first watched channel that has run away
    *
@@ -242,7 +292,32 @@ export function watchRunaway(): RunawayWatch {
       return [];
     },);
 
-    return failing[0] ?? { kind: 'continuing', };
+    /**
+     * Repetition verdict, if either detector on either channel found one.
+     */
+    const [repeated,] = failing;
+    if (repeated !== undefined)
+      return repeated;
+
+    /**
+     * Answer characters produced so far, which is the volume the bound reads.
+     *
+     * THE ANSWER CHANNEL ONLY. A reasoning bound was measured and refused: on
+     * every thinking model here reasoning precedes content, so a bound on
+     * silent reasoning fires mid-stream on calls that were about to answer,
+     * and at 40,000 it would have killed 22 of 545 completed calls.
+     */
+    const contentChars = ratioDetectors.content
+      .charsSeen();
+    if (contentChars >= contentCap)
+      return {
+        kind: 'overrun',
+        channel: 'content',
+        charsSeen: contentChars,
+        cap: contentCap,
+      };
+
+    return { kind: 'continuing', };
   }
 
   return {

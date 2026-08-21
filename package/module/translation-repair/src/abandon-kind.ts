@@ -1,5 +1,6 @@
 import { StreamCutShortError, } from './stream-cut.ts';
 import { StreamDegenerateError, } from './stream-runaway-watch.ts';
+import { StreamOverrunError, } from './stream-overrun.ts';
 
 //region Abandon kind
 // WHY A VOICE WAS LOST, in a form a run log can be grouped by.
@@ -54,6 +55,10 @@ const RATIO_DIGITS = 4;
  * ```
  */
 export function describeAbandon({ error, }: { readonly error: unknown; },): string {
+  if (error instanceof StreamOverrunError)
+    return `overran ${error.channel} at ${String(error.charsSeen,)} chars `
+      + `against a bound of ${String(error.cap,)}`;
+
   if (error instanceof StreamDegenerateError) {
     /**
      * Share of recent windows that were distinct when the call was ended.

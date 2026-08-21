@@ -324,8 +324,10 @@ await describe({
     },),
 
     it({
-      name: 'LETS A HEALTHY LONG CALL FINISH, thinking and answer alike, so a model that simply '
-        + 'writes a great deal is never cut off for it',
+      name: 'LETS A HEALTHY LONG CALL FINISH, with UNBOUNDED THINKING and an answer inside the '
+        + 'volume bound, so a model that simply writes a great deal is never cut off for it. The '
+        + 'thinking side is 6000 frames on purpose: a reasoning volume bound was measured and refused, '
+        + 'and this is what pins that refusal',
       fn: async () => {
         /**
          * Long, varied thinking followed by a long, varied answer.
@@ -342,7 +344,7 @@ await describe({
             },);
           },
         ).join('',) + Array.from(
-          { length: 6_000, },
+          { length: 120, },
           function answer(
             _unused,
             at,

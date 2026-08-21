@@ -243,6 +243,10 @@ export {
   watchRunaway,
 } from './stream-runaway-watch.ts';
 export {
+  isSelfEndedStream,
+  StreamOverrunError,
+} from './stream-overrun.ts';
+export {
   armIdleGuard,
   type IdleGuard,
   STREAM_FIRST_BYTE_MS,

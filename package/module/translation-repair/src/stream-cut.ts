@@ -42,15 +42,21 @@ const OPENING_CHARS = 80;
 /**
  * How a stream ended.
  *
- * THREE VALUES rather than two, so a termination THIS SYSTEM CHOSE reads as
+ * FOUR VALUES rather than two, so a termination THIS SYSTEM CHOSE reads as
  * its own outcome rather than as `cut`. A stall and a runaway call for
  * opposite responses, a stall is worth retrying and a model that has begun
  * repeating itself will repeat itself again, and a reader counting `cut`
  * lines to measure stalls would otherwise count every deliberate termination
  * among them, which is the same conflation `StreamDegenerateError` was given
  * its own class to avoid, one layer further out.
+ *
+ * THE TWO CHOSEN ENDINGS STAY APART for the same reason they are apart from
+ * `cut`: `degenerate` is a stream that stopped saying anything new, and
+ * `overrun` is one that said far more than any legitimate call ever did.
+ * They are found by different evidence and pooling them would make either
+ * unreadable in a census of the other.
  */
-export type StreamOutcome = 'completed' | 'cut' | 'degenerate';
+export type StreamOutcome = 'completed' | 'cut' | 'degenerate' | 'overrun';
 
 /**
  * Raised when a stream was cut off, carrying what it had already delivered.

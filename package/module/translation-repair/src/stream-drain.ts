@@ -3,12 +3,18 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { IdleGuard, } from './stream-idle-guard.ts';
 import {
+  type RunawayVerdict,
   StreamDegenerateError,
   watchRunaway,
 } from './stream-runaway-watch.ts';
 import {
+  isSelfEndedStream,
+  StreamOverrunError,
+} from './stream-overrun.ts';
+import {
   reportStreamProgress,
   StreamCutShortError,
+  type StreamOutcome,
 } from './stream-cut.ts';
 
 //region Stream drain
@@ -63,6 +69,78 @@ async function stopReading(
     },);
     cl.warn(`could not cancel ${url}: ${String(error,)}`,);
   }
+}
+
+/**
+ * Turns a runaway verdict into the error that ends the call.
+ *
+ * ONE PLACE THE MAPPING LIVES, so the drain's read loop stays a single
+ * decision: stop reading, then report. A verdict carries the evidence its own
+ * kind gathered, and each error class takes exactly that evidence, which is
+ * why neither can be built from the other.
+ *
+ * @param label - what was being called, for the message
+ *
+ * @param verdict - runaway verdict to report
+ *
+ * @returns Error naming why this call was ended
+ *
+ * @example
+ * ```ts
+ * throw runawayError({ label, verdict, },);
+ * ```
+ */
+function runawayError(
+  {
+    label,
+    verdict,
+  }: {
+    readonly label: string;
+    readonly verdict: Extract<RunawayVerdict, { readonly kind: 'overrun' | 'runaway'; }>;
+  },
+): StreamDegenerateError | StreamOverrunError {
+  if (verdict.kind === 'overrun')
+    return new StreamOverrunError({
+      label,
+      channel: verdict.channel,
+      charsSeen: verdict.charsSeen,
+      cap: verdict.cap,
+    },);
+
+  return new StreamDegenerateError({
+    label,
+    channel: verdict.channel,
+    distinctRatio: verdict.distinctRatio,
+    charsSeen: verdict.charsSeen,
+  },);
+}
+
+/**
+ * Names how a stream ended, for the progress line.
+ *
+ * SEPARATE FROM {@link isSelfEndedStream}, which answers whether to retry.
+ * This answers what to call it, and the two questions have different shapes:
+ * a reader counting `cut` lines to measure stalls needs the chosen endings
+ * kept apart from stalls AND from each other, while the retry ladder only
+ * needs to know that we chose it.
+ *
+ * @param error - whatever the drain caught
+ *
+ * @returns Outcome name for this ending
+ *
+ * @example
+ * ```ts
+ * const outcome = endedOutcome({ error, },);
+ * ```
+ */
+function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome {
+  if (error instanceof StreamOverrunError)
+    return 'overrun';
+
+  if (error instanceof StreamDegenerateError)
+    return 'degenerate';
+
+  return 'cut';
 }
 
 /**
@@ -180,7 +258,7 @@ export async function drainBody(
        * Whether this call has stopped producing anything new.
        */
       const runaway = watch.notifyChunk({ chunk: text, },);
-      if (runaway.kind === 'runaway') {
+      if (runaway.kind !== 'continuing') {
         // Released before reporting, so the socket does not stay open feeding a
         // model that will not stop. The provider ends neither, and no token cap
         // bounds it, so this is the only place the call can end.
@@ -189,17 +267,15 @@ export async function drainBody(
           reader,
           url: response.url,
         },);
-        throw new StreamDegenerateError({
-          // The MODEL'S label, not `response.url`: every chat-completions call
-          // shares one endpoint across the whole roster, so attributing a
-          // runaway to the endpoint makes a per-model latency figure
-          // unreadable. `stopReading` above still logs `response.url`,
-          // because releasing the right socket is a URL question and naming
-          // the runaway is a model question.
+        // The MODEL'S label, not `response.url`: every chat-completions call
+        // shares one endpoint across the whole roster, so attributing a
+        // runaway to the endpoint makes a per-model latency figure unreadable.
+        // `stopReading` above still logs `response.url`, because releasing the
+        // right socket is a URL question and naming the runaway is a model
+        // question.
+        throw runawayError({
           label,
-          channel: runaway.channel,
-          distinctRatio: runaway.distinctRatio,
-          charsSeen: runaway.charsSeen,
+          verdict: runaway,
         },);
       }
     }
@@ -221,7 +297,7 @@ export async function drainBody(
      * below agree with each other by construction rather than by staying in
      * sync across two separate checks.
      */
-    const isDegenerate = error instanceof StreamDegenerateError;
+    const isDegenerate = isSelfEndedStream({ error, },);
 
     // Reported BEFORE the throw, and on this path as well as the other, because
     // a figure computed only over streams that finished describes only streams
@@ -232,7 +308,7 @@ export async function drainBody(
       label,
       progress: guard.progress(),
       unreadableFrames: watch.unreadableFrames(),
-      outcome: isDegenerate ? 'degenerate' : 'cut',
+      outcome: endedOutcome({ error, },),
       openingText: watch.openingText(),
       generatedChars: watch.generatedChars(),
     },);

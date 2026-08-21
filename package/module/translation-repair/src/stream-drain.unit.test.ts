@@ -430,7 +430,7 @@ await describe({
             },);
           },
         ).join('',) + Array.from(
-          { length: 6_000, },
+          { length: 120, },
           function answer(
             _unused,
             at,

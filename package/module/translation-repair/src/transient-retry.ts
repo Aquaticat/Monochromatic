@@ -4,7 +4,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { SyntheticHttpError, } from './completion-shape.ts';
-import { StreamDegenerateError, } from './stream-runaway-watch.ts';
+import { isSelfEndedStream, } from './stream-overrun.ts';
 import type { ModelTransport, } from './synthetic-transport.ts';
 
 //region Transient retry
@@ -219,7 +219,12 @@ async function attemptExchange(
     // policy. A model that has begun repeating itself will repeat itself again,
     // so every one of those attempts pays the same cost the guard exists to
     // avoid, and the guard ends up multiplying the waste it was built to stop.
-    if (error instanceof StreamDegenerateError)
+    //
+    // ASKED THROUGH ONE PREDICATE rather than by naming a class here, because
+    // the original defect was this check knowing about fewer guards than the
+    // drain could throw. A guard added later updates `isSelfEndedStream` and
+    // this site keeps working.
+    if (isSelfEndedStream({ error, },))
       throw error;
 
     return {
