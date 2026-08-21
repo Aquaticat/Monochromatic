@@ -17,8 +17,18 @@ import {
 } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
 import { collectEnvelopeProposals, } from './editor-proposals.ts';
+import type {
+  ChunkPatchSelection,
+  EditorCandidate,
+  EnvelopeSelection,
+} from './editor-selection-result.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
+import {
+  CHUNK_SCOPE_ENVELOPE,
+  describeJudgedRound,
+  type RepairJudgedRound,
+} from './repair-round-record.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Editor ensemble
@@ -105,74 +115,6 @@ function envelopeContext(
 }
 
 /**
- * One editor's proposal for a chunk.
- *
- * @example
- * ```ts
- * const candidate: EditorCandidate = { modelId, patch, };
- * ```
- */
-export type EditorCandidate = {
-  /**
-   * Model that produced this proposal.
-   */
-  readonly modelId: SyntheticModelId;
-
-  /**
-   * Apply-gate outcome of the operations it proposed.
-   */
-  readonly patch: PatchOutcome;
-};
-
-/**
- * What per-envelope selection assembled, with the counts that say how much of
- * the composite was actually voted on.
- *
- * @example
- * ```ts
- * const { operations, contributors, } = await selectPerEnvelope({ ... },);
- * ```
- */
-export type EnvelopeSelection = {
-  /**
-   * Winning operation per envelope, in envelope order.
-   */
-  readonly operations: readonly PatchOperation[];
-
-  /**
-   * Models whose operations the composite carries, in first-win order.
-   */
-  readonly contributors: readonly SyntheticModelId[];
-
-  /**
-   * Envelopes adopted without a vote because only one editor proposed for
-   * them, counting envelopes where every proposal was identical.
-   */
-  readonly soleCount: number;
-
-  /**
-   * Envelopes decided by a judged vote.
-   */
-  readonly judgedCount: number;
-
-  /**
-   * Envelopes left unedited because judges declined every proposal.
-   */
-  readonly declinedCount: number;
-
-  /**
-   * Degradation findings from every judge fan-out this pass ran.
-   *
-   * Carried up rather than logged because the caller writes findings into the
-   * per-entry artifact, and a log line only exists if something captured it.
-   * The counts above say how many envelopes were decided which way; they do
-   * not say which judge went silent, and that identity is what every
-   * voice-loss diagnosis has turned on.
-   */
-  readonly findings: readonly string[];
-};
-
-/**
  * Chooses one replacement text per envelope by judging the distinct proposals
  * models made for it, then assembles the winners into one operation set.
  *
@@ -257,6 +199,11 @@ export async function selectPerEnvelope(
   const selectionFindings: string[] = [];
 
   /**
+   * Ballots of every envelope round that reached the judges.
+   */
+  const rounds: RepairJudgedRound[] = [];
+
+  /**
    * How each envelope was decided.
    */
   const counters = {
@@ -331,6 +278,12 @@ export async function selectPerEnvelope(
       l,
     },);
     selectionFindings.push(...outcome.findings,);
+    rounds.push(describeJudgedRound({
+      stage: 'envelope',
+      envelopeId: envelope.envelopeId,
+      candidates: proposals,
+      outcome,
+    },),);
     if (outcome.kind === 'declined') {
       counters.declined += 1;
       el.info(
@@ -354,33 +307,9 @@ export async function selectPerEnvelope(
     judgedCount: counters.judged,
     declinedCount: counters.declined,
     findings: selectionFindings,
+    rounds,
   };
 }
-
-/**
- * Patch that ships, with the findings from judging it.
- *
- * Wrapped rather than widening `PatchOutcome`, which is shared across the apply
- * path: putting a telemetry field there would attach it to every operation
- * result in the pipeline. The wrapper keeps the reporting local to the stage
- * that produced it.
- *
- * @example
- * ```ts
- * const { patch, findings, } = await selectChunkPatch({ client, candidates, ... },);
- * ```
- */
-export type ChunkPatchSelection = {
-  /**
-   * Winning patch, or the fallback when judges decline.
-   */
-  readonly patch: PatchOutcome;
-
-  /**
-   * Degradation findings from the judge fan-out, empty when no vote was held.
-   */
-  readonly findings: readonly string[];
-};
 
 /**
  * Judges whole-chunk candidates and returns the patch that ships.
@@ -459,6 +388,7 @@ export async function selectChunkPatch(
     return {
       patch: sole.value,
       findings: [],
+      rounds: [],
     };
   }
 
@@ -486,6 +416,18 @@ export async function selectChunkPatch(
     perCallTimeoutMs,
     l,
   },);
+  /**
+   * This round's ballots, recorded before any branch, so a refusal keeps the
+   * reasoning that produced it exactly as a win does.
+   */
+  const rounds = [
+    describeJudgedRound({
+      stage: 'chunk-patch',
+      envelopeId: CHUNK_SCOPE_ENVELOPE,
+      candidates,
+      outcome,
+    },),
+  ];
   if (outcome.kind === 'declined') {
     // Judges failing to RANK the candidates says nothing against any of them,
     // and dropping every repair over that would turn a disagreement about
@@ -501,12 +443,14 @@ export async function selectChunkPatch(
       return {
         patch: indecisionFallback,
         findings: outcome.findings,
+        rounds,
       };
     }
     cl.info(`${outcome.reason}; shipping no repair for this chunk`,);
     return {
       patch: rejectionFallback,
       findings: outcome.findings,
+      rounds,
     };
   }
   cl.info(
@@ -518,6 +462,7 @@ export async function selectChunkPatch(
   return {
     patch: outcome.value,
     findings: outcome.findings,
+    rounds,
   };
 }
 

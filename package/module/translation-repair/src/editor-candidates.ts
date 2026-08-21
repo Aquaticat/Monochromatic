@@ -13,7 +13,7 @@ import {
   type EditorReportWire,
   resolveEditorEdits,
 } from './edit-wire.ts';
-import type { EditorCandidate, } from './editor-ensemble.ts';
+import type { EditorCandidate, } from './editor-selection-result.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';

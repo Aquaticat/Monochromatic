@@ -5,7 +5,7 @@ import {
   mergeProducers,
 } from './candidate-select-model.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
-import type { EditorCandidate, } from './editor-ensemble.ts';
+import type { EditorCandidate, } from './editor-selection-result.ts';
 
 //region Editor proposals
 // The distinct replacements offered for ONE envelope, with every model that

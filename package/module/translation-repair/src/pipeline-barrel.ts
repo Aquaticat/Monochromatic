@@ -44,18 +44,6 @@ export {
   type PatchRejection,
 } from './apply-patch.ts';
 export {
-  buildEditorMessages,
-  type EditorPromptPlan,
-} from './edit-prompt.ts';
-export {
-  EDITOR_RESPONSE_FORMAT,
-  type EditorEditResolution,
-  type EditorEditWire,
-  type EditorReportWire,
-  isEditorReportWire,
-  resolveEditorEdits,
-} from './edit-wire.ts';
-export {
   deriveEditableEnvelopes,
   type EditableEnvelope,
   type EnvelopePlan,
@@ -106,7 +94,6 @@ export {
   SELF_VOTE_WEIGHT,
 } from './candidate-select-model.ts';
 export { mergeIdenticalCandidates, } from './candidate-merge.ts';
-export { collectEnvelopeProposals, } from './editor-proposals.ts';
 export { selectBestCandidate, } from './candidate-select.ts';
 export {
   buildCandidateSelectMessages,
@@ -116,20 +103,6 @@ export {
   isCandidateBallotWire,
   type SelectEvidence,
 } from './candidate-select-wire.ts';
-export {
-  applyCandidate,
-  type EditorCandidate,
-  type EnvelopeSelection,
-  selectChunkPatch,
-  selectPerEnvelope,
-} from './editor-ensemble.ts';
-export {
-  buildChunkCandidates,
-  buildEditorCandidates,
-  type ChunkCandidateSet,
-  type EditorCandidateSet,
-  pickFallbackPatch,
-} from './editor-candidates.ts';
 export {
   buildGrid,
   type Grid as HeadingAlignGrid,
