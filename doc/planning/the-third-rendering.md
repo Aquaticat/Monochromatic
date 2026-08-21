@@ -1746,7 +1746,7 @@ carried by the floor and the deleted-region rule.
 Nothing has exercised that path since the widening landed,
 so it stays an expectation until the first post-widening run touches a container entry.
 
-## Run 7 scored, and the one slice that shipped a deletion
+## Run 7 scored, and the deletion it did NOT repeat
 
 ### What the headline did, and why it cannot yet be credited to anything
 
@@ -1783,7 +1783,47 @@ That static input is what makes run 9 against run 8 a clean pair:
 identical build, identical slices, nothing touched between them.
 Until that exists the honest reading is that the gate reached more slices in run 7 and the reason is unmeasured.
 
-### `Zha_Ke#1` shipped a 96 percent deletion, and every judge backed it
+### `Zha_Ke#1`: run 6 shipped a 96 percent deletion, and run 7 did not
+
+THE RUN ATTRIBUTION HERE WAS WRONG IN AN EARLIER VERSION OF THIS DOCUMENT,
+which read as though run 7 shipped the deletion.
+It did not.
+Read straight off the two state files:
+
+```text
+run 6   Zha_Ke#1   decision=judged                origin=fresh       incumbent=3875   shipped= 164
+run 7   Zha_Ke#1   decision=declined-indecision   origin=incumbent   incumbent=3875   shipped=3875
+```
+
+Run 6 deleted the letter. Run 7 kept every character of it.
+
+WHAT CHANGED BETWEEN THEM IS THE DECISION, NOT THE JUDGEMENT.
+Run 7's panel still reasoned the deleting way:
+its recorded selection ballot calls the letter-preserving candidates
+"unacceptable because they add the entire letter text, names, and metadata not present in the ORIGINAL".
+The panel did not converge, the gate returned `declined-indecision`,
+and the fallback to the standing text is what saved the letter.
+So the letter survived run 7 by the safety net, not by the panel changing its mind.
+
+RUN 7 IS ALSO THE FIRST RUN CARRYING `#155`.
+The policy clause making deletion of page-only content a named fault landed at 13:45:20,
+and run 7's state file was created at 13:46:48, eighty-eight seconds later.
+Run 6 finished at 13:21, before it existed.
+That makes run 6 against run 7 the only before-and-after pair for that clause,
+and one slice is not enough to attribute the change to it:
+`declined-indecision` is exactly what a panel split by a new fault clause looks like,
+and also exactly what an ordinary tie looks like.
+
+TWO OTHER ROWS NEED SEPARATING FROM THE DELETION COUNT.
+Run 6's `Zha_Ke#0` and run 7's `Acheron#0` both carry `shipped=0` with `decision` undefined.
+Those are slices that failed rather than slices that deleted,
+and counting them as deletions would overstate the rate in both runs.
+
+Run 7 does carry one large reduction that is not a failure:
+`Acheron#1` shipped 172 characters against 328 standing, judged and fresh, a 48 percent cut.
+Nothing has read that slice.
+
+What follows describes RUN 6's deletion, which remains the clearest evidence in the bed.
 
 Run 6 replaced 3875 characters of standing text with 164 characters, and the gate ballots were 6 for consolidated, 0 against.
 Every other slice in both runs shipped between 90 and 111 percent of what stood.
