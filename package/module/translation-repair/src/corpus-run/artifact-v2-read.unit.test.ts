@@ -29,6 +29,18 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
+ * Ballot backing the translate lane, carried by the contest cases.
+ */
+const CONTEST_BALLOT = {
+  choice: 'translate',
+  unsupported: [],
+  unsupportedRaw: [],
+  dropped: [],
+  droppedRaw: [],
+  reason: 'the archive`s wording drops the windowsill the original names',
+};
+
+/**
  * Original of the slice both lanes work on.
  */
 const SOURCE_NAP = '猫猫在窗台上睡觉。';
@@ -527,6 +539,72 @@ await describe({
           .raw
           .repairedText,).toBe(`## Section one\n\n${ARCHIVE_NAP}`,);
         expect(parsed.laneSelection,).toEqual({ kind: 'pending-human-decision', },);
+      },
+    },),
+    it({
+      name:
+        'reads a SETTLED CONTEST against the comparison it derived for itself, rather than against one '
+        + 'a test typed out. The gap slice here leaves both lanes carrying nothing, so a filter reading '
+        + 'verdict names rather than lane wording would offer it to the roster as a contest between two '
+        + 'empty candidates',
+      fn: async () => {
+        /**
+         * Artifact whose contest answers the one slice the two lanes worded
+         * differently, which is slice 0: slice 1 is a gap neither lane filled.
+         */
+        const parsed = parseSettledArtifactV2({
+          value: artifactWith({
+            laneSelection: {
+              kind: 'contested',
+              slices: [
+                {
+                  chunkIndex: 0,
+                  verdict: {
+                    kind: 'lane-won',
+                    lane: 'translate',
+                  },
+                  ballots: [
+                    CONTEST_BALLOT,
+                    CONTEST_BALLOT,
+                  ],
+                  usable: 2,
+                },
+              ],
+            },
+          },),
+        },);
+        if (parsed.laneSelection
+          .kind !== 'contested')
+          throw new Error('reader returned a pending selection for a contested one',);
+        expect(parsed.laneSelection
+          .slices
+          .map(function nameSlice(slice,): number {
+            return slice.chunkIndex;
+          },),).toEqual([0,],);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a contest answering the GAP slice, where neither lane put down wording and there is '
+        + 'therefore nothing for a roster to choose between',
+      fn: async () => {
+        expect(function contestsAGap() {
+          parseSettledArtifactV2({
+            value: artifactWith({
+              laneSelection: {
+                kind: 'contested',
+                slices: [
+                  {
+                    chunkIndex: 1,
+                    verdict: { kind: 'quorum-not-met', },
+                    ballots: [],
+                    usable: 0,
+                  },
+                ],
+              },
+            },),
+          },);
+        },).toThrow('slices [0], which are the ones where the two lanes differ, rather than [1]',);
       },
     },),
     it({
@@ -1253,8 +1331,8 @@ await describe({
     },),
     it({
       name:
-        'REFUSES a lane selection naming a decision nobody has made, so a later generation that recorded '
-        + 'one cannot be read as though this file already carried it',
+        'REFUSES a lane selection naming a lane directly, since a decided contest is recorded as a '
+        + 'contest with its ballots and a bare lane name would be a verdict with nothing behind it',
       fn: async () => {
         expect(function unknownSelection() {
           parseSettledArtifactV2({ value: artifactWith({ laneSelection: { kind: 'translate', }, },), },);

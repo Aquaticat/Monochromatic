@@ -36,6 +36,12 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * TWO, matching every other agreement rule in this package. One judge is an
  * opinion; two reaching the same reading of the same original is corroboration.
+ *
+ * FROZEN, like the version 2 comparison rules. The settled-artifact reader
+ * recomputes every recorded verdict against this number, so raising or lowering
+ * it re-decides every contest already on disk and makes artifacts settled under
+ * the old value refuse to parse. A different quorum is a different question and
+ * needs a new artifact generation, not a tuned constant.
  */
 export const LANE_CONTEST_QUORUM = 2;
 
