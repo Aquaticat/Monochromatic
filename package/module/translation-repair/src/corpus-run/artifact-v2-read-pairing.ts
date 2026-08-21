@@ -88,7 +88,7 @@ function parseSectionPairs(
     .map(function readPair(
       entry,
       at,
-    ): { readonly source: number; readonly target: number; } {
+    ): ArtifactSectionPairingV2['pairs'][number] {
       /**
        * Where this pair is reported from.
        */
