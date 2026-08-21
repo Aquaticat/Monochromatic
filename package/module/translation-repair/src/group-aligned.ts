@@ -284,10 +284,10 @@ export function groupNodesAligned(
      * contributes none, read before anything else so a declined one can end the
      * run without entering it.
      */
-    const declinedHere = (step.kind === 'target-only')
-      && (targetNodes[step.targetIndex] !== undefined)
-      && declined.has(targetNodes[step.targetIndex].id,);
-    if (declinedHere) {
+    const declinedNode = (step.kind === 'target-only')
+      ? targetNodes[step.targetIndex]
+      : undefined;
+    if ((declinedNode !== undefined) && declined.has(declinedNode.id,)) {
       closedByDecline = true;
       continue;
     }
