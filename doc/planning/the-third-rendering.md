@@ -1184,3 +1184,47 @@ after the floor fix a slice cut through one ships nothing at all. That makes
 #154 a shipping blocker for that fraction of the corpus rather than a tidiness
 issue, and it should be read alongside #71, which found a different defect on
 the same `XingZ60` entry.
+
+## The five declines are real, not voice loss
+
+Measured from the archived run-6 state, no quota. This answers the question
+#130 had to settle before any decline policy could be written on top of it,
+because a policy calibrated on infrastructure failures would be calibrated on
+noise.
+
+EVERY ONE OF THE FIVE HAD A FULL PANEL. All five record `judgesAvailable: 6`
+and `ballots: 6`: every judge answered, and none was lost to an empty reply or
+a cut stream. The earlier declines in this bed that were caused by voice loss
+were a different thing, and none of these is one. They are genuine indecision.
+
+They are also near misses rather than chaos. The picks, by candidate index:
+
+    -   `lintong#2` scattered across four candidates, best supported by two.
+    -   `keyword233#0` across four, best supported by three, and every one of
+        the six ballots was a self-vote.
+    -   `Weideriche_#1` split three against three between only two candidates.
+    -   `Acheron#1` across five, best supported by two.
+    -   `Acheron#2` across four, best supported by two.
+
+The seven slices that DID reach the gate look barely different: their best
+candidate carried three or four votes against the declines' two or three, and
+`gaoyanger#1` proceeded on the same three-against-three shape between two
+candidates that made `Weideriche_#1` decline. What separates them is the
+weighting rather than the raw count, and self-voting is doing much of that
+work: `keyword233#0` weighed to nothing because all six judges preferred their
+own candidate.
+
+That last observation belongs to #91, which is about weighing self-certification
+rather than forbidding it, and it now has a measured case behind it.
+
+### What this settles, and what it does not
+
+It settles that the decline rate is behaviour rather than infrastructure, so it
+can be reasoned about.
+
+The remaining half of #130 is a values choice rather than a measurement: what
+SHOULD happen when a full panel cannot agree. The current behaviour keeps the
+incumbent, and that is the reading consistent with everything else decided for
+this corpus, where reader protection outranks completeness and a tie already
+keeps the standing text. It is adopted on that basis rather than left open, and
+it is the owner's to overrule.
