@@ -50,6 +50,73 @@ export const HOUSE_POLICY_BLOCK = `House rules this corpus is written under. The
 - Do not carry punctuation that means nothing in English. A trailing emoticon, a bare pair of empty brackets, or a run of full-width marks that carried tone in Chinese is not rendered by copying the characters across; render the tone in words or leave it out.`;
 
 /**
+ * What English forces on a translator and Chinese does not, shared by every
+ * sheet that grades a rendering.
+ *
+ * ONE PARAGRAPH, NO CLOSING SENTENCE. The sentence that used to end it, telling
+ * a reader to hold a forced choice against a CANDIDATE, names a term only the
+ * judging sheets define, so each consumer supplies its own close in its own
+ * vocabulary.
+ *
+ * @example
+ * ```ts
+ * const opening = FORCED_DIFFERENCES;
+ * ```
+ */
+const FORCED_DIFFERENCES =
+  'Obligatory differences between the two languages are never faults. Each language forces choices the other leaves open, and meeting English\'s own requirements is not an addition or an alteration: supplying a pronoun, a number, an article or A TENSE that the ORIGINAL leaves unmarked is REQUIRED. Chinese marks no tense, so rendering it in past or present is a choice English forces, never a change to the time the ORIGINAL refers to.';
+
+/**
+ * Judge-facing close of `JUDGE_POLICY_BLOCK`.
+ *
+ * SEPARATE FROM `FORCED_DIFFERENCES` because it names a candidate and a
+ * criterion, and the measuring sheets have neither. They speak of findings,
+ * issues, regions and the text under review, so a shared close would put two
+ * undefined terms in front of three checkers.
+ *
+ * @example
+ * ```ts
+ * const tail = JUDGE_POLICY_TAIL;
+ * ```
+ */
+const JUDGE_POLICY_TAIL = `Hold it against a candidate only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports.
+
+WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. A candidate vaguer than the ORIGINAL because reader protection asks for it has left nothing out, and a candidate naming what it points at rather than where it sits on the page is obeying a rule rather than departing from the text.`;
+
+/**
+ * Measurement-facing close, for sheets that grade or check rather than choose.
+ *
+ * WHY THE PRECEDENCE SENTENCE IS RESTATED RATHER THAN SHARED: a measuring sheet
+ * has no ranked criteria, so `WHERE A CRITERION AND A HOUSE RULE DISAGREE`
+ * names something that is not in front of it, and a model reading a rule about
+ * an absent thing may take the whole block as addressed to someone else.
+ *
+ * SUPPORTED BY THE ORIGINAL IS SAID OUTRIGHT because `introduced-defect-wire`
+ * carries the opposite rule in as many words: content the AFTER text drops is
+ * damage only if the ORIGINAL supports it. On a protected detail the ORIGINAL
+ * DOES support it, which is the entire point of reader protection, so a spliced
+ * block that did not name the interaction would leave two live rules in
+ * disagreement.
+ *
+ * VERDICT NAMES ARE NOT HERE. The three consumers have disjoint vocabularies,
+ * so each splice site adds the one line mapping this principle onto its own
+ * verdicts. Restating the principle in three places is what would drift; naming
+ * three different verdicts once each cannot.
+ *
+ * @example
+ * ```ts
+ * const tail = MEASUREMENT_POLICY_TAIL;
+ * ```
+ */
+const MEASUREMENT_POLICY_TAIL = `Hold a forced choice against the text under review only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports.
+
+WHERE A RULE YOU HAVE BEEN GIVEN AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. You are measuring, and a measurement that penalises a page for obeying the rules it was written under reports damage where there is none.
+
+SUPPORTED BY THE ORIGINAL IS NOT ENOUGH TO MAKE SOMETHING MISSING A DEFECT. Reader protection keeps specific detail out of these pages precisely where the ORIGINAL states it, so text vaguer than the ORIGINAL about how a death happened, or about a medication, is obeying the rule rather than omitting. Never file that as a finding and never count it as damage.
+
+WHERE AN ISSUE OR FINDING YOU WERE GIVEN ASKS FOR SUCH A DETAIL, THE ISSUE ITSELF IS WRONG. Do not agree that the text should carry it. Where the text under review HAS restored a detail reader protection keeps out, that restoration is new damage rather than a fix, however plainly the ORIGINAL states it.`;
+
+/**
  * House rules plus the two things a JUDGE needs that a producer does not.
  *
  * WHY JUDGES NEEDED THEIR OWN BLOCK. Every producing sheet splices
@@ -71,13 +138,30 @@ export const HOUSE_POLICY_BLOCK = `House rules this corpus is written under. The
  *
  * @example
  * ```ts
- * const system = `${task}\n\n${JUDGE_POLICY_BLOCK}`;
+ * const system = \`${task}\n\n${JUDGE_POLICY_BLOCK}\`;
  * ```
  */
 export const JUDGE_POLICY_BLOCK: string = `${HOUSE_POLICY_BLOCK}
 
-Obligatory differences between the two languages are never faults. Each language forces choices the other leaves open, and meeting English's own requirements is not an addition or an alteration: supplying a pronoun, a number, an article or A TENSE that the ORIGINAL leaves unmarked is REQUIRED. Chinese marks no tense, so rendering it in past or present is a choice English forces, never a change to the time the ORIGINAL refers to. Hold it against a candidate only when the choice it made is the WRONG one, and say which reading the ORIGINAL supports.
+${FORCED_DIFFERENCES} ${JUDGE_POLICY_TAIL}`;
 
-WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. A candidate vaguer than the ORIGINAL because reader protection asks for it has left nothing out, and a candidate naming what it points at rather than where it sits on the page is obeying a rule rather than departing from the text.`;
+/**
+ * House rules for the sheets that MEASURE rather than write or choose.
+ *
+ * The rendering auditor, the resolution checker and the introduced-defect
+ * prober all grade text against the ORIGINAL, and all three scored a page
+ * obeying reader protection as a defect because none had ever been told the
+ * rule. Nothing ships from any of them, which is why they were fixed after the
+ * deciding sheets rather than with them; what they do decide is which defects
+ * get worked on next.
+ *
+ * @example
+ * ```ts
+ * const system = \`${task}\n\n${MEASUREMENT_POLICY_BLOCK}\`;
+ * ```
+ */
+export const MEASUREMENT_POLICY_BLOCK: string = `${HOUSE_POLICY_BLOCK}
+
+${FORCED_DIFFERENCES} ${MEASUREMENT_POLICY_TAIL}`;
 
 //endregion House policy
