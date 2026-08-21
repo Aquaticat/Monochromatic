@@ -291,3 +291,46 @@ keep being swept exactly as they are today.
 Their correct treatment is the anchored unit,
 and `#106` holds that pending evidence telling omission apart from merging.
 Nothing measured here changes that.
+
+## What landed, and what it deliberately does not do
+
+Commits `86b5adca4`, `1186624fe`, `16cb04266`, `440faf7b4`, `1f7366ad8`, `bb7308c67`.
+Written and committed before being built, because the consolidation bed's `dist` is frozen
+between runs 8 and 9 and rebuilding it would destroy the only clean band pair there is.
+
+`src/declined-target-runs.ts` reads which translation blocks a supplied pairing accounted for nowhere.
+`groupNodesAligned` skips such a block AND CLOSES THE RUN AT IT,
+so the block's bytes fall between two slice spans rather than inside one.
+`assertSliceCoverage` takes the same list and now requires a target block to be in a slice
+OR in that list, so a block in neither still throws,
+and a declined block that turns up in a slice throws as its own named fault.
+`document-preparation.ts` emits `alignment target-unclaimed` naming the blocks and their character mass,
+into the same `alignmentFindings` channel that was empty on `Zha_Ke`.
+
+Three restrictions, each one load-bearing.
+
+ONLY A SUPPLIED PAIRING DECLINES.
+`alignBlocks`, the scorer fallback, emits `target-only` steps too,
+and those report where a heuristic ran out rather than a decision.
+
+ONLY A PAIRING THAT PLACED EVERY ORIGINAL DECLINES.
+`pairBlocksAcrossRoster` returns no pairs at all when no voice was usable,
+and the caller passes that straight through.
+Without this gate an empty pairing would declare every translation block declined
+and take a whole section out of review in one step.
+The cost is that an entry with a genuinely untranslated passage,
+which arrives as a `source-only` step,
+gets no declines at all.
+The fix simply does not apply there, and that is the correct direction to fail in:
+the harm being prevented is a memorial letter being deleted,
+and the harm of not applying it is a slice staying exactly as wide as it is today.
+
+TARGET SIDE ONLY, as stated already.
+
+## The check still owed
+
+Build, `lint:types`, `test:unit`, and GFP on the new guard.
+Then the live one: `verify-157-live.mjs` in agent scratch runs the BUILT grouper
+over `Zha_Ke`'s real blocks and the pairing the roster actually returned on 2026-08-20,
+and asserts no run's span covers the letter.
+Until that has run, this section describes intent rather than behaviour.
