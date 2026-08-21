@@ -175,6 +175,10 @@ function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome 
  * @throws `StreamDegenerateError` when the model stopped saying anything new,
  * which no silence window can detect because such a stream is never silent
  *
+ * @throws `StreamOverrunError` when the answer channel passed its content
+ * bound, which catches a runaway whose period is too long to repeat inside
+ * what the repetition detectors can hold
+ *
  * @example
  * ```ts
  * const bodyText = await drainBody({ response, guard, callerSignal, },);
@@ -226,6 +230,11 @@ export async function drainBody(
    * guard asks whether bytes are arriving; a degenerating model answers yes
    * forever. Neither can stand in for the other.
    */
+  // Called with no bound of its own ON PURPOSE. `watchRunaway` accepts a
+  // content bound so a role that knows it emits more can raise it, but nothing
+  // in the pipeline passes one: every call here is policed at the same default.
+  // Threading it would mean a parameter through this function and every caller,
+  // and the measurement says one bound clears every role by more than twice.
   const watch = watchRunaway();
 
   /**
@@ -297,7 +306,7 @@ export async function drainBody(
      * below agree with each other by construction rather than by staying in
      * sync across two separate checks.
      */
-    const isDegenerate = isSelfEndedStream({ error, },);
+    const isSelfEnded = isSelfEndedStream({ error, },);
 
     // Reported BEFORE the throw, and on this path as well as the other, because
     // a figure computed only over streams that finished describes only streams
@@ -313,12 +322,13 @@ export async function drainBody(
       generatedChars: watch.generatedChars(),
     },);
 
-    // OUR OWN DELIBERATE TERMINATION PASSES THROUGH UNCHANGED. A runaway is
-    // thrown from inside this try, and it already carries the channel, the
-    // ratio and the cost. Wrapping it would bury a finished diagnosis inside a
+    // OUR OWN DELIBERATE TERMINATION PASSES THROUGH UNCHANGED. Both guard
+    // errors are thrown from inside this try, and each already carries the
+    // channel and the cost, a repetition ratio on one and the bound it passed
+    // on the other. Wrapping either would bury a finished diagnosis inside a
     // description of a cut, and every reader would have to unwrap it to learn
     // what the drain already knew.
-    if (isDegenerate)
+    if (isSelfEnded)
       throw error;
 
     // A stall aborts the guard's own controller and never the caller's, so this

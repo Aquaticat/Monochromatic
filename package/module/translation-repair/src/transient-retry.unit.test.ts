@@ -489,7 +489,7 @@ await describe({
 
     it({
       name: 'REFUSES TO RE-DISPATCH A CALL THIS SYSTEM ENDED FOR VOLUME, because the ladder cannot '
-        + 'tell one guard error from the other by class. A bound that stops a runaway at ten '
+        + 'tell one guard error from the other by class. A bound that stops a runaway at thirty-two '
         + 'thousand characters, then grants the ladder four more attempts at it, costs more than '
         + 'the unbounded call it replaced',
       fn: async () => {
@@ -509,8 +509,8 @@ await describe({
         const overrun = new StreamOverrunError({
           label: 'hf:whiskers',
           channel: 'content',
-          charsSeen: 10_000,
-          cap: 10_000,
+          charsSeen: 32_000,
+          cap: 32_000,
         },);
 
         /**

@@ -180,7 +180,7 @@ await describe({
         const verdict = feed({
           watch,
           channel: 'content',
-          text: variedText({ length: 12_000, },),
+          text: variedText({ length: 34_000, },),
           pieceSize: 400,
         },);
 
@@ -188,20 +188,22 @@ await describe({
         if (verdict.kind !== 'overrun')
           throw new Error('overrun by construction',);
         expect(verdict.channel,).toBe('content',);
-        expect(verdict.cap,).toBe(10_000,);
-        expect(verdict.charsSeen,).toBeGreaterThanOrEqual(10_000,);
+        expect(verdict.cap,).toBe(32_000,);
+        expect(verdict.charsSeen,).toBeGreaterThanOrEqual(32_000,);
       },
     },),
 
     it({
-      name: 'ACCEPTS an answer below the bound, which is every legitimate call in the measured '
-        + 'population: the largest emitted 4278 characters',
+      name: 'ACCEPTS THE LARGEST LEGITIMATE ANSWER ON RECORD, 11392 characters of picture '
+        + 'transcription. This call is why the bound is not ten thousand: the population the first '
+        + 'bound was set on held no reading-lane call, and ten thousand would have ended seven of '
+        + 'the 1887 real completions that have since been pooled',
       fn: async () => {
         const watch = watchRunaway();
         const verdict = feed({
           watch,
           channel: 'content',
-          text: variedText({ length: 4_500, },),
+          text: variedText({ length: 11_392, },),
           pieceSize: 400,
         },);
 
@@ -210,27 +212,28 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS SIXTY THOUSAND SILENT REASONING CHARACTERS, which is the bound that was measured '
-        + 'and refused. Reasoning precedes content on every thinking model here, so a bound on silent '
-        + 'reasoning fires mid-stream on calls that were about to answer: at forty thousand it would '
-        + 'have ended 22 of 545 completed calls, and the largest legitimate completion carried 69847',
+      name: 'ACCEPTS SIXTY-FOUR THOUSAND SILENT REASONING CHARACTERS, the bound that was measured and '
+        + 'refused. Reasoning precedes content on every thinking model here, so a bound on silent '
+        + 'reasoning fires mid-stream on calls that were about to answer: across 1887 real completions '
+        + 'forty thousand would have ended 24 of them and even sixty thousand would have ended 5. The '
+        + 'largest legitimate completion carried 64501 reasoning characters and then answered',
       fn: async () => {
         const watch = watchRunaway();
         const verdict = feed({
           watch,
           channel: 'reasoning',
-          text: variedText({ length: 60_000, },),
+          text: variedText({ length: 64_501, },),
           pieceSize: 500,
         },);
 
         expect(verdict.kind,).toBe('continuing',);
-        expect(watch.generatedChars().reasoning,).toBeGreaterThanOrEqual(60_000,);
+        expect(watch.generatedChars().reasoning,).toBeGreaterThanOrEqual(64_501,);
         expect(watch.generatedChars().content,).toBe(0,);
       },
     },),
 
     it({
-      name: 'REACHES A REPETITIVE ANSWER THIRTEEN TIMES EARLIER THAN REPETITION DOES, and so relabels '
+      name: 'REACHES A REPETITIVE ANSWER FOUR TIMES EARLIER THAN REPETITION DOES, and so relabels '
         + 'it. Both observed repetition endings on the answer channel were called degenerate only '
         + 'after 131078 content characters, so the volume bound gets there first and they now read '
         + 'overrun. The same call is ended either way, far sooner, which is the trade this records',
@@ -241,9 +244,9 @@ await describe({
          * A model repeating one sentence into the answer, the shape that used
          * to run to 131078 characters before either detector called it.
          */
-        const repeated = 'The cat sat on the mat and said nothing at all. '.repeat(400,);
+        const repeated = 'The cat sat on the mat and said nothing at all. '.repeat(800,);
 
-        expect(repeated.length,).toBeGreaterThan(10_000,);
+        expect(repeated.length,).toBeGreaterThan(32_000,);
 
         const verdict = feed({
           watch,
@@ -255,7 +258,7 @@ await describe({
         expect(verdict.kind,).toBe('overrun',);
         if (verdict.kind !== 'overrun')
           throw new Error('overrun by construction',);
-        expect(verdict.charsSeen,).toBeLessThanOrEqual(11_000,);
+        expect(verdict.charsSeen,).toBeLessThanOrEqual(33_000,);
       },
     },),
 
@@ -333,8 +336,8 @@ await describe({
             error: new StreamOverrunError({
               label: 'editor',
               channel: 'content',
-              charsSeen: 26_000,
-              cap: 10_000,
+              charsSeen: 40_000,
+              cap: 32_000,
             },),
           },),
         ).toBe(true,);
@@ -380,13 +383,13 @@ await describe({
           error: new StreamOverrunError({
             label: 'editor',
             channel: 'content',
-            charsSeen: 26_000,
-            cap: 10_000,
+            charsSeen: 40_000,
+            cap: 32_000,
           },),
         },);
 
-        expect(described.includes('26000',),).toBe(true,);
-        expect(described.includes('10000',),).toBe(true,);
+        expect(described.includes('40000',),).toBe(true,);
+        expect(described.includes('32000',),).toBe(true,);
         expect(described.includes('content',),).toBe(true,);
         expect(described.includes('distinct',),).toBe(false,);
       },

@@ -54,10 +54,21 @@ const OPENING_TEXT_CAP = 200;
 /**
  * Answer characters one call may produce before the watch calls it a runaway.
  *
- * MEASURED, NOT CHOSEN. Over 545 completed calls the largest legitimate
- * emission was 4,278 content characters, and the two content-producing cuts
- * emitted 25,482 and 28,026. Ten thousand sits between them with better than
- * twice the margin over observed legitimate use.
+ * MEASURED, NOT CHOSEN, AND RE-MEASURED ONCE. The first bound was ten
+ * thousand, set on 545 completed calls whose largest legitimate emission was
+ * 4,278 characters. That population carried no reading-lane call, and reading
+ * a picture is the one role here that legitimately emits at length. Pooling
+ * every log that records the two channels separately gives 1,887 real
+ * completions, whose largest legitimate emission is 11,392, a transcription.
+ * Ten thousand would have ended seven of those calls.
+ *
+ * Thirty-two thousand clears the largest legitimate emission by better than
+ * two and a half times, ends none of the 1,887, and still reaches a runaway
+ * about four times sooner than the repetition detectors, which need 131,072
+ * characters before a cycle becomes visible to them. Both recorded degenerate
+ * calls ran just past that threshold, and the two runaway cuts pulled
+ * 9,699,969 and 11,366,983 raw characters off the wire before a different
+ * guard stopped them.
  *
  * A DEFAULT RATHER THAN A CONSTANT THE GUARD FREEZES IN: the measurement
  * behind it comes from one bed, so a call site that knows its own role emits
@@ -65,7 +76,7 @@ const OPENING_TEXT_CAP = 200;
  * `doc/decision/translation-repair-runaway-call-termination.md` records what
  * the number rests on.
  */
-const CONTENT_OVERRUN_CAP = 10_000;
+const CONTENT_OVERRUN_CAP = 32_000;
 
 /**
  * Channels watched, in the order a verdict is reported for them.

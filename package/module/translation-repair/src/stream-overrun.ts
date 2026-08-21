@@ -32,7 +32,7 @@ import type { StreamChannel, } from './stream-delta-scan.ts';
  *
  * @example
  * ```ts
- * throw new StreamOverrunError({ label, channel: 'content', charsSeen: 26_000, cap: 10_000, },);
+ * throw new StreamOverrunError({ label, channel: 'content', charsSeen: 40_000, cap: 32_000, },);
  * ```
  */
 export class StreamOverrunError extends Error {
@@ -76,7 +76,7 @@ export class StreamOverrunError extends Error {
    *   label: 'editor',
    *   channel: 'content',
    *   charsSeen: 26_000,
-   *   cap: 10_000,
+   *   cap: 32_000,
    * },);
    * ```
    */
