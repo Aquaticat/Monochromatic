@@ -1228,3 +1228,66 @@ incumbent, and that is the reading consistent with everything else decided for
 this corpus, where reader protection outranks completeness and a tie already
 keeps the standing text. It is adopted on that basis rather than left open, and
 it is the owner's to overrule.
+
+### Measurement 4 in full: the three changed slices that lost nothing
+
+Five run-6 slices shipped text differing from the standing rendering. Two were
+read and recorded as damaged: `gaoyanger#1` drifted into the present tense, and
+`Zha_Ke#1` shipped a short note where the archive carried a will. The other
+three were flagged for reading and never got a recorded verdict, so measurement
+4 stood as a bare "no, twice" without saying what the rest of the changed
+slices did. All three are now read against the same question, which is whether
+anything the standing text carried is lost. The passages stay in the run
+artifacts under `~/temp/agent`; what follows describes the changes rather than
+reproducing them.
+
+`lintong#1` differs in exactly two places. The subject's name changes from a
+two-word capitalised spelling to the lowercase single-word form the entry
+declares, which is the ground every judge quoted in the run-6 name tripwire gave
+for their pick. One sentence loses a trailing English connective that the
+original marks nowhere. The attribution line survives intact and every other
+line is identical. Nothing is lost.
+
+`Zha_Ke#3` makes two changes and both are what the ballots argued for. A
+connective the standing text had read as additive is read as contrastive
+instead, and a verb phrase regains the object the original names, which the
+standing text had left implicit. The outbound link survives unchanged. Nothing
+is lost, and two readings improve.
+
+`Acheron#0` is word for word identical to the standing text. It differs only in
+that the semantic line breaks are gone, which is #151 rather than a loss of
+content.
+
+Measurement 4 therefore reads three clean against two damaged, rather than two
+damaged against silence. Both damaged slices now have a fix and a guard behind
+them, in #152 and #153, and confirming those hold in production is what run 7 is
+for.
+
+### What run 7 must show, written before run 7 is read
+
+Recorded before the run finishes, for the same reason the `gaoyanger#1`
+prediction was worth recording: an expectation written afterwards cannot be
+wrong, and so cannot be evidence.
+
+`gaoyanger#1` must not ship a present-tense rendering. The #152 sheets now name
+the English as the authority for tense wherever the original leaves it unmarked.
+A present-tense rendering shipping again means #152 failed in production, which
+is an escalation rather than a cue to re-read the ballots.
+
+`Zha_Ke#1` must ship nothing. Every candidate at that slice should be refused by
+the floor, the incumbent retained, and the will preserved. Expect repair-round
+churn there, because the finding the floor emits is a kind mismatch no candidate
+can act on while #154 is open. That churn is #153 working rather than a hang or
+a fresh defect. The one thing worth watching is whether the bed retries an
+unfixable refusal past its bounded rounds, which would be a bound to fix in the
+bed script rather than a pipeline defect.
+
+The #155 change to DROPPED carries an overcorrection risk, because a criterion
+counting anything the archive holds and a candidate omits structurally favours
+the lane that starts from the archive. Run 6 settled 8 contests to translate, 4
+to repair, and 1 to neither. Translate wins collapsing toward two or three would
+mean the criterion overshot, and it would need the bounding pass #143 got.
+
+Decline counts and `neither` counts may move in either direction, because the
+sheets themselves changed. That is #130 data rather than noise, and it should be
+read as a fresh measurement rather than compared for stability.
