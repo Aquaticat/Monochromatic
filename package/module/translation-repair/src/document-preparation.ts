@@ -272,12 +272,19 @@ export function prepareDocumentPair(
         `alignment target-unclaimed (pair ${String(pairIndex,)}: ${
           String(blocks.length,)
         } translation blocks no original claims, ${
-          String(blocks.reduce(function addChars(sum, node,): number {
+          String(blocks.reduce(
+            function addChars(
+              sum,
+              node,
+            ): number {
             return sum + (node.endOffset - node.startOffset);
-          }, 0,),)
+          },
+            0,
+          ),)
         } characters: ${blocks.map(function toId(node,): string {
           return node.id;
-        },).join(', ',)})`,
+        },)
+          .join(', ',)})`,
       );
     }
 

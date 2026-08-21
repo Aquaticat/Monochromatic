@@ -72,6 +72,68 @@ function nodeChars(node: DocumentNode,): number {
 }
 
 /**
+ * Reads the walk positions a declined block falls immediately before.
+ *
+ * A DECLINED BLOCK MUST CLOSE THE RUN, not merely be skipped. A run's text is
+ * cut from its first offset to its last, so a run holding the blocks either
+ * side of a declined one still contains the declined bytes, and
+ * `span-contiguity.ts` refuses that shape for exactly this reason. Closing
+ * here is what puts the block BETWEEN two slices, where `splice-slices.ts`
+ * leaves it untouched.
+ *
+ * @param walk - steps the grouping reads, in document order
+ *
+ * @param targetNodes - translation blocks the steps index
+ *
+ * @param declined - ids of blocks no original claims
+ *
+ * @returns Positions that must begin a fresh run
+ *
+ * @example
+ * ```ts
+ * const afterDecline = positionsAfterDecline({ walk, targetNodes, declined, },);
+ * ```
+ */
+function positionsAfterDecline(
+  {
+    walk,
+    targetNodes,
+    declined,
+  }: {
+    readonly walk: readonly AlignmentStep[];
+    readonly targetNodes: readonly DocumentNode[];
+    readonly declined: ReadonlySet<string>;
+  },
+): ReadonlySet<number> {
+  /**
+   * Positions that begin a fresh run.
+   */
+  const positions = new Set<number>();
+
+  /**
+   * Whether a declined block has been passed with no run started since.
+   */
+  let sawDecline = false;
+  for (const [at, step,] of walk.entries()) {
+    /**
+     * Block this step names on the translation side, when it names one.
+     */
+    const node = (step.kind === 'target-only')
+      ? targetNodes[step.targetIndex]
+      : undefined;
+    if ((node !== undefined) && declined.has(node.id,)) {
+      sawDecline = true;
+      continue;
+    }
+    if (sawDecline) {
+      positions.add(at,);
+      sawDecline = false;
+    }
+  }
+  return positions;
+}
+
+/**
  * Folds runs that ended up with nothing on one side into a neighbour. A run of
  * purely unpartnered blocks has no counterpart to compare against, and every
  * later stage requires both sides to be non-empty, so it joins the run beside
@@ -237,17 +299,6 @@ export function groupNodesAligned(
     targetChars: 0,
   };
 
-  /**
-   * Whether a declined block just ended the run being filled.
-   *
-   * A DECLINED BLOCK MUST CLOSE THE RUN, not merely be skipped. A run's text is
-   * cut from its first offset to its last, so a run holding the blocks either
-   * side of a declined one still contains the declined bytes, and
-   * `span-contiguity.ts` refuses that shape for exactly this reason. Closing
-   * here is what puts the block BETWEEN two slices, where `splice-slices.ts`
-   * leaves it untouched.
-   */
-  let closedByDecline = false;
   // A SUPPLIED PAIRING WINS, because it came from models that read both texts
   // while `alignBlocks` scores kind, script-neutral tokens and length. On this
   // corpus those three are exhausted: kind is constant across paragraphs,
@@ -278,7 +329,15 @@ export function groupNodesAligned(
       steps,
       targetNodes,
     },);
-  for (const step of walk) {
+  /**
+   * Walk positions a declined block falls immediately before.
+   */
+  const afterDecline = positionsAfterDecline({
+    walk,
+    targetNodes,
+    declined,
+  },);
+  for (const [at, step,] of walk.entries()) {
     /**
      * Block this step would contribute on the translation side, absent when it
      * contributes none, read before anything else so a declined one can end the
@@ -287,10 +346,8 @@ export function groupNodesAligned(
     const declinedNode = (step.kind === 'target-only')
       ? targetNodes[step.targetIndex]
       : undefined;
-    if ((declinedNode !== undefined) && declined.has(declinedNode.id,)) {
-      closedByDecline = true;
+    if ((declinedNode !== undefined) && declined.has(declinedNode.id,))
       continue;
-    }
 
     /**
      * Original block this step contributes, when it contributes one.
@@ -362,14 +419,13 @@ export function groupNodesAligned(
     // block belongs to and this is about which bytes a slice's span covers.
     // Keeping a continuation attached across a declined block would put the
     // declined bytes back inside the span.
-    if (closedByDecline || ((!cohesive) && overBudget)) {
+    if (afterDecline.has(at,) || ((!cohesive) && overBudget)) {
       runs.push({
         sourceRun: [ ...sourceNode, ],
         targetRun: [ ...targetNode, ],
       },);
       open.sourceChars = sourceChars;
       open.targetChars = targetChars;
-      closedByDecline = false;
       continue;
     }
     current.sourceRun

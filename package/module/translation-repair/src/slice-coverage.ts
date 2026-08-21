@@ -207,7 +207,8 @@ export function assertSliceCoverage(
       expected: idsOf({
         runs: [ pair.target
           .nodes, ],
-      },).filter(function isNotDeclined(id,): boolean {
+      },)
+        .filter(function isNotDeclined(id,): boolean {
         return !declined.has(id,);
       },),
       placed: placedTargets,

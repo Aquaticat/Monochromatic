@@ -59,6 +59,59 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 // which is why no size threshold is needed to tell the two apart.
 
 /**
+ * Reads which translation blocks sit BETWEEN two halves of one rendering.
+ *
+ * A pairing may name one original against translation blocks 1 and 3, which
+ * leaves block 2 claimed by nobody and yet inside a rendering. Declining it
+ * asks grouping to close a run in the middle of that rendering, and the span
+ * then either stretches back over the declined bytes or cuts the original away
+ * from half its own translation, which is the shape `span-contiguity.ts`
+ * refuses. Inside a rendering, staying in the slice is the lesser cost.
+ *
+ * READ BACKWARDS because that is what makes the question local: a block is
+ * inside a rendering exactly when a further rendering follows it with no new
+ * pairing in between.
+ *
+ * @param steps - alignment steps built from a roster pairing
+ *
+ * @returns Translation indices no decline may claim
+ *
+ * @example
+ * ```ts
+ * const inside = blocksInsideRendering({ steps, },);
+ * ```
+ */
+function blocksInsideRendering(
+  { steps, }: { readonly steps: readonly AlignmentStep[]; },
+): ReadonlySet<number> {
+  /**
+   * Indices a rendering encloses.
+   */
+  const insideRendering = new Set<number>();
+
+  /**
+   * Whether a further rendering follows the step being read, with no pairing
+   * opened since.
+   */
+  let renderingContinues = false;
+  for (const step of steps.toReversed()) {
+    if (step.kind === 'paired') {
+      renderingContinues = false;
+      continue;
+    }
+    if (step.kind !== 'target-only')
+      continue;
+    if (step.continuesPairing === true) {
+      renderingContinues = true;
+      continue;
+    }
+    if (renderingContinues)
+      insideRendering.add(step.targetIndex,);
+  }
+  return insideRendering;
+}
+
+/**
  * Reads the translation blocks a supplied pairing accounted for nowhere.
  *
  * A block qualifies when the only step naming it is `target-only` AND that step
@@ -121,41 +174,9 @@ export function declinedTargetBlocks(
   );
 
   /**
-   * Blocks that sit BETWEEN two halves of one rendering.
-   *
-   * A pairing may name one original against translation blocks 1 and 3, which
-   * leaves block 2 claimed by nobody and yet inside a rendering. Declining it
-   * asks grouping to close a run in the middle of that rendering, and the span
-   * then either stretches back over the declined bytes or cuts the original
-   * away from half its own translation, which is the shape
-   * `span-contiguity.ts` refuses. Inside a rendering, staying in the slice is
-   * the lesser cost.
-   *
-   * READ BACKWARDS because that is what makes the question local: a block is
-   * inside a rendering exactly when a further rendering follows it with no new
-   * pairing in between.
+   * Blocks no original claims that nonetheless sit inside a rendering.
    */
-  const insideRendering = new Set<number>();
-
-  /**
-   * Whether a further rendering follows the step being read, with no pairing
-   * opened since.
-   */
-  let renderingContinues = false;
-  for (const step of steps.toReversed()) {
-    if (step.kind === 'paired') {
-      renderingContinues = false;
-      continue;
-    }
-    if (step.kind !== 'target-only')
-      continue;
-    if (step.continuesPairing === true) {
-      renderingContinues = true;
-      continue;
-    }
-    if (renderingContinues)
-      insideRendering.add(step.targetIndex,);
-  }
+  const insideRendering = blocksInsideRendering({ steps, },);
 
   return steps
     .filter(function isDeclined(step,): boolean {
