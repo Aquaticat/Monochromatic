@@ -30,8 +30,14 @@ import advisor, {
 /** Fixture context budget. */
 const CONTEXT_WINDOW = 1_000;
 
+/** Configured Advisor output requirement. */
+const ADVISOR_OUTPUT_TOKENS = 32;
+
 /** Fixture max output tokens. */
 const MAX_TOKENS = 100;
+
+/** Advertised output capacity below Advisor requirement. */
+const INSUFFICIENT_MAX_TOKENS = ADVISOR_OUTPUT_TOKENS - 1;
 
 /** Fixture model used by registration status helpers. */
 const fixtureModel: Model<'faux'> = {
@@ -52,6 +58,15 @@ const fixtureModel: Model<'faux'> = {
   maxTokens: MAX_TOKENS,
 };
 
+/** Scoped fixture excluded by Advisor output requirement. */
+const insufficientOutputFixtureModel: Model<'faux'> = {
+  ...fixtureModel,
+  id: 'limited-reviewer',
+  name: 'Limited Reviewer',
+  provider: 'limited-provider',
+  maxTokens: INSUFFICIENT_MAX_TOKENS,
+};
+
 /** Expensive current-main fixture used by default-avoidance tests. */
 const expensiveFixtureModel: Model<'faux'> = {
   ...fixtureModel,
@@ -68,6 +83,7 @@ const expensiveFixtureModel: Model<'faux'> = {
 /** Advisor config fixture. */
 const advisorConfig: AdvisorConfig = {
   ...DEFAULT_CONFIG,
+  maxAdvisorOutputTokens: ADVISOR_OUTPUT_TOKENS,
   source: {
     globalPath: '/home/test/.pi/agent/extensions/pi-advisor.json',
     projectPath: '/repo/.pi/extensions/pi-advisor.json',
@@ -144,6 +160,25 @@ function extensionContextWithCurrentMainModel(): ExtensionContext {
 }
 
 /**
+ * Build a minimal extension context containing one output-ineligible model.
+ *
+ * @returns extension context mock
+ */
+function extensionContextWithInsufficientOutputModel(): ExtensionContext {
+  return {
+    cwd: '/repo',
+    modelRegistry: modelRegistryWith([
+      fixtureModel,
+      insufficientOutputFixtureModel,
+    ],),
+    scopedModels: [
+      fixtureModel,
+      insufficientOutputFixtureModel,
+    ],
+  } as unknown as ExtensionContext;
+}
+
+/**
  * Build a minimal command context mock.
  *
  * @returns command context mock
@@ -159,6 +194,15 @@ function commandContext(): ExtensionCommandContext {
  */
 function commandContextWithCurrentMainModel(): ExtensionCommandContext {
   return extensionContextWithCurrentMainModel() as unknown as ExtensionCommandContext;
+}
+
+/**
+ * Build a command context containing one output-ineligible model.
+ *
+ * @returns command context mock
+ */
+function commandContextWithInsufficientOutputModel(): ExtensionCommandContext {
+  return extensionContextWithInsufficientOutputModel() as unknown as ExtensionCommandContext;
 }
 
 /**
@@ -243,6 +287,17 @@ await describe({
         expect(guidance,).toContain('advisor({}) default model: faux-provider/reviewer',);
       },
     },),
+    it({
+      name: 'omits output-ineligible model from allowed slugs',
+      fn: async () => {
+        const guidance = await buildMainModelGuidance({
+          ctx: extensionContextWithInsufficientOutputModel(),
+          config: advisorConfig,
+        },);
+        expect(guidance,).toContain('Allowed Advisor model slugs: faux-provider/reviewer',);
+        expect(guidance,).not.toContain('limited-provider/limited-reviewer',);
+      },
+    },),
   ],
 },);
 
@@ -271,6 +326,20 @@ await describe({
         },);
         expect(status,).toContain('Scoped models: faux-provider/reviewer, expensive-provider/reviewer',);
         expect(status,).toContain('Default model: faux-provider/reviewer',);
+      },
+    },),
+    it({
+      name: 'reports output-eligible scoped models separately',
+      fn: async () => {
+        const status = await buildAdvisorStatus({
+          ctx: commandContextWithInsufficientOutputModel(),
+          config: advisorConfig,
+          enabled: true,
+        },);
+        expect(status,).toContain(
+          `Eligible Advisor models (>=${String(ADVISOR_OUTPUT_TOKENS,)} output tokens): faux-provider/reviewer`,
+        );
+        expect(status,).toContain('Scoped models: faux-provider/reviewer, limited-provider/limited-reviewer',);
       },
     },),
   ],

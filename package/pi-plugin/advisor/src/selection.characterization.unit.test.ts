@@ -48,6 +48,9 @@ const ADVISOR_OUTPUT_TOKENS = 32;
 /** Advisor input token estimate used by selection tests. */
 const ADVISOR_INPUT_TOKENS = 16;
 
+/** Advertised output capacity just below Advisor requirement. */
+const INSUFFICIENT_MAX_TOKENS = ADVISOR_OUTPUT_TOKENS - 1;
+
 /** Fixture context budget. */
 const CONTEXT_WINDOW = 4_096;
 
@@ -81,6 +84,8 @@ const advisorConfig: AdvisorConfig = {
  *
  * @param outputCost - output price per million tokens
  *
+ * @param maxOutputTokens - optional advertised output capacity
+ *
  * @returns pi model fixture
  *
  * @example
@@ -95,12 +100,14 @@ function modelFixture(
     name,
     inputCost,
     outputCost,
+    maxOutputTokens,
   }: {
     readonly provider: string;
     readonly id: string;
     readonly name: string;
     readonly inputCost: number;
     readonly outputCost: number;
+    readonly maxOutputTokens?: number;
   },
 ): Model<Api> {
   return {
@@ -118,7 +125,8 @@ function modelFixture(
       cacheWrite: 0,
     },
     contextWindow: CONTEXT_WINDOW,
-    maxTokens: MAX_TOKENS,
+    maxTokens: maxOutputTokens
+      ?? MAX_TOKENS,
   } satisfies Model<Api>;
 }
 
@@ -138,6 +146,16 @@ const expensiveModel = modelFixture({
   name: 'Reviewer Expensive',
   inputCost: EXPENSIVE_INPUT,
   outputCost: EXPENSIVE_OUTPUT,
+},);
+
+/** High-cost model whose endpoint advertises too little output capacity. */
+const insufficientOutputModel = modelFixture({
+  provider: 'limited',
+  id: 'limited-reviewer',
+  name: 'Limited Reviewer',
+  inputCost: EXPENSIVE_INPUT,
+  outputCost: EXPENSIVE_OUTPUT,
+  maxOutputTokens: INSUFFICIENT_MAX_TOKENS,
 },);
 
 /** Registry-only model fixture used to distinguish out-of-scope from unknown slugs. */
@@ -171,6 +189,7 @@ const modelRegistry = {
       cheapModel,
       expensiveModel,
       thirdModel,
+      insufficientOutputModel,
     ];
   },
 } as ModelRegistry;
@@ -283,6 +302,98 @@ await describe({
       },
     },),
     it({
+      name: 'excludes higher-cost default model below configured output capacity',
+      fn: async function testDefaultExcludesInsufficientOutputModel() {
+        const mixedCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [
+            {
+              model: cheapModel,
+              canonicalSlug: 'cheap/reviewer',
+            },
+            {
+              model: insufficientOutputModel,
+              canonicalSlug: 'limited/limited-reviewer',
+            },
+          ],
+        };
+        const result = selectAdvisorModel({
+          scope: mixedCapacityScope,
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+        },);
+
+        expect(result.selected.canonicalSlug,).toBe('cheap/reviewer',);
+        expect(
+          result.defaultSelection?.ranking.map(function mapScore(score,) {
+            return score.slug;
+          },),
+        )
+          .toEqual(['cheap/reviewer',],);
+      },
+    },),
+    it({
+      name: 'rejects explicit model below configured output capacity',
+      fn: async function testExplicitRejectsInsufficientOutputModel() {
+        const mixedCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [
+            {
+              model: cheapModel,
+              canonicalSlug: 'cheap/reviewer',
+            },
+            {
+              model: insufficientOutputModel,
+              canonicalSlug: 'limited/limited-reviewer',
+            },
+          ],
+        };
+        const caught = captureError(function selectInsufficientOutputModel() {
+          return selectAdvisorModel({
+            scope: mixedCapacityScope,
+            requestedSlug: 'limited/limited-reviewer',
+            config: advisorConfig,
+            estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+            modelRegistry,
+          },);
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          `requires ${String(ADVISOR_OUTPUT_TOKENS,)} output tokens`,
+        );
+        expect((caught as Error).message,).toContain(
+          `advertises ${String(INSUFFICIENT_MAX_TOKENS,)} output tokens`,
+        );
+      },
+    },),
+    it({
+      name: 'rejects default selection when every model lacks output capacity',
+      fn: async function testDefaultRejectsInsufficientOutputScope() {
+        const insufficientCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [{
+            model: insufficientOutputModel,
+            canonicalSlug: 'limited/limited-reviewer',
+          },],
+        };
+        const caught = captureError(function selectWithoutEligibleModel() {
+          return selectAdvisorModel({
+            scope: insufficientCapacityScope,
+            config: advisorConfig,
+            estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+            modelRegistry,
+          },);
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          `no scoped models advertise at least ${String(ADVISOR_OUTPUT_TOKENS,)} output tokens`,
+        );
+      },
+    },),
+    it({
       name: 'keeps ambiguous bare-id error shape',
       fn: async function testAmbiguousBareIdErrorShape() {
         const caught = captureError(function selectAmbiguousBareId() {
@@ -352,6 +463,34 @@ await describe({
         },);
 
         expect(result.selection.selected.canonicalSlug,).toBe('cheap/reviewer',);
+      },
+    },),
+    it({
+      name: 'builds context only for models meeting configured output capacity',
+      fn: async function testRunContextExcludesInsufficientOutputModel() {
+        const mixedCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [
+            {
+              model: cheapModel,
+              canonicalSlug: 'cheap/reviewer',
+            },
+            {
+              model: insufficientOutputModel,
+              canonicalSlug: 'limited/limited-reviewer',
+            },
+          ],
+        };
+        const result = selectAdvisorRunContext({
+          branch: [],
+          config: advisorConfig,
+          advisorSystemPrompt: 'review carefully',
+          scope: mixedCapacityScope,
+          modelRegistry,
+        },);
+
+        expect(result.selection.selected.canonicalSlug,).toBe('cheap/reviewer',);
+        expect(result.selection.defaultSelection?.ranking,).toHaveLength(1,);
       },
     },),
   ],
