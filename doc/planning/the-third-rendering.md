@@ -2249,3 +2249,27 @@ and that question is meaningless when one of them is structurally not the page.
 This is adopted rather than asked, per the settled-decision rule:
 both halves come from policy already in the lane this stage reuses verbatim.
 Veto invited.
+
+## The first measurement, restated once the floor is in it
+
+The section "`#151` landed, and it corrects the first measurement above"
+put the rate at 9 of 11 decided slices in run 8 and 8 of 9 in run 9.
+Both numbers predate the validity floor,
+and the floor moves them again.
+
+`Zha_Ke#1` carries `valid=0/5` in both runs and shipped a real content change in both.
+It is not one of the whitespace demotions.
+Under the floor it never reaches the gate at all,
+so it leaves the decided set rather than moving from one column to the other,
+and it comes out of the numerator and the denominator together.
+
+The rate after both fixes is 8 of 10 in run 8 and 7 of 8 in run 9.
+
+Two of the three whitespace demotions are unchanged by the archive-aware half of the fix.
+Re-running the demotion check with the wrapped standing text as a second key
+finds the same three slices it found with one key:
+`gaoyanger#1` in both runs and `keyword233#0` in run 8.
+Every standing text in the band pair is lane output, which is already wrapped,
+so the archive case the second key exists for is not exercised by this population.
+It closes a hole the pair does not happen to contain,
+which is why it needed a written guard rather than a measured one.
