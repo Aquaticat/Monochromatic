@@ -932,3 +932,40 @@ A third rendering that no lane assembles inherits neither.
 Nothing in production is wrong today, because consolidation is not wired.
 Wired as it stands, every consolidated slice would ship unwrapped into a corpus #122 converted to semantic wrapping.
 Filed as its own task, blocking the wiring half of this work.
+
+## Measurement 4 has already found one: the consolidation changed the tense of a page
+
+`gaoyanger` slice 1 is a slice where the reading and the contest AGREED on the translate lane,
+which is the population measurement 4 exists to protect.
+The gate settled on a consolidation anyway, and that consolidation moved the slice from past into present.
+
+- standing: `Gaoyang was a cute, gentle, and kind girl. She grew up in a single-parent family with difficult living conditions, but she was always very strong.`
+- shipped: `Gaoyang is a cute, gentle, kind girl. She is from a single-parent family, and from childhood her living conditions were difficult, but she has always been very strong.`
+
+The rest of the page is past.
+Chunk 0's standing text reads `Gaoyang indulged in the cradle of happiness.`,
+and chunk 1's own standing text reads `Gaoyang was a pretty, tender and kind girl.`
+A reader meets both tenses on one short memorial page.
+The shipped sentence also disagrees with itself: `She is from a single-parent family, and from childhood her living conditions were difficult.`
+
+The shipped text is not worse on any other axis.
+It separates `单亲家庭` from `从小生活条件不好`, which the Chinese does carry as two clauses and the standing text had fused.
+So this is a tense defect specifically, not a bad consolidation.
+
+### The mechanism, read off the sheets rather than guessed
+
+`consolidate-wire.ts` splices `HOUSE_POLICY_BLOCK`, which says nothing about tense,
+so the producer choosing the wording had no guidance at all, with the past-tense standing text in front of it.
+`contest-ballot-wire.ts` splices `JUDGE_POLICY_BLOCK`,
+whose forced-differences paragraph tells the gate that rendering a tenseless copula in past or present is a choice English forces and never a fault.
+The producer was free and the decider was told not to object.
+
+That paragraph was added by #146 for a measured reason and is not the thing to undo:
+three whole-slate refusals came from judges treating a forced tense as an alteration of the time referred to,
+and Chinese does mark no tense.
+What no sheet has ever carried is the other half.
+A slice joins a page that already has a tense, and absent a reason to change it, the page's tense is the one to match.
+Consistency with the page is a different claim from whether a forced choice is a fault, so stating it does not reopen the refusals.
+
+This is the run reporting a behavioural finding rather than an instrument defect,
+which is what a swept instrument is supposed to produce.
