@@ -297,3 +297,42 @@ calling the pair equivalent.
 What shipped is the winning lane's text with one unsupported word removed, which
 is measurement 4's criterion met rather than merely not violated: nothing the
 winner carried is gone.
+
+## One anchor for three stages, and the question it leaves open
+
+`#139`, `#140` and `#142` are three symptoms of one unsettled question:
+WHICH TEXT DECIDES THE SHAPE OF A RENDERED SLICE.
+
+Today three stages answer it three ways.
+The translate lane validates against the SOURCE.
+The consolidation arm validates against the STANDING text, which is whichever
+lane won.
+The consolidation sheet asks for the shape of the ARCHIVE.
+Any two of those disagree wherever the archive is shaped differently from the
+Chinese, which is 4 of 19 measured comparison rows, and the first bed slice is
+one of them.
+
+THE ARCHIVE IS THE ONLY REFERENCE EVERY STAGE CAN SHARE.
+The source is another language's shape and the lanes cannot both be anchored to
+their own outputs without drifting apart, so a document assembled from slices
+that each chose their own reference assembles inconsistently.
+Where the archive has no text for a slice, the source is the only reference
+left, and the existing fallback chain already says so.
+
+WHICH MAKES `#140` DISSOLVE RATHER THAN NEED A DESIGN.
+Once the translate lane is anchored to the page it writes into, the standing
+text can no longer be shaped unlike the archive, and the consolidation's guard
+and its sheet are naming the same text by two names.
+The guard then anchors to the archive directly and the sheet keeps its present
+wording.
+
+WHAT THIS DOES NOT SETTLE, and what no measurement here can settle:
+an archive whose own shape is wrong.
+Anchoring to the archive preserves a bad shape as faithfully as a good one,
+and the owner's standard is that what we produce must be good even where the
+original is not.
+The first bed slice is the easy direction, where the archive's block quote and
+attribution line are better than the Chinese paragraph they render.
+The hard direction, an archive that merged what the Chinese separates, has not
+been looked for and is not in the bed.
+It is recorded here rather than guessed at.
