@@ -737,3 +737,30 @@ and then hands a retryable error to the retry layer buys the same runaway four m
 The outcome also needs its own label in `reportStreamProgress`,
 which means the census pattern gains a fourth alternative and every earlier scan of that log
 counts a population that did not include it.
+
+### First condition discharged: no other role emits more than the consolidation bed
+
+The other producing roles were read off the 11 settled artifacts,
+taking the largest single model-produced text for each:
+
+- Editor, whole document: 6,679 characters, `Arita`.
+- Editor, one slice: 1,766 characters, `dogesir_`.
+- Translator candidate: 1,766 characters, `dogesir_`.
+- Judge ballot reason: 1,457 characters, `Arita`.
+- Critic quoted span: 629 characters, `saurikissa`.
+- Critic claim summary: 289 characters, `GLaDOSister`.
+
+THE 6,679 FIGURE IS NOT A STREAM. `Arita`'s repaired document is assembled from 12 slices
+whose accepted texts sum to 6,534, the largest of them 1,134,
+and every one of them appears verbatim in the assembled text.
+No single call produced it, so it does not bound anything a per-stream guard reads.
+
+The largest single-stream emission by any role in the artifacts is therefore 1,766 parsed characters.
+Artifact fields hold parsed results rather than raw stream content,
+so each understates the stream that carried it by its JSON envelope and escaping.
+Even generously inflated, 1,766 stays below the 4,278 the consolidation bed reached.
+
+The consolidation bed is the heaviest emitter measured anywhere,
+and its 4,278 is already counted in raw stream content characters rather than parsed length,
+which is the unit the guard reads.
+A 10,000 character content bound keeps better than twice that margin.
