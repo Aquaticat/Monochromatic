@@ -312,25 +312,24 @@ Any two of those disagree wherever the archive is shaped differently from the
 Chinese, which is 4 of 19 measured comparison rows, and the first bed slice is
 one of them.
 
-THE ARCHIVE IS THE ONLY REFERENCE EVERY STAGE CAN SHARE.
-The source is another language's shape and the lanes cannot both be anchored to
-their own outputs without drifting apart, so a document assembled from slices
-that each chose their own reference assembles inconsistently.
-Where the archive has no text for a slice, the source is the only reference
-left, and the existing fallback chain already says so.
+THE FIRST ANSWER WAS "ANCHOR EVERYTHING TO THE ARCHIVE", AND IT IS WRONG.
+It is kept here as a rejected option rather than deleted, because the reason it
+fails is the reason the guard ends up shaped the way it does.
+The argument for it was that the archive is the only reference every stage can
+share, the source being another language's shape.
+"Measured: neither text is a correct structural authority" refutes it, and
+"What the guard should check instead" is what replaces it.
 
-WHICH MAKES `#140` DISSOLVE RATHER THAN NEED A DESIGN.
-Once the translate lane is anchored to the page it writes into, the standing
-text can no longer be shaped unlike the archive, and the consolidation's guard
-and its sheet are naming the same text by two names.
-The guard then anchors to the archive directly and the sheet keeps its present
-wording.
+WHAT SURVIVES IS THE FRAMING, NOT THE ANSWER.
+The three stages must stop answering the shape question three ways, and `#140`
+still dissolves rather than needing a design of its own, because the rule that
+settles `#139` settles it too.
 
-WHAT THIS DOES NOT SETTLE, and what no measurement here can settle:
+WHAT NOTHING HERE SETTLES, and what no measurement in this bed can settle:
 an archive whose own shape is wrong.
-Anchoring to the archive preserves a bad shape as faithfully as a good one,
-and the owner's standard is that what we produce must be good even where the
-original is not.
+The rule below ACCEPTS the archive shape wherever a candidate matches it, which
+preserves a bad one as faithfully as a good one, and the owner's standard is
+that what we produce must be good even where the original is not.
 The first bed slice is the easy direction, where the archive's block quote and
 attribution line are better than the Chinese paragraph they render.
 The hard direction, an archive that merged what the Chinese separates, has not
@@ -379,8 +378,11 @@ has no defence.
 WHERE THEY DISAGREE, a candidate is valid if it matches EITHER the archive's
 block sequence or the Chinese's.
 The shape is a judgement call there, the pipeline has no authority that settles
-it, and a guard that picks one anyway manufactures findings on 28% of slices
-and sends models back to undo defensible work.
+it, and a guard that picks one anyway manufactures findings on 19 of 67 measured
+records and sends models back to undo defensible work.
+THAT SHARE IS NOT A CORPUS RATE: the pool is the settled artifacts on this
+machine, five of the seven fewer-block records are one entry sliced by different
+runs, and one entry dominates the more-block records.
 Matching either still catches the failure the guard was built for, a model
 returning one undifferentiated blob, except where a reference is itself one
 block.
@@ -389,6 +391,17 @@ THE PROTECTED ATOMS ARE UNAFFECTED and stay strict against both.
 A footnote marker or a link that appears in neither reference is invented, and
 one that appears in both and not in the candidate is lost, whatever the block
 shape does.
+
+TWO LIMITS, RECORDED RATHER THAN BUILT AROUND.
+A candidate matches one reference SEQUENCE ENTIRE, so an archive that both
+reshapes what it keeps AND drops a trailing block leaves the ideal rendering,
+reshaped prefix plus restored tail, matching neither.
+No measured record does both, and the `Aniloviraw` prefixes are kind-identical
+so a restoration there matches the Chinese, but it is unmeasured rather than
+impossible.
+And a one-sided slice has no archive text at all, so the second reference has to
+be OPTIONAL, degrading to today's single-reference check rather than refusing
+every candidate.
 
 THE CONSOLIDATION BED STAYS VALID UNDER THIS RULE.
 Its first slice is a disagreement record, and what the six producers returned
