@@ -1401,3 +1401,48 @@ one.
 One limit on the census: it reads regions that were assigned to a slice, so a
 page region no slice covers cannot appear in it. It therefore undercounts
 exposure rather than overcounting it.
+
+### The real cause: container tags are in no block at all
+
+The census said the invariant should have caught this, because
+`assertSpanContiguity` already refuses a slice that cuts through a block and it
+runs at preparation, at `document-preparation.ts:293`. Running the real
+preparation over the real `Zha_Ke` pair explains why it did not.
+
+`parseDocument` returns six nodes for that page, and none of them is the
+`<details>` element. The nodes run to the element's contents directly, as a
+paragraph for the summary and a blockquote for the will, and the tags
+themselves land in the gaps between nodes:
+
+```text
+  block/1   [  159,  370) paragraph
+  GAP       [  370,  382) NOT IN ANY NODE: "\n\n<details>\n"
+  block/2   [  382,  408) paragraph
+  block/3   [  409, 4034) blockquote
+  GAP       [ 4034, 4047) NOT IN ANY NODE: "\n</details>\n\n"
+  block/4   [ 4047, 4103) mdxJsxFlowElement
+```
+
+`AkiraComplex` is the same shape, with `<BlurBlock>` at `[264, 278)` and
+`</BlurBlock>` at `[669, 684)`, both in no node.
+
+So the slice at chunk 1 covers `[159, 4034)` and carries exactly three whole
+nodes. No block is cut, every block inside the range is one the slice holds, and
+the invariant is satisfied on its own terms. The opening tag sits in a gap
+inside the range and the closing tag sits in a gap outside it. Assembly replaces
+the range, which deletes the opener, and copies the untouched remainder, which
+preserves the closer.
+
+That is the whole mechanism behind the assembled page carrying `<details>` zero
+times and `</details>` once.
+
+The defect is therefore not that the slicer cuts elements. It is that the
+document node model has no representation for a container's tags, so a class of
+page content exists only as text between nodes. Every invariant reasons over
+nodes, so none of them can see it, and any slice whose range happens to span
+such a gap deletes what is in it. `assertSliceCoverage` is blind for the same
+reason, since it asks whether every block reached a slice.
+
+This also explains why `AkiraComplex` needed no fallback to reach the same
+state. Nothing about a bad pairing is required. An ordinary boundary between two
+ordinary blocks does it, whenever a container happens to open between them.
