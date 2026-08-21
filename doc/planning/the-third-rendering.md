@@ -1539,3 +1539,87 @@ caps output size.
 
 Filed as #156 rather than folded into #154, with the cap left to be derived from
 the observed distribution of completed responses rather than guessed.
+
+## Container tags: the defect has one origin and two consumers
+
+Recorded 2026-08-21, before the fix is written, so the expectations below count as evidence.
+
+### The guard's census, and what it hides
+
+`assertContainerIntegrity` refuses 11 of the 92 readable pairs.
+Naming them, because the next measurement has to reproduce this exact set:
+`AkiraComplex`, `SevenBird`, `XingZ60`, `Zha_Ke`, `cheonwoomaeng`, `gqt`, `hulicaijia`, `lin10104`,
+`mikaela_khara`, `shihai4h`, `zhangyubaka`.
+Sixteen entries carry a container at all, so five carry one and are not refused.
+
+The refusals do not share a cause, and reading them as one cause is what sent the first fix at the wrong file.
+Eight of the 11 hold a container wholly inside one paired chunk,
+and the cut happens when subdivision splits that container's blocks across two slices.
+Three do not: `SevenBird`, `mikaela_khara` and `XingZ60` hold a container whose closing tag
+falls outside the chunk that holds its own children.
+On `mikaela_khara` the chunk ends at 8581, the closer occupies 8581 to 8593,
+and the next chunk begins at 8595, so the tag sits in a 14 character gap between two chunks.
+On `SevenBird` the closer begins exactly at its chunk's end offset.
+
+That is the same defect one level up.
+Chunk boundaries are minted at `src/chunk-document.ts:190` from `first.startOffset` and `last.endOffset`.
+Slice boundaries are minted in `runToChunk` at `src/slice-pair.ts:76` from the same two fields.
+Both read node extents, container tags belong to no node, so both draw boundaries that cut tags off.
+A fix at subdivision alone would leave `SevenBird` and `mikaela_khara` refused,
+because their damage is done before subdivision runs.
+
+### Widening at the origin rather than binding at the consumers
+
+The first design was atomicity at subdivision: treat a container as indivisible, carve over atoms, widen at the edges.
+It is rejected, and the measurement is what rejects it.
+It repairs one of the two consumers, and it leaves any range derivation added later exposed to the same defect.
+
+The fix instead widens the extents where the package first writes them:
+a block that carries a container's opening tag owns that tag,
+and a block that carries the closing tag owns that one.
+Every consumer that reads `startOffset` and `endOffset` inherits the correction without knowing containers exist.
+
+Two facts make this safe, and both are measured rather than assumed.
+Across both sides of the whole corpus there are 53 containers and not one of them
+has a tag region overlapping any block node, so widening cannot collide with a neighbour.
+Nesting exists on `XingZ60` alone, four pairs across its two sides,
+and it composes: a block takes the minimum opener start among containers it opens
+and the maximum closer end among containers it closes.
+
+Widening also dissolves the atomicity requirement rather than implementing it.
+When a container's blocks split across two slices, the first slice carries the opening tag inside its own text
+and the last slice carries the closing tag inside its own text.
+Each tag is wholly held by some slice, neither is half held, and the invariant is satisfied by construction.
+The `AkiraComplex` shape stops being a merge problem.
+
+### What is expected after the change, committed in advance
+
+The census must report 0 `ContainerIntegrityError` across all 92 pairs, with no qualification.
+`XingZ60` carries a ninth container in a target-only section that no paired chunk reaches;
+it needs no treatment, because no slice reaches it, neither tag is ever held,
+and `spliceSlices` copies the region verbatim.
+So the expected number is 0, not "0 except one".
+
+Every entry without a container must produce byte-identical slices.
+Seventy-six of the 92 have none, and any difference there means the widening reached text it had no business reaching.
+
+On the 16 entries that do carry one, every tag region must fall inside some slice's range.
+
+Cache misses on those 16 are expected, and they are invalidation rather than breakage:
+the slice text changed, so the key changed.
+
+### What the guard is for afterwards
+
+Its job changes, and saying so now prevents a later session reading it as dead weight.
+Before the widening it stood between a container and a document that loses a will.
+After the widening, preparation cannot produce a half held tag at all,
+so the guard stands against a future regression in range derivation rather than against damage in flight.
+
+The residual exposure moves rather than disappearing.
+A lane can still drop a closing tag from its own candidate,
+and that is now a candidate fault rather than a preparation fault.
+The machinery for it already exists: the floor reads a page the strict grammar refuses,
+and a deleted region is a named fault bounded to a silent original.
+Expected steady state, committed in advance: a container defect that used to stop preparation
+now appears as a contest-visible fault on one candidate, and a different candidate ships.
+No new machinery is to be built for it in this task.
