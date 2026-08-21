@@ -326,4 +326,71 @@ export function declaredNameRefusalFinding(
   } and the replacement does not; keeping the archive text)`;
 }
 
+/**
+ * Everything one refusal contributes to a settled slice.
+ *
+ * GATHERED IN ONE PLACE because a refusal has to show up in three: the record
+ * field a reader queries, the finding a scorecard counts, and the log an
+ * operator watches. Spelled out at each call site, the three drift apart, and a
+ * refusal missing from any one of them is a refusal nobody can audit.
+ *
+ * @example
+ * ```ts
+ * const report = declaredNameRefusalReport({ chunkIndex: 3, dropped, },);
+ * ```
+ */
+export type DeclaredNameRefusalReport = {
+  /**
+   * Fragment to spread into the settled record, empty when nothing was
+   * refused.
+   */
+  readonly record: { readonly droppedDeclaredNames?: readonly string[]; };
+
+  /**
+   * Findings to append, empty when nothing was refused.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ * Gathers what a refusal owes the record, the findings and the log.
+ *
+ * @param chunkIndex - slice the refusal names
+ *
+ * @param dropped - declared forms the replacement no longer carries, empty when
+ * it dropped none
+ *
+ * @returns Record fragment and findings, both empty when nothing was refused
+ *
+ * @example
+ * ```ts
+ * const { record, findings, } = declaredNameRefusalReport({ chunkIndex, dropped, },);
+ * ```
+ */
+export function declaredNameRefusalReport(
+  {
+    chunkIndex,
+    dropped,
+  }: {
+    readonly chunkIndex: number;
+    readonly dropped: readonly string[];
+  },
+): DeclaredNameRefusalReport {
+  if (dropped.length === 0) {
+    return {
+      record: {},
+      findings: [],
+    };
+  }
+  return {
+    record: { droppedDeclaredNames: dropped, },
+    findings: [
+      declaredNameRefusalFinding({
+        chunkIndex,
+        dropped,
+      },),
+    ],
+  };
+}
+
 //endregion Declared name survival

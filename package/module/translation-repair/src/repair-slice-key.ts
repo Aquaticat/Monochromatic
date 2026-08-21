@@ -244,8 +244,15 @@ import type { RepairModels, } from './repair-contract.ts';
  * question did not change, which is the cost version 26 paid deliberately and
  * once. Folding the evidence into the key spends only the slices whose evidence
  * actually moved.
+ *
+ * VERSION 28, on 2026-08-20, for the declared-name guard reaching this lane's
+ * acceptance. Unlike the window, this is not a question the key can carry: the
+ * declarations already ride in the run shape through `identityContext`, so a
+ * slice settled before the guard existed keys identically to one settled after
+ * and would resume with its refusal never asked. The guard is the reason to
+ * spend the corpus, and a guard any cache hit can walk past is not a guard.
  */
-export const SLICE_CACHE_VERSION = 27;
+export const SLICE_CACHE_VERSION = 28;
 /**
  * Everything about a repair run that changes what the models are ASKED, folded
  * into every cache key.

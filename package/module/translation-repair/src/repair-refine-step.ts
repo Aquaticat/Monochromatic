@@ -85,6 +85,7 @@ export async function refineSettledSlices(
     outcomes,
     models,
     identityContext,
+    declaredNames,
     signal,
     perCallTimeoutMs,
     l,
@@ -95,6 +96,7 @@ export async function refineSettledSlices(
     readonly outcomes: readonly ChunkRepairOutcome[];
     readonly models: RepairModels;
     readonly identityContext?: string;
+    readonly declaredNames: readonly string[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -112,6 +114,7 @@ export async function refineSettledSlices(
         slices,
         outcomes,
         models,
+        declaredNames,
         ...(identityContext === undefined ? {} : { identityContext, }),
         signal,
         perCallTimeoutMs,

@@ -81,17 +81,22 @@ await describe({
         + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(27,);
+        expect(SLICE_CACHE_VERSION,).toBe(28,);
 
-        // MOVED 2026-08-20 WITHOUT A VERSION BUMP, and the distinction is the
-        // whole reason this note exists. The fixture roster was renamed when
-        // the provider replaced one model, so the INPUT moved and the
-        // derivation did not. Real entries on disk carry the old roster inside
-        // their own key, so they stop matching on their own; bumping the
-        // version would additionally discard every entry whose roster never
+        // MOVED TWICE ON 2026-08-20, FOR OPPOSITE REASONS, which is the whole
+        // point of keeping the note. First the fixture roster was renamed when
+        // the provider replaced one model: the INPUT moved and the derivation
+        // did not, so no version moved with it. Real entries on disk carry the
+        // old roster inside their own key and stop matching on their own, while
+        // a bump would additionally discard every entry whose roster never
         // changed, which is a corpus of work thrown away for nothing.
+        //
+        // Then the declared-name guard reached this lane's acceptance, and that
+        // one DID need version 28: the declarations already ride in the run
+        // shape, so a slice settled before the guard existed keys identically to
+        // one settled after and would resume with its refusal never asked.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('cb751bddd9927c26b2cc04b4ca7d8815dd186c6268595178733e9c9d1b543cbb',);
+          .toBe('4b05451571bf034fe6733c36b2403dcab6812e6d787205ffa635fd9ffc5bbbf5',);
       },
     },),
     it({

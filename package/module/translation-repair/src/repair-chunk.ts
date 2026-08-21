@@ -3,11 +3,11 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
+import { declaredNameRefusalReport, } from './declared-name-survival.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { runChunkCriticPhase, } from './chunk-critic-phase.ts';
 import {
   candidateConfirmedIssueIds,
-  measurePatchedCandidate,
   selectCreditableIssues,
 } from './chunk-measure.ts';
 import { dedupeAcceptedIssues, } from './dedupe-issues.ts';
@@ -24,7 +24,10 @@ import { runCheckerStage, } from './repair-edit-stages.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
 import { runPanelStage, } from './repair-stages.ts';
-import { settleChunkVerdict, } from './repair-chunk-verdict.ts';
+import {
+  describeChunkSettlement,
+  settleChunkFromChecks,
+} from './repair-chunk-verdict.ts';
 
 //region Chunk repair
 // One chunk pair through the whole loop: critics, aggregation, panel,
@@ -57,6 +60,10 @@ import { settleChunkVerdict, } from './repair-chunk-verdict.ts';
  * @param identityContext - declared names from both sides' front matter,
  * passed down from the whole document because chunk text carries no front
  * matter of its own
+ *
+ * @param declaredNames - same declarations as strings to compare rather than
+ * prose to read, which is a different job: one tells a model what is true, the
+ * other decides whether a patch may ship
  *
  * @param neighbouringSourceText - original of the passages either side, shown to
  * the critic, panel and editor as CONTEXT they may neither quote against nor
@@ -92,6 +99,7 @@ export async function repairChunk(
     models,
     adjudicationConfig,
     identityContext,
+    declaredNames,
     neighbouringIncumbentText,
     neighbouringSourceText,
     signal,
@@ -106,6 +114,7 @@ export async function repairChunk(
     readonly models: RepairModels;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
+    readonly declaredNames: readonly string[];
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly signal: AbortSignal;
@@ -389,52 +398,49 @@ export async function repairChunk(
   },);
 
   /**
-   * Issue ids the checker majority confirmed fixed.
-   */
-  const resolvedIssueIds = creditableIssues
-    .filter(function isResolved(issue,) {
-      return checker.tallies[issue.issueId]
-        ?.resolved
-        === true;
-    },)
-    .map(function toId(issue,) {
-      return issue.issueId;
-    },);
-
-  /**
-   * Which candidate won, and whether the returned text moved at all.
+   * Which candidate won, whether the returned text moved at all, and which
+   * issues the checkers confirmed.
    *
-   * Two verdicts rather than one: a patch whose envelope operations cancel can
-   * win selection and write no byte. See `settleChunkVerdict`.
+   * Several verdicts rather than one: a patch whose envelope operations cancel
+   * can win selection and write no byte, and a patch that drops a declared name
+   * is refused whatever it won. See `settleChunkFromChecks`.
    */
   const {
     repairedText,
     patchSelected,
     changed,
-  } = settleChunkVerdict({
+    droppedDeclaredNames,
+    resolvedIssueIds,
+  } = settleChunkFromChecks({
     chunkIndex,
+    declaredNames,
     incumbentText: targetText,
     patchedText: editor.patch
       .patchedText,
-    measurements: measurePatchedCandidate({
-      acceptedIssues: creditableIssues,
-      tallies: checker.tallies,
-      resolvedTotal: resolvedIssueIds.length,
-      envelopes,
-      applied: editor.patch
-        .applied,
-      patchedDocument: parseDocument({ text: editor.patch
-        .patchedText, },),
-      targetDocument: documents.target,
-    },),
+    appliedOperations: editor.patch
+      .applied,
+    creditableIssues,
+    tallies: checker.tallies,
+    envelopes,
+    targetDocument: documents.target,
   },);
-  l.info(
-    `chunk ${String(chunkIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
-      String(resolvedIssueIds.length,)
-    }/${String(creditableIssues.length,)} served accepted issues resolved (${
-      String(acceptedIssues.length,)
-    } accepted, ${String(unenveloped.length,)} unenveloped)`,
-  );
+  /**
+   * What the declared-name refusal owes this slice's record and findings.
+   */
+  const refusal = declaredNameRefusalReport({
+    chunkIndex,
+    dropped: droppedDeclaredNames,
+  },);
+  for (const finding of refusal.findings)
+    l.warn(finding,);
+  l.info(describeChunkSettlement({
+    chunkIndex,
+    changed,
+    resolvedCount: resolvedIssueIds.length,
+    creditableCount: creditableIssues.length,
+    acceptedCount: acceptedIssues.length,
+    unenvelopedCount: unenveloped.length,
+  },),);
 
   return {
     chunkIndex,
@@ -450,6 +456,7 @@ export async function repairChunk(
     introducedDefects,
     accuracyPatchSelected: patchSelected,
     refined: false,
+    ...refusal.record,
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: critic.contradicted,
     nonTranslationStanding: critic.votesStand,
@@ -466,6 +473,7 @@ export async function repairChunk(
       // reads identically to a clean run, so a prober that went silent looked
       // like a prober that found nothing.
       ...introducedDefects.findings,
+      ...refusal.findings,
     ],
   };
 }

@@ -157,6 +157,8 @@ async function runFixture(client: SyntheticClient,) {
   /** Envelopes and definitions of the fixture. */
   const slice = fixtureSlice();
   return runRefineStage({
+    declaredNames: [],
+    chunkIndex: 0,
     client,
     refinerModelIds: REFINERS,
     judgeModelIds: JUDGES,
@@ -251,6 +253,8 @@ await describe({
 
         /** Run whose rewrite silently drops the age. */
         const result = await runRefineStage({
+          declaredNames: [],
+          chunkIndex: 0,
           client: scriptedRefiner({
             newText: `${SMOOTH_TEXT} She was young that year.`,
             ballot: 1,
@@ -279,6 +283,8 @@ await describe({
         const slice = fixtureSlice();
         await expect(
           runRefineStage({
+            declaredNames: [],
+            chunkIndex: 0,
             client: scriptedRefiner({ ballot: 1, },),
             refinerModelIds: [
               'hf:zai-org/GLM-5.2',

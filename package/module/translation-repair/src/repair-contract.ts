@@ -534,6 +534,16 @@ export type ChunkRepairOutcome = {
   readonly refined: boolean;
 
   /**
+   * Declared names a winning patch would have dropped, present only on a slice
+   * refused for that reason.
+   *
+   * ABSENT RATHER THAN EMPTY on every other slice, so a settled artifact written
+   * before this guard existed still reads, and so a reader can tell a slice that
+   * was never asked from one that was asked and dropped nothing.
+   */
+  readonly droppedDeclaredNames?: readonly string[];
+
+  /**
    * Shadow-mode audit of damage the NATURALNESS REWRITE caused, present only on
    * a slice the lane actually rewrote.
    *

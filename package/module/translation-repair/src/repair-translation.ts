@@ -404,6 +404,7 @@ export async function repairPreparedDocument(
           targetText: slice.target
             .text,
           lineStructured: lineStructuredSlices.has(chunkIndex,),
+          declaredNames: prepared.declaredNames,
           neighbouringIncumbentText,
           neighbouringSourceText,
           models,
@@ -537,6 +538,7 @@ export async function repairPreparedDocument(
     slices,
     outcomes,
     models,
+    declaredNames: prepared.declaredNames,
     ...identityFragment,
     signal,
     perCallTimeoutMs,

@@ -264,6 +264,7 @@ async function runPhase(
   },
 ) {
   return runRefinePhase({
+    declaredNames: [],
     client: scriptedPhase({ checkerVerdict, },),
     targetText: REPAIRED_TEXT,
     slices: SLICES,
@@ -450,6 +451,7 @@ await describe({
          * Phase over that outcome, whose rewriter returns the archive wording.
          */
         const phase = await runRefinePhase({
+          declaredNames: [],
           client: scriptedPhase({ checkerVerdict: 'fixed', },),
           targetText: SMOOTH_TEXT,
           slices: archiveSlices,

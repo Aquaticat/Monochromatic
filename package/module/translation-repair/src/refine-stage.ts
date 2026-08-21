@@ -12,6 +12,10 @@ import {
 import { selectBestCandidate, } from './candidate-select.ts';
 import { mergeIdenticalCandidates, } from './candidate-merge.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import {
+  declaredNameRefusalFinding,
+  findDroppedDeclaredNames,
+} from './declared-name-survival.ts';
 import { gateParagraphRewrite, } from './inspect-paragraph.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { buildRefineMessages, } from './refine-prompt.ts';
@@ -85,6 +89,11 @@ export type RefineStageResult = {
  *
  * @param identityContext - declared names and handles, when any
  *
+ * @param declaredNames - same declarations as strings to compare, since a
+ * rewrite for naturalness is exactly the edit that drops one
+ *
+ * @param chunkIndex - slice being refined, which a refusal names
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -112,6 +121,8 @@ export async function runRefineStage(
     envelopes,
     definitions,
     identityContext,
+    declaredNames,
+    chunkIndex,
     signal,
     perCallTimeoutMs,
     l,
@@ -124,6 +135,8 @@ export async function runRefineStage(
     readonly envelopes: readonly EditableEnvelope[];
     readonly definitions: string;
     readonly identityContext?: string;
+    readonly declaredNames: readonly string[];
+    readonly chunkIndex: number;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -339,6 +352,40 @@ export async function runRefineStage(
    * lane needs, cannot break a stage that has no opinion about it.
    */
   const contributors = [...producerModelIds(outcome.producer,),];
+
+  /**
+   * Declared names this refinement would take out of the slice.
+   *
+   * CHECKED HERE AS WELL AS AT THE ACCURACY VERDICT, because refinement
+   * REPLACES the text that verdict accepted. A guard standing only there would
+   * pass a slice and then let this lane take the name out of it, and
+   * naturalness is the exact pressure that makes a judge prefer the shorter
+   * wording: the probe behind `declared-name-survival.ts` measured judges
+   * choosing it six times out of six.
+   */
+  const droppedDeclaredNames = findDroppedDeclaredNames({
+    forms: declaredNames,
+    baseText: repairedText,
+    candidateText: outcome.value,
+  },);
+  if (droppedDeclaredNames.length > 0) {
+    /**
+     * Refusal in the wording every lane reports this under.
+     */
+    const refusal = declaredNameRefusalFinding({
+      chunkIndex,
+      dropped: droppedDeclaredNames,
+    },);
+    rl.warn(`${refusal}; keeping the repaired text`,);
+    return {
+      ...unchanged,
+      findings: [
+        ...stageFindings,
+        ...outcome.findings,
+        refusal,
+      ],
+    };
+  }
   rl.info(`refinement from ${contributors.join(' + ',)} won weight ${String(outcome.voteWeight,)}`,);
   return {
     refinedText: outcome.value,

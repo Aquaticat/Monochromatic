@@ -76,6 +76,9 @@ export type RefinePhaseResult = {
  *
  * @param identityContext - declared names and handles, when any
  *
+ * @param declaredNames - same declarations as strings a guard compares, kept
+ * apart from the prose the models read
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -97,6 +100,7 @@ export async function runRefinePhase(
     outcomes,
     models,
     identityContext,
+    declaredNames,
     signal,
     perCallTimeoutMs,
     l,
@@ -107,6 +111,7 @@ export async function runRefinePhase(
     readonly outcomes: readonly ChunkRepairOutcome[];
     readonly models: RepairModels;
     readonly identityContext?: string;
+    readonly declaredNames: readonly string[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -222,6 +227,8 @@ export async function runRefinePhase(
       envelopes: slice.envelopes,
       definitions,
       ...(identityContext === undefined ? {} : { identityContext, }),
+      declaredNames,
+      chunkIndex: outcome.chunkIndex,
       signal,
       perCallTimeoutMs,
       l,
