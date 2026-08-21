@@ -553,3 +553,25 @@ shape the guard was simultaneously demanding candidates depart from.
 Neither archived run is scored, because both were produced under wording that
 has since changed, but they are evidence about the instrument rather than about
 the pipeline, and that evidence survives the run being discarded.
+
+### The ballot that failed a whole slate on both criteria at once
+
+One of the six is not a passing remark.
+At `lintong` slice 1, the run I stopped, a judge abstained from the entire slate
+and gave two reasons: that no candidate spelled the declared handle the way the
+identity block does, and that "the original is a single unbroken paragraph with
+no block-quote markers, yet every candidate wraps the text in block quotes and
+most fragment it into separate quoted lines, altering the markdown structure
+(criterion 4)".
+
+Every candidate wrapped the passage in block quotes because THE ARCHIVE PAGE
+DOES, and the guard requires it: the page's blocks are the floor.
+So the slate was refused for obeying the guard, by a criterion that had not been
+told the guard had changed, and the refusal cost that slice its whole judged
+decision.
+Both halves of that sentence are now closed, criterion 3 by `#143` and criterion
+4 by `#144`.
+
+A tripwire in the scorecard prints any ballot whose stated reason reaches for the
+source's shape or for a declared name, and it was shown firing on this archived
+row before being trusted on a live one.
