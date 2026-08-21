@@ -7,6 +7,7 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
+import { contestResponseFormat, } from './contest-ballot-wire.ts';
 import {
   buildLaneContestMessages,
   isLaneContestWire,
@@ -53,33 +54,7 @@ const HEARD_NEEDED = 2;
 /**
  * Schema a reply must satisfy before it reaches the reader.
  */
-const CONTEST_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'lane_contest',
-    schema: {
-      type: 'object',
-      properties: {
-        choice: { type: 'string', },
-        unsupported: {
-          type: 'array',
-          items: { type: 'string', },
-        },
-        dropped: {
-          type: 'array',
-          items: { type: 'string', },
-        },
-        reason: { type: 'string', },
-      },
-      required: [
-        'choice',
-        'unsupported',
-        'dropped',
-        'reason',
-      ],
-    },
-  },
-};
+const CONTEST_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({ schemaName: 'lane_contest', },);
 
 /**
  * What the roster settled on for one contested slice.

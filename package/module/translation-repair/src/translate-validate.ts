@@ -114,20 +114,24 @@ function describeAtom(atom: ProtectedAtom,): string {
  *
  * @param candidate - atoms the candidate carries
  *
+ * @param referenceName - what the findings call the side being matched
+ *
  * @returns One finding per missing or invented atom
  *
  * @example
  * ```ts
- * const findings = compareAtoms({ source, candidate, },);
+ * const findings = compareAtoms({ source, candidate, referenceName, },);
  * ```
  */
 function compareAtoms(
   {
     source,
     candidate,
+    referenceName,
   }: {
     readonly source: readonly ProtectedAtom[];
     readonly candidate: readonly ProtectedAtom[];
+    readonly referenceName: string;
   },
 ): readonly string[] {
   /**
@@ -161,7 +165,7 @@ function compareAtoms(
     const left = remaining.get(key,) ?? 0;
     if (left === 0) {
       missing.push(
-        `The ORIGINAL carries ${key} and your translation does not.`,
+        `The ${referenceName} carries ${key} and your translation does not.`,
       );
       continue;
     }
@@ -180,7 +184,7 @@ function compareAtoms(
       .map(function toFinding([key, count,],): string {
         return `Your translation carries ${key}${
           count === 1 ? '' : ` ${String(count,)} times`
-        } and the ORIGINAL does not.`;
+        } and the ${referenceName} does not.`;
       },),
   ];
 }
@@ -192,20 +196,24 @@ function compareAtoms(
  *
  * @param candidate - candidate's blocks
  *
+ * @param referenceName - what the findings call the side being matched
+ *
  * @returns One finding when the sequences differ, none when they match
  *
  * @example
  * ```ts
- * const findings = compareBlocks({ source, candidate, },);
+ * const findings = compareBlocks({ source, candidate, referenceName, },);
  * ```
  */
 function compareBlocks(
   {
     source,
     candidate,
+    referenceName,
   }: {
     readonly source: readonly BlockShape[];
     readonly candidate: readonly BlockShape[];
+    readonly referenceName: string;
   },
 ): readonly string[] {
   /**
@@ -227,12 +235,12 @@ function compareBlocks(
   if (matches)
     return [];
   return [
-    `The ORIGINAL is ${String(source.length,)} block${
+    `The ${referenceName} is ${String(source.length,)} block${
       source.length === 1 ? '' : 's'
     } (${describeBlocks({ blocks: source, },)}) and your translation is ${
       String(candidate.length,)
-    } (${describeBlocks({ blocks: candidate, },)}). Render one block per `
-      + 'original block, of the same kind, in the same order.',
+    } (${describeBlocks({ blocks: candidate, },)}). Match it block for `
+      + 'block, of the same kinds, in the same order.',
   ];
 }
 
@@ -242,6 +250,11 @@ function compareBlocks(
  * @param sourceText - original slice
  *
  * @param candidateText - proposed translation of it
+ *
+ * @param referenceName - what the findings call `sourceText`, since a caller
+ * may be matching a candidate against the page as it stands rather than against
+ * the original. Naming it wrongly tells the model that wrote the candidate
+ * something untrue about the text it is being asked to match
  *
  * @returns Verdict, with findings written for the model that wrote it
  *
@@ -254,9 +267,11 @@ export function validateTranslatedSlice(
   {
     sourceText,
     candidateText,
+    referenceName = 'ORIGINAL',
   }: {
     readonly sourceText: string;
     readonly candidateText: string;
+    readonly referenceName?: string;
   },
 ): SliceValidation {
   /**
@@ -272,7 +287,7 @@ export function validateTranslatedSlice(
   if (source.kind === 'unparseable')
     return {
       kind: 'unknown',
-      detail: `original could not be read: ${source.detail}`,
+      detail: `${referenceName.toLowerCase()} could not be read: ${source.detail}`,
     };
 
   /**
@@ -305,10 +320,12 @@ export function validateTranslatedSlice(
     ...compareBlocks({
       source: expected.blocks,
       candidate: actual.blocks,
+      referenceName,
     },),
     ...compareAtoms({
       source: expected.atoms,
       candidate: actual.atoms,
+      referenceName,
     },),
   ];
   if (findings.length === 0)

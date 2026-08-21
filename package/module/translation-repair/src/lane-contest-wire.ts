@@ -1,5 +1,11 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import {
+  CONTEST_POLICY,
+  isStringList,
+  namesOneOf,
+  readCandidateNames,
+} from './contest-ballot-wire.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Lane contest wire
@@ -105,11 +111,6 @@ const CANDIDATE_NAMES: readonly LaneChoice[] = [
 ];
 
 /**
- * Same names as a set, for membership tests.
- */
-const CHOICES: ReadonlySet<string> = new Set(CANDIDATE_NAMES,);
-
-/**
  * Whether a value is one of the names a judge may use.
  *
  * @param value - candidate name from a reply
@@ -122,135 +123,9 @@ const CHOICES: ReadonlySet<string> = new Set(CANDIDATE_NAMES,);
  * ```
  */
 function isLaneChoice(value: unknown,): value is LaneChoice {
-  return ((typeof value) === 'string') && CHOICES.has(value,);
-}
-
-/**
- * Whether a value is a list of strings, whatever those strings say.
- *
- * SHAPE, NOT VOCABULARY, which is what this guard always claimed to check.
- * An earlier form demanded that every member name a candidate, so a judge that
- * filled the findings with the offending phrases instead lost its whole ballot,
- * choice included. Two of the first sixty calibration voices went that way,
- * both carrying a usable choice. The choice is the thing the contest counts,
- * and no wording of a finding may cost a voice.
- *
- * @param value - list from a reply
- *
- * @returns Whether it is a list of strings
- *
- * @example
- * ```ts
- * const shaped = isStringList(['repair',],);
- * ```
- */
-function isStringList(value: unknown,): value is readonly string[] {
-  return Array.isArray(value,)
-    && value.every(function isText(member: unknown,): boolean {
-      return ((typeof member) === 'string');
-    },);
-}
-
-/**
- * Whether the character at one offset could continue a word.
- *
- * READS PAST THE END SAFELY, because `charAt` answers an empty string beyond
- * the last index and an empty string continues nothing. A candidate name
- * filling a finding entirely therefore needs no separate case.
- *
- * @param text - finding being read
- *
- * @param at - offset just past a candidate name
- *
- * @returns Whether the character there extends that name into a longer word
- *
- * @example
- * ```ts
- * const continues = continuesWord({ text: 'repairing', at: 'repair'.length, },);
- * ```
- */
-function continuesWord(
-  {
-    text,
-    at,
-  }: {
-    readonly text: string;
-    readonly at: number;
-  },
-): boolean {
-  /**
-   * Case-folded character at that offset, empty past the end.
-   */
-  const folded = text
-    .charAt(at,)
-    .toLowerCase();
-  return (((folded >= 'a') && (folded <= 'z'))
-    || ((folded >= '0') && (folded <= '9')));
-}
-
-/**
- * Whether one finding blames one candidate.
- *
- * ANNOTATION IS NOT REFUSAL. Judges write `repair`, and they write
- * `repair (changes the bottle to a can)`, and both name the same candidate.
- * A finding naming a phrase rather than a candidate blames nobody, and says so
- * by matching none of them.
- *
- * @param finding - what a judge wrote
- *
- * @param name - candidate to test for
- *
- * @returns Whether this finding names this candidate
- *
- * @example
- * ```ts
- * const blamed = namesCandidate({ finding: 'repair (adds a season)', name: 'repair', },);
- * ```
- */
-function namesCandidate(
-  {
-    finding,
-    name,
-  }: {
-    readonly finding: string;
-    readonly name: LaneChoice;
-  },
-): boolean {
-  /**
-   * Finding with surrounding space and case removed.
-   */
-  const folded = finding
-    .trim()
-    .toLowerCase();
-  return (folded.startsWith(name,)
-    && (!continuesWord({
-      text: folded,
-      at: name.length,
-    },)));
-}
-
-/**
- * Reads which candidates a list of findings blames.
- *
- * @param findings - findings exactly as a judge wrote them
- *
- * @returns Candidates named, in canonical order and without repeats
- *
- * @example
- * ```ts
- * const blamed = readCandidateNames({ findings: [ 'repair (adds a season)', ], },);
- * ```
- */
-function readCandidateNames(
-  { findings, }: { readonly findings: readonly string[]; },
-): readonly LaneChoice[] {
-  return CANDIDATE_NAMES.filter(function blamed(name,): boolean {
-    return findings.some(function names(finding,): boolean {
-      return namesCandidate({
-        finding,
-        name,
-      },);
-    },);
+  return namesOneOf({
+    value,
+    names: CANDIDATE_NAMES,
   },);
 }
 
@@ -308,9 +183,15 @@ export function readLaneContestBallot(
     choice: isLaneChoice(wire.choice,)
       ? wire.choice
       : 'neither',
-    unsupported: readCandidateNames({ findings: wire.unsupported, },),
+    unsupported: readCandidateNames({
+      findings: wire.unsupported,
+      names: CANDIDATE_NAMES,
+    },),
     unsupportedRaw: wire.unsupported,
-    dropped: readCandidateNames({ findings: wire.dropped, },),
+    dropped: readCandidateNames({
+      findings: wire.dropped,
+      names: CANDIDATE_NAMES,
+    },),
     droppedRaw: wire.dropped,
     reason: wire.reason,
   };
@@ -359,33 +240,6 @@ export type LaneContestSubject = {
    */
   readonly identityContext?: string;
 };
-
-/**
- * What the judge is told its job is.
- */
-const POLICY = [
-  'You are choosing which of two English renderings of a Chinese passage should be published.',
-  '',
-  'THE ORIGINAL IS THE STANDARD. Judge each candidate against the Chinese, never against the archive rendering.',
-  'The archive rendering is shown only as evidence about what the original says, and as wording worth keeping where it is right.',
-  '',
-  'Answer two questions about each candidate first, and let the choice follow from them.',
-  '',
-  'UNSUPPORTED: does the candidate state something the Chinese does not say?',
-  'An invented time period, an invented characterisation, a strengthened claim: all unsupported.',
-  'A detail the archive supplies that the Chinese does not contradict, such as a name or a spelled-out referent, is NOT unsupported: keeping it is correct.',
-  '',
-  'DROPPED: does the candidate omit something the Chinese does say?',
-  'A clause, a qualifier, a named object, a speaker aside: all dropped.',
-  '',
-  'DECLARED NAMES ARE ATTESTED FACTS about this person, taken from the documents\' own front matter.',
-  'A candidate carrying one is NOT unsupported, even where the passage itself never spells it out.',
-  'A candidate omitting one HAS dropped something.',
-  '',
-  'THEN CHOOSE. Prefer the candidate with no unsupported statements. If both are clean, prefer the one that drops nothing.',
-  'Answer "neither" when they differ only in wording and neither is more faithful, which is a real verdict rather than a failure to answer.',
-  'Answer "neither" also when both are equally unfaithful.',
-].join('\n',);
 
 /**
  * Builds the exchange asking one judge to settle one contested slice.
@@ -437,7 +291,7 @@ export function buildLaneContestMessages(
   return [
     {
       role: 'system',
-      content: POLICY,
+      content: CONTEST_POLICY,
     },
     {
       role: 'user',

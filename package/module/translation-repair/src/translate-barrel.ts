@@ -101,7 +101,31 @@ export {
   type TranslatePromptPlan,
   type TranslateReportWire,
 } from './translate-wire.ts';
+export {
+  CONTEST_POLICY,
+  CONTEST_REFUSAL,
+  contestResponseFormat,
+  isStringList,
+  namesOneOf,
+  readCandidateNames,
+} from './contest-ballot-wire.ts';
 export { renderConsolidationBrief, } from './consolidate-brief.ts';
+export {
+  CONSOLIDATE_GATE_QUORUM,
+  type ConsolidateGateOutcome,
+  gateConsolidatedSlice,
+  type GateShipped,
+  settleGateBallots,
+} from './consolidate-gate-stage.ts';
+export {
+  buildConsolidateGateMessages,
+  type ConsolidateGateSubject,
+  type GateBallot,
+  type GateChoice,
+  type GateWire,
+  isConsolidateGateWire,
+  readConsolidateGateBallot,
+} from './consolidate-gate-wire.ts';
 export {
   buildConsolidateMessages,
   type ConsolidateSubject,

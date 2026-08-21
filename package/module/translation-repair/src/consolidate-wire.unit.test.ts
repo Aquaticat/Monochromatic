@@ -146,6 +146,17 @@ await describe({
       },
     },),
     it({
+      name: 'makes the page\'s shape the structural standard, not the original\'s',
+      fn: async () => {
+        // MEASURED, NOT ASSUMED. On the first calibration slice the Chinese is
+        // one paragraph and the archive is a block quote plus an attribution
+        // line, and a stage that matched the original flattened both into one.
+        const sheet = sheetFor({ subject: bare, },);
+        expect(sheet,).toContain('KEEP THE SHAPE OF THE PAGE',);
+        expect(sheet,).toContain('the page\'s shape wins',);
+      },
+    },),
+    it({
       name: 'asks for the translate lane\'s own reply shape',
       fn: async () => {
         expect(sheetFor({ subject: bare, },),)

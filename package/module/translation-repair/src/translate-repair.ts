@@ -86,6 +86,7 @@ async function repairOneCandidate(
     signal,
     perCallTimeoutMs,
     l,
+    referenceName,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly voice: HeardVoice<TranslateReportWire>;
@@ -95,6 +96,7 @@ async function repairOneCandidate(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly referenceName: string;
   }>,
 ): Promise<RepairOutcome> {
   // A candidate that reproduced the incumbent is about to COLLAPSE into it, and
@@ -118,6 +120,7 @@ async function repairOneCandidate(
     sourceText,
     candidateText: voice.value
       .translation,
+    referenceName,
   },);
   if (validation.kind === 'valid')
     return {
@@ -194,6 +197,7 @@ async function repairOneCandidate(
   const rechecked = validateTranslatedSlice({
     sourceText,
     candidateText: translation,
+    referenceName,
   },);
 
   // A revision that still fails is NOT taken. The model was asked to fix these
@@ -233,7 +237,8 @@ async function repairOneCandidate(
  *
  * @param voices - heard translator replies
  *
- * @param sourceText - original slice
+ * @param sourceText - text every candidate must match structurally, which is
+ * the original for a translator and the page as it stands for a consolidator
  *
  * @param incumbentText - translation as it stands, so a candidate that already
  * reproduces it is left alone
@@ -245,6 +250,9 @@ async function repairOneCandidate(
  * @param perCallTimeoutMs - deadline per exchange
  *
  * @param l - stage logger
+ *
+ * @param referenceName - what a finding calls `sourceText`, defaulting to the
+ * translator's own word for it
  *
  * @returns Final voices in the order given, plus every finding
  *
@@ -263,6 +271,7 @@ export async function repairInvalidCandidates(
     signal,
     perCallTimeoutMs,
     l,
+    referenceName = 'ORIGINAL',
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
@@ -272,6 +281,7 @@ export async function repairInvalidCandidates(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly referenceName?: string;
   }>,
 ): Promise<{
   readonly voices: readonly HeardVoice<TranslateReportWire>[];
@@ -291,6 +301,7 @@ export async function repairInvalidCandidates(
         signal,
         perCallTimeoutMs,
         l,
+        referenceName,
       },);
     },),
   );

@@ -30,6 +30,15 @@ import { TRANSLATE_LINE_STRUCTURE_RULE, } from './translate-wire.ts';
 //
 // THE FINDINGS ARE SHOWN AS CLAIMS. See `consolidate-brief.ts` for why that
 // framing is load-bearing rather than polite.
+//
+// THE PAGE'S SHAPE IS THE STRUCTURAL STANDARD, NOT THE ORIGINAL'S, and this was
+// measured rather than assumed. On the first calibration slice the Chinese is
+// one paragraph while the archive renders it as a block quote followed by an
+// attribution line, so all six consolidations were called invalid against the
+// original, five were sent back, and the rendering that then won had flattened
+// the quote and its attribution into one plain paragraph. That is damage this
+// stage would have authored. What a consolidation replaces is the text on the
+// page, so the page is what it has to match.
 
 /**
  * Instructions every consolidating producer shares.
@@ -54,7 +63,7 @@ Rules:
 - Where a candidate already renders a clause well, KEEP ITS WORDING. Reaching the same English by different words is not an improvement, and a reader who knows this archive should not see it churn.
 - You may take one clause from one candidate and the next from the other. Neither candidate has to be right about the whole passage, and that is the point of this call.
 - Write English, not a repair of English. The result must read as prose a person wrote, carrying the original's voice: its warmth, grief, humour or anger. A stiff literal rendering that loses the feeling is not a good rendering.
-- Preserve every Markdown structure the ORIGINAL uses: block quotes, list markers, headings, footnote markers, links, and the paragraph breaks between blocks.
+- KEEP THE SHAPE OF THE PAGE. Your rendering replaces the ARCHIVE RENDERING block for block: the same number of blocks, of the same kinds, in the same order, carrying the same block quotes, list markers, headings, footnote markers and links. Where the Chinese is shaped differently, the page's shape wins: a passage the archive sets as a block quote followed by an attribution line stays a block quote followed by an attribution line.
 
 THE JUDGE FINDINGS ARE CLAIMS, NOT FACTS. Other models wrote them about these two candidates, and they can be wrong. Check each one against the ORIGINAL before you act on it, and ignore any the ORIGINAL does not support. A finding you obey that the original does not support is a defect you introduced yourself.
 
