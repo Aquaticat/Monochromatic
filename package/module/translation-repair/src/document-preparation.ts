@@ -229,6 +229,23 @@ export function prepareDocumentPair(
       .entries()
   ) {
     /**
+     * Correspondences the roster agreed for this chunk, ABSENT when it agreed
+     * none.
+     *
+     * ABSENCE HAS TO STAY ABSENCE all the way to subdivision. A section the
+     * roster could not pair is left OUT of the map, and `prepare-with-pairing`
+     * says what it means by that: it records `fell back to scoring` and logs
+     * "keeping the deterministic aligner". Reading the miss as an EMPTY pairing
+     * says something else entirely, because `blockPairingToSteps` reads zero
+     * pairs as every block unpartnered on both sides, every run then comes out
+     * one-sided, `mergeOneSidedRuns` folds them all together, and the section
+     * becomes ONE slice. Measured on `Zha_Ke`: four slices become one, 262
+     * characters of original against 4340 of translation, which is the largest
+     * slice in the document at exactly the section nobody could pair.
+     */
+    const sectionPairing = blockPairings?.get(pairIndex,);
+
+    /**
      * Slices carved from this chunk.
      */
     const carved = subdivideChunkPair({
@@ -237,11 +254,7 @@ export function prepareDocumentPair(
       targetText,
       baseIndex: slices.length,
       budget: sliceCharBudget,
-      ...((blockPairings === undefined)
-        ? {}
-        : {
-          blockPairing: blockPairings.get(pairIndex,) ?? [],
-        }),
+      ...((sectionPairing === undefined) ? {} : { blockPairing: sectionPairing, }),
     },);
 
     /**
@@ -250,10 +263,10 @@ export function prepareDocumentPair(
      * Derived here rather than returned by subdivision, from the same pairing
      * subdivision was handed, so the assertion and the carving cannot drift.
      */
-    const declined = (blockPairings === undefined)
+    const declined = (sectionPairing === undefined)
       ? new Set<string>()
       : declinedTargetIdsOfPairing({
-        pairs: blockPairings.get(pairIndex,) ?? [],
+        pairs: sectionPairing,
         sourceNodes: pair.source
           .nodes,
         targetNodes: pair.target

@@ -213,5 +213,42 @@ The cat comes home
         }
       },
     },),
+
+    it({
+      name: 'KEEPS THE SCORER for a section the roster agreed nothing for',
+      fn: async () => {
+        // What `prepare-with-pairing` produces for a document whose every
+        // section came back unpaired: a map that is present and holds nothing.
+        // It records that as "fell back to scoring", so this must slice exactly
+        // as the scorer does rather than reading the miss as an empty pairing.
+        const scorer = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },);
+        const unpaired = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          blockPairings: new Map(),
+        },);
+
+        /**
+         * Reads a slicing as the spans it carries, which is what a later stage
+         * sees; counts alone would pass a slicing that moved every boundary.
+         */
+        const spansOf = function spansOf(prepared,): readonly string[] {
+          return prepared.slices
+            .map(function toSpan(slice,): string {
+              return `${String(slice.target.startOffset,)}..${String(slice.target.endOffset,)}`;
+            },);
+        };
+
+        expect(spansOf(unpaired,),).toStrictEqual(spansOf(scorer,),);
+
+        // POSITIVE CONTROL. An empty pairing read as a pairing collapses the
+        // section into one slice, so a document that slices into several is
+        // what makes the comparison capable of failing at all.
+        expect(scorer.slices.length,).toBeGreaterThan(1,);
+      },
+    },),
   ],
 },);
