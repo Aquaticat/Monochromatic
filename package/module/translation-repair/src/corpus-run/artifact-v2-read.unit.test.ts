@@ -1211,10 +1211,13 @@ await describe({
         };
 
         /**
-         * Artifact JSON as a settled file holds it, round-tripped through the
-         * serialization a written artifact actually goes through.
+         * Artifact as the bytes a settled file holds.
+         *
+         * SERIALIZED AND PARSED RATHER THAN CLONED, which is not the same test:
+         * a clone would preserve values JSON cannot carry, and what this case
+         * asks is whether the round survives the trip to disk and back.
          */
-        const written = JSON.parse(JSON.stringify(artifactWith({
+        const serialized = JSON.stringify(artifactWith({
           repairRaw: {
             ...repairResult(),
             chunks: [
@@ -1225,7 +1228,12 @@ await describe({
               },
             ],
           },
-        },),),) as unknown;
+        },),);
+
+        /**
+         * Same artifact as a reader receives it.
+         */
+        const written = JSON.parse(serialized,) as unknown;
 
         /**
          * Repair lane as a reader gets it back.
