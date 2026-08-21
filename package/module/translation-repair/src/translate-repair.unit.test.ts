@@ -144,6 +144,9 @@ function repairClient(
  * @param incumbentText - translation already in the document, blank by default
  * so most cases exercise a slice with none
  *
+ * @param pageText - text the candidate replaces, left to the incumbent by
+ * default because that is what a translator replaces
+ *
  * @returns Final voices, findings, and what the follow-up call saw
  *
  * @example
@@ -156,10 +159,12 @@ async function runRepair(
     translation,
     answer,
     incumbentText = '',
+    pageText = incumbentText,
   }: {
     readonly translation: string;
     readonly answer: unknown;
     readonly incumbentText?: string;
+    readonly pageText?: string;
   },
 ) {
   /**
@@ -186,6 +191,7 @@ async function runRepair(
     ],
     sourceText: SOURCE_TEXT,
     incumbentText,
+    pageText,
     priorMessages: PRIOR_MESSAGES,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
@@ -376,6 +382,30 @@ await describe({
         },);
         expect(repaired.voices[0]?.value.translation,).toBe(MERGED_TEXT,);
         expect(repaired.findings,).toContain(`translate-repair-unheard (${TRANSLATOR})`,);
+      },
+    },),
+
+    it({
+      name: 'CHECKS a candidate against the page rather than the incumbent '
+        + 'where the two differ, which is what a consolidator faces: its '
+        + 'incumbent is the lane that won and the page it replaces is the '
+        + 'archive',
+      fn: async () => {
+        const { log, repaired, } = await runRepair({
+          translation: MERGED_TEXT,
+          // The lane that won, which merged the heading away as well, so a
+          // candidate checked against IT would be called valid.
+          incumbentText: `${MERGED_TEXT} It naps.`,
+          // The archive, which carries the heading.
+          pageText: GOOD_TEXT,
+          answer: {
+            resolution: 'unable',
+            translation: '',
+            explanation: 'the heading is not a sentence in English',
+          },
+        },);
+        expect(log.calls,).toBe(1,);
+        expect(repaired.findings.join('\n',),).toContain('PAGE AS IT STANDS',);
       },
     },),
   ],

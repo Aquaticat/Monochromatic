@@ -59,9 +59,12 @@ export type RepairOutcome = {
  *
  * @param sourceText - original slice the candidate renders
  *
- * @param incumbentText - translation as it stands, which is both what a
- * matching candidate collapses into and the page whose block shape a candidate
- * has to carry
+ * @param incumbentText - translation as it stands, which a matching candidate
+ * collapses into
+ *
+ * @param pageText - text this candidate would replace, whose block shape it has
+ * to carry. The same as `incumbentText` for a translator, and the ARCHIVE
+ * rather than the winning lane for a consolidator
  *
  * @param priorMessages - exact messages that produced the candidate
  *
@@ -84,6 +87,7 @@ async function repairOneCandidate(
     voice,
     sourceText,
     incumbentText,
+    pageText,
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -93,6 +97,7 @@ async function repairOneCandidate(
     readonly voice: HeardVoice<TranslateReportWire>;
     readonly sourceText: string;
     readonly incumbentText: string;
+    readonly pageText: string;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -120,7 +125,7 @@ async function repairOneCandidate(
     sourceText,
     candidateText: voice.value
       .translation,
-    pageText: incumbentText,
+    pageText,
   },);
   if (validation.kind === 'valid')
     return {
@@ -197,7 +202,7 @@ async function repairOneCandidate(
   const rechecked = validateTranslatedSlice({
     sourceText,
     candidateText: translation,
-    pageText: incumbentText,
+    pageText,
   },);
 
   // A revision that still fails is NOT taken. The model was asked to fix these
@@ -240,7 +245,12 @@ async function repairOneCandidate(
  * @param sourceText - original every candidate renders
  *
  * @param incumbentText - translation as it stands, so a candidate reproducing
- * it is left alone, and the page whose blocks a candidate has to carry
+ * it is left alone
+ *
+ * @param pageText - text these candidates would replace, whose blocks they have
+ * to carry, defaulting to the incumbent because that is what a translator
+ * replaces. A consolidator replaces the ARCHIVE while its incumbent is the lane
+ * that won, and the two are different texts
  *
  * @param priorMessages - exact messages every translator was given
  *
@@ -263,6 +273,7 @@ export async function repairInvalidCandidates(
     voices,
     sourceText,
     incumbentText,
+    pageText = incumbentText,
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -272,6 +283,7 @@ export async function repairInvalidCandidates(
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly sourceText: string;
     readonly incumbentText: string;
+    readonly pageText?: string;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -291,6 +303,7 @@ export async function repairInvalidCandidates(
         voice,
         sourceText,
         incumbentText,
+        pageText,
         priorMessages,
         signal,
         perCallTimeoutMs,
