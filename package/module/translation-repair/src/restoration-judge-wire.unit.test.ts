@@ -76,6 +76,29 @@ await describe({
             expect(sheet,).toContain('REFERENCE 1: The kitten also chases butterflies.',);
           },
         },),
+        it({
+          name: 'CARRIES the house rules onto a grader anchored on the Chinese',
+          fn: async () => {
+            // The 2026-07-17 directive anchors this grade on the source, and an
+            // anchor on the source is exactly what makes completeness bias
+            // possible: a repair rendered vaguer than the Chinese because
+            // reader protection asks for it reads as partial restoration. The
+            // block does not move the anchor, it says what a shortfall is.
+            const plan = buildRestorationJudgeMessages({
+              sourceText: SOURCE_TEXT,
+              repairedText: REPAIRED_TEXT,
+              references: REFERENCES,
+            },);
+
+            /**
+             * Standing rules half of the exchange.
+             */
+            const system = plan.messages[0]?.content ?? '';
+            expect(system,).toContain('Reader protection outranks completeness',);
+            expect(system,).toContain('Chinese marks no tense',);
+            expect(system,).toContain('is restored rather than partial',);
+          },
+        },),
       ],
     },),
     describe({

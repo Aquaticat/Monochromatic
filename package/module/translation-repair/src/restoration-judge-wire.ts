@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import {
   isJsonArray,
   isJsonRecord,
@@ -76,6 +77,10 @@ For each numbered REFERENCE (an English sentence that was removed), judge the RE
 
 Judge MEANING, not wording. Different phrasing, word order, or a terse-but-faithful rendering all count as restored. Do not require the exact words of the reference.
 Information not supported by the ORIGINAL Chinese is never restored, even if it reads well.
+
+${MEASUREMENT_POLICY_BLOCK}
+
+A repaired sentence vaguer than the ORIGINAL Chinese because a house rule asks for it is restored rather than partial: the REFERENCE was cut from a translation written under the same rules and asks for no more than it carried. Where the repaired translation carries a detail a house rule keeps out, that is not a better restoration and no verdict is raised for it.
 
 Reply with ONLY a JSON object of shape {"judgments": [{"reference": 1, "verdict": "restored"}]}. No prose, no code fences.
 Every reference number must appear exactly once.`;
