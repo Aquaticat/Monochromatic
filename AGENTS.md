@@ -1529,6 +1529,12 @@ blank line,
 `<why>`.
 Repeat in package order.
 
+TID:
+ `#N` in a commit message is a GitHub issue of this repo.
+Never write an agent task-list ID there;
+ the numbering spaces collide.
+Verify with `gh issue view N` before any closing keyword.
+
 GCA:
  Inaccurate commit message:
  don't amend (harness rule).
