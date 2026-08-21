@@ -216,6 +216,31 @@ type BlockContainer = {
 };
 
 /**
+ * Whether a value read off a foreign node is a list of mdast nodes.
+ *
+ * A PREDICATE RATHER THAN AN ASSERTION, which is the whole point of it. The
+ * `in` check that proves `children` exists types it `unknown`, and naming the
+ * element type with `as` claims two things at once: that the value is an array,
+ * which nothing has checked, and that its elements are borrowed-foreign, which
+ * the marker exists to carry. Splitting the array check out proves the first at
+ * runtime and lets the predicate carry the second, so neither
+ * `no-unsafe-type-assertion` nor `prefer-readonly-parameter-types` has anything
+ * to object to.
+ *
+ * @param value - property value read from a foreign node
+ *
+ * @returns Whether it is an array this walk can read as nodes
+ *
+ * @example
+ * ```ts
+ * if (isNodeList(children,)) { }
+ * ```
+ */
+function isNodeList(value: unknown,): value is BlockContainer['children'] {
+  return Array.isArray(value,);
+}
+
+/**
  * Whether a node is a container whose children should be promoted: a JSX flow
  * element holding at least one real block, every child positioned. A
  * self-closing component such as a photo scroll has no children and stays a
@@ -239,18 +264,17 @@ function isUnwrappableContainer(
     return false;
 
   /**
-   * Child blocks the container holds, empty for a self-closing element.
-   *
-   * ASSERTED RATHER THAN NARROWED, and the assertion is load-bearing. Reading
-   * the property through the `in` check instead loses the borrowed-foreign
-   * marking, so the callback below infers a writable parameter and
-   * `prefer-readonly-parameter-types` refuses it. mdast has no member for JSX
-   * elements at all, which is why the shape has to be named here.
+   * Child blocks the container holds, typed `unknown` by the `in` check that
+   * proved the property exists. mdast has no member for JSX elements at all,
+   * which is why nothing about this shape arrives already named.
    */
-  const { children, } = node as BlockContainer;
+  const { children, } = node;
+  if (!isNodeList(children,))
+    return false;
+
   return (children.length > 0)
     && children.every(isPositioned,)
-    && children.some(function isBlock(child,) {
+    && children.some(function isBlock(child: BlockContainer['children'][number],) {
       return BLOCK_TYPES.has(child.type,);
     },);
 }
