@@ -45,7 +45,7 @@ export type LaneChoice = 'repair' | 'translate' | 'neither';
  *
  * @example
  * ```ts
- * const ballot: LaneContestBallot = { choice: 'repair', unsupported: [], dropped: [], reason: 'x', };
+ * const ballot: LaneContestBallot = { choice: 'repair', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: 'x', };
  * ```
  */
 export type LaneContestBallot = {
@@ -60,9 +60,24 @@ export type LaneContestBallot = {
   readonly unsupported: readonly LaneChoice[];
 
   /**
+   * Unsupported findings exactly as this judge wrote them.
+   *
+   * KEPT BESIDE THE NARROWED LIST rather than instead of it. A judge that
+   * answers with the offending phrases rather than with candidate names has
+   * still said something, and keeping only the narrowed list would leave an
+   * audit trail reading as though that judge had found nothing.
+   */
+  readonly unsupportedRaw: readonly string[];
+
+  /**
    * Candidates omitting something the original says.
    */
   readonly dropped: readonly LaneChoice[];
+
+  /**
+   * Dropped findings exactly as this judge wrote them.
+   */
+  readonly droppedRaw: readonly string[];
 
   /**
    * Why, for the audit trail rather than for validity.
@@ -83,11 +98,16 @@ export type LaneContestWire = {
 /**
  * Candidate names a judge may use, which are the lanes plus the refusal.
  */
-const CHOICES: ReadonlySet<string> = new Set([
+const CANDIDATE_NAMES: readonly LaneChoice[] = [
   'repair',
   'translate',
   'neither',
-],);
+];
+
+/**
+ * Same names as a set, for membership tests.
+ */
+const CHOICES: ReadonlySet<string> = new Set(CANDIDATE_NAMES,);
 
 /**
  * Whether a value is one of the names a judge may use.
@@ -106,19 +126,132 @@ function isLaneChoice(value: unknown,): value is LaneChoice {
 }
 
 /**
- * Whether every member of a list names a candidate.
+ * Whether a value is a list of strings, whatever those strings say.
+ *
+ * SHAPE, NOT VOCABULARY, which is what this guard always claimed to check.
+ * An earlier form demanded that every member name a candidate, so a judge that
+ * filled the findings with the offending phrases instead lost its whole ballot,
+ * choice included. Two of the first sixty calibration voices went that way,
+ * both carrying a usable choice. The choice is the thing the contest counts,
+ * and no wording of a finding may cost a voice.
  *
  * @param value - list from a reply
  *
- * @returns Whether it is a list of candidate names
+ * @returns Whether it is a list of strings
  *
  * @example
  * ```ts
- * const named = isChoiceList(['repair',],);
+ * const shaped = isStringList(['repair',],);
  * ```
  */
-function isChoiceList(value: unknown,): value is readonly string[] {
-  return Array.isArray(value,) && value.every(isLaneChoice,);
+function isStringList(value: unknown,): value is readonly string[] {
+  return Array.isArray(value,)
+    && value.every(function isText(member: unknown,): boolean {
+      return ((typeof member) === 'string');
+    },);
+}
+
+/**
+ * Whether the character at one offset could continue a word.
+ *
+ * READS PAST THE END SAFELY, because `charAt` answers an empty string beyond
+ * the last index and an empty string continues nothing. A candidate name
+ * filling a finding entirely therefore needs no separate case.
+ *
+ * @param text - finding being read
+ *
+ * @param at - offset just past a candidate name
+ *
+ * @returns Whether the character there extends that name into a longer word
+ *
+ * @example
+ * ```ts
+ * const continues = continuesWord({ text: 'repairing', at: 'repair'.length, },);
+ * ```
+ */
+function continuesWord(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  /**
+   * Case-folded character at that offset, empty past the end.
+   */
+  const folded = text
+    .charAt(at,)
+    .toLowerCase();
+  return (((folded >= 'a') && (folded <= 'z'))
+    || ((folded >= '0') && (folded <= '9')));
+}
+
+/**
+ * Whether one finding blames one candidate.
+ *
+ * ANNOTATION IS NOT REFUSAL. Judges write `repair`, and they write
+ * `repair (changes the bottle to a can)`, and both name the same candidate.
+ * A finding naming a phrase rather than a candidate blames nobody, and says so
+ * by matching none of them.
+ *
+ * @param finding - what a judge wrote
+ *
+ * @param name - candidate to test for
+ *
+ * @returns Whether this finding names this candidate
+ *
+ * @example
+ * ```ts
+ * const blamed = namesCandidate({ finding: 'repair (adds a season)', name: 'repair', },);
+ * ```
+ */
+function namesCandidate(
+  {
+    finding,
+    name,
+  }: {
+    readonly finding: string;
+    readonly name: LaneChoice;
+  },
+): boolean {
+  /**
+   * Finding with surrounding space and case removed.
+   */
+  const folded = finding
+    .trim()
+    .toLowerCase();
+  return (folded.startsWith(name,)
+    && (!continuesWord({
+      text: folded,
+      at: name.length,
+    },)));
+}
+
+/**
+ * Reads which candidates a list of findings blames.
+ *
+ * @param findings - findings exactly as a judge wrote them
+ *
+ * @returns Candidates named, in canonical order and without repeats
+ *
+ * @example
+ * ```ts
+ * const blamed = readCandidateNames({ findings: [ 'repair (adds a season)', ], },);
+ * ```
+ */
+function readCandidateNames(
+  { findings, }: { readonly findings: readonly string[]; },
+): readonly LaneChoice[] {
+  return CANDIDATE_NAMES.filter(function blamed(name,): boolean {
+    return findings.some(function names(finding,): boolean {
+      return namesCandidate({
+        finding,
+        name,
+      },);
+    },);
+  },);
 }
 
 /**
@@ -151,8 +284,8 @@ export function isLaneContestWire(value: unknown,): value is LaneContestWire {
   if (!('reason' in value))
     return false;
   return isLaneChoice(value.choice,)
-    && isChoiceList(value.unsupported,)
-    && isChoiceList(value.dropped,)
+    && isStringList(value.unsupported,)
+    && isStringList(value.dropped,)
     && ((typeof value.reason) === 'string');
 }
 
@@ -175,10 +308,10 @@ export function readLaneContestBallot(
     choice: isLaneChoice(wire.choice,)
       ? wire.choice
       : 'neither',
-    unsupported: wire.unsupported
-      .filter(isLaneChoice,),
-    dropped: wire.dropped
-      .filter(isLaneChoice,),
+    unsupported: readCandidateNames({ findings: wire.unsupported, },),
+    unsupportedRaw: wire.unsupported,
+    dropped: readCandidateNames({ findings: wire.dropped, },),
+    droppedRaw: wire.dropped,
     reason: wire.reason,
   };
 }
