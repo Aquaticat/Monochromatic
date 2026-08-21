@@ -814,9 +814,14 @@ while the structural guard floors on the page as it stands,
 so every verse candidate would be rejected on any page that had merged lines.
 
 Measured, and refuted.
-`validateTranslatedSlice` is a kind-sequence FLOOR, not an equality check.
-A candidate unmerged into three blocks against a one-block page returns `valid`;
-only a candidate MISSING a block of the page fails.
+`validateTranslatedSlice` has two sides, and neither of them forbids unmerging on verse.
+Every block of the page must appear in the candidate, in kind and in order, so a candidate that MERGES the page's blocks fails.
+Extra blocks are allowed, but only where the ORIGINAL has them:
+a three-block candidate against a one-block page returns `valid` when the source is verse and `invalid` when the source is prose,
+with `Add a block only to carry something the ORIGINAL has and the text you are replacing left out.`
+
+So on a line-structured chunk the guard actively PERMITS the unmerge, because the original licenses every block it adds.
+The guard and the verse rule agree; it was the two sheet rules that did not.
 
 The probe was positive-controlled before its null was trusted, per QPC.
 The control reproduces the archived finding verbatim:
