@@ -1992,10 +1992,51 @@ It bounds what the bed can say at this size:
 differences smaller than about two slices in thirteen are noise here,
 and every rate this document reports on a single run should be read with that spread attached.
 
-Judge participation stayed healthy in run 9, six judges available at every slice that had one,
-five or six ballots, and one abstention.
-So the movement is the panel deciding differently, not a panel that lost voices,
-which is the confound `#156` would introduce.
+### Participation moved too, and it is confounded with the one flip
+
+An earlier version of this section claimed run 9 held five or six ballots
+with one abstention throughout,
+and concluded that the movement was the panel deciding differently
+rather than a panel that had lost voices.
+Both halves are wrong,
+and the second half is wrong exactly where it mattered.
+
+Ballot counts moved at six of the twelve slices that produced a contest in either run,
+in both directions,
+and the range is four to six rather than five to six.
+
+`Weideriche_#0` is the only slice whose contest choice flipped,
+repair in run 8 and translate in run 9,
+and it is also the largest participation loss in the pair,
+six ballots down to four, with one abstention.
+The flip cannot be separated from the voice loss on the evidence of two runs.
+Whatever else run 9 shows,
+it does not show that the repair lean survives or fails on the panel's reasoning,
+because the panel that reversed it was two voices short.
+
+Two slices do carry a clean reading.
+`Weideriche_#1` declined at six ballots, up from five in run 8,
+holding the same contest choice both times,
+so a full and slightly larger panel reached a different gate outcome on identical inputs.
+`lintong#1` declined at five ballots against six, also holding its contest choice.
+
+Participation change is neither necessary nor sufficient for outcome change here.
+`Zha_Ke#1` and `Zha_Ke#3` each lost a ballot and held their outcomes,
+and `lintong#2` gained one and held its own.
+
+These ballots were lost on the dist frozen for run 8,
+which carries no content bound at all,
+so panel shrinkage is a standing property of the bed rather than anything `#156` introduced.
+That cuts both ways.
+It clears the new bound of this movement,
+and it means a later run cannot be read as bound-free just because participation looks healthy,
+since the bed loses voices on its own.
+
+The headline is unchanged and slightly strengthened.
+The bed at this size has at least two sources of run-to-run movement,
+the gate's own variation and the size of the panel that votes,
+so a difference smaller than about two slices in thirteen remains unreadable,
+and the ship decision still cannot rest on one run.
 
 ### What run 9 does not test
 
