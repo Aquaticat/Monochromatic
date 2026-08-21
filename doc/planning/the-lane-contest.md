@@ -192,14 +192,51 @@ The serious one is that an alias is a promise a very small operation can move:
 a repointed alias changes which model votes with nothing in this repository
 changing, no build failing, and no log line saying so.
 
+## What the pass records, landed 2026-08-21
+
+`laneSelection` had one kind, `pending-human-decision`.
+It now also carries `contested`, holding one record per slice where the two
+lanes left different wording.
+The version 2 reader refuses unknown keys by design, so the writer and the
+reader moved together.
+
+The verdict is a kind rather than the stage's raw `choice`, because `neither`
+means two unrelated things: a roster that heard enough voices and backed no
+candidate, and a roster too few of whose voices arrived to settle anything.
+`settled-neither` and `quorum-not-met` keep those apart.
+Merging them would make a reader counting refusals count silence instead.
+Both carry their ballots, on the same footing as a win, because a reader asking
+why a slice shipped neither lane is looking exactly where a record without
+ballots would be silent.
+
+The reader recomputes each verdict from the ballots stored beside it and refuses
+a disagreement, which is the treatment the recorded lane comparison already
+gets.
+It also refuses a contest that does not answer exactly the slices the recomputed
+comparison says the lanes worded differently.
+Eligibility is derived from the two lane texts rather than from verdict names,
+so it stays right if a verdict is ever added.
+
+`LANE_CONTEST_QUORUM` is frozen by that recomputation.
+Changing the number re-decides every contest already on disk and makes artifacts
+settled under the old value refuse to parse, so a different quorum is a new
+artifact generation rather than a tuned constant.
+
+Every pass now writes `contested`, even when nothing differed.
+"The roster was asked and nothing differed" and "nobody has asked" are different
+facts, and `pending-human-decision` from here on means only the second.
+
+The contest has its own cache on its own version constant, because every other
+paid stage resumes and an uncached one would re-buy ballots on every resume and
+write different ballots for identical inputs.
+The key carries the archive rendering as well as the two candidates, since the
+judge is shown it as evidence.
+Quorum failures are deliberately not cached: an unheard roster is a transient
+fact about a provider on one night, not a property of the question.
+
 ## What is still owed after this
 
-Wiring the contest into the pass, which changes what an artifact records and so
-needs `laneSelection` to gain the kinds it currently lacks.
-That touches the version 2 readers, which refuse unknown keys by design, so the
-writer and the reader move together.
-
-And the question that is genuinely the owner's, which the mechanism does not
-answer: what a slice the contest declines should ship.
+The question that is genuinely the owner's, which the mechanism does not answer:
+what a slice the contest declines should ship.
 That is a values question about the release rather than a measurable one, and it
-is answerable once the mechanism exists rather than before.
+is answerable now that the mechanism exists.
