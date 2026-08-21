@@ -536,3 +536,20 @@ THE BED WAS BOUGHT AGAIN, for the second time in a day.
 One row had landed under the old criteria and it was discarded rather than
 scored, on the standing instruction to fix and restart rather than to score
 around a defect.
+
+### Measured, not inferred: judges were already deciding slates on the source shape
+
+The two archived bed runs carry 26 judge ballots between them.
+SIX OF THE 26 NAME THE ORIGINAL'S SHAPE as a reason for their choice, one of
+them citing "Criterion 4" by number and rejecting two candidates in the same
+sentence for what it called violating structure while praising the winner for
+conveying the passage as one coherent paragraph rather than a disjointed list.
+That is the criterion deciding a slate, on a slice where the archive and the
+Chinese disagree about how many blocks the passage has.
+
+So the fix is not a precaution against a failure mode that might appear.
+It removes a criterion that six ballots were visibly applying, against the same
+shape the guard was simultaneously demanding candidates depart from.
+Neither archived run is scored, because both were produced under wording that
+has since changed, but they are evidence about the instrument rather than about
+the pipeline, and that evidence survives the run being discarded.
