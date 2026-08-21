@@ -1066,3 +1066,42 @@ unnecessary line breaks, and breaking mid-sentence in a way that undermines
 coherent reading. At least five ballots across four slices demote a candidate
 for it. So the wrapper must run AFTER selection and never on a candidate a judge
 is shown, or fixing #151 will cost the wrapped lane its votes.
+
+### Correction to the `Zha_Ke#1` account, and the real cause
+
+The finding stands and the mechanism is confirmed, but the evidence first cited
+for it was the wrong field, and the cause is one layer deeper than described.
+
+WHAT WAS WRONG. The account cited the scorecard's `standing=INVALID:1` as proof
+that the page does not parse. `standingText` in the bed is not the archive page:
+`standingOf` returns the WINNING LANE'S candidate, the text that would ship if
+the consolidation lost. The page is `incumbentText`.
+
+WHAT WAS MEASURED INSTEAD, by running the production validator directly over the
+run-6 state rather than reading the scorecard's summary:
+
+    -   `sourceText` is 41 characters on one line.
+    -   `incumbentText` is 3875 characters over 73 lines.
+    -   `repairText` and `translateText` are both 3875 characters: BOTH LANES
+        KEPT THE WHOLE THING.
+    -   `shippedText` is 164 characters on one line.
+    -   `validateTranslatedSlice` returns `valid` for the shipped text and
+        `invalid` for the page itself, whose finding is that it could not be
+        parsed as Markdown.
+
+So the conclusion holds exactly as stated: the floor was disabled because the
+page does not parse, and a candidate that drops 3711 of 3875 characters passed
+against the source alone.
+
+THE CAUSE, which the first account did not reach. The strict grammar's complaint
+is `Expected a closing tag for <details>`. The slice boundary cuts THROUGH an
+HTML element: the opening tag is inside this slice's span and the closing tag is
+not. The span is therefore not a well-formed document fragment, and no strict
+parse of it can succeed no matter what any producer writes.
+
+The same page parses cleanly under the plain-markdown grammar, which reads it as
+two blocks, a paragraph and an html block. Under that reading the floor bites
+correctly and the one-paragraph candidate is refused.
+
+This reframes the slicing task: not "one line of Chinese paired against a large
+English span" alone, but a slicer that splits inside an HTML element.
