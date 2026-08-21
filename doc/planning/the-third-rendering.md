@@ -1689,3 +1689,36 @@ The mechanism did not: the pre-commit predicted every candidate refused by the f
 and what happened was `declined-indecision` at the judge, with the incumbent kept for want of agreement.
 Recording the difference because a right outcome reached by an unpredicted route
 is weaker evidence than one reached by the predicted mechanism, and the distinction should not be lost.
+
+### The instrument that proved it, and the one that could not
+
+The first attempt at an end-to-end check assembled each container entry with identity replacements,
+every slice handing back exactly the text it was cut from, and compared the result to the archive.
+All 16 came back byte-identical with no tag lost.
+That result is worthless, and the positive control is what showed it:
+neutering both the widening and the guard and running the same probe returns the same clean answer.
+Identity replacement writes back the slice text it was given, and a tag inside a slice range
+is inside that slice's text, so the probe round-trips whatever it is handed.
+It cannot distinguish a fixed pipeline from a broken one.
+
+The discriminating question is narrower, and it is the asymmetry the widening actually removes.
+A tag inside some slice's range is text a lane rewrites.
+A tag inside no slice's range is text assembly copies through untouched.
+When a container has one of each, the two tags are decided by different authorities:
+one can be dropped by a candidate while the other is guaranteed to survive,
+which is precisely how a page ends up with markup closing nothing.
+
+Measured across the target sides that carry containers, 24 containers reached in both builds:
+
+    before  6 containers with both tags in a slice range, 7 with neither, and 11 SPLIT
+    after   23 with both tags in a slice range, 1 with neither, and 0 SPLIT
+
+The 11 name themselves: `SevenBird`, `XingZ60` three times, `Zha_Ke`, `cheonwoomaeng`, `gqt`,
+`hulicaijia`, `lin10104`, `mikaela_khara`, `zhangyubaka`.
+The single remaining "neither" is `XingZ60`'s target-only section, which no slice reaches by design.
+
+WHAT THIS DOES NOT CLAIM. It does not claim a lane can no longer drop a tag.
+It claims that both tags of a container are now decided by the same authority,
+so dropping one is a candidate fault visible to the contest
+rather than a structural certainty invisible to every invariant.
+The residual exposure is named in the section on what the guard is for, and it is unchanged by this.
