@@ -5,6 +5,22 @@ type Child = {
   value: string;
 };
 
+/** Mutable explicit callback `this` state supplied independently. */
+type ThisState = {
+  label: string;
+};
+
+/**
+ * Referenced observer reached only through foreign receiver.
+ *
+ * @param referencedChild - Element whose sole inbound is foreign.
+ *
+ * @returns whether value is present.
+ */
+function referencedForeignObserver(referencedChild: Child,): boolean {
+  return referencedChild.value.length > 0;
+}
+
 /**
  * Reusable observer reached through foreign and ordinary receivers.
  *
@@ -30,6 +46,17 @@ export function inspectForeignObservers(
   void values.map(function mapObserver(mapChild, mapIndex, mapValues,) {
     return mapChild.value.length + mapIndex + mapValues.length;
   },);
+  void values.map(function thisObserver(
+    this: ThisState,
+    thisChild,
+    thisIndex,
+    thisValues,
+  ) {
+    return this.label.length
+      + thisChild.value.length
+      + thisIndex
+      + thisValues.length;
+  }, { label: 'state', },);
   values.forEach(function forEachObserver(forEachChild, forEachIndex, forEachValues,) {
     void forEachChild.value;
     void forEachIndex;
@@ -74,6 +101,7 @@ export function inspectForeignObservers(
       };
     },
   );
+  void values.some(referencedForeignObserver,);
   void values.some(reusedObserver,);
   void ordinaryValues.some(reusedObserver,);
 }

@@ -192,6 +192,7 @@ export function createDemandDrivenEffectIndex(
         allOmittedKeys: omittedCallableKeys,
         restoredKeys: hit.omittedCallableKeys,
         sourceFileName: sourceFile.fileName,
+        reason: hit.omissionReason,
       },);
       return {
         fileSummaries: hit.summaries,

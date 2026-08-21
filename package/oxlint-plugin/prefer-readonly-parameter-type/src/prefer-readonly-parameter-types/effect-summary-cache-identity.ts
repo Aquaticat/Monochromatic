@@ -35,8 +35,11 @@ import { ancestorDirectories, } from './ancestor-directories.ts';
  * Schema 6 persists callable identities deliberately omitted after direct-summary failures.
  * Without them a warm process rejects caller edges that the cold process accepted as
  * fail-closed omissions.
+ *
+ * Schema 7 adds bounded omission reason category,
+ * so restored-cache warnings retain why coverage was narrowed.
  */
-export const EFFECT_CACHE_SCHEMA = 6;
+export const EFFECT_CACHE_SCHEMA = 7;
 
 /**
  * Process memo for analyzer implementation digest.

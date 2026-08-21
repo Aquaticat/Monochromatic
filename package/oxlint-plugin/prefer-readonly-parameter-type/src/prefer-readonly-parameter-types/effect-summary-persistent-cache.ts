@@ -21,6 +21,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
 import {
   ENVELOPE_INVALID,
+  type EffectSummaryOmissionReason,
   type PersistentEffectCacheEnvelope,
   type PersistentEffectDependencyState,
   validatePersistentEnvelope,
@@ -106,6 +107,7 @@ export type PersistentEffectCacheHit = {
   readonly dependenciesResolved: boolean;
   readonly directDependencies: readonly string[];
   readonly omittedCallableKeys: readonly string[];
+  readonly omissionReason: EffectSummaryOmissionReason;
 };
 
 /**
@@ -244,6 +246,7 @@ export function readPersistentEffectSummaries({
       dependenciesResolved: envelope.dependenciesResolved,
       directDependencies: envelope.directDependencies,
       omittedCallableKeys: envelope.omittedCallableKeys,
+      omissionReason: envelope.omissionReason,
     };
   }
   catch (error) {
@@ -314,6 +317,9 @@ export function writePersistentEffectSummaries({
     directDependencies: closure.directDependencies,
     dependencyDigests: closure.dependencyDigests,
     omittedCallableKeys: [...omittedCallableKeys,].toSorted(),
+    omissionReason: omittedCallableKeys.length === 0
+      ? 'none'
+      : 'direct-summary-construction-failed',
     payload: serializeEffectSummaries(summaries,),
   };
   /**

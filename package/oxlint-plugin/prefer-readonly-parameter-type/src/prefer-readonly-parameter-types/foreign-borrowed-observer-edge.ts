@@ -355,6 +355,29 @@ export function addForeignObserverInbound({
       type: receiverType,
     },);
   /**
+   * Observer parameters including optional explicit TypeScript `this` declaration.
+   */
+  const { parameters: observerParameters, } = observerDeclaration;
+  /**
+   * Runtime formal positions begin after explicit `this` declaration when present.
+   */
+  const [firstObserverParameter,] = observerParameters;
+  /**
+   * First formal name,
+   * absent only for zero-parameter callback.
+   */
+  const firstObserverName = firstObserverParameter?.name;
+  /**
+   * Whether declaration begins with TypeScript-only `this` parameter.
+   */
+  const hasExplicitThis = (firstObserverName !== undefined)
+    && isIdentifier(firstObserverName,)
+    && (firstObserverName.text === 'this');
+  /**
+   * Declaration offset translating runtime callback positions.
+   */
+  const runtimePositionOffset = hasExplicitThis ? 1 : 0;
+  /**
    * Observer slot ownership required by synthetic call edge arrays.
    */
   const observerSlots = parameterSlotTable({ declaration: observerDeclaration, },);
@@ -371,26 +394,40 @@ export function addForeignObserverInbound({
       .map(function noEffectOrigins(): readonly EffectSlot[] {
         return [];
       },),
-    capturedOriginsByFormal: observerDeclaration.parameters
+    capturedOriginsByFormal: observerParameters
       .map(function noCapturedOrigins(): readonly EffectSlot[] {
         return [];
       },),
-    foreignOriginsByFormal: observerDeclaration.parameters
+    foreignOriginsByFormal: observerParameters
       .map(function observerForeignOrigins(
         _parameter,
         parameterIndex,
       ): readonly ParameterIndex[] {
-        return derivedPositions.includes(asParameterIndex(parameterIndex,),)
-          ? receiverParameters
-          : [];
+        /**
+         * Runtime callback position excluding explicit `this` declaration.
+         */
+        const runtimePosition = parameterIndex - runtimePositionOffset;
+        /**
+         * Whether declaration formal receives collection receiver state.
+         */
+        const receiverDerived = (runtimePosition >= 0)
+          && derivedPositions.includes(asParameterIndex(runtimePosition,),);
+        return receiverDerived ? receiverParameters : [];
       },),
-    directForeignByFormal: observerDeclaration.parameters
+    directForeignByFormal: observerParameters
       .map(function observerDirectForeign(
         _parameter,
         parameterIndex,
       ): boolean {
-        return receiverDirectlyForeign
-          && derivedPositions.includes(asParameterIndex(parameterIndex,),);
+        /**
+         * Runtime callback position excluding explicit `this` declaration.
+         */
+        const runtimePosition = parameterIndex - runtimePositionOffset;
+        if (!receiverDirectlyForeign)
+          return false;
+        if (runtimePosition < 0)
+          return false;
+        return derivedPositions.includes(asParameterIndex(runtimePosition,),);
       },),
     foreignInbound: true,
     callbackKeysByCalleeSlot: observerSlots.parameterOfSlot

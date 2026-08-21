@@ -406,6 +406,9 @@ children: [
       [
         'mapChild',
         'mapValues',
+        'referencedChild',
+        'thisChild',
+        'thisValues',
         'forEachChild',
         'forEachValues',
         'filterChild',
@@ -2169,6 +2172,11 @@ children: [
       expect(messages.some(function genuineReturnProducer(message,): boolean {
         return message.startsWith('Parameter "returnedRow" can be deeply readonly:')
           && message.includes('originates in callable "makeProducedRow" at ')
+          && message.includes('give that callable an explicit deeply readonly return type');
+      },),).toBe(true,);
+      expect(messages.some(function boundReturnProducer(message,): boolean {
+        return message.startsWith('Parameter "boundReturnedRow" can be deeply readonly:')
+          && message.includes('originates in callable "makeBoundProducedRow" at ')
           && message.includes('give that callable an explicit deeply readonly return type');
       },),).toBe(true,);
     },

@@ -1,5 +1,6 @@
 import {
   mutableClassificationHasExternalDeclaration,
+  mutableClassificationHasWorkspaceDeclaration,
   type ReadonlyClassification,
 } from './readonly-classification-model.ts';
 import type { ReadonlySuggestion, } from './readonly-suggestion.ts';
@@ -150,7 +151,18 @@ export function readonlyPreferenceGuidance({
   const verified = verifiedSuggestionGuidance(suggestions,);
   if ((typeof verified) !== 'symbol')
     return verified;
-  if (mutableClassificationHasExternalDeclaration(classification,)) {
+  /**
+   * Whether writable leaf declarations include external library source.
+   */
+  const hasExternalDeclaration = mutableClassificationHasExternalDeclaration(classification,);
+  /**
+   * Whether writable leaf declarations include editable workspace source.
+   */
+  const hasWorkspaceDeclaration = mutableClassificationHasWorkspaceDeclaration(classification,);
+  if (hasExternalDeclaration && hasWorkspaceDeclaration) {
+    return 'Reported writable paths span workspace and external declarations. Make the workspace paths deeply readonly and introduce a project-owned deep projection for external paths, then run type checking. `Readonly<T>` is shallow and can only move the finding to a nested path.';
+  }
+  if (hasExternalDeclaration) {
     return 'At least one reported writable path is declared outside this workspace. Introduce a project-owned deep readonly projection at the annotated or producing boundary, then run type checking. `Readonly<T>` is shallow and can only move the finding to a nested path. If the value actually enters through an externally owned mutable boundary, mark that boundary `ForeignBorrowed`; do not repeat the marker on descendants.';
   }
   if (originEvidence.kind === 'authored') {

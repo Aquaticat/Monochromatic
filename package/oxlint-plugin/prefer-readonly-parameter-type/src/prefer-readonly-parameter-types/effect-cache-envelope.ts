@@ -21,6 +21,23 @@ export const ENVELOPE_INVALID: unique symbol = Symbol(
 );
 
 /**
+ * Reason category when direct-summary scan omitted no callable.
+ */
+const NO_OMISSION_REASON = 'none';
+
+/**
+ * Reason category when direct-summary construction failed.
+ */
+const DIRECT_SUMMARY_FAILURE_REASON = 'direct-summary-construction-failed';
+
+/**
+ * Bounded persisted reason for source-local summary coverage.
+ */
+export type EffectSummaryOmissionReason =
+  | typeof DIRECT_SUMMARY_FAILURE_REASON
+  | typeof NO_OMISSION_REASON;
+
+/**
  * Validated incremental JSON cache envelope.
  *
  * `dependencyDigests` snapshots the content identity of every non-declaration
@@ -44,6 +61,7 @@ export type PersistentEffectCacheEnvelope = {
   readonly directDependencies: readonly string[];
   readonly dependencyDigests: Readonly<Record<string, string>>;
   readonly omittedCallableKeys: readonly string[];
+  readonly omissionReason: EffectSummaryOmissionReason;
   readonly payload: SerializedEffectSummaries;
 };
 
@@ -134,6 +152,30 @@ function isOmittedCallableKeys({
     && keys.every(function validOmissionKey(key,): boolean {
       return key.startsWith(`${fileName}:`,) && (!summaryKeys.has(key,));
     },);
+}
+
+/**
+ * Tests whether omission reason category agrees with omission list presence.
+ *
+ * @param keys - Parsed omission identities.
+ *
+ * @param reason - Parsed bounded reason category.
+ *
+ * @returns whether category is known and matches empty state.
+ */
+function omissionReasonMatches({
+  keys,
+  reason,
+}: {
+  readonly keys: unknown;
+  readonly reason: unknown;
+}): boolean {
+  if (!Array.isArray(keys,))
+    return false;
+  if ((reason !== NO_OMISSION_REASON)
+    && (reason !== DIRECT_SUMMARY_FAILURE_REASON))
+    return false;
+  return (keys.length === 0) === (reason === NO_OMISSION_REASON);
 }
 
 /**
@@ -233,6 +275,10 @@ export function validatePersistentEnvelope({
       dependencyDigests: value.dependencyDigests,
       sourceDigests: state.sourceDigests,
     },))
+    || (!omissionReasonMatches({
+      keys: value.omittedCallableKeys,
+      reason: value.omissionReason,
+    },))
     || (!Array.isArray(value.omittedCallableKeys,))
     || (!isSerializedEffectSummaries(value.payload,))
     || (!isOmittedCallableKeys({
@@ -241,6 +287,13 @@ export function validatePersistentEnvelope({
       payload: value.payload,
     },)))
     return ENVELOPE_INVALID;
+  /**
+   * Bounded reason narrowed after complete relation validation.
+   */
+  const omissionReason: EffectSummaryOmissionReason = value.omissionReason
+    === DIRECT_SUMMARY_FAILURE_REASON
+    ? DIRECT_SUMMARY_FAILURE_REASON
+    : NO_OMISSION_REASON;
   return {
     schema: EFFECT_CACHE_SCHEMA,
     analyzerDigest: identity.analyzerDigest,
@@ -258,6 +311,7 @@ export function validatePersistentEnvelope({
       .filter(function omittedKey(entry,): entry is string {
         return (typeof entry) === 'string';
       },),
+    omissionReason,
     payload: value.payload,
   };
 }

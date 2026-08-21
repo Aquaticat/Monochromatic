@@ -61,7 +61,7 @@ function classifyMutableArray({
     mutableReadonlyClassification({
       kind: 'array',
       segments: [],
-      declarationOwners: ['default-library'],
+      declarationOwners: [],
     },),
     ...checker
       .getIndexInfosOfType(type,)
@@ -197,7 +197,7 @@ function classifyTuple({
       : [mutableReadonlyClassification({
         kind: 'tuple',
         segments: [],
-        declarationOwners: ['default-library'],
+        declarationOwners: [],
       },),],
     ...tupleElementResults,
   ],);

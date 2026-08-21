@@ -290,8 +290,19 @@ export function normalizeWritablePaths(
       left,
       right,
     ): number {
-      return writablePathReason(left,)
-        .localeCompare(writablePathReason(right,),);
+      /**
+       * Left rendered identity compared by runtime-independent UTF-16 code units.
+       */
+      const leftReason = writablePathReason(left,);
+      /**
+       * Right rendered identity compared by runtime-independent UTF-16 code units.
+       */
+      const rightReason = writablePathReason(right,);
+      if (leftReason < rightReason)
+        return -1;
+      if (leftReason > rightReason)
+        return 1;
+      return 0;
     },);
 }
 
@@ -368,5 +379,33 @@ export function mutableClassificationHasExternalDeclaration(
         .some(function externalOwner(owner,): boolean {
           return (owner === 'default-library') || (owner === 'external-library');
         },);
+    },);
+}
+
+/**
+ * Tests whether any writable declaration belongs to workspace source.
+ *
+ * @param classification - Candidate mutable classification.
+ *
+ * @returns whether at least one exact workspace declaration is writable.
+ *
+ * @example
+ * ```ts
+ * mutableClassificationHasWorkspaceDeclaration(classification);
+ * ```
+ */
+export function mutableClassificationHasWorkspaceDeclaration(
+  classification: ReadonlyClassification,
+): boolean {
+  if (classification.kind !== 'mutable')
+    return false;
+  return classification
+    .writablePaths
+    .some(function workspacePath(path,): boolean {
+      /**
+       * Ownership categories for current writable leaf.
+       */
+      const { declarationOwners, } = path;
+      return declarationOwners.includes('workspace',);
     },);
 }

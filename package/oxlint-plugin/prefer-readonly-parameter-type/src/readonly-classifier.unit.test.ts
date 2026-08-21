@@ -134,6 +134,66 @@ await describe({
       },);
     },),
     it({
+      name: 'retains structured workspace ownership without intrinsic collection owners',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        const parameterNode = session.nodeAtOffset(SOURCE.indexOf('shallowReadonlyValues:',),);
+        const type = session.checker.getTypeAtLocation(parameterNode,);
+        if (type === undefined)
+          throw new Error('Expected shallow readonly values type.',);
+        const classification = classifyReadonlyType({
+          checker: session.checker,
+          project: session.project,
+          type,
+        },);
+        closeSemanticBridge();
+        if (classification.kind !== 'mutable')
+          throw new Error('Expected mutable shallow readonly values.',);
+        expect(classification.writablePaths.every(function workspaceLeaf(path,): boolean {
+          return path.declarationOwners.includes('workspace',)
+            && (!path.declarationOwners.includes('default-library',));
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'merges workspace and default-library owners on one writable path',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        const parameterNode = session.nodeAtOffset(SOURCE.indexOf('mixedNamedValue:',),);
+        const type = session.checker.getTypeAtLocation(parameterNode,);
+        if (type === undefined)
+          throw new Error('Expected mixed writable owner type.',);
+        const classification = classifyReadonlyType({
+          checker: session.checker,
+          project: session.project,
+          type,
+        },);
+        closeSemanticBridge();
+        if (classification.kind !== 'mutable')
+          throw new Error('Expected mutable mixed owner type.',);
+        /**
+         * Shared `name` path merged across both union branches.
+         */
+        const mixedPath = classification.writablePaths.find(function namePath(path,): boolean {
+          return path.segments.some(function nameSegment(segment,): boolean {
+            return (segment.kind === 'property') && (segment.name === 'name');
+          },);
+        },);
+        expect(mixedPath?.declarationOwners,).toEqual([
+          'default-library',
+          'workspace',
+        ],);
+      },
+    },),
+    it({
       name: 'classifies a cycle member the same whichever member is asked for first',
       fn: async () => {
         /* One session for both, because the defect this guards is the shared classification

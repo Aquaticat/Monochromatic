@@ -18,10 +18,12 @@ import {
   isObjectLiteralExpression,
   isReturnStatement,
   isTypeAliasDeclaration,
+  isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { ancestorDirectories, } from './ancestor-directories.ts';
+import { callableReturnsBinding, } from './readonly-returned-binding.ts';
 import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 
 /**
@@ -102,21 +104,31 @@ function displayRoot(configFileName: string,): string {
  *
  * @param declaration - Semantic type declaration.
  *
+ * @param project - Project proving local binding return flow.
+ *
  * @returns named type owner,
  * proved returning callable,
  * or exact original declaration.
  *
  * @example
  * ```ts
- * originOwner(objectLiteral);
+ * originOwner({ declaration: objectLiteral, project });
  * ```
  */
-function originOwner(declaration: Node,): Node {
+function originOwner({
+  declaration,
+  project,
+}: {
+  readonly declaration: Node;
+  readonly project: Project;
+}): Node {
   /**
    * Ancestor cursor retaining nearest actionable local aggregate.
    */
   const cursor = {
     current: declaration,
+    hasLocalBinding: false,
+    localBinding: declaration,
     localProducer: declaration,
     pending: true,
     returned: false,
@@ -133,15 +145,36 @@ function originOwner(declaration: Node,): Node {
       const conciseArrow = isArrowFunction(cursor.current,)
         && (!isBlock(cursor.current
           .body,));
+      /**
+       * Whether local aggregate binding reaches this callable's return.
+       */
+      const returnedBinding = cursor.hasLocalBinding
+        && isIdentifier(cursor.localBinding,)
+        && callableReturnsBinding({
+          callable: cursor.current,
+          binding: cursor.localBinding,
+          project,
+        },);
       if ((cursor.current === declaration)
         || cursor.returned
-        || conciseArrow)
+        || conciseArrow
+        || returnedBinding)
         return cursor.current;
       return cursor.localProducer;
     }
     if (isObjectLiteralExpression(cursor.current,)
       || isArrayLiteralExpression(cursor.current,))
       cursor.localProducer = cursor.current;
+    if (isVariableDeclaration(cursor.current,)) {
+      /**
+       * Binding name candidate for semantic return-flow proof.
+       */
+      const { name, } = cursor.current;
+      if (isIdentifier(name,)) {
+        cursor.hasLocalBinding = true;
+        cursor.localBinding = name;
+      }
+    }
     if (isReturnStatement(cursor.current,))
       cursor.returned = true;
     /**
@@ -325,7 +358,10 @@ export function readonlyTypeOrigin({
   /**
    * Reader-facing callable or named type boundary.
    */
-  const owner = originOwner(declaration,);
+  const owner = originOwner({
+    declaration,
+    project,
+  },);
   /**
    * Stable name when boundary declares an identifier.
    */

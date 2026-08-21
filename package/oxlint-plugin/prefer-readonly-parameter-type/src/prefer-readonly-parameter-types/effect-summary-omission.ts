@@ -7,6 +7,8 @@
 import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import type { EffectSummaryOmissionReason, } from './effect-cache-envelope.ts';
+
 /**
  * Omission lifecycle logger.
  */
@@ -70,7 +72,7 @@ export function reportDirectSummaryOmissions({
   if (omittedKeys.size === 0)
     return;
   l.warn(
-    `omitted ${String(omittedKeys.size,)} callable summaries for ${sourceFileName}; debug logging contains causes`,
+    `omitted ${String(omittedKeys.size,)} callable summaries for ${sourceFileName}: direct-summary-construction-failed; debug logging contains causes`,
   );
 }
 
@@ -83,21 +85,30 @@ export function reportDirectSummaryOmissions({
  *
  * @param sourceFileName - Exact source whose cached scan was incomplete.
  *
+ * @param reason - Validated bounded reason category restored from cache.
+ *
  * @mutates allOmittedKeys - Adds every restored callable identity.
  *
  * @example
  * ```ts
- * restoreCachedSummaryOmissions({ allOmittedKeys, restoredKeys, sourceFileName });
+ * restoreCachedSummaryOmissions({
+ *   allOmittedKeys,
+ *   restoredKeys,
+ *   sourceFileName,
+ *   reason,
+ * });
  * ```
  */
 export function restoreCachedSummaryOmissions({
   allOmittedKeys,
   restoredKeys,
   sourceFileName,
+  reason,
 }: {
   readonly allOmittedKeys: Set<string>;
   readonly restoredKeys: readonly string[];
   readonly sourceFileName: string;
+  readonly reason: EffectSummaryOmissionReason;
 }): void {
   restoredKeys.forEach(function restoreKey(key,): void {
     allOmittedKeys.add(key,);
@@ -105,6 +116,6 @@ export function restoreCachedSummaryOmissions({
   if (restoredKeys.length === 0)
     return;
   l.warn(
-    `restored ${String(restoredKeys.length,)} omitted callable summaries for ${sourceFileName} from effect cache`,
+    `restored ${String(restoredKeys.length,)} omitted callable summaries for ${sourceFileName} from effect cache: ${reason}`,
   );
 }

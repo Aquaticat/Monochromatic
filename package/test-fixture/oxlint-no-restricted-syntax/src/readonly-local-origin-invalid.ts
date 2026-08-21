@@ -29,6 +29,17 @@ function makeProducedRow() {
 }
 
 /**
+ * Produces inferred row through local binding returned by callable.
+ *
+ * @returns inferred row through binding.
+ */
+function makeBoundProducedRow() {
+  /** Local binding whose identity reaches return. */
+  const row = { count: 0, };
+  return row;
+}
+
+/**
  * Exercises local expression and genuine return producer attribution.
  *
  * @param condition - Selects distinct local union branches.
@@ -69,6 +80,9 @@ export function localOriginControls(condition: boolean,): void {
 
   [makeProducedRow(),].map(function inspectReturnedRow(returnedRow,) {
     return returnedRow.count;
+  },);
+  [makeBoundProducedRow(),].map(function inspectBoundReturnedRow(boundReturnedRow,) {
+    return boundReturnedRow.count;
   },);
 }
 

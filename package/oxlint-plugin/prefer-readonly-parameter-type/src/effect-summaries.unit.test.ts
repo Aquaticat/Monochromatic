@@ -3100,12 +3100,18 @@ export function use(): void {
         const [cacheEntry,] = cacheEntries;
         if (cacheEntry === undefined)
           throw new Error('Expected persistent summary cache entry.',);
+        /** Exact persistent cache entry path for schema controls. */
+        const cacheEntryPath = join(cacheRoot, cacheEntry,);
         /** Persisted JSON carrying explicit omission metadata. */
         const cached = JSON.parse(readFileSync(
-          join(cacheRoot, cacheEntry,),
+          cacheEntryPath,
           'utf8',
-        ),) as { readonly omittedCallableKeys?: readonly string[]; };
+        ),) as {
+          readonly omittedCallableKeys?: readonly string[];
+          readonly omissionReason?: string;
+        };
         expect(cached.omittedCallableKeys?.length,).toBeGreaterThan(0,);
+        expect(cached.omissionReason,).toBe('direct-summary-construction-failed',);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
@@ -3123,6 +3129,40 @@ export function use(): void {
         const warmStats = effectSummaryCacheStats();
         expect(warmStats.directSummaryBuildCount,).toBe(0,);
         expect(warmStats.persistentSourceCacheHitCount,).toBeGreaterThan(0,);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        /** Parsed current entry before simulating pre-omission schema. */
+        const currentEnvelope = JSON.parse(readFileSync(
+          cacheEntryPath,
+          'utf8',
+        ),) as Readonly<Record<string, unknown>>;
+        /** Legacy envelope without omission metadata and with prior schema identity. */
+        const legacyEnvelope = Object.fromEntries(Object.entries(currentEnvelope,)
+          .filter(function nonOmissionField([field,],): boolean {
+            return (field !== 'omittedCallableKeys') && (field !== 'omissionReason');
+          },),);
+        writeFileSync(
+          cacheEntryPath,
+          JSON.stringify({
+            ...legacyEnvelope,
+            schema: 5,
+          },),
+        );
+        const legacySession = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({
+          project: legacySession.project,
+          activeSourceFile: legacySession.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Counters proving legacy entry became miss rather than inferred omission. */
+        const legacyStats = effectSummaryCacheStats();
+        expect(legacyStats.directSummaryBuildCount,).toBeGreaterThan(0,);
+        expect(legacyStats.persistentSourceCacheHitCount,).toBe(0,);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
@@ -3383,6 +3423,91 @@ export function use(): void {
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
+      },
+    },),
+    it({
+      name: 'keeps omission fingerprints equal across cold and warm processes',
+      fn: async () => {
+        using project = disposableCacheDirectory();
+        /** Persistent cache isolated from every other omission test. */
+        const cacheRoot = join(project.path, '.effect-cache',);
+        /** Single-source tuple serialization reproduction. */
+        const inputPath = join(project.path, 'input.ts',);
+        /** Independent process probe importing built package interface. */
+        const probePath = join(project.path, 'omission-probe.mjs',);
+        writeFileSync(
+          join(project.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
+        );
+        writeFileSync(
+          inputPath,
+          `export function take<Fn extends (...args: never[]) => unknown,>(
+  fn: Fn,
+  args: Parameters<Fn>,
+): void {
+  void fn;
+  void args;
+}
+
+export function use(): void {
+  take(
+    function render(): string {
+      return '';
+    },
+    [],
+  );
+}
+`,
+        );
+        /** Probe source printing cache activity and every callable verdict. */
+        const probeSource = `import { readFileSync } from 'node:fs';
+import { buildEffectSummaryIndex, closeSemanticBridge, effectSummaryCacheStats, openSemanticFile, NO_EFFECT_SUMMARY } from ${JSON.stringify(BUILT_ENTRY_URL)};
+const [fileName, cacheRoot] = process.argv.slice(2);
+const sourceText = readFileSync(fileName, 'utf8');
+const session = openSemanticFile({ fileName, sourceText, hasBOM: false });
+const index = buildEffectSummaryIndex({ project: session.project, activeSourceFile: session.sourceFile, cacheRootOverride: cacheRoot });
+const fingerprint = session.sourceFile.statements.flatMap((declaration) => {
+  if (!('parameters' in declaration)) return [];
+  const summary = index.get(declaration);
+  if (summary === NO_EFFECT_SUMMARY) return [[declaration.name?.text ?? 'anonymous', 'NO_SUMMARY']];
+  return [[
+    declaration.name?.text ?? 'anonymous',
+    [...summary.referentMutatedParameterIndexes].sort().join(','),
+    [...summary.opaqueParameterIndexes].sort().join(','),
+    [...summary.returnedParameterIndexes].sort().join(','),
+  ]];
+});
+console.log(JSON.stringify({ ...effectSummaryCacheStats(), fingerprint }));
+closeSemanticBridge();
+`;
+        writeFileSync(probePath, probeSource,);
+        const cold = await spawn(
+          'node',
+          [probePath, inputPath, cacheRoot,],
+        );
+        const warm = await spawn(
+          'node',
+          [probePath, inputPath, cacheRoot,],
+        );
+        /** Cold process result built from syntax. */
+        const coldResult = JSON.parse(cold.stdout.trim(),) as {
+          readonly directSummaryBuildCount: number;
+          readonly persistentSourceCacheHitCount: number;
+          readonly fingerprint: readonly (readonly string[])[];
+        };
+        /** Warm process result restored from persisted summaries and omissions. */
+        const warmResult = JSON.parse(warm.stdout.trim(),) as {
+          readonly directSummaryBuildCount: number;
+          readonly persistentSourceCacheHitCount: number;
+          readonly fingerprint: readonly (readonly string[])[];
+        };
+        expect(coldResult.directSummaryBuildCount,).toBeGreaterThan(0,);
+        expect(coldResult.persistentSourceCacheHitCount,).toBe(0,);
+        expect(warmResult.directSummaryBuildCount,).toBe(0,);
+        expect(warmResult.persistentSourceCacheHitCount,).toBeGreaterThan(0,);
+        expect(warmResult.fingerprint,).toEqual(coldResult.fingerprint,);
+        expect(cold.stderr,).toContain('omitted 1 callable summaries for');
+        expect(warm.stderr,).toContain('restored 1 omitted callable summaries for');
       },
     },),
     it({
