@@ -118,6 +118,10 @@ export {
   settleGateBallots,
 } from './consolidate-gate-stage.ts';
 export {
+  wrapConsolidation,
+  type WrappedConsolidation,
+} from './consolidate-wrap.ts';
+export {
   buildConsolidateGateMessages,
   type ConsolidateGateSubject,
   type GateBallot,
