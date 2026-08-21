@@ -375,10 +375,37 @@ read straight out of the cache file the run used,
 so every original is placed once and no original is rendered twice.
 The two rules leave its declines exactly as they were.
 
-## The check still owed
+## What the checks found
 
-Build, `lint:types`, `test:unit`, and GFP on the new guard.
-Then the live one: `verify-157-live.mjs` in agent scratch runs the BUILT grouper
-over `Zha_Ke`'s real blocks and the pairing the roster actually returned on 2026-08-20,
-and asserts no run's span covers the letter.
-Until that has run, this section describes intent rather than behaviour.
+All of them ran on 2026-08-21, after run 9 launched on the frozen `dist` and freed the build.
+
+`lint:types` found sixteen indexed reads in the new test file that had never been type-checked,
+because the file was committed before anything could build it.
+They are now `nonNullishOrThrow(nodes.at(n,),)`, which is what `align-blocks.unit.test.ts` already used.
+`lint:oxlint` found the two `let`s the decline introduced and was right about both;
+each is now a helper returning its own binding.
+The package lints clean apart from one `no-unsafe-type-assertion` warning in `unwrap-container.ts`,
+which came from `#154` and is untouched by this work.
+`test:unit` is 485 PASS, zero FAIL.
+
+GFP RAN THREE TIMES, one neuter each, because one neuter cannot show three rules.
+Removing the whole decline fails four cases,
+including the two that assert a declined block reaches no run and no span.
+Removing only the sandwich rule fails exactly one case, the sandwich.
+Removing only the merge half of the gate fails exactly one case, the merge.
+Every neuter was restored with `git checkout --` and the tree rebuilt clean before the next.
+
+THE LIVE CHECK, over `Zha_Ke`'s real blocks and the pairing the roster returned on 2026-08-20,
+at the budgets the bed used:
+two runs, spanning 47..370 and 4047..4387,
+and the letter at 409..4045 lies between them.
+No run's span covers any of it, so assembly leaves it byte for byte.
+
+THE PREPARATION CHECK is the one that answers `#157` in its own terms,
+because it runs `prepareDocumentPair` rather than the grouper alone.
+Before, chunk 1 carried 41 characters of original against 3886 of standing English.
+After, it carries 41 against 211, and the preparation emits
+`alignment target-unclaimed (pair 0: 2 translation blocks no original claims, 3672 characters: block/2, block/3)`
+into the channel that was empty when the entry settled.
+The judges now compare 41 characters of original against 211 of English
+rather than against 3886, of which 3672 had already been declined.
