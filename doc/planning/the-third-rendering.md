@@ -1891,3 +1891,37 @@ That is `#157`, and this is the strongest evidence for it in the corpus so far:
 not a pairing that produced a confidently wrong answer,
 but a CORRECT pairing whose refusal the slicer discarded,
 coming within a single unanimous ballot of deleting a letter someone wrote about a person who died.
+
+## Run 8 scored, stratified, and what its headline rate hides
+
+Run 8 finished on 2026-08-21 with all thirteen slices recorded.
+Scored flat against the eight-entry reading it agrees on six of twelve,
+excluding `Zha_Ke#1` for the reason `#154` and `#157` both give:
+that row replays a slice built before either landed.
+
+THE FLAT RATE ANSWERS THREE DIFFERENT QUESTIONS AT ONCE, so it is not the number to read.
+The bed's own note records that `neither` in the reading means the two lanes TIED,
+"not that both were bad".
+A contest that picks a lane there has broken a tie, not contradicted the reading.
+And a slice with no standing text has nothing to contest at all,
+so its `neither` is structural rather than a judgement.
+
+Split three ways:
+
+- The reading named a lane and standing text existed, seven slices: the contest agrees on six.
+    The one miss is `Acheron#2`, where the reading says translate and the contest chose repair.
+- The reading called the lanes tied, three slices: the contest broke toward repair on all three.
+- No standing text, two slices: `Zha_Ke#0` and `Acheron#0`, both necessarily `neither`.
+
+THE TIE-BREAK LEAN IS WORTH WATCHING AND IS NOT YET A FINDING.
+Three of three toward repair is what a systematic lean would look like
+and also what three coin flips look like one time in four.
+Run 9 is the second draw, on the identical build and the identical replayed slices,
+and it is the thing that can tell those apart.
+
+WHAT THE GATE SHIPPED: consolidated at eight slices, standing at three, no gate at two.
+Judge participation was healthy throughout:
+six judges available at every slice that had one,
+five or six ballots, and zero abstentions anywhere.
+So nothing in this run was decided by a panel that had lost voices,
+which is the confound `#156` would introduce if the runaway guard were letting streams through.
