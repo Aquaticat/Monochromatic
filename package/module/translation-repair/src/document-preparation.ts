@@ -2,7 +2,11 @@ import {
   alignDocumentSections,
   type ChunkPair,
 } from './chunk-document.ts';
-import { collectIdentityLines, } from './identity-context.ts';
+import { declaredNameForms, } from './declared-name-survival.ts';
+import {
+  collectIdentityLines,
+  extractDeclaredIdentity,
+} from './identity-context.ts';
 import {
   type ChunkGovernance,
   type ChunkSlice,
@@ -82,6 +86,18 @@ export type PreparedDocumentPair = {
   readonly identityContext?: string;
 
   /**
+   * Declared name forms as the TRANSLATION side spells them.
+   *
+   * SEPARATE FROM `identityContext`, which is prose for a prompt. These are the
+   * strings a guard compares, and the guard exists because asking a model to
+   * keep a name does not work: probed on the repair lane's own judge sheet,
+   * six of six judges preferred the candidate that dropped a declared alias.
+   *
+   * TRANSLATION SIDE ONLY, because the text being guarded is English.
+   */
+  readonly declaredNames: readonly string[];
+
+  /**
    * Alignment findings in scorecard-stable wording.
    */
   readonly alignmentFindings: readonly string[];
@@ -145,6 +161,16 @@ export function prepareDocumentPair(
       ?.data,
     targetData: targetDocument.frontMatter
       ?.data,
+  },);
+
+  /**
+   * Declared name forms a guard compares against English text.
+   */
+  const declaredNames = declaredNameForms({
+    identity: extractDeclaredIdentity({
+      data: targetDocument.frontMatter
+        ?.data,
+    },),
   },);
 
   /**
@@ -279,6 +305,7 @@ export function prepareDocumentPair(
     ...(identityLines.length === 0
       ? {}
       : { identityContext: identityLines.join('\n',), }),
+    declaredNames,
     alignmentFindings,
     alignmentPairCount: alignment.pairs
       .length,

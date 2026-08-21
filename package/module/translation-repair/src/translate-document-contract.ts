@@ -38,8 +38,13 @@ import type { SliceSelection, } from './slice-selection.ts';
  * be filled or left as the gap it is, while a slice that has one may settle on
  * what is already there. The bump discards nothing, measured before the change:
  * no record had been settled under version 2 at all.
+ *
+ * VERSION 4, on 2026-08-20, for the declared-name guard. Every slice cached
+ * before it was settled without that check, so a resumed run would ship a
+ * replacement that dropped a declared name rather than re-deciding it. A guard
+ * any cache hit can walk past is not a guard.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 3;
+export const TRANSLATE_SLICE_CACHE_VERSION = 4;
 
 /**
  * Models the translate lane seats.
@@ -84,7 +89,13 @@ export type TranslateDisposition =
    * Stage wanted to replace the incumbent and the quote guard refused, because
    * the replacement carried fewer quoted passages than the archive does.
    */
-  | 'refused-quote-loss';
+  | 'refused-quote-loss'
+  /**
+   * Stage wanted to replace the incumbent and the declared-name guard refused,
+   * because the replacement dropped a name the archive text carried and the
+   * documents declare.
+   */
+  | 'refused-declared-name';
 
 /**
  * Settled record for one translate slice.
@@ -136,6 +147,15 @@ export type TranslateSliceRecord = {
    * What the driver did with the stage result.
    */
   readonly disposition: TranslateDisposition;
+
+  /**
+   * Declared forms the replacement dropped, when that is why it was refused.
+   *
+   * STORED, unlike the alignment refusal's sentence, because these forms name
+   * no slice index and so survive a record being resumed at a different
+   * position. The reporter has no preparation to recompute them from.
+   */
+  readonly droppedDeclaredNames?: readonly string[];
 
   /**
    * Measurements behind the alignment decision, recorded on every slice rather

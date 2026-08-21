@@ -98,7 +98,8 @@ export function assembleTranslation(
    */
   const refused = settled.filter(function wasRefused(record,): boolean {
     return (record.disposition === 'refused-alignment')
-      || (record.disposition === 'refused-quote-loss');
+      || (record.disposition === 'refused-quote-loss')
+      || (record.disposition === 'refused-declared-name');
   },);
 
   /**

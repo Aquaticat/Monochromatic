@@ -121,6 +121,7 @@ const PREPARED: PreparedDocumentPair = {
   targetText: INCUMBENT_TEXT,
   slices: [SLICE,],
   lineStructuredSliceIndices: new Set<number>(),
+  declaredNames: [],
   alignmentFindings: [],
   alignmentPairCount: 1,
 };

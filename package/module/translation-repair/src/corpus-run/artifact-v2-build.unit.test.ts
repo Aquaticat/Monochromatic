@@ -113,6 +113,7 @@ function catPreparation(): PreparedDocumentPair {
     targetText: ARCHIVE_NAP,
     slices: catSlices(),
     lineStructuredSliceIndices: new Set<number>(),
+    declaredNames: [],
     alignmentFindings: [],
     alignmentPairCount: 2,
   } as unknown as PreparedDocumentPair;

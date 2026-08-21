@@ -4,6 +4,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import {
+  declaredNameRefusalFinding,
+  findDroppedDeclaredNames,
+} from './declared-name-survival.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import {
   BlankSelectionError,
@@ -280,6 +284,50 @@ export async function settleTranslateSlice(
       outputText: archiveText,
       changed: false,
       disposition: 'refused-quote-loss',
+      alignment,
+      findings,
+    };
+  }
+  /**
+   * Whether this slice is one the declared-name guard applies to at all.
+   *
+   * Only a slice whose archive text is being replaced can lose a name from it.
+   */
+  const guardsThisSlice = (incumbentKind === 'present')
+    && wantsReplacement
+    && (!refused);
+  /**
+   * Declared names the archive text carries and the replacement does not.
+   *
+   * CHECKED RATHER THAN ASKED FOR. Probed against the repair lane's own judge
+   * sheet and roster, six of six judges preferred a candidate that dropped a
+   * declared alias, and stating the exception in the criterion moved their
+   * reasoning without moving the vote.
+   */
+  const droppedDeclaredNames = guardsThisSlice
+    ? findDroppedDeclaredNames({
+      forms: prepared.declaredNames,
+      baseText: incumbentText,
+      candidateText: stageResult.text,
+    },)
+    : [];
+  if (droppedDeclaredNames.length > 0) {
+    l.warn(
+      declaredNameRefusalFinding({
+        chunkIndex,
+        dropped: droppedDeclaredNames,
+      },),
+    );
+    return {
+      kind: 'translate-slice',
+      schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
+      chunkIndex,
+      stageResult,
+      // The whole archive, for the reason the alignment refusal gives.
+      outputText: archiveText,
+      changed: false,
+      disposition: 'refused-declared-name',
+      droppedDeclaredNames,
       alignment,
       findings,
     };

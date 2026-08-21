@@ -187,4 +187,38 @@ export function findDroppedDeclaredNames(
   },);
 }
 
+/**
+ * Renders a declared-name refusal as a finding.
+ *
+ * @param chunkIndex - slice the refusal names
+ *
+ * @param dropped - declared forms the replacement no longer carries
+ *
+ * @returns Finding in scorecard-stable wording
+ *
+ * @example
+ * ```ts
+ * const finding = declaredNameRefusalFinding({ chunkIndex: 3, dropped: [ 'Blossom', ], },);
+ * ```
+ */
+export function declaredNameRefusalFinding(
+  {
+    chunkIndex,
+    dropped,
+  }: {
+    readonly chunkIndex: number;
+    readonly dropped: readonly string[];
+  },
+): string {
+  /**
+   * Lost forms quoted, so a finding cannot be misread as prose.
+   */
+  const quoted = dropped.map(function quote(form,): string {
+    return JSON.stringify(form,);
+  },);
+  return `translate-refused-declared-name (slice ${String(chunkIndex,)}: archive text carries ${
+    quoted.join(', ',)
+  } and the replacement does not; keeping the archive text)`;
+}
+
 //endregion Declared name survival

@@ -115,6 +115,7 @@ function preparationOf(
     targetText,
     slices,
     lineStructuredSliceIndices: new Set(lineStructured,),
+    declaredNames: [],
     alignmentFindings: [],
     alignmentPairCount: slices.length,
     ...(identityContext === undefined) ? {} : { identityContext, },

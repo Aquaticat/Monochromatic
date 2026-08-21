@@ -1,3 +1,4 @@
+import { declaredNameRefusalFinding, } from './declared-name-survival.ts';
 import { quoteLossRefusalFinding, } from './quote-preservation.ts';
 import { alignmentRefusalFinding, } from './translate-alignment.ts';
 import type { TranslateSliceRecord, } from './translate-document-contract.ts';
@@ -50,6 +51,15 @@ export function alignmentRefusals(
           incumbentText: record.outputText,
           shippedText: record.stageResult
             .text,
+        },),];
+      }
+      // A DROPPED DECLARED NAME IS NAMED TOO, and named separately for the same
+      // reason: a run whose refusals are all names is a different run from one
+      // whose refusals are all alignment, and one label would hide that.
+      if (record.disposition === 'refused-declared-name') {
+        return [declaredNameRefusalFinding({
+          chunkIndex: record.chunkIndex,
+          dropped: record.droppedDeclaredNames ?? [],
         },),];
       }
       return [];
