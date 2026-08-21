@@ -1925,3 +1925,82 @@ six judges available at every slice that had one,
 five or six ballots, and zero abstentions anywhere.
 So nothing in this run was decided by a panel that had lost voices,
 which is the confound `#156` would introduce if the runaway guard were letting streams through.
+
+## Run 9 scored: the band pair, and what run-to-run variation actually costs
+
+Run 9 finished on 2026-08-21 with all thirteen slices recorded,
+on the dist frozen for run 8 and the identical replayed slices.
+It is the second draw the run 8 section asked for, and it answers more than the question it was bought for.
+
+### The tie-break lean does not survive
+
+Run 8 broke all three tied slices toward repair.
+Run 9 broke two toward repair and one toward translate:
+
+- `keyword233#0`: repair in both runs.
+- `keyword233#1`: repair in both runs.
+- `Weideriche_#0`: repair in run 8, TRANSLATE in run 9.
+
+Same slice, same build, same inputs, opposite answer.
+Three of three was the coin-flip outcome the run 8 section warned it might be,
+and the second draw is what separates that from a systematic lean.
+IT WAS NOT A LEAN. Nothing here licenses a decline policy that assumes the contest favours repair.
+
+### The contest moved a slice between strata, which the flat rate hides
+
+`Acheron#0` was scored in run 8 as having no standing text and therefore a structural `neither`.
+That reading of it was backwards, and this run shows why.
+`standingText` is what the contest LEAVES STANDING, not an input it was handed.
+Run 8 recorded zero standing characters there because the contest chose `neither`;
+run 9 chose repair on the same slice and left 255 characters standing.
+So the stratum labelled "no standing text to contest" is not a property of the slice at all.
+It is a restatement of the contest having declined, and it cannot be read as a condition the contest faced.
+
+Only `Zha_Ke#0` is genuinely in that stratum in both runs, with zero standing characters and no ballots.
+
+The stratified rate moves accordingly, on a denominator that is itself a run-to-run variable:
+six of seven in run 8, six of eight in run 9.
+THE NUMERATOR DID NOT MOVE AND THE DENOMINATOR DID.
+Reporting either as a percentage invites a comparison the data does not support.
+
+### The larger finding: the consolidation's decisiveness is not reproducible
+
+Run 8 recorded `judged` at every slice that reached the consolidation panel, with zero declines.
+Run 9 recorded `declined-indecision` at three of them:
+`lintong#1`, `Weideriche_#0` and `Weideriche_#1`.
+
+That is zero declines against three, out of thirteen slices, with nothing changed but the draw.
+It carries straight through to what ships:
+
+- Run 8: consolidated at eight slices, standing at three, no gate at two.
+- Run 9: consolidated at six slices, standing at three, no gate at four.
+
+Measurement 1 in this document asks how often the roster backs a consolidation.
+The band pair says that number has a spread of at least two slices in thirteen,
+roughly fifteen percent of the bed, before any change to the pipeline is considered.
+A SINGLE RUN CANNOT RESOLVE ANYTHING SMALLER THAN THAT.
+
+### What this settles for `#130`
+
+The ship decision cannot rest on one thirteen-slice run.
+Both candidate readings of run 8, that the contest leans toward repair
+and that the consolidation is decisive enough to ship at eight of thirteen,
+are inside the band the second run measured.
+
+This does not refute the consolidation stage.
+It bounds what the bed can say at this size:
+differences smaller than about two slices in thirteen are noise here,
+and every rate this document reports on a single run should be read with that spread attached.
+
+Judge participation stayed healthy in run 9, six judges available at every slice that had one,
+five or six ballots, and one abstention.
+So the movement is the panel deciding differently, not a panel that lost voices,
+which is the confound `#156` would introduce.
+
+### What run 9 does not test
+
+Run 9 was launched on the dist frozen for run 8,
+so it carries neither the `#157` decline fix nor the `#159` subdivision fix.
+It measures run-to-run variation on identical inputs and nothing else.
+NO LATER RUN MAY BE POOLED WITH THIS PAIR,
+because a run on the current build differs from both by more than the draw.
