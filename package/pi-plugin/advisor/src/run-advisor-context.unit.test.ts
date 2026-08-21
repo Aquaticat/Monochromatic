@@ -95,6 +95,62 @@ await describe({
   name: runAdvisor.name,
   children: [
     it({
+      name: 'refuses insufficient endpoint capacity before provider dispatch',
+      fn: async function testOutputCapacityBeforeProviderDispatch() {
+        /** Faux provider whose endpoint advertises less than configured requirement. */
+        const providerFixture = fauxProvider({
+          api: 'faux',
+          provider: 'limited-provider',
+          models: [{
+            id: 'limited-reviewer',
+            reasoning: false,
+            maxTokens: advisorConfig.maxAdvisorOutputTokens - 1,
+          },],
+        },);
+        providerFixture.setResponses([
+          fauxAssistantMessage('unexpected advisor answer',),
+        ],);
+        /** Extension context whose only scoped model lacks required output capacity. */
+        const ctx = {
+          cwd: '/repo',
+          scopedModels: [providerFixture.getModel(),],
+          modelRegistry: {
+            async getApiKeyAndHeaders() {
+              return {
+                ok: true,
+                apiKey: 'test-key',
+              };
+            },
+            getProvider() {
+              return providerFixture.provider;
+            },
+          },
+          sessionManager: {
+            buildContextEntries() {
+              return [];
+            },
+          },
+        } as unknown as ExtensionContext;
+        /** Eligibility error returned before provider invocation. */
+        let caught: unknown;
+        try {
+          await runAdvisor({
+            ctx,
+            config: advisorConfig,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          `no scoped models advertise at least ${String(advisorConfig.maxAdvisorOutputTokens,)} output tokens`,
+        );
+        expect(providerFixture.state.callCount,).toBe(0,);
+      },
+    },),
+    it({
       name: 'uses compaction-aware session entries instead of full branch',
       fn: async function testCompactionAwareBoundary() {
         /** Faux provider and selected model. */

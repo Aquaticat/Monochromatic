@@ -334,6 +334,34 @@ await describe({
       },
     },),
     it({
+      name: 'accepts model advertising exactly configured output capacity',
+      fn: async function testDefaultAcceptsExactOutputCapacity() {
+        const exactCapacityModel = modelFixture({
+          provider: 'exact',
+          id: 'reviewer',
+          name: 'Exact Capacity Reviewer',
+          inputCost: CHEAP_INPUT,
+          outputCost: CHEAP_OUTPUT,
+          maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+        },);
+        const exactCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [{
+            model: exactCapacityModel,
+            canonicalSlug: 'exact/reviewer',
+          },],
+        };
+        const result = selectAdvisorModel({
+          scope: exactCapacityScope,
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+        },);
+
+        expect(result.selected.canonicalSlug,).toBe('exact/reviewer',);
+      },
+    },),
+    it({
       name: 'rejects explicit model below configured output capacity',
       fn: async function testExplicitRejectsInsufficientOutputModel() {
         const mixedCapacityScope: EffectiveModelScope = {
