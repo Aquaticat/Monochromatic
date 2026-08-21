@@ -336,3 +336,61 @@ attribution line are better than the Chinese paragraph they render.
 The hard direction, an archive that merged what the Chinese separates, has not
 been looked for and is not in the bed.
 It is recorded here rather than guessed at.
+
+## Measured: neither text is a correct structural authority
+
+Anchoring every stage to the archive was the obvious answer, and it is wrong.
+Measured over every settled artifact on this machine, 68 distinct
+entry-and-slice records (the same passage appears more than once where two runs
+sliced it differently), using the package's own `readSliceSkeleton`:
+
+-   48 records: the archive and the Chinese carry the SAME block sequence, so
+    the shape is not in doubt at all.
+-   11 records: the archive carries MORE blocks, almost always an English
+    rendering splitting one dense Chinese paragraph.
+-   7 records: the archive carries FEWER blocks.
+-   1 record: same count, different kinds.
+-   1 record: unparseable under the strict grammar.
+
+THE SEVEN ARE TWO DIFFERENT PHENOMENA, and that is the finding.
+At `lintong` the archive merges several Chinese paragraphs into a block quote
+and an attribution line, which is a better shape than the Chinese has.
+At `Aniloviraw` slice 0 the archive is missing a whole block quote the Chinese
+carries, and at slice 2 it is missing two trailing elements.
+The first is a reshape to preserve.
+The second is content the archive DROPPED, which is the whole reason this
+pipeline exists.
+
+SO AN ARCHIVE ANCHOR WOULD FORBID THE RESTORATION.
+A rendering that puts back what `Aniloviraw`'s archive lost has one block too
+many, gets called invalid, goes back to its author, and comes back with the
+restoration deleted.
+That is the mirror of the defect the source anchor caused at `lintong` slice 1,
+and it is worse, because a lost block is lost silently while a flattened quote
+is at least visible.
+
+## What the guard should check instead
+
+WHERE THE TWO REFERENCES AGREE, which is 48 of 67 parseable records, the guard
+stays exactly as strict as it is now.
+Both texts say the same thing about the shape and a candidate departing from it
+has no defence.
+
+WHERE THEY DISAGREE, a candidate is valid if it matches EITHER the archive's
+block sequence or the Chinese's.
+The shape is a judgement call there, the pipeline has no authority that settles
+it, and a guard that picks one anyway manufactures findings on 28% of slices
+and sends models back to undo defensible work.
+Matching either still catches the failure the guard was built for, a model
+returning one undifferentiated blob, except where a reference is itself one
+block.
+
+THE PROTECTED ATOMS ARE UNAFFECTED and stay strict against both.
+A footnote marker or a link that appears in neither reference is invented, and
+one that appears in both and not in the candidate is lost, whatever the block
+shape does.
+
+THE CONSOLIDATION BED STAYS VALID UNDER THIS RULE.
+Its first slice is a disagreement record, and what the six producers returned
+matched the archive's sequence, which the proposed rule accepts.
+Nothing measured so far would have to be bought again.
