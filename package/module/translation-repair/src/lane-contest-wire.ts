@@ -339,6 +339,25 @@ export type LaneContestSubject = {
    * What the translate lane would ship.
    */
   readonly translateText: string;
+
+  /**
+   * Names and handles both documents' front matter declares, when either does.
+   *
+   * WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION.
+   * Front matter is document-level while this stage sees one slice, so a name
+   * the source document declares appears, to a judge shown only the slice, in
+   * the archive and in the repair candidate and nowhere in the Chinese. Calling
+   * it unsupported is the correct inference from that evidence and the wrong
+   * answer about the passage. Measured on `Zha_Ke` slice 0, where the source
+   * front matter declares an alias, the archive renders it, the repair lane
+   * keeps it, the translate lane drops it, and the contest chose the lane that
+   * dropped it.
+   *
+   * Every other model-facing stage in this package is already given this:
+   * critics, refiners, translators, translate judges and the rendering audit.
+   * This stage was the only one that was not.
+   */
+  readonly identityContext?: string;
 };
 
 /**
@@ -358,6 +377,10 @@ const POLICY = [
   '',
   'DROPPED: does the candidate omit something the Chinese does say?',
   'A clause, a qualifier, a named object, a speaker aside: all dropped.',
+  '',
+  'DECLARED NAMES ARE ATTESTED FACTS about this person, taken from the documents\' own front matter.',
+  'A candidate carrying one is NOT unsupported, even where the passage itself never spells it out.',
+  'A candidate omitting one HAS dropped something.',
   '',
   'THEN CHOOSE. Prefer the candidate with no unsupported statements. If both are clean, prefer the one that drops nothing.',
   'Answer "neither" when they differ only in wording and neither is more faithful, which is a real verdict rather than a failure to answer.',
@@ -388,8 +411,29 @@ export function buildLaneContestMessages(
       subject.incumbentText,
       subject.repairText,
       subject.translateText,
+      subject.identityContext ?? '',
     ],
   },);
+
+  /**
+   * Declared names as one block, empty when neither side declares any.
+   */
+  const declared = subject.identityContext ?? '';
+
+  /**
+   * Declared names and their fence, or nothing when neither side declares any.
+   *
+   * PLACED BEFORE THE PASSAGES, as in the critic prompt, so the declarations
+   * read as given facts rather than as a footnote to evidence already weighed.
+   */
+  const identityBlock = (declared.length === 0)
+    ? []
+    : [
+      `${fence} DECLARED NAMES ${fence}`,
+      declared,
+      fence,
+      '',
+    ];
   return [
     {
       role: 'system',
@@ -398,6 +442,7 @@ export function buildLaneContestMessages(
     {
       role: 'user',
       content: [
+        ...identityBlock,
         'ORIGINAL (Chinese), the standard:',
         `${fence}\n${subject.sourceText}\n${fence}`,
         '',

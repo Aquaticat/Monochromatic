@@ -19,6 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  buildLaneContestMessages,
   isLaneContestWire,
   readLaneContestBallot,
 } from '../dist/final/node/index.mjs';
@@ -160,6 +161,65 @@ await describe({
           },
         },);
         expect(ballot.unsupported,).toEqual([ 'repair', 'translate', ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: buildLaneContestMessages.name,
+  children: [
+    it({
+      name: 'SHOWS the declared names, so an attested one is not read as an invention',
+      fn: async () => {
+        // THE FAILURE THIS CLOSES. Front matter is document-level and this
+        // stage sees one slice, so a declared name reaches the judge only if
+        // it is put here. Without it the name appears in the archive and in
+        // one candidate and nowhere in the original, and calling it unsupported
+        // is the correct inference from the wrong evidence.
+        const messages = buildLaneContestMessages({
+          subject: {
+            sourceText: '猫睡了。',
+            incumbentText: 'Mittens (Whiskers) slept.',
+            repairText: 'Mittens (Whiskers) slept.',
+            translateText: 'Mittens slept.',
+            identityContext: 'name: 猫猫 / Mittens\nalias: Whiskers',
+          },
+        },);
+        const asked = messages.at(1,)?.content ?? '';
+        expect(asked.includes('Whiskers',),).toBe(true,);
+        expect(asked.includes('DECLARED NAMES',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'OMITS the block entirely when neither document declares a name',
+      fn: async () => {
+        // An empty heading would read as "nothing is declared about this
+        // person", which is a claim, rather than as an absent section.
+        const messages = buildLaneContestMessages({
+          subject: {
+            sourceText: '猫睡了。',
+            incumbentText: 'The cat slept.',
+            repairText: 'The cat slept.',
+            translateText: 'The cat slept soundly.',
+          },
+        },);
+        expect((messages.at(1,)?.content ?? '').includes('DECLARED NAMES',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'TELLS the judge that dropping a declared name is a dropped detail',
+      fn: async () => {
+        const policy = buildLaneContestMessages({
+          subject: {
+            sourceText: '猫睡了。',
+            incumbentText: 'x',
+            repairText: 'y',
+            translateText: 'z',
+          },
+        },).at(0,)?.content ?? '';
+        expect(policy.includes('DECLARED NAMES ARE ATTESTED FACTS',),).toBe(true,);
+        expect(policy.includes('HAS dropped something',),).toBe(true,);
       },
     },),
   ],

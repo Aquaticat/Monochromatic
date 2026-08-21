@@ -29,6 +29,10 @@ export {
   assertSpanContiguity,
   SpanContiguityError,
 } from './span-contiguity.ts';
+export {
+  parseDocument,
+  type RepairDocument,
+} from './parse-document.ts';
 export { groupNodes, } from './group-nodes.ts';
 export {
   AlignedIndexError,
