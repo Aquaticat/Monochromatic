@@ -133,6 +133,65 @@ which was checked case by case against the old predicate.
 A round that settled on a full roster therefore settles identically under the
 fix, and only the one short round was re-run.
 
+## The judge was reasoning correctly from the wrong evidence
+
+THE ONE WRONG-LANE CALL HAD A CAUSE, and it was not the judge.
+
+Twelve rounds of the first calibration matched the reading on eight of the nine
+slices where the reading named a lane, declined none, and named the opposite
+lane exactly once.
+
+Read against the Chinese, that one slice turns on a name.
+The source document's front matter declares an alias.
+The archive renders it, the repair lane keeps it, the translate lane drops it,
+and the contest chose the lane that dropped it.
+
+Front matter is document-level and this stage is shown one slice.
+So the declared name reached the judge nowhere in the original it was handed,
+and appeared only in the archive and in one candidate.
+Calling it unsupported is the correct inference from that evidence.
+It is the wrong answer about the passage.
+
+EVERY OTHER MODEL-FACING STAGE WAS ALREADY GIVEN THIS.
+Critics, refiners, translators, translate judges and the rendering audit all
+receive `identityContext`, built by `collectIdentityLines` from both sides' front
+matter, and have since the fix recorded as `M3 fix A`.
+The lane contest was the only stage that was not, because it was written after
+that fix and nothing connected the two.
+
+The subject now carries it, the prompt renders it before the passages the way
+the critic prompt does, and the policy states what a declared name means:
+carrying one is not unsupported, and omitting one is a dropped detail.
+The control arm receives the same block, because the two arms may differ in the
+question and in nothing else.
+
+WHY THE MEASUREMENT WAS RESTARTED RATHER THAN FINISHED.
+Every round of the first calibration was bought from a judge that could not see
+this, so the score it was heading for describes an instrument that no longer
+exists.
+Sixteen rounds of quota is worth less than a number that means something.
+
+## The roster changed under the measurement too
+
+The provider announced a replacement for one roster model and will retire the
+older one shortly, with no service level agreement, so the retirement can land
+without notice.
+A retired id answers HTTP 404, which is not in the transient retry set, so
+leaving it listed costs one lost voice per stage per call, silently.
+That already happened once, on 2026-08-05, with two other ids.
+
+The replacement is identical on every field the catalog records and on every
+capability the models endpoint reports, checked against the live endpoint rather
+than assumed, and driven through the package's own client before the swap
+landed.
+
+THE PROVIDER'S OWN ALIASES STAY REFUSED, and the reason recorded beside the
+catalog is now the stronger one.
+Double-seating a voting panel was the original reason.
+The serious one is that an alias is a promise a very small operation can move:
+a repointed alias changes which model votes with nothing in this repository
+changing, no build failing, and no log line saying so.
+
 ## What is still owed after this
 
 Wiring the contest into the pass, which changes what an artifact records and so
