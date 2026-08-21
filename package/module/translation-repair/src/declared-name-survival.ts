@@ -341,10 +341,13 @@ export function declaredNameRefusalFinding(
  */
 export type DeclaredNameRefusalReport = {
   /**
-   * Fragment to spread into the settled record, empty when nothing was
-   * refused.
+   * Fragment to spread into the settled record.
+   *
+   * ALWAYS NAMES THE FIELD, empty array when nothing was refused, because the
+   * repair outcome requires it: a reader of a settled slice should never have
+   * to tell "dropped nothing" from "nobody wrote the field".
    */
-  readonly record: { readonly droppedDeclaredNames?: readonly string[]; };
+  readonly record: { readonly droppedDeclaredNames: readonly string[]; };
 
   /**
    * Findings to append, empty when nothing was refused.
@@ -378,7 +381,7 @@ export function declaredNameRefusalReport(
 ): DeclaredNameRefusalReport {
   if (dropped.length === 0) {
     return {
-      record: {},
+      record: { droppedDeclaredNames: [], },
       findings: [],
     };
   }

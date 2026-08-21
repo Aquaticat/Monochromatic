@@ -178,6 +178,8 @@ export async function repairChunk(
     repairRegions: [],
     accuracyPatchSelected: false,
     refined: false,
+    rounds: [],
+    droppedDeclaredNames: [],
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: critic.contradicted,
     nonTranslationStanding: critic.votesStand,
@@ -328,6 +330,7 @@ export async function repairChunk(
     return {
       ...unchangedOutcome,
       issues: deduped.issues,
+      rounds: editor.rounds,
       findings: [
         ...stageFindings,
         ...editor.findings,
@@ -456,6 +459,7 @@ export async function repairChunk(
     introducedDefects,
     accuracyPatchSelected: patchSelected,
     refined: false,
+    rounds: editor.rounds,
     ...refusal.record,
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: critic.contradicted,

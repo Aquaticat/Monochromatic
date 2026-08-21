@@ -81,22 +81,31 @@ await describe({
         + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(28,);
+        expect(SLICE_CACHE_VERSION,).toBe(29,);
 
-        // MOVED TWICE ON 2026-08-20, FOR OPPOSITE REASONS, which is the whole
-        // point of keeping the note. First the fixture roster was renamed when
-        // the provider replaced one model: the INPUT moved and the derivation
-        // did not, so no version moved with it. Real entries on disk carry the
-        // old roster inside their own key and stop matching on their own, while
-        // a bump would additionally discard every entry whose roster never
-        // changed, which is a corpus of work thrown away for nothing.
+        // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
+        // is the whole point of keeping the note.
+        //
+        // First the fixture roster was renamed when the provider replaced one
+        // model: the INPUT moved and the derivation did not, so no version moved
+        // with it. Real entries on disk carry the old roster inside their own
+        // key and stop matching on their own, while a bump would additionally
+        // discard every entry whose roster never changed, which is a corpus of
+        // work thrown away for nothing.
         //
         // Then the declared-name guard reached this lane's acceptance, and that
         // one DID need version 28: the declarations already ride in the run
         // shape, so a slice settled before the guard existed keys identically to
         // one settled after and would resume with its refusal never asked.
+        //
+        // Then version 29, for a change to the RECORD rather than to the
+        // question: the outcome grew `rounds` and an unconditional
+        // `droppedDeclaredNames`. A version-28 record fails the loader's own
+        // shape check and is recomputed regardless, so the bump buys nothing at
+        // runtime; it is here so one version number never names two record
+        // shapes, which is what this file's versioning exists to prevent.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('4b05451571bf034fe6733c36b2403dcab6812e6d787205ffa635fd9ffc5bbbf5',);
+          .toBe('abd8d50302804d0978347ce2ff3ce63e617140be86d727a73559c53ecc5b41f9',);
       },
     },),
     it({

@@ -108,6 +108,8 @@ function catOutcome({ chunkIndex, }: { readonly chunkIndex: number; },) {
     repairRegions: [],
     accuracyPatchSelected: true,
     refined: false,
+    rounds: [],
+    droppedDeclaredNames: [],
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
@@ -463,6 +465,42 @@ await describe({
         );
 
         expect((await openSliceCache({ dir, generation: TEST_GENERATION, },)).resumed.size,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'REFUSES an outcome written before the judged rounds were recorded, '
+        + 'so a slice settled under the older shape is recomputed rather than '
+        + 'resumed with no ballots and no declared-name verdict on it',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         * Entry cache directory holding one outcome of the older shape.
+         */
+        const dir = join(
+          scratch.path,
+          'Mittens',
+        );
+        const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+
+        /**
+         * Complete outcome with exactly the two fields the newer shape added
+         * taken back out, so a refusal here is attributable to them and to
+         * nothing else about the record.
+         */
+        const {
+          rounds,
+          droppedDeclaredNames,
+          ...older
+        } = catOutcome({ chunkIndex: 0, },);
+        expect(rounds,).toEqual([],);
+        expect(droppedDeclaredNames,).toEqual([],);
+        await cache.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(older,),
+        },);
+
+        expect((await openSliceCache({ dir, generation: TEST_GENERATION, },)).resumed.size,).toBe(0,);
       },
     },),
   ],

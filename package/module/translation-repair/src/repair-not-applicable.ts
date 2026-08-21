@@ -74,6 +74,8 @@ export function notApplicableRepair(
     repairRegions: [],
     accuracyPatchSelected: false,
     refined: false,
+    rounds: [],
+    droppedDeclaredNames: [],
     nonTranslationVotes: 0,
     // NOT a non-translation verdict. An untranslated passage is exactly what
     // that block is meant to catch, and counting anchors toward it would block

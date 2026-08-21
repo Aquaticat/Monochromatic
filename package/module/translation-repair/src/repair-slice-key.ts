@@ -251,8 +251,21 @@ import type { RepairModels, } from './repair-contract.ts';
  * slice settled before the guard existed keys identically to one settled after
  * and would resume with its refusal never asked. The guard is the reason to
  * spend the corpus, and a guard any cache hit can walk past is not a guard.
+ *
+ * VERSION 29, the same day, for the opposite kind of change: the record grew
+ * rather than the question changing. `ChunkRepairOutcome` now carries `rounds`,
+ * every judged round with its ballots, and `droppedDeclaredNames` unconditionally
+ * rather than only on a refusal.
+ *
+ * A version-28 record is recomputed either way, because `isChunkRepairOutcome`
+ * now requires both arrays and a record written without them fails the check.
+ * The bump is here so the NUMBER stays honest: one version naming two record
+ * shapes is exactly what this file's versioning exists to prevent, and reading
+ * the structural check as a substitute would leave a reader of the history
+ * unable to tell when the shape moved. It costs nothing beyond version 28,
+ * which no run had resumed under.
  */
-export const SLICE_CACHE_VERSION = 28;
+export const SLICE_CACHE_VERSION = 29;
 /**
  * Everything about a repair run that changes what the models are ASKED, folded
  * into every cache key.

@@ -82,6 +82,9 @@ export function blockedRepairResult(
       blocked: true,
     },),
     chunkCritics: buildChunkCriticRecords({ outcomes, },),
+    // Only the slices decided before the crossing; `sliceCount` is what they
+    // are out of, and the gap is the point rather than a defect.
+    chunks: outcomes,
     // Nothing shipped and nothing was taken back at assembly: this exit never
     // reaches assembly. A blocked run returns its input, so no slice carries a
     // repair, and the withdrawal that says so belongs to the issue records

@@ -137,6 +137,8 @@ function catOutcome(
     repairRegions,
     accuracyPatchSelected,
     refined,
+    rounds: [],
+    droppedDeclaredNames: [],
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,

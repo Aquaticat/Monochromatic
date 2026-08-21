@@ -25,6 +25,11 @@ import {
   resolveRefineRewrites,
 } from './refine-wire.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
+import {
+  CHUNK_SCOPE_ENVELOPE,
+  describeJudgedRound,
+  type RepairJudgedRound,
+} from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -56,6 +61,17 @@ export type RefineStageResult = {
    * Whether a refinement actually won.
    */
   readonly changed: boolean;
+
+  /**
+   * Ballots of this slice's refinement round, empty when it never reached the
+   * judges.
+   *
+   * Recorded on EVERY exit after the round, decline included, because a
+   * refinement that lost still says what the panel thought of the repaired
+   * text, and this lane is the one that re-decides text an accuracy verdict
+   * already accepted.
+   */
+  readonly rounds: readonly RepairJudgedRound[];
 
   /**
    * Models whose rewrites the shipped text carries, empty when unchanged;
@@ -157,6 +173,7 @@ export async function runRefineStage(
     refinedText: repairedText,
     changed: false,
     contributors: [],
+    rounds: [],
     findings: [`refine-skipped (${String(envelopes.length,)} eligible paragraphs)`,],
   };
   if (envelopes.length === 0)
@@ -327,6 +344,18 @@ export async function runRefineStage(
     perCallTimeoutMs,
     l,
   },);
+  /**
+   * This round's ballots, recorded before any branch so a decline and a
+   * refusal keep the reasoning that produced them exactly as a win does.
+   */
+  const rounds = [
+    describeJudgedRound({
+      stage: 'refine',
+      envelopeId: CHUNK_SCOPE_ENVELOPE,
+      candidates,
+      outcome,
+    },),
+  ];
   if (outcome.kind === 'declined') {
     // BOTH dispositions fall back, unlike the editor stage. There, judges
     // failing to rank repairs still leaves repairs the panel ruled necessary,
@@ -336,6 +365,7 @@ export async function runRefineStage(
     rl.info(`${outcome.reason}; keeping the repaired text`,);
     return {
       ...unchanged,
+      rounds,
       findings: [
         ...stageFindings,
         ...outcome.findings,
@@ -379,6 +409,7 @@ export async function runRefineStage(
     rl.warn(`${refusal}; keeping the repaired text`,);
     return {
       ...unchanged,
+      rounds,
       findings: [
         ...stageFindings,
         ...outcome.findings,
@@ -391,6 +422,7 @@ export async function runRefineStage(
     refinedText: outcome.value,
     changed: true,
     contributors,
+    rounds,
     findings: [
       ...stageFindings,
       ...outcome.findings,

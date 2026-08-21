@@ -214,6 +214,9 @@ export function assembleRepair(
 
   return {
     chunkCritics: buildChunkCriticRecords({ outcomes, },),
+    // The WRAPPED outcomes, so the rounds sit beside the wording that shipped
+    // rather than beside a pre-wrap rendering of it.
+    chunks: outcomes,
     repairedText: guarded.assembledText,
     sliceCount: slices.length,
     status: anyChanged ? 'repaired' : 'unchanged',

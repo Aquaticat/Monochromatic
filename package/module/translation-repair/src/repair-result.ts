@@ -1,5 +1,6 @@
 import type { ChunkCriticRecord, } from './critic-attribution.ts';
 import type { LaneSliceText, } from './lane-slice-text.ts';
+import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { RepairIssueRecord, } from './repair-record.ts';
 
 //region Repair result
@@ -102,6 +103,27 @@ export type RepairTranslationResult = {
    * is that fact, and repeating it per slice would let the two disagree.
    */
   readonly sliceTexts: readonly LaneSliceText[];
+
+  /**
+   * Every slice this run settled, with the judged rounds that decided each.
+   *
+   * THE REPAIR LANE'S COUNTERPART TO `TranslateDocumentResult.slices`, added
+   * because it had none: the outcome went into the slice cache and no further,
+   * so a settled artifact carried this lane's repaired text with no record of
+   * which panel chose it or why. That is the whole reason the declared-name
+   * defect had to be found with a live probe.
+   *
+   * COVERAGE. One entry per slice the run reached, in slice order. An ordinary
+   * run reaches every prepared slice, so the count equals `sliceCount`. A run
+   * blocked for non-translation stops at the crossing and carries only the
+   * slices decided before it, which is why the two numbers are reported
+   * separately rather than one being derived from the other.
+   *
+   * Withdrawn slices stay here. What assembly took back is `withdrawnChunkIndices`;
+   * this side says what the lane decided, and a withdrawal is only readable
+   * against the decision it withdrew.
+   */
+  readonly chunks: readonly ChunkRepairOutcome[];
 };
 
 //endregion Repair result

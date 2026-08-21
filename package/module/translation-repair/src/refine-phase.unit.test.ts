@@ -125,6 +125,8 @@ function settledOutcome(
     repairRegions: [],
     accuracyPatchSelected: false,
     refined: false,
+    rounds: [],
+    droppedDeclaredNames: [],
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,

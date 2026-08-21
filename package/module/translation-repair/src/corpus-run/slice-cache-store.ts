@@ -54,6 +54,8 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
     && ((typeof value.refined) === 'boolean')
     && Array.isArray(value.claimAttributions,)
     && Array.isArray(value.heardCriticIds,)
+    && Array.isArray(value.rounds,)
+    && Array.isArray(value.droppedDeclaredNames,)
     && Array.isArray(value.findings,);
 }
 

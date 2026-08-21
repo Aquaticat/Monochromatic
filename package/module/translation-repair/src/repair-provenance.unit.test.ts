@@ -166,6 +166,8 @@ function settledOutcome(
     },),
     accuracyPatchSelected,
     refined: false,
+    rounds: [],
+    droppedDeclaredNames: [],
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,

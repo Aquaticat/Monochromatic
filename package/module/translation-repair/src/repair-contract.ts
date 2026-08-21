@@ -7,6 +7,7 @@ import {
 import type { ClaimAttribution, } from './critic-attribution.ts';
 import type { IntroducedDefectReport, } from './introduced-defect-probe.ts';
 import type { RepairRegion, } from './repair-region.ts';
+import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Repair contract
@@ -534,14 +535,32 @@ export type ChunkRepairOutcome = {
   readonly refined: boolean;
 
   /**
-   * Declared names a winning patch would have dropped, present only on a slice
-   * refused for that reason.
+   * Every judged round this slice went through, editor and refinement alike,
+   * with the ballots that decided each one.
    *
-   * ABSENT RATHER THAN EMPTY on every other slice, so a settled artifact written
-   * before this guard existed still reads, and so a reader can tell a slice that
-   * was never asked from one that was asked and dropped nothing.
+   * ONE ARRAY RATHER THAN ONE FIELD PER STAGE, because the interesting question
+   * is asked across stages: which panel preferred which wording, and the stage
+   * is recorded on the round itself. Rounds appear in the order they ran, so a
+   * refinement that undid an accuracy repair reads as the later entry.
+   *
+   * Empty on a slice nothing judged, which is an ordinary outcome: an envelope
+   * only one editor proposed for is adopted without a vote, and a chunk every
+   * editor agreed on ships unjudged.
    */
-  readonly droppedDeclaredNames?: readonly string[];
+  readonly rounds: readonly RepairJudgedRound[];
+
+  /**
+   * Declared names a winning patch would have dropped, empty on every slice
+   * that dropped none.
+   *
+   * Required rather than optional, unlike its translate-lane counterpart on
+   * `TranslateSliceRecord`. That one is optional because settled artifacts
+   * written before the guard existed carry the record and have to keep reading.
+   * No artifact ever carried a repair outcome, so there is no older shape to
+   * stay compatible with, and an always-present field means a reader never has
+   * to tell "dropped nothing" from "field not written".
+   */
+  readonly droppedDeclaredNames: readonly string[];
 
   /**
    * Shadow-mode audit of damage the NATURALNESS REWRITE caused, present only on

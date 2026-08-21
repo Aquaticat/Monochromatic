@@ -238,9 +238,27 @@ export async function runRefinePhase(
         ...slice.findings,
         ...refined.findings,
       );
+
+    /**
+     * This slice with the refinement round appended to what the editor stage
+     * already recorded.
+     *
+     * BUILT BEFORE THE EXITS BELOW, because a refinement that lost is exactly
+     * the round worth reading: it says the panel looked at the repaired text
+     * and either could not agree or preferred a rewrite the guards then
+     * refused. Pushing the bare outcome on those paths would keep the ballots
+     * only when they agreed with the result.
+     */
+    const withRefineRounds: ChunkRepairOutcome = {
+      ...outcome,
+      rounds: [
+        ...outcome.rounds,
+        ...refined.rounds,
+      ],
+    };
     if (!refined.changed) {
       collected.outcomes
-        .push(outcome,);
+        .push(withRefineRounds,);
       continue;
     }
 
@@ -262,7 +280,7 @@ export async function runRefinePhase(
       .push(...retained.findings,);
     if (!retained.retained) {
       collected.outcomes
-        .push(outcome,);
+        .push(withRefineRounds,);
       continue;
     }
     /**
@@ -321,7 +339,7 @@ export async function runRefinePhase(
     const changed = refined.refinedText !== incumbentText;
     collected.outcomes
       .push({
-        ...outcome,
+        ...withRefineRounds,
         repairedText: refined.refinedText,
         changed,
         // Dropped when the refinement landed back on the archive wording, by

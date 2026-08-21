@@ -759,6 +759,11 @@ await describe({
             findings: [],
             chunkCritics: [],
 
+            // No slice outcome, because this stub never runs one: it rewrites
+            // the document whole. An empty list here says the same thing the
+            // sliceCount below does, from the other side.
+            chunks: [],
+
             // One slice, since this stub does not slice at all: the count is
             // what every index set below is out of, and a benchmark reading a
             // rate needs the denominator as much as the numerator.

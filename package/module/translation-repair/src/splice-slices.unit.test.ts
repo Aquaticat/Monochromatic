@@ -245,6 +245,8 @@ function outcomeFor(
   readonly repairRegions: readonly never[];
   readonly accuracyPatchSelected: boolean;
   readonly refined: boolean;
+  readonly rounds: readonly never[];
+  readonly droppedDeclaredNames: readonly never[];
   readonly nonTranslationVotes: number;
   readonly nonTranslationContradicted: boolean;
   readonly nonTranslationStanding: boolean;
@@ -266,6 +268,8 @@ function outcomeFor(
     // nothing here can look like a repair that happened.
     accuracyPatchSelected: false,
     refined: false,
+    rounds: [],
+    droppedDeclaredNames: [],
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,

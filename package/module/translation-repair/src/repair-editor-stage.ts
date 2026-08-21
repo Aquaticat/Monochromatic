@@ -22,6 +22,7 @@ import {
 } from './editor-ensemble.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { assertJudgeableEditorRoster, } from './repair-contract.ts';
+import type { RepairJudgedRound, } from './repair-round-record.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -56,6 +57,12 @@ export type EditorStageResult = {
    * Editors whose reply arrived and validated.
    */
   readonly heardEditors: number;
+
+  /**
+   * Judged rounds from both selection passes, per-envelope first and the
+   * whole-chunk round last, in the order they ran.
+   */
+  readonly rounds: readonly RepairJudgedRound[];
 
   /**
    * Wire irregularities and selection telemetry in scorecard-stable wording.
@@ -230,6 +237,7 @@ export async function runEditorStage(
       patch: unchanged,
       heardEditors: gather.voices
         .length,
+      rounds: [],
       findings: stageFindings,
     };
   }
@@ -302,6 +310,10 @@ export async function runEditorStage(
     patch,
     heardEditors: gather.voices
       .length,
+    rounds: [
+      ...perEnvelope.rounds,
+      ...chunkSelection.rounds,
+    ],
     findings: [
       ...stageFindings,
       // Judge fan-out losses from both selection passes. These were built and
