@@ -818,3 +818,91 @@ A repetitive ANSWER now reports `overrun` where it would once have reported
 `degenerate`, because the bound reaches it first. The same call is ended either
 way and far sooner. Any census that groups by outcome across this change is
 counting two different partitions of the same population.
+
+## Correction: 10,000 was set on an unrepresentative population, and shipped at 32,000
+
+The bound recorded above was measured on completions drawn from the consolidation bed.
+That bed replays the reading, pairing and critic lanes from cache,
+so none of their calls were in the sample.
+Reading a picture is the one role here that legitimately emits at length,
+and it was the one role the measurement could not see.
+
+The `census2.mjs` instrument named earlier reads one log at a time.
+`pool-real.mjs` pools every log that records the two channels separately,
+and keeps only labels carrying a vendor path,
+so the cat-themed fixture `hf:whiskers` and its 381,890-character test streams stay out.
+
+### What the fuller population says
+
+1,887 real provider completions, from 64 logs.
+
+Seven of them exceed 10,000 content characters.
+Every one is a reading-lane transcription,
+and the largest is 11,392.
+The bound as shipped would have ended all seven mid-answer.
+
+At 32,000 none of the 1,887 is ended.
+The margin over the largest legitimate answer is better than two and a half times,
+and a runaway is still reached about four times sooner than the repetition detectors manage,
+since those need 131,072 characters before a cycle becomes visible to them.
+
+`overrun` appears in no recorded run.
+The bound has never fired in anger,
+so the old value cost no voice before it was corrected.
+
+### The two large cuts are runaways, not long legitimate answers
+
+A cut is transient and gets retried;
+an overrun is permanent and ends the voice.
+Raising the bound past a legitimate long answer is therefore the expensive mistake,
+and two real cuts sit between 32,000 and 131,072 where the new bound would relabel them.
+Both were checked rather than assumed.
+
+`hf:zai-org/GLM-4.7-Flash` was cut at 113,346 content characters in `reading-verify3.log`,
+having pulled 9,699,969 raw characters off the wire.
+The five largest completed calls in that same log carry 3,054, 2,831, 2,737, 2,704 and 2,683.
+That call is 37 times the largest healthy answer in its own population,
+and it is the same model as both recorded degenerate calls.
+
+`hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` was cut at 59,869 in `sens-audit.log`,
+having pulled 11,366,983 raw characters.
+Its peers answering the same question in the same minute emitted 493, 466, 55 and 52.
+
+Neither is legitimate long output.
+Reaching both earlier is a gain, and it is the larger part of what this bound buys.
+
+### The refused reasoning bound, restated on the same population
+
+The refutation recorded earlier stands and gets stronger.
+Across the 1,887 real completions,
+a silent-reasoning bound at 40,000 would have ended 24 of them,
+and even 60,000 would have ended 5.
+Nothing under 70,000 is clean.
+The largest legitimate completion carried 64,501 reasoning characters and then answered normally.
+
+### What the critic and pairing numbers actually are
+
+The earlier discharge of the first condition compared per-field maxima against a per-stream bound.
+Those are different units.
+One critic call carries a whole claims list, not one quoted span.
+
+Reconstructing per critic per slice from `claimAttributions` and the claims they name,
+839 claims link across the settled artifacts with none unlinked,
+giving 361 payloads whose largest is 6,236 characters.
+
+THIS IS A LOWER BOUND AND NOT A MEASUREMENT OF THE STREAM.
+It counts only claims that survived the accept gate,
+so a critic's real emission adds whatever the gate rejected plus the JSON envelope around it.
+At 32,000 even the largest reconstructed payload leaves more than five times its own size in headroom,
+which is why the default is left to cover this role rather than raised again for it.
+
+### The cap parameter stays unthreaded on purpose
+
+`watchRunaway` takes a content bound so a role that knows it emits more can raise it.
+Nothing in the pipeline passes one.
+`drainBody` neither accepts nor forwards it,
+so threading it is an API change through that function and every caller,
+not a parameter tweak.
+The measurement says one bound clears every role by better than twice,
+so the parameter stays reachable from tests and the call site says so in a comment.
+A reviewer who finds it dangling should read this section before wiring it up.
