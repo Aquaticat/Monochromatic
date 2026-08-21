@@ -1765,15 +1765,22 @@ A shift from 7 to 10 out of 13 is well inside the spread two draws of that size 
 and nothing here has measured that spread.
 Run 8 does NOT bound it either, and saying so here corrects a line this document briefly carried.
 A run-to-run band has to be measured on ONE UNCHANGED BUILD.
-Run 8 carries two changes run 7 did not:
-the `#154` container widening, which re-slices `Zha_Ke` and changes its standing text structurally,
-and the `#158` scanner fix, which is not telemetry-only.
+Run 8 carries ONE change run 7 did not:
+the `#158` scanner fix, which is not telemetry-only.
 Arming the degeneration detector on 47 percent of traffic that was previously invisible to it
 can change outcomes on its own,
 because a call whose thinking repeats past 131072 characters is now cut where run 7 let it complete.
-So run 8 against run 7 carries exactly the confound run 7 against run 6 carried.
+So run 8 against run 7 still carries a confound, though a narrower one than run 7 against run 6.
 
-The first pair that can measure the band is run 9 against run 8, on the identical build, with nothing touched between them.
+The bed's slices are NOT the second change, and a line this document carried saying otherwise was wrong.
+The bed does not slice anything.
+It replays static artifacts under `~/temp/agent/readable-20260820` and `~/temp/agent/pairfix-20260820`,
+every one of them written on 2026-08-20 between 17:34 and 19:29.
+The `#154` widening landed at 2026-08-21 14:50:40, about twenty hours later.
+Run 8 therefore replays PRE-WIDENING slices, exactly as run 7 did.
+
+That static input is what makes run 9 against run 8 a clean pair:
+identical build, identical slices, nothing touched between them.
 Until that exists the honest reading is that the gate reached more slices in run 7 and the reason is unmeasured.
 
 ### `Zha_Ke#1` shipped a 96 percent deletion, and every judge backed it
@@ -1816,17 +1823,31 @@ so the container's tags belonged to no node and the slice text carried a letter 
 A candidate faithfully reproducing that text reproduces the imbalance, and unbalanced MDX does not parse.
 A candidate that rewrites it into a short clean note parses fine.
 
-### What run 8 tests, and what it cannot fix
+### What run 8 does NOT test
 
-Run 8 is the first run whose slices are cut after the widening,
-so it is the live test of the residual expectation this document already recorded as unobserved.
-If the widening holds, the faithful candidates at `Zha_Ke#1` parse,
-the structural check stops selecting for deletion,
-and the deleting candidate has to win on its merits rather than by being the last one standing.
+An earlier version of this section said run 8 was the first run whose slices are cut after the widening,
+so it would be the live test of the residual expectation recorded here as unobserved.
+That was wrong, and the timestamps settle it:
+the bed replays artifacts written 2026-08-20, and the widening landed 2026-08-21 14:50:40.
+Run 8 never exercises the widening.
 
-The widening does not fix the pairing.
-Forty-one characters of source against a 3673-character letter is a slice no judge should be shown at all,
-whatever parses.
+The consequence for scoring matters more than the correction.
+At `Zha_Ke#1`, a still-failing faithful candidate is NOT evidence the widening failed,
+and a passing one is NOT evidence it worked.
+The path was not walked.
+Testing the widening needs slices cut from the current build, which the bed as written never does.
+
+`Zha_Ke#1` should also come OUT of run 8's accuracy count for the band comparison.
+Its `expect: 'repair'` label was set by a reading that did not know
+93 percent of the slice's standing text was material the pairing had already declined to pair.
+A malformed slice scoring as a clean accuracy point in a thirteen-item bed
+moves the number this document is trying to bound.
+Score it, record it, and exclude it from the comparison with a note.
+
+The widening does not fix the pairing, and neither does anything else here.
+Forty-one characters of source against a 2909-character letter the roster explicitly refused to pair
+is a slice no judge should be shown at all, whatever parses.
 That is `#157`, and this is the strongest evidence for it in the corpus so far:
-not a pairing that produced a confidently wrong answer in the abstract,
-but one that came within a single unanimous ballot of deleting a letter someone wrote about a person who died.
+not a pairing that produced a confidently wrong answer,
+but a CORRECT pairing whose refusal the slicer discarded,
+coming within a single unanimous ballot of deleting a letter someone wrote about a person who died.
