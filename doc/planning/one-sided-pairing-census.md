@@ -327,6 +327,42 @@ and the harm of not applying it is a slice staying exactly as wide as it is toda
 
 TARGET SIDE ONLY, as stated already.
 
+## Two pairing shapes the first implementation read wrong
+
+Commits `b98bb7b7e` and `9a9bd9836`.
+Both were found by reading `pair-blocks-steps.ts` for the emission order
+rather than by reasoning about the pairing schema in the abstract.
+
+A MERGE IS NOT AN UNPLACED ORIGINAL.
+Two originals rendered as one translation block reach the steps
+as a `paired` step followed by a `source-only` step carrying `continuesPairing`,
+and the second original IS placed, against a block the first one already claimed.
+The completeness gate read any `source-only` step as an unplaced original,
+so one merge anywhere in a chunk switched the decline off for that whole chunk.
+The gate now tests `continuesPairing` as well,
+which is the same distinction the grouper already draws one file away.
+
+A SPLIT CAN STRADDLE AN UNCLAIMED BLOCK.
+Pairing one original against translation blocks 1 and 3
+leaves block 2 claimed by nobody and yet sitting inside a rendering.
+`blockPairingToSteps` emits it there, between the two halves,
+because `emitUnclaimedTargetsBefore` runs before each further rendering.
+Declining it would ask grouping to close a run in the middle of a rendering,
+and the span would then either stretch back over the declined bytes
+or cut the original away from half its own translation,
+which is the shape `span-contiguity.ts` refuses.
+That is a throw at preparation, on a live corpus entry, not a silent loss.
+`declinedTargetBlocks` now reads the steps backwards
+and refuses to decline any block a further rendering follows
+with no new pairing opened in between.
+Inside a rendering, staying in the slice is the lesser cost.
+
+NEITHER SHAPE IS `Zha_Ke`'S.
+Its recorded pairing is `0->0, 1->1, 2->4, 3->5`,
+read straight out of the cache file the run used,
+so every original is placed once and no original is rendered twice.
+The two rules leave its declines exactly as they were.
+
 ## The check still owed
 
 Build, `lint:types`, `test:unit`, and GFP on the new guard.
