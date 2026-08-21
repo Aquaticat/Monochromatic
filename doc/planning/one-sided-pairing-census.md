@@ -97,3 +97,84 @@ The consolidation bed currently runs 13 slices drawn from entries in the band.
 and neither has ever been run.
 Adding one of them is the cheapest way to find out whether the ZH-heavy direction
 fails the same way the EN-heavy one did.
+
+## The pairing was not wrong, and `#157`'s stated cause is refuted
+
+Measured 2026-08-21, after the census, from the pairing cache
+`~/temp/agent/readable-20260820-pairings/Zha_Ke/pairing.efaf7d6f...json`
+and the prepared artifact `~/temp/agent/readable-20260820/artifacts/Zha_Ke.json`.
+Zero provider calls.
+
+`#157` recorded that block pairing declines and then falls through to
+`groupNodesAligned`'s monotone scorer, which never declines,
+so an explicit refusal becomes a confident guess.
+That is not what happened here.
+
+The roster's recorded pairing for `Zha_Ke` is four correspondences:
+
+```text
+source 0 -> target 0     source 1 -> target 1
+source 2 -> target 4     source 3 -> target 5
+```
+
+The Chinese page has four blocks and the English six.
+Targets 2 and 3 appear nowhere.
+The roster paired every source block and DECLINED TO PAIR the two English blocks
+that carry content the Chinese does not have,
+which is exactly the behaviour `#71` asked for.
+
+Block sizes, dense characters, from the current parser:
+
+```text
+zh[0]  43  ->  en[0]   89   ratio 2.1
+zh[1]  41  ->  en[1]  180   ratio 4.4
+zh[2]  53  ->  en[4]   53   ratio 1.0
+zh[3] 114  ->  en[5]  242   ratio 2.1
+unpaired:      en[2]   34
+unpaired:      en[3] 2909   (blockquote, the letter)
+```
+
+Every paired ratio sits in or near the corpus band.
+The pairing stage produced a good answer.
+
+## The slicer swept the declined blocks back in
+
+The prepared artifact holds four delivery rows, one per SOURCE block,
+and three of them carry exactly the English block the pairing named:
+
+```text
+chunk 0  source raw   43  incumbent raw  110  = en[0] exactly
+chunk 1  source raw   41  incumbent raw 3875  = en[1] + en[2] + en[3]
+chunk 2  source raw   56  incumbent raw   56  = en[4] exactly
+chunk 3  source raw  116  incumbent raw  282  = en[5] exactly
+```
+
+Chunk 1 is the exception, and it is the exception by 3664 characters.
+Normalized, its standing text is 3044 characters
+against 180 for the block the pairing actually named,
+so 93 percent of what the judges were shown at `Zha_Ke#1`
+is the two blocks the roster had already declined to pair.
+
+The raw ratio is 3875 over 41, which is the 94.5 the bed reported.
+The dense ratio is 75.9.
+Either way it is an order of magnitude outside the band every other slice sits in.
+
+## What this changes
+
+The fix `#157` proposed, making a declined pairing produce silence instead of a guess,
+would not have prevented this, because the pairing already produced silence.
+The defect is downstream:
+slicing assigns every target block to some slice
+whether or not the pairing named it,
+so a block the roster deliberately left out reaches a judge anyway,
+attached to whichever slice happens to be adjacent.
+
+That is `#90`'s subject, "slicing sizes source runs by the incumbent,
+and does not slice one-sided sections at all",
+observed doing damage for the first time.
+
+Nothing in the settled artifact records any of this.
+`alignmentFindings` is empty,
+and the only place the declined pairing survives is a cache file beside the run.
+That is `#135`, and it is what made this take a pairing cache and a parser to reconstruct
+rather than a single read of the artifact.
