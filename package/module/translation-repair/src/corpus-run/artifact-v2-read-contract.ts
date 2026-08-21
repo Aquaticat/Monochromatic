@@ -1,6 +1,7 @@
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import type { ArtifactJsonValue, } from './artifact-v2-contract.ts';
+import type { ParsedBlockPairingV2, } from './artifact-v2-read-pairing.ts';
 import type {
   ArtifactComparisonRowV2,
   ArtifactDeliveryRowV2,
@@ -285,6 +286,12 @@ export type ParsedPreparationV2 = {
    * What alignment observed about the two documents' structure.
    */
   readonly alignmentFindings: readonly string[];
+
+  /**
+   * Pairing this slicing was built on, or a statement that the file records
+   * none.
+   */
+  readonly blockPairing: ParsedBlockPairingV2;
 };
 
 /**

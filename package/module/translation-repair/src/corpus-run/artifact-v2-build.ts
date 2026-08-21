@@ -235,6 +235,18 @@ export function buildSettledArtifactV2(
       // `assertFindingsDescribePreparation` above exists to stop: with the two
       // checked equal, this reads from the side the field is filed under.
       alignmentFindings: [...prepared.alignmentFindings,],
+
+      // THE PAIRING THE SLICING WAS BUILT ON, taken off the preparation for the
+      // same reason the findings are: preparation echoes back the map it
+      // consumed, so this records the decision itself rather than a second copy
+      // that could describe a different run.
+      //
+      // OMITTED RATHER THAN EMPTIED when no roster was asked. An empty list is
+      // the answer "asked, agreed nothing", and writing it where nobody was
+      // asked would put a claim in the file that nobody made.
+      ...((prepared.blockPairing === undefined)
+        ? {}
+        : { blockPairing: [...prepared.blockPairing,], }),
     },
     lanes: {
       repair: {

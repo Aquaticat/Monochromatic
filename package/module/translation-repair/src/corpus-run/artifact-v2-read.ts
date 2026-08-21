@@ -22,6 +22,7 @@ import type {
   ParsedPreparationV2,
 } from './artifact-v2-read-contract.ts';
 import { parseLanesV2, } from './artifact-v2-read-lanes.ts';
+import { parseBlockPairingV2, } from './artifact-v2-read-pairing.ts';
 import { parseComparisonRowV2, } from './artifact-v2-read-rows.ts';
 import {
   assertPipelineDigest,
@@ -178,8 +179,18 @@ function parsePreparationV2(
       'sourceBytes',
       'alignmentPairCount',
       'alignmentFindings',
+      'blockPairing',
     ],
     path,
+  },);
+
+  /**
+   * Aligned sections this preparation reports, read before the rest because the
+   * pairing's section indices are bounded by it.
+   */
+  const alignmentPairCount = requireCount({
+    value: record.alignmentPairCount,
+    path: `${path}.alignmentPairCount`,
   },);
   return {
     identity: requireIdentity({
@@ -217,9 +228,17 @@ function parsePreparationV2(
       value: record.sourceBytes,
       path: `${path}.sourceBytes`,
     },),
-    alignmentPairCount: requireCount({
-      value: record.alignmentPairCount,
-      path: `${path}.alignmentPairCount`,
+    alignmentPairCount,
+
+    // ABSENT AND EMPTY ARE DIFFERENT ANSWERS here for the second time in this
+    // record, and for a second reason. A file written before the field carries
+    // no pairing; an entry whose roster was asked about every section and
+    // committed to nothing carries the empty list. Reading absence as `[]`
+    // would turn "nobody was asked" into "asked and agreed nothing".
+    blockPairing: parseBlockPairingV2({
+      value: record.blockPairing,
+      alignmentPairCount,
+      path: `${path}.blockPairing`,
     },),
     alignmentFindings: requireArray({
       value: record.alignmentFindings,
