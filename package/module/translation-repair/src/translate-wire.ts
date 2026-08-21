@@ -77,9 +77,24 @@ const TRANSLATE_REPLY_RULE =
  * SHARED WITH THE CONSOLIDATE WIRE, whose producer is a translator too. A
  * second wording of the same rule would drift from the one `Toka_ls` was
  * measured against.
+ *
+ * SAYS OUTRIGHT THAT IT OUTRANKS THE SHAPE RULE, because the two disagree on
+ * exactly the case this exists for. `TRANSLATE_RULES` tells a producer to keep
+ * the existing translation's shape where it merges blocks the ORIGINAL keeps
+ * apart, and on `Toka_ls` that means keeping 18 blocks where the Chinese has
+ * 21. Both rules arrive in one system prompt and neither used to defer, so a
+ * producer met a contradiction and resolved it however it liked.
+ *
+ * THE GUARD DOES NOT DECIDE THIS. `validateTranslatedSlice` is a kind-sequence
+ * floor: a candidate carrying MORE blocks than the page passes, and only a
+ * candidate missing one fails. Measured, with the archived two-block finding as
+ * a positive control. So precedence had to be stated in the sheet; nothing
+ * downstream would have caught the wrong choice.
  */
 export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-structured: each '
-  + 'original line is a unit. Produce one output line per original line, in the '
+  + 'original line is a unit. THIS RULE OUTRANKS THE STANDING RULE ASKING YOU TO '
+  + 'KEEP THE EXISTING TRANSLATION\'S SHAPE, which governs prose and not verse. '
+  + 'Produce one output line per original line, in the '
   + 'same order. Never merge two original '
   + 'lines into one output line, never split one across two, and never invent or '
   + 'drop a line. Where the EXISTING TRANSLATION has merged lines, unmerge them.';

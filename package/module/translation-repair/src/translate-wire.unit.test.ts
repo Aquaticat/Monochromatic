@@ -46,6 +46,24 @@ const system = buildTranslateMessages({
   },)
   .join('\n',);
 
+/**
+ * Same sheet for a chunk whose ORIGINAL is verse, where a second shape rule
+ * arrives and points the other way.
+ */
+const verseSystem = buildTranslateMessages({
+  sourceText: SOURCE_TEXT,
+  existingText: EXISTING_TEXT,
+  lineStructured: true,
+},)
+  .messages
+  .filter(function isSystem(message,): boolean {
+    return message.role === 'system';
+  },)
+  .map(function toContent(message,): string {
+    return message.content;
+  },)
+  .join('\n',);
+
 await describe({
   name: 'translate wire shape rule',
   children: [
@@ -73,6 +91,22 @@ await describe({
         // its whole judged decision.
         expect(system.includes('THE DECLARED SPELLING WINS',),).toBe(true,);
         expect(system.includes('Never invent a third spelling',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'RANKS the verse rule above the keep-the-page rule, and only on verse',
+      fn: async () => {
+        // Both rules reach one prompt on a line-structured chunk and they point
+        // opposite ways: on `Toka_ls` the Chinese runs 21 blocks against the
+        // rendering's 18, so one says keep 18 and the other says restore 21.
+        // The guard cannot settle it either way, being a kind-sequence floor
+        // that passes a candidate carrying MORE blocks than the page, so the
+        // sheet has to say which wins.
+        expect(verseSystem.includes('THIS RULE OUTRANKS THE STANDING RULE',),).toBe(true,);
+        expect(verseSystem.includes('unmerge them',),).toBe(true,);
+        // Prose keeps the page's shape, so the precedence must not leak there.
+        expect(system.includes('THIS RULE OUTRANKS THE STANDING RULE',),).toBe(false,);
+        expect(system.includes('KEEP THE EXISTING TRANSLATION\'S SHAPE',),).toBe(true,);
       },
     },),
     it({
