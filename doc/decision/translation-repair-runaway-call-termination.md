@@ -495,3 +495,63 @@ and estimating one would mean spending quota this task was not authorized to spe
 ranked, are in `doc/planning/translation-repair-open-decisions.md`, Question 9. The idle-window
 re-arming posture this section leaves open, whether 600000 should ever be lowered given the
 tail evidence above, is the same document's Question 10.
+
+## Both channels were scanned and one of them was never read, `#158`
+
+The section "Both channels are scanned, and the thinking one matters most" was right about why,
+and wrong about what the code did.
+`scanStreamDeltas` read `content` and `reasoning_content` off `choices[0].delta` and nothing else.
+This provider does not spell the thinking channel the same way for every model.
+
+Measured 2026-08-21 with one streaming call per model, a cat-themed invented prompt, no corpus text:
+
+- `zai-org/GLM-5.2` carried `reasoning_content` on 328 of its 329 frames.
+- `zai-org/GLM-4.7-Flash` carried `reasoning` on 871 of its 1029 frames.
+- `nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` carried `reasoning` on 43 of its 232 frames.
+
+So the detector was handed an empty string for every thinking token two of the roster's models
+produced,
+which is precisely the failure this document already named as the worst case:
+a model repeating one sentence forever inside its thinking is never silent,
+so the idle guard cannot fire,
+and produced no text the degeneration detector could read,
+so that could not fire either.
+Both models ran to the wall clock instead.
+
+The unreadable-frame tally could not show this and was never going to.
+It rises only when a payload fails to parse.
+These frames parsed perfectly and were simply not read,
+so the number built to make a changed wire format visible sat at zero throughout.
+A renamed field is invisible to it,
+which is worth remembering before trusting that counter to prove anything about a future provider change.
+
+The fix reads `reasoning_content` first and `reasoning` second,
+taking the first non-empty value rather than the first present one,
+so a provider that begins sending both spellings as aliases contributes that text once.
+Merging them would double every thinking character on such a model
+and push the detector toward a verdict on volume the model never produced.
+
+### What proves it
+
+Removing `reasoning` from the precedence list and rebuilding takes the suite from exit 0 to exit 1,
+failing the three cases that depend on it,
+including a thinking loop spelled `reasoning` that goes from unjudged to `degenerate`.
+
+The control that mattered more ran against the built artifact and a live stream,
+because widening the detector's input to a channel its thresholds were never calibrated on
+could have produced spurious verdicts on healthy thinking,
+which would be worse than the blindness it replaced.
+All three models now count their thinking,
+`GLM-4.7-Flash` at 5158 characters and Nemotron at 167 where both previously counted zero,
+and all three leave both channels `undecided` on an ordinary call.
+
+### What this invalidates
+
+Every generated-character figure recorded for `GLM-4.7-Flash` and Nemotron before this date understates,
+by however much thinking those calls did.
+Any bound derived from that column has to be re-derived,
+which is why `#156` is blocked on this rather than merely related to it.
+
+Timing figures are unaffected.
+The straggler and idle windows re-derived in `#121` read `firstByteMs` and `maxGapMs`,
+which never depended on which field carried the text.
