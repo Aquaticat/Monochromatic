@@ -325,7 +325,7 @@ await describe({
           targetBudget: WIDE_BUDGET,
           steps,
         },).flatMap(function toIds(run,): readonly string[] {
-          return run.targetNodes.map(function toId(node,): string {
+          return run.targetRun.map(function toId(node,): string {
             return node.id;
           },);
         },),);
