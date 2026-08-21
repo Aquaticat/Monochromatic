@@ -1159,6 +1159,91 @@ await describe({
     },),
     it({
       name:
+        'CARRIES THE REPAIR LANE`S BALLOTS THROUGH, verbatim reasons included, which is the whole '
+        + 'reason the rounds are recorded: this lane can delete a declared name from a translation, '
+        + 'and until the rounds landed in the artifact the only way to see it happen was to run a '
+        + 'live probe against the real judging sheet',
+      fn: async () => {
+        /**
+         * One judged round of the shape the editor stage now records.
+         */
+        const round = {
+          kind: 'selected',
+          stage: 'envelope',
+          envelopeId: 'envelope/nap',
+          slate: [
+            {
+              index: 1,
+              rendered: 'Mittens the Cat naps on the sill.',
+              hash: 'hash-with-alias',
+              producer: {
+                kind: 'model',
+                modelId: 'hf:openai/gpt-oss-120b',
+              },
+            },
+            {
+              index: 2,
+              rendered: 'The cat naps on the sill.',
+              hash: 'hash-without-alias',
+              producer: {
+                kind: 'model',
+                modelId: 'hf:zai-org/GLM-5.2',
+              },
+            },
+          ],
+          ballots: [
+            {
+              modelId: 'hf:Qwen/Qwen3.8-27B',
+              best: 2,
+              reason: 'the alias has no basis in the original',
+              weight: 1,
+            },
+          ],
+          tally: {
+            judgesAvailable: 1,
+            ballots: 1,
+            abstentions: 0,
+            selfVotes: 0,
+          },
+          perCandidate: [],
+          selectedIndex: 2,
+          voteWeight: 1,
+        };
+
+        /**
+         * Artifact JSON as a settled file holds it, round-tripped through the
+         * serialization a written artifact actually goes through.
+         */
+        const written = JSON.parse(JSON.stringify(artifactWith({
+          repairRaw: {
+            ...repairResult(),
+            chunks: [
+              {
+                chunkIndex: 0,
+                rounds: [round,],
+                droppedDeclaredNames: ['Mittens the Cat',],
+              },
+            ],
+          },
+        },),),) as unknown;
+
+        /**
+         * Repair lane as a reader gets it back.
+         */
+        const { raw, } = parseSettledArtifactV2({ value: written, },)
+          .lanes
+          .repair;
+        expect(raw.chunks,).toEqual([
+          {
+            chunkIndex: 0,
+            rounds: [round,],
+            droppedDeclaredNames: ['Mittens the Cat',],
+          },
+        ],);
+      },
+    },),
+    it({
+      name:
         'REFUSES a lane selection naming a decision nobody has made, so a later generation that recorded '
         + 'one cannot be read as though this file already carried it',
       fn: async () => {
