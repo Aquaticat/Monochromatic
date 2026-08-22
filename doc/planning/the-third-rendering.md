@@ -3755,11 +3755,24 @@ Across the whole population,
  47 version 2 artifacts parsed and 0 refused,
  14 of them carrying a settled contest across 6 entries.
 
-The first roll-up of this measurement reported every count doubled,
- because it tallied per entry while the registered numbers are per artifact,
- and each entry carries two copies from the resume verification.
-The copies agree slice for slice,
- which is what made the doubling legible rather than confusing.
+The first roll-up of this measurement reported counts above the registered ones,
+ because it tallied per entry while the registered numbers are per artifact.
+An entry carries one artifact per pass,
+ and the passes are not one:
+ the two entries the control names carry two artifacts each,
+ while `Zha_Ke` carries four across two run roots.
+
+The copies are not always the same artifact twice.
+The two `vub-run1` copies of `Zha_Ke` disagree at two of its four contested slices,
+ where the contest reads `settled-neither` in the earlier and `lane-won` in the later.
+That is not a cache the second pass re-bought.
+`pass-entry.ts` discards a settled entry's whole slice cache after the artifact write,
+ bounding the directory to documents still in flight,
+ so a pass that settles every entry leaves nothing for the next one to resume.
+The second pass was cold rather than resumed,
+ the repair lane bought new wording at three of those four slices,
+ and the contest key covers that wording,
+ so re-asking was the correct answer to a question whose inputs had moved.
 
 ### One decomposition differs, and the difference is the point
 
