@@ -6,11 +6,18 @@
  * rebuys, what it is willing to write to the cache, and what it refuses to
  * proceed past.
  *
- * EVERY CASE HERE BUYS NOTHING. The client these hand over throws on any call,
- * which is the assertion: a driver that reached the roster on a resumed slice,
- * or on a slice the contest never settled, fails loudly instead of quietly
- * costing a run its budget. The rounds themselves are covered by
+ * ALMOST EVERY CASE HERE BUYS NOTHING. The client those hand over throws on any
+ * call, which is the assertion: a driver that reached the roster on a resumed
+ * slice, or on a slice the contest never settled, fails loudly instead of
+ * quietly costing a run its budget. The rounds themselves are covered by
  * `consolidate-settle.unit.test.ts`.
+ *
+ * THE TWO SHEET CASES ARE THE EXCEPTION, and deliberately so. They let the calls
+ * through to a client that records what it was sent and answers each with content
+ * no sheet can parse, because what they ask is what the driver SENT rather than
+ * what a roster would say back. Every voice is lost, which the validity floor
+ * already handles, so the driver settles on the standing text having bought
+ * nothing usable.
  *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
@@ -33,6 +40,8 @@ import {
   createSyntheticClient,
   type ProjectedLanesV2,
   type SliceCache,
+  type SyntheticClient,
+  TRANSLATE_LINE_STRUCTURE_RULE,
   type TranslateDecision,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
@@ -62,6 +71,56 @@ const REFUSING_CLIENT = createSyntheticClient({
     throw new Error('the driver bought a call it should not have',);
   },
 },);
+
+/**
+ * Builds a client that records every request body and answers none of them.
+ *
+ * ANSWERS WITH UNREADABLE CONTENT rather than throwing, which matters more than
+ * it looks. A thrown transport error is retried five times and then propagates
+ * out of the driver, so a case built that way spends seconds failing on the
+ * refusal instead of reading the sheet. A well-formed reply carrying content no
+ * sheet can parse loses the voice instead, which is an outcome the validity floor
+ * is already built for.
+ *
+ * @returns Client to drive with, beside the bodies it recorded
+ *
+ * @example
+ * ```ts
+ * const { client, bodies, } = recordingClient();
+ * ```
+ */
+function recordingClient(): {
+  readonly client: SyntheticClient;
+  readonly bodies: readonly string[];
+} {
+  /**
+   * Every request body the driver sent, in order.
+   */
+  const bodies: string[] = [];
+
+  return {
+    client: createSyntheticClient({
+      apiKey: 'test-key',
+      transport: async function recordThenSayNothingUsable(exchange,) {
+        bodies.push(exchange.bodyJson ?? '',);
+        return {
+          status: 200,
+          bodyText: `data: ${
+            JSON.stringify({
+              choices: [
+                {
+                  index: 0,
+                  delta: { content: 'no sheet can read this', },
+                },
+              ],
+            },)
+          }\n\ndata: [DONE]\n\n`,
+        };
+      },
+    },),
+    bodies,
+  };
+}
 
 /**
  * Builds both ledgers for a document of two slices.
@@ -185,10 +244,14 @@ async function driveWith(
     contests,
     resumed = new Map(),
     projected = twoSliceDocument(),
+    client = REFUSING_CLIENT,
+    lineStructuredSlices = new Set(),
   }: {
     readonly contests: readonly ArtifactContestSliceV2[];
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
     readonly projected?: ProjectedLanesV2;
+    readonly client?: SyntheticClient;
+    readonly lineStructuredSlices?: ReadonlySet<number>;
   },
 ) {
   /**
@@ -207,14 +270,14 @@ async function driveWith(
   };
 
   const slices = await consolidateDocument({
-    client: REFUSING_CLIENT,
+    client,
     projected,
     contests,
     modelIds: ROSTER,
     cache,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
-    lineStructuredSlices: new Set(),
+    lineStructuredSlices,
     l,
   },);
 
@@ -324,6 +387,47 @@ await describe({
         expect(slices[0]?.terminal,).toBe('incumbent-only',);
         expect(slices[0]?.gate.kind,).toBe('not-asked',);
         expect(written.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS A GOVERNED SLICE\'S PRODUCERS THE RULE AGAINST MERGING LINES, which is the only '
+        + 'reason this driver is handed the governed set at all. The subject field carrying the fact '
+        + 'was born optional on 2026-08-21 and no caller ever set it, so until 2026-08-22 every '
+        + 'consolidating producer was told its passage was prose, verse included',
+      fn: async () => {
+        const { client, bodies, } = recordingClient();
+
+        await driveWith({
+          client,
+          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          lineStructuredSlices: new Set([0,],),
+        },);
+
+        expect(bodies.length,).toBeGreaterThan(0,);
+        expect(bodies.some(function carriesRule(body,): boolean {
+          return body.includes(TRANSLATE_LINE_STRUCTURE_RULE,);
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES THE RULE OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the case above '
+        + 'evidence. A sheet carrying the rule unconditionally would satisfy that one just as well, '
+        + 'and would mean the governed set was never read',
+      fn: async () => {
+        const { client, bodies, } = recordingClient();
+
+        await driveWith({
+          client,
+          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          lineStructuredSlices: new Set(),
+        },);
+
+        expect(bodies.length,).toBeGreaterThan(0,);
+        expect(bodies.some(function carriesRule(body,): boolean {
+          return body.includes(TRANSLATE_LINE_STRUCTURE_RULE,);
+        },),).toBe(false,);
       },
     },),
   ],
