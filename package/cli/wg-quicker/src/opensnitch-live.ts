@@ -89,7 +89,7 @@ export function isLiveRuleSetReady(
    * First application-filter queue position establishing ordering boundary.
    */
   const queueIndex = output.indexOf('queue',);
-  if (queueIndex < 0)
+  if (queueIndex === (-1))
     return false;
   /**
    * Resolves exact generated accept-rule position.

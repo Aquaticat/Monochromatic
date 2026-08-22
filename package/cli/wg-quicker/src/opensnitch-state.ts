@@ -1,3 +1,4 @@
+import { randomUUID, } from 'node:crypto';
 import { constants, } from 'node:fs';
 import {
   mkdir,
@@ -6,8 +7,8 @@ import {
   unlink,
   writeFile,
 } from 'node:fs/promises';
-import { isAbsolute, join, } from 'node:path';
-import { randomUUID, } from 'node:crypto';
+import { isAbsolute, } from 'node:path';
+import { join, } from 'node:path';
 
 import { OpenSnitchConfigError, } from './errors.ts';
 import {
@@ -154,14 +155,25 @@ function parseOpenSnitchState(
     throw new OpenSnitchConfigError(`wg-quicker OpenSnitch lifecycle state has invalid config path: ${path}`,);
   if (!Array.isArray(parsed.Ports,))
     throw new OpenSnitchConfigError(`wg-quicker OpenSnitch lifecycle state has invalid ports: ${path}`,);
-  const ports = parsed.Ports.filter(function validPort(port,): port is number {
-    if ((typeof port) !== 'number')
-      return false;
-    if (!Number.isSafeInteger(port,))
-      return false;
-    return (port >= MIN_UDP_PORT) && (port <= MAX_UDP_PORT);
-  },);
-  if (ports.length !== parsed.Ports.length)
+  /**
+   * Valid port subset proving every persisted value before use.
+   */
+  const ports = parsed
+    .Ports
+    .filter(function validPort(port,): port is number {
+      if ((typeof port) !== 'number')
+        return false;
+      if (!Number.isSafeInteger(port,))
+        return false;
+      return (port >= MIN_UDP_PORT) && (port <= MAX_UDP_PORT);
+    },);
+  /**
+   * Original unvalidated port count.
+   */
+  const originalPortCount = parsed
+    .Ports
+    .length;
+  if (ports.length !== originalPortCount)
     throw new OpenSnitchConfigError(`wg-quicker OpenSnitch lifecycle state has invalid port value: ${path}`,);
   return {
     path: parsed.Path,
@@ -197,6 +209,9 @@ export async function readOpenSnitchState(
    */
   const path = openSnitchStatePath({ interfaceName, },);
   try {
+    /**
+     * Link-refusing descriptor for race-resistant state read.
+     */
     await using handle = await open(
       path,
       constants.O_RDONLY | constants.O_NOFOLLOW,
@@ -248,11 +263,25 @@ export async function writeOpenSnitchState(
   },
 ): Promise<void> {
   /**
-   * Private runtime root and interface state path.
+   * Private runtime root.
    */
   const directory = bypassRuntimeDirectory();
+  /**
+   * Interface-specific final state path.
+   */
   const path = openSnitchStatePath({ interfaceName, },);
+  /**
+   * Unique same-directory path for atomic replacement.
+   */
   const temporaryPath = `${path}.${randomUUID()}.tmp`;
+  /**
+   * Complete state JSON prepared before filesystem mutation.
+   */
+  const serialized = `${JSON.stringify({
+    Version: STATE_VERSION,
+    Path: state.path,
+    Ports: [...state.ports,],
+  }, null, 2,)}\n`;
   await mkdir(
     directory,
     {
@@ -263,11 +292,7 @@ export async function writeOpenSnitchState(
   try {
     await writeFile(
       temporaryPath,
-      `${JSON.stringify({
-        Version: STATE_VERSION,
-        Path: state.path,
-        Ports: [...state.ports,],
-      }, null, 2,)}\n`,
+      serialized,
       {
         encoding: 'utf8',
         flag: 'wx',
