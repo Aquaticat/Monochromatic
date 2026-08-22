@@ -167,7 +167,7 @@ export function comparisonRowsEqualV2(
     && (left.incumbentText === right.incumbentText)
     && (left.repairText === right.repairText)
     && (left.translateText === right.translateText)
-    && (left.verdict === right.verdict)
+    && (left.laneRelation === right.laneRelation)
     && outcomesEqualV2({
       left: left.repairOutcome,
       right: right.repairOutcome,

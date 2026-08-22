@@ -2,7 +2,7 @@ import type {
   ArtifactComparisonRowV2,
   ArtifactDecisionComparisonV2,
   ArtifactDeliveryRowV2,
-  ArtifactLaneVerdictV2,
+  ArtifactLaneRelationV2,
   ArtifactSliceOutcomeV2,
 } from './artifact-v2-vocabulary.ts';
 
@@ -64,7 +64,7 @@ function judgeSliceV2(
     readonly incumbentKind: 'present' | 'absent';
     readonly incumbentText: string;
   },
-): ArtifactLaneVerdictV2 {
+): ArtifactLaneRelationV2 {
   /**
    * Whether the repair document moved off the archive wording.
    */
@@ -248,7 +248,7 @@ export function compareLanesV2(
       incumbentText: mine.incumbentText,
       repairText: mine.shippedText,
       translateText: theirs.shippedText,
-      verdict: judgeSliceV2({
+      laneRelation: judgeSliceV2({
         repairText: mine.shippedText,
         translateText: theirs.shippedText,
         incumbentKind: mine.incumbentKind,

@@ -144,6 +144,21 @@ export function parseComparisonRowV2(
     value,
     path,
   },);
+  /**
+   * Key this row spells its lane relation under.
+   *
+   * TWO SPELLINGS, AND EXACTLY ONE PER ROW. The field was `verdict` until
+   * 2026-08-22, sharing a name with `laneSelection.slices[].verdict`, which
+   * answers a different question at a sibling path. Renaming it removes the
+   * collision for everything written afterwards; reading both keeps the
+   * artifacts settled under the old name readable, since artifacts outlive
+   * the pipelines that wrote them.
+   *
+   * A ROW CARRYING BOTH IS REFUSED rather than resolved, because the exact-key
+   * guard below is handed only the spelling chosen here. Two spellings in one
+   * row means two pipelines wrote it, and picking one would hide that.
+   */
+  const relationKey = ('laneRelation' in record) ? 'laneRelation' : 'verdict';
   requireExactKeys({
     record,
     allowed: [
@@ -152,7 +167,7 @@ export function parseComparisonRowV2(
       'incumbentText',
       'repairText',
       'translateText',
-      'verdict',
+      relationKey,
       'repairOutcome',
       'translateOutcome',
       'decisionComparison',
@@ -186,8 +201,8 @@ export function parseComparisonRowV2(
       value: record.translateText,
       path: `${path}.translateText`,
     },),
-    verdict: requireOneOf({
-      value: record.verdict,
+    laneRelation: requireOneOf({
+      value: record[relationKey],
       allowed: [
         'archive-stands',
         'repair-only',
@@ -196,7 +211,7 @@ export function parseComparisonRowV2(
         'both-differ',
         'gap-remains',
       ],
-      path: `${path}.verdict`,
+      path: `${path}.${relationKey}`,
     },),
     repairOutcome: parseSliceOutcomeV2({
       value: record.repairOutcome,

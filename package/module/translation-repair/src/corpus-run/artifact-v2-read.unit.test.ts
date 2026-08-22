@@ -527,7 +527,7 @@ await describe({
           .status,).toBe('unfilled',);
         expect(parsed.comparison
           .map(function toVerdict(row,): string {
-            return row.verdict;
+            return row.laneRelation;
           },),).toEqual([
           'translate-only',
           'gap-remains',
@@ -1016,8 +1016,8 @@ await describe({
         + 'about two ledgers stored beside it and nothing has to trust it',
       fn: async () => {
         /**
-         * The derived comparison with one verdict changed to something the rows
-         * do not produce.
+         * The derived comparison with one lane relation changed to something
+         * the rows do not produce.
          */
         const retitled = compareLanesV2({
           repair: repairLedger(),
@@ -1030,7 +1030,7 @@ await describe({
             return (position === 0)
               ? {
                 ...row,
-                verdict: 'both-agree',
+                laneRelation: 'both-agree',
               }
               : row;
           },);

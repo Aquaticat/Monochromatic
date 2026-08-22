@@ -202,10 +202,10 @@ export type ArtifactDecisionComparisonV2 = {
  *
  * @example
  * ```ts
- * const verdict: ArtifactLaneVerdictV2 = 'both-differ';
+ * const laneRelation: ArtifactLaneRelationV2 = 'both-differ';
  * ```
  */
-export type ArtifactLaneVerdictV2 =
+export type ArtifactLaneRelationV2 =
   | 'archive-stands'
   | 'repair-only'
   | 'translate-only'
@@ -218,7 +218,7 @@ export type ArtifactLaneVerdictV2 =
  *
  * @example
  * ```ts
- * const row: ArtifactComparisonRowV2 = { chunkIndex: 0, verdict: 'both-differ', ... };
+ * const row: ArtifactComparisonRowV2 = { chunkIndex: 0, laneRelation: 'both-differ', ... };
  * ```
  */
 export type ArtifactComparisonRowV2 = {
@@ -248,9 +248,18 @@ export type ArtifactComparisonRowV2 = {
   readonly translateText: string;
 
   /**
-   * How the two documents relate here.
+   * Which lanes changed this slice, and whether their changes agree.
+   *
+   * NOT SPELLED `verdict`, which it was until 2026-08-22. That put one key
+   * name over two meanings at sibling paths of one artifact:
+   * `laneSelection.slices[].verdict` says who WON, which is the question
+   * about shipping, while this says which lanes CHANGED anything, naming no
+   * winner. Reading the wrong one does not throw and does not surface as
+   * `undefined` anywhere a reader looks; a probe that took the string form
+   * for the object form reported 142 of 142 slices as audit subjects, a
+   * false total that read as an answer.
    */
-  readonly verdict: ArtifactLaneVerdictV2;
+  readonly laneRelation: ArtifactLaneRelationV2;
 
   /**
    * What the repair lane did.

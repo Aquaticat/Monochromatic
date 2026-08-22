@@ -339,7 +339,7 @@ await describe({
         expect(artifact.comparison,).toHaveLength(2,);
         expect(artifact.comparison
           .map(function toVerdict(row,): string {
-            return row.verdict;
+            return row.laneRelation;
           },),).toEqual([
           'repair-only',
           'translate-only',

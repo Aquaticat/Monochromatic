@@ -395,7 +395,7 @@ await describe({
   name: parseComparisonRowV2.name,
   children: [
     it({
-      name: 'reads a whole comparison row, all four unions and the verdict included',
+      name: 'reads a whole comparison row, all four unions and the lane relation included',
       fn: async () => {
         /**
          * One row saying both lanes moved to different wordings.
@@ -406,7 +406,7 @@ await describe({
           incumbentText: ARCHIVE_NAP,
           repairText: 'The cat is asleep on the sill.',
           translateText: 'The cat naps on the windowsill.',
-          verdict: 'both-differ',
+          laneRelation: 'both-differ',
           repairOutcome: {
             kind: 'decided',
             acceptedText: 'The cat is asleep on the sill.',
@@ -428,10 +428,85 @@ await describe({
         },),).toEqual(row,);
       },
     },),
+
     it({
       name:
-        'REFUSES a verdict this version does not name, so a generation that added one cannot be read as '
-        + 'though its rows meant what these do',
+        'READS A ROW WRITTEN UNDER THE RETIRED SPELLING, because artifacts outlive the pipelines '
+        + 'that wrote them. The field was `verdict` until 2026-08-22, sharing a bare key name with '
+        + '`laneSelection.slices[].verdict` at a sibling path, where it answers who WON rather than '
+        + 'which lanes changed. Refusing the old spelling would have made 25 settled artifacts '
+        + 'unreadable to buy a name',
+      fn: async () => {
+        /**
+         * One row as a pipeline before the rename wrote it.
+         */
+        const legacy = {
+          chunkIndex: 2,
+          incumbentKind: 'present',
+          incumbentText: ARCHIVE_NAP,
+          repairText: 'The cat is asleep on the sill.',
+          translateText: 'The cat naps on the windowsill.',
+          verdict: 'both-differ',
+          repairOutcome: {
+            kind: 'decided',
+            acceptedText: 'The cat is asleep on the sill.',
+          },
+          translateOutcome: {
+            kind: 'decided',
+            acceptedText: 'The cat naps on the windowsill.',
+          },
+          decisionComparison: {
+            kind: 'comparable',
+            verdict: 'different',
+          },
+          repairDelivery: { kind: 'replacement-shipped', },
+          translateDelivery: { kind: 'replacement-shipped', },
+        };
+
+        expect(parseComparisonRowV2({
+          value: legacy,
+          path: 'comparison[0]',
+        },).laneRelation,).toBe('both-differ',);
+      },
+    },),
+
+    it({
+      name:
+        'REFUSES A ROW CARRYING BOTH SPELLINGS rather than picking one, since two names for one '
+        + 'field means two pipelines wrote the row, and quietly preferring either would hide that '
+        + 'from every reader downstream',
+      fn: async () => {
+        expect(function bothSpellings() {
+          parseComparisonRowV2({
+            value: {
+              chunkIndex: 0,
+              incumbentKind: 'absent',
+              incumbentText: '',
+              repairText: '',
+              translateText: '',
+              laneRelation: 'gap-remains',
+              verdict: 'gap-remains',
+              repairOutcome: { kind: 'not-applicable', },
+              translateOutcome: { kind: 'unfilled', },
+              decisionComparison: {
+                kind: 'not-comparable',
+                undecidedLanes: [
+                  'repair',
+                  'translate',
+                ],
+              },
+              repairDelivery: { kind: 'gap-remains', },
+              translateDelivery: { kind: 'gap-remains', },
+            },
+            path: 'comparison[0]',
+          },);
+        },).toThrow('verdict',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a lane relation this version does not name, so a generation that added one cannot '
+        + 'be read as though its rows meant what these do',
       fn: async () => {
         expect(function unknownVerdict() {
           parseComparisonRowV2({

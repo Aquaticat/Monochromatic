@@ -165,7 +165,7 @@ export type {
   ArtifactComparisonRowV2,
   ArtifactDecisionComparisonV2,
   ArtifactDeliveryRowV2,
-  ArtifactLaneVerdictV2,
+  ArtifactLaneRelationV2,
   ArtifactSliceDeliveryV2,
   ArtifactSliceOutcomeV2,
 } from './corpus-run/artifact-v2-vocabulary.ts';

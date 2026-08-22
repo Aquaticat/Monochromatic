@@ -138,7 +138,7 @@ function catComparisonRow(
     incumbentText: ARCHIVE_NAP,
     repairText,
     translateText,
-    verdict: (repairText === translateText) ? 'both-agree' : 'both-differ',
+    laneRelation: (repairText === translateText) ? 'both-agree' : 'both-differ',
     repairOutcome: {
       kind: 'decided',
       acceptedText: repairText,

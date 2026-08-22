@@ -223,7 +223,10 @@ export function toArtifactComparisonRowV2(
     incumbentText: row.incumbentText,
     repairText: row.repairText,
     translateText: row.translateText,
-    verdict: row.verdict,
+    // Renamed at the artifact boundary only: the source type keeps `verdict`,
+    // which is unambiguous where it is declared. The collision existed in the
+    // artifact JSON, where a bare key sat beside a sibling of the same name.
+    laneRelation: row.verdict,
     repairOutcome: toArtifactOutcomeV2({ outcome: row.repairOutcome, },),
     translateOutcome: toArtifactOutcomeV2({ outcome: row.translateOutcome, },),
     decisionComparison: toArtifactDecisionsV2({ decisionComparison: row.decisionComparison, },),

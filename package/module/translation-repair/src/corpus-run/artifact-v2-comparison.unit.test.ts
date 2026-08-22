@@ -192,7 +192,7 @@ await describe({
           ],
         },);
         expect(rows.map(function toVerdict(one,): string {
-          return one.verdict;
+          return one.laneRelation;
         },),).toEqual([
           'archive-stands',
           'repair-only',
@@ -256,7 +256,7 @@ await describe({
           ],
         },);
         expect(rows.map(function toVerdict(one,): string {
-          return one.verdict;
+          return one.laneRelation;
         },),).toEqual([
           'gap-remains',
           'archive-stands',
@@ -291,7 +291,7 @@ await describe({
 
         // And the document verdict still says both carry the archive, which is
         // a different fact from either lane having chosen it.
-        expect(rows[0]?.verdict,).toBe('archive-stands',);
+        expect(rows[0]?.laneRelation,).toBe('archive-stands',);
       },
     },),
     it({
@@ -416,13 +416,13 @@ await describe({
         },);
 
         /**
-         * The same rows with one verdict changed, standing in for a pipeline
+         * The same rows with one lane relation changed, standing in for a pipeline
          * whose rules have moved.
          */
         const live = frozen.map(function retitle(row,) {
           return {
             ...row,
-            verdict: 'both-agree' as const,
+            laneRelation: 'both-agree' as const,
           };
         },);
         expect(function derivationsDiffer() {
@@ -633,7 +633,7 @@ await describe({
           },
           {
             ...row,
-            verdict: 'both-differ',
+            laneRelation: 'both-differ',
           },
           {
             ...row,
