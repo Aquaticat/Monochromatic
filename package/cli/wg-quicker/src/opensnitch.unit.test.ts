@@ -1,9 +1,11 @@
 import {
   chmod,
+  link as createHardLink,
   mkdtemp,
   readFile,
   rm,
   stat,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -228,6 +230,73 @@ await describe({
               missing = error;
             }
             expect(missing,).toBeInstanceOf(Error,);
+          },
+        },),
+
+        it({
+          name: 'leaves valid config unchanged when peers have no endpoints',
+          fn: async ctx => {
+            const content = `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`;
+            await using fixture = await createFixture({ content, });
+            const warning = ctx.sinon.spy(console, 'warn',);
+            await installOpenSnitchEndpointAllowance({
+              interfaceName: 'wg0',
+              endpointPorts: [],
+            },);
+            expect(await readFile(
+              fixture.configPath,
+              'utf8',
+            ),).toBe(content,);
+            expect(warning,).not.toHaveBeenCalled();
+          },
+        },),
+
+        it({
+          name: 'rejects symbolic-link system-firewall path',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            await rm(fixture.configPath,);
+            await symlink(
+              fixture.daemonConfigPath,
+              fixture.configPath,
+            );
+            let caught: unknown;
+            try {
+              await installOpenSnitchEndpointAllowance({
+                interfaceName: 'wg0',
+                endpointPorts: [51_820,],
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('Cannot read OpenSnitch system-firewall config',);
+          },
+        },),
+
+        it({
+          name: 'rejects multiply-linked system-firewall file',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            await createHardLink(
+              fixture.configPath,
+              `${fixture.configPath}.link`,
+            );
+            let caught: unknown;
+            try {
+              await installOpenSnitchEndpointAllowance({
+                interfaceName: 'wg0',
+                endpointPorts: [51_820,],
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('Cannot read OpenSnitch system-firewall config',);
           },
         },),
 

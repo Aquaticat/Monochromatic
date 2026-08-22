@@ -222,6 +222,33 @@ await describe({
             },
             diagnostic: 'exactly one',
           },
+          {
+            name: 'duplicate target chain',
+            mutate: function duplicateTargetChain(document: Record<string, unknown>,): void {
+              document.SystemRules = [
+                {
+                  Chains: [
+                    { Name: 'mangle_output', Table: 'opensnitch', Family: 'inet', Rules: [], },
+                    { Name: 'mangle_output', Table: 'opensnitch', Family: 'inet', Rules: [], },
+                  ],
+                },
+              ];
+            },
+            diagnostic: 'exactly one',
+          },
+          {
+            name: 'invalid target rules',
+            mutate: function invalidTargetRules(document: Record<string, unknown>,): void {
+              document.SystemRules = [
+                {
+                  Chains: [
+                    { Name: 'mangle_output', Table: 'opensnitch', Family: 'inet', Rules: 'invalid', },
+                  ],
+                },
+              ];
+            },
+            diagnostic: 'Rules is invalid',
+          },
         ].map(function invalidSchema(testCase,) {
           return it({
             name: `rejects ${testCase.name}`,
