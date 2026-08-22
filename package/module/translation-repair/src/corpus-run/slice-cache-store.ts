@@ -2,6 +2,7 @@ import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { isJsonRecord, } from '../json-guard.ts';
+import type { PairedSectionRecord, } from '../pair-blocks-stage.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
 import type { RefinedSliceSettlement, } from '../refine-slice-settle.ts';
 import type { ChunkRepairOutcome, } from '../repair-contract.ts';
@@ -190,21 +191,21 @@ export async function openSliceCache(
 }
 
 /**
- * Whether a cached value is a usable pairing.
+ * Whether a parsed value is a list of correspondences.
  *
  * SHAPE ONLY. What a pairing must satisfy against the blocks it describes is
  * `readBlockPairing`'s question, and a cached pairing is re-read through it.
  *
- * @param value - parsed cache entry
+ * @param value - candidate list, still unknown in type
  *
- * @returns Whether it is a list of correspondences
+ * @returns Whether every entry names two integer block indices
  *
  * @example
  * ```ts
- * const ok = isCachedPairing([{ source: 0, target: 0, },],);
+ * const ok = isPairList([{ source: 0, target: 0, },],);
  * ```
  */
-function isCachedPairing(value: unknown,): value is readonly BlockPair[] {
+function isPairList(value: unknown,): value is readonly BlockPair[] {
   if (!Array.isArray(value,))
     return false;
   return value.every(function isPair(entry: unknown,): boolean {
@@ -226,6 +227,30 @@ function isCachedPairing(value: unknown,): value is readonly BlockPair[] {
     } = entry;
     return Number.isInteger(source,) && Number.isInteger(target,);
   },);
+}
+
+/**
+ * Whether a parsed cache file is a usable pairing record.
+ *
+ * REFUSES A BARE ARRAY, which is what this namespace stored until 2026-08-22,
+ * when the findings a section produced became half the record. Nothing has to
+ * read the old shape: the namespace is discarded whenever the stored
+ * generation differs from the running pipeline digest, and editing these files
+ * changes that digest. The refusal is the belt beside that brace.
+ *
+ * @param value - parsed JSON of a cache file
+ *
+ * @returns Whether it carries correspondences beside their findings
+ *
+ * @example
+ * ```ts
+ * if (isCachedPairing(parsed,)) resumed.set(key, parsed,);
+ * ```
+ */
+function isCachedPairing(value: unknown,): value is PairedSectionRecord {
+  return isJsonRecord(value,)
+    && Array.isArray(value.findings,)
+    && isPairList(value.pairs,);
 }
 
 /**
@@ -255,7 +280,7 @@ export async function openPairingCache(
     readonly dir: string;
     readonly generation: string;
   },
-): Promise<SliceCache<readonly BlockPair[]>> {
+): Promise<SliceCache<PairedSectionRecord>> {
   return await openNamespacedCache({
     dir,
     generation,

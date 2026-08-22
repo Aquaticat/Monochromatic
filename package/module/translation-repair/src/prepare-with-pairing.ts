@@ -12,7 +12,10 @@ import {
   prepareDocumentPair,
   type PreparedDocumentPair,
 } from './document-preparation.ts';
-import { pairBlocksWithRoster, } from './pair-blocks-stage.ts';
+import {
+  pairBlocksWithRoster,
+  type PairedSectionRecord,
+} from './pair-blocks-stage.ts';
 import type {
   BlockPair,
   NumberedBlock,
@@ -104,7 +107,7 @@ export async function prepareDocumentPairWithRoster(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly sliceCharBudget?: number;
-    readonly pairingCache?: SliceCache<readonly BlockPair[]>;
+    readonly pairingCache?: SliceCache<PairedSectionRecord>;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -206,14 +209,33 @@ export async function prepareDocumentPairWithRoster(
     const cached = pairingCache?.resumed
       .get(key,);
     if (cached !== undefined) {
+      // REPUBLISHED BEFORE ANYTHING IS DECIDED. This run asks nobody about this
+      // section, so every finding the first run reported here is reported by
+      // nothing at all unless it comes back off disk. Until 2026-08-22 the cache
+      // stored a bare list of pairs, and a resumed entry silently lost the
+      // per-section counts, the fallback notice, and every voice-level finding.
+      /**
+       * The two halves of a stored round: what it agreed, and what it reported.
+       */
+      const {
+        pairs: cachedPairs,
+        findings: cachedFindings,
+      } = cached;
+      findings.push(...cachedFindings,);
+
       // AN EMPTY CACHED PAIRING IS AN ANSWER: the roster was asked about these
       // blocks and agreed on nothing, so the section keeps the scorer without
-      // the round being bought again.
-      if (cached.length > 0)
-        blockPairings.set(
-          pairIndex,
-          cached,
-        );
+      // the round being bought again. Warned again rather than only the first
+      // time, because falling back to the deterministic aligner is what THIS run
+      // is doing, not something that merely happened once.
+      if (cachedPairs.length === 0) {
+        pl.warn(`section ${String(pairIndex,)}: no agreed pairing, keeping the deterministic aligner`,);
+        continue;
+      }
+      blockPairings.set(
+        pairIndex,
+        cachedPairs,
+      );
       continue;
     }
 
@@ -230,7 +252,6 @@ export async function prepareDocumentPairWithRoster(
       exchangeTimeoutMs,
       l: pl,
     },);
-    findings.push(...outcome.findings,);
 
     /**
      * Correspondences this section's round agreed on, beside how many voices
@@ -241,6 +262,16 @@ export async function prepareDocumentPairWithRoster(
       usable,
       heard,
     } = outcome;
+
+    /**
+     * Everything this section reported, gathered before any of it is stored.
+     *
+     * GATHERED BECAUSE THE CACHE KEEPS IT. Pushing each finding straight into
+     * the document's list left nothing naming which findings belonged to this
+     * section, so the record written beside the pairs could not carry them and
+     * a resume reported a quieter round than the one that was bought.
+     */
+    const sectionFindings: string[] = [...outcome.findings,];
 
     // HOW MANY VOICES AGREED, recorded rather than only logged. A section two
     // voices paired and one six voices paired are different evidence about the
@@ -253,7 +284,7 @@ export async function prepareDocumentPairWithRoster(
     // has already filed `no-usable-voice`, and a count of zero out of zero
     // beside it would be a second wording for one fact.
     if (usable > 0)
-      findings.push(
+      sectionFindings.push(
         `block-pairing section ${String(pairIndex,)} paired ${String(pairs.length,)} of ${
           String(sourceBlocks.length,)
         } original and ${String(targetBlocks.length,)} translation blocks, from ${
@@ -266,14 +297,25 @@ export async function prepareDocumentPairWithRoster(
     // bad minute permanent for this entry. A round that WAS answered caches
     // even when it agreed on nothing, because that is a stable fact about these
     // blocks and re-buying it on every resume is what the cache exists to stop.
+    if (pairs.length === 0)
+      sectionFindings.push(`block-pairing section ${String(pairIndex,)} fell back to scoring`,);
+
+    // FED ON EVERY PATH, gated by nothing. Only the persist below asks whether
+    // anyone answered: a round nobody answered still reported findings, and
+    // hanging the document's list off the same condition would lose them on the
+    // cold run that produced them.
+    findings.push(...sectionFindings,);
+
     if (usable > 0)
       // eslint-disable-next-line no-await-in-loop -- writing this section's answer before the next one is asked is the point: a batched write at the end loses everything an abort interrupts
       await pairingCache?.persist({
         key,
-        serialized: JSON.stringify(pairs,),
+        serialized: JSON.stringify({
+          pairs,
+          findings: sectionFindings,
+        },),
       },);
     if (pairs.length === 0) {
-      findings.push(`block-pairing section ${String(pairIndex,)} fell back to scoring`,);
       pl.warn(`section ${String(pairIndex,)}: no agreed pairing, keeping the deterministic aligner`,);
       continue;
     }

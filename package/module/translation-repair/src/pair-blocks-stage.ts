@@ -111,6 +111,45 @@ export type BlockPairingOutcome = {
 };
 
 /**
+ * One section's settled pairing as the cache stores it.
+ *
+ * THE FINDINGS ARE HALF THE RECORD, not decoration beside the pairs. A resumed
+ * run makes no calls for a cached section, so anything the section reported the
+ * first time is reported by nothing on the second unless it was stored. Before
+ * this type the cache held a bare `BlockPair[]`, and a resumed entry lost the
+ * per-section pairing counts, the fallback notice, and every voice-level
+ * finding the round produced.
+ *
+ * ROSTER REACHABILITY IS STORED ON PURPOSE, including `block-pairing unusable`
+ * naming a voice that failed. It reads as a claim about a call this run never
+ * made, and it is kept anyway: the findings say what buying this pairing cost,
+ * and a resume that dropped them would report a healthier roster than the one
+ * that produced the stored pairs. `RefinedSliceSettlement` stores its
+ * `refine-candidates (N/M heard)` line for the same reason.
+ *
+ * `usable` and `heard` ARE DELIBERATELY ABSENT. They decide whether this round
+ * may be cached at all, which is a question about the run that asked rather
+ * than about these blocks, and the finding wording already carries both counts
+ * for any reader that wants them.
+ *
+ * @example
+ * ```ts
+ * const settled: PairedSectionRecord = { pairs: [], findings: [], };
+ * ```
+ */
+export type PairedSectionRecord = {
+  /**
+   * Correspondences the roster agreed on, in document order.
+   */
+  readonly pairs: readonly BlockPair[];
+
+  /**
+   * Findings this section contributed, in the order a cold run emitted them.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
  * Counts how many voices named each correspondence.
  *
  * @param pairings - one usable pairing per voice

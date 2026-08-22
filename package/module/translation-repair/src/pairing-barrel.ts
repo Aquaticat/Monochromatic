@@ -21,6 +21,7 @@ export {
 export {
   type BlockPairingOutcome,
   pairBlocksWithRoster,
+  type PairedSectionRecord,
 } from './pair-blocks-stage.ts';
 export {
   type SectionBlockPairing,
