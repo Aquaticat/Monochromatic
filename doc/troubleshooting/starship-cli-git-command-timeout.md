@@ -202,7 +202,7 @@ PE,
 Mach-O,
 and universal Mach-O.
 Windows command shims remain text-scanned,
-and the marker set now includes Windows package-path spelling.
+and the marker set includes backslash spellings for both package and bundled-entry paths.
 
 ### Cli-git repeated repository metadata requests
 
@@ -257,6 +257,8 @@ if (!transactionCommitted) {
 The regression fixture
 `package/git-policy/cli/src/read-only-forwarding.unit.test.ts`
 uses Starship's exact argument vector and requires only one identity request followed by the forwarded `for-each-ref`.
+It also places an incomplete transaction directory under retained identity and proves recovery blocks before forwarding.
+Removing retained-identity recovery made this guard fail before the production branch was restored.
 
 ### Starship emitted the warning correctly
 
@@ -387,6 +389,10 @@ which preserves self-shim detection but may retain the earlier resolver cost on 
 Supported Linux,
 Windows,
 and macOS native Git formats take the header path.
+Parameterized fixtures cover every recognized ELF,
+PE,
+thin Mach-O,
+and universal Mach-O signature in both represented byte orders.
 
 ### Disable Starship upstream-status segments
 
