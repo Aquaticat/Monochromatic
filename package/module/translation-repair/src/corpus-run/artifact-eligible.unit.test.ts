@@ -36,6 +36,8 @@ import {
 
 import {
   censusByGeneration,
+  EmptyPoolError,
+  MixedGenerationError,
   selectEligible,
 } from '../../dist/final/node/index.mjs';
 
@@ -421,13 +423,15 @@ await describe({
           ],
         },);
 
-        await expect(
-          selectEligible({
-            census: await censusByGeneration({ artifactsDir: dir, },),
-          },),
-        )
-          .rejects
-          .toThrow('No entry could be placed',);
+        /**
+         * What selectEligible refused with, read for class as well as wording.
+         */
+        const refusalOfSelectEligible = selectEligible({
+          census: await censusByGeneration({ artifactsDir: dir, },),
+        },);
+
+        await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(EmptyPoolError,);
+        await expect(refusalOfSelectEligible,).rejects.toThrow('No entry could be placed',);
       },
     },),
 
@@ -468,13 +472,15 @@ await describe({
           ],
         },);
 
-        await expect(
-          selectEligible({
-            census: await censusByGeneration({ artifactsDir: dir, },),
-          },),
-        )
-          .rejects
-          .toThrow('pipeline generations',);
+        /**
+         * What selectEligible refused with, read for class as well as wording.
+         */
+        const refusalOfSelectEligible = selectEligible({
+          census: await censusByGeneration({ artifactsDir: dir, },),
+        },);
+
+        await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(MixedGenerationError,);
+        await expect(refusalOfSelectEligible,).rejects.toThrow('pipeline generations',);
       },
     },),
 
@@ -642,14 +648,16 @@ await describe({
           ],
         },);
 
-        await expect(
-          selectEligible({
-            census: await censusByGeneration({ artifactsDir: dir, },),
-            requiredCommit: head,
-          },),
-        )
-          .rejects
-          .toThrow('excluded by generation filtering',);
+        /**
+         * What selectEligible refused with, read for class as well as wording.
+         */
+        const refusalOfSelectEligible = selectEligible({
+          census: await censusByGeneration({ artifactsDir: dir, },),
+          requiredCommit: head,
+        },);
+
+        await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(EmptyPoolError,);
+        await expect(refusalOfSelectEligible,).rejects.toThrow('excluded by generation filtering',);
       },
     },),
 
@@ -659,13 +667,15 @@ await describe({
       fn: async () => {
         const dir = await writeArtifacts({ entries: [], },);
 
-        await expect(
-          selectEligible({
-            census: await censusByGeneration({ artifactsDir: dir, },),
-          },),
-        )
-          .rejects
-          .toThrow('nothing to pool',);
+        /**
+         * What selectEligible refused with, read for class as well as wording.
+         */
+        const refusalOfSelectEligible = selectEligible({
+          census: await censusByGeneration({ artifactsDir: dir, },),
+        },);
+
+        await expect(refusalOfSelectEligible,).rejects.toBeInstanceOf(EmptyPoolError,);
+        await expect(refusalOfSelectEligible,).rejects.toThrow('nothing to pool',);
       },
     },),
 
