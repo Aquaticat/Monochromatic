@@ -15,7 +15,10 @@ import {
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
 import type { SliceValidation, } from './translate-validate.ts';
-import { wrapConsolidation, } from './consolidate-wrap.ts';
+import {
+  wrapConsolidation,
+  wrapConsolidationProposals,
+} from './consolidate-wrap.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import { buildTranslateCandidates, } from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
@@ -437,10 +440,30 @@ export async function settleConsolidation(
   },);
 
   /**
+   * Those same proposals as they would actually ship.
+   *
+   * WRAPPED BEFORE THE SLATE IS BUILT rather than after the gate has spoken,
+   * which is the whole of `#162`. Wrapping only the winner leaves both
+   * deciders judging bytes the run then changes, and it did: over the two most
+   * recent runs of the band pair 15 of the 16 shipped consolidations came back
+   * from `wrapConsolidation` altered.
+   *
+   * IT ALSO COLLAPSES THE WHITESPACE CASE FOR FREE. A proposal differing from
+   * an already-wrapped standing text only in where its lines break becomes that
+   * text exactly, the candidate dedup folds it into the incumbent, and a slate
+   * left holding the incumbent alone settles unjudged without buying a slate
+   * round or a gate round.
+   */
+  const shippableVoices = wrapConsolidationProposals({
+    voices: survivingVoices,
+    lineStructured,
+  },);
+
+  /**
    * Distinct proposals the judges will see, incumbent among them.
    */
   const built = buildTranslateCandidates({
-    voices: survivingVoices,
+    voices: shippableVoices,
     translatorModelIds: roster,
     incumbentText: standingText,
   },);

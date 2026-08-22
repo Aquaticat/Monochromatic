@@ -5,6 +5,8 @@ import type {
   GateShipped,
 } from './consolidate-gate-stage.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
+import type { HeardVoice, } from './stage-quorum.ts';
+import type { TranslateReportWire, } from './translate-wire.ts';
 
 //region Consolidation wrap
 // APPLIES THE SEMANTIC WRAP TO A CONSOLIDATION THAT SHIPS, which is the one
@@ -240,6 +242,78 @@ export function wrapConsolidation(
     rewrapped,
     demoted,
   };
+}
+
+/**
+ * Wraps every proposal on a slate, so both deciders judge the bytes that ship.
+ *
+ * THE DEFECT THIS CLOSES, measured 2026-08-22 over the two most recent runs of
+ * the band pair's six entries: 15 of the 16 consolidations that shipped had
+ * their bytes changed by {@link wrapConsolidation} AFTER the slate judges had
+ * chosen them and the gate had approved them, 9 of 9 in one run and 6 of 7 in
+ * the other. Both deciders were reading text the run does not publish.
+ *
+ * THE SAME WRAPPER, AND NO CONFIGURATION TO DRIFT. `wrapReplacementText` takes
+ * a text and nothing else, so this cannot fall out of step with what
+ * {@link wrapConsolidation} applies afterwards. If the two ever did disagree,
+ * the candidate dedup would collapse proposals against bytes that never ship,
+ * which inverts the point of wrapping them early at all.
+ *
+ * SAFE TO APPLY TWICE, and it is applied twice: a winner wrapped here reaches
+ * {@link wrapConsolidation} and is wrapped again. Measured rather than assumed
+ * over twelve representative passages, seven of which the first application
+ * moved and none of which a second application moved again.
+ *
+ * THE INCUMBENT IS NEITHER WRAPPED NOR PASSED HERE. Wrapping text a lane
+ * decided to keep would report a change nobody decided on, which
+ * `wrapReplacementText`'s own contract refuses. So a proposal that is a pure
+ * re-wrapping of an UNWRAPPED archive standing text still fails to collapse
+ * into it, and {@link wrapConsolidation}'s `standingAsWritten` key stays as the
+ * thing that catches that case.
+ *
+ * A GOVERNED SLICE IS LEFT ALONE, on the same evidence that stops the shipping
+ * wrap touching one: over the 211 line-structured slices of the pinned corpus
+ * this rule changes 189 and breaks 470 of the 1091 lines they already carry.
+ * Wrapping their proposals would put text in front of the judges that breaks
+ * the very rule `#177` gave them to enforce.
+ *
+ * @param voices - proposals that passed the validity floor
+ *
+ * @param lineStructured - whether the verse rule governs this slice, which
+ * forbids the wrap outright rather than narrowing it
+ *
+ * @returns Same voices carrying proposals as they would ship, or that array
+ * untouched where the verse rule governs
+ *
+ * @example
+ * ```ts
+ * const onTheSlate = wrapConsolidationProposals({ voices, lineStructured, },);
+ * ```
+ */
+export function wrapConsolidationProposals(
+  {
+    voices,
+    lineStructured,
+  }: {
+    readonly voices: readonly HeardVoice<TranslateReportWire>[];
+    readonly lineStructured: boolean;
+  },
+): readonly HeardVoice<TranslateReportWire>[] {
+  // THE GOVERNED ANSWER IS THE ARRAY ITSELF, returned rather than rebuilt, so a
+  // verse slice reaches the slate byte for byte as it did before this existed.
+  if (lineStructured)
+    return voices;
+
+  return voices.map(function wrapOneProposal(voice,): HeardVoice<TranslateReportWire> {
+    return {
+      ...voice,
+      value: {
+        ...voice.value,
+        translation: wrapReplacementText({ text: voice.value
+          .translation, },),
+      },
+    };
+  },);
 }
 
 //endregion Consolidation wrap

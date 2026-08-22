@@ -154,6 +154,7 @@ export {
 } from './consolidate-settle.ts';
 export {
   wrapConsolidation,
+  wrapConsolidationProposals,
   type WrappedConsolidation,
 } from './consolidate-wrap.ts';
 export {
