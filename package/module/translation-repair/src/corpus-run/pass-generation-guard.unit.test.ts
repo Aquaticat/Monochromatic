@@ -25,7 +25,10 @@ import {
 
 import {
   assertResumableGeneration,
+  GenerationDriftError,
+  LegacyPipelineError,
   readDriftOptIn,
+  UnplaceableArtifactError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -184,14 +187,16 @@ await describe({
           },
         },);
 
-        await expect(
-          assertResumableGeneration({
-            artifactsDir: dir,
-            digest: DIGEST_B,
-          },),
-        )
-          .rejects
-          .toThrow('built by a different pipeline',);
+        /**
+         * What assertResumableGeneration refused with, read for class as well as wording.
+         */
+        const refusalOfAssertResumableGeneration = assertResumableGeneration({
+          artifactsDir: dir,
+          digest: DIGEST_B,
+        },);
+
+        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(GenerationDriftError,);
+        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('built by a different pipeline',);
       },
     },),
 
@@ -207,18 +212,20 @@ await describe({
           },
         },);
 
-        await expect(
-          assertResumableGeneration({
-            artifactsDir: dir,
-            digest: DIGEST_C,
-          },),
-        )
-          .rejects
-          // Sixteen characters, not the full id: every digest opens with the
-          // same scheme name, so the abbreviation grows past its floor to the
-          // first character that differs. Asserting the full id would pass
-          // only if the message stopped abbreviating at all.
-          .toThrow('sha256-tree-v1:b',);
+        /**
+         * What assertResumableGeneration refused with, read for class as well as wording.
+         */
+        const refusalOfAssertResumableGeneration = assertResumableGeneration({
+          artifactsDir: dir,
+          digest: DIGEST_C,
+        },);
+
+        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(GenerationDriftError,);
+        // Sixteen characters, not the full id: every digest opens with the
+        // same scheme name, so the abbreviation grows past its floor to the
+        // first character that differs. Asserting the full id would pass
+        // only if the message stopped abbreviating at all.
+        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('sha256-tree-v1:b',);
       },
     },),
 
@@ -244,15 +251,17 @@ await describe({
       fn: async () => {
         const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
 
-        await expect(
-          assertResumableGeneration({
-            artifactsDir: dir,
-            digest: DIGEST_B,
-            driftAllowed: false,
-          },),
-        )
-          .rejects
-          .toThrow('different pipeline',);
+        /**
+         * What assertResumableGeneration refused with, read for class as well as wording.
+         */
+        const refusalOfAssertResumableGeneration = assertResumableGeneration({
+          artifactsDir: dir,
+          digest: DIGEST_B,
+          driftAllowed: false,
+        },);
+
+        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(GenerationDriftError,);
+        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('different pipeline',);
       },
     },),
 
@@ -277,14 +286,16 @@ await describe({
           'utf8',
         );
 
-        await expect(
-          assertResumableGeneration({
-            artifactsDir: dir,
-            digest: DIGEST_A,
-          },),
-        )
-          .rejects
-          .toThrow('Deleting them is NOT the remedy',);
+        /**
+         * What assertResumableGeneration refused with, read for class as well as wording.
+         */
+        const refusalOfAssertResumableGeneration = assertResumableGeneration({
+          artifactsDir: dir,
+          digest: DIGEST_A,
+        },);
+
+        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(LegacyPipelineError,);
+        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('Deleting them is NOT the remedy',);
       },
     },),
 
@@ -306,14 +317,16 @@ await describe({
           'utf8',
         );
 
-        await expect(
-          assertResumableGeneration({
-            artifactsDir: dir,
-            digest: DIGEST_A,
-          },),
-        )
-          .rejects
-          .toThrow('Mittens',);
+        /**
+         * What assertResumableGeneration refused with, read for class as well as wording.
+         */
+        const refusalOfAssertResumableGeneration = assertResumableGeneration({
+          artifactsDir: dir,
+          digest: DIGEST_A,
+        },);
+
+        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
+        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('Mittens',);
       },
     },),
 
@@ -332,14 +345,16 @@ await describe({
           'utf8',
         );
 
-        await expect(
-          assertResumableGeneration({
-            artifactsDir: dir,
-            digest: DIGEST_A,
-          },),
-        )
-          .rejects
-          .toThrow('Biscuit',);
+        /**
+         * What assertResumableGeneration refused with, read for class as well as wording.
+         */
+        const refusalOfAssertResumableGeneration = assertResumableGeneration({
+          artifactsDir: dir,
+          digest: DIGEST_A,
+        },);
+
+        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
+        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('Biscuit',);
       },
     },),
   ],
