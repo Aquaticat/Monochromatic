@@ -3,6 +3,7 @@ import {
   link as createHardLink,
   mkdtemp,
   readFile,
+  readdir,
   rm,
   stat,
   symlink,
@@ -37,6 +38,11 @@ type OpenSnitchFixture = {
    * Daemon config path selected by environment override.
    */
   readonly daemonConfigPath: string;
+
+  /**
+   * Fixture-private wg-quicker runtime path.
+   */
+  readonly runtimePath: string;
 
   /**
    * Removes fixture and restores process environment.
@@ -144,15 +150,20 @@ async function createFixture(
    */
   const originalDaemonConfig = process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT];
   const originalRuntime = process.env.WG_QUICKER_RUNTIME_DIRECTORY;
-  process.env[OPENSNITCH_CONFIG_ENVIRONMENT] = configPath;
-  process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT] = daemonConfigPath;
-  process.env.WG_QUICKER_RUNTIME_DIRECTORY = join(
+  /**
+   * Fixture-private runtime directory.
+   */
+  const runtimePath = join(
     directory,
     'run',
   );
+  process.env[OPENSNITCH_CONFIG_ENVIRONMENT] = configPath;
+  process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT] = daemonConfigPath;
+  process.env.WG_QUICKER_RUNTIME_DIRECTORY = runtimePath;
   return {
     configPath,
     daemonConfigPath,
+    runtimePath,
     async [Symbol.asyncDispose](): Promise<void> {
       if (originalConfig === undefined)
         delete process.env.WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG;
@@ -270,6 +281,55 @@ await describe({
               endpointPorts: [51_820,],
             },);
             expect(await readRules({ path: fixture.configPath, },),).toHaveLength(1,);
+          },
+        },),
+
+        it({
+          name: 'rejects relative explicit system-firewall path',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            process.env.WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG = 'relative-system-fw.json';
+            let caught: unknown;
+            try {
+              await installOpenSnitchEndpointAllowance({
+                interfaceName: 'wg0',
+                endpointPorts: [51_820,],
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('must be an absolute path',);
+          },
+        },),
+
+        it({
+          name: 'rejects relative daemon FwOptions config path',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            await writeFile(
+              fixture.daemonConfigPath,
+              JSON.stringify({
+                Firewall: 'nftables',
+                FwOptions: { ConfigPath: 'relative-system-fw.json', },
+              },),
+            );
+            delete process.env.WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG;
+            let caught: unknown;
+            try {
+              await installOpenSnitchEndpointAllowance({
+                interfaceName: 'wg0',
+                endpointPorts: [51_820,],
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('FwOptions.ConfigPath must be an absolute path',);
           },
         },),
 
@@ -428,6 +488,50 @@ await describe({
               rules[2],
             ],);
             expect((await stat(fixture.configPath,)).size,).toBe(sizeBefore,);
+          },
+        },),
+
+        it({
+          name: 'removes from persisted install path after daemon path changes',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            await installOpenSnitchEndpointAllowance({
+              interfaceName: 'wg0',
+              endpointPorts: [51_820,],
+            },);
+            const replacementPath = `${fixture.configPath}.replacement`;
+            await writeFile(
+              replacementPath,
+              `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            );
+            process.env.WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG = replacementPath;
+            await removeOpenSnitchEndpointAllowance({ interfaceName: 'wg0', },);
+            expect(await readRules({ path: fixture.configPath, },),).toEqual([],);
+            expect(await readRules({ path: replacementPath, },),).toEqual([],);
+            expect((await readdir(fixture.runtimePath,),)
+              .filter(function stateFiles(name,): boolean {
+                return name.startsWith('opensnitch-interface-',) && name.endsWith('.json',);
+              },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'uses explicit removal path despite malformed daemon config',
+          fn: async () => {
+            const rules = [
+              { Description: 'wg-quicker managed endpoint [wg0] UDP destination port 2049', },
+            ];
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules, },), null, 2,)}\n`,
+            },);
+            await writeFile(
+              fixture.daemonConfigPath,
+              '{',
+            );
+            await removeOpenSnitchEndpointAllowance({ interfaceName: 'wg0', },);
+            expect(await readRules({ path: fixture.configPath, },),).toEqual([],);
           },
         },),
 

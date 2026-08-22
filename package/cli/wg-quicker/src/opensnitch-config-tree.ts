@@ -257,6 +257,8 @@ function findTargetChain(
  *
  * @param requireEnabled - Whether disabled firewall rejects operation.
  *
+ * @param previousManagedPorts - Persisted ports needing negative recovery verification.
+ *
  * @returns Reconciled document and change metadata.
  *
  * @throws {@link OpenSnitchConfigError} when schema cannot be changed safely.
@@ -279,12 +281,14 @@ export function reconcileOpenSnitchConfig(
     endpointPorts,
     path,
     requireEnabled,
+    previousManagedPorts = [],
   }: {
     readonly document: JsonRecord;
     readonly interfaceName: string;
     readonly endpointPorts: readonly number[];
     readonly path: string;
     readonly requireEnabled: boolean;
+    readonly previousManagedPorts?: readonly number[];
   },
 ): OpenSnitchConfigMutation {
   /**
@@ -327,16 +331,19 @@ export function reconcileOpenSnitchConfig(
   /**
    * Exact ports accepted by removed interface-owned rules.
    */
-  const removedManagedPorts = existingRules
-    .filter(function ownedRule(rule,): boolean {
-      return isManagedRule({
-        value: rule,
-        prefix,
-      },);
-    },)
-    .flatMap(function removedPorts(rule,): readonly number[] {
-      return acceptedUdpPorts({ value: rule, },);
-    },);
+  const removedManagedPorts = [
+    ...previousManagedPorts,
+    ...existingRules
+      .filter(function ownedRule(rule,): boolean {
+        return isManagedRule({
+          value: rule,
+          prefix,
+        },);
+      },)
+      .flatMap(function removedPorts(rule,): readonly number[] {
+        return acceptedUdpPorts({ value: rule, },);
+      },),
+  ];
   /**
    * Exact ports still accepted by unrelated or other-interface rules.
    */

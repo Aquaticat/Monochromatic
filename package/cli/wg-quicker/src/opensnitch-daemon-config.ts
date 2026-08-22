@@ -1,4 +1,5 @@
 import { readFile, } from 'node:fs/promises';
+import { isAbsolute, } from 'node:path';
 
 import { OpenSnitchConfigError, } from './errors.ts';
 
@@ -61,6 +62,36 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return Error.isError(error,);
+}
+
+/**
+ * Requires system-firewall path to have process-independent meaning.
+ *
+ * @param path - Configured system-firewall path.
+ *
+ * @param source - Configuration source used in diagnostic.
+ *
+ * @returns Validated absolute path.
+ *
+ * @throws {@link OpenSnitchConfigError} when path is relative.
+ *
+ * @example
+ * ```ts
+ * assertAbsoluteSystemPath({ path: '/etc/opensnitchd/system-fw.json', source: 'FwOptions.ConfigPath' });
+ * ```
+ */
+function assertAbsoluteSystemPath(
+  {
+    path,
+    source,
+  }: {
+    readonly path: string;
+    readonly source: string;
+  },
+): string {
+  if (!isAbsolute(path,))
+    throw new OpenSnitchConfigError(`OpenSnitch ${source} must be an absolute path: ${path}`,);
+  return path;
 }
 
 /**
@@ -185,6 +216,14 @@ export async function resolveOpenSnitchSystemFirewallPath(
    * Explicit system-firewall path taking precedence over daemon field.
    */
   const configuredSystemPath = process.env[OPENSNITCH_CONFIG_ENVIRONMENT];
+  if ((!requireNftables)
+    && (configuredSystemPath !== undefined)
+    && (configuredSystemPath !== '')) {
+    return assertAbsoluteSystemPath({
+      path: configuredSystemPath,
+      source: OPENSNITCH_CONFIG_ENVIRONMENT,
+    },);
+  }
   /**
    * Effective daemon config path and optional content.
    */
@@ -198,9 +237,12 @@ export async function resolveOpenSnitchSystemFirewallPath(
       throw new OpenSnitchConfigError('Unexpected OpenSnitch daemon-config result.',);
     if (requireNftables)
       return OPENSNITCH_DAEMON_CONFIG_ABSENT;
-    return (configuredSystemPath === undefined) || (configuredSystemPath === '')
-      ? DEFAULT_SYSTEM_FIREWALL_CONFIG
-      : configuredSystemPath;
+    if ((configuredSystemPath === undefined) || (configuredSystemPath === ''))
+      return DEFAULT_SYSTEM_FIREWALL_CONFIG;
+    return assertAbsoluteSystemPath({
+      path: configuredSystemPath,
+      source: OPENSNITCH_CONFIG_ENVIRONMENT,
+    },);
   }
   /**
    * Parsed daemon config supplying backend and default system path.
@@ -214,15 +256,23 @@ export async function resolveOpenSnitchSystemFirewallPath(
       `wg-quicker OpenSnitch auto-configuration requires Firewall = nftables in ${daemonPath}.`,
     );
   }
-  if ((configuredSystemPath !== undefined) && (configuredSystemPath !== ''))
-    return configuredSystemPath;
+  if ((configuredSystemPath !== undefined) && (configuredSystemPath !== '')) {
+    return assertAbsoluteSystemPath({
+      path: configuredSystemPath,
+      source: OPENSNITCH_CONFIG_ENVIRONMENT,
+    },);
+  }
   /**
    * OpenSnitch firewall options carrying watched system config path.
    */
   const options = daemonConfig.FwOptions;
   if (isRecord(options,)
     && ((typeof options.ConfigPath) === 'string')
-    && (options.ConfigPath !== ''))
-    return options.ConfigPath;
+    && (options.ConfigPath !== '')) {
+    return assertAbsoluteSystemPath({
+      path: options.ConfigPath,
+      source: 'FwOptions.ConfigPath',
+    },);
+  }
   return DEFAULT_SYSTEM_FIREWALL_CONFIG;
 }

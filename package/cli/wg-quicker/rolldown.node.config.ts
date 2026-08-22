@@ -15,6 +15,7 @@ const config: NodeFlavorConfigs = perEntryNodeConfig({
     './src/policy-routing-conflict.ts',
     './src/opensnitch.ts',
     './src/opensnitch-config-tree.ts',
+    './src/opensnitch-live.ts',
     './src/tunnel.ts',
     './src/config.ts',
     './src/tunnel-bypass.ts',

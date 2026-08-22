@@ -173,6 +173,22 @@ await describe({
         },),
 
         it({
+          name: 'recovers persisted port after JSON rule was already removed',
+          fn: async () => {
+            const recovered = reconcileOpenSnitchConfig({
+              document: fixtureDocument({ rules: [], }),
+              interfaceName: 'wg0',
+              endpointPorts: [],
+              previousManagedPorts: [2_049,],
+              path: '/tmp/system-fw.json',
+              requireEnabled: false,
+            },);
+            expect(recovered.changed,).toBe(false,);
+            expect(recovered.forbiddenPorts,).toEqual([2_049,],);
+          },
+        },),
+
+        it({
           name: 'retains shared exact port when another interface owns allowance',
           fn: async () => {
             const first = reconcileOpenSnitchConfig({
