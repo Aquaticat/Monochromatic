@@ -3545,3 +3545,88 @@ The third pins that a path reaching both rounds reports each finding ONCE,
 which is the trap in fixing the first two:
 the judged round is already handed the produce half's list,
 so a settlement appending it again would report one lost voice twice.
+
+## One key name stopped meaning two things
+
+Landed 2026-08-22 as `0b64add7f` for the two schema-free items
+and `6cf4ed287` for the artifact field,
+completing the coordinated schema change begun by the terminal split.
+
+### An alignment observation now names the numbering it counts in
+
+`AlignmentFinding.pairIndex` was documented as not always a pair index,
+and it was not.
+A whole-document observation borrowed zero for a number it does not have,
+and a refusal carried the index of the unpaired chunk on its OWN side,
+whose numbering need not line up with the pairs a run produced.
+All three rendered as `(pair N: ...)`,
+beside a `target-unclaimed (pair N: ...)` carrying a real pair index.
+
+The field is now `attachedTo`,
+a union over the three numbering spaces,
+so the whole-document case has no index at all rather than a borrowed zero.
+A refusal now reads
+`alignment structure-mismatch (source section 1: ...)`,
+measured on live output before and after:
+the same fixture rendered `(pair 1: ...)` under the previous code,
+where the 1 was a source-side index.
+
+Both blockers the task recorded against this rename were checked and refuted
+ before it was made.
+No scorecard renders the field,
+and renaming a TypeScript field could not have changed any stored string,
+because the template interpolates the value and writes the word itself.
+
+### The comparison row's verdict is now a lane relation
+
+`comparison[].verdict` and `laneSelection.slices[].verdict`
+sat at sibling paths of one artifact under one bare key.
+The first says WHICH LANES CHANGED a slice and names no winner.
+The second says WHO WON,
+which is the question about shipping.
+
+Reading the wrong one neither throws nor surfaces as an absence:
+taking the string form for the object form yields `undefined` for every row,
+which reads as a uniform,
+plausible answer.
+The measured cost was a probe reporting 142 of 142 slices as audit subjects,
+caught only because it printed a distribution as a control.
+
+The comparison field becomes `laneRelation`.
+The contest field keeps `verdict`,
+because it is the one a reader asking about shipping wants.
+
+### The reader takes either spelling, and that was verified on the archive
+
+Refusing the retired key would have made every settled artifact unreadable
+ to buy a name,
+so the reader accepts either,
+and refuses a row carrying both rather than resolving it.
+
+VERIFIED AT THE BOUNDARY rather than by fixture.
+Every settled artifact on this machine was parsed through the current reader:
+47 files,
+all 47 carrying a comparison,
+271 rows,
+and all 271 spelled under the retired key.
+Zero rows were refused.
+
+The relations read back as
+138 `both-differ`,
+56 `translate-only`,
+36 `repair-only`,
+36 `archive-stands`
+and 5 `both-agree`,
+which is the positive control the discipline this task recorded calls for:
+a reader returning one bucket for every row would be the failure signature,
+and this distribution is not that.
+
+### What this batch did not touch
+
+A third field spelled `verdict` sits at
+`comparison[].decisionComparison.verdict`,
+holding `same` or `different`.
+It is nested rather than a sibling,
+so a reader reaches it through a name that already says which question it
+ answers,
+and it was left alone deliberately rather than missed.
