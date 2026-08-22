@@ -1,17 +1,25 @@
-# OpenSnitch 1.8.0 strict deny blocks wg-quicker WireGuard transport until endpoint UDP is allowed
+# OpenSnitch 1.8.0 strict deny blocks WireGuard transport unless wg-quicker installs endpoint rule
 
 ## Symptom
 
-`wg-quicker` and OpenSnitch 1.8.0 are compatible in the verified IPv4 and nftables setup with OpenSnitch's
-default `allow` action.
-They also work with strict default-deny policy after OpenSnitch allows the WireGuard peer's outer UDP connection.
+Current `wg-quicker` automatically adds visible OpenSnitch 1.8.0 system rules for WireGuard peer endpoint UDP
+ports.
+The verified IPv4 and nftables setup now works with OpenSnitch's default `allow` action and with strict
+`DefaultAction = deny`.
+The command warns that each managed rule accepts any process's outbound UDP to that destination port before
+application filtering,
+and removes the rule on `down` or failed-`up` rollback.
+
 The live boundary test covered IPv4,
 the nftables backend,
 and the `proc` monitor.
-IPv6 and the iptables backend were not live-tested;
-eBPF attribution and application exemptions received source review only.
+The integration rejects OpenSnitch's iptables backend instead of claiming protection from an ignored nftables
+rule.
+IPv6,
+eBPF attribution,
+and application exemptions received source review only.
 
-Without that allowance,
+Without the managed allowance or an equivalent user rule,
 `wg-quicker up` still exits successfully because creating a WireGuard interface does not wait for a handshake.
 The visible failure occurs when traffic tries to cross the tunnel:
 
@@ -270,14 +278,170 @@ It does not match a WireGuard peer on another port.
 The active repository host tunnel used endpoint port `2049` when inspected,
 so the stock value would need adjustment for that tunnel.
 
+### wg-quicker now owns endpoint-rule lifecycle
+
+Current `wg-quicker` extracts distinct peer endpoint ports and installs OpenSnitch rules after WireGuard accepts the
+peer config but before bringing the link up.
+`package/cli/wg-quicker/src/tunnel.ts:294-309` contains the ordering:
+
+```ts
+try {
+  await addLink({ interfaceName: iface, },);
+  await executeHooks({
+    hooks: config.preUp,
+    interfaceName: iface,
+  },);
+  await applyPeerConfig({ config, },);
+  await installOpenSnitchEndpointAllowance({
+    interfaceName: iface,
+    endpointPorts: config.endpointPorts,
+  },);
+  await addAddressesAndUp({ config, },);
+```
+
+The config-tree implementation preserves unrelated and unknown JSON fields,
+removes stale rules owned by the same interface,
+and appends one enabled rule per sorted port.
+The ownership and replacement path appears in
+`package/cli/wg-quicker/src/opensnitch-config-tree.ts:367-443`:
+
+```ts
+const prefix = managedPrefix({ interfaceName, },);
+const retainedRules = existingRules.filter(function retainRule(rule,): boolean {
+  return !isManagedRule({
+    value: rule,
+    prefix,
+  },);
+},);
+const managedRules = managedPorts.map(function toRule(port,): JsonRecord {
+  return createManagedRule({
+    interfaceName,
+    port,
+  },);
+},);
+
+const replacementChain: JsonRecord = {
+  ...targetChain,
+  Rules: [
+    ...retainedRules,
+    ...managedRules,
+  ],
+};
+```
+
+Each generated rule uses description
+`wg-quicker managed endpoint [<interface>] UDP destination port <port>`,
+`Enabled = true`,
+string `Position = "0"`,
+and target `accept`.
+The integration requires OpenSnitch's nftables backend,
+version 1 system-firewall schema,
+an enabled top-level firewall,
+and exactly one `inet opensnitch mangle_output` chain.
+It fails and rolls tunnel startup back rather than writing a rule that the daemon would ignore.
+
+Cleanup removes owned rules before checking whether the WireGuard link still exists.
+This ordering in `package/cli/wg-quicker/src/tunnel-cleanup.ts:24-34` also recovers an allowance left by an
+interrupted startup:
+
+```ts
+const iface = config.interfaceName;
+await removeOpenSnitchEndpointAllowance({ interfaceName: iface, },);
+await stopApplicationExemptions({
+  interfaceName: iface,
+  configured: config.exemptMark !== undefined,
+},);
+if (!(await linkExists({ interfaceName: iface, },)))
+  return;
+```
+
+### OpenSnitch live reload needs one file write event
+
+OpenSnitch 1.8.0 reloads its complete system firewall for every filesystem `Write` or `Remove` event.
+`evilsocket/opensnitch@v1.8.0:daemon/firewall/config/config.go:250-258` contains the watcher:
+
+```go
+func (c *Config) monitorConfigWorker() {
+	for {
+		select {
+		case <-c.ctx.Done():
+			goto Exit
+		case event := <-c.watcher.Events:
+			if (event.Op&fsnotify.Write == fsnotify.Write) || (event.Op&fsnotify.Remove == fsnotify.Remove) {
+				c.LoadDiskConfiguration(common.ReloadConf)
+			}
+		}
+	}
+```
+
+Each event deletes and recreates system rules in
+`evilsocket/opensnitch@v1.8.0:daemon/firewall/nftables/monitor.go:56-61`:
+
+```go
+func (n *Nft) ReloadConfCallback() {
+	log.Important("reloadConfCallback changed, reloading")
+	n.DeleteSystemRules(!common.ForcedDelRules, !common.RestoreChains, log.GetLogLevel() == log.DEBUG)
+	n.AddSystemRules(common.ReloadRules, !common.BackupChains)
+}
+```
+
+An initial `writeFile` implementation could emit two `Write` events from truncate plus content write.
+The released daemon then performed two back-to-back reloads,
+emitted the following diagnostic,
+and lost system rules in the disposable namespace:
+
+```text
+WAR nftables: error applying changes: conn.Receive: netlink receive: no such file or directory
+```
+
+Atomic path replacement was also rejected.
+It changes the inode watched by OpenSnitch and produced unstable second-reload behavior during removal.
+
+The current writer performs one positional write to the existing inode.
+When new JSON is shorter,
+it pads the document with valid trailing JSON whitespace instead of truncating.
+`package/cli/wg-quicker/src/opensnitch-config-file.ts:132-210` contains the workaround:
+
+```ts
+const padding = Buffer.alloc(
+  Math.max(
+    0,
+    minimumSize - replacement.length,
+  ),
+  ' ',
+);
+const payload = Buffer.concat([
+  replacement,
+  padding,
+],);
+await using handle = await open(
+  path,
+  'r+',
+);
+const { bytesWritten, } = await handle.write(
+  payload,
+  0,
+  payload.length,
+  0,
+);
+```
+
+After writing,
+`package/cli/wg-quicker/src/opensnitch.ts:167-213` requires consecutive live nftables listings that contain each
+managed port rule and OpenSnitch's queue rule.
+Startup fails and rolls back when an active daemon does not converge.
+If the daemon is stopped,
+the persisted rule loads at its next start.
+
 ## Verification
 
 ### Versions and artifact identity
 
 The combined test used:
 
-- repository HEAD `04521a6ee1301e242231cd52aa65d70e1ee85faf`;
-- latest `wg-quicker` package commit `9eb155a1cde5ebd97c071740597a8c20312c2c64`;
+- `wg-quicker` automatic-rule implementation through commit
+  `fde6c739fb5b11aad66fecca2156bec47c2b57a8`;
+- single-write live-reload fix commit `ba90d31612ac5a09ca498444af1daed21718a81d`;
 - OpenSnitch release `v1.8.0`,
   commit `b404c4c6316760fa7bc415509d3f8d747f7dc9cc`;
 - released RPM SHA-256 `e06e9119daf764e56455b61c319e496274c0274bb53bb94a0ff1ab72967fea7d`;
@@ -287,9 +451,12 @@ The combined test used:
   OpenSnitch process monitor `proc`,
   and disposable client and server network namespaces.
 
-The fixture used a WireGuard peer on `192.0.2.2:2049`,
+The compatibility fixture used a WireGuard peer on `192.0.2.2:2049`,
 tunnel addresses `10.44.0.1/24` and `10.44.0.2/24`,
 and `AllowedIPs = 0.0.0.0/0`.
+The automatic-rule fixture used the same endpoint and tunnel addresses with
+`AllowedIPs = 10.44.0.2/32`.
+Both ran inside disposable namespaces.
 No host route,
 firewall,
 or WireGuard interface was changed.
@@ -309,6 +476,8 @@ The combined boundary invocation used the built CLI and released daemon:
 ```console
 sudo ip netns exec wgqosc813 env \
   WG_QUICKER_RUNTIME_DIRECTORY="$scratch/runtime" \
+  WG_QUICKER_OPENSNITCH_DAEMON_CONFIG="$scratch/default-config.json" \
+  WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG="$scratch/system-fw.json" \
   "$node_bin" package/cli/wg-quicker/dist/final/node/index.mjs \
   up "$scratch/wgqos.conf"
 
@@ -366,6 +535,19 @@ The combined test added OpenSnitch to its client namespace before invoking the r
   WireGuard completed a recent handshake,
   transferred `476 B` received and `532 B` sent,
   and ping received `3` of `3` replies.
+- Current automatic configuration under default action `deny`:
+  `wg-quicker up` emitted the policy-widening warning,
+  inserted its visible config rule,
+  produced one OpenSnitch reload callback,
+  retained ICMP and NFQUEUE rules,
+  completed a handshake,
+  transferred `476 B` received and `564 B` sent,
+  and ping received `3` of `3` replies.
+- Current automatic cleanup:
+  `wg-quicker down` removed the managed config and nftables rule,
+  retained OpenSnitch ICMP and NFQUEUE rules,
+  kept the valid JSON file at measured size `8174` bytes through whitespace padding,
+  and removed the WireGuard link.
 - OpenSnitch started before `wg-quicker`:
   both nftables tables coexisted and the default-allow tunnel passed traffic.
 - OpenSnitch restarted while the WireGuard fixture existed,
@@ -386,6 +568,11 @@ The combined test added OpenSnitch to its client namespace before invoking the r
   and ping received `0` of `2` replies.
 - OpenSnitch's disabled stock exclusion was not a workaround for the fixture's port `2049` because its only match is
   UDP destination port `51820`.
+- A truncate-plus-write implementation emitted two OpenSnitch reload callbacks for one logical edit.
+  The daemon logged `conn.Receive: netlink receive: no such file or directory` and dropped system rules.
+  One positional write plus whitespace padding replaced that implementation.
+- OpenSnitch `Firewall = iptables` does not consume rules nested in the nftables `mangle_output` chain.
+  Current `wg-quicker` rejects that backend before writing.
 
 ## Verified workarounds
 
@@ -399,32 +586,40 @@ Tradeoff:
 a no-process connection that has no matching rule receives the permissive default.
 This is unsuitable when the intended policy requires unknown kernel traffic to fail closed.
 
-### Add an OpenSnitch system rule for the peer endpoint port
+### Use current wg-quicker automatic endpoint rules
 
 For strict default deny,
-add or enable an OpenSnitch system rule before its queue rules:
+run current `wg-quicker up` normally.
+Standard OpenSnitch 1.8 paths need no additional setting.
+Custom daemon deployments provide both paths:
 
-```nft
-udp dport 2049 accept
+```console
+WG_QUICKER_OPENSNITCH_DAEMON_CONFIG=/custom/default-config.json \
+WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG=/custom/system-fw.json \
+wg-quicker up wg0
 ```
 
-Use the actual UDP destination port from the WireGuard peer's `Endpoint`.
-The released `Exclude WireGuard VPN from being intercepted` rule can be enabled unchanged only when that port is
-`51820`.
-The disposable strict-deny test verified port `2049`.
-It restarted the released daemon after changing its firewall data,
-so use the same tested load path after saving a file edit:
+`wg-quicker` adds the actual peer endpoint ports,
+waits for OpenSnitch's live nftables chain,
+and warns with exact scope.
+The disposable strict-deny test verified endpoint port `2049` without restarting the daemon.
+`down` removes the managed rules through the same live-reload path.
+
+Tradeoff:
+each port-only rule bypasses OpenSnitch application attribution for every process's outbound UDP connection to that
+destination port while the interface is up.
+It does not bypass `wg-quicker` routing or encryption.
+The integration intentionally rejects OpenSnitch's iptables backend and unsupported system-firewall schemas.
+
+For an older `wg-quicker` build,
+enable or add OpenSnitch's system rule for the actual endpoint port and restart the packaged daemon after saving:
 
 ```console
 sudo systemctl restart opensnitch.service
 ```
 
-Tradeoff:
-a port-only rule bypasses OpenSnitch application attribution for every outbound UDP connection to that destination
-port.
-It does not bypass `wg-quicker` routing or encryption.
-A separately verified address-and-port rule would be narrower,
-but this investigation did not claim that untested variant as a verified workaround.
+The released `Exclude WireGuard VPN from being intercepted` rule works unchanged only when the destination port is
+`51820`.
 
 ### Use OpenSnitch eBPF attribution or debug unknown connections
 
@@ -448,6 +643,13 @@ so this path is upstream-documented rather than locally verified here.
 - Setting `ExemptMark` is not an OpenSnitch bypass.
   It intentionally sends selected application sockets through physical routing,
   but those packets still cross OpenSnitch's output interception chain.
+- Writing `system-fw.json` through truncate plus content write is not safe for this integration.
+  OpenSnitch reloads each filesystem write event;
+  duplicate callbacks reproduced netlink errors and missing system rules.
+- Replacing `system-fw.json` atomically by rename is not safe for OpenSnitch's file-inode watcher.
+  The verified writer retains the inode and pads shorter JSON instead.
+- Adding only a nested nftables rule while OpenSnitch uses its iptables backend has no effect.
+  Current `wg-quicker` rejects that backend.
 - Treating OpenSnitch's shutdown warnings as tunnel-failure evidence does not work.
   The fixture emitted `queue ... stuck, closing by timeout` only during daemon teardown after successful handshakes;
   the live connection catalog showed no such warning.
@@ -468,6 +670,12 @@ The relevant threads were read in full:
 
 - `#454`,
   the original WireGuard and kernel-process investigation;
+- `#688`,
+  an incomplete system-firewall edit and netlink-error report;
+- `#781`,
+  the fixed 1.6.0 periodic nftables netlink-error report after firewall reload;
+- `#976`,
+  a closed kernel-requirement nftables error report;
 - `#853`,
   the fixed 1.6.0-rc.4 regression;
 - `#1250`,
@@ -481,10 +689,11 @@ The relevant threads were read in full:
 
 The required filing constraints resolve as follows:
 
-1.  Upstream fault is **no**.
-    Released 1.8.0 worked with `wg-quicker` under default allow.
-    Strict deny dropping an unattributed connection follows the configured policy,
-    and OpenSnitch already provides attribution and exclusion mechanisms.
+1.  Upstream fault is **no** for the compatibility problem.
+    Released 1.8.0 worked with `wg-quicker` under default allow and a valid system rule.
+    Strict deny dropping an unattributed connection follows the configured policy.
+    Duplicate file-write events exposed a separate reload quirk,
+    but one-event consumer writing resolved it without an upstream change.
 2.  An upstream fix is **not applicable** to the verified compatibility result.
     A separate attribution regression would be fixable,
     but this harness did not reproduce one.
@@ -498,8 +707,9 @@ The required filing constraints resolve as follows:
     and no prohibition on assisted reports was found.
     Pull request `#1423` demonstrates a recent external firewall contribution and maintainer review.
 5.  Likely upstream action is **none** from this result.
-    The observed strict-deny behavior is policy enforcement,
-    not evidence of a defect.
+    The strict-deny behavior is policy enforcement.
+    Closed issue `#781` already tracks a related nftables reload failure,
+    while this reproduction depends on a disposable namespace and a rejected multi-event writer.
 6.  A minimal compatible fix is **not applicable** because constraints 1 and 5 fail.
     The consumer-side endpoint-port configuration was tested instead.
 
@@ -507,8 +717,11 @@ The required filing constraints resolve as follows:
 
 Nothing should be filed or added to an existing thread from this investigation.
 The result confirms compatibility and an existing documented policy requirement.
-It does not reproduce open issue `#1629`'s ProtonVPN timeout,
-so commenting there would conflate different versions and callers rather than advance its diagnosis.
+It does not reproduce open issue `#1629`'s ProtonVPN timeout.
+The rejected multi-event writer resembles closed issue `#781`,
+but the disposable namespace evidence does not establish a current host regression and the consumer workaround is
+verified.
+Commenting on either thread would conflate different versions or triggers rather than advance diagnosis.
 
 ## Sources
 
@@ -516,6 +729,9 @@ so commenting there would conflate different versions and callers rather than ad
 - [OpenSnitch system rules documentation][opensnitch-system-rules]
 - [OpenSnitch 1.8.0 release][opensnitch-release]
 - [OpenSnitch WireGuard issue 454][opensnitch-454]
+- [OpenSnitch nftables netlink issue 688][opensnitch-688]
+- [OpenSnitch periodic reload issue 781][opensnitch-781]
+- [OpenSnitch nftables requirements issue 976][opensnitch-976]
 - [OpenSnitch ProtonVPN issue 1629][opensnitch-1629]
 - [OpenSnitch application-specific nftables pull request 1423][opensnitch-1423]
 
@@ -523,6 +739,9 @@ so commenting there would conflate different versions and callers rather than ad
 [opensnitch-system-rules]: https://github.com/evilsocket/opensnitch/wiki/System-rules
 [opensnitch-release]: https://github.com/evilsocket/opensnitch/releases/tag/v1.8.0
 [opensnitch-454]: https://github.com/evilsocket/opensnitch/issues/454
+[opensnitch-688]: https://github.com/evilsocket/opensnitch/issues/688
+[opensnitch-781]: https://github.com/evilsocket/opensnitch/issues/781
+[opensnitch-976]: https://github.com/evilsocket/opensnitch/issues/976
 [opensnitch-1250]: https://github.com/evilsocket/opensnitch/issues/1250
 [opensnitch-1629]: https://github.com/evilsocket/opensnitch/issues/1629
 [opensnitch-1423]: https://github.com/evilsocket/opensnitch/pull/1423
