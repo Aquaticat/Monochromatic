@@ -353,28 +353,26 @@ export async function initializeMainRepository(repositoryRoot: string,): Promise
       '--initial-branch=main',
     ],
   },);
-  await Promise.all([
-    runRealGit({
-      cwd: repositoryRoot,
-      args: [
-        'config',
-        'user.name',
-        TEST_USER_NAME,
-      ],
-    },),
-    runRealGit({
-      cwd: repositoryRoot,
-      args: [
-        'config',
-        'user.email',
-        TEST_USER_EMAIL,
-      ],
-    },),
-    writeFile(
-      join(repositoryRoot, 'tracked.txt',),
-      'tracked\n',
-    ),
-  ],);
+  await runRealGit({
+    cwd: repositoryRoot,
+    args: [
+      'config',
+      'user.name',
+      TEST_USER_NAME,
+    ],
+  },);
+  await runRealGit({
+    cwd: repositoryRoot,
+    args: [
+      'config',
+      'user.email',
+      TEST_USER_EMAIL,
+    ],
+  },);
+  await writeFile(
+    join(repositoryRoot, 'tracked.txt',),
+    'tracked\n',
+  );
   await runRealGit({
     cwd: repositoryRoot,
     args: [
