@@ -411,10 +411,15 @@ Two builds of unchanged
      `--only` line into it.
     A re-bought settlement is the diagnostic evidence and
      the discard will delete it the same way.
-4.  Run 2 passes if its log carries ZERO `reportStreamProgress` lines.
-    Run 1 is
-     the positive control for that instrument,
-    at several hundred.
+4.  Run 2 passes on the per-slice accounting registered under
+     "What run 2 must re-buy",
+    NOT on a count of
+     `reportStreamProgress` lines.
+    Those lines are tagged `translation-repair`
+     rather than an entry,
+    so they cannot be attributed to a slice at all,
+    and
+     a zero was never reachable.
 5.  `node ~/temp/agent/vub-compare.mjs <run1-artifacts> <run2-artifacts>`
      confirms the consolidation records are byte-identical.
 6.  Kill the poller.
@@ -439,3 +444,138 @@ It writes only under
 outside git,
 because a runs directory holds corpus text from an
  unlicensed source.
+
+## What run 2 must re-buy
+
+REGISTERED 2026-08-22 from run 1's capture and artifacts,
+before run 2 started.
+The criterion this replaces,
+zero `reportStreamProgress` lines,
+would have
+ reported a failure that never happened.
+
+### Why zero was never reachable
+
+`consolidationWorthResuming` in
+ `package/module/translation-repair/src/consolidate-driver.ts`
+ REFUSES TO PERSIST a `slate-kept-standing` settlement whose decision is
+ `declined-indecision` or `declined-rejection`.
+Those two are `UNSETTLED_DECISIONS`,
+and the reason is given beside them:
+a
+ thin panel is a fact about a provider on one night,
+not a property of the
+ question,
+and freezing it into the cache would answer every later resume of
+ that entry with that night.
+
+So a declining slice is never written to the cache at all.
+No poll rate catches
+ it,
+and run 2 re-asks it BY DESIGN.
+`Acheron` slice 0 is exactly that case,
+measured in run 1's log at `2026-08-22T02:17:44.907Z`:
+`translate stage: winner short of the minimum vote weight; keeping the
+ incumbent`.
+
+### What the capture actually holds
+
+Read with `~/temp/agent/capture-decisions.mjs`,
+which prints the `decided`
+ field the artifact does not carry.
+
+- `Acheron` slice 1 and slice 2 persisted.
+   Both `consolidated`,
+   both
+   `judged` from a `fresh` origin,
+   both at gate `usable` 6.
+   They are
+   identified by `rewrapped`,
+   false on slice 1 and true on slice 2,
+   which
+   matches the artifact.
+- `Weideriche_` persisted one of its two slices.
+   `consolidated`,
+   `judged`,
+   `fresh`,
+   gate `usable` 6.
+   Both its slices carry `rewrapped` true,
+   so
+   the envelope does not say which one.
+
+### What must re-buy, and why
+
+- `Acheron` slice 0,
+   `slate-kept-standing`,
+   REFUSED BY RULE.
+   Never cached,
+   so nothing was lost.
+- `Acheron` slice 3,
+   `no-standing-text`,
+   RACED AWAY.
+   The rule persists it,
+   the capture does not hold it,
+   and the entry is already discarded from the
+   live cache,
+   so it is gone for good.
+- One `Weideriche_` slice,
+   RACED AWAY,
+   on the same evidence.
+
+Two entries,
+two race losses,
+one each.
+The poller loses roughly one file per
+ entry to `discardSliceCache`.
+
+### The instrument, and its positive control
+
+A resumed slice is SILENT.
+`consolidateDocument` reads
+ `const settlement = resumed ?? await settleFresh()`,
+so a cache hit calls
+ neither `produceConsolidations` nor `settleConsolidation` and neither tag can
+ appear.
+A fresh purchase calls both.
+
+Count `[<entry>] [consolidateDocument] [settleConsolidation]` and the same with
+ `[produceConsolidations]`.
+Run 1's positive control is 27 and 2 for `Acheron`
+ across 4 slices,
+19 and 1 for `Weideriche_` across 2.
+
+### The pass criterion
+
+Per slice,
+against run 1's artifact:
+
+- `Acheron` slice 1 and slice 2 MUST be byte-identical.
+   A difference there
+   means the resume path is broken,
+   which is what this verification exists to
+   decide.
+- `Acheron` slice 0 and slice 3 MAY differ,
+   and a difference is not a
+   failure.
+- One `Weideriche_` slice MUST be byte-identical and one MAY differ.
+   Which is
+   which is not predictable from the capture,
+   so either assignment passes.
+- Both entries MUST show fewer fresh-purchase lines than run 1,
+   since half
+   their slices resume.
+   Equality with run 1 means nothing resumed.
+
+Keep `Acheron` in run 2 rather than dropping it for a cleaner result.
+Slice 0
+ is the only place the decline-refusal path can be watched executing on real
+ state.
+
+### Scope run 2 to entries that settled
+
+Only entries holding a settled artifact when run 1 ends belong in run 2's
+ `--only` line.
+An entry killed mid-flight keeps a partial cache in the run's own directory,
+which is a snapshot rather than a resume,
+and it cannot be predicted from an
+ artifact that does not exist.
