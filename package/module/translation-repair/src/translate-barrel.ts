@@ -189,6 +189,8 @@ export {
 export {
   neighbouringIncumbent,
   neighbouringSource,
+  type SliceNeighbourContext,
+  sliceNeighbourContexts,
 } from './fidelity-window.ts';
 export {
   type ClassifiedSlice,

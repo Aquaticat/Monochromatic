@@ -49,6 +49,24 @@ const LINE_STRUCTURED_KEY_MARK = 'line-structured';
 const PICTURE_KEY_LABEL = 'pictures';
 
 /**
+ * What a slice carrying a window labels its ORIGINAL side with.
+ *
+ * TWO LABELS RATHER THAN ONE, because the two sides are independently absent:
+ * a slice can stand beside a section the archive never translated, and folding
+ * them under a single label would let a source-only window and an
+ * incumbent-only one collide.
+ *
+ * SPELLED AS `translateSliceKey` SPELLS IT, so a reader tracing one window
+ * through both keys meets the same two words.
+ */
+const NEIGHBOURING_SOURCE_KEY_LABEL = 'neighbouring';
+
+/**
+ * What a slice carrying a window labels its ARCHIVE side with.
+ */
+const NEIGHBOURING_INCUMBENT_KEY_LABEL = 'neighbouring-incumbent';
+
+/**
  * Everything about this run that changes what the voices are ASKED.
  *
  * Without it a resumed slice could return a settlement reached by a different
@@ -142,6 +160,8 @@ export function consolidateSliceKey(
     ballots,
     lineStructured,
     pictureContext,
+    neighbouringSourceText,
+    neighbouringIncumbentText,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -152,6 +172,8 @@ export function consolidateSliceKey(
     readonly ballots: readonly LaneContestBallot[];
     readonly lineStructured: boolean;
     readonly pictureContext?: string;
+    readonly neighbouringSourceText?: string;
+    readonly neighbouringIncumbentText?: string;
   },
 ): string {
   return hashContent({
@@ -181,6 +203,34 @@ export function consolidateSliceKey(
         : [
           PICTURE_KEY_LABEL,
           pictureContext,
+        ]),
+      // THE WINDOW, on the same terms and for the same reason: the judges of a
+      // consolidation read the passages either side from 2026-08-22, and a
+      // settlement decided without them answered a different question.
+      //
+      // AFTER THE PICTURES RATHER THAN BEFORE, which is where the sibling
+      // `translateSliceKey` puts the same two fields. Appending is this file's
+      // own convention and the labels make position irrelevant to correctness,
+      // so the orders differ and neither is wrong; a reader comparing the two
+      // keys side by side should not read the difference as a defect.
+      //
+      // UNLIKE THE PICTURE APPEND, THIS IS NOT CHEAP. Most slices carry no
+      // picture, so that field left almost every settled consolidation
+      // resumable. Nearly every slice of a multi-slice document HAS a window,
+      // so nearly every settlement keyed before this is re-bought. That is the
+      // correct outcome rather than a regrettable one: resuming them would
+      // return answers to a question nobody asked, which is `#95`.
+      ...(((neighbouringSourceText === undefined) || (neighbouringSourceText === ''))
+        ? []
+        : [
+          NEIGHBOURING_SOURCE_KEY_LABEL,
+          neighbouringSourceText,
+        ]),
+      ...(((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === ''))
+        ? []
+        : [
+          NEIGHBOURING_INCUMBENT_KEY_LABEL,
+          neighbouringIncumbentText,
         ]),
     ],),
   },);

@@ -10,6 +10,7 @@ import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { prepareDocumentPairWithRoster, } from '../prepare-with-pairing.ts';
+import { sliceNeighbourContexts, } from '../fidelity-window.ts';
 import { slicePictureContexts, } from '../slice-pictures.ts';
 import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
 import { projectLanesV2, } from './artifact-v2-derive.ts';
@@ -385,6 +386,11 @@ async function runEntryPipeline(
         slices: prepared.slices,
         readings: pictureReadings,
       },),
+      // THE WINDOW THE TRANSLATE LANE'S JUDGES GET, computed from the same
+      // slices, for the consolidation's judges. Built here rather than in the
+      // driver for the reason the picture map is: a window is POSITIONAL, found
+      // by walking the prepared array, and the driver holds no prepared slices.
+      neighbourContextBySlice: sliceNeighbourContexts({ slices: prepared.slices, },),
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),

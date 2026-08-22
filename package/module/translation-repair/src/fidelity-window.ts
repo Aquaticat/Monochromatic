@@ -182,4 +182,81 @@ export function neighbouringIncumbent(
     .join('\n\n',);
 }
 
+/**
+ * Passages either side of one slice, both halves together.
+ *
+ * ONE RECORD RATHER THAN TWO MAPS, so the two texts provably come from one
+ * slice position. Two maps could be built from different indices and nothing
+ * would say so: a judge would then be shown the Chinese beside one passage and
+ * the English beside another, which reads as an archive that moved a passage.
+ *
+ * @example
+ * ```ts
+ * const beside: SliceNeighbourContext = { sourceText: '猫走了。', incumbentText: 'The cat left.', };
+ * ```
+ */
+export type SliceNeighbourContext = {
+  /**
+   * Original of the passages either side.
+   */
+  readonly sourceText: string;
+
+  /**
+   * Archive English of the same passages, which is the half that shows a
+   * relocation: the Chinese says each thing once in its own place while the
+   * English says it next door.
+   */
+  readonly incumbentText: string;
+};
+
+/**
+ * Window for every slice of a document, keyed by stamped chunk index.
+ *
+ * BUILT WHERE THE SLICES ARE, because a window is POSITIONAL: it is the passage
+ * before and the passage after, found by walking the prepared array. A consumer
+ * holding only per-slice rows cannot recover that, and the consolidate driver is
+ * exactly such a consumer, which is why it is handed this rather than the slices.
+ *
+ * KEYED BY THE STAMPED INDEX, NOT THE POSITION, matching
+ * `slicePictureContexts`. `#99` recorded that `chunkIndex` names three different
+ * things depending on who stamped it, and a consumer looking a slice up by its
+ * own stamp must find the window computed for that same slice.
+ *
+ * @param slices - prepared pairs in document order, which is what makes a window
+ * positional rather than a lookup
+ *
+ * @returns Window per stamped chunk index
+ *
+ * @example
+ * ```ts
+ * const windows = sliceNeighbourContexts({ slices, },);
+ * ```
+ */
+export function sliceNeighbourContexts(
+  { slices, }: { readonly slices: readonly ChunkPair[]; },
+): ReadonlyMap<number, SliceNeighbourContext> {
+  return new Map(slices.map(function nameSliceWindow(
+    slice,
+    sliceIndex,
+  ): readonly [
+    number,
+    SliceNeighbourContext,
+  ] {
+    return [
+      slice.target
+        .chunkIndex,
+      {
+        sourceText: neighbouringSource({
+          slices,
+          sliceIndex,
+        },),
+        incumbentText: neighbouringIncumbent({
+          slices,
+          sliceIndex,
+        },),
+      },
+    ];
+  },),);
+}
+
 //endregion Fidelity window

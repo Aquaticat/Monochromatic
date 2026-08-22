@@ -40,6 +40,7 @@ import {
   createSyntheticClient,
   type ProjectedLanesV2,
   type SliceCache,
+  type SliceNeighbourContext,
   type SyntheticClient,
   TRANSLATE_LINE_STRUCTURE_RULE,
   type TranslateDecision,
@@ -247,6 +248,7 @@ async function driveWith(
     client = REFUSING_CLIENT,
     lineStructuredSlices = new Set(),
     pictureContextBySlice = new Map(),
+    neighbourContextBySlice = new Map(),
   }: {
     readonly contests: readonly ArtifactContestSliceV2[];
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
@@ -254,6 +256,7 @@ async function driveWith(
     readonly client?: SyntheticClient;
     readonly lineStructuredSlices?: ReadonlySet<number>;
     readonly pictureContextBySlice?: ReadonlyMap<number, string>;
+    readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
   },
 ) {
   /**
@@ -281,6 +284,7 @@ async function driveWith(
     perCallTimeoutMs: CALL_TIMEOUT_MS,
     lineStructuredSlices,
     pictureContextBySlice,
+    neighbourContextBySlice,
     l,
   },);
 

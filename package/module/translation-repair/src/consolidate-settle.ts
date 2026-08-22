@@ -158,6 +158,28 @@ export type ConsolidationSubject = {
    * Front matter identity, absent when the pair declares none.
    */
   readonly identityContext?: string;
+
+  /**
+   * What the pictures near this slice were read to say.
+   *
+   * DECLARED HERE FROM 2026-08-22, having been PASSED here since `#176`. The
+   * driver builds one subject and hands it to both halves, so the field was
+   * already arriving; only this type and the judging call were unaware of it,
+   * which is precisely how the judges came to weigh proposals written against
+   * evidence they could not see.
+   */
+  readonly pictureContext?: string;
+
+  /**
+   * Original of the passages either side, absent for a lone slice.
+   */
+  readonly neighbouringSourceText?: string;
+
+  /**
+   * Archive English of those same passages, which is the half that shows a
+   * relocation.
+   */
+  readonly neighbouringIncumbentText?: string;
 };
 
 /**
@@ -312,6 +334,33 @@ export async function settleConsolidation(
     : { identityContext: subject.identityContext, };
 
   /**
+   * Words about this passage that are not the passage: what its pictures were
+   * read to say and what stands either side of it.
+   *
+   * SPREAD PER FIELD RATHER THAN PASSED WHOLE, on the same terms as the
+   * identity above it. An absent picture and an empty picture are the same
+   * state and must render as no heading at all, since a heading promising
+   * readings and carrying none reads as a picture nobody could make sense of.
+   *
+   * ONE VALUE FEEDS THE SHEET AND THE KEY, which is `#107`'s lesson stated in
+   * `translate-document.ts` as well: a key that did not name the evidence would
+   * let a narrow run's answer be resumed for a wide one, and nothing anywhere
+   * would report the two as different questions.
+   */
+  const evidence = {
+    ...(((subject.pictureContext === undefined) || (subject.pictureContext === ''))
+      ? {}
+      : { pictureContext: subject.pictureContext, }),
+    ...(((subject.neighbouringSourceText === undefined) || (subject.neighbouringSourceText === ''))
+      ? {}
+      : { neighbouringSourceText: subject.neighbouringSourceText, }),
+    ...(((subject.neighbouringIncumbentText === undefined)
+        || (subject.neighbouringIncumbentText === ''))
+      ? {}
+      : { neighbouringIncumbentText: subject.neighbouringIncumbentText, }),
+  };
+
+  /**
    * What the structural guard leaves of the slate.
    */
   const floor = floorConsolidateSlate({
@@ -420,6 +469,11 @@ export async function settleConsolidation(
     incumbentText: standingText,
     incumbentKind: 'present',
     ...identity,
+    // WHAT THE PRODUCERS WERE SHOWN, forwarded rather than recomputed. `#176`
+    // put the pictures in front of the producers and left the judges blind,
+    // which is worse than both being blind: a producer that used a picture
+    // correctly then looked to its judge like one inventing detail.
+    ...evidence,
     // THE SAME FLAG THE PRODUCERS WERE GIVEN, which this function has held
     // since it was written and passed to nobody. `#176` gave it to the
     // consolidation producers; leaving the judges out of it would have the

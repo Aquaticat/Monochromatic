@@ -25,6 +25,7 @@ import type {
   ArtifactContestVerdictV2,
 } from './corpus-run/artifact-v2-contest.ts';
 import type { ProjectedLanesV2, } from './corpus-run/artifact-v2-derive.ts';
+import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { TranslateDecision, } from './translate-stage-result.ts';
@@ -208,6 +209,9 @@ function laneChoiceOf(
  * say, keyed by chunk index and already windowed by the caller, since the window
  * is positional in the prepared slices and this driver holds none of them
  *
+ * @param neighbourContextBySlice - passages either side of each slice, keyed the
+ * same way and computed by the same caller for the same reason
+ *
  * @param cache - per-entry store of settlements already bought
  *
  * @param signal - abort shared with the rest of the entry
@@ -223,7 +227,7 @@ function laneChoiceOf(
  *
  * @example
  * ```ts
- * const slices = await consolidateDocument({ client, projected, contests, modelIds, lineStructuredSlices, pictureContextBySlice, cache, signal, perCallTimeoutMs, l, },);
+ * const slices = await consolidateDocument({ client, projected, contests, modelIds, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function consolidateDocument(
@@ -235,6 +239,7 @@ export async function consolidateDocument(
     identityContext,
     lineStructuredSlices,
     pictureContextBySlice,
+    neighbourContextBySlice,
     cache,
     signal,
     perCallTimeoutMs,
@@ -247,6 +252,7 @@ export async function consolidateDocument(
     readonly identityContext?: string;
     readonly lineStructuredSlices: ReadonlySet<number>;
     readonly pictureContextBySlice: ReadonlyMap<number, string>;
+    readonly neighbourContextBySlice: ReadonlyMap<number, SliceNeighbourContext>;
     readonly cache: SliceCache<ConsolidationSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -353,6 +359,17 @@ export async function consolidateDocument(
     const pictureContext = pictureContextBySlice.get(row.chunkIndex,) ?? '';
 
     /**
+     * Passages either side of this slice, folded the same way and for the same
+     * reason: a lone slice has an empty window and a slice the map never
+     * mentions is a slice in exactly that position.
+     */
+    const neighbours = neighbourContextBySlice.get(row.chunkIndex,)
+      ?? {
+        sourceText: '',
+        incumbentText: '',
+      };
+
+    /**
      * Slice as both halves take it.
      */
     const subject = {
@@ -366,6 +383,15 @@ export async function consolidateDocument(
       // Omitted rather than empty, matching the context above it, so a producer
       // shown no readings is shown no heading promising any.
       ...((pictureContext === '') ? {} : { pictureContext, }),
+      // THE WINDOW REACHES THE JUDGING HALF ONLY, for now. The producer sheet
+      // has no block for it, so putting it here promises nothing to a producer
+      // and gives `settleConsolidation` what its judges need. Whether the
+      // producers should have it too is a real question and `#178` records it
+      // as an explicit exclusion rather than answering it in passing.
+      ...((neighbours.sourceText === '') ? {} : { neighbouringSourceText: neighbours.sourceText, }),
+      ...((neighbours.incumbentText === '')
+        ? {}
+        : { neighbouringIncumbentText: neighbours.incumbentText, }),
     };
 
     /**
@@ -381,6 +407,8 @@ export async function consolidateDocument(
       ballots: contest.ballots,
       lineStructured,
       pictureContext,
+      neighbouringSourceText: neighbours.sourceText,
+      neighbouringIncumbentText: neighbours.incumbentText,
     },);
 
     /**
