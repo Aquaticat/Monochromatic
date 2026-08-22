@@ -94,6 +94,26 @@ export type WouldShipReading =
   };
 
 /**
+ * Fields of a parsed artifact a reading is derived from.
+ *
+ * NARROWER THAN THE WHOLE ARTIFACT deliberately, so this file names its own
+ * inputs rather than taking everything and reading three things. A whole
+ * `ParsedArtifactV2` satisfies it unchanged, so consumers pass what they
+ * already hold, and the types still come from the parsed contract: that is
+ * what makes a key this file misspells a type error rather than an
+ * `undefined` that reads as an answer.
+ *
+ * @example
+ * ```ts
+ * const source: WouldShipSource = parseSettledArtifactV2({ value, },);
+ * ```
+ */
+export type WouldShipSource = Pick<
+  ParsedArtifactV2,
+  'comparison' | 'consolidation' | 'laneSelection'
+>;
+
+/**
  * One slice's reading, beside the index both lanes name it by.
  *
  * @example
@@ -248,7 +268,7 @@ function consolidatedWordingAt(
     artifact,
     chunkIndex,
   }: {
-    readonly artifact: ParsedArtifactV2;
+    readonly artifact: WouldShipSource;
     readonly chunkIndex: number;
   },
 ): ConsolidationContribution {
@@ -355,7 +375,7 @@ export function wouldShipTextFor(
     artifact,
     row,
   }: {
-    readonly artifact: ParsedArtifactV2;
+    readonly artifact: WouldShipSource;
     readonly row: ArtifactComparisonRowV2;
   },
 ): WouldShipReading {
@@ -429,7 +449,7 @@ export function wouldShipTextFor(
  * ```
  */
 export function wouldShipTextPerSlice(
-  { artifact, }: { readonly artifact: ParsedArtifactV2; },
+  { artifact, }: { readonly artifact: WouldShipSource; },
 ): readonly WouldShipSlice[] {
   return artifact
     .comparison

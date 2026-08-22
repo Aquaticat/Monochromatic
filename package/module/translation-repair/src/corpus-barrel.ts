@@ -44,6 +44,7 @@ export {
   type WouldShipReading,
   type WouldShipSilence,
   type WouldShipSlice,
+  type WouldShipSource,
   wouldShipTextFor,
   wouldShipTextPerSlice,
 } from './corpus-run/would-ship-text.ts';
