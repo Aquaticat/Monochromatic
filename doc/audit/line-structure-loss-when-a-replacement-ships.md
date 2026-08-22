@@ -270,7 +270,7 @@ so the near-total failure is a property of the wrap rather than of the compariso
 Skipping the wrap alone would reopen the hole this audit measured,
 which is why the guard is part of the same decision rather than a later one.
 
-### A fixture the queued work must carry, unproven
+### The fixture the queued work owed, now measured
 
 `wrapConsolidation` demotes on `wrapped === standingText || wrapped === standingAsWritten`,
 where `standingAsWritten` is the standing text put through the same wrap.
@@ -280,10 +280,34 @@ demote,
 and ship the flat text.
 The exact repair the rule demands would be discarded silently.
 
-THIS IS A READING OF THE CODE AND NOT A MEASUREMENT.
-It is written here so the queued work carries a `GFP` fixture for it,
-shown to fail with the guard removed,
-rather than so it can be cited as observed.
+MEASURED 2026-08-22, against the code as it stood before the skip,
+with `~/temp/agent/167-demote-control.mjs`.
+It was a reading of the code when written and is no longer one.
+
+Built from a six-block verse both sides of which trip `isLineStructured`,
+a flat standing text of 11 lines,
+and a producer that correctly unmerges to 17:
+
+```text
+producedIsLineStructured   true
+standingIsLineStructured   true
+producedLines              17
+standingLines              11
+wrapOfProducedIsNoOp       true
+wrappedStandingLines       17
+collision                  true
+shippedKind                standing
+shippedDemoted             true
+shippedLines               11
+shippedIsTheProducersWork  false
+```
+
+The producer obeyed the rule,
+the wrap had nothing to add to its output,
+and wrapping the flat standing text for comparison reproduced the producer's own 17 lines exactly.
+The demote fired on that collision and shipped the 11-line flat text.
+The fixture now lives in `consolidate-wrap.unit.test.ts`,
+and removing the skip fails it.
 
 ### What this does to earlier records
 
@@ -296,7 +320,81 @@ It does not rescue wrapping:
 `isLineStructured` reads the source,
 and wrapping damages line-per-unit text however well the pairing was drawn.
 
-### Still owed
+### What landed, and the one prescription measurement narrowed
 
-Implementation is queued behind the source freeze recorded in
-`doc/handover/translation-repair-run-continuity.md`.
+Landed 2026-08-22, in four commits on `translation-repair-rebased`.
+The freeze this was queued behind lifted the same day.
+
+- The wrap is skipped at all three sites on a governed slice.
+  The set comes from `prepared.lineStructuredSliceIndices`,
+  threaded in rather than recomputed:
+  the union's chunk half needs the whole chunk's pre-subdivision text,
+  which a `ChunkPair` no longer carries.
+- The consolidation keeps its demote across the skip,
+  comparing the two texts raw.
+  That branch also guards a proposal identical to what already stands,
+  which the skip does not make go away.
+- Each lane counts what it skipped,
+  so a governed run is legible in the log rather than looking like a wrap that found nothing.
+- The flattening fault is `compareLineCounts` in `line-structure-guard.ts`,
+  called from `validateTranslatedSlice`.
+  `translate-validate.ts` went past its line budget at 322 lines,
+  so the new comparison moved to a sibling rather than raising the limit.
+
+THE RECORDED PRESCRIPTION WAS NARROWED BY MEASUREMENT.
+This audit asked for "a line-count check against the original".
+Read as an equality that is refuted.
+Measured over the same 211 governed slices with `~/temp/agent/167-linecount-band.mjs`,
+taking the archive's own English against its Chinese:
+
+```text
+governed slices          211
+equal line counts        115
+archive has FEWER         16
+archive has MORE          80
+delta band            -5 .. +10,  median 0,  p90 +3
+```
+
+96 of 211 differ,
+and 80 of those carry MORE lines,
+because an English rendering of Chinese verse legitimately expands.
+An equality check would have sent back nearly half of every governed rendering.
+So the fault names a SHORTFALL and nothing else.
+
+The 16 that fall short are archive text,
+which this audit already records as violating the rule in 50 of 64 incumbents.
+They are not a live behaviour change:
+all three call sites validate `voice.value.translation`,
+a model's own candidate,
+and `translate-repair.ts` returns early where a candidate matches its incumbent,
+so no archive text is ever handed to the guard.
+
+### Three things measured on the way that are worth keeping
+
+`wrap-erased-difference` HAS NEVER FIRED.
+Across every settled artifact,
+21 consolidation slices carry a terminal,
+and the census is `consolidated` 11, `slate-kept-standing` 5, `gate-kept-standing` 4, `no-standing-text` 1.
+A governed proposal that equals the standing text still demotes into that terminal,
+where the name is now imprecise,
+since no wrap ran to erase anything.
+Splitting the terminal would touch the vocabulary,
+the reader,
+the cache store and their tests for a state no artifact holds,
+so it was left alone and recorded here instead.
+
+`rewrapped: false` NOW CARRIES TWO MEANINGS in the artifact:
+the wrap ran and changed nothing,
+or the wrap was skipped.
+Nothing reads the field beyond storing it,
+so no measurement is wrong today.
+The log discriminates the two,
+which is where a reader should go until something needs the artifact to.
+
+A FAILING GROUP HIDES EVERY LATER GROUP IN THE SAME FILE.
+`await describe` throws,
+so a second `await describe` after a failing one never runs and reports neither `PASS` nor `FAIL`.
+This is how the harness has always behaved and 40-odd files carry more than one group,
+so it changes nothing about a green suite;
+it matters when reading a red one,
+and it cost a `GFP` round here before it was spotted.
