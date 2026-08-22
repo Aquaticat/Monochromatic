@@ -1,5 +1,6 @@
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
+import type { ParsedConsolidationV2, } from './artifact-v2-read-consolidate.ts';
 import type { ArtifactJsonValue, } from './artifact-v2-contract.ts';
 import type { ParsedBlockPairingV2, } from './artifact-v2-read-pairing.ts';
 import type {
@@ -373,6 +374,12 @@ export type ParsedArtifactV2 = {
    * with the comparison this reader recomputed.
    */
   readonly laneSelection: ArtifactLaneSelectionV2;
+
+  /**
+   * What the third rendering settled, that the pass chose not to ask, or that
+   * this artifact was written before the field existed.
+   */
+  readonly consolidation: ParsedConsolidationV2;
 };
 
 //endregion Artifact version 2 read contract

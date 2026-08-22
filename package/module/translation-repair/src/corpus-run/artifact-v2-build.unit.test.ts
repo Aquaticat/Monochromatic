@@ -258,6 +258,7 @@ function catArtifact(): ReturnType<typeof buildSettledArtifactV2> {
     prepared: catPreparation(),
     lanes: catLanes(),
     laneSelection: { kind: 'pending-human-decision', },
+    consolidation: { kind: 'not-run', },
   },);
 }
 
@@ -411,6 +412,7 @@ await describe({
               repairDelivery: incoherent,
             },
             laneSelection: { kind: 'pending-human-decision', },
+            consolidation: { kind: 'not-run', },
           },);
         },).toThrow();
       },
@@ -450,6 +452,7 @@ await describe({
             prepared: catPreparation(),
             lanes: bothShort,
             laneSelection: { kind: 'pending-human-decision', },
+            consolidation: { kind: 'not-run', },
           },);
         },).toThrow('1 rows for a preparation of 2 slices',);
       },
@@ -491,6 +494,7 @@ await describe({
             prepared: foreign,
             lanes: catLanes(),
             laneSelection: { kind: 'pending-human-decision', },
+            consolidation: { kind: 'not-run', },
           },);
         },).toThrow('was built over',);
       },
@@ -545,6 +549,7 @@ await describe({
               translateDelivery: renumbered({ records: translateLedger(), },),
             },
             laneSelection: { kind: 'pending-human-decision', },
+            consolidation: { kind: 'not-run', },
           },);
         },).toThrow('names slice 7 at position 1',);
       },
@@ -572,6 +577,7 @@ await describe({
               },
             } as unknown as DocumentLanesResult,
             laneSelection: { kind: 'pending-human-decision', },
+            consolidation: { kind: 'not-run', },
           },);
         },).toThrow('counts 9 slices',);
       },
@@ -622,6 +628,7 @@ await describe({
           prepared: catPreparation(),
           lanes: overgrown,
           laneSelection: { kind: 'pending-human-decision', },
+          consolidation: { kind: 'not-run', },
         },),);
 
         for (const invented of [
@@ -682,6 +689,7 @@ await describe({
           prepared: paired,
           lanes: catLanes(),
           laneSelection: { kind: 'pending-human-decision', },
+          consolidation: { kind: 'not-run', },
         },).preparation
           .blockPairing,).toEqual([{
           sectionIndex: 1,

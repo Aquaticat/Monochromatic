@@ -22,6 +22,7 @@ import type {
   ParsedPreparationV2,
 } from './artifact-v2-read-contract.ts';
 import { parseLanesV2, } from './artifact-v2-read-lanes.ts';
+import { parseConsolidationV2, } from './artifact-v2-read-consolidate.ts';
 import { parseBlockPairingV2, } from './artifact-v2-read-pairing.ts';
 import { parseComparisonRowV2, } from './artifact-v2-read-rows.ts';
 import {
@@ -317,6 +318,7 @@ export function parseSettledArtifactV2(
       'lanes',
       'comparison',
       'laneSelection',
+      'consolidation',
     ],
     path: id,
   },);
@@ -401,6 +403,15 @@ export function parseSettledArtifactV2(
       value: artifact.laneSelection,
       comparison,
       path: `${id}.laneSelection`,
+    },),
+
+    // WHAT THE THIRD RENDERING SETTLED, absent on every artifact written before
+    // the field existed. That absence is NAMED rather than defaulted: a reader
+    // counting how often the stage declined must not count the whole earlier
+    // archive as declines.
+    consolidation: parseConsolidationV2({
+      value: artifact.consolidation,
+      path: `${id}.consolidation`,
     },),
   };
 }

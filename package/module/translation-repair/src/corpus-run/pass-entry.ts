@@ -12,7 +12,9 @@ import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { prepareDocumentPairWithRoster, } from '../prepare-with-pairing.ts';
 import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
 import { projectLanesV2, } from './artifact-v2-derive.ts';
+import { consolidateDocument, } from '../consolidate-driver.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
+import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
@@ -339,6 +341,35 @@ async function runEntryPipeline(
     },);
 
     /**
+     * What the roster settled at every slice the contest left a standing text
+     * at, which is the third rendering: a wording neither lane produced.
+     *
+     * BOUNDED BY THE ENTRY'S OWN SIGNAL and nothing narrower. The stage buys a
+     * slate, one judging and one gate per slice, each already bounded by
+     * `RUN_PER_CALL_TIMEOUT_MS` and by the client's stream guards, and every
+     * settled slice is persisted before the next begins. A separate
+     * per-settlement ceiling would therefore cut a round that the per-call
+     * bound is already cutting, and would cost the slice's bought work to do
+     * it. The entry ceiling is what stops a document that is going nowhere.
+     */
+    const consolidateSlices = await consolidateDocument({
+      client,
+      projected,
+      contests: contestSlices,
+      modelIds: RUN_ROSTER,
+      ...((prepared.identityContext === undefined)
+        ? {}
+        : { identityContext: prepared.identityContext, }),
+      cache: await openConsolidateCache({
+        dir: entryCacheDir,
+        generation: pipelineDigest,
+      },),
+      signal: deadline.callSignal,
+      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      l: tagged({ tag: entry.id, },),
+    },);
+
+    /**
      * Wall time this entry took, both lanes and the contest included.
      */
     const durationMs = Date.now() - t0;
@@ -369,6 +400,15 @@ async function runEntryPipeline(
       laneSelection: {
         kind: 'contested',
         slices: contestSlices,
+      },
+
+      // A CONSOLIDATION THAT RAN, whatever it found, for the reason given
+      // above about the contest: a document where every contested slice kept
+      // its standing text records a settled stage with those records in it,
+      // not the absence that means nobody asked.
+      consolidation: {
+        kind: 'settled',
+        slices: consolidateSlices,
       },
     },);
     await writeFileAtomic({

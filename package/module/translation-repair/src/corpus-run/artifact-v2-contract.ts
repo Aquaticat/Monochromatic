@@ -1,6 +1,7 @@
 import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { RepairTranslationResult, } from '../repair-result.ts';
 import type { TranslateDocumentResult, } from '../translate-document-contract.ts';
+import type { ArtifactConsolidationV2, } from './artifact-v2-consolidate.ts';
 import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import type {
   ArtifactComparisonRowV2,
@@ -311,6 +312,16 @@ export type SettledArtifactV2 = {
    * absence, which is the defect class this whole generation exists to end.
    */
   readonly laneSelection: ArtifactLaneSelectionV2;
+
+  /**
+   * What the consolidation settled, or a stated absence saying it never ran.
+   *
+   * SEPARATE FROM `laneSelection` because it answers a later question. The
+   * contest picks between the two lanes; this asks whether a rendering neither
+   * lane produced is better than the winner, and it runs only where the contest
+   * already settled something.
+   */
+  readonly consolidation: ArtifactConsolidationV2;
 };
 
 //endregion Artifact version 2 contract

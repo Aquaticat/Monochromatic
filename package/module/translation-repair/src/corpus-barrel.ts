@@ -33,6 +33,10 @@ export {
   contestEligibleIndexes,
   describeContestSlice,
 } from './corpus-run/artifact-v2-contest.ts';
+export {
+  parseConsolidationV2,
+  type ParsedConsolidationV2,
+} from './corpus-run/artifact-v2-read-consolidate.ts';
 export { parseLaneSelectionV2, } from './corpus-run/artifact-v2-read-contest.ts';
 export {
   projectLanesV2,

@@ -25,11 +25,14 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  type ArtifactContestSliceV2,
   consolidateDocument,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
   consolidationWorthResuming,
   createSyntheticClient,
+  type ProjectedLanesV2,
+  type SliceCache,
   type TranslateDecision,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
@@ -70,7 +73,7 @@ const REFUSING_CLIENT = createSyntheticClient({
  * const projected = twoSliceDocument();
  * ```
  */
-function twoSliceDocument() {
+function twoSliceDocument(): ProjectedLanesV2 {
   /**
    * One comparison row per slice, both lanes wording them differently.
    */
@@ -95,24 +98,38 @@ function twoSliceDocument() {
       },),
       translate: [],
     },
-  };
+  } as unknown as ProjectedLanesV2;
 }
 
 /**
- * Builds one contest outcome.
+ * Builds one contest record, as the contest wrote it for the artifact.
  *
- * @param choice - lane the contest settled on
+ * @param chunkIndex - slice this answers
  *
- * @returns Outcome shaped as the contest stage returns one
+ * @param lane - lane the contest backed
+ *
+ * @returns Record shaped as the contest stage produces one
  *
  * @example
  * ```ts
- * const outcome = contestSettling({ choice: 'repair', },);
+ * const record = contestSettling({ chunkIndex: 0, lane: 'repair', },);
  * ```
  */
-function contestSettling({ choice, }: { readonly choice: string; },) {
+function contestSettling(
+  {
+    chunkIndex,
+    lane,
+  }: {
+    readonly chunkIndex: number;
+    readonly lane: 'repair' | 'translate';
+  },
+): ArtifactContestSliceV2 {
   return {
-    choice,
+    chunkIndex,
+    verdict: {
+      kind: 'lane-won',
+      lane,
+    },
     ballots: [],
     usable: ROSTER.length,
   };
@@ -130,7 +147,9 @@ function contestSettling({ choice, }: { readonly choice: string; },) {
  * const settled = settlementReaching({ terminal: 'incumbent-only', },);
  * ```
  */
-function settlementReaching({ terminal, }: { readonly terminal: string; },) {
+function settlementReaching(
+  { terminal, }: { readonly terminal: ConsolidationTerminal; },
+): ConsolidationSettlement {
   return {
     terminal,
     text: 'whatever this slice keeps',
@@ -157,7 +176,7 @@ function settlementReaching({ terminal, }: { readonly terminal: string; },) {
  *
  * @example
  * ```ts
- * const { slices, written, } = await driveWith({ contests: new Map(), },);
+ * const { slices, written, } = await driveWith({ contests: [], },);
  * ```
  */
 async function driveWith(
@@ -166,9 +185,9 @@ async function driveWith(
     resumed = new Map(),
     projected = twoSliceDocument(),
   }: {
-    readonly contests: ReadonlyMap<number, unknown>;
-    readonly resumed?: ReadonlyMap<string, unknown>;
-    readonly projected?: unknown;
+    readonly contests: readonly ArtifactContestSliceV2[];
+    readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
+    readonly projected?: ProjectedLanesV2;
   },
 ) {
   /**
@@ -176,21 +195,26 @@ async function driveWith(
    */
   const written: string[] = [];
 
+  /**
+   * Cache standing in for the entry store, recording every write.
+   */
+  const cache: SliceCache<ConsolidationSettlement> = {
+    resumed,
+    persist: async function recordWrite({ key, }: { readonly key: string; },): Promise<void> {
+      written.push(key,);
+    },
+  };
+
   const slices = await consolidateDocument({
     client: REFUSING_CLIENT,
     projected,
     contests,
     modelIds: ROSTER,
-    cache: {
-      resumed,
-      persist: async function recordWrite({ key, }: { readonly key: string; },) {
-        written.push(key,);
-      },
-    },
+    cache,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
     l,
-  } as never,);
+  },);
 
   return {
     slices,
@@ -206,7 +230,7 @@ await describe({
         + 'slice both lanes worded identically has nothing to consolidate, because a third rendering '
         + 'would be competing against their agreement rather than resolving a difference',
       fn: async () => {
-        const { slices, written, } = await driveWith({ contests: new Map(), },);
+        const { slices, written, } = await driveWith({ contests: [], },);
 
         expect(slices.length,).toBe(0,);
         expect(written.length,).toBe(0,);
@@ -224,7 +248,7 @@ await describe({
         let raised: unknown;
         try {
           await driveWith({
-            contests: new Map([[0, contestSettling({ choice: 'repair', },),],],),
+            contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
           },);
         } catch (error: unknown) {
           raised = error;
@@ -257,7 +281,7 @@ await describe({
         let raised: unknown;
         try {
           await driveWith({
-            contests: new Map([[0, contestSettling({ choice: 'repair', },),],],),
+            contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
             projected: gapped,
           },);
         } catch (error: unknown) {
@@ -285,11 +309,11 @@ await describe({
         };
 
         const { slices, written, } = await driveWith({
-          contests: new Map([
-            [0, contestSettling({ choice: 'repair', },),],
-            [1, contestSettling({ choice: 'translate', },),],
-          ],),
-          resumed: everyKey as never,
+          contests: [
+            contestSettling({ chunkIndex: 0, lane: 'repair', },),
+            contestSettling({ chunkIndex: 1, lane: 'translate', },),
+          ],
+          resumed: everyKey as unknown as ReadonlyMap<string, ConsolidationSettlement>,
         },);
 
         expect(slices.length,).toBe(2,);

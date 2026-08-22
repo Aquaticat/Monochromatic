@@ -3,6 +3,7 @@ import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { compareDocumentLanes, } from '../lane-comparison.ts';
 import { preparationIdentity, } from '../preparation-identity.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
+import type { ArtifactConsolidationV2, } from './artifact-v2-consolidate.ts';
 import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import { projectLanesV2, } from './artifact-v2-derive.ts';
 import {
@@ -61,6 +62,10 @@ import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
  *
  * @param lanes - what both lanes returned, with the ledgers derived from them
  *
+ * @param laneSelection - which lane ships, or that nobody has asked
+ *
+ * @param consolidation - what the third rendering settled, or that it never ran
+ *
  * @returns Artifact ready to serialize
  *
  * @throws {@link LaneComparisonError} when the two ledgers cannot be compared,
@@ -86,6 +91,7 @@ export function buildSettledArtifactV2(
     prepared,
     lanes,
     laneSelection,
+    consolidation,
   }: {
     readonly entryId: string;
     readonly tip: string;
@@ -103,6 +109,13 @@ export function buildSettledArtifactV2(
      * nobody chose.
      */
     readonly laneSelection: ArtifactLaneSelectionV2;
+
+    /**
+     * What the consolidation settled, stated by the caller for the same reason
+     * `laneSelection` is: a pass that never asked for a third rendering says so
+     * out loud rather than leaving an absence the reader has to interpret.
+     */
+    readonly consolidation: ArtifactConsolidationV2;
   },
 ): SettledArtifactV2 {
   /**
@@ -264,6 +277,11 @@ export function buildSettledArtifactV2(
     // roster or by nobody, and an artifact that left the field out would make
     // "not decided yet" indistinguishable from "written before anyone asked".
     laneSelection,
+
+    // THE THIRD RENDERING, likewise stated. A pass that ran only the two lanes
+    // records that it did not ask, so a census counting consolidated slices is
+    // not counting a field's absence as a stage that found nothing.
+    consolidation,
   };
 }
 

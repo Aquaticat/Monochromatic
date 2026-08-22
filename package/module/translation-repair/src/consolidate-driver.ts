@@ -19,8 +19,12 @@ import {
   type ArtifactConsolidateSliceV2,
   describeConsolidateSlice,
 } from './corpus-run/artifact-v2-consolidate.ts';
+import type {
+  ArtifactContestSliceV2,
+  ArtifactContestVerdictV2,
+} from './corpus-run/artifact-v2-contest.ts';
 import type { ProjectedLanesV2, } from './corpus-run/artifact-v2-derive.ts';
-import type { LaneContestOutcome, } from './lane-contest-stage.ts';
+import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { TranslateDecision, } from './translate-stage-result.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
@@ -125,13 +129,41 @@ export function consolidationWorthResuming(
 }
 
 /**
+ * Reads which lane the contest backed out of the verdict it recorded.
+ *
+ * BOTH WAYS OF NOT SETTLING READ AS `neither`, deliberately. The record keeps
+ * `settled-neither` apart from `quorum-not-met` because they are different
+ * facts about the run, but this stage asks one question of them: is there a
+ * standing text to improve on. There is not, either way, and `standingTextFor`
+ * answers the empty string for both, which stops the settlement before it buys
+ * anything.
+ *
+ * @param verdict - what the contest recorded for this slice
+ *
+ * @returns Lane the contest backed, or the refusal
+ *
+ * @example
+ * ```ts
+ * const choice = laneChoiceOf({ verdict, },);
+ * ```
+ */
+function laneChoiceOf(
+  { verdict, }: { readonly verdict: ArtifactContestVerdictV2; },
+): LaneChoice {
+  if (verdict.kind === 'lane-won')
+    return verdict.lane;
+  return 'neither';
+}
+
+/**
  * Asks the roster for a third rendering at every slice the contest settled.
  *
  * @param client - synthetic chat client
  *
  * @param projected - both ledgers as version 2 rows, beside their comparison
  *
- * @param contests - what the lane contest settled, keyed by slice
+ * @param contests - one record per contested slice, as the contest wrote them
+ * for the artifact
  *
  * @param modelIds - roster to ask
  *
@@ -169,7 +201,7 @@ export async function consolidateDocument(
   }: {
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanesV2;
-    readonly contests: ReadonlyMap<number, LaneContestOutcome>;
+    readonly contests: readonly ArtifactContestSliceV2[];
     readonly modelIds: readonly SyntheticModelId[];
     readonly identityContext?: string;
     readonly cache: SliceCache<ConsolidationSettlement>;
@@ -202,6 +234,19 @@ export async function consolidateDocument(
     },),);
 
   /**
+   * Contest record for each slice it answered.
+   */
+  const contestBySlice = new Map(contests.map(function nameSlice(slice,): readonly [
+    number,
+    ArtifactContestSliceV2,
+  ] {
+    return [
+      slice.chunkIndex,
+      slice,
+    ];
+  },),);
+
+  /**
    * What this run asks, folded into every key.
    */
   const runShape = consolidateRunShape({
@@ -214,12 +259,12 @@ export async function consolidateDocument(
    */
   const slices: ArtifactConsolidateSliceV2[] = [];
 
-  dl.info(`consolidation: ${String(contests.size,)} contested slices to settle`,);
+  dl.info(`consolidation: ${String(contests.length,)} contested slices to settle`,);
   for (const row of projected.comparison) {
     /**
      * What the contest settled here, absent where it never ran.
      */
-    const contest = contests.get(row.chunkIndex,);
+    const contest = contestBySlice.get(row.chunkIndex,);
     if (contest === undefined)
       continue;
 
@@ -237,7 +282,7 @@ export async function consolidateDocument(
      * Wording that would ship without this stage.
      */
     const standingText = standingTextFor({
-      choice: contest.choice,
+      choice: laneChoiceOf({ verdict: contest.verdict, },),
       repairText: row.repairText,
       translateText: row.translateText,
     },);

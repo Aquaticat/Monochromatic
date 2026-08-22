@@ -126,6 +126,7 @@ export {
   type ArtifactConsolidateGateV2,
   type ArtifactConsolidateShippedV2,
   type ArtifactConsolidateSliceV2,
+  type ArtifactConsolidationV2,
   describeConsolidateSlice,
 } from './corpus-run/artifact-v2-consolidate.ts';
 export {

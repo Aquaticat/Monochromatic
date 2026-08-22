@@ -199,4 +199,36 @@ export function describeConsolidateSlice(
   };
 }
 
+/**
+ * What the consolidation stage did over one document, or that it did not run.
+ *
+ * A STATED ABSENCE rather than an empty list, following `laneSelection` for the
+ * same reason: a pass that never asked for a third rendering and a document
+ * where no slice was eligible are different facts, and an empty `slices` array
+ * would be the only record of either.
+ *
+ * @example
+ * ```ts
+ * const consolidation: ArtifactConsolidationV2 = { kind: 'not-run', };
+ * ```
+ */
+export type ArtifactConsolidationV2 =
+  | {
+    /**
+     * No third rendering was asked for over this entry.
+     */
+    readonly kind: 'not-run';
+  }
+  | {
+    /**
+     * The stage ran at every slice the lane contest settled.
+     */
+    readonly kind: 'settled';
+
+    /**
+     * One record per consolidated slice, in comparison-row order.
+     */
+    readonly slices: readonly ArtifactConsolidateSliceV2[];
+  };
+
 //endregion Artifact version 2 consolidation

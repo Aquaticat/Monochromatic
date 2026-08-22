@@ -546,6 +546,7 @@ async function writeArtifact(
         prepared,
         lanes,
         laneSelection: { kind: 'pending-human-decision', },
+        consolidation: { kind: 'not-run', },
       },),
       undefined,
       2,
