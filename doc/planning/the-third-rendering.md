@@ -3095,7 +3095,7 @@ and the sole-candidate case is the one that most distorts a count.
 
 ### The condition and what reaches it
 
-`consolidate-settle.ts:376` assigns the terminal on one test,
+`consolidate-settle.ts:379` assigns the terminal on one test,
 `decided.origin !== 'fresh'`,
 under a comment reading that the judges choosing the incumbent ends it.
 That comment describes one of the three cases the condition admits.
