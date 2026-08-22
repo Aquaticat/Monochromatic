@@ -41,6 +41,31 @@ import {
 // where a region survived the draw and then could not be located again.
 
 /**
+ * Raised when a slice that shipped is named by no comparison row.
+ *
+ * @example
+ * ```ts
+ * throw new DamageRegionV2Error({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
+ * ```
+ */
+export class DamageRegionV2Error extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - which slice and lane no row accounts for
+   *
+   * @example
+   * ```ts
+   * throw new DamageRegionV2Error({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'DamageRegionV2Error';
+  }
+}
+
+/**
  * Lanes a damage draw ranges over, in the order a pass runs them.
  */
 export const DAMAGE_LANES = [
@@ -252,9 +277,9 @@ export function regionsOfLane(
        */
       const reading = readings.get(row.chunkIndex,);
       if (reading === undefined)
-        throw new Error(
-          `slice ${row.chunkIndex} shipped in the ${lane} lane and is named by no comparison row`,
-        );
+        throw new DamageRegionV2Error({
+          message: `slice ${row.chunkIndex} shipped in the ${lane} lane and is named by no comparison row`,
+        },);
 
       return {
         entryId,

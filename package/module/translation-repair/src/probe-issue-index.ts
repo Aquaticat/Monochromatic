@@ -13,6 +13,31 @@ import type { TelemetryProbeReading, } from './probe-attribution.ts';
 // package exports should not be one that also runs something.
 
 /**
+ * Raised when two shipped records claim one issue id.
+ *
+ * @example
+ * ```ts
+ * throw new ProbeIssueIndexError({ message: 'two shipped records claim issue 4f2a', },);
+ * ```
+ */
+export class ProbeIssueIndexError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - which id more than one record claims
+   *
+   * @example
+   * ```ts
+   * throw new ProbeIssueIndexError({ message: 'two shipped records claim issue 4f2a', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'ProbeIssueIndexError';
+  }
+}
+
+/**
  * Indexes readings by the issue that OWNS each one.
  *
  * Ownership comes from the record the reading was written on, never from the
@@ -48,12 +73,12 @@ export function indexReadingsByIssue(
      */
     const existing = byIssueId.get(entry.issueId,);
     if ((existing !== undefined) && (existing !== entry.reading))
-      throw new Error(
-        `two shipped records claim issue ${entry.issueId}. The graded sheet `
+      throw new ProbeIssueIndexError({
+        message: `two shipped records claim issue ${entry.issueId}. The graded sheet `
           + 'joins to probe verdicts through this id, so a duplicate would '
           + 'attach one record\'s verdict to another record\'s position '
           + 'without the counts showing it.',
-      );
+      },);
     byIssueId.set(
       entry.issueId,
       entry.reading,

@@ -26,6 +26,31 @@ import { assertSliceIndexing, } from './slice-indexing.ts';
 // whether some stage considers its work a change.
 
 /**
+ * Raised when replacements cannot be written into the slices they name.
+ *
+ * @example
+ * ```ts
+ * throw new SliceSpliceError({ message: 'two replacements name one slice', },);
+ * ```
+ */
+export class SliceSpliceError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - which replacement cannot land, and what makes it impossible
+   *
+   * @example
+   * ```ts
+   * throw new SliceSpliceError({ message: 'two replacements name one slice', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'SliceSpliceError';
+  }
+}
+
+/**
  * Text to write over one slice's span.
  *
  * Carries no `changed` flag: presence in the list IS the instruction to apply
@@ -311,11 +336,11 @@ export function spliceSlices(
     ] as const;
   },),);
   if (spans.size !== slices.length) {
-    throw new Error(
-      'two slices carry one index: a map keyed by index keeps only the last of '
+    throw new SliceSpliceError({
+      message: 'two slices carry one index: a map keyed by index keeps only the last of '
         + 'them, so one slice becomes unreachable while its replacement lands '
         + 'on the other',
-    );
+    },);
   }
 
   // AFTER identity, BEFORE any offset is read. Assembly is where a malformed
@@ -350,10 +375,10 @@ export function spliceSlices(
      */
     const slice = spans.get(replacement.chunkIndex,);
     if (slice === undefined) {
-      throw new Error(
-        `no slice ${String(replacement.chunkIndex,)} to write into: `
+      throw new SliceSpliceError({
+        message: `no slice ${String(replacement.chunkIndex,)} to write into: `
         + `the document was sliced into ${String(slices.length,)} slices`,
-      );
+      },);
     }
 
     /**
@@ -385,11 +410,11 @@ export function spliceSlices(
     if (missingTranslation
       && writesNothing
       && sourceSaysSomething) {
-      throw new Error(
-        `slice ${String(replacement.chunkIndex,)} has no translation and writes none: an anchor is `
+      throw new SliceSpliceError({
+        message: `slice ${String(replacement.chunkIndex,)} has no translation and writes none: an anchor is `
           + 'where a rendering belongs, so blank text there leaves the passage missing while the run '
           + 'reports it delivered',
-      );
+      },);
     }
     return {
       replacement,
@@ -400,10 +425,10 @@ export function spliceSlices(
     return entry.replacement
       .chunkIndex;
   },),).size !== placed.length) {
-    throw new Error(
-      'two replacements name one slice: whichever applied second would '
+    throw new SliceSpliceError({
+      message: 'two replacements name one slice: whichever applied second would '
       + 'overwrite the other, and the winner would depend on sort order',
-    );
+    },);
   }
 
   /**

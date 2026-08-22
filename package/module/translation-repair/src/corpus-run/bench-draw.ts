@@ -11,6 +11,31 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // function that needs a pinned corpus checkout to execute.
 
 /**
+ * Raised when no bench sample can be drawn from what was offered.
+ *
+ * @example
+ * ```ts
+ * throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
+ * ```
+ */
+export class BenchDrawError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - what was offered in place of slices to draw from
+   *
+   * @example
+   * ```ts
+   * throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'BenchDrawError';
+  }
+}
+
+/**
  * Midpoint of a stratum, so the draw takes representative slices rather than
  * the corpus extremes.
  */
@@ -127,7 +152,7 @@ export function pickSpreadSample<SliceT extends DrawableSlice,>(
   },
 ): readonly SliceT[] {
   if (slices.length === 0)
-    throw new Error('a bench sample cannot be drawn from no slices',);
+    throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
 
   /**
    * Slices ordered by source size.

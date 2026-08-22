@@ -104,6 +104,7 @@ export {
   corroboratedCount,
   corroboratingProberCount,
   judgeRegionProbe,
+  ProbeTelemetryError,
   type ProbeTelemetrySummary,
   type RegionProbeVerdict,
   summarizeProbeTelemetry,

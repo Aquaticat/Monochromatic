@@ -23,6 +23,31 @@ import type { BenchRow, } from './roster-bench.ts';
 // for, and the split is what keeps that readable.
 
 /**
+ * Raised when a roster cannot be benched because nothing in it varies.
+ *
+ * @example
+ * ```ts
+ * throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
+ * ```
+ */
+export class BenchReportError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - what leaves nothing for one bench run to compare
+   *
+   * @example
+   * ```ts
+   * throw new BenchReportError({ message: 'a roster of 1 cannot be benched: nothing to vary', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'BenchReportError';
+  }
+}
+
+/**
  * Narrowest producer roster worth benching: below two there is nothing to
  * choose between except the incumbent.
  */
@@ -116,9 +141,9 @@ export function benchWidths(
     },
   );
   if (widths.length === 0)
-    throw new Error(
-      `a roster of ${String(roster.length,)} cannot be benched: nothing to vary`,
-    );
+    throw new BenchReportError({
+      message: `a roster of ${String(roster.length,)} cannot be benched: nothing to vary`,
+    },);
 
   return {
     widths,

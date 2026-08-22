@@ -9,6 +9,31 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // must not ship its edit.
 
 /**
+ * Raised when a candidate slate cannot say what winning it would mean.
+ *
+ * @example
+ * ```ts
+ * throw new CandidateSlateError({ message: 'candidate slate must include the unchanged translation', },);
+ * ```
+ */
+export class CandidateSlateError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - what the slate holds that leaves its winner unreadable
+   *
+   * @example
+   * ```ts
+   * throw new CandidateSlateError({ message: 'candidate slate must include the unchanged translation', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'CandidateSlateError';
+  }
+}
+
+/**
  * Everything measured about one candidate translation.
  * Measurements come from deterministic checks and the semantic resolution
  * stage; selection itself never calls a model.
@@ -292,16 +317,16 @@ export function selectRepairCandidate(
     return candidate.candidateId === UNCHANGED_CANDIDATE_ID;
   },);
   if (claimingUnchanged.length === 0) {
-    throw new Error(
-      'candidate slate must include the unchanged translation; it always competes',
-    );
+    throw new CandidateSlateError({
+      message: 'candidate slate must include the unchanged translation; it always competes',
+    },);
   }
   if (claimingUnchanged.length > 1) {
-    throw new Error(
-      `candidate slate holds ${
+    throw new CandidateSlateError({
+      message: `candidate slate holds ${
         String(claimingUnchanged.length,)
       } candidates under the unchanged identifier, so winning it would say nothing`,
-    );
+    },);
   }
 
   /**
@@ -309,10 +334,10 @@ export function selectRepairCandidate(
    */
   const unchanged = nonNullishOrThrow(claimingUnchanged[0],);
   if (unchanged.text !== incumbentText) {
-    throw new Error(
-      'unchanged candidate carries wording other than the archive text, so the '
+    throw new CandidateSlateError({
+      message: 'unchanged candidate carries wording other than the archive text, so the '
         + 'slate cannot say what winning it would mean',
-    );
+    },);
   }
 
   /**

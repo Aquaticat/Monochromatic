@@ -16,6 +16,31 @@ import type { SampleManifest, } from './sample-manifest.ts';
 // there.
 
 /**
+ * Raised when a graded sheet and the manifest it is scored against cannot describe one draw.
+ *
+ * @example
+ * ```ts
+ * throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
+ * ```
+ */
+export class SheetBindingError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - which half of the binding disagrees, in sheet and manifest terms
+   *
+   * @example
+   * ```ts
+   * throw new SheetBindingError({ message: 'sheet and manifest carry different draw digests', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'SheetBindingError';
+  }
+}
+
+/**
  * How firmly a sheet was tied to the manifest it is being scored against.
  *
  * @example
@@ -66,22 +91,22 @@ export function assertSheetMatchesManifest(
   },
 ): SheetBindingStrength {
   if (identity.seed !== manifest.seed)
-    throw new Error(
-      `${sheetLabel} and manifest belong to different draws: sheet says seed ${
+    throw new SheetBindingError({
+      message: `${sheetLabel} and manifest belong to different draws: sheet says seed ${
         JSON.stringify(identity.seed,)
       }, manifest says ${JSON.stringify(manifest.seed,)}. Item counts can `
         + 'match across unrelated draws of the same size, so position is not '
         + 'evidence they describe the same items.',
-    );
+    },);
 
   if (identity.corpusSha !== manifest.corpusSha)
-    throw new Error(
-      `${sheetLabel} and manifest were produced against different corpus `
+    throw new SheetBindingError({
+      message: `${sheetLabel} and manifest were produced against different corpus `
         + `commits: sheet says ${JSON.stringify(identity.corpusSha,)}, manifest `
         + `says ${JSON.stringify(manifest.corpusSha,)}. The same entry can `
         + 'carry different text at two commits, so the grades and the '
         + 'artifacts would be about different documents.',
-    );
+    },);
 
   /**
    * Whether the sheet declares a digest.
@@ -101,13 +126,13 @@ export function assertSheetMatchesManifest(
   // them as legacy would let the newer file's presence be ignored by the older
   // file's absence.
   if (sheetBound !== manifestBound)
-    throw new Error(
-      `${sheetLabel} and manifest disagree about whether this draw is bound: `
+    throw new SheetBindingError({
+      message: `${sheetLabel} and manifest disagree about whether this draw is bound: `
         + `the ${sheetBound ? 'sheet' : 'manifest'} carries a draw digest and `
         + `the ${sheetBound ? 'manifest' : 'sheet'} carries none. One draw `
         + 'writes both in the same instant, so this pair was assembled from '
         + 'two different draws, or one of them lost its digest.',
-    );
+    },);
 
   // Absent on BOTH sides means the draw predates the binding, which is true of
   // every sheet drawn before it existed and is not a fault. Refusing those
@@ -118,15 +143,15 @@ export function assertSheetMatchesManifest(
     return 'header-only';
 
   if (identity.drawDigest !== manifest.drawDigest)
-    throw new Error(
-      `${sheetLabel} and manifest carry different draw digests: sheet says ${
+    throw new SheetBindingError({
+      message: `${sheetLabel} and manifest carry different draw digests: sheet says ${
         JSON.stringify(identity.drawDigest,)
       }, manifest says ${JSON.stringify(manifest.drawDigest,)}. They agree on `
         + 'seed and corpus pin, which is exactly the case the digest exists '
         + 'for: the draw is deterministic in its seed but not in its pool, so '
         + 'the same seed drawn after another entry settled names a different '
         + 'set of items at the same positions.',
-    );
+    },);
 
   return 'digest';
 }
@@ -163,12 +188,12 @@ export function requireSheetSeed(
   },
 ): string {
   if (identity.seed === '')
-    throw new Error(
-      `${sheetLabel} declares no draw seed, so nothing can say which draw it `
+    throw new SheetBindingError({
+      message: `${sheetLabel} declares no draw seed, so nothing can say which draw it `
         + 'came from. Every sheet the formatters write carries a "Draw seed: " '
         + 'header above its first item; a file without one cannot be paired '
         + 'with a manifest or with pre-grades except by guessing.',
-    );
+    },);
   return identity.seed;
 }
 

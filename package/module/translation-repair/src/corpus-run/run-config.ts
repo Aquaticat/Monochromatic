@@ -30,6 +30,31 @@ import { resolveGit, } from './git-command.ts';
 // (AGENTS.md TMP/NMD), never into git.
 
 /**
+ * Raised when a setting a run depends on is absent from its environment.
+ *
+ * @example
+ * ```ts
+ * throw new RunConfigError({ message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set', },);
+ * ```
+ */
+export class RunConfigError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - which setting is missing, and where runs ordinarily get it
+   *
+   * @example
+   * ```ts
+   * throw new RunConfigError({ message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'RunConfigError';
+  }
+}
+
+/**
  * Directory of this source file, for locating the worktree via git.
  */
 const HERE = import.meta.dirname;
@@ -465,9 +490,9 @@ export function createRunClient(): SyntheticClient {
     .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
     ?? '';
   if (apiKey === '')
-    throw new Error(
-      'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set; run under mise so sops injects it',
-    );
+    throw new RunConfigError({
+      message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set; run under mise so sops injects it',
+    },);
   return createSyntheticClient({ apiKey, },);
 }
 

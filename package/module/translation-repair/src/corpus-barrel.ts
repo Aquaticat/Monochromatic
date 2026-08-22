@@ -18,6 +18,7 @@ export {
   collectShippedRegionsV2,
   DAMAGE_LANES,
   type DamageLane,
+  DamageRegionV2Error,
   regionIdOf,
   regionsOfLane,
   type ShippedRegionCensus,
@@ -211,6 +212,7 @@ export {
 } from './corpus-run/markup-slice.ts';
 export { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 export {
+  BenchDrawError,
   type DrawableSlice,
   orderBySourceSize,
   pickSpreadSample,
@@ -220,7 +222,10 @@ export {
   type CallTokens,
   recordingClient,
 } from './corpus-run/bench-record.ts';
-export { benchWidths, } from './corpus-run/bench-report.ts';
+export {
+  BenchReportError,
+  benchWidths,
+} from './corpus-run/bench-report.ts';
 export {
   lockRunsDir,
   RunsDirectoryBusyError,

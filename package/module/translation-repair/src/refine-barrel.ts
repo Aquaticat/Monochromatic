@@ -51,6 +51,7 @@ export { wrapRepairOutcomes, } from './repair-wrap.ts';
 export { wrapReplacementText, } from './semantic-wrap.ts';
 export {
   type SliceReplacement,
+  SliceSpliceError,
   spliceSlices,
 } from './splice-slices.ts';
 

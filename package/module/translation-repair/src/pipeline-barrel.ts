@@ -261,6 +261,7 @@ export {
 export {
   type CandidateMeasurements,
   type CandidateSelection,
+  CandidateSlateError,
   compareCandidates,
   type RepairCandidate,
   selectRepairCandidate,

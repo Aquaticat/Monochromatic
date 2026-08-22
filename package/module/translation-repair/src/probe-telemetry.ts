@@ -23,6 +23,31 @@ import type {
 // which silently overweights exactly the widest edits.
 
 /**
+ * Raised when probe copies for one envelope disagree across records it served.
+ *
+ * @example
+ * ```ts
+ * throw new ProbeTelemetryError({ message: 'envelope 3 of entry 7 carries disagreeing probe copies', },);
+ * ```
+ */
+export class ProbeTelemetryError extends Error {
+  /**
+   * Builds refusal carrying what could not hold.
+   *
+   * @param message - which envelope contradicts itself, and across which records
+   *
+   * @example
+   * ```ts
+   * throw new ProbeTelemetryError({ message: 'envelope 3 of entry 7 carries disagreeing probe copies', },);
+   * ```
+   */
+  public constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'ProbeTelemetryError';
+  }
+}
+
+/**
  * How a region's probers came down on it, once a majority rule is applied.
  *
  * @example
@@ -381,13 +406,13 @@ export function summarizeProbeTelemetry(
             heardProbers: reading.heardProbers,
           },
         },))
-          throw new Error(
-            `envelope ${tally.envelopeId} of entry ${entry.entryId} carries `
+          throw new ProbeTelemetryError({
+            message: `envelope ${tally.envelopeId} of entry ${entry.entryId} carries `
               + 'disagreeing probe copies across the records it served. Every '
               + 'record of a merged envelope carries the same tally and one '
               + 'roster probed them all, so keeping either copy would make '
               + 'this summary depend on the order records were read.',
-          );
+          },);
         continue;
       }
       distinct.set(

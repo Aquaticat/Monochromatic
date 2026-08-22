@@ -81,6 +81,7 @@ export {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
+  RunConfigError,
 } from './corpus-run/run-config.ts';
 export {
   type AttributionGather,
@@ -124,7 +125,10 @@ export {
   openSliceCache,
   openTranslateSliceCache,
 } from './corpus-run/slice-cache-store.ts';
-export { indexReadingsByIssue, } from './probe-issue-index.ts';
+export {
+  indexReadingsByIssue,
+  ProbeIssueIndexError,
+} from './probe-issue-index.ts';
 export {
   type DrawOutputs,
   trackDrawOutputs,
@@ -158,6 +162,7 @@ export {
   assertSheetMatchesManifest,
   HEADER_ONLY_BINDING_NOTE,
   requireSheetSeed,
+  SheetBindingError,
   type SheetBindingStrength,
 } from './sheet-binding.ts';
 export {
