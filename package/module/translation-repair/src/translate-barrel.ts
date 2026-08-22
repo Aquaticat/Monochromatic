@@ -122,6 +122,11 @@ export {
   type ProposalValidity,
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
+export {
+  type ArtifactConsolidateGateV2,
+  type ArtifactConsolidateSliceV2,
+  describeConsolidateSlice,
+} from './corpus-run/artifact-v2-consolidate.ts';
 export { standingTextFor, } from './consolidate-standing.ts';
 export {
   CONSOLIDATE_CACHE_VERSION,
