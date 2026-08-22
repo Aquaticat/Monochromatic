@@ -39,6 +39,15 @@ export {
 } from './corpus-run/artifact-v2-read-consolidate.ts';
 export { parseLaneSelectionV2, } from './corpus-run/artifact-v2-read-contest.ts';
 export {
+  UnansweredContestSliceError,
+  type WouldShipDecider,
+  type WouldShipReading,
+  type WouldShipSilence,
+  type WouldShipSlice,
+  wouldShipTextFor,
+  wouldShipTextPerSlice,
+} from './corpus-run/would-ship-text.ts';
+export {
   projectLanesV2,
   type ProjectedLanesV2,
 } from './corpus-run/artifact-v2-derive.ts';
