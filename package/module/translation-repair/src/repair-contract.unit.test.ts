@@ -27,6 +27,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -251,13 +252,19 @@ await describe({
         + 'refiner roster rather than an editor one and whoever reads it opens '
         + 'the right configuration',
       fn: async () => {
-        expect(function refuseRefinerRoster() {
+        /**
+         * What refuseRefinerRoster raised, read for its class as well as its wording.
+         */
+        const refusalOfRefuseRefinerRoster = caught(function refuseRefinerRoster() {
           assertJudgeableProducerRoster({
             producerModelIds: [PRODUCER_ONE,],
             judgeModelIds: [JUDGE_ONE,],
             role: 'refiner',
           },);
-        },).toThrow('refiner',);
+        },);
+
+        expect(refusalOfRefuseRefinerRoster,).toBeInstanceOf(ProducerRosterError,);
+        expect((refusalOfRefuseRefinerRoster as Error).message,).toContain('refiner',);
       },
     },),
 
@@ -347,7 +354,10 @@ await describe({
         + 'repeated id needs one removed, and a message covering both sends '
         + 'whoever reads it to the wrong configuration',
       fn: async () => {
-        expect(function refuseAndSayWhy() {
+        /**
+         * What refuseAndSayWhy raised, read for its class as well as its wording.
+         */
+        const refusalOfRefuseAndSayWhy = caught(function refuseAndSayWhy() {
           assertJudgeableProducerRoster({
             producerModelIds: [PRODUCER_ONE,],
             judgeModelIds: [
@@ -356,7 +366,10 @@ await describe({
             ],
             role: 'editor',
           },);
-        },).toThrow('at most 1.5',);
+        },);
+
+        expect(refusalOfRefuseAndSayWhy,).toBeInstanceOf(ProducerRosterError,);
+        expect((refusalOfRefuseAndSayWhy as Error).message,).toContain('at most 1.5',);
       },
     },),
   ],
@@ -370,12 +383,18 @@ await describe({
         + 'shared guard readable at two call sites: the same arithmetic fails '
         + 'under two different names',
       fn: async () => {
-        expect(function refuseEditorRoster() {
+        /**
+         * What refuseEditorRoster raised, read for its class as well as its wording.
+         */
+        const refusalOfRefuseEditorRoster = caught(function refuseEditorRoster() {
           assertJudgeableEditorRoster({
             editorModelIds: [PRODUCER_ONE,],
             judgeModelIds: [JUDGE_ONE,],
           },);
-        },).toThrow('editor',);
+        },);
+
+        expect(refusalOfRefuseEditorRoster,).toBeInstanceOf(ProducerRosterError,);
+        expect((refusalOfRefuseEditorRoster as Error).message,).toContain('editor',);
       },
     },),
 

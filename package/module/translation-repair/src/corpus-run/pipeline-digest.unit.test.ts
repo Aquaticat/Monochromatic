@@ -25,6 +25,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -257,9 +258,15 @@ await describe({
         + 'a digest read back from an artifact cannot enter the type system '
         + 'without passing the same test the writer passed',
       fn: async () => {
-        expect(function narrows() {
+        /**
+         * What narrows raised, read for its class as well as its wording.
+         */
+        const refusalOfNarrows = caught(function narrows() {
           assertPipelineDigest('not-a-digest',);
-        },).toThrow('lowercase hex',);
+        },);
+
+        expect(refusalOfNarrows,).toBeInstanceOf(TypeError,);
+        expect((refusalOfNarrows as Error).message,).toContain('lowercase hex',);
       },
     },),
   ],
