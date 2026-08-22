@@ -13,6 +13,12 @@
  * assembled correctly is byte-identical outside the slices that were replaced,
  * and only text either side of a replaced span can show that.
  *
+ * THE TWO PURE SUBJECTS LIVE IN `publish-fixed-replacements.unit.test.ts`, apart
+ * from these. A file is abandoned once any describe in it fails, so while they
+ * shared one, a break in the replacement builder left every case here unrun and
+ * unreported: the runner named one narrow failure where the real blast radius
+ * was every page the pass writes.
+ *
  * ONE CASE PROVES A BRANCH THE CORPUS CANNOT REACH. No slice in any settled
  * artifact on disk carries an archive that holds no wording, 249 of 249 at the
  * last count, so the silent readings are unreachable there and a measurement
@@ -421,62 +427,6 @@ async function publishAndRead(
 }
 
 //endregion Fixtures
-
-await describe({
-  name: fixedPagePath.name,
-  children: [
-    it({
-      name:
-        'NAMES THE CORPUS\'S OWN PATH for an entry, `people/<id>/page.en.md`, because the owner asked '
-        + 'for the corpus directory structure replicated rather than for a flat pile named by id: a '
-        + 'tree shaped this way can be diffed against the one it mirrors with nothing to translate first',
-      fn: async () => {
-        expect(fixedPagePath({
-          publishDir: '/tmp/run/fixed',
-          entryId: 'BookshopCat',
-        },),).toBe('/tmp/run/fixed/people/BookshopCat/page.en.md',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: shippableReplacements.name,
-  children: [
-    it({
-      name:
-        'HANDS A SILENT SLICE THE EMPTY STRING rather than dropping it from the list, since a slice '
-        + 'the assembler is never told about keeps whatever the archive had there. The deciders '
-        + 'agreeing that nothing belongs at a passage is a decision, and republishing the archive '
-        + 'underneath it would undo it',
-      fn: async () => {
-        expect(shippableReplacements({ artifact: artifactShippingNothing(), },),).toEqual([
-          {
-            chunkIndex: 1,
-            replacementText: '',
-          },
-        ],);
-      },
-    },),
-
-    it({
-      name:
-        'CARRIES THE DECIDED WORDING for a slice that settled on some, which is what makes the case '
-        + 'above evidence: a builder that emitted the empty string for everything would satisfy it '
-        + 'just as well and would publish an empty page',
-      fn: async () => {
-        expect(shippableReplacements({
-          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-        },),).toEqual([
-          {
-            chunkIndex: 1,
-            replacementText: DECIDED_MIDDLE,
-          },
-        ],);
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: publishFixedPage.name,
