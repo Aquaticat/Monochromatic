@@ -13,7 +13,7 @@ import type {
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
-  buildAdvisorSystemPrompt,
+  buildAdvisorSystemPromptForProject,
   completeAdvisor,
   extractAdvisorText,
 } from './advisor-client.ts';
@@ -52,6 +52,10 @@ export type CreateAdvisorToolOptions = {
    * Return current session enablement.
    */
   readonly getSessionEnabled: () => boolean;
+  /**
+   * Return current Pi-loaded project-context snapshot.
+   */
+  readonly getProjectContext: () => string;
 };
 
 /**
@@ -137,6 +141,7 @@ export function createAdvisorTool(
       const result = await runAdvisor({
         ctx,
         config,
+        projectContext: toolOptions.getProjectContext(),
         ...(requestedSlug
           === undefined ? {} : { requestedSlug, }),
         ...(question
@@ -266,7 +271,10 @@ export async function runAdvisor(
   /**
    * Advisor model system prompt.
    */
-  const advisorSystemPrompt = buildAdvisorSystemPrompt(options.config,);
+  const advisorSystemPrompt = buildAdvisorSystemPromptForProject({
+    config: options.config,
+    projectContext: options.projectContext ?? '',
+  },);
   /**
    * Current primary model to avoid for default Advisor selection when possible.
    */
@@ -315,6 +323,7 @@ export async function runAdvisor(
       .model,
     config: options.config,
     advisorContext,
+    projectContext: options.projectContext ?? '',
     operationStartedAtMs: startedAt,
     ...(options.question
       === undefined ? {} : { question: options.question, }),

@@ -138,6 +138,19 @@ When present,
  it caps the model-derived budget.
 Advisor starts from Pi's compaction-aware context entries,
  so messages summarized by the latest compaction are not resent.
+Pi-loaded project context files are captured separately from
+`before_agent_start.systemPromptOptions` and retained across automatic
+compact-and-continue runs that do not emit another prompt event.
+The snapshot is replaced authoritatively on each later agent run and cleared at
+the session boundary.
+Manual `/advisor` calls read current prompt options directly after pending work
+settles.
+
+Project context is JSON-encoded and appended to the Advisor system prompt,
+so `AGENTS.md`, global context,
+and ancestor context instructions remain available even when conversation
+messages containing earlier file reads were compacted.
+The selected model's context budget includes this expanded system prompt.
 
 Project config overrides global scalar values.
 Model selection is not configurable here.
@@ -194,13 +207,18 @@ which maps it to each provider's request format.
 
 ## Privacy and cost
 
-Advisor sends the serialized conversation to the selected advisor model.
+Advisor sends the serialized conversation and Pi-loaded project context to the
+selected advisor model.
 That can include prompts,
  tool calls,
  tool results,
  edits,
  command output,
- and compaction summaries.
+ compaction summaries,
+global context files,
+ancestor context files,
+absolute context-file paths,
+and repository `AGENTS.md` contents.
 Each Advisor call can incur provider cost for the selected model.
 
 ## Troubleshooting

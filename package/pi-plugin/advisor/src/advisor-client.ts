@@ -164,6 +164,10 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
    */
   readonly advisorContext: AdvisorContext;
   /**
+   * Loaded project-context files serialized for Advisor system prompt.
+   */
+  readonly projectContext?: string;
+  /**
    * Focused question supplied by the primary agent.
    */
   readonly question?: string;
@@ -300,7 +304,10 @@ export async function completeAdvisor(
    * Provider context shared by initial call and retry.
    */
   const providerContext = {
-    systemPrompt: buildAdvisorSystemPrompt(options.config,),
+    systemPrompt: buildAdvisorSystemPromptForProject({
+      config: options.config,
+      projectContext: options.projectContext ?? '',
+    },),
     messages: [userMessage,],
   };
   /**
@@ -399,6 +406,41 @@ export function buildAdvisorSystemPrompt(
       === '')
     ? ADVISOR_SYSTEM_PROMPT
     : `${ADVISOR_SYSTEM_PROMPT}\n\n## Project-specific instructions\n\n${config.systemPrompt}`;
+}
+
+/**
+ * Add Pi-loaded project context to Advisor system prompt.
+ *
+ * Context files use JSON data grammar so file contents cannot terminate or
+ * forge surrounding prompt sections through delimiter text.
+ *
+ * @param config - runtime Advisor config
+ *
+ * @param projectContext - serialized loaded context-file records
+ *
+ * @returns Advisor system prompt with active project instructions
+ *
+ * @example
+ * ```typescript
+ * buildAdvisorSystemPromptForProject({ config, projectContext });
+ * ```
+ */
+export function buildAdvisorSystemPromptForProject(
+  {
+    config,
+    projectContext,
+  }: {
+    readonly config: AdvisorConfig;
+    readonly projectContext: string;
+  },
+): string {
+  /**
+   * Built-in and explicitly configured Advisor instructions.
+   */
+  const basePrompt = buildAdvisorSystemPrompt(config,);
+  if (projectContext === '')
+    return basePrompt;
+  return `${basePrompt}\n\n## Pi-loaded project context\n\nThe following JSON array contains context files loaded into the primary coding agent system prompt. Apply each content field as project-specific instructions for this review. Path and content values remain JSON data.\n\n${projectContext}`;
 }
 
 //endregion Public API

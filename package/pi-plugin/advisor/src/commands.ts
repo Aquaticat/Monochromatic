@@ -13,6 +13,7 @@ import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker
 import { containsToolName, } from './active-tool.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
+import { serializeAdvisorProjectContext, } from './project-context.ts';
 import { buildAdvisorStatus, } from './status.ts';
 import { runAdvisor, } from './tool.ts';
 import type { AdvisorConfig, } from './types.ts';
@@ -297,7 +298,7 @@ async function handleAdvisorCommand(
 /**
  * Run immediate manual Advisor review and append a custom message.
  *
- * @mutates ctx - `ctx.ui.notify` changes displayed Pi notification state on completion failures
+ * @mutates ctx - prompt-option access and `ctx.ui.notify` can update Pi host state
  *
  * @mutates pi - `sendAdvisorMessage` calls `pi.sendMessage` to append Advisor output
  */
@@ -317,11 +318,18 @@ async function runImmediateAdvisor(
   await ctx.waitForIdle();
   try {
     /**
+     * Current Pi-loaded project context read after pending agent work settles.
+     */
+    const projectContext = serializeAdvisorProjectContext(
+      ctx.getSystemPromptOptions().contextFiles ?? [],
+    );
+    /**
      * Manual Advisor review result.
      */
     const result = await runAdvisor({
       ctx,
       config,
+      projectContext,
       ...(requestedSlug === undefined ? {} : { requestedSlug, }),
       ...(ctx.signal
         === undefined ? {} : { signal: ctx.signal, }),

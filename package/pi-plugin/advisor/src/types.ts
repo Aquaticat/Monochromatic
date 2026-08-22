@@ -305,6 +305,10 @@ export type AdvisorRunOptions = ForeignHostCapability<{
    */
   readonly config: AdvisorConfig;
   /**
+   * Loaded project-context files serialized for Advisor system prompt.
+   */
+  readonly projectContext?: string;
+  /**
    * Optional user-requested model slug.
    */
   readonly requestedSlug?: string;

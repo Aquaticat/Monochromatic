@@ -35,6 +35,7 @@ import {
 import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
+import { createAdvisorProjectContextState, } from './project-context.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
 
@@ -89,6 +90,10 @@ export default async function advisor(
    * Mutable session state controlled by `/advisor on` and `/advisor off`.
    */
   const state = createAdvisorSessionState(config.enabled,);
+  /**
+   * Pi-loaded project context retained across compact-and-continue runs.
+   */
+  const projectContextState = createAdvisorProjectContextState();
 
   innerL.debug(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
 
@@ -99,6 +104,7 @@ export default async function advisor(
     getSessionEnabled: function getSessionEnabled() {
       return state.getEnabled();
     },
+    getProjectContext: projectContextState.get,
   },),);
 
   registerAdvisorCommands({
@@ -143,6 +149,7 @@ export default async function advisor(
   pi.on(
     'session_start',
     function handleSessionStart() {
+      projectContextState.clear();
       syncAdvisorActiveTool({
         pi,
         enabled: state.getEnabled(),
@@ -167,6 +174,9 @@ export default async function advisor(
       event: ForeignBorrowed<BeforeAgentStartEvent>,
       ctx: ForeignHostCapability<ExtensionContext>,
     ) {
+      projectContextState.replace(
+        event.systemPromptOptions.contextFiles ?? [],
+      );
       if (!state.getEnabled())
         return undefined;
 
@@ -274,11 +284,22 @@ export { buildAdvisorStatus, } from './status.ts';
 export { buildMainModelGuidance, };
 
 /**
+ * Internal project-context helpers exported for built-artifact verification.
+ *
+ * @internal
+ */
+export {
+  createAdvisorProjectContextState,
+  serializeAdvisorProjectContext,
+} from './project-context.ts';
+
+/**
  * Internal provider-call behavior exported for built-artifact verification.
  *
  * @internal
  */
 export {
+  buildAdvisorSystemPromptForProject,
   completeAdvisor,
   type CompleteAdvisorModel,
 } from './advisor-client.ts';
