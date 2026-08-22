@@ -3,11 +3,13 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { SliceCache, } from './slice-cache.ts';
 import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
 import {
   type RefinePhaseResult,
   runRefinePhase,
 } from './refine-phase.ts';
+import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
@@ -86,6 +88,7 @@ export async function refineSettledSlices(
     models,
     identityContext,
     declaredNames,
+    refineCache,
     signal,
     perCallTimeoutMs,
     l,
@@ -97,6 +100,7 @@ export async function refineSettledSlices(
     readonly models: RepairModels;
     readonly identityContext?: string;
     readonly declaredNames: readonly string[];
+    readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -116,6 +120,7 @@ export async function refineSettledSlices(
         models,
         declaredNames,
         ...(identityContext === undefined ? {} : { identityContext, }),
+        ...(refineCache === undefined ? {} : { refineCache, }),
         signal,
         perCallTimeoutMs,
         l,

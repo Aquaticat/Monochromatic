@@ -3,20 +3,23 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { parseDocument, } from './parse-document.ts';
+import { collectDefinitions, } from './refine-envelope.ts';
 import {
-  collectDefinitions,
-  deriveRefinableEnvelopes,
-} from './refine-envelope.ts';
-import { runRefineStage, } from './refine-stage.ts';
+  refineRunShape,
+  refineSliceKey,
+} from './refine-slice-key.ts';
+import {
+  type RefinedSliceSettlement,
+  settleRefinedSlice,
+} from './refine-slice-settle.ts';
 import {
   assertCheckerIndependence,
   type ChunkRepairOutcome,
   type RepairModels,
 } from './repair-contract.ts';
-import { runCheckerStage, } from './repair-edit-stages.ts';
 import { repairReplacements, } from './repair-replacements.ts';
+import type { SliceCache, } from './slice-cache.ts';
 import { spliceSlices, } from './splice-slices.ts';
 
 //region Refinement phase
@@ -29,6 +32,12 @@ import { spliceSlices, } from './splice-slices.ts';
 // Text carrying no accuracy defect takes the second of those returns, and text
 // that is awkward rather than wrong is precisely what this lane exists for, so
 // a lane at the bottom of that function would have missed its own target.
+//
+// IT CACHES ITS OWN SLICES, in its own namespace, for the reason
+// `refine-slice-key.ts` records: the accuracy pass persists before this lane
+// runs, so a resumed run used to replay accuracy from disk and then buy the
+// whole lane again. That published different text at 7 of 18 repair-lane slices
+// across two runs over identical inputs.
 
 /**
  * Outcomes after refinement, with the phase's own telemetry.
@@ -52,11 +61,16 @@ export type RefinePhaseResult = {
   /**
    * Whether any rewriter was asked anything.
    *
-   * Refinement is the one phase a fully cached document still has to BUY, and
-   * the driver reads this to apply the rule the slice loop already follows: a
+   * The driver reads this to apply the rule the slice loop already follows: a
    * run whose work was all resumed finishes under a caller's abort, and a run
-   * that had to ask somebody does not. False when the lane is off, and false
-   * when every slice turned out to have nothing eligible to rewrite.
+   * that had to ask somebody does not. False when the lane is off, false when
+   * every slice turned out to have nothing eligible to rewrite, and false when
+   * every slice came off disk.
+   *
+   * A RESUMED SLICE NEVER SETS IT, which is what makes the rule mean what it
+   * says now that this phase caches. Before the cache, refinement was the one
+   * phase a fully cached document still had to buy, so this was true on every
+   * run that reached a rewritable slice.
    */
   readonly askedRewriters: boolean;
 };
@@ -79,6 +93,9 @@ export type RefinePhaseResult = {
  * @param declaredNames - same declarations as strings a guard compares, kept
  * apart from the prose the models read
  *
+ * @param refineCache - optional cross-run cache in this phase's own namespace;
+ * a hit skips every model call for that slice
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -89,7 +106,7 @@ export type RefinePhaseResult = {
  *
  * @example
  * ```ts
- * const phase = await runRefinePhase({ ... },);
+ * const phase = await runRefinePhase({ client, targetText, slices, outcomes, models, declaredNames, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function runRefinePhase(
@@ -101,6 +118,7 @@ export async function runRefinePhase(
     models,
     identityContext,
     declaredNames,
+    refineCache,
     signal,
     perCallTimeoutMs,
     l,
@@ -112,6 +130,7 @@ export async function runRefinePhase(
     readonly models: RepairModels;
     readonly identityContext?: string;
     readonly declaredNames: readonly string[];
+    readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -136,6 +155,10 @@ export async function runRefinePhase(
   /**
    * Definitions of the assembled `T1`, so a paragraph's references resolve
    * during gating even when the definition lives in another slice.
+   *
+   * IN THE CACHE KEY as well as in the prompt, because it is derived from what
+   * EVERY slice settled: a neighbour settling differently changes what this
+   * slice's rewriter is shown, and a key blind to that resumes a stale rewrite.
    */
   const definitions = collectDefinitions({
     document: parseDocument({
@@ -145,6 +168,16 @@ export async function runRefinePhase(
         replacements: repairReplacements({ outcomes, },),
       },),
     },),
+  },);
+
+  /**
+   * What this run asks, which no resumed slice may have been asked differently.
+   */
+  const runShape = refineRunShape({
+    refinerModelIds,
+    judgeModelIds: models.judgeModelIds,
+    checkerModelIds: models.checkerModelIds,
+    ...(identityContext === undefined ? {} : { identityContext, }),
   },);
 
   /**
@@ -195,280 +228,73 @@ export async function runRefinePhase(
       .text
       ?? outcome.repairedText;
 
-    // A slice the critics ruled non-translation shipped deliberately
-    // untouched; rewriting it for fluency would undo that decision.
-    if (outcome.nonTranslationStanding) {
-      collected.outcomes
-        .push(outcome,);
-      continue;
-    }
+    /**
+     * Key this slice's refinement answers.
+     */
+    const key = refineSliceKey({
+      runShape,
+      sourceText,
+      repairedText: outcome.repairedText,
+      definitions,
+      declaredNames,
+      issues: outcome.issues,
+      resolvedIssueIds: outcome.resolvedIssueIds,
+      nonTranslationStanding: outcome.nonTranslationStanding,
+    },);
 
     /**
-     * Eligible paragraphs of this slice's repaired text.
+     * What an earlier run settled for this exact question, when one did.
      */
-    const slice = deriveRefinableEnvelopes({
-      document: parseDocument({ text: outcome.repairedText, },),
-    },);
-    if (slice.envelopes
-      .length
-      > 0)
-      asked.any = true;
+    const stored = refineCache?.resumed
+      .get(key,);
+    if (stored !== undefined) {
+      collected.outcomes
+        .push(stored.outcome,);
+      collected.findings
+        .push(...stored.findings,);
+      continue;
+    }
 
     /* oxlint-disable no-await-in-loop -- slices run sequentially by the same rule as the accuracy pass: aggregate concurrency beyond one stream per model collapses throughput on this plan */
     /**
-     * What refinement decided for this slice.
+     * What refinement decided for this slice, bought now.
      */
-    const refined = await runRefineStage({
+    const settled = await settleRefinedSlice({
       client,
-      refinerModelIds,
-      judgeModelIds: models.judgeModelIds,
-      sourceText,
-      repairedText: outcome.repairedText,
-      envelopes: slice.envelopes,
-      definitions,
-      ...(identityContext === undefined ? {} : { identityContext, }),
-      declaredNames,
-      chunkIndex: outcome.chunkIndex,
-      signal,
-      perCallTimeoutMs,
-      l,
-    },);
-    collected.findings
-      .push(
-        ...slice.findings,
-        ...refined.findings,
-      );
-
-    /**
-     * This slice with the refinement round appended to what the editor stage
-     * already recorded.
-     *
-     * BUILT BEFORE THE EXITS BELOW, because a refinement that lost is exactly
-     * the round worth reading: it says the panel looked at the repaired text
-     * and either could not agree or preferred a rewrite the guards then
-     * refused. Pushing the bare outcome on those paths would keep the ballots
-     * only when they agreed with the result.
-     */
-    const withRefineRounds: ChunkRepairOutcome = {
-      ...outcome,
-      rounds: [
-        ...outcome.rounds,
-        ...refined.rounds,
-      ],
-    };
-    if (!refined.changed) {
-      collected.outcomes
-        .push(withRefineRounds,);
-      continue;
-    }
-
-    /**
-     * Whether every issue the checkers had confirmed is still confirmed in
-     * the refined text.
-     */
-    const retained = await retainsResolvedIssues({
-      client,
-      models,
       outcome,
       sourceText,
-      refinedText: refined.refinedText,
+      incumbentText,
+      definitions,
+      models,
+      refinerModelIds,
+      ...(identityContext === undefined ? {} : { identityContext, }),
+      declaredNames,
       signal,
       perCallTimeoutMs,
       l,
     },);
-    collected.findings
-      .push(...retained.findings,);
-    if (!retained.retained) {
-      collected.outcomes
-        .push(withRefineRounds,);
-      continue;
-    }
-    /**
-     * Shadow-mode audit of damage the REWRITE caused.
-     *
-     * The accuracy probe already ran, but it compared the original translation
-     * with the repaired one and finished before this lane started, so it says
-     * nothing about the text this rewrite produced. Auditing one whole slice
-     * rather than each rewritten paragraph matches the unit the lane itself
-     * decides in: `retainsResolvedIssues` rolls back the whole slice too.
-     *
-     * The roster is the checkers, exactly as the accuracy probe uses, and
-     * `assertCheckerIndependence` above has already established that no
-     * refiner is among them, so nobody audits their own rewrite.
-     */
-    const refinementDefects = await runIntroducedDefectProbe({
-      client,
-      proberModelIds: models.checkerModelIds,
-      sourceText,
-      baselineText: outcome.repairedText,
-      regions: [
-        {
-          envelopeId: `refinement/${String(outcome.chunkIndex,)}`,
-          issueIds: outcome.issues
-            .map(function toId(issue,) {
-              return issue.issueId;
-            },),
-          before: outcome.repairedText,
-          editorAfter: refined.refinedText,
-        },
-      ],
-      issues: outcome.issues,
-      editKind: 'naturalness-refinement',
-      // Withheld for the same reason the accuracy stage withholds, and with
-      // more force here: this lane rewrites text whose accepted issues were
-      // ALREADY repaired, so listing them describes defects that are no longer
-      // present and excuses damage to wording that was correct.
-      disclosure: 'withheld',
-      signal,
-      perCallTimeoutMs,
-      l,
-    },);
-
-    // Same omission as the accuracy path: the refinement probe fans out to a
-    // roster and loses voices like every other stage, and nothing carried what
-    // it lost. Pushed here rather than beside the refine-stage findings above
-    // because the probe has not run at that point.
-    collected.findings
-      .push(...refinementDefects.findings,);
-
-    /**
-     * Whether the text this slice now returns differs from the archive's,
-     * which is a different question from whether the rewriter changed
-     * anything.
-     */
-    const changed = refined.refinedText !== incumbentText;
+    if (settled.asked)
+      asked.any = true;
     collected.outcomes
-      .push({
-        ...withRefineRounds,
-        repairedText: refined.refinedText,
-        changed,
-        // Dropped when the refinement landed back on the archive wording, by
-        // the same rule the accuracy stage applies: a resolution credited to
-        // text the document does not carry is a repair no reader saw.
-        resolvedIssueIds: changed ? outcome.resolvedIssueIds : [],
-        // Marks every recorded repair in this slice as pre-refinement text, so
-        // a grading sheet can say so instead of presenting an editor
-        // replacement as the words that shipped.
-        refined: true,
-        refinementDefects,
-      },);
+      .push(settled.outcome,);
+    collected.findings
+      .push(...settled.findings,);
+
+    // Persisted before the next slice starts, matching the accuracy pass, so an
+    // abort leaves settled refinements recoverable rather than rebought.
+    await refineCache?.persist({
+      key,
+      serialized: JSON.stringify({
+        outcome: settled.outcome,
+        findings: settled.findings,
+      } satisfies RefinedSliceSettlement,),
+    },);
     /* oxlint-enable no-await-in-loop */
   }
   return {
     outcomes: collected.outcomes,
     findings: collected.findings,
     askedRewriters: asked.any,
-  };
-}
-
-/**
- * Whether a refinement kept every issue the checkers had already confirmed.
- *
- * Rolls back the WHOLE slice when it did not. Checkers report per ISSUE while
- * refinement happens per paragraph, and an issue can span paragraphs, so which
- * paragraph broke a given issue is not derivable from what the checker
- * returns. The regressed issue is named in the findings so a later session can
- * judge whether finer attribution is worth building.
- *
- * @param client - injected model client
- *
- * @param models - role roster
- *
- * @param outcome - settled accuracy outcome for this slice
- *
- * @param sourceText - original chunk text
- *
- * @param refinedText - candidate text the refinement produced
- *
- * @param signal - caller abort honored by every exchange
- *
- * @param perCallTimeoutMs - deadline per exchange
- *
- * @param l - pipeline logger
- *
- * @returns Whether the refinement may ship, plus findings
- *
- * @example
- * ```ts
- * const retained = await retainsResolvedIssues({ ... },);
- * ```
- */
-async function retainsResolvedIssues(
-  {
-    client,
-    models,
-    outcome,
-    sourceText,
-    refinedText,
-    signal,
-    perCallTimeoutMs,
-    l,
-  }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
-    readonly models: RepairModels;
-    readonly outcome: ChunkRepairOutcome;
-    readonly sourceText: string;
-    readonly refinedText: string;
-    readonly signal: AbortSignal;
-    readonly perCallTimeoutMs: number;
-    readonly l: Logger;
-  }>,
-): Promise<{
-  readonly retained: boolean;
-  readonly findings: readonly string[];
-}> {
-  /**
-   * Issues the checkers had confirmed fixed in `T1`.
-   */
-  const confirmed = outcome.issues
-    .filter(function wasResolved(issue,) {
-      return outcome.resolvedIssueIds
-        .includes(issue.issueId,);
-    },);
-
-  // Nothing was proved about this slice, so a refinement cannot un-prove it.
-  // This is the common case: the lane's whole target is text with no accepted
-  // issue, and spending a checker round there would buy nothing.
-  if (confirmed.length === 0)
-    return {
-      retained: true,
-      findings: [],
-    };
-
-  /**
-   * Checker verdicts over the refined text.
-   */
-  const checker = await runCheckerStage({
-    client,
-    checkerModelIds: models.checkerModelIds,
-    sourceText,
-    patchedText: refinedText,
-    issues: confirmed,
-    signal,
-    perCallTimeoutMs,
-    l,
-  },);
-
-  /**
-   * Issues the refinement broke, named so the rollback is explainable.
-   */
-  const regressed = confirmed
-    .filter(function brokeIt(issue,) {
-      return checker.tallies[issue.issueId]
-        ?.resolved
-        !== true;
-    },)
-    .map(function toId(issue,) {
-      return issue.issueId;
-    },);
-  if (regressed.length === 0)
-    return {
-      retained: true,
-      findings: [`refine-recheck-passed (${String(confirmed.length,)} issues)`,],
-    };
-  return {
-    retained: false,
-    findings: [`refine-rolled-back (${regressed.join(', ',)})`,],
   };
 }
 

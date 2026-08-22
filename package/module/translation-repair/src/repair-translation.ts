@@ -35,6 +35,7 @@ import {
 import { repairChunk, } from './repair-chunk.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
 import { armSliceCost, } from './slice-cost-log.ts';
 import { assembleRepair, } from './repair-assemble.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';
@@ -103,6 +104,9 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * @param sliceCache - optional cross-run cache; resumes finished slices
  * and persists newly finished ones so a large document survives aborts
  *
+ * @param refineCache - optional cross-run cache for the naturalness lane, which
+ * runs after `sliceCache` has already persisted and so cannot ride in it
+ *
  * @param parentLogger - logger this lane tags under, so a caller running both
  * lanes over one document can put them under one entry; defaults to the
  * pipeline root for a standalone call
@@ -131,6 +135,7 @@ export async function repairPreparedDocument(
     signal,
     perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
     sliceCache,
+    refineCache,
     parentLogger = l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -140,6 +145,7 @@ export async function repairPreparedDocument(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
+    readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly parentLogger?: Logger;
   }>,
 ): Promise<RepairTranslationResult> {
@@ -540,6 +546,7 @@ export async function repairPreparedDocument(
     models,
     declaredNames: prepared.declaredNames,
     ...identityFragment,
+    ...(refineCache === undefined ? {} : { refineCache, }),
     signal,
     perCallTimeoutMs,
     l: rl,

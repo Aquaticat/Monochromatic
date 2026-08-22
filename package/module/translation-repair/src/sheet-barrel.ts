@@ -120,6 +120,7 @@ export {
 export {
   discardSliceCache,
   listResumableEntries,
+  openRefineSliceCache,
   openSliceCache,
   openTranslateSliceCache,
 } from './corpus-run/slice-cache-store.ts';

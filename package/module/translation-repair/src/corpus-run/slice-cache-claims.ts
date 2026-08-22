@@ -109,6 +109,21 @@ const CLAIM_BY_ROLE = {
     prefix: 'picture.',
     marker: 'picture-generation.txt',
   },
+
+  /**
+   * Naturalness refinement. NOT A LANE: a refinement is bought after the repair
+   * lane has already settled a slice, over what its accuracy pass produced, so
+   * it retires with the entry rather than standing beside the lane's own work.
+   *
+   * ITS OWN CLAIM RATHER THAN THE REPAIR LANE'S, so that moving the rewriter
+   * roster discards refinements without discarding the accuracy pass that fed
+   * them. Sharing the repair prefix would throw away hours of critic and editor
+   * rounds to rebuy a rewrite.
+   */
+  refinement: {
+    prefix: 'refine.',
+    marker: 'refine-generation.txt',
+  },
 } as const satisfies Record<string, SliceNamespace>;
 
 /**
@@ -150,5 +165,10 @@ export const CONSOLIDATE_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.consolidation
  * Picture readings' claim.
  */
 export const PICTURE_READING_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.pictureReading;
+
+/**
+ * Naturalness refinement's claim.
+ */
+export const REFINE_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.refinement;
 
 //endregion Slice cache claims

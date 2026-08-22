@@ -22,6 +22,7 @@ import { settledTallyLine, } from './settled-tally.ts';
 import {
   discardSliceCache,
   openPairingCache,
+  openRefineSliceCache,
   openSliceCache,
   openTranslateSliceCache,
 } from './slice-cache-store.ts';
@@ -204,6 +205,21 @@ async function runEntryPipeline(
     },);
 
     /**
+     * Naturalness lane's own cache, in its own namespace under the same
+     * directory.
+     *
+     * SEPARATE FROM THE REPAIR LANE'S because it runs AFTER that lane has
+     * persisted every slice, so its answers cannot ride in a record written
+     * before it was asked. Without it a resumed entry replayed the accuracy
+     * pass from disk and then rebought the whole rewrite, publishing different
+     * text on identical inputs.
+     */
+    const refineSliceCache = await openRefineSliceCache({
+      dir: entryCacheDir,
+      generation: pipelineDigest,
+    },);
+
+    /**
      * Store for what this entry's pictures were read as.
      *
      * ITS OWN NAMESPACE beside the two lanes', because a reading is neither
@@ -300,6 +316,7 @@ async function runEntryPipeline(
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       repairSliceCache: sliceCache,
+      refineSliceCache,
       translateSliceCache,
       l: tagged({ tag: entry.id, },),
     },);

@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import { isJsonRecord, } from '../json-guard.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
+import type { RefinedSliceSettlement, } from '../refine-slice-settle.ts';
 import type { ChunkRepairOutcome, } from '../repair-contract.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import {
@@ -14,6 +15,7 @@ import {
   openNamespacedCache,
   readDirectoryNames,
   PAIRING_NAMESPACE,
+  REFINE_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
   TRANSLATE_SLICE_NAMESPACE,
 } from './slice-cache-namespace.ts';
@@ -318,6 +320,65 @@ export async function discardSliceCache(
       force: true,
     },
   );
+}
+
+/**
+ * Whether a parsed cache file is a usable refinement settlement.
+ *
+ * CHECKS THE OUTCOME INSIDE rather than only the wrapper, because bytes off
+ * disk become published text here: a settlement whose outcome is malformed
+ * would splice a broken slice into the document with no later stage able to
+ * tell it from a fresh one.
+ *
+ * @param value - parsed JSON of a cache file
+ *
+ * @returns True when it carries a settlement over a well-formed outcome
+ *
+ * @example
+ * ```ts
+ * if (isRefinedSliceSettlement(parsed,)) resumed.set(key, parsed,);
+ * ```
+ */
+function isRefinedSliceSettlement(value: unknown,): value is RefinedSliceSettlement {
+  return isJsonRecord(value,)
+    && Array.isArray(value.findings,)
+    && isChunkRepairOutcome(value.outcome,);
+}
+
+/**
+ * Opens an entry's REFINEMENT cache.
+ *
+ * Separate from the repair lane's own cache because the naturalness lane runs
+ * after the accuracy pass has already persisted, so its answers cannot ride in
+ * a record written before it was asked. Without this the lane was rebought on
+ * every resumed run and published different text on identical inputs.
+ *
+ * @param dir - per-entry slice-cache directory
+ *
+ * @param generation - digest of the built pipeline this pass runs
+ *
+ * @returns Cache resuming settled refinements and persisting new ones
+ *
+ * @example
+ * ```ts
+ * const refineCache = await openRefineSliceCache({ dir: entryCacheDir, generation, },);
+ * ```
+ */
+export async function openRefineSliceCache(
+  {
+    dir,
+    generation,
+  }: {
+    readonly dir: string;
+    readonly generation: string;
+  },
+): Promise<SliceCache<RefinedSliceSettlement>> {
+  return await openNamespacedCache({
+    dir,
+    generation,
+    namespace: REFINE_NAMESPACE,
+    isValue: isRefinedSliceSettlement,
+  },);
 }
 
 //endregion Slice cache store

@@ -21,6 +21,7 @@ import type { RepairTranslationResult, } from './repair-result.ts';
 import { repairPreparedDocument, } from './repair-translation.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
 import {
   buildSliceDelivery,
   type SliceDeliveryRecord,
@@ -211,6 +212,9 @@ function laneDelivery(
  *
  * @param repairSliceCache - repair lane's cache, in its own namespace
  *
+ * @param refineSliceCache - naturalness lane's cache, in its own namespace; it
+ * runs after the repair lane has persisted, so it cannot share that one
+ *
  * @param translateSliceCache - translate lane's cache, in its own namespace
  *
  * @param l - logger both lanes tag under, so one entry reads as one run
@@ -244,6 +248,7 @@ export async function runDocumentLanes(
     signal,
     perCallTimeoutMs,
     repairSliceCache,
+    refineSliceCache,
     translateSliceCache,
     l,
   }: ForeignBorrowed<{
@@ -266,6 +271,7 @@ export async function runDocumentLanes(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly repairSliceCache?: SliceCache<ChunkRepairOutcome>;
+    readonly refineSliceCache?: SliceCache<RefinedSliceSettlement>;
     readonly translateSliceCache?: SliceCache<TranslateSliceRecord>;
     readonly l: Logger;
   }>,
@@ -324,6 +330,9 @@ export async function runDocumentLanes(
     ...((repairSliceCache === undefined)
       ? {}
       : { sliceCache: repairSliceCache, }),
+    ...((refineSliceCache === undefined)
+      ? {}
+      : { refineCache: refineSliceCache, }),
     parentLogger: dl,
   },);
 
