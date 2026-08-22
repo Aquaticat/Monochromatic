@@ -26,7 +26,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { lockRunsDir, } from '../../dist/final/node/index.mjs';
+import {
+  lockRunsDir,
+  RunsDirectoryBusyError,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Makes a throwaway runs directory for one case.
@@ -83,9 +86,13 @@ await describe({
 
         await using _lock = await lockRunsDir({ runsDir, },);
 
-        await expect(lockRunsDir({ runsDir, },),)
-          .rejects
-          .toThrow('Another pass is running',);
+        /**
+         * What lockRunsDir refused with, read for class as well as wording.
+         */
+        const refusalOfLockRunsDir = lockRunsDir({ runsDir, },);
+
+        await expect(refusalOfLockRunsDir,).rejects.toBeInstanceOf(RunsDirectoryBusyError,);
+        await expect(refusalOfLockRunsDir,).rejects.toThrow('Another pass is running',);
       },
     },),
 

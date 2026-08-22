@@ -35,6 +35,7 @@ import {
   assertPipelineDigest,
   digestPipeline,
   isDigestShaped,
+  PipelineDigestError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -195,9 +196,13 @@ await describe({
           ),
         );
 
-        await expect(digestPipeline({ dir, },),)
-          .rejects
-          .toThrow('neither a regular file nor a directory',);
+        /**
+         * What digestPipeline refused with, read for class as well as wording.
+         */
+        const refusalOfDigestPipeline = digestPipeline({ dir, },);
+
+        await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
+        await expect(refusalOfDigestPipeline,).rejects.toThrow('neither a regular file nor a directory',);
       },
     },),
 
@@ -210,9 +215,13 @@ await describe({
           files: { 'index.d.mts': 'export declare const mittens: number;\n', },
         },);
 
-        await expect(digestPipeline({ dir, },),)
-          .rejects
-          .toThrow('no file that could execute',);
+        /**
+         * What digestPipeline refused with, read for class as well as wording.
+         */
+        const refusalOfDigestPipeline = digestPipeline({ dir, },);
+
+        await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
+        await expect(refusalOfDigestPipeline,).rejects.toThrow('no file that could execute',);
       },
     },),
 
