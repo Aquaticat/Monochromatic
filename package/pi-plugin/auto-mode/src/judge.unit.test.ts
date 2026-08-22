@@ -413,6 +413,7 @@ await describe({
           action: 'bash: echo hi',
           actionInput: '{"command":"echo hi"}',
           cwd: '/project',
+          projectContext: PROJECT_CONTEXT_FIXTURE,
           recentContext: '',
           trustDirectives: [],
           timeoutMs: JUDGE_TIMEOUT_MS,
@@ -433,6 +434,11 @@ await describe({
         expect(retry.options.toolChoiceType,).toBeUndefined();
         expect(retry.context.systemPrompt,).toContain('Retry mode:',);
         expect(retry.context.systemPrompt,).not.toContain('Do not respond with text; use the tool.',);
+        /** Direct-JSON retry user message preserving loaded context. */
+        const [retryMessage,] = retry.context.messages;
+        if (retryMessage === undefined)
+          throw new Error('Expected retry user message.',);
+        expect(retryMessage.content,).toContain(PROJECT_CONTEXT_FIXTURE,);
       },
     },),
     it({

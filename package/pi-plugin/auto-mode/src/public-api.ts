@@ -7,7 +7,9 @@
 export { findBudgetModel, } from './budget-model.ts';
 export {
   buildContext,
+  buildProjectContext,
   getReusableApproval,
+  type ProjectContextFile,
 } from './context.ts';
 export {
   callJudge,

@@ -272,6 +272,8 @@ function stableSerialize(
  *
  * @param cwd - current extension working directory
  *
+ * @param projectContext - canonical loaded context affecting judge decision
+ *
  * @returns serialized call identity for approval reuse
  *
  * @example
@@ -283,19 +285,25 @@ function buildApprovalFingerprintIdentity(
   {
     event,
     cwd,
+    projectContext = '',
   }: {
     readonly event: ForeignBorrowed<ToolCallEvent>;
     readonly cwd: string;
+    readonly projectContext?: string;
   },
 ): string {
+  /** Context identity omitted when no context files loaded, preserving prior empty-context fingerprints. */
+  const contextIdentity = projectContext === ''
+    ? ''
+    : `,"projectContext":${quoteJsonString(projectContext,)}`;
   if (isReadToolEvent(event,)) {
     return `{"cwd":${quoteJsonString(cwd,)},"input":${stableSerialize({
       path: event.input
         .path,
-    },)},"toolName":${quoteJsonString(event.toolName,)}}`;
+    },)}${contextIdentity},"toolName":${quoteJsonString(event.toolName,)}}`;
   }
 
-  return `{"cwd":${quoteJsonString(cwd,)},"input":${stableSerialize(event.input,)},"toolName":${quoteJsonString(event.toolName,)}}`;
+  return `{"cwd":${quoteJsonString(cwd,)},"input":${stableSerialize(event.input,)}${contextIdentity},"toolName":${quoteJsonString(event.toolName,)}}`;
 }
 
 /**
@@ -305,16 +313,19 @@ function buildApprovalFingerprintIdentity(
  * and serializes it with {@link stableSerialize} before hashing.
  *
  * The fingerprint includes the tool name and current working directory. Read
- * calls include only the read path, ignoring `offset` and `limit`, so repeated
+ * calls include only read path, ignoring `offset` and `limit`, so repeated
  * reads of one file at different ranges reuse approval. Other tools include
- * full tool input. Only the digest is stored in the session, so write or edit
- * payloads are compared without persisting their contents in custom entries.
+ * full tool input. Loaded project context participates when present, preventing
+ * reuse after context changes. Only digest is stored in session, so inputs and
+ * context are compared without persisting their contents in custom entries.
  *
  * @param event - tool call event being guarded
  *
  * @param cwd - current extension working directory
  *
- * @returns SHA-256 digest for the guarded tool call
+ * @param projectContext - canonical loaded context affecting judge decision
+ *
+ * @returns SHA-256 digest for guarded tool call and active context
  *
  * @example
  * ```typescript
@@ -325,9 +336,11 @@ function buildApprovalFingerprint(
   {
     event,
     cwd,
+    projectContext = '',
   }: {
     readonly event: ForeignBorrowed<ToolCallEvent>;
     readonly cwd: string;
+    readonly projectContext?: string;
   },
 ): string {
   /**
@@ -336,6 +349,7 @@ function buildApprovalFingerprint(
   const serializedCall = buildApprovalFingerprintIdentity({
     event,
     cwd,
+    projectContext,
   },);
   return createHash(APPROVAL_FINGERPRINT_HASH_ALGORITHM,)
     .update(serializedCall,)

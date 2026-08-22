@@ -14,7 +14,61 @@ import {
   isVerdictEntry,
   type VerdictData,
 } from './types.ts';
+import { serializeUntrustedDataForJudge, } from './tool-helpers.ts';
 import { buildVisibleContext, } from './visible-context.ts';
+
+/**
+ * Loaded Pi context file supplied to coding agent system prompt.
+ *
+ * @example
+ * ```typescript
+ * const contextFile: ProjectContextFile = {
+ *   path: '/project/AGENTS.md',
+ *   content: 'Run builds through mise.',
+ * };
+ * ```
+ */
+type ProjectContextFile = {
+  /** Absolute context-file path reported by Pi. */
+  readonly path: string;
+  /** Complete loaded context-file content. */
+  readonly content: string;
+};
+
+/**
+ * Build isolated canonical project-context data for judge request.
+ *
+ * Copies only path and content from Pi-owned records before serialization so
+ * later host mutation cannot change active judge context.
+ *
+ * @param contextFiles - context files loaded into coding agent prompt
+ *
+ * @returns canonical request-only JSON, or empty string when none loaded
+ *
+ * @example
+ * ```typescript
+ * const context = buildProjectContext([
+ *   { path: '/project/AGENTS.md', content: 'Use mise.' },
+ * ]);
+ * ```
+ */
+function buildProjectContext(
+  contextFiles: readonly ProjectContextFile[] | undefined,
+): string {
+  /** Owned path/content records preserving Pi load order. */
+  const isolatedContextFiles = (contextFiles ?? [])
+    .map(function isolateContextFile(
+      contextFile,
+    ): ProjectContextFile {
+      return {
+        path: contextFile.path,
+        content: contextFile.content,
+      };
+    },);
+  return isolatedContextFiles.length === 0
+    ? ''
+    : serializeUntrustedDataForJudge(isolatedContextFiles,);
+}
 
 /**
  * Reusable approval lookup result.
@@ -214,6 +268,8 @@ function buildContext(
 
 export {
   buildContext,
+  buildProjectContext,
   getReusableApproval,
   getTrustDirectives,
 };
+export type { ProjectContextFile, };

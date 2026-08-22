@@ -80,6 +80,8 @@ class EmptyJudgeResponseError extends Error {
  *
  * @param cwd - agent working directory
  *
+ * @param projectContext - complete loaded project-context files encoded as JSON
+ *
  * @param recentContext - complete selected user-visible messages encoded as JSON
  *
  * @param trustDirectives - active approved trust directives
@@ -104,7 +106,7 @@ class EmptyJudgeResponseError extends Error {
  *
  * @example
  * ```ts
- * const verdict = await callJudge({ model, auth, action, actionInput: '{"path":"src/index.ts"}', cwd, recentContext, trustDirectives: [], timeoutMs: 60_000, systemPrompt, batchContext: [] });
+ * const verdict = await callJudge({ model, auth, action, actionInput: '{"path":"src/index.ts"}', cwd, projectContext, recentContext, trustDirectives: [], timeoutMs: 60_000, systemPrompt, batchContext: [] });
  * ```
  */
 async function callJudge(
@@ -114,6 +116,7 @@ async function callJudge(
     action,
     actionInput,
     cwd,
+    projectContext = '',
     recentContext,
     trustDirectives,
     timeoutMs,
@@ -126,6 +129,7 @@ async function callJudge(
     readonly action: string;
     readonly actionInput: string;
     readonly cwd: string;
+    readonly projectContext?: string;
     readonly recentContext: string;
     readonly trustDirectives: readonly string[];
     readonly timeoutMs: number;
@@ -149,6 +153,7 @@ async function callJudge(
     action,
     actionInput,
     cwd,
+    projectContext,
     recentContext,
     trustDirectives,
     batchContext,

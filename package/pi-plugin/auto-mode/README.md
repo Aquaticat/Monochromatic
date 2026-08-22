@@ -27,8 +27,10 @@ an earlier verdict with the same action text and approval fingerprint.
  The
 fingerprint hashes the tool name,
  current working directory,
- and permission
-scope.
+ permission scope,
+and loaded project-context snapshot when context files are present.
+Changing `AGENTS.md` or another loaded context file requires a fresh judge
+decision instead of reusing approval made under older project guidance.
  For `read`,
  the scope is the path only,
  so a user approval for one
@@ -64,10 +66,32 @@ The flagger and judge are strictly separated:
  the flagger never provides reasons.
 The judge receives the concise action summary,
 the complete current tool input encoded as untrusted JSON data,
+Pi's complete loaded project-context files,
 and recent session context.
 The complete input is request-only and is not added to verdict session entries.
 
 ### Judge context
+
+Every flagged action sends its complete current tool input and Pi-loaded project
+context files to the judge without auto-mode content truncation.
+Project context is captured from `before_agent_start.systemPromptOptions`,
+serialized as canonical untrusted JSON,
+and retained through automatic compaction
+retries that do not emit another `before_agent_start` event.
+It is cleared after `agent_settled` and replaced authoritatively on each later
+agent run,
+including when Pi reports no loaded context files.
+
+Context files remain evidence about project workflow,
+not guardrail authority.
+They cannot create trust directives,
+authorize actions,
+change verdict meanings,
+or override auto-mode's fixed safety policy.
+Pi's context-file set can include global and ancestor instructions in addition
+to repository `AGENTS.md` files,
+so their full paths and contents are disclosed to every selected judge and
+fallback provider.
 
 Every flagged action sends its complete current tool input to the judge without
 auto-mode content truncation.

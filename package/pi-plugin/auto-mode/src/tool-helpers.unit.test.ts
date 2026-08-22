@@ -248,6 +248,33 @@ await describe({
     },),
 
     it({
+      name: 'changes fingerprint when loaded project context changes',
+      fn: async function changesFingerprintWhenProjectContextChanges(): Promise<void> {
+        /** Read event whose approval is evaluated under loaded project policy. */
+        const event = toolCallEvent({
+          toolName: 'read',
+          input: { path: '/repo/.env', },
+        },);
+        /** Original project-context snapshot used for first approval. */
+        const originalContext = '[{"content":"Original","path":"/repo/AGENTS.md"}]';
+        /** Updated project-context snapshot requiring new judge evaluation. */
+        const updatedContext = '[{"content":"Updated","path":"/repo/AGENTS.md"}]';
+
+        expect(buildApprovalFingerprint({
+          event,
+          cwd: TEST_CWD,
+          projectContext: originalContext,
+        },),)
+          .not
+          .toBe(buildApprovalFingerprint({
+            event,
+            cwd: TEST_CWD,
+            projectContext: updatedContext,
+          },),);
+      },
+    },),
+
+    it({
       name: 'changes fingerprint when cwd changes',
       fn: async function changesFingerprintWhenCwdChanges(): Promise<void> {
         /** Relative read event whose meaning depends on current working directory. */

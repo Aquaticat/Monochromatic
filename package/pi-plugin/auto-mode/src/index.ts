@@ -32,6 +32,7 @@ import {
   updateBypassStatus,
 } from './bypass.ts';
 import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
+import { buildProjectContext, } from './context.ts';
 import { evaluate, } from './evaluate.ts';
 import { createJudgeCallHistory, } from './judge-call-history.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
@@ -74,18 +75,30 @@ const l = tagged({
  *
  * @example
  * ```typescript
- * const event: SkillPromptEvent = {
- *   systemPromptOptions: { skills: [{ baseDir: "/skills/example" }] },
+ * const event: PromptContextEvent = {
+ *   systemPromptOptions: {
+ *     contextFiles: [{ path: '/project/AGENTS.md', content: 'Use mise.' }],
+ *     skills: [{ baseDir: '/skills/example' }],
+ *   },
  * };
  * ```
  */
-type SkillPromptEvent = {
+type PromptContextEvent = {
   /**
-   * Structured prompt options containing loaded skill metadata.
+   * Structured prompt options containing loaded context metadata.
    */
   readonly systemPromptOptions: {
     /**
-     * Skills visible to the model in the current prompt.
+     * Context files loaded into coding agent system prompt.
+     */
+    readonly contextFiles?: readonly {
+      /** Absolute context-file path reported by Pi. */
+      readonly path: string;
+      /** Complete loaded context-file content. */
+      readonly content: string;
+    }[];
+    /**
+     * Skills visible to model in current prompt.
      */
     readonly skills?: readonly {
       /**
@@ -116,6 +129,8 @@ type SkillPromptEvent = {
  *
  * @param historicalAgentTempDir - historical compatibility root used for isolated verification
  *
+ * @param evaluateAction - evaluation boundary override used by provider-free integration tests
+ *
  * @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
  *
  * @example
@@ -128,10 +143,12 @@ function initializeAutoMode(
     pi,
     home = homedir(),
     historicalAgentTempDir = HISTORICAL_AGENT_TEMP_DIR,
+    evaluateAction = evaluate,
   }: {
     readonly pi: ForeignHostCapability<ExtensionAPI>;
     readonly home?: string;
     readonly historicalAgentTempDir?: string;
+    readonly evaluateAction?: typeof evaluate;
   },
 ): void {
   /**
@@ -183,9 +200,13 @@ function initializeAutoMode(
     reason: string;
   }[] = [];
   /**
-   * Skill base directories visible in the current prompt; read-tool access bypasses path prompts.
+   * Skill base directories visible in current prompt; read-tool access bypasses path prompts.
    */
   let currentSkillReadDirs: readonly string[] = [];
+  /**
+   * Canonical loaded project-context snapshot retained through compact-and-retry runs.
+   */
+  let currentProjectContext = '';
   /**
    * Runtime bypass state, restored from session entries and toggled by
    * {@link BYPASS_SHORTCUT}.
@@ -287,12 +308,15 @@ function initializeAutoMode(
   pi.on(
     'before_agent_start',
     function handleBeforeAgentStart(
-      event: SkillPromptEvent,
+      event: PromptContextEvent,
     ) {
       /**
-       * Prompt options carrying the loaded skill catalog for this turn.
+       * Prompt options carrying loaded project and skill context for this run.
        */
       const { systemPromptOptions, } = event;
+      currentProjectContext = buildProjectContext(
+        systemPromptOptions.contextFiles,
+      );
       /**
        * Skills visible in the current system prompt; empty when no skills are loaded.
        */
@@ -373,6 +397,18 @@ function initializeAutoMode(
         flowVerdicts = [];
       }
       currentSkillReadDirs = [];
+    },
+  );
+
+  pi.on(
+    'agent_settled',
+    /**
+     * Clears run-scoped project context after every retry and continuation settles.
+     *
+     * @returns Nothing.
+     */
+    function handleAgentSettled() {
+      currentProjectContext = '';
     },
   );
 
@@ -472,6 +508,7 @@ function initializeAutoMode(
       const approvalFingerprint = approvalFingerprintForEvent({
         event,
         cwd: ctx.cwd,
+        projectContext: currentProjectContext,
       },);
       /**
        * Snapshot of this turn's siblings handed to the judge so it can reason about batch context; empty when this is the turn's first flagged call.
@@ -481,13 +518,14 @@ function initializeAutoMode(
       /**
        * Block-or-allow result after judge and any user decision complete.
        */
-      const result = await evaluate({
+      const result = await evaluateAction({
         pi,
         ctx,
         systemPrompt: JUDGE_SYSTEM_PROMPT,
         action,
         actionInput,
         approvalFingerprint,
+        projectContext: currentProjectContext,
         batchContext,
         judgeCallHistory,
       },);

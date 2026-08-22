@@ -268,6 +268,7 @@ function judgeRequest(
     action: 'bash: echo hi',
     actionInput: '{"command":"echo hi"}',
     cwd: '/project',
+    projectContext: '[{"content":"Use mise.","path":"/project/AGENTS.md"}]',
     recentContext: '',
     trustDirectives: [],
     timeoutMs: JUDGE_TIMEOUT_MS,
@@ -359,6 +360,12 @@ await describe({
           'fallback-one',
           'fallback-two',
         ],);
+        expect(transport.requests.every(function requestKeepsProjectContext(request,) {
+          return request.context.messages.some(function messageKeepsProjectContext(message,) {
+            return ((typeof message.content) === 'string')
+              && message.content.includes('/project/AGENTS.md',);
+          },);
+        },),).toBe(true,);
       },
     },),
     it({

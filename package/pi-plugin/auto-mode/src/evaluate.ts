@@ -136,6 +136,7 @@ async function evaluate(
     action,
     actionInput,
     approvalFingerprint,
+    projectContext = '',
     batchContext,
     judgeCallHistory = createJudgeCallHistory(),
   }: {
@@ -145,6 +146,7 @@ async function evaluate(
     readonly action: string;
     readonly actionInput: string;
     readonly approvalFingerprint: string;
+    readonly projectContext?: string;
     readonly batchContext: readonly BatchEntry[];
     readonly judgeCallHistory?: JudgeCallHistory;
   },
@@ -267,6 +269,7 @@ async function evaluate(
         action,
         actionInput,
         cwd: ctx.cwd,
+        projectContext,
         recentContext,
         trustDirectives,
         timeoutMs: JUDGE_TIMEOUT_MS,

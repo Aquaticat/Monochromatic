@@ -52,6 +52,7 @@ const NO_SECOND_FALLBACK: unique symbol = Symbol('second fallback judge unavaila
  *   action: 'write src/index.ts',
  *   actionInput: '{}',
  *   cwd: '/project',
+ *   projectContext: '',
  *   recentContext: '',
  *   trustDirectives: [],
  *   timeoutMs: 60_000,
@@ -73,6 +74,10 @@ type JudgeReviewRequest = {
    * Agent working directory.
    */
   readonly cwd: string;
+  /**
+   * Complete loaded project-context files as canonical JSON.
+   */
+  readonly projectContext: string;
   /**
    * Complete selected user-visible session messages as canonical JSON.
    */

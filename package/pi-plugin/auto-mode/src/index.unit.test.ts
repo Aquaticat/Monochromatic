@@ -256,7 +256,7 @@ await describe({
     //region Registration
 
     it({
-      name: 'registers all seven event handlers',
+      name: 'registers all eight event handlers',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         await autoMode(api,);
@@ -268,6 +268,7 @@ await describe({
           'agent_start',
           'turn_start',
           'agent_end',
+          'agent_settled',
           'tool_call',
         ];
 
@@ -276,6 +277,90 @@ await describe({
           expect(handlers,).toBeDefined();
           expect(handlers,).toHaveLength(1,);
         }
+      },
+    },),
+
+    //endregion
+
+    //region Project context lifecycle
+
+    it({
+      name: 'keeps loaded project context through compact retry and clears after settlement',
+      fn: async () => {
+        /** Project-context snapshots received by provider-free evaluation seam. */
+        const evaluatedProjectContexts: string[] = [];
+        /** Mock extension runtime under lifecycle test. */
+        const { api, registrations, } = createMockApi();
+        initializeAutoMode({
+          pi: api,
+          evaluateAction: async function captureEvaluation(
+            { projectContext, },
+          ) {
+            evaluatedProjectContexts.push(projectContext ?? '',);
+            return { decision: { block: false, }, };
+          },
+        },);
+        /** Prompt hook that captures Pi-loaded context files. */
+        const beforeAgentStartHandler = getHandler({
+          registrations,
+          event: 'before_agent_start',
+        },);
+        /** Inner-run end hook fired before automatic compaction. */
+        const agentEndHandler = getHandler({ registrations, event: 'agent_end', },);
+        /** Retried inner-run start hook fired without another prompt hook. */
+        const agentStartHandler = getHandler({ registrations, event: 'agent_start', },);
+        /** Final run-settlement hook after retries and continuations finish. */
+        const agentSettledHandler = getHandler({ registrations, event: 'agent_settled', },);
+        /** Guarded tool-call hook consuming current context snapshot. */
+        const toolCallHandler = getHandler({ registrations, event: 'tool_call', },);
+        /** Pi-loaded project policy fixture. */
+        const contextFiles = [{
+          path: '/repo/AGENTS.md',
+          content: 'PX3: Act on authorized repository work.\n',
+        },];
+        /** Canonical snapshot expected at evaluation boundary. */
+        const expectedProjectContext =
+          '[{"content":"PX3: Act on authorized repository work.\\n","path":"/repo/AGENTS.md"}]';
+        /** Minimal UI context used by agent lifecycle handlers. */
+        const lifecycleContext = {
+          ui: {
+            setWidget() {},
+          },
+        };
+
+        beforeAgentStartHandler({ systemPromptOptions: { contextFiles, }, },);
+        agentEndHandler({}, lifecycleContext,);
+        agentStartHandler({}, lifecycleContext,);
+        await toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-context-after-compact',
+            input: { path: '/repo/.env', },
+          },
+          {
+            cwd: '/repo',
+            ui: lifecycleContext.ui,
+          },
+        );
+        agentSettledHandler();
+        await toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-context-after-settlement',
+            input: { path: '/repo/.env', },
+          },
+          {
+            cwd: '/repo',
+            ui: lifecycleContext.ui,
+          },
+        );
+
+        expect(evaluatedProjectContexts,).toEqual([
+          expectedProjectContext,
+          '',
+        ],);
       },
     },),
 
