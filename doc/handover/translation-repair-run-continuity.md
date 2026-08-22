@@ -1180,3 +1180,94 @@ So the consolidation resume path is clean,
 and run 2 exercised it far less than the run's own numbers suggest.
 The repair lane's refinement remains the only measured source of
  non-determinism on a resumed run.
+
+## The fix: the naturalness lane caches in its own namespace
+
+LANDED 2026-08-22 as `fda817aaf`,
+with tests in `0f781c687`.
+
+### Why the per-stage cache and not the other option
+
+The fork recorded earlier was whether the cached unit becomes the slice AFTER
+ refinement,
+or whether refinement gets a cache of its own keyed on the accuracy result.
+
+The first option is not merely worse,
+it does not work.
+Folding refinement into the existing record means a resumed slice must skip the
+ lane,
+and the only marker available to skip on is `refined`.
+`refine-phase.ts` set that flag on exactly one path,
+where a rewrite both changed the text and kept every confirmed issue,
+so it reads false both for a slice refinement declined and for a slice
+ refinement never saw.
+Skipping on it would still rebuy the lane at precisely the slices that flipped
+ between the two runs,
+which is where the divergence came from.
+
+The second option also keeps a refinement re-askable without rebuying the
+ accuracy pass,
+which matters because the rewriter roster has churned before.
+
+### What the key covers
+
+`refine-slice-key.ts` keys on the slice source,
+the accuracy text,
+the declared names,
+the filed issues whole rather than by identifier,
+the confirmed subset,
+the non-translation verdict,
+and the rewriter,
+judge and checker rosters.
+
+It also keys on the DEFINITIONS of the whole assembled document.
+Those are collected across every slice so a paragraph's references resolve
+ while it is gated,
+which means a neighbour settling differently changes what this rewriter is
+ shown.
+A key blind to that resumes a stale rewrite,
+which is the failure `#126` already recorded once at the accuracy window.
+
+The checkers are in the key even though they never rewrite anything,
+because they decide whether a rewrite is rolled back for breaking a confirmed
+ repair,
+so a different checker roster ships wording this one refused.
+
+### What a resumed slice does not carry
+
+`askedRewriters` is re-derived rather than stored.
+It says whether THIS run reached a rewriter,
+and the driver reads it to decide whether a run overtaken by an abort may still
+ call itself finished.
+A slice resumed from disk asked nobody anything,
+so carrying the stored answer would report a previous run's purchase as this
+ one's.
+
+### How it was verified
+
+Three phase cases and twelve key cases,
+all passing,
+with the package at 504 passing tests and zero lint findings.
+
+The phase cases COUNT MODEL CALLS rather than compare text.
+The scripted client answers the same way every time by construction,
+so identical text proves nothing about whether anything was bought.
+
+Shown to fail per GFP.
+With the resume removed and the package rebuilt,
+the second run makes 8 calls instead of 0 and `askedRewriters` reads true
+ instead of false.
+The first run asserting it bought something is the positive control:
+without it,
+a second run buying nothing would prove only that the lane never ran.
+
+### What is still owed
+
+The band pair has not been re-run under the fix.
+That is the user-boundary verification,
+and it is the next thing to do:
+two passes over the same six entries,
+comparing published text slice by slice,
+with the criterion this file now states exactly,
+that a resumed slice must ship its cached text once blockquote markers are
+ normalised.
