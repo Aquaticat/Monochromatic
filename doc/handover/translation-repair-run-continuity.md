@@ -734,3 +734,82 @@ Run 2's artifacts land in `vub-run1-20260821/artifacts`,
 beside run 1's in `artifacts-run1`.
 No capture poller runs for run 2,
 because the criterion reads the log and the artifacts rather than the cache.
+
+## Run 2's first entry, and what it decided
+
+`Acheron` settled in run 2 at 07:24Z,
+33 minutes after the pass started,
+against 5.3 hours for all six in run 1.
+
+### The consolidation resume works
+
+Slice 2 reproduced byte for byte,
+350 characters in both runs.
+Slice 3 reproduced as `no-standing-text` with nothing shipped.
+Slice 0 was allowed to differ and did,
+moving from `slate-kept-standing` to `gate-kept-standing` while shipping the
+ same standing text,
+which is the refused-persistence path re-executing and landing on a real vote.
+
+Slice 1 differed,
+181 characters against 195,
+and the criterion called that a failure.
+It is not one.
+`consolidate-key.ts:108` puts `repairText` in the consolidation cache key,
+so a slice whose repair candidate changed has a different key by construction
+ and must re-buy.
+The consolidation resumed wherever its input was stable and re-bought wherever
+ its input moved,
+which is what a correct cache does.
+
+### The repair lane does not reproduce, and that is the finding
+
+Every one of the eight lane-slices reported `exit=resumed` with `ms=0`,
+so nothing was re-bought at the lane level.
+The delivered text still moved.
+
+The restored cache holds repair `repairedText` lengths of
+ 255,
+340,
+371 and 251.
+Run 1's own artifact recorded `comparison[].repairText` of
+ 242,
+344,
+371 and 251.
+Run 2 recorded
+ 252,
+326,
+371 and 251.
+
+Chunks carrying 371 and 251 agree across all three readings.
+The other two disagree in all three,
+and 255 and 340 appear in neither artifact.
+Those are multisets,
+so the `chunkIndex` ambiguity `#99` records cannot explain the gap:
+no remapping makes 255 and 340 into 242 and 344.
+
+So run 1's artifact already disagreed with run 1's own cache,
+and run 2 disagreed with both.
+
+### What this rules in and out
+
+The lane contest is not the cause.
+Every verdict is identical across the runs,
+at the same `usable` of 6,
+and the translate lane reproduced its text exactly on all four slices.
+
+The mechanism between the cached `repairedText` and the delivered `repairText`
+ is not yet identified,
+and naming it is the next step rather than a guess to record here.
+What is measured is that `exit=resumed` is not evidence that a slice reproduced
+ what it cached.
+
+### What this does to the criterion
+
+The per-slice criterion recorded earlier reads a difference at a MUST slice as a
+ broken resume.
+That inference does not hold,
+because a legitimate upstream change moves the key.
+The criterion needs to compare against the CACHE rather than against run 1's
+ artifact,
+since the artifact is the thing now known not to match it.
