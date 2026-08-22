@@ -15,7 +15,7 @@ const MANAGED_DESCRIPTION_PREFIX = 'wg-quicker managed endpoint';
 /**
  * JSON object with unknown fields retained during round-trip.
  */
-export type JsonRecord = Record<string, unknown>;
+export type JsonRecord = Readonly<Record<string, unknown>>;
 
 /**
  * Reconciled OpenSnitch document and whether disk write is necessary.
@@ -50,7 +50,11 @@ export type OpenSnitchConfigMutation = {
  * ```
  */
 function isRecord(value: unknown,): value is JsonRecord {
-  return ((typeof value) === 'object') && (value !== null) && (!Array.isArray(value,));
+  if ((typeof value) !== 'object')
+    return false;
+  if (value === null)
+    return false;
+  return !Array.isArray(value,);
 }
 
 /**
@@ -94,7 +98,9 @@ function isManagedRule(
 ): boolean {
   if (!isRecord(value,))
     return false;
-  return ((typeof value.Description) === 'string') && value.Description.startsWith(prefix,);
+  if ((typeof value.Description) !== 'string')
+    return false;
+  return value.Description.startsWith(prefix,);
 }
 
 /**
@@ -146,6 +152,42 @@ function createManagedRule(
 }
 
 /**
+ * Parses untrusted JSON with OpenSnitch-specific syntax diagnostic.
+ *
+ * @param text - Full JSON document.
+ *
+ * @param path - Source path used in diagnostics.
+ *
+ * @returns Parsed unknown JSON value.
+ *
+ * @throws {@link OpenSnitchConfigError} when JSON syntax is invalid.
+ *
+ * @example
+ * ```ts
+ * parseJson({ text: '{"Enabled":true}', path: '/etc/opensnitchd/system-fw.json' });
+ * ```
+ */
+function parseJson(
+  {
+    text,
+    path,
+  }: {
+    readonly text: string;
+    readonly path: string;
+  },
+): unknown {
+  try {
+    return JSON.parse(text,);
+  }
+  catch (error) {
+    throw new OpenSnitchConfigError(
+      `OpenSnitch system-firewall config is not valid JSON: ${path}`,
+      { cause: error, },
+    );
+  }
+}
+
+/**
  * Parses OpenSnitch system-firewall JSON without discarding unknown fields.
  *
  * @param text - Full JSON document.
@@ -173,16 +215,10 @@ export function parseOpenSnitchConfig(
   /**
    * Untrusted parsed JSON root.
    */
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text,);
-  }
-  catch (error) {
-    throw new OpenSnitchConfigError(
-      `OpenSnitch system-firewall config is not valid JSON: ${path}`,
-      { cause: error, },
-    );
-  }
+  const parsed = parseJson({
+    text,
+    path,
+  },);
   if (!isRecord(parsed,))
     throw new OpenSnitchConfigError(`OpenSnitch system-firewall config has invalid root: ${path}`,);
   return parsed;
@@ -219,6 +255,9 @@ function findTargetChain(
 ): {
   readonly chain: JsonRecord;
   readonly parent: JsonRecord;
+  readonly parentChains: readonly unknown[];
+  readonly rules: readonly unknown[];
+  readonly systemRules: readonly unknown[];
 } {
   if (document.Version !== SUPPORTED_VERSION) {
     throw new OpenSnitchConfigError(
@@ -233,39 +272,57 @@ function findTargetChain(
   if (!Array.isArray(document.SystemRules,))
     throw new OpenSnitchConfigError(`OpenSnitch SystemRules is missing at ${path}.`,);
   /**
+   * Validated top-level system-rule entries.
+   */
+  const systemRules = document.SystemRules;
+  /**
    * Matching chain-parent pairs across system-rule entries.
    */
-  const matches = document.SystemRules.flatMap(function matchingChains(entry,): readonly {
-    readonly chain: JsonRecord;
-    readonly parent: JsonRecord;
-  }[] {
-    if ((!isRecord(entry,)) || (!Array.isArray(entry.Chains,)))
-      return [];
-    return entry.Chains
-      .filter(function isTarget(chain,): chain is JsonRecord {
-        return isRecord(chain,)
-          && (chain.Name === 'mangle_output')
-          && (chain.Table === 'opensnitch')
-          && (chain.Family === 'inet');
-      },)
-      .map(function pair(chain,) {
-        return {
-          chain,
-          parent: entry,
-        };
-      },);
-  },);
+  const matches = systemRules
+    .flatMap(function matchingChains(entry,): readonly {
+      readonly chain: JsonRecord;
+      readonly parent: JsonRecord;
+      readonly parentChains: readonly unknown[];
+    }[] {
+      if ((!isRecord(entry,)) || (!Array.isArray(entry.Chains,)))
+        return [];
+      /**
+       * Validated chains array from current parent entry.
+       */
+      const parentChains = entry.Chains;
+      return parentChains
+        .filter(function isTarget(chain,): chain is JsonRecord {
+          return isRecord(chain,)
+            && (chain.Name === 'mangle_output')
+            && (chain.Table === 'opensnitch')
+            && (chain.Family === 'inet');
+        },)
+        .map(function pair(chain: Readonly<JsonRecord>,) {
+          return {
+            chain,
+            parent: entry,
+            parentChains,
+          };
+        },);
+    },);
   if (matches.length !== 1) {
     throw new OpenSnitchConfigError(
       `OpenSnitch config at ${path} must contain exactly one inet opensnitch mangle_output chain.`,
     );
   }
+  /**
+   * Sole validated target-chain match.
+   */
   const [match,] = matches;
   if (match === undefined)
     throw new OpenSnitchConfigError(`OpenSnitch mangle_output chain is missing at ${path}.`,);
   if (!Array.isArray(match.chain.Rules,))
     throw new OpenSnitchConfigError(`OpenSnitch mangle_output Rules is invalid at ${path}.`,);
-  return match;
+  return {
+    ...match,
+    rules: match.chain.Rules,
+    systemRules,
+  };
 }
 
 /**
@@ -314,9 +371,15 @@ export function reconcileOpenSnitchConfig(
     readonly requireEnabled: boolean;
   },
 ): OpenSnitchConfigMutation {
+  /**
+   * Validated target path and arrays used for immutable replacement.
+   */
   const {
     chain: targetChain,
     parent: targetParent,
+    parentChains,
+    rules: existingRules,
+    systemRules,
   } = findTargetChain({
     document,
     path,
@@ -325,17 +388,20 @@ export function reconcileOpenSnitchConfig(
   /**
    * Desired sorted unique ports for deterministic config rendering.
    */
-  const managedPorts = [...new Set(endpointPorts,),].toSorted(function ascending(a, b,): number {
-    return a - b;
-  },);
+  const managedPorts = [...new Set(endpointPorts,),]
+    .toSorted(function ascending(
+      a,
+      b,
+    ): number {
+      return a - b;
+    },);
   /**
-   * Existing target rules narrowed by target-chain validation.
-   */
-  const existingRules = targetChain.Rules as readonly unknown[];
-  /**
-   * Interface-owned rules removed before current desired set is appended.
+   * Interface-owned description prefix.
    */
   const prefix = managedPrefix({ interfaceName, },);
+  /**
+   * Unrelated and other-interface rules retained in order.
+   */
   const retainedRules = existingRules.filter(function retainRule(rule,): boolean {
     return !isManagedRule({
       value: rule,
@@ -377,14 +443,14 @@ export function reconcileOpenSnitchConfig(
    */
   const replacementParent: JsonRecord = {
     ...targetParent,
-    Chains: (targetParent.Chains as readonly unknown[]).map(function replaceChain(chain,): unknown {
+    Chains: parentChains.map(function replaceChain(chain,): unknown {
       return chain === targetChain ? replacementChain : chain;
     },),
   };
   return {
     document: {
       ...document,
-      SystemRules: (document.SystemRules as readonly unknown[]).map(function replaceParent(entry,): unknown {
+      SystemRules: systemRules.map(function replaceParent(entry,): unknown {
         return entry === targetParent ? replacementParent : entry;
       },),
     },
@@ -408,5 +474,13 @@ export function reconcileOpenSnitchConfig(
 export function renderOpenSnitchConfig(
   { document, }: { readonly document: Readonly<JsonRecord>; },
 ): string {
-  return `${JSON.stringify(document, null, 2,)}\n`;
+  /**
+   * Pretty-printed body before required trailing newline.
+   */
+  const serialized = JSON.stringify(
+    document,
+    null,
+    2,
+  );
+  return `${serialized}\n`;
 }

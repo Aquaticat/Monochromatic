@@ -7,6 +7,11 @@ import {
 } from './text.ts';
 
 /**
+ * Highest valid UDP port number.
+ */
+const MAX_UDP_PORT = 65_535;
+
+/**
  * Paths parsed from one peer's `AllowedIPsFromFiles` value.
  */
 export type AllowedFromFilesPaths = {
@@ -183,7 +188,11 @@ export function parseEndpointPort(
    * Final colon separates host from port for every valid endpoint form.
    */
   const separator = value.lastIndexOf(':',);
-  if ((separator <= 0) || (separator === value.length - 1))
+  /**
+   * Final endpoint index used to reject missing port text.
+   */
+  const finalIndex = value.length - 1;
+  if ((separator <= 0) || (separator === finalIndex))
     throw new ConfigError(`Invalid \`Endpoint' value \`${value}': expected host:port`,);
   /**
    * Host section before final separator.
@@ -204,7 +213,7 @@ export function parseEndpointPort(
     key: 'Endpoint port',
     value: value.slice(separator + 1,),
   },);
-  if (port > 65_535)
+  if (port > MAX_UDP_PORT)
     throw new ConfigError(`Invalid \`Endpoint' value \`${value}': port exceeds 65535`,);
   return port;
 }

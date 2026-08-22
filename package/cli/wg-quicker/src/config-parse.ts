@@ -7,10 +7,8 @@ import {
   parsePositiveInt,
   stripComment,
 } from './config-parse-values.ts';
-import type {
-  AllowedFromFiles,
-  WireguardConfig,
-} from './config-types.ts';
+import type { ParseAcc, } from './config-parse-types.ts';
+import type { WireguardConfig, } from './config-types.ts';
 import { ConfigError, } from './errors.ts';
 import { trimLinear, } from './text.ts';
 
@@ -77,101 +75,6 @@ function sectionName({ stripped, }: { readonly stripped: string; },): string {
   ), },)
     .toLowerCase();
 }
-
-/**
- * Mutable state gathered while walking config lines.
- */
-type ParseAcc = {
-  /**
-   * Accumulated `Address` values.
-   */
-  addresses: string[];
-
-  /**
-   * Accumulated DNS server literals.
-   */
-  dns: string[];
-
-  /**
-   * Accumulated DNS search domains.
-   */
-  dnsSearch: string[];
-
-  /**
-   * Accumulated explicit MTU.
-   */
-  mtu?: number;
-
-  /**
-   * Accumulated `Table` value.
-   */
-  table?: string;
-
-  /**
-   * Accumulated `ExemptMark` value.
-   */
-  exemptMark?: number;
-
-  /**
-   * Accumulated peer endpoint UDP ports.
-   */
-  endpointPorts: number[];
-
-  /**
-   * Accumulated peer-scoped `AllowedIPsFromFiles` directives.
-   */
-  allowedFromFiles: AllowedFromFiles[];
-
-  /**
-   * Accumulated `PreUp` hooks.
-   */
-  preUp: string[];
-
-  /**
-   * Accumulated `PostUp` hooks.
-   */
-  postUp: string[];
-
-  /**
-   * Accumulated `PreDown` hooks.
-   */
-  preDown: string[];
-
-  /**
-   * Accumulated `PostDown` hooks.
-   */
-  postDown: string[];
-
-  /**
-   * Raw lines forwarded to `wg addconf`.
-   */
-  wgLines: string[];
-
-  /**
-   * Whether cursor is inside `[Interface]` section.
-   */
-  inInterface: boolean;
-
-  /**
-   * Whether cursor is inside `[Peer]` section.
-   */
-  inPeer: boolean;
-
-  /**
-   * Zero-based index of current or most recently opened peer.
-   */
-  peerIndex: number;
-
-  /**
-   * Whether current peer already contains literal `AllowedIPs`.
-   */
-  peerHasAllowedIps: boolean;
-
-  /**
-   * Whether current peer already contains `AllowedIPsFromFiles`.
-   */
-  peerHasAllowedFromFiles: boolean;
-};
 
 /**
  * Routes one `[Interface]` key/value pair into the accumulator.
@@ -402,7 +305,8 @@ function processLine(
   },))
     return;
   if (acc.inPeer && (lower === 'endpoint'))
-    acc.endpointPorts.push(parseEndpointPort({ value, },),);
+    acc.endpointPorts
+      .push(parseEndpointPort({ value, },),);
   if (acc.inInterface) {
     /**
      * Index of the first key/value separator in the raw line.

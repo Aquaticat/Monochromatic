@@ -122,7 +122,7 @@ async function createFixture(
     configPath,
     async [Symbol.asyncDispose](): Promise<void> {
       if (originalConfig === undefined)
-        delete process.env[OPENSNITCH_CONFIG_ENVIRONMENT];
+        delete process.env.WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG;
       else
         process.env[OPENSNITCH_CONFIG_ENVIRONMENT] = originalConfig;
       if (originalRuntime === undefined)

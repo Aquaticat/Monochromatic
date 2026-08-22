@@ -1,8 +1,8 @@
 import {
-  readFile,
-  stat,
-  writeFile,
+  lstat,
   mkdir,
+  readFile,
+  writeFile,
 } from 'node:fs/promises';
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -47,6 +47,11 @@ const RELOAD_PROBE_INTERVAL_MS = 100;
 const RELOAD_PROBE_ATTEMPTS = 40;
 
 /**
+ * Sentinel indicating OpenSnitch system-firewall file is absent.
+ */
+const OPENSNITCH_CONFIG_ABSENT: unique symbol = Symbol('OpenSnitch system-firewall config absent',);
+
+/**
  * Reports whether unknown failure carries Node filesystem code.
  *
  * @param error - Unknown caught value.
@@ -59,7 +64,7 @@ const RELOAD_PROBE_ATTEMPTS = 40;
  * ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
-  return error instanceof Error;
+  return Error.isError(error,);
 }
 
 /**
@@ -73,10 +78,33 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  * ```
  */
 function openSnitchConfigPath(): string {
+  /**
+   * Explicit custom system-firewall path when configured.
+   */
   const configured = process.env[OPENSNITCH_CONFIG_ENVIRONMENT];
   return (configured === undefined) || (configured === '')
     ? DEFAULT_SYSTEM_FIREWALL_CONFIG
     : configured;
+}
+
+/**
+ * Narrows config-read result to exact absence sentinel.
+ *
+ * @param value - Config text or absence symbol.
+ *
+ * @returns Whether OpenSnitch config path was absent.
+ *
+ * @example
+ * ```ts
+ * isOpenSnitchConfigAbsent(OPENSNITCH_CONFIG_ABSENT);
+ * ```
+ */
+function isOpenSnitchConfigAbsent(
+  { value, }: { readonly value: string | typeof OPENSNITCH_CONFIG_ABSENT; },
+): value is typeof OPENSNITCH_CONFIG_ABSENT {
+  if ((typeof value) !== 'symbol')
+    return false;
+  return value === OPENSNITCH_CONFIG_ABSENT;
 }
 
 /**
@@ -129,7 +157,7 @@ async function claimOpenSnitchConfigOperation(
  *
  * @param path - OpenSnitch system-firewall config path.
  *
- * @returns Existing text or undefined when OpenSnitch is not installed.
+ * @returns Existing text or absence sentinel when OpenSnitch is not installed.
  *
  * @throws {@link OpenSnitchConfigError} when existing path cannot be read safely.
  *
@@ -140,9 +168,12 @@ async function claimOpenSnitchConfigOperation(
  */
 async function readOpenSnitchConfig(
   { path, }: { readonly path: string; },
-): Promise<string | undefined> {
+): Promise<string | typeof OPENSNITCH_CONFIG_ABSENT> {
   try {
-    const metadata = await stat(path,);
+    /**
+     * Link metadata rejects symlink and hard-link replacement targets.
+     */
+    const metadata = await lstat(path,);
     if ((!metadata.isFile()) || (metadata.nlink !== 1)) {
       throw new OpenSnitchConfigError(
         `OpenSnitch system-firewall config must be one regular file with one link: ${path}`,
@@ -155,7 +186,7 @@ async function readOpenSnitchConfig(
   }
   catch (error) {
     if (isErrnoException(error,) && (error.code === 'ENOENT'))
-      return undefined;
+      return OPENSNITCH_CONFIG_ABSENT;
     if (error instanceof OpenSnitchConfigError)
       throw error;
     throw new OpenSnitchConfigError(
@@ -251,6 +282,9 @@ async function writeOpenSnitchConfig(
  * ```
  */
 async function openSnitchTableExists(): Promise<boolean> {
+  /**
+   * Nftables table probe whose failure means daemon is not currently active.
+   */
   const result = await runAllowingFailure({
     command: 'nft',
     args: [
@@ -321,11 +355,15 @@ async function verifyOpenSnitchLiveReload(
   if (!(await openSnitchTableExists()))
     return;
   /**
-   * Mutable bounded attempt counter for asynchronous external convergence.
+   * Mutable bounded cursor contained in object rather than function-root binding.
    */
-  let attempt = 0;
-  while (attempt < RELOAD_PROBE_ATTEMPTS) {
+  const cursor = { attempt: 0, };
+  /* oxlint-disable eslint/no-await-in-loop -- Each probe depends on prior external state and delay. */
+  while (cursor.attempt < RELOAD_PROBE_ATTEMPTS) {
     await wait(RELOAD_PROBE_INTERVAL_MS,);
+    /**
+     * Current numeric output-chain listing after one reload interval.
+     */
     const result = await runAllowingFailure({
       command: 'nft',
       args: [
@@ -342,12 +380,28 @@ async function verifyOpenSnitchLiveReload(
       ports,
     },))
       return;
-    attempt += 1;
+    cursor.attempt += 1;
   }
+  /* oxlint-enable eslint/no-await-in-loop */
   throw new OpenSnitchConfigError(
     `OpenSnitch did not load wg-quicker endpoint rules from ${path}; its live nftables chain is incomplete.`,
   );
 }
+
+/**
+ * Existing OpenSnitch config plus managed endpoint ports.
+ */
+type OpenSnitchReconcileResult = {
+  /**
+   * System-firewall config path changed or inspected.
+   */
+  readonly path: string;
+
+  /**
+   * Sorted managed endpoint ports after reconciliation.
+   */
+  readonly ports: readonly number[];
+};
 
 /**
  * Reconciles one interface's managed OpenSnitch rules under config lock.
@@ -360,7 +414,7 @@ async function verifyOpenSnitchLiveReload(
  * @param requireEnabled - Whether disabled OpenSnitch system firewall rejects operation.
  *
  * @returns Existing config path and managed ports,
- * or undefined when OpenSnitch is absent.
+ * or absence sentinel when OpenSnitch is absent.
  *
  * @example
  * ```ts
@@ -381,22 +435,37 @@ async function reconcileOpenSnitchEndpointAllowance(
     readonly endpointPorts: readonly number[];
     readonly requireEnabled: boolean;
   },
-): Promise<{
-  readonly path: string;
-  readonly ports: readonly number[];
-} | undefined> {
+): Promise<OpenSnitchReconcileResult | typeof OPENSNITCH_CONFIG_ABSENT> {
+  /**
+   * Effective OpenSnitch config path.
+   */
   const path = openSnitchConfigPath();
+  /**
+   * Unlocked existence probe avoiding runtime directory when OpenSnitch is absent.
+   */
   const initial = await readOpenSnitchConfig({ path, },);
-  if (initial === undefined)
-    return undefined;
+  if (isOpenSnitchConfigAbsent({ value: initial, },))
+    return OPENSNITCH_CONFIG_ABSENT;
+  /**
+   * Config-path operation lock held through disk and live-kernel convergence.
+   */
   await using lock = await claimOpenSnitchConfigOperation({ path, },);
+  /**
+   * Locked source re-read protecting against concurrent pre-lock changes.
+   */
   const current = await readOpenSnitchConfig({ path, },);
-  if (current === undefined)
-    return undefined;
+  if (isOpenSnitchConfigAbsent({ value: current, },))
+    return OPENSNITCH_CONFIG_ABSENT;
+  /**
+   * Validated unknown-field-preserving config tree.
+   */
   const document = parseOpenSnitchConfig({
     text: current,
     path,
   },);
+  /**
+   * Immutable managed-rule reconciliation result.
+   */
   const mutation = reconcileOpenSnitchConfig({
     document,
     interfaceName,
@@ -445,15 +514,36 @@ export async function installOpenSnitchEndpointAllowance(
     readonly endpointPorts: readonly number[];
   },
 ): Promise<void> {
+  /**
+   * Reconciled OpenSnitch state or installation-absence sentinel.
+   */
   const result = await reconcileOpenSnitchEndpointAllowance({
     interfaceName,
     endpointPorts,
     requireEnabled: true,
   },);
-  if ((result === undefined) || (result.ports.length === 0))
+  if ((typeof result) === 'symbol') {
+    if (result === OPENSNITCH_CONFIG_ABSENT)
+      return;
+    throw new OpenSnitchConfigError('Unexpected OpenSnitch reconciliation result.',);
+  }
+  /**
+   * Concrete managed ports and config path after symbol narrowing.
+   */
+  const {
+    path,
+    ports,
+  } = result;
+  if (ports.length === 0)
     return;
+  /**
+   * Human-readable accepted port list.
+   */
+  const renderedPorts = ports.join(', ',);
   l.warn(
-    `OpenSnitch now accepts any process's outbound UDP to destination port(s) ${result.ports.join(', ',)} before application filtering while ${interfaceName} is up. wg-quicker added visible rules to ${result.path} and removes them on down.`,
+    `OpenSnitch now accepts any process's outbound UDP to destination port(s) ${renderedPorts} `
+    + `before application filtering while ${interfaceName} is up. wg-quicker added visible rules to ${path} `
+    + 'and removes them on down.',
   );
 }
 
@@ -482,7 +572,8 @@ export async function removeOpenSnitchEndpointAllowance(
   }
   catch (error) {
     l.error(
-      `Cannot remove ${interfaceName} OpenSnitch endpoint rules; remove wg-quicker-managed rules manually: ${String(error,)}`,
+      `Cannot remove ${interfaceName} OpenSnitch endpoint rules; `
+      + `remove wg-quicker-managed rules manually: ${String(error,)}`,
     );
   }
 }
