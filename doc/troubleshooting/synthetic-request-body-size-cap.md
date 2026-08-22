@@ -120,12 +120,50 @@ once the source freeze recorded in `doc/handover/translation-repair-run-continui
   The two mentions in `doc/audit/reading-a-picture-at-the-user-boundary.md` describe historical runs
   and keep the old spelling deliberately.
 
-STILL OWED:
+- The gateway's parse failure re-raised as a size refusal,
+  in `package/module/translation-repair/src/request-size-refusal.ts`.
+  `failureForReply` builds `SyntheticRequestTooLargeError`,
+  a subclass of `SyntheticHttpError` carrying the measured body size beside the passing size,
+  and `synthetic-client.ts` routes its streaming-completions failure through it.
 
-- Re-raising the gateway's parse failure as a size refusal.
-  Lowering the ceiling makes the picture path safe;
-  it does not make the error honest,
-  and a body pushed over by anything other than a picture still arrives as a parse error.
+Nothing is owed on this document now.
+
+## How the re-raise decides
+
+THREE SIGNALS, ANDed.
+Status 400,
+a body message beginning `Could not parse request as valid JSON`,
+and a request body measured over 10485760 bytes.
+Any one of them missing leaves the plain `SyntheticHttpError` untouched.
+
+The conjunction protects both directions.
+A small body drawing that message is a body we genuinely malformed,
+and reporting it as too large would send whoever chases it hunting for a limit they never hit.
+An oversize body refused for a bad model name is refused for the model name.
+
+BYTES, NOT CHARACTERS.
+This corpus is Chinese,
+where one character costs three bytes in UTF-8,
+so `bodyJson.length` reads about a third of the wire size
+and would never fire on the oversize-prompt case the re-raise exists for.
+`Buffer.byteLength` is what the client measures,
+and `synthetic-client.unit.test.ts` pins it with a request whose character count is under the cap
+while its byte count is over.
+
+AFTER THE FACT, NEVER BEFORE IT.
+Nothing refuses a request client-side at the passing size.
+Only that size is exact;
+the failing size is approximate and the boundary between them has never been bisected,
+so a pre-flight guard at 10485760 would reject bodies in the gray zone above it
+that the gateway may well carry.
+Reading an answer that already arrived cannot cost a call that would have worked.
+
+NOT CAUGHT ANYWHERE, deliberately.
+The reading stage does not fold this into an `unavailable` reading.
+After the ceiling drop the picture path cannot produce an oversize body,
+9787235 against 10485760 by measurement,
+so a catch there would absorb a state that should be impossible.
+A body pushed over by something other than a picture is a defect to see, not to recover from.
 
 ## What is not ruled out
 

@@ -113,6 +113,10 @@ export {
   readUsage,
   SyntheticHttpError,
 } from './completion-shape.ts';
+export {
+  failureForReply,
+  SyntheticRequestTooLargeError,
+} from './request-size-refusal.ts';
 export { extractStreamedCompletion, } from './stream-completion.ts';
 export {
   type BenchmarkEntry,

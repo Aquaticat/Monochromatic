@@ -42,6 +42,11 @@ export class SyntheticHttpError extends Error {
    *
    * @param bodyText - raw response body, excerpted for the message
    *
+   * @param summary - what went wrong, where a subclass knows something this
+   * class cannot infer from a status. Absent leaves the plain status line.
+   * The excerpt is appended either way, so no subclass has to know how long
+   * an excerpt runs or how to label whose words it quotes
+   *
    * @example
    * ```ts
    * new SyntheticHttpError({ status: 500, bodyText: 'upstream exploded', },);
@@ -51,13 +56,15 @@ export class SyntheticHttpError extends Error {
     {
       status,
       bodyText,
+      summary,
     }: {
       readonly status: number;
       readonly bodyText: string;
+      readonly summary?: string;
     },
   ) {
     super(
-      `Synthetic API returned HTTP ${String(status,)}: ${
+      `${summary ?? `Synthetic API returned HTTP ${String(status,)}:`} ${
         bodyText.slice(
           0,
           BODY_EXCERPT_LIMIT,

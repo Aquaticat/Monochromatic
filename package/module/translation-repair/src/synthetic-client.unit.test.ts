@@ -21,6 +21,7 @@ import {
   stripCodeFence,
   stripThinkBlock,
   SyntheticHttpError,
+  SyntheticRequestTooLargeError,
   type TransportExchange,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
@@ -356,6 +357,92 @@ await describe({
         ).toBe(429,);
         // First attempt plus two transient retries.
         expect(exchanges,).toHaveLength(3,);
+      },
+    },),
+
+    it({
+      name: 'MEASURES THE BODY IN BYTES, NOT CHARACTERS, when re-raising the gateway\'s size '
+        + 'refusal. The content here is Chinese, so its character count sits comfortably under '
+        + 'the passing size while its UTF-8 weight is a third again over it. A client counting '
+        + '`.length` would call this small, hand back the gateway\'s parse error, and never once '
+        + 'fire on the only corpus this pipeline actually translates',
+      fn: async () => {
+        /**
+         * Content whose characters number far fewer than its bytes.
+         *
+         * 3600000 characters at three UTF-8 bytes each is 10800000 bytes, over the
+         * 10485760 measured to pass, while the character count is barely a third
+         * of it. The two readings disagree by design.
+         */
+        const wide = '猫'.repeat(3_600_000,);
+
+        /** Transport replaying the gateway\'s answer to an oversize body. */
+        const { transport, } = recordedTransport({
+          replies: [{
+            status: 400,
+            bodyText: 'Could not parse request as valid JSON. '
+              + 'Unterminated string in JSON at position 10444203',
+          },],
+        },);
+
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+
+        /** Value caught from the oversize exchange. */
+        let caught: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: [{ role: 'user' as const, content: wide, },],
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+
+        expect(caught instanceof SyntheticRequestTooLargeError,).toBe(true,);
+        if (!(caught instanceof SyntheticRequestTooLargeError))
+          throw new Error('size failure by construction',);
+        expect(caught.bodyBytes > caught.passingBodyBytes,).toBe(true,);
+        // The character count is what a `.length` reading would have seen, and it
+        // is under the cap: this is the gap the case exists to hold open.
+        expect(wide.length < caught.passingBodyBytes,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A SMALL MALFORMED BODY AS AN ORDINARY FAILURE, so a request we genuinely '
+        + 'broke still reports as broken. Without this, every parse error would be re-raised as '
+        + 'a size problem and whoever chased one would go hunting for a limit they never hit',
+      fn: async () => {
+        /** Transport replaying a parse failure on a small body. */
+        const { transport, } = recordedTransport({
+          replies: [{
+            status: 400,
+            bodyText: 'Could not parse request as valid JSON. '
+              + 'Unterminated string in JSON at position 41',
+          },],
+        },);
+
+        /** Client under test. */
+        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+
+        /** Value caught from the refused exchange. */
+        let caught: unknown;
+        try {
+          await client.chatText({
+            modelId: 'hf:zai-org/GLM-5.2',
+            messages: MESSAGES,
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+
+        expect(caught instanceof SyntheticHttpError,).toBe(true,);
+        expect(caught instanceof SyntheticRequestTooLargeError,).toBe(false,);
       },
     },),
 

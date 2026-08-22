@@ -18,6 +18,7 @@ import {
   stripThinkBlock,
 } from './model-content.ts';
 import { detectRefusalShape, } from './refusal.ts';
+import { failureForReply, } from './request-size-refusal.ts';
 import {
   SYNTHETIC_CHAT_BASE_URL,
   SYNTHETIC_QUOTAS_URL,
@@ -212,6 +213,29 @@ export function createSyntheticClient(
         : deadline.callSignal;
 
       /**
+       * Exactly what goes on the wire, hoisted so its size can be measured.
+       *
+       * MEASURED, NOT ESTIMATED. The gateway caps this body and reports a body
+       * over the cap as a parse failure naming our JSON, so the only way to tell
+       * that refusal from a real malformation is to know how big this was.
+       */
+      const bodyJson = JSON.stringify({
+        model: request.modelId,
+        messages: request.messages,
+        // The provider is finicky without streaming, and streamed headers
+        // arrive before fetch's default headers timeout can fire.
+        stream: true,
+        stream_options: { include_usage: true, },
+        // Conditional spreads keep optional knobs absent instead of undefined.
+        ...(request.maxTokens === undefined
+          ? {}
+          : { max_tokens: request.maxTokens, }),
+        ...(request.responseFormat === undefined
+          ? {}
+          : { response_format: request.responseFormat, }),
+      },);
+
+      /**
        * Raw reply from the transport seam, retried on transient statuses.
        */
       const reply = await exchangeWithRetry({
@@ -221,21 +245,7 @@ export function createSyntheticClient(
           label: request.modelId,
           method: 'POST',
           headers,
-          bodyJson: JSON.stringify({
-          model: request.modelId,
-          messages: request.messages,
-          // The provider is finicky without streaming, and streamed headers
-          // arrive before fetch's default headers timeout can fire.
-          stream: true,
-          stream_options: { include_usage: true, },
-          // Conditional spreads keep optional knobs absent instead of undefined.
-          ...(request.maxTokens === undefined
-            ? {}
-            : { max_tokens: request.maxTokens, }),
-          ...(request.responseFormat === undefined
-            ? {}
-            : { response_format: request.responseFormat, }),
-          },),
+          bodyJson,
           signal: exchangeSignal,
         },
         policy: retryPolicy,
@@ -243,9 +253,15 @@ export function createSyntheticClient(
 
       if ((reply.status < HTTP_SUCCESS_MIN) || (reply.status >= HTTP_SUCCESS_MAX_EXCLUSIVE)) {
         rl.warn(`<- ${request.modelId}: HTTP ${String(reply.status,)}`,);
-        throw new SyntheticHttpError({
+
+        // BYTES RATHER THAN CHARACTERS, which is the whole trap here. This
+        // corpus is Chinese, and one character costs three bytes in UTF-8, so a
+        // `.length` here would read a third of the wire size and never once fire
+        // on the case this exists for.
+        throw failureForReply({
           status: reply.status,
           bodyText: reply.bodyText,
+          requestBodyBytes: Buffer.byteLength(bodyJson,),
         },);
       }
 
