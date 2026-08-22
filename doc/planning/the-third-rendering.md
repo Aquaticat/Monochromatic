@@ -2902,3 +2902,134 @@ and `doc/troubleshooting/synthetic-aggregate-concurrency-stall.md` measured
  every backend degrading above roughly seven aggregate streams.
 The sweep is therefore queued behind the `#138` verification,
 not blocked by it.
+
+## What the settled-artifact consumers actually read
+
+`#166` asked whether a graded sheet drawn from an accepted repair-lane issue
+ describes text a later stage replaced,
+which would make the precision number describe a draft rather than a publication.
+The answer is no,
+for a reason nobody had checked:
+those consumers cannot read a current artifact at all.
+
+### The schema split as measured
+
+Every artifact the current pipeline has written carries `artifactSchemaVersion: 2`.
+Across every run directory under the agent scratch root,
+24 of 24 are version 2,
+and 0 of 24 carry a top-level `issues` array.
+
+`artifact-probe-read.ts` reads `artifact.issues`,
+and filters each record on `record.repairDisposition === SHIPPED_DISPOSITION`.
+`artifact-repair-read.ts` and `repair-sheet.ts` key on the same field,
+which `repair-record.ts` defines as the string `shipped`.
+Neither `issues` nor `repairDisposition` exists in the version 2 shape,
+whose lane payload is `lanes.repair.delivery[]` with a nested `delivery.kind`.
+
+Version 1 artifacts do carry both fields,
+which is the positive control this claim needs:
+a sweep of the older run payload found ten artifacts carrying `issues` arrays,
+the largest with 77 records and the smallest with none,
+each with `artifactSchemaVersion` absent.
+The reader was never broken.
+The artifact moved out from under it.
+
+### Why the word was accurate when it was written
+
+`repairDisposition: 'shipped'` is documented as the disposition of a repair
+ that the returned document carries,
+and `repair-record.ts:351` is its only writer.
+In the version 1 pipeline that claim was exactly true,
+because the repair lane's returned document was the publication:
+no stage ran after it.
+
+Two stages run after it now.
+The lane contest chooses between the repair lane,
+ the translate lane and the incumbent,
+and the consolidation can replace whatever the contest settled on.
+A field written before either runs cannot describe what either decided.
+
+### What the naive port would cost
+
+The version 2 analogue of that field is `lanes.repair.delivery[].delivery.kind`,
+and mapping one onto the other is the obvious port.
+It would be wrong at every row this repository can measure.
+
+On the artifacts carrying both a lane contest and a consolidation,
+6 rows claim `replacement-shipped`,
+and the text of 0 of them reached the page.
+The contest alone had already chosen another lane at 5 of the 6,
+and the consolidation then overrode 4 rows including the one the contest had kept.
+That population is 2 artifacts,
+so it establishes the mechanism and its direction rather than a rate.
+The corroborating figure is the consolidation override rate recorded for the band pair,
+8 of 10 decided slices in run 8 and 7 of 8 in run 9.
+
+### The failure mode this leaves today
+
+A reader that finds no records does not mislead;
+it returns nothing.
+The danger is that nothing is indistinguishable from a clean result:
+an introduced-defect probe reporting no damage over zero shipped records
+ reads exactly like one reporting no damage over every shipped record.
+
+`artifact-probe-read.ts` anticipated this and already carries the discriminator,
+`shippedRecords`,
+documented so a run whose probe never fired is distinguishable from one that had
+ nothing to ship.
+Nothing reads it.
+Any port must make a zero denominator a refusal rather than a pass.
+
+### Decided that every consumer names the question it asks
+
+Two different questions are worth answering,
+and the split is what `#166` exists to fix.
+
+The lane-scoped question is whether a lane's own output carried a given repair.
+It stays.
+Roster decisions rest on lane attribution,
+and a consumer that could only see the page could no longer tell which voice
+ earned a result.
+
+The shipped-scoped question is whether the text reached the page.
+It is added beside the lane-scoped one rather than replacing it.
+
+Neither is a default.
+Every consumer names the question it asks in its own identifier rather than in a
+ comment,
+because the defect being repaired here is a name that asserted more than the
+ value meant.
+
+### Decided that the shipped text is derived once
+
+A single reader answers the shipped-scoped question for one slice,
+and every consumer calls it rather than walking the artifact itself.
+
+It cannot simply read `shipped.text`.
+Measured on the settled artifacts,
+`shipped` carries a `text` key only where the terminal is `consolidated`.
+Where the terminal is `slate-kept-standing` or `no-standing-text`,
+`shipped` carries a bare `kind` of `unchanged` and no text at all.
+
+So the reader walks the deciders in the order they ran:
+a `consolidated` terminal yields `shipped.text`;
+any other terminal yields the standing text,
+which is whatever the lane contest settled on;
+an artifact with no consolidation yields the contest result directly;
+and an entry with no contest yields the incumbent.
+
+### Still owed
+
+The port itself is queued behind the source freeze,
+with `#167` and `#168`.
+It carries three parts:
+the shipped-text reader,
+the renaming of every consumer that currently implies a page-level claim,
+and the zero-denominator refusal.
+
+`#66` recorded that the probe named neither damage that shipped.
+That answer was reached on version 1 artifacts,
+where the reader could see records,
+so it is not void.
+It is also not evidence about anything the two-lane pipeline has produced,
+and it should not be cited as if it were.
