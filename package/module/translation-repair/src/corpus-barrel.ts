@@ -87,6 +87,14 @@ export type {
   SettledAuditRow,
 } from './corpus-run/rendering-audit-settled-row.ts';
 export {
+  pageRelationFor,
+  pageRelationLabel,
+  pageRelationOf,
+  type PageRelationTally,
+  relationTallyOf,
+  type SettledPageRelation,
+} from './corpus-run/rendering-audit-settled-relation.ts';
+export {
   readArchiveSubjects,
   readArtifactSubjects,
   type SettledArtifactReading,

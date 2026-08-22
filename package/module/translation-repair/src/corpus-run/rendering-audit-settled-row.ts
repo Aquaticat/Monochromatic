@@ -1,4 +1,5 @@
 import type { RenderingAuditReport, } from '../rendering-audit.ts';
+import type { SettledPageRelation, } from './rendering-audit-settled-relation.ts';
 
 //region Settled audit row
 // What one audited slice becomes on disk.
@@ -90,6 +91,20 @@ export type SettledAuditRow = {
    * rendering, which is the split every aggregate must respect.
    */
   readonly auditsArchiveText: boolean;
+
+  /**
+   * Whether a later stage overruled the wording this row audited.
+   *
+   * BESIDE `auditsArchiveText`, never instead of it. That field says which
+   * text the LANE delivered, which is what the audit read and what its
+   * denominator must stay split by. This one says what a document assembled
+   * today would carry at the same slice.
+   *
+   * READ THROUGH `pageRelationFor`, never directly: rows persisted before
+   * this field existed carry nothing here, and the cast that loads them does
+   * not check.
+   */
+  readonly pageRelation: SettledPageRelation;
 
   /**
    * Built output that produced the decision under audit.

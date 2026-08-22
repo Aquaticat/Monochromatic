@@ -12,6 +12,7 @@ import {
 import { repeatBandOf, } from './rendering-audit-settled-band.ts';
 import {
   printBand,
+  printRelations,
   printRelocations,
   printSplit,
   printVoices,
@@ -20,6 +21,7 @@ import {
   rateByVoice,
   splitFor,
 } from './rendering-audit-settled-read.ts';
+import { relationTallyOf, } from './rendering-audit-settled-relation.ts';
 import { auditRelocationPairs, } from './rendering-audit-settled-relocation.ts';
 import {
   auditRepeatsAcross,
@@ -331,6 +333,7 @@ async function main(): Promise<void> {
     },),
   },);
 
+  printRelations({ tallies: relationTallyOf({ rows, },), },);
   printVoices({ rates: rateByVoice({ rows, },), },);
   printRelocations({ pairs: auditRelocationPairs({ rows, },), },);
   printBand({

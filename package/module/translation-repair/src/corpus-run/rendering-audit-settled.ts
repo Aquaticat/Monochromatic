@@ -11,6 +11,10 @@ import {
 import { digestAuditedText, } from './rendering-audit-settled-digest.ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
 import {
+  pageRelationFor,
+  pageRelationLabel,
+} from './rendering-audit-settled-relation.ts';
+import {
   readArchiveSubjects,
   type SettledArtifactReading,
   type SettledAuditSubject,
@@ -98,6 +102,7 @@ async function auditOne(
     chunkIndex,
     deliveryKind,
     auditsArchiveText,
+    pageRelation,
     artifactDigest,
     corpusSha,
     sourceText,
@@ -131,6 +136,7 @@ async function auditOne(
     chunkIndex,
     deliveryKind,
     auditsArchiveText,
+    pageRelation,
     artifactDigest,
     corpusSha,
     identityKind: identity.kind,
@@ -246,10 +252,32 @@ function printPopulation(
       return subject.auditsArchiveText;
     },);
 
+    /**
+     * Slices a later stage overruled, so the audit will read wording no
+     * reader of an assembled document would meet.
+     *
+     * PRINTED HERE because this whole reading is free, and knowing it before
+     * a roster is woken up is the reason this module is separate from the
+     * driver that spends quota.
+     */
+    const displaced = subjects.filter(function wasOverruled(subject,): boolean {
+      return subject.pageRelation.kind === 'displaced';
+    },);
+
+    /**
+     * Slices no stage has decided at all, which is the absence of a decision
+     * rather than one, and is pending `#175` with the owner.
+     */
+    const undecided = subjects.filter(function wasNeverAsked(subject,): boolean {
+      return subject.pageRelation.kind === 'undecided';
+    },);
+
     console.log(
       `${runSet}/${artifactFile}  subjects=${String(subjects.length,)} retained=${
         String(retained.length,)
-      } replaced=${String(subjects.length - retained.length,)} verification=${verification.kind}`,
+      } replaced=${String(subjects.length - retained.length,)} displaced=${
+        String(displaced.length,)
+      } undecided=${String(undecided.length,)} verification=${verification.kind}`,
     );
     if (verification.kind === 'refused')
       console.log(`   REFUSED: ${verification.detail}`,);
@@ -277,6 +305,16 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
     auditsArchiveText,
     report,
   } = row;
+
+  /**
+   * Whether a later stage overruled the wording just audited.
+   *
+   * PRINTED BESIDE the archive-versus-fresh token rather than replacing it.
+   * `FRESH` says the lane produced this wording, which stays true however
+   * the contest and the consolidation later ruled; without the relation
+   * beside it a watcher reads every `FRESH` line as the product.
+   */
+  const relation = pageRelationFor({ row, },);
 
   /**
    * Both agreement tiers, the near misses, the degradation and every voice.
@@ -313,7 +351,9 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
   console.log(
     `${runSet}/${entryId}#${String(chunkIndex,)} ${
       auditsArchiveText ? 'ARCHIVE' : 'FRESH  '
-    } claimed=${String(claimed,)} corroborated=${String(corroborated.length,)} agreed=${
+    } ${pageRelationLabel({ relation, },)} claimed=${String(claimed,)} corroborated=${
+      String(corroborated.length,)
+    } agreed=${
       String(agreed.length,)
     } near=${String(near.length,)}${
       (findings.length === 0) ? '' : ` degraded=${String(findings.length,)}`

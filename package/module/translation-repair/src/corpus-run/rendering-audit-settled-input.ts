@@ -21,6 +21,14 @@ import { verifyArtifactV2AgainstPreparation, } from './artifact-v2-corpus-verify
 import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
 import type { ParsedArtifactV2, } from './artifact-v2-read-contract.ts';
 import type { ArtifactSliceDeliveryV2, } from './artifact-v2-vocabulary.ts';
+import {
+  pageRelationOf,
+  type SettledPageRelation,
+} from './rendering-audit-settled-relation.ts';
+import {
+  type WouldShipReading,
+  wouldShipTextPerSlice,
+} from './would-ship-text.ts';
 
 //region Settled audit input
 // Turns an archive of settled version 2 artifacts into audit subjects, without
@@ -179,6 +187,16 @@ export type SettledAuditSubject = {
    * Rendering under audit, which is what the lane decided on.
    */
   readonly candidateText: string;
+
+  /**
+   * Whether any later stage overruled that rendering.
+   *
+   * ADDED BESIDE the lane-scoped fields rather than replacing them, per the
+   * decision recorded in `#166`. The audit still reads what the judges
+   * really decided; this says whether a reader of an assembled document
+   * would ever meet it.
+   */
+  readonly pageRelation: SettledPageRelation;
 
   /**
    * Names the producing run licensed, or a positive statement of none.
@@ -374,6 +392,22 @@ function subjectsOf(
   const { delivery, } = artifact.lanes
     .translate;
 
+  /**
+   * What would stand at each slice, by the index every stage names it by.
+   *
+   * DERIVED ONCE PER ARTIFACT rather than once per subject, since the reader
+   * walks every comparison row to answer any single one of them.
+   */
+  const readings = new Map(
+    wouldShipTextPerSlice({ artifact, },)
+      .map(function pair(slice,): readonly [number, WouldShipReading,] {
+        return [
+          slice.chunkIndex,
+          slice.reading,
+        ];
+      },),
+  );
+
   return delivery
     .filter(function wasDecided(row,): boolean {
       /**
@@ -396,6 +430,20 @@ function subjectsOf(
       if (outcome.kind !== 'decided')
         throw new Error(`slice ${row.chunkIndex} passed the decided filter and is not decided`,);
 
+      /**
+       * What would stand at this slice.
+       *
+       * THROWN ON RATHER THAN SKIPPED. The comparison is derived from the same
+       * slicing the lane delivered, so a delivered slice no comparison row
+       * names is a contradiction inside one artifact. Dropping it would
+       * shrink the audited population for a reason nobody would see.
+       */
+      const reading = readings.get(row.chunkIndex,);
+      if (reading === undefined)
+        throw new Error(
+          `slice ${row.chunkIndex} was delivered by the translate lane and named by no comparison row`,
+        );
+
       return {
         runSet,
         entryId: artifact.id,
@@ -406,6 +454,11 @@ function subjectsOf(
         auditsArchiveText: shipped.kind === ARCHIVE_TEXT_DELIVERY,
         sourceText: row.sourceText,
         candidateText: outcome.acceptedText,
+        pageRelation: pageRelationOf({
+          laneSelection: artifact.laneSelection,
+          reading,
+          candidateText: outcome.acceptedText,
+        },),
         identity,
       };
     },);

@@ -4,6 +4,7 @@ import type {
   AuditRelocationPair,
   VoiceRate,
 } from './rendering-audit-settled-read.ts';
+import type { PageRelationTally, } from './rendering-audit-settled-relation.ts';
 
 //region Settled audit printing
 // How a persisted run reads on a terminal.
@@ -20,6 +21,13 @@ import type {
  * Width model ids are padded to, so a column of rates reads down the page.
  */
 const MODEL_COLUMN = 48;
+
+/**
+ * Width relation labels are padded to, so a column of counts reads down the
+ * page. Set by the longest label the reader can produce,
+ * `silent:contest-declined-and-archive-silent`.
+ */
+const RELATION_COLUMN = 42;
 
 /**
  * Prints one half of the population.
@@ -52,6 +60,32 @@ export function printSplit({ split, }: { readonly split: AudienceSplit; },): voi
     }  drew a claim=${String(subjectsWithClaims,)}  claims=${String(claimed,)}  corroborated=${
       String(corroborated,)
     }  agreed=${String(agreed,)}  near=${String(near,)}  degraded=${String(degraded,)}`,
+  );
+}
+
+/**
+ * Prints how much of the audit describes wording a later stage overruled.
+ *
+ * @param tallies - one per relation present
+ *
+ * @example
+ * ```ts
+ * printRelations({ tallies, },);
+ * ```
+ */
+export function printRelations(
+  { tallies, }: { readonly tallies: readonly PageRelationTally[]; },
+): void {
+  console.log('\nWHAT A DOCUMENT WOULD CARRY AT THE SAME SLICES (#166)',);
+  for (const tally of tallies)
+    console.log(
+      `  ${tally.label.padEnd(RELATION_COLUMN,)}  subjects=${
+        String(tally.subjects,)
+      }  claims=${String(tally.claimed,)}`,
+    );
+  console.log(
+    '  A displaced subject was audited on wording no reader of a document would meet.'
+      + ' An undecided one is waiting on #175, not overruled.',
   );
 }
 
