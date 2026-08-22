@@ -39,7 +39,9 @@ import {
 const SETTLEMENT_TERMINALS: readonly ConsolidationTerminal[] = [
   'incumbent-only',
   'no-standing-text',
-  'slate-kept-standing',
+  'slate-endorsed-standing',
+  'slate-unjudged-standing',
+  'slate-declined-standing',
   'gate-kept-standing',
   'wrap-erased-difference',
   'consolidated',
@@ -197,6 +199,11 @@ function isConsolidationSettlement(value: unknown,): value is ConsolidationSettl
   const { terminal, } = value;
 
   /**
+   * Findings the file carries, before any of them is known to be a string.
+   */
+  const { findings, } = value;
+
+  /**
    * Whether that terminal is a way this stage can actually leave.
    */
   const named = SETTLEMENT_TERMINALS.some(function matches(known,): boolean {
@@ -210,7 +217,11 @@ function isConsolidationSettlement(value: unknown,): value is ConsolidationSettl
     && ((decided === undefined) || isJsonRecord(decided,))
     && isGateOutcomeOrAbsent(value.gate,)
     && ((typeof value.rewrapped) === 'boolean')
-    && ((typeof value.demoted) === 'boolean');
+    && ((typeof value.demoted) === 'boolean')
+    && Array.isArray(findings,)
+    && findings.every(function isText(finding,): boolean {
+      return (typeof finding) === 'string';
+    },);
 }
 
 /**

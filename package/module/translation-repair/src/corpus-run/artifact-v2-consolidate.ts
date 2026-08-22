@@ -97,6 +97,32 @@ export type ArtifactConsolidateShippedV2 =
  * const slice: ArtifactConsolidateSliceV2 = { chunkIndex: 0, terminal: 'incumbent-only', shipped: { kind: 'unchanged', }, rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
  * ```
  */
+/**
+ * Terminal as an ARTIFACT may name it, which is wider than what a run writes.
+ *
+ * CARRIES ONE RETIRED SPELLING. `slate-kept-standing` named three states at
+ * once: judges endorsing the archive, a slate carrying one candidate nobody
+ * judged, and judges refusing to settle. It was split because a tally over it
+ * added a working roster to a failing one to a slate that measured neither.
+ *
+ * THE OLD ROWS CANNOT BE RECLASSIFIED, and this type is how that is said out
+ * loud rather than guessed at. Eleven rows across four settled entries carry
+ * the spelling, every one of them with the same key set and no record of the
+ * judged round, so which of the three each was is not recoverable from the
+ * artifact, from a log, or from a cache that no longer resumes.
+ *
+ * A RUN NEVER WRITES IT. `ConsolidationTerminal` carries only the three new
+ * names, so this widening reaches the reader and stops there.
+ *
+ * @example
+ * ```ts
+ * const terminal: ArtifactConsolidationTerminal = 'slate-kept-standing';
+ * ```
+ */
+export type ArtifactConsolidationTerminal =
+  | ConsolidationTerminal
+  | 'slate-kept-standing';
+
 export type ArtifactConsolidateSliceV2 = {
   /**
    * Slice both lanes name it by, matching the comparison row it answers.
@@ -106,7 +132,7 @@ export type ArtifactConsolidateSliceV2 = {
   /**
    * How the slice left the stage, which is the field a census should count.
    */
-  readonly terminal: ConsolidationTerminal;
+  readonly terminal: ArtifactConsolidationTerminal;
 
   /**
    * Wording this slice contributes, or a named absence saying it contributes

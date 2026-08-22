@@ -19,7 +19,10 @@ import { wrapConsolidation, } from './consolidate-wrap.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import { buildTranslateCandidates, } from './translate-candidates.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
-import type { TranslateStageResult, } from './translate-stage-result.ts';
+import type {
+  TranslateDecision,
+  TranslateStageResult,
+} from './translate-stage-result.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
 
@@ -66,10 +69,36 @@ import type { TranslateReportWire, } from './translate-wire.ts';
 export type ConsolidationTerminal =
   | 'incumbent-only'
   | 'no-standing-text'
-  | 'slate-kept-standing'
+  | 'slate-endorsed-standing'
+  | 'slate-unjudged-standing'
+  | 'slate-declined-standing'
   | 'gate-kept-standing'
   | 'wrap-erased-difference'
   | 'consolidated';
+
+/**
+ * Which slate terminal a judged round ends in, per decision.
+ *
+ * THE THREE ANSWER DIFFERENT QUESTIONS ABOUT THE ROSTER, which is why one
+ * name for them could not be counted. A roster that endorses the archive is
+ * working. A roster that cannot agree is not. A slate carrying one candidate
+ * says nothing about the roster at all, because no judge was asked.
+ *
+ * `no-candidate` JOINS THE UNJUDGED rather than the declined, because nothing
+ * reached a judge on that path either. `no-candidate-backed` joins the
+ * declined, because candidates existed and the judges backed none of them.
+ *
+ * A RECORD RATHER THAN A CHAIN, so a decision added to the union fails to
+ * typecheck here instead of falling quietly into whichever branch is last.
+ */
+const SLATE_TERMINALS: Record<TranslateDecision, ConsolidationTerminal> = {
+  'judged': 'slate-endorsed-standing',
+  'sole-candidate': 'slate-unjudged-standing',
+  'no-candidate': 'slate-unjudged-standing',
+  'declined-indecision': 'slate-declined-standing',
+  'declined-rejection': 'slate-declined-standing',
+  'no-candidate-backed': 'slate-declined-standing',
+};
 
 /**
  * One voice's structural verdict WITHOUT its text, which is what a record of
@@ -184,6 +213,25 @@ export type ConsolidationSettlement = {
    * Whether wrapping left nothing between the consolidation and what stands.
    */
   readonly demoted: boolean;
+
+  /**
+   * Everything this slice's rounds recorded, as ONE authoritative list.
+   *
+   * READ THIS RATHER THAN DIGGING INTO `decided` OR `gate`. Before it existed,
+   * the produce half's findings reached a reader only where a judged round or
+   * a gate round happened to run, so the two terminals that end before either
+   * one, `no-standing-text` and `incumbent-only`, dropped them on every run.
+   * Those are exactly the terminals whose findings explain themselves: voice
+   * loss and transport failure are why a slate had nothing valid on it.
+   *
+   * EACH FINDING APPEARS ONCE. The produce half's findings are threaded into
+   * the judged round, so a path carrying `decided` already carries them and
+   * must not add them again.
+   *
+   * PER-PROPOSAL VERDICTS STAY OUT, because `verdicts` already records them
+   * structurally, and repeating them here would count one refusal twice.
+   */
+  readonly findings: readonly string[];
 };
 
 /**
@@ -306,6 +354,7 @@ export async function settleConsolidation(
       verdicts,
       rewrapped: false,
       demoted: false,
+      findings: producedFindings,
     };
   }
 
@@ -320,6 +369,7 @@ export async function settleConsolidation(
       verdicts,
       rewrapped: false,
       demoted: false,
+      findings: producedFindings,
     };
 
   /**
@@ -378,13 +428,14 @@ export async function settleConsolidation(
   // already in place.
   if (decided.origin !== 'fresh')
     return {
-      terminal: 'slate-kept-standing',
+      terminal: SLATE_TERMINALS[decided.decision],
       text: standingText,
       floor,
       verdicts,
       decided,
       rewrapped: false,
       demoted: false,
+      findings: decided.findings,
     };
 
   /**
@@ -432,6 +483,13 @@ export async function settleConsolidation(
     gate,
     rewrapped: wrapped.rewrapped,
     demoted: wrapped.demoted,
+
+    // The judged round already carries the produce half's findings, so
+    // adding them again here would report one voice loss twice.
+    findings: [
+      ...decided.findings,
+      ...gate.findings,
+    ],
   };
 }
 

@@ -58,6 +58,13 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  * The consolidation reaches the judge only past a floor that already refused
  * an empty slate, so it should not arise at all; if it does, keeping it stops
  * a later run re-buying a full panel to be told the same thing.
+ *
+ * SURVIVED THE TERMINAL SPLIT, and the reason is worth stating, because the
+ * split otherwise routes this whole function. `slate-declined-standing` covers
+ * BOTH the two declines a second panel might change and the settled
+ * `no-candidate-backed` it records afterwards, so the terminal alone cannot
+ * tell a re-askable decline from a settled one. The other four terminals are
+ * decided by name.
  */
 const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
   'declined-indecision',
@@ -109,15 +116,17 @@ export function consolidationWorthResuming(
   if (
     (settlement.terminal === 'incumbent-only')
     || (settlement.terminal === 'no-standing-text')
+    || (settlement.terminal === 'slate-endorsed-standing')
+    || (settlement.terminal === 'slate-unjudged-standing')
   )
     return true;
 
-  if (settlement.terminal !== 'slate-kept-standing')
+  if (settlement.terminal !== 'slate-declined-standing')
     return false;
 
   /**
-   * What the judges decided, which separates a panel that settled on the
-   * standing text from one that declined to settle at all.
+   * What the judges decided, which separates the settled decline this stage
+   * records after a second round from the two a second round might change.
    */
   const { decided, } = settlement;
   if (decided === undefined)

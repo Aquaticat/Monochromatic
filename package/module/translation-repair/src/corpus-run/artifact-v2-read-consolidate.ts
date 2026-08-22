@@ -8,6 +8,7 @@ import {
 } from '../artifact-guard.ts';
 import type {
   ArtifactConsolidateSliceV2,
+  ArtifactConsolidationTerminal,
   ArtifactConsolidationV2,
 } from './artifact-v2-consolidate.ts';
 import {
@@ -15,7 +16,7 @@ import {
   parseShipped,
   parseVerdict,
 } from './artifact-v2-read-consolidate-parts.ts';
-import type { ConsolidationTerminal, } from '../consolidate-settle.ts';
+
 
 //region Artifact version 2 consolidation read
 // Reading what the third rendering settled over one document.
@@ -33,9 +34,17 @@ import type { ConsolidationTerminal, } from '../consolidate-settle.ts';
 /**
  * Ways a settlement can leave the stage, as an artifact may name them.
  */
-const TERMINAL_NAMES: readonly ConsolidationTerminal[] = [
+const TERMINAL_NAMES: readonly ArtifactConsolidationTerminal[] = [
   'incumbent-only',
   'no-standing-text',
+  'slate-endorsed-standing',
+  'slate-unjudged-standing',
+  'slate-declined-standing',
+
+  // RETIRED, AND STILL READ. Artifacts outlive pipeline digests, and 11 rows
+  // across four settled entries carry this spelling for a state that could be
+  // any of the three above. None can be told apart after the fact, because no
+  // artifact ever recorded the judged round beside it.
   'slate-kept-standing',
   'gate-kept-standing',
   'wrap-erased-difference',

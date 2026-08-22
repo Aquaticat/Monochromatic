@@ -6,7 +6,7 @@ import {
   requireRecord,
 } from '../artifact-guard.ts';
 import type { ArtifactConsolidateSliceV2, } from './artifact-v2-consolidate.ts';
-import type { ConsolidationTerminal, } from '../consolidate-settle.ts';
+import type { ArtifactConsolidationTerminal, } from './artifact-v2-consolidate.ts';
 import {
   type GateBallot,
   isGateChoice,
@@ -50,7 +50,7 @@ export function parseShipped(
     path,
   }: {
     readonly value: unknown;
-    readonly terminal: ConsolidationTerminal;
+    readonly terminal: ArtifactConsolidationTerminal;
     readonly path: string;
   },
 ): ArtifactConsolidateSliceV2['shipped'] {
