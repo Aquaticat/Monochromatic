@@ -200,3 +200,103 @@ and it confirms a direction rather than establishing a rate.
 What makes it worth recording is that the earlier pool's failure mode was not marginal:
 58 of 64 with 326 findings does not become 0 of 9 by luck.
 The corpus-wide confirmation rides the end-to-end pass whenever that runs.
+
+## The boundary: never on a line-structured slice
+
+DECIDED 2026-08-22,
+recorded here rather than in a planning document because it bounds the fix this audit argued for.
+`#167` carries it.
+
+### What was contradictory
+
+On a slice `isLineStructured` trips,
+the pipeline hands the producer `TRANSLATE_LINE_STRUCTURE_RULE`:
+one output line per original line,
+never split one across two.
+Every rendering that ships is then passed through `wrapReplacementText`,
+which splits lines at semantic boundaries.
+None of the three call sites is gated on the flag:
+`src/repair-wrap.ts`,
+`src/translate-wrap.ts`,
+`src/consolidate-wrap.ts`.
+
+Measured over the 211 line-structured slices of the pinned corpus,
+189 are changed by the wrap and 470 of 1091 lines are broken.
+A producer that obeys the rule has its work broken after every decider approved it.
+
+### Why the narrower policy was rejected
+
+The narrower candidate was to keep the wrap only where the producer emitted FEWER lines
+than the passage it replaces,
+which is the flattening case this audit measured,
+and to skip it otherwise.
+That rests on the wrap being a REPAIR in the flattening case.
+
+It is not.
+`wrapReplacementText` splits at semantic boundaries and never joins,
+so it cannot reconstruct the boundaries the original had.
+MEASURED with `~/temp/agent/167-flatten-repair.mjs`,
+over the 116 line-structured slices whose blocks carry more than one line,
+by flattening the archive's own English and wrapping the result:
+
+- 3 of 116 come back exactly.
+- 9 of 116 come back carrying even the same number of lines.
+- 290 of 740 original lines reappear at all,
+  and the wrap emits 919 lines where the passage had 740.
+
+So wrapping a flattened verse passage does not restore it.
+It produces a third structure,
+neither the producer's nor the archive's.
+The instrument can report success,
+since 3 slices do come back exactly,
+so the near-total failure is a property of the wrap rather than of the comparison.
+
+### What replaces it
+
+- `wrapReplacementText` is NEVER applied to a line-structured slice,
+  at any of the three sites.
+  `#162` inherits the same rule for proposals shown to judges:
+  before judging or after,
+  line-structured text is not wrapped.
+- The flattening violation becomes a NAMED FAULT instead.
+  `validateTranslatedSlice` compares atoms and blocks and is blind to lines:
+  the word `line` occurs once in its 17655 bytes,
+  inside a comment.
+  Verse lines separated by a single newline sit inside one block,
+  so a producer that merges them passes the guard today.
+  A line-count check against the original on line-structured slices sends that work back to its author,
+  which is the pattern `#88` and `#153` already set.
+
+Skipping the wrap alone would reopen the hole this audit measured,
+which is why the guard is part of the same decision rather than a later one.
+
+### A fixture the queued work must carry, unproven
+
+`wrapConsolidation` demotes on `wrapped === standingText || wrapped === standingAsWritten`,
+where `standingAsWritten` is the standing text put through the same wrap.
+On a line-structured slice whose standing text is FLAT,
+a producer that correctly unmerges the lines can have its wrapped output collide with the wrapped standing text,
+demote,
+and ship the flat text.
+The exact repair the rule demands would be discarded silently.
+
+THIS IS A READING OF THE CODE AND NOT A MEASUREMENT.
+It is written here so the queued work carries a `GFP` fixture for it,
+shown to fail with the guard removed,
+rather than so it can be cited as observed.
+
+### What this does to earlier records
+
+`#122` shipped the wrap and confirmed it on settled output.
+That confirmation stands for prose and was never taken over line-structured slices specifically,
+so it gains a scope note rather than a reopening.
+
+Whether the archive's line structure is the right target on a loosely paired slice belongs to `#71` and `#98`.
+It does not rescue wrapping:
+`isLineStructured` reads the source,
+and wrapping damages line-per-unit text however well the pairing was drawn.
+
+### Still owed
+
+Implementation is queued behind the source freeze recorded in
+`doc/handover/translation-repair-run-continuity.md`.
