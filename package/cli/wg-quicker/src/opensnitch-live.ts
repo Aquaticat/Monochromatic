@@ -1,3 +1,5 @@
+import { readlink, } from 'node:fs/promises';
+
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
 import { OpenSnitchConfigError, } from './errors.ts';
@@ -19,10 +21,11 @@ const RELOAD_PROBE_ATTEMPTS = 40;
 const RELOAD_STABLE_PROBES = 3;
 
 /**
- * Reports whether OpenSnitch daemon is active in current process namespace.
+ * Reports whether OpenSnitch daemon is active in current network namespace.
  *
- * Exit status one from `pgrep` proves process absence;
- * other failures are operational errors rather than absence.
+ * Exit status one from `pgrep` proves process absence.
+ * Namespace comparison excludes daemons attached to unrelated disposable fixtures;
+ * other probe failures are operational errors rather than absence.
  *
  * @returns Whether exact daemon process name is active.
  *
@@ -35,23 +38,46 @@ const RELOAD_STABLE_PROBES = 3;
  */
 async function isOpenSnitchDaemonActive(): Promise<boolean> {
   /**
-   * Exact process-name probe without output.
+   * Exact process-name probe returning candidate process IDs.
    */
   const result = await runAllowingFailure({
     command: 'pgrep',
     args: [
       '--exact',
-      '--quiet',
       'opensnitchd',
     ],
   },);
-  if (result.exitCode === 0)
-    return true;
   if (result.exitCode === 1)
     return false;
-  throw new OpenSnitchConfigError(
-    `Cannot determine whether OpenSnitch daemon is active: ${result.stderr}`,
-  );
+  if (result.exitCode !== 0) {
+    throw new OpenSnitchConfigError(
+      `Cannot determine whether OpenSnitch daemon is active: ${result.stderr}`,
+    );
+  }
+  /**
+   * Current network-namespace identity.
+   */
+  const currentNamespace = await readlink('/proc/self/ns/net',);
+  /**
+   * Candidate daemon process identifiers from pgrep.
+   */
+  const processIds = result
+    .stdout
+    .split('\n',)
+    .filter(function nonempty(value,): boolean {
+      return value !== '';
+    },);
+  /**
+   * Namespace probes tolerate candidates exiting between pgrep and readlink.
+   */
+  const namespaces = await Promise.allSettled(processIds.map(async function processNamespace(
+    processId,
+  ): Promise<string> {
+    return await readlink(`/proc/${processId}/ns/net`,);
+  },),);
+  return namespaces.some(function sameNamespace(candidate,): boolean {
+    return (candidate.status === 'fulfilled') && (candidate.value === currentNamespace);
+  },);
 }
 
 /**
