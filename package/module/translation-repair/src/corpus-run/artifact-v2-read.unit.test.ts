@@ -17,6 +17,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -24,6 +25,7 @@ import {
 
 import {
   type ArtifactDeliveryRowV2,
+  ArtifactParseError,
   compareLanesV2,
   parseSettledArtifactV2,
 } from '../../dist/final/node/index.mjs';
@@ -492,7 +494,10 @@ await describe({
          */
         const preparation = artifactWith()
           .preparation as Record<string, unknown>;
-        expect(function readWrong() {
+        /**
+         * What readWrong raised, read for its class as well as its wording.
+         */
+        const refusalOfReadWrong = caught(function readWrong() {
           parseSettledArtifactV2({
             value: artifactWith({
               preparation: {
@@ -501,7 +506,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('archiveText',);
+        },);
+
+        expect(refusalOfReadWrong,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadWrong as Error).message,).toContain('archiveText',);
       },
     },),
     it({
@@ -588,7 +596,10 @@ await describe({
         'REFUSES a contest answering the GAP slice, where neither lane put down wording and there is '
         + 'therefore nothing for a roster to choose between',
       fn: async () => {
-        expect(function contestsAGap() {
+        /**
+         * What contestsAGap raised, read for its class as well as its wording.
+         */
+        const refusalOfContestsAGap = caught(function contestsAGap() {
           parseSettledArtifactV2({
             value: artifactWith({
               laneSelection: {
@@ -604,7 +615,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('slices [0], which are the ones where the two lanes differ, rather than [1]',);
+        },);
+
+        expect(refusalOfContestsAGap,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfContestsAGap as Error).message,).toContain('slices [0], which are the ones where the two lanes differ, rather than [1]',);
       },
     },),
     it({
@@ -613,7 +627,10 @@ await describe({
         + 'the schema-ownership rule in one pair: version 2 says a lane is a result beside a ledger, and '
         + 'says nothing at all about what a result holds',
       fn: async () => {
-        expect(function extraOnEnvelope() {
+        /**
+         * What extraOnEnvelope raised, read for its class as well as its wording.
+         */
+        const refusalOfExtraOnEnvelope = caught(function extraOnEnvelope() {
           parseSettledArtifactV2({
             value: artifactWith({
               lanes: {
@@ -629,7 +646,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.repair.whiskers',);
+        },);
+
+        expect(refusalOfExtraOnEnvelope,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfExtraOnEnvelope as Error).message,).toContain('lanes.repair.whiskers',);
         expect(parseSettledArtifactV2({
           value: artifactWith({
             repairRaw: {
@@ -649,9 +669,15 @@ await describe({
         + 'the writer controls every byte of the first and leaves an unset key out, and controls none of '
         + 'the second',
       fn: async () => {
-        expect(function nullInConfig() {
+        /**
+         * What nullInConfig raised, read for its class as well as its wording.
+         */
+        const refusalOfNullInConfig = caught(function nullInConfig() {
           parseSettledArtifactV2({ value: artifactWith({ callConfig: { budget: { slice: null, }, }, },), },);
-        },).toThrow('CatEntry1.callConfig.budget.slice',);
+        },);
+
+        expect(refusalOfNullInConfig,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNullInConfig as Error).message,).toContain('CatEntry1.callConfig.budget.slice',);
         expect(parseSettledArtifactV2({
           value: artifactWith({
             translateRaw: {
@@ -675,7 +701,10 @@ await describe({
          * The repair result with its two correct rows swapped.
          */
         const raw = repairResult();
-        expect(function rowsOutOfOrder() {
+        /**
+         * What rowsOutOfOrder raised, read for its class as well as its wording.
+         */
+        const refusalOfRowsOutOfOrder = caught(function rowsOutOfOrder() {
           parseSettledArtifactV2({
             value: artifactWith({
               repairRaw: {
@@ -684,7 +713,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.repair.delivery[0].chunkIndex',);
+        },);
+
+        expect(refusalOfRowsOutOfOrder,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfRowsOutOfOrder as Error).message,).toContain('lanes.repair.delivery[0].chunkIndex',);
       },
     },),
     it({
@@ -707,7 +739,10 @@ await describe({
          * itself and only the two LANES disagree.
          */
         const raw = translateResult();
-        expect(function coverageDiffers() {
+        /**
+         * What coverageDiffers raised, read for its class as well as its wording.
+         */
+        const refusalOfCoverageDiffers = caught(function coverageDiffers() {
           parseSettledArtifactV2({
             value: artifactWith({
               translateDelivery: shifted,
@@ -725,7 +760,10 @@ await describe({
               comparison: [],
             },),
           },);
-        },).toThrow('position 0 names slice 0',);
+        },);
+
+        expect(refusalOfCoverageDiffers,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfCoverageDiffers as Error).message,).toContain('position 0 names slice 0',);
       },
     },),
     it({
@@ -764,7 +802,10 @@ await describe({
          * naming the slice its first row shipped.
          */
         const translateRaw = translateResult();
-        expect(function slicesRepeat() {
+        /**
+         * What slicesRepeat raised, read for its class as well as its wording.
+         */
+        const refusalOfSlicesRepeat = caught(function slicesRepeat() {
           parseSettledArtifactV2({
             value: artifactWith({
               repairDelivery: collapsedRepair,
@@ -783,7 +824,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('this row names 0, so the rows are a repeat',);
+        },);
+
+        expect(refusalOfSlicesRepeat,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfSlicesRepeat as Error).message,).toContain('this row names 0, so the rows are a repeat',);
       },
     },),
     it({
@@ -825,7 +869,10 @@ await describe({
          * Translate raw result on the same footing.
          */
         const translateRaw = translateResult();
-        expect(function slicesPermuted() {
+        /**
+         * What slicesPermuted raised, read for its class as well as its wording.
+         */
+        const refusalOfSlicesPermuted = caught(function slicesPermuted() {
           parseSettledArtifactV2({
             value: artifactWith({
               repairDelivery: flippedRepair,
@@ -840,7 +887,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('this row names 0, so the rows are out of order',);
+        },);
+
+        expect(refusalOfSlicesPermuted,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfSlicesPermuted as Error).message,).toContain('this row names 0, so the rows are out of order',);
       },
     },),
     it({
@@ -888,7 +938,10 @@ await describe({
             };
           },
         },);
-        expect(function unblockedRefusal() {
+        /**
+         * What unblockedRefusal raised, read for its class as well as its wording.
+         */
+        const refusalOfUnblockedRefusal = caught(function unblockedRefusal() {
           parseSettledArtifactV2({
             value: artifactWith({
               repairDelivery: refusedWhileRunning,
@@ -898,7 +951,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.repair.result.status',);
+        },);
+
+        expect(refusalOfUnblockedRefusal,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnblockedRefusal as Error).message,).toContain('lanes.repair.result.status',);
 
         /**
          * A blocked run naming a slice its document carries.
@@ -918,7 +974,10 @@ await describe({
             };
           },
         },);
-        expect(function blockedShipping() {
+        /**
+         * What blockedShipping raised, read for its class as well as its wording.
+         */
+        const refusalOfBlockedShipping = caught(function blockedShipping() {
           parseSettledArtifactV2({
             value: artifactWith({
               repairDelivery: shippedWhileBlocked,
@@ -930,7 +989,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.repair.result.status',);
+        },);
+
+        expect(refusalOfBlockedShipping,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfBlockedShipping as Error).message,).toContain('lanes.repair.result.status',);
       },
     },),
     it({
@@ -939,7 +1001,10 @@ await describe({
         + 'assembly guard`s alone: a run refused as a whole never assembled anything, so counting its '
         + 'withdrawals would make every blocked document look like one the guard tore apart',
       fn: async () => {
-        expect(function shippedDisagrees() {
+        /**
+         * What shippedDisagrees raised, read for its class as well as its wording.
+         */
+        const refusalOfShippedDisagrees = caught(function shippedDisagrees() {
           parseSettledArtifactV2({
             value: artifactWith({
               repairRaw: {
@@ -948,7 +1013,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.repair.result.shippedChunkIndices',);
+        },);
+
+        expect(refusalOfShippedDisagrees,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfShippedDisagrees as Error).message,).toContain('lanes.repair.result.shippedChunkIndices',);
 
         /**
          * A blocked run whose blocked withdrawal stays OUT of the withdrawn
@@ -992,7 +1060,10 @@ await describe({
         + 'catch: a document carrying a shipped replacement at a slice its lane says it had nothing to '
         + 'do at is a row this reader would otherwise hand on as fact',
       fn: async () => {
-        expect(function axesDisagree() {
+        /**
+         * What axesDisagree raised, read for its class as well as its wording.
+         */
+        const refusalOfAxesDisagree = caught(function axesDisagree() {
           parseSettledArtifactV2({
             value: artifactWith({
               repairDelivery: rowReplaced({
@@ -1007,7 +1078,10 @@ await describe({
               },),
             },),
           },);
-        },).toThrow('lanes.repair.delivery[1]',);
+        },);
+
+        expect(refusalOfAxesDisagree,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfAxesDisagree as Error).message,).toContain('lanes.repair.delivery[1]',);
       },
     },),
     it({
@@ -1034,9 +1108,15 @@ await describe({
               }
               : row;
           },);
-        expect(function comparisonDisagrees() {
+        /**
+         * What comparisonDisagrees raised, read for its class as well as its wording.
+         */
+        const refusalOfComparisonDisagrees = caught(function comparisonDisagrees() {
           parseSettledArtifactV2({ value: artifactWith({ comparison: retitled, },), },);
-        },).toThrow('CatEntry1.comparison[0]',);
+        },);
+
+        expect(refusalOfComparisonDisagrees,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfComparisonDisagrees as Error).message,).toContain('CatEntry1.comparison[0]',);
       },
     },),
     it({
@@ -1076,7 +1156,10 @@ await describe({
         // lane, between its raw result and its own ledger. Leaving the translate
         // side alone would make the lanes disagree first, and this case would
         // pass on a refusal it is not about.
-        expect(function compositionDiffers() {
+        /**
+         * What compositionDiffers raised, read for its class as well as its wording.
+         */
+        const refusalOfCompositionDiffers = caught(function compositionDiffers() {
           parseSettledArtifactV2({
             value: artifactWith({
               translateDelivery: rowReplaced({
@@ -1136,7 +1219,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.repair.delivery[0].incumbentText',);
+        },);
+
+        expect(refusalOfCompositionDiffers,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfCompositionDiffers as Error).message,).toContain('lanes.repair.delivery[0].incumbentText',);
       },
     },),
     it({
@@ -1191,7 +1277,10 @@ await describe({
           },),
         },).preparation
           .identity,).toBe(foreign,);
-        expect(function badIdentity() {
+        /**
+         * What badIdentity raised, read for its class as well as its wording.
+         */
+        const refusalOfBadIdentity = caught(function badIdentity() {
           parseSettledArtifactV2({
             value: artifactWith({
               preparation: {
@@ -1205,7 +1294,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('CatEntry1.preparation.identity',);
+        },);
+
+        expect(refusalOfBadIdentity,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfBadIdentity as Error).message,).toContain('CatEntry1.preparation.identity',);
       },
     },),
     it({
@@ -1213,7 +1305,10 @@ await describe({
         'REFUSES a translate lane whose counts or status disagree with what it recorded per slice, which '
         + 'is the lane`s own arithmetic checked against its own rows',
       fn: async () => {
-        expect(function countDisagrees() {
+        /**
+         * What countDisagrees raised, read for its class as well as its wording.
+         */
+        const refusalOfCountDisagrees = caught(function countDisagrees() {
           parseSettledArtifactV2({
             value: artifactWith({
               translateRaw: {
@@ -1222,8 +1317,14 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.translate.result.changedSliceCount',);
-        expect(function statusDisagrees() {
+        },);
+
+        expect(refusalOfCountDisagrees,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfCountDisagrees as Error).message,).toContain('lanes.translate.result.changedSliceCount',);
+        /**
+         * What statusDisagrees raised, read for its class as well as its wording.
+         */
+        const refusalOfStatusDisagrees = caught(function statusDisagrees() {
           parseSettledArtifactV2({
             value: artifactWith({
               translateRaw: {
@@ -1232,7 +1333,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('lanes.translate.result.status',);
+        },);
+
+        expect(refusalOfStatusDisagrees,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfStatusDisagrees as Error).message,).toContain('lanes.translate.result.status',);
       },
     },),
     it({
@@ -1334,9 +1438,15 @@ await describe({
         'REFUSES a lane selection naming a lane directly, since a decided contest is recorded as a '
         + 'contest with its ballots and a bare lane name would be a verdict with nothing behind it',
       fn: async () => {
-        expect(function unknownSelection() {
+        /**
+         * What unknownSelection raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownSelection = caught(function unknownSelection() {
           parseSettledArtifactV2({ value: artifactWith({ laneSelection: { kind: 'translate', }, },), },);
-        },).toThrow('CatEntry1.laneSelection.kind',);
+        },);
+
+        expect(refusalOfUnknownSelection,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownSelection as Error).message,).toContain('CatEntry1.laneSelection.kind',);
       },
     },),
   ],
