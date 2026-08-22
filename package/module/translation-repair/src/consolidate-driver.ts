@@ -200,6 +200,14 @@ function laneChoiceOf(
  *
  * @param identityContext - names and handles both documents declare
  *
+ * @param lineStructuredSlices - chunk indices whose original is verse or
+ * otherwise line-structured, which decides whether a producer is shown the rule
+ * against merging lines
+ *
+ * @param pictureContextBySlice - what the pictures near each slice were read to
+ * say, keyed by chunk index and already windowed by the caller, since the window
+ * is positional in the prepared slices and this driver holds none of them
+ *
  * @param cache - per-entry store of settlements already bought
  *
  * @param signal - abort shared with the rest of the entry
@@ -215,7 +223,7 @@ function laneChoiceOf(
  *
  * @example
  * ```ts
- * const slices = await consolidateDocument({ client, projected, contests, modelIds, lineStructuredSlices, cache, signal, perCallTimeoutMs, l, },);
+ * const slices = await consolidateDocument({ client, projected, contests, modelIds, lineStructuredSlices, pictureContextBySlice, cache, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function consolidateDocument(
@@ -226,6 +234,7 @@ export async function consolidateDocument(
     modelIds,
     identityContext,
     lineStructuredSlices,
+    pictureContextBySlice,
     cache,
     signal,
     perCallTimeoutMs,
@@ -237,6 +246,7 @@ export async function consolidateDocument(
     readonly modelIds: readonly SyntheticModelId[];
     readonly identityContext?: string;
     readonly lineStructuredSlices: ReadonlySet<number>;
+    readonly pictureContextBySlice: ReadonlyMap<number, string>;
     readonly cache: SliceCache<ConsolidationSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -331,6 +341,18 @@ export async function consolidateDocument(
     const lineStructured = lineStructuredSlices.has(row.chunkIndex,);
 
     /**
+     * What the pictures near this slice were read to say, empty where none
+     * were.
+     *
+     * MISSING AND EMPTY ARE ONE STATE, folded here on purpose. A slice near no
+     * readable picture gets an empty block from the windowing, and a slice the
+     * map never mentions is a slice in exactly that position, so distinguishing
+     * them would only let the sheet and the key disagree about which spelling
+     * the caller happened to use.
+     */
+    const pictureContext = pictureContextBySlice.get(row.chunkIndex,) ?? '';
+
+    /**
      * Slice as both halves take it.
      */
     const subject = {
@@ -341,6 +363,9 @@ export async function consolidateDocument(
       ballots: contest.ballots,
       lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
+      // Omitted rather than empty, matching the context above it, so a producer
+      // shown no readings is shown no heading promising any.
+      ...((pictureContext === '') ? {} : { pictureContext, }),
     };
 
     /**
@@ -355,6 +380,7 @@ export async function consolidateDocument(
       standingText,
       ballots: contest.ballots,
       lineStructured,
+      pictureContext,
     },);
 
     /**

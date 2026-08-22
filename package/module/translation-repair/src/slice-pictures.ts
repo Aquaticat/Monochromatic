@@ -200,4 +200,95 @@ export function slicePictures(
   };
 }
 
+/**
+ * Every slice's picture block, keyed by the index its consumers read.
+ *
+ * TWO INDEX SPACES MEET HERE, which is the whole reason this exists.
+ * {@link slicePictures} takes a POSITION, because a window is defined by who sits
+ * either side in the array. A stage downstream of preparation holds no array: it
+ * holds rows stamped with `chunkIndex`, and `#99` is the record of what happens
+ * when those two are assumed equal by someone holding neither.
+ *
+ * THEY ARE EQUAL, AND ENFORCED SO. `assertSliceIndexing` refuses any preparation
+ * whose slice at a position is stamped with a different index, so this reads the
+ * stamp rather than the position and gets the same number by a route that would
+ * break loudly if the invariant ever did.
+ *
+ * THE FINDINGS ARE DROPPED, deliberately. A refused reading is already reported
+ * once by the stage that windows it for itself, and a second stage reporting the
+ * same refusal would have a run count one unread picture twice.
+ *
+ * @param slices - prepared slice pairs of one entry, indexed as prepared
+ *
+ * @param readings - what reading produced per asset name, for this entry
+ *
+ * @returns Picture block per slice, keyed by stamped index, empty where a slice
+ * neighbours no readable picture
+ *
+ * @throws {@link RangeError} by way of {@link slicePictures}
+ *
+ * @throws Error - when two slices carry one stamped index, which
+ * `assertSliceIndexing` already forbids and which would otherwise silently drop
+ * one slice's pictures
+ *
+ * @example
+ * ```ts
+ * const contexts = slicePictureContexts({ slices, readings, },);
+ * ```
+ */
+export function slicePictureContexts(
+  {
+    slices,
+    readings,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly readings: ReadonlyMap<string, PairedReading>;
+  },
+): ReadonlyMap<number, string> {
+  /**
+   * One pair per slice, stamped index against rendered block.
+   */
+  const entries = slices.map(function nameSlicePictures(
+    slice,
+    sliceIndex,
+  ): readonly [
+    number,
+    string,
+  ] {
+    /**
+     * Block this slice would be shown, windowed positionally.
+     */
+    const rendered = slicePictures({
+      slices,
+      sliceIndex,
+      readings,
+    },);
+
+    return [
+      slice.target
+        .chunkIndex,
+      rendered.context,
+    ];
+  },);
+
+  /**
+   * Those pairs as a lookup.
+   */
+  const contexts = new Map(entries,);
+
+  // BELT OVER BRACES, and the braces are `assertSliceIndexing`. A `Map` keeps
+  // the last of any duplicate key without a word, and the loss would surface as
+  // a producer shown the wrong slice's pictures rather than as a failure, which
+  // is the quietest possible way to be wrong about what a passage depicts.
+  if (contexts.size !== entries.length) {
+    throw new Error(
+      `slice pictures: ${String(entries.length,)} slices carry ${
+        String(contexts.size,)
+      } distinct stamped indices, so at least two name one slice and one slice's pictures were dropped`,
+    );
+  }
+
+  return contexts;
+}
+
 //endregion Slice pictures

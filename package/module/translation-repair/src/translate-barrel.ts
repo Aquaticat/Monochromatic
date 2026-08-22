@@ -256,6 +256,7 @@ export {
 export { readDocumentPictures, } from './document-readings.ts';
 export { imageReadingKey, } from './image-reading-key.ts';
 export {
+  slicePictureContexts,
   slicePictureNames,
   slicePictures,
   type SlicePictures,

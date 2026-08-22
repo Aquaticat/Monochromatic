@@ -10,6 +10,7 @@ import { runDocumentLanes, } from '../document-lanes.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { openPictureReadingCache, } from './reading-cache-store.ts';
 import { prepareDocumentPairWithRoster, } from '../prepare-with-pairing.ts';
+import { slicePictureContexts, } from '../slice-pictures.ts';
 import { buildSettledArtifactV2, } from './artifact-v2-build.ts';
 import { projectLanesV2, } from './artifact-v2-derive.ts';
 import { consolidateDocument, } from '../consolidate-driver.ts';
@@ -375,6 +376,15 @@ async function runEntryPipeline(
       contests: contestSlices,
       modelIds: RUN_ROSTER,
       lineStructuredSlices: prepared.lineStructuredSliceIndices,
+      // THE SAME WINDOW THE TRANSLATE LANE WAS SHOWN, computed from the same
+      // slices and the same readings. A producer asked to better a translation
+      // should not be shown less of the passage than its translator was, and
+      // until today it was shown none of it: the subject field existed, the
+      // sheet rendered it, and no caller ever wrote it.
+      pictureContextBySlice: slicePictureContexts({
+        slices: prepared.slices,
+        readings: pictureReadings,
+      },),
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),

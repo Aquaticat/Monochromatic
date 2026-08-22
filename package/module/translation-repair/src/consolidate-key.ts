@@ -39,6 +39,16 @@ export const CONSOLIDATE_CACHE_VERSION = 1;
 const LINE_STRUCTURED_KEY_MARK = 'line-structured';
 
 /**
+ * What a slice carrying picture readings labels them with.
+ *
+ * LABELLED AND PAIRED, unlike the mark above it, because this append carries
+ * CONTENT rather than a fact. A bare append of the readings could collide with
+ * the mark for a reading whose words happen to be `line-structured`, and a
+ * label in front of them costs one array element to make that impossible.
+ */
+const PICTURE_KEY_LABEL = 'pictures';
+
+/**
  * Everything about this run that changes what the voices are ASKED.
  *
  * Without it a resumed slice could return a settlement reached by a different
@@ -111,6 +121,9 @@ export function consolidateRunShape(
  * which decides whether the producer sheet carries the rule against merging
  * lines, and so decides what was bought
  *
+ * @param pictureContext - what the pictures this slice and its neighbours
+ * show were read to say, absent where none were read
+ *
  * @returns Hash keying this slice's settlement
  *
  * @example
@@ -128,6 +141,7 @@ export function consolidateSliceKey(
     standingText,
     ballots,
     lineStructured,
+    pictureContext,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -137,6 +151,7 @@ export function consolidateSliceKey(
     readonly standingText: string;
     readonly ballots: readonly LaneContestBallot[];
     readonly lineStructured: boolean;
+    readonly pictureContext?: string;
   },
 ): string {
   return hashContent({
@@ -151,6 +166,22 @@ export function consolidateSliceKey(
       standingText,
       ballots,
       ...(lineStructured ? [LINE_STRUCTURED_KEY_MARK,] : []),
+      // THE READING'S WORDS RATHER THAN ITS OWN KEY, matching
+      // `translate-slice-key.ts` exactly, and for its reason: what changes a
+      // producer's answer is the words it was shown, so two runs that read one
+      // picture into different words asked different questions however identical
+      // their texts were.
+      //
+      // APPENDED AND ONLY WHEN PRESENT, so a slice near no readable picture
+      // hashes the array it always hashed. Most slices carry no pictures, and
+      // discarding their settled consolidations to record an absence would buy
+      // the corpus nothing.
+      ...(((pictureContext === undefined) || (pictureContext === ''))
+        ? []
+        : [
+          PICTURE_KEY_LABEL,
+          pictureContext,
+        ]),
     ],),
   },);
 }

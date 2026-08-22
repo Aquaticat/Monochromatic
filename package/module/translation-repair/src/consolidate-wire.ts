@@ -120,7 +120,19 @@ export type ConsolidateSubject = {
   readonly identityContext?: string;
 
   /**
-   * What the pictures in this passage say, when any were read.
+   * What the pictures this slice and its neighbours show were read to say, when
+   * any could be.
+   *
+   * OPTIONAL, AND HONESTLY SO, unlike `lineStructured` below it. A slice sitting
+   * near no picture, or near none any reader could make out, is a slice with
+   * nothing to say here, so absence is a real state rather than a caller's
+   * omission.
+   *
+   * WHICH IS EXACTLY WHY IT WENT UNWRITTEN FOR SO LONG. From this field's birth
+   * until 2026-08-22 every consolidating producer read the absence, because no
+   * caller wrote it and an optional field cannot say whether the caller had
+   * nothing or forgot. `slicePictureContexts` is the writer, and the window it
+   * hands over is the one the translate lane already saw.
    */
   readonly pictureContext?: string;
 
