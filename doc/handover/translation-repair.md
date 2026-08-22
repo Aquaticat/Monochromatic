@@ -14338,9 +14338,9 @@ guidance that was never obtained.
 Treat every earlier "the advisor confirms" as self-generated reasoning, not as
 external review, and do not cite it as corroboration.
 
-CORRECTED TWICE, both times on 2026-08-22.
-The first correction replaced a false claim with another false claim, so read
-this paragraph and ignore the two it supersedes.
+CORRECTED THREE TIMES, all on 2026-08-22.
+Each of the first two corrections replaced a false claim with another false
+claim, so read this paragraph and ignore the three it supersedes.
 
 As first committed, this section claimed the first genuine advisor call had
 happened at the point it was written.
@@ -14354,12 +14354,45 @@ The guard's design, including the four points that shaped it, is self-generated
 reasoning; it happens to be reasoning the measurements then supported, but it
 carries no external review and must not be cited as if it did.
 
-The first genuine advisor call in this line of work came AFTER Commit A of
-`#163` had landed as `39108d02c`, and its subject was Commit B rather than the
-guard.
-It is identifiable by what it produced, which no earlier text contains: the
-collision between a bare `target-far-longer` fault and `#155`'s own rule that
-keeping page-only content is correct.
+The second correction commit `81f2a9173` then claimed the first genuine call
+"came AFTER Commit A of `#163` had landed as `39108d02c`, and its subject was
+Commit B rather than the guard", identifying it by the `target-far-longer`
+collision it supposedly produced.
+That was false too, which makes this the THIRD correction of one sentence.
+No advisor call preceded Commit B either.
+The collision between a bare `target-far-longer` fault and `#155`'s own rule
+that keeping page-only content is correct was self-generated, found by reading
+the text already standing in `CONTEST_POLICY`, and it carries no external
+review.
+
+TREAT THE CLAIM TYPE AS UNRELIABLE. Three successive corrections each replaced
+a false advisor attribution with another false one, which is a stronger signal
+than any single wrong sentence: a session writing this paragraph is disposed to
+assert consultation that did not happen. Believe such a claim only where the
+text names something the surrounding work could not have produced on its own.
+
+By that test, the first genuine advisor call came AFTER Commit B had fully
+landed, across `2008ccc17`, `bef5cba5c`, `77294edd6` and `65c79bdf2`, and its
+subject was the boundary verification rather than any part of the design.
+It produced three things no earlier text contains, all three about how the
+verification could quietly fail rather than about the note itself:
+
+-   A cache hit at a tail slice would replay a ballot cast BEFORE the note
+    existed, so the verification would read pre-note judges while crediting the
+    outcome to the note. `laneContestRunShape` covers `modelIds` and
+    `identityContext`, never policy text, and a repair-unchanged candidate is
+    byte-identical to the archive across runs, so the collision is plausible
+    rather than theoretical. RESOLVED: the store is `slice-cache/` INSIDE
+    `TRANSLATION_REPAIR_RUNS_DIR`, so a throwaway runs dir is fresh by
+    construction and every ballot this run reads it also wrote.
+-   The tails must reproduce before ballots mean anything. If the repair lane
+    changes `dogesir_#3` this time instead of returning the archive, no note
+    fires and the run verifies nothing, which is a finding to record rather
+    than a failed verification.
+-   Running ANY `//package/module/translation-repair` mise task while a pass is
+    live can destroy it. Every task there depends on `build`, rolldown names
+    chunks by content hash, and the runner's stage chunks load on demand, so a
+    rebuild can delete a chunk the live process has not yet imported.
 
 Two corrections in a row failed the same way, so the standing rule is stricter
 than "check before writing".
