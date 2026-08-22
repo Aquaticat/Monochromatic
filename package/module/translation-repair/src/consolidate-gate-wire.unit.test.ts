@@ -211,3 +211,79 @@ await describe({
     },),
   ],
 },);
+
+/**
+ * Original long enough for the size floor to pass, so a ratio is measured
+ * rather than skipped.
+ */
+const SIZED_SOURCE = '猫睡在窗台上，看着一只蛾子飞过。'.repeat(6,);
+
+/**
+ * Archive rendering far longer than that original, which is the shape a
+ * page-only region produces.
+ */
+const PAGE_HEAVY = 'the archive spells this out at length. '.repeat(30,);
+
+/**
+ * Rendering in proportion to the original, at roughly three times its size.
+ */
+const IN_PROPORTION = 'the cat slept on the sill and watched a moth. '.repeat(6,);
+
+await describe({
+  name: 'buildConsolidateGateMessages size note',
+  children: [
+    it({
+      name: 'CARRIES the size note into the message when one rendering is far out of proportion, '
+        + 'which is the only place the evidence can reach a judge',
+      fn: async () => {
+        const asked = buildConsolidateGateMessages({
+          subject: {
+            sourceText: SIZED_SOURCE,
+            incumbentText: PAGE_HEAVY,
+            consolidatedText: PAGE_HEAVY,
+            standingText: IN_PROPORTION,
+          },
+        },).at(1,)?.content ?? '';
+
+        expect(asked.includes('SIZE NOTE',),).toBe(true,);
+        expect(asked.includes('CANDIDATE "consolidated"',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES THE MESSAGE ALONE when every rendering is in proportion, so a judge reading a '
+        + 'note knows it is about this passage rather than boilerplate',
+      fn: async () => {
+        const asked = buildConsolidateGateMessages({
+          subject: {
+            sourceText: SIZED_SOURCE,
+            incumbentText: IN_PROPORTION,
+            consolidatedText: IN_PROPORTION,
+            standingText: IN_PROPORTION,
+          },
+        },).at(1,)?.content ?? '';
+
+        expect(asked.includes('SIZE NOTE',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'CARRIES the reading for both directions in the policy, so the note is evidence a '
+        + 'judge knows how to weigh rather than a number with no rule attached',
+      fn: async () => {
+        const policy = buildConsolidateGateMessages({
+          subject: {
+            sourceText: SIZED_SOURCE,
+            incumbentText: IN_PROPORTION,
+            consolidatedText: IN_PROPORTION,
+            standingText: IN_PROPORTION,
+          },
+        },).at(0,)?.content ?? '';
+
+        expect(policy.includes('FAR SHORTER',),).toBe(true,);
+        expect(policy.includes('FAR LONGER',),).toBe(true,);
+        expect(policy.includes('SIZE ALONE SETTLES NEITHER READING',),).toBe(true,);
+      },
+    },),
+  ],
+},);
