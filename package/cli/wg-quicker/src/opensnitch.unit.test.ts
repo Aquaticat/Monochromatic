@@ -2,6 +2,7 @@ import { createHash, } from 'node:crypto';
 import {
   chmod,
   link as createHardLink,
+  mkdir,
   mkdtemp,
   readFile,
   readdir,
@@ -190,15 +191,43 @@ async function createFixture(
   const originalDaemonConfig = process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT];
   const originalRuntime = process.env.WG_QUICKER_RUNTIME_DIRECTORY;
   /**
+   * Original executable search path restored on disposal.
+   */
+  const originalPath = process.env.PATH;
+  /**
    * Fixture-private runtime directory.
    */
   const runtimePath = join(
     directory,
     'run',
   );
+  /**
+   * Fixture command directory proving no stale nftables table exists.
+   */
+  const commandDirectory = join(
+    directory,
+    'bin',
+  );
+  await mkdir(commandDirectory,);
+  /**
+   * Minimal nft fixture executable used only after daemon absence is confirmed.
+   */
+  const nftPath = join(
+    commandDirectory,
+    'nft',
+  );
+  await writeFile(
+    nftPath,
+    `#!/usr/bin/env node\nif (process.argv.slice(2).join(' ') !== '--numeric list tables') throw new Error('unexpected nft fixture invocation');\n`,
+  );
+  await chmod(
+    nftPath,
+    0o700,
+  );
   process.env[OPENSNITCH_CONFIG_ENVIRONMENT] = configPath;
   process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT] = daemonConfigPath;
   process.env.WG_QUICKER_RUNTIME_DIRECTORY = runtimePath;
+  process.env.PATH = `${commandDirectory}:${originalPath ?? ''}`;
   return {
     configPath,
     daemonConfigPath,
@@ -216,6 +245,10 @@ async function createFixture(
         delete process.env.WG_QUICKER_RUNTIME_DIRECTORY;
       else
         process.env.WG_QUICKER_RUNTIME_DIRECTORY = originalRuntime;
+      if (originalPath === undefined)
+        delete process.env.PATH;
+      else
+        process.env.PATH = originalPath;
       await rm(
         directory,
         {
