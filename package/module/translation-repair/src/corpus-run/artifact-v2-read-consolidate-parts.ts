@@ -5,8 +5,10 @@ import {
   requireString,
   requireRecord,
 } from '../artifact-guard.ts';
-import type { ArtifactConsolidateSliceV2, } from './artifact-v2-consolidate.ts';
-import type { ArtifactConsolidationTerminal, } from './artifact-v2-consolidate.ts';
+import type {
+  ArtifactConsolidateSliceV2,
+  ArtifactConsolidationTerminal,
+} from './artifact-v2-consolidate.ts';
 import {
   type GateBallot,
   isGateChoice,

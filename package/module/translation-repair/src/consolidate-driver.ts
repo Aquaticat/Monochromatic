@@ -12,6 +12,7 @@ import { CONSOLIDATE_GATE_QUORUM, } from './consolidate-gate-stage.ts';
 import { produceConsolidations, } from './consolidate-produce.ts';
 import {
   type ConsolidationSettlement,
+  type ConsolidationTerminal,
   settleConsolidation,
 } from './consolidate-settle.ts';
 import { standingTextFor, } from './consolidate-standing.ts';
@@ -72,6 +73,25 @@ const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
 ];
 
 /**
+ * Terminals settled enough to keep without reading the judged round.
+ *
+ * FOUR OF THE FIVE NON-GATED WAYS OUT, and the split is what made them
+ * readable by name. Two never reached a judge, one records judges endorsing
+ * the archive, and one records a slate carrying a single candidate nobody was
+ * asked about. None of those changes on a second asking of the same slate.
+ *
+ * The fifth, `slate-declined-standing`, is the only one that still needs the
+ * decision read, because it covers both the declines a second panel might
+ * change and the settled one recorded after that second panel has run.
+ */
+const SETTLED_WITHOUT_A_GATE: readonly ConsolidationTerminal[] = [
+  'incumbent-only',
+  'no-standing-text',
+  'slate-endorsed-standing',
+  'slate-unjudged-standing',
+];
+
+/**
  * Whether a settlement is worth keeping across runs.
  *
  * SETTLED VERDICTS ONLY, matching the contest's rule for the same reason: a
@@ -113,15 +133,17 @@ export function consolidationWorthResuming(
   if (gate !== undefined)
     return gate.usable >= CONSOLIDATE_GATE_QUORUM;
 
-  if (
-    (settlement.terminal === 'incumbent-only')
-    || (settlement.terminal === 'no-standing-text')
-    || (settlement.terminal === 'slate-endorsed-standing')
-    || (settlement.terminal === 'slate-unjudged-standing')
-  )
+  /**
+   * How this slice left the stage, which decides four of the five cases on
+   * its own now that the slate name is no longer one word for three states.
+   */
+  const { terminal, } = settlement;
+  if (SETTLED_WITHOUT_A_GATE.some(function matches(settled,): boolean {
+    return settled === terminal;
+  },))
     return true;
 
-  if (settlement.terminal !== 'slate-declined-standing')
+  if (terminal !== 'slate-declined-standing')
     return false;
 
   /**

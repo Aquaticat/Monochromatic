@@ -90,14 +90,6 @@ export type ArtifactConsolidateShippedV2 =
   };
 
 /**
- * One consolidated slice as the stage left it.
- *
- * @example
- * ```ts
- * const slice: ArtifactConsolidateSliceV2 = { chunkIndex: 0, terminal: 'incumbent-only', shipped: { kind: 'unchanged', }, rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
- * ```
- */
-/**
  * Terminal as an ARTIFACT may name it, which is wider than what a run writes.
  *
  * CARRIES ONE RETIRED SPELLING. `slate-kept-standing` named three states at
@@ -123,6 +115,14 @@ export type ArtifactConsolidationTerminal =
   | ConsolidationTerminal
   | 'slate-kept-standing';
 
+/**
+ * One consolidated slice as the stage left it.
+ *
+ * @example
+ * ```ts
+ * const slice: ArtifactConsolidateSliceV2 = { chunkIndex: 0, terminal: 'incumbent-only', shipped: { kind: 'unchanged', }, rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
+ * ```
+ */
 export type ArtifactConsolidateSliceV2 = {
   /**
    * Slice both lanes name it by, matching the comparison row it answers.

@@ -84,6 +84,7 @@ const CAT_SETTLEMENT = {
   },
   rewrapped: true,
   demoted: false,
+  findings: ['cat-gather-lost-a-voice'],
 };
 
 /**
@@ -195,6 +196,7 @@ await describe({
             ],
             rewrapped: false,
             demoted: false,
+            findings: [],
           },
         },),).toBe(true,);
       },
