@@ -158,6 +158,24 @@ await describe({
 
     it({
       name:
+        'ANSWERS UNDECIDED EVEN WHERE THE TEXT MATCHES, which is the half of the order a '
+        + 'differing-text case cannot reach. An undecided slice whose archive wording happens to '
+        + 'equal the lane wording would otherwise read as SURVIVES, asserting that a document '
+        + 'would carry it when no stage has decided the entry at all',
+      fn: async () => {
+        expect(pageRelationOf({
+          laneSelection: UNDECIDED,
+          reading: wordingFrom({
+            decidedBy: 'archive',
+            text: LANE_NAP,
+          },),
+          candidateText: LANE_NAP,
+        },),).toEqual({ kind: 'undecided', },);
+      },
+    },),
+
+    it({
+      name:
         'NAMES THE CONSOLIDATION when the third rendering replaced the lane wording, which is the '
         + 'largest displacing stage in the settled population',
       fn: async () => {
