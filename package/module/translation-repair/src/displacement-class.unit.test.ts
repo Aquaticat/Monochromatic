@@ -31,9 +31,17 @@ import {
 /**
  * Builds a slice of a given original length at a given expansion.
  *
+ * BLOCKS DEFAULT TO ONE ON EACH SIDE, which is a slice the pairing agrees about.
+ * A test wanting the block-count evidence passes them, so that every fixture not
+ * naming blocks is stating that blocks are not what it is about.
+ *
  * @param sourceChars - original characters
  *
  * @param ratio - translated characters per original character
+ *
+ * @param sourceBlocks - blocks on the original side, defaulting to one
+ *
+ * @param targetBlocks - blocks on the translated side, defaulting to one
  *
  * @returns Slice sizes carrying that expansion
  *
@@ -46,14 +54,20 @@ function at(
   {
     sourceChars,
     ratio,
+    sourceBlocks = 1,
+    targetBlocks = 1,
   }: {
     readonly sourceChars: number;
     readonly ratio: number;
+    readonly sourceBlocks?: number;
+    readonly targetBlocks?: number;
   },
 ): SliceSize {
   return {
     sourceChars,
     targetChars: Math.round(sourceChars * ratio,),
+    sourceBlocks,
+    targetBlocks,
   };
 }
 
@@ -70,6 +84,8 @@ await describe({
             {
               sourceChars: 0,
               targetChars: 900,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 300,
@@ -92,10 +108,14 @@ await describe({
             {
               sourceChars: 4,
               targetChars: 6,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 41,
               targetChars: 3_652,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 300,
@@ -120,23 +140,75 @@ await describe({
   name: documentBaseline.name,
   children: [
     it({
-      name: 'reads a document own expansion by LENGTH rather than by slice, so a long section '
-        + 'counts for more than a short one',
+      name: 'LETS NO SINGLE LONG SLICE DECIDE, which is the property `#163` changed the estimator '
+        + 'to get: the pooled ratio this replaced would read 4.26 here because one slice carries '
+        + 'nine tenths of the characters, while every slice counting once reads 3',
       fn: async () => {
         const baseline = documentBaseline({
           slices: [
             at({
-              sourceChars: 1_200,
+              sourceChars: 2_000,
+              ratio: 4.4,
+            },),
+            at({
+              sourceChars: 100,
               ratio: 3,
             },),
             at({
-              sourceChars: 50,
-              ratio: 9,
+              sourceChars: 120,
+              ratio: 3,
             },),
           ],
         },);
         expect(baseline.from,).toBe('document',);
-        expect(baseline.expansion,).toBeLessThan(3.5,);
+        expect(baseline.expansion,).toBe(3,);
+      },
+    },),
+    it({
+      name: 'AVERAGES THE TWO MIDDLE RATIOS on an even count rather than taking either, so adding '
+        + 'one slice cannot move the centre further than the slices around it sit apart',
+      fn: async () => {
+        const baseline = documentBaseline({
+          slices: [
+            at({
+              sourceChars: 100,
+              ratio: 2,
+            },),
+            at({
+              sourceChars: 300,
+              ratio: 4,
+            },),
+          ],
+        },);
+        expect(baseline.from,).toBe('document',);
+        expect(baseline.expansion,).toBe(3,);
+      },
+    },),
+    it({
+      name: 'DROPS a slice with no original from the order rather than flooring it, since a '
+        + 'stand-in ratio would let the number of untranslatable slices decide where the middle '
+        + 'falls',
+      fn: async () => {
+        const baseline = documentBaseline({
+          slices: [
+            {
+              sourceChars: 0,
+              targetChars: 900,
+              sourceBlocks: 1,
+              targetBlocks: 1,
+            },
+            at({
+              sourceChars: 100,
+              ratio: 3,
+            },),
+            at({
+              sourceChars: 100,
+              ratio: 3,
+            },),
+          ],
+        },);
+        expect(baseline.from,).toBe('document',);
+        expect(baseline.expansion,).toBe(3,);
       },
     },),
     it({
@@ -224,10 +296,14 @@ await describe({
             {
               sourceChars: 500,
               targetChars: 0,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 500,
               targetChars: 0,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 500,
@@ -256,6 +332,8 @@ await describe({
             {
               sourceChars: 23,
               targetChars: 62,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 300,
@@ -285,10 +363,14 @@ await describe({
             {
               sourceChars: 35,
               targetChars: 403,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 129,
               targetChars: 268,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 600,
@@ -327,10 +409,14 @@ await describe({
             {
               sourceChars: 43,
               targetChars: 25,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 55,
               targetChars: 439,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 400,
@@ -356,10 +442,14 @@ await describe({
             {
               sourceChars: 200,
               targetChars: 1_600,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 1_000,
               targetChars: 3_350,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 1_000,
@@ -385,22 +475,32 @@ await describe({
             {
               sourceChars: 165,
               targetChars: 300,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 162,
               targetChars: 436,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 715,
               targetChars: 14,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 1_016,
               targetChars: 13,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 1_313,
               targetChars: 12,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
           ],
         },);
@@ -427,6 +527,8 @@ await describe({
             {
               sourceChars: 41,
               targetChars: 3_652,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 560,
@@ -451,6 +553,8 @@ await describe({
             {
               sourceChars: 400,
               targetChars: 3_400,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 400,
@@ -471,10 +575,14 @@ await describe({
             {
               sourceChars: 350,
               targetChars: 2_400,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             {
               sourceChars: 900,
               targetChars: 20,
+              sourceBlocks: 1,
+              targetBlocks: 1,
             },
             at({
               sourceChars: 900,
@@ -484,6 +592,45 @@ await describe({
         },);
         expect(reading.untranslated,).toEqual([1,],);
         expect(reading.relocationCandidates,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'KEEPS AN IMPLAUSIBLE SLICE OUT OF THE BASELINE while still classifying it, so a pair '
+        + 'the slicing does not agree about cannot say what this document normal is. The two '
+        + 'contaminated slices here trip on BLOCK COUNTS rather than on their ratio, which is the '
+        + 'evidence a character-only reading cannot see: counting them would put the centre at '
+        + '5.5 and lose the document its own baseline',
+      fn: async () => {
+        const contaminated = [
+          at({
+            sourceChars: 200,
+            ratio: 8,
+            sourceBlocks: 1,
+            targetBlocks: 5,
+          },),
+          at({
+            sourceChars: 200,
+            ratio: 8,
+            sourceBlocks: 1,
+            targetBlocks: 5,
+          },),
+        ];
+        const reading = classifyDisplacement({
+          slices: [
+            at({
+              sourceChars: 200,
+              ratio: 3,
+            },),
+            at({
+              sourceChars: 200,
+              ratio: 3,
+            },),
+            ...contaminated,
+          ],
+        },);
+        expect(reading.baselineFrom,).toBe('document',);
+        expect(reading.baseline,).toBe(3,);
+        expect(reading.slices.length,).toBe(4,);
       },
     },),
   ],

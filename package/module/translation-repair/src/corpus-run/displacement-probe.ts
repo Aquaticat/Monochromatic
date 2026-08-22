@@ -10,6 +10,7 @@ import {
   type DocumentDisplacement,
   type RelocationCandidate,
 } from '../displacement-class.ts';
+import { sliceSizeOf, } from '../displacement-ratio.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 import { isMarkupOnly, } from './markup-slice.ts';
@@ -204,14 +205,12 @@ function readEntry(
   const reading = classifyDisplacement({
     slices: prepared.slices
       .map(function toSizes(slice,) {
-        return {
-          sourceChars: slice.source
-            .text
-            .length,
-          targetChars: slice.target
-            .text
-            .length,
-        };
+        return sliceSizeOf({
+          sourceText: slice.source
+            .text,
+          targetText: slice.target
+            .text,
+        },);
       },),
   },);
   return {

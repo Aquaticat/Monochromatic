@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 //region Displacement ratio
 // Size primitives the displacement classifier reads: per-slice ratios, a
 // document's own expansion, and the corpus expansion to fall back on.
@@ -11,14 +13,31 @@
 // by hand: the English `Description` carries four sentences whose Chinese sits
 // in the NEXT slice.
 //
-// WHY A DOCUMENT'S OWN MEDIAN IS NOT THE STATISTIC, which the first version of
-// this file got wrong. Density does vary by register, so comparing a document
-// to itself is the right instinct. But a median over slices is CONTAMINATED BY
-// THE THING IT IS MEANT TO DETECT: `shi_Yumiaoya` carries three untranslated
-// sections whose near-zero ratios pull its median to 0.76, which drops the
-// threshold to 1.51, which then flags two perfectly ordinary translations. A
-// document aggregate over slices that are plausibly translated does not have
-// that failure.
+// THE CENTRE HAS BEEN A MEDIAN, THEN A POOLED AGGREGATE, AND IS A MEDIAN AGAIN.
+// All three readings are recorded here because the second one was right about
+// the case that beat the first, and wrong to conclude the statistic was the
+// problem.
+//
+// The FIRST version took a median over EVERY slice, and it was contaminated by
+// the thing it exists to detect: `shi_Yumiaoya` carries three untranslated
+// sections whose near-zero ratios pulled its median to 0.76, which dropped the
+// threshold to 1.51, which then flagged two perfectly ordinary translations.
+//
+// The SECOND version replaced it with a pooled aggregate over slices believed
+// translated. That fixed `shi_Yumiaoya`, but the fix was the ELIGIBILITY FILTER,
+// not the pooling, and nothing checked which of the two had done the work.
+// Pooling brought its own exposure: a pooled ratio is decided by the longest
+// slices, so one long contaminated slice moves it while a hundred short clean
+// ones do not.
+//
+// The THIRD version, `#163`, measured them against each other over the 89
+// documents that offer a baseline. Removing the implausible slices moves a
+// pooled centre in 7 more documents than it moves a median, and flips 7 onto the
+// corpus reference where a median flips 2. `shi_Yumiaoya` was re-read under both
+// and falls back to the corpus reference under each, because the eligibility
+// filter removes its untranslated sections before either estimator sees them.
+// So the median returned, over a filtered set rather than every slice, and the
+// filter that made it safe is the one the second version had already added.
 //
 // THE AGGREGATE IS NOT FULLY INVARIANT UNDER RELOCATION EITHER, and an earlier
 // version of this comment claimed it was. A total over ALL slices would be:
@@ -80,9 +99,17 @@ export const MIN_RATIO_SOURCE_CHARS = 80;
 /**
  * One slice's size reading.
  *
+ * CARRIES BLOCK COUNTS AS WELL AS CHARACTERS, because a slice whose two sides
+ * disagree about how many blocks they hold is one whose PAIRING is in doubt,
+ * and a ratio taken across a doubtful pairing measures the pairing rather than
+ * the translation. Excluding those from the baseline moved 8 of 89 documents
+ * and flipped one onto the corpus reference, which is why the counts are
+ * required rather than optional: a caller that omitted them would silently get
+ * a different estimator from the measured one.
+ *
  * @example
  * ```ts
- * const size: SliceSize = { sourceChars: 129, targetChars: 268, };
+ * const size: SliceSize = { sourceChars: 129, targetChars: 268, sourceBlocks: 2, targetBlocks: 2, };
  * ```
  */
 export type SliceSize = {
@@ -95,14 +122,89 @@ export type SliceSize = {
    * Characters of translation.
    */
   readonly targetChars: number;
+
+  /**
+   * Blank-line-separated blocks carrying content on the original side.
+   */
+  readonly sourceBlocks: number;
+
+  /**
+   * Blank-line-separated blocks carrying content on the translated side.
+   */
+  readonly targetBlocks: number;
 };
+
+/**
+ * Counts blank-line-separated blocks that carry content.
+ *
+ * @param text - one side of a slice
+ *
+ * @returns How many non-empty blocks it holds
+ *
+ * @example
+ * ```ts
+ * const blocks = contentBlockCount({ text: slice.source.text, },);
+ * ```
+ */
+function contentBlockCount(
+  { text, }: { readonly text: string; },
+): number {
+  return text
+    .split('\n\n',)
+    .filter(function carriesContent(
+      block,
+    ): boolean {
+      return block.trim() !== '';
+    },)
+    .length;
+}
+
+/**
+ * Reads both sides of one paired slice into the sizes this instrument wants.
+ *
+ * THE ONE PLACE BLOCKS ARE COUNTED, so that every caller feeding the classifier
+ * counts them the same way. Two callers splitting blocks slightly differently
+ * would be running two different estimators while reporting one number, and the
+ * difference would be invisible in the output.
+ *
+ * A BLOCK IS BLANK-LINE-SEPARATED AND NON-EMPTY, matching how the line-structure
+ * reader counts, because a trailing separator is a formatting artifact rather
+ * than a block the pairing failed to match.
+ *
+ * @param sourceText - original side of this slice
+ *
+ * @param targetText - translated side of this slice
+ *
+ * @returns Characters and blocks on both sides
+ *
+ * @example
+ * ```ts
+ * const size = sliceSizeOf({ sourceText: slice.source.text, targetText: slice.target.text, },);
+ * ```
+ */
+export function sliceSizeOf(
+  {
+    sourceText,
+    targetText,
+  }: {
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
+): SliceSize {
+  return {
+    sourceChars: sourceText.length,
+    targetChars: targetText.length,
+    sourceBlocks: contentBlockCount({ text: sourceText, },),
+    targetBlocks: contentBlockCount({ text: targetText, },),
+  };
+}
 
 /**
  * One slice's size reading with the ratio it implies.
  *
  * @example
  * ```ts
- * const reading: SliceRatio = { sliceIndex: 0, sourceChars: 35, targetChars: 403, ratio: 11.51, };
+ * const reading: SliceRatio = { sliceIndex: 0, sourceChars: 35, targetChars: 403, sourceBlocks: 1, targetBlocks: 1, ratio: 11.51, };
  * ```
  */
 export type SliceRatio = SliceSize & {
@@ -152,6 +254,8 @@ export function sliceRatios(
         sliceIndex,
         sourceChars: slice.sourceChars,
         targetChars: slice.targetChars,
+        sourceBlocks: slice.sourceBlocks,
+        targetBlocks: slice.targetBlocks,
         ratio: slice.targetChars,
       };
     }
@@ -159,6 +263,8 @@ export function sliceRatios(
       sliceIndex,
       sourceChars: slice.sourceChars,
       targetChars: slice.targetChars,
+      sourceBlocks: slice.sourceBlocks,
+      targetBlocks: slice.targetBlocks,
       ratio: slice.targetChars / slice.sourceChars,
     };
   },);
@@ -167,16 +273,31 @@ export function sliceRatios(
 /**
  * Expansion to read a document's slices against.
  *
- * THE AGGREGATE RATHER THAN THE MEDIAN, over slices the caller has already
- * decided are plausibly translated. It weights by length, so a 1300-character
- * section counts for more than an 80-character one, which a median does not, and
- * it is not dragged to nothing by a section nobody translated.
+ * THE MEDIAN OF PER-SLICE RATIOS RATHER THAN A POOLED AGGREGATE, reversing what
+ * this file did until `#163` measured the two against each other. A pooled
+ * ratio is decided by the longest slices, so a single contaminated long slice
+ * moves it; every slice counts once here. Measured over the pinned commit's 89
+ * documents that offer a baseline at all, removing the implausible slices moves
+ * a pooled centre in 7 more documents than it moves this one, and flips 2 onto
+ * the corpus reference where the pooled centre flips 7. Half the sensitivity to
+ * the contamination it exists to survive.
  *
- * IT IS ONLY PARTLY INVARIANT UNDER RELOCATION. Over ALL slices it would be
- * exactly invariant, since moving text between slices leaves both totals alone;
- * over the ELIGIBLE ones it is not, because relocation can carry text across the
- * eligibility boundary. The region comment gives the measured size of that
- * effect and `#432` carries the fix.
+ * A MEDIAN WAS TRIED FIRST AND REJECTED, and the region comment still records
+ * why: `shi_Yumiaoya`'s untranslated sections pulled a median to 0.76. That
+ * median was taken over EVERY slice. This one is taken over what the caller
+ * passes, and the caller now passes neither the untranslated sections nor the
+ * implausible ones, so the case that refuted it no longer reaches it: measured,
+ * that document falls back to the corpus reference under both estimators.
+ *
+ * NO MINIMUM SLICE COUNT, which was proposed and then refuted. Split-half
+ * stability was read at every count, and a document's own centre beat the
+ * corpus reference at all of them, including one.
+ *
+ * IT IS NOT INVARIANT UNDER RELOCATION, and neither was the aggregate it
+ * replaces. Moving text between two slices changes both their ratios, so it
+ * moves this centre whenever it moves either of them across the middle of the
+ * order. The region comment gives the measured size of that effect for the
+ * aggregate and `#432` carries the fix; the median inherits the question.
  *
  * @param slices - slices believed to be translated
  *
@@ -195,51 +316,56 @@ export function documentBaseline(
   readonly from: 'document' | 'corpus-reference';
 } {
   /**
-   * Original characters across those slices.
+   * Every offered slice's own ratio, smallest first.
+   *
+   * A slice with no original is dropped rather than floored, since it carries
+   * no ratio to rank: keeping it at some stand-in value would let the number of
+   * untranslatable slices decide where the middle of the order falls.
    */
-  const sourceChars = slices.reduce(
-    function addSource(
-      total,
+  const ratios = slices
+    .filter(function carriesARatio(
       slice,
-    ) {
-      return total + Math.max(
-        0,
-        slice.sourceChars,
-      );
-    },
-    0,
-  );
+    ): boolean {
+      return slice.sourceChars > 0;
+    },)
+    .map(function toRatio(
+      slice,
+    ): number {
+      return slice.targetChars / slice.sourceChars;
+    },)
+    .toSorted(function bySize(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },);
 
   /**
-   * Translated characters across those slices.
-   */
-  const targetChars = slices.reduce(
-    function addTarget(
-      total,
-      slice,
-    ) {
-      return total + Math.max(
-        0,
-        slice.targetChars,
-      );
-    },
-    0,
-  );
-
-  /**
-   * Corpus expansion, named once so both refusal paths read alike.
+   * Corpus expansion, named once so every refusal path reads alike.
    */
   const fallback = {
     expansion: CORPUS_REFERENCE_EXPANSION,
     from: 'corpus-reference',
   } as const;
-  if (sourceChars <= 0)
+  if (ratios.length === 0)
     return fallback;
 
   /**
-   * This document's own expansion over the slices it offered.
+   * Where the middle of the order sits.
    */
-  const expansion = targetChars / sourceChars;
+  const middle = Math.floor(ratios.length / 2,);
+
+  /**
+   * This document's own expansion, taken as the middle ratio.
+   *
+   * An even count averages the two middle ratios rather than taking either,
+   * so that adding one slice cannot move the centre further than the slices
+   * around it sit apart.
+   */
+  const expansion = ((ratios.length % 2) === 1)
+    ? nonNullishOrThrow(ratios[middle],)
+    : ((nonNullishOrThrow(ratios[middle - 1],) + nonNullishOrThrow(ratios[middle],)) / 2);
+
   if (expansion < PLAUSIBLE_BASELINE_MIN)
     return fallback;
   if (expansion > PLAUSIBLE_BASELINE_MAX)

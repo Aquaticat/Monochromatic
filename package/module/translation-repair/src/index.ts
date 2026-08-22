@@ -275,6 +275,7 @@ export {
 
 export * from './assembly-barrel.ts';
 export * from './corpus-barrel.ts';
+export * from './displacement-barrel.ts';
 export * from './document-barrel.ts';
 export * from './generation-barrel.ts';
 export * from './pairing-barrel.ts';

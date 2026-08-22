@@ -9,6 +9,7 @@ import {
   readCorpusFile,
 } from '../corpus-source.ts';
 import { classifyDisplacement, } from '../displacement-class.ts';
+import { sliceSizeOf, } from '../displacement-ratio.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import { hashContent, } from '../document-node.ts';
 import {
@@ -201,14 +202,12 @@ async function drawEntry(
   const displacement = classifyDisplacement({
     slices: prepared.slices
       .map(function toSizes(slice,) {
-        return {
-          sourceChars: slice.source
-            .text
-            .length,
-          targetChars: slice.target
-            .text
-            .length,
-        };
+        return sliceSizeOf({
+          sourceText: slice.source
+            .text,
+          targetText: slice.target
+            .text,
+        },);
       },),
   },);
 

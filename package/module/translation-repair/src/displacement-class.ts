@@ -5,6 +5,7 @@ import {
   type SliceSize,
   sliceRatios,
 } from './displacement-ratio.ts';
+import { isPlausibleSlice, } from './slice-implausible.ts';
 
 //region Displacement classification
 // What a size anomaly MEANS, which the first version of this instrument
@@ -326,15 +327,28 @@ export function classifyDisplacement(
   },);
 
   /**
-   * Expansion read from slices that are plausibly translations AND long enough
-   * on the original side for their ratio to mean something.
+   * Expansion read from slices that are plausibly translations, long enough on
+   * the original side for their ratio to mean something, and not themselves
+   * implausible.
    *
-   * BOTH CONDITIONS ARE LOAD-BEARING, and in opposite directions. Dropping
-   * untranslated sections stops a near-zero ratio pulling the baseline down onto
-   * its neighbours, which is `shi_Yumiaoya`. Dropping short originals stops one
-   * slice with a 41-character original and 3652 translated characters pulling it
-   * up, which is `Zha_Ke`, whose document aggregate is 16.85 for that reason
-   * alone. Both slices are still CLASSIFIED; they just do not get to say what
+   * ALL THREE CONDITIONS ARE LOAD-BEARING, and they were measured separately
+   * over the 89 documents that offer a baseline at all. Dropping short originals
+   * moves 62 of them, which is the largest of the three: it stops one slice with
+   * a 41-character original and 3652 translated characters from counting as an
+   * ordinary reading, which is `Zha_Ke`, whose document-wide aggregate is 16.85
+   * for that reason alone. Dropping the implausible slices moves 15 and flips 2
+   * onto the corpus reference. Dropping untranslated sections moves 2, and it
+   * stays because its case is definitional rather than statistical: a section
+   * nobody rendered is not a translation, so it has no standing to say what a
+   * translation's density is, whatever the number would have done.
+   *
+   * THE IMPLAUSIBILITY FILTER IS NOT CIRCULAR, which is the thing to check
+   * before believing any of this. Every predicate behind it reads fixed
+   * endpoints and never the baseline, so nothing it removes was chosen by the
+   * quantity it goes on to compute. A filter that read the baseline would be
+   * defining the centre in terms of itself.
+   *
+   * EVERY EXCLUDED SLICE IS STILL CLASSIFIED. They just do not get to say what
    * normal is.
    */
   const baseline = documentBaseline({
@@ -344,7 +358,9 @@ export function classifyDisplacement(
     ) {
       if (classes[sliceIndex] !== 'translated')
         return false;
-      return reading.sourceChars >= MIN_RATIO_SOURCE_CHARS;
+      if (reading.sourceChars < MIN_RATIO_SOURCE_CHARS)
+        return false;
+      return isPlausibleSlice({ slice: reading, },);
     },),
   },);
 
