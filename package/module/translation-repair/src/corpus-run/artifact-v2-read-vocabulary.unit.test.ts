@@ -20,12 +20,14 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ArtifactParseError,
   parseComparisonRowV2,
   parseDecisionComparisonV2,
   parseDeliveryRowV2,
@@ -82,20 +84,32 @@ await describe({
         + 'here that version 2 never described has no reading at all, and taking the row anyway would '
         + 'record a slice under a name this reader invented',
       fn: async () => {
-        expect(function unknownKind() {
+        /**
+         * What unknownKind raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownKind = caught(function unknownKind() {
           parseSliceOutcomeV2({
             value: { kind: 'napped-through-it', },
             unknownKeys: 'refuse',
             path: 'outcome',
           },);
-        },).toThrow('outcome.kind',);
-        expect(function unknownKindTolerated() {
+        },);
+
+        expect(refusalOfUnknownKind,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownKind as Error).message,).toContain('outcome.kind',);
+        /**
+         * What unknownKindTolerated raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownKindTolerated = caught(function unknownKindTolerated() {
           parseSliceOutcomeV2({
             value: { kind: 'napped-through-it', },
             unknownKeys: 'tolerate',
             path: 'outcome',
           },);
-        },).toThrow('outcome.kind',);
+        },);
+
+        expect(refusalOfUnknownKindTolerated,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownKindTolerated as Error).message,).toContain('outcome.kind',);
       },
     },),
     it({
@@ -116,7 +130,10 @@ await describe({
           kind: 'decided',
           acceptedText: ARCHIVE_NAP,
         },);
-        expect(function strictHere() {
+        /**
+         * What strictHere raised, read for its class as well as its wording.
+         */
+        const refusalOfStrictHere = caught(function strictHere() {
           parseSliceOutcomeV2({
             value: {
               kind: 'decided',
@@ -126,7 +143,10 @@ await describe({
             unknownKeys: 'refuse',
             path: 'outcome',
           },);
-        },).toThrow('outcome.confidence',);
+        },);
+
+        expect(refusalOfStrictHere,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfStrictHere as Error).message,).toContain('outcome.confidence',);
       },
     },),
     it({
@@ -135,7 +155,10 @@ await describe({
         + 'ones: an outcome that decided nothing cannot carry the wording it decided, and reading past '
         + 'that would hand a caller a wording no lane chose',
       fn: async () => {
-        expect(function misplacedText() {
+        /**
+         * What misplacedText raised, read for its class as well as its wording.
+         */
+        const refusalOfMisplacedText = caught(function misplacedText() {
           parseSliceOutcomeV2({
             value: {
               kind: 'not-evaluated',
@@ -144,8 +167,14 @@ await describe({
             unknownKeys: 'tolerate',
             path: 'outcome',
           },);
-        },).toThrow('outcome.acceptedText',);
-        expect(function misplacedTextOnFallback() {
+        },);
+
+        expect(refusalOfMisplacedText,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfMisplacedText as Error).message,).toContain('outcome.acceptedText',);
+        /**
+         * What misplacedTextOnFallback raised, read for its class as well as its wording.
+         */
+        const refusalOfMisplacedTextOnFallback = caught(function misplacedTextOnFallback() {
           parseSliceOutcomeV2({
             value: {
               kind: 'incumbent-fallback',
@@ -154,20 +183,29 @@ await describe({
             unknownKeys: 'tolerate',
             path: 'outcome',
           },);
-        },).toThrow('decided nothing',);
+        },);
+
+        expect(refusalOfMisplacedTextOnFallback,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfMisplacedTextOnFallback as Error).message,).toContain('decided nothing',);
       },
     },),
     it({
       name:
         'REFUSES a decision carrying no wording, which is the one field a member of this union owns',
       fn: async () => {
-        expect(function noText() {
+        /**
+         * What noText raised, read for its class as well as its wording.
+         */
+        const refusalOfNoText = caught(function noText() {
           parseSliceOutcomeV2({
             value: { kind: 'decided', },
             unknownKeys: 'refuse',
             path: 'outcome',
           },);
-        },).toThrow('outcome.acceptedText',);
+        },);
+
+        expect(refusalOfNoText,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNoText as Error).message,).toContain('outcome.acceptedText',);
       },
     },),
   ],
@@ -200,7 +238,10 @@ await describe({
         'REFUSES a withdrawal whose mechanism this version does not name, and a reason on a member that '
         + 'took nothing back: both would let a reader report a withdrawal that never happened',
       fn: async () => {
-        expect(function unknownReason() {
+        /**
+         * What unknownReason raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownReason = caught(function unknownReason() {
           parseSliceDeliveryV2({
             value: {
               kind: 'replacement-withdrawn',
@@ -208,8 +249,14 @@ await describe({
             },
             path: 'delivery',
           },);
-        },).toThrow('delivery.reason',);
-        expect(function reasonWithoutWithdrawal() {
+        },);
+
+        expect(refusalOfUnknownReason,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownReason as Error).message,).toContain('delivery.reason',);
+        /**
+         * What reasonWithoutWithdrawal raised, read for its class as well as its wording.
+         */
+        const refusalOfReasonWithoutWithdrawal = caught(function reasonWithoutWithdrawal() {
           parseSliceDeliveryV2({
             value: {
               kind: 'incumbent-retained',
@@ -217,7 +264,10 @@ await describe({
             },
             path: 'delivery',
           },);
-        },).toThrow('delivery.reason',);
+        },);
+
+        expect(refusalOfReasonWithoutWithdrawal,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReasonWithoutWithdrawal as Error).message,).toContain('delivery.reason',);
       },
     },),
   ],
@@ -262,7 +312,10 @@ await describe({
         'REFUSES a lane name this pipeline has no lane for, at the position that named it, since a third '
         + 'lane is a generation this reader cannot describe rather than a typo to skip past',
       fn: async () => {
-        expect(function unknownLane() {
+        /**
+         * What unknownLane raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownLane = caught(function unknownLane() {
           parseDecisionComparisonV2({
             value: {
               kind: 'not-comparable',
@@ -273,7 +326,10 @@ await describe({
             },
             path: 'decisionComparison',
           },);
-        },).toThrow('decisionComparison.undecidedLanes[1]',);
+        },);
+
+        expect(refusalOfUnknownLane,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownLane as Error).message,).toContain('decisionComparison.undecidedLanes[1]',);
       },
     },),
     it({
@@ -349,7 +405,10 @@ await describe({
           shippedText: ARCHIVE_NAP,
           delivery: { kind: 'incumbent-retained', },
         };
-        expect(function extraKey() {
+        /**
+         * What extraKey raised, read for its class as well as its wording.
+         */
+        const refusalOfExtraKey = caught(function extraKey() {
           parseDeliveryRowV2({
             value: {
               ...row,
@@ -357,7 +416,10 @@ await describe({
             },
             path: 'row',
           },);
-        },).toThrow('row.whiskers',);
+        },);
+
+        expect(refusalOfExtraKey,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfExtraKey as Error).message,).toContain('row.whiskers',);
         expect([
           1.5,
           -1,
@@ -476,7 +538,10 @@ await describe({
         + 'field means two pipelines wrote the row, and quietly preferring either would hide that '
         + 'from every reader downstream',
       fn: async () => {
-        expect(function bothSpellings() {
+        /**
+         * What bothSpellings raised, read for its class as well as its wording.
+         */
+        const refusalOfBothSpellings = caught(function bothSpellings() {
           parseComparisonRowV2({
             value: {
               chunkIndex: 0,
@@ -500,7 +565,10 @@ await describe({
             },
             path: 'comparison[0]',
           },);
-        },).toThrow('verdict',);
+        },);
+
+        expect(refusalOfBothSpellings,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfBothSpellings as Error).message,).toContain('verdict',);
       },
     },),
     it({
@@ -508,7 +576,10 @@ await describe({
         'REFUSES a lane relation this version does not name, so a generation that added one cannot '
         + 'be read as though its rows meant what these do',
       fn: async () => {
-        expect(function unknownVerdict() {
+        /**
+         * What unknownVerdict raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownVerdict = caught(function unknownVerdict() {
           parseComparisonRowV2({
             value: {
               chunkIndex: 0,
@@ -531,7 +602,10 @@ await describe({
             },
             path: 'comparison[0]',
           },);
-        },).toThrow('comparison[0].verdict',);
+        },);
+
+        expect(refusalOfUnknownVerdict,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownVerdict as Error).message,).toContain('comparison[0].verdict',);
       },
     },),
   ],
@@ -574,7 +648,10 @@ await describe({
         'still REQUIRES the four, since they are what the ledger is checked against: a raw row missing '
         + 'one of them leaves the check with nothing to compare and would pass by having less',
       fn: async () => {
-        expect(function noIncumbentKind() {
+        /**
+         * What noIncumbentKind raised, read for its class as well as its wording.
+         */
+        const refusalOfNoIncumbentKind = caught(function noIncumbentKind() {
           parseEvidenceRowV2({
             value: {
               chunkIndex: 1,
@@ -583,7 +660,10 @@ await describe({
             },
             path: 'sliceTexts[1]',
           },);
-        },).toThrow('sliceTexts[1].incumbentKind',);
+        },);
+
+        expect(refusalOfNoIncumbentKind,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNoIncumbentKind as Error).message,).toContain('sliceTexts[1].incumbentKind',);
       },
     },),
   ],

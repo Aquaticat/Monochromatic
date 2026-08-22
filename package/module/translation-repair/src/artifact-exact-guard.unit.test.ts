@@ -14,12 +14,14 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ArtifactParseError,
   requireArtifactJsonRecord,
   requireArtifactJsonValue,
   requireExactKeys,
@@ -36,7 +38,10 @@ await describe({
         + 'a field from a generation this reader cannot read or a typo that dropped one it needs, and '
         + 'both produce a confident answer about a file nobody wrote',
       fn: async () => {
-        expect(function unknownKey() {
+        /**
+         * What unknownKey raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownKeyInLane = caught(function unknownKeyInLane() {
           requireExactKeys({
             record: {
               result: {},
@@ -49,8 +54,14 @@ await describe({
             ],
             path: 'lanes.repair',
           },);
-        },).toThrow('lanes.repair.whiskers',);
-        expect(function unknownKey() {
+        },);
+
+        expect(refusalOfUnknownKeyInLane,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownKeyInLane as Error).message,).toContain('lanes.repair.whiskers',);
+        /**
+         * What unknownKey raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownKeyBeyondResult = caught(function unknownKeyBeyondResult() {
           requireExactKeys({
             record: { whiskers: 3, },
             allowed: [
@@ -59,7 +70,10 @@ await describe({
             ],
             path: 'lanes.repair',
           },);
-        },).toThrow('no key here beyond result, delivery',);
+        },);
+
+        expect(refusalOfUnknownKeyBeyondResult,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownKeyBeyondResult as Error).message,).toContain('no key here beyond result, delivery',);
       },
     },),
     it({
@@ -93,19 +107,34 @@ await describe({
         'REFUSES `null` AT EVERY DEPTH, naming the path that reached it, because null is absence spelled '
         + 'as a value and the writer of this field leaves an unset key out instead',
       fn: async () => {
-        expect(function nullAtTop() {
+        /**
+         * What nullAtTop raised, read for its class as well as its wording.
+         */
+        const refusalOfNullAtTop = caught(function nullAtTop() {
           requireArtifactJsonValue({
             value: null,
             path: 'callConfig',
           },);
-        },).toThrow('callConfig',);
-        expect(function nullInObject() {
+        },);
+
+        expect(refusalOfNullAtTop,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNullAtTop as Error).message,).toContain('callConfig',);
+        /**
+         * What nullInObject raised, read for its class as well as its wording.
+         */
+        const refusalOfNullInObject = caught(function nullInObject() {
           requireArtifactJsonValue({
             value: { roster: { critic: null, }, },
             path: 'callConfig',
           },);
-        },).toThrow('callConfig.roster.critic',);
-        expect(function nullInArray() {
+        },);
+
+        expect(refusalOfNullInObject,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNullInObject as Error).message,).toContain('callConfig.roster.critic',);
+        /**
+         * What nullInArray raised, read for its class as well as its wording.
+         */
+        const refusalOfNullInArray = caught(function nullInArray() {
           requireArtifactJsonValue({
             value: { roster: [
               'Tabby',
@@ -113,7 +142,10 @@ await describe({
             ], },
             path: 'callConfig',
           },);
-        },).toThrow('callConfig.roster[1]',);
+        },);
+
+        expect(refusalOfNullInArray,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNullInArray as Error).message,).toContain('callConfig.roster[1]',);
       },
     },),
     it({
@@ -154,20 +186,32 @@ await describe({
         'REFUSES a value JSON cannot carry at all, which reaches this guard only when it is called on a '
         + 'live object rather than on parsed text, and is worth refusing there rather than serializing',
       fn: async () => {
-        expect(function undefinedHeld() {
+        /**
+         * What undefinedHeld raised, read for its class as well as its wording.
+         */
+        const refusalOfUndefinedHeld = caught(function undefinedHeld() {
           requireArtifactJsonValue({
             value: { retries: undefined, },
             path: 'callConfig',
           },);
-        },).toThrow('callConfig.retries',);
-        expect(function functionHeld() {
+        },);
+
+        expect(refusalOfUndefinedHeld,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUndefinedHeld as Error).message,).toContain('callConfig.retries',);
+        /**
+         * What functionHeld raised, read for its class as well as its wording.
+         */
+        const refusalOfFunctionHeld = caught(function functionHeld() {
           requireArtifactJsonValue({
             value: { retries: function two(): number {
               return 2;
             }, },
             path: 'callConfig',
           },);
-        },).toThrow('callConfig.retries',);
+        },);
+
+        expect(refusalOfFunctionHeld,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfFunctionHeld as Error).message,).toContain('callConfig.retries',);
       },
     },),
   ],
@@ -196,7 +240,10 @@ await describe({
         'REFUSES a word outside the list and a value that is not a word at all, listing what this '
         + 'version knows, since a vocabulary a reader cannot name is a vocabulary it cannot report on',
       fn: async () => {
-        expect(function unknownWord() {
+        /**
+         * What unknownWord raised, read for its class as well as its wording.
+         */
+        const refusalOfUnknownWord = caught(function unknownWord() {
           requireOneOf({
             value: 'napped',
             allowed: [
@@ -205,14 +252,23 @@ await describe({
             ],
             path: 'outcome.kind',
           },);
-        },).toThrow('decided, unfilled',);
-        expect(function notAWord() {
+        },);
+
+        expect(refusalOfUnknownWord,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnknownWord as Error).message,).toContain('decided, unfilled',);
+        /**
+         * What notAWord raised, read for its class as well as its wording.
+         */
+        const refusalOfNotAWord = caught(function notAWord() {
           requireOneOf({
             value: 2,
             allowed: ['decided',],
             path: 'outcome.kind',
           },);
-        },).toThrow('outcome.kind',);
+        },);
+
+        expect(refusalOfNotAWord,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNotAWord as Error).message,).toContain('outcome.kind',);
       },
     },),
   ],
@@ -237,12 +293,18 @@ await describe({
           retries: 2,
           budgets: { slice: 4_000, },
         },);
-        expect(function nullBeneath() {
+        /**
+         * What nullBeneath raised, read for its class as well as its wording.
+         */
+        const refusalOfNullBeneath = caught(function nullBeneath() {
           requireArtifactJsonRecord({
             value: { budgets: { slice: null, }, },
             path: 'callConfig',
           },);
-        },).toThrow('callConfig.budgets.slice',);
+        },);
+
+        expect(refusalOfNullBeneath,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNullBeneath as Error).message,).toContain('callConfig.budgets.slice',);
       },
     },),
     it({
@@ -250,12 +312,18 @@ await describe({
         'REFUSES a value that is not a record, at the path naming it, rather than reading an array or a '
         + 'bare word as a configuration with every field missing',
       fn: async () => {
-        expect(function arrayGiven() {
+        /**
+         * What arrayGiven raised, read for its class as well as its wording.
+         */
+        const refusalOfArrayGiven = caught(function arrayGiven() {
           requireArtifactJsonRecord({
             value: [{ retries: 2, },],
             path: 'callConfig',
           },);
-        },).toThrow('callConfig',);
+        },);
+
+        expect(refusalOfArrayGiven,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfArrayGiven as Error).message,).toContain('callConfig',);
       },
     },),
   ],
@@ -291,12 +359,18 @@ await describe({
         + 'back with every named field undefined, which surfaces later as a missing field rather than '
         + 'here as the shape error it is',
       fn: async () => {
-        expect(function arrayGiven() {
+        /**
+         * What arrayGiven raised, read for its class as well as its wording.
+         */
+        const refusalOfArrayGiven = caught(function arrayGiven() {
           requireOpenRecord({
             value: [],
             path: 'lanes.repair.result',
           },);
-        },).toThrow('lanes.repair.result',);
+        },);
+
+        expect(refusalOfArrayGiven,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfArrayGiven as Error).message,).toContain('lanes.repair.result',);
       },
     },),
   ],

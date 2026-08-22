@@ -14,12 +14,16 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseBlockPairingV2, } from '../../dist/final/node/index.mjs';
+import {
+  ArtifactParseError,
+  parseBlockPairingV2,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Sections a fixture may name, wide enough that no case is bounded by accident.
@@ -100,7 +104,10 @@ await describe({
         'REFUSES a section index the preparation beside it never aligned, the way each lane index set is '
         + 'bounded by the slice count: a pairing filed under a section nobody aligned describes another document',
       fn: async () => {
-        expect(function pastTheEnd() {
+        /**
+         * What pastTheEnd raised, read for its class as well as its wording.
+         */
+        const refusalOfPastTheEnd = caught(function pastTheEnd() {
           parseBlockPairingV2({
             value: [
               {
@@ -111,7 +118,10 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('[0].sectionIndex',);
+        },);
+
+        expect(refusalOfPastTheEnd,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfPastTheEnd as Error).message,).toContain('[0].sectionIndex',);
       },
     },),
     it({
@@ -119,7 +129,10 @@ await describe({
         'REFUSES a section named twice, since the writer builds the list from a map keyed by section and '
         + 'cannot emit one, so a repeat means two runs merged into a file neither wrote',
       fn: async () => {
-        expect(function twice() {
+        /**
+         * What twice raised, read for its class as well as its wording.
+         */
+        const refusalOfTwice = caught(function twice() {
           parseBlockPairingV2({
             value: [
               {
@@ -134,7 +147,10 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('rather than 1 again',);
+        },);
+
+        expect(refusalOfTwice,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfTwice as Error).message,).toContain('rather than 1 again',);
       },
     },),
     it({
@@ -142,7 +158,10 @@ await describe({
         'REFUSES sections out of recorded order rather than sorting them, because the writer sorts and '
         + 'quietly reordering would accept the file while hiding which run produced it',
       fn: async () => {
-        expect(function backwards() {
+        /**
+         * What backwards raised, read for its class as well as its wording.
+         */
+        const refusalOfBackwards = caught(function backwards() {
           parseBlockPairingV2({
             value: [
               {
@@ -157,7 +176,10 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('a section above 2',);
+        },);
+
+        expect(refusalOfBackwards,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfBackwards as Error).message,).toContain('a section above 2',);
       },
     },),
     it({
@@ -165,7 +187,10 @@ await describe({
         'REFUSES a pairing that walks backwards on either side, which the roster reply reader already '
         + 'refuses: both documents say things in the same order',
       fn: async () => {
-        expect(function backOnTheOriginal() {
+        /**
+         * What backOnTheOriginal raised, read for its class as well as its wording.
+         */
+        const refusalOfBackOnTheOriginal = caught(function backOnTheOriginal() {
           parseBlockPairingV2({
             value: [
               {
@@ -185,8 +210,14 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('on both sides',);
-        expect(function backOnTheTranslation() {
+        },);
+
+        expect(refusalOfBackOnTheOriginal,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfBackOnTheOriginal as Error).message,).toContain('on both sides',);
+        /**
+         * What backOnTheTranslation raised, read for its class as well as its wording.
+         */
+        const refusalOfBackOnTheTranslation = caught(function backOnTheTranslation() {
           parseBlockPairingV2({
             value: [
               {
@@ -206,7 +237,10 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('on both sides',);
+        },);
+
+        expect(refusalOfBackOnTheTranslation,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfBackOnTheTranslation as Error).message,).toContain('on both sides',);
       },
     },),
     it({
@@ -214,7 +248,10 @@ await describe({
         'REFUSES a correspondence made twice in one section, which repeats an answer rather than giving '
         + 'a new one, and which the roster reply reader refuses for the same reason',
       fn: async () => {
-        expect(function repeated() {
+        /**
+         * What repeated raised, read for its class as well as its wording.
+         */
+        const refusalOfRepeated = caught(function repeated() {
           parseBlockPairingV2({
             value: [
               {
@@ -234,7 +271,10 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('does not already make',);
+        },);
+
+        expect(refusalOfRepeated,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfRepeated as Error).message,).toContain('does not already make',);
       },
     },),
     it({
@@ -242,7 +282,10 @@ await describe({
         'REFUSES a key this version does not name, on the section and on the pair alike, so a field from '
         + 'a later generation cannot be read as one this reader understands',
       fn: async () => {
-        expect(function extraOnSection() {
+        /**
+         * What extraOnSection raised, read for its class as well as its wording.
+         */
+        const refusalOfExtraOnSection = caught(function extraOnSection() {
           parseBlockPairingV2({
             value: [
               {
@@ -254,8 +297,14 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('[0].whiskers',);
-        expect(function extraOnPair() {
+        },);
+
+        expect(refusalOfExtraOnSection,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfExtraOnSection as Error).message,).toContain('[0].whiskers',);
+        /**
+         * What extraOnPair raised, read for its class as well as its wording.
+         */
+        const refusalOfExtraOnPair = caught(function extraOnPair() {
           parseBlockPairingV2({
             value: [
               {
@@ -272,7 +321,10 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('[0].pairs[0].confidence',);
+        },);
+
+        expect(refusalOfExtraOnPair,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfExtraOnPair as Error).message,).toContain('[0].pairs[0].confidence',);
       },
     },),
     it({
@@ -280,7 +332,10 @@ await describe({
         'REFUSES a fractional or negative index on either side, since every index here counts blocks and '
         + 'a fraction means the writer and this reader disagree about what the field holds',
       fn: async () => {
-        expect(function fractional() {
+        /**
+         * What fractional raised, read for its class as well as its wording.
+         */
+        const refusalOfFractional = caught(function fractional() {
           parseBlockPairingV2({
             value: [
               {
@@ -296,8 +351,14 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('[0].pairs[0].source',);
-        expect(function negative() {
+        },);
+
+        expect(refusalOfFractional,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfFractional as Error).message,).toContain('[0].pairs[0].source',);
+        /**
+         * What negative raised, read for its class as well as its wording.
+         */
+        const refusalOfNegative = caught(function negative() {
           parseBlockPairingV2({
             value: [
               {
@@ -308,7 +369,10 @@ await describe({
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('[0].sectionIndex',);
+        },);
+
+        expect(refusalOfNegative,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNegative as Error).message,).toContain('[0].sectionIndex',);
       },
     },),
     it({
@@ -316,20 +380,32 @@ await describe({
         'REFUSES anything that is not a list of records, so a pairing written as an object keyed by '
         + 'section reaches no reader as an empty one',
       fn: async () => {
-        expect(function notAList() {
+        /**
+         * What notAList raised, read for its class as well as its wording.
+         */
+        const refusalOfNotAList = caught(function notAList() {
           parseBlockPairingV2({
             value: { 0: [], },
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('Whiskers.preparation.blockPairing',);
-        expect(function notARecord() {
+        },);
+
+        expect(refusalOfNotAList,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNotAList as Error).message,).toContain('Whiskers.preparation.blockPairing',);
+        /**
+         * What notARecord raised, read for its class as well as its wording.
+         */
+        const refusalOfNotARecord = caught(function notARecord() {
           parseBlockPairingV2({
             value: ['paired',],
             alignmentPairCount: ALIGNED_SECTIONS,
             path: 'Whiskers.preparation.blockPairing',
           },);
-        },).toThrow('[0]',);
+        },);
+
+        expect(refusalOfNotARecord,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNotARecord as Error).message,).toContain('[0]',);
       },
     },),
   ],
