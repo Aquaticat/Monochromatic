@@ -64,16 +64,59 @@ Measured on 2026-08-21 against the pinned corpus and the shipped reading stage.
   There is no accumulating history,
   so the growth mode the report describes does not apply here.
 - `READING_MAX_BYTES` in that file is 8388608 raw bytes.
-  Base64 turns that into about 11184812 characters before the JSON envelope and the instruction text,
-  which is ABOVE the reported cap.
+  MEASURED 2026-08-22 by serializing the exact body the stage builds,
+  with `~/temp/agent/measure-168-body.mjs`:
+  at that ceiling the body is 11185335 bytes,
+  which is 699575 above the only size known to pass.
   So the refusal threshold this repository configures permits a request the gateway would reject,
   and the rejection would arrive as the parse error rather than as a refusal naming size.
+- The overhead around the picture is a constant 501 bytes,
+  the 342 byte instruction plus the JSON envelope,
+  so a raw ceiling maps onto a body size exactly and monotonically.
+  The largest raw picture whose body still fits is 7863927 bytes,
+  for a body of 10485759 and one byte of headroom.
+  7863930 gives 10485763 and does not fit,
+  so that boundary is bisected rather than estimated.
 - Nothing in the pinned corpus comes close.
   The largest asset is 1344454 bytes of 291 assets,
-  about 1.79 MiB once base64 encoded.
+  whose body measures 1793131 bytes,
+  leaving 8692629 under the passing size.
 
 The exposure is therefore the configured ceiling rather than current traffic.
-`#168` carries the question of whether that ceiling should be lowered to sit under the gateway's.
+
+## The ceiling this repository will configure
+
+DECIDED 2026-08-22 on the body measurement recorded in this document,
+made with `~/temp/agent/measure-168-body.mjs`.
+It is recorded rather than asked because nothing is traded away by it:
+the new ceiling is still more than five times the largest asset in the corpus,
+so no picture that is read today would be refused.
+
+`READING_MAX_BYTES` becomes 7340032,
+seven mebibytes.
+Its body measures 9787235 bytes,
+which leaves 698525 under the passing size.
+
+NOT the exact fit of 7863927.
+Only the passing size is exact.
+The failing size is reported as approximate and the true boundary between them has never been bisected,
+so a ceiling with one byte of headroom rests on an assumption rather than on a measurement.
+Seven mebibytes also absorbs growth in the instruction text,
+which is part of the constant.
+
+STILL OWED,
+and queued behind the source freeze recorded in
+`doc/handover/translation-repair-run-continuity.md`:
+
+- The constant lowered in `package/module/translation-repair/src/image-reading-stage.ts`.
+- A refusal reason naming transport rather than the model.
+  `too-large-for-model` describes the derivation it replaced,
+  and the picture is now refused for what the gateway will carry
+  rather than for what the model will read.
+- Re-raising the gateway's parse failure as a size refusal.
+  Lowering the ceiling makes the picture path safe;
+  it does not make the error honest,
+  and a body pushed over by anything other than a picture still arrives as a parse error.
 
 ## What is not ruled out
 
