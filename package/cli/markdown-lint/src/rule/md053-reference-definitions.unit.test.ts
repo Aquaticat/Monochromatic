@@ -4,10 +4,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { applyFixes, } from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { referenceDefinitions, } from './md053-reference-definitions.ts';
+import {
+  applyFixes,
+  type Diagnostic,
+  referenceDefinitions,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD053 over Markdown source.

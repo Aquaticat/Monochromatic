@@ -13,7 +13,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { run, } from './run.ts';
+import {
+  run,
+} from '../dist/final/node/index.mjs';
 
 /**
  * A throwaway directory that removes itself on disposal, so the CLI's real

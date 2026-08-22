@@ -5,9 +5,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { headingIncrement, } from './md001-heading-increment.ts';
+import {
+  type Diagnostic,
+  headingIncrement,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD001 over Markdown source.

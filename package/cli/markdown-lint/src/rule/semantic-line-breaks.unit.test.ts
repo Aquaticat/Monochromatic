@@ -4,9 +4,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { fixSource, } from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import { semanticLineBreaks, } from './semantic-line-breaks.ts';
+import {
+  fixSource,
+  runRules,
+  semanticLineBreaks,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * One diagnostic as `runRules` reports it.

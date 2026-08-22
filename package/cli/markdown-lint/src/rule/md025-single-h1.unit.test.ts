@@ -5,9 +5,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { singleH1, } from './md025-single-h1.ts';
+import {
+  type Diagnostic,
+  runRules,
+  singleH1,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD025 over Markdown source.

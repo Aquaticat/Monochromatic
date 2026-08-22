@@ -4,19 +4,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import type { Table, } from 'mdast';
-import type { ReadonlyDeep, } from 'type-fest';
 
 import {
   applyFixes,
+  type Diagnostic,
   fixSource,
-} from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import { parse, } from '../parse.ts';
-import { toHtmlTable, } from '../to-html-table.ts';
-import type { Diagnostic, } from '../types.ts';
-import { walk, } from '../walk.ts';
-import { noPipeTables, } from './no-pipe-tables.ts';
+  noPipeTables,
+  parse,
+  runRules,
+  toHtmlTable,
+  walk,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only `no-pipe-tables` over a source.
@@ -39,13 +37,23 @@ function lintTables(
 }
 
 /**
+ * `table` node exactly as the SHIPPED renderer declares it.
+ *
+ * TAKEN FROM THE SIGNATURE rather than imported from `mdast`, because the
+ * bundled declaration file inlines its own `Table` and the two are not
+ * interchangeable. Annotating with mdast's copy compiles against the source
+ * and fails against the artifact, which is the drift this test exists to catch.
+ */
+type RenderableTable = Parameters<typeof toHtmlTable>[0]['table'];
+
+/**
  * Parse a source and return its first `table` node, for transform tests.
  *
  * @param source - Markdown source containing a table
  *
  * @returns first table node
  */
-function firstTable(source: string,): ReadonlyDeep<Table> {
+function firstTable(source: string,): RenderableTable {
   for (const { node, } of walk(parse({
     source,
     mdx: false,

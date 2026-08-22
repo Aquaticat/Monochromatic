@@ -4,10 +4,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { applyFixes, } from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { fencedCodeLanguage, } from './md040-fenced-code-language.ts';
+import {
+  applyFixes,
+  type Diagnostic,
+  fencedCodeLanguage,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD040 over Markdown source.

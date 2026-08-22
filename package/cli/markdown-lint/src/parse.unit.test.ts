@@ -5,10 +5,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { fixSource, } from './fix.ts';
-import { runRules, } from './lint.ts';
-import { noPipeTables, } from './rule/no-pipe-tables.ts';
-import type { Diagnostic, } from './types.ts';
+import {
+  type Diagnostic,
+  fixSource,
+  noPipeTables,
+  runRules,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Run only `no-pipe-tables` over a source, the one fixable rule wired so far,

@@ -4,10 +4,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { applyFixes, } from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { commandsShowOutput, } from './md014-commands-show-output.ts';
+import {
+  applyFixes,
+  commandsShowOutput,
+  type Diagnostic,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD014 over Markdown source.

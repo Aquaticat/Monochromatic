@@ -4,10 +4,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { applyFixes, } from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { linkImageStyle, } from './md054-link-image-style.ts';
+import {
+  applyFixes,
+  type Diagnostic,
+  linkImageStyle,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD054 over Markdown source.

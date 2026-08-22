@@ -4,9 +4,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { noDuplicateHeading, } from './md024-no-duplicate-heading.ts';
+import {
+  type Diagnostic,
+  noDuplicateHeading,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD024 over Markdown source.

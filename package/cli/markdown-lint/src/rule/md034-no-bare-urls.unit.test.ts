@@ -4,10 +4,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { applyFixes, } from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { noBareUrls, } from './md034-no-bare-urls.ts';
+import {
+  applyFixes,
+  type Diagnostic,
+  noBareUrls,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD034 over Markdown or MDX source.

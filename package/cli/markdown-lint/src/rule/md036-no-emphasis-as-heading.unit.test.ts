@@ -4,9 +4,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { noEmphasisAsHeading, } from './md036-no-emphasis-as-heading.ts';
+import {
+  type Diagnostic,
+  noEmphasisAsHeading,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD036 over Markdown source.

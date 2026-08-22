@@ -5,10 +5,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { applyFixes, } from '../fix.ts';
-import { runRules, } from '../lint.ts';
-import type { Diagnostic, } from '../types.ts';
-import { noTrailingPunctuation, } from './md026-no-trailing-punctuation.ts';
+import {
+  applyFixes,
+  type Diagnostic,
+  noTrailingPunctuation,
+  runRules,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Run only MD026 over Markdown source.
