@@ -24,7 +24,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { compareLineCounts, } from '../dist/final/node/index.mjs';
+import {
+  compareLineCounts,
+  validateTranslatedSlice,
+} from '../dist/final/node/index.mjs';
 
 /**
  * One original whose six lines each stand as a unit.
@@ -179,6 +182,48 @@ await describe({
             'not move.',
           ].join('\n',),
         },).length,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${validateTranslatedSlice.name} on a line-structured slice`,
+  children: [
+    it({
+      name:
+        'REFUSES A FLATTENED RENDERING THROUGH THE STRUCTURAL GUARD, which is the wiring the skip '
+        + 'depends on. Skipping the wrap without this would reopen the hole the audit measured: verse '
+        + 'lines separated by a single newline sit inside ONE block, so a producer that merged them '
+        + 'passed a guard comparing blocks and atoms, and the wrap silently papered over it after',
+      fn: async () => {
+        const validation = validateTranslatedSlice({
+          sourceText: ORIGINAL,
+          candidateText: MERGED,
+          lineStructured: true,
+        },);
+
+        expect(validation.kind,).toBe('invalid',);
+        expect(
+          (validation.kind === 'invalid')
+            && validation.findings.some(function namesTheRule(finding,): boolean {
+            return finding.includes('LINE-STRUCTURED',);
+          },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name:
+        'LEAVES THE CHECK OFF WHERE A CALLER SAID NOTHING, since the decision is a union over the '
+        + 'slice AND its enclosing chunk and the slice half alone covers 55 slices where the union '
+        + 'covers 211. A guard defaulting the other way would guess at that from the slice, which is '
+        + 'the reading measured to be wrong',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: ORIGINAL,
+          candidateText: MERGED,
+        },).kind,).toBe('valid',);
       },
     },),
   ],
