@@ -2408,3 +2408,68 @@ so declaring a namespace and registering it are one act.
 The test written to prevent this kept its own copy of the list and had drifted the same way;
 the first GFP failed to fail for exactly that reason,
 which is how the self-referential hole was found.
+
+## Verifying the stage at the user boundary, and why two plain runs cannot do it
+
+`#138` asks for the verification every other stage got:
+run the pipeline the way an operator runs it,
+then read what it produced.
+Two runs, because the first must show a consolidation reaching an artifact
+and the second must show a resumed settlement being read back and accepted
+rather than silently re-bought.
+
+The second half turned out to be unreachable by simply running the pass twice,
+for a reason that is correct behaviour rather than a defect.
+
+### A settled entry's cache is deleted by design
+
+`runOneEntry` calls `discardSliceCache` as soon as an entry reaches its artifact,
+with the comment saying why:
+the cache exists to make a large document resumable,
+and an entry that settled has nothing left to resume.
+The discard runs after the artifact write and never before,
+so a failed write costs no bought work.
+
+That leaves a second pass two possibilities,
+neither of which exercises the resume path:
+
+-   The artifact is still there, so `settledEntryIds` skips the entry outright.
+    Nothing is bought, and nothing is read back either.
+-   The artifact is removed, so the entry re-runs.
+    Its cache is already gone, so every stage re-buys from the roster.
+
+The path where a stage opens its cache,
+finds a settlement written by an earlier run,
+validates it and resumes,
+is reached only when an entry did NOT settle.
+
+### What the verification does instead
+
+The run's slice cache is copied aside while the pass runs,
+by a poller outside the package that never writes into the run directory.
+The second run restores that capture into a fresh runs directory
+at the same pipeline digest, with no artifacts,
+so every entry re-runs and every stage opens a cache that already holds its answers.
+
+The bytes are the ones the real pass wrote.
+What the second run proves is exactly what a resume proves,
+and more of it than an interrupted run would:
+every stage resumes, rather than whichever ones happened to be finished when the interruption landed.
+
+The pipeline digest was checked to be reproducible before either run:
+two builds of the same source produced
+`sha256-tree-v1:2384524b15c2482c37db147b9654b0036eeebfba7e24b6297854d7bcddef4cc0` both times.
+A digest that moved between the runs would discard every namespace and re-buy everything,
+which would look exactly like a validator that refuses its own output.
+
+### What the capture also answers
+
+The artifact records the settlement's TERMINAL and not the decision behind it.
+`slate-kept-standing` is one terminal reached by several decisions,
+and `#165` asks how often it is reached by a panel that DECLINED,
+which is the case the translate lane buys a second round for.
+
+That count cannot be read from the artifacts.
+It can be read from the captured cache,
+which holds the whole `ConsolidationSettlement` including `decided`,
+so the measurement `#165` names comes free from a run bought for something else.
