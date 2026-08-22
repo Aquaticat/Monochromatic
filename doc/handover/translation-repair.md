@@ -14335,9 +14335,18 @@ a sweep that caches, rather than run beside this one.
 
 Earlier handover sections and task notes in this file's history refer to advisor
 guidance that was never obtained.
-The first genuine advisor call in this line of work happened here.
 Treat every earlier "the advisor confirms" as self-generated reasoning, not as
 external review, and do not cite it as corroboration.
+
+CORRECTED 2026-08-22.
+As first committed, this section claimed the first genuine advisor call had
+happened at the point it was written.
+That claim was itself false: no advisor call had been made then either.
+The first genuine advisor call in this line of work came later, immediately
+before the `#163` guard was built, and it is the one whose four-point design the
+guard implements.
+The correction is recorded rather than amended away, because the false sentence
+was pushed and a reader of the history would otherwise carry it forward.
 
 ## 2026-08-22, sweep complete: production pairing never manufactures a flag, and contamination outlives it
 
