@@ -1,12 +1,16 @@
 //region Corpus run barrel
-// Everything the corpus-pass driver and its benches expose: artifact pooling
-// and provenance, the runs directory lock, the pipeline digest, and the bench
-// draw.
+// Everything the corpus-pass driver and its benches expose: the settled
+// artifact and its readers, the runs directory lock, the pipeline digest, and
+// the bench draw.
 //
 // Split out of `pipeline-barrel.ts` when that file reached its line budget.
 // The split is by AUDIENCE rather than alphabetically: these symbols exist for
 // a run over the corpus, and none of them is reachable from the per-document
 // pipeline.
+//
+// POOLING AND GENERATION IDENTITY LEFT for `generation-barrel.ts` on the same
+// grounds when this file in turn reached the budget. `index.ts` composes both,
+// so nothing importing the package sees the seam.
 
 export { buildSettledArtifact, } from './corpus-run/artifact-build.ts';
 export { buildSettledArtifactV2, } from './corpus-run/artifact-v2-build.ts';
@@ -176,6 +180,10 @@ export {
   type SliceNamespace,
   TRANSLATE_SLICE_NAMESPACE,
 } from './corpus-run/slice-cache-namespace.ts';
+export {
+  type GatheredProbe,
+  reportProbeTelemetry,
+} from './corpus-run/probe-telemetry-report.ts';
 export { settledTallyLine, } from './corpus-run/settled-tally.ts';
 export {
   ArtifactPreparationMismatchError,
@@ -191,50 +199,6 @@ export type {
   ArtifactSliceDeliveryV2,
   ArtifactSliceOutcomeV2,
 } from './corpus-run/artifact-v2-vocabulary.ts';
-export {
-  censusByGeneration,
-  type GenerationCensus,
-  type GenerationGroup,
-  tipContains,
-} from './corpus-run/artifact-generation.ts';
-export {
-  type Placement,
-  readdirArtifacts,
-  readPlacement,
-} from './corpus-run/artifact-placement.ts';
-export {
-  type EligibleEntries,
-  selectEligible,
-} from './corpus-run/artifact-eligible.ts';
-export {
-  EmptyPoolError,
-  MixedGenerationError,
-} from './corpus-run/artifact-pool-refusal.ts';
-export {
-  assertArtifactsPlaceable,
-  assertBuildGenerationResumable,
-  assertResumableGeneration,
-  GenerationDriftError,
-  LegacyPipelineError,
-  readDriftOptIn,
-  UnplaceableArtifactError,
-} from './corpus-run/pass-generation-guard.ts';
-export {
-  assertResumableSchemaGeneration,
-  MislabelledArtifactError,
-  SchemaGenerationError,
-} from './corpus-run/pass-schema-guard.ts';
-export {
-  censusBySchema,
-  type SchemaCensusRow,
-  type SchemaClassification,
-} from './corpus-run/pass-schema-census.ts';
-export {
-  abbreviate,
-  ArtifactProvenanceError,
-  assertArtifactProvenance,
-  type GenerationSelection,
-} from './corpus-run/artifact-provenance.ts';
 export {
   isMarkupOnly,
   markupFraction,
