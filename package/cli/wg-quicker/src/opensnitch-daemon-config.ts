@@ -8,9 +8,24 @@ import { OpenSnitchConfigError, } from './errors.ts';
 const DEFAULT_DAEMON_CONFIG = '/etc/opensnitchd/default-config.json';
 
 /**
+ * OpenSnitch release default system-firewall path.
+ */
+const DEFAULT_SYSTEM_FIREWALL_CONFIG = '/etc/opensnitchd/system-fw.json';
+
+/**
  * Environment override for custom OpenSnitch daemon config and fixtures.
  */
 export const OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT = 'WG_QUICKER_OPENSNITCH_DAEMON_CONFIG';
+
+/**
+ * Environment override for custom OpenSnitch system-firewall config and fixtures.
+ */
+export const OPENSNITCH_CONFIG_ENVIRONMENT = 'WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG';
+
+/**
+ * Sentinel indicating OpenSnitch daemon config is absent.
+ */
+export const OPENSNITCH_DAEMON_CONFIG_ABSENT: unique symbol = Symbol('OpenSnitch daemon config absent',);
 
 /**
  * Reports non-null JSON object.
@@ -30,6 +45,22 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   if (value === null)
     return false;
   return !Array.isArray(value,);
+}
+
+/**
+ * Reports whether unknown failure carries Node filesystem code.
+ *
+ * @param error - Unknown caught value.
+ *
+ * @returns Whether value is Node error with optional code.
+ *
+ * @example
+ * ```ts
+ * isErrnoException({ code: 'ENOENT' });
+ * ```
+ */
+function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
+  return Error.isError(error,);
 }
 
 /**
@@ -53,13 +84,13 @@ function openSnitchDaemonConfigPath(): string {
 }
 
 /**
- * Reads daemon config with integration-specific diagnostic.
+ * Reads daemon config or reports absent OpenSnitch installation.
  *
  * @param path - Effective daemon config path.
  *
- * @returns Raw daemon JSON.
+ * @returns Raw daemon JSON or absence sentinel.
  *
- * @throws {@link OpenSnitchConfigError} when file is unreadable.
+ * @throws {@link OpenSnitchConfigError} when existing file is unreadable.
  *
  * @example
  * ```ts
@@ -68,7 +99,7 @@ function openSnitchDaemonConfigPath(): string {
  */
 async function readDaemonConfig(
   { path, }: { readonly path: string; },
-): Promise<string> {
+): Promise<string | typeof OPENSNITCH_DAEMON_CONFIG_ABSENT> {
   try {
     return await readFile(
       path,
@@ -76,8 +107,10 @@ async function readDaemonConfig(
     );
   }
   catch (error) {
+    if (isErrnoException(error,) && (error.code === 'ENOENT'))
+      return OPENSNITCH_DAEMON_CONFIG_ABSENT;
     throw new OpenSnitchConfigError(
-      `Cannot read OpenSnitch daemon config to verify nftables backend: ${path}`,
+      `Cannot read OpenSnitch daemon config: ${path}`,
       { cause: error, },
     );
   }
@@ -90,9 +123,9 @@ async function readDaemonConfig(
  *
  * @param path - Effective daemon config path.
  *
- * @returns Unknown parsed value.
+ * @returns Parsed daemon object.
  *
- * @throws {@link OpenSnitchConfigError} when JSON syntax is invalid.
+ * @throws {@link OpenSnitchConfigError} when JSON or root shape is invalid.
  *
  * @example
  * ```ts
@@ -107,45 +140,86 @@ function parseDaemonConfig(
     readonly text: string;
     readonly path: string;
   },
-): unknown {
-  try {
-    return JSON.parse(text,);
-  }
-  catch (error) {
-    throw new OpenSnitchConfigError(
-      `OpenSnitch daemon config is not valid JSON: ${path}`,
-      { cause: error, },
-    );
-  }
+): Readonly<Record<string, unknown>> {
+  /**
+   * Parsed untrusted daemon config.
+   */
+  const parsed = (function parseUnknown(): unknown {
+    try {
+      return JSON.parse(text,);
+    }
+    catch (error) {
+      throw new OpenSnitchConfigError(
+        `OpenSnitch daemon config is not valid JSON: ${path}`,
+        { cause: error, },
+      );
+    }
+  })();
+  if (!isRecord(parsed,))
+    throw new OpenSnitchConfigError(`OpenSnitch daemon config has invalid root: ${path}`,);
+  return parsed;
 }
 
 /**
- * Requires OpenSnitch nftables backend before writing nftables system rules.
+ * Resolves effective system-firewall path from explicit override or daemon config.
  *
- * @throws {@link OpenSnitchConfigError} when daemon config is unreadable,
- * malformed,
- * or selects unsupported backend.
+ * Installation requires nftables when `requireNftables` is true.
+ * Removal skips backend check so owned rules can be cleaned after config changes.
+ *
+ * @param requireNftables - Whether unsupported backend must reject startup.
+ *
+ * @returns Effective system-firewall path,
+ * or absence sentinel when startup finds no OpenSnitch daemon config.
+ *
+ * @throws {@link OpenSnitchConfigError} when existing daemon config is malformed or unsupported.
  *
  * @example
  * ```ts
- * await assertOpenSnitchNftablesBackend();
+ * await resolveOpenSnitchSystemFirewallPath({ requireNftables: true });
  * ```
  */
-export async function assertOpenSnitchNftablesBackend(): Promise<void> {
+export async function resolveOpenSnitchSystemFirewallPath(
+  { requireNftables, }: { readonly requireNftables: boolean; },
+): Promise<string | typeof OPENSNITCH_DAEMON_CONFIG_ABSENT> {
   /**
-   * Effective daemon configuration path.
+   * Explicit system-firewall path taking precedence over daemon field.
    */
-  const path = openSnitchDaemonConfigPath();
+  const configuredSystemPath = process.env[OPENSNITCH_CONFIG_ENVIRONMENT];
   /**
-   * Parsed daemon configuration candidate.
+   * Effective daemon config path and optional content.
    */
-  const parsed = parseDaemonConfig({
-    text: await readDaemonConfig({ path, },),
-    path,
+  const daemonPath = openSnitchDaemonConfigPath();
+  const daemonText = await readDaemonConfig({ path: daemonPath, },);
+  if ((typeof daemonText) === 'symbol') {
+    if (daemonText !== OPENSNITCH_DAEMON_CONFIG_ABSENT)
+      throw new OpenSnitchConfigError('Unexpected OpenSnitch daemon-config result.',);
+    if (requireNftables)
+      return OPENSNITCH_DAEMON_CONFIG_ABSENT;
+    return (configuredSystemPath === undefined) || (configuredSystemPath === '')
+      ? DEFAULT_SYSTEM_FIREWALL_CONFIG
+      : configuredSystemPath;
+  }
+  /**
+   * Parsed daemon config supplying backend and default system path.
+   */
+  const daemonConfig = parseDaemonConfig({
+    text: daemonText,
+    path: daemonPath,
   },);
-  if ((!isRecord(parsed,)) || (parsed.Firewall !== 'nftables')) {
+  if (requireNftables && (daemonConfig.Firewall !== 'nftables')) {
     throw new OpenSnitchConfigError(
-      `wg-quicker OpenSnitch auto-configuration requires Firewall = nftables in ${path}.`,
+      `wg-quicker OpenSnitch auto-configuration requires Firewall = nftables in ${daemonPath}.`,
     );
   }
+  if ((configuredSystemPath !== undefined) && (configuredSystemPath !== ''))
+    return configuredSystemPath;
+  /**
+   * OpenSnitch firewall options carrying watched system config path.
+   */
+  const options = daemonConfig.FwOptions;
+  if (isRecord(options,)
+    && ((typeof options.ConfigPath) === 'string')
+    && (options.ConfigPath !== ''))
+    return options.ConfigPath;
+  return DEFAULT_SYSTEM_FIREWALL_CONFIG;
 }

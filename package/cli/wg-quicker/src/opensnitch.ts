@@ -7,12 +7,14 @@ import { OpenSnitchConfigError, } from './errors.ts';
 import { claimOperationLock, } from './operation-lock.ts';
 import {
   isOpenSnitchConfigAbsent,
-  openSnitchConfigPath,
   OPENSNITCH_CONFIG_ABSENT,
   readOpenSnitchConfig,
   writeOpenSnitchConfig,
 } from './opensnitch-config-file.ts';
-import { assertOpenSnitchNftablesBackend, } from './opensnitch-daemon-config.ts';
+import {
+  OPENSNITCH_DAEMON_CONFIG_ABSENT,
+  resolveOpenSnitchSystemFirewallPath,
+} from './opensnitch-daemon-config.ts';
 import {
   parseOpenSnitchConfig,
   reconcileOpenSnitchConfig,
@@ -24,8 +26,10 @@ import {
   bypassStateKey,
 } from './tunnel-bypass-path.ts';
 
-export { OPENSNITCH_CONFIG_ENVIRONMENT, } from './opensnitch-config-file.ts';
-export { OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT, } from './opensnitch-daemon-config.ts';
+export {
+  OPENSNITCH_CONFIG_ENVIRONMENT,
+  OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT,
+} from './opensnitch-daemon-config.ts';
 
 /**
  * Module logger for OpenSnitch system-firewall integration.
@@ -123,28 +127,48 @@ async function openSnitchTableExists(): Promise<boolean> {
  *
  * @param output - Numeric nft chain listing.
  *
- * @param ports - Required UDP destination ports.
+ * @param requiredPorts - UDP destination ports that must be present.
+ *
+ * @param forbiddenPorts - Formerly owned ports that must be absent.
  *
  * @returns Whether live reload reached usable state.
  *
  * @example
  * ```ts
- * isLiveRuleSetReady({ output: 'udp dport 51820 accept queue', ports: [51820] });
+ * isLiveRuleSetReady({
+ *   output: 'udp dport 51820 accept queue',
+ *   requiredPorts: [51820],
+ *   forbiddenPorts: [],
+ * });
  * ```
  */
 function isLiveRuleSetReady(
   {
     output,
-    ports,
+    requiredPorts,
+    forbiddenPorts,
   }: {
     readonly output: string;
-    readonly ports: readonly number[];
+    readonly requiredPorts: readonly number[];
+    readonly forbiddenPorts: readonly number[];
   },
 ): boolean {
   if (!output.includes('queue',))
     return false;
-  return ports.every(function includesPort(port,): boolean {
+  /**
+   * Reports whether numeric chain output contains exact generated rule.
+   *
+   * @param port - Exact UDP destination port.
+   *
+   * @returns Whether generated accept rule is listed.
+   */
+  function containsPort(port: number,): boolean {
     return output.includes(`udp dport ${String(port,)} accept`,);
+  }
+  if (!requiredPorts.every(containsPort,))
+    return false;
+  return forbiddenPorts.every(function excludesPort(port,): boolean {
+    return !containsPort(port,);
   },);
 }
 
@@ -155,22 +179,30 @@ function isLiveRuleSetReady(
  *
  * @param path - Config path used in failure diagnostic.
  *
- * @param ports - Managed endpoint ports expected in live chain.
+ * @param requiredPorts - Managed endpoint ports expected in live chain.
+ *
+ * @param forbiddenPorts - Removed exact ports expected absent from live chain.
  *
  * @throws {@link OpenSnitchConfigError} when running daemon does not converge.
  *
  * @example
  * ```ts
- * await verifyOpenSnitchLiveReload({ path, ports: [51820] });
+ * await verifyOpenSnitchLiveReload({
+ *   path,
+ *   requiredPorts: [51820],
+ *   forbiddenPorts: [],
+ * });
  * ```
  */
 async function verifyOpenSnitchLiveReload(
   {
     path,
-    ports,
+    requiredPorts,
+    forbiddenPorts,
   }: {
     readonly path: string;
-    readonly ports: readonly number[];
+    readonly requiredPorts: readonly number[];
+    readonly forbiddenPorts: readonly number[];
   },
 ): Promise<void> {
   if (!(await openSnitchTableExists()))
@@ -201,7 +233,8 @@ async function verifyOpenSnitchLiveReload(
     },);
     if ((result.exitCode === 0) && isLiveRuleSetReady({
       output: result.stdout,
-      ports,
+      requiredPorts,
+      forbiddenPorts,
     },))
       cursor.consecutiveReady += 1;
     else
@@ -265,17 +298,26 @@ async function reconcileOpenSnitchEndpointAllowance(
   },
 ): Promise<OpenSnitchReconcileResult | typeof OPENSNITCH_CONFIG_ABSENT> {
   /**
-   * Effective OpenSnitch config path.
+   * Effective OpenSnitch system-firewall path from override or daemon config.
    */
-  const path = openSnitchConfigPath();
+  const resolvedPath = await resolveOpenSnitchSystemFirewallPath({
+    requireNftables: requireEnabled,
+  },);
+  if ((typeof resolvedPath) === 'symbol') {
+    if (resolvedPath === OPENSNITCH_DAEMON_CONFIG_ABSENT)
+      return OPENSNITCH_CONFIG_ABSENT;
+    throw new OpenSnitchConfigError('Unexpected OpenSnitch system-firewall path result.',);
+  }
+  /**
+   * Concrete system-firewall path after daemon-absence narrowing.
+   */
+  const path = resolvedPath;
   /**
    * Unlocked existence probe avoiding runtime directory when OpenSnitch is absent.
    */
   const initial = await readOpenSnitchConfig({ path, },);
   if (isOpenSnitchConfigAbsent(initial,))
     return OPENSNITCH_CONFIG_ABSENT;
-  if (requireEnabled)
-    await assertOpenSnitchNftablesBackend();
   /**
    * Config-path operation lock held through disk and live-kernel convergence.
    */
@@ -311,7 +353,8 @@ async function reconcileOpenSnitchEndpointAllowance(
     },);
     await verifyOpenSnitchLiveReload({
       path,
-      ports: mutation.managedPorts,
+      requiredPorts: mutation.managedPorts,
+      forbiddenPorts: mutation.forbiddenPorts,
     },);
   }
   return {

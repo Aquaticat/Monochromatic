@@ -15,16 +15,6 @@ import { parseOpenSnitchConfig, } from './opensnitch-config-tree.ts';
 const l = tagged({ tag: 'opensnitch-config-file', },);
 
 /**
- * OpenSnitch release default system-firewall path.
- */
-const DEFAULT_SYSTEM_FIREWALL_CONFIG = '/etc/opensnitchd/system-fw.json';
-
-/**
- * Environment override for custom OpenSnitch daemon deployments and fixtures.
- */
-export const OPENSNITCH_CONFIG_ENVIRONMENT = 'WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG';
-
-/**
  * Sentinel indicating OpenSnitch system-firewall file is absent.
  */
 export const OPENSNITCH_CONFIG_ABSENT: unique symbol = Symbol(
@@ -45,26 +35,6 @@ export const OPENSNITCH_CONFIG_ABSENT: unique symbol = Symbol(
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return Error.isError(error,);
-}
-
-/**
- * Resolves OpenSnitch system-firewall path.
- *
- * @returns Explicit override or release default.
- *
- * @example
- * ```ts
- * openSnitchConfigPath();
- * ```
- */
-export function openSnitchConfigPath(): string {
-  /**
-   * Explicit custom system-firewall path when configured.
-   */
-  const configured = process.env[OPENSNITCH_CONFIG_ENVIRONMENT];
-  return (configured === undefined) || (configured === '')
-    ? DEFAULT_SYSTEM_FIREWALL_CONFIG
-    : configured;
 }
 
 /**

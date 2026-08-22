@@ -252,6 +252,28 @@ await describe({
         },),
 
         it({
+          name: 'uses daemon FwOptions config path without explicit system override',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            await writeFile(
+              fixture.daemonConfigPath,
+              JSON.stringify({
+                Firewall: 'nftables',
+                FwOptions: { ConfigPath: fixture.configPath, },
+              },),
+            );
+            delete process.env.WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG;
+            await installOpenSnitchEndpointAllowance({
+              interfaceName: 'wg0',
+              endpointPorts: [51_820,],
+            },);
+            expect(await readRules({ path: fixture.configPath, },),).toHaveLength(1,);
+          },
+        },),
+
+        it({
           name: 'rejects symbolic-link system-firewall path',
           fn: async () => {
             await using fixture = await createFixture({

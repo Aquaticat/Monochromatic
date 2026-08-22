@@ -1,16 +1,15 @@
-import { randomUUID, } from 'node:crypto';
-
 import { OpenSnitchConfigError, } from './errors.ts';
+import {
+  acceptedUdpPorts,
+  createManagedRule,
+  isManagedRule,
+  managedPrefix,
+} from './opensnitch-rule.ts';
 
 /**
  * OpenSnitch system-firewall schema version supported by this integration.
  */
 const SUPPORTED_VERSION = 1;
-
-/**
- * Stable prefix identifying rules owned by wg-quicker.
- */
-const MANAGED_DESCRIPTION_PREFIX = 'wg-quicker managed endpoint';
 
 /**
  * JSON object with unknown fields retained during round-trip.
@@ -35,6 +34,11 @@ export type OpenSnitchConfigMutation = {
    * Sorted distinct destination ports represented by managed rules.
    */
   readonly managedPorts: readonly number[];
+
+  /**
+   * Formerly managed exact ports with no remaining accepting rule.
+   */
+  readonly forbiddenPorts: readonly number[];
 };
 
 /**
@@ -55,102 +59,6 @@ function isRecord(value: unknown,): value is JsonRecord {
   if (value === null)
     return false;
   return !Array.isArray(value,);
-}
-
-/**
- * Creates interface-specific managed-rule description prefix.
- *
- * @param interfaceName - WireGuard interface owning rules.
- *
- * @returns Prefix with unambiguous interface delimiter.
- *
- * @example
- * ```ts
- * managedPrefix({ interfaceName: 'wg0' });
- * ```
- */
-function managedPrefix({ interfaceName, }: { readonly interfaceName: string; },): string {
-  return `${MANAGED_DESCRIPTION_PREFIX} [${interfaceName}] UDP destination port `;
-}
-
-/**
- * Reports whether rule belongs to one interface's wg-quicker lifecycle.
- *
- * @param value - Unknown rule value.
- *
- * @param prefix - Exact interface-specific ownership prefix.
- *
- * @returns Whether description identifies managed rule.
- *
- * @example
- * ```ts
- * isManagedRule({ value: { Description: 'wg-quicker managed endpoint [wg0] UDP destination port 1' }, prefix });
- * ```
- */
-function isManagedRule(
-  {
-    value,
-    prefix,
-  }: {
-    readonly value: unknown;
-    readonly prefix: string;
-  },
-): boolean {
-  if (!isRecord(value,))
-    return false;
-  if ((typeof value.Description) !== 'string')
-    return false;
-  return value
-    .Description
-    .startsWith(prefix,);
-}
-
-/**
- * Creates one OpenSnitch nftables accept rule for endpoint UDP port.
- *
- * @param interfaceName - WireGuard interface owning rule.
- *
- * @param port - UDP destination port accepted before NFQUEUE.
- *
- * @returns OpenSnitch version 1 rule object.
- *
- * @example
- * ```ts
- * createManagedRule({ interfaceName: 'wg0', port: 51820 });
- * ```
- */
-function createManagedRule(
-  {
-    interfaceName,
-    port,
-  }: {
-    readonly interfaceName: string;
-    readonly port: number;
-  },
-): JsonRecord {
-  return {
-    UUID: randomUUID(),
-    Enabled: true,
-    Position: '0',
-    Description: `${managedPrefix({ interfaceName, },)}${String(port,)}`,
-    Parameters: '',
-    Expressions: [
-      {
-        Statement: {
-          Op: '',
-          Name: 'udp',
-          Values: [
-            {
-              Key: 'dport',
-              Value: String(port,),
-            },
-          ],
-        },
-      },
-    ],
-    Target: 'accept',
-    TargetParameters: '',
-  };
 }
 
 /**
@@ -417,6 +325,27 @@ export function reconcileOpenSnitchConfig(
     },);
   },);
   /**
+   * Exact ports accepted by removed interface-owned rules.
+   */
+  const removedManagedPorts = existingRules
+    .filter(function ownedRule(rule,): boolean {
+      return isManagedRule({
+        value: rule,
+        prefix,
+      },);
+    },)
+    .flatMap(function removedPorts(rule,): readonly number[] {
+      return acceptedUdpPorts({ value: rule, },);
+    },);
+  /**
+   * Exact ports still accepted by unrelated or other-interface rules.
+   */
+  const retainedAcceptedPorts = new Set(retainedRules.flatMap(function retainedPorts(
+    rule,
+  ): readonly number[] {
+    return acceptedUdpPorts({ value: rule, },);
+  },),);
+  /**
    * Fresh managed rules matching current endpoint ports.
    */
   const managedRules = managedPorts.map(function toRule(port,): JsonRecord {
@@ -426,6 +355,19 @@ export function reconcileOpenSnitchConfig(
     },);
   },);
   /**
+   * Removed ports expected to disappear from live chain.
+   */
+  const forbiddenPorts = [...new Set(removedManagedPorts,),]
+    .filter(function noRemainingAllowance(port,): boolean {
+      return (!managedPorts.includes(port,)) && (!retainedAcceptedPorts.has(port,));
+    },)
+    .toSorted(function ascending(
+      a,
+      b,
+    ): number {
+      return a - b;
+    },);
+  /**
    * Existing managed descriptions used to avoid unnecessary write when removing none.
    */
   const existingManagedCount = existingRules.length - retainedRules.length;
@@ -434,6 +376,7 @@ export function reconcileOpenSnitchConfig(
       document,
       changed: false,
       managedPorts,
+      forbiddenPorts,
     };
   }
   /**
@@ -464,6 +407,7 @@ export function reconcileOpenSnitchConfig(
     },
     changed: true,
     managedPorts,
+    forbiddenPorts,
   };
 }
 

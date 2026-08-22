@@ -152,6 +152,55 @@ await describe({
         },),
 
         it({
+          name: 'reports replaced exact port that must disappear from live chain',
+          fn: async () => {
+            const installed = reconcileOpenSnitchConfig({
+              document: fixtureDocument({ rules: [], }),
+              interfaceName: 'wg0',
+              endpointPorts: [2_049,],
+              path: '/tmp/system-fw.json',
+              requireEnabled: true,
+            },);
+            const replaced = reconcileOpenSnitchConfig({
+              document: installed.document,
+              interfaceName: 'wg0',
+              endpointPorts: [51_820,],
+              path: '/tmp/system-fw.json',
+              requireEnabled: true,
+            },);
+            expect(replaced.forbiddenPorts,).toEqual([2_049,],);
+          },
+        },),
+
+        it({
+          name: 'retains shared exact port when another interface owns allowance',
+          fn: async () => {
+            const first = reconcileOpenSnitchConfig({
+              document: fixtureDocument({ rules: [], }),
+              interfaceName: 'wg0',
+              endpointPorts: [2_049,],
+              path: '/tmp/system-fw.json',
+              requireEnabled: true,
+            },);
+            const shared = reconcileOpenSnitchConfig({
+              document: first.document,
+              interfaceName: 'wg1',
+              endpointPorts: [2_049,],
+              path: '/tmp/system-fw.json',
+              requireEnabled: true,
+            },);
+            const removed = reconcileOpenSnitchConfig({
+              document: shared.document,
+              interfaceName: 'wg0',
+              endpointPorts: [],
+              path: '/tmp/system-fw.json',
+              requireEnabled: false,
+            },);
+            expect(removed.forbiddenPorts,).toEqual([],);
+          },
+        },),
+
+        it({
           name: 'removes managed rules while disabled during teardown',
           fn: async () => {
             const document = fixtureDocument({
@@ -182,6 +231,7 @@ await describe({
             },);
             expect(result.changed,).toBe(false,);
             expect(result.document,).toBe(document,);
+            expect(result.forbiddenPorts,).toEqual([],);
           },
         },),
 
