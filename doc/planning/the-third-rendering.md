@@ -3428,3 +3428,120 @@ That verification is `#172`,
 and it runs first,
 because every item above it is queued behind a pipeline whose reproducibility
  is claimed rather than measured.
+
+## The slate terminal now names three states, and a settlement keeps its findings
+
+Landed 2026-08-22 across `0898c8d17`,
+`8d3da278d` and `e2e8b1216`,
+the first item of the coordinated schema change,
+after `#170`'s two schema-free items landed as `0b64add7f`.
+
+### The retired name is not reused
+
+The earlier plan kept `slate-kept-standing` for the endorsed case,
+on the reasoning that the surviving name would then mean what it says.
+A census taken before writing any code overturned that.
+
+Across every settled artifact on this machine,
+47 scanned and 14 carrying a consolidation over 42 slices,
+the terminal appears on 11 rows in `Acheron`,
+`Zha_Ke`,
+`gaoyanger` and `lintong`.
+Every one of those rows carries the identical key set,
+`chunkIndex`,
+`demoted`,
+`gate`,
+`rewrapped`,
+`shipped`,
+`terminal` and `verdicts`,
+with no record of the judged round.
+
+So no legacy row can be told apart from any other.
+Had the endorsed case kept the spelling,
+a census over mixed artifacts could not have separated
+a post-split endorsement from a pre-split row meaning one of three,
+except by keying on which other fields a row happens to carry,
+which is implicit versioning by another name.
+
+All three states get new names,
+and `slate-kept-standing` survives only in the artifact reader,
+as `ArtifactConsolidationTerminal`,
+whose docblock says what it cannot tell apart.
+The 11 rows are not backfilled from logs or captures.
+They are unrecoverable by construction,
+and inference presented as data is worse than a named absence.
+
+### Legacy tolerance is confined to the reader, and that was verified
+
+Artifacts outlive pipeline digests.
+Caches do not.
+
+`openNamespacedCache` returns an empty resume map and discards the namespace
+ whenever the generation stored beside it differs from the running digest,
+and `openConsolidateCache` is handed the pipeline digest as that generation.
+So no consolidate cache entry written before this change can ever be resumed,
+which is why the producer union and the cache guard carry only the new names
+while the reader carries the retired one as well.
+
+### What the split confirmed on the first run
+
+The test named `KEEPS THE STANDING TEXT WHEN EVERY JUDGE DECLINES`
+has always described a declining panel,
+and had always asserted the name a panel ENDORSING the archive would carry.
+Under the split it settles as `slate-declined-standing`.
+
+That is the defect the task predicted,
+found in the repository's own test suite rather than in a run,
+and it is the clearest evidence that one name for three states
+was being read as the wrong one of the three.
+
+### The decision read survives, against the plan to retire it
+
+Splitting the terminal was expected to make
+`consolidationWorthResuming` a pure terminal read.
+It does not,
+and the reason is worth recording so a later session does not retry it.
+
+`slate-declined-standing` covers both the two declines a second panel might
+ change and the settled `no-candidate-backed` recorded after that second panel
+ has already run.
+Those get opposite answers,
+so the terminal alone cannot decide them.
+The other four terminals now decide by name,
+through `SETTLED_WITHOUT_A_GATE`,
+and the persistence policy is unchanged in every case.
+
+### A settlement carries its own findings
+
+Folded in from the `#174` survey,
+because it changes the same type
+and doing it separately would rewrite that type and its reader twice.
+
+`ConsolidationSettlement` carried no findings field,
+so the produce half's findings reached a reader only where a judged round or a
+ gate round happened to run.
+The two terminals that end before either,
+`no-standing-text` and `incumbent-only`,
+dropped them on EVERY run rather than only on a resume.
+
+Those are exactly the terminals whose findings explain them.
+`produced.findings` is gather findings plus repair findings,
+which is where voice loss and transport failure are recorded,
+so the account of why a slate had nothing valid on it was being lost
+at the terminal that reports a slate had nothing valid on it.
+
+Per-proposal validity findings were never affected,
+because `ProposalVerdict` carries its own,
+so the loss was bounded to the produce half.
+No lint signal existed,
+because `producedFindings` is used on one branch
+and so is not an unused parameter.
+
+Three tests pin it.
+Two show the loss,
+and both fail against the code before this change,
+where `settled.findings` reads `undefined`.
+The third pins that a path reaching both rounds reports each finding ONCE,
+which is the trap in fixing the first two:
+the judged round is already handed the produce half's list,
+so a settlement appending it again would report one lost voice twice.
