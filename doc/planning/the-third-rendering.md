@@ -2656,3 +2656,54 @@ If an entry caps or fails in run 1, the verification proceeds on the settled sub
 A failed entry keeps its cache in run 1's own directory, by the same rule that discards a settled one,
 so re-running that entry in place is the one resume case reached organically rather than restored.
 It is worth taking if it happens and not worth buying.
+
+## The expansion band does not survive a wider population
+
+`#163` proposed guarding the ratio of English characters to Chinese characters,
+on a band of 2.09 to 4.24 drawn from the 24 shipped consolidations of the band pair,
+and owed a re-measurement on a wider population before it decided anything.
+
+Measured over every paired slice of the pinned corpus as the ARCHIVE carries it,
+1259 slices across 92 pairs, at no quota cost.
+
+### What the archive's own ratios look like
+
+Prose slices, 1048 of them:
+minimum 0.01, fifth percentile 1.06, first quartile 2.40, median 2.96,
+third quartile 3.52, ninety-fifth percentile 5.11, maximum 521.86.
+
+Line-structured slices, 211 of them, are not a separate distribution worth its own band:
+median 3.06 against prose's 2.96, and a ninety-fifth percentile of 4.33 against 5.11.
+Item 3 of the task asked whether verse needs checking separately.
+On this measurement it does not.
+
+### The proposed band would fire on a quarter of the corpus
+
+281 of 1048 prose slices fall outside 2.09 to 4.24, which is 27 percent.
+190 sit below the low end and 91 above the high end.
+Across everything it is 328 of 1259.
+
+A guard firing on one slice in four is not naming a failure mode.
+The band was drawn from 24 observations of a stage that had already selected for a decided slice,
+and it does not describe the population it would run over.
+
+### Where the tail actually starts
+
+Sweeping the cutoffs over the same 1259 slices:
+
+-   Below 2.09 flags 223, below 1.5 flags 107, below 1.0 flags 26,
+    below 0.8 flags 15, below 0.7 flags 14, below 0.5 flags 6.
+-   Above 4.24 flags 105, above 6 flags 44, above 8 flags 30,
+    above 10 flags 23, above 15 flags 15, above 20 flags 11.
+
+So a band around 0.8 to 10 flags roughly 38 slices, three percent,
+which is a set small enough to read one by one.
+The furthest outliers are the ones the task wanted found:
+`shihai4h#53` at 521.86, `Zha_Ke#1` at 94.78, three `windward0032` slices between 55 and 85,
+and at the other end three `shi_Yumiaoya` slices at 0.01 to 0.02.
+
+WHAT THIS DOES NOT SETTLE. Whether those outliers are mis-sliced or are correctly paired
+passages the archive simply left mostly untranslated is a reading, not a ratio,
+and the flagged set is now small enough that the reading is affordable.
+The action on a breach is still undecided,
+and `#71` records what recording a finding and never acting on it costs.
