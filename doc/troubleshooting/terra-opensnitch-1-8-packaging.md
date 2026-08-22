@@ -309,6 +309,44 @@ Rebooting, enabling services, copying root-owned configuration,
 and layering dependencies would mutate real firewall state,
 so diagnosis stopped before those actions.
 
+### Replace Terra's package with the official release pair
+
+OpenSnitch v1.8.0 publishes separate daemon and UI RPMs.
+The daemon SHA-256 is
+`e06e9119daf764e56455b61c319e496274c0274bb53bb94a0ff1ab72967fea7d`;
+the UI SHA-256 is
+`e5527b6b0040f771cd5345d4917269f0fe98b6d06064bae15f4ab937e45b4a08`.
+Both match GitHub's release asset digests.
+Both RPM signatures verify against release key fingerprint
+`F34016AC014BAAF8C90AC730141D0D4E9FF44A67`.
+
+The two official RPM file lists do not overlap.
+The daemon RPM includes `/etc/opensnitchd` configuration,
+eBPF objects, `/usr/bin/opensnitchd`, and `opensnitch.service`.
+The UI RPM declares PyQt6 as a hard dependency and gRPC,
+protobuf, slugify, packaging, notifications, and Qt SQL support as recommendations.
+
+This transaction was verified with `--dry-run` on the affected host:
+
+```bash
+rpm-ostree install --dry-run \
+  --uninstall=opensnitch \
+  ~/temp/agent/opensnitch-official-2026-08-21/opensnitch-1.8.0-1.x86_64.rpm \
+  ~/Downloads/opensnitch-ui-1.8.0-1.noarch.rpm
+```
+
+It resolved successfully,
+planned removal of the Terra package request,
+and selected both official RPMs plus the missing Fedora 44 UI dependencies.
+Remove `--dry-run` to stage that same replacement.
+
+Tradeoff:
+local RPM requests persist across rpm-ostree upgrades,
+but they do not follow new OpenSnitch releases from a package repository.
+Each future upstream release requires a deliberate local RPM replacement.
+
+### Correct Terra's package source
+
 A package-spec correction prototype is recorded as
 [`terra-opensnitch-1-8-packaging.patch`](terra-opensnitch-1-8-packaging.patch).
 Its zero-context hunks apply to a clean `terrapkg/packages@462374e` checkout with:
