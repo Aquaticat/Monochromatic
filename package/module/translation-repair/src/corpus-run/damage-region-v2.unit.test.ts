@@ -74,6 +74,78 @@ function rowOf(
   } as Parameters<typeof regionsOfLane>[0]['rows'][number];
 }
 
+/**
+ * Selection an artifact carries once a contest has settled it.
+ */
+const CONTESTED = { kind: 'contested', slices: [], } as unknown as
+  Parameters<typeof regionsOfLane>[0]['laneSelection'];
+
+/**
+ * Selection an artifact carries while nobody has decided it.
+ */
+const UNDECIDED = { kind: 'pending-human-decision', } as unknown as
+  Parameters<typeof regionsOfLane>[0]['laneSelection'];
+
+/**
+ * How many slice indices the shared readings cover, which is more than any
+ * case here uses so a new case need not extend it.
+ */
+const COVERED_SLICES = 16;
+
+/**
+ * Builds a reading carrying wording for every slice a case might use.
+ *
+ * DEFAULTS TO EACH ROW'S OWN SHIPPED WORDING, so the annotation reads
+ * `survives` unless a case deliberately says otherwise. `rowOf` generates its
+ * texts from the index, so the reading can be built without the rows.
+ *
+ * @param text - wording to claim would stand, defaulting to what the lane
+ * shipped at that index
+ *
+ * @param decidedBy - stage whose decision survived
+ *
+ * @returns Readings by chunk index
+ *
+ * @example
+ * ```ts
+ * const readings = readingsOf({ text: 'Something else entirely.', },);
+ * ```
+ */
+function readingsOf(
+  {
+    text,
+    decidedBy = 'consolidation',
+  }: {
+    readonly text?: string;
+    readonly decidedBy?: string;
+  } = {},
+): Parameters<typeof regionsOfLane>[0]['readings'] {
+  return new Map(
+    Array.from(
+      { length: COVERED_SLICES, },
+      function perSlice(_unused, chunkIndex,): readonly [
+        number,
+        unknown,
+      ] {
+        return [
+          chunkIndex,
+          {
+            kind: 'wording',
+            text: text ?? `Cat ${String(chunkIndex,)} is perched on the windowsill.`,
+            decidedBy,
+          },
+        ];
+      },
+    ),
+  ) as Parameters<typeof regionsOfLane>[0]['readings'];
+}
+
+/**
+ * Readings under which every lane wording survives, which is what the cases
+ * about population and text want: they are not about the annotation.
+ */
+const SURVIVING = readingsOf();
+
 await describe({
   name: regionsOfLane.name,
   children: [
@@ -87,6 +159,8 @@ await describe({
          */
         const census = regionsOfLane({
           entryId: 'Tabby',
+          laneSelection: CONTESTED,
+          readings: SURVIVING,
           lane: 'repair',
           rows: [
             rowOf({
@@ -117,6 +191,8 @@ await describe({
       fn: async () => {
         const census = regionsOfLane({
           entryId: 'Tabby',
+          laneSelection: CONTESTED,
+          readings: SURVIVING,
           lane: 'translate',
           rows: [
             rowOf({
@@ -146,6 +222,8 @@ await describe({
          */
         const repair = regionsOfLane({
           entryId: 'Tabby',
+          laneSelection: CONTESTED,
+          readings: SURVIVING,
           lane: 'repair',
           rows: [rowOf({
             chunkIndex: 3,
@@ -154,6 +232,8 @@ await describe({
         },);
         const translate = regionsOfLane({
           entryId: 'Tabby',
+          laneSelection: CONTESTED,
+          readings: SURVIVING,
           lane: 'translate',
           rows: [rowOf({
             chunkIndex: 3,
@@ -176,6 +256,8 @@ await describe({
       fn: async () => {
         const census = regionsOfLane({
           entryId: 'Tabby',
+          laneSelection: CONTESTED,
+          readings: SURVIVING,
           lane: 'repair',
           rows: [rowOf({
             chunkIndex: 5,
@@ -195,11 +277,85 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS A REGION A LATER STAGE OVERRULED, and NAMES the stage. Rebuilding this population '
+        + 'from what would ship would cut it from 378 regions to 30 and empty 33 of 47 artifacts, '
+        + 'because on an entry nobody has decided the archive stands and nothing replaces anything. '
+        + 'The lane still made the edit, so the damage question is still answerable; what the '
+        + 'annotation adds is that no reader of a document would meet the result',
+      fn: async () => {
+        const census = regionsOfLane({
+          entryId: 'Tabby',
+          laneSelection: CONTESTED,
+          readings: readingsOf({ text: 'The third rendering says something else.', },),
+          lane: 'repair',
+          rows: [rowOf({
+            chunkIndex: 4,
+            kind: 'replacement-shipped',
+          },),],
+        },);
+
+        expect(census.regions.length,).toBe(1,);
+        expect(census.regions[0]?.pageRelation,).toEqual({
+          kind: 'displaced',
+          decidedBy: 'consolidation',
+        },);
+        expect(census.regions[0]?.shippedText,).toBe('Cat 4 is perched on the windowsill.',);
+      },
+    },),
+
+    it({
+      name: 'ANSWERS UNDECIDED on an entry no stage has decided, where the would-ship text is the '
+        + 'ARCHIVE and so differs from every shipped region by construction. Filing those as '
+        + 'displaced would report an overrule on all 306 of the undecided regions, when what '
+        + 'actually happened is that nobody has decided anything yet',
+      fn: async () => {
+        const census = regionsOfLane({
+          entryId: 'Tabby',
+          laneSelection: UNDECIDED,
+          readings: readingsOf({
+            text: 'Cat 6 sits on the sill.',
+            decidedBy: 'archive',
+          },),
+          lane: 'translate',
+          rows: [rowOf({
+            chunkIndex: 6,
+            kind: 'replacement-shipped',
+          },),],
+        },);
+
+        expect(census.regions[0]?.pageRelation,).toEqual({ kind: 'undecided', },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SHIPPED ROW NAMED BY NO COMPARISON ROW rather than dropping it, since the '
+        + 'comparison is derived from the same slicing this ledger delivered: a row missing from it '
+        + 'is a contradiction inside one artifact, and skipping it would shrink the draw '
+        + 'population for a reason nobody would see',
+      fn: async () => {
+        expect(function unnamedSlice() {
+          regionsOfLane({
+            entryId: 'Tabby',
+            laneSelection: CONTESTED,
+            readings: new Map() as Parameters<typeof regionsOfLane>[0]['readings'],
+            lane: 'repair',
+            rows: [rowOf({
+              chunkIndex: 7,
+              kind: 'replacement-shipped',
+            },),],
+          },);
+        },).toThrow('named by no comparison row',);
+      },
+    },),
+
+    it({
       name: 'REPORTS AN EMPTY LEDGER as no regions rather than failing, since a lane that shipped '
         + 'nothing is an ordinary outcome',
       fn: async () => {
         const census = regionsOfLane({
           entryId: 'Tabby',
+          laneSelection: CONTESTED,
+          readings: SURVIVING,
           lane: 'repair',
           rows: [],
         },);

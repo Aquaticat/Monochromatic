@@ -1,7 +1,16 @@
 import { readFile, } from 'node:fs/promises';
 
+import type { ArtifactLaneSelectionV2, } from './artifact-v2-contest.ts';
 import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
 import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
+import {
+  pageRelationOf,
+  type SettledPageRelation,
+} from './rendering-audit-settled-relation.ts';
+import {
+  type WouldShipReading,
+  wouldShipTextPerSlice,
+} from './would-ship-text.ts';
 
 //region Damage regions, version 2
 // EVERY REGION WHERE THIS PIPELINE SHIPPED REPLACEMENT TEXT, read out of the
@@ -98,6 +107,23 @@ export type ShippedRegionV2 = {
    * Wording that shipped instead.
    */
   readonly shippedText: string;
+
+  /**
+   * Whether a later stage overruled that wording.
+   *
+   * BESIDE THE LANE MEANING, never instead of it, and the measurement is why.
+   * A region exists where a lane REPLACED an incumbent, which stays true
+   * however the contest and the consolidation later ruled. Rebuilding this
+   * population from what would ship instead would cut it from 378 regions to
+   * 30 and delete every region from 33 of 47 artifacts, since on an entry
+   * nobody has decided the archive stands and nothing replaces anything. The
+   * draw would not be corrected, it would be emptied.
+   *
+   * A DISPLACED REGION IS STILL A REAL EDIT. The lane made it, and asking
+   * whether it damaged the text is still answerable; what the annotation adds
+   * is that no reader of a document would meet the result.
+   */
+  readonly pageRelation: SettledPageRelation;
 };
 
 /**
@@ -167,11 +193,18 @@ export function regionIdOf(
  *
  * @param rows - that lane's delivery ledger
  *
+ * @param laneSelection - whether any stage decided this entry
+ *
+ * @param readings - what would stand at each slice, by chunk index
+ *
  * @returns Regions, and how many rows had no incumbent to damage
+ *
+ * @throws {@link Error} when a shipped row is named by no comparison row,
+ * which is a contradiction inside one artifact rather than a missing answer
  *
  * @example
  * ```ts
- * const found = regionsOfLane({ entryId, lane: 'repair', rows, },);
+ * const found = regionsOfLane({ entryId, lane: 'repair', rows, laneSelection, readings, },);
  * ```
  */
 export function regionsOfLane(
@@ -179,10 +212,14 @@ export function regionsOfLane(
     entryId,
     lane,
     rows,
+    laneSelection,
+    readings,
   }: {
     readonly entryId: string;
     readonly lane: DamageLane;
     readonly rows: readonly ArtifactDeliveryRowV2[];
+    readonly laneSelection: ArtifactLaneSelectionV2;
+    readonly readings: ReadonlyMap<number, WouldShipReading>;
   },
 ): ShippedRegionCensus {
   /**
@@ -205,6 +242,20 @@ export function regionsOfLane(
 
   return {
     regions: replaced.map(function toRegion(row,): ShippedRegionV2 {
+      /**
+       * What would stand at this slice.
+       *
+       * THROWN ON RATHER THAN SKIPPED, since the comparison is derived from
+       * the same slicing this ledger delivered: a shipped row no comparison
+       * row names is a contradiction, and dropping it would shrink the draw
+       * population for a reason nobody would see.
+       */
+      const reading = readings.get(row.chunkIndex,);
+      if (reading === undefined)
+        throw new Error(
+          `slice ${row.chunkIndex} shipped in the ${lane} lane and is named by no comparison row`,
+        );
+
       return {
         entryId,
         lane,
@@ -216,6 +267,11 @@ export function regionsOfLane(
         sourceText: row.sourceText,
         incumbentText: row.incumbentText,
         shippedText: row.shippedText,
+        pageRelation: pageRelationOf({
+          laneSelection,
+          reading,
+          candidateText: row.shippedText,
+        },),
       };
     },),
     filledWithoutIncumbent: shipped.length - replaced.length,
@@ -281,6 +337,22 @@ export async function collectShippedRegionsV2(
       ),),
     },);
 
+    /**
+     * What would stand at each slice, derived once for both lanes.
+     */
+    const readings = new Map(
+      wouldShipTextPerSlice({ artifact, },)
+        .map(function pair(slice,): readonly [
+          number,
+          WouldShipReading,
+        ] {
+          return [
+            slice.chunkIndex,
+            slice.reading,
+          ];
+        },),
+    );
+
     DAMAGE_LANES.forEach(function perLane(lane,): void {
       /**
        * This lane as the parser read it.
@@ -294,6 +366,8 @@ export async function collectShippedRegionsV2(
         entryId,
         lane,
         rows: laneRead.delivery,
+        laneSelection: artifact.laneSelection,
+        readings,
       },);
       found.push(...census.regions,);
       skipped.count += census.filledWithoutIncumbent;
