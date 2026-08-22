@@ -715,8 +715,13 @@ Run 2's `START` line carries the same
 Had any file under `src` changed,
 every cache namespace would have moved and the restore would have bought
  nothing.
-That is what the source freeze was for,
-and it is now spent.
+That is what the source freeze was for.
+THE FREEZE STILL HOLDS UNTIL RUN 2 FINISHES.
+Its cache-key job is done,
+because the digest was read at startup and matched,
+but run 2 is executing `dist/final/node/corpus-pass.mjs`,
+and editing `src` triggers a rebuild that would overwrite `dist` under a live
+ pass.
 
 `START files=96 pending=6 done=0` confirms all six were found unsettled,
 and the first `SLICE-COST` lines report `exit=resumed`,
