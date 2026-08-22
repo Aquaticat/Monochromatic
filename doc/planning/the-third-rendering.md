@@ -3085,3 +3085,81 @@ because two probes in one session returned a false total from a wrong field path
 
 Filed as `#170`,
 queued behind the source freeze.
+
+## What `slate-kept-standing` actually merges
+
+`#165` said the terminal merges a decline with a deliberate keep.
+Read at the branch that assigns it,
+it merges three states,
+and the sole-candidate case is the one that most distorts a count.
+
+### The condition and what reaches it
+
+`consolidate-settle.ts:376` assigns the terminal on one test,
+`decided.origin !== 'fresh'`,
+under a comment reading that the judges choosing the incumbent ends it.
+That comment describes one of the three cases the condition admits.
+
+Judges heard a slate and chose the archive.
+`decision` is `judged` and `origin` is `incumbent`.
+This is a real endorsement of the standing wording,
+and the only case the comment describes.
+
+The slate carried nothing but the incumbent.
+`decision` is `sole-candidate`,
+`judgesAvailable` is 0 and `ballots` is 0.
+No judge spoke,
+so nothing was endorsed.
+The capture holds this case live on `Zha_Ke`.
+
+Judges heard a slate and refused it.
+`decision` is `declined-indecision` or `declined-rejection`,
+which `translate-judge.ts:439` assigns when the panel could not agree or rejected
+ what it saw.
+`Acheron` slice 0 took this path,
+its winner short of the minimum vote weight.
+
+### Why the count cannot be taken
+
+A tally of `slate-kept-standing` adds an endorsement of the archive to a slice
+ where no judge spoke and a slice where the judges refused to speak.
+Those answer opposite questions about roster quality.
+A roster that endorses the archive is working;
+a roster that cannot agree is not;
+a slate with one candidate measures the producing stage rather than the judges.
+
+`translate-judge.ts:442` already carries the reasoning,
+in a comment saying a decline is not a keep where there is nothing to keep.
+The judge separates them.
+The settlement collapses them one call later.
+
+### The ranking changes
+
+`#165` previously ranked an artifact field over a terminal split.
+Reading the surrounding code reverses that.
+
+`consolidate-settle.ts:424` already splits the gate side of the same question
+ into three named terminals,
+`consolidated`,
+`wrap-erased-difference` and `gate-kept-standing`,
+under a comment saying they are kept apart because they answer different
+ questions about the roster.
+Splitting the slate side the same way is the design this file already states,
+not a new mechanism.
+An artifact field would record the discriminator beside a terminal that still
+ reports one state for three.
+
+The split is three terminals in place of one,
+distinguished by the `decision` the judge already produced.
+`slate-kept-standing` stays for the endorsement,
+so the name keeps meaning what it says.
+Nothing forbids the new spellings:
+`forbidden-strings.append.local.txt` carries no entry for `slate`,
+`declined` or `sole`.
+
+Cost counted rather than guessed:
+`slate-kept-standing` occurs in 7 files,
+4 under `src` and 3 tests,
+and the artifact schema and its version 2 reader move with it.
+
+Queued behind the source freeze.
