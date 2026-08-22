@@ -2979,8 +2979,10 @@ an introduced-defect probe reporting no damage over zero shipped records
 `shippedRecords`,
 documented so a run whose probe never fired is distinguishable from one that had
  nothing to ship.
-Nothing reads it.
-Any port must make a zero denominator a refusal rather than a pass.
+`probe-telemetry-report.ts:120` prints it and `score-probe.ts:180` sums it,
+so the zero is reported rather than hidden.
+What no reader does is treat that zero as a refusal,
+which is what the port must add.
 
 ### Decided that every consumer names the question it asks
 
@@ -3278,3 +3280,63 @@ because a refusal reporting a side index as a pair index is the reading that
  sends someone to the wrong section.
 
 Queued behind the source freeze.
+
+## Correcting the consumer inventory
+
+Two claims recorded against `#166` are wrong,
+and both were mine.
+
+### The six files exist
+
+The correction filed on `#166` said `draw-entry-load.ts`,
+`score-probe.ts`,
+`probe-telemetry-report.ts`,
+`probe-relabel-*.ts`,
+`score-attribution.ts` and `score-crosscheck.ts` do not exist.
+All of them do,
+in `package/module/translation-repair/src/corpus-run/`.
+
+The listing that produced the claim ran without recursion in the top-level
+ `src`,
+so it saw only the files beside `index.ts`.
+The same mistake produced the empty grep it was meant to correct:
+the first grep named the right files and searched the wrong directory,
+and the correction then declared them absent for the same reason.
+A file list is a search result,
+and it fails the way `QRY` describes.
+
+### The discriminator is read
+
+That section also said nothing reads `shippedRecords`.
+`probe-telemetry-report.ts:120` prints it in the `PROBE` line beside the entry
+ count,
+and `score-probe.ts:180` sums it across entries.
+A run whose probe saw no shipped records already reports a zero rather than
+ hiding one.
+What no reader does is treat that zero as a refusal.
+
+### What survives once the real files are read
+
+The family reaches artifacts through `artifact-probe-read.ts`,
+which reads `artifact.issues` and filters on `repairDisposition`.
+`probe-relabel.ts` and `probe-relabel-artifact.ts` read `.issues` directly.
+No version 2 artifact carries either field,
+so the conclusion stands:
+on a current artifact this family sees no records.
+
+None of the ten files mentions `consolidat`,
+`laneSelection` or `contest`,
+so none of them accounts for either decider.
+
+### The port has a pattern to follow rather than invent
+
+`score-probe.ts:147` already carries the idea the port needs.
+It collects `refinedIssueIds` for issues whose slice the naturalness lane
+ rewrote after the probe ran,
+commenting that the probe's verdict is about wording that did not ship.
+
+That is the right concept applied one stage too early.
+It watches a rewrite inside the repair lane and stops at the lane boundary,
+while the contest and the consolidation can each replace the same text
+ afterwards.
+The shipped-scoped reader extends that set rather than introducing a new one.
