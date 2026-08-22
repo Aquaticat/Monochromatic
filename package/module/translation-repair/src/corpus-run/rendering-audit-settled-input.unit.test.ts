@@ -925,7 +925,7 @@ await describe({
     },),
 
     it({
-      name: 'READS THE FLAT LAYOUT A PASS ACTUALLY WRITES, artifacts straight under the directory '
+      name: 'READS THE FLAT LAYOUT A CORPUS RUN ACTUALLY WRITES, artifacts straight under the directory '
         + 'with no run-set subdirectory. corpus-pass produces one settlement so it invents no '
         + 'subdirectory for it, and before this the audit refused such a directory with "no '
         + 'artifacts under", which reads like an empty pass rather than like a layout it cannot see',

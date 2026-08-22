@@ -64,7 +64,7 @@ await describe({
     },),
 
     it({
-      name: 'STAYS A PLAIN FAILURE FOR A SMALL BODY CARRYING THE SAME MESSAGE, because a parse '
+      name: 'STAYS A PLAIN ERROR FOR A SMALL BODY CARRYING THE SAME MESSAGE, because a parse '
         + 'failure on a body well under the cap is a body we actually malformed. Reporting that as '
         + 'too large would send whoever chases it looking for a limit instead of for their own '
         + 'defect, which is the exact confusion this module was built to end',
@@ -84,7 +84,7 @@ await describe({
     },),
 
     it({
-      name: 'STAYS A PLAIN FAILURE FOR AN OVERSIZE BODY REFUSED FOR SOMETHING ELSE, since a big '
+      name: 'STAYS A PLAIN ERROR FOR AN OVERSIZE BODY REFUSED FOR SOMETHING ELSE, since a big '
         + 'request can be rejected for a bad model name or a malformed parameter like any other. '
         + 'Size is only the explanation when the gateway offers the explanation it offers for size',
       fn: async () => {
@@ -103,7 +103,7 @@ await describe({
     },),
 
     it({
-      name: 'STAYS A PLAIN FAILURE ON ANY OTHER STATUS, so a throttle or an upstream fault carrying '
+      name: 'STAYS A PLAIN ERROR ON ANY OTHER STATUS, so a throttle or an upstream fault carrying '
         + 'an oversize body is still the throttle it was. The retry layer branches on status and '
         + 'nothing here may quietly change what it sees',
       fn: async () => {

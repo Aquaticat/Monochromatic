@@ -412,7 +412,7 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES A SMALL MALFORMED BODY AS AN ORDINARY FAILURE, so a request we genuinely '
+      name: 'LEAVES A SMALL MALFORMED BODY AS AN ORDINARY ERROR, so a request we genuinely '
         + 'broke still reports as broken. Without this, every parse error would be re-raised as '
         + 'a size problem and whoever chased one would go hunting for a limit they never hit',
       fn: async () => {
