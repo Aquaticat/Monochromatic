@@ -2707,3 +2707,34 @@ passages the archive simply left mostly untranslated is a reading, not a ratio,
 and the flagged set is now small enough that the reading is affordable.
 The action on a breach is still undecided,
 and `#71` records what recording a finding and never acting on it costs.
+
+### The shape of the outliers, and a second instrument
+
+Reading the 38 slices a 0.8 to 10 band would flag, by SHAPE rather than by wording:
+
+At the short end the source carries many blocks and the target carries one.
+`shi_Yumiaoya#2`, `#3` and `#4` pair 11 to 15 Chinese blocks against a single English HEADING
+of twelve to fourteen characters.
+At the long end the source carries one block and the target carries several:
+`shihai4h#53` pairs a 21-character HTML block against 28 blocks and 10959 characters,
+and `windward0032#0`, `#8`, `#10` and `#14` each pair a bare Chinese heading
+against an English heading plus its body.
+
+So under nearly every outlier is a block-count disparity, which is unit-free
+and does not fire on a passage that is faithful but terse.
+
+Measured over the same 1259 slices, 1104 of them, 88 percent, carry EQUAL block counts.
+A gap of more than one flags 43 slices, more than two flags 15, more than three flags 9.
+
+The two instruments are complementary rather than nested.
+Of the 38 ratio outliers, 17 also carry a block gap above one, and 21 do not.
+Of the 43 block-gap flags, 26 sit inside the ratio band.
+Their union is 64 slices, five percent, which is the candidate set worth reading.
+
+CAVEAT, and it matters before anything is built on these numbers:
+this is the RAW archive slicing.
+`prepareDocumentPair` was called with no `blockPairings`,
+so the LLM-assisted pairing stage `#131` shipped has not run over these slices.
+That stage exists to reconcile exactly this kind of disparity,
+so some of the 64 are already handled in a real pass and the guard would never see them.
+The measurement bounds the population from above.
