@@ -364,6 +364,9 @@ hyperfine --warmup 3 --runs 20 --shell=none \
 - At Starship's default 500 ms timeout,
   20 complete prompt renders produced no timeout warning.
 - The complete cli-git unit suite passed after rebuilding the shipped artifact.
+- The packed-artifact `perf:lifecycle-latency` gate passed every scenario.
+  Its read-only scenario added 60.3 ms median and 72.6 ms maximum against a 300 ms budget;
+  its no-config scenario added 62.0 ms median and 89.3 ms maximum against a 275 ms budget.
 - `mise run //package/git-policy/cli:lint:types` passed.
 
 `mise run //package/git-policy/cli:lint:oxlint` still reports 96 existing
