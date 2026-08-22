@@ -11,11 +11,15 @@
  * the list: opening the repair cache removed a picture reading and reported
  * "discarding 1 cached slices".
  *
- * THE FIRST TEST IS THE CURE. It walks every namespace this package defines and
- * asserts each is claimed, so a fifth lane cannot be added without either
- * registering it or failing here. The rest pin the containment in both
- * directions, since a namespace that claims too much is as wrong as one that
- * claims too little.
+ * THE FIRST TEST WALKS THE PACKAGE'S OWN LIST, `EVERY_SLICE_NAMESPACE`, rather
+ * than a copy of it. It used to keep a copy, and the copy drifted exactly the
+ * way the registration it guards had: `contest.` and `pairing.` were missing
+ * from both, so a repair-lane generation change deleted an entry's contest
+ * ballots and its whole block pairing while reporting that it discarded its own
+ * slices. A guard maintained by hand fails the same way as the thing it guards,
+ * so it now reads the same array the store derives its claims from. The rest
+ * pin the containment in both directions, since a namespace that claims too
+ * much is as wrong as one that claims too little.
  *
  * @module
  */
@@ -28,24 +32,12 @@ import {
 
 import {
   belongsToNamespace,
+  EVERY_SLICE_NAMESPACE,
   PICTURE_READING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
   type SliceNamespace,
   TRANSLATE_SLICE_NAMESPACE,
 } from '../../dist/final/node/index.mjs';
-
-/**
- * Every namespace this package defines, which is what the first test walks.
- *
- * ADDING A LANE MEANS ADDING IT HERE TOO. That is the point: a lane absent from
- * this list is a lane nothing checks, and the check is the only thing standing
- * between a new prefix and the repair lane quietly adopting it.
- */
-const EVERY_NAMESPACE: readonly SliceNamespace[] = [
-  REPAIR_SLICE_NAMESPACE,
-  TRANSLATE_SLICE_NAMESPACE,
-  PICTURE_READING_NAMESPACE,
-];
 
 /**
  * A file name in a namespace, built the way the store builds one.
@@ -82,7 +74,7 @@ await describe({
         + 'is defined by subtraction, so an unregistered prefix is adopted by it and deleted on '
         + 'the next generation change, which is the error this list has cost four times',
       fn: async () => {
-        for (const namespace of EVERY_NAMESPACE) {
+        for (const namespace of EVERY_SLICE_NAMESPACE) {
           if (namespace.prefix === '')
             continue;
 
@@ -153,8 +145,8 @@ await describe({
       name: 'REFUSES A GENERATION MARKER TO EVERY LANE, since a marker is not a cached slice and '
         + 'a discard that swept one would erase the stamp it is about to compare against',
       fn: async () => {
-        for (const namespace of EVERY_NAMESPACE)
-          for (const marker of EVERY_NAMESPACE.map(function toMarker(one,): string {
+        for (const namespace of EVERY_SLICE_NAMESPACE)
+          for (const marker of EVERY_SLICE_NAMESPACE.map(function toMarker(one,): string {
             return one.marker;
           },))
             expect(belongsToNamespace({
@@ -171,7 +163,7 @@ await describe({
         /**
          * Marker file name per lane, which must be as distinct as the prefixes.
          */
-        const markers = EVERY_NAMESPACE.map(function toMarker(one,): string {
+        const markers = EVERY_SLICE_NAMESPACE.map(function toMarker(one,): string {
           return one.marker;
         },);
 

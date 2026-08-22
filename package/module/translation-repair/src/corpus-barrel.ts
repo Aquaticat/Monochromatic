@@ -142,6 +142,7 @@ export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
 export { openPictureReadingCache, } from './corpus-run/reading-cache-store.ts';
 export {
   belongsToNamespace,
+  EVERY_SLICE_NAMESPACE,
   PICTURE_READING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
   type SliceNamespace,

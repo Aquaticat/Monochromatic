@@ -23,12 +23,16 @@ import type { SliceCache, } from '../slice-cache.ts';
 // exist on disk from earlier passes, and renaming them would discard real work
 // to gain nothing.
 
-import type { SliceNamespace, } from './slice-cache-claims.ts';
+import {
+  EVERY_SLICE_NAMESPACE,
+  type SliceNamespace,
+} from './slice-cache-claims.ts';
 
 // RE-EXPORTED rather than moved out of sight: every consumer already imports
 // its claim from here, and a split made for the line cap is not a reason to
 // rewrite call sites that were never wrong.
 export {
+  EVERY_SLICE_NAMESPACE,
   LANE_CONTEST_NAMESPACE,
   PAIRING_NAMESPACE,
   PICTURE_READING_NAMESPACE,
@@ -45,24 +49,28 @@ const JSON_SUFFIX = '.json';
 /**
  * Prefixes that belong to a named lane.
  *
- * The unprefixed namespace is defined as everything NOT in this list, so adding
- * a lane here is what keeps the older one from adopting its files.
+ * DERIVED FROM `EVERY_SLICE_NAMESPACE` RATHER THAN RESTATED. This was a
+ * hand-written list for as long as it existed, and forgetting to add a prefix
+ * to it is silent: the repair lane is defined as everything NOT here, so it
+ * adopts the unregistered files and its `discardNamespace` deletes them on the
+ * next generation change while logging that it discarded its own slices.
  *
- * FORGETTING TO ADD ONE IS SILENT AND HAS NOW COST FOUR TIMES. The repair lane
- * adopts the unregistered files, and its `discardNamespace` deletes them on the
- * next generation change while logging that it discarded its own slices. The
- * most recent was `picture.`, added to the store the same day it was added
- * here: opening the repair cache removed a picture reading and reported
- * "discarding 1 cached slices".
+ * THAT OMISSION HAPPENED SIX TIMES, twice of them still live when this was
+ * derived: `contest.` and `pairing.` were both missing, so a repair generation
+ * change threw away an entry's contest ballots and its whole block pairing.
+ * Both are bought from the roster, so both cost real calls to rebuy.
  *
- * SO: A NEW NAMESPACE IS NOT DONE UNTIL ITS PREFIX IS IN THIS LIST. Nothing
- * else enforces it, which is why `slice-cache-namespace.unit.test.ts` asserts
- * that every namespace this package defines appears here.
+ * The empty prefix is dropped because it is the repair lane's own: keeping it
+ * would make `startsWith` true for every name and leave that lane owning
+ * nothing at all.
  */
-const CLAIMED_PREFIXES: readonly string[] = [
-  'translate.',
-  'picture.',
-];
+const CLAIMED_PREFIXES: readonly string[] = EVERY_SLICE_NAMESPACE
+  .map(function toPrefix({ prefix, },): string {
+    return prefix;
+  },)
+  .filter(function isNamed(prefix,): boolean {
+    return prefix !== '';
+  },);
 
 
 /**

@@ -83,4 +83,33 @@ export const PICTURE_READING_NAMESPACE: SliceNamespace = {
   marker: 'picture-generation.txt',
 };
 
+/**
+ * Every namespace this package defines, in one list.
+ *
+ * THE LIST IS THE REGISTRATION. `belongsToNamespace` defines the repair lane by
+ * subtraction, so a prefix absent from here is a prefix the repair lane adopts,
+ * and its next generation change deletes those files while reporting that it
+ * discarded its own slices. Deriving the claimed prefixes from this array is
+ * what makes declaring a namespace and registering it the same act.
+ *
+ * IT WAS TWO SEPARATE ACTS UNTIL NOW AND THE SECOND WAS FORGOTTEN SIX TIMES.
+ * The most recent two were `contest.` and `pairing.`, both unregistered and
+ * both live: a repair-lane generation change deleted an entry's whole
+ * consolidated pairing and every contest ballot it had bought, logging
+ * "discarding 3 cached slices". The test written to prevent exactly this kept
+ * its own hand-written copy of this list, and the same omission reached it.
+ *
+ * @example
+ * ```ts
+ * const prefixes = EVERY_SLICE_NAMESPACE.map((namespace,) => namespace.prefix,);
+ * ```
+ */
+export const EVERY_SLICE_NAMESPACE: readonly SliceNamespace[] = [
+  REPAIR_SLICE_NAMESPACE,
+  TRANSLATE_SLICE_NAMESPACE,
+  LANE_CONTEST_NAMESPACE,
+  PAIRING_NAMESPACE,
+  PICTURE_READING_NAMESPACE,
+];
+
 //endregion Slice cache claims
