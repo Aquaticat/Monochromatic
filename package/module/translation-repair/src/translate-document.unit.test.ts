@@ -114,6 +114,16 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 /**
  * Models that render each slice.
  */
+/**
+ * Exactly the failure an entry deadline trips with.
+ *
+ * HELD AT MODULE SCOPE so the fixture that aborts and the case that asserts
+ * name one object. The driver's contract is that it surfaces the abort reason
+ * ITSELF; a wording assertion is satisfied by any lookalike, including a
+ * wrapper built from the reason, which is the failure worth ruling out.
+ */
+const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
+
 const TRANSLATORS: readonly SyntheticModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
@@ -264,7 +274,7 @@ function laneClient(
         calls.translateAttempts += 1;
         if ((abortAfterTranslateCalls !== undefined)
           && (calls.translate >= abortAfterTranslateCalls))
-          controller.abort(new Error('entry deadline reached',),);
+          controller.abort(ENTRY_DEADLINE_FAILURE,);
         // What the real transport does under an aborted signal: the stream is
         // torn down and the failure propagates untouched. The gather machinery
         // turns that into a LOST VOICE rather than a throw, which is exactly
@@ -899,7 +909,7 @@ await describe({
           persisted,
         },),)
           .rejects
-          .toThrow('entry deadline reached',);
+          .toBe(ENTRY_DEADLINE_FAILURE,);
         // The first slice was bought and settled; the second was not, and must
         // not be sitting in the cache claiming otherwise.
         expect(persisted.size,).toBe(1,);
@@ -939,7 +949,7 @@ await describe({
           calls,
         },),)
           .rejects
-          .toThrow('entry deadline reached',);
+          .toBe(ENTRY_DEADLINE_FAILURE,);
         expect(persisted.size,).toBe(1,);
         // The abort landed inside the second slice's translate round, so the
         // only judging this run may have paid for is the first slice's. A round

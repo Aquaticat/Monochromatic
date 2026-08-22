@@ -54,6 +54,16 @@ const MODELS: RepairModels = {
 };
 
 /**
+ * Exactly the failure an entry deadline trips with.
+ *
+ * HELD AT MODULE SCOPE so the fixtures that abort and the cases that assert
+ * name one object. The driver's contract is that it surfaces the abort reason
+ * ITSELF; a wording assertion is satisfied by any lookalike, including a
+ * wrapper built from the reason, which is the failure worth ruling out.
+ */
+const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
+
+/**
  * One-based sheet numbers 1 through count.
  */
 function oneBasedNumbers(
@@ -274,7 +284,7 @@ function steeringClient(
             ?.json_schema
             .name
           === abortOnStage))
-        controller.abort(new Error('entry deadline reached',),);
+        controller.abort(ENTRY_DEADLINE_FAILURE,);
       if (request.responseFormat
         ?.json_schema
         .name
@@ -282,7 +292,7 @@ function steeringClient(
         calls.critic += 1;
         if ((abortAfterCriticCalls !== undefined)
           && (calls.critic > abortAfterCriticCalls))
-          controller.abort(new Error('entry deadline reached',),);
+          controller.abort(ENTRY_DEADLINE_FAILURE,);
         if (silentCritics)
           throw new Error('critic provider is down',);
       }
@@ -1276,7 +1286,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           },
         },),)
           .rejects
-          .toThrow('entry deadline reached',);
+          .toBe(ENTRY_DEADLINE_FAILURE,);
         expect(store.size,).toBe(1,);
       },
     },),
@@ -1322,7 +1332,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
           signal: controller.signal,
         },),)
           .rejects
-          .toThrow('entry deadline reached',);
+          .toBe(ENTRY_DEADLINE_FAILURE,);
       },
     },),
 
@@ -1372,7 +1382,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
          * Caller that gave up before the second run started.
          */
         const spent = new AbortController();
-        spent.abort(new Error('entry deadline reached',),);
+        spent.abort(ENTRY_DEADLINE_FAILURE,);
 
         /**
          * Second run, resuming everything under that spent deadline.

@@ -294,16 +294,24 @@ await describe({
          */
         const calls = { count: 0, };
 
+        /**
+         * Exactly the failure the transport raised, held so the assertion can
+         * prove THAT object came back. A wrapper quoting it reads identically
+         * to a matcher that only checks wording, and a wrapper is what this
+         * case exists to rule out.
+         */
+        const transportFailure = new Error('connection reset',);
+
         await expect(
           exchangeWithRetry({
             transport: scriptedTransport({
-              script: [new Error('connection reset',),],
+              script: [transportFailure,],
               calls,
             },),
             exchange: exchangeWith({ signal: new AbortController().signal, },),
             policy: FAST_POLICY,
           },),
-        ).rejects.toThrow('connection reset',);
+        ).rejects.toBe(transportFailure,);
         expect(calls.count,).toBe(FAST_POLICY.limit + 1,);
       },
     },),
@@ -393,11 +401,18 @@ await describe({
         const controller = new AbortController();
 
         /**
+         * Exactly the failure the transport raised, held so the assertion can
+         * prove the retry layer surfaced THAT object rather than the HTTP error
+         * the case name says it never received.
+         */
+        const transportFailure = new Error('connection reset',);
+
+        /**
          * Transport dropping the connection, then aborting the caller.
          */
         const transport: ModelTransport = async () => {
           controller.abort();
-          throw new Error('connection reset',);
+          throw transportFailure;
         };
 
         await expect(
@@ -406,7 +421,7 @@ await describe({
             exchange: exchangeWith({ signal: controller.signal, },),
             policy: FAST_POLICY,
           },),
-        ).rejects.toThrow('connection reset',);
+        ).rejects.toBe(transportFailure,);
       },
     },),
 
