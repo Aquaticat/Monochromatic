@@ -514,11 +514,11 @@ await describe({
             const rules = await readRules({ path: fixture.configPath, },);
             expect(rules,).toHaveLength(2,);
             expect(rules[0]?.Position,).toBe('0',);
-            expect(rules[0]?.Description,).toEqual(
-              expect.stringContaining('wg-quicker managed endpoint [wg0] [netns:',),
-            );
-            expect(rules[0]?.Description,).toEqual(
-              expect.stringContaining('] UDP destination port 2049',),
+            expect(rules[0]?.Description,).toBe(
+              managedDescription({
+                interfaceName: 'wg0',
+                port: 2_049,
+              },),
             );
             expect((await stat(fixture.configPath,)).mode & 0o777,).toBe(0o640,);
             expect(warning,).toHaveBeenCalledWith(
