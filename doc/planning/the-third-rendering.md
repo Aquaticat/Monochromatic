@@ -3674,3 +3674,103 @@ committed in the instrument built to measure it,
 and it was caught only because a second measurement disagreed.
 A count that reads as an answer is worth nothing without something independent
  saying the same number.
+
+## What would ship is derived, because nothing publishes it
+
+The reader `wouldShipTextFor` lands in
+ `package/module/translation-repair/src/corpus-run/would-ship-text.ts`.
+It answers,
+ for one slice,
+ what a document assembled today would carry there.
+
+### The name is what it can prove
+
+Not `shippedTextFor`.
+Nothing assembles a document out of these decisions at all,
+so nothing this reader names has been published.
+The founding defect of this family was `repairDisposition: 'shipped'`,
+a name that went on asserting a publication after the stage performing it
+ stopped being last,
+and a reader called `shippedTextFor` over a pipeline that publishes nothing
+ would repeat that on its first day.
+The pipeline-scale version of that gap is recorded as its own task,
+ because whether the pipeline should publish is the owner's decision.
+
+### No reading may carry an empty string
+
+`standingTextFor` returns the empty string at a declined contest,
+ deliberately,
+ because it answers what a consolidation slate must beat.
+`ArtifactConsolidateShippedV2` already documents the consequence:
+ a consumer reading a bare per-slice `text` and writing it into a document
+ would delete every declined slice outright.
+
+So a reading carries either wording plus the decider that settled it,
+or a named silence,
+and never a `text` key holding nothing.
+
+This corrects one line of the decision recorded earlier in this document.
+That line said any terminal other than `consolidated` yields the standing text.
+Taken literally it returns the empty string at `no-standing-text`.
+The archive is the floor underneath both declines instead:
+ this pipeline repairs an English translation that already exists,
+ so a slice no later stage displaced still carries what the archive published.
+Where the archive holds nothing either,
+ the reading names which stage left the slice silent.
+
+### The order the deciders ran in, read backwards
+
+A `consolidated` terminal yields its text.
+Otherwise the contest's winning lane.
+Otherwise,
+ where the contest never saw the slice,
+ the wording both lanes agreed on,
+ since a slice is eligible exactly where the lane texts differ.
+Otherwise the archive.
+
+Terminals are tested by shape rather than enumerated by name,
+so the eight keeping terminals need no list and a terminal added later cannot
+ silently begin yielding text.
+That includes the retired `slate-kept-standing` spelling.
+
+### The control was registered before the instrument existed
+
+Task `#166` recorded these numbers on 2026-08-22,
+ measured by hand,
+ before this reader was written.
+Running the reader over every settled artifact reproduces them exactly:
+
+-   `Acheron`,
+    4 contested slices,
+     the translate lane's text is what would ship at 1,
+     so the audit is wrong at 3 of 4.
+-   `Weideriche_`,
+    2 contested slices,
+     the translate lane's text is what would ship at 0,
+     so the audit is wrong at 2 of 2.
+-   Together,
+    1 of 6.
+
+Across the whole population,
+ 47 version 2 artifacts parsed and 0 refused,
+ 14 of them carrying a settled contest across 6 entries.
+
+The first roll-up of this measurement reported every count doubled,
+ because it tallied per entry while the registered numbers are per artifact,
+ and each entry carries two copies from the resume verification.
+The copies agree slice for slice,
+ which is what made the doubling legible rather than confusing.
+
+### One decomposition differs, and the difference is the point
+
+The earlier hand count described the five mismatched slices as one where the
+ repair lane won,
+ one that settled neither,
+ and three where the translate lane won and the consolidation replaced it.
+The reader attributes four to the consolidation and one to the archive.
+Both totals are five.
+The disagreement is that one slice the repair lane won was then replaced by the
+ consolidation,
+ so the contest verdict and what would ship name different stages.
+Asking who won and asking what would ship are different questions,
+ which is the whole reason this reader exists.
