@@ -276,6 +276,15 @@ mise run //package/pi-plugin/advisor:lint:oxlint
 mise run //package/pi-plugin/advisor:verify:extension
 ```
 
+`mise run //package/pi-plugin/auto-mode:lint:oxlint` remains red on
+29 unrelated baseline diagnostics:
+27 existing tests still import package source instead of built artifacts,
+and `budget-model-auth.ts` has two existing `ProviderHeaders` assignability
+errors.
+The project-context implementation itself produced no remaining Oxlint
+diagnostic,
+and auto-mode unit tests plus type lint pass.
+
 ## Verified workarounds
 
 ### Use the fixed plugin builds
