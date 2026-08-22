@@ -12,6 +12,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -19,6 +20,7 @@ import {
 
 import {
   abbreviate,
+  ArtifactProvenanceError,
   assertArtifactProvenance,
 } from '../../dist/final/node/index.mjs';
 
@@ -148,7 +150,10 @@ await describe({
         + 'keyed on, since the pool admits by file name while every reader '
         + 'downstream uses the id inside',
       fn: async () => {
-        expect(function checks() {
+        /**
+         * What checks raised, read for its class as well as its wording.
+         */
+        const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
             name: 'Mittens.json',
             observedId: 'Pepper',
@@ -157,7 +162,10 @@ await describe({
             expectedTip: TIP,
             expectedDigest: DIGEST,
           },);
-        },).toThrow('entry id',);
+        },);
+
+        expect(refusalOfChecks,).toBeInstanceOf(ArtifactProvenanceError,);
+        expect((refusalOfChecks as Error).message,).toContain('entry id',);
       },
     },),
 
@@ -165,7 +173,10 @@ await describe({
       name: 'REFUSES bytes recording a different commit than the pool placed, '
         + 'which is what a file rewritten between the two reads looks like',
       fn: async () => {
-        expect(function checks() {
+        /**
+         * What checks raised, read for its class as well as its wording.
+         */
+        const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
             name: 'Mittens.json',
             observedId: 'Mittens',
@@ -174,7 +185,10 @@ await describe({
             expectedTip: TIP,
             expectedDigest: DIGEST,
           },);
-        },).toThrow('tip',);
+        },);
+
+        expect(refusalOfChecks,).toBeInstanceOf(ArtifactProvenanceError,);
+        expect((refusalOfChecks as Error).message,).toContain('tip',);
       },
     },),
 
@@ -184,7 +198,10 @@ await describe({
         + 'number of builds, so a file rewritten by another build passes a tip '
         + 'comparison exactly',
       fn: async () => {
-        expect(function checks() {
+        /**
+         * What checks raised, read for its class as well as its wording.
+         */
+        const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
             name: 'Mittens.json',
             observedId: 'Mittens',
@@ -193,7 +210,10 @@ await describe({
             expectedTip: TIP,
             expectedDigest: DIGEST,
           },);
-        },).toThrow('pipeline digest',);
+        },);
+
+        expect(refusalOfChecks,).toBeInstanceOf(ArtifactProvenanceError,);
+        expect((refusalOfChecks as Error).message,).toContain('pipeline digest',);
       },
     },),
 
@@ -220,14 +240,20 @@ await describe({
         + 'later, and the reader would then count it having faced no generation '
         + 'check at all',
       fn: async () => {
-        expect(function checks() {
+        /**
+         * What checks raised, read for its class as well as its wording.
+         */
+        const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
             name: 'Mittens.json',
             observedId: 'Mittens',
             observedTip: TIP,
             observedDigest: DIGEST,
           },);
-        },).toThrow('admission',);
+        },);
+
+        expect(refusalOfChecks,).toBeInstanceOf(ArtifactProvenanceError,);
+        expect((refusalOfChecks as Error).message,).toContain('admission',);
       },
     },),
 
@@ -236,7 +262,10 @@ await describe({
         + 'holding only provenance still gets the check it can support rather '
         + 'than none at all',
       fn: async () => {
-        expect(function checks() {
+        /**
+         * What checks raised, read for its class as well as its wording.
+         */
+        const refusalOfChecks = caught(function checks() {
           assertArtifactProvenance({
             name: 'Mittens.json',
             observedId: 'Mittens',
@@ -244,7 +273,10 @@ await describe({
             observedDigest: DIGEST,
             expectedTip: TIP,
           },);
-        },).toThrow('tip',);
+        },);
+
+        expect(refusalOfChecks,).toBeInstanceOf(ArtifactProvenanceError,);
+        expect((refusalOfChecks as Error).message,).toContain('tip',);
       },
     },),
   ],

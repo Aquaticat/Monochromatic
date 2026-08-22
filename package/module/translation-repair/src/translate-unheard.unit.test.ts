@@ -16,6 +16,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -126,7 +127,10 @@ await describe({
         + 'that flag: the document would carry a replacement while the wording ledger reported that '
         + 'nobody produced one, which is the contradiction the two axes exist to make impossible',
       fn: async () => {
-        expect(function claimedAChange() {
+        /**
+         * What claimedAChange raised, read for its class as well as its wording.
+         */
+        const refusalOfClaimedAChange = caught(function claimedAChange() {
           assertUnheardKeptIncumbent({
             chunkIndex: 4,
             record: recordFor({
@@ -136,7 +140,10 @@ await describe({
             },),
             incumbentText: ARCHIVE_NAP,
           },);
-        },).toThrow('reports a change',);
+        },);
+
+        expect(refusalOfClaimedAChange,).toBeInstanceOf(TranslateUnheardError,);
+        expect((refusalOfClaimedAChange as Error).message,).toContain('reports a change',);
       },
     },),
     it({

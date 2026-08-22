@@ -7,6 +7,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -203,7 +204,10 @@ await describe({
         + 'spans that overlap, two starting at one offset, and a list sorted differently from its slices '
         + 'are all the same defect seen from different sides',
       fn: async () => {
-        expect(function checkBackwards() {
+        /**
+         * What checkBackwards raised, read for its class as well as its wording.
+         */
+        const refusalOfCheckBackwards = caught(function checkBackwards() {
           assertPlacementLayout({
             slices: [
               spanAt({
@@ -219,7 +223,10 @@ await describe({
             ],
             targetText: TARGET_TEXT,
           },);
-        },).toThrow('would move or overwrite',);
+        },);
+
+        expect(refusalOfCheckBackwards,).toBeInstanceOf(PlacementLayoutError,);
+        expect((refusalOfCheckBackwards as Error).message,).toContain('would move or overwrite',);
       },
     },),
     it({
@@ -265,7 +272,10 @@ await describe({
       name: 'REFUSES content covering nothing, since an empty span and a place where text is missing are '
         + 'indistinguishable by their offsets, and only one of them may be written INTO',
       fn: async () => {
-        expect(function checkHollowContent() {
+        /**
+         * What checkHollowContent raised, read for its class as well as its wording.
+         */
+        const refusalOfCheckHollowContent = caught(function checkHollowContent() {
           assertPlacementLayout({
             slices: [
               spanAt({
@@ -276,7 +286,10 @@ await describe({
             ],
             targetText: TARGET_TEXT,
           },);
-        },).toThrow('content covering nothing',);
+        },);
+
+        expect(refusalOfCheckHollowContent,).toBeInstanceOf(PlacementLayoutError,);
+        expect((refusalOfCheckHollowContent as Error).message,).toContain('content covering nothing',);
       },
     },),
     it({
@@ -284,7 +297,10 @@ await describe({
         + 'document reach assembly: the offsets are all in range, every span is ordered, and the result '
         + 'is a confident splice into a passage nobody read',
       fn: async () => {
-        expect(function checkForeignSlices() {
+        /**
+         * What checkForeignSlices raised, read for its class as well as its wording.
+         */
+        const refusalOfCheckForeignSlices = caught(function checkForeignSlices() {
           assertPlacementLayout({
             slices: [
               {
@@ -303,14 +319,20 @@ await describe({
             ],
             targetText: TARGET_TEXT,
           },);
-        },).toThrow('cut from another document',);
+        },);
+
+        expect(refusalOfCheckForeignSlices,).toBeInstanceOf(PlacementLayoutError,);
+        expect((refusalOfCheckForeignSlices as Error).message,).toContain('cut from another document',);
       },
     },),
     it({
       name: 'REFUSES an anchor that claims to cover text, and an offset that is not a whole number. Both '
         + 'are values the constructor cannot produce and the structural type still permits',
       fn: async () => {
-        expect(function checkFatAnchor() {
+        /**
+         * What checkFatAnchor raised, read for its class as well as its wording.
+         */
+        const refusalOfCheckFatAnchor = caught(function checkFatAnchor() {
           assertPlacementLayout({
             slices: [
               {
@@ -330,8 +352,14 @@ await describe({
             ],
             targetText: TARGET_TEXT,
           },);
-        },).toThrow('a place covers none of the three',);
-        expect(function checkFractionalOffset() {
+        },);
+
+        expect(refusalOfCheckFatAnchor,).toBeInstanceOf(PlacementLayoutError,);
+        expect((refusalOfCheckFatAnchor as Error).message,).toContain('a place covers none of the three',);
+        /**
+         * What checkFractionalOffset raised, read for its class as well as its wording.
+         */
+        const refusalOfCheckFractionalOffset = caught(function checkFractionalOffset() {
           assertPlacementLayout({
             slices: [
               {
@@ -350,7 +378,10 @@ await describe({
             ],
             targetText: TARGET_TEXT,
           },);
-        },).toThrow('whole numbers',);
+        },);
+
+        expect(refusalOfCheckFractionalOffset,).toBeInstanceOf(PlacementLayoutError,);
+        expect((refusalOfCheckFractionalOffset as Error).message,).toContain('whole numbers',);
       },
     },),
   ],

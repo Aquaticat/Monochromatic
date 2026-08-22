@@ -13,6 +13,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -273,19 +274,31 @@ await describe({
         + 'expecting a non-negative integer, so the diagnostic says which '
         + 'disagreement occurred',
       fn: async () => {
-        expect(function readStringAsCount() {
+        /**
+         * What readStringAsCount raised, read for its class as well as its wording.
+         */
+        const refusalOfReadStringAsCount = caught(function readStringAsCount() {
           requireCount({
             value: '6',
             path: PATH,
           },);
-        },).toThrow('expected a number',);
+        },);
 
-        expect(function readFractionAsCount() {
+        expect(refusalOfReadStringAsCount,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadStringAsCount as Error).message,).toContain('expected a number',);
+
+        /**
+         * What readFractionAsCount raised, read for its class as well as its wording.
+         */
+        const refusalOfReadFractionAsCount = caught(function readFractionAsCount() {
           requireCount({
             value: 2.7,
             path: PATH,
           },);
-        },).toThrow('expected a non-negative integer',);
+        },);
+
+        expect(refusalOfReadFractionAsCount,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadFractionAsCount as Error).message,).toContain('expected a non-negative integer',);
       },
     },),
 
@@ -295,12 +308,18 @@ await describe({
         + 'so a value that size is not a tally or an index anybody wrote, however '
         + 'integral it looks to a check that only asks whether it is whole',
       fn: async () => {
-        expect(function readUnsafeCount() {
+        /**
+         * What readUnsafeCount raised, read for its class as well as its wording.
+         */
+        const refusalOfReadUnsafeCount = caught(function readUnsafeCount() {
           requireCount({
             value: Number.MAX_SAFE_INTEGER + 2,
             path: PATH,
           },);
-        },).toThrow('no larger than JSON carries exactly',);
+        },);
+
+        expect(refusalOfReadUnsafeCount,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadUnsafeCount as Error).message,).toContain('no larger than JSON carries exactly',);
         expect(requireCount({
           value: Number.MAX_SAFE_INTEGER,
           path: PATH,

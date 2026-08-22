@@ -18,6 +18,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -25,6 +26,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
+  UnansweredContestSliceError,
   type WouldShipReading,
   type WouldShipSource,
   wouldShipTextFor,
@@ -486,7 +488,10 @@ await describe({
       + 'reading it as agreement and picking one lane with nothing behind it. The parser forbids '
       + 'that artifact, so reaching it means the record contradicts itself',
     fn: async () => {
-      expect(function unanswered() {
+      /**
+       * What unanswered raised, read for its class as well as its wording.
+       */
+      const refusalOfUnanswered = caught(function unanswered() {
         firstReadingOf({
           source: sourceWith({
             laneSelection: {
@@ -495,7 +500,10 @@ await describe({
             },
           },),
         },);
-      },).toThrow('names it nowhere',);
+      },);
+
+      expect(refusalOfUnanswered,).toBeInstanceOf(UnansweredContestSliceError,);
+      expect((refusalOfUnanswered as Error).message,).toContain('names it nowhere',);
     },
   },),
   ],

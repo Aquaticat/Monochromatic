@@ -17,6 +17,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  caught,
   describe,
   expect,
   it,
@@ -207,13 +208,19 @@ await describe({
             chunkIndex: 12,
           },),
         ];
-        expect(function askByStamp() {
+        /**
+         * What askByStamp raised, read for its class as well as its wording.
+         */
+        const refusalOfAskByStamp = caught(function askByStamp() {
           return neighbouringSource({
             slices: stamped,
             sliceIndex: stamped[0]?.source
               .chunkIndex ?? 0,
           },);
-        },).toThrow('not a position in this entry',);
+        },);
+
+        expect(refusalOfAskByStamp,).toBeInstanceOf(RangeError,);
+        expect((refusalOfAskByStamp as Error).message,).toContain('not a position in this entry',);
       },
     },),
     it({

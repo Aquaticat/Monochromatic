@@ -6,6 +6,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -130,7 +131,10 @@ await describe({
         + 'carries the index, so two slices sharing one index share a key, and the second would resume the '
         + 'first slice\'s settled text as its own',
       fn: async () => {
-        expect(function checkRepeatedIndex() {
+        /**
+         * What checkRepeatedIndex raised, read for its class as well as its wording.
+         */
+        const refusalOfCheckRepeatedIndex = caught(function checkRepeatedIndex() {
           assertSliceIndexing({
             slices: [
               sliceAt({
@@ -143,7 +147,10 @@ await describe({
               },),
             ],
           },);
-        },).toThrow('reads that index as the position',);
+        },);
+
+        expect(refusalOfCheckRepeatedIndex,).toBeInstanceOf(SliceIndexingError,);
+        expect((refusalOfCheckRepeatedIndex as Error).message,).toContain('reads that index as the position',);
       },
     },),
     it({

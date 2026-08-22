@@ -14,6 +14,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -202,12 +203,18 @@ await describe({
       name: 'names both counts in the message, so an operator reading a stopped run learns whether '
         + 'the window missed entirely or only partly',
       fn: async () => {
-        expect(function refuses() {
+        /**
+         * What refuses raised, read for its class as well as its wording.
+         */
+        const refusalOfRefuses = caught(function refuses() {
           assertWindowReachedJudges({
             sheets: [`one ${WINDOW_LABEL}`,],
             expected: 6,
           },);
-        },).toThrow('1 of the judge sheets carried SURROUNDING ORIGINAL where 6',);
+        },);
+
+        expect(refusalOfRefuses,).toBeInstanceOf(WindowEvidenceError,);
+        expect((refusalOfRefuses as Error).message,).toContain('1 of the judge sheets carried SURROUNDING ORIGINAL where 6',);
       },
     },),
   ],

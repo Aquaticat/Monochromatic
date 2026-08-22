@@ -17,19 +17,21 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ArtifactParseError,
   buildSettledArtifactV2,
   type DocumentLanesResult,
   parseSettledArtifactV2,
   type PipelineDigest,
   preparationIdentity,
-  prepareDocumentPair,
   type PreparedDocumentPair,
+  prepareDocumentPair,
   type SliceDeliveryRecord,
   verifyArtifactV2AgainstPreparation,
 } from '../../dist/final/node/index.mjs';
@@ -259,12 +261,18 @@ await describe({
          * Artifact written over the first.
          */
         const artifact = writeAndRead({ prepared, },);
-        expect(function differentDocuments() {
+        /**
+         * What differentDocuments raised, read for its class as well as its wording.
+         */
+        const refusalOfDifferentDocuments = caught(function differentDocuments() {
           verifyArtifactV2AgainstPreparation({
             artifact,
             prepared: otherPair,
           },);
-        },).toThrow('CatEntry1.preparation.identity',);
+        },);
+
+        expect(refusalOfDifferentDocuments,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfDifferentDocuments as Error).message,).toContain('CatEntry1.preparation.identity',);
       },
     },),
     it({
@@ -295,12 +303,18 @@ await describe({
         // preparation and passing for the wrong reason.
         expect(preparationIdentity({ prepared: finer, },),).not
           .toBe(preparationIdentity({ prepared, },),);
-        expect(function differentSlicing() {
+        /**
+         * What differentSlicing raised, read for its class as well as its wording.
+         */
+        const refusalOfDifferentSlicing = caught(function differentSlicing() {
           verifyArtifactV2AgainstPreparation({
             artifact: writeAndRead({ prepared, },),
             prepared: finer,
           },);
-        },).toThrow('CatEntry1.preparation.identity',);
+        },);
+
+        expect(refusalOfDifferentSlicing,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfDifferentSlicing as Error).message,).toContain('CatEntry1.preparation.identity',);
       },
     },),
   ],

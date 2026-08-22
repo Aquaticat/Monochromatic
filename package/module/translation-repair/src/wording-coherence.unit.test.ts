@@ -16,6 +16,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -115,7 +116,10 @@ await describe({
         'REFUSES a missing passage the archive translates, the mirror of the same rule, because every count '
         + 'of untranslated passages would inherit a slice the archive covers',
       fn: async () => {
-        expect(function missingWhatExists() {
+        /**
+         * What missingWhatExists raised, read for its class as well as its wording.
+         */
+        const refusalOfMissingWhatExists = caught(function missingWhatExists() {
           assertWordingCoherent({
             wording: {
               chunkIndex: 3,
@@ -124,7 +128,10 @@ await describe({
               outcome: { kind: 'unfilled', },
             },
           },);
-        },).toThrow('holds wording for it',);
+        },);
+
+        expect(refusalOfMissingWhatExists,).toBeInstanceOf(WordingCoherenceError,);
+        expect((refusalOfMissingWhatExists as Error).message,).toContain('holds wording for it',);
       },
     },),
     it({
