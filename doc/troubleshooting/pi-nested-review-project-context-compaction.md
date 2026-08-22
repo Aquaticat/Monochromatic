@@ -282,7 +282,7 @@ mise run //package/pi-plugin/advisor:verify:extension
 
 The complete workaround is the consumer-side fix in this repository.
 Auto-mode now captures context in
-`package/pi-plugin/auto-mode/src/index.ts:271-282` and sends it through
+`package/pi-plugin/auto-mode/src/index.ts:271-283` and sends it through
 `package/pi-plugin/auto-mode/src/judge-messages.ts:120-125`.
 Advisor captures context in
 `package/pi-plugin/advisor/src/index.ts:175-181` and builds the provider prompt
