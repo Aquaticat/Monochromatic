@@ -1,0 +1,53 @@
+diff --git a/anda/apps/opensnitch/opensnitch.spec b/anda/apps/opensnitch/opensnitch.spec
+index 653df93..76247d7 100644
+--- a/anda/apps/opensnitch/opensnitch.spec
++++ b/anda/apps/opensnitch/opensnitch.spec
+@@ -37,6 +37,14 @@ BuildRequires:  /usr/bin/lrelease-qt5
+ BuildRequires:  protobuf-compiler
+ BuildRequires:  pkgconfig(libnetfilter_queue)
+ BuildRequires:  qt6-linguist
++Requires:       python3dist(grpcio) >= 1.10.1
++Requires:       python3dist(packaging)
++Requires:       python3dist(protobuf)
++Requires:       python3dist(pyqt6) >= 6.4
++Requires:       python3dist(python-slugify) >= 7.0.0
++Requires:       python3dist(requests)
++Recommends:     python3-inotify
++Recommends:     python3-notify2
+ 
+ %description %{common_description}
+ 
+@@ -53,6 +61,7 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.1
+ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+ 
+ sed -i 's/@pip3 /@python3 -m pip /' ui/Makefile
++sed -i 's|/usr/local/bin/opensnitchd|%{_bindir}/opensnitchd|' daemon/data/init/opensnitchd.service
+ 
+ %build
+ pushd ui
+@@ -80,6 +89,10 @@ popd
+ %gopkginstall
+ install -Dm755 opensnitchd -t %buildroot%_bindir
+ install -Dm644 daemon/data/init/opensnitchd.service %{buildroot}%{_unitdir}/opensnitchd.service
++install -Dm644 daemon/data/default-config.json daemon/data/system-fw.json daemon/data/network_aliases.json \
++  -t %{buildroot}%{_sysconfdir}/opensnitchd
++install -Dm600 daemon/data/rules/*.json -t %{buildroot}%{_sysconfdir}/opensnitchd/rules
++install -Dm600 daemon/data/tasks/tasks.json -t %{buildroot}%{_sysconfdir}/opensnitchd/tasks
+ 
+ pushd ui
+ %pyproject_install
+@@ -104,6 +117,14 @@ rm -rf %buildroot%python3_sitelib%_usr
+ %doc README.md
+ %_bindir/opensnitch-ui
+ %_bindir/opensnitchd
++%dir %{_sysconfdir}/opensnitchd
++%config(noreplace) %{_sysconfdir}/opensnitchd/default-config.json
++%config(noreplace) %{_sysconfdir}/opensnitchd/network_aliases.json
++%config(noreplace) %{_sysconfdir}/opensnitchd/system-fw.json
++%dir %{_sysconfdir}/opensnitchd/rules
++%config(noreplace) %{_sysconfdir}/opensnitchd/rules/*.json
++%dir %{_sysconfdir}/opensnitchd/tasks
++%config(noreplace) %{_sysconfdir}/opensnitchd/tasks/tasks.json
+ %_datadir/applications/opensnitch_ui.desktop
+ %_iconsdir/hicolor/48x48/apps/opensnitch-ui.png
+ %_iconsdir/hicolor/64x64/apps/opensnitch-ui.png
