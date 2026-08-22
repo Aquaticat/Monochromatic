@@ -1271,3 +1271,55 @@ comparing published text slice by slice,
 with the criterion this file now states exactly,
 that a resumed slice must ship its cached text once blockquote markers are
  normalised.
+
+## The capture poller reads directories only
+
+The method that makes this verification possible nearly produced nothing,
+and it would have failed silently.
+
+`vub-cache-capture.mjs` walks its source directory,
+skips every entry that is not itself a directory,
+and copies the files one level down.
+Pointed at `slice-cache`,
+that is exactly right,
+because each entry id is a directory and its cache files sit inside.
+Pointed at `slice-cache/<id>`,
+every entry it sees is a plain file,
+so it skips all of them and copies nothing,
+forever,
+while still logging as a healthy process.
+
+Run one of the pair was launched with the source pointed one level too deep.
+The cache held eight files,
+the capture held zero,
+and the poller was alive the whole time.
+Nothing in the poller reports the difference between
+a directory that is empty
+and a directory whose every entry it refuses.
+
+Corrected mid-run,
+with no loss,
+because the poller keys what it has already copied by size and modification time
+rather than by having watched it appear,
+so a restart recaptures everything present.
+All eight files were captured on the first poll after the restart,
+which is the evidence that the walk now reaches them.
+
+The markers came with them,
+and that matters more than it looks.
+`openNamespacedCache` reads each lane's marker
+and discards the whole namespace when it is absent or does not match,
+so a restore missing them would delete every restored file before anything resumed,
+buy the lane again,
+publish different text,
+and present as this fix not working.
+A capture that copies only the slice files is not a capture that can be restored.
+
+The general shape,
+which is the reusable part:
+a poller that filters by a structural predicate reports the same silence
+for nothing to do
+and for everything filtered out.
+A capture is not verified by the process still running.
+It is verified by naming a file that must be in it,
+and finding that file.
