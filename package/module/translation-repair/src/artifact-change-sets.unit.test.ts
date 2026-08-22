@@ -6,6 +6,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -23,34 +24,6 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Runs one reader and hands back whatever it threw.
- *
- * BESIDE {@link changeSetFailure} RATHER THAN REPLACING IT, because that one
- * names the reader it calls and builds its argument, while this one takes any
- * call at all. Both exist so a refusal can be read for its CLASS as well as its
- * wording: an assertion that checks only the message passes just as happily when
- * the wrong error type is thrown.
- *
- * @param act - call that must refuse
- *
- * @returns Failure it raised, or `undefined` when it returned instead
- *
- * @example
- * ```ts
- * const refusal = refusalFrom(function readsAFutureVersion() { ... },);
- * ```
- */
-function refusalFrom(act: () => unknown,): unknown {
-  try {
-    act();
-  }
-  catch (error) {
-    return error;
-  }
-  return undefined;
-}
-
-/**
  * Reads change sets out of one artifact record, returning whatever it threw.
  *
  * @param artifact - artifact record under test
@@ -59,7 +32,7 @@ function refusalFrom(act: () => unknown,): unknown {
  *
  * @example
  * ```ts
- * const caught = changeSetFailure({ artifact: { shippedChunkIndices: [], }, },);
+ * const refusal = changeSetFailure({ artifact: { shippedChunkIndices: [], }, },);
  * ```
  */
 function changeSetFailure(
@@ -123,7 +96,7 @@ await describe({
         /**
          * What readFutureVersion raised, read for its class as well as its wording.
          */
-        const refusalOfReadFutureVersion = refusalFrom(function readFutureVersion() {
+        const refusalOfReadFutureVersion = caught(function readFutureVersion() {
           readArtifactSchemaVersion({
             // One past the newest version this reader knows, taken from the
             // list rather than written as a literal, so it stays a FUTURE
@@ -159,7 +132,7 @@ await describe({
         /**
          * What readTwoLaneArtifact raised, read for its class as well as its wording.
          */
-        const refusalOfReadTwoLaneArtifact = refusalFrom(function readTwoLaneArtifact() {
+        const refusalOfReadTwoLaneArtifact = caught(function readTwoLaneArtifact() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
@@ -181,7 +154,7 @@ await describe({
         /**
          * What readZeroVersion raised, read for its class as well as its wording.
          */
-        const refusalOfReadZeroVersion = refusalFrom(function readZeroVersion() {
+        const refusalOfReadZeroVersion = caught(function readZeroVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: 0, },
             path: 'Mittens',
@@ -199,7 +172,7 @@ await describe({
         /**
          * What readStringVersion raised, read for its class as well as its wording.
          */
-        const refusalOfReadStringVersion = refusalFrom(function readStringVersion() {
+        const refusalOfReadStringVersion = caught(function readStringVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: '1', },
             path: 'Mittens',
@@ -211,7 +184,7 @@ await describe({
         /**
          * What readFractionalVersion raised, read for its class as well as its wording.
          */
-        const refusalOfReadFractionalVersion = refusalFrom(function readFractionalVersion() {
+        const refusalOfReadFractionalVersion = caught(function readFractionalVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: 1.5, },
             path: 'Mittens',
@@ -223,7 +196,7 @@ await describe({
         /**
          * What readNegativeVersion raised, read for its class as well as its wording.
          */
-        const refusalOfReadNegativeVersion = refusalFrom(function readNegativeVersion() {
+        const refusalOfReadNegativeVersion = caught(function readNegativeVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: -1, },
             path: 'Mittens',
@@ -333,7 +306,7 @@ await describe({
         /**
          * What repeatedShipped raised, read for its class as well as its wording.
          */
-        const refusalOfRepeatedShipped = refusalFrom(function repeatedShipped() {
+        const refusalOfRepeatedShipped = caught(function repeatedShipped() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [
@@ -351,7 +324,7 @@ await describe({
         /**
          * What repeatedWithdrawn raised, read for its class as well as its wording.
          */
-        const refusalOfRepeatedWithdrawn = refusalFrom(function repeatedWithdrawn() {
+        const refusalOfRepeatedWithdrawn = caught(function repeatedWithdrawn() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [],
@@ -376,7 +349,7 @@ await describe({
         /**
          * What shippedAlone raised, read for its class as well as its wording.
          */
-        const refusalOfShippedAlone = refusalFrom(function shippedAlone() {
+        const refusalOfShippedAlone = caught(function shippedAlone() {
           readArtifactChangeSets({
             artifact: { shippedChunkIndices: [1,], },
             path: 'Mittens',
@@ -388,7 +361,7 @@ await describe({
         /**
          * What withdrawnAlone raised, read for its class as well as its wording.
          */
-        const refusalOfWithdrawnAlone = refusalFrom(function withdrawnAlone() {
+        const refusalOfWithdrawnAlone = caught(function withdrawnAlone() {
           readArtifactChangeSets({
             artifact: { withdrawnChunkIndices: [1,], },
             path: 'Mittens',
@@ -407,7 +380,7 @@ await describe({
         /**
          * What countWithoutVersion raised, read for its class as well as its wording.
          */
-        const refusalOfCountWithoutVersion = refusalFrom(function countWithoutVersion() {
+        const refusalOfCountWithoutVersion = caught(function countWithoutVersion() {
           readArtifactChangeSets({
             artifact: {
               sliceCount: 2,
@@ -429,7 +402,7 @@ await describe({
         /**
          * What nullShipped raised, read for its class as well as its wording.
          */
-        const refusalOfNullShipped = refusalFrom(function nullShipped() {
+        const refusalOfNullShipped = caught(function nullShipped() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: null,
@@ -450,7 +423,7 @@ await describe({
         /**
          * What versionedWithoutSets raised, read for its class as well as its wording.
          */
-        const refusalOfVersionedWithoutSets = refusalFrom(function versionedWithoutSets() {
+        const refusalOfVersionedWithoutSets = caught(function versionedWithoutSets() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -465,7 +438,7 @@ await describe({
         /**
          * What versionedWithoutCount raised, read for its class as well as its wording.
          */
-        const refusalOfVersionedWithoutCount = refusalFrom(function versionedWithoutCount() {
+        const refusalOfVersionedWithoutCount = caught(function versionedWithoutCount() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -487,7 +460,7 @@ await describe({
         + 'rather than who broke the contract',
       fn: async () => {
         /** Failure the out-of-range shipped index raised. */
-        const caught = changeSetFailure({
+        const refusalOfBothOutOfRange = changeSetFailure({
           artifact: {
             artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
             sliceCount: 2,
@@ -495,13 +468,13 @@ await describe({
             withdrawnChunkIndices: [],
           },
         },);
-        expect(caught,).toBeInstanceOf(ArtifactParseError,);
-        expect(String(caught,),).toContain('Mittens index sets',);
-        expect(String(caught,),).toContain('of 2 prepared',);
+        expect(refusalOfBothOutOfRange,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(refusalOfBothOutOfRange,),).toContain('Mittens index sets',);
+        expect(String(refusalOfBothOutOfRange,),).toContain('of 2 prepared',);
         /**
          * What withdrawnOutOfRange raised, read for its class as well as its wording.
          */
-        const refusalOfWithdrawnOutOfRange = refusalFrom(function withdrawnOutOfRange() {
+        const refusalOfWithdrawnOutOfRange = caught(function withdrawnOutOfRange() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -524,7 +497,7 @@ await describe({
         /**
          * What overlapping raised, read for its class as well as its wording.
          */
-        const refusalOfOverlapping = refusalFrom(function overlapping() {
+        const refusalOfOverlapping = caught(function overlapping() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -550,7 +523,7 @@ await describe({
         /**
          * What fractionalIndex raised, read for its class as well as its wording.
          */
-        const refusalOfFractionalIndex = refusalFrom(function fractionalIndex() {
+        const refusalOfFractionalIndex = caught(function fractionalIndex() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [
@@ -568,7 +541,7 @@ await describe({
         /**
          * What unsafeIndex raised, read for its class as well as its wording.
          */
-        const refusalOfUnsafeIndex = refusalFrom(function unsafeIndex() {
+        const refusalOfUnsafeIndex = caught(function unsafeIndex() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [Number.MAX_SAFE_INTEGER + 2,],
@@ -630,7 +603,7 @@ await describe({
         /**
          * What parseFutureArtifact raised, read for its class as well as its wording.
          */
-        const refusalOfParseFutureArtifact = refusalFrom(function parseFutureArtifact() {
+        const refusalOfParseFutureArtifact = caught(function parseFutureArtifact() {
           parseSettledArtifact({
             value: {
               ...VERSIONED_ARTIFACT,
@@ -654,7 +627,7 @@ await describe({
         /**
          * What parseTwoLaneArtifact raised, read for its class as well as its wording.
          */
-        const refusalOfParseTwoLaneArtifact = refusalFrom(function parseTwoLaneArtifact() {
+        const refusalOfParseTwoLaneArtifact = caught(function parseTwoLaneArtifact() {
           parseSettledArtifact({
             value: {
               ...VERSIONED_ARTIFACT,
