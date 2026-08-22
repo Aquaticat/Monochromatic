@@ -403,6 +403,74 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS WHAT THE PRODUCE HALF RECORDED ON AN INCUMBENT-ONLY SLICE, which is the '
+        + 'terminal those findings explain. This path ends before a judged round and before a '
+        + 'gate round, and the findings rode inside those rounds, so what said WHY a slate had '
+        + 'nothing valid on it was dropped at exactly the slices reporting that it had nothing',
+      fn: async () => {
+        const { settled, } = await settleWith({
+          voices: ROSTER.map(function toVoice(modelId,) {
+            return voiceOf({ modelId, translation: FRESH, },);
+          },),
+          validity: ROSTER.map(function toVerdict(modelId,) {
+            return validityOf({ modelId, valid: false, },);
+          },),
+          producedFindings: ['cat-gather-lost-a-voice',],
+        },);
+
+        expect(settled.terminal,).toBe('incumbent-only',);
+        expect(settled.findings,).toContain('cat-gather-lost-a-voice',);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THEM ON A SLICE WITH NO STANDING TEXT TOO, the other terminal ending before '
+        + 'either round. Both were losing the same list, and neither loss depended on a cache: a '
+        + 'fresh run dropped them exactly as a resumed one did',
+      fn: async () => {
+        const { settled, } = await settleWith({
+          voices: ROSTER.map(function toVoice(modelId,) {
+            return voiceOf({ modelId, translation: FRESH, },);
+          },),
+          validity: ROSTER.map(function toVerdict(modelId,) {
+            return validityOf({ modelId, valid: true, },);
+          },),
+          standingText: '',
+          producedFindings: ['cat-gather-lost-a-voice',],
+        },);
+
+        expect(settled.terminal,).toBe('no-standing-text',);
+        expect(settled.findings,).toContain('cat-gather-lost-a-voice',);
+      },
+    },),
+
+    it({
+      name: 'REPORTS EACH FINDING ONCE ON A PATH THAT REACHED BOTH ROUNDS, which is the trap in '
+        + 'fixing the two above. The judged round is already handed what the produce half '
+        + 'recorded, so a settlement appending that list beside the judged round would report one '
+        + 'lost voice twice and double every count taken over it',
+      fn: async () => {
+        const { settled, } = await settleWith({
+          voices: ROSTER.map(function toVoice(modelId,) {
+            return voiceOf({ modelId, translation: FRESH, },);
+          },),
+          validity: ROSTER.map(function toVerdict(modelId,) {
+            return validityOf({ modelId, valid: true, },);
+          },),
+          producedFindings: ['cat-gather-lost-a-voice',],
+        },);
+
+        expect(
+          settled.findings
+            .filter(function isTheOne(finding,): boolean {
+              return finding === 'cat-gather-lost-a-voice';
+            },)
+            .length,
+        ).toBe(1,);
+      },
+    },),
+
+    it({
       name: 'READS AN ABSENT STANDING TEXT AHEAD OF AN EMPTY SLATE when a slice is both at once, '
         + 'because the missing standing text is the older fact: the floor would have refused a slate '
         + 'this slice was never going to use. A census counting terminal states has to be told which '
@@ -462,7 +530,10 @@ await describe({
           judgeReply: judgeBallot({ best: 0, },),
         },);
 
-        expect(settled.terminal,).toBe('slate-kept-standing',);
+        // NAMED AS A DECLINE, which the merged terminal could not say. This
+        // test always described a declining panel, and always asserted the
+        // name a panel ENDORSING the archive would carry.
+        expect(settled.terminal,).toBe('slate-declined-standing',);
         expect(settled.text,).toBe(STANDING,);
         expect(served.judge,).toBeGreaterThan(0,);
         expect(served.gate,).toBe(0,);

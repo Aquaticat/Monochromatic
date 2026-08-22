@@ -67,6 +67,7 @@ function settledAs(
     verdicts: [],
     rewrapped: false,
     demoted: false,
+    findings: [],
   } as ConsolidationSettlement;
 }
 
@@ -128,7 +129,9 @@ await describe({
          */
         const keptStanding: readonly ConsolidationTerminal[] = [
           'incumbent-only',
-          'slate-kept-standing',
+          'slate-endorsed-standing',
+          'slate-unjudged-standing',
+          'slate-declined-standing',
           'gate-kept-standing',
           'wrap-erased-difference',
         ];

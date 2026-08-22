@@ -160,6 +160,7 @@ function settlementReaching(
     verdicts: [],
     rewrapped: false,
     demoted: false,
+    findings: [],
   };
 }
 
@@ -415,6 +416,7 @@ function settlementFor(
     verdicts: [],
     rewrapped: false,
     demoted: false,
+    findings: [],
     ...((usable === undefined)
       ? {}
       : {
@@ -479,16 +481,32 @@ await describe({
         + 'would freeze an undecided panel',
       fn: async () => {
         expect(consolidationWorthResuming({
-          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'declined-indecision', },),
+          settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-indecision', },),
         },),).toBe(false,);
         expect(consolidationWorthResuming({
-          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'declined-rejection', },),
+          settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-rejection', },),
         },),).toBe(false,);
         expect(consolidationWorthResuming({
-          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'judged', },),
+          settlement: settlementFor({ terminal: 'slate-endorsed-standing', decision: 'judged', },),
         },),).toBe(true,);
+
+        // THE SETTLED DECLINE, which is why the decision read survived the
+        // terminal split: it shares a terminal with the two above and gets
+        // the opposite answer, so the name alone cannot decide this one.
         expect(consolidationWorthResuming({
-          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'no-candidate-backed', },),
+          settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'no-candidate-backed', },),
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'CACHES A SLATE NO JUDGE WAS ASKED ABOUT, which is the state the merged name hid '
+        + 'worst. A slate carrying one candidate measures the PRODUCING half and says nothing '
+        + 'about the roster, so counting it beside an endorsement of the archive reported a '
+        + 'working panel where no panel spoke',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'slate-unjudged-standing', decision: 'sole-candidate', },),
         },),).toBe(true,);
       },
     },),
