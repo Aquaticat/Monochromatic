@@ -428,6 +428,24 @@ async function runEntryPipeline(
         slices: consolidateSlices,
       },
     },);
+    /**
+     * This entry's TALLY line, read off the artifact BEFORE it is written.
+     *
+     * NOT INLINED INTO THE `console.log` BELOW, which is where it sat until
+     * 2026-08-22 and where the obvious tidying would put it back. The line asks
+     * what each slice would carry, and that question raises
+     * `UnansweredContestSliceError` on a document whose lanes differ at a slice
+     * the contest names nowhere. Raised after the write, that lands in the catch
+     * below, which prints `status=ERROR` for an entry whose complete artifact is
+     * already on disk: every later reader would then find a settled file the
+     * pass reported as failed.
+     *
+     * Asking first makes the refusal truthful. A contest that cannot account for
+     * a slice it was obliged to decide has not settled the document, and no
+     * artifact should claim it did; the stage caches still hold every answer, so
+     * a re-run reproduces the contradiction rather than losing it.
+     */
+    const tally = settledTallyLine({ artifact, },);
     await writeFileAtomic({
       path: join(
         artifactsDir,
@@ -439,7 +457,7 @@ async function runEntryPipeline(
         2,
       )}\n`,
     },);
-    console.log(settledTallyLine({ artifact, },),);
+    console.log(tally,);
     return { kind: 'settled', };
   }
   catch (error) {
