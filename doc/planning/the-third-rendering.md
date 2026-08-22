@@ -2634,3 +2634,25 @@ On a slice where the producer kept it, the same repair is damage,
 and nothing currently tells the two apart.
 
 `#167` carries the decision.
+
+### Reading the two runs, in order of authority
+
+The capture completeness check is a LOWER BOUND, not a verdict.
+It can compare the captured settlement count against what the artifact says was worth persisting,
+except at `slate-kept-standing`, where persistence turns on a decision the artifact does not record.
+A settled-slate file the discard raced away therefore passes the check silently.
+
+So the order is:
+
+-   Run 2's `reportStreamProgress` count is the authoritative instrument.
+    Zero means every stage resumed.
+-   A small nonzero count is a diagnosis, not a verdict.
+    The completeness check's per-entry namespace census says which entry and which namespace to look at,
+    and only after that split can a re-buy be called a raced capture or a refused settlement.
+-   `vub-compare` covers the consolidation field alone,
+    so it confirms rather than decides.
+
+If an entry caps or fails in run 1, the verification proceeds on the settled subset.
+A failed entry keeps its cache in run 1's own directory, by the same rule that discards a settled one,
+so re-running that entry in place is the one resume case reached organically rather than restored.
+It is worth taking if it happens and not worth buying.
