@@ -389,6 +389,14 @@ Copying the cache aside while the pass runs is what makes a restored
 
 ### The constraint a taking-over session must respect
 
+LIFTED 2026-08-22 08:12Z.
+Run 2 finished,
+`DONE processed=6 of pending=6`,
+so the freeze this section describes no longer binds.
+The rest of the section is kept because it explains WHY the digest matters,
+which the next cached run will need again.
+
+The historical constraint read:
 DO NOT EDIT ANYTHING UNDER `package/module/translation-repair/src/` UNTIL RUN 2
  HAS FINISHED.
 The slice cache is keyed on the pipeline digest,
