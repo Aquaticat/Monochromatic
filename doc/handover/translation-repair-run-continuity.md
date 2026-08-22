@@ -1067,3 +1067,116 @@ or whether the refinement gets a cache of its own keyed on the accuracy result.
 Both make a resumed run reproduce.
 They differ in what a cache invalidation costs and in whether a refinement can
  be re-asked without re-buying the accuracy pass.
+
+## The full accounting from cache to shipped text
+
+MEASURED 2026-08-22 over all 18 repair-lane slices of the band pair,
+comparing each captured slice-cache record against the text that lane
+ delivered.
+Two transforms separate them,
+and together they explain every row with no residue.
+
+### Refinement explains every divergent row and nothing else does
+
+`refined=false` and "the cached text is what shipped" are the same fact on
+ 16 of 18 rows,
+and the two remaining rows are explained in the next section.
+
+The correlation carries its own positive control,
+which is why it is worth more than a count.
+Three slices changed their refinement answer between the runs:
+`Zha_Ke` chunk 0,
+`Zha_Ke` chunk 3,
+and `Weideriche_` chunk 1 were refined in run 1 and not in run 2.
+At all three the cache match flips in lockstep,
+from mismatching in run 1 to matching in run 2.
+A predictor that moves when the thing it predicts moves is not a coincidence
+ of one sample.
+
+`refine-phase.ts` sets `refined: true` on exactly one path,
+`refine-phase.ts:352`,
+the path where a rewrite both changed the text and kept every confirmed issue.
+Every other path pushes the accuracy outcome unmodified.
+So `refined=false` is a positive claim that the accuracy text is what shipped,
+which is what makes the correlation testable at all.
+
+### The wrap is not length-preserving inside a blockquote
+
+`lintong` chunks 1 and 2 were the only rows refinement did not explain.
+They ship 4 and 12 characters more than the cache holds,
+they are identical across both runs,
+and neither was refined.
+
+The cause is the semantic wrap.
+Chunk 1 gains 2 blockquote markers and exactly 4 characters,
+chunk 2 gains 6 markers and exactly 12.
+When the wrap breaks a line that sits inside a blockquote,
+the new line needs its own `> ` prefix,
+so two characters appear per inserted break.
+
+Stripping blockquote markers and collapsing whitespace makes the cached text
+ and the shipped text equal on 10 of 10 unrefined rows,
+with no exceptions.
+
+This corrects a claim recorded earlier in this file and in
+ `doc/planning/the-third-rendering.md`,
+that the wrap is length-preserving because it only exchanges a space for a
+ newline.
+That holds in running prose and fails inside a blockquote.
+`#167` is where the wrap's treatment of line-structured slices is decided,
+and this belongs to it.
+
+### Why this matters for the fix
+
+Once refinement is cached,
+cache to shipped becomes a pure deterministic function.
+The reproduction criterion can therefore be stated exactly:
+a resumed slice must ship text equal to its cached text after blockquote
+ markers are normalised,
+and any other difference is a defect.
+
+Before this measurement the criterion could not be stated,
+because two unexplained rows would have failed it.
+
+## Correction: the consolidation divergence was an incomplete capture
+
+The section titled "The consolidation contributes its own share" names the
+ wrong mechanism.
+It attributes `keyword233` chunk 1 publishing 419 characters in run 1 and 411
+ in run 2 to ballots moving the consolidation key.
+That mechanism was never measured.
+
+What the capture actually holds settles it.
+`keyword233` has one captured consolidation envelope,
+a `gate-kept-standing` terminal carrying 212 characters,
+which is chunk 0's length.
+Chunk 1's settlement was never captured,
+so run 2 had nothing to resume and bought a fresh one.
+
+This is not confined to one entry.
+Every entry in the band pair is missing at least one consolidation envelope:
+`keyword233` 1 of 2,
+`gaoyanger` 1 of 2,
+`lintong` 2 of 3,
+`Weideriche_` 1 of 3,
+`Zha_Ke` 3 of 4,
+`Acheron` 2 of 4.
+The consolidation settles last per slice,
+and the poller loses the last file it has not yet copied,
+so the stage that settles last is the stage the capture is worst at holding.
+
+### What still stands and what does not
+
+A consolidation bought fresh produces different text between runs.
+That is expected of fresh model calls and is not evidence of a defect.
+
+A consolidation RESUMED from cache reproduces byte for byte.
+That was verified separately on `Acheron` slice 2 through the validating
+ store,
+and `Acheron` slice 1 correctly re-bought because `consolidate-key.ts:108`
+ puts `repairText` in the key and the repair text had moved.
+
+So the consolidation resume path is clean,
+and run 2 exercised it far less than the run's own numbers suggest.
+The repair lane's refinement remains the only measured source of
+ non-determinism on a resumed run.
