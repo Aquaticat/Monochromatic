@@ -813,3 +813,43 @@ because a legitimate upstream change moves the key.
 The criterion needs to compare against the CACHE rather than against run 1's
  artifact,
 since the artifact is the thing now known not to match it.
+
+### The delivered text is not the cached text, measured by overlap
+
+Comparing each cached `repairedText` against the `shippedText` the same run
+ delivered,
+by common prefix and common suffix,
+which needs no passage quoted.
+
+- chunk 2 is identical in both runs at 371 characters.
+- chunk 3 is the same length in both runs and NOT identical,
+   sharing a 14 character prefix and a 209 character suffix.
+   Both runs give the same two numbers,
+   so whatever rewrites the middle there is deterministic.
+- chunk 0 shares a 62 character prefix in both runs,
+   and a suffix of 32 in run 1 against 38 in run 2.
+- chunk 1 shares a 39 character suffix in both,
+   and a prefix of 222 in run 1 against 82 in run 2.
+
+So a stage after the slice cache rewrites the middle of the text.
+It settles on the same answer for chunks 2 and 3 and on different answers for
+ chunks 0 and 1.
+
+### The fact that carries the finding
+
+Chunk 0's cached record says `changed` is false,
+carries zero `repairRegions`,
+and records no rounds.
+The repair lane did nothing there.
+Its `repairedText` is 255 characters,
+the same length as the incumbent.
+
+Both runs nevertheless recorded `delivery=replacement-shipped` for that chunk,
+shipping 242 characters in run 1 and 252 in run 2.
+Neither is the incumbent and neither is the cached text.
+
+A slice whose own record says it changed nothing cannot have produced that
+ delivery,
+so the delivered text does not come from the cached record.
+That holds without naming the stage that does produce it,
+which is the next thing to find and is deliberately not guessed here.
