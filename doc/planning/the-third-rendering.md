@@ -2847,3 +2847,58 @@ This is not only a measurement gap.
 A consumer deciding what to show a reader cannot currently tell a passage the
  judges endorsed from one they could not rule on,
 which puts it in `#166`'s scope as well as `#165`'s.
+
+## What the pairing re-measurement actually costs
+
+`#163` records its remaining item as "re-measure the 64 WITH the pairing
+ applied",
+and calls it free.
+It is not free,
+and the number is worth having before anyone schedules it.
+
+`prepareDocumentPair` applies only a pairing it is HANDED.
+A pairing exists for an entry only where a real pass has already bought one,
+because the stage `#131` shipped is LLM-assisted.
+So the re-measurement is free exactly to the extent that the flagged entries
+ already have a cached pairing on disk.
+
+Measured,
+with the instrument first validated against the recorded numbers:
+
+-   The union is 64 slices,
+    spread across 29 entries.
+-   Cached pairings exist anywhere under the agent scratch root for 5 entries.
+-   Of those 5,
+    exactly 1 is among the 29.
+-   So 1 of 64 slices is re-measurable at zero quota,
+    and 28 entries would need a fresh pairing call.
+
+VALIDATING THE INSTRUMENT FIRST MATTERED.
+A fresh reimplementation of the two flags returned a union of 88 rather than 64,
+because it used a Han-character denominator where the recorded measurement used
+ plain string length,
+and because it skipped a slice with no Han characters before the block-gap flag
+ could see it,
+which silently dropped 5 gap flags.
+Re-running the original script reproduced every recorded number exactly:
+1259 slices,
+1104 with equal block counts,
+43 flagged by a block gap above one,
+38 ratio outliers,
+17 in both.
+A number that does not reproduce is an instrument fault until proven otherwise.
+
+### How to run it, and when
+
+No source change is needed.
+`prepareDocumentPairWithRoster` is exported from the built
+ `dist/final/node/index.mjs`,
+so a scratch script can pair the 28 entries and re-measure without touching the
+ package.
+
+It must NOT run while a corpus pass is alive.
+A pairing sweep buys provider concurrency of its own,
+and `doc/troubleshooting/synthetic-aggregate-concurrency-stall.md` measured
+ every backend degrading above roughly seven aggregate streams.
+The sweep is therefore queued behind the `#138` verification,
+not blocked by it.
