@@ -14,7 +14,7 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { parseGlobalOptions, } from '../parse-global-options.ts';
+import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { isMissingPath, } from '../trust/registry-io.ts';
 import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
@@ -34,6 +34,10 @@ import {
   resolveCurrentHead,
 } from './commit-transaction-journal.ts';
 import {
+  RECOVERY_TARGET_NOT_APPLICABLE,
+  resolveCommitTransactionDirectory,
+} from './commit-transaction-recovery-target.ts';
+import {
   assertLandedCommit,
   assertOwnedLock,
   assertTransactionReflog,
@@ -42,8 +46,6 @@ import {
   parsePreparedJournal,
   parseRefUpdated,
 } from './commit-transaction-recovery-validation.ts';
-import { TRANSACTION_DIRECTORY_NAME, } from './commit-transaction-workspace.ts';
-
 export { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 
 /**
@@ -112,6 +114,8 @@ function processIsAlive(pid: number,): boolean {
  *
  * @param gitPath - resolved real Git executable
  *
+ * @param identity - optional repository identity retained by config-free forwarding
+ *
  * @returns recovery action
  *
  * @throws CommitTransactionRecoveryError when current state conflicts
@@ -124,56 +128,20 @@ function processIsAlive(pid: number,): boolean {
 export async function recoverCommitTransaction({
   args,
   gitPath,
+  identity,
 }: Readonly<{
   args: readonly string[];
   gitPath: string;
+  identity?: GitWorktreeIdentity;
 }>,): Promise<CommitTransactionRecoveryResult> {
-  /**
-   * Effective invocation repository location.
-   */
-  const { effectiveCwd, } = parseGlobalOptions(args,);
-  /**
-   * Whether cwd belongs to worktree.
-   */
-  const inside = await runTransactionGit({
+  /** Absolute invocation-specific transaction directory when one can exist. */
+  const directory = await resolveCommitTransactionDirectory({
+    args,
     gitPath,
-    cwd: effectiveCwd,
-    args: [
-      'rev-parse',
-      '--is-inside-work-tree',
-    ],
-    allowFailure: true,
+    ...(identity === undefined ? {} : { identity, }),
   },);
-  if ((inside.exitCode !== 0) || (DECODER.decode(inside.stdout,)
-    .trim()
-    !== 'true'))
+  if (directory === RECOVERY_TARGET_NOT_APPLICABLE)
     return 'none';
-  /**
-   * Git-provided transaction directory path.
-   */
-  const directoryOutput = await runTransactionGit({
-    gitPath,
-    cwd: effectiveCwd,
-    args: [
-      'rev-parse',
-      '--git-path',
-      TRANSACTION_DIRECTORY_NAME,
-    ],
-  },);
-  /**
-   * Reported transaction path.
-   */
-  const reportedDirectory = DECODER.decode(directoryOutput.stdout,)
-    .trim();
-  /**
-   * Absolute transaction directory.
-   */
-  const directory = isAbsolute(reportedDirectory,)
-    ? reportedDirectory
-    : resolve(
-      effectiveCwd,
-      reportedDirectory,
-    );
   if (!(await pathExists(directory,)))
     return 'none';
   /**

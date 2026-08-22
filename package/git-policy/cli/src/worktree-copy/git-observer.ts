@@ -4,7 +4,10 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { resolveGitWorktreeIdentity, } from '../git-worktree-identity.ts';
+import {
+  type GitWorktreeIdentity,
+  resolveGitWorktreeIdentity,
+} from '../git-worktree-identity.ts';
 import { WorktreeCopyError, } from './errors.ts';
 import type { WorktreeCopyObservation, } from './model.ts';
 
@@ -78,6 +81,8 @@ export async function readAdminIds(adminRoot: string,): Promise<ReadonlySet<stri
  *
  * @param gitPath - absolute real-Git executable
  *
+ * @param identity - optional repository identity retained before config-free forwarding
+ *
  * @returns repository observation or not-applicable sentinel
  *
  * @example
@@ -88,9 +93,11 @@ export async function readAdminIds(adminRoot: string,): Promise<ReadonlySet<stri
 export async function observeWorktreeRepository({
   args,
   gitPath,
+  identity: retainedIdentity,
 }: Readonly<{
   args: readonly string[];
   gitPath: string;
+  identity?: GitWorktreeIdentity;
 }>,): Promise<WorktreeCopyObservation | typeof WORKTREE_COPY_NOT_APPLICABLE> {
   /**
    * Tagged observer logger.
@@ -102,7 +109,7 @@ export async function observeWorktreeRepository({
   /**
    * Canonical repository identity shared across package consumers.
    */
-  const identity = await resolveGitWorktreeIdentity({
+  const identity = retainedIdentity ?? await resolveGitWorktreeIdentity({
     args,
     gitPath,
   },);

@@ -5,6 +5,7 @@ import {
   stripEscapeHatch,
   WORKTREE_COPY_ESCAPE_HATCH,
 } from '../escape-hatch.ts';
+import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
   ForwardedGitWorktreeCopyError,
@@ -166,6 +167,8 @@ function asWorktreeCopyError(error: unknown,): WorktreeCopyError {
  *
  * @param gitPath - absolute real-Git executable
  *
+ * @param identity - optional repository identity retained before config-free forwarding
+ *
  * @throws {@link SubprocessError} when Git failed but copying succeeded
  *
  * @throws {@link ForwardedGitWorktreeCopyError} when copying failed
@@ -178,9 +181,11 @@ function asWorktreeCopyError(error: unknown,): WorktreeCopyError {
 export async function runGitWithWorktreeCopy({
   args,
   gitPath,
+  identity,
 }: Readonly<{
   args: readonly string[];
   gitPath: string;
+  identity?: GitWorktreeIdentity;
 }>,): Promise<void> {
   /**
    * Tagged lifecycle logger.
@@ -192,7 +197,10 @@ export async function runGitWithWorktreeCopy({
   /**
    * Subcommand layout consulted so the opt-out flag is recognized only in flag position.
    */
-  const { subcommandIndex, } = parseGlobalOptions(args,);
+  const {
+    subcommandIndex,
+    willShortCircuit,
+  } = parseGlobalOptions(args,);
   /**
    * Argv with flag-position opt-out tokens removed; identical when absent.
    */
@@ -219,12 +227,23 @@ export async function runGitWithWorktreeCopy({
       throw execution.failure;
     return;
   }
+  if (willShortCircuit) {
+    /** Real-Git global help or version execution cannot register worktrees. */
+    const execution = await executeRealGit({
+      args,
+      gitPath,
+    },);
+    if ('failure' in execution)
+      throw execution.failure;
+    return;
+  }
   /**
    * Effective repository observation before real Git.
    */
   const initialObservation = await observeWorktreeRepository({
     args,
     gitPath,
+    ...(identity === undefined ? {} : { identity, }),
   },);
   if (initialObservation === WORKTREE_COPY_NOT_APPLICABLE) {
     /**

@@ -1,4 +1,5 @@
 import { realpath, } from 'node:fs/promises';
+import { resolve, } from 'node:path';
 
 import { SubprocessError, } from 'nano-spawn';
 
@@ -125,6 +126,10 @@ type ParsedIdentityMetadata = Readonly<{
    * Raw invocation-specific Git-directory path.
    */
   gitDir: string;
+  /**
+   * Absolute or effective-cwd-relative path back to worktree root.
+   */
+  worktreePath: string;
 }>;
 
 /**
@@ -211,6 +216,7 @@ async function readIdentityMetadata({
         '--is-bare-repository',
         '--git-dir',
         '--git-common-dir',
+        '--show-cdup',
       ],
     },);
   }
@@ -243,6 +249,7 @@ function parseIdentityMetadata(output: string,): ParsedIdentityMetadata {
     isBareOutput,
     gitDir,
     commonDir,
+    worktreePath = '',
   ] = stripGitLine(output,)
     .split('\n',);
   if ((gitDir === undefined) || (commonDir === undefined)) {
@@ -254,6 +261,7 @@ function parseIdentityMetadata(output: string,): ParsedIdentityMetadata {
     commonDir,
     gitDir,
     isBare: isBareOutput === 'true',
+    worktreePath,
   };
 }
 
@@ -346,18 +354,14 @@ export async function resolveGitWorktreeIdentity({
     };
   }
   /**
-   * Git-reported effective worktree root with terminal line break.
+   * Worktree root resolved from Git's absolute cdup result or effective root cwd.
    */
-  const worktreeOutput = await runIdentityGit({
-    gitPath,
-    preSubcommandArgs,
-    invocationCwd,
-    metadataArgs: ['--show-toplevel',],
-  },);
-  /**
-   * Canonical effective worktree root for non-bare identity.
-   */
-  const worktreeRoot = await realpath(stripGitLine(worktreeOutput,),);
+  const worktreeRoot = await realpath(metadata.worktreePath === ''
+    ? effectiveCwd
+    : resolve(
+        effectiveCwd,
+        metadata.worktreePath,
+      ),);
   return {
     kind: gitDir === commonDir
       ? 'main-worktree'

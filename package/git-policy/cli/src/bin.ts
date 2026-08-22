@@ -3,6 +3,7 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { autoPush, } from './auto-push.ts';
+import { resolveGitWorktreeIdentity, } from './git-worktree-identity.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { parseManagementArgs, } from './management-parser.ts';
 import { runManagementCommand, } from './management.ts';
@@ -26,6 +27,7 @@ import {
 } from './policy-engine/events.ts';
 import { resolveGit, } from './resolve-git.ts';
 import { TrustedConfigError, } from './trust/config-loader.ts';
+import { classifyConfigLoading, } from './trust/command-classification.ts';
 import {
   resolveRuntimeConfig,
   RUNTIME_CONFIG_ABSENT,
@@ -177,10 +179,21 @@ try {
    * Absolute real Git path needed before repository config executes.
    */
   const gitPath = await resolveGit();
+  /**
+   * Repository identity reused only when classification proves config cannot mutate process selection.
+   */
+  const configFreeIdentity = (!willShortCircuit)
+    && (classifyConfigLoading(rawArgs,) === 'skip-config')
+    ? await resolveGitWorktreeIdentity({
+        args: rawArgs,
+        gitPath,
+      },)
+    : undefined;
   if (!willShortCircuit)
     await recoverCommitTransaction({
       args: rawArgs,
       gitPath,
+      ...(configFreeIdentity === undefined ? {} : { identity: configFreeIdentity, }),
     },);
   /**
    * Trusted runtime config resolution after transaction recovery.
@@ -330,6 +343,7 @@ try {
     await runGitWithWorktreeCopy({
       args: processedArgs,
       gitPath,
+      ...(configFreeIdentity === undefined ? {} : { identity: configFreeIdentity, }),
     },);
   }
 
