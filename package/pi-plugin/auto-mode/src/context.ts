@@ -29,9 +29,13 @@ import { buildVisibleContext, } from './visible-context.ts';
  * ```
  */
 type ProjectContextFile = {
-  /** Absolute context-file path reported by Pi. */
+  /**
+   * Absolute context-file path reported by Pi.
+   */
   readonly path: string;
-  /** Complete loaded context-file content. */
+  /**
+   * Complete loaded context-file content.
+   */
   readonly content: string;
 };
 
@@ -53,10 +57,12 @@ type ProjectContextFile = {
  * ```
  */
 function buildProjectContext(
-  contextFiles: readonly ProjectContextFile[] | undefined,
+  contextFiles: readonly ProjectContextFile[],
 ): string {
-  /** Owned path/content records preserving Pi load order. */
-  const isolatedContextFiles = (contextFiles ?? [])
+  /**
+   * Owned path/content records preserving Pi load order.
+   */
+  const isolatedContextFiles = contextFiles
     .map(function isolateContextFile(
       contextFile,
     ): ProjectContextFile {

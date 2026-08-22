@@ -320,7 +320,7 @@ await describe({
         },];
         /** Canonical snapshot expected at evaluation boundary. */
         const expectedProjectContext =
-          '[{"content":"PX3: Act on authorized repository work.\\n","path":"/repo/AGENTS.md"}]';
+          String.raw`[{"content":"PX3: Act on authorized repository work.\n","path":"/repo/AGENTS.md"}]`;
         /** Minimal UI context used by agent lifecycle handlers. */
         const lifecycleContext = {
           ui: {

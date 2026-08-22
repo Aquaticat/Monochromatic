@@ -292,7 +292,9 @@ function buildApprovalFingerprintIdentity(
     readonly projectContext?: string;
   },
 ): string {
-  /** Context identity omitted when no context files loaded, preserving prior empty-context fingerprints. */
+  /**
+   * Context identity omitted when no context files loaded, preserving prior empty-context fingerprints.
+   */
   const contextIdentity = projectContext === ''
     ? ''
     : `,"projectContext":${quoteJsonString(projectContext,)}`;

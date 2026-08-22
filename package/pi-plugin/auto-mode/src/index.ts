@@ -12,6 +12,7 @@
 import { homedir, } from 'node:os';
 
 import type {
+  BeforeAgentStartEvent,
   ExtensionAPI,
   ExtensionContext,
   ToolCallEvent,
@@ -69,45 +70,6 @@ const l = tagged({
   tag: 'index',
   l: parentLogger,
 },);
-
-/**
- * Readonly event subset needed to collect skill read allowlist entries.
- *
- * @example
- * ```typescript
- * const event: PromptContextEvent = {
- *   systemPromptOptions: {
- *     contextFiles: [{ path: '/project/AGENTS.md', content: 'Use mise.' }],
- *     skills: [{ baseDir: '/skills/example' }],
- *   },
- * };
- * ```
- */
-type PromptContextEvent = {
-  /**
-   * Structured prompt options containing loaded context metadata.
-   */
-  readonly systemPromptOptions: {
-    /**
-     * Context files loaded into coding agent system prompt.
-     */
-    readonly contextFiles?: readonly {
-      /** Absolute context-file path reported by Pi. */
-      readonly path: string;
-      /** Complete loaded context-file content. */
-      readonly content: string;
-    }[];
-    /**
-     * Skills visible to model in current prompt.
-     */
-    readonly skills?: readonly {
-      /**
-       * Absolute skill root directory.
-       */
-      readonly baseDir: string;
-    }[];
-  };
-};
 
 /**
  * Auto-mode pi extension.
@@ -308,14 +270,14 @@ function initializeAutoMode(
   pi.on(
     'before_agent_start',
     function handleBeforeAgentStart(
-      event: PromptContextEvent,
+      event: ForeignBorrowed<BeforeAgentStartEvent>,
     ) {
       /**
        * Prompt options carrying loaded project and skill context for this run.
        */
       const { systemPromptOptions, } = event;
       currentProjectContext = buildProjectContext(
-        systemPromptOptions.contextFiles,
+        systemPromptOptions.contextFiles ?? [],
       );
       /**
        * Skills visible in the current system prompt; empty when no skills are loaded.
