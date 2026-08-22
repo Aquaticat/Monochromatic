@@ -893,3 +893,89 @@ A slice recorded as changing nothing shipped a replacement.
 It outranks the frozen queue,
 because a rerun over an unchanged corpus publishing different text is a
  correctness problem on a memorial corpus rather than a performance one.
+
+## Run 2 finished, and the verification's answer
+
+`DONE processed=6 of pending=6` in 4825 seconds,
+against 18933 for run 1.
+All 36 lane-slices reported `exit=resumed`,
+none `computed`.
+
+### The resume works mechanically
+
+The cache is doing its job.
+Run 2 took 80 minutes where run 1 took 5.3 hours,
+every lane-slice resumed,
+and consolidation work fell on five of six entries:
+`Acheron` 30 to 24,
+`Weideriche_` 21 to 11,
+`gaoyanger` 12 to 9,
+`keyword233` 20 to 11,
+`lintong` 25 to 12.
+`Zha_Ke` rose,
+14 to 30,
+for a reason the next section gives.
+
+### The pipeline does not publish the same text twice
+
+This is the finding,
+and it is what verifying at the user boundary was for.
+
+Comparing run 1's artifacts against run 2's,
+on the same corpus,
+under the same pipeline digest,
+from the same restored cache:
+
+- Repair lane,
+   18 slices:
+   11 published identical text,
+   0 differed only by wrapping,
+   7 published DIFFERENT TEXT.
+- Consolidation,
+   17 slices:
+   11 identical,
+   0 wrap-only,
+   6 published DIFFERENT TEXT,
+   and 3 changed terminal.
+
+The repair-lane divergences are
+ `Acheron` chunks 0 and 1,
+`Weideriche_` chunk 1,
+`Zha_Ke` chunk 0,
+chunk 1 and chunk 3,
+and `gaoyanger` chunk 1.
+Two entries,
+`keyword233` and `lintong`,
+reproduced their repair lane exactly.
+
+### The largest divergence
+
+`Zha_Ke` chunks 0 and 3 settled `no-standing-text` in run 1,
+shipping nothing at all,
+and settled `consolidated` in run 2,
+shipping 162 and 278 characters.
+
+Text appeared where a previous run published none.
+That is also why `Zha_Ke` bought MORE consolidation work in run 2:
+two slices that had no standing text to consolidate acquired some.
+
+### The consolidation contributes its own share
+
+`keyword233` chunk 1 published 419 characters in run 1 and 411 in run 2,
+while its repair lane reproduced exactly between the runs.
+So the divergence there did not come from upstream.
+`consolidate-key.ts` puts `ballots` in the consolidation key,
+and ballots come from the contest,
+so a contest that answered differently moves the consolidation key even when
+ the lane text is stable.
+
+### What this settles
+
+The question run 2 was built to answer was whether the resume path works.
+It does.
+The question it actually answered is larger:
+the pipeline is not reproducible,
+and the resume signal does not indicate reproduction.
+
+`#171` carries this.
+It outranks the frozen queue.
