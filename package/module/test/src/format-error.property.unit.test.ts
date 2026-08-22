@@ -44,12 +44,10 @@ import { ASCII_LOWERCASE_ALPHANUMERIC_CHARS, } from '@monochromatic-dev/module-c
 import {
   describe,
   expect,
-  it,
-} from '@monochromatic-dev/module-test';
-import {
   formatErrorDeep,
   formatFailure,
-} from './format-error.ts';
+  it,
+} from '@monochromatic-dev/module-test';
 
 //region Constants
 
