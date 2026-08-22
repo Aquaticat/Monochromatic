@@ -100,7 +100,9 @@ function isManagedRule(
     return false;
   if ((typeof value.Description) !== 'string')
     return false;
-  return value.Description.startsWith(prefix,);
+  return value
+    .Description
+    .startsWith(prefix,);
 }
 
 /**
@@ -316,11 +318,17 @@ function findTargetChain(
   const [match,] = matches;
   if (match === undefined)
     throw new OpenSnitchConfigError(`OpenSnitch mangle_output chain is missing at ${path}.`,);
-  if (!Array.isArray(match.chain.Rules,))
+  /**
+   * Rules candidate from sole matched chain.
+   */
+  const rules = match
+    .chain
+    .Rules;
+  if (!Array.isArray(rules,))
     throw new OpenSnitchConfigError(`OpenSnitch mangle_output Rules is invalid at ${path}.`,);
   return {
     ...match,
-    rules: match.chain.Rules,
+    rules,
     systemRules,
   };
 }
