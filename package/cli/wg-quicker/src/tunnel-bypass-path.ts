@@ -1,5 +1,10 @@
 import { createHash, } from 'node:crypto';
-import { join, } from 'node:path';
+import {
+  isAbsolute,
+  join,
+} from 'node:path';
+
+import { BypassStateError, } from './errors.ts';
 
 /**
  * Default root-owned runtime state directory.
@@ -31,9 +36,14 @@ export function bypassRuntimeDirectory(): string {
    * Explicit runtime path for isolated execution.
    */
   const configured = process.env[RUNTIME_DIRECTORY_ENVIRONMENT];
-  return (configured === undefined) || (configured === '')
-    ? DEFAULT_RUNTIME_DIRECTORY
-    : configured;
+  if ((configured === undefined) || (configured === ''))
+    return DEFAULT_RUNTIME_DIRECTORY;
+  if (!isAbsolute(configured,)) {
+    throw new BypassStateError(
+      `${RUNTIME_DIRECTORY_ENVIRONMENT} must be an absolute path: ${configured}`,
+    );
+  }
+  return configured;
 }
 
 /**

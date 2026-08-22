@@ -6,6 +6,7 @@ import {
   OpenSnitchConfigError,
   OpenSnitchLiveReloadError,
 } from './errors.ts';
+import { currentNetworkNamespace, } from './network-namespace.ts';
 import { runAllowingFailure, } from './runner.ts';
 
 /**
@@ -71,7 +72,7 @@ async function isOpenSnitchDaemonActive(): Promise<boolean> {
   /**
    * Current network-namespace identity.
    */
-  const currentNamespace = await readlink('/proc/self/ns/net',);
+  const { identity: currentNamespace, } = await currentNetworkNamespace();
   /**
    * Candidate daemon process identifiers from pgrep.
    */
@@ -155,9 +156,146 @@ export function isLiveRuleSetReady(
 }
 
 /**
+ * Reports whether processless OpenSnitch chain is safe for requested transition.
+ *
+ * Without NFQUEUE,
+ * positive allowances are unnecessary until daemon reloads persisted config.
+ * Forbidden exact ports must never remain.
+ *
+ * @param output - Numeric stale chain listing.
+ *
+ * @param requiredPorts - Ports needed when stale NFQUEUE remains.
+ *
+ * @param forbiddenPorts - Removed exact ports required absent.
+ *
+ * @returns Whether processless chain cannot preserve or cause policy failure.
+ *
+ * @example
+ * ```ts
+ * isInactiveRuleSetSafe({ output: '', requiredPorts: [51820], forbiddenPorts: [] });
+ * ```
+ */
+export function isInactiveRuleSetSafe(
+  {
+    output,
+    requiredPorts,
+    forbiddenPorts,
+  }: {
+    readonly output: string;
+    readonly requiredPorts: readonly number[];
+    readonly forbiddenPorts: readonly number[];
+  },
+): boolean {
+  /**
+   * Reports exact generated allowance presence.
+   *
+   * @param port - Exact UDP destination port.
+   *
+   * @returns Whether stale chain contains generated accept rule.
+   */
+  function containsPort(port: number,): boolean {
+    return output.includes(`udp dport ${String(port,)} accept`,);
+  }
+  if (forbiddenPorts.some(containsPort,))
+    return false;
+  if (!output.includes('queue',))
+    return true;
+  return isLiveRuleSetReady({
+    output,
+    requiredPorts,
+    forbiddenPorts,
+  },);
+}
+
+/**
+ * Verifies stale kernel state when no OpenSnitch daemon process exists.
+ *
+ * Absent table is safe because next daemon start reads persisted config.
+ * Existing table must not retain forbidden ports;
+ * an existing NFQUEUE path must already carry required ordered allowances.
+ *
+ * @param path - Config path used in failure diagnostic.
+ *
+ * @param requiredPorts - Managed endpoint ports needed when stale NFQUEUE remains.
+ *
+ * @param forbiddenPorts - Removed exact ports required absent from stale chain.
+ *
+ * @throws {@link OpenSnitchConfigError} when nftables inspection fails.
+ *
+ * @throws {@link OpenSnitchLiveReloadError} when stale kernel state is unsafe.
+ *
+ * @example
+ * ```ts
+ * await verifyInactiveOpenSnitchKernelState({
+ *   path,
+ *   requiredPorts: [51820],
+ *   forbiddenPorts: [],
+ * });
+ * ```
+ */
+async function verifyInactiveOpenSnitchKernelState(
+  {
+    path,
+    requiredPorts,
+    forbiddenPorts,
+  }: {
+    readonly path: string;
+    readonly requiredPorts: readonly number[];
+    readonly forbiddenPorts: readonly number[];
+  },
+): Promise<void> {
+  /**
+   * Full table listing distinguishes absent table from failed chain probe.
+   */
+  const tables = await runAllowingFailure({
+    command: 'nft',
+    args: [
+      '--numeric',
+      'list',
+      'tables',
+    ],
+  },);
+  if (tables.exitCode !== 0) {
+    throw new OpenSnitchConfigError(
+      `Cannot inspect nftables tables while OpenSnitch daemon is stopped: ${tables.stderr}`,
+    );
+  }
+  if (!tables.stdout.includes('table inet opensnitch',))
+    return;
+  /**
+   * Existing stale OpenSnitch output chain.
+   */
+  const chain = await runAllowingFailure({
+    command: 'nft',
+    args: [
+      '--numeric',
+      'list',
+      'chain',
+      'inet',
+      'opensnitch',
+      'mangle_output',
+    ],
+  },);
+  if (chain.exitCode !== 0) {
+    throw new OpenSnitchConfigError(
+      `Cannot inspect stale OpenSnitch output chain while daemon is stopped: ${chain.stderr}`,
+    );
+  }
+  if (!isInactiveRuleSetSafe({
+    output: chain.stdout,
+    requiredPorts,
+    forbiddenPorts,
+  },)) {
+    throw new OpenSnitchLiveReloadError(
+      `Stopped OpenSnitch left stale or incomplete wg-quicker endpoint rules after reading ${path}.`,
+    );
+  }
+}
+
+/**
  * Waits for active OpenSnitch daemon to apply config through file watcher.
  *
- * Confirmed daemon absence skips verification because next daemon start reads persisted file.
+ * Confirmed daemon absence still inspects any surviving nftables table.
  *
  * @param path - Config path used in failure diagnostic.
  *
@@ -187,8 +325,14 @@ export async function verifyOpenSnitchLiveReload(
     readonly forbiddenPorts: readonly number[];
   },
 ): Promise<void> {
-  if (!(await isOpenSnitchDaemonActive()))
+  if (!(await isOpenSnitchDaemonActive())) {
+    await verifyInactiveOpenSnitchKernelState({
+      path,
+      requiredPorts,
+      forbiddenPorts,
+    },);
     return;
+  }
   /**
    * Mutable bounded cursor contained in object rather than function-root binding.
    */

@@ -65,9 +65,9 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Requires system-firewall path to have process-independent meaning.
+ * Requires configured path to have process-independent meaning.
  *
- * @param path - Configured system-firewall path.
+ * @param path - Configured OpenSnitch path.
  *
  * @param source - Configuration source used in diagnostic.
  *
@@ -77,10 +77,10 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  *
  * @example
  * ```ts
- * assertAbsoluteSystemPath({ path: '/etc/opensnitchd/system-fw.json', source: 'FwOptions.ConfigPath' });
+ * assertAbsolutePath({ path: '/etc/opensnitchd/system-fw.json', source: 'FwOptions.ConfigPath' });
  * ```
  */
-function assertAbsoluteSystemPath(
+function assertAbsolutePath(
   {
     path,
     source,
@@ -109,9 +109,12 @@ function openSnitchDaemonConfigPath(): string {
    * Explicit custom daemon config path when configured.
    */
   const configured = process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT];
-  return (configured === undefined) || (configured === '')
-    ? DEFAULT_DAEMON_CONFIG
-    : configured;
+  if ((configured === undefined) || (configured === ''))
+    return DEFAULT_DAEMON_CONFIG;
+  return assertAbsolutePath({
+    path: configured,
+    source: OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT,
+  },);
 }
 
 /**
@@ -219,7 +222,7 @@ export async function resolveOpenSnitchSystemFirewallPath(
   if ((!requireNftables)
     && (configuredSystemPath !== undefined)
     && (configuredSystemPath !== '')) {
-    return assertAbsoluteSystemPath({
+    return assertAbsolutePath({
       path: configuredSystemPath,
       source: OPENSNITCH_CONFIG_ENVIRONMENT,
     },);
@@ -239,7 +242,7 @@ export async function resolveOpenSnitchSystemFirewallPath(
       return OPENSNITCH_DAEMON_CONFIG_ABSENT;
     if ((configuredSystemPath === undefined) || (configuredSystemPath === ''))
       return DEFAULT_SYSTEM_FIREWALL_CONFIG;
-    return assertAbsoluteSystemPath({
+    return assertAbsolutePath({
       path: configuredSystemPath,
       source: OPENSNITCH_CONFIG_ENVIRONMENT,
     },);
@@ -257,7 +260,7 @@ export async function resolveOpenSnitchSystemFirewallPath(
     );
   }
   if ((configuredSystemPath !== undefined) && (configuredSystemPath !== '')) {
-    return assertAbsoluteSystemPath({
+    return assertAbsolutePath({
       path: configuredSystemPath,
       source: OPENSNITCH_CONFIG_ENVIRONMENT,
     },);
@@ -269,7 +272,7 @@ export async function resolveOpenSnitchSystemFirewallPath(
   if (isRecord(options,)
     && ((typeof options.ConfigPath) === 'string')
     && (options.ConfigPath !== '')) {
-    return assertAbsoluteSystemPath({
+    return assertAbsolutePath({
       path: options.ConfigPath,
       source: 'FwOptions.ConfigPath',
     },);

@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { OpenSnitchConfigError, } from './errors.ts';
+import { currentNetworkNamespace, } from './network-namespace.ts';
 import { OPENSNITCH_CONFIG_ABSENT, } from './opensnitch-config-file.ts';
 import {
   claimOpenSnitchInterfaceOperation,
@@ -52,13 +53,23 @@ export async function installOpenSnitchEndpointAllowance(
   },
 ): Promise<void> {
   /**
+   * Current network namespace establishing ownership identity.
+   */
+  const { key: networkNamespaceKey, } = await currentNetworkNamespace();
+  /**
    * Interface lock covering manifest and config transition.
    */
-  await using interfaceOperation = await claimOpenSnitchInterfaceOperation({ interfaceName, },);
+  await using interfaceOperation = await claimOpenSnitchInterfaceOperation({
+    interfaceName,
+    networkNamespaceKey,
+  },);
   /**
    * Prior lifecycle state surviving normal operation or interrupted transition.
    */
-  const previous = await readOpenSnitchState({ interfaceName, },);
+  const previous = await readOpenSnitchState({
+    interfaceName,
+    networkNamespaceKey,
+  },);
   /**
    * Effective validated startup path or daemon-absence sentinel.
    */
@@ -93,6 +104,7 @@ export async function installOpenSnitchEndpointAllowance(
     path: resolvedPath,
     interfaceName,
     endpointPorts,
+    networkNamespaceKey,
   },);
   if ((typeof inspection) === 'symbol') {
     if (inspection !== OPENSNITCH_CONFIG_ABSENT)
@@ -117,6 +129,7 @@ export async function installOpenSnitchEndpointAllowance(
   await writeOpenSnitchState({
     interfaceName,
     state: {
+      networkNamespaceKey,
       path: resolvedPath,
       ports: transitionPorts,
     },
@@ -128,6 +141,7 @@ export async function installOpenSnitchEndpointAllowance(
     path: resolvedPath,
     interfaceName,
     endpointPorts,
+    networkNamespaceKey,
     previousManagedPorts: transitionPorts,
     requireEnabled: true,
     verifyLive: true,
@@ -144,12 +158,16 @@ export async function installOpenSnitchEndpointAllowance(
     .ports
     .length;
   if (managedPortCount === 0) {
-    await removeOpenSnitchState({ interfaceName, },);
+    await removeOpenSnitchState({
+      interfaceName,
+      networkNamespaceKey,
+    },);
     return;
   }
   await writeOpenSnitchState({
     interfaceName,
     state: {
+      networkNamespaceKey,
       path: result.path,
       ports: result.ports,
     },
@@ -187,13 +205,23 @@ export async function removeOpenSnitchEndpointAllowance(
 ): Promise<void> {
   try {
     /**
+     * Current network namespace establishing ownership identity.
+     */
+    const { key: networkNamespaceKey, } = await currentNetworkNamespace();
+    /**
      * Interface lock covering manifest and config transition.
      */
-    await using interfaceOperation = await claimOpenSnitchInterfaceOperation({ interfaceName, },);
+    await using interfaceOperation = await claimOpenSnitchInterfaceOperation({
+      interfaceName,
+      networkNamespaceKey,
+    },);
     /**
      * Persisted exact cleanup target when installation reached ownership transition.
      */
-    const persisted = await readOpenSnitchState({ interfaceName, },);
+    const persisted = await readOpenSnitchState({
+      interfaceName,
+      networkNamespaceKey,
+    },);
     if ((typeof persisted) !== 'symbol') {
       await removePersistedOpenSnitchAllowance({
         interfaceName,
@@ -216,6 +244,7 @@ export async function removeOpenSnitchEndpointAllowance(
       path,
       interfaceName,
       endpointPorts: [],
+      networkNamespaceKey,
       previousManagedPorts: [],
       requireEnabled: false,
       verifyLive: false,

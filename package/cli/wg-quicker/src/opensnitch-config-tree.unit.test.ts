@@ -173,6 +173,45 @@ await describe({
         },),
 
         it({
+          name: 'retains same interface rules owned by another network namespace',
+          fn: async () => {
+            const first = reconcileOpenSnitchConfig({
+              document: fixtureDocument({ rules: [], }),
+              interfaceName: 'wg0',
+              endpointPorts: [2_049,],
+              networkNamespaceKey: 'namespace-a',
+              path: '/tmp/system-fw.json',
+              requireEnabled: true,
+            },);
+            const second = reconcileOpenSnitchConfig({
+              document: first.document,
+              interfaceName: 'wg0',
+              endpointPorts: [51_820,],
+              networkNamespaceKey: 'namespace-b',
+              path: '/tmp/system-fw.json',
+              requireEnabled: true,
+            },);
+            /**
+             * Target rules after independent namespace installation.
+             */
+            const rules = ((second.document.SystemRules as readonly {
+              readonly Chains: readonly { readonly Rules: readonly unknown[]; }[];
+            }[])[0]?.Chains[0]?.Rules) ?? [];
+            expect(rules,).toHaveLength(2,);
+            const removedSecond = reconcileOpenSnitchConfig({
+              document: second.document,
+              interfaceName: 'wg0',
+              endpointPorts: [],
+              networkNamespaceKey: 'namespace-b',
+              path: '/tmp/system-fw.json',
+              requireEnabled: false,
+            },);
+            expect(JSON.stringify(removedSecond.document,),).toContain('[netns:namespace-a]',);
+            expect(JSON.stringify(removedSecond.document,),).not.toContain('[netns:namespace-b]',);
+          },
+        },),
+
+        it({
           name: 'recovers persisted port after JSON rule was already removed',
           fn: async () => {
             const recovered = reconcileOpenSnitchConfig({

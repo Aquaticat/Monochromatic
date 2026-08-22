@@ -37,15 +37,27 @@ function isRecord(value: unknown,): value is JsonRecord {
  *
  * @param interfaceName - WireGuard interface owning rules.
  *
- * @returns Prefix with unambiguous interface delimiter.
+ * @param networkNamespaceKey - Namespace-specific ownership identity.
+ *
+ * @returns Prefix with unambiguous interface and namespace delimiters.
  *
  * @example
  * ```ts
- * managedPrefix({ interfaceName: 'wg0' });
+ * managedPrefix({ interfaceName: 'wg0', networkNamespaceKey: 'abc123' });
  * ```
  */
-export function managedPrefix({ interfaceName, }: { readonly interfaceName: string; },): string {
-  return `${MANAGED_DESCRIPTION_PREFIX} [${interfaceName}] UDP destination port `;
+export function managedPrefix(
+  {
+    interfaceName,
+    networkNamespaceKey,
+  }: {
+    readonly interfaceName: string;
+    readonly networkNamespaceKey: string;
+  },
+): string {
+  if (networkNamespaceKey === '')
+    return `${MANAGED_DESCRIPTION_PREFIX} [${interfaceName}] UDP destination port `;
+  return `${MANAGED_DESCRIPTION_PREFIX} [${interfaceName}] [netns:${networkNamespaceKey}] UDP destination port `;
 }
 
 /**
@@ -85,21 +97,25 @@ export function isManagedRule(
  *
  * @param interfaceName - WireGuard interface owning rule.
  *
+ * @param networkNamespaceKey - Namespace-specific ownership identity.
+ *
  * @param port - UDP destination port accepted before NFQUEUE.
  *
  * @returns OpenSnitch version 1 rule object.
  *
  * @example
  * ```ts
- * createManagedRule({ interfaceName: 'wg0', port: 51820 });
+ * createManagedRule({ interfaceName: 'wg0', networkNamespaceKey: 'abc123', port: 51820 });
  * ```
  */
 export function createManagedRule(
   {
     interfaceName,
+    networkNamespaceKey,
     port,
   }: {
     readonly interfaceName: string;
+    readonly networkNamespaceKey: string;
     readonly port: number;
   },
 ): JsonRecord {
@@ -107,7 +123,10 @@ export function createManagedRule(
     UUID: randomUUID(),
     Enabled: true,
     Position: '0',
-    Description: `${managedPrefix({ interfaceName, },)}${String(port,)}`,
+    Description: `${managedPrefix({
+      interfaceName,
+      networkNamespaceKey,
+    },)}${String(port,)}`,
     Parameters: '',
     Expressions: [
       {

@@ -115,19 +115,32 @@ async function claimOpenSnitchConfigOperation(
  *
  * @param interfaceName - WireGuard interface identity.
  *
+ * @param networkNamespaceKey - Namespace-specific ownership identity.
+ *
  * @returns Crash-safe advisory lock guard.
  *
  * @example
  * ```ts
- * await using lock = await claimOpenSnitchInterfaceOperation({ interfaceName: 'wg0' });
+ * await using lock = await claimOpenSnitchInterfaceOperation({
+ *   interfaceName: 'wg0',
+ *   networkNamespaceKey: 'abc123',
+ * });
  * ```
  */
 export async function claimOpenSnitchInterfaceOperation(
-  { interfaceName, }: { readonly interfaceName: string; },
+  {
+    interfaceName,
+    networkNamespaceKey,
+  }: {
+    readonly interfaceName: string;
+    readonly networkNamespaceKey: string;
+  },
 ): Promise<AsyncDisposable> {
   await ensureOpenSnitchRuntimeDirectory();
   return await claimOperationLock({
-    lockPath: `${bypassRuntimeDirectory()}/opensnitch-interface-${bypassStateKey({ interfaceName, },)}.operation.lock`,
+    lockPath: `${bypassRuntimeDirectory()}/opensnitch-interface-${bypassStateKey({
+      interfaceName: `${interfaceName}\0${networkNamespaceKey}`,
+    },)}.operation.lock`,
     conflictMessage: `Another wg-quicker lifecycle is changing ${interfaceName} OpenSnitch rules.`,
     errorFactory: makeOpenSnitchConfigError,
   },);
@@ -168,11 +181,18 @@ export async function resolveOpenSnitchPath(
  *
  * @param endpointPorts - Desired endpoint ports.
  *
+ * @param networkNamespaceKey - Namespace-specific ownership identity.
+ *
  * @returns Dry reconciliation metadata or absence sentinel.
  *
  * @example
  * ```ts
- * await inspectOpenSnitchConfig({ path, interfaceName: 'wg0', endpointPorts: [51820] });
+ * await inspectOpenSnitchConfig({
+ *   path,
+ *   interfaceName: 'wg0',
+ *   endpointPorts: [51820],
+ *   networkNamespaceKey: 'abc123',
+ * });
  * ```
  */
 export async function inspectOpenSnitchConfig(
@@ -180,10 +200,12 @@ export async function inspectOpenSnitchConfig(
     path,
     interfaceName,
     endpointPorts,
+    networkNamespaceKey,
   }: {
     readonly path: string;
     readonly interfaceName: string;
     readonly endpointPorts: readonly number[];
+    readonly networkNamespaceKey: string;
   },
 ): Promise<OpenSnitchConfigMutation | typeof OPENSNITCH_CONFIG_ABSENT> {
   /**
@@ -199,6 +221,7 @@ export async function inspectOpenSnitchConfig(
     },),
     interfaceName,
     endpointPorts,
+    networkNamespaceKey,
     path,
     requireEnabled: true,
   },);
@@ -212,6 +235,8 @@ export async function inspectOpenSnitchConfig(
  * @param interfaceName - WireGuard interface owning rules.
  *
  * @param endpointPorts - Desired endpoint ports; empty removes rules.
+ *
+ * @param networkNamespaceKey - Namespace-specific ownership identity.
  *
  * @param previousManagedPorts - Persisted ports requiring crash-recovery verification.
  *
@@ -227,6 +252,7 @@ export async function inspectOpenSnitchConfig(
  *   path,
  *   interfaceName: 'wg0',
  *   endpointPorts: [51820],
+ *   networkNamespaceKey: 'abc123',
  *   previousManagedPorts: [],
  *   requireEnabled: true,
  *   verifyLive: true,
@@ -238,6 +264,7 @@ export async function reconcileOpenSnitchEndpointAllowance(
     path,
     interfaceName,
     endpointPorts,
+    networkNamespaceKey,
     previousManagedPorts,
     requireEnabled,
     verifyLive,
@@ -245,6 +272,7 @@ export async function reconcileOpenSnitchEndpointAllowance(
     readonly path: string;
     readonly interfaceName: string;
     readonly endpointPorts: readonly number[];
+    readonly networkNamespaceKey: string;
     readonly previousManagedPorts: readonly number[];
     readonly requireEnabled: boolean;
     readonly verifyLive: boolean;
@@ -276,6 +304,7 @@ export async function reconcileOpenSnitchEndpointAllowance(
     },),
     interfaceName,
     endpointPorts,
+    networkNamespaceKey,
     path,
     requireEnabled,
     previousManagedPorts,
@@ -321,6 +350,7 @@ export async function reconcileOpenSnitchEndpointAllowance(
         },),
         interfaceName,
         endpointPorts,
+        networkNamespaceKey,
         path,
         requireEnabled,
         previousManagedPorts,
@@ -397,6 +427,7 @@ export async function removePersistedOpenSnitchAllowance(
     path: state.path,
     interfaceName,
     endpointPorts: [],
+    networkNamespaceKey: state.networkNamespaceKey,
     previousManagedPorts: state.ports,
     requireEnabled: false,
     verifyLive: true,
@@ -409,5 +440,8 @@ export async function removePersistedOpenSnitchAllowance(
     }
     throw new OpenSnitchConfigError('Unexpected OpenSnitch removal result.',);
   }
-  await removeOpenSnitchState({ interfaceName, },);
+  await removeOpenSnitchState({
+    interfaceName,
+    networkNamespaceKey: state.networkNamespaceKey,
+  },);
 }

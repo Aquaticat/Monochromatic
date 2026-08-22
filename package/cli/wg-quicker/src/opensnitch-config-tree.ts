@@ -253,6 +253,8 @@ function findTargetChain(
  *
  * @param endpointPorts - Desired endpoint UDP ports.
  *
+ * @param networkNamespaceKey - Namespace-specific ownership identity.
+ *
  * @param path - Source path used in diagnostics.
  *
  * @param requireEnabled - Whether disabled firewall rejects operation.
@@ -269,6 +271,7 @@ function findTargetChain(
  *   document,
  *   interfaceName: 'wg0',
  *   endpointPorts: [51820],
+ *   networkNamespaceKey: 'abc123',
  *   path: '/etc/opensnitchd/system-fw.json',
  *   requireEnabled: true,
  * });
@@ -279,6 +282,7 @@ export function reconcileOpenSnitchConfig(
     document,
     interfaceName,
     endpointPorts,
+    networkNamespaceKey = '',
     path,
     requireEnabled,
     previousManagedPorts = [],
@@ -286,6 +290,7 @@ export function reconcileOpenSnitchConfig(
     readonly document: JsonRecord;
     readonly interfaceName: string;
     readonly endpointPorts: readonly number[];
+    readonly networkNamespaceKey?: string;
     readonly path: string;
     readonly requireEnabled: boolean;
     readonly previousManagedPorts?: readonly number[];
@@ -318,7 +323,10 @@ export function reconcileOpenSnitchConfig(
   /**
    * Interface-owned description prefix.
    */
-  const prefix = managedPrefix({ interfaceName, },);
+  const prefix = managedPrefix({
+    interfaceName,
+    networkNamespaceKey,
+  },);
   /**
    * Unrelated and other-interface rules retained in order.
    */
@@ -358,6 +366,7 @@ export function reconcileOpenSnitchConfig(
   const managedRules = managedPorts.map(function toRule(port,): JsonRecord {
     return createManagedRule({
       interfaceName,
+      networkNamespaceKey,
       port,
     },);
   },);

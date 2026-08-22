@@ -1,9 +1,11 @@
+import { createHash, } from 'node:crypto';
 import {
   chmod,
   link as createHardLink,
   mkdtemp,
   readFile,
   readdir,
+  readlink,
   rm,
   stat,
   symlink,
@@ -24,6 +26,43 @@ import {
   OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT,
   removeOpenSnitchEndpointAllowance,
 } from '../dist/final/node/opensnitch.mjs';
+
+/**
+ * Current namespace key matching production ownership derivation.
+ */
+const NETWORK_NAMESPACE_KEY = createHash('sha256',)
+  .update(await readlink('/proc/self/ns/net',),)
+  .digest('hex',)
+  .slice(
+    0,
+    32,
+  );
+
+/**
+ * Creates scoped managed-rule description for current test namespace.
+ *
+ * @param interfaceName - WireGuard interface owner.
+ *
+ * @param port - Exact endpoint destination port.
+ *
+ * @returns Production-format ownership description.
+ *
+ * @example
+ * ```ts
+ * managedDescription({ interfaceName: 'wg0', port: 51820 });
+ * ```
+ */
+function managedDescription(
+  {
+    interfaceName,
+    port,
+  }: {
+    readonly interfaceName: string;
+    readonly port: number;
+  },
+): string {
+  return `wg-quicker managed endpoint [${interfaceName}] [netns:${NETWORK_NAMESPACE_KEY}] UDP destination port ${String(port,)}`;
+}
 
 /**
  * Disposable OpenSnitch config fixture and environment restoration.
@@ -306,6 +345,48 @@ await describe({
         },),
 
         it({
+          name: 'rejects relative daemon config override',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            process.env.WG_QUICKER_OPENSNITCH_DAEMON_CONFIG = 'relative-default-config.json';
+            let caught: unknown;
+            try {
+              await installOpenSnitchEndpointAllowance({
+                interfaceName: 'wg0',
+                endpointPorts: [51_820,],
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('must be an absolute path',);
+          },
+        },),
+
+        it({
+          name: 'rejects relative runtime directory override',
+          fn: async () => {
+            await using fixture = await createFixture({
+              content: `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`,
+            },);
+            process.env.WG_QUICKER_RUNTIME_DIRECTORY = 'relative-runtime';
+            let caught: unknown;
+            try {
+              await installOpenSnitchEndpointAllowance({
+                interfaceName: 'wg0',
+                endpointPorts: [51_820,],
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('WG_QUICKER_RUNTIME_DIRECTORY must be an absolute path',);
+          },
+        },),
+
+        it({
           name: 'rejects relative daemon FwOptions config path',
           fn: async () => {
             await using fixture = await createFixture({
@@ -400,8 +481,11 @@ await describe({
             const rules = await readRules({ path: fixture.configPath, },);
             expect(rules,).toHaveLength(2,);
             expect(rules[0]?.Position,).toBe('0',);
-            expect(rules[0]?.Description,).toBe(
-              'wg-quicker managed endpoint [wg0] UDP destination port 2049',
+            expect(rules[0]?.Description,).toEqual(
+              expect.stringContaining('wg-quicker managed endpoint [wg0] [netns:',),
+            );
+            expect(rules[0]?.Description,).toEqual(
+              expect.stringContaining('] UDP destination port 2049',),
             );
             expect((await stat(fixture.configPath,)).mode & 0o777,).toBe(0o640,);
             expect(warning,).toHaveBeenCalledWith(
@@ -471,8 +555,8 @@ await describe({
           name: 'removes only requested interface rules',
           fn: async () => {
             const rules = [
-              { Description: 'wg-quicker managed endpoint [wg0] UDP destination port 2049', },
-              { Description: 'wg-quicker managed endpoint [wg1] UDP destination port 51820', },
+              { Description: managedDescription({ interfaceName: 'wg0', port: 2_049, }), },
+              { Description: managedDescription({ interfaceName: 'wg1', port: 51_820, }), }
               { Description: 'user rule', },
             ];
             await using fixture = await createFixture({
@@ -521,7 +605,7 @@ await describe({
           name: 'uses explicit removal path despite malformed daemon config',
           fn: async () => {
             const rules = [
-              { Description: 'wg-quicker managed endpoint [wg0] UDP destination port 2049', },
+              { Description: managedDescription({ interfaceName: 'wg0', port: 2_049, }), },
             ];
             await using fixture = await createFixture({
               content: `${JSON.stringify(systemFirewall({ rules, },), null, 2,)}\n`,
