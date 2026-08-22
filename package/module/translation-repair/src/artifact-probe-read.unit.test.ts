@@ -367,7 +367,7 @@ await describe({
           path: 'Kitten',
         },);
         expect(reading.readings,).toHaveLength(1,);
-        expect(reading.shippedRecords,).toBe(1,);
+        expect(reading.repairShippedRecords,).toBe(1,);
         expect(reading.readings[0]
           ?.regions[0]
           ?.envelopeId,).toBe('envelope/nap',);
@@ -656,8 +656,8 @@ await describe({
           path: 'Kitten',
         },);
         expect(reading.readings,).toHaveLength(0,);
-        expect(reading.shippedRecords,).toBe(1,);
-        expect(reading.unprobedRecords,).toBe(1,);
+        expect(reading.repairShippedRecords,).toBe(1,);
+        expect(reading.repairUnprobedRecords,).toBe(1,);
       },
     },),
 
@@ -736,8 +736,8 @@ await describe({
           path: 'Kitten',
         },);
         expect(reading.readings,).toHaveLength(0,);
-        expect(reading.shippedRecords,).toBe(0,);
-        expect(reading.unprobedRecords,).toBe(0,);
+        expect(reading.repairShippedRecords,).toBe(0,);
+        expect(reading.repairUnprobedRecords,).toBe(0,);
       },
     },),
   ],

@@ -116,7 +116,7 @@ export type OwnedProbeReading = {
  *
  * @example
  * ```ts
- * const reading: ArtifactProbeReading = { readings: [], shippedRecords: 3, unprobedRecords: 1, };
+ * const reading: ArtifactProbeReading = { readings: [], repairShippedRecords: 3, repairUnprobedRecords: 1, };
  * ```
  */
 export type ArtifactProbeReading = {
@@ -138,15 +138,30 @@ export type ArtifactProbeReading = {
   readonly owned: readonly OwnedProbeReading[];
 
   /**
-   * Shipped records seen, probed or not, so a run whose probe never fired is
-   * distinguishable from one that had nothing to ship.
+   * Repair-lane records seen, probed or not, so a run whose probe never fired
+   * is distinguishable from one that had nothing to ship.
+   *
+   * NOT SPELLED `shippedRecords`, which it was until 2026-08-22. "Shipped" is
+   * the repair lane's own word for its own output: the record's
+   * `repairDisposition` says that lane applied this replacement to the document
+   * IT built, which is the only thing the probe ever looked at. Two stages sit
+   * between that and any page. The contest can prefer the translate lane's
+   * wording, and the consolidation can replace both; across the 47 settled
+   * artifacts read on 2026-08-22, the contest had not run on 33, so what a page
+   * would carry there is the archive's wording rather than either lane's. Under
+   * the bare word this count reads as a publication count, which it has never
+   * been.
    */
-  readonly shippedRecords: number;
+  readonly repairShippedRecords: number;
 
   /**
-   * Shipped records carrying no probe field at all.
+   * Repair-lane records carrying no probe field at all.
+   *
+   * A SUBSET OF the count beside it, computed as that count minus the readings,
+   * so a zero there forces a zero here and the pair cannot disagree about how
+   * much there was to read.
    */
-  readonly unprobedRecords: number;
+  readonly repairUnprobedRecords: number;
 
   /**
    * Readings of the NATURALNESS lane's own rewrites.
@@ -428,8 +443,8 @@ export function readArtifactProbe(
   return {
     readings,
     owned,
-    shippedRecords: shipped.length,
-    unprobedRecords: shipped.length - readings.length,
+    repairShippedRecords: shipped.length,
+    repairUnprobedRecords: shipped.length - readings.length,
     refinementReadings,
     // Read as plain strings and NOT validated into a vocabulary. These feed a
     // coverage count that says whether a stage could speak, and a run whose

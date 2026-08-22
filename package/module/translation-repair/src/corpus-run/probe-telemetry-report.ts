@@ -87,14 +87,20 @@ export type GatheredProbe = {
   readonly entries: number;
 
   /**
-   * Shipped records seen, probed or not.
+   * Repair-lane records seen across every artifact read, probed or not.
+   *
+   * THE DENOMINATOR EVERY PROBE RATE DIVIDES BY. Named for its lane because
+   * "shipped" is the repair lane's word for its own output, not a claim that
+   * any page carries it: the contest and the consolidation both sit downstream
+   * of the disposition this counts.
    */
-  readonly shippedRecords: number;
+  readonly repairShippedRecords: number;
 
   /**
-   * Shipped records carrying no probe field.
+   * Repair-lane records carrying no probe field, a subset of the count beside
+   * it.
    */
-  readonly unprobedRecords: number;
+  readonly repairUnprobedRecords: number;
 };
 
 /**
@@ -117,9 +123,9 @@ export function reportProbeTelemetry(
   const summary = summarizeProbeTelemetry({ entries: gathered.readings, },);
 
   console.log(
-    `PROBE entries=${String(gathered.entries,)} shippedRecords=${
-      String(gathered.shippedRecords,)
-    } unprobedRecords=${String(gathered.unprobedRecords,)} regions=${
+    `PROBE entries=${String(gathered.entries,)} repairShippedRecords=${
+      String(gathered.repairShippedRecords,)
+    } repairUnprobedRecords=${String(gathered.repairUnprobedRecords,)} regions=${
       String(summary.regions,)
     } majorityIntroduced=${String(summary.majorityIntroduced,)} minorityIntroduced=${
       String(summary.minorityIntroduced,)

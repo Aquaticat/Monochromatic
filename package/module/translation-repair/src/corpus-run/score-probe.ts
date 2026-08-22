@@ -177,21 +177,21 @@ async function gatherReadings(
       },)
       .length,
     entries: perEntry.length,
-    shippedRecords: perEntry.reduce(
+    repairShippedRecords: perEntry.reduce(
       function addShipped(
       sum,
       entry,
     ) {
-      return sum + entry.shippedRecords;
+      return sum + entry.repairShippedRecords;
     },
       0,
     ),
-    unprobedRecords: perEntry.reduce(
+    repairUnprobedRecords: perEntry.reduce(
       function addUnprobed(
       sum,
       entry,
     ) {
-      return sum + entry.unprobedRecords;
+      return sum + entry.repairUnprobedRecords;
     },
       0,
     ),
