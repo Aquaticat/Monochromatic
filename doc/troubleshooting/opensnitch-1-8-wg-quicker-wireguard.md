@@ -9,6 +9,9 @@ The verified IPv4 and nftables setup now works with OpenSnitch's default `allow`
 The command warns that each managed rule accepts any process's outbound UDP to that destination port before
 application filtering,
 and removes the rule on `down` or failed-`up` rollback.
+A private lifecycle manifest preserves the original file and ports across crashes,
+path changes,
+and missing-link retries until live removal is proved.
 
 The live boundary test covered IPv4,
 the nftables backend,
@@ -351,14 +354,21 @@ The released 1.8.0 defaults in
 
 An explicit `WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` takes precedence.
 Otherwise,
-`package/cli/wg-quicker/src/opensnitch-daemon-config.ts:181-232` reads `FwOptions.ConfigPath` from the selected
-daemon config.
+`package/cli/wg-quicker/src/opensnitch-daemon-config.ts:212-278` reads absolute `FwOptions.ConfigPath` from the
+selected daemon config.
 The final strict-deny fixture set only `WG_QUICKER_OPENSNITCH_DAEMON_CONFIG`,
 resolved a non-default watched system-firewall path,
 and passed traffic.
 
+Before config mutation,
+`package/cli/wg-quicker/src/opensnitch-state.ts:258-330` atomically persists interface-owned config path and
+potential ports in private runtime state.
+Cleanup uses that recorded path even if daemon `FwOptions.ConfigPath` changes while the interface is up.
+It clears state only after config reconciliation and live-chain proof succeed.
+
 Cleanup removes owned rules before checking whether the WireGuard link still exists.
-This ordering in `package/cli/wg-quicker/src/tunnel-cleanup.ts:24-34` also recovers an allowance left by an
+`package/cli/wg-quicker/src/tunnel.ts:398-412` retries that removal even when `down` finds the link already absent.
+The ordering in `package/cli/wg-quicker/src/tunnel-cleanup.ts:24-34` also recovers an allowance left by an
 interrupted startup:
 
 ```ts
@@ -377,7 +387,7 @@ Reconciliation records formerly owned exact ports that no retained rule still ac
 The final custom-path fixture checked the chain immediately after `down` and found no managed destination-port
 rule while ICMP and NFQUEUE rules remained.
 
-### OpenSnitch live reload needs one file write event
+### OpenSnitch live reload needs bounded writes and convergence proof
 
 OpenSnitch 1.8.0 reloads its complete system firewall for every filesystem `Write` or `Remove` event.
 `evilsocket/opensnitch@v1.8.0:daemon/firewall/config/config.go:250-258` contains the watcher:
@@ -419,7 +429,7 @@ WAR nftables: error applying changes: conn.Receive: netlink receive: no such fil
 Atomic path replacement was also rejected.
 It changes the inode watched by OpenSnitch and produced unstable second-reload behavior during removal.
 
-The current writer performs one positional write to the existing inode.
+The current writer performs one positional write to the existing inode for each bounded attempt.
 When new JSON is shorter,
 it pads the document with valid trailing JSON whitespace instead of truncating.
 `package/cli/wg-quicker/src/opensnitch-config-file.ts:102-180` contains the workaround:
@@ -448,12 +458,15 @@ const { bytesWritten, } = await handle.write(
 );
 ```
 
-After writing,
-`package/cli/wg-quicker/src/opensnitch.ts:197-249` requires consecutive live nftables listings that contain each
-managed port rule,
-exclude formerly owned exact ports,
-and retain OpenSnitch's queue rule.
-Startup fails and rolls back when an active daemon does not converge.
+The recovery fixture later observed the same daemon diagnostic after some single positional writes.
+One event reduces the trigger surface but does not eliminate OpenSnitch's internal reload race.
+`package/cli/wg-quicker/src/opensnitch-live.ts:179-228` therefore requires consecutive live nftables listings in
+the daemon's network namespace.
+Every managed port rule must precede the first queue rule,
+and formerly owned exact ports must be absent.
+`package/cli/wg-quicker/src/opensnitch-operation.ts:288-338` performs one bounded same-inode rewrite and repeats
+the proof after a missed convergence.
+Startup fails and rolls back when that retry also fails.
 If the daemon is stopped,
 the persisted rule loads at its next start.
 
@@ -464,10 +477,11 @@ the persisted rule loads at its next start.
 The combined test used:
 
 - `wg-quicker` automatic-rule implementation through commit
-  `2ed6aad8f1141df5b43b1dbb8fcc684236c5be56`;
+  `5bc52eca47e689f59f3c3b2a145ef06e3e181890`;
+- missing-link retry wiring commit `0166622637f1ca21eba12a473d5882d98ef5e361`;
 - path-resolution and removal-verification fix commit
   `df738d6622712865caa2d34646bf3eb3f4d517bd`;
-- single-write live-reload fix commit `ba90d31612ac5a09ca498444af1daed21718a81d`;
+- initial single-write live-reload fix commit `ba90d31612ac5a09ca498444af1daed21718a81d`;
 - OpenSnitch release `v1.8.0`,
   commit `b404c4c6316760fa7bc415509d3f8d747f7dc9cc`;
 - released RPM SHA-256 `e06e9119daf764e56455b61c319e496274c0274bb53bb94a0ff1ab72967fea7d`;
@@ -561,7 +575,7 @@ The combined test added OpenSnitch to its client namespace before invoking the r
   WireGuard completed a recent handshake,
   transferred `476 B` received and `532 B` sent,
   and ping received `3` of `3` replies.
-- Current automatic configuration under default action `deny`:
+- Initial automatic configuration under default action `deny`:
   `wg-quicker up` emitted the policy-widening warning,
   inserted its visible config rule,
   produced one OpenSnitch reload callback,
@@ -584,6 +598,25 @@ The combined test added OpenSnitch to its client namespace before invoking the r
   and ping received `3` of `3` replies under default deny.
   Immediately after `down` returned,
   port `2050` was absent while ICMP and NFQUEUE rules remained.
+- Recovery fixture under default action `deny`:
+  endpoint port `2051` was accepted before NFQUEUE,
+  a private manifest recorded the original absolute config path and port,
+  and ping received `3` of `3` replies.
+  After daemon `ConfigPath` changed from fixture path A to path B,
+  `down` removed the rule from path A,
+  left path B untouched,
+  removed the link,
+  and cleared the manifest.
+- Stale-live-rule recovery fixture:
+  with JSON already clean but port `2051` injected into the live chain,
+  `down` retained the manifest after negative proof failed while still removing the WireGuard link.
+  A later cleanup after live state recovered verified absence and cleared the manifest.
+- Missing-link recovery fixture:
+  after the WireGuard link was deleted externally,
+  `down` removed the config rule and manifest before reporting that the link was absent.
+- Network-namespace isolation control:
+  package unit tests passed while released `opensnitchd` ran in a different network namespace;
+  daemon detection excluded that unrelated process by `/proc/<pid>/ns/net` identity.
 - OpenSnitch started before `wg-quicker`:
   both nftables tables coexisted and the default-allow tunnel passed traffic.
 - OpenSnitch restarted while the WireGuard fixture existed,
@@ -607,6 +640,10 @@ The combined test added OpenSnitch to its client namespace before invoking the r
 - A truncate-plus-write implementation emitted two OpenSnitch reload callbacks for one logical edit.
   The daemon logged `conn.Receive: netlink receive: no such file or directory` and dropped system rules.
   One positional write plus whitespace padding replaced that implementation.
+- Released OpenSnitch 1.8.0 also emitted the same diagnostic after some later single-write configuration and cleanup
+  attempts.
+  Consecutive kernel-state proof caught one missed convergence;
+  current `wg-quicker` performs one bounded same-inode rewrite before failing safely.
 - OpenSnitch `Firewall = iptables` does not consume rules nested in the nftables `mangle_output` chain.
   Current `wg-quicker` rejects that backend before writing.
 
@@ -636,11 +673,15 @@ wg-quicker up wg0
 ```
 
 Set `WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` only to override that `FwOptions` path.
+Both effective system-firewall paths must be absolute.
 `wg-quicker` adds the actual peer endpoint ports,
-waits for OpenSnitch's live nftables chain,
+records cleanup ownership before mutation,
+requires accept rules before NFQUEUE,
 and warns with exact scope.
 The disposable strict-deny test verified endpoint port `2049` without restarting the daemon.
 `down` removes the managed rules through the same live-reload path.
+A failed live proof retains private cleanup state;
+a later `down` retries the originally recorded file and ports even if the link or current daemon path changed.
 
 Tradeoff:
 each port-only rule bypasses OpenSnitch application attribution for every process's outbound UDP connection to that
