@@ -7,6 +7,13 @@
  * question, and nothing looks wrong: the slice text matches, so the key
  * matches, and a run publishes wording it never bought.
  *
+ * The INCUMBENT is the member that looks wrong. It reaches no prompt in this
+ * stage at all, and it is in the key because the settlement stores a `changed`
+ * flag computed against it and drops the confirmed set wherever a rewrite
+ * lands back on the archive wording. A key blind to it returns a verdict
+ * reached against wording this run no longer carries, and the resume then
+ * throws rather than correcting itself.
+ *
  * The DEFINITIONS are the case this stage adds over the others. They are
  * collected from the whole assembled document rather than from this slice, so a
  * neighbouring slice settling differently changes what this rewriter is shown.
@@ -59,6 +66,7 @@ const BASE = {
   runShape: RUN_SHAPE,
   sourceText: '猫猫每天下午都在窗台上晒太阳。',
   repairedText: 'The cat sunbathes on the windowsill every afternoon.',
+  incumbentText: 'The cat suns herself on the windowsill each afternoon.',
   definitions: '[nap]: https://example.invalid/nap',
   declaredNames: ['Mimi',],
   issues: [ISSUE,],
@@ -102,6 +110,23 @@ await describe({
           refineSliceKey({
             ...BASE,
             repairedText: 'The cat sunbathes on the sill each afternoon.',
+          },),
+        ).not.toBe(refineSliceKey(BASE,),);
+      },
+    },),
+
+    it({
+      name: 'MOVES WHEN ONLY THE INCUMBENT MOVES, which reads like a mistake '
+        + 'until the stored record is read: no rewriter, judge or checker is '
+        + 'ever shown the archive wording, but the settlement computes '
+        + '`changed` against it and drops the confirmed set wherever a rewrite '
+        + 'lands back on it. A field no model reads still belongs in a key '
+        + 'whose record is computed from it',
+      fn: async () => {
+        expect(
+          refineSliceKey({
+            ...BASE,
+            incumbentText: 'The cat suns herself on the sill each afternoon.',
           },),
         ).not.toBe(refineSliceKey(BASE,),);
       },

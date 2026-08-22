@@ -107,12 +107,32 @@ export function refineRunShape(
  * changes nothing a voice is asked, and keeping the index would discard every
  * settled refinement after a renumbering.
  *
+ * THE INCUMBENT IS IN IT THOUGH IT REACHES NO PROMPT, which reads like a
+ * mistake until the stored record is read. No rewriter, judge or checker is
+ * ever shown the archive wording. The RECORD is computed from it:
+ * `settleRefinedSlice` sets `changed` by comparing its rewrite against the
+ * incumbent, and drops `resolvedIssueIds` wherever the two match, so two runs
+ * over one source and one repaired text but different archive wording settle
+ * differently and would otherwise share a key. `consolidate-key.ts` covers the
+ * standing text for the same reason.
+ *
+ * NOTHING PINS THE INCUMBENT TO THE REPAIRED TEXT one to one. Even where no
+ * current path yields a moved incumbent under an unchanged repaired text, that
+ * is a coincidence of what other stages happen to do rather than an invariant
+ * anything asserts, and what it leaves is not a self-healing rebuy:
+ * `repair-refine-step.ts` throws on any resumed slice whose stored `changed`
+ * disagrees with the incumbent the current run computed.
+ *
  * @param runShape - what this run asks, from {@link refineRunShape}
  *
  * @param sourceText - slice original, which is the faithfulness anchor
  *
  * @param repairedText - what the accuracy pass settled, which is what gets
  * rewritten and what the probe measures damage against
+ *
+ * @param incumbentText - archive wording a rewrite may land back on, which
+ * reaches no prompt and decides both the stored `changed` flag and the
+ * resolutions that flag gates
  *
  * @param definitions - link and footnote definitions of the assembled document,
  * which vary with what every OTHER slice settled
@@ -131,7 +151,7 @@ export function refineRunShape(
  *
  * @example
  * ```ts
- * const key = refineSliceKey({ runShape, sourceText, repairedText, definitions, declaredNames, issues, resolvedIssueIds, nonTranslationStanding, },);
+ * const key = refineSliceKey({ runShape, sourceText, repairedText, incumbentText, definitions, declaredNames, issues, resolvedIssueIds, nonTranslationStanding, },);
  * ```
  */
 export function refineSliceKey(
@@ -139,6 +159,7 @@ export function refineSliceKey(
     runShape,
     sourceText,
     repairedText,
+    incumbentText,
     definitions,
     declaredNames,
     issues,
@@ -148,6 +169,7 @@ export function refineSliceKey(
     readonly runShape: string;
     readonly sourceText: string;
     readonly repairedText: string;
+    readonly incumbentText: string;
     readonly definitions: string;
     readonly declaredNames: readonly string[];
     readonly issues: readonly AdjudicatedIssue[];
@@ -162,6 +184,7 @@ export function refineSliceKey(
       runShape,
       sourceText,
       repairedText,
+      incumbentText,
       definitions,
       declaredNames,
       issues,

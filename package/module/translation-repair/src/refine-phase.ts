@@ -230,11 +230,19 @@ export async function runRefinePhase(
 
     /**
      * Key this slice's refinement answers.
+     *
+     * HANDED THE RESOLVED `incumbentText` RATHER THAN RE-DERIVING IT. The
+     * fallback to `outcome.repairedText` fires wherever no prepared slice
+     * sits at this index, so a key re-reading `prepared?.target.text` would
+     * cover an absent incumbent while the settlement below compared against
+     * the repaired text. The two would then answer different questions on
+     * exactly the path that has no archive wording to check.
      */
     const key = refineSliceKey({
       runShape,
       sourceText,
       repairedText: outcome.repairedText,
+      incumbentText,
       definitions,
       declaredNames,
       issues: outcome.issues,
