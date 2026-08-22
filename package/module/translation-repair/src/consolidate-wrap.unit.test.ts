@@ -64,6 +64,44 @@ function gateSettling(
  */
 const ONE_LONG_LINE = 'The cat naps in the window. She wakes at four. She asks for nothing at all.';
 
+/**
+ * One line-structured passage as it stands in a page nobody has wrapped.
+ *
+ * FLAT ON PURPOSE, and this is the ordinary case rather than a contrived one:
+ * 50 of 64 archive incumbents already violate the line rule, and a retention
+ * keeps the archive's bytes.
+ */
+const VERSE_AS_IT_STANDS = [
+  'The cat wakes. Sun is warm.',
+  '',
+  'She counts birds. Counts again.',
+  '',
+  'The kettle ticks. Time holds.',
+  '',
+  'A door swings. She stays.',
+  '',
+  'The sun moves. She follows.',
+  '',
+  'Dust settles. She sleeps.',
+].join('\n',);
+
+/**
+ * Same passage as a producer obeying the line-structure rule returns it, one
+ * line per unit.
+ */
+const VERSE_UNMERGED = [
+  'The cat wakes.\nSun is warm.',
+  '',
+  'She counts birds.\nCounts again.',
+  '',
+  'The kettle ticks.\nTime holds.',
+  '',
+  'A door swings.\nShe stays.',
+  '',
+  'The sun moves.\nShe follows.',
+  '',
+  'Dust settles.\nShe sleeps.',
+].join('\n',);
 await describe({
   name: wrapConsolidation.name,
   children: [
@@ -206,6 +244,49 @@ await describe({
         },);
 
         expect(shipped.rewrapped,).toBe(true,);
+        expect(shipped.demoted,).toBe(true,);
+      },
+    },),
+    it({
+      name:
+        'SHIPS THE PRODUCER\'S OWN LINES ON A LINE-STRUCTURED SLICE, which is the fixture the '
+        + 'audit owed and could only read off the code. The standing text here is FLAT, so wrapping '
+        + 'it for comparison reproduces exactly the lines a producer obeying the rule emits; the '
+        + 'wrapped path then demotes on that collision and ships the flat text, discarding the exact '
+        + 'repair the rule demands. Measured against the code before the skip, not inferred from it',
+      fn: async () => {
+        const shipped = wrapConsolidation({
+          outcome: gateSettling({ ships: 'consolidated', },),
+          consolidatedText: VERSE_UNMERGED,
+          standingText: VERSE_AS_IT_STANDS,
+          lineStructured: true,
+          l,
+        },);
+
+        expect(shipped.ships,).toBe('consolidated',);
+        expect(shipped.text,).toBe(VERSE_UNMERGED,);
+        expect(shipped.demoted,).toBe(false,);
+        expect(shipped.rewrapped,).toBe(false,);
+      },
+    },),
+
+    it({
+      name:
+        'STILL DEMOTES A GOVERNED PROPOSAL THAT IS THE STANDING TEXT, comparing the two raw. '
+        + 'Skipping the wrap removes every way a re-wrapping could collide, but not the plain case '
+        + 'of a proposal that changes nothing: a replacement identical to its incumbent survives the '
+        + 'footnote guard and lands in the shipped set beside a document nobody changed',
+      fn: async () => {
+        const shipped = wrapConsolidation({
+          outcome: gateSettling({ ships: 'consolidated', },),
+          consolidatedText: VERSE_UNMERGED,
+          standingText: VERSE_UNMERGED,
+          lineStructured: true,
+          l,
+        },);
+
+        expect(shipped.ships,).toBe('standing',);
+        expect(shipped.text,).toBe(VERSE_UNMERGED,);
         expect(shipped.demoted,).toBe(true,);
       },
     },),

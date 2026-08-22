@@ -115,6 +115,11 @@ function recordOf(
   } as unknown as Parameters<typeof wrapTranslateRecords>[0]['settled'][number];
 }
 
+/**
+ * One passage a governed producer returned, carrying sentence boundaries the
+ * wrap would break at if it were allowed to run.
+ */
+const GOVERNED_PRODUCED = 'The cat wakes. Sun is warm. She counts birds.';
 await describe({
   name: wrapTranslateRecords.name,
   children: [
@@ -244,6 +249,30 @@ await describe({
           lineStructuredSlices: new Set(),
           l,
         },).length,).toBe(0,);
+      },
+    },),
+    it({
+      name:
+        'LEAVES A LINE-STRUCTURED SLICE EXACTLY AS PRODUCED, though the wrap would otherwise '
+        + 'change it. The line rule was handed to this producer and it obeyed; the wrap only ever '
+        + 'adds breaks, so running it here would break work every decider had already approved',
+      fn: async () => {
+        const wrapped = wrapTranslateRecords({
+          slices: [pairOf({
+            chunkIndex: 0,
+            incumbentText: 'The cat sleeps on the sill.',
+          },),],
+          settled: [recordOf({
+            chunkIndex: 0,
+            outputText: GOVERNED_PRODUCED,
+            changed: true,
+          },),],
+          lineStructuredSlices: new Set([0,],),
+          l,
+        },);
+
+        expect(wrapped[0]?.outputText,).toBe(GOVERNED_PRODUCED,);
+        expect(wrapped[0]?.changed,).toBe(true,);
       },
     },),
   ],
