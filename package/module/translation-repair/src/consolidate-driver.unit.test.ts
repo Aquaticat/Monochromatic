@@ -124,6 +124,104 @@ function recordingClient(): {
 }
 
 /**
+ * Marker the gate's own sheet carries and no other round does.
+ *
+ * READ OFF `consolidate-gate-wire.ts`. The gate and the slate judges share the
+ * ballot schema, so the schema name alone cannot tell them apart and a case
+ * reading `the judges' sheet` would otherwise be reading the gate's half the time.
+ */
+const GATE_MARKER = 'Return JSON: choice one of "consolidated", "standing"';
+
+/**
+ * Builds a client that records every request and answers each role usefully.
+ *
+ * WHY NOT {@link recordingClient}. That one answers content no sheet can parse,
+ * so every voice is lost and the driver settles on the standing text having
+ * bought nothing. That is exactly right for reading what a PRODUCER was sent,
+ * since the producer round happens before anything can be lost, and useless for
+ * reading a judge's sheet, because no judging round ever runs.
+ *
+ * @returns Client to drive with, beside the judge requests it recorded
+ *
+ * @example
+ * ```ts
+ * const { client, judgeSheets, } = answeringClient();
+ * ```
+ */
+function answeringClient(): {
+  readonly client: SyntheticClient;
+  readonly judgeSheets: readonly string[];
+} {
+  /**
+   * Requests the SLATE judges received, gate rounds excluded.
+   */
+  const judgeSheets: string[] = [];
+
+  return {
+    client: createSyntheticClient({
+      apiKey: 'test-key',
+      transport: async function answerByRole(exchange,) {
+        /**
+         * Everything this call is sending, which is where the sheet lives.
+         */
+        const sent = exchange.bodyJson ?? '';
+
+        /**
+         * Which of the three rounds this call is, decided once so the answer and
+         * the recording cannot disagree about it.
+         *
+         * THE GATE IS CHECKED BEFORE THE BALLOT, because both ask for the same
+         * schema and only the gate's own wording separates them.
+         */
+        const role = sent.includes('translation_report',)
+          ? 'produce'
+          : (sent.includes(GATE_MARKER,) ? 'gate' : 'judge');
+
+        /**
+         * Reply each round is given.
+         */
+        const answers: Record<string, string> = {
+          produce: JSON.stringify({ translation: 'A cat asleep in the sun.', },),
+          gate: JSON.stringify({
+            choice: 'standing',
+            unsupported: [],
+            dropped: [],
+            reason: 'the original supports it',
+          },),
+          judge: JSON.stringify({
+            best: 1,
+            reason: 'it says what the original says',
+          },),
+        };
+
+        /**
+         * Reply body for whichever role asked.
+         */
+        const answer = answers[role] ?? '';
+
+        if (role === 'judge')
+          judgeSheets.push(sent,);
+
+        return {
+          status: 200,
+          bodyText: `data: ${
+            JSON.stringify({
+              choices: [
+                {
+                  index: 0,
+                  delta: { content: answer, },
+                },
+              ],
+            },)
+          }\n\ndata: [DONE]\n\n`,
+        };
+      },
+    },),
+    judgeSheets,
+  };
+}
+
+/**
  * Builds both ledgers for a document of two slices.
  *
  * @returns Projection shaped as the lanes leave one
@@ -478,6 +576,64 @@ await describe({
         expect(bodies.some(function carriesReading(body,): boolean {
           return body.includes('the photograph shows a tabby asleep on a stack of library books',);
         },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS THE SLATE JUDGES WHAT ITS PICTURES SAY AND WHAT STANDS EITHER SIDE. `#176` gave the '
+        + 'readings to this stage\'s PRODUCERS and stopped, so for one day the judges weighed proposals '
+        + 'written against evidence they could not see, which is worse than both being blind: a producer '
+        + 'that used a picture correctly looked to its judge like one inventing detail. The window was '
+        + 'never shown to either half. Both are read off the judges\' own request, which is the only '
+        + 'place the wiring is visible',
+      fn: async () => {
+        const { client, judgeSheets, } = answeringClient();
+
+        await driveWith({
+          client,
+          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          pictureContextBySlice: new Map([[0, 'The photograph shows a tortoiseshell asleep in a sunlit doorway.',],],),
+          neighbourContextBySlice: new Map([[
+            0,
+            {
+              sourceText: '她把窗户推开了一条缝。',
+              incumbentText: 'She pushed the window open a crack.',
+            },
+          ],],),
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(
+          judgeSheets.every(function carriesEvidence(sheet,): boolean {
+            return sheet.includes('tortoiseshell asleep in a sunlit doorway',)
+              && sheet.includes('她把窗户推开了一条缝',)
+              && sheet.includes('She pushed the window open a crack',);
+          },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS THEM NEITHER WHEN THE DRIVER HOLDS NEITHER, which is the control the case above needs. '
+        + 'A sheet that rendered these blocks unconditionally would satisfy that one just as well and would '
+        + 'mean the two maps were never read, and a slice near no readable picture would be shown a '
+        + 'heading promising readings it does not have',
+      fn: async () => {
+        const { client, judgeSheets, } = answeringClient();
+
+        await driveWith({
+          client,
+          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(
+          judgeSheets.some(function carriesEvidence(sheet,): boolean {
+            return sheet.includes('tortoiseshell',)
+              || sheet.includes('她把窗户推开了一条缝',)
+              || sheet.includes('She pushed the window open a crack',);
+          },),
+        ).toBe(false,);
       },
     },),
   ],

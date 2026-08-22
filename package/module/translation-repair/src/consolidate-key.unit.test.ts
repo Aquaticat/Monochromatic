@@ -156,6 +156,41 @@ await describe({
     },),
 
     it({
+      name: 'SEPARATES A SLICE JUDGED WITH A WINDOW FROM ONE JUDGED WITHOUT, because from 2026-08-22 the '
+        + 'judges of a consolidation are shown the passages either side. A settlement decided without them '
+        + 'answered a different question, and handing it back for a windowed slice would return an answer '
+        + 'to a question nobody asked, which is `#95`',
+      fn: async () => {
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({
+            ...SLICE,
+            neighbouringSourceText: '她把窗户推开了一条缝。',
+          },),
+        );
+      },
+    },),
+
+    it({
+      name: 'SEPARATES A SOURCE-ONLY WINDOW FROM AN INCUMBENT-ONLY ONE, which is why the two sides carry '
+        + 'their own labels rather than sharing one. A slice can stand beside a section the archive never '
+        + 'translated, so the two are independently absent, and folding them under a single label would '
+        + 'let a run shown only the Chinese resume a run shown only the English',
+      fn: async () => {
+        expect(
+          consolidateSliceKey({
+            ...SLICE,
+            neighbouringSourceText: 'beside it',
+          },),
+        ).not.toBe(
+          consolidateSliceKey({
+            ...SLICE,
+            neighbouringIncumbentText: 'beside it',
+          },),
+        );
+      },
+    },),
+
+    it({
       name: 'PINS THE KEY TO A LITERAL, so a change to this material has to be made on purpose. The value '
         + 'moved once, on 2026-08-22, when `CONSOLIDATE_CACHE_VERSION` went to 2. That bump was not a '
         + 'change to any field here: it answered a change the material CANNOT SEE. The judges deciding a '
