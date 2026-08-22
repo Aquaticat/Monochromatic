@@ -67,6 +67,16 @@ const TEXT_ONLY: SyntheticModelId = 'hf:openai/gpt-oss-120b';
 const OVERSIZED_BYTES = 9_000_000;
 
 /**
+ * Size sitting between the ceiling this stage configures and the one it
+ * configured until 2026-08-22.
+ *
+ * BETWEEN THEM ON PURPOSE. 7340032 refuses this and 8388608 admits it, so a
+ * case built on this size is the only thing in the suite that can tell the two
+ * numbers apart. `OVERSIZED_BYTES` clears both and would pass under either.
+ */
+const PAST_THE_NEW_CEILING_ONLY = 8_000_000;
+
+/**
  * Transcription a reader returns for the picture under test.
  */
 const A_READING = '虎斑猫 Mittens，2019 年领养，联系方式 @mittenspaw。';
@@ -264,6 +274,37 @@ await describe({
           client,
           modelId: READER,
           bytes: bytesOf({ length: OVERSIZED_BYTES, },),
+          assetName: 'mittens.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+
+        expect(reading.kind,).toBe('unavailable',);
+        if (reading.kind !== 'unavailable')
+          throw new Error('unavailable by construction',);
+        expect(reading.reason,).toBe('too-large-for-transport',);
+        expect(requests.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES AT THE CEILING THE MEASUREMENT DECIDED, not at the one it replaced. This '
+        + 'size clears 7340032 and does not clear 8388608, so it is the only input in the suite '
+        + 'that can tell those two numbers apart. The old ceiling mapped onto a request body of '
+        + '11185335 bytes against the 10485760 measured to pass, which means the guard against '
+        + 'oversize requests was itself admitting requests the gateway rejects, and rejecting '
+        + 'them as a parse error naming our JSON',
+      fn: async () => {
+        const { client, requests, } = replyingClient({ text: A_READING, },);
+
+        /**
+         * Attempt with a picture between the two ceilings.
+         */
+        const reading = await readImageAsset({
+          client,
+          modelId: READER,
+          bytes: bytesOf({ length: PAST_THE_NEW_CEILING_ONLY, },),
           assetName: 'mittens.webp',
           signal: AbortSignal.timeout(30_000,),
           perCallTimeoutMs: 30_000,
