@@ -1,6 +1,7 @@
 import {
   alignDocumentSections,
   type ChunkPair,
+  describeAlignmentAttachment,
 } from './chunk-document.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
 import {
@@ -203,7 +204,9 @@ export function prepareDocumentPair(
    */
   const sectionFindings = alignment.findings
     .map(function toText(finding,): string {
-      return `alignment ${finding.kind} (pair ${String(finding.pairIndex,)}: ${finding.detail})`;
+      return `alignment ${finding.kind} (${
+        describeAlignmentAttachment({ attachedTo: finding.attachedTo, },)
+      }: ${finding.detail})`;
     },);
 
   /**

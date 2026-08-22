@@ -64,13 +64,85 @@ export type ChunkPair = {
 };
 
 /**
+ * Where an alignment observation attaches, naming the numbering it counts in.
+ *
+ * A UNION RATHER THAN A NUMBER, because the three cases count in three
+ * different spaces. A refused chunk has only the index it holds on its OWN
+ * side, and that side's numbering need not line up with the pairs a run
+ * produced. A whole-document observation has no index at all and used to
+ * borrow zero. Rendered together as `pair N`, all three read as one space,
+ * and a reader meeting `pair 0` could not tell which one it lived in.
+ *
+ * @example
+ * ```ts
+ * const attachedTo: AlignmentAttachment = { kind: 'source-section', index: 2, };
+ * ```
+ */
+export type AlignmentAttachment =
+  | {
+    /**
+     * Observation about the two documents rather than about any one section.
+     */
+    readonly kind: 'whole-document';
+  }
+  | {
+    /**
+     * Section of the ORIGINAL side, counted in that side's own numbering.
+     */
+    readonly kind: 'source-section';
+
+    /**
+     * Position on that side, which no pair index need match.
+     */
+    readonly index: number;
+  }
+  | {
+    /**
+     * Section of the TRANSLATED side, counted in that side's own numbering.
+     */
+    readonly kind: 'target-section';
+
+    /**
+     * Position on that side, which no pair index need match.
+     */
+    readonly index: number;
+  };
+
+/**
+ * Renders where an observation attaches, in wording naming its numbering.
+ *
+ * SPELLS THE SPACE OUT rather than leaving a bare number, so a refusal
+ * reporting a side index can no longer be read as a pair index. That misread
+ * is the one that sends a reader to the wrong section of the document.
+ *
+ * @param attachedTo - place this observation hangs from
+ *
+ * @returns Phrase naming the numbering, and the index where there is one
+ *
+ * @example
+ * ```ts
+ * const where = describeAlignmentAttachment({ attachedTo: { kind: 'whole-document', }, },);
+ * ```
+ */
+export function describeAlignmentAttachment(
+  { attachedTo, }: { readonly attachedTo: AlignmentAttachment; },
+): string {
+  if (attachedTo.kind === 'whole-document')
+    return 'whole document';
+
+  return `${(attachedTo.kind === 'source-section') ? 'source' : 'target'} section ${
+    String(attachedTo.index,)
+  }`;
+}
+
+/**
  * One structural observation from automatic alignment.
  *
  * @example
  * ```ts
  * const finding: AlignmentFinding = {
  *   kind: 'structure-mismatch',
- *   pairIndex: 2,
+ *   attachedTo: { kind: 'source-section', index: 2, },
  *   detail: 'source-only (no target heading scored above the floor); has no translation to repair',
  * };
  * ```
@@ -87,16 +159,9 @@ export type AlignmentFinding = {
   readonly kind: 'structure-mismatch';
 
   /**
-   * Index the observation attaches to, WHICH IS NOT ALWAYS A PAIR INDEX.
-   *
-   * Whole-document observations use zero. A refusal uses the index of the
-   * unpaired chunk on its OWN side, which is the only index it has, and that
-   * side's numbering need not line up with the pairs a run produced. The name
-   * is kept for now because the scorecard renders it into a finding string that
-   * 56 settled artifacts share, so renaming it is a comparability change rather
-   * than a rename. It moves with `#99`, where what an index means is settled.
+   * Where this observation attaches, carrying the numbering it counts in.
    */
-  readonly pairIndex: number;
+  readonly attachedTo: AlignmentAttachment;
 
   /**
    * Concrete structural description.
@@ -287,7 +352,7 @@ export function alignDocumentSections(
       pairs: [],
       findings: [{
         kind: 'structure-mismatch',
-        pairIndex: 0,
+        attachedTo: { kind: 'whole-document', },
         detail: `one side has no content: source ${String(sourceChunks.length,)} chunks, target ${
           String(targetChunks.length,)
         } chunks`,
@@ -382,7 +447,15 @@ export function alignDocumentSections(
 
       return [{
         kind: 'structure-mismatch',
-        pairIndex: (step.kind === 'source-only') ? step.sourceIndex : step.targetIndex,
+        attachedTo: (step.kind === 'source-only')
+          ? {
+            kind: 'source-section',
+            index: step.sourceIndex,
+          }
+          : {
+            kind: 'target-section',
+            index: step.targetIndex,
+          },
         detail: `${step.kind} (${step.reason}); ${
           (step.kind === 'source-only') ? 'has no translation to repair' : 'passes through unrepaired'
         }`,

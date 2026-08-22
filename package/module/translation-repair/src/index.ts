@@ -59,11 +59,13 @@ export {
   normalizePunctuation,
 } from './quote-normalize.ts';
 export {
+  type AlignmentAttachment,
   type AlignmentFinding,
   alignDocumentSections,
   type ChunkPair,
   chunkByHeadings,
   type ContentChunk,
+  describeAlignmentAttachment,
   type DocumentChunk,
   type InsertionChunk,
   isInsertionChunk,

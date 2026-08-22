@@ -15,6 +15,7 @@ import {
 import {
   alignDocumentSections,
   chunkByHeadings,
+  describeAlignmentAttachment,
   parseDocument,
 } from '../dist/final/node/index.mjs';
 
@@ -211,6 +212,77 @@ await describe({
 
         expect(alignment.pairs,).toHaveLength(3,);
         expect(alignment.findings,).toHaveLength(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: describeAlignmentAttachment.name,
+  children: [
+    it({
+      name: 'NAMES THE WHOLE DOCUMENT rather than borrowing index zero, which is '
+        + 'the reading that made an observation about the two documents '
+        + 'indistinguishable from one about the first pair',
+      fn: async () => {
+        expect(
+          describeAlignmentAttachment({ attachedTo: { kind: 'whole-document', }, },),
+        ).toBe('whole document',);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE ORIGINAL SIDE AND ITS OWN NUMBERING for a refusal there, '
+        + 'because a refused chunk holds only the index it has on its own side '
+        + 'and that side need not count the same way the pairs do',
+      fn: async () => {
+        expect(
+          describeAlignmentAttachment({
+            attachedTo: {
+              kind: 'source-section',
+              index: 3,
+            },
+          },),
+        ).toBe('source section 3',);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE TRANSLATED SIDE SEPARATELY, so two refusals carrying the '
+        + 'same number on opposite sides no longer render as one place',
+      fn: async () => {
+        expect(
+          describeAlignmentAttachment({
+            attachedTo: {
+              kind: 'target-section',
+              index: 3,
+            },
+          },),
+        ).toBe('target section 3',);
+      },
+    },),
+
+    it({
+      name: 'RENDERS A REAL REFUSAL WITHOUT THE WORD PAIR, which is the whole '
+        + 'defect: the aligner reported a side index under the same wording a '
+        + 'genuine pair index uses, and a reader meeting one could not tell '
+        + 'which numbering the number lived in',
+      fn: async () => {
+        /**
+         * Sides whose section counts differ and whose headings share nothing,
+         * so every section is refused rather than paired.
+         */
+        const alignment = alignDocumentSections({
+          source: parseDocument({ text: SOURCE_FIXTURE, },),
+          target: parseDocument({ text: EXTRA_SECTION_FIXTURE, },),
+        },);
+
+        expect(alignment.findings.length,).toBeGreaterThan(0,);
+        for (const finding of alignment.findings)
+          expect(
+            describeAlignmentAttachment({ attachedTo: finding.attachedTo, },)
+              .includes('pair',),
+          ).toBe(false,);
       },
     },),
   ],

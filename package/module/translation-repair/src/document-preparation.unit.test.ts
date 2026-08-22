@@ -160,6 +160,38 @@ The cat also likes sunbathing.
     },),
 
     it({
+      name: 'RENDERS A REFUSAL WITHOUT THE WORD PAIR, because the number in a '
+        + 'refusal is an index on the refused chunk\'s OWN side while the number '
+        + 'in a target-unclaimed finding is a real pair index. Rendered the same '
+        + 'way, a reader meeting one could not tell which numbering it counted '
+        + 'in, and would be sent to the wrong section of the document',
+      fn: async () => {
+        const { alignmentFindings, } = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          // One section short, the shape that refuses rather than pairs.
+          targetText: `## Section one
+
+The cat likes chasing butterflies.
+
+The cat also likes sunbathing.
+`,
+        },);
+
+        /**
+         * Findings the ALIGNER wrote, which are the ones that reported a side
+         * index under the pair wording.
+         */
+        const mismatches = alignmentFindings
+          .filter(function isMismatch(finding,): boolean {
+            return finding.includes('structure-mismatch',);
+          },);
+
+        expect(mismatches.length,).toBeGreaterThan(0,);
+        for (const finding of mismatches)
+          expect(finding.includes('(pair ',),).toBe(false,);
+      },
+    },),
+    it({
       name: 'GIVES THE SAME SLICING EVERY TIME for one pair, which is the '
         + 'whole reason preparation is shared: two lanes that sliced separately '
         + 'would drift the moment either changed a budget, and each would still '

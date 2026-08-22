@@ -18,8 +18,8 @@ import type { RepairDocument, } from './parse-document.ts';
 // stage, and this is what it has to ask about.
 //
 // THE SECTION SCALE IS RECOMPUTED HERE rather than read off `alignDocumentSections`,
-// which reports its refusals only as prose findings: `pairIndex` plus a detail
-// string. Recomputing means mirroring its branching, including the equal-shape
+// which reports its refusals only as prose findings: an `attachedTo` place plus a
+// detail string. Recomputing means mirroring its branching, including the equal-shape
 // short circuit that 85 of 92 corpus entries take, and the mirror has to be kept
 // in step by hand until refusals are reported structurally.
 
