@@ -241,7 +241,10 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
     /**
      * Same opened candidate supplies native header and any text fallback.
      */
-    await using candidate = await open(candidatePath, 'r',);
+    await using candidate = await open(
+      candidatePath,
+      'r',
+    );
     /**
      * Fixed native-signature prefix.
      */
@@ -255,7 +258,12 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
       header.length,
       0,
     );
-    if (isNativeExecutableHeader(header.subarray(0, bytesRead,),))
+    if (isNativeExecutableHeader(
+      header.subarray(
+        0,
+        bytesRead,
+      ),
+    ))
       return false;
     /**
      * Complete non-native candidate text inspected for self-shim markers.

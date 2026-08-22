@@ -41,7 +41,7 @@ node "%~dp0\\..\\@monochromatic-dev\\git-policy-cli\\dist\\final\\node\\index.mj
 `;
 
 /** Native ELF-like bytes containing marker text that must remain unscanned. */
-const NATIVE_GIT_FIXTURE_CONTENT = `\u007fELF${PACKAGE_NAME_SHIM_CONTENT}`;
+const NATIVE_GIT_FIXTURE_CONTENT = `\u007FELF${PACKAGE_NAME_SHIM_CONTENT}`;
 
 /** Shell script that stands in for the real system git binary. */
 const REAL_GIT_CONTENT = `#!/bin/sh
