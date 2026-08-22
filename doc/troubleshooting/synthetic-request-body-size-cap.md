@@ -20,7 +20,8 @@ with a message naming a JSON parse failure:
 Could not parse request as valid JSON. Unterminated string in JSON at position 1044xxxx
 ```
 
-The body sent is valid, complete JSON.
+The body sent is valid,
+complete JSON.
 The reporter verified this by capturing the body locally and replaying it with plain `curl`.
 
 - A body of exactly 10485760 bytes succeeds.
@@ -31,7 +32,9 @@ The reporter verified this by capturing the body locally and replaying it with p
 The reading that fits those observations is that the gateway truncates the body near 10 MiB
 and then parses the truncated text,
 which fails inside whatever string the cut landed in.
-The reported position, around 1044xxxx, sits just under the 10 MiB boundary,
+The reported position,
+around 1044xxxx,
+sits just under the 10 MiB boundary,
 which is consistent with that reading.
 
 ## What is asked of the provider
@@ -46,7 +49,8 @@ which is consistent with that reading.
 ## Why the misleading error costs more than the limit does
 
 The reporter hit this from an agent workflow that attaches images.
-Once the accumulated history passes the cap, every subsequent request fails,
+Once the accumulated history passes the cap,
+every subsequent request fails,
 and the session cannot recover on its own,
 because a caller reading the error has no reason to suspect size.
 A `413` would let a client drop or downscale attachments and continue.
@@ -57,7 +61,8 @@ Measured on 2026-08-21 against the pinned corpus and the shipped reading stage.
 
 - `package/module/translation-repair/src/image-reading-stage.ts` sends ONE picture per request,
   as a `text` part followed by a single `image_url` part carrying a base64 data URI.
-  There is no accumulating history, so the growth mode the report describes does not apply here.
+  There is no accumulating history,
+  so the growth mode the report describes does not apply here.
 - `READING_MAX_BYTES` in that file is 8388608 raw bytes.
   Base64 turns that into about 11184812 characters before the JSON envelope and the instruction text,
   which is ABOVE the reported cap.
@@ -72,7 +77,9 @@ The exposure is therefore the configured ceiling rather than current traffic.
 
 ## What is not ruled out
 
-- Only the passing size, 10485760 bytes, is exact.
+- Only the passing size,
+  10485760 bytes,
+  is exact.
   The failing size is reported as approximate.
   The true boundary between them has not been bisected.
 - Whether the cap belongs to the gateway or to a proxy in front of it.
