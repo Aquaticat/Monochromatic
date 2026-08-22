@@ -92,6 +92,45 @@ for source trace,
 diagnosis,
 and verified recovery.
 
+## OpenSnitch endpoint allowance
+
+When OpenSnitch 1.8's system-firewall file exists,
+`wg-quicker up` adds one enabled system rule for each distinct peer `Endpoint` UDP destination port.
+The rule sits in OpenSnitch's existing `inet opensnitch mangle_output` chain before its NFQUEUE rules,
+so WireGuard's kernel-generated outer connection works even when OpenSnitch uses `DefaultAction = deny`.
+If OpenSnitch is not installed,
+the integration is a no-op.
+
+Each port rule accepts outbound UDP from any process to that destination port before application filtering.
+`wg-quicker` emits a warning naming the ports,
+interface,
+and changed file whenever this policy widening is active.
+The rules carry interface-specific `wg-quicker managed endpoint [...]` descriptions and remain visible in
+OpenSnitch's system-firewall configuration.
+`down` and failed-`up` rollback remove only that interface's rules,
+even when the WireGuard link is already absent.
+
+The integration supports OpenSnitch 1.8's nftables backend and version 1 system-firewall schema.
+It rejects disabled system firewall,
+unsupported schema,
+missing `mangle_output` chain,
+non-regular config paths,
+and non-nftables backends instead of claiming strict-deny compatibility without an active rule.
+OpenSnitch live reload receives one positional file write;
+shorter JSON is padded with valid trailing whitespace so truncate does not emit a second reload event.
+`wg-quicker` then requires consecutive healthy nftables observations before tunnel startup continues.
+
+Standard paths are `/etc/opensnitchd/default-config.json` and `/etc/opensnitchd/system-fw.json`.
+Custom deployments can set
+`WG_QUICKER_OPENSNITCH_DAEMON_CONFIG` and
+`WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG`.
+Both overrides cross the sudo boundary through the validated private caller-context file.
+See
+[`doc/troubleshooting/opensnitch-1-8-wg-quicker-wireguard.md`](../../../doc/troubleshooting/opensnitch-1-8-wg-quicker-wireguard.md)
+for source trace,
+warning scope,
+and disposable strict-deny verification.
+
 ## Generate AllowedIPs from files
 
 A peer may replace literal `AllowedIPs` with `AllowedIPsFromFiles`:
