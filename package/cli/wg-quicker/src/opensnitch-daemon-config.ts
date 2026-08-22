@@ -189,6 +189,9 @@ export async function resolveOpenSnitchSystemFirewallPath(
    * Effective daemon config path and optional content.
    */
   const daemonPath = openSnitchDaemonConfigPath();
+  /**
+   * Daemon config text or absence sentinel.
+   */
   const daemonText = await readDaemonConfig({ path: daemonPath, },);
   if ((typeof daemonText) === 'symbol') {
     if (daemonText !== OPENSNITCH_DAEMON_CONFIG_ABSENT)

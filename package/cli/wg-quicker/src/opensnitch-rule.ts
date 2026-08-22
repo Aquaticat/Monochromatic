@@ -8,6 +8,11 @@ import type { JsonRecord, } from './opensnitch-config-tree.ts';
 const MANAGED_DESCRIPTION_PREFIX = 'wg-quicker managed endpoint';
 
 /**
+ * Highest valid UDP port number.
+ */
+const MAX_UDP_PORT = 65_535;
+
+/**
  * Reports non-null JSON object.
  *
  * @param value - Unknown JSON value.
@@ -145,7 +150,11 @@ function exactUdpPort(value: unknown,): readonly number[] {
    * Numeric exact-port candidate.
    */
   const port = Number(value.Value,);
-  if ((!Number.isSafeInteger(port,)) || (port <= 0) || (port > 65_535))
+  if (!Number.isSafeInteger(port,))
+    return [];
+  if (port <= 0)
+    return [];
+  if (port > MAX_UDP_PORT)
     return [];
   return [port,];
 }
@@ -178,11 +187,16 @@ export function acceptedUdpPorts(
     .flatMap(function expressionPorts(expression,): readonly number[] {
       if (!isRecord(expression,))
         return [];
+      /**
+       * Statement candidate from current expression.
+       */
       const { Statement: statement, } = expression;
       if ((!isRecord(statement,)) || (statement.Name !== 'udp'))
         return [];
       if (!Array.isArray(statement.Values,))
         return [];
-      return statement.Values.flatMap(exactUdpPort,);
+      return statement
+        .Values
+        .flatMap(exactUdpPort,);
     },);
 }
