@@ -355,6 +355,23 @@ which is recorded in
  `doc/troubleshooting/pgrep-wait-loop-matches-itself.md` and cost two wrong
  readings while setting this up.
 
+One command answers all of it with no pattern to get wrong:
+`node ~/temp/agent/vub-status.mjs`.
+It scans `/proc` the way the pass guard now does,
+matching on the interpreter and on the script's base name,
+so it cannot match the shell that invoked it and arguments cannot defeat it.
+It prints the settled entries,
+the entry still holding a cache,
+the captured file count,
+and one line per watched script with its pids.
+
+PREFER IT TO A HAND-WRITTEN PATTERN.
+A hand-written `pgrep` was read as a dead poller on 2026-08-22 because the
+ pattern named a script that never existed,
+which the bracket does nothing to catch.
+A status check that under-reports invites restarting a poller,
+or worse a second pass into the same runs directory and the same slice cache.
+
 ### Why a poller exists at all
 
 `runOneEntry` calls `discardSliceCache` the moment an entry reaches its
