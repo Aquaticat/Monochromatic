@@ -40,6 +40,10 @@ const RELOAD_PROBE_INTERVAL_MS = 100;
  */
 const RELOAD_PROBE_ATTEMPTS = 40;
 
+/**
+ * Consecutive healthy observations required after file watcher reload.
+ */
+const RELOAD_STABLE_PROBES = 3;
 
 /**
  * Creates OpenSnitch-specific error for shared lock implementation.
@@ -172,7 +176,10 @@ async function verifyOpenSnitchLiveReload(
   /**
    * Mutable bounded cursor contained in object rather than function-root binding.
    */
-  const cursor = { attempt: 0, };
+  const cursor = {
+    attempt: 0,
+    consecutiveReady: 0,
+  };
   /* oxlint-disable eslint/no-await-in-loop -- Each probe depends on prior external state and delay. */
   while (cursor.attempt < RELOAD_PROBE_ATTEMPTS) {
     await wait(RELOAD_PROBE_INTERVAL_MS,);
@@ -194,6 +201,10 @@ async function verifyOpenSnitchLiveReload(
       output: result.stdout,
       ports,
     },))
+      cursor.consecutiveReady += 1;
+    else
+      cursor.consecutiveReady = 0;
+    if (cursor.consecutiveReady >= RELOAD_STABLE_PROBES)
       return;
     cursor.attempt += 1;
   }

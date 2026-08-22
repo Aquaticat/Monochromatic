@@ -266,11 +266,16 @@ await describe({
             await using fixture = await createFixture({
               content: `${JSON.stringify(systemFirewall({ rules, },), null, 2,)}\n`,
             },);
+            /**
+             * Watched inode size before shorter JSON replacement.
+             */
+            const sizeBefore = (await stat(fixture.configPath,)).size;
             await removeOpenSnitchEndpointAllowance({ interfaceName: 'wg0', },);
             expect(await readRules({ path: fixture.configPath, },),).toEqual([
               rules[1],
               rules[2],
             ],);
+            expect((await stat(fixture.configPath,)).size,).toBe(sizeBefore,);
           },
         },),
 

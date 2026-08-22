@@ -1,7 +1,7 @@
 import {
   lstat,
+  open,
   readFile,
-  writeFile,
 } from 'node:fs/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -130,6 +130,81 @@ export async function readOpenSnitchConfig(
 }
 
 /**
+ * Writes one payload without truncating watched inode.
+ *
+ * Shorter JSON is padded with valid trailing whitespace to retain file size.
+ * One write event avoids duplicate OpenSnitch 1.8 reloads from truncate-plus-write.
+ *
+ * @param path - OpenSnitch system-firewall config path.
+ *
+ * @param text - Valid JSON text written at offset zero.
+ *
+ * @param minimumSize - Existing byte size retained through whitespace padding.
+ *
+ * @throws {@link OpenSnitchConfigError} when one write syscall is incomplete.
+ *
+ * @example
+ * ```ts
+ * await writeThroughWatchedInode({ path, text, minimumSize: 1024 });
+ * ```
+ */
+async function writeThroughWatchedInode(
+  {
+    path,
+    text,
+    minimumSize,
+  }: {
+    readonly path: string;
+    readonly text: string;
+    readonly minimumSize: number;
+  },
+): Promise<void> {
+  /**
+   * UTF-8 replacement bytes.
+   */
+  const replacement = Buffer.from(
+    text,
+    'utf8',
+  );
+  /**
+   * Trailing JSON whitespace retaining existing inode size.
+   */
+  const padding = Buffer.alloc(
+    Math.max(
+      0,
+      minimumSize - replacement.length,
+    ),
+    ' ',
+  );
+  /**
+   * Single payload passed through one positional write.
+   */
+  const payload = Buffer.concat([
+    replacement,
+    padding,
+  ],);
+  await using handle = await open(
+    path,
+    'r+',
+  );
+  /**
+   * Positional write result used to reject a partial config.
+   */
+  const { bytesWritten, } = await handle.write(
+    payload,
+    0,
+    payload.length,
+    0,
+  );
+  if (bytesWritten !== payload.length) {
+    throw new OpenSnitchConfigError(
+      `OpenSnitch system-firewall write was incomplete: ${path}`,
+    );
+  }
+  await handle.sync();
+}
+
+/**
  * Writes validated JSON through watched inode and restores original text after write failure.
  *
  * OpenSnitch 1.8 watches file inode for `Write`;
@@ -163,21 +238,38 @@ export async function writeOpenSnitchConfig(
     text: rendered,
     path,
   },);
+  /**
+   * Original byte length retained when replacement is shorter.
+   */
+  const originalSize = Buffer.byteLength(
+    original,
+    'utf8',
+  );
   try {
-    await writeFile(
+    await writeThroughWatchedInode({
       path,
-      rendered,
-      'utf8',
-    );
+      text: rendered,
+      minimumSize: originalSize,
+    },);
   }
   catch (error) {
     l.error(`OpenSnitch config write failed at ${path}: ${String(error,)}`,);
     try {
-      await writeFile(
-        path,
-        original,
-        'utf8',
+      /**
+       * Current length may exceed original after failed extending write.
+       */
+      const recoverySize = Math.max(
+        originalSize,
+        Buffer.byteLength(
+          rendered,
+          'utf8',
+        ),
       );
+      await writeThroughWatchedInode({
+        path,
+        text: original,
+        minimumSize: recoverySize,
+      },);
     }
     catch (restoreError) {
       l.error(`OpenSnitch config recovery failed at ${path}: ${String(restoreError,)}`,);
