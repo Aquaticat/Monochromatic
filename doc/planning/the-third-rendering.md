@@ -3914,3 +3914,136 @@ the archive delivery constant,
 `identityOf` and `subjectsOf`,
 while the input module keeps the archive walk,
 the provenance check and the reading.
+
+## The last owed item asked for a refusal that was already there
+
+Item 4 of `#166` prescribed a refusal:
+treat a whole-run `shippedRecords` of zero as a stop rather than a printed zero.
+Measuring before building refuted it,
+and the refutation has three separate legs.
+
+### The pointed-at-nothing refusal exists and fires
+
+`EmptyPoolError` is raised from `selectEligible` in
+`package/module/translation-repair/src/corpus-run/artifact-eligible.ts`,
+reached through `resolvePool`,
+which all four pool consumers call:
+`score-probe.ts`,
+`draw-sample.ts`,
+`damage-sample.ts` and
+`attribution-read.ts`.
+Its message already states the rationale item 4 was going to add:
+a rate over zero entries is
+"a denominator quietly shrunk, here all the way to nothing,
+while the number above it still renders".
+
+Proved at the user boundary rather than inferred.
+Pointing the built `score-probe.mjs` at a throwaway run holding an empty artifacts directory
+printed the `SOURCE` line naming the directory and then raised,
+exiting 1:
+
+```text
+EmptyPoolError: No entry has settled yet, so there is nothing to pool.
+```
+
+### A surviving zero is a legitimate run, not a misread
+
+Item 1 of this task closed every path by which a misread reaches the printer.
+`readArtifactProbe` reads the records through `parseSettledArtifactV2`,
+so an absent list,
+an absent field,
+and a disposition the pipeline never writes each raise
+rather than shrinking the count.
+The reader's own docblock records why:
+both lists "used to be read off the artifact root,
+where version 2 writes neither, and both answered their absence with an empty list".
+
+What that leaves is a run whose repair lane genuinely accepted nothing.
+The population holds one artifact with repair status `unchanged`,
+so a single-entry run over it is a healthy run with a zero denominator.
+A refusal there would reject it.
+
+### Nothing divides by the count, which changes what the note must say
+
+The working justification had been that every rate below the count loses its denominator.
+Reading `reportProbeTelemetry` refuted that:
+every figure it prints is a raw count,
+and there is no rate in the report at all.
+The real hazard is narrower and worse to state loosely.
+With no repair-lane record,
+`repairUnprobedRecords`,
+`regions` and every `*Introduced` and `CLAIMS` figure are zero by construction,
+so the reader meets seven zeros and reads `majorityIntroduced=0`
+as the probe having cleared the run.
+
+### So it is a note, and the file already had the idiom
+
+`probe-telemetry-report.ts` met this hazard once before,
+for `rewrittenSlices=0`,
+and answered it with a note rather than a refusal
+because a zero there is ordinary on artifacts written before the lane was audited.
+The new note follows it,
+and points at `editorOffered` on the `ROSTER` line,
+which is the figure that separates the two readings:
+above zero the editor was asked and nothing it produced shipped,
+at zero the critics filed nothing to repair.
+
+Verified at the user boundary through the built CLI,
+on a throwaway run under `~/temp/agent` holding one real artifact
+whose only shipped record was moved to `not-selected`:
+
+```text
+PROBE entries=1 repairShippedRecords=0 repairUnprobedRecords=0 regions=0 majorityIntroduced=0 ...
+NOTE repairShippedRecords=0 means no artifact read here carries a repair-lane record ...
+ROSTER editorOffered=1 editorDegraded=0 editorSilent=0 ...
+```
+
+`editorOffered=1` beside the zero is the discriminating case working:
+the editor was asked at one slice and nothing it produced shipped.
+
+The note is covered by three cases in
+`probe-telemetry-report.unit.test.ts`,
+which is the file's first test.
+Per GFP the note was removed,
+rebuilt and rerun:
+the two presence cases fail and the silence case correctly keeps passing.
+
+## Two counters were named for a page they never reached
+
+The remaining half of item 3,
+renaming consumers that imply a page-level claim,
+had no recorded disposition.
+`shippedRecords` and `unprobedRecords` are that class,
+and the rename landed in `693b0c58a`.
+
+Both count repair-lane issue records whose `repairDisposition` is `shipped`,
+which says that lane applied a replacement to the document it built.
+The contest and the consolidation both sit downstream of it.
+Under the bare word,
+`PROBE shippedRecords=271` reads as a count of wording a page carries,
+and this task's own measurement says the contest had not run on 33 of 47 artifacts,
+so what a page would carry there is the archive's wording rather than either lane's.
+They are now `repairShippedRecords` and `repairUnprobedRecords`.
+
+Adding one export to `corpus-barrel.ts` pushed it one line over its budget.
+Per MXL nothing was disabled:
+`generation-barrel.ts` now holds the pooling and generation-identity exports,
+split at the seam the corpus barrel's own header names,
+by audience.
+
+## Asking what a document would carry, before writing the artifact that claims it
+
+`settledTallyLine` gained a call to `wouldShipTextFor` per comparison row,
+which made `UnansweredContestSliceError` reachable on the production pass path.
+It was computed AFTER `writeFileAtomic`,
+so a document whose lanes differ at a slice the contest names nowhere
+would have its complete artifact written
+and then be reported `status=ERROR` by the entry catch below.
+Every later reader would find a settled file the pass reported as failed.
+
+Asking first makes the refusal truthful,
+and it is the correct refusal rather than the convenient one:
+a contest that cannot account for a slice it was obliged to decide has not settled the document.
+The stage caches still hold every answer,
+so a re-run reproduces the contradiction rather than losing it.
+Landed in `462ecd70d`.
