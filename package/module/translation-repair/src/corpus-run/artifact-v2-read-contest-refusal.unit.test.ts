@@ -13,6 +13,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -20,6 +21,7 @@ import {
 
 import {
   type ArtifactComparisonRowV2,
+  ArtifactParseError,
   parseLaneSelectionV2,
 } from '../../dist/final/node/index.mjs';
 
@@ -174,7 +176,10 @@ await describe({
         'REFUSES a verdict naming a lane its own ballots did not back, since a stored winner nobody '
         + 're-derives is a field that can quietly become a lie',
       fn: async () => {
-        expect(() => {
+        /**
+         * What readOneSlice refused with, read for class as well as wording.
+         */
+        const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
               chunkIndex: 0,
@@ -190,7 +195,10 @@ await describe({
             },
             comparison: ONE_CONTESTED,
           },);
-        },).toThrow('lane-won:translate, which is what these ballots settle on, rather than lane-won:repair',);
+        },);
+
+        expect(refusalOfReadOneSlice,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadOneSlice as Error).message,).toContain('lane-won:translate, which is what these ballots settle on, rather than lane-won:repair',);
       },
     },),
     it({
@@ -198,7 +206,10 @@ await describe({
         'REFUSES a refusal its ballots contradict, so a slice recorded as shipping neither lane '
         + 'cannot carry a roster that chose one',
       fn: async () => {
-        expect(() => {
+        /**
+         * What readOneSlice refused with, read for class as well as wording.
+         */
+        const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
               chunkIndex: 0,
@@ -211,7 +222,10 @@ await describe({
             },
             comparison: ONE_CONTESTED,
           },);
-        },).toThrow('rather than settled-neither',);
+        },);
+
+        expect(refusalOfReadOneSlice,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadOneSlice as Error).message,).toContain('rather than settled-neither',);
       },
     },),
     it({
@@ -219,7 +233,10 @@ await describe({
         'REFUSES a usable count the ballots do not support, since the quorum is measured against '
         + 'that number and a raised one turns an unheard roster into a verdict',
       fn: async () => {
-        expect(() => {
+        /**
+         * What readOneSlice refused with, read for class as well as wording.
+         */
+        const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
               chunkIndex: 0,
@@ -229,7 +246,10 @@ await describe({
             },
             comparison: ONE_CONTESTED,
           },);
-        },).toThrow('1, which is how many ballots this slice carries, rather than 2',);
+        },);
+
+        expect(refusalOfReadOneSlice,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadOneSlice as Error).message,).toContain('1, which is how many ballots this slice carries, rather than 2',);
       },
     },),
     it({
@@ -237,7 +257,10 @@ await describe({
         'REFUSES a contest answering a slice where the two lanes left the same wording, which has no '
         + 'question to ask and therefore no answer to record',
       fn: async () => {
-        expect(() => {
+        /**
+         * What parseLaneSelectionV2 refused with, read for class as well as wording.
+         */
+        const refusalOfParseLaneSelectionV2 = caught(() => {
           parseLaneSelectionV2({
             value: {
               kind: 'contested',
@@ -253,7 +276,10 @@ await describe({
             comparison: ONE_CONTESTED_ONE_AGREED,
             path: SELECTION_PATH,
           },);
-        },).toThrow('slices [0], which are the ones where the two lanes differ, rather than [1]',);
+        },);
+
+        expect(refusalOfParseLaneSelectionV2,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfParseLaneSelectionV2 as Error).message,).toContain('slices [0], which are the ones where the two lanes differ, rather than [1]',);
       },
     },),
     it({
@@ -261,7 +287,10 @@ await describe({
         'REFUSES a contest leaving an eligible slice unanswered, since a silent gap reads as a slice '
         + 'nobody had to decide rather than as one the record dropped',
       fn: async () => {
-        expect(() => {
+        /**
+         * What parseLaneSelectionV2 refused with, read for class as well as wording.
+         */
+        const refusalOfParseLaneSelectionV2 = caught(() => {
           parseLaneSelectionV2({
             value: {
               kind: 'contested',
@@ -270,13 +299,19 @@ await describe({
             comparison: ONE_CONTESTED,
             path: SELECTION_PATH,
           },);
-        },).toThrow('slices [0], which are the ones where the two lanes differ, rather than []',);
+        },);
+
+        expect(refusalOfParseLaneSelectionV2,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfParseLaneSelectionV2 as Error).message,).toContain('slices [0], which are the ones where the two lanes differ, rather than []',);
       },
     },),
     it({
       name: 'REFUSES a won verdict that does not say which lane won, rather than reading the omission as a refusal',
       fn: async () => {
-        expect(() => {
+        /**
+         * What readOneSlice refused with, read for class as well as wording.
+         */
+        const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
               chunkIndex: 0,
@@ -289,13 +324,19 @@ await describe({
             },
             comparison: ONE_CONTESTED,
           },);
-        },).toThrow(`${SELECTION_PATH}.slices[0].verdict`,);
+        },);
+
+        expect(refusalOfReadOneSlice,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadOneSlice as Error).message,).toContain(`${SELECTION_PATH}.slices[0].verdict`,);
       },
     },),
     it({
       name: 'REFUSES a ballot naming a candidate that is neither lane nor the refusal',
       fn: async () => {
-        expect(() => {
+        /**
+         * What readOneSlice refused with, read for class as well as wording.
+         */
+        const refusalOfReadOneSlice = caught(() => {
           readOneSlice({
             slice: {
               chunkIndex: 0,
@@ -310,7 +351,10 @@ await describe({
             },
             comparison: ONE_CONTESTED,
           },);
-        },).toThrow(`${SELECTION_PATH}.slices[0].ballots[0].choice`,);
+        },);
+
+        expect(refusalOfReadOneSlice,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadOneSlice as Error).message,).toContain(`${SELECTION_PATH}.slices[0].ballots[0].choice`,);
       },
     },),
   ],
