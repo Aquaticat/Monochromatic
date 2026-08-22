@@ -14247,3 +14247,94 @@ The guard's shape is settled and does not reopen:
 per-slice archive reference where usable, document baseline fallback,
 and a named fault in the `contest-ballot-wire.ts` shape both deciders read, which is `#155`'s mechanism.
 The sweep decides its calibration inputs only, and the guard is built after it rather than beside it.
+
+## 2026-08-22, still later: `#163`'s estimator was chosen by measurement, and the floor it implied was refuted
+
+Three things were settled here, all at zero quota, because deterministic pairing
+is pure local computation and the question is about the ESTIMATOR rather than
+about the pairing.
+
+### The exclusion is not circular, which the source had to say
+
+`displacement-class.ts` computes its baseline over slices that are class
+`translated` and at least `MIN_RATIO_SOURCE_CHARS` long, then derives both
+`residual` and the high-slice flags FROM that baseline (`slice.ratio >=
+baseline.expansion * HIGH_FACTOR`).
+So excluding `highIndices` from the baseline would be circular and would need a
+fixpoint.
+
+The contamination actually measured is a different set.
+It uses the absolute predicates: block disparity above one, ratio below 0.8, or
+ratio above 10.
+None of them reads a baseline, so excluding what they flag is a plain filter and
+terminates in one pass.
+This distinction decides the design and is the reason the guard can be written
+at all.
+
+### The centre should be a median, measured on 89 entries
+
+The shipped estimator is a POOLED ratio, the sum of translated characters over
+the sum of original characters, so the longest slices decide it.
+That is why `Zha_Ke` reads 16.85 at document aggregate, and why the
+minimum-length filter had to be added.
+
+Scored by how far each centre moves when the flagged slices are removed, over
+the 22 entries that carry contamination:
+
+-   pooled: median move 0.168, seven documents change baseline source
+-   median of per-slice ratios: median move 0.086, two documents change baseline source
+
+The median is about half as sensitive and flips its fallback decision two times
+instead of seven.
+It also leaves 82 of 89 documents able to trust their own expansion, against 80
+for the pooled ratio.
+
+Switching from shipped (pooled, uncleaned) to proposed (median, cleaned) moves 7
+of 89 documents across the document/corpus-reference boundary, five of them
+gaining a document-specific baseline they were previously denied.
+Median baseline shift is 0.110.
+
+### The minimum-count floor was proposed, measured, and refuted
+
+Instability falls monotonically with the number of clean eligible slices: median
+move 0.334 at one to three slices, 0.271 at four to six, 0.132 at seven to
+twelve, and 0.017 at thirteen or more.
+That reads as an argument for refusing a document its own baseline when it has
+too few slices.
+
+It is wrong, and the split-half probe says why.
+Splitting each document's clean slices into alternating halves and comparing the
+two centres estimates the estimator's own noise without needing a ground truth
+the corpus does not have.
+Against that, the corpus reference costs whatever `|own - 2.86|` is.
+
+-   two to three slices: own error 0.315, reference error 0.605
+-   four to five: 0.164 against 0.583
+-   six to eight: 0.243 against 0.333
+-   nine to twelve: 0.165 against 0.240
+-   thirteen or more: 0.092 against 0.215
+
+The document's own centre wins at EVERY count, and 60 to 70 percent of
+individual documents are better served by it in every band.
+Thin documents are noisy, but 2.86 is more wrong than they are, so a floor would
+trade a noisy estimate for a biased one.
+No floor is added.
+
+### What is not yet settled
+
+The calibration NUMBERS still wait on the roster sweep, which is ordered by
+baseline exposure and so has delivered its high-exposure head first.
+Band and tail endpoints must not be read off a partial prefix.
+
+The sweep does NOT pass a `pairingCache`, so its roster pairings are not
+persisted and re-reading them would re-buy every round.
+Any later probe that needs roster-paired per-slice numbers has to be folded into
+a sweep that caches, rather than run beside this one.
+
+### Recorded to prevent a false citation
+
+Earlier handover sections and task notes in this file's history refer to advisor
+guidance that was never obtained.
+The first genuine advisor call in this line of work happened here.
+Treat every earlier "the advisor confirms" as self-generated reasoning, not as
+external review, and do not cite it as corroboration.
