@@ -23,6 +23,34 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
+ * Runs one reader and hands back whatever it threw.
+ *
+ * BESIDE {@link changeSetFailure} RATHER THAN REPLACING IT, because that one
+ * names the reader it calls and builds its argument, while this one takes any
+ * call at all. Both exist so a refusal can be read for its CLASS as well as its
+ * wording: an assertion that checks only the message passes just as happily when
+ * the wrong error type is thrown.
+ *
+ * @param act - call that must refuse
+ *
+ * @returns Failure it raised, or `undefined` when it returned instead
+ *
+ * @example
+ * ```ts
+ * const refusal = refusalFrom(function readsAFutureVersion() { ... },);
+ * ```
+ */
+function refusalFrom(act: () => unknown,): unknown {
+  try {
+    act();
+  }
+  catch (error) {
+    return error;
+  }
+  return undefined;
+}
+
+/**
  * Reads change sets out of one artifact record, returning whatever it threw.
  *
  * @param artifact - artifact record under test
@@ -92,7 +120,10 @@ await describe({
         + 'assumption that fields it knows still mean what they did: an instrument that reports a wrong '
         + 'number is worse than one that reports none',
       fn: async () => {
-        expect(function readFutureVersion() {
+        /**
+         * What readFutureVersion raised, read for its class as well as its wording.
+         */
+        const refusalOfReadFutureVersion = refusalFrom(function readFutureVersion() {
           readArtifactSchemaVersion({
             // One past the newest version this reader knows, taken from the
             // list rather than written as a literal, so it stays a FUTURE
@@ -100,7 +131,10 @@ await describe({
             artifact: { artifactSchemaVersion: Math.max(...KNOWN_ARTIFACT_SCHEMA_VERSIONS,) + 1, },
             path: 'Mittens',
           },);
-        },).toThrow('this reader knows',);
+        },);
+
+        expect(refusalOfReadFutureVersion,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadFutureVersion as Error).message,).toContain('this reader knows',);
       },
     },),
     it({
@@ -122,7 +156,10 @@ await describe({
         + 'artifact records a ledger PER LANE and has no singular anything to answer with: reading its '
         + 'absent top-level sets as unrecorded would report a run that changed nothing',
       fn: async () => {
-        expect(function readTwoLaneArtifact() {
+        /**
+         * What readTwoLaneArtifact raised, read for its class as well as its wording.
+         */
+        const refusalOfReadTwoLaneArtifact = refusalFrom(function readTwoLaneArtifact() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V2,
@@ -130,7 +167,10 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('one change set',);
+        },);
+
+        expect(refusalOfReadTwoLaneArtifact,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadTwoLaneArtifact as Error).message,).toContain('one change set',);
       },
     },),
     it({
@@ -138,36 +178,60 @@ await describe({
         + 'absent field would have invented, so accepting it would let the invention back in through '
         + 'the field itself',
       fn: async () => {
-        expect(function readZeroVersion() {
+        /**
+         * What readZeroVersion raised, read for its class as well as its wording.
+         */
+        const refusalOfReadZeroVersion = refusalFrom(function readZeroVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: 0, },
             path: 'Mittens',
           },);
-        },).toThrow('this reader knows',);
+        },);
+
+        expect(refusalOfReadZeroVersion,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadZeroVersion as Error).message,).toContain('this reader knows',);
       },
     },),
     it({
       name: 'REFUSES a version that is not a count at all, before comparing it to anything: a string, a '
         + 'fraction and a negative each mean the writer and this reader disagree about the field',
       fn: async () => {
-        expect(function readStringVersion() {
+        /**
+         * What readStringVersion raised, read for its class as well as its wording.
+         */
+        const refusalOfReadStringVersion = refusalFrom(function readStringVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: '1', },
             path: 'Mittens',
           },);
-        },).toThrow('a number',);
-        expect(function readFractionalVersion() {
+        },);
+
+        expect(refusalOfReadStringVersion,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadStringVersion as Error).message,).toContain('a number',);
+        /**
+         * What readFractionalVersion raised, read for its class as well as its wording.
+         */
+        const refusalOfReadFractionalVersion = refusalFrom(function readFractionalVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: 1.5, },
             path: 'Mittens',
           },);
-        },).toThrow('a non-negative integer',);
-        expect(function readNegativeVersion() {
+        },);
+
+        expect(refusalOfReadFractionalVersion,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadFractionalVersion as Error).message,).toContain('a non-negative integer',);
+        /**
+         * What readNegativeVersion raised, read for its class as well as its wording.
+         */
+        const refusalOfReadNegativeVersion = refusalFrom(function readNegativeVersion() {
           readArtifactSchemaVersion({
             artifact: { artifactSchemaVersion: -1, },
             path: 'Mittens',
           },);
-        },).toThrow('a non-negative integer',);
+        },);
+
+        expect(refusalOfReadNegativeVersion,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfReadNegativeVersion as Error).message,).toContain('a non-negative integer',);
       },
     },),
   ],
@@ -266,7 +330,10 @@ await describe({
           ],
           withdrawn: [],
         },);
-        expect(function repeatedShipped() {
+        /**
+         * What repeatedShipped raised, read for its class as well as its wording.
+         */
+        const refusalOfRepeatedShipped = refusalFrom(function repeatedShipped() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [
@@ -277,8 +344,14 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('shipped slices repeat',);
-        expect(function repeatedWithdrawn() {
+        },);
+
+        expect(refusalOfRepeatedShipped,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfRepeatedShipped as Error).message,).toContain('shipped slices repeat',);
+        /**
+         * What repeatedWithdrawn raised, read for its class as well as its wording.
+         */
+        const refusalOfRepeatedWithdrawn = refusalFrom(function repeatedWithdrawn() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [],
@@ -289,7 +362,10 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('withdrawn slices repeat',);
+        },);
+
+        expect(refusalOfRepeatedWithdrawn,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfRepeatedWithdrawn as Error).message,).toContain('withdrawn slices repeat',);
       },
     },),
     it({
@@ -297,18 +373,30 @@ await describe({
         + 'both or neither, so one alone means the record was edited or truncated, and reading it would '
         + 'report a shipped set with no withdrawals as though a run had said so',
       fn: async () => {
-        expect(function shippedAlone() {
+        /**
+         * What shippedAlone raised, read for its class as well as its wording.
+         */
+        const refusalOfShippedAlone = refusalFrom(function shippedAlone() {
           readArtifactChangeSets({
             artifact: { shippedChunkIndices: [1,], },
             path: 'Mittens',
           },);
-        },).toThrow('both index sets or neither',);
-        expect(function withdrawnAlone() {
+        },);
+
+        expect(refusalOfShippedAlone,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfShippedAlone as Error).message,).toContain('both index sets or neither',);
+        /**
+         * What withdrawnAlone raised, read for its class as well as its wording.
+         */
+        const refusalOfWithdrawnAlone = refusalFrom(function withdrawnAlone() {
           readArtifactChangeSets({
             artifact: { withdrawnChunkIndices: [1,], },
             path: 'Mittens',
           },);
-        },).toThrow('both index sets or neither',);
+        },);
+
+        expect(refusalOfWithdrawnAlone,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfWithdrawnAlone as Error).message,).toContain('both index sets or neither',);
       },
     },),
     it({
@@ -316,7 +404,10 @@ await describe({
         + 'What produces it is a CURRENT artifact whose version field was lost to an edit or a merge, and '
         + 'reading that as an older generation would throw away a denominator the run recorded',
       fn: async () => {
-        expect(function countWithoutVersion() {
+        /**
+         * What countWithoutVersion raised, read for its class as well as its wording.
+         */
+        const refusalOfCountWithoutVersion = refusalFrom(function countWithoutVersion() {
           readArtifactChangeSets({
             artifact: {
               sliceCount: 2,
@@ -325,14 +416,20 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('records the slice count that arrived with one',);
+        },);
+
+        expect(refusalOfCountWithoutVersion,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfCountWithoutVersion as Error).message,).toContain('records the slice count that arrived with one',);
       },
     },),
     it({
       name: 'treats an explicit null as PRESENT and refuses it, rather than reading it as the absence of a '
         + 'field: a writer that emitted null said something, and what it said is not a set of indices',
       fn: async () => {
-        expect(function nullShipped() {
+        /**
+         * What nullShipped raised, read for its class as well as its wording.
+         */
+        const refusalOfNullShipped = refusalFrom(function nullShipped() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: null,
@@ -340,14 +437,20 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('an array',);
+        },);
+
+        expect(refusalOfNullShipped,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNullShipped as Error).message,).toContain('an array',);
       },
     },),
     it({
       name: 'REFUSES a versioned artifact that omits the sets or their count, since the version is what '
         + 'promises them: a missing field is a defect there rather than an older generation',
       fn: async () => {
-        expect(function versionedWithoutSets() {
+        /**
+         * What versionedWithoutSets raised, read for its class as well as its wording.
+         */
+        const refusalOfVersionedWithoutSets = refusalFrom(function versionedWithoutSets() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -355,8 +458,14 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('index sets',);
-        expect(function versionedWithoutCount() {
+        },);
+
+        expect(refusalOfVersionedWithoutSets,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfVersionedWithoutSets as Error).message,).toContain('index sets',);
+        /**
+         * What versionedWithoutCount raised, read for its class as well as its wording.
+         */
+        const refusalOfVersionedWithoutCount = refusalFrom(function versionedWithoutCount() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -365,7 +474,10 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('sliceCount',);
+        },);
+
+        expect(refusalOfVersionedWithoutCount,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfVersionedWithoutCount as Error).message,).toContain('sliceCount',);
       },
     },),
     it({
@@ -386,7 +498,10 @@ await describe({
         expect(caught,).toBeInstanceOf(ArtifactParseError,);
         expect(String(caught,),).toContain('Mittens index sets',);
         expect(String(caught,),).toContain('of 2 prepared',);
-        expect(function withdrawnOutOfRange() {
+        /**
+         * What withdrawnOutOfRange raised, read for its class as well as its wording.
+         */
+        const refusalOfWithdrawnOutOfRange = refusalFrom(function withdrawnOutOfRange() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -396,14 +511,20 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('of 2 prepared',);
+        },);
+
+        expect(refusalOfWithdrawnOutOfRange,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfWithdrawnOutOfRange as Error).message,).toContain('of 2 prepared',);
       },
     },),
     it({
       name: 'REFUSES a slice recorded as both shipped and withdrawn, which the writing lanes call '
         + 'impossible by construction: found in a file afterwards it describes the same contradiction',
       fn: async () => {
-        expect(function overlapping() {
+        /**
+         * What overlapping raised, read for its class as well as its wording.
+         */
+        const refusalOfOverlapping = refusalFrom(function overlapping() {
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
@@ -416,14 +537,20 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('both shipped and withdrawn',);
+        },);
+
+        expect(refusalOfOverlapping,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfOverlapping as Error).message,).toContain('both shipped and withdrawn',);
       },
     },),
     it({
       name: 'REFUSES an entry that is not a slice index, naming the position it sits at, and refuses one '
         + 'too large for JSON to carry exactly however whole it looks',
       fn: async () => {
-        expect(function fractionalIndex() {
+        /**
+         * What fractionalIndex raised, read for its class as well as its wording.
+         */
+        const refusalOfFractionalIndex = refusalFrom(function fractionalIndex() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [
@@ -434,8 +561,14 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('shippedChunkIndices[1]',);
-        expect(function unsafeIndex() {
+        },);
+
+        expect(refusalOfFractionalIndex,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfFractionalIndex as Error).message,).toContain('shippedChunkIndices[1]',);
+        /**
+         * What unsafeIndex raised, read for its class as well as its wording.
+         */
+        const refusalOfUnsafeIndex = refusalFrom(function unsafeIndex() {
           readArtifactChangeSets({
             artifact: {
               shippedChunkIndices: [Number.MAX_SAFE_INTEGER + 2,],
@@ -443,7 +576,10 @@ await describe({
             },
             path: 'Mittens',
           },);
-        },).toThrow('no larger than JSON carries exactly',);
+        },);
+
+        expect(refusalOfUnsafeIndex,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfUnsafeIndex as Error).message,).toContain('no larger than JSON carries exactly',);
       },
     },),
   ],
@@ -491,7 +627,10 @@ await describe({
       name: 'REFUSES a generation from the future through the parser too, since a consumer scanning a '
         + 'directory meets artifacts a newer pass wrote there rather than hand-built records',
       fn: async () => {
-        expect(function parseFutureArtifact() {
+        /**
+         * What parseFutureArtifact raised, read for its class as well as its wording.
+         */
+        const refusalOfParseFutureArtifact = refusalFrom(function parseFutureArtifact() {
           parseSettledArtifact({
             value: {
               ...VERSIONED_ARTIFACT,
@@ -501,7 +640,10 @@ await describe({
               issues: [],
             },
           },);
-        },).toThrow('this reader knows',);
+        },);
+
+        expect(refusalOfParseFutureArtifact,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfParseFutureArtifact as Error).message,).toContain('this reader knows',);
       },
     },),
     it({
@@ -509,7 +651,10 @@ await describe({
         + 'which is the difference between a version this reader knows and one it can answer for: the '
         + 'top-level status and issues a version 2 artifact does not have would come back as absences',
       fn: async () => {
-        expect(function parseTwoLaneArtifact() {
+        /**
+         * What parseTwoLaneArtifact raised, read for its class as well as its wording.
+         */
+        const refusalOfParseTwoLaneArtifact = refusalFrom(function parseTwoLaneArtifact() {
           parseSettledArtifact({
             value: {
               ...VERSIONED_ARTIFACT,
@@ -519,7 +664,10 @@ await describe({
               issues: [],
             },
           },);
-        },).toThrow('one change set',);
+        },);
+
+        expect(refusalOfParseTwoLaneArtifact,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfParseTwoLaneArtifact as Error).message,).toContain('one change set',);
       },
     },),
     it({
