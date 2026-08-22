@@ -82,6 +82,10 @@ export {
 } from './artifact-probe-read.ts';
 export { parseRegionTally, } from './artifact-probe-tally.ts';
 export {
+  type RepairLaneRecords,
+  repairLaneRecordsOf,
+} from './artifact-repair-lane-records.ts';
+export {
   type StageRosterCoverage,
   summarizeStageRoster,
 } from './stage-roster.ts';

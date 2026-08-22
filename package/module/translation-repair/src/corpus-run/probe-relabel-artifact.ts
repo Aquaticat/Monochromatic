@@ -7,6 +7,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { repairLaneRecordsOf, } from '../artifact-repair-lane-records.ts';
 import {
   type IssueCategory,
   isIssueCategory,
@@ -367,9 +368,14 @@ export async function readArtifactRecords(
   const dir = await resolveRunsDir();
 
   /**
-   * Artifact as a record.
+   * Repair lane's issue records, read through the version 2 parser so the walk
+   * to them is type-checked.
+   *
+   * READ FROM THE LANE, NOT FROM THE ROOT. This asked for `artifact.issues`,
+   * which version 2 does not write, so every call refused a well-formed
+   * artifact for carrying no issues at all.
    */
-  const artifact = requireRecord({
+  const { issues, } = repairLaneRecordsOf({
     value: JSON.parse(await readFile(
       `${dir}/artifacts/${entryId}.json`,
       'utf8',
@@ -377,17 +383,14 @@ export async function readArtifactRecords(
     path: `artifact ${entryId}`,
   },);
 
-  return requireArray({
-    value: artifact.issues,
-    path: `artifact ${entryId}.issues`,
-  },)
+  return issues
     .map(function toRecord(value,): ArtifactRecord {
       /**
        * Issue record as a record.
        */
       const record = requireRecord({
         value,
-        path: `artifact ${entryId}.issues[]`,
+        path: `artifact ${entryId}.lanes.repair.result.issues[]`,
       },);
 
       return {

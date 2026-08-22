@@ -7,6 +7,7 @@ import {
   requireString,
 } from './artifact-guard.ts';
 import { parseRegionTally, } from './artifact-probe-tally.ts';
+import { repairLaneRecordsOf, } from './artifact-repair-lane-records.ts';
 import type { TelemetryProbeReading, } from './probe-attribution.ts';
 import {
   REPAIR_DISPOSITIONS,
@@ -284,22 +285,27 @@ export function readArtifactProbe(
   },
 ): ArtifactProbeReading {
   /**
-   * Artifact as a record.
+   * Repair lane's two record lists, read through the version 2 parser so the
+   * walk to them is type-checked rather than spelled.
+   *
+   * NEITHER IS OPTIONAL ANY MORE. Both used to be read off the artifact root,
+   * where version 2 writes neither, and both answered their absence with an
+   * empty list. That reported zero shipped records and zero findings over every
+   * artifact in the corpus, which is indistinguishable from a run that shipped
+   * nothing and heard nothing.
    */
-  const artifact = requireRecord({
+  const {
+    issues: records,
+    findings: reportedFindings,
+  } = repairLaneRecordsOf({
     value,
     path,
   },);
 
   /**
-   * Issue records the run wrote, or none when the artifact carries no report.
+   * On-disk path of those issue records, for error messages.
    */
-  const records = artifact.issues === undefined
-    ? []
-    : requireArray({
-      value: artifact.issues,
-      path: `${path}.issues`,
-    },);
+  const recordsPath = `${path}.lanes.repair.result.issues`;
 
   /**
    * Shipped records paired with their index, for error paths.
@@ -312,7 +318,7 @@ export function readArtifactProbe(
       return {
         record: requireRecord({
           value: entry,
-          path: `${path}.issues[${String(index,)}]`,
+          path: `${recordsPath}[${String(index,)}]`,
         },),
         index,
       };
@@ -331,7 +337,7 @@ export function readArtifactProbe(
       return requireDisposition({
         value: entry.record
           .repairDisposition,
-        path: `${path}.issues[${String(entry.index,)}].repairDisposition`,
+        path: `${recordsPath}[${String(entry.index,)}].repairDisposition`,
       },) === SHIPPED_DISPOSITION;
     },);
 
@@ -351,7 +357,7 @@ export function readArtifactProbe(
     /**
      * Path of this record's probe field.
      */
-    const probePath = `${path}.issues[${String(entry.index,)}].introducedDefects`;
+    const probePath = `${recordsPath}[${String(entry.index,)}].introducedDefects`;
 
     /**
      * Probe reading as a record.
@@ -366,19 +372,19 @@ export function readArtifactProbe(
     const issue = requireRecord({
       value: entry.record
         .issue,
-      path: `${path}.issues[${String(entry.index,)}].issue`,
+      path: `${recordsPath}[${String(entry.index,)}].issue`,
     },);
 
     return [
       {
         issueId: requireString({
           value: issue.issueId,
-          path: `${path}.issues[${String(entry.index,)}].issue.issueId`,
+          path: `${recordsPath}[${String(entry.index,)}].issue.issueId`,
         },),
         refined: requireBoolean({
           value: entry.record
             .refined,
-          path: `${path}.issues[${String(entry.index,)}].refined`,
+          path: `${recordsPath}[${String(entry.index,)}].refined`,
         },),
         reading: parseProbeReading({
           value: probe,
@@ -414,7 +420,7 @@ export function readArtifactProbe(
     return [
       parseProbeReading({
         value: probe,
-        path: `${path}.issues[${String(entry.index,)}].refinementDefects`,
+        path: `${recordsPath}[${String(entry.index,)}].refinementDefects`,
       },),
     ];
   },);
@@ -429,12 +435,7 @@ export function readArtifactProbe(
     // coverage count that says whether a stage could speak, and a run whose
     // findings drifted must still be countable: throwing here would silence
     // the very diagnostic that exists to notice a stage going quiet.
-    findings: (artifact.findings === undefined
-      ? []
-      : requireArray({
-        value: artifact.findings,
-        path: `${path}.findings`,
-      },))
+    findings: reportedFindings
       .flatMap(function toText(entry,) {
         return ((typeof entry) === 'string')
           ? [entry,]
