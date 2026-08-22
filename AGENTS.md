@@ -1288,6 +1288,11 @@ GFP:
 Commit the guard first;
  restoring discards uncommitted work on that file.
 
+FSP:
+ Test runner abandons a whole file once any describe in it fails.
+Never share one file between cheap unit describes and end-to-end ones;
+ a cheap break then hides every expensive case.
+
 CXL:
  Semantic plugin/process cleanup must not emit bare shutdown errors such as `context canceled`.
  Capture stderr in lifecycle tests and fix hook ordering;
