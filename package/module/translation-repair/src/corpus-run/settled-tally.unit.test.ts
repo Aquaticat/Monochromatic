@@ -197,6 +197,11 @@ function catArtifact(): SettledArtifactV2 {
       },
     ],
     laneSelection: { kind: 'pending-human-decision', },
+
+    // A STATED ABSENCE, which the contract requires and the cast below was
+    // hiding: leaving it out made this fixture claim a shape no pipeline
+    // writes, and the first reader to reach for the field found undefined.
+    consolidation: { kind: 'not-run', },
   } as unknown as SettledArtifactV2;
 }
 
@@ -336,6 +341,29 @@ await describe({
         const fields = renderedFields();
         expect(fields.slices,).toBe('2',);
         expect(fields.ms,).toBe('1234',);
+      },
+    },),
+    it({
+      name:
+        'COUNTS WHAT A DOCUMENT WOULD CARRY BESIDE what each lane proposed, and reports ZERO here '
+        + 'ON PURPOSE. This entry is undecided with no consolidation, so the archive stands at every '
+        + 'slice that has one: two lanes proposed changes and, as things stand, a document would '
+        + 'carry none of them. Read beside selection=pending-human-decision on the same line, that '
+        + 'is #175 stated in the log rather than left to inference',
+      fn: async () => {
+        /**
+         * Its fields.
+         */
+        const fields = renderedFields();
+
+        // The lane counts are untouched: they say what was PROPOSED.
+        expect(fields.translateChanged,).toBe('1',);
+
+        expect(fields.pageChanged,).toBe('0',);
+
+        // The slice with no incumbent at all: nothing stands there, which is
+        // neither a change nor a retention and would be invisible inside either.
+        expect(fields.pageSilent,).toBe('1',);
       },
     },),
   ],

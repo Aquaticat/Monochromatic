@@ -1,5 +1,6 @@
 import type { SettledArtifactV2, } from './artifact-v2-contract.ts';
 import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
+import { wouldShipTextFor, } from './would-ship-text.ts';
 
 //region Settled tally
 // The one line a settled entry prints, once BOTH lanes have run.
@@ -99,6 +100,55 @@ export function settledTallyLine(
       return row.repairText !== row.translateText;
     },);
 
+  /**
+   * Slices where a document assembled today would carry wording the archive
+   * did not.
+   *
+   * ADDED BESIDE the two lane counts rather than replacing either, per this
+   * task's decision 1. `repairChanged` and `translateChanged` say what each
+   * lane PROPOSED, which stays true however the deciders later ruled; this
+   * says how much of the entry a reader would actually meet as new. Without
+   * it a reader gauging how much an entry changed misses the consolidation
+   * entirely, and on an entry nobody has decided reads two sets of proposals
+   * as the outcome.
+   *
+   * ZERO IS THE HONEST ANSWER on an undecided entry, and it is meant to be
+   * read beside `selection=pending-human-decision` on the same line: two
+   * lanes proposed changes and, as things stand, a document would carry none
+   * of them. That is `#175`, stated in the log rather than left to inference.
+   */
+  const pageChanged = artifact.comparison
+    .filter(function pageCarriesAChange(row,): boolean {
+      /**
+       * What would stand at this slice.
+       */
+      const reading = wouldShipTextFor({
+        artifact,
+        row,
+      },);
+
+      if (reading.kind === 'nothing-ships')
+        return false;
+      return reading.text !== row.incumbentText;
+    },);
+
+  /**
+   * Slices where nothing at all would stand, which is neither a change nor a
+   * retention and would be invisible inside either count.
+   */
+  const pageSilent = artifact.comparison
+    .filter(function pageCarriesNothing(row,): boolean {
+      /**
+       * What would stand at this slice.
+       */
+      const reading = wouldShipTextFor({
+        artifact,
+        row,
+      },);
+
+      return reading.kind === 'nothing-ships';
+    },);
+
   return [
     `TALLY ${artifact.id}`,
     'status=SETTLED',
@@ -119,6 +169,8 @@ export function settledTallyLine(
       .status}`,
     `translateChanged=${String(changedSlices({ rows: translate.delivery, },),)}`,
     `documentsDiffer=${String(differing.length,)}`,
+    `pageChanged=${String(pageChanged.length,)}`,
+    `pageSilent=${String(pageSilent.length,)}`,
     `alignmentFindings=${String(artifact.preparation
       .alignmentFindings
       .length,)}`,
