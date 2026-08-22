@@ -15,6 +15,7 @@ import {
   resolve,
 } from 'node:path';
 import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
+import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { isMissingPath, } from '../trust/registry-io.ts';
 import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
@@ -142,6 +143,8 @@ export async function recoverCommitTransaction({
   },);
   if (directory === RECOVERY_TARGET_NOT_APPLICABLE)
     return 'none';
+  /** Effective invocation cwd retained for journal verification Git requests. */
+  const { effectiveCwd, } = parseGlobalOptions(args,);
   if (!(await pathExists(directory,)))
     return 'none';
   /**

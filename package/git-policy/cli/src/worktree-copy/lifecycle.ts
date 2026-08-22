@@ -228,7 +228,9 @@ export async function runGitWithWorktreeCopy({
     return;
   }
   if (willShortCircuit) {
-    /** Real-Git global help or version execution cannot register worktrees. */
+    /**
+     * Real-Git global help or version execution cannot register worktrees.
+     */
     const execution = await executeRealGit({
       args,
       gitPath,
