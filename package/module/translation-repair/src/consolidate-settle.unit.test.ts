@@ -586,9 +586,11 @@ await describe({
     },),
 
     it({
-      name: 'SHIPS A CONSOLIDATION BOTH ROUNDS BACKED, WRAPPED, which is the whole point of the stage: '
-        + 'the judges pick it, the gate agrees the original supports it, and the wrap gives it the '
-        + 'semantic line breaks both lanes apply at their own assembly step and this stage had none',
+      name: 'SHIPS A CONSOLIDATION BOTH ROUNDS BACKED, CARRYING THE SEMANTIC LINE BREAKS both lanes '
+        + 'apply at their own assembly step and this stage had none. REWRAPPED IS FALSE AND THAT IS '
+        + 'THE POINT since `#162`: the breaks are there before either decider reads the proposal, so '
+        + 'the shipping wrap finds nothing left to correct. It asserted true until 2026-08-22, when '
+        + 'what shipped was still being altered after the gate had approved it',
       fn: async () => {
         const { settled, served, } = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
@@ -598,7 +600,7 @@ await describe({
         },);
 
         expect(settled.terminal,).toBe('consolidated',);
-        expect(settled.rewrapped,).toBe(true,);
+        expect(settled.rewrapped,).toBe(false,);
         expect(settled.demoted,).toBe(false,);
         expect(settled.text.split('\n',).length,).toBeGreaterThan(1,);
         expect(served.gate,).toBeGreaterThan(0,);
@@ -625,25 +627,30 @@ await describe({
     },),
 
     it({
-      name: 'SEPARATES A WRAP THAT ERASED THE DIFFERENCE FROM A GATE THAT REFUSED, though both keep the '
-        + 'standing text. Three of the 20 real consolidations in the band pair differed from what stood '
-        + 'only in where the lines broke, and each was recorded as a consolidation that shipped',
+      name: 'SETTLES A PURE RE-WRAPPING WITHOUT BUYING EITHER ROUND, which is what `#162` changed. '
+        + 'This case asserted wrap-erased-difference until 2026-08-22: the proposal reached the slate '
+        + 'unwrapped, both deciders spent ballots on where the lines broke, and the shipping wrap '
+        + 'demoted it at the end. Wrapped before the slate it IS the standing text, the candidate '
+        + 'dedup folds it in, and nothing is bought. The demote is still reachable where the standing '
+        + 'text is unwrapped archive wording, which consolidate-proposal-wrap.unit.test.ts covers',
       fn: async () => {
         /**
          * The standing text as a producer that ignored the wrap rule emits it.
          */
         const unwrapped = STANDING.replaceAll('\n', ' ',);
 
-        const { settled, } = await settleWith({
+        const { settled, served, } = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: unwrapped, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [unwrapped,], wanted: unwrapped, },), },),
           gateReply: gateBallot({ choice: 'consolidated', },),
         },);
 
-        expect(settled.terminal,).toBe('wrap-erased-difference',);
+        expect(settled.terminal,).toBe('slate-unjudged-standing',);
         expect(settled.text,).toBe(STANDING,);
-        expect(settled.demoted,).toBe(true,);
+        expect(settled.demoted,).toBe(false,);
+        expect(served.judge,).toBe(0,);
+        expect(served.gate,).toBe(0,);
       },
     },),
 
