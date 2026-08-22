@@ -156,6 +156,29 @@ await describe({
     },),
 
     it({
+      name: 'READS A SLICE UNDER THE RETIRED TERMINAL, which 11 rows across four settled entries '
+        + 'carry. The name covered three states that are now spelled apart, and none of those rows '
+        + 'can be told apart after the fact because no artifact recorded the judged round beside '
+        + 'the terminal. Refusing the spelling would make those entries unreadable to buy a name',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...FLOORED_SLICE,
+                terminal: 'slate-kept-standing',
+              },
+            ],
+          },
+        },);
+
+        expect(read.reason,).toBe('',);
+        expect(read.kind,).toBe('settled',);
+      },
+    },),
+
+    it({
       name: 'REFUSES TEXT FROM A SLICE THAT SETTLED ON NO CHANGE, which would write a passage into '
         + 'the document that no round decided on. The terminal and the shipped kind answer the same '
         + 'question, so a record disagreeing with itself about it is not a record of anything',
