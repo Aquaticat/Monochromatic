@@ -1,54 +1,30 @@
 diff --git a/anda/apps/opensnitch/opensnitch.spec b/anda/apps/opensnitch/opensnitch.spec
-index 653df93..f2ccdcf 100644
+index 653df93..0311c0d 100644
 --- a/anda/apps/opensnitch/opensnitch.spec
 +++ b/anda/apps/opensnitch/opensnitch.spec
-@@ -20,7 +20,7 @@ Snitch.}
-                         utils/packaging/ui/deb/debian/changelog
- 
- Name:           opensnitch
+@@ -23 +23 @@ Name:           opensnitch
 -Release:        2%{?dist}
 +Release:        3%{?dist}
- Summary:        OpenSnitch is a GNU/Linux interactive application firewall inspired by Little Snitch
- 
- License:        GPL-3.0-only AND LGPL-2.1-or-later
-@@ -37,6 +37,14 @@ BuildRequires:  /usr/bin/lrelease-qt5
- BuildRequires:  protobuf-compiler
- BuildRequires:  pkgconfig(libnetfilter_queue)
- BuildRequires:  qt6-linguist
+@@ -39,0 +40,8 @@ BuildRequires:  qt6-linguist
 +Requires:       python3dist(grpcio) >= 1.10.1
 +Requires:       python3dist(packaging)
 +Requires:       python3dist(protobuf)
 +Requires:       python3dist(pyqt6) >= 6.4
 +Requires:       python3dist(python-slugify) >= 7.0.0
-+Requires:       python3dist(requests)
 +Recommends:     python3-inotify
 +Recommends:     python3-notify2
- 
- %description %{common_description}
- 
-@@ -53,6 +61,7 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.1
- go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
- 
- sed -i 's/@pip3 /@python3 -m pip /' ui/Makefile
++Recommends:     python3dist(requests)
+@@ -55,0 +64 @@ sed -i 's/@pip3 /@python3 -m pip /' ui/Makefile
 +sed -i 's|/usr/local/bin/opensnitchd|%{_bindir}/opensnitchd|' daemon/data/init/opensnitchd.service
- 
- %build
- pushd ui
-@@ -80,6 +89,10 @@ popd
- %gopkginstall
- install -Dm755 opensnitchd -t %buildroot%_bindir
- install -Dm644 daemon/data/init/opensnitchd.service %{buildroot}%{_unitdir}/opensnitchd.service
+@@ -82,0 +92,4 @@ install -Dm644 daemon/data/init/opensnitchd.service %{buildroot}%{_unitdir}/open
 +install -Dm644 daemon/data/default-config.json daemon/data/system-fw.json daemon/data/network_aliases.json \
 +  -t %{buildroot}%{_sysconfdir}/opensnitchd
 +install -Dm600 daemon/data/rules/*.json -t %{buildroot}%{_sysconfdir}/opensnitchd/rules
 +install -Dm600 daemon/data/tasks/tasks.json -t %{buildroot}%{_sysconfdir}/opensnitchd/tasks
- 
- pushd ui
- %pyproject_install
-@@ -104,6 +117,14 @@ rm -rf %buildroot%python3_sitelib%_usr
- %doc README.md
- %_bindir/opensnitch-ui
- %_bindir/opensnitchd
+@@ -87,0 +101,2 @@ popd
++install -Dm644 ui/resources/opensnitch_ui.desktop \
++  -t %{buildroot}%{_sysconfdir}/xdg/autostart
+@@ -106,0 +122,9 @@ rm -rf %buildroot%python3_sitelib%_usr
 +%dir %{_sysconfdir}/opensnitchd
 +%config(noreplace) %{_sysconfdir}/opensnitchd/default-config.json
 +%config(noreplace) %{_sysconfdir}/opensnitchd/network_aliases.json
@@ -57,6 +33,4 @@ index 653df93..f2ccdcf 100644
 +%config(noreplace) %{_sysconfdir}/opensnitchd/rules/*.json
 +%dir %{_sysconfdir}/opensnitchd/tasks
 +%config(noreplace) %{_sysconfdir}/opensnitchd/tasks/tasks.json
- %_datadir/applications/opensnitch_ui.desktop
- %_iconsdir/hicolor/48x48/apps/opensnitch-ui.png
- %_iconsdir/hicolor/64x64/apps/opensnitch-ui.png
++%{_sysconfdir}/xdg/autostart/opensnitch_ui.desktop

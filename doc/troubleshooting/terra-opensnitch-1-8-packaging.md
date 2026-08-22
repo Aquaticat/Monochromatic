@@ -13,12 +13,13 @@ The staged RPM owns both application binaries:
 It also owns the desktop entry and `opensnitchd.service`.
 The current deployment does not expose those files until reboot.
 
-The staged deployment is not activation-ready:
+The staged unit is disabled, so explicit service enablement would still be required.
+More importantly, the staged deployment has functional activation blockers:
 
-- `opensnitchd.service` is disabled.
 - Its `ExecStart` names absent `/usr/local/bin/opensnitchd`, not packaged `/usr/bin/opensnitchd`.
 - `/etc/opensnitchd/default-config.json` and related daemon data are absent.
 - PyQt6 and gRPC are absent, so `opensnitch-ui` exits during its first import.
+- No OpenSnitch entry exists in `/etc/xdg/autostart`, so the UI would not launch at desktop login.
 
 Trying to layer upstream `opensnitch-ui-1.8.0-1.noarch.rpm` over the Terra package fails:
 
@@ -112,6 +113,28 @@ BuildRequires:  python3dist(pyqt5)
 The staged RPM's generated requirements consequently include Python 3.14 and native daemon libraries,
 but not PyQt6, gRPC, protobuf, slugify, packaging, or requests.
 The staged deployment has none of PyQt6 or gRPC.
+
+### Terra omits desktop-session autostart
+
+The freedesktop [Desktop Application Autostart Specification][xdg-autostart]
+requires an application desktop file in an XDG autostart directory.
+The default system directory is `/etc/xdg/autostart`.
+A menu entry under `/usr/share/applications` does not register desktop-session autostart.
+
+OpenSnitch's v1.8.0 UI RPM creates that registration at
+`evilsocket/opensnitch@v1.8.0:utils/packaging/ui/rpm/opensnitch-ui.spec:45-47`:
+
+```spec
+deskfile=/etc/xdg/autostart/opensnitch_ui.desktop
+if [ -d /etc/xdg/autostart -a ! -h  $deskfile -a ! -f $deskfile ]; then
+    ln -s /usr/share/applications/opensnitch_ui.desktop /etc/xdg/autostart/
+fi
+```
+
+Terra's combined package runs only systemd macros in its scriptlets.
+The staged deployment has no `/etc/xdg/autostart/opensnitch_ui.desktop`.
+Even after dependency repair,
+users would need to launch the UI manually before it could display interactive connection prompts.
 
 ### Terra installs an upstream unit with the wrong prefix
 
@@ -225,6 +248,7 @@ python3-grpcio-1.48.4-57.fc44.x86_64
 python3-packaging-25.0-8.fc44.noarch
 python3-protobuf-3.19.6-20.fc44.noarch
 python3-pyqt6-6.11.0-4.fc44.x86_64
+python3-requests-2.33.1-1.fc44.noarch
 python3-slugify-8.0.4-4.fc44.noarch
 ```
 
@@ -260,6 +284,14 @@ $ grep '^ExecStart=' "$staged/usr/lib/systemd/system/opensnitchd.service"
 ExecStart=/usr/local/bin/opensnitchd
 ```
 
+The desktop-session autostart entry is absent:
+
+```console
+$ test -e "$staged/etc/xdg/autostart/opensnitch_ui.desktop"
+$ echo $?
+1
+```
+
 The upstream local UI RPM and Terra RPM both own the path that reported `File exists`:
 
 ```console
@@ -279,13 +311,21 @@ so diagnosis stopped before those actions.
 
 A package-spec correction prototype is recorded as
 [`terra-opensnitch-1-8-packaging.patch`](terra-opensnitch-1-8-packaging.patch).
+Its zero-context hunks apply to a clean `terrapkg/packages@462374e` checkout with:
+
+```bash
+git apply --check --unidiff-zero terra-opensnitch-1-8-packaging.patch
+git apply --unidiff-zero terra-opensnitch-1-8-packaging.patch
+```
+
 It:
 
 - bumps Terra's RPM release;
 - corrects the service executable path before installation;
 - packages default configuration, rules, and tasks as `%config(noreplace)`;
-- adds hard runtime requirements for unconditional UI imports;
-- adds optional monitoring and notification integrations as recommendations.
+- adds hard runtime requirements for modules needed by the base UI;
+- adds optional requests, monitoring, and notification integrations as recommendations;
+- installs the desktop entry in the system XDG autostart directory.
 
 A structural positive-control harness reported the original spec as `INCOMPLETE`,
 listed every absent correction,
@@ -310,7 +350,7 @@ OpenSnitch can fall back to `/proc`, but that differs from upstream's default eB
   Both packages own `/usr/bin/opensnitch-ui`, and the observed checkout abort leaves no separate UI package staged.
 - **Install only PyQt6.**
   This moves the UI past its first import,
-  but does not supply every unconditional module and does not repair the daemon.
+  but does not supply other base UI modules and does not repair the daemon.
 - **Treat `systemctl is-enabled` as the packaging defect.**
   Disabled state can be an expected activation choice.
   The wrong `ExecStart`, missing configuration, and missing runtime dependencies are the functional packaging defects.
@@ -321,8 +361,9 @@ The exact duplicate is [terrapkg/packages issue 15904][terra-15904].
 It reported the missing unit and missing configuration.
 [Pull request 15995][terra-15995] added the unit,
 but installed its upstream `/usr/local` path unchanged and did not add configuration.
-A comment posted on 2026-08-22 already identifies the path mismatch and repeated configuration omission.
-The missing UI runtime requirements are additional evidence not present in that thread.
+[A comment posted on 2026-08-22][terra-15904-comment]
+already identifies the path mismatch and repeated configuration omission.
+The missing UI runtime requirements and absent XDG autostart entry are additional evidence not present in that thread.
 
 No additive comment draft is provided.
 Terra's current [AI policy][terra-policy] says LLMs must not write issue descriptions or further comments.
@@ -364,9 +405,12 @@ No `.out-of-scope/` entry covers Terra or OpenSnitch packaging.
 - [Terra package pull request 15995][terra-15995]
 - [Terra AI and packaging policy][terra-policy]
 - [OpenSnitch v1.8.0 source release][opensnitch-release]
+- [Desktop Application Autostart Specification][xdg-autostart]
 
 [terra-packages]: https://github.com/terrapkg/packages
 [terra-15904]: https://github.com/terrapkg/packages/issues/15904
+[terra-15904-comment]: https://github.com/terrapkg/packages/issues/15904#issuecomment-5377198692
 [terra-15995]: https://github.com/terrapkg/packages/pull/15995
 [terra-policy]: https://docs.terrapkg.com/contributing/policies/#ai-policy
 [opensnitch-release]: https://github.com/evilsocket/opensnitch/releases/tag/v1.8.0
+[xdg-autostart]: https://specifications.freedesktop.org/autostart-spec/latest/
