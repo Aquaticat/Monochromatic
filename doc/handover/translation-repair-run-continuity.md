@@ -1323,3 +1323,87 @@ and for everything filtered out.
 A capture is not verified by the process still running.
 It is verified by naming a file that must be in it,
 and finding that file.
+
+## The refinement resume verified at the user boundary
+
+Run the same entry twice,
+capture the first run's cache before it is discarded,
+restore it,
+and compare what the second run publishes.
+`Zha_Ke` under pipeline `sha256-tree-v1:851f8020`.
+
+The result.
+Every published slice is byte-identical across the pair,
+in both lanes,
+four repair slices and four translate slices,
+zero differing.
+Before the refinement cache existed the same instrument found
+7 of 18 repair-lane slices publishing different text on identical inputs.
+
+The second run made 19 model calls against the first run's 301,
+settled in 207 seconds against 4838,
+and discarded no namespace.
+Both runs recorded the same pipeline digest
+even though `tip` moved,
+because a documentation commit landed between them:
+the digest reads the built directory rather than the commit,
+which is the case `pipeline-digest.ts` was written for
+and which this pair demonstrates rather than assumes.
+
+The direct evidence for the lane under test is an absence.
+The first run's log carries three `runRefineStage` decisions,
+two rewrites that won on weight
+and one panel tie that kept the repaired text.
+The second run's log carries no refinement line at all.
+The lane ran once,
+was read back the second time,
+and published the same words.
+
+### The one slice that differs is the instrument rather than the pipeline
+
+Consolidation slice 3 shipped 277 characters in the first run and 281 in the second.
+That difference is the capture,
+and the timestamps say so exactly.
+
+The first run gated three consolidations,
+at 10:10:01,
+10:14:22 and 10:18:50.
+The capture holds three consolidation records,
+written at 06:10:01,
+06:14:23 and 06:15:34 local,
+so its newest predates the final gate by more than three minutes.
+The artifact was written at 06:18:50,
+and `discardSliceCache` runs immediately after it,
+so the record for the last gated slice was created and deleted
+inside one 200 millisecond poll.
+The second run resumed the three it had
+and bought the one it did not,
+which is one purchase,
+matching its single gate line.
+
+This was scoped before the comparison was read,
+not after it,
+which is the only reason it can be called an artifact rather than a result.
+A difference confined to a consolidation slice the capture demonstrably lost
+is the measurement failing to record,
+not the pipeline failing to resume.
+Any other difference would have been a defect.
+
+### A resumed run under-reports its own findings
+
+Found by the same comparison,
+and unrelated to the resume under test.
+
+The first run records `alignmentFindings` twice and 34 repair findings.
+The second records one and 33.
+The missing entry is the same string in both places,
+`block-pairing section 0`,
+and it is missing because the pairing stage emits it when it BUYS
+and does not persist it with the record it caches.
+
+So a resumed artifact's findings list is not a faithful account of what the pipeline determined.
+It is an account of what this particular run happened to pay for.
+Anything reading findings to characterise an entry
+reads a different answer depending on cache state,
+which is the same class of defect as `#171`
+with telemetry in place of published text.
