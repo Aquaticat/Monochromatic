@@ -580,12 +580,11 @@ await describe({
     },),
 
     it({
-      name: 'SHOWS THE SLATE JUDGES WHAT ITS PICTURES SAY AND WHAT STANDS EITHER SIDE. `#176` gave the '
-        + 'readings to this stage\'s PRODUCERS and stopped, so for one day the judges weighed proposals '
-        + 'written against evidence they could not see, which is worse than both being blind: a producer '
-        + 'that used a picture correctly looked to its judge like one inventing detail. The window was '
-        + 'never shown to either half. Both are read off the judges\' own request, which is the only '
-        + 'place the wiring is visible',
+      name: 'SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY. `#176` gave the readings to '
+        + 'this stage\'s PRODUCERS and stopped, so for one day the judges weighed proposals written '
+        + 'against evidence they could not see, which is worse than both halves being blind: a producer '
+        + 'that used a picture correctly looked to its judge like one inventing detail. Read off the '
+        + 'judges\' own request, which is the only place the wiring is visible',
       fn: async () => {
         const { client, judgeSheets, } = answeringClient();
 
@@ -593,6 +592,28 @@ await describe({
           client,
           contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
           pictureContextBySlice: new Map([[0, 'The photograph shows a tortoiseshell asleep in a sunlit doorway.',],],),
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(
+          judgeSheets.every(function carriesReading(sheet,): boolean {
+            return sheet.includes('tortoiseshell asleep in a sunlit doorway',);
+          },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS THEM THE PASSAGES EITHER SIDE, which neither half of this stage has ever been given. '
+        + 'The translate lane\'s judges have had the window since `#107`, and a consolidation judge '
+        + 'without it cannot tell a passage the archive moved next door from one a candidate invented. '
+        + 'Kept apart from the picture case above so a break in one is not read as a break in the other',
+      fn: async () => {
+        const { client, judgeSheets, } = answeringClient();
+
+        await driveWith({
+          client,
+          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
           neighbourContextBySlice: new Map([[
             0,
             {
@@ -604,9 +625,8 @@ await describe({
 
         expect(judgeSheets.length,).toBeGreaterThan(0,);
         expect(
-          judgeSheets.every(function carriesEvidence(sheet,): boolean {
-            return sheet.includes('tortoiseshell asleep in a sunlit doorway',)
-              && sheet.includes('她把窗户推开了一条缝',)
+          judgeSheets.every(function carriesWindow(sheet,): boolean {
+            return sheet.includes('她把窗户推开了一条缝',)
               && sheet.includes('She pushed the window open a crack',);
           },),
         ).toBe(true,);
