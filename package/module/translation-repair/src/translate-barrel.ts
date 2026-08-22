@@ -123,6 +123,11 @@ export {
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
 export {
+  CONSOLIDATE_CACHE_VERSION,
+  consolidateRunShape,
+  consolidateSliceKey,
+} from './consolidate-key.ts';
+export {
   produceConsolidations,
   type ProducedConsolidations,
 } from './consolidate-produce.ts';
