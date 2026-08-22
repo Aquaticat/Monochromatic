@@ -3033,3 +3033,55 @@ where the reader could see records,
 so it is not void.
 It is also not evidence about anything the two-lane pipeline has produced,
 and it should not be cited as if it were.
+
+## Sizing the audit error
+
+`#166` item 1 called `rendering-audit-settled-input.ts` wrong as it stands
+ without sizing it.
+Sized now,
+against `laneSelection.slices[].verdict` on every artifact whose contest settled.
+
+The audit derives every subject from `lanes.translate.delivery` alone.
+Of 6 contest slices across 2 artifacts,
+5 are subjects whose translate-lane text is not what shipped:
+1 where the repair lane won the contest,
+1 that settled neither,
+and 3 where the translate lane won and the consolidation then replaced it.
+`Acheron` is wrong at 3 of 4 slices and `Weideriche_` at 2 of 2.
+
+The audit therefore describes shipped text at 1 of 6 slices.
+The population is 2 artifacts,
+so this is mechanism and direction rather than a rate,
+and it is the whole population that exists.
+
+### Two fields named verdict
+
+Sizing that error produced a wrong number first,
+which is worth recording because the mechanism will catch the next reader too.
+
+A settled artifact carries two fields spelled `verdict` at sibling paths.
+`comparison[].verdict` is `SliceLaneVerdict` from `lane-comparison.ts:39`,
+a string union naming which lanes changed the slice.
+`laneSelection.slices[].verdict` is `ArtifactContestVerdictV2` from
+ `corpus-run/artifact-v2-contest.ts:29`,
+an object discriminated on `kind` naming who won.
+Only the contest field answers a question about shipping.
+
+Reading `row.verdict.kind` against the string form yields `undefined` on every
+ row,
+which is not an error and not an obviously wrong answer.
+The first probe written to size the audit error did exactly that,
+and reported 142 of 142 slices wrong.
+The correct read gives 5 of 6.
+
+It was caught by a positive control rather than by review:
+the probe printed the distribution of the field it was reading,
+and every one of 142 rows fell in a single bucket.
+That is now the standing rule for artifact probes here.
+A probe prints the distribution of what it reads before its headline number is
+ trusted,
+because two probes in one session returned a false total from a wrong field path
+ and neither threw.
+
+Filed as `#170`,
+queued behind the source freeze.
