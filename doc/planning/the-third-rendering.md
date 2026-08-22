@@ -2273,3 +2273,78 @@ Every standing text in the band pair is lane output, which is already wrapped,
 so the archive case the second key exists for is not exercised by this population.
 It closes a hole the pair does not happen to contain,
 which is why it needed a written guard rather than a measured one.
+
+## The gate's refusal policy, measured rather than asked
+
+I had this down as a values question and was about to put it to the owner.
+That was wrong, and the correction is worth recording:
+under a quality-first guideline,
+a decision that measurement cannot settle means the measurement is wrong or too small,
+not that the decision is a preference.
+
+### The question
+
+A gate judge may answer `neither`,
+meaning the two renderings differ only in wording and neither is more faithful to the Chinese.
+Today that behaves as an abstention that does not count,
+so a consolidation can ship on a minority of decisive ballots.
+The churn-averse alternative is to let a plurality of `neither` block a change.
+
+### The population
+
+Across runs 6 to 9 the gate ran at 37 slice-instances.
+At 14 of them a consolidation shipped with refusals at or above its own vote count,
+which is where the two policies differ.
+Three of those 14 are already resolved by the semantic wrap,
+which demotes a consolidation that only re-wraps what stands,
+leaving 11 live cases across 5 distinct slices:
+`keyword233#1` in all four runs,
+`Acheron#1` in three,
+`Weideriche_#0` in two,
+and `keyword233#0` and `Weideriche_#1` once each.
+
+### The instrument, which was already paid for
+
+The gate ballot carries `unsupported` and `dropped` beside `choice`,
+each a list naming whichever renderings say something the original does not
+or omit something it does.
+That evidence is recorded per ballot and nothing has ever read it.
+It answers a different question from `choice`:
+not which rendering a judge prefers,
+but which one that judge could name a fault in.
+A judge answering `neither` still fills these in.
+
+### The result
+
+Across the 11 live cases,
+the ballots name the standing text faulty 24 times and the consolidation 15 times.
+At no live case is the consolidation named faulty more often than the standing text;
+the worst it does is tie, at 4 of the 11.
+
+So blocking on a refusal plurality would,
+at every case it would have fired on,
+keep a text the panel's own evidence calls equally or more faulty than the one it replaced.
+The churn-averse policy costs quality at 7 of 11 cases and gains nothing at the other 4.
+
+`neither` keeps behaving as an abstention that does not count.
+
+### The positive control
+
+A null from an instrument that cannot show the opposite means nothing,
+so the same tally was run over all 37 gated instances.
+It names the consolidation the worse text at 5 of them,
+so it discriminates.
+At 3 of those 5 the gate had already settled on the standing text,
+which is the instrument and the panel agreeing.
+
+### What the control turned up on its own
+
+The other 2 are a defect, and a different one from the question above.
+`lintong#2` and `Weideriche_#0`, both in run 8,
+shipped a consolidation that the ballots name faulty MORE often than the standing text:
+4 against 3, and 3 against 2.
+Neither is a refusal-plurality case, so no refusal policy would have caught them.
+
+The gate's `choice` field and its own evidence fields disagree there,
+and nothing reads the evidence,
+so the disagreement has never been actionable.
