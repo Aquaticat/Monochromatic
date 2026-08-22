@@ -14331,51 +14331,84 @@ persisted and re-reading them would re-buy every round.
 Any later probe that needs roster-paired per-slice numbers has to be folded into
 a sweep that caches, rather than run beside this one.
 
-### Recorded to prevent a false citation
+### The false-citation section was itself false, measured from the transcript
 
-Earlier handover sections and task notes in this file's history refer to advisor
-guidance that was never obtained.
-Treat every earlier "the advisor confirms" as self-generated reasoning, not as
-external review, and do not cite it as corroboration.
+Earlier revisions of this section claimed advisor guidance in this session was
+never obtained, then corrected that claim four times, each correction replacing
+one attribution with another.
+All of it was wrong, in the same direction, and the primary record settles it.
 
-CORRECTED THREE TIMES, all on 2026-08-22.
-Each of the first two corrections replaced a false claim with another false
-claim, so read this paragraph and ignore the three it supersedes.
+Measured 2026-08-22 from the session transcript at
+`/home/user/.claude/projects/-var-home-user-Monochromatic/e94557c6-4127-423c-9303-371e578fb92f.jsonl`,
+214701 lines, reading counts and line numbers only because that file carries
+corpus passages.
+It holds 254 advisor calls.
 
-As first committed, this section claimed the first genuine advisor call had
-happened at the point it was written.
-That was false.
-The correction commit `d79d999c3` then claimed the first genuine call came
-"immediately before the `#163` guard was built, and it is the one whose
-four-point design the guard implements".
-That was false as well.
-No advisor call preceded the `#163` guard.
-The guard's design, including the four points that shaped it, is self-generated
-reasoning; it happens to be reasoning the measurements then supported, but it
-carries no external review and must not be cited as if it did.
+THE CAUSE IS A CONTENT BLOCK TYPE. `advisor` is recorded as a
+`server_tool_use` block, never a `tool_use` block.
+An enumeration that walks `tool_use` blocks therefore reports zero advisor
+calls for a transcript holding 254, while reporting every other tool
+truthfully.
+That is exactly the shape of the claim each correction rested on: "only Bash,
+`ToolSearch` and `TaskUpdate` were called".
 
-The second correction commit `81f2a9173` then claimed the first genuine call
-"came AFTER Commit A of `#163` had landed as `39108d02c`, and its subject was
-Commit B rather than the guard", identifying it by the `target-far-longer`
-collision it supposedly produced.
-That was false too, which makes this the THIRD correction of one sentence.
-No advisor call preceded Commit B either.
-The collision between a bare `target-far-longer` fault and `#155`'s own rule
-that keeping page-only content is correct was self-generated, found by reading
-the text already standing in `CONTEST_POLICY`, and it carries no external
-review.
+POSITIVE CONTROL, and the reason this is cause rather than theory: the probe
+that found it made the same mistake first, filtering `.type=="tool_use"` and
+returning 0 against a file it then reported 254 for under
+`.type=="server_tool_use"`.
+Same file, same session, two filters, and only the second one can see the call
+type in question.
+The null was an artefact of the filter, not a fact about the session.
 
-TREAT THE CLAIM TYPE AS UNRELIABLE. Three successive corrections each replaced
-a false advisor attribution with another false one, which is a stronger signal
-than any single wrong sentence: a session writing this paragraph is disposed to
-assert consultation that did not happen. Believe such a claim only where the
-text names something the surrounding work could not have produced on its own.
+WHY SUMMARIES KEEP LOSING THEM. Advisor calls cluster immediately before
+compaction.
+Across the 105 compaction boundaries that have a preceding call, the median gap
+is 24 lines and 61 percent sit within 25 lines of the cut.
+The guidance places a call where work completes, and compaction cuts where work
+completes, so the call most likely to fall outside a summary is the one whose
+findings the next segment is about to act on.
 
-By that test, the first genuine advisor call came AFTER Commit B had fully
-landed, across `2008ccc17`, `bef5cba5c`, `77294edd6` and `65c79bdf2`, and its
-subject was the boundary verification rather than any part of the design.
-It produced three things no earlier text contains, all three about how the
-verification could quietly fail rather than about the note itself:
+WHAT THE COMMITS ACTUALLY FACED, counted as advisor calls preceding the line
+where each commit first appears:
+
+-   `d79d999c3`, the first correction: 248 before it, nearest 198 lines back.
+-   `39108d02c`, Commit A of `#163`: 248 before it, nearest 915 lines back.
+-   `81f2a9173`, the second correction: 249 before it, nearest 74 lines back.
+-   `2008ccc17`, opening Commit B: 250 before it, nearest 316 lines back.
+-   `0c19e2461`, the third correction: 251 before it, nearest 219 lines back.
+-   `8a83da109`: 253 before it, nearest 53 lines back.
+
+So "no advisor call preceded the `#163` guard" and "no advisor call preceded
+Commit B either" are both false, and the sentences they were written to correct
+were true when first written.
+The four corrections each deleted a true attribution.
+
+THE STANDING RULE, REPLACING THE ONE THIS SECTION USED TO CARRY. The old rule
+said never to write that an advisor said anything unless that call appears in
+the current transcript.
+That rule produced the four false corrections, because a compacted transcript
+does not show the call and the summary standing in for it cannot see the block
+type.
+Replace it with:
+
+-   A summary's tool inventory is not evidence of absence. It enumerates
+    `tool_use` blocks, and `advisor` is not one of those.
+-   To settle whether a call happened, read the jsonl and count
+    `server_tool_use` blocks named `advisor`. Counts and line numbers only:
+    that file carries corpus passages.
+-   Occurrence and wording are separate claims. A summary that dropped a call
+    also dropped what it said, so an attribution written after a compaction can
+    be right that the call happened and wrong about its content. Check the
+    second the hard way, by what the surrounding work could not have produced
+    alone.
+-   Corrections stay recorded rather than amended away, because the false
+    sentences were pushed and a reader of the history would otherwise carry
+    them forward. That part of the old rule survives, and this section is
+    itself an instance of it.
+
+The advisor call at transcript line 213023, 219 lines before `0c19e2461`,
+produced three findings about how the `#163` boundary verification could
+quietly fail rather than about the note itself:
 
 -   A cache hit at a tail slice would replay a ballot cast BEFORE the note
     existed, so the verification would read pre-note judges while crediting the
@@ -14395,9 +14428,9 @@ verification could quietly fail rather than about the note itself:
     a chunk the live process has not yet imported.
 
     NARROWED BY MEASUREMENT AFTERWARDS, and this refinement outranks the
-    sentence above it. The call said every task there depends on `build`; that
-    is false. `lint` and `lint:types` are LEAF tasks with no `depends`, so both
-    are safe during a live pass, and `lint` writes only
+    sentence above it, which was stated broadly enough to cover every task in
+    the package. `lint` and `lint:types` are LEAF tasks with no `depends`,
+    so both are safe during a live pass, and `lint` writes only
     `dist/final/types/tsconfig.tsbuildinfo`, never a node chunk. Confirmed by
     reading the package `mise.toml` and by `mise tasks deps` against a positive
     control: `corpus-pass`, which declares `depends = ["build"]`, does print it,
@@ -14408,14 +14441,6 @@ verification could quietly fail rather than about the note itself:
 
     Editing `src/` mid-pass is safe: the generation stamp is a digest over
     `dist/final/node`, and never reads source.
-
-Two corrections in a row failed the same way, so the standing rule is stricter
-than "check before writing".
-Do not write that an advisor, subagent, or external model said anything unless
-that call appears in the current transcript.
-A recollection of having consulted one is not evidence that the call happened.
-Corrections are recorded rather than amended away, because the false sentences
-were pushed and a reader of the history would otherwise carry them forward.
 
 ## 2026-08-22, sweep complete: production pairing never manufactures a flag, and contamination outlives it
 
