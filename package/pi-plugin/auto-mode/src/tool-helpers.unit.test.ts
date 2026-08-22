@@ -13,7 +13,7 @@ import {
 import {
   buildApprovalFingerprint,
   serializeToolInputForJudge,
-} from './tool-helpers.ts';
+} from '../dist/final/node/index.mjs';
 
 /** Test working directory for approval fingerprint fixtures. */
 const TEST_CWD = '/repo';

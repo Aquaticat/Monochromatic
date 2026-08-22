@@ -13,7 +13,7 @@ import {
 import {
   DEFAULT_DENY_GUIDANCE,
   JUDGE_SYSTEM_PROMPT,
-} from './system-prompt.ts';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'judge policy text',

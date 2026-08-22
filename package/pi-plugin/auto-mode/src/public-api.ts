@@ -27,7 +27,14 @@ export {
   toolChoiceForApi,
   VERDICT_TOOL,
 } from './judge-tool.ts';
-export { buildApprovalFingerprint, } from './tool-helpers.ts';
+export {
+  buildApprovalFingerprint,
+  serializeToolInputForJudge,
+} from './tool-helpers.ts';
+export {
+  DEFAULT_DENY_GUIDANCE,
+  JUDGE_SYSTEM_PROMPT,
+} from './system-prompt.ts';
 export {
   type BudgetModel,
   type VerdictData,
