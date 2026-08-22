@@ -35,13 +35,34 @@ exec node "$basedir/../../package/git-policy/cli/dist/final/node/index.mjs" "$@"
 # cmd-shim-target=/var/home/user/Monochromatic/package/git-policy/cli/dist/final/node/index.mjs
 `;
 
-/** Windows command shim without Unix shebang that delegates to this package. */
+/** Windows command shim without Unix shebang that delegates through package path. */
 const WINDOWS_SELF_SHIM_CONTENT = `@ECHO off
 node "%~dp0\\..\\@monochromatic-dev\\git-policy-cli\\dist\\final\\node\\index.mjs" %*
 `;
 
-/** Native ELF-like bytes containing marker text that must remain unscanned. */
-const NATIVE_GIT_FIXTURE_CONTENT = `\u007FELF${PACKAGE_NAME_SHIM_CONTENT}`;
+/** Windows command shim containing only backslash-spelled bundled entry path. */
+const WINDOWS_BUNDLED_ENTRY_SHIM_CONTENT = `@ECHO off
+node "%~dp0\\..\\..\\package\\git-policy\\cli\\dist\\final\\node\\index.mjs" %*
+`;
+
+/** Supported native executable signatures exercised before marker-like payload bytes. */
+const NATIVE_HEADER_CASES: readonly {
+  /** Human-readable executable format. */
+  readonly name: string;
+  /** Exact hexadecimal file prefix. */
+  readonly hexPrefix: string;
+}[] = [
+  { name: 'ELF', hexPrefix: '7f454c46', },
+  { name: 'PE', hexPrefix: '4d5a', },
+  { name: 'big-endian 32-bit Mach-O', hexPrefix: 'feedface', },
+  { name: 'big-endian 64-bit Mach-O', hexPrefix: 'feedfacf', },
+  { name: 'little-endian 32-bit Mach-O', hexPrefix: 'cefaedfe', },
+  { name: 'little-endian 64-bit Mach-O', hexPrefix: 'cffaedfe', },
+  { name: 'big-endian universal Mach-O', hexPrefix: 'cafebabe', },
+  { name: 'little-endian universal Mach-O', hexPrefix: 'bebafeca', },
+  { name: 'big-endian 64-bit universal Mach-O', hexPrefix: 'cafebabf', },
+  { name: 'little-endian 64-bit universal Mach-O', hexPrefix: 'bfbafeca', },
+];
 
 /** Shell script that stands in for the real system git binary. */
 const REAL_GIT_CONTENT = `#!/bin/sh
@@ -66,6 +87,10 @@ const SELF_SHIM_CASES: readonly {
   {
     name: 'Windows package marker',
     content: WINDOWS_SELF_SHIM_CONTENT,
+  },
+  {
+    name: 'Windows bundled entry marker',
+    content: WINDOWS_BUNDLED_ENTRY_SHIM_CONTENT,
   },
 ];
 
@@ -127,8 +152,8 @@ async function writeExecutable({
 }: {
   /** Absolute file path to create. */
   readonly path: string;
-  /** Script contents to write. */
-  readonly content: string;
+  /** Script or binary bytes to write. */
+  readonly content: string | Uint8Array;
 },): Promise<void> {
   await writeFile(
     path,
@@ -268,25 +293,30 @@ await describe({
         },),).toBe(commonGitPath,);
       },
     },),
-    it({
-      name: 'accepts native executable without scanning marker-like payload',
-      fn: async function testNativeExecutableHeader(): Promise<void> {
-        await using tempDirectory = await createTempDirectory();
-        /** PATH directory containing native-format candidate. */
-        const nativeBinDir = join(tempDirectory.path, 'native-bin',);
-        await mkdir(nativeBinDir,);
-        /** Native-format candidate with marker-like payload bytes. */
-        const nativeGitPath = join(nativeBinDir, 'git',);
-        await writeExecutable({
-          path: nativeGitPath,
-          content: NATIVE_GIT_FIXTURE_CONTENT,
-        },);
+    ...NATIVE_HEADER_CASES.map(function mapNativeHeaderCase(nativeHeaderCase,) {
+      return it({
+        name: `accepts ${nativeHeaderCase.name} executable without scanning marker-like payload`,
+        fn: async function testNativeExecutableHeader(): Promise<void> {
+          await using tempDirectory = await createTempDirectory();
+          /** PATH directory containing native-format candidate. */
+          const nativeBinDir = join(tempDirectory.path, 'native-bin',);
+          await mkdir(nativeBinDir,);
+          /** Native-format candidate with marker-like payload bytes. */
+          const nativeGitPath = join(nativeBinDir, 'git',);
+          await writeExecutable({
+            path: nativeGitPath,
+            content: Buffer.concat([
+              Buffer.from(nativeHeaderCase.hexPrefix, 'hex',),
+              Buffer.from(PACKAGE_NAME_SHIM_CONTENT,),
+            ],),
+          },);
 
-        expect(await resolveGit({
-          pathEnv: nativeBinDir,
-          commonGitPaths: [nativeGitPath,],
-        },),).toBe(nativeGitPath,);
-      },
+          expect(await resolveGit({
+            pathEnv: nativeBinDir,
+            commonGitPaths: [nativeGitPath,],
+          },),).toBe(nativeGitPath,);
+        },
+      },);
     },),
     it({
       name: 'falls back to PATH when common paths are unavailable',
