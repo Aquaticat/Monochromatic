@@ -147,7 +147,8 @@ Manual `/advisor` calls read current prompt options directly after pending work
 settles.
 
 Project context is JSON-encoded and appended to the Advisor system prompt,
-so `AGENTS.md`, global context,
+so `AGENTS.md`,
+ global context,
 and ancestor context instructions remain available even when conversation
 messages containing earlier file reads were compacted.
 The selected model's context budget includes this expanded system prompt.
