@@ -831,9 +831,18 @@ which needs no passage quoted.
 - chunk 1 shares a 39 character suffix in both,
    and a prefix of 222 in run 1 against 82 in run 2.
 
-So a stage after the slice cache rewrites the middle of the text.
-It settles on the same answer for chunks 2 and 3 and on different answers for
- chunks 0 and 1.
+MOST OF THAT IS THE SEMANTIC WRAP,
+which `repair-assemble.ts` applies at assembly and which is length preserving,
+so it is benign and expected.
+Normalising whitespace on both sides separates it from a real change.
+Of 14 readings across the two entries,
+11 are wrap-only.
+Three carry a genuine text difference:
+`Acheron` chunk 0 and chunk 1 in both runs,
+and `Weideriche_` chunk 1 in run 1 but NOT in run 2,
+where it came back wrap-only.
+
+So which slices diverge from their cache is itself unstable between runs.
 
 ### The fact that carries the finding
 
@@ -853,3 +862,34 @@ A slice whose own record says it changed nothing cannot have produced that
 so the delivered text does not come from the cached record.
 That holds without naming the stage that does produce it,
 which is the next thing to find and is deliberately not guessed here.
+
+### The positive control that makes chunk 0 an anomaly
+
+`Weideriche_` chunk 2 has the same cache state as `Acheron` chunk 0:
+`changed` false,
+zero repair regions.
+It delivered `incumbent-retained`,
+with the shipped text identical to the cached text,
+in both runs.
+
+That is the correct handling of a slice the lane did not change,
+and it proves the pipeline can produce it.
+
+`Acheron` chunk 0 has that same cache state and delivered
+ `replacement-shipped` instead,
+with text that is neither the incumbent nor the cached text,
+and that differs between the two runs.
+Two slices with the same recorded lane outcome took different delivery paths.
+
+### What run 2 has decided so far
+
+The consolidation resume works.
+The semantic wrap accounts for 11 of the 14 cache-to-delivery comparisons.
+Three readings carry a real divergence,
+and one of those appeared in run 1 and not in run 2.
+A slice recorded as changing nothing shipped a replacement.
+
+`#171` carries this.
+It outranks the frozen queue,
+because a rerun over an unchanged corpus publishing different text is a
+ correctness problem on a memorial corpus rather than a performance one.
