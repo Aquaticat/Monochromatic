@@ -4,7 +4,12 @@
  * @module
  */
 
-import type { Model, } from '@earendil-works/pi-ai';
+import {
+  fauxAssistantMessage,
+  fauxProvider,
+  type Context,
+  type Model,
+} from '@earendil-works/pi-ai';
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
@@ -92,6 +97,9 @@ const advisorConfig: AdvisorConfig = {
   },
 };
 
+/** Generic recorded extension callback used by registration probes. */
+type RecordedHandler = (...args: unknown[]) => unknown;
+
 /** Recorded extension API calls. */
 type RecordedPi = {
   /** Registered tool names. */
@@ -102,6 +110,12 @@ type RecordedPi = {
   renderers: string[];
   /** Registered event names. */
   events: string[];
+  /** Registered event callbacks keyed by event name. */
+  eventHandlers: Map<string, RecordedHandler>;
+  /** Registered tool callbacks keyed by tool name. */
+  toolHandlers: Map<string, RecordedHandler>;
+  /** Registered command callbacks keyed by command name. */
+  commandHandlers: Map<string, RecordedHandler>;
   /** Fake extension API. */
   api: ExtensionAPI;
 };
@@ -216,28 +230,68 @@ function recordedPi(): RecordedPi {
     commands: [],
     renderers: [],
     events: [],
+    eventHandlers: new Map(),
+    toolHandlers: new Map(),
+    commandHandlers: new Map(),
   };
   return {
     ...recorded,
     api: {
-      registerTool(tool: { name: string; },) {
-        recorded.tools.push(tool.name,);
+      registerTool(tool: Record<string, unknown>,) {
+        /** Registered tool name from Pi definition. */
+        const name = tool.name as string;
+        recorded.tools.push(name,);
+        recorded.toolHandlers.set(name, tool.execute as RecordedHandler,);
       },
-      registerCommand(name: string,) {
+      registerCommand(
+        name: string,
+        options: Record<string, unknown>,
+      ) {
         recorded.commands.push(name,);
+        recorded.commandHandlers.set(name, options.handler as RecordedHandler,);
       },
       registerMessageRenderer(customType: string,) {
         recorded.renderers.push(customType,);
       },
-      on(event: string,) {
+      on(
+        event: string,
+        handler: RecordedHandler,
+      ) {
         recorded.events.push(event,);
+        recorded.eventHandlers.set(event, handler,);
       },
       getActiveTools() {
         return [];
       },
       setActiveTools() {},
+      sendMessage() {},
     } as unknown as ExtensionAPI,
   };
+}
+
+/**
+ * Get required recorded callback from registration map.
+ *
+ * @param handlers - callbacks keyed by registered name
+ *
+ * @param name - required registration name
+ *
+ * @returns recorded callback
+ */
+function registeredHandler(
+  {
+    handlers,
+    name,
+  }: {
+    readonly handlers: ReadonlyMap<string, RecordedHandler>;
+    readonly name: string;
+  },
+): RecordedHandler {
+  /** Registered callback for requested name. */
+  const handler = handlers.get(name,);
+  if (handler === undefined)
+    throw new Error(`Missing registered handler: ${name}`,);
+  return handler;
 }
 
 //endregion Fixtures
@@ -257,6 +311,130 @@ await describe({
           'session_start',
           'before_agent_start',
         ],);
+      },
+    },),
+    it({
+      name: 'forwards prompt snapshot to tool and live prompt options to command',
+      fn: async function forwardsProjectContextAcrossRegisteredPaths(): Promise<void> {
+        /** Recorded extension registrations under lifecycle integration test. */
+        const recorded = recordedPi();
+        await advisor(recorded.api,);
+        /** Faux provider used at real Advisor provider boundary. */
+        const providerFixture = fauxProvider({
+          api: 'faux',
+          provider: 'faux-provider',
+          models: [{
+            id: 'reviewer',
+            reasoning: false,
+            maxTokens: DEFAULT_CONFIG.maxAdvisorOutputTokens,
+          },],
+        },);
+        /** Provider contexts from tool and command calls in order. */
+        const providerContexts: Context[] = [];
+        providerFixture.setResponses([
+          function toolResponse(context,) {
+            providerContexts.push(context,);
+            return fauxAssistantMessage('tool advisor answer',);
+          },
+          function commandResponse(context,) {
+            providerContexts.push(context,);
+            return fauxAssistantMessage('command advisor answer',);
+          },
+        ],);
+        /** Shared extension context with scoped model and provider access. */
+        const ctx = {
+          cwd: '/repo',
+          scopedModels: [providerFixture.getModel(),],
+          modelRegistry: {
+            getAll() {
+              return providerFixture.models;
+            },
+            getAvailable() {
+              return providerFixture.models;
+            },
+            async getApiKeyAndHeaders() {
+              return {
+                ok: true,
+                apiKey: 'test-key',
+              };
+            },
+            getProvider() {
+              return providerFixture.provider;
+            },
+          },
+          sessionManager: {
+            buildContextEntries() {
+              return [];
+            },
+          },
+        } as unknown as ExtensionContext;
+        /** Prompt hook capturing tool-run project context. */
+        const beforeAgentStart = registeredHandler({
+          handlers: recorded.eventHandlers,
+          name: 'before_agent_start',
+        },);
+        /** Registered Advisor tool execution boundary. */
+        const executeTool = registeredHandler({
+          handlers: recorded.toolHandlers,
+          name: ADVISOR_TOOL_NAME,
+        },);
+        /** Session boundary that clears tool-run snapshot. */
+        const sessionStart = registeredHandler({
+          handlers: recorded.eventHandlers,
+          name: 'session_start',
+        },);
+        /** Registered manual Advisor command boundary. */
+        const executeCommand = registeredHandler({
+          handlers: recorded.commandHandlers,
+          name: ADVISOR_TOOL_NAME,
+        },);
+
+        await beforeAgentStart(
+          {
+            type: 'before_agent_start',
+            prompt: 'Review current work.',
+            systemPrompt: 'Main prompt.',
+            systemPromptOptions: {
+              cwd: '/repo',
+              contextFiles: [{
+                path: '/repo/AGENTS.md',
+                content: 'Tool snapshot guidance.',
+              },],
+            },
+          },
+          ctx,
+        );
+        await executeTool(
+          'advisor-context-tool',
+          { model: 'faux-provider/reviewer', },
+          undefined,
+          undefined,
+          ctx,
+        );
+        await sessionStart({}, ctx,);
+        /** Command context exposing current prompt options after idle. */
+        const commandCtx = {
+          ...ctx,
+          async waitForIdle() {},
+          getSystemPromptOptions() {
+            return {
+              cwd: '/repo',
+              contextFiles: [{
+                path: '/repo/AGENTS.md',
+                content: 'Command live guidance.',
+              },],
+            };
+          },
+          ui: {
+            notify() {},
+          },
+        } as unknown as ExtensionCommandContext;
+        await executeCommand('faux-provider/reviewer', commandCtx,);
+
+        expect(providerContexts,).toHaveLength(2,);
+        expect(providerContexts[0]?.systemPrompt,).toContain('Tool snapshot guidance.',);
+        expect(providerContexts[1]?.systemPrompt,).toContain('Command live guidance.',);
+        expect(providerContexts[1]?.systemPrompt,).not.toContain('Tool snapshot guidance.',);
       },
     },),
   ],

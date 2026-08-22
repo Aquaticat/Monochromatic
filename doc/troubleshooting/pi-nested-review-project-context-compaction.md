@@ -293,6 +293,9 @@ Tradeoffs:
 
 - Every nested provider receives full context-file paths and contents.
 - Requests consume more input tokens.
+- Auto-mode does not truncate project or recent context,
+  so unusually large context stacks can exceed a smaller judge model's input
+  window and fall back to manual approval.
 - Auto-mode treats project context as evidence,
   not authority to weaken guard policy.
 - Advisor treats project context as project instructions,

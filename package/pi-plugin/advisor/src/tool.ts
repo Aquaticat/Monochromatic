@@ -67,7 +67,7 @@ export type CreateAdvisorToolOptions = {
  *
  * @example
  * ```typescript
- * pi.registerTool(createAdvisorTool({ getConfig, getSessionEnabled }));
+ * pi.registerTool(createAdvisorTool({ getConfig, getSessionEnabled, getProjectContext }));
  * ```
  */
 export function createAdvisorTool(
