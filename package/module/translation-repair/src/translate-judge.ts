@@ -21,7 +21,7 @@ import {
 import type { TranslateCandidateValue, } from './translate-candidates.ts';
 import type { ProducedSlate, } from './translate-produce.ts';
 import {
-  TRANSLATE_SELECTION_CRITERIA,
+  translateSelectionCriteria,
   TRANSLATE_SELECTION_TASK,
 } from './translate-selection-sheet.ts';
 import {
@@ -118,6 +118,7 @@ export async function judgeTranslateSlate(
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
+    lineStructured,
     signal,
     perCallTimeoutMs,
     l,
@@ -132,6 +133,18 @@ export async function judgeTranslateSlate(
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
+
+    /**
+     * Whether the enclosing chunk is governed by the verse rule.
+     *
+     * REQUIRED RATHER THAN OPTIONAL, which is the whole lesson of `#176`. The
+     * consolidation producers carried this same fact as an optional field for a
+     * day, no caller ever set it, and every verse passage was quietly told it
+     * was prose. An optional flag here would fail exactly that way again, and
+     * silently: the sheet would render, the judges would answer, and nothing
+     * anywhere would report that the rule went missing.
+     */
+    readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -298,7 +311,7 @@ export async function judgeTranslateSlate(
       ? LEAVES_PASSAGE_UNTRANSLATED
       : KEEPS_TRUSTED_TEXT,
     task: TRANSLATE_SELECTION_TASK,
-    criteria: TRANSLATE_SELECTION_CRITERIA,
+    criteria: translateSelectionCriteria({ lineStructured, },),
     evidence: [
       {
         label: 'ORIGINAL (Chinese)',

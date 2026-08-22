@@ -420,6 +420,11 @@ export async function settleConsolidation(
     incumbentText: standingText,
     incumbentKind: 'present',
     ...identity,
+    // THE SAME FLAG THE PRODUCERS WERE GIVEN, which this function has held
+    // since it was written and passed to nobody. `#176` gave it to the
+    // consolidation producers; leaving the judges out of it would have the
+    // judges mark down exactly the unmerging the producers were told to do.
+    lineStructured,
     signal,
     perCallTimeoutMs,
     l: sl,

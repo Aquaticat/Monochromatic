@@ -14,7 +14,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import type { FidelityDamageKind, } from './fidelity-damage.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import {
-  TRANSLATE_SELECTION_CRITERIA,
+  translateSelectionCriteria,
   TRANSLATE_SELECTION_TASK,
 } from './translate-selection-sheet.ts';
 
@@ -386,7 +386,12 @@ export async function runFidelityTrial(
     candidates,
     judgeModelIds,
     task: TRANSLATE_SELECTION_TASK,
-    criteria: TRANSLATE_SELECTION_CRITERIA,
+    // THE UNGOVERNED SHEET, named explicitly rather than taken by default.
+    // `#84` measured whether these judges can tell a faithful rendering from a
+    // fluent one, and it measured them on the prose criteria. Letting this bed
+    // follow whatever the production default became would silently re-point the
+    // number at a sheet nobody measured.
+    criteria: translateSelectionCriteria({ lineStructured: false, },),
     evidence: [
       {
         label: 'ORIGINAL (Chinese)',

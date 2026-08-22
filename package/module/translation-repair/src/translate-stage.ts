@@ -170,6 +170,11 @@ export async function runTranslateStage(
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),
+      // THE SAME VALUE THE PRODUCER WAS GIVEN, read from one binding rather
+      // than derived twice. A slate written under the verse rule and judged
+      // without it is the contradiction `#150` fixed for producers alone, and
+      // two derivations of one fact are how it would come back.
+      lineStructured,
       signal,
       perCallTimeoutMs,
       l,

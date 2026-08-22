@@ -60,6 +60,18 @@ const A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES =
   'Prefer a candidate using a DECLARED spelling over one that does not; where NO candidate uses one, that fault is shared and cannot separate them, so decide on the other criteria rather than declining.';
 
 /**
+ * Clause allowing a candidate to carry a shape the ORIGINAL does not have.
+ *
+ * NAMED SO TWO CRITERIA CAN SHARE ONE SPELLING. The shape criterion states it
+ * and {@link TRANSLATE_LINE_STRUCTURE_CRITERION} overrides it by quoting it
+ * back, which only works while the two spell it identically. Sharing a constant
+ * makes that true by construction, rather than by a test that would have to
+ * notice an edit to one of them and would pass while the override silently
+ * named a rule no judge was given.
+ */
+const A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT = 'A SHAPE THE ORIGINAL DOES NOT HAVE IS NOT A FAULT';
+
+/**
  * What the shape rule can ask of a judge that is never shown the page.
  *
  * WHAT THIS REPLACED, and why. The rule used to read "Markdown structure of the
@@ -78,7 +90,7 @@ const A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES =
  * alone.
  */
 const SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE =
-  'Markdown that holds together: block quotes, list markers, headings, footnote markers and links used consistently, with breaks between blocks. A SHAPE THE ORIGINAL DOES NOT HAVE IS NOT A FAULT, because this archive\'s pages split, merge and quote passages of their own accord.';
+  `Markdown that holds together: block quotes, list markers, headings, footnote markers and links used consistently, with breaks between blocks. ${A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT}, because this archive's pages split, merge and quote passages of their own accord.`;
 
 /**
  * Decision rules the judges apply, most important first.
@@ -107,5 +119,76 @@ export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
   SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE,
   'Natural, idiomatic English reading as one coherent passage.',
 ];
+
+/**
+ * Criterion added where the enclosing chunk's ORIGINAL is line-structured.
+ *
+ * WRITTEN FOR A JUDGE RATHER THAN A TRANSLATOR, which is why it is not
+ * `TRANSLATE_LINE_STRUCTURE_RULE` from `translate-wire.ts`. That one tells a
+ * producer what to build, in imperatives it can follow: produce one line per
+ * original line, unmerge what the existing translation merged. A judge builds
+ * nothing and chooses between candidates already written, so the same fact has
+ * to arrive as a test it can apply to each one.
+ *
+ * IT OVERRIDES CRITERION FOUR RATHER THAN SITTING BESIDE IT. Without this, a
+ * judge on a verse slice reads
+ * {@link SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE} and is told that a shape the
+ * ORIGINAL lacks is no fault, which on this archive is the right rule pointed
+ * the wrong way: here the ORIGINAL is what HAS the line structure and the page
+ * is what merged it. A producer obeying the verse rule unmerges, and a judge
+ * reading criterion four alone has been handed a reason to prefer the merged
+ * rival it was measured against.
+ *
+ * THE SAME CONTRADICTION `#150` FIXED, on the other side of the round. That
+ * task made the verse rule outrank the page rule for producers and said so in
+ * the rule text rather than by ordering, because a model resolves a
+ * contradiction however it likes when neither side defers. Ordering alone
+ * would be the same mistake here.
+ */
+export const TRANSLATE_LINE_STRUCTURE_CRITERION: string =
+  `The ORIGINAL is line-structured: each original line is a unit, and this criterion OUTRANKS the rule that ${A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT}, which governs prose and not verse. Count the lines against the ORIGINAL: a candidate that merges two original lines into one, splits one across two, or drops or invents a line is FAULTY here however well it reads, and a candidate carrying one line per original line is correct even where the EXISTING TRANSLATION merged them.`;
+
+/**
+ * Decision rules for a slice, carrying the line-structure criterion only where
+ * the rule governs.
+ *
+ * A FUNCTION RATHER THAN A SECOND ARRAY. Two arrays would answer the same
+ * question in two places and drift the moment either is edited, and the
+ * ungoverned answer is the one `#84` measured, so it has to stay exactly what
+ * it was.
+ *
+ * INSERTED BY IDENTITY, NOT BY INDEX. The criterion belongs immediately ahead
+ * of the shape rule it overrides, and finding that position by searching for
+ * the rule keeps it there if the list is ever reordered. An index would silently
+ * put it somewhere else.
+ *
+ * @param lineStructured - whether the enclosing chunk is governed by the verse
+ * rule, decided by the caller from the same set that gates the producer sheet
+ *
+ * @returns Criteria to give every judge of this slice, most important first
+ *
+ * @example
+ * ```ts
+ * const criteria = translateSelectionCriteria({ lineStructured: true, },);
+ * ```
+ */
+export function translateSelectionCriteria(
+  { lineStructured, }: { readonly lineStructured: boolean; },
+): readonly string[] {
+  // THE UNGOVERNED ANSWER IS THE ARRAY ITSELF, returned rather than rebuilt, so
+  // a prose slice is asked byte for byte what it was asked before this existed.
+  if (!lineStructured)
+    return TRANSLATE_SELECTION_CRITERIA;
+
+  return TRANSLATE_SELECTION_CRITERIA
+    .flatMap(function aheadOfTheRuleItOverrides(criterion,): readonly string[] {
+      return (criterion === SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE)
+        ? [
+          TRANSLATE_LINE_STRUCTURE_CRITERION,
+          criterion,
+        ]
+        : [criterion,];
+    },);
+}
 
 //endregion Translate selection sheet

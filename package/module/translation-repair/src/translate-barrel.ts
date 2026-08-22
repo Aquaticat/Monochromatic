@@ -58,7 +58,9 @@ export {
   type TranslateAbsenceReason,
 } from './translate-absence.ts';
 export {
+  TRANSLATE_LINE_STRUCTURE_CRITERION,
   TRANSLATE_SELECTION_CRITERIA,
+  translateSelectionCriteria,
   TRANSLATE_SELECTION_TASK,
 } from './translate-selection-sheet.ts';
 export { judgeTranslateSlate, } from './translate-judge.ts';

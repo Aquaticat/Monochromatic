@@ -22,7 +22,7 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  * consolidation to the standing text, which is a different settlement and not a
  * different way of writing the same one.
  */
-export const CONSOLIDATE_CACHE_VERSION = 1;
+export const CONSOLIDATE_CACHE_VERSION = 2;
 
 /**
  * What a line-structured slice appends to its key material.

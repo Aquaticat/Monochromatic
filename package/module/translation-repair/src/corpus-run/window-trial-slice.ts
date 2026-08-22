@@ -184,6 +184,23 @@ export async function runSliceArms(
     );
 
   /**
+   * Whether this bed treats its slices as governed by the verse rule.
+   *
+   * IT DOES NOT, and the value is named rather than written twice so the
+   * producer and the judges provably agree. This trial varies ONE thing, the
+   * width of the window, and every other input has to be identical across the
+   * arms and between the halves. A slate built under the verse rule and judged
+   * without it would vary two things and the difference would be credited to
+   * the window.
+   *
+   * NOT DERIVED FROM THE SLICE, deliberately. Production decides this per
+   * enclosing CHUNK, from a set this bed does not carry, so deriving it here
+   * from the slice text alone would answer a different question than
+   * production asks and the bed would stop measuring production.
+   */
+  const TRIAL_TREATS_ITS_SLICES_AS_PROSE = false;
+
+  /**
    * Slate every arm judges, bought once.
    */
   const produced = await produceTranslateSlate({
@@ -193,7 +210,7 @@ export async function runSliceArms(
       .text,
     incumbentText: slice.target
       .text,
-    lineStructured: false,
+    lineStructured: TRIAL_TREATS_ITS_SLICES_AS_PROSE,
     signal,
     perCallTimeoutMs,
     l,
@@ -218,6 +235,7 @@ export async function runSliceArms(
         .text,
       incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
       ...((arm === TRIAL_ARMS.wide) ? { neighbouringSourceText, } : {}),
+      lineStructured: TRIAL_TREATS_ITS_SLICES_AS_PROSE,
       signal,
       perCallTimeoutMs,
       l,

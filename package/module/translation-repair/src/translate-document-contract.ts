@@ -51,7 +51,7 @@ import type { SliceSelection, } from './slice-selection.ts';
  * would report itself decided. The widening loses none of the forms the old
  * comparison found, so no cached slice can be re-decided the other way.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 5;
+export const TRANSLATE_SLICE_CACHE_VERSION = 6;
 
 /**
  * Models the translate lane seats.
