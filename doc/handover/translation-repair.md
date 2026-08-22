@@ -14389,10 +14389,25 @@ verification could quietly fail rather than about the note itself:
     changes `dogesir_#3` this time instead of returning the archive, no note
     fires and the run verifies nothing, which is a finding to record rather
     than a failed verification.
--   Running ANY `//package/module/translation-repair` mise task while a pass is
-    live can destroy it. Every task there depends on `build`, rolldown names
-    chunks by content hash, and the runner's stage chunks load on demand, so a
-    rebuild can delete a chunk the live process has not yet imported.
+-   Running a `//package/module/translation-repair` mise task that BUILDS,
+    while a pass is live, can destroy it. rolldown names chunks by content
+    hash and the runner's stage chunks load on demand, so a rebuild can delete
+    a chunk the live process has not yet imported.
+
+    NARROWED BY MEASUREMENT AFTERWARDS, and this refinement outranks the
+    sentence above it. The call said every task there depends on `build`; that
+    is false. `lint` and `lint:types` are LEAF tasks with no `depends`, so both
+    are safe during a live pass, and `lint` writes only
+    `dist/final/types/tsconfig.tsbuildinfo`, never a node chunk. Confirmed by
+    reading the package `mise.toml` and by `mise tasks deps` against a positive
+    control: `corpus-pass`, which declares `depends = ["build"]`, does print it,
+    so an empty result for `lint` is a real absence rather than a broken probe.
+    `test:unit` declares no `depends` either, which is why `buildAndTest`
+    exists to sequence them: it does not rebuild, so running it against a stale
+    `dist` passes vacuously rather than testing what was just edited.
+
+    Editing `src/` mid-pass is safe: the generation stamp is a digest over
+    `dist/final/node`, and never reads source.
 
 Two corrections in a row failed the same way, so the standing rule is stricter
 than "check before writing".
