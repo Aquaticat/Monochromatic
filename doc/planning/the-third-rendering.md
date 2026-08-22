@@ -2580,3 +2580,57 @@ WHAT REMAINS OPEN, and is a different question:
 so they may carry content the name lists cannot.
 Nothing reads them either.
 Whether they are worth reading is not answered here.
+
+## The wrap and the line-structure rule, measured against each other
+
+`#162` proposed wrapping consolidation proposals before the slate,
+so a proposal differing from the standing text only in its line breaks
+would collapse into the incumbent and buy no ballots.
+It was deferred with one question owed:
+does `wrapReplacementText` split a line on the slices where line structure carries meaning?
+If it never does, the change is free.
+
+### The band pair cannot answer it
+
+Zero of the band pair's thirteen slices are `lineStructured`.
+Measuring there returns a clean null from a probe that could not have shown anything else.
+The corpus can answer it: `isLineStructured` trips on 211 slices across 34 of the 92 pairs.
+
+### It splits, on nine slices in ten
+
+Over those 211 slices, wrapping the archive's own English changes 189.
+It never joins lines. It splits them.
+
+Of the 1091 non-empty lines those passages already carry,
+621 survive the wrap intact and 470 are broken, adding 750 lines net.
+
+The archive's English is the right thing to wrap for this question.
+`TRANSLATE_LINE_STRUCTURE_RULE` asks the producer to keep the passage's line structure,
+so a proposal that obeyed it carries the structure that text carries.
+Wrapping proposals before the judges would therefore show them
+text breaking a rule they were told to enforce, on 189 slices rather than none.
+
+`#162`'s free version is off the table.
+Its remaining item is a re-run comparison,
+and that population needs a line-structured entry in it,
+because the band pair cannot measure the degradation the item is about.
+
+### The larger finding, which is not about proposals
+
+None of the three shipped wrap sites is gated on `lineStructured`:
+`repair-wrap.ts`, `translate-wrap.ts` and `consolidate-wrap.ts` all wrap unconditionally.
+
+So the pipeline already does to its own output what `#162` was worried about doing to proposals.
+A producer that follows the line-structure rule has 43 percent of its lines broken at assembly,
+after every decider approved the text it wrote.
+
+That is not automatically wrong.
+`doc/audit/line-structure-loss-when-a-replacement-ships.md` records why the wrap exists:
+replacements were arriving as one long line,
+326 `semantic-line-breaks` findings,
+seventeen of them flattening a multi-line archive passage.
+The wrap is a repair for a producer that lost the structure.
+On a slice where the producer kept it, the same repair is damage,
+and nothing currently tells the two apart.
+
+`#167` carries the decision.
