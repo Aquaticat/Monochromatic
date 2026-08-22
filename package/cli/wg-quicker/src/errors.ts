@@ -91,6 +91,21 @@ export class OpenSnitchConfigError extends Error {
 }
 
 /**
+ * Error raised when active OpenSnitch daemon does not converge to persisted rules.
+ *
+ * @example
+ * ```ts
+ * throw new OpenSnitchLiveReloadError('OpenSnitch live chain is incomplete.');
+ * ```
+ */
+export class OpenSnitchLiveReloadError extends OpenSnitchConfigError {
+  /**
+   * Stable error type name rendered by Node.
+   */
+  override name = 'OpenSnitchLiveReloadError';
+}
+
+/**
  * Error raised when existing policy routing would override tunnel selection.
  *
  * @example

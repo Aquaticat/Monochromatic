@@ -1,6 +1,11 @@
 import { mkdir, } from 'node:fs/promises';
 
-import { OpenSnitchConfigError, } from './errors.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+import {
+  OpenSnitchConfigError,
+  OpenSnitchLiveReloadError,
+} from './errors.ts';
 import { claimOperationLock, } from './operation-lock.ts';
 import {
   isOpenSnitchConfigAbsent,
@@ -27,6 +32,11 @@ import {
   bypassRuntimeDirectory,
   bypassStateKey,
 } from './tunnel-bypass-path.ts';
+
+/**
+ * Module logger for OpenSnitch reconciliation operations.
+ */
+const l = tagged({ tag: 'opensnitch-operation', },);
 
 /**
  * Existing OpenSnitch config plus managed endpoint ports.
@@ -278,11 +288,54 @@ export async function reconcileOpenSnitchEndpointAllowance(
     },);
   }
   if (verifyLive || mutation.changed) {
-    await verifyOpenSnitchLiveReload({
-      path,
-      requiredPorts: mutation.managedPorts,
-      forbiddenPorts: mutation.forbiddenPorts,
-    },);
+    try {
+      await verifyOpenSnitchLiveReload({
+        path,
+        requiredPorts: mutation.managedPorts,
+        forbiddenPorts: mutation.forbiddenPorts,
+      },);
+    }
+    catch (error) {
+      if (!(error instanceof OpenSnitchLiveReloadError))
+        throw error;
+      l.warn(
+        `OpenSnitch missed a watched-file convergence after ${path}; retrying one same-inode write: ${String(error,)}`,
+      );
+      /**
+       * Latest config preserving external edits before bounded reload retry.
+       */
+      const retryCurrent = await readOpenSnitchConfig({ path, },);
+      if (isOpenSnitchConfigAbsent(retryCurrent,)) {
+        throw new OpenSnitchLiveReloadError(
+          `OpenSnitch config disappeared before live-reload retry: ${path}`,
+          { cause: error, },
+        );
+      }
+      /**
+       * Recomputed retry document retaining unknown fields and concurrent changes.
+       */
+      const retryMutation = reconcileOpenSnitchConfig({
+        document: parseOpenSnitchConfig({
+          text: retryCurrent,
+          path,
+        },),
+        interfaceName,
+        endpointPorts,
+        path,
+        requireEnabled,
+        previousManagedPorts,
+      },);
+      await writeOpenSnitchConfig({
+        path,
+        original: retryCurrent,
+        rendered: renderOpenSnitchConfig({ document: retryMutation.document, },),
+      },);
+      await verifyOpenSnitchLiveReload({
+        path,
+        requiredPorts: retryMutation.managedPorts,
+        forbiddenPorts: retryMutation.forbiddenPorts,
+      },);
+    }
   }
   return {
     path,

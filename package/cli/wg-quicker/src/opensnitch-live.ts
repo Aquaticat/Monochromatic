@@ -2,7 +2,10 @@ import { readlink, } from 'node:fs/promises';
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
-import { OpenSnitchConfigError, } from './errors.ts';
+import {
+  OpenSnitchConfigError,
+  OpenSnitchLiveReloadError,
+} from './errors.ts';
 import { runAllowingFailure, } from './runner.ts';
 
 /**
@@ -223,7 +226,7 @@ export async function verifyOpenSnitchLiveReload(
     cursor.attempt += 1;
   }
   /* oxlint-enable eslint/no-await-in-loop */
-  throw new OpenSnitchConfigError(
+  throw new OpenSnitchLiveReloadError(
     `OpenSnitch did not converge after reading ${path}; its live nftables chain has missing, stale, or misordered rules.`,
   );
 }
