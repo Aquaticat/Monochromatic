@@ -35,6 +35,14 @@ exec node "$basedir/../../package/git-policy/cli/dist/final/node/index.mjs" "$@"
 # cmd-shim-target=/var/home/user/Monochromatic/package/git-policy/cli/dist/final/node/index.mjs
 `;
 
+/** Windows command shim without Unix shebang that delegates to this package. */
+const WINDOWS_SELF_SHIM_CONTENT = `@ECHO off
+node "%~dp0\\..\\@monochromatic-dev\\git-policy-cli\\dist\\final\\node\\index.mjs" %*
+`;
+
+/** Native ELF-like bytes containing marker text that must remain unscanned. */
+const NATIVE_GIT_FIXTURE_CONTENT = `\u007fELF${PACKAGE_NAME_SHIM_CONTENT}`;
+
 /** Shell script that stands in for the real system git binary. */
 const REAL_GIT_CONTENT = `#!/bin/sh
 echo real git "$@"
@@ -54,6 +62,10 @@ const SELF_SHIM_CASES: readonly {
   {
     name: 'bundled entry marker',
     content: BUNDLED_ENTRY_SHIM_CONTENT,
+  },
+  {
+    name: 'Windows package marker',
+    content: WINDOWS_SELF_SHIM_CONTENT,
   },
 ];
 
@@ -254,6 +266,26 @@ await describe({
           pathEnv: [pathBinDir, commonBinDir,].join(delimiter,),
           commonGitPaths: [commonGitPath,],
         },),).toBe(commonGitPath,);
+      },
+    },),
+    it({
+      name: 'accepts native executable without scanning marker-like payload',
+      fn: async function testNativeExecutableHeader(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** PATH directory containing native-format candidate. */
+        const nativeBinDir = join(tempDirectory.path, 'native-bin',);
+        await mkdir(nativeBinDir,);
+        /** Native-format candidate with marker-like payload bytes. */
+        const nativeGitPath = join(nativeBinDir, 'git',);
+        await writeExecutable({
+          path: nativeGitPath,
+          content: NATIVE_GIT_FIXTURE_CONTENT,
+        },);
+
+        expect(await resolveGit({
+          pathEnv: nativeBinDir,
+          commonGitPaths: [nativeGitPath,],
+        },),).toBe(nativeGitPath,);
       },
     },),
     it({
