@@ -165,6 +165,36 @@ After the ceiling drop the picture path cannot produce an oversize body,
 so a catch there would absorb a state that should be impossible.
 A body pushed over by something other than a picture is a defect to see, not to recover from.
 
+## Each guard shown to fail
+
+Measured 2026-08-22.
+Every break below is type-legal,
+so only a test can catch it,
+and each was applied alone and reverted before the next.
+Every one failed exactly the case it targets and nothing else.
+
+- The ceiling restored to 8388608:
+  fails `REFUSES AT THE CEILING THE MEASUREMENT DECIDED`,
+  which reads `expected 'read' to equal 'unavailable'`.
+  The 8000000 byte picture was sent and read.
+- `Buffer.byteLength(bodyJson)` replaced with `bodyJson.length`:
+  fails `MEASURES THE BODY IN BYTES, NOT CHARACTERS`.
+  The Chinese request measures 3600000 characters and over 10800000 bytes,
+  so the character reading calls it small and no size failure is raised.
+- The size signal always true:
+  fails `STAYS A PLAIN FAILURE FOR A SMALL BODY CARRYING THE SAME MESSAGE`
+  and `LEAVES A SMALL MALFORMED BODY AS AN ORDINARY FAILURE`,
+  one in each test file.
+- The message signal always true:
+  fails `STAYS A PLAIN FAILURE FOR AN OVERSIZE BODY REFUSED FOR SOMETHING ELSE`.
+- The status signal always true:
+  fails `STAYS A PLAIN FAILURE ON ANY OTHER STATUS`.
+
+Suite after every break was reverted:
+517 groups passing,
+none failing,
+lint clean.
+
 ## What is not ruled out
 
 - Only the passing size,
