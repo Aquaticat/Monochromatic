@@ -7,8 +7,10 @@ import {
   unlink,
   writeFile,
 } from 'node:fs/promises';
-import { isAbsolute, } from 'node:path';
-import { join, } from 'node:path';
+import {
+  isAbsolute,
+  join,
+} from 'node:path';
 
 import { OpenSnitchConfigError, } from './errors.ts';
 import {
@@ -275,13 +277,21 @@ export async function writeOpenSnitchState(
    */
   const temporaryPath = `${path}.${randomUUID()}.tmp`;
   /**
-   * Complete state JSON prepared before filesystem mutation.
+   * Serializable state document.
    */
-  const serialized = `${JSON.stringify({
+  const stateDocument = {
     Version: STATE_VERSION,
     Path: state.path,
     Ports: [...state.ports,],
-  }, null, 2,)}\n`;
+  };
+  /**
+   * Complete state JSON prepared before filesystem mutation.
+   */
+  const serialized = `${JSON.stringify(
+    stateDocument,
+    null,
+    2,
+  )}\n`;
   await mkdir(
     directory,
     {

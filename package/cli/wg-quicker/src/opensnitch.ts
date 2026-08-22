@@ -137,9 +137,13 @@ export async function installOpenSnitchEndpointAllowance(
       `OpenSnitch config disappeared during installation: ${resolvedPath}`,
     );
   }
-  if (result
+  /**
+   * Managed port count after successful reconciliation.
+   */
+  const managedPortCount = result
     .ports
-    .length === 0) {
+    .length;
+  if (managedPortCount === 0) {
     await removeOpenSnitchState({ interfaceName, },);
     return;
   }
