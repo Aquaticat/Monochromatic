@@ -543,6 +543,8 @@ The combined test added OpenSnitch to its client namespace before invoking the r
   completed a handshake,
   transferred `476 B` received and `564 B` sent,
   and ping received `3` of `3` replies.
+  After a measured `20`-second monitor interval,
+  the managed and queue rules remained and ping received `2` of `2` replies.
 - Current automatic cleanup:
   `wg-quicker down` removed the managed config and nftables rule,
   retained OpenSnitch ICMP and NFQUEUE rules,
