@@ -42,6 +42,11 @@ const BUNDLED_ENTRY_MARKER = 'package/git-policy/cli/dist/final/node/index.mjs';
 const WINDOWS_PACKAGE_PATH_MARKER = String.raw`@monochromatic-dev\git-policy-cli`;
 
 /**
+ * Windows path spelling for command shims that name only bundled entry location.
+ */
+const WINDOWS_BUNDLED_ENTRY_MARKER = String.raw`package\git-policy\cli\dist\final\node\index.mjs`;
+
+/**
  * Header byte count covering supported native executable signatures.
  */
 const NATIVE_EXECUTABLE_HEADER_BYTES = 4;
@@ -70,6 +75,7 @@ const SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
   PACKAGE_NAME,
   BUNDLED_ENTRY_MARKER,
   WINDOWS_PACKAGE_PATH_MARKER,
+  WINDOWS_BUNDLED_ENTRY_MARKER,
 ],);
 
 /**
