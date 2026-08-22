@@ -14120,6 +14120,39 @@ This is the second time this runner behaviour has cost a segment's evidence.
 The rule it implies:
 cheap unit describes and end-to-end describes do not share a file.
 
+### Verified at the user boundary, and one claim of mine corrected
+
+A real `corpus-pass --only gaoyanger` into a throwaway `TRANSLATION_REPAIR_RUNS_DIR`,
+settling the entry in 976 seconds and publishing `fixed/people/gaoyanger/page.en.md`.
+
+The check is an INDEPENDENT reconstruction rather than a second call to the assembler.
+Re-splicing would compare the publisher against itself and agree with any offset bug it has,
+so the expected page is rebuilt from the corpus bytes by string replacement,
+which knows nothing about ranges:
+start from `git show <pin>:people/gaoyanger/page.en.md`,
+and swap each incumbent wording for what the artifact says shipped there.
+
+-   archive 349 characters, published 370
+-   2 slices: 1 shipped new wording, 1 kept the archive wording, 0 shipped nothing
+-   page matches the independent reconstruction: true
+-   trailing newline preserved exactly, on both sides
+
+CORRECTION TO WHAT THIS RECORD FIRST SAID.
+It claimed re-runs overwrite the page.
+A second pass into the same runs directory reports `pending=0 done=1`,
+skips the entry outright,
+and leaves the page with an unchanged mtime and an identical digest.
+So a resumed pass does not republish at all,
+which is what the "done implies published" ordering is FOR:
+the page is already there, and nothing has to re-derive it.
+Overwriting is only the path where an entry is genuinely re-settled,
+an artifact gone while its page remains,
+and that path is covered by a unit case rather than by this run.
+
+The run also carried the first real traffic through `#162`, `#177` and `#178`,
+which dropping `#162`'s fork run had left unexercised.
+It settled with `selection=contested`, `pageChanged=1`, `pageSilent=0` and no refusal.
+
 ### Commits
 
 -   `f982ca3cc`, `f6ebbce0b`, `3e711d9bf`: `#162`, the wrap and its tests.
