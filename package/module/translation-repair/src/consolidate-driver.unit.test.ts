@@ -457,9 +457,10 @@ await describe({
 
     it({
       name: 'LEAVES A SLICE THE MAP NEVER MENTIONS UNILLUSTRATED, which is what makes the case above '
-        + 'evidence rather than a sheet that always carries a picture heading. It also pins the '
-        + 'lookup: a driver reading the wrong slice\'s entry would pass this and fail nothing, so '
-        + 'the map here holds a reading for a slice this contest never settles',
+        + 'evidence rather than a sheet that always carries a picture heading. It pins the lookup too, '
+        + 'which is why the map here holds a reading for a slice this contest never settles: a driver '
+        + 'reading a neighbouring slice\'s entry finds that reading and puts it on the sheet, and both '
+        + 'picture cases fail together. `#99` is the record of why that is the defect worth pinning',
       fn: async () => {
         const { client, bodies, } = recordingClient();
 
