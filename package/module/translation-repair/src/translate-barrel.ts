@@ -122,6 +122,7 @@ export {
   type ProposalValidity,
   type SlateFloor,
 } from './consolidate-validity-floor.ts';
+export { standingTextFor, } from './consolidate-standing.ts';
 export {
   CONSOLIDATE_CACHE_VERSION,
   consolidateRunShape,
