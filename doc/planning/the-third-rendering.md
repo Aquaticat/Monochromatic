@@ -2923,8 +2923,21 @@ the count was 24 when measured and 25 once `Zha_Ke` settled.
 and filters each record on `record.repairDisposition === SHIPPED_DISPOSITION`.
 `artifact-repair-read.ts` and `repair-sheet.ts` key on the same field,
 which `repair-record.ts` defines as the string `shipped`.
-Neither `issues` nor `repairDisposition` exists in the version 2 shape,
-whose lane payload is `lanes.repair.delivery[]` with a nested `delivery.kind`.
+THE PATH MOVED,
+and an earlier revision of this section said the fields were gone.
+They are not.
+Version 2 carries both at `lanes.repair.result.issues[]`,
+measured across 28 version 2 artifacts:
+0 carry a top-level `issues` array,
+27 carry the nested one,
+holding 871 records whose `repairDisposition` reads `shipped` 432 times,
+`no-region` 427 and `not-selected` 12.
+
+So the readers find nothing because they look at `artifact.issues`,
+which version 2 does not have,
+and not because the data stopped being written.
+That makes the port a re-pointing rather than a reconstruction,
+which is much cheaper than this section first recorded.
 
 Version 1 artifacts do carry both fields,
 which is the positive control this claim needs:
