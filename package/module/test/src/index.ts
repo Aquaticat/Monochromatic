@@ -1,3 +1,5 @@
+export { caught, } from './caught.ts';
+
 export { describe, } from './describe.ts';
 export type {
   DescribeChild,

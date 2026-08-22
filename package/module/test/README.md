@@ -225,6 +225,39 @@ Asymmetric matchers for use inside `toHaveBeenCalledWith`:
 - `expect.stringContaining`, `expect.stringMatching`, `expect.objectContaining`, `expect.arrayContaining`
 - `expect.anything`, `expect.any`
 
+### `caught(act)`
+
+Runs a call that must refuse and hands back what it threw,
+so more than one thing can be asserted about the same refusal.
+
+```ts
+const refusal = caught(function readsAFutureVersion() {
+  readArtifactSchemaVersion({ artifact, path, },);
+},);
+
+expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+expect((refusal as Error).message,).toContain('this reader knows',);
+```
+
+`toThrow` takes ONE expectation, a message, a pattern, or a class,
+so a test wanting both the class and the wording cannot ask for them in a single call.
+Asking twice on one bound matcher does not work either:
+chai rebinds the assertion subject to the error it caught,
+so the second call asserts against that error rather than the function
+and reports `expected SomeError... to be a function`.
+
+This matters because an assertion naming only a message
+passes just as happily when the wrong error type is thrown.
+
+`caught` refuses a call that returns, naming it,
+rather than handing back `undefined` for a later matcher to complain about
+in terms that never mention throwing.
+
+Synchronous only, deliberately.
+A rejected promise needs no equivalent:
+`expect(promise).rejects` awaits afresh on every matcher call,
+so asserting a class and then a message against the same promise already works.
+
 ### `expectTypeOf`
 
 Re-exported from the [`expect-type`](https://www.npmjs.com/package/expect-type) package.
