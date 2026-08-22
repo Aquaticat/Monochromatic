@@ -77,12 +77,17 @@ export function printRelations(
   { tallies, }: { readonly tallies: readonly PageRelationTally[]; },
 ): void {
   console.log('\nWHAT A DOCUMENT WOULD CARRY AT THE SAME SLICES (#166)',);
-  for (const tally of tallies)
+  for (const tally of tallies) {
+    /**
+     * Relation name, padded so the counts beside it read down the page.
+     */
+    const named = tally.label
+      .padEnd(RELATION_COLUMN,);
+
     console.log(
-      `  ${tally.label.padEnd(RELATION_COLUMN,)}  subjects=${
-        String(tally.subjects,)
-      }  claims=${String(tally.claimed,)}`,
+      `  ${named}  subjects=${String(tally.subjects,)}  claims=${String(tally.claimed,)}`,
     );
+  }
   console.log(
     '  A displaced subject was audited on wording no reader of a document would meet.'
       + ' An undecided one is waiting on #175, not overruled.',

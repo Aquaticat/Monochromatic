@@ -247,6 +247,26 @@ export type PageRelationTally = {
 };
 
 /**
+ * Counts accumulated for one relation while a run is walked.
+ *
+ * @example
+ * ```ts
+ * const running: RelationRunning = { subjects: 0, claimed: 0, };
+ * ```
+ */
+type RelationRunning = {
+  /**
+   * Subjects counted so far.
+   */
+  readonly subjects: number;
+
+  /**
+   * Claims counted so far.
+   */
+  readonly claimed: number;
+};
+
+/**
  * Reads how much of an audit describes wording a later stage overruled.
  *
  * COUNTS CLAIMS BESIDE SUBJECTS, because those answer different questions.
@@ -273,7 +293,7 @@ export function relationTallyOf(
   /**
    * Running subject and claim counts, keyed by printed label.
    */
-  const byLabel = new Map<string, { subjects: number; claimed: number; }>();
+  const byLabel = new Map<string, RelationRunning>();
 
   for (const row of rows) {
     /**
@@ -289,10 +309,18 @@ export function relationTallyOf(
       claimed: 0,
     };
 
-    byLabel.set(label, {
-      subjects: running.subjects + 1,
-      claimed: running.claimed + anchoredClaims({ row, },).length,
-    },);
+    /**
+     * Claims this row's roster made that anchored.
+     */
+    const claims = anchoredClaims({ row, },);
+
+    byLabel.set(
+      label,
+      {
+        subjects: running.subjects + 1,
+        claimed: running.claimed + claims.length,
+      },
+    );
   }
 
   return [...byLabel.entries(),]
@@ -303,7 +331,10 @@ export function relationTallyOf(
         claimed: tally.claimed,
       };
     },)
-    .sort(function bySubjects(left, right,): number {
+    .toSorted(function bySubjects(
+      left,
+      right,
+    ): number {
       return right.subjects - left.subjects;
     },);
 }

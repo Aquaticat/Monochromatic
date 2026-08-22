@@ -98,10 +98,14 @@ export {
   readArchiveSubjects,
   readArtifactSubjects,
   type SettledArtifactReading,
-  type SettledAuditSubject,
-  type SettledIdentity,
   type SettledVerification,
 } from './corpus-run/rendering-audit-settled-input.ts';
+export {
+  identityOf,
+  type SettledAuditSubject,
+  type SettledIdentity,
+  subjectsOf,
+} from './corpus-run/rendering-audit-settled-subject.ts';
 export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
 export { verifyArtifactV2AgainstPreparation, } from './corpus-run/artifact-v2-corpus-verify.ts';
 export { parseLanesV2, } from './corpus-run/artifact-v2-read-lanes.ts';

@@ -17,8 +17,8 @@ import {
 import {
   readArchiveSubjects,
   type SettledArtifactReading,
-  type SettledAuditSubject,
 } from './rendering-audit-settled-input.ts';
+import type { SettledAuditSubject, } from './rendering-audit-settled-subject.ts';
 import {
   createRunClient,
   resolveRunsDir,
@@ -261,7 +261,11 @@ function printPopulation(
      * driver that spends quota.
      */
     const displaced = subjects.filter(function wasOverruled(subject,): boolean {
-      return subject.pageRelation.kind === 'displaced';
+      /**
+       * How this subject relates to what a document would carry.
+       */
+      const { pageRelation, } = subject;
+      return pageRelation.kind === 'displaced';
     },);
 
     /**
@@ -269,7 +273,11 @@ function printPopulation(
      * rather than one, and is pending `#175` with the owner.
      */
     const undecided = subjects.filter(function wasNeverAsked(subject,): boolean {
-      return subject.pageRelation.kind === 'undecided';
+      /**
+       * How this subject relates to what a document would carry.
+       */
+      const { pageRelation, } = subject;
+      return pageRelation.kind === 'undecided';
     },);
 
     console.log(
