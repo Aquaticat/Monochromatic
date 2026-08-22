@@ -57,8 +57,12 @@ const TEXT_ONLY: SyntheticModelId = 'hf:openai/gpt-oss-120b';
  * used to be half a model's context converted to base64 characters, which
  * measured the wrong thing: sent as they are, both readers accept every asset
  * in the corpus, including one of 1274028 bytes that the old derivation refused
- * to the smaller of them at 294912. What remains is a plain guard against a
- * pathological upload, which nothing in the corpus approaches.
+ * to the smaller of them at 294912.
+ *
+ * WHAT REPLACED IT MEASURES THE GATEWAY, since 2026-08-22. A body over the
+ * gateway's cap returns `400` naming a parse failure, so the ceiling exists to
+ * keep a picture from turning into an error that describes the wrong thing.
+ * This number stays above it, and nothing in the corpus approaches either.
  */
 const OVERSIZED_BYTES = 9_000_000;
 
@@ -247,8 +251,9 @@ await describe({
     it({
       name: 'REFUSES A PICTURE PAST THE STAGE CEILING rather than downscaling it. A shrunk '
         + 'photograph of handwriting is the exact input that produces a confident wrong reading, '
-        + 'and the ceiling now guards against a pathological upload rather than predicting what '
-        + 'a provider will take, which it did badly',
+        + 'and the ceiling now measures what the gateway will carry rather than predicting what '
+        + 'a model will take, which it did badly. THE REQUEST COUNT IS THE OTHER HALF: refusing '
+        + 'before sending is what keeps an oversize body from returning as a parse error',
       fn: async () => {
         const { client, requests, } = replyingClient({ text: A_READING, },);
 
@@ -268,7 +273,7 @@ await describe({
         expect(reading.kind,).toBe('unavailable',);
         if (reading.kind !== 'unavailable')
           throw new Error('unavailable by construction',);
-        expect(reading.reason,).toBe('too-large-for-model',);
+        expect(reading.reason,).toBe('too-large-for-transport',);
         expect(requests.length,).toBe(0,);
       },
     },),

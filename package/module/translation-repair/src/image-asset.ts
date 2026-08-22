@@ -76,8 +76,14 @@ export type EncodedAsset = {
   /**
    * Why it cannot be sent, so a finding names the reason rather than the
    * absence.
+   *
+   * TRANSPORT RATHER THAN MODEL in the size reason, renamed 2026-08-22. The
+   * ceiling that produces it was derived from what a model would read until
+   * `#123`, and is now measured against what the gateway will carry, which are
+   * different authorities with different numbers. A reader who saw the old
+   * spelling would look for a model that refused, and no model ever did.
    */
-  readonly reason: 'unknown-media-type' | 'too-large-for-model';
+  readonly reason: 'unknown-media-type' | 'too-large-for-transport';
 };
 
 /**
@@ -146,7 +152,7 @@ export function encodeImageAsset(
   if (bytes.length > maxBytes) {
     return {
       kind: 'refused',
-      reason: 'too-large-for-model',
+      reason: 'too-large-for-transport',
     };
   }
 

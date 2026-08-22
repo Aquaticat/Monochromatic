@@ -102,12 +102,14 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A PICTURE TOO LARGE FOR THE MODEL IT WOULD GO TO, rather than shrinking it: '
-        + 'the pictures that do not fit are the handwritten letters, which are the hardest to '
-        + 'read, so a downscale would produce the confident wrong reading this all exists to avoid',
+      name: 'REFUSES A PICTURE TOO LARGE TO SEND, rather than shrinking it: the pictures that '
+        + 'do not fit are the handwritten letters, which are the hardest to read, so a downscale '
+        + 'would produce the confident wrong reading this all exists to avoid. TO SEND, not to '
+        + 'read: no model ever refused one of these for size, and the ceiling that decides is '
+        + 'measured against what the gateway will carry',
       fn: async () => {
         /**
-         * A picture larger than half the smaller model's context allows.
+         * A picture past whatever bound its caller set.
          */
         const encoded = encodeImageAsset({
           bytes: bytesOf({ length: 1_024 * 1_024, },),
@@ -118,7 +120,7 @@ await describe({
         expect(encoded.kind,).toBe('refused',);
         if (encoded.kind !== 'refused')
           throw new Error('refused by construction',);
-        expect(encoded.reason,).toBe('too-large-for-model',);
+        expect(encoded.reason,).toBe('too-large-for-transport',);
       },
     },),
 
@@ -154,7 +156,7 @@ await describe({
         expect(encodeImageAsset({
           bytes: bytesOf({ length: 1_274_028, },),
           assetName: 'photo1.webp',
-          maxBytes: 8_388_608,
+          maxBytes: 7_340_032,
         },).kind,).toBe('usable',);
       },
     },),

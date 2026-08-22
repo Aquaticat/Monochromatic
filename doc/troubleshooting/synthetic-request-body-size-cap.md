@@ -104,15 +104,24 @@ so a ceiling with one byte of headroom rests on an assumption rather than on a m
 Seven mebibytes also absorbs growth in the instruction text,
 which is part of the constant.
 
-STILL OWED,
-and queued behind the source freeze recorded in
-`doc/handover/translation-repair-run-continuity.md`:
+LANDED 2026-08-22,
+once the source freeze recorded in `doc/handover/translation-repair-run-continuity.md` lifted:
 
-- The constant lowered in `package/module/translation-repair/src/image-reading-stage.ts`.
-- A refusal reason naming transport rather than the model.
-  `too-large-for-model` describes the derivation it replaced,
-  and the picture is now refused for what the gateway will carry
-  rather than for what the model will read.
+- The constant lowered to 7340032 in `package/module/translation-repair/src/image-reading-stage.ts`,
+  with its documentation rewritten around the gateway rather than the model.
+- The refusal reason renamed from `too-large-for-model` to `too-large-for-transport`,
+  in both unions that declare it
+  (`image-asset.ts` and `image-reading-stage.ts`)
+  and in both tests that assert it.
+  No settled artifact carries the old spelling,
+  checked across `~/temp/agent/*.json` and both run directories,
+  and refusals are re-asked rather than cached under `#123`,
+  so no persisted state holds it either.
+  The two mentions in `doc/audit/reading-a-picture-at-the-user-boundary.md` describe historical runs
+  and keep the old spelling deliberately.
+
+STILL OWED:
+
 - Re-raising the gateway's parse failure as a size refusal.
   Lowering the ceiling makes the picture path safe;
   it does not make the error honest,
