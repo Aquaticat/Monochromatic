@@ -3353,3 +3353,78 @@ It watches a rewrite inside the repair lane and stops at the lane boundary,
 while the contest and the consolidation can each replace the same text
  afterwards.
 The shipped-scoped reader extends that set rather than introducing a new one.
+
+## The freeze is lifted and `#171` is fixed
+
+Written 2026-08-22.
+This section supersedes every "queued behind the source freeze" line above it.
+Nothing in this document is blocked on a freeze any more.
+Where an ordering is still stated,
+it is a design dependency and says so.
+
+### What the freeze was for
+
+Run 2 of the band pair executed the built `dist/`,
+so rebuilding while it ran would have overwritten the code under a live pass.
+That run finished on 2026-08-22,
+and the freeze ended with it.
+
+### What `#171` turned out to be
+
+The naturalness lane ran after the accuracy pass had already persisted every
+ slice,
+and read no cache of its own,
+so a resumed run replayed accuracy from disk and then bought the whole rewrite
+ again.
+Measured across the band pair,
+that published different text at 7 of 18 repair-lane slices on identical
+ inputs.
+
+The fix gives the lane its own `refine.` namespace,
+keyed on the slice and on the definitions of the whole assembled document,
+because those are collected across every slice and a neighbour settling
+ differently changes what this rewriter is shown.
+Landed as `fda817aaf` with tests in `0f781c687`.
+
+### Why the alternative was refuted rather than out-ranked
+
+Folding refinement into the existing slice record would require a resumed slice
+ to SKIP the lane,
+and the only marker available to skip on is `refined`.
+That flag is set on exactly one path,
+where a rewrite both changed the text and kept every confirmed issue,
+so it reads false both where refinement declined and where refinement never
+ ran.
+Skipping on it would still rebuy the lane at precisely the slices that flipped
+ between the two runs,
+which is where the divergence came from.
+
+This is worth recording as a shape rather than as one task's detail.
+A flag that records an OUTCOME cannot stand in for a record that a QUESTION was
+ asked,
+because the outcome collapses "asked and declined" into "never asked".
+
+### What the order is now, and why
+
+The order is unchanged,
+but it rests on design dependencies rather than on a freeze.
+
+    1.  `#170` and `#165` together, as one coordinated schema change.
+        `#165` splits `slate-kept-standing`,
+        which changes the terminal vocabulary,
+        and `#170` renames three names that each carry two meanings.
+        Doing them separately means changing the same schema twice.
+    2.  `#166`, the shipped-text reader and the consumer renaming.
+        It depends on the terminal vocabulary `#165` settles,
+        so writing it first would bind it to names about to change.
+    3.  `#167` and `#168`,
+        which touch neither the schema nor the reader.
+
+### What still stands between here and a reproducible pipeline
+
+The fix is proved by unit tests and shown to fail without its resume,
+but it has not been exercised through the CLI over a corpus entry.
+That verification is `#172`,
+and it runs first,
+because every item above it is queued behind a pipeline whose reproducibility
+ is claimed rather than measured.
