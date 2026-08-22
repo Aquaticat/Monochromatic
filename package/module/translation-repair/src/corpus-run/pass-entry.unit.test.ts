@@ -36,6 +36,7 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  fixedPagePath,
   messageText,
   type PipelineDigest,
   settleEntry,
@@ -587,6 +588,59 @@ await describe({
         // And this entry's cache directory survives the failure, holding the
         // slices both lanes had already bought.
         expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual(['CatEntry1',],);
+      },
+    },),
+    it({
+      name:
+        'PUBLISHES THE PAGE BEFORE THE ARTIFACT, so an entry the pass will never look at again always '
+        + 'has one. A pass builds its skip set from the artifacts already on disk, which makes the '
+        + 'artifact the sentinel for "done": written first, a crash before publishing would strand '
+        + 'that entry done forever with no page. The write that fails here is the artifact write, and '
+        + 'the page is on disk regardless',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+
+        /**
+         * Schemas the run served before the write failed.
+         */
+        const served: string[] = [];
+
+        // The SAME failure the case above uses, for the opposite assertion: a
+        // directory that does not exist fails the artifact write and nothing
+        // before it.
+        await settleEntry({
+          client: entryClient({ served, },),
+          entry: ENTRY,
+          artifactsDir: join(
+            dirs.artifactsDir,
+            'not-created',
+          ),
+          publishDir: dirs.publishDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        // Nothing says this entry settled, so a later pass attempts it again.
+        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([],);
+
+        /**
+         * This entry's page, which has to exist even though its artifact does not.
+         */
+        const published = await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: ENTRY.id,
+          },),
+          'utf8',
+        );
+
+        // A whole page rather than a stub: both of the archive's sections are
+        // in it, so what landed is the document and not one settled slice.
+        expect(published.includes('## Section one',),).toBe(true,);
+        expect(published.includes('## Section two',),).toBe(true,);
       },
     },),
     it({
