@@ -2738,3 +2738,112 @@ so the LLM-assisted pairing stage `#131` shipped has not run over these slices.
 That stage exists to reconcile exactly this kind of disparity,
 so some of the 64 are already handled in a real pass and the guard would never see them.
 The measurement bounds the population from above.
+
+## The settlement that cannot be counted, and the two opposite verdicts it hides
+
+`#165` asked for a count before deciding whether the consolidation should buy a
+ second judging the way the translate lane does.
+Taking that count found something that outranks it.
+
+`consolidate-settle.ts` assigns `terminal: 'slate-kept-standing'` on a single
+ condition,
+`decided.origin !== 'fresh'`.
+That condition is true in two opposite cases.
+It is true when the panel could not agree,
+or rejected every candidate,
+and the slice keeps its standing text because nobody chose anything.
+It is also true when the panel deliberately read the standing text as the best
+ rendering on the slate and picked it.
+One says the judges failed.
+The other says the judges succeeded and the archive won.
+The record calls both the same thing.
+
+Where the distinguishing fact lives,
+measured rather than assumed:
+
+-   NOT in the artifact.
+    A consolidation slice carries exactly these fields,
+    read off `Acheron.json` from the run in flight:
+    `chunkIndex`,
+    `terminal`,
+    `shipped`,
+    `rewrapped`,
+    `demoted`,
+    `verdicts`,
+    `gate`.
+    There is no `decided` field,
+    so `decision` and `origin` never reach it.
+-   In the cache record,
+    which carries `decided` with `origin` and `decision` among its keys.
+    That is where it cannot be read for this question,
+    because `consolidationWorthResuming` deliberately refuses to persist a
+    `slate-kept-standing` settlement carrying one of the two retried declines.
+    The mitigation and the measurement want opposite things from one record.
+-   In the log,
+    but only as free text.
+    The decline path logs the judge's own reason and `keeping the incumbent`.
+    The enum name is computed one line earlier in `translate-judge.ts`,
+    and it is used only in the `TranslateAbsenceError` thrown when the incumbent
+    is absent,
+    so on the keep path it is never written anywhere that outlives the run.
+
+So the count `#165` asked for is not available from either durable output.
+The first action is to make the decision observable,
+not to count.
+
+### What the log does show, so far
+
+Run 1 had settled one entry and was working a second when this was read.
+Across both,
+`translate stage:` appears 14 times:
+5 under `consolidateDocument` and 9 under `translateDocument`,
+with none unattributed,
+which is the check that the filter did not silently drop lines.
+
+Of the 5 consolidation judgings,
+4 were fresh wins,
+and 1 declined for a winner short of the minimum vote weight.
+Acheron contributed 3 judgings and the entry in flight contributed 2.
+This is far too small to answer whether a retry is cheap.
+It is recorded only so the finished run can be compared against it.
+
+### Options, ranked
+
+-   **Record `decision` and `origin` on the artifact's consolidation slice.**
+    Durable,
+    measurable across every future run without a log,
+    and it separates the two verdicts for every consumer rather than only for
+    this count.
+    Against it:
+    an artifact schema change,
+    so `parseSettledArtifactV2` and its refusal tests move with it.
+-   **Split the terminal into two names,
+    one for a deliberate keep and one for a decline.**
+    Makes the distinction impossible to miss,
+    adds no field,
+    and reads correctly at a glance.
+    Against it:
+    every consumer switching on the terminal moves with it,
+    and it still does not say WHICH decline it was.
+-   **Log the enum on the keep path.**
+    One line,
+    and no schema change.
+    Against it:
+    it leaves the fact in a log no consumer reads and no run keeps,
+    and does nothing about the conflation itself.
+
+Ranking:
+the artifact field,
+then the terminal split,
+then the log line.
+The field beats the split because it leaves the terminal vocabulary alone while
+ adding the fact that is actually missing,
+and because it carries which decline it was rather than only that there was one.
+The split beats the log line because it puts the distinction in the durable
+ record where consumers read it,
+while a log file is deleted with the run.
+
+This is not only a measurement gap.
+A consumer deciding what to show a reader cannot currently tell a passage the
+ judges endorsed from one they could not rule on,
+which puts it in `#166`'s scope as well as `#165`'s.
