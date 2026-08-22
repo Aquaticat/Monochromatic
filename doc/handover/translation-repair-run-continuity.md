@@ -135,6 +135,112 @@ Nothing was armed when this was found,
 so no double
  launch occurred.
 
+### Fixed 2026-08-22: the guard reads `/proc`, and `pgrep` patterns are abandoned
+
+THE PATH WAS ONLY HALF THE DEFECT.
+Correcting `PASS_PATTERN` to the built path leaves the guard exactly as blind,
+because `--exact` compares the pattern against the WHOLE command line,
+and every pass launched by hand carries `--only <entries>`.
+Measured against the live pass,
+ in order:
+
+-   `pgrep --full --exact 'node src/corpus-run/corpus-pass.ts'`,
+    the shipped pattern:
+    exit 1.
+-   `pgrep --full --exact 'node dist/final/node/corpus-pass.mjs'`,
+    the path corrected and nothing else changed:
+    exit 1.
+-   `pgrep --full 'node dist/final/node/corpus-pass.mjs'`,
+    `--exact` dropped:
+    exit 0,
+    matching the pass and also the shell carrying the pattern text.
+-   `pgrep --full --exact` against the entire command line including the
+    `--only` list:
+    exit 0,
+    matching only the pass,
+    and useless because that list changes per run.
+
+So the guard has been blind to every hand-launched pass since it was written,
+and correct only for the argument-free passes the supervisor launches itself.
+That is why the log carries a real `another launcher won the field` line from
+ 2026-08-14:
+that pass had no arguments.
+
+`passRunning` no longer asks `pgrep` anything.
+It reads `/proc`,
+the way `watcherAlive` in the same file already did,
+and counts a process as a pass when its interpreter is `node` and one of its
+ arguments is named exactly `corpus-pass.mjs` or `corpus-pass.ts`.
+Matching the file NAME rather than the path is what survives the move that broke
+ this.
+Matching an EXACT name rather than a prefix keeps a `node --eval` one-liner that
+ merely mentions the file from counting as a pass.
+
+DO NOT RESTORE A `pgrep` PATTERN HERE.
+Two separate flag interactions have each left this guard silently blind,
+and both failed by returning false,
+which reads exactly like a clear field.
+
+The scan deliberately reads every argument rather than only the one node treats
+ as the script.
+The two errors do not cost the same.
+Reporting a pass that is not there makes the supervisor wait and launch nothing.
+Missing a pass that is there makes it launch a second one into the same runs
+ directory and the same slice cache.
+A rule keyed on argument position would go blind in the expensive direction the
+ moment the task grew a node flag ahead of the script.
+
+#### Controls for the pass guard, and why the old ones passed a broken guard
+
+The controls recorded under "Verifying it rather than trusting it" tested whether
+ `pgrep` works,
+not whether the pattern matches the passes this project runs.
+The positive control there used a supervisor-launched pass with no arguments,
+and the negative control varied the PATTERN rather than the process state.
+Both are satisfiable by a guard that cannot see a `--only` pass.
+
+The replacement varies the PROCESS STATE,
+and runs the real function through the real code path:
+
+-   Fail first,
+    per GFP:
+    the shipped pattern against the live pass,
+    exit 1,
+    recorded before any fix was written.
+-   Live positive,
+    against the running pass:
+    `passRunning returned true`.
+-   Nothing running at all:
+    `passRunning returned false`.
+-   A pass carrying `--only`:
+    `passRunning returned true`.
+-   A shell naming `//package/module/translation-repair:corpus-pass`,
+    which is the launcher shape that made a loose match useless:
+    `passRunning returned false`.
+-   A `node --eval` one-liner naming the built path inside its code:
+    `passRunning returned false`.
+
+Every control after the live positive answers true on this host while a pass is
+ alive,
+because the live pass satisfies all of them.
+They run inside a fresh PID namespace instead,
+where it is invisible:
+
+```sh
+unshare --user --map-root-user --fork --pid --mount-proc bash -c \
+  'node /decoy/dist/final/node/corpus-pass.mjs --only x & sleep 1;
+   RESUME_SUPERVISOR_PASSCHECK=1 node ~/temp/agent/resume-supervisor.ts'
+```
+
+`RESUME_SUPERVISOR_PASSCHECK` exists because `RESUME_SUPERVISOR_SELFTEST` runs
+ `smokeCheck` first,
+which shells out to a mise task that can rebuild `dist`,
+and a running pass is EXECUTING from `dist`.
+That coupling is why this guard could not be checked against a live pass without
+ risking the run,
+and it is a large part of why it stayed broken.
+The two are now separable.
+
 -   **Smoke check before every launch.** The pass runs straight from SOURCE, so
     a session that stopped mid-edit leaves a broken module graph and the resume
     would die instantly. `--plan` is the documented zero-quota setup check: it
