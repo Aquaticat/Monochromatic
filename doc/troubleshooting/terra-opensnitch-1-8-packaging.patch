@@ -1,7 +1,16 @@
 diff --git a/anda/apps/opensnitch/opensnitch.spec b/anda/apps/opensnitch/opensnitch.spec
-index 653df93..76247d7 100644
+index 653df93..f2ccdcf 100644
 --- a/anda/apps/opensnitch/opensnitch.spec
 +++ b/anda/apps/opensnitch/opensnitch.spec
+@@ -20,7 +20,7 @@ Snitch.}
+                         utils/packaging/ui/deb/debian/changelog
+ 
+ Name:           opensnitch
+-Release:        2%{?dist}
++Release:        3%{?dist}
+ Summary:        OpenSnitch is a GNU/Linux interactive application firewall inspired by Little Snitch
+ 
+ License:        GPL-3.0-only AND LGPL-2.1-or-later
 @@ -37,6 +37,14 @@ BuildRequires:  /usr/bin/lrelease-qt5
  BuildRequires:  protobuf-compiler
  BuildRequires:  pkgconfig(libnetfilter_queue)
