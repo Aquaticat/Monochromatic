@@ -17,6 +17,7 @@ const VALID_CONTEXT = {
     WG_QUICKER_CALLER_PATH: '/home/caller/bin:/usr/bin',
     WG_QUICKER_EXEMPT_COMMAND: '/repo/target/release/wg-quicker-exempt',
     WG_QUICKER_EXEMPT_UID: '1000',
+    WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: '/etc/opensnitchd/default-config.json',
     WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG: '/etc/opensnitchd/system-fw.json',
     WG_QUICKER_RUNTIME_DIRECTORY: '/run/wg-quicker',
     XDG_CACHE_HOME: '/home/caller/.cache',

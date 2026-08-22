@@ -12,6 +12,7 @@ import {
   readOpenSnitchConfig,
   writeOpenSnitchConfig,
 } from './opensnitch-config-file.ts';
+import { assertOpenSnitchNftablesBackend, } from './opensnitch-daemon-config.ts';
 import {
   parseOpenSnitchConfig,
   reconcileOpenSnitchConfig,
@@ -24,6 +25,7 @@ import {
 } from './tunnel-bypass-path.ts';
 
 export { OPENSNITCH_CONFIG_ENVIRONMENT, } from './opensnitch-config-file.ts';
+export { OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT, } from './opensnitch-daemon-config.ts';
 
 /**
  * Module logger for OpenSnitch system-firewall integration.
@@ -272,6 +274,8 @@ async function reconcileOpenSnitchEndpointAllowance(
   const initial = await readOpenSnitchConfig({ path, },);
   if (isOpenSnitchConfigAbsent(initial,))
     return OPENSNITCH_CONFIG_ABSENT;
+  if (requireEnabled)
+    await assertOpenSnitchNftablesBackend();
   /**
    * Config-path operation lock held through disk and live-kernel convergence.
    */

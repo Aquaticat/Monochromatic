@@ -22,6 +22,7 @@ export type PrivilegeEnvironment = {
   readonly WG_QUICKER_CALLER_PATH?: string;
   readonly WG_QUICKER_EXEMPT_COMMAND?: string;
   readonly WG_QUICKER_EXEMPT_UID?: string;
+  readonly WG_QUICKER_OPENSNITCH_DAEMON_CONFIG?: string;
   readonly WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG?: string;
   readonly WG_QUICKER_RUNTIME_DIRECTORY?: string;
   readonly XDG_CACHE_HOME?: string;
@@ -46,6 +47,7 @@ const ALLOWED_ENVIRONMENT_KEYS = new Set([
   'WG_QUICKER_CALLER_PATH',
   'WG_QUICKER_EXEMPT_COMMAND',
   'WG_QUICKER_EXEMPT_UID',
+  'WG_QUICKER_OPENSNITCH_DAEMON_CONFIG',
   'WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG',
   'WG_QUICKER_RUNTIME_DIRECTORY',
   'XDG_CACHE_HOME',
@@ -162,6 +164,7 @@ function capturePrivilegeEnvironment(): PrivilegeEnvironment {
     WG_ALLOWEDIPS_CACHE_DIRECTORY: allowedIpsCache,
     WG_QUICKER_EXEMPT_COMMAND: exemptCommand,
     WG_QUICKER_EXEMPT_UID: exemptUid,
+    WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: openSnitchDaemonConfig,
     WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG: openSnitchSystemFirewallConfig,
     WG_QUICKER_RUNTIME_DIRECTORY: runtimeDirectory,
     XDG_CACHE_HOME: xdgCacheHome,
@@ -181,6 +184,9 @@ function capturePrivilegeEnvironment(): PrivilegeEnvironment {
     ...(exemptUid === undefined
       ? {}
       : { WG_QUICKER_EXEMPT_UID: exemptUid, }),
+    ...(openSnitchDaemonConfig === undefined
+      ? {}
+      : { WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: openSnitchDaemonConfig, }),
     ...(openSnitchSystemFirewallConfig === undefined
       ? {}
       : {
@@ -270,6 +276,7 @@ export function parsePrivilegeContext(
     WG_QUICKER_CALLER_PATH: callerPath,
     WG_QUICKER_EXEMPT_COMMAND: exemptCommand,
     WG_QUICKER_EXEMPT_UID: exemptUid,
+    WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: openSnitchDaemonConfig,
     WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG: openSnitchSystemFirewallConfig,
     WG_QUICKER_RUNTIME_DIRECTORY: runtimeDirectory,
     XDG_CACHE_HOME: xdgCacheHome,
@@ -291,6 +298,9 @@ export function parsePrivilegeContext(
         : {}),
       ...((typeof exemptUid) === 'string'
         ? { WG_QUICKER_EXEMPT_UID: exemptUid, }
+        : {}),
+      ...((typeof openSnitchDaemonConfig) === 'string'
+        ? { WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: openSnitchDaemonConfig, }
         : {}),
       ...((typeof openSnitchSystemFirewallConfig) === 'string'
         ? {

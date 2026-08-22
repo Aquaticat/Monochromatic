@@ -18,6 +18,7 @@ import {
 import {
   installOpenSnitchEndpointAllowance,
   OPENSNITCH_CONFIG_ENVIRONMENT,
+  OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT,
   removeOpenSnitchEndpointAllowance,
 } from '../dist/final/node/opensnitch.mjs';
 
@@ -29,6 +30,11 @@ type OpenSnitchFixture = {
    * System-firewall path selected by environment override.
    */
   readonly configPath: string;
+
+  /**
+   * Daemon config path selected by environment override.
+   */
+  readonly daemonConfigPath: string;
 
   /**
    * Removes fixture and restores process environment.
@@ -84,6 +90,8 @@ function systemFirewall(
  * @param content - Exact initial config text,
  * or undefined to leave path absent.
  *
+ * @param firewall - Daemon firewall backend.
+ *
  * @returns Disposable fixture.
  *
  * @example
@@ -92,7 +100,13 @@ function systemFirewall(
  * ```
  */
 async function createFixture(
-  { content, }: { readonly content?: string; },
+  {
+    content,
+    firewall = 'nftables',
+  }: {
+    readonly content?: string;
+    readonly firewall?: string;
+  },
 ): Promise<OpenSnitchFixture> {
   const directory = await mkdtemp(join(
     tmpdir(),
@@ -101,6 +115,17 @@ async function createFixture(
   const configPath = join(
     directory,
     'system-fw.json',
+  );
+  /**
+   * Fixture-local daemon config proving selected backend.
+   */
+  const daemonConfigPath = join(
+    directory,
+    'default-config.json',
+  );
+  await writeFile(
+    daemonConfigPath,
+    JSON.stringify({ Firewall: firewall, },),
   );
   if (content !== undefined) {
     await writeFile(
@@ -112,19 +137,29 @@ async function createFixture(
     );
   }
   const originalConfig = process.env[OPENSNITCH_CONFIG_ENVIRONMENT];
+  /**
+   * Original daemon-config override restored on disposal.
+   */
+  const originalDaemonConfig = process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT];
   const originalRuntime = process.env.WG_QUICKER_RUNTIME_DIRECTORY;
   process.env[OPENSNITCH_CONFIG_ENVIRONMENT] = configPath;
+  process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT] = daemonConfigPath;
   process.env.WG_QUICKER_RUNTIME_DIRECTORY = join(
     directory,
     'run',
   );
   return {
     configPath,
+    daemonConfigPath,
     async [Symbol.asyncDispose](): Promise<void> {
       if (originalConfig === undefined)
         delete process.env.WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG;
       else
         process.env[OPENSNITCH_CONFIG_ENVIRONMENT] = originalConfig;
+      if (originalDaemonConfig === undefined)
+        delete process.env.WG_QUICKER_OPENSNITCH_DAEMON_CONFIG;
+      else
+        process.env[OPENSNITCH_DAEMON_CONFIG_ENVIRONMENT] = originalDaemonConfig;
       if (originalRuntime === undefined)
         delete process.env.WG_QUICKER_RUNTIME_DIRECTORY;
       else
@@ -221,6 +256,32 @@ await describe({
             expect(warning,).toHaveBeenCalledWith(
               expect.stringContaining("accepts any process's outbound UDP",),
             );
+          },
+        },),
+
+        it({
+          name: 'rejects unsupported OpenSnitch iptables backend without changing file',
+          fn: async () => {
+            const content = `${JSON.stringify(systemFirewall({ rules: [], },), null, 2,)}\n`;
+            await using fixture = await createFixture({
+              content,
+              firewall: 'iptables',
+            },);
+            let caught: unknown;
+            try {
+              await installOpenSnitchEndpointAllowance({
+                interfaceName: 'wg0',
+                endpointPorts: [51_820,],
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('requires Firewall = nftables',);
+            expect(await readFile(
+              fixture.configPath,
+              'utf8',
+            ),).toBe(content,);
           },
         },),
 
