@@ -54,4 +54,10 @@ export {
   spliceSlices,
 } from './splice-slices.ts';
 
+export {
+  REFINE_CACHE_VERSION,
+  refineRunShape,
+  refineSliceKey,
+} from './refine-slice-key.ts';
+
 //endregion Refinement barrel

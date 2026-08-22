@@ -18,8 +18,10 @@ import {
   type ChunkPair,
   type ChunkRepairOutcome,
   messageText,
+  type RefinedSliceSettlement,
   type RepairModels,
   runRefinePhase,
+  type SliceCache,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -469,6 +471,175 @@ await describe({
         // returns can have resolved anything: crediting the issue here would
         // count a repair no reader saw.
         expect(phase.outcomes[0]?.resolvedIssueIds,).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Counts every model call a client is asked to make.
+ *
+ * WHAT IT IS FOR: a resumed slice is only resumed if it bought NOTHING. Reading
+ * the returned text alone cannot tell a cache hit from a rewriter that happened
+ * to answer the same way twice, and the scripted client here answers the same
+ * way every time by construction, so the text would match either way.
+ *
+ * @param inner - client doing the actual scripted answering
+ *
+ * @param calls - counter this bumps on every structured call
+ *
+ * @returns Client forwarding to `inner` and counting
+ *
+ * @example
+ * ```ts
+ * const client = countingClient({ inner, calls, },);
+ * ```
+ */
+function countingClient(
+  {
+    inner,
+    calls,
+  }: {
+    readonly inner: SyntheticClient;
+    readonly calls: { count: number; };
+  },
+): SyntheticClient {
+  return {
+    chatText: inner.chatText,
+    chatJson: async (request) => {
+      calls.count += 1;
+      return await inner.chatJson(request,);
+    },
+    quotas: inner.quotas,
+  };
+}
+
+/**
+ * In-memory refinement cache behaving as the disk-backed one does.
+ *
+ * @param stored - map surviving between the two runs of a case
+ *
+ * @returns Cache resuming from `stored` and writing back into it
+ *
+ * @example
+ * ```ts
+ * const cache = memoryRefineCache({ stored, },);
+ * ```
+ */
+function memoryRefineCache(
+  { stored, }: { readonly stored: Map<string, RefinedSliceSettlement>; },
+): SliceCache<RefinedSliceSettlement> {
+  return {
+    resumed: stored,
+    persist: async ({ key, serialized, },) => {
+      stored.set(
+        key,
+        JSON.parse(serialized,) as RefinedSliceSettlement,
+      );
+    },
+  };
+}
+
+/**
+ * Runs the phase once against a shared cache, counting what it bought.
+ *
+ * @param stored - cache contents carried between runs
+ *
+ * @returns Phase result beside the number of calls this run made
+ *
+ * @example
+ * ```ts
+ * const first = await runCachedPhase({ stored, },);
+ * ```
+ */
+async function runCachedPhase(
+  { stored, }: { readonly stored: Map<string, RefinedSliceSettlement>; },
+) {
+  /**
+   * Calls this run made, which is what separates a resume from a rebuy.
+   */
+  const calls = { count: 0, };
+
+  /**
+   * What the phase settled this run.
+   */
+  const phase = await runRefinePhase({
+    declaredNames: [],
+    client: countingClient({
+      inner: scriptedPhase({ checkerVerdict: 'fixed', },),
+      calls,
+    },),
+    targetText: REPAIRED_TEXT,
+    slices: SLICES,
+    outcomes: [settledOutcome({ resolvedIssueIds: [], },),],
+    models: MODELS,
+    refineCache: memoryRefineCache({ stored, },),
+    signal: new AbortController().signal,
+    perCallTimeoutMs: 1_000,
+    l,
+  },);
+  return {
+    phase,
+    calls: calls.count,
+  };
+}
+
+await describe({
+  name: `${runRefinePhase.name} resume`,
+  children: [
+    it({
+      name: 'REPUBLISHES THE SAME TEXT WITHOUT BUYING ANYTHING on a second run '
+        + 'over one cache, which is the whole defect: the accuracy pass persists '
+        + 'before this phase runs, so a resumed entry replayed accuracy from disk '
+        + 'and then rebought the rewrite, publishing different text at 7 of 18 '
+        + 'repair-lane slices across two runs on identical inputs',
+      fn: async () => {
+        /**
+         * Cache both runs share, as one entry directory would be.
+         */
+        const stored = new Map<string, RefinedSliceSettlement>();
+
+        const first = await runCachedPhase({ stored, },);
+        const second = await runCachedPhase({ stored, },);
+
+        // The positive control: the first run must have bought something, or a
+        // second run buying nothing would prove only that the lane never ran.
+        expect(first.calls,).toBeGreaterThan(0,);
+        expect(second.calls,).toBe(0,);
+
+        expect(first.phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(second.phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(second.phase.outcomes[0]?.refined,).toBe(true,);
+        expect(second.phase.outcomes[0]?.changed,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REPORTS NO REWRITER ASKED on the resumed run, because that answer '
+        + 'decides whether a run overtaken by an abort may call itself finished. '
+        + 'A resumed slice asked nobody anything, and carrying the stored answer '
+        + 'would report a previous run\'s purchase as this one\'s',
+      fn: async () => {
+        const stored = new Map<string, RefinedSliceSettlement>();
+
+        const first = await runCachedPhase({ stored, },);
+        const second = await runCachedPhase({ stored, },);
+
+        expect(first.phase.askedRewriters,).toBe(true,);
+        expect(second.phase.askedRewriters,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'CARRIES THE FINDINGS BACK with the resumed slice, so a scorecard '
+        + 'reads the same telemetry whether the entry was bought or resumed',
+      fn: async () => {
+        const stored = new Map<string, RefinedSliceSettlement>();
+
+        const first = await runCachedPhase({ stored, },);
+        const second = await runCachedPhase({ stored, },);
+
+        expect(second.phase.findings,).toStrictEqual(first.phase.findings,);
       },
     },),
   ],
