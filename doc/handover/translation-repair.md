@@ -14159,3 +14159,91 @@ It settled with `selection=contested`, `pageChanged=1`, `pageSilent=0` and no re
 -   `6acb9a86c`: the publisher and its wiring.
 -   `db52bc892`: the publisher's tests.
 -   `717bb781c`: the file split GFP forced.
+
+## 2026-08-22, later still: `#163` found its instrument already built, and its sweep was re-aimed
+
+`#163` asked for an expansion-ratio guard.
+Its own closing note proposed the sharper form:
+"a per-slice comparison against the archive's own ratio may be sharper than any corpus-wide band,
+and costs nothing more".
+That instrument already exists in production source,
+and the task never mentioned it.
+
+### The instrument was already built, and its header is a catalog of the traps
+
+`src/displacement-ratio.ts`, 253 lines, and `src/displacement-class.ts` beside it:
+
+-   `sliceRatios` measures every slice and filters nothing,
+    because an earlier version discarded short originals and threw away the strongest evidence there is.
+-   `documentBaseline` returns the document's own expansion when it lands between
+    `PLAUSIBLE_BASELINE_MIN` 1.9 and `PLAUSIBLE_BASELINE_MAX` 4.5,
+    and `CORPUS_REFERENCE_EXPANSION` 2.86 otherwise,
+    saying which of the two it used.
+-   `classifyDisplacement` classifies each slice, computes a residual against that baseline,
+    and keeps untranslated, target-only, relocation candidates and unpaired imbalances apart.
+-   `MIN_RATIO_SOURCE_CHARS` 80 stops a short original's ratio being read as evidence at all.
+
+The header already records that a document's own MEDIAN is contaminated by exactly what it detects,
+and that the eligible-slice aggregate is only partly invariant under relocation.
+A second ratio instrument built beside this one would re-hit both.
+
+### What it measures, and what it decides
+
+Read at the call sites rather than assumed:
+
+-   Both consumers feed it `prepareDocumentPair({ sourceText, targetText, },)`, which is the ARCHIVE pair.
+    It has never seen a candidate rendering.
+-   Both consumers are probes under `corpus-run/`, `displacement-probe.ts` and `window-trial-probe.ts`,
+    emitting telemetry.
+-   No pipeline stage reads it.
+    `translate-barrel.ts` only re-exports it.
+
+So the instrument exists and the guard does not.
+The neighbouring guards are all size-blind:
+`translate-validate.ts` compares block skeleton, references and code;
+`consolidate-validity-floor.ts` refuses a slate with no structurally valid proposal.
+A candidate that keeps the skeleton and deletes most of the prose inside it passes both.
+`#155` named the complementary fault, deleting what the archive carries and the Chinese does not,
+bounded to a SILENT original.
+An original that says something and a rendering that renders almost none of it is still unnamed.
+
+### The sweep looked unnecessary, and the probe that could refute that did
+
+The sweep's product is a cleaned outlier list,
+which is worth buying only if the guard reads a parameter those outliers can move.
+A per-slice guard comparing a rendering against the archive's own value for that slice draws no corpus-wide band,
+so at first reading the 28 pairing calls bought nothing.
+That reading was wrong, and measuring it rather than asserting it is what showed the difference:
+
+-   Only 854 of 1259 slices, 67.8 percent, can serve as their own reference.
+    The other 405 must read the document baseline.
+-   Of the 64 flagged slices, 36 are currently eligible to SET their document's baseline.
+-   Removing them changes the baseline source in 7 documents,
+    and moves it by up to 0.725 against a corpus value of 2.86.
+-   170 of the 405 baseline-reading slices sit in a document whose baseline moves.
+
+### Why the sweep is bought anyway, which is a better reason than the first one
+
+Every number this task ever recorded, the 1259 slices, the 64 flags, and both contamination probes,
+was measured with `prepareDocumentPair`, the DETERMINISTIC pairing.
+Production preparation is `prepareDocumentPairWithRoster`, at `corpus-run/pass-entry.ts:266`, per `#131`.
+The two slice a document differently.
+Calibrating a guard on the deterministic numbers would calibrate it on slices the pipeline never produces,
+so the sweep is not "clean the outlier list" but "measure on the population the guard will read".
+That justifies it whether or not the contamination result had come back null.
+
+### What is running
+
+`~/temp/agent/163-roster-sweep.mjs`, sequential by entry:
+29 entries, 110 paid pairing rounds, each asking all 6 roster voices.
+Sections are already asked in order inside the preparation,
+so one entry at a time holds the whole sweep at six concurrent streams,
+under the roughly seven the aggregate-concurrency stall was measured at.
+Entries are ordered by baseline exposure, so a stall still leaves the decisive ones settled.
+It stores counts only, never text, and reports errors by class name,
+because pairing and parse errors quote the passage they failed on.
+
+The guard's shape is settled and does not reopen:
+per-slice archive reference where usable, document baseline fallback,
+and a named fault in the `contest-ballot-wire.ts` shape both deciders read, which is `#155`'s mechanism.
+The sweep decides its calibration inputs only, and the guard is built after it rather than beside it.
