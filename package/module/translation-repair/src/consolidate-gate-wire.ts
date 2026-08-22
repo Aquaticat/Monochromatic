@@ -53,7 +53,7 @@ const GATE_NAMES: readonly GateChoice[] = [
  * const named = isGateChoice('standing',);
  * ```
  */
-function isGateChoice(value: unknown,): value is GateChoice {
+export function isGateChoice(value: unknown,): value is GateChoice {
   return namesOneOf({
     value,
     names: GATE_NAMES,

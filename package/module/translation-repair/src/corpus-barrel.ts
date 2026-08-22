@@ -38,6 +38,7 @@ export {
   projectLanesV2,
   type ProjectedLanesV2,
 } from './corpus-run/artifact-v2-derive.ts';
+export { openConsolidateCache, } from './corpus-run/consolidate-cache-store.ts';
 export { openLaneContestCache, } from './corpus-run/lane-contest-cache-store.ts';
 export {
   ArtifactComparisonV2Error,
@@ -142,6 +143,7 @@ export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
 export { openPictureReadingCache, } from './corpus-run/reading-cache-store.ts';
 export {
   belongsToNamespace,
+  CONSOLIDATE_NAMESPACE,
   EVERY_SLICE_NAMESPACE,
   PICTURE_READING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,

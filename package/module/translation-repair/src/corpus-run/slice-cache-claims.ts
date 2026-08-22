@@ -91,6 +91,16 @@ const CLAIM_BY_ROLE = {
   },
 
   /**
+   * Consolidation. NOT A LANE: a settlement is bought after the lane contest
+   * has already decided what stands, over the two lanes and the standing text
+   * together, so it retires with the entry like the contest it follows.
+   */
+  consolidation: {
+    prefix: 'consolidate.',
+    marker: 'consolidate-generation.txt',
+  },
+
+  /**
    * Picture readings. Neither a repair outcome nor a translated slice; evidence
    * gathered before either lane runs, keyed by the picture rather than by any
    * slice.
@@ -130,6 +140,11 @@ export const LANE_CONTEST_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.laneContest;
  * Block pairing's claim.
  */
 export const PAIRING_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.pairing;
+
+/**
+ * Consolidation's claim.
+ */
+export const CONSOLIDATE_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.consolidation;
 
 /**
  * Picture readings' claim.

@@ -32,6 +32,7 @@ import {
 // its claim from here, and a split made for the line cap is not a reason to
 // rewrite call sites that were never wrong.
 export {
+  CONSOLIDATE_NAMESPACE,
   EVERY_SLICE_NAMESPACE,
   LANE_CONTEST_NAMESPACE,
   PAIRING_NAMESPACE,
