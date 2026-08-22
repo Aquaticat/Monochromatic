@@ -52,6 +52,10 @@ const staleEntry: SessionEntry = {
   },
 };
 
+/** Canonical loaded project context that must survive compaction-aware selection. */
+const PROJECT_CONTEXT_FIXTURE =
+  `[{"content":"PX3: Act on authorized repository work.\\n","path":"/repo/AGENTS.md"}]`;
+
 /** Advisor config fixture. */
 const advisorConfig: AdvisorConfig = {
   ...DEFAULT_CONFIG,
@@ -298,6 +302,7 @@ await describe({
         await runAdvisor({
           ctx,
           config: advisorConfig,
+          projectContext: PROJECT_CONTEXT_FIXTURE,
           requestedSlug: 'faux-provider/reviewer',
         },);
 
@@ -309,6 +314,8 @@ await describe({
         const requestText = providerUserText(providerContext,);
         expect(requestText,).toContain('retained task evidence',);
         expect(requestText,).not.toContain('stale pre-compaction evidence',);
+        expect(providerContext.systemPrompt,).toContain('/repo/AGENTS.md',);
+        expect(providerContext.systemPrompt,).toContain('PX3: Act on authorized repository work.',);
       },
     },),
   ],
