@@ -2348,3 +2348,63 @@ Neither is a refusal-plurality case, so no refusal policy would have caught them
 The gate's `choice` field and its own evidence fields disagree there,
 and nothing reads the evidence,
 so the disagreement has never been actionable.
+
+## The stage is called, and what that cost to reach
+
+The stage now runs inside the pass.
+`pass-entry.ts` asks for a third rendering after the lane contest,
+and the settled artifact carries what it decided.
+Two things worth keeping from getting there.
+
+### What ships is a named absence, not a string
+
+Six terminal states end a settlement and exactly one of them,
+`consolidated`,
+produces wording an assembly should write.
+Every other one leaves the slice with whatever the lane contest put there,
+and one of them,
+`no-standing-text`,
+carries the EMPTY STRING as its text:
+the contest named neither lane, so nothing stands.
+
+A record with a plain `text` field per slice would therefore hand a consumer an empty string to write
+over every passage whose contest declined,
+which is deletion by default.
+The record instead carries `shipped` as `{ kind: 'consolidated', text }` or `{ kind: 'unchanged' }`,
+and the reader refuses a record that disagrees with its own terminal in either direction.
+
+### The budget bound, decided rather than defaulted
+
+The calibration bed bounded judging and gating separately,
+at six and four times the per-call timeout.
+The composed stage takes one signal for a whole settlement,
+so the driver had to choose.
+
+It is bounded by the ENTRY's signal and nothing narrower.
+Each round the stage buys is already bounded by `RUN_PER_CALL_TIMEOUT_MS` and by the client's stream guards,
+and every settled slice is persisted before the next begins.
+A per-settlement ceiling would therefore cut a round that the per-call bound is already cutting,
+and would throw away that slice's bought work to do it.
+
+### A cache namespace nobody registered, found on the way past
+
+Adding the consolidation's own cache namespace exposed a live defect in the one that registers them.
+`belongsToNamespace` defines the repair lane by subtraction from a hand-written list of claimed prefixes,
+and `contest.` and `pairing.` were both missing from that list.
+
+Measured on a throwaway directory:
+writing one file per namespace and then opening the repair cache at a new generation deleted
+`abc.json`, `contest.abc.json` and `pairing.abc.json`,
+reporting `discarding 3 cached slices` as though all three were its own.
+`translate.` and `picture.` survived, because they were registered.
+
+So every repair-lane generation change since the pairing cache landed has silently thrown away
+that entry's whole block pairing and every contest ballot it had bought,
+both of which are bought from the roster.
+Some of the cost attributed to re-running entries after a pipeline change was this.
+
+The list is now derived from a single `CLAIM_BY_ROLE` record that the named exports also read from,
+so declaring a namespace and registering it are one act.
+The test written to prevent this kept its own copy of the list and had drifted the same way;
+the first GFP failed to fail for exactly that reason,
+which is how the self-referential hole was found.
