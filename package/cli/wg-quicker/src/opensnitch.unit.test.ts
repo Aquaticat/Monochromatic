@@ -556,7 +556,7 @@ await describe({
           fn: async () => {
             const rules = [
               { Description: managedDescription({ interfaceName: 'wg0', port: 2_049, }), },
-              { Description: managedDescription({ interfaceName: 'wg1', port: 51_820, }), }
+              { Description: managedDescription({ interfaceName: 'wg1', port: 51_820, }), },
               { Description: 'user rule', },
             ];
             await using fixture = await createFixture({

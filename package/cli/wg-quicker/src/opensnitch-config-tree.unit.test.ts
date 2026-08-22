@@ -192,12 +192,11 @@ await describe({
               requireEnabled: true,
             },);
             /**
-             * Target rules after independent namespace installation.
+             * Serialized document proving both namespace owners coexist.
              */
-            const rules = ((second.document.SystemRules as readonly {
-              readonly Chains: readonly { readonly Rules: readonly unknown[]; }[];
-            }[])[0]?.Chains[0]?.Rules) ?? [];
-            expect(rules,).toHaveLength(2,);
+            const serialized = JSON.stringify(second.document,);
+            expect(serialized,).toContain('[netns:namespace-a]',);
+            expect(serialized,).toContain('[netns:namespace-b]',);
             const removedSecond = reconcileOpenSnitchConfig({
               document: second.document,
               interfaceName: 'wg0',
