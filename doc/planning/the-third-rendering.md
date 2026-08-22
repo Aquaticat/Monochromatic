@@ -2473,3 +2473,37 @@ That count cannot be read from the artifacts.
 It can be read from the captured cache,
 which holds the whole `ConsolidationSettlement` including `decided`,
 so the measurement `#165` names comes free from a run bought for something else.
+
+### What each run has to show, stated before either was read
+
+Run 1, over `Acheron`, `Weideriche_`, `Zha_Ke`, `gaoyanger`, `keyword233` and `lintong`:
+
+-   Every artifact parses through `parseSettledArtifactV2`.
+    This is the seam nothing has covered: the parser's own tests are built by hand,
+    and the six-artifact compatibility check exercised only the `unrecorded` path.
+    Builder output carrying a settled consolidation had never met the whole-artifact parser.
+-   Every artifact records `consolidation` as `settled`.
+-   At least one slice records `shipped` as `consolidated` with a non-empty text.
+    Runs 8 and 9 consolidated at eight and six slices of thirteen,
+    so zero across the whole set would be a finding to record against those,
+    not evidence that the wiring failed.
+
+Run 2, restored from the capture into a fresh directory:
+
+-   ZERO `reportStreamProgress` lines in its log.
+    That is the primary instrument, because it covers every stage rather than the consolidation alone.
+    Run 1 is its positive control: the same instrument counts in the hundreds there.
+-   Every artifact's `consolidation` field byte-identical to run 1's.
+    A resumed settlement is returned exactly as it was persisted,
+    so a settlement the validator refused would be re-bought and would differ.
+-   Wall time collapsed against run 1.
+
+The capture is checked for completeness before run 2 is allowed to mean anything.
+A file the discard raced away and a settlement the validator REFUSED both appear as a call to the roster,
+and they mean opposite things.
+The check reads each artifact's own consolidation record,
+counts the slices `consolidationWorthResuming` would have persisted,
+and compares that against the captured files.
+`slate-kept-standing` is reported as ambiguous rather than counted,
+because whether it persists turns on the decision behind it,
+which is the field the artifact does not carry.
