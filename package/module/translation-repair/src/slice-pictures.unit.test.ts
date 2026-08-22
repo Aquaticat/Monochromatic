@@ -31,6 +31,7 @@ import {
 import {
   type ChunkPair,
   type PairedReading,
+  slicePictureContexts,
   slicePictureNames,
   slicePictures,
   type SyntheticModelId,
@@ -470,6 +471,100 @@ await describe({
 
         expect(rendered.context,).toBe('',);
         expect(rendered.findings,).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: slicePictureContexts.name,
+  children: [
+    it({
+      name: 'KEYS EVERY SLICE BY THE STAMP ITS CONSUMERS READ, IN DOCUMENT ORDER, which is the '
+        + 'whole job. A stage downstream of preparation holds rows stamped with an index and no '
+        + 'array to count positions in, so somebody holding the slices has to do the translation, '
+        + 'and `#99` is the record of what assuming it costs. The order is asserted rather than '
+        + 'sorted away, since the fold walks the document and a map that came out unordered would '
+        + 'mean it had stopped doing that',
+      fn: async () => {
+        /**
+         * Fold over the three-slice document whose middle slice names no
+         * picture of its own.
+         */
+        const contexts = slicePictureContexts({
+          slices: MULTI_PICTURE_SLICES,
+          readings: MULTI_PICTURE_READINGS,
+        },);
+
+        expect([...contexts.keys(),],).toEqual([
+          0,
+          1,
+          2,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'RENDERS EACH SLICE EXACTLY WHAT THE POSITIONAL CALL RENDERS IT, so the fold is a '
+        + 're-keying and never a second windowing. A producer improving a translation is shown the '
+        + 'block its translator was shown, and this is what says so',
+      fn: async () => {
+        const contexts = slicePictureContexts({
+          slices: MULTI_PICTURE_SLICES,
+          readings: MULTI_PICTURE_READINGS,
+        },);
+
+        for (const [sliceIndex, slice,] of MULTI_PICTURE_SLICES.entries()) {
+          expect(contexts.get(slice.target.chunkIndex,),).toBe(
+            slicePictures({
+              slices: MULTI_PICTURE_SLICES,
+              sliceIndex,
+              readings: MULTI_PICTURE_READINGS,
+            },).context,
+          );
+        }
+      },
+    },),
+
+    it({
+      name: 'RENDERS AN EMPTY BLOCK WHERE NO READING IS AVAILABLE, rather than a heading over '
+        + 'nothing or a hedge about pictures nobody could read. The consolidation folds a missing '
+        + 'entry into this same empty string, so the two spellings of nothing agree',
+      fn: async () => {
+        const contexts = slicePictureContexts({
+          slices: ORDERED_SLICES,
+          readings: new Map<string, PairedReading>(),
+        },);
+
+        expect([...contexts.values(),],).toEqual([
+          '',
+          '',
+          '',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A DOCUMENT WHOSE SLICES CLAIM ONE STAMP TWICE, which `assertSliceIndexing` '
+        + 'already forbids upstream. A `Map` keeps the last of a duplicate key silently, and the '
+        + 'loss would read as a producer shown the wrong slice\'s pictures rather than as a '
+        + 'failure, which is the quietest available way to be wrong about what a passage depicts',
+      fn: async () => {
+        expect(function foldMisStampedSlices() {
+          slicePictureContexts({
+            slices: [
+              sliceOf({
+                text: 'Tabby sleeps through the afternoon.\n',
+                chunkIndex: 0,
+              },),
+              sliceOf({
+                text: 'Then she sleeps through the evening.\n',
+                chunkIndex: 0,
+              },),
+            ],
+            readings: new Map<string, PairedReading>(),
+          },);
+        },).toThrow(Error,);
       },
     },),
   ],

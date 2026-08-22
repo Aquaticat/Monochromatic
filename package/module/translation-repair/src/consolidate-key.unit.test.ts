@@ -180,5 +180,33 @@ await describe({
         );
       },
     },),
+
+    it({
+      name: 'SEPARATES A SLICE WHOSE PICTURES WERE READ FROM ONE WHOSE WERE NOT, because the readings '
+        + 'go on the producer sheet as words. Two runs that read one photograph into different '
+        + 'sentences asked different questions however identical their texts were, and a shared key '
+        + 'would hand the second run the first run\'s answer',
+      fn: async () => {
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({
+            ...SLICE,
+            pictureContext: 'the photograph shows a tabby asleep on a stack of library books',
+          },),
+        );
+      },
+    },),
+
+    it({
+      name: 'KEYS NO READINGS AND AN EMPTY READING ALIKE, which the driver depends on: it folds a '
+        + 'slice its map never mentions into the empty string so the sheet and the key cannot '
+        + 'disagree about which spelling the caller used. Were these two keys, every slice near no '
+        + 'readable picture would be re-bought the first time a caller changed its mind about how to '
+        + 'say nothing',
+      fn: async () => {
+        expect(consolidateSliceKey({ ...SLICE, pictureContext: '', },),).toBe(
+          consolidateSliceKey(SLICE,),
+        );
+      },
+    },),
   ],
 },);

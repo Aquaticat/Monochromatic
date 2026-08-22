@@ -246,12 +246,14 @@ async function driveWith(
     projected = twoSliceDocument(),
     client = REFUSING_CLIENT,
     lineStructuredSlices = new Set(),
+    pictureContextBySlice = new Map(),
   }: {
     readonly contests: readonly ArtifactContestSliceV2[];
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
     readonly projected?: ProjectedLanesV2;
     readonly client?: SyntheticClient;
     readonly lineStructuredSlices?: ReadonlySet<number>;
+    readonly pictureContextBySlice?: ReadonlyMap<number, string>;
   },
 ) {
   /**
@@ -278,6 +280,7 @@ async function driveWith(
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
     lineStructuredSlices,
+    pictureContextBySlice,
     l,
   },);
 
@@ -427,6 +430,48 @@ await describe({
         expect(bodies.length,).toBeGreaterThan(0,);
         expect(bodies.some(function carriesRule(body,): boolean {
           return body.includes(TRANSLATE_LINE_STRUCTURE_RULE,);
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS A PRODUCER WHAT THE PICTURES NEAR ITS SLICE WERE READ TO SAY, which the sheet has '
+        + 'rendered since it was written and no caller ever supplied. A passage whose meaning leans '
+        + 'on an image was consolidated blind until 2026-08-22, while the translate lane that wrote '
+        + 'one of the candidates had been shown the same reading all along',
+      fn: async () => {
+        const { client, bodies, } = recordingClient();
+
+        await driveWith({
+          client,
+          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          pictureContextBySlice: new Map([[0, 'the photograph shows a tabby asleep on a stack of library books',],],),
+        },);
+
+        expect(bodies.length,).toBeGreaterThan(0,);
+        expect(bodies.some(function carriesReading(body,): boolean {
+          return body.includes('the photograph shows a tabby asleep on a stack of library books',);
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A SLICE THE MAP NEVER MENTIONS UNILLUSTRATED, which is what makes the case above '
+        + 'evidence rather than a sheet that always carries a picture heading. It also pins the '
+        + 'lookup: a driver reading the wrong slice\'s entry would pass this and fail nothing, so '
+        + 'the map here holds a reading for a slice this contest never settles',
+      fn: async () => {
+        const { client, bodies, } = recordingClient();
+
+        await driveWith({
+          client,
+          contests: [contestSettling({ chunkIndex: 0, lane: 'repair', },),],
+          pictureContextBySlice: new Map([[1, 'the photograph shows a tabby asleep on a stack of library books',],],),
+        },);
+
+        expect(bodies.length,).toBeGreaterThan(0,);
+        expect(bodies.some(function carriesReading(body,): boolean {
+          return body.includes('the photograph shows a tabby asleep on a stack of library books',);
         },),).toBe(false,);
       },
     },),
