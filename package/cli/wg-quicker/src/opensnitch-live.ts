@@ -21,6 +21,17 @@ const RELOAD_PROBE_ATTEMPTS = 40;
 const RELOAD_STABLE_PROBES = 3;
 
 /**
+ * Deep-readonly projection of one settled namespace probe.
+ */
+type NamespaceProbeResult = {
+  readonly status: 'fulfilled';
+  readonly value: string;
+} | {
+  readonly status: 'rejected';
+  readonly reason: unknown;
+};
+
+/**
  * Reports whether OpenSnitch daemon is active in current network namespace.
  *
  * Exit status one from `pgrep` proves process absence.
@@ -74,7 +85,7 @@ async function isOpenSnitchDaemonActive(): Promise<boolean> {
     processId,
   ): Promise<string> {
     return await readlink(`/proc/${processId}/ns/net`,);
-  },),);
+  },),) as readonly NamespaceProbeResult[];
   return namespaces.some(function sameNamespace(candidate,): boolean {
     return (candidate.status === 'fulfilled') && (candidate.value === currentNamespace);
   },);
