@@ -29,7 +29,7 @@ const LOCK_PARENT_PROBE_MS = 100;
  * Holder exits through uncaught error when parent disappears,
  * releasing kernel lock after caller crash.
  */
-const LOCK_HOLDER_SOURCE = `const ownerPid = ${String(process.pid,)}; process.stdout.write('${LOCK_READY_LINE}\n'); setInterval(function verifyOwner() { if (process.ppid !== ownerPid) throw new Error('wg-quicker operation-lock owner disappeared'); }, ${String(LOCK_PARENT_PROBE_MS,)});`;
+const LOCK_HOLDER_SOURCE = `const ownerPid = ${String(process.pid,)}; process.stdout.write('${LOCK_READY_LINE}\\n'); setInterval(function verifyOwner() { if (process.ppid !== ownerPid) throw new Error('wg-quicker operation-lock owner disappeared'); }, ${String(LOCK_PARENT_PROBE_MS,)});`;
 
 /**
  * Acquires crash-safe kernel lock through readiness-signaled holder.
