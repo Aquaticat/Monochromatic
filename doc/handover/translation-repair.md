@@ -14800,3 +14800,42 @@ Both files pass again after restore. This supersedes any plan to revert a source
 error class and rebuild to prove the same thing: each converted file already
 runs against real `dist`, and one wrong-class failure closes the gap for the
 whole family without a build.
+
+### What is actually available while the pass runs, and what is not
+
+Checked against the tracker rather than assumed, because the obvious next item
+turned out to be blocked in the opposite direction from the one expected.
+
+-   `#98` records `Blocked by: #106`, not the reverse, and its own fix order
+    says not to route the equal-count fast path through the current aligner
+    just to route it: the gate waits until heading scoring gains a signal for
+    handle-free headings.
+-   `#106` blocks `#98` and `#100`, and ends with an explicit instruction not
+    to wire `groupSourceFirst` into `subdivideChunkPair` nor emit insertion
+    pairs from `alignDocumentSections` until the user answers question 28 in
+    `doc/planning/translation-repair-open-decisions.md`.
+-   `#106` also must not start while a pass holds the roster, which the live
+    verification run does.
+-   `#94` is held with `#100` for a stated reason that still holds: `#100`
+    changes what `alignmentPairCount` means, which is the denominator confusion
+    the rename exists to prevent, so renaming first means renaming twice.
+
+So the alignment cluster is gated on a USER DECISION, not on the build. Nothing
+in it should be started unasked.
+
+### Run-exit protocol, in order
+
+Ballots outrank the build, because the run is the perishable thing.
+
+1.  `node ${HOME}/temp/agent/163-ballots.mjs ${HOME}/temp/agent/163b-verify`.
+    The sharp question is whether the new slicing still produces a slice 3
+    where the repair lane returns the archive. If it does not, no note fires
+    and the run verifies nothing, which is a finding rather than a failure.
+2.  `mise run //package/module/translation-repair:build`, which only becomes
+    safe once the pass has exited.
+3.  `mise run //package/module/translation-repair:test:unit`, to confirm the
+    baseline holds with the nine classes `56ba8f1dd` added.
+4.  The 24 of `#127`, per `${HOME}/temp/agent/127-step2-mapping.txt`: convert,
+    run each file with `node <file>`, then `test:unit` again. Never run
+    `test:unit` before the build; it declares no `depends` and passes vacuously
+    against a stale `dist`.
