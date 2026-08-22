@@ -1407,3 +1407,88 @@ Anything reading findings to characterise an entry
 reads a different answer depending on cache state,
 which is the same class of defect as `#171`
 with telemetry in place of published text.
+
+## The refinement key now covers the incumbent
+
+Landed 2026-08-22 as `f8d747f9c`,
+the obligation `#172` left open.
+
+### A field no model reads still belongs in a key
+
+`refineSliceKey` covered the source,
+the repaired text,
+the definitions,
+the declared names,
+the issues,
+the confirmed set,
+the non-translation verdict and the roster.
+It did not cover the archive wording.
+
+That absence reads as correct on the first pass through the stage,
+because nothing shown to a rewriter,
+a judge or a checker carries the incumbent.
+Every prompt in the lane is built from the source and the repaired text.
+
+The stored RECORD is a different question from the prompt.
+`refine-slice-settle.ts` sets `changed` by comparing its rewrite against the incumbent,
+and drops `resolvedIssueIds` wherever the two match,
+on the rule the accuracy stage already applies:
+a resolution credited to text the document does not carry is a repair no reader saw.
+So two runs over one source and one repaired text
+but different archive wording settle differently,
+and shared a key.
+
+### The failure is a hard stop rather than a wasted purchase
+
+A key too narrow usually costs correctness quietly.
+This one does not.
+`repair-refine-step.ts` asserts over every refined outcome,
+resumed ones included,
+that the stored `changed` agrees with the incumbent the current run computed.
+There is no discard path.
+A resumed slice carrying the other run's verdict throws,
+and it throws on every later resume of that entry rather than once.
+
+### Nothing pinned the two texts together
+
+The obvious way to close this without touching the key
+is to establish that no path yields a moved incumbent under an unchanged repaired text,
+which would make the omission harmless.
+That check was not run,
+deliberately.
+Even a true answer would be a coincidence of what other stages happen to do
+rather than an invariant anything asserts,
+and a later change to slicing or pairing would break it with no test failing.
+`consolidate-key.ts` already covers the standing text for the same reason,
+which makes this the in-repo precedent rather than a new idea.
+
+### The phase hands over its resolved incumbent
+
+The key is given the same variable the settlement compares against,
+not a re-derivation of it.
+
+`refine-phase.ts` computes the incumbent as the prepared slice's target text
+falling back to the outcome's repaired text,
+and the fallback fires wherever no prepared slice sits at an index.
+A key that re-read the prepared slice itself would cover an absent incumbent
+while the settlement below compared against the repaired text,
+so the two would answer different questions
+on exactly the path that has no archive wording to check.
+
+### Shown to fail without it
+
+The key-movement test was committed first,
+then the pre-change `refineSliceKey` was restored over it and the package rebuilt.
+Exactly one test failed,
+the new one,
+and the suite passed again once the field was put back.
+
+No cache generation bump was needed.
+The hashed array gains an element,
+so no key written before this change can collide with one written after it,
+and any source edit moves the pipeline digest regardless.
+
+One consequence worth stating for the next session:
+the `vub171` capture taken for `#172` is no longer restorable,
+because its stored markers name a digest this change moved.
+That is expected and costs nothing.
