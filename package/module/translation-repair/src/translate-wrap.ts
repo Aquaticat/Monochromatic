@@ -25,9 +25,21 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
  * archive once wrapped, and a record still claiming a change there fails the
  * assembly assertion.
  *
+ * NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
+ * producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
+ * and then broke that work afterwards: over the 211 line-structured slices of
+ * the pinned corpus the wrap changed 189 and broke 470 of 1091 lines, after
+ * every decider had approved them. Flattening is caught by the structural
+ * guard and sent back to its author instead of papered over here, because
+ * `wrapReplacementText` splits and never joins, so it cannot put back a break
+ * a producer merged away.
+ *
  * @param slices - prepared slice pairs, for the archive wording per index
  *
  * @param settled - settled per-slice records in document order
+ *
+ * @param lineStructuredSlices - global indices the line-structure rule
+ * governs, whose lines are the producer's to set
  *
  * @param l - lane logger
  *
@@ -35,17 +47,19 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
  *
  * @example
  * ```ts
- * const wrapped = wrapTranslateRecords({ slices, settled, l, },);
+ * const wrapped = wrapTranslateRecords({ slices, settled, lineStructuredSlices, l, },);
  * ```
  */
 export function wrapTranslateRecords(
   {
     slices,
     settled,
+    lineStructuredSlices,
     l,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly settled: readonly TranslateSliceRecord[];
+    readonly lineStructuredSlices: ReadonlySet<number>;
     readonly l: Logger;
   },
 ): readonly TranslateSliceRecord[] {
@@ -71,6 +85,7 @@ export function wrapTranslateRecords(
   const counted = {
     rewrapped: 0,
     demoted: 0,
+    governed: 0,
   };
 
   /**
@@ -79,6 +94,14 @@ export function wrapTranslateRecords(
   const wrapped = settled.map(function perRecord(record,): TranslateSliceRecord {
     if (!record.changed)
       return record;
+
+    // LEFT EXACTLY AS PRODUCED, like a record that changed nothing. The
+    // line-structure rule made this slice's line breaks the producer's to set,
+    // and this function only ever adds more.
+    if (lineStructuredSlices.has(record.chunkIndex,)) {
+      counted.governed += 1;
+      return record;
+    }
 
     /**
      * Wording as the rule would have it written.
@@ -101,6 +124,12 @@ export function wrapTranslateRecords(
       changed,
     };
   },);
+
+  if (counted.governed > 0)
+    l.info(
+      `semantic wrap: skipped ${String(counted.governed,)} line-structured translated slices, whose `
+        + 'line breaks the producer was told to set',
+    );
 
   if (counted.rewrapped > 0)
     l.info(

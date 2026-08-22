@@ -30,9 +30,21 @@ import { wrapReplacementText, } from './semantic-wrap.ts';
  * settled 2026-08-18 does this, which is why the case has its own test rather
  * than a measurement.
  *
+ * NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
+ * producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
+ * and then broke that work afterwards: over the 211 line-structured slices of
+ * the pinned corpus the wrap changed 189 and broke 470 of 1091 lines, after
+ * every decider had approved them. Flattening is caught by the structural
+ * guard and sent back to its author instead of papered over here, because
+ * `wrapReplacementText` splits and never joins, so it cannot put back a break
+ * a producer merged away.
+ *
  * @param slices - prepared slice pairs, for the archive wording per index
  *
  * @param outcomes - settled per-slice outcomes, refinement included
+ *
+ * @param lineStructuredSlices - global indices the line-structure rule
+ * governs, whose lines are the producer's to set
  *
  * @param l - lane logger
  *
@@ -40,17 +52,19 @@ import { wrapReplacementText, } from './semantic-wrap.ts';
  *
  * @example
  * ```ts
- * const wrapped = wrapRepairOutcomes({ slices, outcomes, l, },);
+ * const wrapped = wrapRepairOutcomes({ slices, outcomes, lineStructuredSlices, l, },);
  * ```
  */
 export function wrapRepairOutcomes(
   {
     slices,
     outcomes,
+    lineStructuredSlices,
     l,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly outcomes: readonly ChunkRepairOutcome[];
+    readonly lineStructuredSlices: ReadonlySet<number>;
     readonly l: Logger;
   },
 ): readonly ChunkRepairOutcome[] {
@@ -76,6 +90,7 @@ export function wrapRepairOutcomes(
   const counted = {
     rewrapped: 0,
     demoted: 0,
+    governed: 0,
   };
 
   /**
@@ -84,6 +99,14 @@ export function wrapRepairOutcomes(
   const wrapped = outcomes.map(function perOutcome(outcome,): ChunkRepairOutcome {
     if (!outcome.changed)
       return outcome;
+
+    // LEFT EXACTLY AS PRODUCED, like an outcome that changed nothing. The
+    // line-structure rule made this slice's line breaks the producer's to set,
+    // and this function only ever adds more.
+    if (lineStructuredSlices.has(outcome.chunkIndex,)) {
+      counted.governed += 1;
+      return outcome;
+    }
 
     /**
      * Wording as the rule would have it written.
@@ -111,6 +134,12 @@ export function wrapRepairOutcomes(
       changed,
     };
   },);
+
+  if (counted.governed > 0)
+    l.info(
+      `semantic wrap: skipped ${String(counted.governed,)} line-structured repair outcomes, whose `
+        + 'line breaks the producer was told to set',
+    );
 
   if (counted.rewrapped > 0)
     l.info(

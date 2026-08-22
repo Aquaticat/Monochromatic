@@ -68,6 +68,12 @@ export type WrappedConsolidation = {
  * change nothing into a change, which is what `wrapReplacementText` refuses by
  * contract and what the delivery coherence check refuses by measurement.
  *
+ * NEVER APPLIED TO A LINE-STRUCTURED SLICE EITHER, at this site or at the two
+ * lane sites. The pipeline hands a governed producer `TRANSLATE_LINE_STRUCTURE_RULE`,
+ * one output line per original line, and then broke that work afterwards: over
+ * the 211 line-structured slices of the pinned corpus the wrap changed 189 and
+ * broke 470 of 1091 lines, after every decider had approved them.
+ *
  * @param outcome - what the gate settled, whose `ships` decides whether there
  * is anything to wrap
  *
@@ -76,13 +82,16 @@ export type WrappedConsolidation = {
  * @param standingText - wording already in place, which a wrapped
  * consolidation may turn out to equal
  *
+ * @param lineStructured - whether the line-structure rule governs this slice,
+ * which forbids the wrap outright rather than narrowing it
+ *
  * @param l - stage logger
  *
  * @returns What ships, with the wrap applied and demotion re-derived
  *
  * @example
  * ```ts
- * const shipped = wrapConsolidation({ outcome, consolidatedText, standingText, l, },);
+ * const shipped = wrapConsolidation({ outcome, consolidatedText, standingText, lineStructured, l, },);
  * ```
  */
 export function wrapConsolidation(
@@ -90,11 +99,13 @@ export function wrapConsolidation(
     outcome,
     consolidatedText,
     standingText,
+    lineStructured,
     l,
   }: {
     readonly outcome: ConsolidateGateOutcome;
     readonly consolidatedText: string;
     readonly standingText: string;
+    readonly lineStructured: boolean;
     readonly l: Logger;
   },
 ): WrappedConsolidation {
@@ -105,6 +116,49 @@ export function wrapConsolidation(
       rewrapped: false,
       demoted: false,
     };
+
+  if (lineStructured) {
+    /**
+     * Whether the producer proposed exactly what already stands.
+     *
+     * RAW, AGAINST BOTH TEXTS UNWRAPPED, because neither has been through the
+     * wrap on this path. The comparison the wrapped path makes is wider on
+     * purpose: it also catches a proposal that is a pure re-wrapping of the
+     * standing text. No re-wrapping can reach here, so the only way a
+     * proposal changes nothing is by being the standing text itself.
+     *
+     * THAT CASE STILL DEMOTES. A replacement identical to its incumbent
+     * survives the footnote guard and lands in the shipped set beside a
+     * document nobody changed, which is the fault the demote exists for and
+     * which skipping the wrap does not make go away.
+     */
+    const unchanged = consolidatedText === standingText;
+
+    if (unchanged) {
+      l.info(
+        'semantic wrap: skipped on a line-structured slice, and the consolidation is the standing '
+          + 'text as written, so the slice keeps what it had',
+      );
+      return {
+        ships: 'standing',
+        text: standingText,
+        rewrapped: false,
+        demoted: true,
+      };
+    }
+
+    l.info(
+      `semantic wrap: skipped on a line-structured slice, shipping ${
+        String(consolidatedText.split('\n',).length,)
+      } lines as the producer wrote them`,
+    );
+    return {
+      ships: 'consolidated',
+      text: consolidatedText,
+      rewrapped: false,
+      demoted: false,
+    };
+  }
 
   /**
    * Consolidation as the rule would have it written.

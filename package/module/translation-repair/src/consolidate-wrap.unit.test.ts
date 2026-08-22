@@ -81,6 +81,7 @@ await describe({
           outcome: gateSettling({ ships: 'standing', },),
           consolidatedText: 'The cat naps.\nShe wakes at four.',
           standingText,
+          lineStructured: false,
           l,
         },);
 
@@ -101,6 +102,7 @@ await describe({
           outcome: gateSettling({ ships: 'consolidated', },),
           consolidatedText: ONE_LONG_LINE,
           standingText: 'The cat sleeps somewhere else entirely.',
+          lineStructured: false,
           l,
         },);
 
@@ -125,6 +127,7 @@ await describe({
           outcome: gateSettling({ ships: 'consolidated', },),
           consolidatedText: alreadyWrapped,
           standingText: 'The cat sleeps somewhere else entirely.',
+          lineStructured: false,
           l,
         },);
 
@@ -149,6 +152,7 @@ await describe({
           outcome: gateSettling({ ships: 'consolidated', },),
           consolidatedText: ONE_LONG_LINE,
           standingText,
+          lineStructured: false,
           l,
         },);
 
@@ -178,6 +182,7 @@ await describe({
           outcome: gateSettling({ ships: 'consolidated', },),
           consolidatedText,
           standingText,
+          lineStructured: false,
           l,
         },);
 
@@ -196,6 +201,7 @@ await describe({
           outcome: gateSettling({ ships: 'consolidated', },),
           consolidatedText: ONE_LONG_LINE,
           standingText: 'The cat naps in the window.\nShe wakes at four.\nShe asks for nothing at all.',
+          lineStructured: false,
           l,
         },);
 

@@ -132,6 +132,7 @@ await describe({
             outputText: 'The tabby naps on the sill. It wakes at dusk.',
             changed: true,
           },),],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -160,6 +161,7 @@ await describe({
             outputText: incumbentText,
             changed: false,
           },),],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -187,6 +189,7 @@ await describe({
             outputText: 'It naps. It wakes.',
             changed: true,
           },),],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -222,6 +225,7 @@ await describe({
               changed: true,
             },),
           ],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -237,6 +241,7 @@ await describe({
         expect(wrapTranslateRecords({
           slices: [],
           settled: [],
+          lineStructuredSlices: new Set(),
           l,
         },).length,).toBe(0,);
       },

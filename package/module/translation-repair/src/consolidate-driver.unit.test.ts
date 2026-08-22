@@ -214,6 +214,7 @@ async function driveWith(
     cache,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
+    lineStructuredSlices: new Set(),
     l,
   },);
 

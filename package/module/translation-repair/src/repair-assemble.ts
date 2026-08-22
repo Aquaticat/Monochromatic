@@ -39,6 +39,9 @@ import type { RepairTranslationResult, } from './repair-result.ts';
  *
  * @param outcomes - settled per-slice outcomes, refinement included
  *
+ * @param lineStructuredSlices - global indices the line-structure rule governs,
+ * whose lines the wrap leaves alone
+ *
  * @param findings - alignment and phase findings to carry through
  *
  * @param l - driver logger
@@ -47,7 +50,7 @@ import type { RepairTranslationResult, } from './repair-result.ts';
  *
  * @example
  * ```ts
- * const result = assembleRepair({ targetText, slices, outcomes, findings, l, },);
+ * const result = assembleRepair({ targetText, slices, outcomes, lineStructuredSlices, findings, l, },);
  * ```
  */
 export function assembleRepair(
@@ -55,12 +58,14 @@ export function assembleRepair(
     targetText,
     slices,
     outcomes: producedOutcomes,
+    lineStructuredSlices,
     findings,
     l,
   }: {
     readonly targetText: string;
     readonly slices: readonly ChunkPair[];
     readonly outcomes: readonly ChunkRepairOutcome[];
+    readonly lineStructuredSlices: ReadonlySet<number>;
     readonly findings: readonly string[];
     readonly l: Logger;
   },
@@ -75,6 +80,7 @@ export function assembleRepair(
   const outcomes = wrapRepairOutcomes({
     slices,
     outcomes: producedOutcomes,
+    lineStructuredSlices,
     l,
   },);
 

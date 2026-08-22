@@ -368,6 +368,7 @@ async function settleWith(
     standingText,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS * 8,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
+    lineStructured: false,
     l,
   },);
 

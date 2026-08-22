@@ -374,6 +374,7 @@ async function runEntryPipeline(
       projected,
       contests: contestSlices,
       modelIds: RUN_ROSTER,
+      lineStructuredSlices: prepared.lineStructuredSliceIndices,
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),

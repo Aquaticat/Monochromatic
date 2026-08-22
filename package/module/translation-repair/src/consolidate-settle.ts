@@ -265,7 +265,7 @@ export type ConsolidationSettlement = {
  *
  * @example
  * ```ts
- * const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, signal, perCallTimeoutMs, l, },);
+ * const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, lineStructured, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function settleConsolidation(
@@ -277,6 +277,7 @@ export async function settleConsolidation(
     validity,
     producedFindings,
     standingText,
+    lineStructured,
     signal,
     perCallTimeoutMs,
     l,
@@ -288,6 +289,7 @@ export async function settleConsolidation(
     readonly validity: readonly ProposalValidity[];
     readonly producedFindings: readonly string[];
     readonly standingText: string;
+    readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -463,6 +465,7 @@ export async function settleConsolidation(
     outcome: gate,
     consolidatedText: decided.text,
     standingText,
+    lineStructured,
     l: sl,
   },);
 

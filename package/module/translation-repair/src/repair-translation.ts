@@ -561,6 +561,7 @@ export async function repairPreparedDocument(
     targetText,
     slices,
     outcomes: finalOutcomes,
+    lineStructuredSlices,
     findings: [
       ...alignmentFindings,
       ...refusedCacheFindings,

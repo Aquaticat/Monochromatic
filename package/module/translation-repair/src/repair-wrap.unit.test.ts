@@ -139,6 +139,7 @@ await describe({
             repairedText: 'The tabby naps on the sill. It wakes at dusk.',
             changed: true,
           },),],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -167,6 +168,7 @@ await describe({
             repairedText: incumbentText,
             changed: false,
           },),],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -195,6 +197,7 @@ await describe({
             repairedText: 'It naps. It wakes.',
             changed: true,
           },),],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -217,6 +220,7 @@ await describe({
             repairedText: 'The tabby naps. It wakes.',
             changed: true,
           },),],
+          lineStructuredSlices: new Set(),
           l,
         },);
 
@@ -232,6 +236,7 @@ await describe({
         expect(wrapRepairOutcomes({
           slices: [],
           outcomes: [],
+          lineStructuredSlices: new Set(),
           l,
         },).length,).toBe(0,);
       },

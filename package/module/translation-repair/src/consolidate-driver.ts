@@ -215,7 +215,7 @@ function laneChoiceOf(
  *
  * @example
  * ```ts
- * const slices = await consolidateDocument({ client, projected, contests, modelIds, cache, signal, perCallTimeoutMs, l, },);
+ * const slices = await consolidateDocument({ client, projected, contests, modelIds, lineStructuredSlices, cache, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function consolidateDocument(
@@ -225,6 +225,7 @@ export async function consolidateDocument(
     contests,
     modelIds,
     identityContext,
+    lineStructuredSlices,
     cache,
     signal,
     perCallTimeoutMs,
@@ -235,6 +236,7 @@ export async function consolidateDocument(
     readonly contests: readonly ArtifactContestSliceV2[];
     readonly modelIds: readonly SyntheticModelId[];
     readonly identityContext?: string;
+    readonly lineStructuredSlices: ReadonlySet<number>;
     readonly cache: SliceCache<ConsolidationSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -377,6 +379,7 @@ export async function consolidateDocument(
         validity: produced.validity,
         producedFindings: produced.findings,
         standingText,
+        lineStructured: lineStructuredSlices.has(row.chunkIndex,),
         signal,
         perCallTimeoutMs,
         l: dl,

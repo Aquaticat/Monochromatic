@@ -83,6 +83,7 @@ export function assembleTranslation(
   const settled = wrapTranslateRecords({
     slices: prepared.slices,
     settled: producedRecords,
+    lineStructuredSlices: prepared.lineStructuredSliceIndices,
     l,
   },);
 
