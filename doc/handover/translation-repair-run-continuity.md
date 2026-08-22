@@ -1492,3 +1492,75 @@ One consequence worth stating for the next session:
 the `vub171` capture taken for `#172` is no longer restorable,
 because its stored markers name a digest this change moved.
 That is expected and costs nothing.
+
+## The pairing cache now stores what the round reported
+
+The pairing namespace held a bare list of correspondences.
+A resumed entry makes no calls for a cached section,
+so everything that section reported the first time was reported by nothing the
+ second time:
+the per-section pairing counts,
+the `block-pairing section N fell back to scoring` notice,
+and every voice-level finding the round produced.
+
+The stored record now carries the findings beside the pairs,
+matching `RefinedSliceSettlement`,
+which is the shape that already got this right.
+`isCachedPairing` refuses a bare array,
+though nothing depends on that refusal:
+the namespace is discarded whenever the stored generation differs from the
+ running pipeline digest,
+and editing these files moves that digest.
+
+### The two gates were never the same gate
+
+Three findings leave a section,
+under three different conditions.
+The voice-level findings arrive unconditionally.
+The pairing-count line is filed where any voice was usable,
+which is also what decides whether the round may be stored at all.
+The fallback notice is filed where the roster agreed on nothing,
+which is independent of both.
+
+Collecting them into one list and storing it invites a regression that the
+ resume test cannot see:
+if the document's own list is fed only where the record is persisted,
+a round nobody answered loses its findings on the COLD run,
+and no cached section exists to notice.
+The list is therefore fed on every path,
+and only the persist stays gated.
+
+### The fallback notice had to move
+
+It was filed after the store wrote,
+so storing the collected list would have stored everything except the one
+ finding the comparison originally caught.
+It is now filed before the write.
+The warning beside it is emitted again on a resumed run rather than only the
+ first time,
+because keeping the deterministic aligner is what that run is doing,
+not something that merely happened once.
+
+### Roster reachability is stored on purpose
+
+`block-pairing unusable (<model>: <message>)` names a call that failed.
+Replayed off disk it describes a call the resumed run never made,
+which is a fair objection and it is stored anyway.
+The findings say what buying this pairing cost,
+and a resume that dropped them would report a healthier roster than the one
+ that produced the stored pairs.
+`RefinedSliceSettlement` keeps its `refine-candidates (N/M heard)` line for the
+ same reason.
+
+### Shown to fail
+
+The driver had no cache coverage at all before this,
+so nothing would have noticed the findings going missing.
+The new test runs the same document twice over one map and compares the two
+ findings lists whole,
+rather than sampling a string,
+because a replay that keeps some findings and drops others is the shape this
+ defect actually had.
+It asserts the cold run said something first,
+since two empty lists compare equal.
+Removing the replay line and rebuilding fails that test and no other.
