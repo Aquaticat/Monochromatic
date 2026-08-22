@@ -38,6 +38,7 @@ import {
   RECOVERY_TARGET_NOT_APPLICABLE,
   resolveCommitTransactionDirectory,
 } from './commit-transaction-recovery-target.ts';
+
 import {
   assertLandedCommit,
   assertOwnedLock,
@@ -135,7 +136,9 @@ export async function recoverCommitTransaction({
   gitPath: string;
   identity?: GitWorktreeIdentity;
 }>,): Promise<CommitTransactionRecoveryResult> {
-  /** Absolute invocation-specific transaction directory when one can exist. */
+  /**
+   * Absolute invocation-specific transaction directory when one can exist.
+   */
   const directory = await resolveCommitTransactionDirectory({
     args,
     gitPath,
@@ -143,7 +146,9 @@ export async function recoverCommitTransaction({
   },);
   if (directory === RECOVERY_TARGET_NOT_APPLICABLE)
     return 'none';
-  /** Effective invocation cwd retained for journal verification Git requests. */
+  /**
+   * Effective invocation cwd retained for journal verification Git requests.
+   */
   const { effectiveCwd, } = parseGlobalOptions(args,);
   if (!(await pathExists(directory,)))
     return 'none';

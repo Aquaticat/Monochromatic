@@ -10,12 +10,16 @@ import { runTransactionGit, } from './commit-transaction-git.ts';
 import { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 import { TRANSACTION_DIRECTORY_NAME, } from './commit-transaction-workspace.ts';
 
-/** Invocation has no worktree transaction directory to recover. */
+/**
+ * Invocation has no worktree transaction directory to recover.
+ */
 export const RECOVERY_TARGET_NOT_APPLICABLE: unique symbol = Symbol(
   'commit transaction recovery target is not applicable',
 );
 
-/** Strict Git metadata decoder. */
+/**
+ * Strict Git metadata decoder.
+ */
 const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
@@ -47,11 +51,17 @@ export async function resolveCommitTransactionDirectory({
   gitPath,
   identity,
 }: Readonly<{
-  /** Exact wrapper arguments. */
+  /**
+   * Exact wrapper arguments.
+   */
   args: readonly string[];
-  /** Absolute real-Git executable. */
+  /**
+   * Absolute real-Git executable.
+   */
   gitPath: string;
-  /** Optional retained repository identity. */
+  /**
+   * Optional retained repository identity.
+   */
   identity?: GitWorktreeIdentity;
 }>,): Promise<string | typeof RECOVERY_TARGET_NOT_APPLICABLE> {
   if (identity !== undefined) {
@@ -63,9 +73,13 @@ export async function resolveCommitTransactionDirectory({
     );
   }
 
-  /** Effective invocation repository location. */
+  /**
+   * Effective invocation repository location.
+   */
   const { effectiveCwd, } = parseGlobalOptions(args,);
-  /** Combined worktree-membership and transaction-path response. */
+  /**
+   * Combined worktree-membership and transaction-path response.
+   */
   const metadata = await runTransactionGit({
     gitPath,
     cwd: effectiveCwd,
@@ -81,7 +95,9 @@ export async function resolveCommitTransactionDirectory({
   if (metadata.exitCode !== 0)
     return RECOVERY_TARGET_NOT_APPLICABLE;
 
-  /** Fixed-order decoded metadata fields. */
+  /**
+   * Fixed-order decoded metadata fields.
+   */
   const [
     insideWorktree,
     reportedDirectory,
