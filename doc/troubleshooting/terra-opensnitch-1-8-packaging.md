@@ -304,10 +304,14 @@ opensnitch-1.8.0-2.fc44.x86_64
 
 ## Verified workarounds
 
-No complete runtime workaround was applied to the host.
-Rebooting, enabling services, copying root-owned configuration,
-and layering dependencies would mutate real firewall state,
-so diagnosis stopped before those actions.
+The official replacement is staged but has not been booted or activated.
+No OpenSnitch process was started during staging;
+the booted deployment remains active.
+The booted system already has an `inet opensnitch` nftables table.
+Its output and forward chains use `policy accept`,
+and its queue rules use `flags bypass` while no daemon process is running.
+No OpenSnitch unit journal entries appeared during the staging window,
+so the table was left unchanged rather than attributing it to the offline transaction.
 
 ### Replace Terra's package with the official release pair
 
@@ -338,7 +342,29 @@ rpm-ostree install --dry-run \
 It resolved successfully,
 planned removal of the Terra package request,
 and selected both official RPMs plus the missing Fedora 44 UI dependencies.
-Remove `--dry-run` to stage that same replacement.
+The same command then succeeded without `--dry-run`.
+`rpm-ostree status --json` reports both RPMs under `requested-local-packages`
+in the staged deployment and no Terra package request.
+
+Inspection of the staged deployment confirms:
+
+- the official RPM versions are `opensnitch-1.8.0-1.x86_64`
+  and `opensnitch-ui-1.8.0-1.noarch`;
+- configuration, rules, tasks, daemon and UI executables,
+  eBPF objects, and `opensnitch.service` are present;
+- `opensnitch.service` executes `/usr/bin/opensnitchd`;
+- the required Python packages are installed;
+- the UI autostart link targets `/usr/share/applications/opensnitch_ui.desktop`.
+
+The offline RPM scriptlets did not enable `opensnitch.service`.
+`systemctl --root=<staged-deployment> is-enabled opensnitch.service` reports `disabled`.
+Enabling through `--root` is not possible because the staged deployment is read-only.
+After booting it,
+activate the firewall deliberately with:
+
+```bash
+sudo systemctl enable --now opensnitch.service
+```
 
 Tradeoff:
 local RPM requests persist across rpm-ostree upgrades,
