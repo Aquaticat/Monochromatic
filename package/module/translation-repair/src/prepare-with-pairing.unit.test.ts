@@ -25,7 +25,9 @@ import {
 
 import {
   createSyntheticClient,
+  type PairedSectionRecord,
   prepareDocumentPairWithRoster,
+  type SliceCache,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -103,6 +105,37 @@ function cannedClient(
       };
     },
   },);
+}
+
+/**
+ * Builds a pairing cache backed by a map that outlives one run.
+ *
+ * ROUND-TRIPS THROUGH THE SERIALIZATION rather than storing the record by
+ * reference, because the defect under test is a record whose findings never
+ * reached disk. A stub that kept the object would pass while the bytes carried
+ * only pairs.
+ *
+ * @param stored - map surviving between the two runs of a case
+ *
+ * @returns Cache resuming from `stored` and writing back into it
+ *
+ * @example
+ * ```ts
+ * const cache = memoryPairingCache({ stored, },);
+ * ```
+ */
+function memoryPairingCache(
+  { stored, }: { readonly stored: Map<string, PairedSectionRecord>; },
+): SliceCache<PairedSectionRecord> {
+  return {
+    resumed: stored,
+    persist: async ({ key, serialized, },) => {
+      stored.set(
+        key,
+        JSON.parse(serialized,) as PairedSectionRecord,
+      );
+    },
+  };
 }
 
 await describe({
@@ -204,6 +237,69 @@ await describe({
         expect(findings,).toContain(
           'block-pairing section 0 paired 0 of 2 original and 2 translation blocks, from 2 usable voices of 2 heard',
         );
+      },
+    },),
+
+    it({
+      name:
+        'REPUBLISHES EVERY FINDING OFF A CACHED SECTION, having asked nobody. The cache stored a bare '
+        + 'list of pairs until 2026-08-22, so a resumed entry reported a silent round: no per-section '
+        + 'counts, no fallback notice, no voice-level finding. The two runs are compared whole rather '
+        + 'than by sampled string, because a replay that keeps some findings and drops others is the '
+        + 'shape this defect actually had',
+      fn: async () => {
+        /**
+         * Records surviving between the two runs, as a resumed pass finds them.
+         */
+        const stored = new Map<string, PairedSectionRecord>();
+
+        const cold = await prepareDocumentPairWithRoster({
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+              '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+            ],
+          },),
+          modelIds: ROSTER,
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          pairingCache: memoryPairingCache({ stored, },),
+          l,
+        },);
+
+        // POSITIVE CONTROL. Two empty lists compare equal, so a replay that lost
+        // everything would satisfy the comparison below against a run that said
+        // nothing. The cold run has to have reported something first.
+        expect(cold.findings.length > 0,).toBe(true,);
+        expect(stored.size,).toBe(1,);
+
+        /**
+         * Calls the resumed run made, which must stay at none.
+         */
+        let calls = 0;
+
+        const warm = await prepareDocumentPairWithRoster({
+          client: createSyntheticClient({
+            apiKey: 'test-key',
+            transport: async function countingTransport() {
+              calls += 1;
+              throw new Error('the resumed run bought a pairing it already had',);
+            },
+          },),
+          modelIds: ROSTER,
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          pairingCache: memoryPairingCache({ stored, },),
+          l,
+        },);
+
+        expect(calls,).toBe(0,);
+        expect(warm.findings,).toEqual(cold.findings,);
+        expect(warm.prepared.blockPairing,).toEqual(cold.prepared.blockPairing,);
       },
     },),
   ],
