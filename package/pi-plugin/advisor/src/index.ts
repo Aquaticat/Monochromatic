@@ -174,9 +174,11 @@ export default async function advisor(
       event: ForeignBorrowed<BeforeAgentStartEvent>,
       ctx: ForeignHostCapability<ExtensionContext>,
     ) {
-      projectContextState.replace(
-        event.systemPromptOptions.contextFiles ?? [],
-      );
+      /**
+       * Authoritative loaded context files for current agent run.
+       */
+      const { contextFiles = [], } = event.systemPromptOptions;
+      projectContextState.replace(contextFiles,);
       if (!state.getEnabled())
         return undefined;
 

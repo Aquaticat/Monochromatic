@@ -318,10 +318,14 @@ async function runImmediateAdvisor(
   await ctx.waitForIdle();
   try {
     /**
-     * Current Pi-loaded project context read after pending agent work settles.
+     * Current prompt options read after pending agent work settles.
+     */
+    const promptOptions = ctx.getSystemPromptOptions();
+    /**
+     * Current Pi-loaded project context from authoritative prompt options.
      */
     const projectContext = serializeAdvisorProjectContext(
-      ctx.getSystemPromptOptions().contextFiles ?? [],
+      promptOptions.contextFiles ?? [],
     );
     /**
      * Manual Advisor review result.

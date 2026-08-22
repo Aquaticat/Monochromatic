@@ -93,20 +93,20 @@ export function serializeAdvisorProjectContext(
  */
 export function createAdvisorProjectContextState(): AdvisorProjectContextState {
   /**
-   * Canonical current project-context snapshot.
+   * Canonical current project-context snapshot cell.
    */
-  let projectContext = '';
+  const projectContext = { value: '', };
   return {
     get: function get() {
-      return projectContext;
+      return projectContext.value;
     },
     replace: function replace(
       contextFiles: readonly AdvisorProjectContextFile[],
     ) {
-      projectContext = serializeAdvisorProjectContext(contextFiles,);
+      projectContext.value = serializeAdvisorProjectContext(contextFiles,);
     },
     clear: function clear() {
-      projectContext = '';
+      projectContext.value = '';
     },
   };
 }
