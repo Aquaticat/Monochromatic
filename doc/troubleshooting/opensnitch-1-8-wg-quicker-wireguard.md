@@ -303,7 +303,7 @@ The config-tree implementation preserves unrelated and unknown JSON fields,
 removes stale rules owned by the same interface,
 and appends one enabled rule per sorted port.
 The ownership and replacement path appears in
-`package/cli/wg-quicker/src/opensnitch-config-tree.ts:367-443`:
+`package/cli/wg-quicker/src/opensnitch-config-tree.ts:275-424`:
 
 ```ts
 const prefix = managedPrefix({ interfaceName, },);
@@ -339,6 +339,23 @@ version 1 system-firewall schema,
 an enabled top-level firewall,
 and exactly one `inet opensnitch mangle_output` chain.
 It fails and rolls tunnel startup back rather than writing a rule that the daemon would ignore.
+The released 1.8.0 defaults in
+`evilsocket/opensnitch@v1.8.0:daemon/data/default-config.json:25-28` satisfy these requirements:
+
+```json
+"Firewall": "nftables",
+"FwOptions": {
+  "ConfigPath": "/etc/opensnitchd/system-fw.json"
+}
+```
+
+An explicit `WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` takes precedence.
+Otherwise,
+`package/cli/wg-quicker/src/opensnitch-daemon-config.ts:181-232` reads `FwOptions.ConfigPath` from the selected
+daemon config.
+The final strict-deny fixture set only `WG_QUICKER_OPENSNITCH_DAEMON_CONFIG`,
+resolved a non-default watched system-firewall path,
+and passed traffic.
 
 Cleanup removes owned rules before checking whether the WireGuard link still exists.
 This ordering in `package/cli/wg-quicker/src/tunnel-cleanup.ts:24-34` also recovers an allowance left by an
@@ -354,6 +371,11 @@ await stopApplicationExemptions({
 if (!(await linkExists({ interfaceName: iface, },)))
   return;
 ```
+
+Reconciliation records formerly owned exact ports that no retained rule still accepts.
+`down` requires those ports to disappear from the live nftables chain before it returns.
+The final custom-path fixture checked the chain immediately after `down` and found no managed destination-port
+rule while ICMP and NFQUEUE rules remained.
 
 ### OpenSnitch live reload needs one file write event
 
@@ -400,7 +422,7 @@ It changes the inode watched by OpenSnitch and produced unstable second-reload b
 The current writer performs one positional write to the existing inode.
 When new JSON is shorter,
 it pads the document with valid trailing JSON whitespace instead of truncating.
-`package/cli/wg-quicker/src/opensnitch-config-file.ts:132-210` contains the workaround:
+`package/cli/wg-quicker/src/opensnitch-config-file.ts:102-180` contains the workaround:
 
 ```ts
 const padding = Buffer.alloc(
@@ -427,8 +449,10 @@ const { bytesWritten, } = await handle.write(
 ```
 
 After writing,
-`package/cli/wg-quicker/src/opensnitch.ts:167-213` requires consecutive live nftables listings that contain each
-managed port rule and OpenSnitch's queue rule.
+`package/cli/wg-quicker/src/opensnitch.ts:197-249` requires consecutive live nftables listings that contain each
+managed port rule,
+exclude formerly owned exact ports,
+and retain OpenSnitch's queue rule.
 Startup fails and rolls back when an active daemon does not converge.
 If the daemon is stopped,
 the persisted rule loads at its next start.
@@ -440,7 +464,9 @@ the persisted rule loads at its next start.
 The combined test used:
 
 - `wg-quicker` automatic-rule implementation through commit
-  `fde6c739fb5b11aad66fecca2156bec47c2b57a8`;
+  `2ed6aad8f1141df5b43b1dbb8fcc684236c5be56`;
+- path-resolution and removal-verification fix commit
+  `df738d6622712865caa2d34646bf3eb3f4d517bd`;
 - single-write live-reload fix commit `ba90d31612ac5a09ca498444af1daed21718a81d`;
 - OpenSnitch release `v1.8.0`,
   commit `b404c4c6316760fa7bc415509d3f8d747f7dc9cc`;
@@ -550,6 +576,14 @@ The combined test added OpenSnitch to its client namespace before invoking the r
   retained OpenSnitch ICMP and NFQUEUE rules,
   kept the valid JSON file at measured size `8174` bytes through whitespace padding,
   and removed the WireGuard link.
+- Final custom-path fixture:
+  only `WG_QUICKER_OPENSNITCH_DAEMON_CONFIG` was set;
+  `wg-quicker` followed non-default `FwOptions.ConfigPath`,
+  installed UDP port `2050`,
+  completed a handshake,
+  and ping received `3` of `3` replies under default deny.
+  Immediately after `down` returned,
+  port `2050` was absent while ICMP and NFQUEUE rules remained.
 - OpenSnitch started before `wg-quicker`:
   both nftables tables coexisted and the default-allow tunnel passed traffic.
 - OpenSnitch restarted while the WireGuard fixture existed,
@@ -593,14 +627,15 @@ This is unsuitable when the intended policy requires unknown kernel traffic to f
 For strict default deny,
 run current `wg-quicker up` normally.
 Standard OpenSnitch 1.8 paths need no additional setting.
-Custom daemon deployments provide both paths:
+Custom daemon deployments provide daemon config path;
+`wg-quicker` follows its `FwOptions.ConfigPath`:
 
 ```console
 WG_QUICKER_OPENSNITCH_DAEMON_CONFIG=/custom/default-config.json \
-WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG=/custom/system-fw.json \
 wg-quicker up wg0
 ```
 
+Set `WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` only to override that `FwOptions` path.
 `wg-quicker` adds the actual peer endpoint ports,
 waits for OpenSnitch's live nftables chain,
 and warns with exact scope.
@@ -612,6 +647,9 @@ each port-only rule bypasses OpenSnitch application attribution for every proces
 destination port while the interface is up.
 It does not bypass `wg-quicker` routing or encryption.
 The integration intentionally rejects OpenSnitch's iptables backend and unsupported system-firewall schemas.
+Its runtime lock serializes wg-quicker processes,
+not concurrent edits from the OpenSnitch UI;
+avoid changing system rules while a tunnel lifecycle command runs.
 
 For an older `wg-quicker` build,
 enable or add OpenSnitch's system rule for the actual endpoint port and restart the packaged daemon after saving:

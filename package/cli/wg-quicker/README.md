@@ -109,6 +109,8 @@ The rules carry interface-specific `wg-quicker managed endpoint [...]` descripti
 OpenSnitch's system-firewall configuration.
 `down` and failed-`up` rollback remove only that interface's rules,
 even when the WireGuard link is already absent.
+Teardown waits until formerly owned exact port rules disappear from the live chain,
+unless another retained OpenSnitch rule still accepts the same port.
 
 The integration supports OpenSnitch 1.8's nftables backend and version 1 system-firewall schema.
 It rejects disabled system firewall,
@@ -121,10 +123,13 @@ shorter JSON is padded with valid trailing whitespace so truncate does not emit 
 `wg-quicker` then requires consecutive healthy nftables observations before tunnel startup continues.
 
 Standard paths are `/etc/opensnitchd/default-config.json` and `/etc/opensnitchd/system-fw.json`.
-Custom deployments can set
-`WG_QUICKER_OPENSNITCH_DAEMON_CONFIG` and
-`WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG`.
+Without a system-firewall override,
+`wg-quicker` follows `FwOptions.ConfigPath` from the selected daemon config.
+Custom deployments can set `WG_QUICKER_OPENSNITCH_DAEMON_CONFIG`;
+`WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` takes precedence over `FwOptions.ConfigPath` when both are set.
 Both overrides cross the sudo boundary through the validated private caller-context file.
+The runtime `flock` serializes wg-quicker writers only;
+avoid editing the same OpenSnitch system-firewall file concurrently through its UI.
 See
 [OpenSnitch troubleshooting](../../../doc/troubleshooting/opensnitch-1-8-wg-quicker-wireguard.md)
 for source trace,
