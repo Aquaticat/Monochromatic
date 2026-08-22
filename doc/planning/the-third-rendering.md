@@ -3630,3 +3630,47 @@ It is nested rather than a sibling,
 so a reader reaches it through a name that already says which question it
  answers,
 and it was left alone deliberately rather than missed.
+
+## The archive read was one level below the boundary it claimed
+
+The rename check read `parseComparisonRowV2` per row.
+That covers the comparison half and nothing else.
+The terminal half of the same batch had only its declaration:
+`slate-kept-standing` sat in the reader's allowed names with a comment saying
+ the archive stays readable,
+and no test anywhere carried the string,
+because the split had moved every fixture onto the three new names.
+
+`parseSettledArtifactV2` is the real boundary.
+It runs `assertRecordedComparisonMatches` over the whole artifact and reads the
+ consolidation beside it,
+so it is the only entry point that exercises a retired terminal at all.
+Reading all of it through that function reports
+47 version 2 artifacts,
+271 comparison rows,
+271 of them under the retired relation spelling,
+11 consolidation rows under the retired terminal across 9 artifact files
+ spanning 4 entries,
+and zero refusals.
+
+The 11 rows and the 4 entries reconcile with the census this batch recorded
+ earlier.
+The distinct-slice count is smaller than 11,
+because `vub-run1-20260821` keeps a second copy of its artifacts and one entry
+ appears only in that copy.
+
+### The probe reproduced the defect it was checking
+
+The first run of that read reported zero legacy terminal rows while `rg` found
+ the string in four files.
+The probe asked for `artifact.consolidate.slices`.
+The artifact writes `artifact.consolidation.slices`.
+A wrong key on a JSON object returns `undefined`,
+`?? []` turns that into an empty array,
+and the count comes back zero with nothing raised anywhere.
+
+That is the same failure this batch renamed two fields to prevent,
+committed in the instrument built to measure it,
+and it was caught only because a second measurement disagreed.
+A count that reads as an answer is worth nothing without something independent
+ saying the same number.
