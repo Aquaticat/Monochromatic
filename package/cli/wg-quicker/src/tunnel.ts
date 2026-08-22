@@ -13,6 +13,7 @@ import {
 import { makeTempDir, } from './tempdir.ts';
 import { cleanup, } from './tunnel-cleanup.ts';
 import { linkExists, } from './tunnel-link.ts';
+import { installOpenSnitchEndpointAllowance, } from './opensnitch.ts';
 import { assertNoPolicyRoutingConflict, } from './policy-routing-conflict.ts';
 import { setupRoutes, } from './tunnel-route.ts';
 import {
@@ -300,6 +301,10 @@ async function upInner({ config, }: { readonly config: WireguardConfig; },): Pro
       interfaceName: iface,
     },);
     await applyPeerConfig({ config, },);
+    await installOpenSnitchEndpointAllowance({
+      interfaceName: iface,
+      endpointPorts: config.endpointPorts,
+    },);
     await addAddressesAndUp({ config, },);
     await setDns({ config, },);
     await setupRoutes({ config, },);

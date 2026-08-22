@@ -4,6 +4,7 @@ import { runAllowingFailure, } from './runner.ts';
 import { removeExemptRule, } from './tunnel-bypass.ts';
 import { removeKillSwitch, } from './tunnel-firewall.ts';
 import { linkExists, } from './tunnel-link.ts';
+import { removeOpenSnitchEndpointAllowance, } from './opensnitch.ts';
 import { removePolicyRules, } from './tunnel-route.ts';
 
 /**
@@ -25,6 +26,7 @@ export async function cleanup(
    * Interface whose state is removed.
    */
   const iface = config.interfaceName;
+  await removeOpenSnitchEndpointAllowance({ interfaceName: iface, },);
   await stopApplicationExemptions({
     interfaceName: iface,
     configured: config.exemptMark !== undefined,

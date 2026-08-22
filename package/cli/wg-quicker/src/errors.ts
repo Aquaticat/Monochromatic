@@ -76,6 +76,21 @@ export class BypassRouteError extends Error {
 }
 
 /**
+ * Error raised when OpenSnitch system-firewall configuration cannot be reconciled safely.
+ *
+ * @example
+ * ```ts
+ * throw new OpenSnitchConfigError('OpenSnitch firewall config is malformed.');
+ * ```
+ */
+export class OpenSnitchConfigError extends Error {
+  /**
+   * Stable error type name rendered by Node.
+   */
+  override name = 'OpenSnitchConfigError';
+}
+
+/**
  * Error raised when existing policy routing would override tunnel selection.
  *
  * @example
