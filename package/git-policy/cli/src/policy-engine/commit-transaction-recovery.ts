@@ -38,7 +38,6 @@ import {
   RECOVERY_TARGET_NOT_APPLICABLE,
   resolveCommitTransactionDirectory,
 } from './commit-transaction-recovery-target.ts';
-
 import {
   assertLandedCommit,
   assertOwnedLock,
@@ -48,6 +47,7 @@ import {
   parsePreparedJournal,
   parseRefUpdated,
 } from './commit-transaction-recovery-validation.ts';
+
 export { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 
 /**
