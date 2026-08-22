@@ -260,7 +260,9 @@ async function verifyInactiveOpenSnitchKernelState(
       `Cannot inspect nftables tables while OpenSnitch daemon is stopped: ${tables.stderr}`,
     );
   }
-  if (!tables.stdout.includes('table inet opensnitch',))
+  if (!tables
+    .stdout
+    .includes('table inet opensnitch',))
     return;
   /**
    * Existing stale OpenSnitch output chain.
