@@ -376,12 +376,18 @@ await describe({
         const controller = new AbortController();
         controller.abort();
 
+        /**
+         * Exactly the failure the transport raised, held so the assertion can prove
+         * THAT object propagated rather than a wrapper quoting its words.
+         */
+        const abortFailure = new Error('aborted',);
+
         await expect(
           callWith({
-            client: scriptedClient({ thrown: new Error('aborted',), },),
+            client: scriptedClient({ thrown: abortFailure, },),
             signal: controller.signal,
           },),
-        ).rejects.toThrow('aborted',);
+        ).rejects.toBe(abortFailure,);
       },
     },),
 
@@ -406,12 +412,19 @@ await describe({
         const controller = new AbortController();
         controller.abort();
 
+        /**
+         * Failure saying nothing about aborting, held by identity because the claim
+         * under test is that the SIGNAL decides: a wrapper mentioning these words
+         * would satisfy a wording assertion while breaking the contract.
+         */
+        const unrelatedFailure = new Error('connection reset',);
+
         await expect(
           callWith({
-            client: scriptedClient({ thrown: new Error('connection reset',), },),
+            client: scriptedClient({ thrown: unrelatedFailure, },),
             signal: controller.signal,
           },),
-        ).rejects.toThrow('connection reset',);
+        ).rejects.toBe(unrelatedFailure,);
       },
     },),
 
