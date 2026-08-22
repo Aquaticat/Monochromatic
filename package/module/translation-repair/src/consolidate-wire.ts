@@ -127,8 +127,19 @@ export type ConsolidateSubject = {
   /**
    * Whether the enclosing CHUNK's original is line-structured, decided by the
    * caller because a slice is too small a unit to decide it on.
+   *
+   * REQUIRED, UNLIKE THE TWO CONTEXTS ABOVE IT, and the difference is the
+   * whole reason this reads as it does. A slice genuinely may declare no
+   * names and hold no pictures, so a reader defaulting those is reading a
+   * real absence. Every slice is either line-structured or not, so an
+   * optional spelling here could only ever mean a caller forgot.
+   *
+   * ONE DID. The field and its reader were born together on 2026-08-21 and
+   * no writer ever arrived, so for a day every consolidating producer was
+   * told its passage was prose, verse included. An optional field cannot owe
+   * a writer; a required one can, and the type checker collects.
    */
-  readonly lineStructured?: boolean;
+  readonly lineStructured: boolean;
 };
 
 /**
@@ -261,7 +272,7 @@ export function buildConsolidateMessages(
    */
   const system = [
     CONSOLIDATE_RULES,
-    ((subject.lineStructured ?? false) ? TRANSLATE_LINE_STRUCTURE_RULE : ''),
+    (subject.lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : ''),
     CONSOLIDATE_REPLY_RULE,
   ]
     .filter(function isPresent(part,): boolean {

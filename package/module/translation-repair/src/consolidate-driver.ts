@@ -321,6 +321,16 @@ export async function consolidateDocument(
     },);
 
     /**
+     * Whether the line-structure rule governs this slice.
+     *
+     * READ ONCE, because four places below need this same answer: the sheet
+     * the producers are shown, the guard that reads their proposals, the key
+     * the settlement resumes under, and the wrap. Asking the set four times
+     * is how four answers drift into three.
+     */
+    const lineStructured = lineStructuredSlices.has(row.chunkIndex,);
+
+    /**
      * Slice as both halves take it.
      */
     const subject = {
@@ -329,6 +339,7 @@ export async function consolidateDocument(
       repairText: row.repairText,
       translateText: row.translateText,
       ballots: contest.ballots,
+      lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
     };
 
@@ -343,6 +354,7 @@ export async function consolidateDocument(
       translateText: row.translateText,
       standingText,
       ballots: contest.ballots,
+      lineStructured,
     },);
 
     /**
@@ -366,7 +378,6 @@ export async function consolidateDocument(
         roster: modelIds,
         subject,
         standingText,
-        lineStructured: lineStructuredSlices.has(row.chunkIndex,),
         signal,
         perCallTimeoutMs,
         l: dl,
@@ -380,7 +391,7 @@ export async function consolidateDocument(
         validity: produced.validity,
         producedFindings: produced.findings,
         standingText,
-        lineStructured: lineStructuredSlices.has(row.chunkIndex,),
+        lineStructured,
         signal,
         perCallTimeoutMs,
         l: dl,

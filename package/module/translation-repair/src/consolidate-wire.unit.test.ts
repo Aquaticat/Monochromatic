@@ -34,6 +34,7 @@ const bare: ConsolidateSubject = {
   repairText: 'The cat sleeps on the window sill.',
   translateText: 'The cat is napping on the ledge.',
   ballots: [],
+  lineStructured: false,
 };
 
 /**

@@ -69,6 +69,7 @@ const SUBJECT: ConsolidateSubject = {
   repairText: 'The cat slept on the window sill.',
   translateText: 'The cat is napping on the ledge.',
   ballots: [],
+  lineStructured: false,
 };
 
 /**

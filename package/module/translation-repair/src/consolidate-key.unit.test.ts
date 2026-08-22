@@ -61,6 +61,7 @@ const SLICE = {
   translateText: 'The cat had fallen asleep beside the window.',
   standingText: 'The cat fell asleep by the window.',
   ballots: [BALLOT,],
+  lineStructured: false,
 };
 
 await describe({
@@ -150,6 +151,32 @@ await describe({
       fn: async () => {
         expect(consolidateSliceKey(SLICE,),).not.toBe(
           consolidateSliceKey({ ...SLICE, incumbentText: '> The cat slept by the window.', },),
+        );
+      },
+    },),
+
+    it({
+      name: 'KEYS A PROSE SLICE EXACTLY AS IT DID BEFORE THE LINE-STRUCTURE MARK EXISTED, pinned to '
+        + 'the value the older code produced. The mark is APPENDED, and only where the rule governs, '
+        + 'so every consolidation settled before 2026-08-22 stays resumable instead of being re-bought '
+        + 'under a sheet identical to the one that settled it. Inserting the mark mid-material would '
+        + 'move every key and discard all of them, which is why this case pins a literal rather than '
+        + 'comparing two calls',
+      fn: async () => {
+        expect(consolidateSliceKey(SLICE,),).toBe(
+          '0b426ea013c2a90a122bbaa4a71b9b299cba39c4310b070887e4c4b70ddfdeee',
+        );
+      },
+    },),
+
+    it({
+      name: 'SEPARATES A LINE-STRUCTURED SLICE FROM A PROSE ONE, because the producer sheet carries '
+        + 'the rule against merging lines only where the rule governs. A settlement bought without '
+        + 'that rule answered a different question, so replaying it for a governed slice would hand '
+        + 'back a rendering nobody asked the right question about',
+      fn: async () => {
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({ ...SLICE, lineStructured: true, },),
         );
       },
     },),

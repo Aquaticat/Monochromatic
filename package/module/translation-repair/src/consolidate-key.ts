@@ -25,6 +25,20 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 export const CONSOLIDATE_CACHE_VERSION = 1;
 
 /**
+ * What a line-structured slice appends to its key material.
+ *
+ * APPENDED, NEVER INSERTED, and only when the rule governs. A prose slice
+ * therefore hashes exactly the material it hashed before this mark existed,
+ * so every prose consolidation already settled stays resumable. Only the
+ * governed slices, whose producer sheet genuinely gained a rule, are re-bought.
+ *
+ * NOT A CACHE VERSION BUMP, which would have been correct and wasteful: it
+ * would discard the prose settlements too, and they were bought under a sheet
+ * identical to the one they would be re-bought under.
+ */
+const LINE_STRUCTURED_KEY_MARK = 'line-structured';
+
+/**
  * Everything about this run that changes what the voices are ASKED.
  *
  * Without it a resumed slice could return a settlement reached by a different
@@ -93,11 +107,15 @@ export function consolidateRunShape(
  *
  * @param ballots - what the contest judges said, shown to the producers
  *
+ * @param lineStructured - whether the enclosing chunk is line-structured,
+ * which decides whether the producer sheet carries the rule against merging
+ * lines, and so decides what was bought
+ *
  * @returns Hash keying this slice's settlement
  *
  * @example
  * ```ts
- * const key = consolidateSliceKey({ runShape, sourceText, incumbentText, repairText, translateText, standingText, ballots, },);
+ * const key = consolidateSliceKey({ runShape, sourceText, incumbentText, repairText, translateText, standingText, ballots, lineStructured, },);
  * ```
  */
 export function consolidateSliceKey(
@@ -109,6 +127,7 @@ export function consolidateSliceKey(
     translateText,
     standingText,
     ballots,
+    lineStructured,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -117,6 +136,7 @@ export function consolidateSliceKey(
     readonly translateText: string;
     readonly standingText: string;
     readonly ballots: readonly LaneContestBallot[];
+    readonly lineStructured: boolean;
   },
 ): string {
   return hashContent({
@@ -130,6 +150,7 @@ export function consolidateSliceKey(
       translateText,
       standingText,
       ballots,
+      ...(lineStructured ? [LINE_STRUCTURED_KEY_MARK,] : []),
     ],),
   },);
 }
