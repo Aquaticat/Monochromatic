@@ -14338,15 +14338,36 @@ guidance that was never obtained.
 Treat every earlier "the advisor confirms" as self-generated reasoning, not as
 external review, and do not cite it as corroboration.
 
-CORRECTED 2026-08-22.
+CORRECTED TWICE, both times on 2026-08-22.
+The first correction replaced a false claim with another false claim, so read
+this paragraph and ignore the two it supersedes.
+
 As first committed, this section claimed the first genuine advisor call had
 happened at the point it was written.
-That claim was itself false: no advisor call had been made then either.
-The first genuine advisor call in this line of work came later, immediately
-before the `#163` guard was built, and it is the one whose four-point design the
-guard implements.
-The correction is recorded rather than amended away, because the false sentence
-was pushed and a reader of the history would otherwise carry it forward.
+That was false.
+The correction commit `d79d999c3` then claimed the first genuine call came
+"immediately before the `#163` guard was built, and it is the one whose
+four-point design the guard implements".
+That was false as well.
+No advisor call preceded the `#163` guard.
+The guard's design, including the four points that shaped it, is self-generated
+reasoning; it happens to be reasoning the measurements then supported, but it
+carries no external review and must not be cited as if it did.
+
+The first genuine advisor call in this line of work came AFTER Commit A of
+`#163` had landed as `39108d02c`, and its subject was Commit B rather than the
+guard.
+It is identifiable by what it produced, which no earlier text contains: the
+collision between a bare `target-far-longer` fault and `#155`'s own rule that
+keeping page-only content is correct.
+
+Two corrections in a row failed the same way, so the standing rule is stricter
+than "check before writing".
+Do not write that an advisor, subagent, or external model said anything unless
+that call appears in the current transcript.
+A recollection of having consulted one is not evidence that the call happened.
+Corrections are recorded rather than amended away, because the false sentences
+were pushed and a reader of the history would otherwise carry them forward.
 
 ## 2026-08-22, sweep complete: production pairing never manufactures a flag, and contamination outlives it
 
@@ -14421,3 +14442,97 @@ Six documents change baseline source between the two pairings, three each way.
     `#155` established, because `translate-validate.ts` and
     `consolidate-validity-floor.ts` are both size-blind and `#155` covers only
     the silent-original direction.
+
+## 2026-08-22, `#163` Commit A: the median landed, and the file's own history was wrong about why
+
+Commit `39108d02c`.
+`documentBaseline` now reads a document's expansion from the MIDDLE slice
+rather than from a pooled character aggregate, and slices whose sizes are
+implausible on their face are kept out of the set that sets the bar.
+
+### The comment in the file argued against the change, and it was stale
+
+`displacement-ratio.ts` carried a region comment headed "WHY A DOCUMENT'S OWN
+MEDIAN IS NOT THE STATISTIC", citing `shi_Yumiaoya`'s median of 0.76 as the
+failure that motivated pooling.
+That failure does not reproduce.
+Under both estimators `shi_Yumiaoya` falls back to the corpus reference,
+because the eligibility filter, which was added by a LATER change than the
+comment, removes its untranslated sections before either estimator sees them.
+The filter was doing the work the comment credited to pooling, and nothing had
+ever checked which of the two was responsible.
+The comment now records all three historical readings in order:
+median over all slices, pooled aggregate, median over the filtered set.
+
+Read this as a standing warning.
+A comment that names a concrete failure is evidence about the code AT THE TIME
+IT WAS WRITTEN, not about the code now.
+Re-run the cited failure before letting it veto a change.
+
+### What the exclusion buys, measured
+
+Excluding implausible slices from the baseline set moves 8 documents beyond
+what ratio tails alone would move, and flips 1 outright:
+`saurikissa` gaps to 0.87.
+That is why `SliceSize` gained required `sourceBlocks` and `targetBlocks`
+rather than staying a two-field character record, and why `sliceSizeOf` became
+the single site that counts both.
+Both corpus-run probes were repointed at it, so no caller hand-rolls the shape.
+
+Non-circularity holds and was checked rather than assumed:
+every predicate in `slice-implausible.ts` reads FIXED endpoints
+(`IMPLAUSIBLE_MIN_RATIO` 0.8, `IMPLAUSIBLE_MAX_RATIO` 10,
+`MAX_BLOCK_COUNT_GAP` 1) and never reads the baseline it helps compute.
+
+### Agreement and downstream effect
+
+Implementation against prototype: 89 of 89 exact agreement, 0 disagreements,
+re-confirmed after the barrel split with byte-identical output.
+
+Old build against new build, over the whole corpus:
+the baseline moves by more than 0.01 in 77 of 92 entries and its source flips
+in 7, but `relocationCandidates` changes in only 3 entries, +6 and -0.
+The mechanism was settled rather than inferred:
+no high slice is ever GAINED, `windward0032` loses high slice 17, and every
+gain is donor-side, because a higher baseline enlarges every ordinary slice's
+deficit.
+
+### Structural notes
+
+`translate-barrel.ts` hit 301 lines against the 300 limit.
+Fixed by extracting `displacement-barrel.ts`, NOT by disabling the rule and
+NOT by moving lines into whichever neighbouring file had room.
+
+`stylistic(chain-per-line)` rejected `sliceImplausibility({ slice, },).length`.
+Splitting the chain across lines did not satisfy it;
+naming an intermediate `const reasons` removed the chain and the finding.
+
+GFP performed on the exclusion test:
+removing `isPlausibleSlice` from the filter, rebuilding and running failed it
+with `actual: 'corpus-reference', expected: 'document'`.
+Restored with `git checkout --` and rebuilt green.
+The guard was committed BEFORE the removal, so the restore discarded nothing.
+
+Gate at the commit: lint 0 warnings and 0 errors, types exit 0, build exit 0,
+suite 527 PASS, 0 FAIL, exit 0.
+
+### Commit B is blocked on a collision, not on effort
+
+The plan was two named faults in `contest-ballot-wire.ts`, one per tail
+direction, following `#155`'s policy-line mechanism.
+The SHORTER direction is safe: a candidate at 0.4x its source is missing
+Chinese content whatever the archive did.
+The LONGER direction collides with `#155` itself.
+`CONTEST_POLICY` already tells judges that where the Chinese is silent rather
+than contradicting, KEEPING page-only content is correct.
+A candidate that preserves a long page-only region is far-longer against the
+Chinese AND is the right candidate, so a bare fault name would instruct the
+judge to penalise the exact behaviour `#155` protects.
+That is the shape of `#143`, a criterion licensing the wrong outcome.
+
+Two resolutions, to be chosen by measurement rather than taste:
+gate far-longer on the candidate also exceeding the ARCHIVE's ratio, or drop
+the fault label in that direction and give judges the three numbers plus a
+policy paragraph teaching the reading.
+The second is what `DNL` prefers, since a name that fires on correct
+preservation asserts a fault that is not one.
