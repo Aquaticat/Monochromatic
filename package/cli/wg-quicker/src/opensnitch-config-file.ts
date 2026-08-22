@@ -183,6 +183,9 @@ async function writeThroughWatchedInode(
     replacement,
     padding,
   ],);
+  /**
+   * Watched file descriptor retaining inode through write.
+   */
   await using handle = await open(
     path,
     'r+',
