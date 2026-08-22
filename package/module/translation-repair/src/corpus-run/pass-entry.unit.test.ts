@@ -291,9 +291,9 @@ function entryClient(
 }
 
 /**
- * Throwaway artifacts and cache directories for one case.
+ * Throwaway artifacts, publish and cache directories for one case.
  *
- * @returns Both directories, plus how to remove them
+ * @returns Every directory a settling entry writes into, plus how to remove them
  *
  * @example
  * ```ts
@@ -303,6 +303,7 @@ function entryClient(
 async function throwawayDirs(): Promise<
   {
     readonly artifactsDir: string;
+    readonly publishDir: string;
     readonly sliceCacheDir: string;
   } & AsyncDisposable
 > {
@@ -328,8 +329,24 @@ async function throwawayDirs(): Promise<
     artifactsDir,
     { recursive: true, },
   );
+  /**
+   * Root of the mirrored corpus tree, created here for the same reason the
+   * artifacts directory is: the PASS creates it before settling anything, so a
+   * case that left it out would be measuring how the publisher behaves against
+   * a missing root rather than how it publishes.
+   */
+  const publishDir = join(
+    root,
+    'fixed',
+  );
+  await mkdir(
+    publishDir,
+    { recursive: true, },
+  );
+
   return {
     artifactsDir,
+    publishDir,
     sliceCacheDir: join(
       root,
       'cache',
@@ -456,6 +473,7 @@ await describe({
           client: entryClient({ served, },),
           entry: ENTRY,
           artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -554,6 +572,7 @@ await describe({
             dirs.artifactsDir,
             'not-created',
           ),
+          publishDir: dirs.publishDir,
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -593,6 +612,7 @@ await describe({
             dirs.artifactsDir,
             'not-created',
           ),
+          publishDir: dirs.publishDir,
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -621,6 +641,7 @@ await describe({
           },),
           entry: ENTRY,
           artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -691,6 +712,7 @@ await describe({
             dirs.artifactsDir,
             'not-created',
           ),
+          publishDir: dirs.publishDir,
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -714,6 +736,7 @@ await describe({
           client: entryClient({ served: resumed, },),
           entry: ENTRY,
           artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -760,6 +783,7 @@ await describe({
             dirs.artifactsDir,
             'not-created',
           ),
+          publishDir: dirs.publishDir,
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
@@ -789,6 +813,7 @@ await describe({
               client: entryClient({ served: [], },),
               entry: CLEANUP_ENTRY,
               artifactsDir: dirs.artifactsDir,
+              publishDir: dirs.publishDir,
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,

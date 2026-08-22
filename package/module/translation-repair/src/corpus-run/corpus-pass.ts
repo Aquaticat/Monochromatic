@@ -24,6 +24,7 @@ import {
   type CorpusPair,
   settleEntry,
 } from './pass-entry.ts';
+import { FIXED_TREE_DIR, } from './publish-fixed.ts';
 import {
   assertArtifactsPlaceable,
   assertBuildGenerationResumable,
@@ -199,6 +200,27 @@ async function runCorpusPass(): Promise<void> {
   );
   await mkdir(
     artifactsDir,
+    { recursive: true, },
+  );
+
+  /**
+   * Root of the corpus tree this pass publishes its fixed pages into.
+   *
+   * BESIDE THE ARTIFACTS, under the same runs directory, so a tree carrying
+   * corpus wording inherits the property that keeps that wording safe: runs
+   * directories live outside this repository and are never committed. It also
+   * means a throwaway run publishes into a throwaway tree rather than over
+   * anything real.
+   *
+   * CREATED HERE rather than lazily at the first page, so a pass that settles
+   * no entry still leaves the empty tree it promised rather than nothing.
+   */
+  const publishDir = join(
+    runsDir,
+    FIXED_TREE_DIR,
+  );
+  await mkdir(
+    publishDir,
     { recursive: true, },
   );
 
@@ -506,6 +528,7 @@ async function runCorpusPass(): Promise<void> {
       client,
       entry,
       artifactsDir,
+      publishDir,
       sliceCacheDir,
       tip,
       pipelineDigest,

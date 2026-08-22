@@ -20,6 +20,7 @@ import { openConsolidateCache, } from './consolidate-cache-store.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
+import { publishFixedPage, } from './publish-fixed.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import {
   discardSliceCache,
@@ -121,6 +122,8 @@ export type CorpusPair = {
  *
  * @param artifactsDir - directory one JSON per settled entry is written into
  *
+ * @param publishDir - root of the mirrored corpus tree each fixed page is written into
+ *
  * @param entryCacheDir - this entry's own cache directory
  *
  * @param tip - repository head recorded into the artifact
@@ -144,6 +147,7 @@ async function runEntryPipeline(
     client,
     entry,
     artifactsDir,
+    publishDir,
     entryCacheDir,
     tip,
     pipelineDigest,
@@ -153,6 +157,7 @@ async function runEntryPipeline(
     readonly client: SyntheticClient;
     readonly entry: CorpusPair;
     readonly artifactsDir: string;
+    readonly publishDir: string;
     readonly entryCacheDir: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
@@ -463,6 +468,21 @@ async function runEntryPipeline(
      * a re-run reproduces the contradiction rather than losing it.
      */
     const tally = settledTallyLine({ artifact, },);
+
+    // BEFORE THE ARTIFACT, for the same reason the tally line is read before it,
+    // and for one more. A pass builds its skip set from the artifacts already on
+    // disk, so an entry whose artifact exists is never attempted again. Written
+    // second, a crash between the two writes would leave that entry done forever
+    // with no page ever produced; written first, every entry the pass calls
+    // settled has its page, by construction rather than by luck.
+    await publishFixedPage({
+      artifact,
+      slices: prepared.slices,
+      archiveText: entry.targetText,
+      entryId: entry.id,
+      publishDir,
+      l: tagged({ tag: entry.id, },),
+    },);
     await writeFileAtomic({
       path: join(
         artifactsDir,
@@ -522,6 +542,8 @@ async function runEntryPipeline(
  *
  * @param artifactsDir - directory one JSON per settled entry is written into
  *
+ * @param publishDir - root of the mirrored corpus tree each fixed page is written into
+ *
  * @param sliceCacheDir - root under which this entry claims its own cache
  * subdirectory
  *
@@ -545,6 +567,7 @@ export async function settleEntry(
     client,
     entry,
     artifactsDir,
+    publishDir,
     sliceCacheDir,
     tip,
     pipelineDigest,
@@ -554,6 +577,7 @@ export async function settleEntry(
     readonly client: SyntheticClient;
     readonly entry: CorpusPair;
     readonly artifactsDir: string;
+    readonly publishDir: string;
     readonly sliceCacheDir: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
@@ -577,6 +601,7 @@ export async function settleEntry(
     client,
     entry,
     artifactsDir,
+    publishDir,
     entryCacheDir,
     tip,
     pipelineDigest,

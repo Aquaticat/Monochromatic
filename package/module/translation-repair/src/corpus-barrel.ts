@@ -53,6 +53,12 @@ export {
   wouldShipTextPerSlice,
 } from './corpus-run/would-ship-text.ts';
 export {
+  FIXED_TREE_DIR,
+  fixedPagePath,
+  publishFixedPage,
+  shippableReplacements,
+} from './corpus-run/publish-fixed.ts';
+export {
   projectLanesV2,
   type ProjectedLanesV2,
 } from './corpus-run/artifact-v2-derive.ts';
