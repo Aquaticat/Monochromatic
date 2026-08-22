@@ -12,12 +12,14 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ArtifactParseError,
   KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   readSettledArtifact,
 } from '../dist/final/node/index.mjs';
@@ -94,7 +96,10 @@ await describe({
         + 'the version field is what says which generation wrote a file, and a reader that inferred a '
         + 'generation from shape would read the next generation as whichever old one it resembles',
       fn: async () => {
-        expect(function versionTwoShapeWithoutVersion() {
+        /**
+         * What versionTwoShapeWithoutVersion raised, read for its class as well as its wording.
+         */
+        const refusalOfVersionTwoShapeWithoutVersion = caught(function versionTwoShapeWithoutVersion() {
           readSettledArtifact({
             value: {
               id: 'CatEntry1',
@@ -115,7 +120,10 @@ await describe({
               comparison: [],
             },
           },);
-        },).toThrow('status',);
+        },);
+
+        expect(refusalOfVersionTwoShapeWithoutVersion,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfVersionTwoShapeWithoutVersion as Error).message,).toContain('status',);
       },
     },),
     it({
@@ -142,14 +150,20 @@ await describe({
          * so adding a generation does not quietly make this case vacuous.
          */
         const unknownVersion = Math.max(...KNOWN_ARTIFACT_SCHEMA_VERSIONS,) + 1;
-        expect(function laterGeneration() {
+        /**
+         * What laterGeneration raised, read for its class as well as its wording.
+         */
+        const refusalOfLaterGeneration = caught(function laterGeneration() {
           readSettledArtifact({
             value: {
               ...versionOneArtifact(),
               artifactSchemaVersion: unknownVersion,
             },
           },);
-        },).toThrow('artifactSchemaVersion',);
+        },);
+
+        expect(refusalOfLaterGeneration,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfLaterGeneration as Error).message,).toContain('artifactSchemaVersion',);
       },
     },),
     it({
@@ -186,9 +200,15 @@ await describe({
         'REFUSES anything that is not a record at all, at the outermost path, so a file holding a bare '
         + 'string reports its shape rather than a missing field',
       fn: async () => {
-        expect(function notARecord() {
+        /**
+         * What notARecord raised, read for its class as well as its wording.
+         */
+        const refusalOfNotARecord = caught(function notARecord() {
           readSettledArtifact({ value: `"${ARCHIVE_NAP}"`, },);
-        },).toThrow('artifact',);
+        },);
+
+        expect(refusalOfNotARecord,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNotARecord as Error).message,).toContain('artifact',);
       },
     },),
   ],

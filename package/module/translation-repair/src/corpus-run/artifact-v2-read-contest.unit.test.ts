@@ -12,6 +12,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -19,6 +20,7 @@ import {
 
 import {
   type ArtifactComparisonRowV2,
+  ArtifactParseError,
   parseLaneSelectionV2,
 } from '../../dist/final/node/index.mjs';
 
@@ -261,13 +263,19 @@ await describe({
     it({
       name: 'REFUSES a kind this version does not describe, rather than reading it as pending',
       fn: async () => {
-        expect(() => {
+        /**
+         * What parseLaneSelectionV2 raised, read for its class as well as its wording.
+         */
+        const refusalOfParseLaneSelectionV2 = caught(() => {
           parseLaneSelectionV2({
             value: { kind: 'shipped-repair', },
             comparison: MIXED,
             path: SELECTION_PATH,
           },);
-        },).toThrow('CatEntry1.laneSelection.kind',);
+        },);
+
+        expect(refusalOfParseLaneSelectionV2,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfParseLaneSelectionV2 as Error).message,).toContain('CatEntry1.laneSelection.kind',);
       },
     },),
     it({

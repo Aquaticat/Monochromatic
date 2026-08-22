@@ -14,6 +14,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -22,6 +23,7 @@ import {
 import {
   type ArtifactDeliveryRowV2,
   type ArtifactEvidenceRowV2,
+  ArtifactParseError,
   assertEvidenceMatchesLedger,
   assertRowsCoherent,
 } from '../../dist/final/node/index.mjs';
@@ -89,7 +91,10 @@ await describe({
         'REFUSES a row that reports a missing passage where the archive holds wording, naming the row`s '
         + 'position so a reader of a long ledger can find it',
       fn: async () => {
-        expect(() => {
+        /**
+         * What assertRowsCoherent raised, read for its class as well as its wording.
+         */
+        const refusalOfAssertRowsCoherent = caught(() => {
           assertRowsCoherent({
             ledger: [
               RETAINED_ROW,
@@ -101,7 +106,10 @@ await describe({
             ],
             path: LANE_PATH,
           },);
-        },).toThrow('lanes.translate.delivery[1]',);
+        },);
+
+        expect(refusalOfAssertRowsCoherent,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfAssertRowsCoherent as Error).message,).toContain('lanes.translate.delivery[1]',);
       },
     },),
     it({
@@ -160,13 +168,19 @@ await describe({
           },
         ];
 
-        expect(() => {
+        /**
+         * What assertEvidenceMatchesLedger raised, read for its class as well as its wording.
+         */
+        const refusalOfAssertEvidenceMatchesLedger = caught(() => {
           assertEvidenceMatchesLedger({
             evidence,
             ledger: [RETAINED_ROW,],
             path: LANE_PATH,
           },);
-        },).toThrow('decided rather than incumbent-fallback',);
+        },);
+
+        expect(refusalOfAssertEvidenceMatchesLedger,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfAssertEvidenceMatchesLedger as Error).message,).toContain('decided rather than incumbent-fallback',);
       },
     },),
     it({
@@ -205,13 +219,19 @@ await describe({
           },
         ];
 
-        expect(() => {
+        /**
+         * What assertEvidenceMatchesLedger raised, read for its class as well as its wording.
+         */
+        const refusalOfAssertEvidenceMatchesLedger = caught(() => {
           assertEvidenceMatchesLedger({
             evidence,
             ledger,
             path: LANE_PATH,
           },);
-        },).toThrow('both name decided, and they differ in what that member carries',);
+        },);
+
+        expect(refusalOfAssertEvidenceMatchesLedger,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfAssertEvidenceMatchesLedger as Error).message,).toContain('both name decided, and they differ in what that member carries',);
       },
     },),
   ],
