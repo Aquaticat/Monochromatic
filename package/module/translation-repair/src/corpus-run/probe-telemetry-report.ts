@@ -139,6 +139,24 @@ export function reportProbeTelemetry(
     } degradedRosterRegions=${String(summary.degradedRosterRegions,)}`,
   );
 
+  // NOT GATED ON `entries` AS WELL, and the redundant guard should not be
+  // added back. `resolvePool` raises EmptyPoolError before any artifact is
+  // read when generation filtering leaves nothing, so a report reaching this
+  // line has already read at least one artifact. A zero here therefore says
+  // something about what those artifacts hold, never that none were found.
+  if (gathered.repairShippedRecords === 0)
+    console.log(
+      'NOTE repairShippedRecords=0 means no artifact read here carries a '
+        + 'repair-lane record that lane applied, so every PROBE and CLAIMS '
+        + 'figure above is zero by construction rather than by measurement. '
+        + 'majorityIntroduced=0 is NOT evidence the probe cleared anything: it '
+        + 'had nothing to look at. Read editorOffered on the ROSTER line to '
+        + 'tell the two cases apart, since it counts slices the editor was '
+        + 'asked to repair. Above zero there, the lane was asked and nothing it '
+        + 'produced shipped, which is worth a look; at zero, the critics filed '
+        + 'nothing to repair and this run is quiet rather than clean.',
+    );
+
   /**
    * Summary over the naturalness lane's own rewrites.
    *
