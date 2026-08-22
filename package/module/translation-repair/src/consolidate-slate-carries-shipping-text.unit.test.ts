@@ -1,5 +1,6 @@
 /**
- * Tests for wrapping consolidation proposals before the slate is built.
+ * Tests for what the consolidation stage puts on the slate once proposals are
+ * wrapped.
  *
  * THE DEFECT THIS FILE EXISTS TO STOP is both deciders approving bytes the run
  * then changes. `wrapConsolidation` used to be the only wrap on this path, and
@@ -8,22 +9,20 @@
  * the two most recent runs of the band pair's six entries, 15 of the 16
  * consolidations that shipped came back from that wrap altered.
  *
- * WHAT THIS FILE COVERS is the wrapper alone, as a function. What the STAGE does
- * with it is `consolidate-slate-carries-shipping-text.unit.test.ts`, and the
- * two are apart for a diagnostic reason rather than a tidiness one: the runner
- * abandons a whole FILE once a describe in it fails, so end-to-end cases sharing
- * a file with unit cases go unrun exactly when something has broken and their
- * answer matters most.
+ * DRIVEN THROUGH `settleConsolidation` RATHER THAN THE WRAPPER, which is the
+ * whole reason this file is separate from `consolidate-proposal-wrap.unit.test.ts`.
+ * A wrapper that returns the right array proves nothing about a stage that never
+ * calls it, and the runner abandons a file once a describe in it fails, so these
+ * cases would go unrun exactly when a unit case had broken.
  *
- * THE INVARIANT BOTH FILES SERVE: a candidate on the slate is the text that
- * ships if it wins. Proposals arrive wrapped, the incumbent arrives untouched,
- * and a governed slice arrives exactly as its producers wrote it.
+ * THE INVARIANT EVERY CASE HERE SERVES: a candidate on the slate is the text
+ * that ships if it wins. Proposals arrive wrapped, the incumbent arrives
+ * untouched, and a governed slice arrives exactly as its producers wrote it.
  *
  * Fixtures are cat-themed invention. No corpus content appears here.
  *
  * @module
  */
-
 import {
   describe,
   expect,
@@ -400,49 +399,133 @@ function gateBallot({ choice, }: { readonly choice: string; },): string {
 }
 
 await describe({
-  name: wrapConsolidationProposals.name,
+  name: `${settleConsolidation.name} over wrapped proposals`,
   children: [
     it({
-      name: 'REWRITES A FLAT PROPOSAL INTO THE LINES IT WOULD SHIP ON, and leaves a governed slice\'s '
-        + 'proposals exactly as their producer wrote them. Both halves in one case because the '
-        + 'second is what makes the first evidence: a wrapper that ran unconditionally would '
-        + 'satisfy the first just as well',
+      name: 'BUYS NO SLATE ROUND AND NO GATE ROUND WHEN EVERY PROPOSAL IS ONLY A RE-WRAPPING of the '
+        + 'text already standing. Wrapped before the slate they become that text exactly, the '
+        + 'candidate dedup folds them into the incumbent, and a slate holding the incumbent alone '
+        + 'settles unjudged',
       fn: async () => {
-        const voices = ROSTER.map(function toVoice(modelId,) {
-          return voiceOf({ modelId, translation: FRESH, },);
+        const { settled, served, } = await settleWith({
+          proposals: [REWRAPPING, REWRAPPING, REWRAPPING,],
+          judgeReply: judgeBallot({ best: 1, },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
         },);
 
-        const ungoverned = wrapConsolidationProposals({ voices, lineStructured: false, },);
-        const governed = wrapConsolidationProposals({ voices, lineStructured: true, },);
+        // The fixture's premise, asserted rather than trusted: this proposal
+        // and the standing text differ only in where the lines break.
+        expect(wrapReplacementText({ text: REWRAPPING, },),).toBe(STANDING,);
+        expect(REWRAPPING,).not
+          .toBe(STANDING,);
 
-        // The wrap must actually move this fixture, or neither half means
-        // anything. That is this case's own positive control.
-        expect(wrapReplacementText({ text: FRESH, },),).not
-          .toBe(FRESH,);
+        expect(served.judge,).toBe(0,);
+        expect(served.gate,).toBe(0,);
+        expect(settled.terminal,).toBe('slate-unjudged-standing',);
+        expect(settled.text,).toBe(STANDING,);
+      },
+    },),
 
-        expect(ungoverned.every(function carriesWrapped(voice,): boolean {
-          return voice.value
-            .translation === wrapReplacementText({ text: FRESH, },);
-        },),).toBe(true,);
+    it({
+      name: 'BUYS BOTH ROUNDS FOR THAT SAME PROPOSAL WHEN THE VERSE RULE GOVERNS THE SLICE, which is '
+        + 'what makes the case above evidence of the wrap rather than of the dedup. The proposal '
+        + 'reaches the judges as one line against a standing text of two, so nothing collapses',
+      fn: async () => {
+        const { served, judgeSheets, } = await settleWith({
+          proposals: [REWRAPPING, REWRAPPING, REWRAPPING,],
+          lineStructured: true,
+          judgeReply: judgeBallot({ best: 0, },),
+          gateReply: gateBallot({ choice: 'standing', },),
+        },);
 
-        expect(governed.every(function carriesEmitted(voice,): boolean {
-          return voice.value
-            .translation === FRESH;
+        expect(served.judge,).toBeGreaterThan(0,);
+        expect(judgeSheets.some(function carriesEmitted(sheet,): boolean {
+          return sheet.includes(asSent({ text: REWRAPPING, },),);
         },),).toBe(true,);
       },
     },),
 
     it({
-      name: 'HANDS BACK THE VERY ARRAY IT WAS GIVEN FOR A GOVERNED SLICE, by identity rather than '
-        + 'rebuilt. A verse slice must reach the slate as it did before this existed, and an '
-        + 'equal-but-rebuilt array would let a later edit change what governed slices are shown '
-        + 'while every value assertion still passed',
+      name: 'SHOWS THE SLATE JUDGES THE WRAPPED RENDERING AND NOT THE LINE THE PRODUCER EMITTED, '
+        + 'which is the whole point: the judges were reading text the run then changed on the way '
+        + 'out, on 15 of the 16 consolidations that shipped across the band pair\'s two most '
+        + 'recent runs',
       fn: async () => {
-        const voices = ROSTER.map(function toVoice(modelId,) {
-          return voiceOf({ modelId, translation: FRESH, },);
+        const { judgeSheets, } = await settleWith({
+          proposals: [FRESH,],
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              proposals: [FRESH,],
+              incumbentText: STANDING,
+              lineStructured: false,
+              wanted: wrapReplacementText({ text: FRESH, },),
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
         },);
 
-        expect(wrapConsolidationProposals({ voices, lineStructured: true, },),).toBe(voices,);
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+
+        expect(judgeSheets.some(function carriesWrapped(sheet,): boolean {
+          return sheet.includes(asSent({ text: wrapReplacementText({ text: FRESH, },), },),);
+        },),).toBe(true,);
+
+        expect(judgeSheets.some(function carriesEmitted(sheet,): boolean {
+          return sheet.includes(asSent({ text: FRESH, },),);
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SHIPS THE WINNER THE DECIDERS READ, BYTE FOR BYTE, so the shipping wrap has nothing left '
+        + 'to correct and REFUSES to report a rewrap. A settlement recording rewrapped true after '
+        + 'this change means a proposal reached the slate unwrapped',
+      fn: async () => {
+        const { settled, } = await settleWith({
+          proposals: [FRESH,],
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              proposals: [FRESH,],
+              incumbentText: STANDING,
+              lineStructured: false,
+              wanted: wrapReplacementText({ text: FRESH, },),
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+        },);
+
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.rewrapped,).toBe(false,);
+        expect(settled.text,).toBe(wrapReplacementText({ text: FRESH, },),);
+      },
+    },),
+
+    it({
+      name: 'STILL DEMOTES A RE-WRAPPING OF UNWRAPPED ARCHIVE WORDING, and buys both rounds to do it. '
+        + 'This is the residue the pre-slate wrap does NOT cover and the reason wrapConsolidation '
+        + 'keeps its standingAsWritten key: where a lane contest settled on the incumbent, what '
+        + 'stands is the archive\'s own wording, which nothing has ever wrapped, so no wrapped '
+        + 'proposal can collapse into it',
+      fn: async () => {
+        const { settled, served, } = await settleWith({
+          proposals: [STANDING,],
+          standingText: REWRAPPING,
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              proposals: [STANDING,],
+              incumbentText: REWRAPPING,
+              lineStructured: false,
+              wanted: STANDING,
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+        },);
+
+        expect(served.judge,).toBeGreaterThan(0,);
+        expect(served.gate,).toBeGreaterThan(0,);
+        expect(settled.terminal,).toBe('wrap-erased-difference',);
+        expect(settled.demoted,).toBe(true,);
+        expect(settled.text,).toBe(REWRAPPING,);
       },
     },),
   ],
