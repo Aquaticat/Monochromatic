@@ -158,3 +158,53 @@ export function parsePositiveInt(
   }
   return parsed;
 }
+
+/**
+ * Extracts UDP destination port from one WireGuard peer endpoint.
+ *
+ * Hostnames and IPv4 use `host:port`;
+ * IPv6 must use WireGuard's bracketed `[address]:port` form.
+ *
+ * @param value - Comment-stripped peer endpoint value.
+ *
+ * @returns Valid UDP port from endpoint.
+ *
+ * @throws {@link ConfigError} when endpoint lacks valid host or port.
+ *
+ * @example
+ * ```ts
+ * parseEndpointPort({ value: '[2001:db8::1]:51820' });
+ * ```
+ */
+export function parseEndpointPort(
+  { value, }: { readonly value: string; },
+): number {
+  /**
+   * Final colon separates host from port for every valid endpoint form.
+   */
+  const separator = value.lastIndexOf(':',);
+  if ((separator <= 0) || (separator === value.length - 1))
+    throw new ConfigError(`Invalid \`Endpoint' value \`${value}': expected host:port`,);
+  /**
+   * Host section before final separator.
+   */
+  const host = value.slice(
+    0,
+    separator,
+  );
+  if (host.includes(':',) && ((!host.startsWith('[',)) || (!host.endsWith(']',)))) {
+    throw new ConfigError(
+      `Invalid \`Endpoint' value \`${value}': IPv6 address must use [address]:port`,
+    );
+  }
+  /**
+   * Validated positive port candidate.
+   */
+  const port = parsePositiveInt({
+    key: 'Endpoint port',
+    value: value.slice(separator + 1,),
+  },);
+  if (port > 65_535)
+    throw new ConfigError(`Invalid \`Endpoint' value \`${value}': port exceeds 65535`,);
+  return port;
+}

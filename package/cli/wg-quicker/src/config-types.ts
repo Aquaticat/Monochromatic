@@ -58,6 +58,11 @@ export type WireguardConfig = {
   readonly exemptMark?: number;
 
   /**
+   * Distinct UDP destination ports from peer `Endpoint` values.
+   */
+  readonly endpointPorts: readonly number[];
+
+  /**
    * Peer-scoped source-file directives awaiting optional expansion.
    */
   readonly allowedFromFiles: readonly AllowedFromFiles[];

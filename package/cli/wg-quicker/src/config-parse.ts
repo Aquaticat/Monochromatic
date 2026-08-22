@@ -3,6 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   isIpLiteral,
   parseAllowedFromFiles,
+  parseEndpointPort,
   parsePositiveInt,
   stripComment,
 } from './config-parse-values.ts';
@@ -110,6 +111,11 @@ type ParseAcc = {
    * Accumulated `ExemptMark` value.
    */
   exemptMark?: number;
+
+  /**
+   * Accumulated peer endpoint UDP ports.
+   */
+  endpointPorts: number[];
 
   /**
    * Accumulated peer-scoped `AllowedIPsFromFiles` directives.
@@ -395,6 +401,8 @@ function processLine(
     value,
   },))
     return;
+  if (acc.inPeer && (lower === 'endpoint'))
+    acc.endpointPorts.push(parseEndpointPort({ value, },),);
   if (acc.inInterface) {
     /**
      * Index of the first key/value separator in the raw line.
@@ -472,6 +480,7 @@ export function parseConfigText(
     preDown: [],
     postDown: [],
     allowedFromFiles: [],
+    endpointPorts: [],
     wgLines: [],
     inInterface: false,
     inPeer: false,
@@ -499,6 +508,7 @@ export function parseConfigText(
     ...(acc.mtu === undefined ? {} : { mtu: acc.mtu, }),
     ...(acc.table === undefined ? {} : { table: acc.table, }),
     ...(acc.exemptMark === undefined ? {} : { exemptMark: acc.exemptMark, }),
+    endpointPorts: [...new Set(acc.endpointPorts,),],
     allowedFromFiles: acc.allowedFromFiles,
     preUp: acc.preUp,
     postUp: acc.postUp,

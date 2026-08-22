@@ -86,6 +86,62 @@ await describe({
 
         //endregion Interface key parsing
 
+        //region Peer endpoint parsing
+
+        it({
+          name: 'collects distinct endpoint ports across hostname IPv4 and bracketed IPv6 peers',
+          fn: async () => {
+            const config = parseConfigText({
+              interfaceName: 'wg0',
+              text: [
+                '[Interface]',
+                'PrivateKey = aaaaa',
+                '[Peer]',
+                'Endpoint = vpn.example:2049',
+                '[Peer]',
+                'Endpoint = 192.0.2.1:2049',
+                '[Peer]',
+                'Endpoint = [2001:db8::1]:51820 # transport',
+              ].join('\n',),
+            },);
+            expect(config.endpointPorts,).toEqual([2_049, 51_820,],);
+            expect(config.wgConfig,).toContain('Endpoint = vpn.example:2049',);
+            expect(config.wgConfig,).toContain('Endpoint = [2001:db8::1]:51820 # transport',);
+          },
+        },),
+
+        ...[
+          'vpn.example',
+          ':51820',
+          '2001:db8::1:51820',
+          'vpn.example:0',
+          'vpn.example:65536',
+          'vpn.example:https',
+        ].map(function invalidEndpoint(value,) {
+          return it({
+            name: `rejects invalid endpoint ${value}`,
+            fn: async () => {
+              expect(() => parseConfigText({
+                interfaceName: 'wg0',
+                text: ['[Interface]', 'PrivateKey = aaaaa', '[Peer]', `Endpoint = ${value}`,].join('\n',),
+              },),).toThrow('Endpoint',);
+            },
+          },);
+        },),
+
+        it({
+          name: 'does not collect Endpoint outside a peer section',
+          fn: async () => {
+            const config = parseConfigText({
+              interfaceName: 'wg0',
+              text: ['[Interface]', 'Endpoint = misplaced.example:51820',].join('\n',),
+            },);
+            expect(config.endpointPorts,).toEqual([],);
+          },
+        },),
+
+        //endregion Peer endpoint parsing
+
         //region wgConfig reconstruction
 
         it({
