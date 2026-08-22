@@ -17,13 +17,13 @@ import {
   reconcileOpenSnitchConfig,
   renderOpenSnitchConfig,
 } from './opensnitch-config-tree.ts';
-
-export { OPENSNITCH_CONFIG_ENVIRONMENT, } from './opensnitch-config-file.ts';
 import { runAllowingFailure, } from './runner.ts';
 import {
   bypassRuntimeDirectory,
   bypassStateKey,
 } from './tunnel-bypass-path.ts';
+
+export { OPENSNITCH_CONFIG_ENVIRONMENT, } from './opensnitch-config-file.ts';
 
 /**
  * Module logger for OpenSnitch system-firewall integration.
