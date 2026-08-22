@@ -2507,3 +2507,76 @@ and compares that against the captured files.
 `slate-kept-standing` is reported as ambiguous rather than counted,
 because whether it persists turns on the decision behind it,
 which is the field the artifact does not carry.
+
+## The gate's evidence fields are not a second opinion, measured
+
+`#164` was opened on a disagreement:
+across the 37 gated slice-instances of runs 6 to 9,
+the ballots name the consolidation faulty more often than the standing text at five of them,
+and at two the gate shipped the consolidation anyway.
+The task asked whether the evidence is right before anything acts on it.
+
+It is not, and the reason is structural rather than a question about any particular slice.
+
+### What the evidence field actually is
+
+`GateBallot` records `unsupported` and `dropped` as lists of RENDERING NAMES,
+not as findings.
+A judge either names a rendering as adding something the original does not support,
+or as omitting something it says,
+or does not name it.
+The raw wording is kept separately in `unsupportedRaw` and `droppedRaw`.
+
+So a ballot naming BOTH renderings faulty adds one to each side of a count of renderings named faulty.
+It cannot move a comparison of the two counts.
+Every differential comes from the asymmetric ballots.
+
+### Two measurements over all four runs
+
+Of 217 gate ballots across runs 6 to 9:
+
+-   106 name neither rendering faulty.
+-   35 name both, and therefore discriminate nothing.
+-   63 name only the standing text faulty.
+-   13 name only the consolidation faulty.
+
+Read over the population, the evidence favours the consolidation by nearly five to one.
+The five disagreeing slices are local inversions of that, not a trend it hides.
+
+The second measurement is the one that settles it.
+Of the 76 asymmetric ballots, 74 name faulty exactly the rendering they voted AGAINST.
+Two do not.
+
+The evidence field agrees with the ballot's own choice 97 percent of the time.
+It is a restatement of the vote, not a second opinion about the text.
+Counting it beside the vote counts the same judge twice.
+
+### What the five disagreements turn out to be
+
+Every disagreement is one or two ballots wide:
+`lintong#2` and `Weideriche_#0` in run 8 by one, `Zha_Ke#1` in run 8 by two,
+`Zha_Ke#1` and `Acheron#0` in run 9 by one.
+
+At `lintong#2` the panel was two for the consolidation, one for the standing text and one for neither,
+and the single asymmetric evidence ballot is the one standing vote, naming the rendering it voted against.
+At `Weideriche_#0` the panel was five to one, and the disagreement is again the single dissenting vote.
+
+Calling that "the panel's evidence points the other way" describes what every majority vote looks like from the minority.
+
+### Decided: nothing weighs on this signal
+
+No refusal, no ballot weighting, no surfacing.
+A mechanism built on this field would act on the dissenting vote a second time,
+under the appearance of independent evidence,
+and would cost the slices where the same field favours the consolidation by 63 ballots to 13.
+
+The genuine case the task hypothesised does exist and is rare:
+two ballots in 217 name a fault in the rendering they nonetheless preferred.
+That is the legitimate reading of a minor fault against a larger gain,
+and at that rate it needs no machinery.
+
+WHAT REMAINS OPEN, and is a different question:
+`unsupportedRaw` and `droppedRaw` carry the judge's own wording rather than a rendering name,
+so they may carry content the name lists cannot.
+Nothing reads them either.
+Whether they are worth reading is not answered here.
