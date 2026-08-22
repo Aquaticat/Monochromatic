@@ -2916,8 +2916,8 @@ those consumers cannot read a current artifact at all.
 
 Every artifact the current pipeline has written carries `artifactSchemaVersion: 2`.
 Across every run directory under the agent scratch root,
-24 of 24 are version 2,
-and 0 of 24 carry a top-level `issues` array.
+every settled artifact is version 2 and none carries a top-level `issues` array;
+the count was 24 when measured and 25 once `Zha_Ke` settled.
 
 `artifact-probe-read.ts` reads `artifact.issues`,
 and filters each record on `record.repairDisposition === SHIPPED_DISPOSITION`.
@@ -2928,9 +2928,11 @@ whose lane payload is `lanes.repair.delivery[]` with a nested `delivery.kind`.
 
 Version 1 artifacts do carry both fields,
 which is the positive control this claim needs:
-a sweep of the older run payload found ten artifacts carrying `issues` arrays,
-the largest with 77 records and the smallest with none,
-each with `artifactSchemaVersion` absent.
+an uncapped sweep of every artifact directory under the agent scratch root found
+ 164 distinct version 1 artifacts carrying `issues` arrays,
+the largest with 405 records.
+The raw file count is 492,
+because three identical worktree-copy payloads hold the same run.
 The reader was never broken.
 The artifact moved out from under it.
 
@@ -3163,3 +3165,37 @@ Cost counted rather than guessed:
 and the artifact schema and its version 2 reader move with it.
 
 Queued behind the source freeze.
+
+## The order the frozen queue lands in
+
+Five tasks are queued behind the source freeze,
+and three of them change the same artifact contract.
+Landing them one at a time would migrate the schema three times,
+and would write `#166`'s shipped-text reader against a terminal vocabulary
+ `#165` is about to change.
+
+The order,
+decided rather than left to whichever is picked up first.
+
+One coordinated schema change lands first,
+bundling `#165` and `#170` and any field rename `#166`'s port needs.
+`#165` splits `slate-kept-standing` into three terminals.
+`#170` renames `comparison[].verdict`,
+which collides with the contest field of the same name.
+Both touch the version 2 reader and its guards,
+so they share one migration and one set of absence rules for older artifacts.
+
+`#166`'s port lands second,
+against the vocabulary that change leaves behind.
+It carries the shipped-text-per-slice reader,
+the renaming of every consumer implying a page-level claim,
+and the zero-denominator refusal.
+Writing it first would bind it to terminals that no longer exist.
+
+`#167` and `#168` are independent of all of that and land in any order.
+`#167` bounds the semantic wrap away from line-structured slices.
+`#168` lowers the transport ceiling to 7 MiB.
+Neither reads the artifact contract.
+
+Nothing here starts before run 2 finishes,
+which is `#138`'s deliverable and the only thing that lifts the freeze.
