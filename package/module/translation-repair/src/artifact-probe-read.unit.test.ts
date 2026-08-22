@@ -13,7 +13,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactDeliveryRowV2,
   ArtifactParseError,
+  compareLanesV2,
   readArtifactProbe,
 } from '../dist/final/node/index.mjs';
 
@@ -139,6 +141,199 @@ function catRecord(
   };
 }
 
+/**
+ * Original of the slice the lanes work on.
+ */
+const SOURCE_NAP = '猫猫在窗台上睡觉。';
+
+/**
+ * Archive's own English for it.
+ */
+const ARCHIVE_NAP = 'The cat sleeps on the sill.';
+
+/**
+ * Wording the translate lane decided for it.
+ */
+const FRESH_NAP = 'The cat naps on the windowsill.';
+
+/**
+ * Identity a preparation gives itself, checked for SYNTAX only.
+ */
+const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
+
+/**
+ * One lane's delivery ledger over the single slice these fixtures carry.
+ *
+ * @param shippedText - wording this lane delivered
+ *
+ * @param delivery - what it did to get there
+ *
+ * @returns One row, which is the whole ledger here
+ *
+ * @example
+ * \`\`\`ts
+ * const rows = catLedger({ shippedText: ARCHIVE_NAP, delivery: 'incumbent-retained', },);
+ * \`\`\`
+ */
+function catLedger(
+  {
+    shippedText,
+    delivery,
+  }: {
+    readonly shippedText: string;
+    readonly delivery: string;
+  },
+): readonly ArtifactDeliveryRowV2[] {
+  return [
+    {
+      chunkIndex: 0,
+      sourceText: SOURCE_NAP,
+      incumbentKind: 'present',
+      incumbentText: ARCHIVE_NAP,
+      outcome: {
+        kind: 'decided',
+        acceptedText: shippedText,
+      },
+      shippedText,
+      delivery: { kind: delivery, },
+    },
+  ] as readonly ArtifactDeliveryRowV2[];
+}
+
+/**
+ * One whole version 2 artifact carrying this case's issue records.
+ *
+ * WHY EVERY FIXTURE HERE IS A WHOLE ARTIFACT and not the bare
+ * \`{ id, issues }\` these cases used to pass: the records moved into the repair
+ * lane at version 2, and \`readArtifactProbe\` now reaches them through the
+ * version 2 parser rather than by naming a root key that no longer exists. That
+ * parser enforces exact top-level keys, so a fixture cannot be patched into
+ * shape one field at a time; it is a version 2 artifact or it is refused.
+ *
+ * The envelope around \`issues\` is inert for every case here. Version 2 fixes
+ * the shape of a lane, not the shape of a result, so the records inside
+ * participate in no cross-check and each case still varies only its own records.
+ *
+ * @param id - entry this artifact is about
+ *
+ * @param issues - repair lane's issue records, empty when the lane filed none
+ *
+ * @returns Artifact as JSON
+ *
+ * @example
+ * \`\`\`ts
+ * const artifact = probeArtifact({ id: 'Kitten', issues: [], },);
+ * \`\`\`
+ */
+function probeArtifact(
+  {
+    id,
+    issues = [],
+  }: {
+    readonly id: string;
+    readonly issues?: readonly unknown[];
+  },
+): Record<string, unknown> {
+  /**
+   * Repair lane's rows, named so the comparison is derived from the same
+   * ledger the lane carries rather than from a second copy of it.
+   */
+  const repairDelivery = catLedger({
+    shippedText: ARCHIVE_NAP,
+    delivery: 'incumbent-retained',
+  },);
+
+  /**
+   * Translate lane's rows, on the same footing.
+   */
+  const translateDelivery = catLedger({
+    shippedText: FRESH_NAP,
+    delivery: 'replacement-shipped',
+  },);
+  return {
+    artifactSchemaVersion: 2,
+    id,
+    tip: 'a'.repeat(40,),
+    pipelineDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,
+    corpusSha: 'b'.repeat(40,),
+    callConfig: {
+      roster: ['Tabby',],
+      retries: 2,
+    },
+    durationMs: 40,
+    timestamp: '2026-08-16T21:00:00.000Z',
+    preparation: {
+      identity: PREPARATION_IDENTITY,
+      sliceCount: 1,
+      sourceChars: 20,
+      targetChars: 30,
+      sourceBytes: 45,
+      alignmentPairCount: 1,
+      alignmentFindings: [],
+    },
+    lanes: {
+      repair: {
+        result: {
+          repairedText: ARCHIVE_NAP,
+          status: 'unchanged',
+          issues,
+          findings: [],
+          chunkCritics: [],
+          sliceCount: 1,
+          shippedChunkIndices: [],
+          withdrawnChunkIndices: [],
+          sliceTexts: [
+            {
+              chunkIndex: 0,
+              incumbentKind: 'present',
+              incumbentText: ARCHIVE_NAP,
+              outcome: {
+                kind: 'decided',
+                acceptedText: ARCHIVE_NAP,
+              },
+            },
+          ],
+        },
+        delivery: repairDelivery,
+      },
+      translate: {
+        result: {
+          translatedText: FRESH_NAP,
+          sliceCount: 1,
+          changedSliceCount: 1,
+          refusedSliceCount: 0,
+          withdrawnSliceCount: 0,
+          shippedChunkIndices: [0,],
+          withdrawnChunkIndices: [],
+          resumedSliceCount: 0,
+          status: 'complete',
+          unfilled: [],
+          slices: [],
+          sliceSelections: [],
+          findings: [],
+          sliceTexts: [
+            {
+              chunkIndex: 0,
+              incumbentKind: 'present',
+              incumbentText: ARCHIVE_NAP,
+              outcome: {
+                kind: 'decided',
+                acceptedText: FRESH_NAP,
+              },
+            },
+          ],
+        },
+        delivery: translateDelivery,
+      },
+    },
+    comparison: compareLanesV2({
+      repair: repairDelivery,
+      translate: translateDelivery,
+    },),
+    laneSelection: { kind: 'pending-human-decision', },
+  };
+}
+
 await describe({
   name: readArtifactProbe.name,
   children: [
@@ -148,7 +343,7 @@ await describe({
         + 'rate about judged ones',
       fn: async () => {
         const reading = readArtifactProbe({
-          value: {
+          value: probeArtifact({
             id: 'Kitten',
             issues: [
               catRecord({
@@ -168,7 +363,7 @@ await describe({
                 },
               },),
             ],
-          },
+          },),
           path: 'Kitten',
         },);
         expect(reading.readings,).toHaveLength(1,);
@@ -199,7 +394,7 @@ await describe({
           ],
         },);
         const reading = readArtifactProbe({
-          value: {
+          value: probeArtifact({
             id: 'Kitten',
             issues: [
               catRecord({
@@ -221,7 +416,7 @@ await describe({
                 },
               },),
             ],
-          },
+          },),
           path: 'Kitten',
         },);
 
@@ -244,7 +439,7 @@ await describe({
         + 'pasteable, so they must not',
       fn: async () => {
         const reading = readArtifactProbe({
-          value: {
+          value: probeArtifact({
             id: 'Kitten',
             issues: [
               catRecord({
@@ -262,7 +457,7 @@ await describe({
                 },
               },),
             ],
-          },
+          },),
           path: 'Kitten',
         },);
 
@@ -296,9 +491,12 @@ await describe({
         + 'silently zero the corroboration of every region and read as a clean '
         + 'run, which is the failure shape that looks most like success',
       fn: async () => {
-        expect(function readsUnknownAdmissibility() {
+        /**
+         * Reads a claim under an admissibility the screen cannot record.
+         */
+        function readsUnknownAdmissibility() {
           readArtifactProbe({
-            value: {
+            value: probeArtifact({
               id: 'Kitten',
               issues: [
                 catRecord({
@@ -321,10 +519,13 @@ await describe({
                   },
                 },),
               ],
-            },
+            },),
             path: 'Kitten',
           },);
-        },).toThrow(ArtifactParseError,);
+        }
+
+        expect(readsUnknownAdmissibility,).toThrow(ArtifactParseError,);
+        expect(readsUnknownAdmissibility,).toThrow('.claims[0].admissibility',);
       },
     },),
 
@@ -337,7 +538,7 @@ await describe({
         + 'Without this flag that mismatch joins silently',
       fn: async () => {
         const reading = readArtifactProbe({
-          value: {
+          value: probeArtifact({
             id: 'Kitten',
             issues: [
               catRecord({
@@ -360,7 +561,7 @@ await describe({
                 },
               },),
             ],
-          },
+          },),
           path: 'Kitten',
         },);
 
@@ -383,9 +584,12 @@ await describe({
         + 'flag nothing, or flag a majority while reporting none, and both look '
         + 'like ordinary output',
       fn: async () => {
-        expect(function readsDisagreeingCount() {
+        /**
+         * Reads a region whose declared count and claim list disagree.
+         */
+        function readsDisagreeingCount() {
           readArtifactProbe({
-            value: {
+            value: probeArtifact({
               id: 'Kitten',
               issues: [
                 catRecord({
@@ -404,10 +608,13 @@ await describe({
                   },
                 },),
               ],
-            },
+            },),
             path: 'Kitten',
           },);
-        },).toThrow(ArtifactParseError,);
+        }
+
+        expect(readsDisagreeingCount,).toThrow(ArtifactParseError,);
+        expect(readsDisagreeingCount,).toThrow('.regions[0]',);
       },
     },),
 
@@ -418,15 +625,21 @@ await describe({
         + 'shrinks the denominator of a rate with nothing recording that it '
         + 'happened',
       fn: async () => {
-        expect(function readsUnknownDisposition() {
+        /**
+         * Reads a record under a disposition the pipeline never writes.
+         */
+        function readsUnknownDisposition() {
           readArtifactProbe({
-            value: {
+            value: probeArtifact({
               id: 'Kitten',
               issues: [catRecord({ repairDisposition: 'shippped', },),],
-            },
+            },),
             path: 'Kitten',
           },);
-        },).toThrow(ArtifactParseError,);
+        }
+
+        expect(readsUnknownDisposition,).toThrow(ArtifactParseError,);
+        expect(readsUnknownDisposition,).toThrow('.repairDisposition',);
       },
     },),
 
@@ -436,10 +649,10 @@ await describe({
         + 'probe never fired still has to be visible',
       fn: async () => {
         const reading = readArtifactProbe({
-          value: {
+          value: probeArtifact({
             id: 'Kitten',
             issues: [catRecord({ repairDisposition: 'shipped', },),],
-          },
+          },),
           path: 'Kitten',
         },);
         expect(reading.readings,).toHaveLength(0,);
@@ -452,9 +665,12 @@ await describe({
       name: 'throws when a PRESENT probe field is malformed, since that means '
         + 'writer and reader disagree and every count downstream is unsound',
       fn: async () => {
-        expect(function readsMalformed() {
+        /**
+         * Reads a probe field that is present and malformed.
+         */
+        function readsMalformed() {
           readArtifactProbe({
-            value: {
+            value: probeArtifact({
               id: 'Kitten',
               issues: [
                 catRecord({
@@ -466,10 +682,13 @@ await describe({
                   },
                 },),
               ],
-            },
+            },),
             path: 'Kitten',
           },);
-        },).toThrow(ArtifactParseError,);
+        }
+
+        expect(readsMalformed,).toThrow(ArtifactParseError,);
+        expect(readsMalformed,).toThrow('.configuredProbers',);
       },
     },),
 
@@ -477,9 +696,12 @@ await describe({
       name: 'refuses a fractional count rather than rounding it, because a '
         + 'fraction means the field is not the tally the reader thinks it is',
       fn: async () => {
-        expect(function readsFraction() {
+        /**
+         * Reads a prober count written as a fraction.
+         */
+        function readsFraction() {
           readArtifactProbe({
-            value: {
+            value: probeArtifact({
               id: 'Kitten',
               issues: [
                 catRecord({
@@ -491,19 +713,26 @@ await describe({
                   },
                 },),
               ],
-            },
+            },),
             path: 'Kitten',
           },);
-        },).toThrow(ArtifactParseError,);
+        }
+
+        expect(readsFraction,).toThrow(ArtifactParseError,);
+        expect(readsFraction,).toThrow('.heardProbers',);
       },
     },),
 
     it({
-      name: 'reads an artifact carrying no issue report at all without '
-        + 'throwing, which is what a blocked entry looks like',
+      name: 'reads an entry whose repair lane FILED NOTHING as a zero rather than a refusal, '
+        + 'because a lane that found no issue is an ordinary outcome and a rate over no records '
+        + 'is honestly zero. NOT the same as an absent list, which is a writer this reader does '
+        + 'not know and is refused; that refusal is pinned beside the reader that draws these '
+        + 'records. The distinction only became expressible at version 2, where a lane always '
+        + 'writes a result and so CAN say it filed nothing',
       fn: async () => {
         const reading = readArtifactProbe({
-          value: { id: 'Kitten', },
+          value: probeArtifact({ id: 'Kitten', },),
           path: 'Kitten',
         },);
         expect(reading.readings,).toHaveLength(0,);
