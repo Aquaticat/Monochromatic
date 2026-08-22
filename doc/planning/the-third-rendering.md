@@ -3787,3 +3787,130 @@ The disagreement is that one slice the repair lane won was then replaced by the
  so the contest verdict and what would ship name different stages.
 Asking who won and asking what would ship are different questions,
  which is the whole reason this reader exists.
+
+## The consumers ask both questions now, and measuring stopped one wrong port
+
+Task `#166` item 2 told me to route the settled rendering audit and the damage
+draw through `wouldShipTextPerSlice`.
+Measuring both consumers first refuted the instruction,
+and the reason is the same in each case:
+33 of the 47 settled artifacts carry `laneSelection: pending-human-decision` and
+no consolidation at all,
+so a would-ship reading on them falls all the way back to the archive.
+
+For the audit,
+that would have put the archive's own English under audit at 227 of 271
+subjects,
+which is exactly the case `auditsArchiveText` exists to separate out,
+since the instrument was built for output that has no BEFORE text.
+For the damage draw,
+the failure has the opposite shape and is worse:
+the population does not get polluted,
+it vanishes.
+A would-ship-scoped builder keeps 30 of 378 regions and deletes every region
+from those 33 artifacts,
+because where the archive stands nothing replaced an incumbent and no region
+exists at all.
+
+The archive standing on an undecided artifact is not a decision.
+It is the absence of one,
+and it is pending `#175` with the owner.
+`ArtifactLaneSelectionV2` says as much in its own docblock:
+`pending-human-decision` means the contest has not run over this entry.
+
+So both consumers keep their lane question and gain an annotation beside it,
+which is what this task's decision 1 said in the first place.
+`SettledPageRelation` in
+`package/module/translation-repair/src/corpus-run/rendering-audit-settled-relation.ts`
+carries four recorded kinds plus `unrecorded`:
+`undecided`,
+`survives`,
+`displaced` with the decider that displaced it,
+and `nothing-would-ship` with the reason nothing stands.
+
+The decider rides by reference rather than being spelled into member names like
+`displaced-by-consolidation`.
+Spelling them would duplicate `WouldShipDecider`'s list,
+so a decider added later would silently produce no new relation,
+which is the drift class `#170` measured twice in this same family.
+
+### The branch order is the whole design, and the first guard for it was vacuous
+
+Undecided is answered before any text is compared.
+Reversing that reports a displacement on artifacts where no stage displaced
+anything.
+
+The first attempt to show that guard failing showed nothing,
+because the fixture's texts differed and the branch below also answers
+undecided.
+Only a fixture where the archive wording matches the lane wording separates the
+two orders,
+and there the broken order answers `survives`:
+it asserts a document would carry that wording on an entry no stage has decided.
+That case is now pinned,
+and it is the only one that fails under the break.
+
+### Numbers, pre-registered before the field existed and reproduced through the built artifact
+
+Audit subjects, all 271:
+undecided 227,
+displaced by the consolidation 20,
+survives 10,
+displaced by the contest 10,
+displaced by the archive 4.
+On the 14 decided artifacts that is 34 displaced of 44 subjects,
+which supersedes the earlier "5 of 6" sizing taken from a hand count of
+`Acheron` and `Weideriche_`.
+
+Damage regions, all 378,
+read through `collectShippedRegionsV2` rather than a reimplementation of it:
+undecided 306,
+displaced by the consolidation 38,
+displaced by the contest 16,
+survives 10,
+displaced by the archive 8.
+
+One number must not be quoted alone.
+368 of 378 regions disagree with the would-ship text,
+but a region exists only where a lane replaced the incumbent,
+and on an undecided artifact the would-ship text is the incumbent,
+so all 306 of those differ by construction.
+The bounded figure is 62 of 72 on the decided artifacts.
+
+### What the report prints, and what the tally counts
+
+No printed line claimed page scope before this,
+so nothing had to be corrected there.
+`THE TWO HALVES, READ APART` prints `ARCHIVE text` and `FRESH text`,
+both lane-scoped and both still accurate.
+The annotation goes in as a new line instead.
+It counts claims beside subjects,
+because a displaced subject nobody claimed anything about cost the run a call
+and nothing else,
+while a displaced subject carrying claims means the instrument reported defects
+in wording no reader of a document would meet.
+
+`settled-tally.ts` gains `pageChanged` and `pageSilent` beside `repairChanged`
+and `translateChanged`.
+Zero is the honest answer on an undecided entry,
+and it is meant to be read beside `selection=pending-human-decision` on the same
+line:
+two lanes proposed changes and,
+as things stand,
+a document would carry none of them.
+
+### Two defects found on the way, both of this task's own class
+
+The tally fixture omitted `consolidation`,
+which the contract requires and states an absence for,
+and an `as unknown as` cast hid the omission.
+The first reader to reach for the field got `undefined`.
+
+The annotation also pushed `rendering-audit-settled-input.ts` one line over its
+budget.
+Nothing was disabled and nothing was reformatted to fit:
+`rendering-audit-settled-subject.ts` now holds the subject types,
+the archive delivery constant,
+`identityOf` and `subjectsOf`,
+while the input module keeps the archive walk,
+the provenance check and the reading.
