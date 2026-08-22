@@ -641,3 +641,91 @@ and it is why these figures can be trusted as a baseline rather than as a filter
 
 Run 2 must show fewer than these on every entry it resumes.
 Equality means nothing resumed.
+
+## Setting up run 2
+
+STARTED 2026-08-22 06:51Z,
+after run 1 settled all six entries in 18932.72s.
+
+### Run 1 finished clean
+
+`DONE processed=6 of pending=6; artifacts=6/92`.
+Final per-entry consolidation counts,
+which supersede the four-entry list recorded earlier:
+
+- `Acheron`:
+   27 settle,
+   2 produce,
+   30 tagged.
+- `Weideriche_`:
+   19,
+   1,
+   21.
+- `Zha_Ke`:
+   12,
+   1,
+   14.
+- `gaoyanger`:
+   9,
+   2,
+   12.
+- `keyword233`:
+   19,
+   0,
+   20.
+- `lintong`:
+   21,
+   3,
+   25.
+
+Those sum to 122,
+which is the log's total,
+so the split is a closed accounting rather than a filter that happened to match.
+
+### Two things had to change before run 2 could run at all
+
+THE PASS SKIPS ENTRIES THAT ALREADY HAVE AN ARTIFACT,
+which `corpus-pass.ts:48` states and `settledEntryIds` at `corpus-pass.ts:265`
+ implements.
+Pointing a second pass at the same directory would have reported `pending=0` and
+ processed nothing.
+Run 1's artifacts moved to `vub-run1-20260821/artifacts-run1`,
+which also preserves them for the byte comparison the criterion needs.
+
+THE LIVE CACHE WAS EMPTY.
+`discardSliceCache` deletes each entry's cache as it settles,
+and all six settled,
+so `vub-run1-20260821/slice-cache` held zero files.
+The 107 files under `~/temp/agent/vub-cache-capture` were the only surviving
+ copy,
+and they were copied back in.
+Per entry the restored counts are
+ `Acheron` 22,
+`Zha_Ke` 23,
+`lintong` 18,
+`Weideriche_` 16,
+`gaoyanger` 14 and
+`keyword233` 14.
+
+### The digest held
+
+Run 2's `START` line carries the same
+ `pipeline=sha256-tree-v1:2384524b15c2482c37db147b9654b0036eeebfba7e24b6297854d7bcddef4cc0`
+ run 1 carried.
+Had any file under `src` changed,
+every cache namespace would have moved and the restore would have bought
+ nothing.
+That is what the source freeze was for,
+and it is now spent.
+
+`START files=96 pending=6 done=0` confirms all six were found unsettled,
+and the first `SLICE-COST` lines report `exit=resumed`,
+so the restored cache is being read rather than ignored.
+
+### How to read the result
+
+The log is `~/temp/agent/vub-run2.log`.
+Run 2's artifacts land in `vub-run1-20260821/artifacts`,
+beside run 1's in `artifacts-run1`.
+No capture poller runs for run 2,
+because the criterion reads the log and the artifacts rather than the cache.
