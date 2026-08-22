@@ -2,8 +2,14 @@
 
 ## Symptom
 
-`wg-quicker` and OpenSnitch 1.8.0 are compatible with OpenSnitch's default `allow` action.
+`wg-quicker` and OpenSnitch 1.8.0 are compatible in the verified IPv4 and nftables setup with OpenSnitch's
+default `allow` action.
 They also work with strict default-deny policy after OpenSnitch allows the WireGuard peer's outer UDP connection.
+The live boundary test covered IPv4,
+the nftables backend,
+and the `proc` monitor.
+IPv6 and the iptables backend were not live-tested;
+eBPF attribution and application exemptions received source review only.
 
 Without that allowance,
 `wg-quicker up` still exits successfully because creating a WireGuard interface does not wait for a handshake.
@@ -231,7 +237,9 @@ int kprobe__iptunnel_xmit(struct pt_regs *ctx)
 ```
 
 Kernel and eBPF prerequisites can still make attribution unavailable.
-OpenSnitch's FAQ recommends checking the eBPF module and enabling `Debug invalid connections` when WireGuard fails.
+OpenSnitch's [FAQ][opensnitch-faq] and maintainer diagnoses in issues
+[#454][opensnitch-454] and [#1250][opensnitch-1250] recommend checking the eBPF module and enabling
+`Debug invalid connections` when WireGuard fails.
 
 The packaged firewall configuration also contains a disabled fallback at
 `evilsocket/opensnitch@v1.8.0:daemon/data/system-fw.json:217-237`:
@@ -404,6 +412,12 @@ Use the actual UDP destination port from the WireGuard peer's `Endpoint`.
 The released `Exclude WireGuard VPN from being intercepted` rule can be enabled unchanged only when that port is
 `51820`.
 The disposable strict-deny test verified port `2049`.
+It restarted the released daemon after changing its firewall data,
+so use the same tested load path after saving a file edit:
+
+```console
+sudo systemctl restart opensnitch.service
+```
 
 Tradeoff:
 a port-only rule bypasses OpenSnitch application attribution for every outbound UDP connection to that destination
@@ -509,5 +523,6 @@ so commenting there would conflate different versions and callers rather than ad
 [opensnitch-system-rules]: https://github.com/evilsocket/opensnitch/wiki/System-rules
 [opensnitch-release]: https://github.com/evilsocket/opensnitch/releases/tag/v1.8.0
 [opensnitch-454]: https://github.com/evilsocket/opensnitch/issues/454
+[opensnitch-1250]: https://github.com/evilsocket/opensnitch/issues/1250
 [opensnitch-1629]: https://github.com/evilsocket/opensnitch/issues/1629
 [opensnitch-1423]: https://github.com/evilsocket/opensnitch/pull/1423
