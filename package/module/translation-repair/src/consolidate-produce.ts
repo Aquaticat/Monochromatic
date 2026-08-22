@@ -91,13 +91,15 @@ export type ProducedConsolidations = {
  *
  * @param perCallTimeoutMs - bound on any single exchange
  *
- * @param l - stage logger
+ * @param lineStructured - whether the line-structure rule governs this slice,
+ * which makes merging its lines a fault the author is sent back to fix
+ * * @param l - stage logger
  *
  * @returns Slate, each proposal's verdict before and after repair, and findings
  *
  * @example
  * ```ts
- * const produced = await produceConsolidations({ client, roster, subject, standingText, signal, perCallTimeoutMs, l, },);
+ * const produced = await produceConsolidations({ client, roster, subject, standingText, lineStructured, signal, perCallTimeoutMs, l, },);
  * ```
  */
 export async function produceConsolidations(
@@ -106,6 +108,7 @@ export async function produceConsolidations(
     roster,
     subject,
     standingText,
+    lineStructured,
     signal,
     perCallTimeoutMs,
     l,
@@ -114,6 +117,7 @@ export async function produceConsolidations(
     readonly roster: readonly SyntheticModelId[];
     readonly subject: ConsolidateSubject;
     readonly standingText: string;
+    readonly lineStructured: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -169,6 +173,7 @@ export async function produceConsolidations(
         candidateText: voice.value
           .translation,
         pageText: subject.incumbentText,
+        lineStructured,
       },),
     };
   }
@@ -191,6 +196,7 @@ export async function produceConsolidations(
     sourceText: subject.sourceText,
     incumbentText: standingText,
     pageText: subject.incumbentText,
+    lineStructured,
     priorMessages: messages,
     signal,
     perCallTimeoutMs,

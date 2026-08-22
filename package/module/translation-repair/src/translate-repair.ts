@@ -72,7 +72,9 @@ export type RepairOutcome = {
  *
  * @param perCallTimeoutMs - deadline for it
  *
- * @param l - stage logger
+ * @param lineStructured - whether the line-structure rule governs this slice,
+ * which makes merging its lines a fault the author is sent back to fix
+ * * @param l - stage logger
  *
  * @returns Final voice for this model plus what was recorded
  *
@@ -88,6 +90,7 @@ async function repairOneCandidate(
     sourceText,
     incumbentText,
     pageText,
+    lineStructured,
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -98,6 +101,7 @@ async function repairOneCandidate(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly pageText: string;
+    readonly lineStructured: boolean;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -126,6 +130,7 @@ async function repairOneCandidate(
     candidateText: voice.value
       .translation,
     pageText,
+    lineStructured,
   },);
   if (validation.kind === 'valid')
     return {
@@ -210,6 +215,7 @@ async function repairOneCandidate(
     sourceText,
     candidateText: translation,
     pageText,
+    lineStructured,
   },);
 
   // A revision that still fails is NOT taken. The model was asked to fix these
@@ -265,7 +271,9 @@ async function repairOneCandidate(
  *
  * @param perCallTimeoutMs - deadline per exchange
  *
- * @param l - stage logger
+ * @param lineStructured - whether the line-structure rule governs this slice,
+ * which makes merging its lines a fault the author is sent back to fix
+ * * @param l - stage logger
  *
  * @returns Final voices in the order given, plus every finding
  *
@@ -281,6 +289,7 @@ export async function repairInvalidCandidates(
     sourceText,
     incumbentText,
     pageText = incumbentText,
+    lineStructured = false,
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -291,6 +300,7 @@ export async function repairInvalidCandidates(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly pageText?: string;
+    readonly lineStructured?: boolean;
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -311,6 +321,7 @@ export async function repairInvalidCandidates(
         sourceText,
         incumbentText,
         pageText,
+        lineStructured,
         priorMessages,
         signal,
         perCallTimeoutMs,

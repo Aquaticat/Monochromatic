@@ -170,6 +170,7 @@ export async function produceTranslateSlate(
     voices: gather.voices,
     sourceText,
     incumbentText,
+    lineStructured,
     priorMessages: plan.messages,
     signal,
     perCallTimeoutMs,

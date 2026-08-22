@@ -147,9 +147,17 @@ export function wrapConsolidation(
       };
     }
 
+    /**
+     * Lines the producer wrote, which is the whole point of the skip and so
+     * the one number worth printing beside it.
+     */
+    const producedLines = consolidatedText
+      .split('\n',)
+      .length;
+
     l.info(
       `semantic wrap: skipped on a line-structured slice, shipping ${
-        String(consolidatedText.split('\n',).length,)
+        String(producedLines,)
       } lines as the producer wrote them`,
     );
     return {

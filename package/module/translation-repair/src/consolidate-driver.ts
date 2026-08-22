@@ -366,6 +366,7 @@ export async function consolidateDocument(
         roster: modelIds,
         subject,
         standingText,
+        lineStructured: lineStructuredSlices.has(row.chunkIndex,),
         signal,
         perCallTimeoutMs,
         l: dl,

@@ -1,3 +1,4 @@
+import { compareLineCounts, } from './line-structure-guard.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
 import {
   type BlockShape,
@@ -525,6 +526,12 @@ const NO_PAGE: SliceSkeleton = {
  * has none. Its shape is a floor the candidate carries rather than a ceiling,
  * so a rendering restoring what the page left out stays valid
  *
+ * @param lineStructured - whether the line-structure rule governs this slice,
+ * which makes merging its lines a fault. Defaults to false, so a caller that
+ * cannot say leaves the check off rather than guessing at it from the slice
+ * alone: the decision is a union over the slice AND its enclosing chunk, and
+ * the slice half alone covers 55 slices where the union covers 211
+ *
  * @returns Verdict, with findings written for the model that wrote it
  *
  * @example
@@ -537,10 +544,12 @@ export function validateTranslatedSlice(
     sourceText,
     candidateText,
     pageText = '',
+    lineStructured = false,
   }: {
     readonly sourceText: string;
     readonly candidateText: string;
     readonly pageText?: string;
+    readonly lineStructured?: boolean;
   },
 ): SliceValidation {
   /**
@@ -642,6 +651,11 @@ export function validateTranslatedSlice(
       floorName,
       source: expected.blocks,
       candidate: actual.blocks,
+    },),
+    ...compareLineCounts({
+      lineStructured,
+      sourceText,
+      candidateText,
     },),
     ...compareAtoms({
       source: mergeAtoms({
