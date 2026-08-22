@@ -25,9 +25,20 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  TRANSLATE_LINE_STRUCTURE_CRITERION,
   TRANSLATE_SELECTION_CRITERIA,
+  translateSelectionCriteria,
   TRANSLATE_SELECTION_TASK,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Clause the line-structure criterion overrides, spelled as both carry it.
+ *
+ * WRITTEN OUT HERE rather than imported, because a case importing the constant
+ * would compare the sheet against itself and pass however the sentence was
+ * edited. The point is that this exact wording still reaches a judge.
+ */
+const OVERRIDDEN_CLAUSE = 'A SHAPE THE ORIGINAL DOES NOT HAVE IS NOT A FAULT';
 
 /**
  * Criteria joined, since a judge reads them as one list.
@@ -140,6 +151,90 @@ await describe({
       name: 'NAMES the candidates as complete translations, not as edits',
       fn: async () => {
         expect(TRANSLATE_SELECTION_TASK.includes('complete English translation',),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: translateSelectionCriteria.name,
+  children: [
+    it({
+      name: 'HANDS BACK THE MEASURED ARRAY ITSELF FOR A PROSE SLICE, not a copy of it and not a rebuild. '
+        + '`#84` measured whether these judges can tell a faithful rendering from a fluent one, and it measured '
+        + 'them on these exact criteria. Identity rather than equality is the assertion, because a rebuilt array '
+        + 'that happened to match today is the thing that drifts tomorrow',
+      fn: async () => {
+        expect(translateSelectionCriteria({ lineStructured: false, },),).toBe(TRANSLATE_SELECTION_CRITERIA,);
+      },
+    },),
+    it({
+      name: 'ADDS THE LINE-STRUCTURE CRITERION ONLY WHERE THE VERSE RULE GOVERNS, which is the whole gate. '
+        + 'A sheet carrying it unconditionally would satisfy every other case here and would tell the judges of '
+        + 'the archive\'s prose to count lines the ORIGINAL never broke',
+      fn: async () => {
+        expect(
+          translateSelectionCriteria({ lineStructured: true, },)
+            .includes(TRANSLATE_LINE_STRUCTURE_CRITERION,),
+        ).toBe(true,);
+        expect(
+          translateSelectionCriteria({ lineStructured: false, },)
+            .includes(TRANSLATE_LINE_STRUCTURE_CRITERION,),
+        ).toBe(false,);
+      },
+    },),
+    it({
+      name: 'PLACES IT AHEAD OF THE RULE IT OVERRIDES, because these criteria are read most important first '
+        + 'and a rule that defers to another has to be met after it. Landing behind the shape rule would leave '
+        + 'a judge reading the general permission first and the exception to it second',
+      fn: async () => {
+        /**
+         * Criteria as a governed slice is given them.
+         */
+        const governed = translateSelectionCriteria({ lineStructured: true, },);
+
+        expect(governed.indexOf(TRANSLATE_LINE_STRUCTURE_CRITERION,),).toBeLessThan(
+          governed.findIndex(function permitsAnUnoriginalShape(criterion,): boolean {
+            return criterion.includes(OVERRIDDEN_CLAUSE,)
+              && (criterion !== TRANSLATE_LINE_STRUCTURE_CRITERION);
+          },),
+        );
+      },
+    },),
+    it({
+      name: 'OVERRIDES A CLAUSE SOME JUDGE IS ACTUALLY GIVEN, spelled the same way in both criteria. An override '
+        + 'naming a sentence that no longer appears anywhere is worse than no override at all: it reads as '
+        + 'settled precedence while leaving the contradiction `#150` fixed standing in front of the judge',
+      fn: async () => {
+        /**
+         * Criteria as a governed slice is given them.
+         */
+        const governed = translateSelectionCriteria({ lineStructured: true, },);
+
+        // BOTH SIDES, because either one alone can hold the clause while the other
+        // has been edited away from it.
+        expect(TRANSLATE_LINE_STRUCTURE_CRITERION.includes(OVERRIDDEN_CLAUSE,),).toBe(true,);
+        expect(
+          governed.some(function statesTheRule(criterion,): boolean {
+            return criterion.includes(OVERRIDDEN_CLAUSE,)
+              && (criterion !== TRANSLATE_LINE_STRUCTURE_CRITERION);
+          },),
+        ).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES FLUENCY LAST AND COVERAGE FIRST ON A GOVERNED SLICE, so the ordering the lane rests on '
+        + 'survives the insertion. A criterion added at either end would reorder the priorities every other '
+        + 'case in this file pins',
+      fn: async () => {
+        /**
+         * Criteria as a governed slice is given them.
+         */
+        const governed = translateSelectionCriteria({ lineStructured: true, },);
+
+        expect(governed.at(0,),).toBe(TRANSLATE_SELECTION_CRITERIA.at(0,),);
+        expect(governed.at(-1,),).toBe(TRANSLATE_SELECTION_CRITERIA.at(-1,),);
+        expect(governed.length,).toBe(TRANSLATE_SELECTION_CRITERIA.length + 1,);
       },
     },),
   ],

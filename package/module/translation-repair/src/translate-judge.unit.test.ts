@@ -33,6 +33,7 @@ import {
   produceTranslateSlate,
   type SyntheticClient,
   type SyntheticModelId,
+  TRANSLATE_LINE_STRUCTURE_CRITERION,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -194,9 +195,92 @@ function driftingClient(): {
   };
 }
 
+/**
+ * Buys one slate and reports the sheet its judges were sent.
+ *
+ * READS THE REQUEST, NOT THE RESULT. What a judge decided is a fact about the
+ * fixture; what a judge was SHOWN is the fact these cases are about, and the two
+ * are only connected while the wiring is right, which is the thing under test.
+ *
+ * @param lineStructured - whether this round is governed by the verse rule
+ *
+ * @returns Sheet the judges received, joined as they read it
+ *
+ * @example
+ * ```ts
+ * const sheet = await judgeSheetFor({ lineStructured: true, },);
+ * ```
+ */
+async function judgeSheetFor(
+  { lineStructured, }: { readonly lineStructured: boolean; },
+): Promise<string> {
+  const rig = driftingClient();
+
+  /**
+   * Slate for the judges to decide over.
+   */
+  const produced = await produceTranslateSlate({
+    client: rig.client,
+    translatorModelIds: TRANSLATORS,
+    sourceText: SOURCE_TEXT,
+    incumbentText: INCUMBENT_TEXT,
+    lineStructured,
+    signal: AbortSignal.timeout(30_000,),
+    perCallTimeoutMs: 5_000,
+    l,
+  },);
+
+  /**
+   * Where the producer sheets end, so the verse rule reaching a TRANSLATOR
+   * cannot be mistaken for it reaching a judge. Both carry the same fact and
+   * only one of them is what these cases are about.
+   */
+  const beforeJudging = rig.judgeSheets.length;
+
+  await judgeTranslateSlate({
+    client: rig.client,
+    produced,
+    judgeModelIds: JUDGES,
+    sourceText: SOURCE_TEXT,
+    incumbentText: INCUMBENT_TEXT,
+    incumbentKind: 'present',
+    lineStructured,
+    signal: AbortSignal.timeout(30_000,),
+    perCallTimeoutMs: 5_000,
+    l,
+  },);
+
+  return rig.judgeSheets
+    .slice(beforeJudging,)
+    .join('\n',);
+}
+
 await describe({
   name: judgeTranslateSlate.name,
   children: [
+    it({
+      name: 'SHOWS A GOVERNED SLICE\'S JUDGES THE RULE AGAINST MERGING LINES. Until 2026-08-22 this '
+        + 'function had no line-structure parameter at all, so the rule reached both producer sheets '
+        + 'and no judge in either lane, and a producer that unmerged what the page had merged was '
+        + 'marked down by a panel told a shape the ORIGINAL lacks is no fault',
+      fn: async () => {
+        expect(
+          (await judgeSheetFor({ lineStructured: true, },))
+            .includes(TRANSLATE_LINE_STRUCTURE_CRITERION,),
+        ).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES IT OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the case above evidence '
+        + 'rather than a tautology. A sheet carrying the criterion unconditionally would satisfy that '
+        + 'one exactly as well and would mean the flag was never read',
+      fn: async () => {
+        expect(
+          (await judgeSheetFor({ lineStructured: false, },))
+            .includes(TRANSLATE_LINE_STRUCTURE_CRITERION,),
+        ).toBe(false,);
+      },
+    },),
     it({
       name: 'JUDGES ONE SLATE TWICE OVER THE SAME CANDIDATES, which is the capability the split '
         + 'exists for. The translators here answer differently on every call, so a second '

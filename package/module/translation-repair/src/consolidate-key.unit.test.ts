@@ -156,15 +156,15 @@ await describe({
     },),
 
     it({
-      name: 'KEYS A PROSE SLICE EXACTLY AS IT DID BEFORE THE LINE-STRUCTURE MARK EXISTED, pinned to '
-        + 'the value the older code produced. The mark is APPENDED, and only where the rule governs, '
-        + 'so every consolidation settled before 2026-08-22 stays resumable instead of being re-bought '
-        + 'under a sheet identical to the one that settled it. Inserting the mark mid-material would '
-        + 'move every key and discard all of them, which is why this case pins a literal rather than '
-        + 'comparing two calls',
+      name: 'PINS THE KEY TO A LITERAL, so a change to this material has to be made on purpose. The value '
+        + 'moved once, on 2026-08-22, when `CONSOLIDATE_CACHE_VERSION` went to 2. That bump was not a '
+        + 'change to any field here: it answered a change the material CANNOT SEE. The judges deciding a '
+        + 'governed consolidation began receiving the rule against merging lines, and a slice settled '
+        + 'before that resumes with a judgment made under a sheet that never mentioned lines while keying '
+        + 'identically. Comparing two calls would not have noticed, which is why this pins a value',
       fn: async () => {
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '0b426ea013c2a90a122bbaa4a71b9b299cba39c4310b070887e4c4b70ddfdeee',
+          'bac632ff7400207f4a57637173c848d9465a23418b5307df1b98f85ee436e9e7',
         );
       },
     },),

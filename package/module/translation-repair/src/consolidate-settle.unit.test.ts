@@ -31,6 +31,7 @@ import {
   createSyntheticClient,
   describeSlate,
   type ProposalValidity,
+  TRANSLATE_LINE_STRUCTURE_CRITERION,
   rotateCandidates,
   settleConsolidation,
 } from '../dist/final/node/index.mjs';
@@ -224,10 +225,17 @@ function routedClient(
     judgeReply,
     gateReply,
     served,
+    judgeSheets,
   }: {
     readonly judgeReply: string;
     readonly gateReply: string;
     readonly served: { judge: number; gate: number; };
+
+    /**
+     * Where to record each slate judge's request, for the cases that read what
+     * the judges were shown rather than what they answered.
+     */
+    readonly judgeSheets?: string[];
   },
 ) {
   return createSyntheticClient({
@@ -244,8 +252,10 @@ function routedClient(
       const isGate = sent.includes(GATE_MARKER,);
       if (isGate)
         served.gate += 1;
-      else
+      else {
         served.judge += 1;
+        judgeSheets?.push(sent,);
+      }
 
       return {
         status: 200,
@@ -334,6 +344,7 @@ async function settleWith(
     judgeReply = judgeBallot({ best: 0, },),
     gateReply = gateBallot({ choice: 'standing', },),
     producedFindings = [],
+    lineStructured = false,
   }: {
     readonly voices: readonly {
       readonly modelId: RosterModelId;
@@ -344,6 +355,12 @@ async function settleWith(
     readonly judgeReply?: string;
     readonly gateReply?: string;
     readonly producedFindings?: readonly string[];
+
+    /**
+     * Whether the enclosing chunk is governed by the verse rule, which decides
+     * what the judges of this round are asked.
+     */
+    readonly lineStructured?: boolean;
   },
 ) {
   /**
@@ -354,11 +371,17 @@ async function settleWith(
     gate: 0,
   };
 
+  /**
+   * Every slate judge's request, for the cases reading what was shown.
+   */
+  const judgeSheets: string[] = [];
+
   const settled = await settleConsolidation({
     client: routedClient({
       judgeReply,
       gateReply,
       served,
+      judgeSheets,
     },),
     roster: ROSTER,
     subject: SUBJECT,
@@ -368,13 +391,14 @@ async function settleWith(
     standingText,
     signal: AbortSignal.timeout(CALL_TIMEOUT_MS * 8,),
     perCallTimeoutMs: CALL_TIMEOUT_MS,
-    lineStructured: false,
+    lineStructured,
     l,
   },);
 
   return {
     settled,
     served,
+    judgeSheets,
   };
 }
 
@@ -620,6 +644,48 @@ await describe({
         expect(settled.terminal,).toBe('wrap-erased-difference',);
         expect(settled.text,).toBe(STANDING,);
         expect(settled.demoted,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS A GOVERNED ROUND\'S JUDGES THE RULE AGAINST MERGING LINES. `#176` gave this fact to the '
+        + 'consolidation PRODUCERS and stopped there, so for a day the judges weighed proposals written to '
+        + 'unmerge a passage against a criterion telling them a shape the ORIGINAL lacks is no fault. This '
+        + 'reads the judges\' own request rather than the settlement, because a settlement decided the right '
+        + 'way on a sheet missing the rule would look identical',
+      fn: async () => {
+        const { judgeSheets, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          lineStructured: true,
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(
+          judgeSheets.some(function carriesCriterion(sheet,): boolean {
+            return sheet.includes(TRANSLATE_LINE_STRUCTURE_CRITERION,);
+          },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES IT OUT OF A ROUND IT DOES NOT GOVERN, which is what makes the case above evidence. A '
+        + 'sheet carrying the criterion unconditionally would satisfy that one just as well and would mean '
+        + 'the flag this function has always received was still reaching nobody',
+      fn: async () => {
+        const { judgeSheets, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          lineStructured: false,
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(
+          judgeSheets.some(function carriesCriterion(sheet,): boolean {
+            return sheet.includes(TRANSLATE_LINE_STRUCTURE_CRITERION,);
+          },),
+        ).toBe(false,);
       },
     },),
   ],

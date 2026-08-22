@@ -59,10 +59,16 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  * that. It moves when {@link TRANSLATE_SLICE_CACHE_VERSION} moves, which is the
  * intended signal: a bump means the corpus is deliberately being rebought.
  *
+ * MOVED ONCE, on 2026-08-22, when the version went to 6. That bump answered a
+ * change no field here can see: the judges of a line-structured slice began
+ * receiving the rule against merging lines. `lineStructured` was already keyed,
+ * so the material was identical either way and a governed slice would have
+ * resumed carrying a judgment made under a sheet that never mentioned lines.
+ *
  * The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  * leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '37607f7cf4e5405941311a0f6f4dcb2522c9aec9b868a24a27fefdee801cb6ca';
+const LEGACY_WINDOWLESS_KEY = '833489bd5ce036255dfa272e0eae0ab1c514107d9968dd46e2b600068479f7b7';
 
 /**
  * One slice's key, with whatever this case wants to vary.
