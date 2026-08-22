@@ -39,7 +39,7 @@ and selected paired or caller-path companion for root execution;
 use root-owned installed artifacts when workspace integrity is not trusted.
 
 See
-[`doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md`](../../../doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md)
+[sudo privilege troubleshooting](../../../doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md)
 for source trace and verification.
 
 ## Config behavior
@@ -87,7 +87,7 @@ Disable that conflicting feature before `up` and do not re-enable it while the t
 the preflight is not a persistent rule monitor.
 Customized IVPN mark or table constants are outside exact detection.
 See
-[`doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md`](../../../doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md)
+[IVPN routing troubleshooting](../../../doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md)
 for source trace,
 diagnosis,
 and verified recovery.
@@ -126,7 +126,7 @@ Custom deployments can set
 `WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG`.
 Both overrides cross the sudo boundary through the validated private caller-context file.
 See
-[`doc/troubleshooting/opensnitch-1-8-wg-quicker-wireguard.md`](../../../doc/troubleshooting/opensnitch-1-8-wg-quicker-wireguard.md)
+[OpenSnitch troubleshooting](../../../doc/troubleshooting/opensnitch-1-8-wg-quicker-wireguard.md)
 for source trace,
 warning scope,
 and disposable strict-deny verification.
