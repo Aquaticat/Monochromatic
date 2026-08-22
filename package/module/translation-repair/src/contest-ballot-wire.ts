@@ -1,4 +1,5 @@
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { SIZE_NOTE_POLICY, } from './contest-size-note.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 
 //region Contest ballot wire
@@ -53,6 +54,8 @@ export const CONTEST_POLICY: string = [
   'Where the Chinese is SILENT rather than contradicting, dropping it is a fault of this kind, and keeping it is correct.',
   'THE SEVEREST CASE IS A WHOLE REGION. Where the archive carries a quoted letter, a list, a details section or any block the candidate does not, that is dropped content, NOT a candidate being faithful to a shorter original.',
   'A passage the Chinese states in one line can stand beside a page region the archive spells out at length, and the shorter candidate is the one that lost something.',
+  '',
+  SIZE_NOTE_POLICY,
   '',
   'DECLARED NAMES ARE ATTESTED FACTS about this person, taken from the documents\' own front matter.',
   'Where the passage refers to this person, a candidate carrying a declared name or handle is NOT unsupported, even where the Chinese only says "she".',

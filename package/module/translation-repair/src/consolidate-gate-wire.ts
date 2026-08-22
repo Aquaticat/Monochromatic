@@ -7,6 +7,7 @@ import {
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
+import { contestSizeNote, } from './contest-size-note.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Consolidate gate wire
@@ -256,6 +257,40 @@ export function buildConsolidateGateMessages(
       fence,
       '',
     ];
+  /**
+   * Size evidence, or nothing when every rendering is in proportion.
+   */
+  const sizeNote = contestSizeNote({
+    sourceText: subject.sourceText,
+    renderings: [
+      {
+        label: 'ARCHIVE RENDERING',
+        text: subject.incumbentText,
+      },
+      {
+        label: 'CANDIDATE "consolidated"',
+        text: subject.consolidatedText,
+      },
+      {
+        label: 'CANDIDATE "standing"',
+        text: subject.standingText,
+      },
+    ],
+  },);
+
+  /**
+   * Size note and its separating blank line, or nothing at all.
+   *
+   * PLACED AFTER THE PASSAGES so a judge reads the texts before their
+   * sizes, rather than being handed a number to confirm.
+   */
+  const sizeBlock = (sizeNote.length === 0)
+    ? []
+    : [
+      sizeNote,
+      '',
+    ];
+
   return [
     {
       role: 'system',
@@ -277,6 +312,7 @@ export function buildConsolidateGateMessages(
         'CANDIDATE "standing":',
         `${fence}\n${subject.standingText}\n${fence}`,
         '',
+        ...sizeBlock,
         `Return JSON: choice one of "consolidated", "standing", "${CONTEST_REFUSAL}";`,
         'unsupported and dropped each a list naming any of "consolidated", "standing";',
         'reason one sentence.',

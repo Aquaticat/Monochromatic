@@ -6,6 +6,7 @@ import {
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
+import { contestSizeNote, } from './contest-size-note.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Lane contest wire
@@ -288,6 +289,40 @@ export function buildLaneContestMessages(
       fence,
       '',
     ];
+  /**
+   * Size evidence, or nothing when every rendering is in proportion.
+   */
+  const sizeNote = contestSizeNote({
+    sourceText: subject.sourceText,
+    renderings: [
+      {
+        label: 'ARCHIVE RENDERING',
+        text: subject.incumbentText,
+      },
+      {
+        label: 'CANDIDATE "repair"',
+        text: subject.repairText,
+      },
+      {
+        label: 'CANDIDATE "translate"',
+        text: subject.translateText,
+      },
+    ],
+  },);
+
+  /**
+   * Size note and its separating blank line, or nothing at all.
+   *
+   * PLACED AFTER THE PASSAGES so a judge reads the texts before their
+   * sizes, rather than being handed a number to confirm.
+   */
+  const sizeBlock = (sizeNote.length === 0)
+    ? []
+    : [
+      sizeNote,
+      '',
+    ];
+
   return [
     {
       role: 'system',
@@ -309,6 +344,7 @@ export function buildLaneContestMessages(
         'CANDIDATE "translate":',
         `${fence}\n${subject.translateText}\n${fence}`,
         '',
+        ...sizeBlock,
         'Return JSON: choice one of "repair", "translate", "neither";',
         'unsupported and dropped each a list naming any of "repair", "translate";',
         'reason one sentence.',

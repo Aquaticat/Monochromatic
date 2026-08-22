@@ -8,7 +8,18 @@
 // exports MEASURE rather than by which lane happens to read them also puts the
 // estimator beside the predicate that filters its input, which is the pair a
 // reader has to see together to check that the filter is not circular.
+//
+// THE JUDGE-FACING NOTE BELONGS HERE FOR THE SAME REASON, though it is read by
+// two contest wires rather than by the classifier. It renders this instrument's
+// output for a reader who cannot run it, so what it may claim is bounded by
+// what the predicate beside it measures, and a change to either that leaves the
+// other alone is visible in one file.
 
+export {
+  type ContestRendering,
+  contestSizeNote,
+  SIZE_NOTE_POLICY,
+} from './contest-size-note.ts';
 export {
   type ClassifiedSlice,
   classifyDisplacement,
