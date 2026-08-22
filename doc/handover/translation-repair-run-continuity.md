@@ -987,3 +987,83 @@ and the resume signal does not indicate reproduction.
 
 `#171` carries this.
 It outranks the frozen queue.
+
+## The cause: the slice cache stops before the naturalness lane
+
+FOUND 2026-08-22,
+from source and confirmed by measurement.
+
+### The structure
+
+`repair-translation.ts` threads `sliceCache` through the ACCURACY pass only.
+It resumes at `repair-translation.ts:330` and persists at
+ `repair-translation.ts:454`.
+
+`refineSettledSlices` is then called at `repair-translation.ts:535`,
+over every slice the accuracy pass settled,
+under a comment saying it runs after every accuracy outcome settled and before
+ anything reads `changed`.
+Neither `repair-refine-step.ts` nor `refine-phase.ts` reads or writes the slice
+ cache.
+
+So a resumed run replays the accuracy pass from disk and then BUYS THE
+ NATURALNESS LANE AGAIN,
+with fresh model calls,
+every time.
+That is also why run 2 ran a checker stage four times while every slice reported
+ `exit=resumed`:
+`refine-phase.ts:441` has its own checker.
+
+### The confirmation
+
+Every cached envelope carries `refined` false,
+because the cache is written before the naturalness lane runs.
+
+Reading `lanes.repair.result.chunks[].refined` in the artifacts,
+against whether a slice published different text in the two runs:
+
+- diverged and refined:
+   7.
+- diverged and NOT refined:
+   0.
+- stable and refined:
+   1.
+- stable and NOT refined:
+   10.
+
+Every divergence is a refined slice,
+and almost every stable slice was never refined.
+
+The flags also show the mechanism directly.
+`Weideriche_` chunk 1,
+`Zha_Ke` chunk 0 and `Zha_Ke` chunk 3 were refined in run 1 and NOT refined in
+ run 2.
+The lane fired on those slices once and declined to the next,
+which is why their text moved.
+
+### What this explains that was previously unexplained
+
+`Acheron` chunk 0's cached record says `changed` false with zero repair regions,
+and it still shipped a replacement.
+It was refined.
+A refinement-only change is a real change to the page made by a slice the
+ accuracy pass left alone,
+and `repair-translation.ts:531` says so outright:
+a refinement-only change reaches `changedOutcomes` and `anyChanged`.
+
+`Zha_Ke` publishing 162 and 278 characters where run 1 published nothing follows
+ the same way,
+one stage further on.
+
+### What a fix has to decide
+
+This is not a bug in the naturalness lane.
+The lane is doing what it was built to do.
+What is missing is that its output is not part of the unit the cache stores,
+so the cache cannot make a run reproducible.
+
+The decision is whether the cached unit becomes the slice AFTER refinement,
+or whether the refinement gets a cache of its own keyed on the accuracy result.
+Both make a resumed run reproduce.
+They differ in what a cache invalidation costs and in whether a refinement can
+ be re-asked without re-buying the accuracy pass.
