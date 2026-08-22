@@ -6,8 +6,9 @@ import {
 
 import { isLiveRuleSetReady, } from '../dist/final/node/opensnitch-live.mjs';
 
-await describe('OpenSnitch live-chain readiness', async () => {
-  await Promise.all([
+await describe({
+  name: 'OpenSnitch live-chain readiness',
+  children: [
     it({
       name: 'accepts required port before application queue',
       fn: async () => {
@@ -51,5 +52,5 @@ await describe('OpenSnitch live-chain readiness', async () => {
         },),).toBe(false,);
       },
     },),
-  ],);
-});
+  ],
+},);

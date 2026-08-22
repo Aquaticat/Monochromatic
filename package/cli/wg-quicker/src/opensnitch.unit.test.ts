@@ -510,7 +510,7 @@ await describe({
             await removeOpenSnitchEndpointAllowance({ interfaceName: 'wg0', },);
             expect(await readRules({ path: fixture.configPath, },),).toEqual([],);
             expect(await readRules({ path: replacementPath, },),).toEqual([],);
-            expect((await readdir(fixture.runtimePath,),)
+            expect((await readdir(fixture.runtimePath,))
               .filter(function stateFiles(name,): boolean {
                 return name.startsWith('opensnitch-interface-',) && name.endsWith('.json',);
               },),).toEqual([],);
