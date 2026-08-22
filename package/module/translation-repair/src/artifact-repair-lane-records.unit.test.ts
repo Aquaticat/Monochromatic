@@ -16,6 +16,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -23,6 +24,7 @@ import {
 
 import {
   type ArtifactDeliveryRowV2,
+  ArtifactParseError,
   compareLanesV2,
   repairLaneRecordsOf,
 } from '../dist/final/node/index.mjs';
@@ -354,12 +356,18 @@ await describe({
         + 'its top-level keys exactly, so the two spellings can never coexist '
         + 'for a reader to pick the wrong one between',
       fn: async () => {
-        expect(function retiredKeyPresent() {
+        /**
+         * What retiredKeyPresent raised, read for its class as well as its wording.
+         */
+        const refusalOfRetiredKeyPresent = caught(function retiredKeyPresent() {
           repairLaneRecordsOf({
             value: artifactWith({ issues: [DECOY_ISSUE,], },),
             path: 'CatEntry1',
           },);
-        },).toThrow('issues',);
+        },);
+
+        expect(refusalOfRetiredKeyPresent,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfRetiredKeyPresent as Error).message,).toContain('issues',);
       },
     },),
 
@@ -389,14 +397,20 @@ await describe({
         + 'about where the records live, and answering that with an empty list '
         + 'is exactly what hid the moved path',
       fn: async () => {
-        expect(function noIssues() {
+        /**
+         * What noIssues raised, read for its class as well as its wording.
+         */
+        const refusalOfNoIssues = caught(function noIssues() {
           repairLaneRecordsOf({
             value: artifactWith({
               repairRaw: repairResult({ issues: undefined, },),
             },),
             path: 'CatEntry1',
           },);
-        },).toThrow('lanes.repair.result.issues',);
+        },);
+
+        expect(refusalOfNoIssues,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNoIssues as Error).message,).toContain('lanes.repair.result.issues',);
       },
     },),
 
@@ -407,14 +421,20 @@ await describe({
         + 'reader that answers their absence with silence reports the one '
         + 'condition it was built to detect',
       fn: async () => {
-        expect(function noFindings() {
+        /**
+         * What noFindings raised, read for its class as well as its wording.
+         */
+        const refusalOfNoFindings = caught(function noFindings() {
           repairLaneRecordsOf({
             value: artifactWith({
               repairRaw: repairResult({ findings: undefined, },),
             },),
             path: 'CatEntry1',
           },);
-        },).toThrow('lanes.repair.result.findings',);
+        },);
+
+        expect(refusalOfNoFindings,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfNoFindings as Error).message,).toContain('lanes.repair.result.findings',);
       },
     },),
   ],

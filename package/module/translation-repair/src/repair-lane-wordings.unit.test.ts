@@ -20,6 +20,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -28,6 +29,7 @@ import {
   type ChunkPair,
   makeInsertionChunk,
   repairLaneWordings,
+  RepairUnheardError,
   type RepairVoiceRecord,
 } from '../dist/final/node/index.mjs';
 
@@ -291,7 +293,10 @@ await describe({
         + 'something produced text no stage was recorded as having produced, and a row like that reaches '
         + 'a ledger, a comparison and a rate before anyone notices',
       fn: async () => {
-        expect(function silentSliceCarriesText() {
+        /**
+         * What silentSliceCarriesText raised, read for its class as well as its wording.
+         */
+        const refusalOfSilentSliceCarriesText = caught(function silentSliceCarriesText() {
           repairLaneWordings({
             slices: alternatingSlices(),
             undecided: 'refuse',
@@ -302,7 +307,10 @@ await describe({
               heard({ chunkIndex: 3, repairedText: '', },),
             ],
           },);
-        },).toThrow('slice 2 heard no critic',);
+        },);
+
+        expect(refusalOfSilentSliceCarriesText,).toBeInstanceOf(RepairUnheardError,);
+        expect((refusalOfSilentSliceCarriesText as Error).message,).toContain('slice 2 heard no critic',);
       },
     },),
     it({

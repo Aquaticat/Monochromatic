@@ -17,11 +17,13 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  ArtifactPreparationMismatchError,
   buildSettledArtifactV2,
   type ChunkPair,
   type DocumentLanesResult,
@@ -441,7 +443,10 @@ await describe({
           },
         };
 
-        expect(function bothLedgersAreShort() {
+        /**
+         * What bothLedgersAreShort raised, read for its class as well as its wording.
+         */
+        const refusalOfBothLedgersAreShort = caught(function bothLedgersAreShort() {
           buildSettledArtifactV2({
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
@@ -454,7 +459,10 @@ await describe({
             laneSelection: { kind: 'pending-human-decision', },
             consolidation: { kind: 'not-run', },
           },);
-        },).toThrow('1 rows for a preparation of 2 slices',);
+        },);
+
+        expect(refusalOfBothLedgersAreShort,).toBeInstanceOf(ArtifactPreparationMismatchError,);
+        expect((refusalOfBothLedgersAreShort as Error).message,).toContain('1 rows for a preparation of 2 slices',);
       },
     },),
     it({
@@ -483,7 +491,10 @@ await describe({
             },),
         } as unknown as PreparedDocumentPair;
 
-        expect(function ledgersDescribeAnotherPreparation() {
+        /**
+         * What ledgersDescribeAnotherPreparation raised, read for its class as well as its wording.
+         */
+        const refusalOfLedgersDescribeAnotherPreparation = caught(function ledgersDescribeAnotherPreparation() {
           buildSettledArtifactV2({
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
@@ -496,7 +507,10 @@ await describe({
             laneSelection: { kind: 'pending-human-decision', },
             consolidation: { kind: 'not-run', },
           },);
-        },).toThrow('was built over',);
+        },);
+
+        expect(refusalOfLedgersDescribeAnotherPreparation,).toBeInstanceOf(ArtifactPreparationMismatchError,);
+        expect((refusalOfLedgersDescribeAnotherPreparation as Error).message,).toContain('was built over',);
       },
     },),
     it({
@@ -534,7 +548,10 @@ await describe({
           };
         }
 
-        expect(function rowsContradictTheName() {
+        /**
+         * What rowsContradictTheName raised, read for its class as well as its wording.
+         */
+        const refusalOfRowsContradictTheName = caught(function rowsContradictTheName() {
           buildSettledArtifactV2({
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
@@ -551,7 +568,10 @@ await describe({
             laneSelection: { kind: 'pending-human-decision', },
             consolidation: { kind: 'not-run', },
           },);
-        },).toThrow('names slice 7 at position 1',);
+        },);
+
+        expect(refusalOfRowsContradictTheName,).toBeInstanceOf(ArtifactPreparationMismatchError,);
+        expect((refusalOfRowsContradictTheName as Error).message,).toContain('names slice 7 at position 1',);
       },
     },),
     it({
@@ -560,7 +580,10 @@ await describe({
         + 'cannot see: a driver result carrying one lane`s rows beside another lane`s result is '
         + 'structurally valid and describes two different runs',
       fn: async () => {
-        expect(function resultCountsAnotherRun() {
+        /**
+         * What resultCountsAnotherRun raised, read for its class as well as its wording.
+         */
+        const refusalOfResultCountsAnotherRun = caught(function resultCountsAnotherRun() {
           buildSettledArtifactV2({
             entryId: 'CatEntry1',
             tip: 'a'.repeat(40,),
@@ -579,7 +602,10 @@ await describe({
             laneSelection: { kind: 'pending-human-decision', },
             consolidation: { kind: 'not-run', },
           },);
-        },).toThrow('counts 9 slices',);
+        },);
+
+        expect(refusalOfResultCountsAnotherRun,).toBeInstanceOf(ArtifactPreparationMismatchError,);
+        expect((refusalOfResultCountsAnotherRun as Error).message,).toContain('counts 9 slices',);
       },
     },),
     it({
