@@ -8,6 +8,7 @@ import {
   consolidateRunShape,
   consolidateSliceKey,
 } from './consolidate-key.ts';
+import { CONSOLIDATE_GATE_QUORUM, } from './consolidate-gate-stage.ts';
 import { produceConsolidations, } from './consolidate-produce.ts';
 import {
   type ConsolidationSettlement,
@@ -21,6 +22,7 @@ import {
 import type { ProjectedLanesV2, } from './corpus-run/artifact-v2-derive.ts';
 import type { LaneContestOutcome, } from './lane-contest-stage.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import type { TranslateDecision, } from './translate-stage-result.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Consolidate driver
@@ -40,16 +42,46 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // that slice's best text, because that text is neither candidate.
 
 /**
+ * Judge decisions a second panel might change, so a cache must not freeze them.
+ *
+ * INHERITED, NOT INVENTED. `translate-retry.ts` names exactly these two as the
+ * declines worth buying another judging for, and names `no-candidate-backed`
+ * as the settled one it records after that second round. The classification is
+ * the same question here, so it gets the same answer.
+ *
+ * `no-candidate` is deliberately absent for the reason given there: it means
+ * nothing usable was proposed, which a re-ask of the SAME slate cannot change.
+ * The consolidation reaches the judge only past a floor that already refused
+ * an empty slate, so it should not arise at all; if it does, keeping it stops
+ * a later run re-buying a full panel to be told the same thing.
+ */
+const UNSETTLED_DECISIONS: readonly TranslateDecision[] = [
+  'declined-indecision',
+  'declined-rejection',
+];
+
+/**
  * Whether a settlement is worth keeping across runs.
  *
  * SETTLED VERDICTS ONLY, matching the contest's rule for the same reason: a
  * thin panel is a transient fact about a provider on one night, not a property
  * of the question, and freezing it into the cache would answer every later
- * resume of this entry with that night.
+ * resume of this entry with that night. The contest spells that as its own
+ * quorum, so this spells it as the GATE'S quorum rather than as any ballot at
+ * all: a gate that heard one voice of six did not settle, it was under-attended,
+ * and `gateConsolidatedSlice` already refuses to act on fewer than
+ * `CONSOLIDATE_GATE_QUORUM`.
  *
  * A settlement that never reached the gate IS still worth keeping when it was
  * the floor or an absent standing text that stopped it. Those are properties of
- * the slate and the contest, not of who answered.
+ * the slate and the contest, not of who answered. A slate the JUDGES kept the
+ * standing text at is worth keeping only where they decided rather than
+ * declined, which is the same distinction one stage earlier.
+ *
+ * EXPORTED FOR ITS OWN TEST, per `XPT`. Driving this predicate through
+ * `consolidateDocument` would need a client that answers every round of every
+ * branch, which buys a transport fixture to assert a decision the fixture is
+ * not what settles.
  *
  * @param settlement - what the stage settled
  *
@@ -57,21 +89,39 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * @example
  * ```ts
- * const keep = worthResuming({ settlement, },);
+ * const keep = consolidationWorthResuming({ settlement, },);
  * ```
  */
-function worthResuming(
+export function consolidationWorthResuming(
   { settlement, }: { readonly settlement: ConsolidationSettlement; },
 ): boolean {
   /**
    * What the gate settled, absent where the slice never reached it.
    */
   const { gate, } = settlement;
-  if (gate === undefined)
-    return (settlement.terminal === 'incumbent-only')
-      || (settlement.terminal === 'no-standing-text')
-      || (settlement.terminal === 'slate-kept-standing');
-  return gate.usable > 0;
+  if (gate !== undefined)
+    return gate.usable >= CONSOLIDATE_GATE_QUORUM;
+
+  if (
+    (settlement.terminal === 'incumbent-only')
+    || (settlement.terminal === 'no-standing-text')
+  )
+    return true;
+
+  if (settlement.terminal !== 'slate-kept-standing')
+    return false;
+
+  /**
+   * What the judges decided, which separates a panel that settled on the
+   * standing text from one that declined to settle at all.
+   */
+  const { decided, } = settlement;
+  if (decided === undefined)
+    return false;
+
+  return !UNSETTLED_DECISIONS.some(function matches(unsettled,): boolean {
+    return unsettled === decided.decision;
+  },);
 }
 
 /**
@@ -256,7 +306,7 @@ export async function consolidateDocument(
         l: dl,
       },);
     })();
-    if ((resumed === undefined) && worthResuming({ settlement, },)) {
+    if ((resumed === undefined) && consolidationWorthResuming({ settlement, },)) {
       await cache.persist({
         key,
         serialized: JSON.stringify(settlement,),

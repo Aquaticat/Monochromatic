@@ -50,11 +50,51 @@ export type ArtifactConsolidateGateV2 =
   };
 
 /**
+ * Wording this slice contributes to the assembled document.
+ *
+ * NAMED ABSENCE RATHER THAN AN UNCONDITIONAL STRING, because exactly one
+ * terminal state produces text an assembly must apply. Every other one leaves
+ * the slice with whatever the lane contest settled, and one of them,
+ * `no-standing-text`, carries the EMPTY STRING as its text: the contest chose
+ * neither lane, so nothing stands. A consumer reading a bare `text` field per
+ * slice and writing it into the document would delete every declined-contest
+ * slice outright. This shape makes that unrepresentable rather than warning
+ * against it.
+ *
+ * @example
+ * ```ts
+ * const shipped: ArtifactConsolidateShippedV2 = { kind: 'unchanged', };
+ * ```
+ */
+export type ArtifactConsolidateShippedV2 =
+  | {
+    /**
+     * A consolidation won both rounds and survived the wrap, so this text
+     * replaces what the lane contest left at this slice.
+     */
+    readonly kind: 'consolidated';
+
+    /**
+     * Wording to write, wrapped, exactly as it should reach the document.
+     */
+    readonly text: string;
+  }
+  | {
+    /**
+     * Nothing here replaces what the lane contest left, whether because the
+     * floor refused the slate, the judges kept the standing text, the gate
+     * did, the wrap erased the difference, or the contest named neither lane.
+     * The terminal state says which.
+     */
+    readonly kind: 'unchanged';
+  };
+
+/**
  * One consolidated slice as the stage left it.
  *
  * @example
  * ```ts
- * const slice: ArtifactConsolidateSliceV2 = { chunkIndex: 0, terminal: 'incumbent-only', rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
+ * const slice: ArtifactConsolidateSliceV2 = { chunkIndex: 0, terminal: 'incumbent-only', shipped: { kind: 'unchanged', }, rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
  * ```
  */
 export type ArtifactConsolidateSliceV2 = {
@@ -67,6 +107,12 @@ export type ArtifactConsolidateSliceV2 = {
    * How the slice left the stage, which is the field a census should count.
    */
   readonly terminal: ConsolidationTerminal;
+
+  /**
+   * Wording this slice contributes, or a named absence saying it contributes
+   * none. This is the field an assembly reads; `terminal` says why.
+   */
+  readonly shipped: ArtifactConsolidateShippedV2;
 
   /**
    * Whether the wrap altered what the producer emitted, which separates a
@@ -122,9 +168,24 @@ export function describeConsolidateSlice(
    * the settlement so the branch below is one member step rather than two.
    */
   const { gate, } = settlement;
+
+  /**
+   * Whether this slice replaces anything. Read off the terminal rather than
+   * off `ships` or off the text differing from the standing text, because
+   * only the terminal distinguishes a consolidation that won from a wrap that
+   * erased the difference, and only it separates both from a contest that
+   * named neither lane and left the settlement's text empty.
+   */
+  const consolidated = settlement.terminal === 'consolidated';
   return {
     chunkIndex,
     terminal: settlement.terminal,
+    shipped: consolidated
+      ? {
+        kind: 'consolidated',
+        text: settlement.text,
+      }
+      : { kind: 'unchanged', },
     rewrapped: settlement.rewrapped,
     demoted: settlement.demoted,
     verdicts: settlement.verdicts,

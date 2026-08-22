@@ -124,10 +124,14 @@ export {
 } from './consolidate-validity-floor.ts';
 export {
   type ArtifactConsolidateGateV2,
+  type ArtifactConsolidateShippedV2,
   type ArtifactConsolidateSliceV2,
   describeConsolidateSlice,
 } from './corpus-run/artifact-v2-consolidate.ts';
-export { consolidateDocument, } from './consolidate-driver.ts';
+export {
+  consolidateDocument,
+  consolidationWorthResuming,
+} from './consolidate-driver.ts';
 export { standingTextFor, } from './consolidate-standing.ts';
 export {
   CONSOLIDATE_CACHE_VERSION,

@@ -26,7 +26,12 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   consolidateDocument,
+  type ConsolidationSettlement,
+  type ConsolidationTerminal,
+  consolidationWorthResuming,
   createSyntheticClient,
+  type TranslateDecision,
+  type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -293,6 +298,174 @@ await describe({
         expect(slices[0]?.terminal,).toBe('incumbent-only',);
         expect(slices[0]?.gate.kind,).toBe('not-asked',);
         expect(written.length,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Builds a judged round that settled the way a resume case needs.
+ *
+ * WHOLE AND HONEST rather than cast, because the predicate reads a field OFF
+ * this object and a fixture narrowed to that field would stop the compiler
+ * noticing if the field moved or was renamed. Everything else is the emptiest
+ * value its type admits.
+ *
+ * @param decision - what the judges settled on
+ *
+ * @returns Round shaped as the judge returns one
+ *
+ * @example
+ * ```ts
+ * const decided = judgedAs({ decision: 'judged', },);
+ * ```
+ */
+function judgedAs(
+  { decision, }: { readonly decision: TranslateDecision; },
+): TranslateStageResult {
+  return {
+    text: 'The cat naps in the window.',
+    origin: 'incumbent',
+    producer: {
+      kind: 'incumbent',
+      matched: [],
+    },
+    decision,
+    voteWeight: 0,
+    tally: {
+      judgesAvailable: 0,
+      ballots: 0,
+      abstentions: 0,
+      selfVotes: 0,
+    },
+    ballots: [],
+    heardTranslators: 0,
+    candidateCount: 1,
+    findings: [],
+    slate: [],
+    selectedIndex: 0,
+    shippedIndex: 0,
+    perCandidate: [],
+  };
+}
+
+/**
+ * Builds a settlement that left the stage the way a resume case needs.
+ *
+ * ONLY THE FIELDS THE PREDICATE READS are real here. It looks at the terminal,
+ * at how many ballots the gate could read, and at what the judges decided;
+ * everything else on a settlement is carried for the record rather than for
+ * this decision.
+ *
+ * @param terminal - how the slice left the stage
+ *
+ * @param usable - ballots the gate could read, absent where it never ran
+ *
+ * @param decision - what the judges decided, absent where none were asked
+ *
+ * @returns Settlement shaped as the stage returns one
+ *
+ * @example
+ * ```ts
+ * const settlement = settlementFor({ terminal: 'consolidated', usable: 4, },);
+ * ```
+ */
+function settlementFor(
+  {
+    terminal,
+    usable,
+    decision,
+  }: {
+    readonly terminal: ConsolidationTerminal;
+    readonly usable?: number;
+    readonly decision?: TranslateDecision;
+  },
+): ConsolidationSettlement {
+  return {
+    terminal,
+    text: 'The cat naps in the window.',
+    floor: {
+      kind: 'proposals',
+      validModelIds: ['hf:cat/Cat-A',],
+    },
+    verdicts: [],
+    rewrapped: false,
+    demoted: false,
+    ...((usable === undefined)
+      ? {}
+      : {
+        gate: {
+          choice: 'consolidated',
+          ships: 'consolidated',
+          ballots: [],
+          usable,
+          findings: [],
+        },
+      }),
+    ...((decision === undefined) ? {} : { decided: judgedAs({ decision, },), }),
+  } as ConsolidationSettlement;
+}
+
+await describe({
+  name: consolidationWorthResuming.name,
+  children: [
+    it({
+      name: 'REFUSES TO CACHE A GATE TOO THIN TO SETTLE, which is the whole reason this predicate '
+        + 'exists: a night when one voice of six answered is a fact about a provider, not about the '
+        + 'question, and writing it would answer every later resume of the entry with that night. The '
+        + 'gate refuses to act below its quorum, so a cache that kept the result would preserve a '
+        + 'verdict the gate itself declined to reach',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'gate-kept-standing', usable: 1, },),
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'CACHES A GATE THAT REACHED ITS QUORUM, which is the positive control: a predicate that '
+        + 'refused everything would pass the case above while making every run re-buy every slice it '
+        + 'had already settled',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'CACHES A SLICE STOPPED BEFORE THE GATE BY THE SLATE OR THE CONTEST, because neither is a '
+        + 'fact about who answered. A floor that refused every proposal read the structural guard, and '
+        + 'a contest that named neither lane left nothing to improve on; both hold on any night',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'incumbent-only', },),
+        },),).toBe(true,);
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'no-standing-text', },),
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO CACHE JUDGES THAT DECLINED TO SETTLE, and caches judges that decided, which is '
+        + 'the same distinction one stage earlier: translate-retry.ts buys a second judging for '
+        + 'exactly declined-indecision and declined-rejection and records the settled decline under a '
+        + 'different name. A predicate keyed on which text won rather than on whether they settled '
+        + 'would freeze an undecided panel',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'declined-indecision', },),
+        },),).toBe(false,);
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'declined-rejection', },),
+        },),).toBe(false,);
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'judged', },),
+        },),).toBe(true,);
+        expect(consolidationWorthResuming({
+          settlement: settlementFor({ terminal: 'slate-kept-standing', decision: 'no-candidate-backed', },),
+        },),).toBe(true,);
       },
     },),
   ],
