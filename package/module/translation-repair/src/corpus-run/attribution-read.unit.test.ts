@@ -436,5 +436,80 @@ await describe({
           ).toContain('emissionCount',);
       },
     },),
+    it({
+      name: 'READS THE REPAIR LANE, where version 2 keeps these records, rather than the artifact '
+        + 'root where version 1 kept them. This is the case every other fixture here could not '
+        + 'reach: all of them are version-1-shaped, so all of them passed while the reader was '
+        + 'blind to every artifact the current pipeline writes. Measured over the settled '
+        + 'population before this held, 0 of 47 artifacts carried chunkCritics at the root and 47 '
+        + 'of 47 carried it in the lane, so every one was filed as PREDATING attribution, which is '
+        + 'the one wrong answer here that reads like an ordinary census of an older corpus. '
+        + 'DECOYS sit at the root, deliberately different from the lane records, so a reader still '
+        + 'asking the root is caught rather than agreeing by coincidence',
+      fn: async () => {
+        /**
+         * Version 2 artifact, with version 1's keys planted at the root.
+         */
+        await using scratch = await writeArtifacts({
+          artifacts: {
+            'Whiskers.json': {
+              id: 'Whiskers',
+              chunkCritics: [{
+                chunkIndex: 9,
+                heardCriticIds: [TABBY,],
+                claimAttributions: [{
+                  claimId: 'decoy-must-not-be-read',
+                  proposers: [{ modelId: TABBY, emissionCount: 7, },],
+                },],
+              },],
+              issues: [],
+              lanes: {
+                repair: {
+                  result: {
+                    chunkCritics: [{
+                      chunkIndex: 3,
+                      heardCriticIds: [TABBY,],
+                      claimAttributions: [{
+                        claimId: NAP,
+                        proposers: [{ modelId: TABBY, emissionCount: 2, },],
+                      },],
+                    },],
+                    issues: [
+                      {
+                        chunkIndex: 0,
+                        issue: {
+                          status: 'accepted',
+                          claims: [{ claimId: NAP, },],
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },);
+
+        /**
+         * Entries as the CLI would gather them.
+         */
+        const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+
+        // ELIGIBLE, which is the half that decides the population. Reading the
+        // root left this undefined and moved the entry into the pre-feature
+        // bucket without anything reporting that it had happened.
+        expect(entries[0]?.chunkCritics,).toBeDefined();
+
+        /**
+         * Chunk record the repair lane carried.
+         */
+        const record = entries[0]?.chunkCritics?.[0];
+
+        expect(record?.chunkIndex,).toBe(3,);
+        expect(record?.claimAttributions[0]?.claimId,).toBe(NAP,);
+        expect(entries[0]?.issues,)
+          .toStrictEqual([{ status: 'accepted', claimIds: [NAP,], },],);
+      },
+    },),
   ],
 },);

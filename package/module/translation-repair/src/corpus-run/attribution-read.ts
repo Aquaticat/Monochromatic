@@ -67,6 +67,62 @@ function readClaimIds(
 }
 
 /**
+ * Record carrying this artifact's own attribution and issue records.
+ *
+ * TWO PATHS, AND EXACTLY ONE PER ARTIFACT. Version 1 wrote `chunkCritics` and
+ * `issues` at the artifact root, and version 2 writes them inside the repair
+ * lane at `lanes.repair.result`. Reading only the root did not throw and did
+ * not read as absent to anyone looking: it read as an artifact settled BEFORE
+ * attribution existed, because an omitted key is exactly what marks the
+ * pre-feature population.
+ *
+ * Measured over the settled artifacts: 0 of 47 carry `chunkCritics` at the
+ * root and 47 of 47 carry it in the repair lane, so the whole population was
+ * filed as pre-feature and the 2479 attributions it holds reached no consumer.
+ * The issue read failed the same way, 0 records against 1546.
+ *
+ * The version 1 path stays rather than being replaced, because artifacts
+ * outlive the pipelines that wrote them and a settled file must keep answering
+ * for itself.
+ *
+ * @param parsed - parsed artifact
+ *
+ * @returns Lane result when this artifact has one, else the artifact itself
+ *
+ * @example
+ * ```ts
+ * const records = recordsHolderOf({ parsed, },);
+ * ```
+ */
+function recordsHolderOf(
+  {
+    parsed,
+  }: {
+    readonly parsed: Readonly<Record<string, unknown>>;
+  },
+): Readonly<Record<string, unknown>> {
+  /**
+   * Lane container, absent on anything version 1 wrote.
+   */
+  const { lanes, } = parsed;
+  if (!isJsonRecord(lanes,))
+    return parsed;
+
+  /**
+   * Repair lane, the only one that files issues or hears critics.
+   */
+  const { repair, } = lanes;
+  if (!isJsonRecord(repair,))
+    return parsed;
+
+  /**
+   * Lane's own result, spelled `result` on disk.
+   */
+  const { result, } = repair;
+  return isJsonRecord(result,) ? result : parsed;
+}
+
+/**
  * Reads one artifact's accepted-issue views.
  *
  * @param raw - parsed artifact
@@ -154,6 +210,12 @@ function toEntry(
    */
   const entryId = ((typeof id) === 'string') ? id : name;
 
+  /**
+   * Where this artifact keeps its records, which is not the artifact itself on
+   * anything version 2 wrote.
+   */
+  const records = recordsHolderOf({ parsed, },);
+
   return {
     id: entryId,
     // ABSENT versus MALFORMED, and the difference decides the population. An
@@ -162,15 +224,19 @@ function toEntry(
     // present but not an array is corruption, and letting it fall through to
     // the same omission would move a broken artifact into the pre-feature
     // population on the strength of its own breakage.
-    ...(('chunkCritics' in parsed)
+    //
+    // ASKED OF THE HOLDER, NOT OF THE ARTIFACT. Asking the artifact root put
+    // every version 2 artifact into the pre-feature population, which is the
+    // one answer here that looks like an ordinary reading of an older corpus.
+    ...(('chunkCritics' in records)
       ? {
         chunkCritics: decodeChunkCritics({
-          value: parsed.chunkCritics,
+          value: records.chunkCritics,
           entryId,
         },),
       }
       : {}),
-    issues: readIssueViews({ raw: parsed, },),
+    issues: readIssueViews({ raw: records, },),
   };
 }
 
