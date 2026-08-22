@@ -105,17 +105,22 @@ Each port rule accepts outbound UDP from any process to that destination port be
 `wg-quicker` emits a warning naming the ports,
 interface,
 and changed file whenever this policy widening is active.
-The rules carry interface-specific `wg-quicker managed endpoint [...]` descriptions and remain visible in
-OpenSnitch's system-firewall configuration.
+The rules carry interface-and-network-namespace-specific `wg-quicker managed endpoint [...] [netns:...]`
+descriptions and remain visible in OpenSnitch's system-firewall configuration.
+Equal interface names in separate network namespaces retain independent rules,
+locks,
+and lifecycle manifests.
 `down` and failed-`up` rollback remove only that interface's rules,
 even when the WireGuard link is already absent.
 Before config mutation,
-`wg-quicker` stores exact config path and potential ports in private per-interface runtime state.
+`wg-quicker` stores exact config path and potential ports in private per-interface-and-namespace runtime state.
 Cleanup uses that recorded path if `FwOptions.ConfigPath` later changes,
 and clears runtime state only after config reconciliation and live-chain proof succeed.
 Teardown waits until formerly owned exact port rules disappear from the live chain,
 unless another retained OpenSnitch rule still accepts the same port.
 A failed proof retains runtime state so a later `down` can retry cleanup.
+This `/run` state survives an interrupted process but not a host reboot;
+host-crash recovery is outside this lifecycle guarantee.
 
 The integration supports OpenSnitch 1.8's nftables backend and version 1 system-firewall schema.
 It rejects disabled system firewall,
@@ -126,6 +131,8 @@ and non-nftables backends instead of claiming strict-deny compatibility without 
 OpenSnitch live reload receives one positional file write;
 shorter JSON is padded with valid trailing whitespace so truncate does not emit a second reload event.
 `wg-quicker` then requires consecutive healthy nftables observations in the daemon's network namespace.
+When no daemon process exists,
+it still inspects any surviving OpenSnitch table and refuses to forget a stale managed allowance.
 Each required accept rule must precede the first NFQUEUE rule,
 and each no-longer-owned exact port must be absent.
 A missed watcher convergence triggers one bounded same-inode rewrite and another proof attempt;
@@ -136,8 +143,11 @@ Without a system-firewall override,
 `wg-quicker` follows `FwOptions.ConfigPath` from the selected daemon config.
 Custom deployments can set `WG_QUICKER_OPENSNITCH_DAEMON_CONFIG`;
 `WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` takes precedence over `FwOptions.ConfigPath` when both are set.
-System-firewall paths must be absolute so daemon and CLI cannot resolve different files.
-Both overrides cross the sudo boundary through the validated private caller-context file.
+System-firewall paths,
+daemon-config overrides,
+and `WG_QUICKER_RUNTIME_DIRECTORY` must be absolute so separate lifecycle invocations cannot resolve different
+files or state.
+The overrides cross the sudo boundary through the validated private caller-context file.
 The runtime `flock` serializes wg-quicker writers only;
 avoid editing the same OpenSnitch system-firewall file concurrently through its UI.
 See

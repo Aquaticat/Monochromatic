@@ -9,9 +9,11 @@ The verified IPv4 and nftables setup now works with OpenSnitch's default `allow`
 The command warns that each managed rule accepts any process's outbound UDP to that destination port before
 application filtering,
 and removes the rule on `down` or failed-`up` rollback.
-A private lifecycle manifest preserves the original file and ports across crashes,
+A private lifecycle manifest preserves the original file and ports across interrupted processes,
 path changes,
 and missing-link retries until live removal is proved.
+The default `/run` manifest is intentionally process-lifecycle state,
+not host-reboot recovery.
 
 The live boundary test covered IPv4,
 the nftables backend,
@@ -333,10 +335,15 @@ const replacementChain: JsonRecord = {
 ```
 
 Each generated rule uses description
-`wg-quicker managed endpoint [<interface>] UDP destination port <port>`,
+`wg-quicker managed endpoint [<interface>] [netns:<namespace-key>] UDP destination port <port>`,
 `Enabled = true`,
 string `Position = "0"`,
 and target `accept`.
+The namespace key is a truncated SHA-256 digest of `/proc/self/ns/net` identity.
+The same interface name in another namespace therefore has a different ownership prefix,
+manifest,
+and interface lock;
+shared config reconciliation retains both rule sets.
 The integration requires OpenSnitch's nftables backend,
 version 1 system-firewall schema,
 an enabled top-level firewall,
@@ -361,8 +368,9 @@ resolved a non-default watched system-firewall path,
 and passed traffic.
 
 Before config mutation,
-`package/cli/wg-quicker/src/opensnitch-state.ts:258-330` atomically persists interface-owned config path and
-potential ports in private runtime state.
+`package/cli/wg-quicker/src/opensnitch-state.ts` atomically persists namespace-scoped interface ownership,
+config path,
+and potential ports in private runtime state.
 Cleanup uses that recorded path even if daemon `FwOptions.ConfigPath` changes while the interface is up.
 It clears state only after config reconciliation and live-chain proof succeed.
 
@@ -464,6 +472,8 @@ One event reduces the trigger surface but does not eliminate OpenSnitch's intern
 the daemon's network namespace.
 Every managed port rule must precede the first queue rule,
 and formerly owned exact ports must be absent.
+When no daemon exists,
+the verifier lists surviving nftables tables and refuses to clear ownership while a stale managed allowance remains.
 `package/cli/wg-quicker/src/opensnitch-operation.ts:288-338` performs one bounded same-inode rewrite and repeats
 the proof after a missed convergence.
 Startup fails and rolls back when that retry also fails.
@@ -477,7 +487,7 @@ the persisted rule loads at its next start.
 The combined test used:
 
 - `wg-quicker` automatic-rule implementation through commit
-  `5bc52eca47e689f59f3c3b2a145ef06e3e181890`;
+  `ac93f26e22ab8af99660ac59cd40d8d4e609587f`;
 - missing-link retry wiring commit `0166622637f1ca21eba12a473d5882d98ef5e361`;
 - path-resolution and removal-verification fix commit
   `df738d6622712865caa2d34646bf3eb3f4d517bd`;
@@ -614,7 +624,17 @@ The combined test added OpenSnitch to its client namespace before invoking the r
 - Missing-link recovery fixture:
   after the WireGuard link was deleted externally,
   `down` removed the config rule and manifest before reporting that the link was absent.
-- Network-namespace isolation control:
+- Network-namespace ownership fixture:
+  two namespaces installed interface name `wgshared` with ports `2052` and `2053` into one shared config file.
+  Distinct namespace-scoped descriptions and manifests coexisted;
+  namespace A cleanup removed only port `2052` and retained namespace B's rule and manifest.
+- Processless stale-kernel fixture:
+  with no `opensnitchd` process,
+  JSON already clean,
+  and a surviving table accepting port `2053`,
+  cleanup retained its manifest after both bounded proofs failed.
+  Removing the stale table and retrying cleanup cleared the manifest.
+- Network-namespace daemon isolation control:
   package unit tests passed while released `opensnitchd` ran in a different network namespace;
   daemon detection excluded that unrelated process by `/proc/<pid>/ns/net` identity.
 - OpenSnitch started before `wg-quicker`:
@@ -673,7 +693,9 @@ wg-quicker up wg0
 ```
 
 Set `WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` only to override that `FwOptions` path.
-Both effective system-firewall paths must be absolute.
+System-firewall paths,
+daemon-config overrides,
+and runtime-directory overrides must be absolute.
 `wg-quicker` adds the actual peer endpoint ports,
 records cleanup ownership before mutation,
 requires accept rules before NFQUEUE,
