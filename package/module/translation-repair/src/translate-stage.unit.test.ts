@@ -34,6 +34,7 @@ import {
   runTranslateStage,
   type SyntheticClient,
   type SyntheticModelId,
+  TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
 } from '../dist/final/node/index.mjs';
 
@@ -294,6 +295,7 @@ async function runLane(
     incumbentText,
     incumbentKind = 'present',
     neighbouringSourceText,
+    lineStructured = false,
   }: {
     readonly translations: TranslateScript;
     readonly needle: string;
@@ -301,6 +303,12 @@ async function runLane(
     readonly incumbentText: string;
     readonly incumbentKind?: IncumbentKind;
     readonly neighbouringSourceText?: string;
+
+    /**
+     * Whether the enclosing chunk is governed by the verse rule, which decides
+     * what BOTH halves of this round are told.
+     */
+    readonly lineStructured?: boolean;
   },
 ) {
   /**
@@ -333,7 +341,7 @@ async function runLane(
     incumbentText,
     incumbentKind,
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
-    lineStructured: false,
+    lineStructured,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
     l,
@@ -767,6 +775,58 @@ await describe({
             return sheet.includes('not expected to render this',);
           },)
           .length,).toBe(judgeSheets.length,);
+      },
+    },),
+
+    it({
+      name: 'FORWARDS THE VERSE RULE TO ITS JUDGES, not only to its translators. This stage has always '
+        + 'handed the flag to `produceTranslateSlate` and, until 2026-08-22, to nothing else, so a slate '
+        + 'written to unmerge a passage was decided by a panel told a shape the ORIGINAL lacks is no fault. '
+        + 'The lane cases in `translate-judge.unit.test.ts` call the judging half directly and would pass '
+        + 'whether or not this handover existed, which is why the pair is repeated here',
+      fn: async () => {
+        const { judgeSheets, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: 'The cat is doing a nap upon the windowsill.',
+          lineStructured: true,
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(
+          judgeSheets.every(function carriesCriterion(sheet,): boolean {
+            return sheet.includes(TRANSLATE_LINE_STRUCTURE_CRITERION,);
+          },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'LEAVES IT OUT OF AN UNGOVERNED ROUND, which is the positive control the case above needs: '
+        + 'a sheet carrying the criterion for every slice would satisfy that one exactly as well and would '
+        + 'mean the flag was never read on the way through',
+      fn: async () => {
+        const { judgeSheets, } = await runLane({
+          translations: {
+            'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
+            'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
+            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+          },
+          needle: 'dozes',
+          incumbentText: 'The cat is doing a nap upon the windowsill.',
+          lineStructured: false,
+        },);
+
+        expect(judgeSheets.length,).toBeGreaterThan(0,);
+        expect(
+          judgeSheets.some(function carriesCriterion(sheet,): boolean {
+            return sheet.includes(TRANSLATE_LINE_STRUCTURE_CRITERION,);
+          },),
+        ).toBe(false,);
       },
     },),
   ],
