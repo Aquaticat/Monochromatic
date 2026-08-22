@@ -395,6 +395,7 @@ async function teardown(
    */
   const iface = config.interfaceName;
   if (!(await linkExists({ interfaceName: iface, },))) {
+    await removeOpenSnitchEndpointAllowance({ interfaceName: iface, },);
     if (tolerateMissing)
       return;
     throw new CommandError({
