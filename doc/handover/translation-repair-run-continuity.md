@@ -604,3 +604,40 @@ An entry killed mid-flight keeps a partial cache in the run's own directory,
 which is a snapshot rather than a resume,
 and it cannot be predicted from an
  artifact that does not exist.
+
+### Run 1 baseline per entry, captured before run 2 starts
+
+Counted from `~/temp/agent/vub-run1.log` at 05:21Z,
+with 4 of 6 entries settled.
+
+- `Acheron`:
+   27 `settleConsolidation`,
+   2 `produceConsolidations`,
+   30 lines tagged `consolidateDocument`.
+- `Weideriche_`:
+   19,
+   1,
+   21.
+- `Zha_Ke`:
+   12,
+   1,
+   14.
+- `gaoyanger`:
+   9,
+   2,
+   12.
+- `keyword233`:
+   still in flight,
+   so it has bought nothing yet.
+- `lintong`:
+   not started.
+
+The accounting closes exactly.
+The four settled entries sum to 77 `consolidateDocument` lines,
+which is the total the log carries.
+That is the positive control for this count,
+and it is why these figures can be trusted as a baseline rather than as a filter
+ that happened to match.
+
+Run 2 must show fewer than these on every entry it resumes.
+Equality means nothing resumed.
