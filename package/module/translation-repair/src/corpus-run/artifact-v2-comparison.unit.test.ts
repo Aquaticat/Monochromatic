@@ -17,6 +17,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -24,6 +25,7 @@ import {
 
 import {
   type ArtifactComparisonRowV2,
+  ArtifactComparisonV2Error,
   type ArtifactDeliveryRowV2,
   assertDerivationsAgree,
   compareLanesV2,
@@ -300,7 +302,10 @@ await describe({
         + 'a comparison joined by index alone would accept rows in the wrong order, which is one of the '
         + 'things reading by position exists to catch',
       fn: async () => {
-        expect(function lengthsDiffer() {
+        /**
+         * What lengthsDiffer raised, read for its class as well as its wording.
+         */
+        const refusalOfLengthsDiffer = caught(function lengthsDiffer() {
           compareLanesV2({
             repair: [
               keptArchive({ chunkIndex: 0, },),
@@ -308,9 +313,15 @@ await describe({
             ],
             translate: [keptArchive({ chunkIndex: 0, },),],
           },);
-        },).toThrow('cover 2 and 1 slices',);
+        },);
 
-        expect(function positionsDisagree() {
+        expect(refusalOfLengthsDiffer,).toBeInstanceOf(ArtifactComparisonV2Error,);
+        expect((refusalOfLengthsDiffer as Error).message,).toContain('cover 2 and 1 slices',);
+
+        /**
+         * What positionsDisagree raised, read for its class as well as its wording.
+         */
+        const refusalOfPositionsDisagree = caught(function positionsDisagree() {
           compareLanesV2({
             repair: [
               keptArchive({ chunkIndex: 0, },),
@@ -321,7 +332,10 @@ await describe({
               keptArchive({ chunkIndex: 0, },),
             ],
           },);
-        },).toThrow('position 0 names slice 0',);
+        },);
+
+        expect(refusalOfPositionsDisagree,).toBeInstanceOf(ArtifactComparisonV2Error,);
+        expect((refusalOfPositionsDisagree as Error).message,).toContain('position 0 names slice 0',);
       },
     },),
     it({
@@ -330,7 +344,10 @@ await describe({
         + 'over different slicings shows up: the slice numbers can still line up while the two lanes were '
         + 'reading different sentences',
       fn: async () => {
-        expect(function sourcesDisagree() {
+        /**
+         * What sourcesDisagree raised, read for its class as well as its wording.
+         */
+        const refusalOfSourcesDisagree = caught(function sourcesDisagree() {
           compareLanesV2({
             repair: [keptArchive({ chunkIndex: 0, },),],
             translate: [
@@ -340,7 +357,10 @@ await describe({
               },
             ],
           },);
-        },).toThrow('carries a different original in each ledger',);
+        },);
+
+        expect(refusalOfSourcesDisagree,).toBeInstanceOf(ArtifactComparisonV2Error,);
+        expect((refusalOfSourcesDisagree as Error).message,).toContain('carries a different original in each ledger',);
       },
     },),
     it({
@@ -348,7 +368,10 @@ await describe({
         'REFUSES two ledgers that disagree about whether the archive translates a slice, even where both '
         + 'carry the same text, since that disagreement is exactly the pair equal text hides',
       fn: async () => {
-        expect(function kindsDisagree() {
+        /**
+         * What kindsDisagree raised, read for its class as well as its wording.
+         */
+        const refusalOfKindsDisagree = caught(function kindsDisagree() {
           compareLanesV2({
             repair: [
               deliveryRow({
@@ -374,7 +397,10 @@ await describe({
               },),
             ],
           },);
-        },).toThrow('is present of archive wording to the repair lane',);
+        },);
+
+        expect(refusalOfKindsDisagree,).toBeInstanceOf(ArtifactComparisonV2Error,);
+        expect((refusalOfKindsDisagree as Error).message,).toContain('is present of archive wording to the repair lane',);
       },
     },),
   ],
@@ -425,12 +451,18 @@ await describe({
             laneRelation: 'both-agree' as const,
           };
         },);
-        expect(function derivationsDiffer() {
+        /**
+         * What derivationsDiffer raised, read for its class as well as its wording.
+         */
+        const refusalOfDerivationsDiffer = caught(function derivationsDiffer() {
           assertDerivationsAgree({
             frozen,
             live,
           },);
-        },).toThrow('disagree about slice 0',);
+        },);
+
+        expect(refusalOfDerivationsDiffer,).toBeInstanceOf(ArtifactComparisonV2Error,);
+        expect((refusalOfDerivationsDiffer as Error).message,).toContain('disagree about slice 0',);
       },
     },),
     it({
@@ -481,12 +513,18 @@ await describe({
           repair: [keptArchive({ chunkIndex: 0, },),],
           translate: [keptArchive({ chunkIndex: 0, },),],
         },);
-        expect(function lengthsDiffer() {
+        /**
+         * What lengthsDiffer raised, read for its class as well as its wording.
+         */
+        const refusalOfLengthsDiffer = caught(function lengthsDiffer() {
           assertDerivationsAgree({
             frozen,
             live: [],
           },);
-        },).toThrow('derives 1 comparison rows where the pipeline derives 0',);
+        },);
+
+        expect(refusalOfLengthsDiffer,).toBeInstanceOf(ArtifactComparisonV2Error,);
+        expect((refusalOfLengthsDiffer as Error).message,).toContain('derives 1 comparison rows where the pipeline derives 0',);
       },
     },),
   ],

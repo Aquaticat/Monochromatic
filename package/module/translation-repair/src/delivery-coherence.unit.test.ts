@@ -14,6 +14,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -146,7 +147,10 @@ await describe({
         + 'document reads exactly as it did and a count of shipped changes would include a slice nobody '
         + 'changed',
       fn: async () => {
-        expect(function replacedNothing() {
+        /**
+         * What replacedNothing raised, read for its class as well as its wording.
+         */
+        const refusalOfReplacedNothing = caught(function replacedNothing() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: {
@@ -157,7 +161,10 @@ await describe({
               delivery: { kind: 'replacement-shipped', },
             },),
           },);
-        },).toThrow('nothing was replaced',);
+        },);
+
+        expect(refusalOfReplacedNothing,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfReplacedNothing as Error).message,).toContain('nothing was replaced',);
       },
     },),
     it({
@@ -165,7 +172,10 @@ await describe({
         'REFUSES a shipped row carrying text that is neither the decision nor the archive, which is the '
         + 'state where no field says what the reader is actually looking at',
       fn: async () => {
-        expect(function carriedSomethingElse() {
+        /**
+         * What carriedSomethingElse raised, read for its class as well as its wording.
+         */
+        const refusalOfCarriedSomethingElse = caught(function carriedSomethingElse() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: {
@@ -176,7 +186,10 @@ await describe({
               delivery: { kind: 'replacement-shipped', },
             },),
           },);
-        },).toThrow('not the one that delivery carries',);
+        },);
+
+        expect(refusalOfCarriedSomethingElse,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfCarriedSomethingElse as Error).message,).toContain('not the one that delivery carries',);
       },
     },),
     it({
@@ -184,7 +197,10 @@ await describe({
         'REFUSES a withdrawn row that carries the withdrawn wording anyway, since a withdrawal is exactly '
         + 'the claim that the document does NOT have it',
       fn: async () => {
-        expect(function withdrewAndShipped() {
+        /**
+         * What withdrewAndShipped raised, read for its class as well as its wording.
+         */
+        const refusalOfWithdrewAndShipped = caught(function withdrewAndShipped() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: {
@@ -198,7 +214,10 @@ await describe({
               },
             },),
           },);
-        },).toThrow('not the one that delivery carries',);
+        },);
+
+        expect(refusalOfWithdrewAndShipped,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfWithdrewAndShipped as Error).message,).toContain('not the one that delivery carries',);
       },
     },),
     it({
@@ -207,7 +226,10 @@ await describe({
         + 'nothing saying what took it back: a reader counting withdrawals would miss it and a reader '
         + 'counting keeps would count it',
       fn: async () => {
-        expect(function hidAChange() {
+        /**
+         * What hidAChange raised, read for its class as well as its wording.
+         */
+        const refusalOfHidAChange = caught(function hidAChange() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: {
@@ -218,7 +240,10 @@ await describe({
               delivery: { kind: 'incumbent-retained', },
             },),
           },);
-        },).toThrow('saying what took the decision back',);
+        },);
+
+        expect(refusalOfHidAChange,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfHidAChange as Error).message,).toContain('saying what took the decision back',);
       },
     },),
     it({
@@ -226,7 +251,10 @@ await describe({
         'REFUSES a retained incumbent where the archive holds none, and a gap where it holds wording, '
         + 'which are the two ways a row can disagree with the archive about which of them it describes',
       fn: async () => {
-        expect(function retainedNothing() {
+        /**
+         * What retainedNothing raised, read for its class as well as its wording.
+         */
+        const refusalOfRetainedNothing = caught(function retainedNothing() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: { kind: 'not-evaluated', },
@@ -235,8 +263,14 @@ await describe({
               incumbentKind: 'absent',
             },),
           },);
-        },).toThrow('where the archive holds none',);
-        expect(function gappedSomething() {
+        },);
+
+        expect(refusalOfRetainedNothing,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfRetainedNothing as Error).message,).toContain('where the archive holds none',);
+        /**
+         * What gappedSomething raised, read for its class as well as its wording.
+         */
+        const refusalOfGappedSomething = caught(function gappedSomething() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: { kind: 'not-evaluated', },
@@ -244,7 +278,10 @@ await describe({
               delivery: { kind: 'gap-remains', },
             },),
           },);
-        },).toThrow('a gap where the archive holds wording',);
+        },);
+
+        expect(refusalOfGappedSomething,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfGappedSomething as Error).message,).toContain('a gap where the archive holds wording',);
       },
     },),
     it({
@@ -252,7 +289,10 @@ await describe({
         'REFUSES a gap that carries wording anyway, since the passage is either missing or it is not, and '
         + 'a gap row with text in it is the state a reader counting untranslated passages would trust',
       fn: async () => {
-        expect(function gapWithText() {
+        /**
+         * What gapWithText raised, read for its class as well as its wording.
+         */
+        const refusalOfGapWithText = caught(function gapWithText() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: { kind: 'unfilled', },
@@ -261,7 +301,10 @@ await describe({
               incumbentKind: 'absent',
             },),
           },);
-        },).toThrow('carries wording anyway',);
+        },);
+
+        expect(refusalOfGapWithText,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfGapWithText as Error).message,).toContain('carries wording anyway',);
       },
     },),
   ],
