@@ -466,6 +466,14 @@ because a runs directory holds corpus text from an
 
 REGISTERED 2026-08-22 from run 1's capture and artifacts,
 before run 2 started.
+
+THIS ACCOUNTING COVERS `Acheron` and `Weideriche_` ONLY,
+the two entries settled when it was written.
+Four more entries were still to come.
+EVERY FURTHER SETTLED ENTRY NEEDS THE SAME ACCOUNTING BEFORE RUN 2 STARTS,
+from `~/temp/agent/slice-terminals.mjs` over its artifact and
+ `~/temp/agent/capture-decisions.mjs` over its capture.
+Reading this list as complete would call a legitimate re-buy a failure.
 The criterion this replaces,
 zero `reportStreamProgress` lines,
 would have
