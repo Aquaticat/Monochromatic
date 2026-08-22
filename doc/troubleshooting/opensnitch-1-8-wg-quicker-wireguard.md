@@ -608,6 +608,16 @@ The combined test added OpenSnitch to its client namespace before invoking the r
   and ping received `3` of `3` replies under default deny.
   Immediately after `down` returned,
   port `2050` was absent while ICMP and NFQUEUE rules remained.
+- Final namespace-scoped strict-deny fixture against released OpenSnitch 1.8.0:
+  the config carried `wgqscope` plus a namespace key,
+  endpoint port `2054` appeared before NFQUEUE,
+  WireGuard completed a handshake,
+  and ping received `3` of `3` replies.
+  Immediately after `down`,
+  the config rule,
+  live port rule,
+  manifest,
+  and WireGuard link were absent while NFQUEUE remained.
 - Recovery fixture under default action `deny`:
   endpoint port `2051` was accepted before NFQUEUE,
   a private manifest recorded the original absolute config path and port,
