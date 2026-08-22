@@ -3199,3 +3199,82 @@ Neither reads the artifact contract.
 
 Nothing here starts before run 2 finishes,
 which is `#138`'s deliverable and the only thing that lifts the freeze.
+
+## The `pairIndex` rename is not the comparability change it was deferred as
+
+`#98` left `AlignmentFinding.pairIndex` documented rather than renamed,
+and `chunk-document.ts:89` records the reason:
+the scorecard renders it into a finding string that 56 settled artifacts share,
+so renaming it would be a comparability change.
+
+Both halves of that are wrong,
+and the real hazard is a third thing neither names.
+
+### No scorecard renders it
+
+The render is `document-preparation.ts:206`,
+into `prepared.alignmentFindings`,
+which `document-preparation.ts:109` declares as `readonly string[]`.
+Neither `scorecard.ts` nor `repair-scorecard.ts` mentions `pairIndex`.
+
+### Renaming the field cannot change any string
+
+The template writes the literal word `pair` and interpolates the value:
+
+```ts
+// package/module/translation-repair/src/document-preparation.ts
+return `alignment ${finding.kind} (pair ${String(finding.pairIndex,)}: ${finding.detail})`;
+```
+
+`alignment structure-mismatch (pair 0: ...)` is byte-identical whatever the
+ TypeScript field is called.
+The field name never reaches an artifact.
+So the rename is a rename,
+and it is free.
+
+### What is actually a comparability change is the word `pair`
+
+Two producers write that word over two different numbering spaces.
+
+`chunk-document.ts:385` sets `pairIndex` to `step.sourceIndex` or
+ `step.targetIndex` for a refusal,
+which is an index on the refused chunk's own side.
+`chunk-document.ts:290` sets it to zero for a whole-document observation.
+Both render as `structure-mismatch (pair N: ...)`.
+
+`document-preparation.ts:300` renders `target-unclaimed (pair N: ...)` from the
+ loop at `document-preparation.ts:242`,
+where N is a real pair index.
+
+So a reader meeting `(pair 0: ...)` cannot tell which numbering space the zero
+ lives in,
+and the two families are told apart only by the kind word beside it.
+Changing that word is what the settled artifacts would notice.
+
+### How many artifacts carry one
+
+5 of 56 version 1 artifacts in the settled payload carry an alignment string,
+which reproduces the count `#71` recorded.
+The heads are `structure-mismatch (pair 0` five times,
+`sections-merged (pair 0` three times and `sections-merged (pair 1` once.
+1 of 25 version 2 artifacts carries one,
+`target-unclaimed (pair 0`.
+
+A first probe reported 0 of 164 for the version 1 side,
+because it looked for a key whose name mentions alignment and these are prose
+ strings inside a findings array.
+No key in any of the 56 mentions alignment at all.
+
+### What this changes
+
+The rename leaves `#98` and joins `#170`,
+which is the same defect class:
+one name over two meanings,
+caught only when a reader takes the wrong one.
+The field rename is free and needs no migration.
+The rendered word is the part that costs comparability,
+and it is worth paying,
+because a refusal reporting a side index as a pair index is the reading that
+ sends someone to the wrong section.
+
+Queued behind the source freeze.
