@@ -178,7 +178,7 @@ await describe({
       name: 'FLOORS A SHORT SOURCE, because three times a heading is a few dozen characters and a '
         + 'purely proportional bound would sit under any answer a model could reasonably give',
       fn: async function floorsShortSources() {
-        expect(producedVolumeBound({ sourceChars: 56, },),).toBe(PRODUCED_VOLUME_FLOOR,);
+        expect(producedVolumeBound({ materialChars: 56, },),).toBe(PRODUCED_VOLUME_FLOOR,);
       },
     },),
 
@@ -186,7 +186,7 @@ await describe({
       name: 'SCALES WITH A LONG SOURCE, so a passage that legitimately runs long is bounded by its '
         + 'own size rather than by a number chosen for short text',
       fn: async function scalesWithLongSources() {
-        expect(producedVolumeBound({ sourceChars: 232, },),).toBe(232 * MAX_PRODUCED_TO_SOURCE_RATIO,);
+        expect(producedVolumeBound({ materialChars: 232, },),).toBe(232 * MAX_PRODUCED_TO_SOURCE_RATIO,);
       },
     },),
 
@@ -198,8 +198,8 @@ await describe({
          */
         const atCrossover = PRODUCED_VOLUME_FLOOR / MAX_PRODUCED_TO_SOURCE_RATIO;
 
-        expect(producedVolumeBound({ sourceChars: atCrossover, },),).toBe(PRODUCED_VOLUME_FLOOR,);
-        expect(producedVolumeBound({ sourceChars: atCrossover + 1, },),)
+        expect(producedVolumeBound({ materialChars: atCrossover, },),).toBe(PRODUCED_VOLUME_FLOOR,);
+        expect(producedVolumeBound({ materialChars: atCrossover + 1, },),)
           .toBe((atCrossover + 1) * MAX_PRODUCED_TO_SOURCE_RATIO,);
       },
     },),

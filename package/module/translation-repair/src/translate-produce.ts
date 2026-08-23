@@ -156,7 +156,7 @@ export async function produceTranslateSlate(
     // measured length, so this slice's own size bounds what any answer to
     // it can legitimately be. Without it the only bound is absolute, and
     // one 56-character slice here produced 10381 characters unchallenged.
-    maxAnswerChars: producedVolumeBound({ sourceChars: sourceText.length, },),
+    maxAnswerChars: producedVolumeBound({ materialChars: sourceText.length, },),
     responseFormat: TRANSLATE_RESPONSE_FORMAT,
     validate: isTranslateReportWire,
     stage: 'translate',

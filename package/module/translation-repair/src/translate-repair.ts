@@ -3,6 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { producedVolumeBound, } from './produced-volume-bound.ts';
 import { attemptStageCall, } from './stage-call.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import {
@@ -162,6 +163,17 @@ async function repairOneCandidate(
     },);
 
   /**
+   * Characters of finding text this answer has to address.
+   *
+   * COUNTED BECAUSE THE REPAIR WIRE EXPLAINS ITSELF. Its `explanation` field
+   * answers these findings, and the producing wire has no such field, so the
+   * slice alone does not bound what a correct answer here can run to.
+   */
+  const findingsChars = validation.findings
+    .join('',)
+    .length;
+
+  /**
    * The author's answer to its own findings.
    */
   const answer = await attemptStageCall({
@@ -175,6 +187,12 @@ async function repairOneCandidate(
     },),
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
+    // THE SAME BOUND AS PRODUCING, over more material. This call re-renders the
+    // same slice, so the slice still bounds it; it also argues with the
+    // findings, which producing never had to do.
+    maxAnswerChars: producedVolumeBound({
+      materialChars: sourceText.length + findingsChars,
+    },),
     responseFormat: TRANSLATE_REPAIR_RESPONSE_FORMAT,
     validate: isTranslateRepairWire,
     stage: 'translate-repair',

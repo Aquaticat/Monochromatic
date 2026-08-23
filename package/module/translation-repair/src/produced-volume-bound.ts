@@ -18,6 +18,28 @@
 // measured distinct share was 1.0000 on the grid against 0.5184 at every
 // offset. This bound does not look at what the text says, only at how much of
 // it there is, which is why phase cannot hide from it.
+//
+// TWO CALLERS, COUNTING DIFFERENT MATERIAL. Producing a slice counts the slice.
+// The re-ask that sends an invalid candidate back to its author counts the
+// slice PLUS the findings it must answer, because the repair wire carries an
+// `explanation` field the report wire does not, and no source length bounds
+// prose about faults. Reusing the producing bound there would refuse correct
+// work: re-asked slices are short, median 111 code points across 96 of 175
+// measured slices, and 23 of them sit below the floor crossover.
+//
+// THE RATIO IS MEASURED; THE MATERIAL IT APPLIES TO IS REASONED. Explanation
+// length is recorded nowhere, so unlike the ratio the widening was not derived
+// from emissions. Three things bound the risk of having reasoned it. It only
+// ever LOOSENS, so it adds no refusal the producing path does not already make.
+// The widened bound still lands far below the 10381-character emission that
+// opened this. And a false refusal costs one candidate, after which the slice
+// falls back to its other voices and to the incumbent, which is where an
+// invalid candidate went before the re-ask existed at all.
+//
+// THE PRIOR TRANSLATION IS DELIBERATELY NOT COUNTED, though the re-ask does
+// send it. It is itself bounded at sixteen times the source, so counting it
+// would permit roughly 272 times the source and clear the 98.2 floor of every
+// runaway ever observed here. Detection would be gone.
 
 /**
  * Smallest emission this bound ever refuses, in characters.
@@ -54,23 +76,28 @@ export const PRODUCED_VOLUME_FLOOR = 1_024;
 export const MAX_PRODUCED_TO_SOURCE_RATIO = 16;
 
 /**
- * Characters a call translating one slice may emit before it is cut.
+ * Characters a producing call may emit before it is cut.
  *
- * @param sourceChars - size of the passage being translated
+ * THE CONSTANT KEEPS ITS PRODUCED-TO-SOURCE NAME because that is where the
+ * number was measured. What a caller counts INTO this parameter may be wider
+ * than the source, and the region comment says which callers widen it and why.
+ *
+ * @param materialChars - text this answer must account for: the passage being
+ * rendered, plus anything else the call obliges it to address
  *
  * @returns Bound to hand the stream watch for this call
  *
  * @example
  * ```ts
- * const cap = producedVolumeBound({ sourceChars: 56, },);
+ * const cap = producedVolumeBound({ materialChars: 56, },);
  * ```
  */
 export function producedVolumeBound(
-  { sourceChars, }: { readonly sourceChars: number; },
+  { materialChars, }: { readonly materialChars: number; },
 ): number {
   return Math.max(
     PRODUCED_VOLUME_FLOOR,
-    sourceChars * MAX_PRODUCED_TO_SOURCE_RATIO,
+    materialChars * MAX_PRODUCED_TO_SOURCE_RATIO,
   );
 }
 
