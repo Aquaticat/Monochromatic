@@ -395,6 +395,47 @@ Tradeoff:
 There is no upstream-supported installation in which mise owns the Hermes package.
 An existing executable at `$HERMES_HOME/bin/uv` skips the nested uv download,
  but that prerequisite must remain compatible with the installer.
+Copying or linking a mise uv into that location was not runtime-tested.
+A symlink would also couple future `hermes update` runs to mise's pruning and upgrade lifecycle.
+
+This host identifies itself as Bazzite through `/etc/os-release`.
+The installer reads `ID` but not `ID_LIKE`,
+ so it records `bazzite` rather than taking its Fedora-specific package and browser branches.
+
+`NousResearch/hermes-agent` `scripts/install.sh:509-528` at the same commit:
+
+```bash
+detect_os() {
+    case "$(uname -s)" in
+        Linux*)
+            if is_termux; then
+                OS="android"
+                DISTRO="termux"
+            else
+                OS="linux"
+                if [ -f /etc/os-release ]; then
+                    . /etc/os-release
+                    DISTRO="$ID"
+                    # VERSION_ID (e.g. "26.04", "14") lets us tell whether the
+                    # apt release is newer than the newest one Playwright's
+                    # platform resolver recognizes — the #35166 hang condition.
+                    DISTRO_VERSION="${VERSION_ID:-}"
+                else
+                    DISTRO="unknown"
+                    DISTRO_VERSION=""
+                fi
+            fi
+            ;;
+```
+
+A new login shell already exposes Git,
+ Node.js 26.7.0,
+ ripgrep 15.2.0,
+ ffmpeg,
+ uv,
+ and xz,
+ so the prerequisite checks should not need a system package installation.
+The browser dependency branch remains a Bazzite-specific runtime uncertainty until exercised.
 
 The official container is the Tier 1 alternative when executing the installer script is itself unacceptable.
 It avoids a host Python checkout,
@@ -403,6 +444,49 @@ It avoids a host Python checkout,
  browser,
  audio,
  and service integration boundaries.
+On this Bazzite host,
+ the `docker` command reports that it emulates Docker through Podman 5.8.4.
+The upstream Tier 1 label names Docker,
+ so it does not establish the same support level for this Podman translation.
+
+### Account for ownership when migrating
+
+The per-user official installer writes its launcher to `~/.local/bin`,
+ while the existing mise declaration injects its own Hermes executable.
+
+`NousResearch/hermes-agent` `scripts/install.sh:456-463` at the same commit:
+
+```bash
+get_command_link_dir() {
+    if is_termux && [ -n "${PREFIX:-}" ]; then
+        echo "$PREFIX/bin"
+    elif [ "$ROOT_FHS_LAYOUT" = true ]; then
+        echo "/usr/local/bin"
+    else
+        echo "$HOME/.local/bin"
+    fi
+}
+```
+
+A migration therefore needs to:
+
+- back up existing `HERMES_HOME` state before allowing newer source to migrate it;
+- remove the global mise Hermes declaration so its executable cannot shadow `~/.local/bin/hermes`;
+- install through the inspected official script;
+- verify every resolved `hermes` path from a new login shell;
+- use `hermes update` afterward,
+  because the Git installer rather than mise then owns the checkout and environment.
+
+The upstream update guide at `website/docs/getting-started/updating.md:9-32` specifies `hermes update` for this
+Git-backed layout and says it pulls `main`,
+ updates dependencies,
+ migrates configuration,
+ and restarts gateways.
+
+Tradeoff:
+ removing the mise declaration gives the supported installer unambiguous ownership,
+ but abandons the original requirement that mise manage Hermes itself.
+Mise can still manage unrelated prerequisites.
 
 ## Verified workarounds
 
