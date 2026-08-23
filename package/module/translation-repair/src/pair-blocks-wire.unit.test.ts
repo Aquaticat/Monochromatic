@@ -203,6 +203,66 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES every CROSSING ownership, where one original owns translations either side of '
+        + 'another original’s, so grouping never has to resolve one. `#100` opened an item for a '
+        + 'crossing refusal downstream; monotone on both sides already makes the shape unsayable, '
+        + 'and this is where that is decided',
+      fn: async () => {
+        /**
+         * The three ways a reply can cross, each one a real reading a model
+         * could hold and none of them expressible in document order.
+         */
+        const crossings = [
+          [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 1,
+            },
+            {
+              source: 0,
+              target: 2,
+            },
+          ],
+          [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 1,
+            },
+            {
+              source: 2,
+              target: 0,
+            },
+          ],
+          [
+            {
+              source: 0,
+              target: 1,
+            },
+            {
+              source: 1,
+              target: 0,
+            },
+          ],
+        ];
+        for (const pairs of crossings)
+          expect(function readsCrossing() {
+            readBlockPairing({
+              value: { pairs, },
+              sourceCount: 4,
+              targetCount: 4,
+            },);
+          },).toThrow(BlockPairingError,);
+      },
+    },),
+    it({
       name: 'ACCEPTS one translation block rendering TWO originals, which is a merge',
       fn: async () => {
         // AN EARLIER VERSION REFUSED THIS, holding that a passage renders one
