@@ -14888,3 +14888,44 @@ yet and is now the whole of the remaining verification.
 Nine of the ten slices reached the lane contest. Slice 5, at 276 characters
 against 244, was not contested and appears in `comparison` but not in
 `laneSelection`.
+
+### Corpus-wide tail census: the extreme archive ratios are gone, in BOTH directions
+
+Run while waiting on `wangzihao980`, over every settled artifact on disk
+(`${HOME}/temp/agent/163-tail-census.mjs`, ids and ratios only). It reports
+ratio tails on the ARCHIVE side per artifact, dated by the artifact's own
+timestamp.
+
+THE AGGREGATE IS CONFOUNDED AND IS NOT THE EVIDENCE. 43 artifacts, 10
+far-longer and 5 far-shorter overall; 15 settled on 2026-08-22 or later with
+zero of either. But the recent set is mostly two-to-four-slice entries settled
+by verification runs, while the older set holds the long ones, so entry size
+alone could produce that split.
+
+THE PAIRED SAME-ENTRY COMPARISONS ARE THE EVIDENCE. Three entries settled both
+before and after the pairing work, and every one lost its tail:
+
+-   `Zha_Ke`: maximum archive ratio 94.51 to 5.15, far-longer 1 to 0.
+-   `dogesir_`: 15.49 to 3.40, far-longer 1 to 0.
+-   `lintong`: 7.98 to 3.75, far-SHORTER 1 to 0, slice count 5 to 3.
+
+A CORRECTION TO WHAT THIS FILE SAID EARLIER TODAY. The `dogesir_` section
+reasons that `#157` cuts TOWARD the far-shorter tail, since removing unpaired
+English shortens a slice's English side. `lintong` refutes that: its
+far-shorter case cleared as well. The pairing work is not directional in the
+way that argument assumed, because it changes the slicing itself rather than
+only trimming one side, so a ratio can move either way. Treat the far-shorter
+prediction for `wangzihao980` as OPEN, not as favoured.
+
+ATTRIBUTION IS LIMITED TO WHAT WAS MEASURED. The census shows the effect, not
+which commit caused it: `#131`, `#157` and `#159` all landed in that window.
+Only `dogesir_` carries a specific mechanism, and it is `#157`'s signature:
+sliced archive characters fell 3475 to 1818 while sliced source characters held
+at exactly 1196.
+
+WHAT THIS MEANS FOR THE SIZE NOTE. Its far-longer half now serves no case that
+still occurs in anything settled here, and its far-shorter half has lost its
+only demonstrated instance outside `wangzihao980`, which has not settled yet.
+Do not act on that until it does. The note costs nothing when silent, so there
+is no urgency in removing it, and the question is whether it earns the policy
+text it adds to every contest message.
