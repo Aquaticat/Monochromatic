@@ -17095,3 +17095,72 @@ Recovered whole with `git checkout --` because it was committed and the worktree
 The rule this breaks is to look at the target before overwriting;
 the reason it cost nothing is that the tree was clean, which is not a defence, only luck.
 Check `git status` and read the path before writing to a name that might exist.
+
+## `#106` BREADTH: the block-scale null was a fact about ONE ENTRY, not about the wire
+
+Ran the absence control over six entries carrying coverage candidates,
+chosen off a zero-quota census of all 92 pairs which found 26 such entries.
+Two clean groups came back, and the second is the one that matters.
+
+### Group one: damage is detected, and only the right damage
+
+-   `mikaela_khara`: HELD. 2 of 3 targeted cuts produced absence votes (6 of 6, 5 of 6);
+    the middle case moved to `partly-carried`. Decoys: 0 of 3.
+-   `TianqiChen666`: HELD. 3 of 3 targeted (5 of 6, 6 of 6, 6 of 6). Decoys: 0 of 3.
+-   `Futajuhuacha`: HELD. 3 of 3 targeted (2, 6, 5 votes). Decoys: 0 of 3.
+
+Across the three: absence votes on 8 of 9 targeted cuts and on 0 of 9 equally sized cuts
+taken where the roster had not pointed.
+
+### Group two: the roster refuses to call the passage covered WITH NOTHING DAMAGED
+
+-   `shi_Yumiaoya`: 8 of 8 candidates. Seven read `absent` with 4 to 6 absence votes, one `split`.
+-   `Aniloviraw`: 3 of 3 read `absent`, 5 to 6 absence votes.
+-   `XingZ60`: 4 of 4 not covered; section 13 `absent` with 5 votes,
+    sections 12 and 14 and one block `partly-carried`.
+
+Fifteen of fifteen undamaged candidates on those entries were NOT called covered.
+Not one refusal in the whole run was an anchoring failure:
+the count of `evidence-not-locatable` across all six entries is zero.
+
+`XingZ60` also REPRODUCES its recorded section-scale verdicts:
+section 12 reads `partly-carried`, which is exactly what `#106` records for it
+(0 full, 5 partial), and section 13 reads `absent` as recorded.
+Section 14 drifted from `absent` to `partly-carried` with one absence vote.
+
+### What this changes
+
+`#106` records, of `mikaela_khara`, "ninety-six answers from six models,
+NOT ONE VOTE FOR ABSENCE was cast on sixteen passages the block aligner refuses to pair",
+and `#100` refuses paragraph-scale landing on that evidence:
+"at most one of twenty-two, and plausibly none".
+
+THAT WAS A FACT ABOUT ONE ENTRY. It is not a fact about the wire, which votes absence
+near-unanimously the moment it is shown a different page, and it is not a fact about the corpus.
+`mikaela_khara` is a well translated entry whose block candidates really are covered;
+`shi_Yumiaoya` and `Aniloviraw` are not, and the same wire says so without being prompted.
+
+So the paragraph-scale evidence base needs re-deriving over a spread of entries
+before it can carry the weight `#100` puts on it.
+This does NOT decide question 28 and nothing has been wired:
+`groupSourceFirst` stays unwired and `alignDocumentSections` still emits no insertion pairs.
+
+### What is NOT established
+
+Whether those absence verdicts are CORRECT. They could be genuine omissions or the aligner
+mispairing, and this control does not tell them apart.
+The argument that they are omissions rather than merges is that a merge puts the content
+somewhere in the translation, which is what `carried` reports,
+while `absent` claims it is nowhere. That is reasoning, not a measurement,
+and checking it means reading those passages against their source.
+
+### The instrument said "not damageable" for two opposite reasons
+
+The first breadth run printed one line for both, and half the entries hit it,
+so half the run was unreadable. A roster that never called a passage covered is the wire
+voting absence on undamaged text, the strongest reading available;
+a quote that cannot be found in the page is an anchoring failure that says nothing about coverage.
+Fixed in `02a65109f`: every refusal now carries its reason, the undamaged verdict and its
+absence votes, and the control no longer throws when nothing was damageable, because a page
+offering nothing to cut is a result rather than an empty run.
+It still cannot HOLD on zero rows, since holding is a claim about what damage does.
