@@ -430,6 +430,49 @@ measured yet.
 
 D, do #84 first
 
+
+### MEASURED 2026-08-23: the width does not decide it
+
+This question was gated on a number nobody had. There is one now, from two disjoint draws of twenty
+slices each over the same forty-slice sample, thirty-one of which carried work.
+The instrument, its three fixed defects and its positive control are described in
+`doc/handover/translation-repair.md`.
+
+Widening the editors from three to six changed what ships NO MORE OFTEN than re-running the same
+three did. The comparison is paired, one bit per slice from changing the width and one from changing
+nothing, so only slices where the two disagree carry information:
+
+-   moved WITHOUT churning, which is width doing something: 1 of 31
+-   churned without moving, which is the lane alone: 2 of 31
+
+Quality was asked separately, by putting both arms' repairs on one slate before the fixed panel in
+both seating orders. Of 23 contests, 7 were decided by SEAT rather than text. The 16 that survived
+the swap split 10 wide to 6 narrow, which arrives about one time in four under no true difference.
+Draw A alone had read 5 to 1 and looked like something; draw B read 5 to 5. The held-back half is the
+only reason that is known rather than believed.
+
+TWO FACTS NOW BEAR ON THE "ALL PRODUCING ROLES TO 4" RULING that were not available when it was made,
+and the ruling is yours to keep or revise:
+
+1.  Between three and six, widening buys nothing measurable on either reading.
+2.  FOUR IS NOT REACHABLE as the rosters stand. `RUN_MODELS` partitions the six-model roster exactly,
+    three editors who are also the three refiners plus the disjoint other three as checkers, because
+    `assertCheckerIndependence` forbids a checker from being a writer. Four writers leaves at most two
+    checkers, and nothing refuses that: the only floor, `assertRostersConfigured`, refuses an EMPTY
+    role and nothing more. At two checkers, one `fixed` against one `not-fixed` resolves nothing,
+    since `tallyResolutionChecks` needs `fixed > (notFixed + worse)`.
+
+So implementing the ruling costs checker independence and buys no measured quality.
+RECOMMENDATION: stay at three, and leave `assertCheckerIndependence` alone.
+That also leaves the checker-side self-vote discount unreachable, which is the standing state
+recorded in `doc/decision/translation-repair-question-answers.md`, and closes the applying task
+unbuilt rather than shipping a relaxation nothing needs.
+
+A SIDE FINDING WORTH MORE THAN THE ANSWER: the panel's ability to separate two serious repairs of one
+passage is not stable between runs. Draw A decided 6 of 12 contests by seat; draw B decided 1 of 11
+that way, hours apart on the same models and the same sheet. Any later measurement resting on this
+panel resolving fine differences should measure that decisiveness first rather than assume it.
+
 ## Question 2: the transcribed-image class
 
 BLOCKS nothing mechanically, and is the largest known quality risk in the new
