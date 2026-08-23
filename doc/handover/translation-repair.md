@@ -16090,3 +16090,64 @@ so what remains is live behaviour rather than output:
     checked rather than assumed.
 
 Commits: 83cfaa4bd (plan), 377e3e62f (wire), 2d8fc8914 (settle and record), 37feccb35 (tests).
+
+## #181 verified live: the field costs no voices, and the archive loses on every slice
+
+Two arms over `wangzihao980`'s five contested slices, same slices, same roster of six,
+one run each, differing only in whether the ballot asks the archive question.
+Run through `contestLaneSlice` against the live roster,
+with source rebuilt from the corpus at the artifact's own commit.
+
+### Voice loss did not rise, which was the risk worth measuring
+
+  - asks-archive: 30 of 30 voices usable, zero lost.
+  - no-archive: 27 of 30 usable, three lost.
+
+The concern was that a new required schema field would raise schema-mismatch loss
+on the weaker models, GLM-4.7-Flash above all.
+It did not: the arm carrying the field sat at the ceiling and lost nothing,
+and every one of its 30 ballots answered the new field.
+
+Read the DIRECTION, not the size.
+Single runs cannot resolve three voices in thirty against the run-to-run band,
+which was never measured here,
+so the honest claim is that loss did not increase, not that the field improves it.
+
+### The control pair behaves as designed
+
+  - chunk 2 and chunk 3 settled `neither`, so the archive verdict is CONSUMED there.
+    These are exactly the slices `#181` was opened about:
+    the archive ships and the record used to say nothing about it.
+  - chunk 0, chunk 4 and chunk 5 had a winning lane, so the field is IGNORED
+    and no archive key is recorded.
+
+Choices agreed across the arms on four of five slices.
+Chunk 5 differed, `translate` against `repair`.
+One slice on single runs is consistent with ordinary judge variation
+and is not evidence that the field perturbs the choice.
+
+### The archive lost everywhere, and that is a finding rather than a fault
+
+29 of 30 archive answers said `flawed`; one said `publishable`.
+All five slices settle `declined`.
+The roster judges the published rendering of this entry unfit as it stands
+at every slice it was asked about, including the three where a candidate beat it.
+
+This is the outcome the design anticipated:
+the deliverable is EVALUATION AND RECORD, not endorsement,
+and a mostly-declined archive is a legitimate answer.
+Shipped bytes are unchanged either way,
+because the archive already ships wherever the contest declines both candidates.
+
+### Still owed, and now the only thing owed on #181
+
+A contested slice whose archive is EMPTY has no archive to judge,
+and the sheet would ask about a blank block.
+Not reachable in this entry, whose five contested slices all carry one,
+so it is unmeasured rather than refuted.
+The fix belongs in `buildLaneContestMessages`:
+omit the archive question when `incumbentText` is empty,
+and let the lenient guard settle it `unjudged` as it already does for a silent judge.
+
+Probe: `${HOME}/temp/agent/181-live.mjs`, results in `181-live-asks-archive.json`
+and `181-live-no-archive.json`. Ids, counts and verdicts only; no passages.
