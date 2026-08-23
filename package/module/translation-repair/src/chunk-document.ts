@@ -10,6 +10,8 @@ import {
   makeInsertionChunk,
 } from './chunk-placement.ts';
 import type { DocumentNode, } from './document-node.ts';
+import { sectionPairingToSteps, } from './pair-sections-steps.ts';
+import type { SectionPair, } from './pair-sections-wire.ts';
 import type { RepairDocument, } from './parse-document.ts';
 
 //region Section chunking
@@ -360,6 +362,12 @@ function describeSourceOnly(
  *
  * @param target - parsed translation document
  *
+ * @param sectionPairing - correspondences a roster agreed on, when one was
+ * bought. Supplied, it REPLACES the deterministic decision entirely rather than
+ * supplementing it: a reading of both documents outranks a token-overlap score
+ * that reads 0.00 across this language boundary, and mixing the two would let
+ * an index match the roster rejected survive as a pair.
+ *
  * @returns Pairs the aligner committed to, plus what it refused
  *
  * @example
@@ -374,9 +382,11 @@ export function alignDocumentSections(
   {
     source,
     target,
+    sectionPairing,
   }: {
     readonly source: RepairDocument;
     readonly target: RepairDocument;
+    readonly sectionPairing?: readonly SectionPair[];
   },
 ): SectionAlignment {
   /**
@@ -427,7 +437,11 @@ export function alignDocumentSections(
         ?.kind;
     },);
 
-  if (equalShape) {
+  // A ROSTER PAIRING SUPPRESSES THE FAST PATH. Equal shape pairs by index
+  // without anything being consulted, which `#98` records as a known blind
+  // spot; a roster was shown both documents and its answer is the better one
+  // wherever the two disagree.
+  if (equalShape && (sectionPairing === undefined)) {
     return {
       pairs: sourceChunks.map(function toPair(
         sourceChunk,
@@ -449,12 +463,28 @@ export function alignDocumentSections(
   }
 
   /**
-   * Pairings the aligner commits to, plus its refusals.
+   * Original section labels, which are all either decider has to go on.
    */
-  const steps = alignHeadingsForced({
-    sourceHeadings: sourceChunks.map(chunkLabel,),
-    targetHeadings: targetChunks.map(chunkLabel,),
-  },);
+  const sourceHeadings = sourceChunks.map(chunkLabel,);
+
+  /**
+   * Translation section labels.
+   */
+  const targetHeadings = targetChunks.map(chunkLabel,);
+
+  /**
+   * Pairings committed to, plus the refusals, from whichever decider ran.
+   */
+  const steps = (sectionPairing === undefined)
+    ? alignHeadingsForced({
+      sourceHeadings,
+      targetHeadings,
+    },)
+    : sectionPairingToSteps({
+      pairs: sectionPairing,
+      sourceHeadings,
+      targetHeadings,
+    },);
 
   // ONLY forced pairings become pairs, and a refusal is never a block. The
   // document still settles with its own text, per

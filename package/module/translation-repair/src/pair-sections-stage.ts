@@ -1,0 +1,386 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+import type {
+  JsonSchemaResponseFormat,
+  SyntheticClient,
+} from './chat-contract.ts';
+import {
+  isSectionPairingWire,
+  readSectionPairing,
+} from './pair-sections-read.ts';
+import {
+  buildSectionPairingMessages,
+  type NumberedSection,
+  type SectionPair,
+  SectionPairingError,
+} from './pair-sections-wire.ts';
+import { runGatherRound, } from './stage-round.ts';
+import type { SyntheticModelId, } from './synthetic-catalog.ts';
+
+//region Section pairing stage
+// ASKS THE ROSTER WHICH SECTION RENDERS WHICH, and keeps only what enough of
+// them agree on. `pair-blocks-stage.ts` does the same job one scale down, and
+// the two share their rules deliberately: no single model decides, and
+// agreement is counted per correspondence rather than per reply.
+//
+// ASKED ONLY WHERE THE DETERMINISTIC ALIGNER REFUSED. Measured over the pinned
+// corpus, 85 of 92 entries have equal section shape and never reach the aligner,
+// and 5 of the remaining 7 align with no refusal. Two entries are ever asked.
+
+/**
+ * Voices that must name a correspondence before it is kept.
+ *
+ * TWO, matching the block stage, and for its reason: a pairing one model
+ * invented is the risk, and a correspondence two models reached independently
+ * is not plausibly coincidence when each is choosing from every section on the
+ * other side.
+ */
+const AGREEMENT_NEEDED = 2;
+
+/**
+ * Voices the round waits for before it starts timing out stragglers.
+ */
+const HEARD_NEEDED = 2;
+
+/**
+ * Schema the reply must satisfy before it reaches the reader.
+ */
+const SECTION_PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
+  type: 'json_schema',
+  json_schema: {
+    name: 'section_pairing',
+    schema: {
+      type: 'object',
+      properties: {
+        pairs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              source: { type: 'integer', },
+              target: { type: 'integer', },
+            },
+            required: [
+              'source',
+              'target',
+            ],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ['pairs',],
+      additionalProperties: false,
+    },
+  },
+};
+
+/**
+ * What the roster settled on for one document's sections.
+ *
+ * @example
+ * ```ts
+ * const outcome: SectionPairingOutcome = { pairs: [], heard: 0, usable: 0, findings: [], };
+ * ```
+ */
+export type SectionPairingOutcome = {
+  /**
+   * Correspondences enough voices named, in document order.
+   */
+  readonly pairs: readonly SectionPair[];
+
+  /**
+   * Voices that answered at all.
+   */
+  readonly heard: number;
+
+  /**
+   * Voices whose answer survived the reader.
+   */
+  readonly usable: number;
+
+  /**
+   * What went wrong, in scorecard-stable wording.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ * One document's settled section pairing as the cache stores it.
+ *
+ * THE FINDINGS ARE HALF THE RECORD, for the reason `PairedSectionRecord` gives
+ * at block scale: a resumed run makes no calls, so anything this round reported
+ * the first time is reported by nothing on the second unless it was stored.
+ *
+ * @example
+ * ```ts
+ * const settled: PairedDocumentRecord = { pairs: [], findings: [], };
+ * ```
+ */
+export type PairedDocumentRecord = {
+  /**
+   * Correspondences the roster agreed on, in document order.
+   */
+  readonly pairs: readonly SectionPair[];
+
+  /**
+   * Findings this round contributed, in the order a cold run emitted them.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ * Counts how many voices named each correspondence.
+ *
+ * @param pairings - one usable pairing per voice
+ *
+ * @returns Voice count per `source,target` key
+ *
+ * @example
+ * ```ts
+ * const votes = countSectionPairs({ pairings, },);
+ * ```
+ */
+function countSectionPairs(
+  { pairings, }: { readonly pairings: readonly (readonly SectionPair[])[]; },
+): ReadonlyMap<string, number> {
+  /**
+   * Votes so far, keyed by the correspondence itself.
+   */
+  const votes = new Map<string, number>();
+  for (const pairing of pairings)
+    for (const pair of pairing) {
+      /**
+       * This correspondence as one comparable key.
+       */
+      const key = `${String(pair.source,)},${String(pair.target,)}`;
+      votes.set(
+        key,
+        (votes.get(key,) ?? 0) + 1,
+      );
+    }
+  return votes;
+}
+
+/**
+ * Reads every heard reply, keeping the usable ones and reporting the rest.
+ *
+ * @param outcomes - one round result per voice
+ *
+ * @param sourceCount - original sections the sheet numbered
+ *
+ * @param targetCount - translation sections the sheet numbered
+ *
+ * @param findings - accumulator an unusable reply appends its notice to
+ *
+ * @param l - stage logger
+ *
+ * @returns Pairings that survived the reader, one per usable voice
+ *
+ * @throws Error when a reader raises anything other than a
+ * {@link SectionPairingError}, since that is a defect rather than a bad reply
+ *
+ * @example
+ * ```ts
+ * const pairings = readUsablePairings({ outcomes, sourceCount, targetCount, findings, l, },);
+ * ```
+ */
+function readUsablePairings(
+  {
+    outcomes,
+    sourceCount,
+    targetCount,
+    findings,
+    l,
+  }: {
+    readonly outcomes: Awaited<ReturnType<typeof runGatherRound>>;
+    readonly sourceCount: number;
+    readonly targetCount: number;
+    readonly findings: string[];
+    readonly l: Logger;
+  },
+): readonly (readonly SectionPair[])[] {
+  /**
+   * Pairings that survived the reader, one per usable voice.
+   */
+  const pairings: (readonly SectionPair[])[] = [];
+  for (const outcome of outcomes) {
+    /**
+     * This voice's reply, heard or lost.
+     */
+    const { voice, } = outcome;
+    if (!voice.heard)
+      continue;
+    try {
+      pairings.push(readSectionPairing({
+        value: voice.value,
+        sourceCount,
+        targetCount,
+      },),);
+    }
+    catch (error) {
+      if (!(error instanceof SectionPairingError))
+        throw error;
+      // A REPLY THAT CANNOT BE USED IS A LOST VOICE, not a stage failure: the
+      // rest of the roster may still agree on a pairing, and refusing the whole
+      // document because one model answered badly is the failure `#110`
+      // recorded.
+      findings.push(`section-pairing unusable (${outcome.modelId}: ${error.message})`,);
+      l.warn(`${outcome.modelId} returned an unusable section pairing: ${error.message}`,);
+    }
+  }
+  return pairings;
+}
+
+/**
+ * Asks the roster to pair two documents' sections and keeps the agreed ones.
+ *
+ * REFUSES RATHER THAN GUESSES. When no voice answers usably the outcome carries
+ * no pairs and says why, and the caller keeps the deterministic aligner's own
+ * refusals rather than proceeding on one model's word. `#71` recorded the rule:
+ * a wrong pairing is worse than no pairing, because it manufactures issues
+ * rather than skipping work.
+ *
+ * @param client - injected model client
+ *
+ * @param modelIds - roster to ask
+ *
+ * @param sourceSections - original sections in document order
+ *
+ * @param targetSections - translation sections in document order
+ *
+ * @param signal - caller's steering
+ *
+ * @param exchangeTimeoutMs - per-call bound
+ *
+ * @param l - driver logger
+ *
+ * @returns What the roster agreed on, with what it lost
+ *
+ * @example
+ * ```ts
+ * const outcome = await pairSectionsWithRoster({ client, modelIds, sourceSections, targetSections, signal, exchangeTimeoutMs, l, },);
+ * ```
+ */
+export async function pairSectionsWithRoster(
+  {
+    client,
+    modelIds,
+    sourceSections,
+    targetSections,
+    signal,
+    exchangeTimeoutMs,
+    l,
+  }: ForeignBorrowed<{
+    readonly client: SyntheticClient;
+    readonly modelIds: readonly SyntheticModelId[];
+    readonly sourceSections: readonly NumberedSection[];
+    readonly targetSections: readonly NumberedSection[];
+    readonly signal: AbortSignal;
+    readonly exchangeTimeoutMs: number;
+    readonly l: Logger;
+  }>,
+): Promise<SectionPairingOutcome> {
+  /**
+   * Logger tagged with this stage.
+   */
+  const pl = tagged({
+    tag: pairSectionsWithRoster.name,
+    l,
+  },);
+
+  /**
+   * Every voice's reply, heard or lost.
+   */
+  const outcomes = await runGatherRound({
+    client,
+    modelIds,
+    messages: buildSectionPairingMessages({
+      sourceSections,
+      targetSections,
+    },),
+    signal,
+    exchangeTimeoutMs,
+    responseFormat: SECTION_PAIRING_RESPONSE_FORMAT,
+    validate: isSectionPairingWire,
+    stage: 'section-pairing',
+    l: pl,
+    heardNeeded: HEARD_NEEDED,
+  },);
+
+  /**
+   * Voices that arrived and validated in shape.
+   */
+  const heard = outcomes
+    .filter(function wasHeard(outcome,) {
+      /**
+       * This voice's reply, heard or lost.
+       */
+      const { voice, } = outcome;
+      return voice.heard;
+    },)
+    .length;
+
+  /**
+   * Findings accumulated while reading replies.
+   */
+  const findings: string[] = [];
+
+  /**
+   * Pairings that survived the reader, one per usable voice.
+   */
+  const pairings = readUsablePairings({
+    outcomes,
+    sourceCount: sourceSections.length,
+    targetCount: targetSections.length,
+    findings,
+    l: pl,
+  },);
+
+  if (pairings.length === 0) {
+    findings.push(
+      `section-pairing no-usable-voice (${String(heard,)} heard of ${String(modelIds.length,)})`,
+    );
+    return {
+      pairs: [],
+      heard,
+      usable: 0,
+      findings,
+    };
+  }
+
+  /**
+   * Voices per correspondence.
+   */
+  const votes = countSectionPairs({ pairings, },);
+
+  /**
+   * Correspondences enough voices named, in document order.
+   *
+   * Taken from the FIRST usable pairing's order rather than re-sorted. Every
+   * pairing the reader passed is strictly increasing on both sides, and a
+   * subsequence of a strictly increasing sequence is strictly increasing, so
+   * the filter cannot produce a pairing the step builder would refuse.
+   */
+  const agreed = (pairings[0] ?? [])
+    .filter(function enoughAgree(pair,): boolean {
+      return (votes.get(`${String(pair.source,)},${String(pair.target,)}`,) ?? 0)
+        >= AGREEMENT_NEEDED;
+    },);
+  pl.info(
+    `paired ${String(agreed.length,)} of ${String(sourceSections.length,)} original and ${
+      String(targetSections.length,)
+    } translation sections, from ${String(pairings.length,)} usable voices of ${String(heard,)} heard`,
+  );
+  return {
+    pairs: agreed,
+    heard,
+    usable: pairings.length,
+    findings,
+  };
+}
+
+//endregion Section pairing stage

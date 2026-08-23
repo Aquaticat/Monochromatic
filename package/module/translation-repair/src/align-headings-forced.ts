@@ -29,8 +29,16 @@ import {
  * has nothing for it. `ambiguous` means several optimal pairings exist and the
  * aligner declines to guess, which is the outcome the shipped scorer cannot
  * produce.
+ *
+ * `roster-unpaired` comes from somewhere else entirely: a model was shown both
+ * documents and did not name this section in its pairing. It is kept separate
+ * from the other two because those describe a scorer's table and this describes
+ * a reading, and on this corpus the two disagree about nearly every section.
  */
-export type UnpairedReason = 'forced-gap' | 'ambiguous';
+export type UnpairedReason =
+  | 'forced-gap'
+  | 'ambiguous'
+  | 'roster-unpaired';
 
 /**
  * Where an untranslated section's rendering may be written, or why it may not.
