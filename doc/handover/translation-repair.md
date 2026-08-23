@@ -15517,3 +15517,106 @@ which is what let the span module get direct tests
 against the built bundle the way everything else here is tested.
 `@internal` is a MODIFIER tag and takes no content;
 the explanation goes in prose above it.
+
+## #184: why no runaway guard saw a 185x emission
+
+### The classification: a gap, not a regression
+
+Both #119 and #120 are DONE and neither regressed.
+Every guard they built is structurally unable to reach this event,
+for three independent reasons, each measured rather than read off the code.
+
+FIRST, LENGTH.
+Both repetition detectors are gated behind `MIN_CHARS_FOR_VERDICT`,
+which is `MIN_WINDOWS_FOR_VERDICT * WINDOW_STRIDE`, 131072 characters.
+The volume bound from #156 is 32000.
+The emission was 10381 characters:
+7.9 percent of the repetition bar and 32.4 percent of the volume cap.
+No guard could form a verdict at all.
+
+SECOND, SHAPE.
+The guards detect a loop, and this is not a loop.
+It is one span of 5032 characters said exactly twice, at offsets 135 and 5188,
+covering 48.5 percent of the emission, and then the generation stopped on its own.
+Every detector rests on the premise stated in `stream-recurrence-watch.ts`:
+"a genuine loop never stops, so it always crosses the bar eventually."
+This one stopped.
+
+THIRD, PHASE, and this is the finding worth keeping.
+The ratio detector samples 64-character windows on a 32-character grid.
+The duplication's period is 5053, which is not a multiple of 32,
+so the two copies never land on the same grid offsets.
+Measured on the real emission:
+
+    stride 32, the detector's own grid   323 windows, distinct 1.0000, none seen twice
+    stride  1, every offset            10318 windows, distinct 0.5184, 4969 seen twice
+
+The duplication is plainly there at stride 1 and perfectly invisible at stride 32.
+Lowering the length bar would not have helped:
+the detector would still have called this text healthy at any length,
+because on its own sampling grid the text genuinely never repeats.
+
+The recurrence detector misses it for a related reason of its own.
+Its documented reach is periods between `TAIL_CHARS` and `BUFFER_CHARS - TAIL_CHARS`,
+1024 to 3072 at current constants.
+A period of 5053 is past that upper bound by construction:
+the earlier copy has scrolled out of the 4096-character buffer before the later one arrives.
+
+### How the probe was validated before any of that was believed
+
+The first run reported "neither detector fires" and the positive control ALSO failed,
+which under QPC means the run said nothing at all.
+Two controls were added before any conclusion was drawn:
+a tight loop, which flags by recurrence at exactly 131072 characters,
+and varied prose, which stays healthy at 1173015 characters.
+Only then did the null on the real text become evidence.
+
+A second null was caught the same way.
+`countPhrases` was called with `phraseWords` where the parameter is `length`,
+and returned an empty map for every input, including the document
+already known to carry 871 repeated phrases.
+Zero everywhere is a harness result, not a measurement.
+
+### One hypothesis raised and refuted
+
+The word instrument sees the duplication clearly:
+1800 words, 918 distinct 12-word phrases, 871 of them repeated.
+The obvious explanation was that the two copies differ in whitespace,
+so words match while characters do not.
+Flattening every whitespace run to one space and re-measuring refutes it:
+distinct stays at 1.0000 and no period appears.
+The cause is phase, not whitespace.
+
+### The seam the fix needs already exists and is deliberately unused
+
+`watchRunaway` accepts `contentCap`, defaulted to `CONTENT_OVERRUN_CAP`.
+Nothing in the pipeline passes one.
+`stream-drain.ts` says so in as many words, and gives the reason:
+threading it "would mean a parameter through this function and every caller,
+and the measurement says one bound clears every role by more than twice."
+
+That rationale answers a different question than the one #184 asks.
+It is about whether a ROLE that legitimately emits more should raise its own bound.
+It is not about a bound relative to the SOURCE,
+which is the only kind that can tell a long legitimate passage
+from a 56-character line that produced 10381.
+
+### What that settles of the four questions the task said to answer first
+
+MID-STREAM OR AFTER: mid-stream, and the mechanism is already there.
+The watch already counts produced characters per channel
+and already accepts a per-call bound, so a producer that knows its source length
+can pass `sourceChars * limit` and nothing on the retry path changes.
+That matters because #120 found six defects in the retry layer,
+and this shape does not touch it.
+
+WHAT RATIO: `sliceImplausibility` already answers this and is already tested.
+`IMPLAUSIBLE_MAX_RATIO` is 10, the largest legitimate observed was 9.27,
+and this emission is 185.4, past the endpoint by more than eighteen times.
+The predicate compares `targetChars / sourceChars` on the original,
+which is exactly the comparison a producer-side bound needs.
+
+STILL OPEN: what happens after refusal, and whether the multiplier
+used for a live bound should equal the endpoint used for a settled judgment.
+A live bound cuts a call that might still have recovered,
+while the settled predicate judges finished text, so they need not be the same number.
