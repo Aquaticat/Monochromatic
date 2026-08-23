@@ -16752,3 +16752,73 @@ Draw B is the untouched half of the same sample, so running it doubles the head-
 redrawing and without looking at the first half twice.
 If the wide lean survives it, there is something to act on; if it does not, width is answered null on
 both readings and `#188` closes unbuilt.
+
+## Task 186 ANSWERED: the width does not decide it, on both readings
+
+Draw B ran 2026-08-23, 14:05 to 19:29, 5.4 hours, on the untouched half of the same sample.
+Fifteen slices carried work, five were skipped.
+Combined with draw A, thirty-one slices carried work across forty drawn.
+
+THE PAIRED READING, combined:
+
+-   moved AND churned, so uninformative: 22
+-   moved WITHOUT churning, which is width doing something: 1
+-   churned without moving, which is the lane alone: 2
+-   neither: 6
+
+One slice in thirty-one shipped text under a doubled roster that the narrow roster would not have
+changed on its own, against two that the narrow roster changed with no widening at all.
+That is not a small effect, it is no effect:
+the discordant slices, which are the only ones carrying information, point slightly the wrong way.
+
+Raw totals say the same thing more loudly.
+Draw A moved 12 against a band of 13. Draw B moved 11 against a band of 11.
+Both draws put the move count AT OR BELOW its own null band.
+
+THE QUALITY READING, combined, and this is why draw B was worth its 5.4 hours:
+
+-   contests run: 23
+-   decided by SEAT rather than text, over both orders: 7
+-   survived the swap: 16, splitting 10 wide and 6 narrow
+
+Draw A alone read 5 wide against 1 narrow, which looked like something.
+Draw B read 5 against 5.
+Ten against six over sixteen arrives about one time in four under no true difference.
+Draw A's lean was noise, and the split sample is the only reason that is known rather than believed.
+Had draw A been reported alone, the honest reading would still have been "suggestive",
+and the temptation to act on it would have been real.
+
+A SECOND THING THE TWO DRAWS DISAGREE ABOUT, worth carrying forward.
+Draw A decided 6 of 12 contests by seat; draw B decided 1 of 11 that way.
+The panel's ability to separate two serious repairs of one passage is NOT stable between runs
+hours apart, on the same models and the same sheet.
+Any future measurement resting on this panel separating fine differences should measure that
+decisiveness first rather than assume it.
+
+NO SUPPRESSION IN EITHER DRAW. Both arms shipped a repair on all thirty-one rows.
+The wide arm never split its vote into keeping the incumbent, so the failure mode the one-sided ship
+counts were added to catch did not occur.
+It also means the indecision-fallback collision had no case to fire on in either draw,
+so the contest fix changed neither draw's numbers.
+It was still required: that could not be known before running, and nothing guarantees the next run
+looks like these two.
+
+### What follows, and what is NOT mine to settle
+
+WHAT THE EVIDENCE SUPPORTS: the roster stays at three editors. Doubling it to six changed what ships
+no more often than re-running the same three did, and produced no quality difference this panel can
+see. Spending nothing is the measured answer, not a concession to the deadline.
+
+WHAT THIS COLLIDES WITH: the owner ruled "All producing roles to 4" in
+`doc/planning/translation-repair-open-decisions.md`, and said so while explicitly noting the four was
+not derived from evidence, having tried and got it wrong twice in one day.
+Two facts now bear on that ruling which were not available when it was made:
+
+1.  Widening buys nothing measurable, between three and six, on both readings.
+2.  Four is UNREACHABLE without relaxing `assertCheckerIndependence`, because the rosters partition a
+    six-model roster exactly. Four writers leaves at most two checkers, and at two checkers one
+    `fixed` against one `not-fixed` resolves nothing.
+
+So implementing the ruling costs checker independence and buys no measured quality.
+THE RECOMMENDATION IS TO STAY AT THREE AND LEAVE THE ASSERTION ALONE.
+The ruling is the owner's to keep or revise; this records the evidence, not a reversal.
