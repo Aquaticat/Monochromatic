@@ -593,18 +593,26 @@ await describe({
           entryId: 'BookshopCat',
         },);
 
-        await expect(publishAndRead({
+        /**
+         * What publishing refused with, held so the class can be named. A bare
+         * `.toThrow()` passes for ANY failure, including one raised before the
+         * publisher reached its own check, which would leave this test green
+         * while the absence it goes on to assert had a different cause.
+         */
+        const refusalOfPublishingIntoAGap = publishAndRead({
           artifact: artifactShippingNothing(),
           publishDir: tree.publishDir,
           slices: documentSlicesWithAGap(),
-        },),).rejects
-          .toThrow();
+        },);
 
+        await expect(refusalOfPublishingIntoAGap,).rejects.toBeInstanceOf(SliceSpliceError,);
+
+        // ENOENT by name rather than a bare rejection: an unreadable page and an
+        // absent one both reject, and only absence is what this test claims.
         await expect(readFile(
           path,
           'utf8',
-        ),).rejects
-          .toThrow();
+        ),).rejects.toHaveProperty('code', 'ENOENT',);
       },
     },),
 

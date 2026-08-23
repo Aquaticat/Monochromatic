@@ -279,9 +279,15 @@ await describe({
       fn: async () => {
         using _unset = withoutApiKey();
 
-        expect(function buildWithoutKey() {
+        /**
+         * What buildWithoutKey raised, read for its class as well as its wording.
+         */
+        const refusalOfBuildingWithNoKeyAtAll = caught(function buildWithoutKey() {
           createRunClient();
-        },).toThrow(API_KEY_VAR,);
+        },);
+
+        expect(refusalOfBuildingWithNoKeyAtAll,).toBeInstanceOf(RunConfigError,);
+        expect((refusalOfBuildingWithNoKeyAtAll as Error).message,).toContain(API_KEY_VAR,);
       },
     },),
 
@@ -292,9 +298,15 @@ await describe({
       fn: async () => {
         using _empty = withApiKey({ value: '', },);
 
-        expect(function buildWithEmptyKey() {
+        /**
+         * What buildWithEmptyKey raised, read for its class as well as its wording.
+         */
+        const refusalOfBuildingWithAnEmptyKey = caught(function buildWithEmptyKey() {
           createRunClient();
-        },).toThrow(API_KEY_VAR,);
+        },);
+
+        expect(refusalOfBuildingWithAnEmptyKey,).toBeInstanceOf(RunConfigError,);
+        expect((refusalOfBuildingWithAnEmptyKey as Error).message,).toContain(API_KEY_VAR,);
       },
     },),
 
