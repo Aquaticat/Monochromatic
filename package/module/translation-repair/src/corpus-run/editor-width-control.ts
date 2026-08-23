@@ -50,6 +50,13 @@ const TERMINATORS = [
  * panel that misses it is missing something the corpus rules already say
  * matters.
  *
+ * Exported so the cut can be tested directly. This function decides what the
+ * positive control is actually asking the panel about, and a version of it that
+ * quietly returned the passage unchanged, or blank on everything, would turn the
+ * gate into a formality that passes whatever it is handed.
+ *
+ * @internal
+ *
  * @param text - passage to damage
  *
  * @returns Passage with a sentence gone, or blank when it holds only one
@@ -59,7 +66,7 @@ const TERMINATORS = [
  * const damaged = withoutASentence(text,);
  * ```
  */
-function withoutASentence(text: string,): string {
+export function withoutASentence(text: string,): string {
   /**
    * Index just past each terminator that appears, as a plain number so no
    * accumulator object rides through the scan.
