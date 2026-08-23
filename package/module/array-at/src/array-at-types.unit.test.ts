@@ -151,6 +151,10 @@ await describe({
           .toEqualTypeOf<'out-of-range'>();
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 0>>>()
           .toEqualTypeOf<never>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 1e999>>>()
+          .toEqualTypeOf<'non-safe-integer'>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 100_000_000_000_000_000>>>()
+          .toEqualTypeOf<'non-safe-integer'>();
       },
     },),
 
@@ -165,11 +169,21 @@ await describe({
           ArrayAtDiagnostics<readonly [10, 20, 30], -4>[number],
           { readonly direction: 'before-start'; }
         >;
+        type LargePastEnd = Extract<
+          ArrayAtDiagnostics<readonly [10, 20, 30], 100_000>[number],
+          { readonly direction: 'past-end'; }
+        >;
+        type LargeBeforeStart = Extract<
+          ArrayAtDiagnostics<readonly [10, 20, 30], -1_000_000_000>[number],
+          { readonly direction: 'before-start'; }
+        >;
 
         expectTypeOf<PastEnd['distance']>().toEqualTypeOf<1>();
         expectTypeOf<PastEnd['maximumPositiveIndex']>().toEqualTypeOf<0>();
         expectTypeOf<BeforeStart['distance']>().toEqualTypeOf<1>();
         expectTypeOf<BeforeStart['minimumNegativeIndex']>().toEqualTypeOf<number>();
+        expectTypeOf<LargePastEnd['distance']>().toEqualTypeOf<99_998>();
+        expectTypeOf<LargeBeforeStart['distance']>().toEqualTypeOf<999_999_997>();
       },
     },),
   ],
@@ -286,6 +300,37 @@ export function rejectsLargeNegativeIndex(): void {
 //endregion Invalid literal calls
 
 //region Union correlation
+
+/**
+ * Verifies every member of valid index union contributes result type.
+ *
+ * @param index - Union containing only valid tuple indices
+ *
+ * @returns Elements selected by possible index members
+ *
+ * @example
+ * ```ts
+ * const result = accessValidUnionIndex(0);
+ * ```
+ */
+export function accessValidUnionIndex(index: 0 | 2,): 10 | 30 {
+  return arrayAt({ array: [10, 20, 30], index, });
+}
+
+/**
+ * Verifies one invalid index union member rejects whole call.
+ *
+ * @param index - Union containing valid and invalid tuple indices
+ *
+ * @example
+ * ```ts
+ * rejectsInvalidUnionIndex(2);
+ * ```
+ */
+export function rejectsInvalidUnionIndex(index: 0 | 2,): void {
+  // @ts-expect-error -- index union contains out-of-range member.
+  arrayAt({ array: [10], index, });
+}
 
 /**
  * Correlated valid input alternatives.

@@ -207,6 +207,20 @@ await describe({
     },),
 
     it({
+      name: 'keeps past-end distance exact at maximum safe integer',
+      fn: async () => {
+        const error = captureArrayAtError(() => uncheckedArrayAt({
+          array: [10],
+          index: Number.MAX_SAFE_INTEGER,
+        }),);
+        const diagnostic = diagnosticByCode({ error, code: 'out-of-range', });
+
+        expect(diagnostic.direction,).toBe('past-end',);
+        expect(diagnostic.distance,).toBe(Number.MAX_SAFE_INTEGER,);
+      },
+    },),
+
+    it({
       name: 'reports exact before-start direction distance and bounds',
       fn: async () => {
         const error = captureArrayAtError(() => uncheckedArrayAt({
