@@ -16180,3 +16180,97 @@ rather than to the archive machinery in general.
 
 FINAL GATE: suite 540 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
 Commits: 83cfaa4bd, 377e3e62f, 2d8fc8914, 37feccb35, 2c08becfc, f69f15342, 731dcc3e2.
+
+## Task 91: the self-certification discount, and why the roster half did not follow
+
+Question 4 answer A is implemented.
+A checker's verdict on text it helped write is heard at `SELF_VOTE_WEIGHT`,
+the same one-half the selection stage already applies,
+imported rather than re-declared.
+
+AUTHORSHIP IS PER ISSUE, which the task note did not anticipate.
+It said "the winning editor's identity", singular.
+An `EditableEnvelope` carries `issueIds` plural,
+and each envelope's selected round has its own winning producer,
+so one patched text has several authors and the discount has to resolve per issue.
+`producerModelIds` already maps a producer to every model with a stake in it,
+covering composites and collapsed incumbents,
+so nothing new had to decide what a stake is.
+
+AUTHORSHIP EXISTS ONLY THROUGH APPLIED OPERATIONS.
+An envelope the gate refused put no text into the candidate,
+so the issues it named keep whole votes.
+A round scoped to `CHUNK_SCOPE_ENVELOPE` authors every issue in the chunk,
+including ones it was never told about,
+which is why `IssueAuthorship` keeps `perIssue` and `everyIssue` apart
+instead of flattening the chunk-wide case across an issue list it would have to be handed.
+
+THE REFINE RECHECK DISCOUNTS BOTH STAGES.
+Refined text is the editor's repair rewritten for naturalness,
+so `retainsResolvedIssues` now receives the outcome carrying the rounds of both,
+and takes its envelope map from `repairRegions`, the regions the accuracy stage actually replaced.
+
+`checker-sensitivity` passes `UNATTRIBUTED_TEXT` at all three of its calls.
+Its sheets are hand-written fixtures no roster model wrote,
+and discounting there would measure the discount rather than the checkers.
+
+### A defect the suite caught, and one the probe caught
+
+`selectedIndex` is the ONE-BASED number of the winner on the slate the judges were shown,
+and its own doc warns the caller may rotate the slate first.
+Reading `slate[selectedIndex]` therefore named the neighbour,
+and named nothing at all when the winner sat last.
+`refine-phase.unit.test.ts` threw `Expected non-nullish value` on three cases immediately.
+Fixed by matching `entry.index` against `selectedIndex`, the only join a rotated slate survives.
+
+THE FIRST VERSION OF THE GUARD FOR THAT FIX PROVED NOTHING.
+It used a rotated slate, winner numbered 1 at position 1,
+where `slate[selectedIndex]` lands on the winner by luck;
+the case passed with the defect restored.
+Natural order is the discriminating shape:
+winner numbered 1 at position 0, so indexing names the LOSER.
+This is the second time in this work a guard has looked green while guarding nothing,
+after the barrel-export false null recorded under task 181.
+
+### GFP
+
+Removing the discount fails five weight-dependent cases, node exits 1, PASS suites 2 to 1,
+with zero import errors, so the bundle loaded and the failures are the assertions.
+The positive control beside the discriminating case,
+identical ballots with nobody named as an author,
+still passes, which is what shows the assertion reads the discount rather than the ballots.
+
+Restoring the array index fails the join case with a value mismatch rather than a throw,
+plus the composite case with a throw, covering both failure modes.
+
+### What #84's numbers say about each half
+
+CORROBORATES THE HALF.
+#84 measured self-preference paired across two draws sharing no slices:
+own 0.367 against 0.220 for judges holding no stake, excess 0.147, lift 1.67 times.
+A discount dividing by two is the right order and slightly more aggressive than the measured effect,
+so the owner's "consistency is its only argument" now has a second argument.
+
+DOES NOT SUPPORT THE ROSTER HALF, which is why that half is not in these commits.
+Question 1 answer D said the producing roster stays at three
+"until #84 measures judge quality on preserve-or-replace, then widens on those numbers".
+#84 reported, and its numbers do not carry that decision:
+
+- Its width series is `NO WIDTH TREND`, and it is a series about SELF-PREFERENCE by width,
+  0.083 then 0.182, non-monotone and mostly inside its own band.
+  It says nothing about whether wider PRODUCTION yields better candidates.
+- Its one width-correlated quality-adjacent number is replacement rate,
+  0.83 at widths two to four against 0.94 at widths five and six.
+  Replacing the incumbent more often is churn, not quality;
+  reading it as quality assumes the thing being asked.
+- Its abstention finding cuts the other way.
+  `gpt-oss-120b` and `Nemotron-3-Super` decline most slices carrying any archive imperfection,
+  so on exactly the slices that matter the effective roster is about four voices, not six.
+
+The cost side was already measured: two producers to six multiplies calls by 1.7 and tokens by 1.8.
+Cost is not the constraint here; the missing measurement is.
+Widening now would act on a number that does not measure what the decision needs.
+Carried on its own task with the probe it would take.
+
+FINAL GATE: suite 546 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
+Commits: bd972fbc2, 664cbc42f, de3e8c51f, 583005335, 23f1432e4.
