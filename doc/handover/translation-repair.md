@@ -16561,3 +16561,47 @@ which is a property of the transcript rather than of which tool reads it.
 Any reviewer that reads this transcript is barred by that reason.
 A later session wanting outside review of a corpus-touching decision should get it from a reader given
 the CODE and the COUNTS, never the transcript.
+
+## Task 186, two instrument defects found before the draw was spent
+
+Both were found on 2026-08-23 by exercising the probe's own output on invented fixtures while the
+smoke run was still in flight, rather than by reading the code again.
+Neither would have announced itself.
+Both would have been met for the first time at the end of a draw that had already spent its quota,
+which is the expensive moment to learn that the instrument was wrong.
+
+### The null band was measured over the wrong rows
+
+`summarizeWidths` filtered out every row it classified `nothing-shipped` before counting anything,
+on the stated grounds that a slice neither arm touched says nothing about width.
+That is true of the MOVE count and false of the BAND.
+
+A slice where both arms shipped nothing is classified `nothing-shipped`,
+but the narrow arm's REPEAT is a third run and may well have shipped something.
+That row carries churn.
+It can never carry a move, because the two arms agreed.
+Excluding it therefore removed churn observations while removing no move observations,
+so the band came out systematically too small and every reading tilted toward width mattering.
+
+Both counts now run over every row, with the trivial slices broken out in the report so a reader can
+still see how much of the draw was untouched.
+The test that pinned the old behaviour was rewritten,
+and a new case covers the exact row the old filter dropped:
+`nothing-shipped` with the repeat disagreeing.
+
+### The held-back half of the sample could not be run
+
+The probe split its sample in two and said so in its header comment, in its console output, and in the
+report's own advice about what to do with a result near the band.
+Nothing could run the second half.
+`main` filtered the even positions into `drawA` and iterated exactly that, with no selector anywhere.
+Both draws would also have written `editor-width.md`,
+so even a hand-edited run of draw B would have overwritten the reading it exists to be checked against.
+
+The draw is now named on the command line, defaults to A, is REFUSED when it is neither half rather
+than quietly spending draw A under another name, and the report is written per draw and says which
+one it describes.
+
+The general lesson is the one the corpus keeps teaching:
+a claim written in a comment is not a mechanism.
+`grep` for the noun a comment promises, and check something reads it.
