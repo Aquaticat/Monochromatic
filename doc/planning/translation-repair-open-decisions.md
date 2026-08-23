@@ -1893,6 +1893,55 @@ DELEGATE
     included. So that split reproduces, and the eleven verdicts this question
     rests on are now two independent samples in agreement rather than one sample.
 
+### MEASURED 2026-08-23: the absence vote is reachable, so the block-scale null is about the corpus
+
+The unanimity recorded for `mikaela_khara`, ninety-six answers with not one vote for absence,
+had two readings and nothing separated them.
+Either the translation carries every passage,
+or the coverage wire's evidence rule admits any non-empty quote,
+which would make an absence verdict unreachable and the count meaningless.
+Both produce the same reading, and the second would undercut everything this question leans on.
+
+Measured both, on that same entry, at the current wire.
+
+FIRST, the verdicts were graded deterministically, no model in the loop,
+over the sixteen block-scale answers from a fresh run:
+no evidence span is offered for two different blocks,
+no block's evidence sits out of document order relative to its neighbours,
+and no evidence is too short to be rendering its source,
+the thinnest being 2.08 English characters per source character against a spread running to 6.78.
+Every detector was first shown to fire on a planted case,
+and the reuse detector was also shown NOT to fire on several voters quoting one span for one block.
+
+SECOND, and this is what settles it,
+the roster was asked about a passage, THE SPANS IT ITSELF ANCHORED ON were deleted,
+and it was asked again.
+Two of three cases flipped from `carried` to `absent`,
+with six of six and five of six voices calling it absent where none had before.
+The third moved to `partly-carried`, which is what a passage partly rendered elsewhere should produce.
+
+THIRD, the same cases were cut again by the same number of characters
+taken from a part of the page the roster had not pointed at.
+None of the three produced a single absence vote.
+The deleted region was classified structurally rather than assumed to be ordinary:
+one prose line of 111 characters, not a heading, list, link or footer.
+So the flip follows the rendering, not the damage.
+
+The targeted arm returned identical verdicts on two independent runs,
+and the coverage path holds no cache,
+so that agreement was bought rather than replayed.
+
+WHAT THIS DOES AND DOES NOT LICENSE.
+It establishes that the wire can say no, which is what question 28's premise needed.
+It does not establish that the corpus carries everything:
+that is one entry and three damaged cases,
+enough to settle reachability and not enough to make a claim about ninety-three pages.
+The wiring itself stays where the owner left it,
+`groupSourceFirst` unwired and `alignDocumentSections` emitting no insertion pairs,
+because what the pipeline should DO with a reachable absence verdict is a separate decision.
+
+Runner: `mise run //package/module/translation-repair:coverage-control-probe -- --only <entry>`.
+
 ### Taken on 2026-08-21, all four vetoable
 
 1.  `#164` IS CLOSED WITH NOTHING BUILT.
