@@ -238,6 +238,10 @@ export {
   type WidthSummary,
 } from './corpus-run/editor-width-model.ts';
 export {
+  armInSeat,
+  seatThatWon,
+} from './corpus-run/editor-width-contest.ts';
+export {
   widthControlHolds,
   withoutASentence,
 } from './corpus-run/editor-width-control.ts';

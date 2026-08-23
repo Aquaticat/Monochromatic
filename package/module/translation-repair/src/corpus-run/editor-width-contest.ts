@@ -5,6 +5,7 @@ import type { PatchOutcome, } from '../apply-patch.ts';
 import type { Candidate, } from '../candidate-select-model.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { selectChunkPatch, } from '../editor-ensemble.ts';
+import type { ShippedProducer, } from '../editor-selection-result.ts';
 import type { SyntheticModelId, } from '../synthetic-catalog.ts';
 import type { ArmOutcome, } from './editor-width-arm.ts';
 import type { WidthProbeInput, } from './editor-width-input.ts';
@@ -26,14 +27,26 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 // second into a quality result.
 
 /**
+ * Seat a contest settled on.
+ *
+ * NAMED BY SEAT RATHER THAN BY TEXT. An arm that declined to repair offers the
+ * untouched translation, which is byte-identical to the fallback a panel that
+ * will not separate the pair falls back to. Reading the winner by comparing
+ * shipped text therefore credited indecision to whichever arm had declined, and
+ * the wide arm declines more often because it splits one selection minimum
+ * across twice the candidates. That turned "the panel could not choose" into
+ * "the wide arm won" exactly where the draw is most sensitive.
+ */
+type ContestSeat = 'first' | 'second' | 'none';
+
+/**
  * What one seating order decided.
  */
 type ContestRound = {
   /**
-   * Text the panel shipped, which is neither arm when it would not separate
-   * them.
+   * Seat the panel shipped, which is neither when it would not separate them.
    */
-  readonly text: string;
+  readonly winner: ContestSeat;
 
   /**
    * Ballots that named a candidate at all.
@@ -140,10 +153,16 @@ async function contest(
     // first seat as the fallback would turn every indecision into a win for
     // whichever arm happened to sit there, which is the position bias this
     // whole two-order design exists to cancel.
+    //
+    // MARKED `incumbent` SO IT CANNOT BE MISTAKEN FOR AN ARM. The stage reports
+    // this producer verbatim as `shippedProducer` when it declines, and both
+    // arms are seated as composites, so the kind alone separates a real win
+    // from an indecision. A composite with no contributors would not: that is
+    // exactly what an arm whose own producer went unattributed carries.
     indecisionFallback: {
       producer: {
-        kind: 'composite',
-        contributors: [],
+        kind: 'incumbent',
+        matched: [],
       },
       value: unchanged,
       rendered: unchanged.patchedText,
@@ -154,10 +173,28 @@ async function contest(
     l,
   },);
 
+  /**
+   * Who the stage says wrote what it shipped.
+   *
+   * Both arms are seated as composites and both fallbacks are not, so this
+   * separates a decided round from a declined one without looking at text.
+   */
+  const { shippedProducer, } = selection;
+
+  /**
+   * Text that shipped, read once.
+   */
+  const shipped = selection
+    .patch
+    .patchedText;
+
   return {
-    text: selection
-      .patch
-      .patchedText,
+    winner: seatThatWon({
+      shippedProducer,
+      shipped,
+      first,
+      second,
+    },),
     usableBallots: selection
       .rounds
       .flatMap(function ballotsOf(round,) {
@@ -171,49 +208,107 @@ async function contest(
 }
 
 /**
- * Names which arm a contested text came from.
+ * Names which seat a round settled on.
  *
- * @param text - what the panel shipped
+ * @param shippedProducer - who the stage says wrote what shipped
  *
- * @param narrow - narrow arm's repair
+ * @param shipped - text that shipped
  *
- * @param wide - wide arm's repair
+ * @param first - candidate seated first
  *
- * @returns Arm that wrote it, or none when the panel shipped neither
+ * @param second - candidate seated second
+ *
+ * Exported so the collision it exists to prevent can be pinned by a test rather
+ * than argued about: a declining arm and the indecision fallback ship the same
+ * bytes, so a reader that went by text alone credited indecision to whichever
+ * arm had declined.
+ *
+ * @internal
+ *
+ * @returns Seat that won, or none when no candidate did
  *
  * @example
  * ```ts
- * const winner = whoseText({ text, narrow, wide, },);
+ * const winner = seatThatWon({ shippedProducer, shipped, first, second, },);
  * ```
  */
-function whoseText(
+export function seatThatWon(
   {
-    text,
-    narrow,
-    wide,
+    shippedProducer,
+    shipped,
+    first,
+    second,
   }: {
-    readonly text: string;
-    readonly narrow: ArmOutcome;
-    readonly wide: ArmOutcome;
+    readonly shippedProducer: ShippedProducer;
+    readonly shipped: string;
+    readonly first: ArmOutcome;
+    readonly second: ArmOutcome;
   },
-): WidthArm | 'none' {
-  /**
-   * What each arm actually shipped, read one step at a time.
-   */
-  const { patchedText: narrowShipped, } = narrow.patch;
+): ContestSeat {
+  // Neither fallback is a composite, and both arms are, so a non-composite
+  // means the panel never separated the pair. Checking this BEFORE the text
+  // settles the case the text cannot: a declining arm and the fallback ship the
+  // same bytes.
+  if (shippedProducer.kind !== 'composite')
+    return 'none';
 
   /**
-   * {@link narrowShipped} for the wide arm.
+   * What the first seat offered.
    */
-  const { patchedText: wideShipped, } = wide.patch;
+  const { patchedText: firstText, } = first.patch;
 
-  if (text === narrowShipped)
-    return 'narrow';
+  /**
+   * What the second seat offered.
+   */
+  const { patchedText: secondText, } = second.patch;
 
-  if (text === wideShipped)
-    return 'wide';
+  if (shipped === firstText)
+    return 'first';
+
+  if (shipped === secondText)
+    return 'second';
 
   return 'none';
+}
+
+/**
+ * Reads a seat as the arm that sat in it.
+ *
+ * @param seat - seat the round settled on
+ *
+ * @param firstArm - arm seated first in that round
+ *
+ * Exported alongside {@link seatThatWon} so the two orders can be shown to map
+ * their seats to opposite arms, which is the whole mechanism that cancels
+ * position bias.
+ *
+ * @internal
+ *
+ * @returns Arm that won, or none
+ *
+ * @example
+ * ```ts
+ * const winner = armInSeat({ seat, firstArm: 'narrow', },);
+ * ```
+ */
+export function armInSeat(
+  {
+    seat,
+    firstArm,
+  }: {
+    readonly seat: ContestSeat;
+    readonly firstArm: WidthArm;
+  },
+): WidthArm | 'none' {
+  if (seat === 'none')
+    return 'none';
+
+  /**
+   * Arm that sat second, which is whichever one did not sit first.
+   */
+  const secondArm: WidthArm = (firstArm === 'narrow') ? 'wide' : 'narrow';
+
+  return (seat === 'first') ? firstArm : secondArm;
 }
 
 /**
@@ -287,15 +382,13 @@ export async function bothOrders(
 
   return {
     verdict: readHeadToHead({
-      firstOrderWinner: whoseText({
-        text: narrowFirst.text,
-        narrow,
-        wide,
+      firstOrderWinner: armInSeat({
+        seat: narrowFirst.winner,
+        firstArm: 'narrow',
       },),
-      secondOrderWinner: whoseText({
-        text: wideFirst.text,
-        narrow,
-        wide,
+      secondOrderWinner: armInSeat({
+        seat: wideFirst.winner,
+        firstArm: 'wide',
       },),
     },),
     usableBallots: narrowFirst.usableBallots + wideFirst.usableBallots,
