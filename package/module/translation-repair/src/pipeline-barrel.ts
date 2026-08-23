@@ -110,8 +110,13 @@ export {
 export {
   alignHeadingsForced,
   type ForcedAlignStep,
+  type InsertionAnchor,
   type UnpairedReason,
 } from './align-headings-forced.ts';
+export {
+  type OptimalPaths,
+  scanOptimalPaths,
+} from './align-headings-optimal.ts';
 export {
   dedupeAcceptedIssues,
   type DedupeOutcome,

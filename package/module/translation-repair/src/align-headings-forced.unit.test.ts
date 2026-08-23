@@ -19,7 +19,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { alignHeadingsForced, } from '../dist/final/node/index.mjs';
+import {
+  alignHeadingsForced,
+  type ForcedAlignStep,
+  type InsertionAnchor,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Reads the target a source index was paired with, or undefined.
@@ -57,6 +61,50 @@ function pairedWith(
       return [];
     return (step.targetIndex === undefined) ? [] : [step.targetIndex,];
   },);
+}
+
+
+/**
+ * Reads one source unit's insertion anchor out of a step list.
+ *
+ * @param steps - aligner output
+ *
+ * @param sourceIndex - unit to read
+ *
+ * @returns Its anchor
+ *
+ * @throws Error when that unit was paired or is missing, since a test expecting
+ * an anchor there is asserting about something the aligner did not produce and
+ * should say so rather than compare against a blank
+ *
+ * @example
+ * ```ts
+ * const anchor = anchorOf({ steps, sourceIndex: 1, },);
+ * ```
+ */
+function anchorOf(
+  {
+    steps,
+    sourceIndex,
+  }: {
+    readonly steps: readonly ForcedAlignStep[];
+    readonly sourceIndex: number;
+  },
+): InsertionAnchor {
+  /**
+   * The unpaired step for that unit.
+   */
+  const found = steps.find(function atIndex(step,): boolean {
+    return (step.kind === 'source-only') && (step.sourceIndex === sourceIndex);
+  },);
+
+  if ((found === undefined) || (found.kind !== 'source-only'))
+    throw new Error(
+      `no source-only step at index ${String(sourceIndex,)}; the aligner either paired that unit `
+        + 'or never emitted it, and an anchor assertion about it is asserting about nothing',
+    );
+
+  return found.anchor;
 }
 
 await describe({
@@ -238,6 +286,146 @@ await describe({
 
         expect(sources.size,).toBe(2,);
         expect(targets.size,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'PROVES WHERE A MISSING SECTION BELONGS, which is the half an insertion cannot '
+        + 'proceed without: knowing a section is untranslated does not say where its rendering '
+        + 'goes, and every optimal alignment here skips it at the same place',
+      fn: async () => {
+        /**
+         * One section absent from the middle of the translation.
+         */
+        const steps = alignHeadingsForced({
+          sourceHeadings: ['Whiskers', 'Mittens', 'Paws',],
+          targetHeadings: ['Whiskers', 'Paws',],
+        },);
+
+        expect(anchorOf({
+          steps,
+          sourceIndex: 1,
+        },),)
+          .toStrictEqual({
+            kind: 'proven',
+            beforeTargetIndex: 1,
+          },);
+      },
+    },),
+
+    it({
+      name: 'ANCHORS A TRAILING RUN PAST THE LAST TRANSLATED SECTION, at the target length '
+        + 'rather than at the last index, since the sections belong after everything the page '
+        + 'carries and an off-by-one there writes them inside the previous section',
+      fn: async () => {
+        /**
+         * Two sections absent from the end.
+         */
+        const steps = alignHeadingsForced({
+          sourceHeadings: ['Whiskers', 'Mittens', 'Paws',],
+          targetHeadings: ['Whiskers',],
+        },);
+
+        expect([
+          anchorOf({
+            steps,
+            sourceIndex: 1,
+          },),
+          anchorOf({
+            steps,
+            sourceIndex: 2,
+          },),
+        ],)
+          .toStrictEqual([
+            {
+              kind: 'proven',
+              beforeTargetIndex: 1,
+            },
+            {
+              kind: 'proven',
+              beforeTargetIndex: 1,
+            },
+          ],);
+      },
+    },),
+
+    it({
+      name: 'ANCHORS EVERY SECTION OF AN UNTRANSLATED PAGE at the start of a target that holds '
+        + 'nothing, rather than leaving a page nobody translated with no place to put any of it',
+      fn: async () => {
+        /**
+         * A page whose translation carries no sections at all.
+         */
+        const steps = alignHeadingsForced({
+          sourceHeadings: ['Whiskers', 'Mittens',],
+          targetHeadings: [],
+        },);
+
+        expect(steps.map(function toAnchor(step,) {
+          return (step.kind === 'source-only') ? step.anchor : undefined;
+        },),)
+          .toStrictEqual([
+            {
+              kind: 'proven',
+              beforeTargetIndex: 0,
+            },
+            {
+              kind: 'proven',
+              beforeTargetIndex: 0,
+            },
+          ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO PLACE A SECTION THAT COULD PAIR, since an optimal alignment matching it '
+        + 'against existing translation means whatever it says may already be on the page, and '
+        + 'inserting it would write the page own content in twice',
+      fn: async () => {
+        /**
+         * Two sides sharing no evidence, where every pairing stays possible.
+         */
+        const steps = alignHeadingsForced({
+          sourceHeadings: ['Whiskers', 'Mittens', 'Boots',],
+          targetHeadings: ['Sunbeam',],
+        },);
+
+        expect(steps.flatMap(function toKind(step,) {
+          return (step.kind === 'source-only') ? [step.anchor.kind,] : [];
+        },),)
+          .toStrictEqual([
+            'may-pair',
+            'may-pair',
+            'may-pair',
+          ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO PLACE A SECTION THE OPTIMAL ALIGNMENTS DISAGREE ABOUT, and says how many '
+        + 'places it could go. An orphan between two identical headings is genuinely missing, '
+        + 'but which side of the one surviving translation it belongs to is undetermined, and '
+        + 'guessing files real content under the wrong section',
+      fn: async () => {
+        /**
+         * An unmatched section framed by a repeated heading.
+         */
+        const steps = alignHeadingsForced({
+          sourceHeadings: ['Whiskers', 'Mittens', 'Whiskers',],
+          targetHeadings: ['Whiskers',],
+        },);
+
+        expect(anchorOf({
+          steps,
+          sourceIndex: 1,
+        },),)
+          .toStrictEqual({
+            kind: 'several-boundaries',
+            boundaries: [
+              0,
+              1,
+            ],
+          },);
       },
     },),
   ],

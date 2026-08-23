@@ -1,14 +1,8 @@
+import { buildGrid, } from './align-headings-grid.ts';
 import {
-  addScore,
-  beats,
-  buildGrid,
-  GAP,
-  type Grid,
-  type LexScore,
-  pairScore,
-  sameScore,
-  UNREACHABLE,
-} from './align-headings-grid.ts';
+  type OptimalPaths,
+  scanOptimalPaths,
+} from './align-headings-optimal.ts';
 
 //region Forced heading alignment
 // An aligner that can REFUSE. The shipped scorer cannot: a pairing scores
@@ -37,6 +31,51 @@ import {
  * produce.
  */
 export type UnpairedReason = 'forced-gap' | 'ambiguous';
+
+/**
+ * Where an untranslated section's rendering may be written, or why it may not.
+ *
+ * THREE ANSWERS RATHER THAN A NULLABLE INDEX, because "we may not insert this"
+ * has two causes wanting opposite remedies, and collapsing them loses the one
+ * that matters. A section that MAY PAIR is one an optimal alignment can match
+ * against existing translation, so inserting it risks writing the page's own
+ * content in twice. A section with SEVERAL BOUNDARIES is genuinely missing but
+ * could go in more than one place, so inserting it risks putting real content
+ * in the wrong section. The first is a duplication, the second a misfiling.
+ */
+export type InsertionAnchor =
+  | {
+    /**
+     * No optimal alignment pairs this section, and every optimal alignment
+     * skips it at the same place.
+     */
+    readonly kind: 'proven';
+
+    /**
+     * Target unit the insertion goes before. Equal to the target length when
+     * the section belongs after everything the translation carries.
+     */
+    readonly beforeTargetIndex: number;
+  }
+  | {
+    /**
+     * Some optimal alignment pairs this section with existing translation, so
+     * whatever it says may already be on the page.
+     */
+    readonly kind: 'may-pair';
+  }
+  | {
+    /**
+     * Nothing pairs it, but optimal alignments disagree about where it sits.
+     */
+    readonly kind: 'several-boundaries';
+
+    /**
+     * Places it could go, in ascending order, so a report can say how wide the
+     * disagreement is rather than only that there was one.
+     */
+    readonly boundaries: readonly number[];
+  };
 
 /**
  * One decision about one heading.
@@ -84,6 +123,12 @@ export type ForcedAlignStep =
      * Whether nothing could pair, or too much could.
      */
     readonly reason: UnpairedReason;
+
+    /**
+     * Where a translation of this section could be inserted, when that place is
+     * proven.
+     */
+    readonly anchor: InsertionAnchor;
   }
   | {
     /**
@@ -104,173 +149,56 @@ export type ForcedAlignStep =
   };
 
 /**
- * Fills a lexicographic DP table over the two sequences.
+ * Decides where an unpaired source section's rendering could be written.
  *
- * @param grid - affinity and trust
+ * @param partners - target units this section pairs with on some optimal path
  *
- * @param rows - source length
+ * @param gapColumns - target columns it is skipped at on some optimal path
  *
- * @param columns - target length
- *
- * @param forward - true to fill from the origin, false from the far corner
- *
- * @returns Table of best scores
+ * @returns Proven place, or which kind of uncertainty forbids one
  *
  * @example
  * ```ts
- * const table = fillTable({ grid, rows, columns, forward: true, },);
+ * const anchor = anchorFor({ partners, gapColumns, },);
  * ```
  */
-function fillTable(
+function anchorFor(
   {
-    grid,
-    rows,
-    columns,
-    forward,
+    partners,
+    gapColumns,
   }: {
-    readonly grid: Grid;
-    readonly rows: number;
-    readonly columns: number;
-    readonly forward: boolean;
+    readonly partners: ReadonlySet<number>;
+    readonly gapColumns: ReadonlySet<number>;
   },
-): readonly (readonly LexScore[])[] {
-  /**
-   * Best score reachable at each cell.
-   */
-  const table: LexScore[][] = Array.from(
-    { length: rows + 1, },
-    function emptyRow(): LexScore[] {
-      return Array.from(
-        { length: columns + 1, },
-        function emptyCell(): LexScore {
-          return UNREACHABLE;
-        },
-      );
-    },
-  );
+): InsertionAnchor {
+  if (partners.size > 0)
+    return { kind: 'may-pair', };
 
   /**
-   * Cell the walk starts from.
+   * Places this section could sit, in document order.
    */
-  const originRow = forward ? 0 : rows;
+  const boundaries = [...gapColumns,]
+    .toSorted(function ascending(
+      left,
+      right,
+    ): number {
+      return left - right;
+    },);
 
   /**
-   * Column the walk starts from.
+   * The single place, when the optimal alignments agree on one.
    */
-  const originColumn = forward ? 0 : columns;
-  (table[originRow] ?? [])[originColumn] = [
-    0,
-    0,
-    0
-  ];
+  const [only,] = boundaries;
+  if ((boundaries.length === 1) && (only !== undefined))
+    return {
+      kind: 'proven',
+      beforeTargetIndex: only,
+    };
 
-  for (let step = 0; step <= rows; step += 1) {
-    for (let column = 0; column <= columns; column += 1) {
-      /**
-       * Row under consideration, walked in the direction of travel.
-       */
-      const row = forward ? step : (rows - step);
-
-      /**
-       * Column under consideration, walked in the direction of travel.
-       */
-      const at = forward ? column : (columns - column);
-      if ((row === originRow) && (at === originColumn))
-        continue;
-
-      /**
-       * Best score found for this cell so far.
-       */
-      let best = UNREACHABLE;
-
-      /**
-       * Neighbouring cells and what reaching this one from them costs.
-       */
-      const moves: readonly (readonly [
-        number,
-        number,
-        LexScore
-      ])[] = forward
-        ? [
-          [
-            row - 1,
-            at - 1,
-            ((row > 0) && (at > 0))
-              ? pairScore({
-                grid,
-                sourceIndex: row - 1,
-                targetIndex: at - 1,
-              },)
-              : UNREACHABLE,
-          ],
-          [
-            row - 1,
-            at,
-            (row > 0) ? GAP : UNREACHABLE,
-          ],
-          [
-            row,
-            at - 1,
-            (at > 0) ? GAP : UNREACHABLE,
-          ],
-        ]
-        : [
-          [
-            row + 1,
-            at + 1,
-            ((row < rows) && (at < columns))
-              ? pairScore({
-                grid,
-                sourceIndex: row,
-                targetIndex: at,
-              },)
-              : UNREACHABLE,
-          ],
-          [
-            row + 1,
-            at,
-            (row < rows) ? GAP : UNREACHABLE,
-          ],
-          [
-            row,
-            at + 1,
-            (at < columns) ? GAP : UNREACHABLE,
-          ],
-        ];
-
-      for (const [neighbourRow, neighbourColumn, cost,] of moves) {
-        if (cost === UNREACHABLE)
-          continue;
-
-        /**
-         * Score at the neighbour this move comes from.
-         */
-        const from = table[neighbourRow]?.[neighbourColumn];
-        if ((from === undefined) || sameScore({
-          left: from,
-          right: UNREACHABLE,
-        },))
-          continue;
-
-        /**
-         * Score of reaching this cell that way.
-         */
-        const candidate = addScore({
-          left: from,
-          right: cost,
-        },);
-        if (beats({
-          candidate,
-          incumbent: best,
-        },))
-          best = candidate;
-      }
-
-      (table[row] ?? [])[at] = best;
-    }
-  }
-
-  return table;
+  return {
+    kind: 'several-boundaries',
+    boundaries,
+  };
 }
 
 /**
@@ -319,138 +247,22 @@ export function alignHeadingsForced(
   },);
 
   /**
-   * Best score reaching each cell from the origin.
+   * What every optimal alignment does with each unit.
    */
-  const forward = fillTable({
-    grid,
-    rows,
-    columns,
-    forward: true,
+  const paths: OptimalPaths = scanOptimalPaths({
+    sourceHeadings,
+    targetHeadings,
   },);
-
-  /**
-   * Best score reaching the far corner from each cell.
-   */
-  const backward = fillTable({
-    grid,
-    rows,
-    columns,
-    forward: false,
-  },);
-
-  /**
-   * Score of an optimal alignment.
-   */
-  const optimal = forward[rows]?.[columns] ?? UNREACHABLE;
 
   /**
    * Target units each source unit pairs with on SOME optimal path.
    */
-  const partnersOfSource = sourceHeadings.map(function empty(): Set<number> {
-    return new Set<number>();
-  },);
-
-  /**
-   * Source units each target unit pairs with on SOME optimal path.
-   */
-  const partnersOfTarget = targetHeadings.map(function empty(): Set<number> {
-    return new Set<number>();
-  },);
-
-  /**
-   * Source units that go unpaired on SOME optimal path.
-   */
-  const sourceCanGap = sourceHeadings.map(function no(): boolean {
-    return false;
-  },);
-
-  /**
-   * Target units that go unpaired on SOME optimal path.
-   */
-  const targetCanGap = targetHeadings.map(function no(): boolean {
-    return false;
-  },);
-
-  for (let row = 0; row <= rows; row += 1) {
-    for (let column = 0; column <= columns; column += 1) {
-      /**
-       * Best score reaching this cell.
-       */
-      const here = forward[row]?.[column];
-      if ((here === undefined) || sameScore({
-        left: here,
-        right: UNREACHABLE,
-      },))
-        continue;
-
-      if ((row < rows) && (column < columns)) {
-        /**
-         * Affinity of pairing these two units.
-         */
-        const value = grid.affinity[row]?.[column] ?? 0;
-
-        /**
-         * Whole-path score if this pairing is taken here.
-         */
-        const through = addScore({
-          left: addScore({
-            left: here,
-            right: [
-              (grid.trusted[row]?.[column] ?? false) ? value : 0,
-              0,
-              value,
-            ],
-          },),
-          right: backward[row + 1]?.[column + 1] ?? UNREACHABLE,
-        },);
-        if (sameScore({
-          left: through,
-          right: optimal,
-        },)) {
-          partnersOfSource[row]
-            ?.add(column,);
-          partnersOfTarget[column]
-            ?.add(row,);
-        }
-      }
-
-      if (row < rows) {
-        /**
-         * Whole-path score if the source unit gaps here.
-         */
-        const through = addScore({
-          left: addScore({
-            left: here,
-            right: GAP,
-          },),
-          right: backward[row + 1]?.[column] ?? UNREACHABLE,
-        },);
-        if (sameScore({
-          left: through,
-          right: optimal,
-        },))
-          sourceCanGap[row] = true;
-      }
-
-      if (column < columns) {
-        /**
-         * Whole-path score if the target unit gaps here.
-         */
-        const through = addScore({
-          left: addScore({
-            left: here,
-            right: GAP,
-          },),
-          right: backward[row]?.[column + 1] ?? UNREACHABLE,
-        },);
-        if (sameScore({
-          left: through,
-          right: optimal,
-        },))
-          targetCanGap[column] = true;
-      }
-    }
-  }
+  const {
+    partnersOfSource,
+    partnersOfTarget,
+    sourceGapColumns,
+    targetCanGap,
+  } = paths;
 
   /**
    * Decisions for every source unit, then the target units left over.
@@ -471,7 +283,10 @@ export function alignHeadingsForced(
     /**
      * The single partner, when there is exactly one and no gap competes.
      */
-    const only = ((partners.size === 1) && (!(sourceCanGap[row] ?? false)))
+    const only = ((partners.size === 1)
+        && ((sourceGapColumns[row]
+          ?.size
+          ?? 0) === 0))
       ? [...partners,][0]
       : undefined;
 
@@ -494,6 +309,10 @@ export function alignHeadingsForced(
       kind: 'source-only',
       sourceIndex: row,
       reason: (partners.size === 0) ? 'forced-gap' : 'ambiguous',
+      anchor: anchorFor({
+        partners,
+        gapColumns: sourceGapColumns[row] ?? new Set<number>(),
+      },),
     },);
   }
 
