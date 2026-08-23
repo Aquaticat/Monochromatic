@@ -64,6 +64,18 @@ export type UnprovenSafeIntegerDiagnostic = {
 //region Range diagnostics
 
 /**
+ * Exact negative lower bound for literal length or broad number for runtime length.
+ *
+ * @example
+ * ```ts
+ * type Bound = MinimumNegativeBound<3>;
+ * ```
+ */
+type MinimumNegativeBound<Length extends number> = number extends Length
+  ? number
+  : NegativeNumber<Length>;
+
+/**
  * Direction in which index exceeds valid array bounds.
  *
  * @example
@@ -86,7 +98,7 @@ export type PastEndDiagnostic<
   Distance extends number = number,
   LastIndex extends number = number,
   Length extends number = number,
-  MinimumNegativeIndex extends number = NegativeNumber<Length>,
+  MinimumNegativeIndex extends number = MinimumNegativeBound<Length>,
 > = {
   readonly code: 'out-of-range';
   readonly message: `Index ${Index} is past the end by ${Distance}.`;
@@ -115,7 +127,7 @@ export type BeforeStartDiagnostic<
   Distance extends number = number,
   LastIndex extends number = number,
   Length extends number = number,
-  MinimumNegativeIndex extends number = NegativeNumber<Length>,
+  MinimumNegativeIndex extends number = MinimumNegativeBound<Length>,
 > = {
   readonly code: 'out-of-range';
   readonly message: `Index ${Index} is before the start by ${Distance}.`;
