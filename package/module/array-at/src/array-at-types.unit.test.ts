@@ -151,6 +151,7 @@ await describe({
           .toEqualTypeOf<'out-of-range'>();
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 0>>>()
           .toEqualTypeOf<never>();
+        // oxlint-disable-next-line eslint/no-loss-of-precision -- Type-level test verifies Infinity literal is diagnosed before arithmetic.
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 1e999>>>()
           .toEqualTypeOf<'non-safe-integer'>();
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 100_000_000_000_000_000>>>()
