@@ -241,17 +241,6 @@ export {
   armInSeat,
   seatThatWon,
 } from './corpus-run/editor-width-contest.ts';
-export {
-  coverageControlHolds,
-  type CoverageControlCase,
-  type CoverageControlResult,
-  type CoverageControlRow,
-  withoutSpans,
-} from './corpus-run/coverage-control.ts';
-export {
-  widthControlHolds,
-  withoutASentence,
-} from './corpus-run/editor-width-control.ts';
 export { writeWidthReport, } from './corpus-run/editor-width-report.ts';
 export {
   lockRunsDir,

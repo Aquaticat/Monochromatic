@@ -224,12 +224,16 @@ async function main(): Promise<void> {
   const {
     held,
     rows,
+    sawAbsenceOnTarget,
+    sawAbsenceOnDecoy,
   } = control;
 
   console.log(
     `COVERAGE control ${held ? 'HELD' : 'DID NOT HOLD'} over ${
       String(rows.length,)
-    } damaged cases`,
+    } damaged cases: absence votes appeared on ${
+      String(sawAbsenceOnTarget,)
+    } targeted cuts and on ${String(sawAbsenceOnDecoy,)} equally large cuts taken elsewhere`,
   );
   console.log(
     held

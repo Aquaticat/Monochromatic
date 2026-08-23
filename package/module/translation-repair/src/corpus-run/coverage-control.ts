@@ -7,6 +7,7 @@ import type { CoverageVerdict, } from '../coverage-verdict.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { SyntheticModelId, } from '../synthetic-catalog.ts';
 import type { AnchorTarget, } from '../validate-issue.ts';
+import { decoyCut, } from './coverage-control-decoy.ts';
 
 //region Coverage control
 // Whether the coverage roster can vote absence AT ALL, asked before its
@@ -92,6 +93,31 @@ export type CoverageControlRow = {
   readonly absentAfter: number;
 
   /**
+   * Verdict when an EQUALLY LARGE cut was taken where the roster did not point,
+   * or `no-room` when the page had nowhere to take one clear of the anchored
+   * spans.
+   *
+   * A sound wire keeps saying `carried` here: the rendering is untouched, so
+   * nothing about the passage changed. This is what separates a wire that reads
+   * the passage from one that answers `absent` to any damaged document.
+   */
+  readonly decoy: CoverageVerdict['kind'] | 'no-room';
+
+  /**
+   * Voices reporting nothing rendered the passage, after the decoy cut.
+   */
+  readonly absentAfterDecoy: number;
+
+  /**
+   * Offset the decoy cut was taken at, or `-1` when there was no room.
+   *
+   * KEPT so a decoy that does move the verdict can be diagnosed rather than
+   * guessed at: a cut landing on a title or a frontmatter block is structural
+   * damage of a different kind, and its offset is what says so.
+   */
+  readonly decoyAt: number;
+
+  /**
    * Spans deleted from the translation.
    */
   readonly removedSpans: number;
@@ -104,6 +130,24 @@ export type CoverageControlRow = {
 };
 
 /**
+ * Decoy round reduced to what the row records.
+ *
+ * The no-room case is given the shape of a verdict so the row does not have to
+ * branch twice over one condition, once per field.
+ */
+type DecoyReading = {
+  /**
+   * Verdict kind, or `no-room` when the page had nowhere to take the cut.
+   */
+  readonly kind: CoverageVerdict['kind'] | 'no-room';
+
+  /**
+   * Voices reporting nothing rendered the passage.
+   */
+  readonly absent: number;
+};
+
+/**
  * Whether the wire proved able to see the damage, with its working.
  */
 export type CoverageControlResult = {
@@ -112,6 +156,18 @@ export type CoverageControlResult = {
    * deleted.
    */
   readonly held: boolean;
+
+  /**
+   * Cases where deleting the anchored spans produced absence votes that were
+   * not there before.
+   */
+  readonly sawAbsenceOnTarget: number;
+
+  /**
+   * Cases where the equally large cut taken ELSEWHERE also produced them,
+   * which a sound wire keeps at zero.
+   */
+  readonly sawAbsenceOnDecoy: number;
 
   /**
    * Every case the control managed to damage and re-ask.
@@ -290,14 +346,79 @@ async function tryCase(
    */
   const { verdict: afterVerdict, } = after;
 
+  /**
+   * Characters the targeted cut took, which the decoy cut matches exactly.
+   */
+  const removedChars = standingText.length - damagedText.length;
+
+  /**
+   * Where an equally large cut can be taken clear of the anchored spans.
+   */
+  const {
+    span: decoySpan,
+    at: decoyAt,
+  } = decoyCut({
+    text: standingText,
+    avoid: evidence,
+    chars: removedChars,
+  },);
+
+  /**
+   * What the roster says with that unrelated cut made instead.
+   *
+   * SPLICED BY OFFSET rather than by text, so exactly as many characters go as
+   * the targeted cut took. Deleting by span would take every occurrence and the
+   * two cuts would stop being the same size.
+   */
+  const decoyAnswer = (decoySpan === '')
+    ? 'no-room' as const
+    : await runCoverageStage({
+      client,
+      modelIds,
+      sourcePassage: probe.sourcePassage,
+      translation: parseDocument({
+        text: standingText.slice(
+          0,
+          decoyAt,
+        ) + standingText.slice(decoyAt + decoySpan.length,),
+      },),
+      signal,
+      exchangeTimeoutMs,
+      l,
+    },);
+
+  /**
+   * That answer read as a verdict.
+   */
+  const decoyVerdict = (function readDecoy(): DecoyReading {
+    if (decoyAnswer === 'no-room')
+      return {
+        kind: 'no-room',
+        absent: 0,
+      };
+
+    /**
+     * Verdict the decoy round returned.
+     */
+    const { verdict, } = decoyAnswer;
+
+    return {
+      kind: verdict.kind,
+      absent: verdict.absent,
+    };
+  })();
+
   return {
     where: probe.where,
     before: beforeVerdict.kind,
     after: afterVerdict.kind,
     absentBefore: beforeVerdict.absent,
     absentAfter: afterVerdict.absent,
+    decoy: decoyVerdict.kind,
+    absentAfterDecoy: decoyVerdict.absent,
+    decoyAt,
     removedSpans: evidence.length,
-    removedChars: standingText.length - damagedText.length,
+    removedChars,
   };
 }
 
@@ -376,7 +497,9 @@ export async function coverageControlHolds(
         String(row.absentBefore,)
       } -> ${String(row.absentAfter,)}, cut ${String(row.removedSpans,)} spans of ${
         String(row.removedChars,)
-      } chars`,
+      } chars; DECOY of the same size at ${String(row.decoyAt,)}: ${row.decoy}, absence votes ${
+        String(row.absentAfterDecoy,)
+      }`,
     );
   }
 
@@ -391,17 +514,34 @@ export async function coverageControlHolds(
    * Cases where deleting the rendering produced absence votes that were not
    * there before.
    */
-  const sawAbsence = rows
+  const sawAbsenceOnTarget = rows
     .filter(function noticed(row,): boolean {
       return row.absentAfter > row.absentBefore;
     },)
     .length;
 
-  // A MAJORITY RATHER THAN UNANIMITY, for the same reason the editor width
-  // control uses one: a passage may be genuinely paraphrased somewhere else in
-  // the document, and demanding a clean sweep would fail a working wire on it.
+  /**
+   * Cases where the cut taken ELSEWHERE produced them too.
+   */
+  const sawAbsenceOnDecoy = rows
+    .filter(function criedWolf(row,): boolean {
+      return row.absentAfterDecoy > row.absentBefore;
+    },)
+    .length;
+
+  // A MAJORITY RATHER THAN UNANIMITY on the targeted cut, for the same reason
+  // the editor width control uses one: a passage may be genuinely paraphrased
+  // somewhere else in the document, and demanding a clean sweep would fail a
+  // working wire on it.
+  //
+  // BOTH HALVES ARE REQUIRED. A wire that votes absence on the targeted cut has
+  // only shown the vote reachable; one that votes it on the decoy too is
+  // answering the damage rather than the question, and its absence votes carry
+  // no information about coverage either way.
   return {
-    held: (sawAbsence * 2) > rows.length,
+    held: ((sawAbsenceOnTarget * 2) > rows.length) && ((sawAbsenceOnDecoy * 2) <= rows.length),
+    sawAbsenceOnTarget,
+    sawAbsenceOnDecoy,
     rows,
   };
 }

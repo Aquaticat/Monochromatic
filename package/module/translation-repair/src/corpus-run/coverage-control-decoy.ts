@@ -42,6 +42,21 @@ const NO_CUT: DecoyCut = {
 };
 
 /**
+ * A stretch of a document one anchored span occupies.
+ */
+type CoveredRegion = {
+  /**
+   * Offset it starts at.
+   */
+  readonly from: number;
+
+  /**
+   * Offset just past its end.
+   */
+  readonly to: number;
+};
+
+/**
  * Every region of a document covered by one of the named spans.
  *
  * @param text - document searched
@@ -63,7 +78,7 @@ function coveredRegions(
     readonly text: string;
     readonly spans: readonly string[];
   },
-): readonly { readonly from: number; readonly to: number; }[] {
+): readonly CoveredRegion[] {
   return spans
     .filter(function isLocatable(span,): boolean {
       return span !== '';
@@ -72,7 +87,7 @@ function coveredRegions(
       /**
        * Every place this span appears.
        */
-      const found: { readonly from: number; readonly to: number; }[] = [];
+      const found: CoveredRegion[] = [];
 
       /**
        * Cursor walking the document, as a plain index rather than a recursion
@@ -145,32 +160,36 @@ export function decoyCut(
    */
   const last = text.length - chars;
 
-  /**
-   * Cursor walking backwards from the last position that fits.
-   */
-  let at = last;
+  // Walks backwards from the last position that fits. The cursor lives in the
+  // loop head rather than at the function root, so nothing after the scan can
+  // see where it stopped.
+  for (let cursor = last; cursor >= 0;) {
+    /**
+     * Start of the window under test, bound once per turn so the search below
+     * cannot see the cursor move under it.
+     */
+    const from = cursor;
 
-  while (at >= 0) {
     /**
      * Anchored region this window runs into, if any.
      */
     const hit = covered.find(function overlaps(region,): boolean {
-      return (region.from < (at + chars)) && (region.to > at);
+      return (region.from < (from + chars)) && (region.to > from);
     },);
 
     if (hit === undefined)
       return {
         span: text.slice(
-          at,
-          at + chars,
+          from,
+          from + chars,
         ),
-        at,
+        at: from,
       };
 
     // Jump to the last window that ends before this region starts, rather than
     // stepping back one character at a time: every position in between overlaps
     // the same region and would be rejected for the same reason.
-    at = hit.from - chars;
+    cursor = hit.from - chars;
   }
 
   return NO_CUT;
