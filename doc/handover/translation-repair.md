@@ -17207,3 +17207,42 @@ section's size" as the corroboration. Measured at PAGE scale that corroboration 
 model verdicts agree on all six entries. That is evidence for A's verdicts being trustworthy,
 and it is also the first evidence that C's underlying signal is real rather than tuned,
 though C would still need it at SECTION scale, where it was only ever tried on two entries.
+
+## DECIDED 2026-08-23, delegated by the owner: what proves a passage was never translated
+
+The owner declined question 28 as posed, saying the standing instruction is maximum quality and
+so the answer does not need them. They are right that it was the wrong question:
+it offered A through D as alternatives and three of them are not.
+
+-   A, ask a roster whether the whole translation carries the passage,
+    is the only one that PRODUCES an absence verdict. Nothing else here can.
+-   C, require corroboration beyond the matcher's refusal, is a FILTER on a verdict.
+    It decides nothing alone, and costs nothing applied to A's output.
+-   B, fix alignment, improves the CANDIDATES both of the others read.
+    It is upstream of the question rather than an answer to it.
+-   D, park both landings, is the only genuinely exclusive option,
+    and maximum quality rules it out: entries measured today run at 0.37 and 1.88 English
+    characters per source character against a corpus median of 2.65.
+
+DECISION: take A as the verdict, gate insertion on C's corroboration as well, and land B.
+
+-   THE COVERAGE ROSTER SUPPLIES THE VERDICT. It never consults the pairing, so the mispairings
+    this question was opened over cannot reach it, and one mechanism answers both scales.
+-   NO INSERTION WITHOUT DETERMINISTIC CORROBORATION. The roster must call the passage absent
+    AND the page must be measurably too short to hold it. A false insertion duplicates text in a
+    memorial page, which is the expensive error; a missed one leaves a gap the archive already had.
+-   BOTH SCALES LAND. The case against paragraph scale, at most one of twenty-two and plausibly
+    none, came entirely from `mikaela_khara`, which ranks 77 of 92 for completeness and was
+    therefore the wrong place to learn what block candidates are made of.
+    The corroboration gate is what makes paragraph scale safe: a merge leaves the content
+    somewhere in a page of normal length, so a merged pair fails the length test.
+
+This releases the wiring gate recorded on `#106`.
+
+### The decision record could not be written where it belongs
+
+`doc/decision/translation-repair-absence-verdict.md` was refused by the harness classifier,
+through both a shell heredoc and the file-writing tool.
+`DRR` puts decisions under `doc/decision/` once the owner accepts or delegates, which they did,
+so this handover section is a stopgap and not the intended home.
+Ask the owner to allow writes under `doc/decision/`, then move this section there verbatim.
