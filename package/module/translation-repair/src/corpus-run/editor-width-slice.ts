@@ -151,6 +151,8 @@ export async function runWidthSlice(
     comparison,
     heardNarrow: narrow.heard,
     heardWide: wide.heard,
+    narrowShipped: narrow.text !== '',
+    wideShipped: wide.text !== '',
     narrowRepeatAgreed: narrow.text === narrowAgain.text,
     verdict: contested.verdict,
     usableBallots: contested.usableBallots,

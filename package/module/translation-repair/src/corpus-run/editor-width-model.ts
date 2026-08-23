@@ -95,6 +95,23 @@ export type WidthRow = {
   readonly heardWide: number;
 
   /**
+   * Whether each arm shipped a repair at all.
+   *
+   * SEPARATE FROM THE COMPARISON because the wide arm fields twice the
+   * candidates against the same selection minimum, so it can split its own vote
+   * and settle on the incumbent where the narrow arm settled on a repair. That
+   * shows up as `differs` exactly like a better rewrite does, and the two are
+   * opposite answers to `#186`: one says widening improved the repair, the
+   * other says widening suppressed it.
+   */
+  readonly narrowShipped: boolean;
+
+  /**
+   * {@link WidthRow.narrowShipped} for the wide arm.
+   */
+  readonly wideShipped: boolean;
+
+  /**
    * Whether the narrow arm, run a second time end to end, shipped the same
    * text. This is the null band: a flip here is the lane disagreeing with
    * itself, with no width change behind it.
@@ -248,6 +265,17 @@ export type WidthSummary = {
   readonly churned: number;
 
   /**
+   * Slices only the narrow arm shipped a repair on, so widening SUPPRESSED a
+   * repair rather than improving one.
+   */
+  readonly narrowOnly: number;
+
+  /**
+   * Slices only the wide arm shipped a repair on.
+   */
+  readonly wideOnly: number;
+
+  /**
    * Head-to-head wins for the wide arm.
    */
   readonly wideWins: number;
@@ -282,6 +310,38 @@ export type WidthSummary = {
  */
 function movedText(row: WidthRow,): boolean {
   return row.comparison === 'differs';
+}
+
+/**
+ * Whether the narrow arm shipped a repair the wide arm did not.
+ *
+ * @param row - one slice's comparison
+ *
+ * @returns Whether widening cost this slice its repair
+ *
+ * @example
+ * ```ts
+ * const suppressed = onlyNarrowShipped(row,);
+ * ```
+ */
+function onlyNarrowShipped(row: WidthRow,): boolean {
+  return row.narrowShipped && !row.wideShipped;
+}
+
+/**
+ * Whether the wide arm shipped a repair the narrow arm did not.
+ *
+ * @param row - one slice's comparison
+ *
+ * @returns Whether widening bought this slice a repair
+ *
+ * @example
+ * ```ts
+ * const gained = onlyWideShipped(row,);
+ * ```
+ */
+function onlyWideShipped(row: WidthRow,): boolean {
+  return row.wideShipped && !row.narrowShipped;
 }
 
 /**
@@ -403,6 +463,14 @@ export function summarizeWidths(
     churned: countWhere({
       rows,
       holds: churnedOnRepeat,
+    },),
+    narrowOnly: countWhere({
+      rows,
+      holds: onlyNarrowShipped,
+    },),
+    wideOnly: countWhere({
+      rows,
+      holds: onlyWideShipped,
     },),
     wideWins: countVerdict({
       rows,

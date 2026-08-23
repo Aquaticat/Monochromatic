@@ -56,6 +56,7 @@ function renderRow(row: WidthRow,): string {
     `-   \`${row.entryId}\` slice ${String(row.chunkIndex,)}`,
     `issues ${String(row.acceptedIssues,)}`,
     `heard ${String(row.heardNarrow,)}/${String(row.heardWide,)}`,
+    `shipped ${row.narrowShipped ? 'y' : 'n'}/${row.wideShipped ? 'y' : 'n'}`,
     row.comparison,
     `repeat ${row.narrowRepeatAgreed ? 'agreed' : 'FLIPPED'}`,
     `${row.verdict} on ${String(row.usableBallots,)} ballots`,
@@ -162,6 +163,12 @@ export async function writeWidthReport(
       `-   slices that produced a row: ${String(summary.slices,)}`,
       `-   of those, neither arm shipped anything: ${String(summary.nothingShipped,)}`,
       `-   shipped text moved when the editors widened: ${String(summary.moved,)}`,
+      `-   of those, only the NARROW arm shipped, so widening suppressed a repair: ${
+        String(summary.narrowOnly,)
+      }`,
+      `-   of those, only the WIDE arm shipped, so widening bought a repair: ${
+        String(summary.wideOnly,)
+      }`,
       `-   NULL BAND, narrow arm run twice shipped different text: ${String(summary.churned,)}`,
       `-   head-to-head, wide preferred in both orders: ${String(summary.wideWins,)}`,
       `-   head-to-head, narrow preferred in both orders: ${String(summary.narrowWins,)}`,
@@ -175,6 +182,10 @@ export async function writeWidthReport(
       '',
       'Both counts are read over every row, the trivial ones included, so they share a',
       'denominator and can be compared directly.',
+      'A move is not by itself an improvement: the wide arm fields twice the candidates',
+      'against the same selection minimum, so it can split its own vote and keep the',
+      'incumbent where the narrow arm shipped a repair. The two suppression counts above',
+      'separate that from a genuinely different rewrite.',
       'The trivial count above is broken out to be seen, not to be subtracted.',
       '',
       '## Slices that carried no work',

@@ -53,10 +53,14 @@ function rowWith(
     comparison = 'same-text',
     verdict = 'not-run',
     narrowRepeatAgreed = true,
+    narrowShipped = true,
+    wideShipped = true,
   }: {
     readonly comparison?: WidthComparison;
     readonly verdict?: HeadToHeadVerdict | 'not-run';
     readonly narrowRepeatAgreed?: boolean;
+    readonly narrowShipped?: boolean;
+    readonly wideShipped?: boolean;
   },
 ): WidthRow {
   return {
@@ -66,6 +70,8 @@ function rowWith(
     comparison,
     heardNarrow: 3,
     heardWide: 6,
+    narrowShipped,
+    wideShipped,
     narrowRepeatAgreed,
     verdict,
     usableBallots: 0,
@@ -230,6 +236,27 @@ await describe({
         expect(summary.moved,).toBe(2,);
         expect(summary.churned,).toBe(2,);
         expect(summary.slices,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'SEPARATES A SUPPRESSED REPAIR FROM AN IMPROVED ONE, because the wide arm fields twice '
+        + 'the candidates against one selection minimum and can split its own vote into keeping the '
+        + 'incumbent; both read as "differs" while being opposite answers to the question',
+      fn: async function suppressionIsNotImprovement() {
+        const summary = summarizeWidths({
+          rows: [
+            rowWith({ comparison: 'differs', narrowShipped: true, wideShipped: false, },),
+            rowWith({ comparison: 'differs', narrowShipped: false, wideShipped: true, },),
+            rowWith({ comparison: 'differs', narrowShipped: true, wideShipped: true, },),
+          ],
+        },);
+
+        // All three moved, but only one of them is the wide arm rewriting rather
+        // than declining, and only one is the narrow arm losing its repair.
+        expect(summary.moved,).toBe(3,);
+        expect(summary.narrowOnly,).toBe(1,);
+        expect(summary.wideOnly,).toBe(1,);
       },
     },),
 
