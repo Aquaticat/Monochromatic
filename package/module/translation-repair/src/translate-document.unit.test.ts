@@ -1287,5 +1287,53 @@ The cat is doing the sleeping on the windowsill.
         expect(result.translatedText,).not.toContain('晒太阳',);
       },
     },),
+
+    it({
+      name: 'REFUSES the same untranslated passage on a page that is not short, before buying a '
+        + 'single round, because a page already carrying its ordinary weight of English is not '
+        + 'missing anything an insertion could supply',
+      fn: async () => {
+        /** Cost of the document with nothing appended. */
+        const plain = await runDriver({});
+
+        /**
+         * Same document with an untranslated passage anchored at the end, on
+         * the VERBOSE pair rather than {@link SHORT_SOURCE}'s.
+         */
+        const anchored = await runDriver({ anchorSource: MISSING_SOURCE, },);
+
+        /** Index the appended anchor holds. */
+        const anchorIndex = anchored.prepared
+          .slices
+          .length - 1;
+        expect(anchored.result
+          .status,).toBe('unfilled',);
+        expect(anchored.result
+          .unfilled
+          .map(function toIndex(passage,): number {
+            return passage.chunkIndex;
+          },),).toEqual([anchorIndex,],);
+        expect(anchored.result
+          .unfilled[0]
+          ?.reason,).toBe('not-corroborated',);
+
+        // NOTHING WAS BOUGHT, which is the whole point of a deterministic gate
+        // in front of a paid round: a refused passage carries no evidence
+        // because no round was ever put. Asserting the finding list is empty is
+        // what separates this from a round that ran and came back silent.
+        expect(anchored.result
+          .unfilled[0]
+          ?.findings,).toEqual([],);
+        expect(anchored.calls
+          .translateAttempts,).toBe(plain.calls
+          .translateAttempts,);
+
+        // The page keeps what it had, and the passage is still reported.
+        expect(anchored.result
+          .shippedChunkIndices,).not.toContain(anchorIndex,);
+        expect(anchored.result
+          .translatedText,).not.toContain('晒太阳',);
+      },
+    },),
   ],
 },);
