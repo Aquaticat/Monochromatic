@@ -25,6 +25,7 @@ import { settledTallyLine, } from './settled-tally.ts';
 import {
   discardSliceCache,
   openPairingCache,
+  openSectionPairingCache,
   openRefineSliceCache,
   openSliceCache,
   openTranslateSliceCache,
@@ -271,6 +272,13 @@ async function runEntryPipeline(
       // module's own test catches: it asserts a fully cached resume makes no
       // calls at all.
       pairingCache: await openPairingCache({
+        dir: entryCacheDir,
+        generation: pipelineDigest,
+      },),
+      // THE SECTION ROUND IS BOUGHT FIRST and cached apart, because it decides
+      // what an aligned section IS and therefore what the block rounds above
+      // are even asked about.
+      sectionCache: await openSectionPairingCache({
         dir: entryCacheDir,
         generation: pipelineDigest,
       },),

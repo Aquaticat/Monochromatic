@@ -28,6 +28,27 @@ export {
   sectionPairingsOf,
 } from './section-pairing.ts';
 export {
+  isSectionPairingWire,
+  readSectionPairing,
+} from './pair-sections-read.ts';
+export { sectionPairingToSteps, } from './pair-sections-steps.ts';
+export {
+  type PairedDocumentRecord,
+  pairSectionsWithRoster,
+  type SectionPairingOutcome,
+} from './pair-sections-stage.ts';
+export {
+  buildSectionPairingMessages,
+  type NumberedSection,
+  type SectionPair,
+  SectionPairingError,
+  type SectionPairingWire,
+} from './pair-sections-wire.ts';
+export {
+  buySectionPairing,
+  type SectionRoundOutcome,
+} from './prepare-section-round.ts';
+export {
   type BlockPair,
   BlockPairingError,
   type BlockPairingWire,

@@ -14,6 +14,7 @@ import {
   governedSliceIndices,
 } from './line-structure-inherit.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
+import type { SectionPair, } from './pair-sections-wire.ts';
 import {
   type SectionBlockPairing,
   sectionPairingsOf,
@@ -137,6 +138,15 @@ export type PreparedDocumentPair = {
  * @param sliceCharBudget - target characters a slice may carry; defaults to
  * {@link SLICE_CHAR_BUDGET}
  *
+ * @param blockPairings - correspondences a roster agreed on WITHIN each aligned
+ * section, keyed by section index
+ *
+ * @param sectionPairing - correspondences a roster agreed on BETWEEN the two
+ * sides' sections, which decides what the aligned sections are in the first
+ * place. Kept apart from `blockPairings` because the two answer different
+ * questions and are bought in that order: which sections correspond, and then
+ * which blocks within one do.
+ *
  * @returns Slices, governance, declared names and alignment findings
  *
  * @example
@@ -150,11 +160,13 @@ export function prepareDocumentPair(
     targetText,
     sliceCharBudget = SLICE_CHAR_BUDGET,
     blockPairings,
+    sectionPairing,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly sliceCharBudget?: number;
     readonly blockPairings?: ReadonlyMap<number, readonly BlockPair[]>;
+    readonly sectionPairing?: readonly SectionPair[];
   },
 ): PreparedDocumentPair {
   /**
@@ -197,6 +209,7 @@ export function prepareDocumentPair(
   const alignment = alignDocumentSections({
     source: sourceDocument,
     target: targetDocument,
+    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
   },);
 
   /**
@@ -261,7 +274,7 @@ export function prepareDocumentPair(
      * characters of original against 4340 of translation, which is the largest
      * slice in the document at exactly the section nobody could pair.
      */
-    const sectionPairing = blockPairings?.get(pairIndex,);
+    const blockPairing = blockPairings?.get(pairIndex,);
 
     /**
      * Slices carved from this chunk.
@@ -272,7 +285,7 @@ export function prepareDocumentPair(
       targetText,
       baseIndex: slices.length,
       budget: sliceCharBudget,
-      ...((sectionPairing === undefined) ? {} : { blockPairing: sectionPairing, }),
+      ...((blockPairing === undefined) ? {} : { blockPairing, }),
     },);
 
     /**
@@ -281,10 +294,10 @@ export function prepareDocumentPair(
      * Derived here rather than returned by subdivision, from the same pairing
      * subdivision was handed, so the assertion and the carving cannot drift.
      */
-    const declined = (sectionPairing === undefined)
+    const declined = (blockPairing === undefined)
       ? new Set<string>()
       : declinedTargetIdsOfPairing({
-        pairs: sectionPairing,
+        pairs: blockPairing,
         sourceNodes: pair.source
           .nodes,
         targetNodes: pair.target

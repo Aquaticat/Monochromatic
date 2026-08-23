@@ -39,6 +39,7 @@ export {
   PICTURE_READING_NAMESPACE,
   REFINE_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
+  SECTION_PAIRING_NAMESPACE,
   type SliceNamespace,
   TRANSLATE_SLICE_NAMESPACE,
 } from './slice-cache-claims.ts';

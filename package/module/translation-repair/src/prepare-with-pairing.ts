@@ -20,7 +20,11 @@ import type {
   BlockPair,
   NumberedBlock,
 } from './pair-blocks-wire.ts';
+import type {
+  PairedDocumentRecord,
+} from './pair-sections-stage.ts';
 import { parseDocument, } from './parse-document.ts';
+import { buySectionPairing, } from './prepare-section-round.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -80,6 +84,13 @@ export type PairedPreparation = {
  *
  * @param sliceCharBudget - slice sizing, passed through untouched
  *
+ * @param pairingCache - store the per-section BLOCK rounds republish from
+ *
+ * @param sectionCache - store the whole-document SECTION round republishes
+ * from, kept apart from `pairingCache` because the two answer different
+ * questions and a key space holding both would let one kind of record be read
+ * as the other
+ *
  * @returns Preparation built on the roster's pairing, and its findings
  *
  * @example
@@ -98,6 +109,7 @@ export async function prepareDocumentPairWithRoster(
     l,
     sliceCharBudget,
     pairingCache,
+    sectionCache,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly SyntheticModelId[];
@@ -108,6 +120,7 @@ export async function prepareDocumentPairWithRoster(
     readonly l: Logger;
     readonly sliceCharBudget?: number;
     readonly pairingCache?: SliceCache<PairedSectionRecord>;
+    readonly sectionCache?: SliceCache<PairedDocumentRecord>;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -125,9 +138,51 @@ export async function prepareDocumentPairWithRoster(
    * document already in memory, and it buys a preparation that stays a pure
    * function of its arguments.
    */
+  const source = parseDocument({ text: sourceText, },);
+
+  /**
+   * Whole translation document, parsed beside it.
+   */
+  const target = parseDocument({ text: targetText, },);
+
+  /**
+   * Which section renders which, bought ONLY where the deterministic aligner
+   * refused, which is two entries in this corpus.
+   *
+   * FIRST, BEFORE THE BLOCK ROUNDS BELOW. Those are asked one aligned section at
+   * a time, so they are questions about an alignment that has to exist before
+   * they can be posed. On `XIEPT2` no section aligns, so without this round the
+   * roster is never asked anything at all and the page reaches no slice.
+   */
+  const sectionRound = await buySectionPairing({
+    client,
+    modelIds,
+    source,
+    target,
+    signal,
+    exchangeTimeoutMs,
+    l: pl,
+    ...((sectionCache === undefined) ? {} : { sectionCache, }),
+  },);
+
+  /**
+   * Correspondences to align on, absent when nobody was asked or nobody agreed,
+   * which is what keeps the deterministic aligner in place.
+   */
+  const { pairing, } = sectionRound;
+
+  /**
+   * That pairing where there is one, absent where the aligner keeps the floor.
+   */
+  const sectionPairing = (pairing.length === 0) ? undefined : pairing;
+
+  /**
+   * Aligned sections, which decide what the roster is asked about below.
+   */
   const alignment = alignDocumentSections({
-    source: parseDocument({ text: sourceText, },),
-    target: parseDocument({ text: targetText, },),
+    source,
+    target,
+    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
   },);
 
   /**
@@ -136,9 +191,9 @@ export async function prepareDocumentPairWithRoster(
   const blockPairings = new Map<number, readonly BlockPair[]>();
 
   /**
-   * What the rounds reported.
+   * What the rounds reported, opened with whatever the section round said.
    */
-  const findings: string[] = [];
+  const findings: string[] = [...sectionRound.findings,];
   for (
     const [pairIndex, pair,] of alignment
       .pairs
@@ -332,6 +387,7 @@ export async function prepareDocumentPairWithRoster(
     sourceText,
     targetText,
     ...((sliceCharBudget === undefined) ? {} : { sliceCharBudget, }),
+    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
     blockPairings,
   },);
 

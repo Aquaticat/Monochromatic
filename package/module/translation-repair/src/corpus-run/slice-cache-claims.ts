@@ -111,6 +111,20 @@ const CLAIM_BY_ROLE = {
   },
 
   /**
+   * Whole-document SECTION pairing, which decides what an aligned section is.
+   *
+   * ITS OWN CLAIM RATHER THAN `pairing`'s, because the two are bought in order
+   * and the first decides the questions the second is asked. Sharing a prefix
+   * would let a stored block answer be read as a section answer, since both
+   * records carry a list of `{source, target}` and a list of findings and
+   * nothing in the shape tells them apart.
+   */
+  sectionPairing: {
+    prefix: 'section-pair.',
+    marker: 'section-pair-generation.txt',
+  },
+
+  /**
    * Naturalness refinement. NOT A LANE: a refinement is bought after the repair
    * lane has already settled a slice, over what its accuracy pass produced, so
    * it retires with the entry rather than standing beside the lane's own work.
@@ -155,6 +169,11 @@ export const LANE_CONTEST_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.laneContest;
  * Block pairing's claim.
  */
 export const PAIRING_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.pairing;
+
+/**
+ * Section pairing's claim.
+ */
+export const SECTION_PAIRING_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.sectionPairing;
 
 /**
  * Consolidation's claim.

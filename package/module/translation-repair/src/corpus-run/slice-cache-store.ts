@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import { isJsonRecord, } from '../json-guard.ts';
 import type { PairedSectionRecord, } from '../pair-blocks-stage.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
+import type { PairedDocumentRecord, } from '../pair-sections-stage.ts';
 import type { RefinedSliceSettlement, } from '../refine-slice-settle.ts';
 import type { ChunkRepairOutcome, } from '../repair-contract.ts';
 import type { SliceCache, } from '../slice-cache.ts';
@@ -17,6 +18,7 @@ import {
   readDirectoryNames,
   PAIRING_NAMESPACE,
   REFINE_NAMESPACE,
+  SECTION_PAIRING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
   TRANSLATE_SLICE_NAMESPACE,
 } from './slice-cache-namespace.ts';
@@ -287,6 +289,59 @@ export async function openPairingCache(
     generation,
     namespace: PAIRING_NAMESPACE,
     isValue: isCachedPairing,
+  },);
+}
+
+/**
+ * Whether a stored value is a settled section pairing.
+ *
+ * @param value - parsed stored record
+ *
+ * @returns Whether it can be republished as one
+ *
+ * @example
+ * ```ts
+ * const ok = isCachedSectionPairing({ pairs: [], findings: [], },);
+ * ```
+ */
+function isCachedSectionPairing(value: unknown,): value is PairedDocumentRecord {
+  return isJsonRecord(value,)
+    && Array.isArray(value.findings,)
+    && isPairList(value.pairs,);
+}
+
+/**
+ * Opens an entry's whole-document SECTION-pairing cache.
+ *
+ * ITS OWN NAMESPACE beside the block one. Both records carry a list of
+ * `{source, target}` and a list of findings, so nothing in the stored shape
+ * separates a section answer from a block answer and only the key space can.
+ *
+ * @param dir - per-entry slice-cache directory
+ *
+ * @param generation - digest of the built pipeline this pass runs
+ *
+ * @returns Cache resuming a settled section pairing and persisting a new one
+ *
+ * @example
+ * ```ts
+ * const sectionCache = await openSectionPairingCache({ dir: entryCacheDir, generation, },);
+ * ```
+ */
+export async function openSectionPairingCache(
+  {
+    dir,
+    generation,
+  }: {
+    readonly dir: string;
+    readonly generation: string;
+  },
+): Promise<SliceCache<PairedDocumentRecord>> {
+  return await openNamespacedCache({
+    dir,
+    generation,
+    namespace: SECTION_PAIRING_NAMESPACE,
+    isValue: isCachedSectionPairing,
   },);
 }
 
