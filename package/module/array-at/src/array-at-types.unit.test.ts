@@ -111,11 +111,14 @@ await describe({
           array: ['a', { value: 1, }, null],
           index: 2,
         },);
+        const anyElement = undefined as any;
+        const anyResult = arrayAt({ array: [anyElement], index: 0, });
 
         expectTypeOf(first,).toEqualTypeOf<10>();
         expectTypeOf(middle,).toEqualTypeOf<20>();
         expectTypeOf(object,).toEqualTypeOf<{ readonly value: 1; }>();
         expectTypeOf(nullable,).toEqualTypeOf<null>();
+        expectTypeOf(anyResult,).toBeAny();
       },
     },),
 
