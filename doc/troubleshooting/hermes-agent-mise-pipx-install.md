@@ -303,6 +303,107 @@ All installed packages are compatible
    while upstream has retired PyPI distribution and
   moved its source version beyond that release.
 
+## Supported alternatives
+
+The current upstream support matrix gives Linux on x86-64 and ARM64 two Tier 1 installation methods:
+ the Git-backed `install.sh` layout and the official Docker image.
+Nix is Tier 2 and maintained on a best-effort basis.
+PyPI,
+ including `uv tool install` and `pip install`,
+ remains explicitly unsupported.
+
+`NousResearch/hermes-agent` `website/docs/getting-started/platform-support.md:13-50` at commit
+`c9c44d0df92279815bfd00ad53b82a256781d497` records those tiers.
+The manual clone instructions in `website/docs/developer-guide/contributing.md:77-104` are a developer fallback,
+ not another Tier 1 distribution method.
+
+### Run the official installer without a pipe
+
+Downloading the official installer to a file,
+ inspecting it,
+ and then invoking that file avoids the `curl | bash` pipeline while retaining the Tier 1 install layout.
+On 2026-08-23,
+ the bytes served by `https://hermes-agent.nousresearch.com/install.sh` exactly matched
+`scripts/install.sh` at upstream commit `c9c44d0df92279815bfd00ad53b82a256781d497`.
+Both files had SHA-256
+`0582d9b1562efcb6e0ac62f4451021667830b830a72ce7d91eaea9fee8b6c09b`.
+Invoking the downloaded file with `--help` returned status `0`.
+
+This removes the pipeline,
+ not shell execution or network-fetched dependencies.
+The installer itself downloads the uv installer to a temporary file and executes it when
+`$HERMES_HOME/bin/uv` is absent.
+
+`NousResearch/hermes-agent` `scripts/install.sh:566-615` at the same commit:
+
+```bash
+local _managed_uv="$HERMES_HOME/bin/uv"
+
+if [ -x "$_managed_uv" ]; then
+    UV_CMD="$_managed_uv"
+    UV_VERSION=$($UV_CMD --version 2>/dev/null)
+    log_success "Managed uv found ($UV_VERSION)"
+    return 0
+fi
+
+log_info "Installing managed uv into $HERMES_HOME/bin ..."
+mkdir -p "$HERMES_HOME/bin"
+
+# Two-stage: download the installer, then run it.  Piping
+# `curl | sh` masks curl failures (sh exits 0 on empty stdin)
+# and conflates network errors with installer errors.
+local _uv_install_log _uv_installer
+_uv_install_log="$(mktemp 2>/dev/null || echo "/tmp/hermes-uv-install.$$.log")"
+_uv_installer="$(mktemp 2>/dev/null || echo "/tmp/hermes-uv-installer.$$.sh")"
+if ! curl -LsSf https://astral.sh/uv/install.sh -o "$_uv_installer" 2>"$_uv_install_log"; then
+    log_error "Failed to download uv installer from https://astral.sh/uv/install.sh"
+    log_info "curl output:"
+    sed 's/^/    /' "$_uv_install_log" >&2
+    log_info "Install manually: https://docs.astral.sh/uv/getting-started/installation/"
+    rm -f "$_uv_install_log" "$_uv_installer"
+    exit 1
+fi
+# UV_UNMANAGED_INSTALL tells the astral installer to place the binary
+# directly into $HERMES_HOME/bin instead of ~/.local/bin.
+if UV_UNMANAGED_INSTALL="$HERMES_HOME/bin" sh "$_uv_installer" >>"$_uv_install_log" 2>&1; then
+    rm -f "$_uv_installer"
+    if [ -x "$_managed_uv" ]; then
+        UV_CMD="$_managed_uv"
+    else
+        log_error "uv installer reported success but binary not found at $_managed_uv"
+        log_info "Installer output:"
+        sed 's/^/    /' "$_uv_install_log" >&2
+        rm -f "$_uv_install_log"
+        exit 1
+    fi
+    rm -f "$_uv_install_log"
+    UV_VERSION=$($UV_CMD --version 2>/dev/null)
+    log_success "Managed uv installed ($UV_VERSION)"
+else
+    log_error "Failed to install uv"
+    log_info "Installer output:"
+    sed 's/^/    /' "$_uv_install_log" >&2
+    log_info "Install manually: https://docs.astral.sh/uv/getting-started/installation/"
+    rm -f "$_uv_install_log" "$_uv_installer"
+    exit 1
+fi
+```
+
+Tradeoff:
+ this route is upstream-supported and host-native,
+ but Hermes owns its checkout and environment under `~/.hermes` rather than mise.
+There is no upstream-supported installation in which mise owns the Hermes package.
+An existing executable at `$HERMES_HOME/bin/uv` skips the nested uv download,
+ but that prerequisite must remain compatible with the installer.
+
+The official container is the Tier 1 alternative when executing the installer script is itself unacceptable.
+It avoids a host Python checkout,
+ but changes terminal,
+ filesystem,
+ browser,
+ audio,
+ and service integration boundaries.
+
 ## Verified workarounds
 
 ### Pin the tool's interpreter through mise
