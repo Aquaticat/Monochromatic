@@ -325,7 +325,7 @@ function movedText(row: WidthRow,): boolean {
  * ```
  */
 function onlyNarrowShipped(row: WidthRow,): boolean {
-  return row.narrowShipped && !row.wideShipped;
+  return row.narrowShipped && (!row.wideShipped);
 }
 
 /**
@@ -341,7 +341,7 @@ function onlyNarrowShipped(row: WidthRow,): boolean {
  * ```
  */
 function onlyWideShipped(row: WidthRow,): boolean {
-  return row.wideShipped && !row.narrowShipped;
+  return row.wideShipped && (!row.narrowShipped);
 }
 
 /**

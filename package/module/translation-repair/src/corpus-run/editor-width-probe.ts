@@ -47,6 +47,14 @@ const DEFAULT_SLICES = 18;
 const DEFAULT_DRAW: WidthDraw = 'a';
 
 /**
+ * Command-line position the draw name is read from.
+ *
+ * Second argument after the slice count, which itself sits at the position
+ * every entry point in this family reads its first argument from.
+ */
+const DRAW_ARGV_INDEX = 3;
+
+/**
  * Position within the sample each draw takes.
  *
  * Alternate positions rather than a front and back half, so both draws stay as
@@ -121,7 +129,7 @@ async function main(): Promise<void> {
   /**
    * Half of the sample this run spends, named on the command line.
    */
-  const asked = process.argv[3] ?? DEFAULT_DRAW;
+  const asked = process.argv[DRAW_ARGV_INDEX] ?? DEFAULT_DRAW;
 
   if ((asked !== 'a') && (asked !== 'b'))
     throw new Error(
