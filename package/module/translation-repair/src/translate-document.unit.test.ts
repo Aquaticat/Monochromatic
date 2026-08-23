@@ -75,6 +75,39 @@ const FRESH = 'The cat naps on the windowsill.';
 const MISSING_SOURCE = '## 第三节\n\n猫猫也喜欢晒太阳。';
 
 /**
+ * Original of a page whose translation is measurably too short to hold it.
+ *
+ * ITS OWN PAIR rather than {@link SOURCE_TEXT}. The corroboration gate admits
+ * an insertion only where the page LACKS about as much English as the passage
+ * would render into, and {@link TARGET_TEXT} is deliberately verbose: it runs
+ * 3.4 English code points per source point against a corpus median of 2.65, so
+ * that page is not missing anything and no insertion may be written into it.
+ * Measured: this pair runs 1.09, leaving a shortfall of 156 against the 45
+ * points {@link MISSING_SOURCE} would render into.
+ */
+const SHORT_SOURCE = `## 第一节
+
+猫猫在窗台上打盹，尾巴一晃一晃的，阳光把它的毛照得发亮，屋子里安安静静，只有钟摆在响。
+
+## 第二节
+
+窗台上有一只鸟，猫猫盯着它看了很久，耳朵一直朝着那个方向，但它始终没有跳起来。
+`;
+
+/**
+ * Translation of {@link SHORT_SOURCE}, terse enough that the page reads as
+ * missing English rather than as merely brief.
+ */
+const SHORT_TARGET = `## Section one
+
+The cat naps on the windowsill.
+
+## Section two
+
+A bird sits outside, and the cat watches it.
+`;
+
+/**
  * Stand-in for "no slice is silenced", which every case but the anchored one
  * uses.
  *
@@ -1200,6 +1233,8 @@ The cat is doing the sleeping on the windowsill.
           persisted,
           prepared,
         } = await runDriver({
+          sourceText: SHORT_SOURCE,
+          targetText: SHORT_TARGET,
           anchorSource: MISSING_SOURCE,
           silentForSource: MISSING_SOURCE,
         },);
