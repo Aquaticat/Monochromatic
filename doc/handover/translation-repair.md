@@ -17491,8 +17491,12 @@ Chinese, a target/source ratio of 0.17 against a corpus median of 2.65, the lowe
 Nothing pairs, so no slice exists, so neither lane is ever asked about it,
 and the page ships exactly as the archive holds it.
 
-Two further pages have slices covering under half their source: `ArtsEpiphany`, 33 of 120
-characters, and `gaoyanger`.
+`ArtsEpiphany` and `gaoyanger` also read as covering under half their source, and CHECKED, both
+are the measure's fault rather than the pipeline's: that ratio divides slice source text by the
+whole file, which includes front matter, heading lines and JSX markup. `ArtsEpiphany` is one
+`mdxJsxFlowElement` holding 33 characters of text, all of which reach a slice; `gaoyanger`'s two
+sections are both covered. Neither is a defect, and a coverage measure that means anything has to
+divide by chunked body text rather than by file length.
 
 ### Why: the affinity grid is all zeros
 
