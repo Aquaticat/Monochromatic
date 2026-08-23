@@ -30,6 +30,15 @@ import {
 // times its Chinese while every other slice runs 0.88 to 6.10 against a
 // document of 2.75, so no other slice is starved of the text this one holds.
 //
+// THE FLOOR IS ONE-DIRECTIONAL, and it did not start that way. A single
+// source-length floor guarded both directions until a census over every
+// settled artifact showed it inverting the instrument: 40 far-longer
+// candidates exist, the note reported 3, and the floor silenced 37. The three
+// it reported ran 15.5, 15.5 and 10.1; among those it hid were 185.4, 137.0,
+// 100.8, 99.1 and 94.5. The largest, a translate candidate of 10381 characters
+// against a 56-character original, is a lane looping rather than a rendering,
+// and the judges deciding that passage were told nothing about it.
+//
 // WHY NO DOCUMENT BASELINE IS THREADED HERE. `PLAUSIBLE_BASELINE_MIN` of 1.9
 // and `PLAUSIBLE_BASELINE_MAX` of 4.5 sit strictly inside the 0.8 and 10
 // endpoints, so a slice tripping an absolute tail is already outside every
@@ -54,6 +63,26 @@ import {
 const RATIO_TAIL_REASONS: ReadonlySet<SliceImplausibility> = new Set([
   'target-far-shorter',
   'target-far-longer',
+],);
+
+/**
+ * Reasons a short original cannot support, because over a twenty-character
+ * line the ratio reports rounding rather than a rendering.
+ *
+ * ONLY THE SHORTER DIRECTION, and the asymmetry is the whole point. A
+ * 20-character original against a 12-character rendering is noise, and reading
+ * it as a shortfall would fire the note on every short line in the corpus. A
+ * 56-character original against a 10381-character rendering is not rounding in
+ * either direction: it is a runaway, and it is exactly what this note exists
+ * to put in front of a judge.
+ *
+ * @example
+ * ```ts
+ * FLOORED_REASONS.has('target-far-shorter',);
+ * ```
+ */
+const FLOORED_REASONS: ReadonlySet<SliceImplausibility> = new Set([
+  'target-far-shorter',
 ],);
 
 /**
@@ -82,7 +111,9 @@ export type ContestRendering = {
  *
  * @param text - one rendering of it
  *
- * @returns Whether a ratio tail applies, ignoring pairing evidence
+ * @returns Whether a ratio tail applies, ignoring pairing evidence, with the
+ * source-length floor applied only to the reasons {@link FLOORED_REASONS}
+ * names
  *
  * @example
  * ```ts
@@ -108,10 +139,20 @@ function tripsARatioTail(
     },),
   },);
 
+  /**
+   * Whether the original is long enough for a SHORTFALL against it to mean
+   * anything. A surplus needs no such support, per {@link FLOORED_REASONS}.
+   */
+  const longEnoughToFallShortOf = sourceText.length >= MIN_RATIO_SOURCE_CHARS;
+
   return reasons.some(function describesTheRendering(
     reason: SliceImplausibility,
   ): boolean {
-    return RATIO_TAIL_REASONS.has(reason,);
+    if (!RATIO_TAIL_REASONS.has(reason,))
+      return false;
+    if (!FLOORED_REASONS.has(reason,))
+      return true;
+    return longEnoughToFallShortOf;
   },);
 }
 
@@ -122,8 +163,10 @@ function tripsARatioTail(
  * knows the note is about this passage rather than boilerplate it can skim. On
  * the settled corpus that is 2 of 116 eligible rows.
  *
- * Renderings whose original is shorter than {@link MIN_RATIO_SOURCE_CHARS} are
- * passed over entirely: a ratio over a twenty-character line reports rounding.
+ * A SHORTFALL against an original shorter than {@link MIN_RATIO_SOURCE_CHARS}
+ * is passed over, because a ratio over a twenty-character line reports
+ * rounding. A SURPLUS is reported at any original length, and
+ * {@link FLOORED_REASONS} carries the measurement behind that split.
  *
  * A rendering of zero length raises nothing here, because
  * {@link sliceImplausibility} reports no reason when either side is empty. An
@@ -158,9 +201,6 @@ export function contestSizeNote(
    * Original's size, which every ratio divides by.
    */
   const sourceChars = sourceText.length;
-
-  if (sourceChars < MIN_RATIO_SOURCE_CHARS)
-    return '';
 
   if (!renderings.some(function isOutOfProportion(rendering,): boolean {
     return tripsARatioTail({

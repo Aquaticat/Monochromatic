@@ -8,6 +8,14 @@
  * far longer than its original AND is the right candidate. A test asserting a
  * fault there would be pinning the wrong behaviour in place.
  *
+ * WHY THE SOURCE FLOOR IS TESTED IN ONE DIRECTION ONLY. A short original
+ * cannot support a SHORTFALL reading, because the ratio reports rounding. It
+ * supports a SURPLUS reading perfectly well: a 56-character original against a
+ * 10381-character rendering is a lane looping. The test that used to live here
+ * asserted silence for an 800-character rendering of a 79-character original,
+ * which is 10.1 times and exactly the shape the note exists to surface, so it
+ * was pinning the defect rather than the behaviour.
+ *
  * WHY A BLOCK GAP IS TESTED FOR SILENCE. That reason describes the PAIRING
  * rather than the rendering, and it was the sole cause for 20 of 36 flagged
  * slices on the corpus. Showing a judge a ratio the pairing does not support
@@ -141,13 +149,46 @@ await describe({
     },),
 
     it({
-      name: 'SAYS NOTHING below the source floor, where a ratio over a short line reports rounding '
-        + 'rather than a rendering being the wrong size',
-      fn: async function silentUnderTheFloor() {
+      name: 'SAYS NOTHING about a SHORTFALL below the source floor, where a ratio over a short '
+        + 'line reports rounding rather than a rendering having left content unrendered',
+      fn: async function silentOnAShortfallUnderTheFloor() {
+        // Fifty-five characters against seventy-nine, which is 0.70 and under 0.8.
         expect(noteFor({
-          text: catText({ chars: 800, },),
+          text: catText({ chars: 55, },),
           sourceText: catText({ chars: 79, },),
         },),).toBe('',);
+      },
+    },),
+
+    it({
+      name: 'SPEAKS about a SURPLUS below the source floor, because a rendering fifty times its '
+        + 'original is a lane looping rather than rounding, and this is the case the note was '
+        + 'measured to be silent on across 37 of 40 far-longer candidates',
+      fn: async function speaksOnASurplusUnderTheFloor() {
+        /**
+         * Two thousand eight hundred characters against fifty-six, the shape a
+         * translate lane produced on a real settled slice at 185 times.
+         */
+        const note = noteFor({
+          text: catText({ chars: 2_800, },),
+          sourceText: catText({ chars: 56, },),
+        },);
+
+        expect(note,).toContain('SIZE NOTE',);
+        expect(note,).toContain('50.0 times the original',);
+        expect(note,).toContain('Chinese original: 56',);
+      },
+    },),
+
+    it({
+      name: 'SPEAKS about a SHORTFALL at the floor exactly, so the one-directional floor is pinned '
+        + 'on the side that still has one rather than only on the side that lost it',
+      fn: async function speaksOnAShortfallAtTheFloor() {
+        // Sixty characters against eighty, which is 0.75 and under 0.8.
+        expect(noteFor({
+          text: catText({ chars: 60, },),
+          sourceText: catText({ chars: 80, },),
+        },),).toContain('SIZE NOTE',);
       },
     },),
 
