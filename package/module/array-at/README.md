@@ -96,9 +96,12 @@ It does not promise that the number is in range for a particular array.
 
 `ArrayAtError` extends `Error` and exposes:
 
-- `diagnostics`, a frozen readonly array;
-- `index`, the requested numeric index;
-- optional `length`, present when validation included array context.
+- `diagnostics`,
+   a frozen readonly array;
+- `index`,
+   the requested numeric index;
+- optional `length`,
+   present when validation included array context.
 
 Diagnostic order is not part of the interface.
 `Error.message` joins every diagnostic message with newlines,
@@ -113,15 +116,21 @@ Callers should branch on diagnostic `code`,
 
 Runtime and static diagnostics use these codes:
 
-- `non-safe-integer`: runtime number or numeric literal is not a safe integer.
-- `empty-array`: array has no element to return.
-- `out-of-range`: safe integer lies before start or past end.
-- `unassigned-slot`: resolved in-range slot has never been assigned.
-- `unproven-safe-integer`: static-only diagnostic for plain `number`.
+- `non-safe-integer`:
+   runtime number or numeric literal is not a safe integer.
+- `empty-array`:
+   array has no element to return.
+- `out-of-range`:
+   safe integer lies before start or past end.
+- `unassigned-slot`:
+   resolved in-range slot has never been assigned.
+- `unproven-safe-integer`:
+   static-only diagnostic for plain `number`.
 
 A range diagnostic includes:
 
-- `direction`, either `before-start` or `past-end`;
+- `direction`,
+   either `before-start` or `past-end`;
 - exact `distance` beyond nearest valid bound;
 - positive and negative valid bounds;
 - requested index and array length.

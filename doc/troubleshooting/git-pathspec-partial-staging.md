@@ -136,7 +136,8 @@ Failing forms have the same pathspec semantics:
 
 - `git commit --message partial -- settings.txt`
 - `git commit --only --message partial -- settings.txt`
-- repository wrapper command with explicit `settings.txt`, because `cli-git` injects `--only`
+- repository wrapper command with explicit `settings.txt`,
+   because `cli-git` injects `--only`
 
 ### Working catalog
 
@@ -240,18 +241,24 @@ Searches of open and closed `git/git` issues and pull requests for commit,
  index,
  and partial-staging combinations returned no matching thread.
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?**
+    No.
    Git documents and tests pathspec commits as partial commits from working-tree paths.
    The incident came from using that mode after partial staging.
-2. **Can upstream fix it?** Not without changing documented command semantics or adding another explicit mode.
+2. **Can upstream fix it?**
+    Not without changing documented command semantics or adding another explicit mode.
    Existing pathless commit already provides staged-index semantics.
-3. **Are they supporting this use case?** Yes.
+3. **Are they supporting this use case?**
+    Yes.
    `Documentation/git-commit.adoc:414-417` identifies pathless `git commit` as the basic way to record staged state.
-4. **Would the repository welcome our contribution?** No filing is warranted,
+4. **Would the repository welcome our contribution?**
+    No filing is warranted,
    and `Documentation/SubmittingPatches:572-595` warns that material appearing AI-generated will be rejected.
-5. **Will they likely fix it?** No relevant defect exists to fix.
+5. **Will they likely fix it?**
+    No relevant defect exists to fix.
    The desired behavior is already available through pathless commit and `--no-only`.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No upstream fix was prototyped because constraints one and five fail.
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    No upstream fix was prototyped because constraints one and five fail.
    The verified consumer-side workaround selects existing staged-index behavior.
 
 Nothing should be filed upstream.
