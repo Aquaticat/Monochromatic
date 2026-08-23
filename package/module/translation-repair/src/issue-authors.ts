@@ -160,7 +160,10 @@ function roundWinnerAuthors(round: RepairJudgedRound,): readonly SyntheticModelI
     .find(function won(entry,) {
       return entry.index === round.selectedIndex;
     },);
-  return producerModelIds(nonNullishOrThrow(winner,).producer,);
+  return producerModelIds(
+    nonNullishOrThrow(winner,)
+      .producer,
+  );
 }
 
 /**

@@ -21,6 +21,9 @@ import {
 
 import {
   type IssueAuthorship,
+  type ResolutionBallot,
+  type ResolutionVerdict,
+  type SyntheticModelId,
   tallyResolutionChecks,
   UNATTRIBUTED_TEXT,
   wroteTextForIssue,
@@ -40,17 +43,17 @@ const PAW = 'adjudicated/paw';
 /**
  * Model cast as the one that wrote the text under check.
  */
-const AUTHOR = 'hf:zai-org/GLM-5.2';
+const AUTHOR: SyntheticModelId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Model that wrote none of it.
  */
-const OUTSIDER = 'hf:Qwen/Qwen3.8-27B';
+const OUTSIDER: SyntheticModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Third voice, for cases needing two independents.
  */
-const BYSTANDER = 'hf:moonshotai/Kimi-K3';
+const BYSTANDER: SyntheticModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
  * Authorship naming {@link AUTHOR} as the writer of one issue's text only.
@@ -69,13 +72,28 @@ const WROTE_THE_CHUNK: IssueAuthorship = {
 };
 
 /**
+ * One checker id beside the ballot built for it.
+ *
+ * @example
+ * ```ts
+ * const entry: CheckerBallot = ['hf:zai-org/GLM-5.2', { verdicts: {}, findings: [], },];
+ * ```
+ */
+type CheckerBallot = readonly [
+  string,
+  ResolutionBallot,
+];
+
+/**
  * Builds ballots from one verdict per checker, so each case reads as the vote
  * it is testing rather than as nested object literals.
  */
-function ballotsOf(votes: Readonly<Record<string, string>>,) {
+function ballotsOf(
+  votes: Readonly<Record<string, ResolutionVerdict>>,
+): Readonly<Record<string, ResolutionBallot>> {
   return Object.fromEntries(
     Object.entries(votes,)
-      .map(function toBallot([modelId, verdict,],) {
+      .map(function toBallot([modelId, verdict,],): CheckerBallot {
         return [
           modelId,
           {
@@ -96,7 +114,7 @@ function fateOf(
     votes,
     authorship,
   }: {
-    readonly votes: Readonly<Record<string, string>>;
+    readonly votes: Readonly<Record<string, ResolutionVerdict>>;
     readonly authorship: IssueAuthorship;
   },
 ) {
