@@ -17164,3 +17164,46 @@ Fixed in `02a65109f`: every refusal now carries its reason, the undamaged verdic
 absence votes, and the control no longer throws when nothing was damageable, because a page
 offering nothing to cut is a result rather than an empty run.
 It still cannot HOLD on zero rows, since holding is a claim about what damage does.
+
+## The absence verdicts are corroborated by a signal that consults no model
+
+The breadth run left one thing unestablished: whether those absence verdicts are CORRECT.
+A deterministic page-level measurement settles it without reading a passage.
+
+English characters per source character, whole page, over all 92 pairs as `readCorpusFile` sees them:
+p5 1.42, p25 2.28, p50 2.65, p75 3.00, p95 4.52.
+Chinese becoming English expands, so a page far below that band is missing content by arithmetic.
+
+The six entries the control ran on separate completely along that ratio:
+
+-   `shi_Yumiaoya`, absent on 8 of 8: ratio 0.37, the SECOND SHORTEST translation of 92.
+-   `Aniloviraw`, absent on 3 of 3: ratio 1.88, rank 11.
+-   `XingZ60`, not covered on 4 of 4: ratio 2.00, rank 12.
+-   `Futajuhuacha`, HELD and carried: ratio 2.79, rank 55.
+-   `mikaela_khara`, HELD and carried: ratio 3.09, rank 77.
+-   `TianqiChen666`, HELD and carried: ratio 3.11, rank 80.
+
+No overlap. The three entries where the roster refuses to call anything covered are the three
+most under-translated of the six, at ranks 2, 11 and 12 from the short end;
+the three where it calls passages carried and notices their deletion sit at 55, 77 and 80.
+
+SO THE ROSTER IS NOT INVENTING ABSENCE. It votes absent exactly where an independent
+character count says the English cannot hold the content, and carried where the English is
+the length a full translation would be.
+That is the correspondence check `#106` asked for, obtained without a model and without
+quoting a line of the corpus.
+
+Note on two different character counts for the same entry:
+`git show | wc -c` reports 9795 source and 1630 English for `shi_Yumiaoya`,
+while `readCorpusFile` reports 3935 and 1458, since the reader strips frontmatter.
+The pipeline's own reader is the one used here. Both put the entry at the extreme low end
+(0.17 and 0.37 against a p5 of 1.42), so the reading does not turn on which is used.
+
+### What this means for option C
+
+Question 28's option C proposes inserting only where absence is corroborated by more than the
+matcher's refusal, naming "the target document is shorter than the source by about that
+section's size" as the corroboration. Measured at PAGE scale that corroboration and option A's
+model verdicts agree on all six entries. That is evidence for A's verdicts being trustworthy,
+and it is also the first evidence that C's underlying signal is real rather than tuned,
+though C would still need it at SECTION scale, where it was only ever tried on two entries.
