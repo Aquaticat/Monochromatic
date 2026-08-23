@@ -16,8 +16,72 @@ import {
   alignDocumentSections,
   chunkByHeadings,
   describeAlignmentAttachment,
+  isInsertionChunk,
   parseDocument,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Source whose headings carry romanised names, which is the `XingZ60` shape:
+ * the only shape where the aligner has evidence to anchor on, and therefore the
+ * only one where a missing section can be proven missing rather than merely
+ * unpairable.
+ */
+const ANCHORED_SOURCE = `---
+name: whiskers
+---
+
+开场白：猫猫登场。
+
+## 其一：Mittens
+
+猫猫喜欢晒太阳，尾巴一摇一摇。
+
+## 其二：Boots
+
+猫猫每天下午都在窗台上打盹，直到太阳落下。
+
+## 其三：Paws
+
+猫猫和邻居家的黑猫是好朋友，它们常常一起追蝴蝶。
+`;
+
+/**
+ * Translation of that source missing its middle section, and short enough that
+ * the page has room to be missing it.
+ */
+const SHORT_TARGET = `---
+name: whiskers
+---
+
+Prologue: the cat arrives.
+
+## Mittens
+
+The cat loves sunbathing, tail swishing.
+
+## Paws
+
+The cat and the black cat next door are friends.
+`;
+
+/**
+ * The same missing section, in a translation that runs LONGER than its source
+ * predicts. Nothing about the alignment differs; only the length does.
+ */
+const LONG_TARGET = `---
+name: whiskers
+---
+
+Prologue: the cat arrives, stepping softly across the warm boards of the porch outside.
+
+## Mittens
+
+The cat loves sunbathing, tail swishing slowly back and forth in the light, and will lie there for hours together without once looking up at anybody who happens to pass by the window on the street.
+
+## Paws
+
+The cat and the black cat from the house next door are the firmest of friends, and the two of them spend whole afternoons chasing butterflies across the long grass at the bottom of the garden until neither can be bothered to chase anything further.
+`;
 
 /**
  * Two-section fixture with front matter and a preamble paragraph.
@@ -212,6 +276,134 @@ await describe({
 
         expect(alignment.pairs,).toHaveLength(3,);
         expect(alignment.findings,).toHaveLength(0,);
+      },
+    },),
+    it({
+      name: 'ANCHORS A MISSING SECTION FOR INSERTION, which is what turns a report into a repair. '
+        + 'The aligner proves every optimal alignment skips it at the same boundary, and the page '
+        + 'is measurably shorter than its source predicts, so both signatures agree it is absent '
+        + 'rather than merged somewhere',
+      fn: async () => {
+        /**
+         * A translation missing its middle section.
+         */
+        const alignment = alignDocumentSections({
+          source: parseDocument({ text: ANCHORED_SOURCE, },),
+          target: parseDocument({ text: SHORT_TARGET, },),
+        },);
+
+        /**
+         * Pairs whose translation side names a place rather than covering text.
+         */
+        const anchors = alignment.pairs
+          .filter(function isAnchor(pair,) {
+            return isInsertionChunk(pair.target,);
+          },);
+
+        expect(anchors.length,).toBe(1,);
+        // The section belongs before `## Paws`, which begins here. An anchor at
+        // the end of the previous section instead would write it inside
+        // `## Mittens`.
+        expect(anchors[0]
+          ?.target
+          .startOffset,)
+          .toBe(SHORT_TARGET.indexOf('## Paws',),);
+      },
+    },),
+
+    it({
+      name: 'KEEPS EVERY OTHER SECTION PAIRED AND IN ORDER around an anchor, since a document '
+        + 'whose insertion displaced a real pairing would repair the wrong passages either side '
+        + 'of the hole it filled',
+      fn: async () => {
+        /**
+         * That same document.
+         */
+        const alignment = alignDocumentSections({
+          source: parseDocument({ text: ANCHORED_SOURCE, },),
+          target: parseDocument({ text: SHORT_TARGET, },),
+        },);
+
+        expect(alignment.pairs.map(function toShape(pair,) {
+          return isInsertionChunk(pair.target,) ? 'anchor' : 'paired';
+        },),)
+          .toStrictEqual([
+            'paired',
+            'paired',
+            'anchor',
+            'paired',
+          ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES THE SAME MISSING SECTION when the page is not short, which is the second '
+        + 'signature doing the work the aligner cannot: a page carrying more English than its '
+        + 'source predicts is likelier to have merged that section somewhere than to have '
+        + 'dropped it, and writing it in would duplicate content',
+      fn: async () => {
+        /**
+         * The same source and the same gap, in a longer translation.
+         */
+        const alignment = alignDocumentSections({
+          source: parseDocument({ text: ANCHORED_SOURCE, },),
+          target: parseDocument({ text: LONG_TARGET, },),
+        },);
+
+        expect(alignment.pairs
+          .filter(function isAnchor(pair,) {
+            return isInsertionChunk(pair.target,);
+          },)
+          .length,)
+          .toBe(0,);
+
+        expect(alignment.findings.map(function toDetail(finding,) {
+          return finding.detail;
+        },),)
+          .toStrictEqual(['source-only (forced-gap); not anchored (page-not-short)',],);
+      },
+    },),
+
+    it({
+      name: 'NAMES WHY IT REFUSED rather than reporting one silent absence, because the reasons '
+        + 'want opposite remedies: a section that may already be on the page is a duplication '
+        + 'risk, and a page that looks complete is a merge the aligner misread',
+      fn: async () => {
+        /**
+         * The anchored source against a translation whose one surviving section
+         * shares no evidence with any of it, so every pairing stays possible.
+         */
+        const alignment = alignDocumentSections({
+          source: parseDocument({ text: ANCHORED_SOURCE, },),
+          target: parseDocument({ text: SHORT_TARGET.replaceAll('Mittens', 'Sunbeam',)
+            .replace('## Paws', '## Naps',), },),
+        },);
+
+        expect(alignment.pairs
+          .filter(function isAnchor(pair,) {
+            return isInsertionChunk(pair.target,);
+          },)
+          .length,)
+          .toBe(0,);
+
+        // The page IS short here, so a gate reporting only "not inserted" would
+        // read identically to the page-not-short case above, and an operator
+        // could not tell a duplication risk from a merge the aligner misread.
+        expect(alignment.findings
+          .map(function toDetail(finding,) {
+            return finding.detail;
+          },)
+          .filter(function isSourceSide(detail,) {
+            return detail.startsWith('source-only',);
+          },),)
+          .toStrictEqual([
+            // Four, not three: with nothing to anchor on, the PREAMBLE is as
+            // unpairable as the three sections are.
+            'source-only (ambiguous); not anchored (may-pair)',
+            'source-only (ambiguous); not anchored (may-pair)',
+            'source-only (ambiguous); not anchored (may-pair)',
+            'source-only (ambiguous); not anchored (may-pair)',
+          ],);
       },
     },),
   ],

@@ -1,7 +1,13 @@
 import { alignHeadingsForced, } from './align-headings-forced.ts';
-import type {
-  ContentChunk,
-  DocumentChunk,
+import {
+  describePlacement,
+  type InsertionPlacement,
+  placeInsertions,
+} from './chunk-insertion.ts';
+import {
+  type ContentChunk,
+  type DocumentChunk,
+  makeInsertionChunk,
 } from './chunk-placement.ts';
 import type { DocumentNode, } from './document-node.ts';
 import type { RepairDocument, } from './parse-document.ts';
@@ -290,6 +296,48 @@ function chunkLabel(chunk: ContentChunk,): string {
 }
 
 /**
+ * Says what became of a section the translation does not carry.
+ *
+ * @param placements - every decision this document produced
+ *
+ * @param sourceIndex - section to report on
+ *
+ * @returns Sentence for a finding's detail
+ *
+ * @throws Error when no decision names that section, since both lists are built
+ * from the same steps and a missing one means the two passes disagree about
+ * which sections are unpaired. A detail invented to cover that would hide it.
+ *
+ * @example
+ * ```ts
+ * const detail = describeSourceOnly({ placements, sourceIndex: 3, },);
+ * ```
+ */
+function describeSourceOnly(
+  {
+    placements,
+    sourceIndex,
+  }: {
+    readonly placements: readonly InsertionPlacement[];
+    readonly sourceIndex: number;
+  },
+): string {
+  /**
+   * Decision for that section.
+   */
+  const found = placements.find(function atIndex(placement,): boolean {
+    return placement.sourceIndex === sourceIndex;
+  },);
+  if (found === undefined)
+    throw new Error(
+      `unreachable: source section ${String(sourceIndex,)} is unpaired but carries no placement `
+        + 'decision, so the alignment steps and the placement pass disagree',
+    );
+
+  return describePlacement(found,);
+}
+
+/**
  * Aligns two parsed documents into critic-sized section pairs, automatically
  * and PARTIALLY.
  *
@@ -416,11 +464,67 @@ export function alignDocumentSections(
   //
   // THE TWO REFUSALS ARE NOT THE SAME EVENT, and the detail says which. A
   // target-only section is English nobody will look at, so it passes through
-  // unrepaired. A source-only section is Chinese with NO English to pass
-  // through: the translation is missing that section entirely, and this lane
-  // repairs rather than writes, so there is nothing here to do about it.
+  // unrepaired. A source-only section is Chinese with no English beside it,
+  // and `#100` landing 5 asks whether it can be given a place to be WRITTEN
+  // at rather than only reported. It can when the aligner proves every optimal
+  // alignment skips it at the same boundary AND the page is measurably too
+  // short to hold it, per
+  // `doc/decision/translation-repair-absence-verdict.md`. Anything less stays
+  // reported and unwritten, and the finding names which signature refused.
+
+  /**
+   * What was decided about each section the translation does not carry.
+   */
+  const placements = placeInsertions({
+    steps,
+    sourceChunks,
+    targetChunks,
+    sourceText: source.text,
+    targetText: target.text,
+  },);
+
+  /**
+   * Those decisions by source index, so the pair and finding builders read one
+   * answer rather than each deriving its own.
+   */
+  const placementBySource = new Map(placements.map(
+    function keyed(placement,): readonly [
+      number,
+      InsertionPlacement,
+    ] {
+      return [
+        placement.sourceIndex,
+        placement,
+      ];
+    },
+  ),);
+
   return {
     pairs: steps.flatMap(function toPair(step,): readonly ChunkPair[] {
+      if (step.kind === 'source-only') {
+        /**
+         * Whether this section earned a place to be written at.
+         */
+        const placement = placementBySource.get(step.sourceIndex,);
+
+        /**
+         * Original-side chunk with nothing beside it.
+         */
+        const sourceChunk = sourceChunks[step.sourceIndex];
+        if ((placement === undefined)
+          || (placement.kind !== 'placed')
+          || (sourceChunk === undefined))
+          return [];
+
+        return [{
+          source: sourceChunk,
+          target: makeInsertionChunk({
+            chunkIndex: step.sourceIndex,
+            offset: placement.offset,
+          },),
+        },];
+      }
+
       if (step.kind !== 'paired')
         return [];
 
@@ -457,7 +561,12 @@ export function alignDocumentSections(
             index: step.targetIndex,
           },
         detail: `${step.kind} (${step.reason}); ${
-          (step.kind === 'source-only') ? 'has no translation to repair' : 'passes through unrepaired'
+          (step.kind === 'source-only')
+            ? describeSourceOnly({
+              placements,
+              sourceIndex: step.sourceIndex,
+            },)
+            : 'passes through unrepaired'
         }`,
       },];
     },),
