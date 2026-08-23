@@ -256,6 +256,67 @@ await describe({
     },),
 
     it({
+      name: 'MOVES WHEN THE WINDOW MOVES. The damage probe inside the '
+        + 'settlement is shown the passages either side, and its findings ride '
+        + 'in the cached record, so a slice audited against its neighbours was '
+        + 'asked a different question from the same slice audited alone and '
+        + 'nothing else records which it was',
+      fn: async () => {
+        expect(
+          refineSliceKey({
+            ...BASE,
+            neighbouringSourceText: '邻居的橘猫在门口等鱼干。',
+          },),
+        ).not.toBe(refineSliceKey(BASE,),);
+      },
+    },),
+
+    it({
+      name: 'DISTINGUISHES THE TWO SIDES OF THE WINDOW carrying identical '
+        + 'text, which is `#126` exactly: spread bare into a positional array '
+        + 'a source-only window and an incumbent-only window hash the same, '
+        + 'and one cached audit then serves two different questions. '
+        + 'Asymmetric windows are real, since a neighbour that is an insertion '
+        + 'anchor has original text and no archive text',
+      fn: async () => {
+        /**
+         * Text placed on one side of the window and then the other, so only
+         * the LABEL differs between the two keys.
+         */
+        const nearby = '邻居的橘猫在门口等鱼干。';
+
+        expect(
+          refineSliceKey({
+            ...BASE,
+            neighbouringSourceText: nearby,
+          },),
+        ).not.toBe(
+          refineSliceKey({
+            ...BASE,
+            neighbouringIncumbentText: nearby,
+          },),
+        );
+      },
+    },),
+
+    it({
+      name: 'READS AN EMPTY WINDOW AS AN ABSENT ONE, because a slice with no '
+        + 'neighbours is asked exactly what a caller without the parameter '
+        + 'asks: `introduced-defect-wire` renders no nearby block for either. '
+        + 'Keying them apart would rebuy every document-edge slice to reach '
+        + 'the identical answer',
+      fn: async () => {
+        expect(
+          refineSliceKey({
+            ...BASE,
+            neighbouringSourceText: '',
+            neighbouringIncumbentText: '',
+          },),
+        ).toBe(refineSliceKey(BASE,),);
+      },
+    },),
+
+    it({
       name: 'READS AN ABSENT IDENTITY CONTEXT AS AN EMPTY ONE rather than as a '
         + 'separate question, so a pair declaring nothing resumes across runs '
         + 'instead of rebuying its whole lane',

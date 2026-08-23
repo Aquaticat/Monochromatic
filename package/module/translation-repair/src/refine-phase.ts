@@ -4,6 +4,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { parseDocument, } from './parse-document.ts';
+import {
+  neighbouringIncumbent,
+  neighbouringSource,
+} from './fidelity-window.ts';
 import { collectDefinitions, } from './refine-envelope.ts';
 import {
   refineRunShape,
@@ -229,6 +233,40 @@ export async function runRefinePhase(
       ?? outcome.repairedText;
 
     /**
+     * Original and archive English of the passages either side, for the damage
+     * probe inside {@link settleRefinedSlice}.
+     *
+     * GUARDED ON `prepared` RATHER THAN ON THE INDEX. {@link neighbouringSource}
+     * throws on a position this entry does not have, and this loop already
+     * tolerates an outcome with no prepared slice behind it: `sourceText` and
+     * `incumbentText` above both fall back rather than fail. A window that
+     * threw where those fall back would turn a tolerated shape into a crash.
+     * A present `prepared` means the lookup found an element, so the index is
+     * an integer inside the array and neither call can throw.
+     *
+     * ADDRESSED BY THE STAMPED INDEX, like everything else in this loop. That
+     * agrees with the position because `document-preparation.ts` stamps
+     * `baseIndex: slices.length`, a running counter over emitted slices, so a
+     * prepared slice's stamp IS its position. `#99` records that this does not
+     * hold of every `chunkIndex` in the codebase, which is why it is said here
+     * rather than assumed; were it ever to break, this window would be wrong in
+     * exactly the way `sourceText` and `incumbentText` were already wrong, and
+     * disagreeing with them would be worse than sharing their fate.
+     */
+    const windowFragment = (prepared === undefined)
+      ? {}
+      : {
+        neighbouringSourceText: neighbouringSource({
+          slices,
+          sliceIndex: outcome.chunkIndex,
+        },),
+        neighbouringIncumbentText: neighbouringIncumbent({
+          slices,
+          sliceIndex: outcome.chunkIndex,
+        },),
+      };
+
+    /**
      * Key this slice's refinement answers.
      *
      * HANDED THE RESOLVED `incumbentText` RATHER THAN RE-DERIVING IT. The
@@ -248,6 +286,7 @@ export async function runRefinePhase(
       issues: outcome.issues,
       resolvedIssueIds: outcome.resolvedIssueIds,
       nonTranslationStanding: outcome.nonTranslationStanding,
+      ...windowFragment,
     },);
 
     /**
@@ -277,6 +316,7 @@ export async function runRefinePhase(
       refinerModelIds,
       ...(identityContext === undefined ? {} : { identityContext, }),
       declaredNames,
+      ...windowFragment,
       signal,
       perCallTimeoutMs,
       l,

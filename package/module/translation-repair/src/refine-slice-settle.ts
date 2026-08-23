@@ -93,6 +93,13 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
  *
  * @returns Final outcome, findings, and whether a rewriter was reached
  *
+ * @param neighbouringSourceText - original of the passages either side, handed
+ * to the damage probe so a phrase that moved next door is not read as one this
+ * rewrite deleted
+ *
+ * @param neighbouringIncumbentText - archive English of those same two, which is
+ * the side a relocation shows
+ *
  * @example
  * ```ts
  * const settled = await settleRefinedSlice({ client, outcome, sourceText, incumbentText, definitions, models, refinerModelIds, declaredNames, signal, perCallTimeoutMs, l, },);
@@ -109,6 +116,8 @@ export async function settleRefinedSlice(
     refinerModelIds,
     identityContext,
     declaredNames,
+    neighbouringSourceText,
+    neighbouringIncumbentText,
     signal,
     perCallTimeoutMs,
     l,
@@ -122,6 +131,8 @@ export async function settleRefinedSlice(
     readonly refinerModelIds: RepairModels['checkerModelIds'];
     readonly identityContext?: string;
     readonly declaredNames: readonly string[];
+    readonly neighbouringSourceText?: string;
+    readonly neighbouringIncumbentText?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -252,6 +263,20 @@ export async function settleRefinedSlice(
     ],
     issues: outcome.issues,
     editKind: 'naturalness-refinement',
+    // THE SAME WINDOW THE ACCURACY LANE'S PROBE GETS, which is what makes the
+    // two lanes' damage telemetry comparable at all. Without it this auditor
+    // reasons about a slice in isolation while its counterpart reasons about
+    // one in context, so a difference between their findings could be the
+    // lanes differing or could be the windows differing, and no reading of the
+    // numbers can separate those.
+    //
+    // It matters more here than for the accuracy probe, not less. This lane
+    // rewrites for FLUENCY, and the commonest fluent rewrite of a paragraph
+    // that repeats what the paragraph next door already said is to drop the
+    // repetition. Judged alone that is a deletion; judged with the neighbour
+    // visible it is the redundancy it was.
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     // Withheld for the same reason the accuracy stage withholds, and with more
     // force here: this lane rewrites text whose accepted issues were ALREADY
     // repaired, so listing them describes defects that are no longer present

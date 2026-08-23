@@ -33,8 +33,15 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  * shadow telemetry and decides nothing, but its findings ride in the cached
  * record, so a resumed slice would otherwise carry an audit the current prober
  * never performed.
+ *
+ * MOVED TO 2 WHEN THE PROBE GAINED ITS WINDOW. The two nearby fields below
+ * already change every key that carries one, so this bump decides nothing on
+ * its own; it is here because the rule above says the version moves when the
+ * probe's question moves, and a reader checking that rule against this change
+ * has to find it kept rather than argued around. It also covers the slices
+ * whose window is empty, which the fields deliberately cannot.
  */
-export const REFINE_CACHE_VERSION = 1;
+export const REFINE_CACHE_VERSION = 2;
 
 /**
  * Everything about this run that changes what the voices are ASKED.
@@ -147,6 +154,14 @@ export function refineRunShape(
  * @param nonTranslationStanding - whether critics ruled this slice untranslated,
  * which skips the lane outright
  *
+ * @param neighbouringSourceText - original of the passages either side, shown to
+ * the probe auditing what this rewrite damaged. In the key because a rewrite
+ * audited against its neighbours was asked a different question from the same
+ * rewrite audited alone, and the audit rides in the cached record
+ *
+ * @param neighbouringIncumbentText - archive English of those same two, which is
+ * the half a relocation shows
+ *
  * @returns Hash keying this slice's refinement
  *
  * @example
@@ -165,6 +180,8 @@ export function refineSliceKey(
     issues,
     resolvedIssueIds,
     nonTranslationStanding,
+    neighbouringSourceText,
+    neighbouringIncumbentText,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -175,6 +192,8 @@ export function refineSliceKey(
     readonly issues: readonly AdjudicatedIssue[];
     readonly resolvedIssueIds: readonly string[];
     readonly nonTranslationStanding: boolean;
+    readonly neighbouringSourceText?: string;
+    readonly neighbouringIncumbentText?: string;
   },
 ): string {
   return hashContent({
@@ -190,6 +209,29 @@ export function refineSliceKey(
       issues,
       resolvedIssueIds,
       nonTranslationStanding,
+      // ABSENT AND EMPTY KEY ALIKE, matching `repairSliceKey` and for the same
+      // reason: `introduced-defect-wire.ts` renders no nearby block for either,
+      // so a slice with no neighbours is asked exactly what a caller without
+      // the parameter asked and should resume rather than be rebought to reach
+      // the identical answer.
+      //
+      // LABELLED for the reason `#126` records. Spread bare into a positional
+      // array, a source-only window and an incumbent-only window carrying the
+      // same text hash identically, and one cached audit would then serve two
+      // different questions. Asymmetric windows are real: a neighbour that is
+      // an insertion anchor has source text and no archive text.
+      ...(((neighbouringSourceText === undefined) || (neighbouringSourceText === ''))
+        ? []
+        : [
+          'nearby-source',
+          neighbouringSourceText,
+        ]),
+      ...(((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === ''))
+        ? []
+        : [
+          'nearby-incumbent',
+          neighbouringIncumbentText,
+        ]),
     ],),
   },);
 }
