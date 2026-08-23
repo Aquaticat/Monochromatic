@@ -16983,3 +16983,59 @@ Third false finish in this work. The `until ! pgrep` waiter exited immediately w
 while `ps -o args=` showed the probe alive under the pid captured at launch.
 Do not trust a waiter's completion notification;
 confirm against `pgrep -af '<runner>.mjs' | grep -v 'bash -c'` and the pid before reading a result as final.
+
+## `#106` option A is DONE: the wire reads the passage, so the null is about the corpus
+
+The paired control settles the objection the first run left open.
+Same entry, same roster, run again with both cuts made per case:
+
+-   `pair 0 block 6`: targeted cut `carried` to `absent`, 0 to 6 absence votes;
+    DECOY of the same 112 characters at offset 10545: `carried`, 0 absence votes.
+-   `pair 0 block 7`: targeted `carried` to `partly-carried`, 0 to 0;
+    decoy of the same 75 characters at 10582: `carried`, 0.
+-   `pair 0 block 9`: targeted `carried` to `absent`, 0 to 5;
+    decoy of the same 74 characters at 10583: `carried`, 0.
+
+Absence votes appeared on two targeted cuts and on NONE of the three decoys.
+The wire is not answering the damage; it is answering the question.
+
+### The decoy cut ordinary prose, checked rather than assumed
+
+All three decoys land in the same tail region, which invites the reading that they deleted a footer
+the roster never cared about.
+Classified the region structurally, without printing any of it:
+offset 10545 of a 10657 character page covers ONE PROSE LINE of 111 characters plus a trailing blank.
+Not a heading, not a list, not links, not html.
+So the decoy deleted a real body sentence of comparable size and the roster still said `carried`.
+
+### It replicated, and the path has no cache
+
+The targeted arm returned the same three verdicts on both runs.
+`coverage-stage.ts`, `coverage-verdict.ts` and `coverage-control.ts` contain no cache of any kind,
+so the second run bought its own answers.
+Two independent runs agreeing on all three, including the `partly-carried` middle case,
+is the discrimination holding rather than a coin landing the same way.
+
+### What `#106` option A now says
+
+Four readings, all pointing the same way on the measured entry:
+
+-   no evidence span serves two blocks,
+-   no block's evidence sits out of document order,
+-   no evidence is too short to be rendering its source, the thinnest being 2.08 English characters
+    per source character,
+-   deleting a rendering is detected and deleting an equal amount of unrelated prose is not.
+
+The block-scale null, ninety-six answers with not one vote for absence,
+is therefore a statement about the translations rather than about a wire that cannot say no.
+Question 28's premise stands on measurement now instead of on an ambiguity.
+
+STILL GATED ON THE OWNER, unchanged:
+do not wire `groupSourceFirst` into `subdivideChunkPair`,
+and do not emit insertion pairs from `alignDocumentSections`.
+That is a decision about what the pipeline should DO with a reachable absence verdict,
+and this only establishes that the verdict is reachable.
+
+Breadth remains the honest limit: one entry, three damaged cases, sixteen graded verdicts.
+Enough to settle reachability, which needs one unambiguous flip and its negative control,
+and not enough to claim the corpus carries everything.
