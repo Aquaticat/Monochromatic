@@ -42,6 +42,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "score-probe": "./src/corpus-run/score-probe.ts",
     "score-verify": "./src/corpus-run/score-verify.ts",
     "sentinel-probe": "./src/corpus-run/sentinel-probe.ts",
+    "coverage-control-probe": "./src/corpus-run/coverage-control-probe.ts",
     "coverage-probe": "./src/corpus-run/coverage-probe.ts",
     "displacement-probe": "./src/corpus-run/displacement-probe.ts",
     "editor-width-probe": "./src/corpus-run/editor-width-probe.ts",

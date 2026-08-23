@@ -100,6 +100,11 @@ description = "PROTOTYPE for question 28: ask a roster whether the translation a
 depends = ["build"]
 run = "node dist/final/node/coverage-probe.mjs"
 
+[tasks."coverage-control-probe"]
+description = "#106: ask the coverage roster about a passage, delete the spans it anchored on, and ask again, to find out whether an absence vote is reachable at all; SPENDS QUOTA (pass --only ids after --)"
+depends = ["build"]
+run = "node dist/final/node/coverage-control-probe.mjs"
+
 [tasks."slice-cost-report"]
 description = "Read the per-slice cost telemetry a pass wrote, and say whether cost tracks slice size or a fixed overhead (pass a log path after --)"
 depends = ["build"]
