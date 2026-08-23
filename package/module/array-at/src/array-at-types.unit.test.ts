@@ -1,0 +1,338 @@
+/**
+ * Compile-time behavior tests for built `arrayAt` declarations.
+ *
+ * Invalid-call helpers are exported only so TypeScript checks their bodies;
+ * unit runner never invokes them.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expectTypeOf,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  arrayAt,
+  type ArrayAtDiagnostic,
+  type ArrayAtDiagnostics,
+  asSafeInteger,
+  assertSafeInteger,
+  isSafeInteger,
+} from '../dist/final/neutral/index.mjs';
+
+/**
+ * Diagnostic code union carried by unordered computed collection.
+ *
+ * @example
+ * ```ts
+ * type Codes = DiagnosticCodes<ArrayAtDiagnostics<readonly [], 1.5>>;
+ * ```
+ */
+type DiagnosticCodes<Diagnostics extends readonly ArrayAtDiagnostic[]> =
+  Diagnostics[number]['code'];
+
+/**
+ * Narrows plain index with assertion before array access.
+ *
+ * @param index - Unproven numeric index
+ *
+ * @returns Selected tuple element union
+ *
+ * @throws Array access or proof error
+ *
+ * @example
+ * ```ts
+ * const value = accessAfterAssertion(0);
+ * ```
+ */
+function accessAfterAssertion(index: number,): 10 | 20 | 30 {
+  assertSafeInteger(index,);
+  return arrayAt({ array: [10, 20, 30], index, });
+}
+
+/**
+ * Narrows plain index with predicate before array access.
+ *
+ * @param index - Unproven numeric index
+ *
+ * @returns Selected tuple element union or `null` for rejected integer proof
+ *
+ * @throws Array access error after successful proof
+ *
+ * @example
+ * ```ts
+ * const value = accessAfterGuard(0);
+ * ```
+ */
+function accessAfterGuard(index: number,): 10 | 20 | 30 | null {
+  if (!isSafeInteger(index,))
+    return null;
+  return arrayAt({ array: [10, 20, 30], index, });
+}
+
+await describe({
+  name: 'arrayAt static interface',
+  children: [
+    it({
+      name: 'returns exact tuple elements',
+      fn: async () => {
+        const first = arrayAt({ array: [10, 20, 30], index: 0, });
+        const middle = arrayAt({ array: [10, 20, 30], index: -2, });
+        const object = arrayAt({
+          array: ['a', { value: 1, }, null],
+          index: 1,
+        },);
+        const nullable = arrayAt({
+          array: ['a', { value: 1, }, null],
+          index: 2,
+        },);
+
+        expectTypeOf(first,).toEqualTypeOf<10>();
+        expectTypeOf(middle,).toEqualTypeOf<20>();
+        expectTypeOf(object,).toEqualTypeOf<{ readonly value: 1; }>();
+        expectTypeOf(nullable,).toEqualTypeOf<null>();
+      },
+    },),
+
+    it({
+      name: 'returns element union for proven dynamic index',
+      fn: async () => {
+        const result = arrayAt({
+          array: [10, 20, 30],
+          index: asSafeInteger(1,),
+        },);
+        expectTypeOf(result,).toEqualTypeOf<10 | 20 | 30>();
+        expectTypeOf<ReturnType<typeof accessAfterAssertion>>()
+          .toEqualTypeOf<10 | 20 | 30>();
+        expectTypeOf<ReturnType<typeof accessAfterGuard>>()
+          .toEqualTypeOf<10 | 20 | 30 | null>();
+      },
+    },),
+
+    it({
+      name: 'returns element type for unknown-length array',
+      fn: async () => {
+        const values: string[] = ['value'];
+        const result = arrayAt({ array: values, index: 0, });
+        expectTypeOf(result,).toEqualTypeOf<string>();
+      },
+    },),
+
+    it({
+      name: 'computes unordered aggregate diagnostic codes',
+      fn: async () => {
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [], 1.5>>>()
+          .toEqualTypeOf<'empty-array' | 'non-safe-integer'>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 1>>>()
+          .toEqualTypeOf<'out-of-range'>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 0>>>()
+          .toEqualTypeOf<never>();
+      },
+    },),
+
+    it({
+      name: 'computes exact directional range metadata',
+      fn: async () => {
+        type PastEnd = Extract<
+          ArrayAtDiagnostics<readonly [10], 1>[number],
+          { readonly direction: 'past-end'; }
+        >;
+        type BeforeStart = Extract<
+          ArrayAtDiagnostics<readonly [10, 20, 30], -4>[number],
+          { readonly direction: 'before-start'; }
+        >;
+
+        expectTypeOf<PastEnd['distance']>().toEqualTypeOf<1>();
+        expectTypeOf<PastEnd['maximumPositiveIndex']>().toEqualTypeOf<0>();
+        expectTypeOf<BeforeStart['distance']>().toEqualTypeOf<1>();
+        expectTypeOf<BeforeStart['minimumNegativeIndex']>().toEqualTypeOf<-3>();
+      },
+    },),
+  ],
+},);
+
+//region Invalid literal calls
+
+/**
+ * Verifies empty tuple calls are rejected.
+ *
+ * @example
+ * ```ts
+ * rejectsEmptyArray();
+ * ```
+ */
+export function rejectsEmptyArray(): void {
+  // @ts-expect-error -- empty tuple has no valid index.
+  arrayAt({ array: [], index: 0, });
+}
+
+/**
+ * Verifies plain numbers require safe-integer proof.
+ *
+ * @param index - Unproven numeric index
+ *
+ * @example
+ * ```ts
+ * rejectsPlainNumber(0);
+ * ```
+ */
+export function rejectsPlainNumber(index: number,): void {
+  // @ts-expect-error -- plain number lacks safe-integer proof.
+  arrayAt({ array: [10, 20, 30], index, });
+}
+
+/**
+ * Verifies positive out-of-range literal is rejected.
+ *
+ * @example
+ * ```ts
+ * rejectsPastEnd();
+ * ```
+ */
+export function rejectsPastEnd(): void {
+  // @ts-expect-error -- index is one position past array end.
+  arrayAt({ array: [10], index: 1, });
+}
+
+/**
+ * Verifies negative out-of-range literal is rejected.
+ *
+ * @example
+ * ```ts
+ * rejectsBeforeStart();
+ * ```
+ */
+export function rejectsBeforeStart(): void {
+  // @ts-expect-error -- index is one position before array start.
+  arrayAt({ array: [10], index: -2, });
+}
+
+/**
+ * Verifies fractional literal is rejected.
+ *
+ * @example
+ * ```ts
+ * rejectsFraction();
+ * ```
+ */
+export function rejectsFraction(): void {
+  // @ts-expect-error -- fractional index is not safe integer.
+  arrayAt({ array: [10, 20], index: 1.5, });
+}
+
+/**
+ * Verifies exact `undefined` tuple element is conservatively rejected.
+ *
+ * @example
+ * ```ts
+ * rejectsStaticUndefined();
+ * ```
+ */
+export function rejectsStaticUndefined(): void {
+  // @ts-expect-error -- static type cannot distinguish stored undefined from hole.
+  arrayAt({ array: [10, undefined], index: 1, });
+}
+
+/**
+ * Verifies sparse tuple slot is rejected.
+ *
+ * @example
+ * ```ts
+ * rejectsSparseSlot();
+ * ```
+ */
+export function rejectsSparseSlot(): void {
+  // @ts-expect-error -- requested tuple element is unassigned.
+  arrayAt({ array: [10, ,], index: -1, });
+}
+
+/**
+ * Verifies large positive safe integer reports range without compiler overflow.
+ *
+ * @example
+ * ```ts
+ * rejectsLargePositiveIndex();
+ * ```
+ */
+export function rejectsLargePositiveIndex(): void {
+  // @ts-expect-error -- large safe integer is outside tuple bounds.
+  arrayAt({ array: [10, 20, 30], index: 100_000, });
+}
+
+/**
+ * Verifies large negative safe integer reports range without compiler overflow.
+ *
+ * @example
+ * ```ts
+ * rejectsLargeNegativeIndex();
+ * ```
+ */
+export function rejectsLargeNegativeIndex(): void {
+  // @ts-expect-error -- large negative safe integer is outside tuple bounds.
+  arrayAt({ array: [10, 20, 30], index: -1_000_000_000, });
+}
+
+//endregion Invalid literal calls
+
+//region Union correlation
+
+/**
+ * Correlated valid input alternatives.
+ *
+ * @example
+ * ```ts
+ * declare const input: ValidCorrelatedInput;
+ * ```
+ */
+type ValidCorrelatedInput =
+  | { readonly array: readonly [10]; readonly index: 0; }
+  | { readonly array: readonly [10, 20]; readonly index: 1; };
+
+/**
+ * Invalid input alternatives containing one impossible member.
+ *
+ * @example
+ * ```ts
+ * declare const input: InvalidCorrelatedInput;
+ * ```
+ */
+type InvalidCorrelatedInput =
+  | { readonly array: readonly [10]; readonly index: 1; }
+  | { readonly array: readonly [10, 20]; readonly index: 1; };
+
+/**
+ * Verifies valid correlated input preserves result union.
+ *
+ * @param input - Correlated valid alternatives
+ *
+ * @returns Selected element union
+ *
+ * @example
+ * ```ts
+ * declare const input: ValidCorrelatedInput;
+ * const result = accessCorrelated(input);
+ * ```
+ */
+export function accessCorrelated(input: ValidCorrelatedInput,): 10 | 20 {
+  return arrayAt(input,);
+}
+
+/**
+ * Verifies invalid correlated alternative rejects entire call.
+ *
+ * @param input - Alternatives including impossible access
+ *
+ * @example
+ * ```ts
+ * declare const input: InvalidCorrelatedInput;
+ * rejectsInvalidCorrelation(input);
+ * ```
+ */
+export function rejectsInvalidCorrelation(input: InvalidCorrelatedInput,): void {
+  // @ts-expect-error -- one correlated member has out-of-range index.
+  arrayAt(input,);
+}
+
+//endregion Union correlation
