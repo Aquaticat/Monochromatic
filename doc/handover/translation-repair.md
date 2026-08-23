@@ -16437,3 +16437,30 @@ Only source files carry the budget.
 
 FINAL GATE: suite 546 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
 Commits: 3922cba3b, f3c444458.
+
+### Correction to the section above: the unreachability was already recorded
+
+`doc/decision/translation-repair-question-answers.md` lines 130 to 140 already say it,
+and say it as a deliberate state rather than a defect:
+
+> `assertCheckerIndependence` in `repair-contract.ts` THROWS when any checker id also appears among the editors
+> or refiners. A roster where a model could certify its own text is refused before any work happens, so no
+> checker is ever a self-certifier and a half-weight branch would never run.
+>
+> Relaxing that assertion is the "widen the producing roles" half of `#91`, and question 1 answer D blocks
+> roster widening until `#84` reports. So the ordering is forced: `#84`, then the roles widen, then the half
+> becomes reachable and is applied.
+
+So the checker-side discount is unreachable BY DESIGN, pending task 186, not by oversight.
+Task 188 is the "and is applied" step, blocked by 186, not a discovery.
+
+What the 2026-08-23 reading did add,
+and what is worth keeping:
+the two readers of `SELF_VOTE_WEIGHT` must not be conflated.
+The selection-side copy at `candidate-select.ts:276` is live on every chunk and must survive any cleanup
+aimed at the checker-side one.
+
+The lesson for a later session is the search, not the fact:
+`grep -rn 'SELF_VOTE_WEIGHT' src/` found the code
+and `grep -rn 'assertCheckerIndependence' doc/` would have found the decision.
+Searching the source and not the decisions is how a recorded choice gets rediscovered as a bug.
