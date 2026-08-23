@@ -21,6 +21,7 @@ import {
 import {
   contestLaneSlice,
   createSyntheticClient,
+  settleArchiveBallots,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -250,6 +251,106 @@ await describe({
         },);
         expect(outcome.choice,).toBe('translate',);
         expect(outcome.ballots.at(0,)?.unsupported,).toEqual([ 'repair', ],);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Builds one ballot body that also answers the archive question.
+ *
+ * @param choice - candidate this judge names
+ *
+ * @param archive - what this judge makes of the archive rendering
+ *
+ * @returns Reply body a judge would return
+ *
+ * @example
+ * ```ts
+ * const body = archiveBallot({ choice: 'neither', archive: 'flawed', },);
+ * ```
+ */
+function archiveBallot(
+  {
+    choice,
+    archive,
+  }: {
+    readonly choice: string;
+    readonly archive: string;
+  },
+): string {
+  return JSON.stringify({
+    choice,
+    unsupported: [],
+    dropped: [],
+    reason: 'the original supports it',
+    archive,
+  },);
+}
+
+/**
+ * Runs one contest over a slice whose archive rendering is absent.
+ *
+ * @param replyByModel - reply body per model
+ *
+ * @returns What the roster settled on
+ *
+ * @example
+ * ```ts
+ * const outcome = await contestWithNoArchive({ replyByModel: [], },);
+ * ```
+ */
+async function contestWithNoArchive(
+  { replyByModel, }: { readonly replyByModel: readonly string[]; },
+) {
+  return await contestLaneSlice({
+    client: cannedClient({ replyByModel, },),
+    modelIds: ROSTER,
+    subject: {
+      ...SUBJECT,
+      incumbentText: '',
+    },
+    signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+    l,
+  },);
+}
+
+await describe({
+  name: 'archive answers on a slice with no archive',
+  children: [
+    it({
+      name: 'KEEPS THE ANSWERS where an archive rendering exists, which is the positive control: '
+        + 'without it, a stripped result would look the same as a roster that never answered',
+      fn: async () => {
+        const outcome = await contest({
+          replyByModel: [
+            archiveBallot({ choice: 'neither', archive: 'flawed', },),
+            archiveBallot({ choice: 'neither', archive: 'flawed', },),
+            archiveBallot({ choice: 'neither', archive: 'flawed', },),
+          ],
+        },);
+
+        expect(settleArchiveBallots({ ballots: outcome.ballots, },),).toBe('declined',);
+      },
+    },),
+
+    it({
+      name: 'DROPS THE ANSWERS where the archive rendering is absent, because the sheet then shows '
+        + 'judges an empty block while the schema still asks whether it is publishable, so the '
+        + 'answers that come back are about nothing at all',
+      fn: async () => {
+        const outcome = await contestWithNoArchive({
+          replyByModel: [
+            archiveBallot({ choice: 'neither', archive: 'flawed', },),
+            archiveBallot({ choice: 'neither', archive: 'flawed', },),
+            archiveBallot({ choice: 'neither', archive: 'flawed', },),
+          ],
+        },);
+
+        expect(settleArchiveBallots({ ballots: outcome.ballots, },),).toBe('unjudged',);
+        expect(outcome.usable,).toBe(3,);
+        expect(outcome.choice,).toBe('neither',);
       },
     },),
   ],

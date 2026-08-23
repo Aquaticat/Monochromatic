@@ -242,6 +242,37 @@ export function settleArchiveBallots(
 }
 
 /**
+ * Drops one ballot's archive answer, keeping everything else it said.
+ *
+ * @param ballot - ballot that answered about an archive that was not there
+ *
+ * @returns Same ballot with no archive verdict
+ *
+ * @remarks
+ * LISTS THE KEPT FIELDS rather than spreading a rest binding. The rest form
+ * leaves an unused `archive` binding and a declaration the TSDoc rule has
+ * nowhere to attach to, and naming the survivors makes the one omission the
+ * point of the function.
+ *
+ * @example
+ * ```ts
+ * const stripped = withoutArchiveAnswer({ ballot, },);
+ * ```
+ */
+function withoutArchiveAnswer(
+  { ballot, }: { readonly ballot: LaneContestBallot; },
+): LaneContestBallot {
+  return {
+    choice: ballot.choice,
+    unsupported: ballot.unsupported,
+    unsupportedRaw: ballot.unsupportedRaw,
+    dropped: ballot.dropped,
+    droppedRaw: ballot.droppedRaw,
+    reason: ballot.reason,
+  };
+}
+
+/**
  * Asks the roster which candidate one contested slice should ship.
  *
  * @param client - synthetic chat client
@@ -323,16 +354,32 @@ export async function contestLaneSlice(
   },);
 
   /**
+   * Ballots as they will be recorded and counted.
+   *
+   * AN ABSENT INCUMBENT LEAVES NOTHING TO JUDGE. `IncumbentKind` admits
+   * `absent`, and such a slice shows judges an empty archive block while the
+   * schema still asks whether the archive is publishable, so an answer arrives
+   * about nothing at all. It is dropped HERE rather than where the record is
+   * built, because the verdict is derived from exactly the ballots that get
+   * stored, and stripping in one place keeps those two from disagreeing.
+   */
+  const recorded = (subject.incumbentText === '')
+    ? ballots.map(function strip(ballot,): LaneContestBallot {
+      return withoutArchiveAnswer({ ballot, },);
+    },)
+    : ballots;
+
+  /**
    * Candidate enough voices backed.
    */
-  const choice = settleLaneContestBallots({ ballots, },);
+  const choice = settleLaneContestBallots({ ballots: recorded, },);
   cl.info(
     `lane contest: ${String(ballots.length,)}/${String(outcomes.length,)} usable, settled on ${choice}`,
   );
   return {
     choice,
-    ballots,
-    usable: ballots.length,
+    ballots: recorded,
+    usable: recorded.length,
     findings: (ballots.length < LANE_CONTEST_QUORUM)
       ? [ `lane-contest heard ${String(ballots.length,)} usable ballots, below the ${String(LANE_CONTEST_QUORUM,)} needed to settle`, ]
       : [],
