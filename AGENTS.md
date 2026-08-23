@@ -1017,6 +1017,11 @@ TD7:
 TD8:
  Include `@example` tags with usage examples.
 
+TD9:
+ `@internal` is a modifier tag and must carry no content,
+ or `tsdoc(empty-tags)` errors.
+Explanation goes in prose above the bare tag.
+
 ### TypeScript
 
 #### Standards
@@ -1062,7 +1067,10 @@ TQ3:
  Throw + return early.
 
 XPT:
- Exporting small helpers through package API for built-artifact tests allowed.
+ Shared internals belong in the barrel,
+ exported and marked `@internal`,
+ not withheld.
+Covers helpers a sibling module or a built-artifact test needs.
 
 #### Type system
 
