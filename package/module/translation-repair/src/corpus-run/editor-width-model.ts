@@ -14,10 +14,12 @@ import type { SyntheticModelId, } from '../synthetic-catalog.ts';
 // nothing and would dilute whatever signal the moved slices carry, so they are
 // classified out before any head-to-head runs.
 //
-// Second, a winner that changed is not yet a winner that improved. Judges
-// disagree with themselves run to run, so the fraction of slices where the
-// shipped text moved means nothing until the same slate judged twice says how
-// often it moves with no width change at all.
+// Second, a winner that changed is not yet a winner that improved. The lane
+// disagrees with itself run to run, so the fraction of slices where the
+// shipped text moved means nothing until the same arm RUN TWICE says how often
+// it moves with no width change at all. That repeat re-produces as well as
+// re-judges, because the width arms differ in production and a band covering
+// only judge churn would credit ordinary editor variation to the extra seats.
 
 /**
  * Fate of one slice under the two widths, named exhaustively so a slice that
@@ -84,9 +86,9 @@ export type WidthRow = {
   readonly heardWide: number;
 
   /**
-   * Whether the narrow slate, judged a second time by the same panel, shipped
-   * the same text. This is the null band: a flip here is judge churn with no
-   * width change behind it.
+   * Whether the narrow arm, run a second time end to end, shipped the same
+   * text. This is the null band: a flip here is the lane disagreeing with
+   * itself, with no width change behind it.
    */
   readonly narrowRepeatAgreed: boolean;
 
@@ -211,8 +213,8 @@ export type WidthSummary = {
   readonly moved: number;
 
   /**
-   * Slices where the narrow slate judged twice shipped different text. This is
-   * the null band for {@link WidthSummary.moved} and is measured, not assumed.
+   * Slices where the narrow arm run twice shipped different text. This is the
+   * null band for {@link WidthSummary.moved} and is measured, not assumed.
    */
   readonly churned: number;
 
@@ -254,7 +256,7 @@ function movedText(row: WidthRow,): boolean {
 }
 
 /**
- * Whether the same slate judged twice disagreed with itself.
+ * Whether the narrow arm run twice disagreed with itself.
  *
  * @param row - one slice's comparison
  *
