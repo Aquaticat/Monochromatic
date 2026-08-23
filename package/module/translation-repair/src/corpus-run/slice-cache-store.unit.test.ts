@@ -106,6 +106,13 @@ function catOutcome({ chunkIndex, }: { readonly chunkIndex: number; },) {
     resolvedIssueIds: [],
     candidateResolvedIssueIds: [],
     repairRegions: [],
+    // POPULATED rather than empty, because an empty record round-trips
+    // identically whether the field crossed the wire or was dropped and rebuilt
+    // as a default. A named author is the only version of this that can fail.
+    authorship: {
+      perIssue: { 'adjudicated/whisker': ['hf:openai/gpt-oss-120b',], },
+      everyIssue: ['hf:zai-org/GLM-5.2',],
+    },
     accuracyPatchSelected: true,
     refined: false,
     rounds: [],

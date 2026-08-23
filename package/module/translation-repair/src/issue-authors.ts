@@ -298,10 +298,10 @@ export function collectIssueAuthors(
   },
 ): IssueAuthorship {
   /**
-   * Who wrote what ships, absent when the untouched translation does.
+   * Who wrote what ships, `unattributed` when the untouched translation does.
    */
   const { shippedProducer, } = editor;
-  if (shippedProducer === undefined)
+  if (shippedProducer.kind === 'unattributed')
     return UNATTRIBUTED_TEXT;
 
   // A composite is the one shipped patch whose parts have DIFFERENT authors,

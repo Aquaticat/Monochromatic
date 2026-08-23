@@ -135,6 +135,11 @@ function catOutcome(
     refined: false,
     rounds: [],
     droppedDeclaredNames: [],
+    // Hand-written fixture text, so nothing here has a model author.
+    authorship: {
+      perIssue: {},
+      everyIssue: [],
+    },
     nonTranslationVotes: nonTranslationStanding ? NON_TRANSLATION_BLOCK_VOTES : 0,
     nonTranslationContradicted: false,
     nonTranslationStanding,

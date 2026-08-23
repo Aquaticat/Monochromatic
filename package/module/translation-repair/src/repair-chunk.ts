@@ -15,7 +15,7 @@ import { buildEditorAddendum, } from './line-structure-addendum.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import { parseDocument, } from './parse-document.ts';
 import { collectRepairRegions, } from './repair-region.ts';
-import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
+import { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
 import {
   assertCheckerIndependence,
   type ChunkRepairOutcome,
@@ -170,27 +170,11 @@ export async function repairChunk(
   /**
    * Unchanged outcome shared by every early exit.
    */
-  const unchangedOutcome = {
+  const unchangedOutcome = unchangedChunkOutcome({
     chunkIndex,
-    repairedText: targetText,
-    changed: false,
-    resolvedIssueIds: [],
-    candidateResolvedIssueIds: [],
-    repairRegions: [],
-    accuracyPatchSelected: false,
-    refined: false,
-    rounds: [],
-    // Nothing was repaired on any exit that spreads this, so no model wrote the
-    // text and no checker can be certifying its own work.
-    authorship: UNATTRIBUTED_TEXT,
-    droppedDeclaredNames: [],
-    nonTranslationVotes: critic.nonTranslationVotes,
-    nonTranslationContradicted: critic.contradicted,
-    nonTranslationStanding: critic.votesStand,
-    heardCritics: critic.heardCritics,
-    heardCriticIds: critic.heardCriticIds,
-    claimAttributions: critic.claimAttributions,
-  };
+    targetText,
+    critic,
+  },);
   // STANDING NON-TRANSLATION VOTES NO LONGER END THE SLICE. They used to return
   // here with the input unchanged, which threw away whatever this chunk's repair
   // would have produced. Question 3 answer B keeps the critics as EVIDENCE for

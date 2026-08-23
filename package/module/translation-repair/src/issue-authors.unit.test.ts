@@ -1,6 +1,6 @@
 /**
- * Tests for reading authorship off judged rounds: who wrote the text a checker
- * stage is about to judge.
+ * Tests for who wrote the text a checker stage is about to judge, read off the
+ * producer the editor stage recorded.
  *
  * @module
  */
@@ -14,12 +14,13 @@ import {
 import {
   appliedIssuesByEnvelope,
   collectIssueAuthors,
-  collectRefinedAuthors,
   type EditableEnvelope,
   type EditorStageResult,
   type PatchOperation,
   type RepairJudgedRound,
+  NOBODY_WROTE_IT,
   type RepairSlateEntry,
+  type ShippedProducer,
   type SyntheticModelId,
 } from '../dist/final/node/index.mjs';
 
@@ -34,12 +35,12 @@ const WHISKER = 'adjudicated/whisker';
 const PAW = 'adjudicated/paw';
 
 /**
- * Model that wins the rounds below unless a case says otherwise.
+ * Model that wrote the text that ships unless a case says otherwise.
  */
 const AUTHOR: SyntheticModelId = 'hf:zai-org/GLM-5.2';
 
 /**
- * Second model, for composites and for losing candidates.
+ * Second model, for rivals and for candidates that lose.
  */
 const HELPER: SyntheticModelId = 'hf:Qwen/Qwen3.8-27B';
 
@@ -101,7 +102,7 @@ function slateEntryOf(
 }
 
 /**
- * Builds a round that picked the candidate carrying `selectedIndex`.
+ * Builds an envelope round that picked the candidate carrying `selectedIndex`.
  */
 function selectedRound(
   {
@@ -133,15 +134,40 @@ function selectedRound(
 }
 
 /**
+ * Builds the whole-chunk round as it looks when judges could not rank anything,
+ * which is the round that records ballots and names no winner.
+ */
+function declinedChunkRound(slate: readonly RepairSlateEntry[],): RepairJudgedRound {
+  return {
+    kind: 'declined',
+    stage: 'chunk-patch',
+    envelopeId: 'chunk',
+    slate,
+    ballots: [],
+    tally: {
+      judgesAvailable: 3,
+      ballots: 3,
+      abstentions: 3,
+      selfVotes: 0,
+    },
+    perCandidate: [],
+    reason: 'no candidate drew quorum',
+    disposition: 'indecision',
+  };
+}
+
+/**
  * Builds the editor stage result the authorship read takes.
  */
 function editorOf(
   {
     rounds,
     applied,
+    shippedProducer,
   }: {
     readonly rounds: readonly RepairJudgedRound[];
     readonly applied: readonly PatchOperation[];
+    readonly shippedProducer: ShippedProducer;
   },
 ): EditorStageResult {
   return {
@@ -153,8 +179,19 @@ function editorOf(
     heardEditors: 3,
     rounds,
     findings: [],
+    shippedProducer,
   };
 }
+
+/**
+ * The one envelope every case below repairs, and the issue it serves.
+ */
+const KEPT = [
+  envelopeOf({
+    envelopeId: 'kept',
+    issueIds: [WHISKER,],
+  },),
+];
 
 await describe({
   name: appliedIssuesByEnvelope.name,
@@ -192,16 +229,69 @@ await describe({
   ],
 },);
 
-
 await describe({
   name: collectIssueAuthors.name,
   children: [
     it({
-      name: 'JOINS THE WINNER BY THE NUMBER JUDGES WERE SHOWN, NOT BY ARRAY POSITION. Numbers are '
-        + 'ONE-BASED, so the winner numbered 1 sits at position 0 and indexing the array by '
-        + 'selectedIndex silently names the LOSER instead. This is the shape that discriminates: '
-        + 'it fails with a wrong answer rather than with a throw',
-      fn: async function oneBasedNumbersAreNotArrayPositions() {
+      name: 'NAMES THE MODEL THAT WROTE THE WHOLE SHIPPED CHUNK for every issue, because one '
+        + 'model wrote all of it and every creditable issue sits in text it produced',
+      fn: async function aLoneWinnerAnswersForEveryIssue() {
+        expect(collectIssueAuthors({
+          editor: editorOf({
+            applied: [operationOf('kept',),],
+            rounds: [],
+            shippedProducer: {
+              kind: 'model',
+              modelId: AUTHOR,
+            },
+          },),
+          envelopes: KEPT,
+        },),).toEqual({
+          perIssue: {},
+          everyIssue: [AUTHOR,],
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE EDITOR WHOSE REPAIR SHIPS AFTER THE JUDGES DECLINED TO RANK ANYTHING. This '
+        + 'is the case a reader of the rounds cannot answer: the round records ballots and no '
+        + 'winner, yet a real editor wrote the text, and leaving it unnamed lets that editor '
+        + 'certify its own work at full weight',
+      fn: async function theIndecisionFallbackHasAnAuthor() {
+        expect(collectIssueAuthors({
+          editor: editorOf({
+            applied: [operationOf('kept',),],
+            rounds: [
+              declinedChunkRound([
+                slateEntryOf({
+                  index: 1,
+                  modelId: AUTHOR,
+                },),
+                slateEntryOf({
+                  index: 2,
+                  modelId: HELPER,
+                },),
+              ],),
+            ],
+            shippedProducer: {
+              kind: 'model',
+              modelId: AUTHOR,
+            },
+          },),
+          envelopes: KEPT,
+        },),).toEqual({
+          perIssue: {},
+          everyIssue: [AUTHOR,],
+        },);
+      },
+    },),
+
+    it({
+      name: 'IGNORES AN ENVELOPE WINNER WHOSE TEXT LOST TO A RIVAL WHOLE-CHUNK PROPOSAL, because '
+        + 'the composite it was assembled into never shipped, so it is judging someone else\'s '
+        + 'text and keeps a whole vote',
+      fn: async function envelopeWinnersThatLostAreNotAuthors() {
         expect(collectIssueAuthors({
           editor: editorOf({
             applied: [operationOf('kept',),],
@@ -211,115 +301,38 @@ await describe({
                 slate: [
                   slateEntryOf({
                     index: 1,
-                    modelId: AUTHOR,
-                  },),
-                  slateEntryOf({
-                    index: 2,
                     modelId: HELPER,
                   },),
                 ],
                 selectedIndex: 1,
               },),
             ],
+            shippedProducer: {
+              kind: 'model',
+              modelId: AUTHOR,
+            },
           },),
-          envelopes: [
-            envelopeOf({
-              envelopeId: 'kept',
-              issueIds: [WHISKER,],
-            },),
-          ],
-        },),).toEqual({
-          perIssue: { [WHISKER]: [AUTHOR,], },
-          everyIssue: [],
-        },);
-      },
-    },),
-
-    it({
-      name: 'NAMES NOBODY FOR A DECLINED ROUND, since a panel that ranked nothing put no model text '
-        + 'into the candidate through it',
-      fn: async function declinedRoundsAuthorNothing() {
-        expect(collectIssueAuthors({
-          editor: editorOf({
-            applied: [operationOf('kept',),],
-            rounds: [
-              {
-                kind: 'declined',
-                stage: 'envelope',
-                envelopeId: 'kept',
-                slate: [
-                  slateEntryOf({
-                    index: 1,
-                    modelId: AUTHOR,
-                  },),
-                ],
-                ballots: [],
-                tally: {
-                  judgesAvailable: 3,
-                  ballots: 3,
-                  abstentions: 3,
-                  selfVotes: 0,
-                },
-                perCandidate: [],
-                reason: 'no candidate drew quorum',
-                disposition: 'indecision',
-              },
-            ],
-          },),
-          envelopes: [
-            envelopeOf({
-              envelopeId: 'kept',
-              issueIds: [WHISKER,],
-            },),
-          ],
+          envelopes: KEPT,
         },),).toEqual({
           perIssue: {},
-          everyIssue: [],
+          everyIssue: [AUTHOR,],
         },);
       },
     },),
 
     it({
-      name: 'NAMES EVERY CONTRIBUTOR TO A COMPOSITE WINNER, because each of them has a stake in the '
-        + 'text that composite put in',
-      fn: async function compositesNameEveryContributor() {
+      name: 'NAMES NOBODY WHEN THE UNTOUCHED TRANSLATION SHIPS, since no model wrote it and no '
+        + 'checker can be certifying its own work',
+      fn: async function nothingShippedMeansNoAuthors() {
         expect(collectIssueAuthors({
           editor: editorOf({
-            applied: [operationOf('kept',),],
-            rounds: [
-              selectedRound({
-                envelopeId: 'kept',
-                slate: [
-                  {
-                    index: 1,
-                    rendered: 'assembled',
-                    hash: 'slate-1',
-                    producer: {
-                      kind: 'composite',
-                      contributors: [
-                        AUTHOR,
-                        HELPER,
-                      ],
-                    },
-                  },
-                ],
-                selectedIndex: 1,
-              },),
-            ],
+            applied: [],
+            rounds: [],
+            shippedProducer: NOBODY_WROTE_IT,
           },),
-          envelopes: [
-            envelopeOf({
-              envelopeId: 'kept',
-              issueIds: [WHISKER,],
-            },),
-          ],
+          envelopes: KEPT,
         },),).toEqual({
-          perIssue: {
-            [WHISKER]: [
-              AUTHOR,
-              HELPER,
-            ],
-          },
+          perIssue: {},
           everyIssue: [],
         },);
       },

@@ -1,6 +1,6 @@
 /**
- * Tests for how far one round's win reaches: onto the issues its envelope
- * served, or onto every issue in the chunk.
+ * Tests for how far one author's credit reaches: the per-envelope split a
+ * shipped composite earns, and the refiners layered on top of it.
  *
  * @module
  */
@@ -12,9 +12,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  appliedIssuesByEnvelope,
+  type CandidateProducer,
   collectIssueAuthors,
-  collectRefinedAuthors,
   type EditableEnvelope,
   type EditorStageResult,
   type PatchOperation,
@@ -24,24 +23,34 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Issue the first envelope serves.
+ * Issue the cases below credit.
  */
 const WHISKER = 'adjudicated/whisker';
 
 /**
- * Issue the second envelope serves.
- */
-const PAW = 'adjudicated/paw';
-
-/**
- * Model that wins the rounds below unless a case says otherwise.
+ * Model that wins the envelope rounds below unless a case says otherwise.
  */
 const AUTHOR: SyntheticModelId = 'hf:zai-org/GLM-5.2';
 
 /**
- * Second model, for composites and for losing candidates.
+ * Second model, for composites and for candidates that lose.
  */
 const HELPER: SyntheticModelId = 'hf:Qwen/Qwen3.8-27B';
+
+/**
+ * What ships in every `collectIssueAuthors` case here.
+ *
+ * A COMPOSITE, deliberately: it is the one shipped patch whose parts have
+ * different authors, so it is the only producer for which the envelope rounds
+ * are consulted at all.
+ */
+const COMPOSITE: CandidateProducer = {
+  kind: 'composite',
+  contributors: [
+    AUTHOR,
+    HELPER,
+  ],
+};
 
 /**
  * Builds an editable envelope carrying the issues it serves.
@@ -77,8 +86,7 @@ function operationOf(envelopeId: string,): PatchOperation {
 }
 
 /**
- * Builds one slate entry, whose `index` is the ONE-BASED number judges saw and
- * need not match its position in the array.
+ * Builds one slate entry, whose `index` is the ONE-BASED number judges saw.
  */
 function slateEntryOf(
   {
@@ -101,7 +109,7 @@ function slateEntryOf(
 }
 
 /**
- * Builds a round that picked the candidate carrying `selectedIndex`.
+ * Builds an envelope round that picked the candidate carrying `selectedIndex`.
  */
 function selectedRound(
   {
@@ -133,9 +141,9 @@ function selectedRound(
 }
 
 /**
- * Builds the editor stage result the authorship read takes.
+ * Builds the editor stage result, with the composite as the shipped producer.
  */
-function editorOf(
+function compositeShipped(
   {
     rounds,
     applied,
@@ -153,6 +161,7 @@ function editorOf(
     heardEditors: 3,
     rounds,
     findings: [],
+    shippedProducer: COMPOSITE,
   };
 }
 
@@ -160,46 +169,57 @@ await describe({
   name: collectIssueAuthors.name,
   children: [
     it({
-      name: 'NAMES A CHUNK-WIDE WINNER SEPARATELY, because a round that decided the whole chunk '
-        + 'answers for issues it was never told about and no envelope map can carry that',
-      fn: async function chunkScopeLandsInEveryIssue() {
+      name: 'JOINS THE WINNER BY THE NUMBER JUDGES WERE SHOWN, NOT BY ARRAY POSITION. Numbers are '
+        + 'ONE-BASED, so the winner numbered 1 sits at position 0 and indexing the array by '
+        + 'selectedIndex silently names the LOSER instead. This is the shape that discriminates: '
+        + 'it fails with a wrong answer rather than with a throw',
+      fn: async function oneBasedNumbersAreNotArrayPositions() {
         expect(collectIssueAuthors({
-          editor: editorOf({
-            applied: [],
+          editor: compositeShipped({
+            applied: [operationOf('kept',),],
             rounds: [
               selectedRound({
-                envelopeId: 'chunk',
+                envelopeId: 'kept',
                 slate: [
                   slateEntryOf({
                     index: 1,
                     modelId: AUTHOR,
+                  },),
+                  slateEntryOf({
+                    index: 2,
+                    modelId: HELPER,
                   },),
                 ],
                 selectedIndex: 1,
               },),
             ],
           },),
-          envelopes: [],
+          envelopes: [
+            envelopeOf({
+              envelopeId: 'kept',
+              issueIds: [WHISKER,],
+            },),
+          ],
         },),).toEqual({
-          perIssue: {},
-          everyIssue: [AUTHOR,],
+          perIssue: { [WHISKER]: [AUTHOR,], },
+          everyIssue: [],
         },);
       },
     },),
 
     it({
-      name: 'MERGES THE AUTHORS OF TWO ENVELOPES SERVING ONE ISSUE, so neither writer of that issue '
-        + 'text keeps a whole vote just because the other also wrote some of it',
+      name: 'MERGES THE AUTHORS OF TWO ENVELOPES SERVING ONE ISSUE, so neither writer of that '
+        + 'issue text keeps a whole vote on it',
       fn: async function twoEnvelopesMergeOntoOneIssue() {
         expect(collectIssueAuthors({
-          editor: editorOf({
+          editor: compositeShipped({
             applied: [
-              operationOf('first',),
-              operationOf('second',),
+              operationOf('front',),
+              operationOf('back',),
             ],
             rounds: [
               selectedRound({
-                envelopeId: 'first',
+                envelopeId: 'front',
                 slate: [
                   slateEntryOf({
                     index: 1,
@@ -209,7 +229,7 @@ await describe({
                 selectedIndex: 1,
               },),
               selectedRound({
-                envelopeId: 'second',
+                envelopeId: 'back',
                 slate: [
                   slateEntryOf({
                     index: 1,
@@ -222,11 +242,11 @@ await describe({
           },),
           envelopes: [
             envelopeOf({
-              envelopeId: 'first',
+              envelopeId: 'front',
               issueIds: [WHISKER,],
             },),
             envelopeOf({
-              envelopeId: 'second',
+              envelopeId: 'back',
               issueIds: [WHISKER,],
             },),
           ],
@@ -242,51 +262,42 @@ await describe({
       },
     },),
 
-  ],
-},);
-
-await describe({
-  name: collectRefinedAuthors.name,
-  children: [
     it({
-      name: 'READS BOTH STAGES OFF ONE ROUND LIST and takes its envelope map from the regions the '
-        + 'accuracy stage actually replaced, so an editor whose fix survived and a refiner who '
-        + 'rewrote around it are both discounted at the recheck',
-      fn: async function refinedTextHasTwoSetsOfAuthors() {
-        expect(collectRefinedAuthors({
-          rounds: [
-            selectedRound({
-              envelopeId: 'kept',
-              slate: [
-                slateEntryOf({
-                  index: 1,
-                  modelId: AUTHOR,
-                },),
-              ],
-              selectedIndex: 1,
-            },),
-            selectedRound({
-              envelopeId: 'chunk',
-              slate: [
-                slateEntryOf({
-                  index: 1,
-                  modelId: HELPER,
-                },),
-              ],
-              selectedIndex: 1,
-            },),
-          ],
-          repairRegions: [
-            {
+      name: 'NAMES EVERY CONTRIBUTOR TO A COMPOSITE THAT WON AN ENVELOPE ROUND, because each of '
+        + 'them has a stake in the text that composite put in',
+      fn: async function compositesNameEveryContributor() {
+        expect(collectIssueAuthors({
+          editor: compositeShipped({
+            applied: [operationOf('kept',),],
+            rounds: [
+              selectedRound({
+                envelopeId: 'kept',
+                slate: [
+                  {
+                    index: 1,
+                    rendered: 'assembled',
+                    hash: 'slate-1',
+                    producer: COMPOSITE,
+                  },
+                ],
+                selectedIndex: 1,
+              },),
+            ],
+          },),
+          envelopes: [
+            envelopeOf({
               envelopeId: 'kept',
               issueIds: [WHISKER,],
-              before: 'the cat naps',
-              editorAfter: 'the cat dozes',
-            },
+            },),
           ],
         },),).toEqual({
-          perIssue: { [WHISKER]: [AUTHOR,], },
-          everyIssue: [HELPER,],
+          perIssue: {
+            [WHISKER]: [
+              AUTHOR,
+              HELPER,
+            ],
+          },
+          everyIssue: [],
         },);
       },
     },),

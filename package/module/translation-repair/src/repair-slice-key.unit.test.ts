@@ -81,7 +81,7 @@ await describe({
         + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(29,);
+        expect(SLICE_CACHE_VERSION,).toBe(30,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -104,8 +104,12 @@ await describe({
         // shape check and is recomputed regardless, so the bump buys nothing at
         // runtime; it is here so one version number never names two record
         // shapes, which is what this file's versioning exists to prevent.
+        //
+        // Then version 30, on 2026-08-23, the same kind again: the outcome grew
+        // `authorship`, naming who wrote the repaired text so the naturalness
+        // recheck can discount a checker judging its own work after a resume.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('abd8d50302804d0978347ce2ff3ce63e617140be86d727a73559c53ecc5b41f9',);
+          .toBe('19a67320f27cf2b06cc53cd131438719add0a7b466c74332d96467f5ef679b31',);
       },
     },),
     it({

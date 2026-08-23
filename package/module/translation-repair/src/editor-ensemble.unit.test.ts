@@ -26,7 +26,7 @@ import {
   hashContent,
   mergeProducers,
   type PatchOutcome,
-  pickFallbackPatch,
+  pickFallbackCandidate,
   producerModelIds,
   type SyntheticModelId,
 } from '../dist/final/node/index.mjs';
@@ -295,7 +295,7 @@ await describe({
 },);
 
 await describe({
-  name: pickFallbackPatch.name,
+  name: pickFallbackCandidate.name,
   children: [
     it({
       name: 'prefers the editor that landed more operations',
@@ -314,14 +314,23 @@ await describe({
         expect(idle.patch
           .applied
           .length,).toBe(0,);
-        expect(
-          pickFallbackPatch({
-            candidates: [
-              idle,
-              working,
-            ],
-          },).patchedText,
-        ).toContain('The cat chases butterflies.',);
+
+        /**
+         * Editor the picker chose, read for its identity as well as its text.
+         */
+        const chosen = pickFallbackCandidate({
+          candidates: [
+            idle,
+            working,
+          ],
+        },);
+
+        expect(chosen.patch
+          .patchedText,).toContain('The cat chases butterflies.',);
+        // The identity is the point of returning a candidate rather than a
+        // patch: this exact path ships text after the judges decline, and the
+        // checker that wrote it must be discounted for judging its own work.
+        expect(chosen.modelId,).toBe('hf:Qwen/Qwen3.8-27B',);
       },
     },),
 
@@ -340,22 +349,24 @@ await describe({
           newText: 'The cat loves chasing butterflies.',
         },);
         expect(
-          pickFallbackPatch({
+          pickFallbackCandidate({
             candidates: [
               first,
               second,
             ],
-          },).patchedText,
+          },).patch
+            .patchedText,
         ).toContain('The cat chases butterflies.',);
         // Reversing the roster reverses the winner, proving order decides
         // rather than anything about the text.
         expect(
-          pickFallbackPatch({
+          pickFallbackCandidate({
             candidates: [
               second,
               first,
             ],
-          },).patchedText,
+          },).patch
+            .patchedText,
         ).toContain('The cat loves chasing butterflies.',);
       },
     },),

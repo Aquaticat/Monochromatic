@@ -125,6 +125,12 @@ function settledOutcome(
     resolvedIssueIds,
     candidateResolvedIssueIds: [],
     repairRegions: [],
+    // Hand-written fixture text, so no model wrote it and no checker in these
+    // cases is judging its own work.
+    authorship: {
+      perIssue: {},
+      everyIssue: [],
+    },
     accuracyPatchSelected: false,
     refined: false,
     rounds: [],

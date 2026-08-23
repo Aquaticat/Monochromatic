@@ -24,10 +24,12 @@ export {
   selectChunkPatch,
   selectPerEnvelope,
 } from './editor-ensemble.ts';
-export type {
-  ChunkPatchSelection,
-  EditorCandidate,
-  EnvelopeSelection,
+export {
+  type ChunkPatchSelection,
+  type EditorCandidate,
+  type EnvelopeSelection,
+  NOBODY_WROTE_IT,
+  type ShippedProducer,
 } from './editor-selection-result.ts';
 export {
   CHUNK_SCOPE_ENVELOPE,

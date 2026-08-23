@@ -26,6 +26,7 @@ import {
   type SliceReplacement,
   SliceSpliceError,
   spliceSlices,
+  type ChunkRepairOutcome,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -238,26 +239,7 @@ function outcomeFor(
     readonly repairedText: string;
     readonly changed: boolean;
   },
-): {
-  readonly chunkIndex: number;
-  readonly repairedText: string;
-  readonly changed: boolean;
-  readonly issues: readonly never[];
-  readonly resolvedIssueIds: readonly string[];
-  readonly candidateResolvedIssueIds: readonly string[];
-  readonly repairRegions: readonly never[];
-  readonly accuracyPatchSelected: boolean;
-  readonly refined: boolean;
-  readonly rounds: readonly never[];
-  readonly droppedDeclaredNames: readonly never[];
-  readonly nonTranslationVotes: number;
-  readonly nonTranslationContradicted: boolean;
-  readonly nonTranslationStanding: boolean;
-  readonly heardCritics: number;
-  readonly heardCriticIds: readonly never[];
-  readonly claimAttributions: readonly never[];
-  readonly findings: readonly string[];
-} {
+): ChunkRepairOutcome {
   return {
     chunkIndex,
     repairedText,
@@ -273,6 +255,11 @@ function outcomeFor(
     refined: false,
     rounds: [],
     droppedDeclaredNames: [],
+    // Hand-written fixture text, so nothing here has a model author.
+    authorship: {
+      perIssue: {},
+      everyIssue: [],
+    },
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,

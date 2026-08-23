@@ -6,6 +6,31 @@ import type { CandidateProducer, } from './candidate-select-model.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
+/**
+ * Nobody wrote the shipped text, because the untouched translation shipped.
+ *
+ * A NAMED STATE RATHER THAN AN ABSENT VALUE. Shipping the translation as it
+ * stood is a decision the stage reaches deliberately, on a rejection or when no
+ * operation survived the gate, so it reads as one of the answers rather than as
+ * a missing one.
+ *
+ * @example
+ * ```ts
+ * return { patch: rejectionFallback, shippedProducer: NOBODY_WROTE_IT, ... };
+ * ```
+ */
+export const NOBODY_WROTE_IT = { kind: 'unattributed', } as const;
+
+/**
+ * Who wrote the text a stage shipped.
+ *
+ * @example
+ * ```ts
+ * const authors = (shipped.kind === 'unattributed') ? [] : producerModelIds(shipped,);
+ * ```
+ */
+export type ShippedProducer = CandidateProducer | typeof NOBODY_WROTE_IT;
+
 //region Editor selection result
 // What the editor ensemble's two judged stages DECIDED, apart from the code
 // that decides it.
@@ -132,7 +157,7 @@ export type ChunkPatchSelection = {
    * and states it here, which is what lets the self-certification discount
    * reach a checker judging text it wrote itself.
    */
-  readonly shippedProducer: CandidateProducer | undefined;
+  readonly shippedProducer: ShippedProducer;
 };
 
 //endregion Editor selection result

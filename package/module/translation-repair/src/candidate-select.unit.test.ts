@@ -16,6 +16,7 @@ import {
 import {
   applyPatchOperations,
   type Candidate,
+  chunkCandidateOf,
   CANDIDATE_NONE,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -641,11 +642,11 @@ await describe({
       name: 'ships the strongest repair when judges fail to rank, because a '
         + 'disagreement about wording is not a verdict against repairing',
       fn: async () => {
-        /** Repair kept when judges cannot converge. */
-        const indecisionFallback: PatchOutcome = candidateFor({
+        /** Repair kept when judges cannot converge, named for its author. */
+        const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
           modelId: 'hf:zai-org/GLM-5.2',
           newText: 'The cat chases butterflies.',
-        },).patch;
+        },),);
 
         /** Untouched chunk, reserved for an outright rejection. */
         const rejectionFallback: PatchOutcome = {
@@ -658,7 +659,7 @@ await describe({
         const counter = { calls: 0, };
 
         /** Verdict over two candidates the judges tie on. */
-        const { patch, } = await selectChunkPatch({
+        const { patch, shippedProducer, } = await selectChunkPatch({
           client: scriptedJudges({
             ballots: {
               'hf:moonshotai/Kimi-K3': 1,
@@ -692,6 +693,14 @@ await describe({
         },);
         expect(patch.patchedText,).toContain('The cat chases butterflies.',);
         expect(patch.applied.length,).toBe(1,);
+        // WHO shipped it, not just what shipped. A declined round records
+        // ballots and no winner, so this is the one path where authorship
+        // cannot be read back off the round, and leaving it unnamed lets the
+        // editor that wrote this text certify its own work at full weight.
+        expect(shippedProducer,).toEqual({
+          kind: 'model',
+          modelId: 'hf:zai-org/GLM-5.2',
+        },);
       },
     },),
 
@@ -700,10 +709,10 @@ await describe({
         + 'a verdict that none of the candidates is good enough',
       fn: async () => {
         /** Repair that must NOT ship over an outright rejection. */
-        const indecisionFallback: PatchOutcome = candidateFor({
+        const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
           modelId: 'hf:zai-org/GLM-5.2',
           newText: 'The cat chases butterflies.',
-        },).patch;
+        },),);
 
         /** Untouched chunk. */
         const rejectionFallback: PatchOutcome = {
@@ -762,28 +771,32 @@ await describe({
           newText: 'The cat chases butterflies.',
         },).patch;
 
+        /**
+         * The one distinct candidate, which is also what would ship if judges
+         * declined, so both roles are filled by the same object here.
+         */
+        const sole: Candidate<PatchOutcome> = {
+          producer: {
+            kind: 'composite',
+            contributors: [
+              'hf:zai-org/GLM-5.2',
+              'hf:Qwen/Qwen3.8-27B',
+            ],
+          },
+          value: agreed,
+          rendered: agreed.patchedText,
+        };
+
         /** Verdict over the one distinct candidate. */
         const { patch, } = await selectChunkPatch({
           client: scriptedJudges({
             ballots: {},
             counter,
           },),
-          candidates: [
-            {
-              producer: {
-                kind: 'composite',
-                contributors: [
-                  'hf:zai-org/GLM-5.2',
-                  'hf:Qwen/Qwen3.8-27B',
-                ],
-              },
-              value: agreed,
-              rendered: agreed.patchedText,
-            },
-          ],
+          candidates: [sole,],
           judgeModelIds: JUDGES,
           sourceText: SOURCE_TEXT,
-          indecisionFallback: agreed,
+          indecisionFallback: sole,
           rejectionFallback: {
             patchedText: TARGET_TEXT,
             applied: [],

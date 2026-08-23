@@ -17,10 +17,11 @@ import {
 } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select.ts';
 import { collectEnvelopeProposals, } from './editor-proposals.ts';
-import type {
-  ChunkPatchSelection,
-  EditorCandidate,
-  EnvelopeSelection,
+import {
+  type ChunkPatchSelection,
+  type EditorCandidate,
+  type EnvelopeSelection,
+  NOBODY_WROTE_IT,
 } from './editor-selection-result.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -453,9 +454,9 @@ export async function selectChunkPatch(
       patch: rejectionFallback,
       findings: outcome.findings,
       rounds,
-      // Nobody: the untouched translation ships, so no editor wrote it and no
-      // checker can be judging its own work here.
-      shippedProducer: undefined,
+      // The untouched translation ships, so no editor wrote it and no checker
+      // can be judging its own work here.
+      shippedProducer: NOBODY_WROTE_IT,
     };
   }
   cl.info(

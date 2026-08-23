@@ -168,6 +168,11 @@ function settledOutcome(
     refined: false,
     rounds: [],
     droppedDeclaredNames: [],
+    // Hand-written fixture text, so nothing here has a model author.
+    authorship: {
+      perIssue: {},
+      everyIssue: [],
+    },
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,

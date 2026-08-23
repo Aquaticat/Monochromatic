@@ -4,7 +4,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { buildLicensedQuotes, } from './licensed-quotes.ts';
 import type { PatchOutcome, } from './apply-patch.ts';
-import type { CandidateProducer, } from './candidate-select-model.ts';
+import {
+  NOBODY_WROTE_IT,
+  type ShippedProducer,
+} from './editor-selection-result.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { buildEditorMessages, } from './edit-prompt.ts';
 import {
@@ -80,7 +83,7 @@ export type EditorStageResult = {
    * decline, and credits envelope winners whose text lost to a rival
    * whole-chunk proposal.
    */
-  readonly shippedProducer: CandidateProducer | undefined;
+  readonly shippedProducer: ShippedProducer;
 };
 
 /**
@@ -252,9 +255,8 @@ export async function runEditorStage(
         .length,
       rounds: [],
       findings: stageFindings,
-      // No operation survived the gate, so the untouched translation ships and
-      // no editor wrote it.
-      shippedProducer: undefined,
+      // No operation survived the gate, so the untouched translation ships.
+      shippedProducer: NOBODY_WROTE_IT,
     };
   }
 
