@@ -208,6 +208,11 @@ function anchorFor(
  * reported unpaired with `ambiguous`, which is the outcome that lets a caller
  * skip a section rather than guess at it.
  *
+ * Exported so the walk can be read directly on corpus pages, which is the only
+ * way to find out which refusal real pages actually produce.
+ *
+ * @internal
+ *
  * @param sourceHeadings - original-side unit labels in document order
  *
  * @param targetHeadings - translation-side unit labels in document order

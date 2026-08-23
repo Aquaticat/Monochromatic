@@ -226,6 +226,13 @@ function fillTable(
 /**
  * Reads every optimal alignment out of the table.
  *
+ * Exported so a probe can ask how WIDE an ambiguity is rather than only that
+ * there was one. The refusal a caller sees names a kind; the partner and gap
+ * sets behind it say whether the aligner hesitated between two adjacent
+ * boundaries or across a whole page, and those want different remedies.
+ *
+ * @internal
+ *
  * @param sourceHeadings - original-side unit labels in document order
  *
  * @param targetHeadings - translation-side unit labels in document order

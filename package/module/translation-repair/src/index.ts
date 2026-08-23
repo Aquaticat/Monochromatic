@@ -59,6 +59,16 @@ export {
   normalizePunctuation,
 } from './quote-normalize.ts';
 export {
+  type ForcedAlignStep,
+  alignHeadingsForced,
+  type InsertionAnchor,
+  type UnpairedReason,
+} from './align-headings-forced.ts';
+export {
+  type OptimalPaths,
+  scanOptimalPaths,
+} from './align-headings-optimal.ts';
+export {
   type AlignmentAttachment,
   type AlignmentFinding,
   alignDocumentSections,
