@@ -16875,3 +16875,56 @@ pgrep -af 'coverage-probe.mjs' | grep -v 'bash -c'
 
 Then check the pid with `ps -o args= -p "$PID"` and confirm the command line is the one expected
 before waiting on it. `kill -0 "$PID"` alone proves a process exists, never that it is the right one.
+
+## `#106` option A: the carried verdicts are self-consistent, which is not yet an answer
+
+Ran the coverage probe over one entry at the current wire,
+`mikaela_khara`, cap 16, into `~/temp/agent/106-coverage`.
+Sixteen block-scale verdicts persisted: `carried` 15, `partly-carried` 1,
+zero absence votes and zero unanchored, reproducing the recorded block-scale null on a fresh run.
+
+Graded those verdicts with three deterministic signals, no model in the loop.
+The question option A exists to answer is whether an anchored quote RENDERS the source passage
+or merely exists somewhere in the translation.
+
+-   REUSE, one span offered as evidence for two different blocks: 0.
+-   INVERSION, a later block anchored earlier in the page than an earlier one: 0 of 15 adjacent pairs.
+-   THINNESS, evidence short enough that it cannot be rendering its source block: 0 of 16.
+    The shortest is 2.08 English characters per source character; the spread runs 2.08 to 6.78.
+
+So the degenerate failure is not what is happening here.
+The evidence spans are block-sized, distinct per block, and walk the page in block order.
+
+### The first version of that grader reported a finding that was not one
+
+It keyed reuse by span and pushed the block label once per evidence quote,
+but each row carries one quote per voter,
+so six voters agreeing on one span registered as six offers and tripped the `length > 1` test.
+Every group it printed was one block repeated.
+Corrected by counting DISTINCT blocks per span, which reads 0.
+
+Same shape as the fabricated `neither shipped: 2` earlier in this work:
+an analysis script that reports a number nobody checked it could produce correctly.
+Every detector now runs a positive control on a planted case before it reads the run,
+and the reuse detector additionally runs a negative control proving
+within-block agreement does not trip it.
+
+### What this does NOT establish
+
+The controls prove the DETECTORS can fire.
+They do not prove the COVERAGE PROBE can vote absence at all,
+which is the actual question behind the unanimity.
+A wire that never returns `absent` produces exactly this reading on a complete translation
+and on a defective instrument alike,
+and one entry could simply be well translated.
+
+The control that separates them: take a case the roster voted `carried` on,
+delete THE ROSTER'S OWN EVIDENCE SPAN from the translation, and ask again about the same source passage.
+The rendering the roster pointed at is then provably gone.
+Voting `carried` again, anchored on some other span, is the contamination hypothesis demonstrated;
+flipping to absent or partial is the wire shown able to see absence,
+which makes the null benign and answers `#106`.
+
+Damage cannot be chosen without asking first:
+coverage candidates are by construction the passages the aligners REFUSE to pair,
+so nothing outside the roster's own answer says which target text renders them.
