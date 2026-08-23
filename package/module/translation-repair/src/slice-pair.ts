@@ -2,6 +2,7 @@ import type {
   ChunkPair,
   ContentChunk,
 } from './chunk-document.ts';
+import { makeInsertionChunk, } from './chunk-placement.ts';
 import type { DocumentNode, } from './document-node.ts';
 import { groupNodesAligned, } from './group-aligned.ts';
 import { blockPairingToSteps, } from './pair-blocks-steps.ts';
@@ -243,12 +244,30 @@ export function subdivideChunkPair(
         run,
         sliceOffset,
       ): ChunkPair {
+        /**
+         * Original side, built the same way whichever kind of run this is.
+         */
+        const source = runToChunk({
+          run: run.sourceRun,
+          documentText: sourceText,
+          chunkIndex: baseIndex + sliceOffset,
+        },);
+
+        // `#100` landing 4: a run of originals nothing rendered gets a PLACE on
+        // the translation side rather than blocks, so the lane can write there.
+        // `runToChunk` would throw on the empty run this used to be handed,
+        // which is why the fold this replaces existed at all.
+        if (run.kind === 'insertion')
+          return {
+            source,
+            target: makeInsertionChunk({
+              chunkIndex: baseIndex + sliceOffset,
+              offset: run.targetOffset,
+            },),
+          };
+
         return {
-          source: runToChunk({
-            run: run.sourceRun,
-            documentText: sourceText,
-            chunkIndex: baseIndex + sliceOffset,
-          },),
+          source,
           target: runToChunk({
             run: run.targetRun,
             documentText: targetText,

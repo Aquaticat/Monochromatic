@@ -109,10 +109,14 @@ await describe({
          * Ids of every translation block any run carries.
          */
         const carried = new Set(runs.flatMap(function toIds(run,): readonly string[] {
-          return run.targetRun
-            .map(function toId(node,): string {
-              return node.id;
-            },);
+          // An insertion run names originals nothing rendered, so it carries no
+          // translation block and contributes nothing to this set.
+          return (run.kind === 'insertion')
+            ? []
+            : run.targetRun
+              .map(function toId(node,): string {
+                return node.id;
+              },);
         },),);
         expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(false,);
         expect(carried.has(nonNullishOrThrow(targetNodes.at(3,),).id,),).toBe(false,);
@@ -126,15 +130,15 @@ await describe({
          * Every run's translation-side span, in document order.
          */
         const spans = runs
-          .filter(function hasTarget(run,): boolean {
-            return run.targetRun
-              .length
-              > 0;
+          .flatMap(function toTargetRun(run,): readonly (readonly DocumentNode[])[] {
+            return ((run.kind === 'insertion') || (run.targetRun.length === 0))
+              ? []
+              : [ run.targetRun, ];
           },)
-          .map(function toSpan(run,): { readonly start: number; readonly end: number; } {
+          .map(function toSpan(targetRun,): { readonly start: number; readonly end: number; } {
             return {
-              start: nonNullishOrThrow(run.targetRun.at(0,),).startOffset,
-              end: nonNullishOrThrow(run.targetRun.at(-1,),).endOffset,
+              start: nonNullishOrThrow(targetRun.at(0,),).startOffset,
+              end: nonNullishOrThrow(targetRun.at(-1,),).endOffset,
             };
           },);
         /**
@@ -178,10 +182,12 @@ await describe({
          * Ids of every translation block any run carries.
          */
         const carried = new Set(runs.flatMap(function toIds(run,): readonly string[] {
-          return run.targetRun
-            .map(function toId(node,): string {
-              return node.id;
-            },);
+          return (run.kind === 'insertion')
+            ? []
+            : run.targetRun
+              .map(function toId(node,): string {
+                return node.id;
+              },);
         },),);
         expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(true,);
         expect(carried.has(nonNullishOrThrow(targetNodes.at(3,),).id,),).toBe(false,);
@@ -207,10 +213,12 @@ await describe({
          * Ids of every translation block any run carries.
          */
         const carried = new Set(runs.flatMap(function toIds(run,): readonly string[] {
-          return run.targetRun
-            .map(function toId(node,): string {
-              return node.id;
-            },);
+          return (run.kind === 'insertion')
+            ? []
+            : run.targetRun
+              .map(function toId(node,): string {
+                return node.id;
+              },);
         },),);
         for (const node of targetNodes)
           expect(carried.has(node.id,),).toBe(true,);
@@ -326,9 +334,11 @@ await describe({
           targetBudget: WIDE_BUDGET,
           steps,
         },).flatMap(function toIds(run,): readonly string[] {
-          return run.targetRun.map(function toId(node,): string {
-            return node.id;
-          },);
+          return (run.kind === 'insertion')
+            ? []
+            : run.targetRun.map(function toId(node,): string {
+              return node.id;
+            },);
         },),);
         expect(carried.has(nonNullishOrThrow(targetNodes.at(2,),).id,),).toBe(true,);
       },

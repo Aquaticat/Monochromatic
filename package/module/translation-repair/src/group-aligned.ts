@@ -4,6 +4,10 @@ import {
 } from './align-blocks-walk.ts';
 import { declinedTargetIds, } from './declined-target-runs.ts';
 import type { DocumentNode, } from './document-node.ts';
+import {
+  anchorOffsets,
+  leavesOriginalUnplaced,
+} from './group-source-anchor.ts';
 
 //region Aligned run grouping
 // Turns a monotone block alignment into budget-bounded slice runs. This
@@ -24,20 +28,48 @@ import type { DocumentNode, } from './document-node.ts';
  *
  * @example
  * ```ts
- * const run: AlignedRun = { sourceRun: [node,], targetRun: [node,], };
+ * const run: AlignedRun = { kind: 'paired', sourceRun: [node,], targetRun: [node,], };
  * ```
  */
-export type AlignedRun = {
-  /**
-   * Original-side blocks of this slice, in document order.
-   */
-  readonly sourceRun: readonly DocumentNode[];
+export type AlignedRun =
+  | {
+    /**
+     * Both sides carry blocks, so the slice can be compared and repaired.
+     */
+    readonly kind: 'paired';
 
-  /**
-   * Translation-side blocks of this slice, in document order.
-   */
-  readonly targetRun: readonly DocumentNode[];
-};
+    /**
+     * Original-side blocks of this slice, in document order.
+     */
+    readonly sourceRun: readonly DocumentNode[];
+
+    /**
+     * Translation-side blocks of this slice, in document order.
+     */
+    readonly targetRun: readonly DocumentNode[];
+  }
+  | {
+    /**
+     * Original blocks nothing rendered, and the place their rendering belongs.
+     *
+     * `#100` landing 4. Before this these blocks were FOLDED into a
+     * neighbouring run, which put them inside that slice's span and left the
+     * lane no way to tell "this passage is missing" from "this passage is part
+     * of the one beside it". Folding also cannot be undone later: once the
+     * span covers them, every reader downstream sees one passage.
+     */
+    readonly kind: 'insertion';
+
+    /**
+     * Original-side blocks, in document order.
+     */
+    readonly sourceRun: readonly DocumentNode[];
+
+    /**
+     * Boundary in the translation their rendering would be written at.
+     */
+    readonly targetOffset: number;
+  };
 
 /**
  * Mutable run under construction, plus the character counts deciding when it
@@ -53,7 +85,19 @@ type OpenRun = {
    * Translation-side blocks gathered so far.
    */
   readonly targetRun: DocumentNode[];
+
+  /**
+   * Where this run's rendering belongs when it holds only unplaced originals,
+   * or {@link NOT_AN_INSERTION} when it is an ordinary run.
+   */
+  readonly anchor: number;
 };
+
+/**
+ * Anchor value for a run that is not an insertion, which no document offset can
+ * collide with.
+ */
+const NOT_AN_INSERTION = -1;
 
 /**
  * Character span of one block.
@@ -134,12 +178,19 @@ function positionsAfterDecline(
 }
 
 /**
- * Folds runs that ended up with nothing on one side into a neighbour. A run of
- * purely unpartnered blocks has no counterpart to compare against, and every
- * later stage requires both sides to be non-empty, so it joins the run beside
- * it rather than becoming a slice that cannot be reviewed. It merges backwards
- * when a previous run exists and forwards otherwise, which keeps a leading run
- * of skips attached to the first reviewable slice.
+ * Folds runs that ended up with nothing on one side into a neighbour, EXCEPT
+ * the ones holding originals nothing rendered.
+ *
+ * A run of purely unpartnered TRANSLATION blocks has no original to compare
+ * against and nothing to write, so it joins the run beside it rather than
+ * becoming a slice nobody can review. It merges backwards when a previous run
+ * exists and forwards otherwise, which keeps a leading run of skips attached to
+ * the first reviewable slice.
+ *
+ * A run of unplaced ORIGINALS is the opposite case and `#100` landing 4 stops
+ * folding it. Those blocks have something to write and nowhere yet to write it;
+ * folding them into a neighbour puts them inside that slice's span, where no
+ * later stage can tell them apart from the passage they were folded into.
  *
  * @param runs - runs as grouped, possibly one-sided
  *
@@ -151,7 +202,7 @@ function positionsAfterDecline(
  * ```
  */
 function mergeOneSidedRuns(
-  { runs, }: { readonly runs: readonly AlignedRun[]; },
+  { runs, }: { readonly runs: readonly OpenRun[]; },
 ): readonly AlignedRun[] {
   /**
    * Runs that carry both sides, each replaced wholesale when it absorbs a
@@ -170,6 +221,28 @@ function mergeOneSidedRuns(
    */
   const heldTarget: DocumentNode[] = [];
   for (const run of runs) {
+    if (run.anchor !== NOT_AN_INSERTION) {
+      // An insertion run stands alone by construction: it carries originals and
+      // the place their rendering goes, so there is nothing to fold it into and
+      // nothing it needs from a neighbour. Held blocks still flush ahead of it,
+      // since they precede it in the document.
+      if ((heldSource.length > 0) || (heldTarget.length > 0)) {
+        merged.push({
+          kind: 'paired',
+          sourceRun: [ ...heldSource, ],
+          targetRun: [ ...heldTarget, ],
+        },);
+        heldSource.length = 0;
+        heldTarget.length = 0;
+      }
+      merged.push({
+        kind: 'insertion',
+        sourceRun: [ ...run.sourceRun, ],
+        targetOffset: run.anchor,
+      },);
+      continue;
+    }
+
     /**
      * Whether this run can stand as a slice of its own.
      */
@@ -184,8 +257,11 @@ function mergeOneSidedRuns(
      * Previous complete run, which absorbs a one-sided run when one exists.
      */
     const previous = merged.at(-1,);
-    if ((!twoSided) && (previous !== undefined)) {
+    if ((!twoSided)
+      && (previous !== undefined)
+      && (previous.kind === 'paired')) {
       merged[merged.length - 1] = {
+        kind: 'paired',
         sourceRun: [
           ...previous.sourceRun,
           ...run.sourceRun,
@@ -205,6 +281,7 @@ function mergeOneSidedRuns(
 
     // Held blocks have no earlier neighbour, so they prepend to this run.
     merged.push({
+      kind: 'paired',
       sourceRun: [
         ...heldSource,
         ...run.sourceRun,
@@ -238,6 +315,7 @@ function mergeOneSidedRuns(
     return [
       ...merged,
       {
+        kind: 'paired',
         sourceRun: [ ...heldSource, ],
         targetRun: [ ...heldTarget, ],
       },
@@ -337,6 +415,33 @@ export function groupNodesAligned(
     targetNodes,
     declined,
   },);
+
+  /**
+   * Walk positions holding an original nothing rendered, mapped to where its
+   * rendering belongs, EMPTY when the scorer produced the walk.
+   *
+   * `#100` landing 4. These positions each start and end a run of their own, so
+   * the blocks nothing rendered become their own slice rather than riding
+   * inside a neighbour's span.
+   *
+   * THE SCORER CANNOT TELL A MERGE FROM AN OMISSION, which is the same reason
+   * its `target-only` steps decline nothing above. It scores kind, script-
+   * neutral tokens and length; facing four originals rendered as one
+   * translation block it reports one pairing and three bare `source-only`
+   * steps, indistinguishable from three originals nobody translated. A roster
+   * that read both texts marks the difference with `continuesPairing`.
+   *
+   * Reading the scorer's version as absence would write a SECOND rendering of a
+   * passage the page already carries, merged, which is the expensive error this
+   * whole question was decided around. So an insertion needs a pairing someone
+   * read the texts to produce.
+   */
+  const anchors = (steps === undefined)
+    ? new Map<number, number>()
+    : anchorOffsets({
+      walk,
+      targetNodes,
+    },);
   for (const [at, step,] of walk.entries()) {
     /**
      * Block this step would contribute on the translation side, absent when it
@@ -419,10 +524,30 @@ export function groupNodesAligned(
     // block belongs to and this is about which bytes a slice's span covers.
     // Keeping a continuation attached across a declined block would put the
     // declined bytes back inside the span.
-    if (afterDecline.has(at,) || ((!cohesive) && overBudget)) {
+    /**
+     * Where this step's original belongs when nothing rendered it, or
+     * {@link NOT_AN_INSERTION} when something did.
+     */
+    const anchor = anchors.get(at,) ?? NOT_AN_INSERTION;
+
+    /**
+     * Whether this step may join the run being filled.
+     *
+     * AN INSERTION RUN IS SEALED IN BOTH DIRECTIONS. It may not absorb a step
+     * that was rendered, and a rendered step's run may not absorb it, because
+     * the whole point is that these blocks sit outside every existing span. A
+     * run mixing the two would have no single answer to "is this passage on the
+     * page".
+     */
+    const sameKindAsOpen = (current !== undefined)
+      && (current.anchor === anchor);
+    if (afterDecline.has(at,)
+      || (!sameKindAsOpen)
+      || ((!cohesive) && overBudget)) {
       runs.push({
         sourceRun: [ ...sourceNode, ],
         targetRun: [ ...targetNode, ],
+        anchor,
       },);
       open.sourceChars = sourceChars;
       open.targetChars = targetChars;

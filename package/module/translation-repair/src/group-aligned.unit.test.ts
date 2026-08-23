@@ -19,6 +19,7 @@
  * @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -93,12 +94,18 @@ function expectCoversEveryBlockOnce(
     return node.id;
   },),);
 
+  // AN INSERTION RUN CARRIES NO TRANSLATION BLOCKS, by construction: it names
+  // originals nothing rendered and the place their rendering belongs. The
+  // coverage claim is unchanged by that, since every translation block still
+  // appears exactly once across the runs that hold any.
   expect(
     runs.flatMap(function toTargetIds(run,) {
-      return run.targetRun
-        .map(function toId(node,) {
-          return node.id;
-        },);
+      return (run.kind === 'insertion')
+        ? []
+        : run.targetRun
+          .map(function toId(node,) {
+            return node.id;
+          },);
     },),
   ).toStrictEqual(targetNodes.map(function toId(node,) {
     return node.id;
@@ -118,6 +125,11 @@ const TARGET_TEXT = 'The cat sleeps on the windowsill.\n\n'
   + 'She wakes when the sun moves.\n\n'
   + 'She chases butterflies, and she loves them.\n\n'
   + 'In the evening she waits by the door.\n';
+
+/**
+ * Stands for "no insertion run was produced", which no offset can be.
+ */
+const NO_RUN = -1;
 
 await describe({
   name: groupNodesAligned.name,
@@ -301,7 +313,12 @@ await describe({
         },);
         for (const run of runs) {
           expect(run.sourceRun.length,).toBeGreaterThan(0,);
-          expect(run.targetRun.length,).toBeGreaterThan(0,);
+          // No pairing was supplied here, so the scorer produced the walk and
+          // no insertion may be proposed off it: the scorer cannot tell an
+          // original that was merged from one that was dropped.
+          expect(run.kind,).toBe('paired',);
+          if (run.kind === 'paired')
+            expect(run.targetRun.length,).toBeGreaterThan(0,);
         }
       },
     },),
@@ -340,7 +357,14 @@ await describe({
 
           for (const run of runs) {
             expect(run.sourceRun.length,).toBeGreaterThan(0,);
-            expect(run.targetRun.length,).toBeGreaterThan(0,);
+            // A MERGE IS NOT AN OMISSION. The four originals here are rendered
+            // as one translation block, which the walk reports as a pairing
+            // followed by continuations, so none of them is unplaced and no
+            // insertion run may appear. If one did, the lane would write a
+            // second rendering of a passage the page already carries.
+            expect(run.kind,).toBe('paired',);
+            if (run.kind === 'paired')
+              expect(run.targetRun.length,).toBeGreaterThan(0,);
           }
           expectCoversEveryBlockOnce({
             runs,
@@ -473,5 +497,201 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'GIVES AN ORIGINAL NOTHING RENDERED ITS OWN RUN, anchored where the next rendered '
+        + 'block begins. Folding it into a neighbour put its bytes inside that slice span, where '
+        + 'no later stage could tell a missing passage from part of the one beside it',
+      fn: async () => {
+        /**
+         * Original blocks.
+         */
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+
+        /**
+         * Translation missing the third paragraph entirely.
+         */
+        const targetNodes = blocksOf({
+          text: 'The cat sleeps on the windowsill.\n\n'
+            + 'She wakes when the sun moves.\n\n'
+            + 'In the evening she waits by the door.\n',
+        },);
+
+        /**
+         * A roster pairing leaving the third original unplaced.
+         */
+        const runs = groupNodesAligned({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+          steps: [
+            {
+              kind: 'paired',
+              sourceIndex: 0,
+              targetIndex: 0,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 1,
+              targetIndex: 1,
+            },
+            {
+              kind: 'source-only',
+              sourceIndex: 2,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 3,
+              targetIndex: 2,
+            },
+          ],
+        },);
+
+        expect(runs.map(function toKind(run,) {
+          return run.kind;
+        },),)
+          .toStrictEqual([
+            'paired',
+            'insertion',
+            'paired',
+          ],);
+
+        /**
+         * The insertion run.
+         */
+        const anchored = runs.find(function isInsertion(run,) {
+          return run.kind === 'insertion';
+        },);
+
+        expect((anchored?.kind === 'insertion') ? anchored.targetOffset : NO_RUN,)
+          .toBe(nonNullishOrThrow(targetNodes.at(2,),).startOffset,);
+
+        expect((anchored?.sourceRun ?? []).map(function toId(node,) {
+          return node.id;
+        },),)
+          .toStrictEqual([ nonNullishOrThrow(sourceNodes.at(2,),).id, ],);
+      },
+    },),
+
+    it({
+      name: 'NEVER PROPOSES AN INSERTION FOR A MERGE, since two originals rendered as one block '
+        + 'arrive as a pairing plus a continuation and the second IS on the page. Writing it in '
+        + 'again would put a second rendering of that passage into a memorial document',
+      fn: async () => {
+        /**
+         * Original blocks.
+         */
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+
+        /**
+         * Translation folding the first two originals into one block.
+         */
+        const targetNodes = blocksOf({
+          text: 'The cat sleeps on the windowsill, and wakes when the sun moves.\n\n'
+            + 'She chases butterflies, and she loves them.\n\n'
+            + 'In the evening she waits by the door.\n',
+        },);
+
+        /**
+         * A pairing whose second original continues the first one's block.
+         */
+        const runs = groupNodesAligned({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+          steps: [
+            {
+              kind: 'paired',
+              sourceIndex: 0,
+              targetIndex: 0,
+            },
+            {
+              kind: 'source-only',
+              sourceIndex: 1,
+              continuesPairing: true,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 2,
+              targetIndex: 1,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 3,
+              targetIndex: 2,
+            },
+          ],
+        },);
+
+        expect(runs.every(function isPaired(run,) {
+          return run.kind === 'paired';
+        },),)
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'ANCHORS A TRAILING ORIGINAL AFTER THE LAST RENDERED BLOCK, since nothing follows it '
+        + 'to sit before, and anchoring at the start of the last block instead would write the '
+        + 'passage above the paragraph it comes after',
+      fn: async () => {
+        /**
+         * Original blocks.
+         */
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+
+        /**
+         * Translation missing the last paragraph.
+         */
+        const targetNodes = blocksOf({
+          text: 'The cat sleeps on the windowsill.\n\n'
+            + 'She wakes when the sun moves.\n\n'
+            + 'She chases butterflies, and she loves them.\n',
+        },);
+
+        /**
+         * A pairing leaving the final original unplaced.
+         */
+        const runs = groupNodesAligned({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+          steps: [
+            {
+              kind: 'paired',
+              sourceIndex: 0,
+              targetIndex: 0,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 1,
+              targetIndex: 1,
+            },
+            {
+              kind: 'paired',
+              sourceIndex: 2,
+              targetIndex: 2,
+            },
+            {
+              kind: 'source-only',
+              sourceIndex: 3,
+            },
+          ],
+        },);
+
+        /**
+         * The insertion run.
+         */
+        const anchored = runs.find(function isInsertion(run,) {
+          return run.kind === 'insertion';
+        },);
+
+        expect((anchored?.kind === 'insertion') ? anchored.targetOffset : NO_RUN,)
+          .toBe(nonNullishOrThrow(targetNodes.at(-1,),).endOffset,);
+      },
+    },),
+
   ],
 },);
