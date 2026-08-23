@@ -4,6 +4,7 @@ import {
 } from './align-blocks-walk.ts';
 import { declinedTargetIds, } from './declined-target-runs.ts';
 import type { DocumentNode, } from './document-node.ts';
+import { reanchorInsertions, } from './group-run-anchor.ts';
 import {
   anchorOffsets,
   leavesOriginalUnplaced,
@@ -657,7 +658,10 @@ export function groupNodesAligned(
     open.sourceChars += sourceChars;
     open.targetChars += targetChars;
   }
-  return mergeOneSidedRuns({ runs, },);
+  // ANCHORS COME LAST, because merging is what invalidates them: folding an
+  // unclaimed translation into a neighbour stretches that run's span over it,
+  // and an anchor naming that block's start then points inside a passage.
+  return reanchorInsertions({ runs: mergeOneSidedRuns({ runs, },), },);
 }
 
 //endregion Aligned run grouping
