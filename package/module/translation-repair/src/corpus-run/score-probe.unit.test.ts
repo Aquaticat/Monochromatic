@@ -15,12 +15,16 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { indexReadingsByIssue, } from '../../dist/final/node/index.mjs';
+import {
+  indexReadingsByIssue,
+  ProbeIssueIndexError,
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Builds a region tally naming the issues it serves.
@@ -150,7 +154,10 @@ await describe({
         + 'verdict, and silently overwriting is exactly the failure that '
         + 'produces confident wrong numbers',
       fn: async () => {
-        expect(function indexesDuplicate() {
+        /**
+         * What indexesDuplicate raised, read for its class as well as its wording.
+         */
+        const refusalOfIndexesDuplicate = caught(function indexesDuplicate() {
           indexReadingsByIssue({
             owned: [
               {
@@ -172,7 +179,10 @@ await describe({
               },
             ],
           },);
-        },).toThrow('adjudicated/nap',);
+        },);
+
+        expect(refusalOfIndexesDuplicate,).toBeInstanceOf(ProbeIssueIndexError,);
+        expect((refusalOfIndexesDuplicate as Error).message,).toContain('adjudicated/nap',);
       },
     },),
 

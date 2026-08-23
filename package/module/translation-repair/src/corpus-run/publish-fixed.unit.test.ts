@@ -51,6 +51,7 @@ import {
   fixedPagePath,
   publishFixedPage,
   shippableReplacements,
+  SliceSpliceError,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 
@@ -560,12 +561,19 @@ await describe({
       fn: async () => {
         await using tree = await throwawayTree();
 
-        await expect(publishAndRead({
+        /**
+         * What publishAndRead refused with, held so the class and the wording
+         * can both be asserted: `.rejects` awaits afresh on every matcher call,
+         * so one promise serves two assertions and no capture helper is needed.
+         */
+        const refusalOfPublishingNoTranslation = publishAndRead({
           artifact: artifactShippingNothing(),
           publishDir: tree.publishDir,
           slices: documentSlicesWithAGap(),
-        },),).rejects
-          .toThrow('has no translation and writes none',);
+        },);
+
+        await expect(refusalOfPublishingNoTranslation,).rejects.toBeInstanceOf(SliceSpliceError,);
+        await expect(refusalOfPublishingNoTranslation,).rejects.toThrow('has no translation and writes none',);
       },
     },),
 
@@ -609,12 +617,19 @@ await describe({
       fn: async () => {
         await using tree = await throwawayTree();
 
-        await expect(publishAndRead({
+        /**
+         * What publishAndRead refused with, held so the class and the wording
+         * can both be asserted: `.rejects` awaits afresh on every matcher call,
+         * so one promise serves two assertions and no capture helper is needed.
+         */
+        const refusalOfPublishingPastTheSlices = publishAndRead({
           artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
           publishDir: tree.publishDir,
           slices: [documentSlices()[0] as ChunkPair,],
-        },),).rejects
-          .toThrow('no slice 1 to write into',);
+        },);
+
+        await expect(refusalOfPublishingPastTheSlices,).rejects.toBeInstanceOf(SliceSpliceError,);
+        await expect(refusalOfPublishingPastTheSlices,).rejects.toThrow('no slice 1 to write into',);
       },
     },),
   ],

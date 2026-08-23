@@ -12,12 +12,15 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  BenchDrawError,
+  BenchReportError,
   benchWidths,
   type DrawableSlice,
   orderBySourceSize,
@@ -198,12 +201,18 @@ await describe({
       name: 'refuses an empty pool rather than returning an empty bench, which '
         + 'would report every width as agreeing perfectly',
       fn: async () => {
-        expect(function drawFromNothing(): void {
+        /**
+         * What drawFromNothing raised, read for its class as well as its wording.
+         */
+        const refusalOfDrawFromNothing = caught(function drawFromNothing(): void {
           pickSpreadSample({
             slices: [],
             count: 3,
           },);
-        },).toThrow('no slices',);
+        },);
+
+        expect(refusalOfDrawFromNothing,).toBeInstanceOf(BenchDrawError,);
+        expect((refusalOfDrawFromNothing as Error).message,).toContain('no slices',);
       },
     },),
   ],
@@ -257,9 +266,15 @@ await describe({
       name: 'refuses a roster with nothing to vary, rather than benching one '
         + 'width and reporting a comparison',
       fn: async () => {
-        expect(function benchOneModel(): void {
+        /**
+         * What benchOneModel raised, read for its class as well as its wording.
+         */
+        const refusalOfBenchOneModel = caught(function benchOneModel(): void {
           benchWidths({ roster: ['a',], },);
-        },).toThrow('nothing to vary',);
+        },);
+
+        expect(refusalOfBenchOneModel,).toBeInstanceOf(BenchReportError,);
+        expect((refusalOfBenchOneModel as Error).message,).toContain('nothing to vary',);
       },
     },),
   ],

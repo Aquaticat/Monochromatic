@@ -7,6 +7,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -17,6 +18,7 @@ import {
   corroboratingProberCount,
   type IssueProbeReading,
   judgeRegionProbe,
+  ProbeTelemetryError,
   type RegionDefectTally,
   type ScreenedDefectClaim,
   summarizeProbeTelemetry,
@@ -309,7 +311,10 @@ await describe({
         + 'the order artifacts happened to be read while reporting a figure '
         + 'that looks settled',
       fn: async () => {
-        expect(function summarizesDisagreement() {
+        /**
+         * What summarizesDisagreement raised, read for its class as well as its wording.
+         */
+        const refusalOfSummarizesDisagreement = caught(function summarizesDisagreement() {
           summarizeProbeTelemetry({
             entries: [
               {
@@ -339,7 +344,10 @@ await describe({
               },
             ],
           },);
-        },).toThrow('envelope/shared',);
+        },);
+
+        expect(refusalOfSummarizesDisagreement,).toBeInstanceOf(ProbeTelemetryError,);
+        expect((refusalOfSummarizesDisagreement as Error).message,).toContain('envelope/shared',);
       },
     },),
 
@@ -349,7 +357,10 @@ await describe({
         + 'invariant this guard states is that disagreeing copies are refused, '
         + 'not that copies with matching arithmetic are accepted',
       fn: async () => {
-        expect(function summarizesDifferentProbers() {
+        /**
+         * What summarizesDifferentProbers raised, read for its class as well as its wording.
+         */
+        const refusalOfSummarizesDifferentProbers = caught(function summarizesDifferentProbers() {
           summarizeProbeTelemetry({
             entries: [
               {
@@ -389,7 +400,10 @@ await describe({
               },
             ],
           },);
-        },).toThrow('envelope/shared',);
+        },);
+
+        expect(refusalOfSummarizesDifferentProbers,).toBeInstanceOf(ProbeTelemetryError,);
+        expect((refusalOfSummarizesDifferentProbers as Error).message,).toContain('envelope/shared',);
       },
     },),
 

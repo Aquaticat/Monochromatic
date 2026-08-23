@@ -21,6 +21,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -32,6 +33,7 @@ import {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
+  RunConfigError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -302,9 +304,15 @@ await describe({
       fn: async () => {
         using _unset = withoutApiKey();
 
-        expect(function buildWithoutKey() {
+        /**
+         * What buildWithoutKey raised, read for its class as well as its wording.
+         */
+        const refusalOfBuildWithoutKey = caught(function buildWithoutKey() {
           createRunClient();
-        },).toThrow('mise',);
+        },);
+
+        expect(refusalOfBuildWithoutKey,).toBeInstanceOf(RunConfigError,);
+        expect((refusalOfBuildWithoutKey as Error).message,).toContain('mise',);
       },
     },),
   ],

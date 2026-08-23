@@ -6,12 +6,14 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
   type CandidateMeasurements,
+  CandidateSlateError,
   type RepairCandidate,
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,
@@ -185,12 +187,18 @@ await describe({
           suffix: 'only',
           measurements: UNCHANGED_MEASUREMENTS,
         },);
-        expect(function selectWithoutUnchanged() {
+        /**
+         * What selectWithoutUnchanged raised, read for its class as well as its wording.
+         */
+        const refusalOfSelectWithoutUnchanged = caught(function selectWithoutUnchanged() {
           selectRepairCandidate({
             candidates: [only,],
             incumbentText: UNCHANGED.text,
           },);
-        },).toThrow('always competes',);
+        },);
+
+        expect(refusalOfSelectWithoutUnchanged,).toBeInstanceOf(CandidateSlateError,);
+        expect((refusalOfSelectWithoutUnchanged as Error).message,).toContain('always competes',);
       },
     },),
 
@@ -205,12 +213,18 @@ await describe({
           text: 'The cat naps in the warm sun.',
           measurements: UNCHANGED_MEASUREMENTS,
         };
-        expect(function selectWithDishonestUnchanged() {
+        /**
+         * What selectWithDishonestUnchanged raised, read for its class as well as its wording.
+         */
+        const refusalOfSelectWithDishonestUnchanged = caught(function selectWithDishonestUnchanged() {
           selectRepairCandidate({
             candidates: [impostor,],
             incumbentText: UNCHANGED.text,
           },);
-        },).toThrow('wording other than the archive text',);
+        },);
+
+        expect(refusalOfSelectWithDishonestUnchanged,).toBeInstanceOf(CandidateSlateError,);
+        expect((refusalOfSelectWithDishonestUnchanged as Error).message,).toContain('wording other than the archive text',);
       },
     },),
 
@@ -239,18 +253,30 @@ await describe({
             touchedRegionChars: 5,
           },
         };
-        expect(function honestFirst() {
+        /**
+         * What honestFirst raised, read for its class as well as its wording.
+         */
+        const refusalOfHonestFirst = caught(function honestFirst() {
           selectRepairCandidate({
             candidates: [archive, wearingTheName,],
             incumbentText: UNCHANGED.text,
           },);
-        },).toThrow('under the unchanged identifier',);
-        expect(function impostorFirst() {
+        },);
+
+        expect(refusalOfHonestFirst,).toBeInstanceOf(CandidateSlateError,);
+        expect((refusalOfHonestFirst as Error).message,).toContain('under the unchanged identifier',);
+        /**
+         * What impostorFirst raised, read for its class as well as its wording.
+         */
+        const refusalOfImpostorFirst = caught(function impostorFirst() {
           selectRepairCandidate({
             candidates: [wearingTheName, archive,],
             incumbentText: UNCHANGED.text,
           },);
-        },).toThrow('under the unchanged identifier',);
+        },);
+
+        expect(refusalOfImpostorFirst,).toBeInstanceOf(CandidateSlateError,);
+        expect((refusalOfImpostorFirst as Error).message,).toContain('under the unchanged identifier',);
       },
     },),
 

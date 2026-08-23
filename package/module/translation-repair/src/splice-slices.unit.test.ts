@@ -13,6 +13,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -21,7 +22,9 @@ import {
 import {
   makeInsertionChunk,
   repairReplacements,
+  SliceIndexingError,
   type SliceReplacement,
+  SliceSpliceError,
   spliceSlices,
 } from '../dist/final/node/index.mjs';
 
@@ -493,7 +496,10 @@ await describe({
         + 'rather than silently dropping it: a lost slice means the driver and '
         + 'the slicer disagree, and shipping the remaining splices would hide it',
       fn: async () => {
-        expect(function spliceMissingSlice() {
+        /**
+         * What spliceMissingSlice raised, read for its class as well as its wording.
+         */
+        const refusalOfSpliceMissingSlice = caught(function spliceMissingSlice() {
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
@@ -504,7 +510,10 @@ await describe({
               },),
             ],
           },);
-        },).toThrow('no slice 9',);
+        },);
+
+        expect(refusalOfSpliceMissingSlice,).toBeInstanceOf(SliceSpliceError,);
+        expect((refusalOfSpliceMissingSlice as Error).message,).toContain('no slice 9',);
       },
     },),
 
@@ -515,7 +524,10 @@ await describe({
         + 'second slice would replace the first and one of them would become '
         + 'unreachable while its replacement landed on the other',
       fn: async () => {
-        expect(function spliceCollidingSlices() {
+        /**
+         * What spliceCollidingSlices raised, read for its class as well as its wording.
+         */
+        const refusalOfSpliceCollidingSlices = caught(function spliceCollidingSlices() {
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: [
@@ -532,7 +544,10 @@ await describe({
               },),
             ],
           },);
-        },).toThrow('two slices carry one index',);
+        },);
+
+        expect(refusalOfSpliceCollidingSlices,).toBeInstanceOf(SliceSpliceError,);
+        expect((refusalOfSpliceCollidingSlices as Error).message,).toContain('two slices carry one index',);
       },
     },),
 
@@ -542,7 +557,10 @@ await describe({
         + 'on sort order. Two lanes writing the same slice is exactly the shape '
         + 'that produces this, and it must not resolve itself quietly',
       fn: async () => {
-        expect(function spliceDuplicate() {
+        /**
+         * What spliceDuplicate raised, read for its class as well as its wording.
+         */
+        const refusalOfSpliceDuplicate = caught(function spliceDuplicate() {
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: SLICES,
@@ -557,7 +575,10 @@ await describe({
               },),
             ],
           },);
-        },).toThrow('two replacements name one slice',);
+        },);
+
+        expect(refusalOfSpliceDuplicate,).toBeInstanceOf(SliceSpliceError,);
+        expect((refusalOfSpliceDuplicate as Error).message,).toContain('two replacements name one slice',);
       },
     },),
 
@@ -632,7 +653,10 @@ await describe({
         + 'plausible text in the wrong order: two anchors at one boundary are written in descending index '
         + 'so they land ascending, and that is document order only while an index is a position',
       fn: async () => {
-        expect(function spliceShuffledIndices() {
+        /**
+         * What spliceShuffledIndices raised, read for its class as well as its wording.
+         */
+        const refusalOfSpliceShuffledIndices = caught(function spliceShuffledIndices() {
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: [
@@ -657,7 +681,10 @@ await describe({
               },),
             ],
           },);
-        },).toThrow('reads that index as the position',);
+        },);
+
+        expect(refusalOfSpliceShuffledIndices,).toBeInstanceOf(SliceIndexingError,);
+        expect((refusalOfSpliceShuffledIndices as Error).message,).toContain('reads that index as the position',);
       },
     },),
 
@@ -666,7 +693,10 @@ await describe({
         + 'has no existing translation, so writing nothing leaves the passage missing while every count '
         + 'reports it delivered',
       fn: async () => {
-        expect(function spliceBlankInsertion() {
+        /**
+         * What spliceBlankInsertion raised, read for its class as well as its wording.
+         */
+        const refusalOfSpliceBlankInsertion = caught(function spliceBlankInsertion() {
           spliceSlices({
             targetText: TARGET_TEXT,
             slices: [
@@ -683,7 +713,10 @@ await describe({
               },),
             ],
           },);
-        },).toThrow('writes none',);
+        },);
+
+        expect(refusalOfSpliceBlankInsertion,).toBeInstanceOf(SliceSpliceError,);
+        expect((refusalOfSpliceBlankInsertion as Error).message,).toContain('writes none',);
       },
     },),
   ],

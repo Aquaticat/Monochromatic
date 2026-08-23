@@ -14,12 +14,14 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  DamageRegionV2Error,
   regionIdOf,
   regionsOfLane,
 } from '../../dist/final/node/index.mjs';
@@ -333,7 +335,10 @@ await describe({
         + 'is a contradiction inside one artifact, and skipping it would shrink the draw '
         + 'population for a reason nobody would see',
       fn: async () => {
-        expect(function unnamedSlice() {
+        /**
+         * What unnamedSlice raised, read for its class as well as its wording.
+         */
+        const refusalOfUnnamedSlice = caught(function unnamedSlice() {
           regionsOfLane({
             entryId: 'Tabby',
             laneSelection: CONTESTED,
@@ -344,7 +349,10 @@ await describe({
               kind: 'replacement-shipped',
             },),],
           },);
-        },).toThrow('named by no comparison row',);
+        },);
+
+        expect(refusalOfUnnamedSlice,).toBeInstanceOf(DamageRegionV2Error,);
+        expect((refusalOfUnnamedSlice as Error).message,).toContain('named by no comparison row',);
       },
     },),
 

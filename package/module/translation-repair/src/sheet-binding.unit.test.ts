@@ -7,6 +7,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -19,6 +20,7 @@ import {
   type GradingCandidate,
   requireSheetSeed,
   type SampleManifest,
+  SheetBindingError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -116,7 +118,10 @@ await describe({
         /** Manifest of the draw actually taken. */
         const manifest = catManifest({ issueId: 'adjudicated/nap', },);
 
-        expect(function scoresAnotherDraw() {
+        /**
+         * What scoresAnotherDraw raised, read for its class as well as its wording.
+         */
+        const refusalOfScoresAnotherDraw = caught(function scoresAnotherDraw() {
           assertSheetMatchesManifest({
             identity: {
               seed: 'cat-seed',
@@ -136,7 +141,10 @@ await describe({
             manifest,
             sheetLabel: 'repair sheet',
           },);
-        },).toThrow('different draw digests',);
+        },);
+
+        expect(refusalOfScoresAnotherDraw,).toBeInstanceOf(SheetBindingError,);
+        expect((refusalOfScoresAnotherDraw as Error).message,).toContain('different draw digests',);
       },
     },),
 
@@ -194,7 +202,10 @@ await describe({
           ],
         };
 
-        expect(function legacySheetWithBoundManifest() {
+        /**
+         * What legacySheetWithBoundManifest raised, read for its class as well as its wording.
+         */
+        const refusalOfLegacySheetWithBoundManifest = caught(function legacySheetWithBoundManifest() {
           assertSheetMatchesManifest({
             identity: {
               seed: 'cat-seed',
@@ -204,9 +215,15 @@ await describe({
             manifest: bound,
             sheetLabel: 'detection sheet',
           },);
-        },).toThrow('disagree about whether this draw is bound',);
+        },);
 
-        expect(function boundSheetWithLegacyManifest() {
+        expect(refusalOfLegacySheetWithBoundManifest,).toBeInstanceOf(SheetBindingError,);
+        expect((refusalOfLegacySheetWithBoundManifest as Error).message,).toContain('disagree about whether this draw is bound',);
+
+        /**
+         * What boundSheetWithLegacyManifest raised, read for its class as well as its wording.
+         */
+        const refusalOfBoundSheetWithLegacyManifest = caught(function boundSheetWithLegacyManifest() {
           assertSheetMatchesManifest({
             identity: {
               seed: 'cat-seed',
@@ -216,7 +233,10 @@ await describe({
             manifest: unbound,
             sheetLabel: 'detection sheet',
           },);
-        },).toThrow('disagree about whether this draw is bound',);
+        },);
+
+        expect(refusalOfBoundSheetWithLegacyManifest,).toBeInstanceOf(SheetBindingError,);
+        expect((refusalOfBoundSheetWithLegacyManifest as Error).message,).toContain('disagree about whether this draw is bound',);
       },
     },),
 
@@ -228,7 +248,10 @@ await describe({
         /** Manifest of the draw under test. */
         const manifest = catManifest({ issueId: 'adjudicated/nap', },);
 
-        expect(function scoresAnotherSeed() {
+        /**
+         * What scoresAnotherSeed raised, read for its class as well as its wording.
+         */
+        const refusalOfScoresAnotherSeed = caught(function scoresAnotherSeed() {
           assertSheetMatchesManifest({
             identity: {
               seed: 'other-seed',
@@ -238,9 +261,15 @@ await describe({
             manifest,
             sheetLabel: 'detection sheet',
           },);
-        },).toThrow('different draws',);
+        },);
 
-        expect(function scoresAnotherPin() {
+        expect(refusalOfScoresAnotherSeed,).toBeInstanceOf(SheetBindingError,);
+        expect((refusalOfScoresAnotherSeed as Error).message,).toContain('different draws',);
+
+        /**
+         * What scoresAnotherPin raised, read for its class as well as its wording.
+         */
+        const refusalOfScoresAnotherPin = caught(function scoresAnotherPin() {
           assertSheetMatchesManifest({
             identity: {
               seed: 'cat-seed',
@@ -250,7 +279,10 @@ await describe({
             manifest,
             sheetLabel: 'detection sheet',
           },);
-        },).toThrow('different corpus',);
+        },);
+
+        expect(refusalOfScoresAnotherPin,).toBeInstanceOf(SheetBindingError,);
+        expect((refusalOfScoresAnotherPin as Error).message,).toContain('different corpus',);
       },
     },),
   ],
@@ -281,7 +313,10 @@ await describe({
         + 'being worked on now: the mispairing the binding exists to stop, '
         + 'arriving through the back door',
       fn: async () => {
-        expect(function scoresAnUnplaceableSheet() {
+        /**
+         * What scoresAnUnplaceableSheet raised, read for its class as well as its wording.
+         */
+        const refusalOfScoresAnUnplaceableSheet = caught(function scoresAnUnplaceableSheet() {
           requireSheetSeed({
             identity: {
               seed: '',
@@ -290,7 +325,10 @@ await describe({
             },
             sheetLabel: 'detection sheet',
           },);
-        },).toThrow('declares no draw seed',);
+        },);
+
+        expect(refusalOfScoresAnUnplaceableSheet,).toBeInstanceOf(SheetBindingError,);
+        expect((refusalOfScoresAnUnplaceableSheet as Error).message,).toContain('declares no draw seed',);
       },
     },),
   ],
