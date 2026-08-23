@@ -16362,3 +16362,78 @@ which also stops three exits restating one record shape.
 
 FINAL GATE: suite 546 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
 Commits: 9b433ea4f, e796d2956.
+
+## Task 187, corrections found while covering the wire
+
+Three corrections to the section above.
+None of them change what shipped;
+two change what a later session should believe about it.
+
+### "Reachable path" was true of the code and false of production
+
+The heading above says the discount missed the author "on a reachable path".
+Reachable in code, yes.
+Reachable in a corpus pass, no,
+and the distinction matters because it decides whether the machinery earns its complexity.
+
+`wroteTextForIssue` weights a checker's verdict at half when that checker appears in `IssueAuthorship`.
+Authorship can only ever name an editor
+(`producer.modelId`, `producer.matched`, `producer.contributors` at `candidate-select-model.ts:136-139`)
+or a refiner, added by `collectRefinedAuthors`.
+`assertCheckerIndependence` at `repair-contract.ts:359` refuses any roster where a checker is also an editor or a refiner,
+and it runs at `repair-chunk.ts:126` and `refine-phase.ts:153`,
+so every chunk and every refine phase is gated on it.
+The production roster at `corpus-run/run-config.ts:192`,
+the only `RepairModels` literal outside TSDoc examples,
+is disjoint:
+editors and refiners are Kimi-K3, GLM-5.2 and GLM-4.7-Flash,
+checkers are Qwen3.8-27B, Nemotron-3-Super-120B and gpt-oss-120b.
+
+So the checker-side discount has changed no tally that ever shipped.
+Task 187's corrections are right and covered;
+they are also currently inert,
+and so is the half of task 91 that built them.
+
+SCOPE THIS PRECISELY.
+`SELF_VOTE_WEIGHT` has two independent readers and only one is unreachable.
+The SELECTION side at `candidate-select.ts:276` halves a JUDGE's vote for its own candidate,
+`judgeModelIds` is the whole six-model roster,
+and the quorum threshold at `repair-contract.ts:288` is written around it.
+That copy fires on every chunk;
+the suite log shows it live
+(`hf:zai-org/GLM-5.2 chose candidate 1 at weight 0.5`).
+Do not delete it.
+
+Whether to drop the checker-side apparatus or instead relax the assert and let the strongest editors check too,
+with their self-votes discounted,
+is a design question with a measurement behind it.
+It is filed, not decided here.
+
+### The stored authorship went stale the moment a refinement was kept
+
+`repairedText` became the refined text while `authorship` stayed editor-only,
+so every `refined: true` record misstated its own contract.
+The recheck's union lived in an argument and died with the call.
+Fixed at the shipping return only:
+both rollback paths hand back the editor's text,
+so the editor's authorship is already true of them.
+
+No cache bump was needed.
+`SLICE_CACHE_VERSION` 30 is baked into the key,
+and no pass has run since it landed,
+so there is no v30 entry to go stale.
+
+GFP: removing the stored union fails `STORES BOTH STAGES ON A RECORD WHOSE REWRITE SHIPPED`
+with `expected [ GLM-4.7-Flash ] to deeply equal [ GLM-4.7-Flash, GLM-5.2 ]`,
+while the control `NAMES NO REFINER ON A SLICE IT ROLLED BACK` still passes.
+Restored byte-identical, zero import errors on the probe.
+
+### Test files are exempt from max-lines
+
+The section above splits a test file at the 300-line budget.
+That split is fine to keep, but it was self-imposed:
+`package/config/oxlint/src/overrides.ts:161` turns `eslint/max-lines` off for `**/*.{test,bench}.ts`.
+Only source files carry the budget.
+
+FINAL GATE: suite 546 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
+Commits: 3922cba3b, f3c444458.
