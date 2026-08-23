@@ -14929,3 +14929,59 @@ only demonstrated instance outside `wangzihao980`, which has not settled yet.
 Do not act on that until it does. The note costs nothing when silent, so there
 is no urgency in removing it, and the question is whether it earns the policy
 text it adds to every contest message.
+
+## 2026-08-23: the boundary verification's answer, and the gap it found
+
+`wangzihao980` settled and the pass exited 0. The far-shorter precondition
+REPRODUCED, twice, so this half of `#163` is a real verification rather than a
+vacant one.
+
+-   Slice 3: Chinese 102, archive 66, 0.65 times, `target-far-shorter`,
+    note FIRED. Candidates 186 and 182.
+-   Slice 4: Chinese 141, archive 88, 0.62 times, `target-far-shorter`,
+    note FIRED. Candidates 167 and 171. In the 08-18 run slice 4 was the 8.71
+    times FAR-LONGER case; under the current pairing it is far-shorter.
+
+Two of five contested slices fired, against the 1.7 percent the design measured
+over the older corpus. The rate on this entry is not the corpus rate, but it is
+worth knowing that a single entry can carry two.
+
+THE NOTE REACHES THE JUDGES AND THEY ACT ON IT, at slice 4: translate won four
+votes to one, two judges marked repair `unsupported` or `dropped`, the
+consolidation gate was ASKED, and the fuller text shipped.
+
+AT SLICE 3 THE UNDER-RENDERING SHIPPED ANYWAY, and the reason is structural
+rather than a judge ignoring evidence:
+
+    laneSelection  settled-neither
+    consolidation  terminal=no-standing-text, gate=not-asked, shipped=unchanged
+
+No lane won, so there is no standing text, so the gate is never asked and the
+archive stands. The archive is the 66-character rendering the note flagged. The
+judges did NOT endorse it: two of six marked BOTH candidates as `dropped`, which
+is a rejection of the candidates, not an endorsement of the incumbent. The
+fallback simply happens to be the shortest of the three.
+
+SO THE GAP IS THIS. `settled-neither` means "neither candidate is better",
+and the pipeline reads it as "keep the archive". At a slice where the archive is
+measurably under-rendering, those are different claims, and nothing currently
+separates them. The size note is the only thing in the system that knows the
+incumbent is short, and it is shown to judges who cannot vote for or against the
+incumbent at all: `LaneChoice` is `repair`, `translate` or `neither`, and the
+archive is not a candidate.
+
+That is worth stating plainly, because it also explains why the far-shorter half
+of `SIZE_NOTE_POLICY` cannot do what it says. It instructs a judge to "put the
+DROPPED question to that rendering in particular", and at slice 3 that rendering
+is the one the ballot has no way to name.
+
+WHAT THIS DOES NOT SHOW. Nothing here says the archive at slice 3 is wrong, only
+that it is short and that no candidate beat it. Deciding it is wrong needs the
+passage read, which is a separate act. The finding is that the mechanism cannot
+currently distinguish the two cases.
+
+VERDICT FOR `#163`: the estimator and the note are LANDED and the note is
+verified to reach judges and to move an outcome where a lane wins. The
+far-longer half now serves no case that still occurs. The far-shorter half is
+demonstrated live, and it exposed the `settled-neither` fallback rather than
+being consumed by it.
