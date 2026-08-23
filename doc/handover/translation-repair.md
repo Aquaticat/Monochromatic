@@ -16822,3 +16822,28 @@ Two facts now bear on that ruling which were not available when it was made:
 So implementing the ruling costs checker independence and buys no measured quality.
 THE RECOMMENDATION IS TO STAY AT THREE AND LEAVE THE ASSERTION ALONE.
 The ruling is the owner's to keep or revise; this records the evidence, not a reversal.
+
+## Task 106, one of its two decision-independent items is already done
+
+Checked 2026-08-23, while looking for work that does not wait on question 28.
+
+`#106` records: "The probe writes its result with `console.log(JSON.stringify(...))` and nothing
+persists it", and concludes "Persisting probe output into the runs directory is worth doing whichever
+option wins."
+
+THAT IS NO LONGER TRUE. `coverage-probe.ts:438` calls `persistProbeRun` into the resolved runs
+directory, keeping the rows, the roster, the corpus pin, the pipeline digest and the runner closure,
+and deliberately keeps standard output as well. `persistProbeRun` landed in `probe-store.ts` on
+2026-08-17, one day after the note was written, alongside a commit whose own subject records that
+"the redirect this probe was built around never worked".
+
+So the durability gap is closed and a later session acting on that line would rebuild what exists.
+This is the same failure the width probe kept producing in reverse:
+there, comments claimed invariants the code did not have;
+here, a task claims a gap the code has since filled.
+Both come from reading a recorded sentence as a fact rather than as a claim to check.
+
+WHAT IS STILL TRUE: the 2026-08-16 numbers themselves are gone. No `coverage-probe` directory exists
+under any runs directory on this machine, so the probe has not been run since persistence landed, and
+those verdicts survive only in session transcripts as the task says. Re-running is the only way to get
+them back, and a re-run now keeps them.
