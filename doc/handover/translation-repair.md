@@ -15709,3 +15709,45 @@ An overrun is already handled this way,
 so a source-relative cut costs the offending model its candidate for that slice and nothing else.
 #88's hand-back is a different level:
 it covers a slice the whole stage returned invalid, not one voice among several.
+
+### The fix, and where it was threaded
+
+`produced-volume-bound.ts` holds the bound and what it rests on.
+The translate producer computes `producedVolumeBound({ sourceChars })` for each slice
+and hands it to the call as `maxAnswerChars`.
+
+THREADED ALONG THE PATH `exchangeTimeoutMs` ALREADY TRAVELS,
+which is what keeps this small and keeps it away from the retry layer:
+producer, `stage-quorum`, `stage-round`, `stage-call`, the client, the transport, the drain.
+Optional at every hop, so a caller that knows nothing about its input size
+is policed at the module default exactly as before.
+Nothing on the retry path changed, which matters because #120 found six defects there.
+
+The `stream-drain.ts` comment that explained why nothing passed a bound
+is rewritten in the same commit, so the code no longer contradicts its own record.
+
+### What the tests prove, and how they could fail
+
+Both controls ride in one run over the same fixture:
+an 8192-character answer, well under the 32000 default so only a per-call bound can end it.
+
+    with maxAnswerChars 2048   overrun at 2210 content chars, 4608 raw chars pulled
+    with no bound named        completed, 8590 content chars, 17522 raw chars pulled
+
+The bounded call ends having pulled a quarter of the bytes,
+and the unbounded one drains the identical fixture whole,
+so the refusal is the bound doing the work rather than anything about the fixture.
+Had the threading been dropped anywhere along the chain,
+the bounded case would have drained whole
+and `refusalFrom` would have reported that the drain returned instead of refusing.
+
+GATE: suite 536 PASS / 0 FAIL / exit 0, `lint` 0 warnings 0 errors, `lint:types` exit 0.
+
+### What this does not cover
+
+The repair lane. Its slices carry no alignment record,
+so the census could not measure a produced-to-incumbent ratio for it
+and no bound is passed on its calls.
+Every observed runaway was in the translate lane,
+so this is a scope statement rather than a known gap,
+but a repair-lane runaway would still be policed only by the absolute default.
