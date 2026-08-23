@@ -1,6 +1,12 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { PatchOperation, } from './apply-patch.ts';
 import type { RepairDocument, } from './parse-document.ts';
+import {
+  appliedIssuesByEnvelope,
+  collectIssueAuthors,
+} from './issue-authors.ts';
+import type { EditorStageResult, } from './repair-editor-stage.ts';
+import type { IssueAuthorship, } from './resolution-authorship.ts';
 import { downgradeCount, } from './downgrade-count.ts';
 import { footnoteBreakCount, } from './footnote-break-count.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -60,17 +66,81 @@ export function selectCreditableIssues(
    * Issues named by the envelope of some applied operation.
    */
   const served = new Set(
-    applied.flatMap(function servedBy(operation,) {
-      return envelopes.find(function matches(candidate,) {
-        return candidate.envelopeId === operation.envelopeId;
-      },)
-        ?.issueIds
-        ?? [];
-    },),
+    Object.values(appliedIssuesByEnvelope({
+      envelopes,
+      applied,
+    },),)
+      .flat(),
   );
   return acceptedIssues.filter(function wasServed(issue,) {
     return served.has(issue.issueId,);
   },);
+}
+
+/**
+ * Both answers one walk over the applied operations yields.
+ *
+ * @example
+ * ```ts
+ * const reading: AppliedEnvelopeReading = { creditableIssues, authorship, };
+ * ```
+ */
+export type AppliedEnvelopeReading = {
+  /**
+   * Accepted issues an applied operation served, in issue order.
+   */
+  readonly creditableIssues: readonly AdjudicatedIssue[];
+
+  /**
+   * Models that wrote the text those operations put into the candidate.
+   */
+  readonly authorship: IssueAuthorship;
+};
+
+/**
+ * What the applied envelopes bought.
+ *
+ * ONE READING RATHER THAN TWO CALLS. Both answers come off the same walk over
+ * the operations that survived the gate, and taking them separately lets the
+ * issues a candidate is credited for drift from the authors it is discounted
+ * for.
+ *
+ * @param acceptedIssues - accepted issues the checkers examined
+ *
+ * @param envelopes - editable envelopes offered to the editors
+ *
+ * @param editor - editor stage result, carrying its rounds and its gate
+ *
+ * @returns Creditable issues beside authorship of the patched text
+ *
+ * @example
+ * ```ts
+ * const reading = readAppliedEnvelopes({ acceptedIssues, envelopes, editor, },);
+ * ```
+ */
+export function readAppliedEnvelopes(
+  {
+    acceptedIssues,
+    envelopes,
+    editor,
+  }: {
+    readonly acceptedIssues: readonly AdjudicatedIssue[];
+    readonly envelopes: readonly EditableEnvelope[];
+    readonly editor: EditorStageResult;
+  },
+): AppliedEnvelopeReading {
+  return {
+    creditableIssues: selectCreditableIssues({
+      acceptedIssues,
+      envelopes,
+      applied: editor.patch
+        .applied,
+    },),
+    authorship: collectIssueAuthors({
+      editor,
+      envelopes,
+    },),
+  };
 }
 
 /**

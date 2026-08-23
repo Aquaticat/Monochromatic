@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { IssueAuthorship, } from './resolution-authorship.ts';
 import {
   buildResolutionMessages,
   isResolutionReportWire,
@@ -61,6 +62,9 @@ export type CheckerStageResult = {
  *
  * @param issues - accepted issues the editors addressed
  *
+ * @param authorship - who wrote `patchedText`, so a checker judging its own
+ * work is heard at a discount rather than at full weight
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -81,6 +85,7 @@ export async function runCheckerStage(
     sourceText,
     patchedText,
     issues,
+    authorship,
     signal,
     perCallTimeoutMs,
     l,
@@ -90,6 +95,7 @@ export async function runCheckerStage(
     readonly sourceText: string;
     readonly patchedText: string;
     readonly issues: readonly AdjudicatedIssue[];
+    readonly authorship: IssueAuthorship;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -156,6 +162,7 @@ export async function runCheckerStage(
   const tallies = tallyResolutionChecks({
     issueIds: plan.issueIds,
     ballots,
+    authorship,
   },);
 
   l.info(

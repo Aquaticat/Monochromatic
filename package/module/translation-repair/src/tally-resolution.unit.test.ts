@@ -14,6 +14,7 @@ import {
   isResolutionReportWire,
   resolveResolutionChecks,
   tallyResolutionChecks,
+  UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -121,6 +122,7 @@ await describe({
         /** Three checkers: two fixed one not-fixed on the first issue, worse-heavy on the second. */
         const tallies = tallyResolutionChecks({
           issueIds: ISSUE_IDS,
+          authorship: UNATTRIBUTED_TEXT,
           ballots: {
             a: {
               verdicts: {
@@ -158,6 +160,7 @@ await describe({
         /** One fixed against one not-fixed on the first issue; nobody answers the second. */
         const tallies = tallyResolutionChecks({
           issueIds: ISSUE_IDS,
+          authorship: UNATTRIBUTED_TEXT,
           ballots: {
             a: {
               verdicts: { 'adjudicated/whisker': 'fixed', },

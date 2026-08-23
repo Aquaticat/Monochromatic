@@ -10,6 +10,7 @@ import type {
   ChunkRepairOutcome,
   RepairModels,
 } from './repair-contract.ts';
+import { collectRefinedAuthors, } from './issue-authors.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
 
 //region Refine slice settle
@@ -214,7 +215,10 @@ export async function settleRefinedSlice(
   const retained = await retainsResolvedIssues({
     client,
     models,
-    outcome,
+    // BOTH STAGES' ROUNDS, not the bare `outcome`. The recheck reads text the
+    // editors repaired and the refiners then rewrote, so a checker that had a
+    // hand in either is judging its own work and must be discounted for it.
+    outcome: withRefineRounds,
     sourceText,
     refinedText: refined.refinedText,
     signal,
@@ -330,7 +334,8 @@ export async function settleRefinedSlice(
  *
  * @param models - role roster
  *
- * @param outcome - settled accuracy outcome for this slice
+ * @param outcome - settled accuracy outcome for this slice, carrying the rounds
+ * of BOTH stages so authorship of the refined text is readable
  *
  * @param sourceText - original chunk text
  *
@@ -400,6 +405,10 @@ async function retainsResolvedIssues(
     sourceText,
     patchedText: refinedText,
     issues: confirmed,
+    authorship: collectRefinedAuthors({
+      rounds: outcome.rounds,
+      repairRegions: outcome.repairRegions,
+    },),
     signal,
     perCallTimeoutMs,
     l,

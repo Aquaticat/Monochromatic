@@ -270,6 +270,16 @@ export {
   winnerChangedText,
 } from './select-candidate.ts';
 export {
+  appliedIssuesByEnvelope,
+  collectIssueAuthors,
+  collectRefinedAuthors,
+} from './issue-authors.ts';
+export {
+  type IssueAuthorship,
+  UNATTRIBUTED_TEXT,
+  wroteTextForIssue,
+} from './resolution-authorship.ts';
+export {
   type IssueResolutionTally,
   resolveResolutionChecks,
   type ResolutionBallot,

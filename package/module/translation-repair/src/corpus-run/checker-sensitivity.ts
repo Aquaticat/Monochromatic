@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { runCheckerStage, } from '../repair-edit-stages.ts';
+import { UNATTRIBUTED_TEXT, } from '../resolution-authorship.ts';
 import {
   createRunClient,
   RUN_MODELS,
@@ -17,6 +18,11 @@ import {
 // checker that answers `fixed` to everything produces exactly this rate whether
 // or not anything was repaired, and `resolvedIssueIds` feeds both candidate
 // selection and the milestone's headline.
+//
+// EVERY SHEET HERE IS HAND-WRITTEN FIXTURE TEXT, so each call passes
+// `UNATTRIBUTED_TEXT`: no roster model wrote a word of it and no verdict is
+// discounted. Attributing any of it would measure the self-certification
+// discount rather than the checkers, which is the one thing this probe asks.
 //
 // The probe sensitivity check settled the same question for the introduced-
 // defect stage and was worth every one of its three calls. This is the same
@@ -90,6 +96,7 @@ async function checkOne(
     sourceText: SOURCE_TEXT,
     patchedText,
     issues: [TENSE_ISSUE,],
+    authorship: UNATTRIBUTED_TEXT,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'checker-sensitivity', },),
@@ -193,6 +200,7 @@ async function checkMixedSheet(): Promise<void> {
       MEANING_ISSUE,
       ABSENT_ISSUE,
     ],
+    authorship: UNATTRIBUTED_TEXT,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'checker-sensitivity', },),
@@ -264,6 +272,7 @@ async function checkAllFixedSheet(): Promise<void> {
       MEANING_ISSUE,
       ABSENT_ISSUE,
     ],
+    authorship: UNATTRIBUTED_TEXT,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'checker-sensitivity', },),

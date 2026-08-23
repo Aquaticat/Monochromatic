@@ -8,7 +8,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { runChunkCriticPhase, } from './chunk-critic-phase.ts';
 import {
   candidateConfirmedIssueIds,
-  selectCreditableIssues,
+  readAppliedEnvelopes,
 } from './chunk-measure.ts';
 import { dedupeAcceptedIssues, } from './dedupe-issues.ts';
 import { buildEditorAddendum, } from './line-structure-addendum.ts';
@@ -339,14 +339,14 @@ export async function repairChunk(
   }
 
   /**
-   * Accepted issues eligible to count toward the patched candidate; see
+   * What the applied envelopes bought: issues eligible to count toward the
+   * patched candidate, and who wrote the text answering for them. See
    * `selectCreditableIssues` for why the rest are excluded.
    */
-  const creditableIssues = selectCreditableIssues({
+  const appliedEnvelopes = readAppliedEnvelopes({
     acceptedIssues,
     envelopes,
-    applied: editor.patch
-      .applied,
+    editor,
   },);
 
   /**
@@ -359,6 +359,7 @@ export async function repairChunk(
     patchedText: editor.patch
       .patchedText,
     issues: acceptedIssues,
+    authorship: appliedEnvelopes.authorship,
     signal,
     perCallTimeoutMs,
     l,
@@ -422,7 +423,7 @@ export async function repairChunk(
       .patchedText,
     appliedOperations: editor.patch
       .applied,
-    creditableIssues,
+    creditableIssues: appliedEnvelopes.creditableIssues,
     tallies: checker.tallies,
     envelopes,
     targetDocument: documents.target,
@@ -440,7 +441,8 @@ export async function repairChunk(
     chunkIndex,
     changed,
     resolvedCount: resolvedIssueIds.length,
-    creditableCount: creditableIssues.length,
+    creditableCount: appliedEnvelopes.creditableIssues
+      .length,
     acceptedCount: acceptedIssues.length,
     unenvelopedCount: unenveloped.length,
   },),);

@@ -30,6 +30,7 @@ import {
   type ChatJsonRequest,
   runCheckerStage,
   type SyntheticClient,
+  UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -154,6 +155,7 @@ async function runStage(
     sourceText: SOURCE_TEXT,
     patchedText: PATCHED_TEXT,
     issues,
+    authorship: UNATTRIBUTED_TEXT,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
     l,
