@@ -206,6 +206,13 @@ export {
   judgeCoverage,
 } from './coverage-verdict.ts';
 export {
+  admitWithinShortfall,
+  type CandidatePassage,
+  CORPUS_EXPANSION,
+  expectedTranslationPoints,
+  pageShortfall,
+} from './coverage-corroboration.ts';
+export {
   buildCoverageMessages,
   COVERAGE_RESPONSE_FORMAT,
   type CoverageDegree,
