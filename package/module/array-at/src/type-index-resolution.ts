@@ -5,7 +5,7 @@
  */
 
 import type { ArrayAtDiagnostic, } from './diagnostic-types.ts';
-import {
+import type {
   createBeforeStartDiagnostic,
   createNonSafeIntegerDiagnostic,
   createPastEndDiagnostic,

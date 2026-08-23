@@ -21,7 +21,7 @@ import type {
 export type ArrayAtErrorOptions = {
   readonly diagnostics: NonEmptyRuntimeArrayAtDiagnostics;
   readonly index: number;
-  readonly length: number | undefined;
+  readonly length?: number;
 };
 
 /**
@@ -39,7 +39,7 @@ export type ArrayAtErrorOptions = {
  * }
  * catch (error) {
  *   if (error instanceof ArrayAtError)
- *     Object.values(error.diagnostics);
+ *     error.diagnostics.map(({ code, }) => code);
  * }
  * ```
  */
@@ -75,19 +75,22 @@ export class ArrayAtError extends Error {
    * const available = error.length;
    * ```
    */
-  readonly length: number | undefined;
+  readonly length?: number;
 
   /**
    * Creates aggregated array-access error.
    *
-   * @param options - Non-empty diagnostics and shared operation context
+   * @param diagnostics - Non-empty runtime diagnostic collection
+   *
+   * @param index - Requested numeric index
+   *
+   * @param length - Array length when operation includes array context
    *
    * @example
    * ```ts
    * const error = new ArrayAtError({
    *   diagnostics: [diagnostic],
    *   index: 1.5,
-   *   length: undefined,
    * });
    * ```
    */
@@ -96,11 +99,23 @@ export class ArrayAtError extends Error {
     index,
     length,
   }: ArrayAtErrorOptions) {
+    /**
+     * Immutable diagnostic snapshot detached from caller-owned collection.
+     */
     const frozenDiagnostics = Object.freeze([...diagnostics]);
-    super(frozenDiagnostics.map(({ message, }) => message).join('\n'));
+    /**
+     * Newline-joined messages retained by ordinary Error reporting.
+     */
+    const combinedMessage = frozenDiagnostics
+      .map(function diagnosticMessage({ message, }) {
+        return message;
+      },)
+      .join('\n');
+    super(combinedMessage);
     this.name = 'ArrayAtError';
     this.diagnostics = frozenDiagnostics;
     this.index = index;
-    this.length = length;
+    if (length !== undefined)
+      this.length = length;
   }
 }

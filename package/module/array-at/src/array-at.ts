@@ -33,8 +33,36 @@ import { runtimeIndexOrThrow, } from './runtime-index.ts';
  */
 export function arrayAt<const Argument extends ArrayAtArgument>(
   argument: Argument & ValidateArrayAtArgument<Argument>,
-): ArrayAtResult<Argument> {
-  const { array, index, } = argument as ArrayAtArgument;
-  const resolvedIndex = runtimeIndexOrThrow({ array, index, });
-  return array[resolvedIndex] as ArrayAtResult<Argument>;
+): ArrayAtResult<Argument>;
+
+/**
+ * Implements runtime side of typed overload.
+ *
+ * @param argument - Correlated runtime array and index
+ *
+ * @returns Selected assigned element
+ *
+ * @throws {@link ArrayAtError} when runtime validation detects diagnostics
+ *
+ * @example
+ * ```ts
+ * const first = arrayAt({ array: [10], index: 0, });
+ * ```
+ */
+export function arrayAt(argument: ArrayAtArgument): unknown {
+  /**
+   * Correlated runtime fields after compile-time validation is erased.
+   */
+  const {
+    array,
+    index,
+  } = argument;
+  /**
+   * Assigned non-negative slot proven by runtime validation.
+   */
+  const resolvedIndex = runtimeIndexOrThrow({
+    array,
+    index,
+  },);
+  return array[resolvedIndex];
 }

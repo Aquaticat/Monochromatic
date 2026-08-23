@@ -228,7 +228,8 @@ await describe({
     it({
       name: 'reports unassigned slots through positive and negative indices',
       fn: async () => {
-        const sparse = [10, ,];
+        const sparse: number[] = [10];
+        sparse.length = 2;
         const positiveError = captureArrayAtError(() => uncheckedArrayAt({
           array: sparse,
           index: 1,

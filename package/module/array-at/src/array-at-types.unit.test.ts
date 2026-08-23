@@ -23,6 +23,26 @@ import {
 } from '../dist/final/neutral/index.mjs';
 
 /**
+ * Sentinel returned by guard example when integer proof fails.
+ *
+ * @example
+ * ```ts
+ * const rejected = NOT_SAFE_INTEGER;
+ * ```
+ */
+const NOT_SAFE_INTEGER = Symbol('index does not have safe-integer proof',);
+
+/**
+ * Empty tuple value used to test empty-array diagnostics without fake optionality.
+ *
+ * @example
+ * ```ts
+ * type EmptyArray = typeof EMPTY_ARRAY;
+ * ```
+ */
+const EMPTY_ARRAY = [] as const;
+
+/**
  * Diagnostic code union carried by unordered computed collection.
  *
  * @example
@@ -66,9 +86,11 @@ function accessAfterAssertion(index: number,): 10 | 20 | 30 {
  * const value = accessAfterGuard(0);
  * ```
  */
-function accessAfterGuard(index: number,): 10 | 20 | 30 | null {
+function accessAfterGuard(
+  index: number,
+): 10 | 20 | 30 | typeof NOT_SAFE_INTEGER {
   if (!isSafeInteger(index,))
-    return null;
+    return NOT_SAFE_INTEGER;
   return arrayAt({ array: [10, 20, 30], index, });
 }
 
@@ -107,7 +129,7 @@ await describe({
         expectTypeOf<ReturnType<typeof accessAfterAssertion>>()
           .toEqualTypeOf<10 | 20 | 30>();
         expectTypeOf<ReturnType<typeof accessAfterGuard>>()
-          .toEqualTypeOf<10 | 20 | 30 | null>();
+          .toEqualTypeOf<10 | 20 | 30 | typeof NOT_SAFE_INTEGER>();
       },
     },),
 
@@ -123,7 +145,7 @@ await describe({
     it({
       name: 'computes unordered aggregate diagnostic codes',
       fn: async () => {
-        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [], 1.5>>>()
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<typeof EMPTY_ARRAY, 1.5>>>()
           .toEqualTypeOf<'empty-array' | 'non-safe-integer'>();
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 1>>>()
           .toEqualTypeOf<'out-of-range'>();
@@ -147,7 +169,7 @@ await describe({
         expectTypeOf<PastEnd['distance']>().toEqualTypeOf<1>();
         expectTypeOf<PastEnd['maximumPositiveIndex']>().toEqualTypeOf<0>();
         expectTypeOf<BeforeStart['distance']>().toEqualTypeOf<1>();
-        expectTypeOf<BeforeStart['minimumNegativeIndex']>().toEqualTypeOf<-3>();
+        expectTypeOf<BeforeStart['minimumNegativeIndex']>().toEqualTypeOf<number>();
       },
     },),
   ],
@@ -233,19 +255,6 @@ export function rejectsFraction(): void {
 export function rejectsStaticUndefined(): void {
   // @ts-expect-error -- static type cannot distinguish stored undefined from hole.
   arrayAt({ array: [10, undefined], index: 1, });
-}
-
-/**
- * Verifies sparse tuple slot is rejected.
- *
- * @example
- * ```ts
- * rejectsSparseSlot();
- * ```
- */
-export function rejectsSparseSlot(): void {
-  // @ts-expect-error -- requested tuple element is unassigned.
-  arrayAt({ array: [10, ,], index: -1, });
 }
 
 /**

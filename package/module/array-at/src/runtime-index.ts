@@ -32,7 +32,11 @@ type ThrowRuntimeDiagnosticsOptions = {
 /**
  * Throws one error containing supplied runtime diagnostics.
  *
- * @param options - Non-empty diagnostics and shared array-access context
+ * @param diagnostics - Non-empty runtime diagnostic collection
+ *
+ * @param index - Requested numeric index
+ *
+ * @param length - Array length
  *
  * @throws {@link ArrayAtError} for supplied diagnostics
  *
@@ -64,7 +68,9 @@ function throwRuntimeDiagnostics({
  * returned together when both fail. Range checks require safe integer and
  * non-empty array; slot assignment requires an in-range resolved index.
  *
- * @param options - Array value and requested signed index
+ * @param array - Array requiring indexed access
+ *
+ * @param index - Requested signed index
  *
  * @returns Resolved assigned array slot
  *
@@ -82,10 +88,16 @@ export function runtimeIndexOrThrow({
   readonly array: readonly unknown[];
   readonly index: number;
 }): number {
-  const length = array.length;
+  /**
+   * Current array length used by every dependent check.
+   */
+  const { length, } = array;
+  /**
+   * Whether index arithmetic remains exact in JavaScript.
+   */
   const indexIsSafe = isSafeInteger(index,);
 
-  if (!indexIsSafe && length === 0)
+  if ((!indexIsSafe) && (length === 0))
     throwRuntimeDiagnostics({
       diagnostics: [
         createNonSafeIntegerDiagnostic({ index, }),
@@ -109,7 +121,13 @@ export function runtimeIndexOrThrow({
       length,
     },);
 
+  /**
+   * Maximum valid non-negative index.
+   */
   const lastIndex = length - 1;
+  /**
+   * Non-negative candidate after translating count-back index.
+   */
   const resolvedIndex = index < 0
     ? length + index
     : index;
@@ -138,7 +156,10 @@ export function runtimeIndexOrThrow({
       length,
     },);
 
-  if (!Object.hasOwn(array, resolvedIndex,))
+  if (!Object.hasOwn(
+    array,
+    resolvedIndex,
+  ))
     throwRuntimeDiagnostics({
       diagnostics: [createUnassignedSlotDiagnostic({
         index,

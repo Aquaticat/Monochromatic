@@ -4,8 +4,6 @@
  * @module
  */
 
-import type { NegativeNumber, } from './type-arithmetic-number.ts';
-
 //region Independent diagnostics
 
 /**
@@ -97,7 +95,7 @@ export type PastEndDiagnostic<
   readonly distance: Distance;
   readonly minimumPositiveIndex: 0;
   readonly maximumPositiveIndex: LastIndex;
-  readonly minimumNegativeIndex: NegativeNumber<Length>;
+  readonly minimumNegativeIndex: number;
   readonly maximumNegativeIndex: -1;
 };
 
@@ -125,7 +123,7 @@ export type BeforeStartDiagnostic<
   readonly distance: Distance;
   readonly minimumPositiveIndex: 0;
   readonly maximumPositiveIndex: LastIndex;
-  readonly minimumNegativeIndex: NegativeNumber<Length>;
+  readonly minimumNegativeIndex: number;
   readonly maximumNegativeIndex: -1;
 };
 

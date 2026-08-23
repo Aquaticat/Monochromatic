@@ -65,7 +65,6 @@ function safeIntegerError(value: number,): ArrayAtError {
   return new ArrayAtError({
     diagnostics: [createNonSafeIntegerDiagnostic({ index: value, })],
     index: value,
-    length: undefined,
   },);
 }
 
@@ -73,6 +72,8 @@ function safeIntegerError(value: number,): ArrayAtError {
  * Asserts number is safe integer and narrows existing binding.
  *
  * @param value - Number requiring safe-integer proof
+ *
+ * @returns Nothing; successful assertion narrows caller binding
  *
  * @throws {@link ArrayAtError} when number is not safe integer
  *

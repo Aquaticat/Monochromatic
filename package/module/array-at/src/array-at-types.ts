@@ -112,7 +112,7 @@ type ArrayMemberDiagnosticUnion<
  */
 type DiagnosticCollection<Diagnostic extends ArrayAtDiagnostic> =
   [Diagnostic] extends [never]
-    ? readonly []
+    ? readonly never[]
     : readonly Diagnostic[];
 
 /**

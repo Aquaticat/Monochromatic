@@ -14,14 +14,12 @@ import type {
   PastEndDiagnostic,
   UnassignedSlotDiagnostic,
 } from './diagnostic-types.ts';
-import type { NegativeNumber, } from './type-arithmetic-number.ts';
-
 //region Independent diagnostics
 
 /**
  * Creates non-safe-integer diagnostic.
  *
- * @param options - Index rejected by safe-integer predicate
+ * @param index - Index rejected by safe-integer predicate
  *
  * @returns Structured safe-integer diagnostic
  *
@@ -94,7 +92,13 @@ type RangeDiagnosticOptions<
 /**
  * Creates diagnostic for index past array end.
  *
- * @param options - Index, exact overshoot, and valid bounds
+ * @param index - Requested index
+ *
+ * @param distance - Exact overshoot from last valid index
+ *
+ * @param lastIndex - Maximum non-negative index
+ *
+ * @param length - Array length defining both valid ranges
  *
  * @returns Structured past-end diagnostic
  *
@@ -134,7 +138,7 @@ export function createPastEndDiagnostic<
     distance,
     minimumPositiveIndex: 0,
     maximumPositiveIndex: lastIndex,
-    minimumNegativeIndex: -length as NegativeNumber<Length>,
+    minimumNegativeIndex: -length,
     maximumNegativeIndex: -1,
   };
 }
@@ -142,7 +146,13 @@ export function createPastEndDiagnostic<
 /**
  * Creates diagnostic for index before array start.
  *
- * @param options - Index, exact overshoot, and valid bounds
+ * @param index - Requested index
+ *
+ * @param distance - Exact overshoot before first valid index
+ *
+ * @param lastIndex - Maximum non-negative index
+ *
+ * @param length - Array length defining both valid ranges
  *
  * @returns Structured before-start diagnostic
  *
@@ -182,7 +192,7 @@ export function createBeforeStartDiagnostic<
     distance,
     minimumPositiveIndex: 0,
     maximumPositiveIndex: lastIndex,
-    minimumNegativeIndex: -length as NegativeNumber<Length>,
+    minimumNegativeIndex: -length,
     maximumNegativeIndex: -1,
   };
 }
@@ -194,7 +204,11 @@ export function createBeforeStartDiagnostic<
 /**
  * Creates diagnostic for in-range unassigned slot.
  *
- * @param options - Requested index, resolved slot, and array length
+ * @param index - Requested signed index
+ *
+ * @param length - Array length defining valid bounds
+ *
+ * @param resolvedIndex - Non-negative unassigned slot
  *
  * @returns Structured unassigned-slot diagnostic
  *
