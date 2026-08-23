@@ -16464,3 +16464,40 @@ The lesson for a later session is the search, not the fact:
 `grep -rn 'SELF_VOTE_WEIGHT' src/` found the code
 and `grep -rn 'assertCheckerIndependence' doc/` would have found the decision.
 Searching the source and not the decisions is how a recorded choice gets rediscovered as a bug.
+
+## Task 188, the arithmetic checked before the relaxation is written
+
+Read on 2026-08-23, while task 186's probe was in flight, so the relaxation could be written the moment
+the width question resolves rather than after it.
+
+The worry worth settling first was whether relaxing `assertCheckerIndependence` would leave the discount
+doing nothing.
+If every checker is also an editor, and every checker were therefore halved,
+the discount would cancel out of `tallyResolutionChecks`:
+its rule is `resolved: fixed > (notFixed + worse)`,
+a comparison of two weighted sums,
+and scaling both sides by one half leaves every verdict exactly where it was.
+A uniform discount over a fully overlapping roster is not a safeguard, it is a no-op.
+
+It is not uniform.
+The weight is chosen per issue at `package/module/translation-repair/src/tally-resolution.ts:265`,
+by `wroteTextForIssue({ authorship, issueId, modelId, },)`,
+so a checker is halved only on the issues whose shipped text it actually helped write
+and keeps full weight on every other issue in the same slice.
+A six-seat roster checking its own slice therefore still produces a mixed tally
+rather than a uniformly scaled one.
+
+This is what makes task 187 a prerequisite rather than a neighbour.
+The discount reads `authorship`,
+and until 187 the record could carry an author list describing pre-refinement text,
+which would have halved the wrong checkers on the wrong issues once the roster overlapped.
+
+What task 188 still owes when it runs,
+none of which this reading settles:
+the assertion's duplicate-checker refusal must survive,
+because a repeated id is a different fault from an overlapping one
+and `gatherStageVoices` still counts a repeat twice toward quorum
+while `runCheckerStage` collapses it to one ballot;
+`assertJudgeableProducerRoster`'s capacity arithmetic at `repair-contract.ts:288` must be re-read
+at whatever width 186 lands on;
+and the selection-side reader of `SELF_VOTE_WEIGHT` must not be touched.
