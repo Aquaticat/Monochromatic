@@ -2,11 +2,18 @@ import { readFile, } from 'node:fs/promises';
 
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { ArtifactParseError, } from '../artifact-guard.ts';
-import { alignDocumentSections, } from '../chunk-document.ts';
+import {
+  alignDocumentSections,
+  type ChunkPair,
+} from '../chunk-document.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
+import {
+  assertSliceIndexing,
+  reindexSlicePair,
+} from '../slice-indexing.ts';
 import {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
@@ -184,20 +191,41 @@ export function locateSlice(
 
   /**
    * Paragraph-bound slices across every aligned section.
+   *
+   * STAMPED FROM THE FINISHED ORDER rather than from arithmetic handed to
+   * subdivision, which is what `reindexSlicePair` exists for. This used to pass
+   * the PAIR index as the base, so every section restamped from its own number:
+   * pair 1's first slice claimed 1, which pair 0's second slice already held.
+   * Nothing here reads a stamp, since the slice is found by its text, which is
+   * why that went unseen rather than wrong.
    */
   const slices = alignment.pairs
-    .flatMap(function toSlices(
-      pair,
-      index,
-    ) {
+    .flatMap(function carve(pair,): readonly ChunkPair[] {
       return subdivideChunkPair({
         pair,
         sourceText,
         targetText,
-        baseIndex: index,
+        // Whatever subdivision counts from is overwritten below, so this is a
+        // starting point rather than an answer.
+        baseIndex: 0,
         budget: SLICE_CHAR_BUDGET,
       },);
+    },)
+    .map(function stamp(
+      slice,
+      sliceIndex,
+    ): ChunkPair {
+      return reindexSlicePair({
+        slice,
+        sliceIndex,
+      },);
     },);
+
+  // `prepareDocumentPair` asks this of every production slicing, and this probe
+  // deliberately bypasses it to re-carve exactly what the run carved. Asking
+  // here keeps the bypass from also bypassing the invariant, so a stamping that
+  // drifts again is refused rather than carried into a comparison.
+  assertSliceIndexing({ slices, },);
 
   /**
    * First slice whose translation carries the replaced text.
