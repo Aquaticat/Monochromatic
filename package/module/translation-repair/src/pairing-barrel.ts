@@ -39,9 +39,11 @@ export {
 
 //endregion Pairing barrel
 export {
+  type ArchiveOutcome,
   contestLaneSlice,
   LANE_CONTEST_QUORUM,
   type LaneContestOutcome,
+  settleArchiveBallots,
   settleLaneContestBallots,
 } from './lane-contest-stage.ts';
 export { contestDocumentLanes, } from './lane-contest-driver.ts';
@@ -51,6 +53,7 @@ export {
   laneContestSliceKey,
 } from './lane-contest-key.ts';
 export {
+  type ArchiveVerdict,
   buildLaneContestMessages,
   isLaneContestWire,
   type LaneChoice,
