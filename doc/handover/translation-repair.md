@@ -16274,3 +16274,91 @@ Carried on its own task with the probe it would take.
 
 FINAL GATE: suite 546 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
 Commits: bd972fbc2, 664cbc42f, de3e8c51f, 583005335, 23f1432e4.
+
+## Task 187: the discount was reading the wrong source, and missed the author on a reachable path
+
+Task 91 shipped the self-certification discount and its arithmetic is unchanged by this.
+What moved is where authorship comes from.
+
+### What was wrong
+
+`collectIssueAuthors` reconstructed "who wrote the shipped text" from the judged rounds.
+Two directions of error, one of which defeated the feature outright:
+
+- UNDER-DISCOUNTED THE AUTHOR.
+  When the whole-chunk judges decline with `indecision`,
+  `editor-ensemble.ts` ships `pickFallbackPatch({ candidates: repairing, },)`,
+  a real editor's applied operations.
+  The round is recorded as `declined`, and a declined round has ballots and no winner,
+  so `roundWinnerAuthors` credited nobody.
+  Creditable issues existed and the checkers ran,
+  and the model that wrote the shipped text certified its own work at full weight.
+  That is exactly what task 91 promises to stop.
+- OVER-DISCOUNTED NON-AUTHORS.
+  Envelope-round winners were credited for their envelope's issues.
+  The composite is assembled from those winners,
+  but a single model's whole-chunk proposal competes against it and can win,
+  and when it does their text did not ship.
+  Direction-blind, like the discount itself, so not a conservative error.
+
+Neither was reconstructable.
+The information is not in `authorsFromRounds`' input,
+so no patch to that function could have been correct.
+
+### What was verified NOT broken, rather than assumed
+
+- The unconditional chunk-scope credit is CORRECT BY CONSTRUCTION.
+  The apply gate runs BEFORE selection (`editor-ensemble.ts` takes `Candidate<PatchOutcome>[]`),
+  and zero-applied candidates are excluded twice:
+  `repairing` filters on `applied.length > 0` in `repair-editor-stage.ts`,
+  and the composite joins the slate only when it applied something in `editor-candidates.ts`.
+  A selected chunk round therefore cannot have a winner that wrote nothing.
+- Refine's declined branches are clean.
+  Both dispositions ship `unchanged` in `refine-stage.ts`,
+  so no candidate's text ships there without a winner.
+- No settled artifact is affected.
+  Rounds are ephemeral and no artifact field carries them,
+  confirmed by scanning both run directories.
+
+### The shape it landed in
+
+The stage knows the shipped producer at every exit, so it states it instead of leaving it to be inferred.
+`ChunkPatchSelection` and `EditorStageResult` carry `shippedProducer`,
+`pickFallbackCandidate` returns the candidate rather than a bare patch so the declined path has one,
+and `chunkCandidateOf` builds slate and fallback the same way so the two cannot drift.
+
+Authorship then reads that producer.
+A `model` producer wrote the whole chunk and answers for every creditable issue.
+A `composite` defers to the envelope rounds that assembled it,
+which is the one case where parts of the shipped text have different authors.
+`NOBODY_WROTE_IT` means the untouched translation shipped.
+
+Absence is a NAMED STATE rather than `CandidateProducer | undefined`.
+The repo forbids nullish unions and was right to here:
+shipping the translation as it stood is a decision two exits reach on purpose.
+
+`ChunkRepairOutcome` carries `authorship` so the naturalness recheck can still name the editor after a resume,
+which cost `SLICE_CACHE_VERSION` 30.
+`collectRefinedAuthors` unions the refiners onto it from `RefineStageResult.contributors`,
+a field whose own documentation claimed callers barred its models and which had no readers at all.
+
+### GFP, both directions, zero import errors on each
+
+- Probe A restored the rounds reconstruction.
+  Three cases failed: the lone winner, the indecision fallback, and the envelope winner whose composite lost.
+  The positive control, `NAMES NOBODY WHEN THE UNTOUCHED TRANSLATION SHIPS`, still passed.
+- Probe B dropped the refiners from the union.
+  Two cases failed.
+  The positive control, a lost refinement adding nobody, still passed.
+
+### Also fixed on the way
+
+`splice-slices.unit.test.ts` had hand-copied the whole `ChunkRepairOutcome` shape as an inline return type,
+which is why it drifted the moment the record grew.
+It names the contract now.
+`unchangedChunkOutcome` moved to `repair-unchanged-outcome.ts`,
+the max-lines remediation for `repair-chunk.ts` reaching 301,
+which also stops three exits restating one record shape.
+
+FINAL GATE: suite 546 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
+Commits: 9b433ea4f, e796d2956.
