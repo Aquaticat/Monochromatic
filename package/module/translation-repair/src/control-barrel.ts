@@ -19,6 +19,7 @@ export {
 export {
   coverageControlHolds,
   type CoverageControlCase,
+  type CoverageControlRefusal,
   type CoverageControlResult,
   type CoverageControlRow,
   withoutSpans,

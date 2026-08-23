@@ -130,6 +130,44 @@ export type CoverageControlRow = {
 };
 
 /**
+ * Why a case could not be damaged.
+ *
+ * TWO OPPOSITE MEANINGS used to print as one line saying "not damageable", and
+ * the difference is the whole question. A roster that did not say `carried` is
+ * a roster VOTING ABSENCE on undamaged corpus text, which is the strongest form
+ * of the thing this control was built to look for. A quote that cannot be found
+ * in the page is an anchoring problem and says nothing about coverage.
+ */
+export type CoverageControlRefusal = {
+  /**
+   * Where the passage sits.
+   */
+  readonly where: string;
+
+  /**
+   * `not-carried` when the roster declined to call it covered before any damage
+   * was done; `evidence-not-locatable` when it did, but none of the spans it
+   * offered could be found in the page to delete.
+   */
+  readonly reason: 'not-carried' | 'evidence-not-locatable';
+
+  /**
+   * Verdict the roster reached on the undamaged page.
+   */
+  readonly verdict: CoverageVerdict['kind'];
+
+  /**
+   * Voices reporting nothing rendered the passage, undamaged.
+   */
+  readonly absent: number;
+
+  /**
+   * Spans the roster offered as evidence.
+   */
+  readonly offeredSpans: number;
+};
+
+/**
  * Decoy round reduced to what the row records.
  *
  * The no-room case is given the shape of a verdict so the row does not have to
@@ -173,6 +211,15 @@ export type CoverageControlResult = {
    * Every case the control managed to damage and re-ask.
    */
   readonly rows: readonly CoverageControlRow[];
+
+  /**
+   * Cases it could not damage, each carrying why.
+   *
+   * NOT A FAILURE LOG. A page whose passages the roster never calls covered
+   * produces nothing to damage and is reported entirely here, and that is a
+   * result rather than an empty run.
+   */
+  readonly refusals: readonly CoverageControlRefusal[];
 };
 
 /**
@@ -281,7 +328,7 @@ async function tryCase(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
   }>,
-): Promise<CoverageControlRow | 'undamageable'> {
+): Promise<CoverageControlRow | CoverageControlRefusal> {
   /**
    * What the roster says about the passage as it stands.
    */
@@ -301,16 +348,23 @@ async function tryCase(
    */
   const { verdict: beforeVerdict, } = before;
 
-  // Only a `carried` case can have its rendering deleted, because only that
-  // verdict claims there is one. Anything else is already the wire declining to
-  // say the passage is covered, which is not what needs proving.
-  if (beforeVerdict.kind !== 'carried')
-    return 'undamageable';
-
   /**
    * Spans the roster anchored on, which are exactly what the cut removes.
    */
   const { evidence, } = beforeVerdict;
+
+  // Only a `carried` case can have its rendering deleted, because only that
+  // verdict claims there is one. Anything else is the wire ALREADY declining to
+  // say the passage is covered, with no damage done to it, which is reported
+  // rather than skipped.
+  if (beforeVerdict.kind !== 'carried')
+    return {
+      where: probe.where,
+      reason: 'not-carried',
+      verdict: beforeVerdict.kind,
+      absent: beforeVerdict.absent,
+      offeredSpans: evidence.length,
+    };
 
   /**
    * Translation as it stands, kept so the size of the cut can be reported.
@@ -326,7 +380,13 @@ async function tryCase(
   },);
 
   if (damagedText === '')
-    return 'undamageable';
+    return {
+      where: probe.where,
+      reason: 'evidence-not-locatable',
+      verdict: beforeVerdict.kind,
+      absent: beforeVerdict.absent,
+      offeredSpans: evidence.length,
+    };
 
   /**
    * What the roster says once the rendering it pointed at is gone.
@@ -425,9 +485,6 @@ async function tryCase(
 /**
  * Asks whether deleting a passage's rendering changes what the roster votes.
  *
- * @throws Error when no offered case could be damaged, since a control that
- * asked nothing must not be reported as one that held
- *
  * @param client - injected model client
  *
  * @param cases - passages to try, of which the first few damageable ones are used
@@ -469,6 +526,11 @@ export async function coverageControlHolds(
    */
   const rows: CoverageControlRow[] = [];
 
+  /**
+   * Cases that could not be damaged, with why.
+   */
+  const refusals: CoverageControlRefusal[] = [];
+
   for (const probe of cases) {
     if (rows.length >= CONTROL_CASES)
       break;
@@ -486,8 +548,13 @@ export async function coverageControlHolds(
       l,
     },);
 
-    if (row === 'undamageable') {
-      console.log(`COVERAGE control ${probe.where}: not damageable, skipped`,);
+    if (!('after' in row)) {
+      refusals.push(row,);
+      console.log(
+        `COVERAGE control ${row.where}: ${row.reason} (undamaged verdict ${row.verdict}, ${
+          String(row.absent,)
+        } absence votes, ${String(row.offeredSpans,)} spans offered)`,
+      );
       continue;
     }
 
@@ -502,13 +569,6 @@ export async function coverageControlHolds(
       }`,
     );
   }
-
-  if (rows.length === 0)
-    throw new Error(
-      'coverage control refused: no offered case reached a `carried` verdict with deletable '
-        + 'evidence, so the roster was never asked about a passage whose rendering was known '
-        + 'to be gone and nothing was measured',
-    );
 
   /**
    * Cases where deleting the rendering produced absence votes that were not
@@ -538,11 +598,18 @@ export async function coverageControlHolds(
   // only shown the vote reachable; one that votes it on the decoy too is
   // answering the damage rather than the question, and its absence votes carry
   // no information about coverage either way.
+  // NO ROWS CANNOT HOLD. A page offering nothing to damage has not shown the
+  // absence vote reachable UNDER DAMAGE, whatever its refusals say on their own,
+  // and reporting that as a held control would be the empty-run claim this
+  // whole family exists to avoid.
   return {
-    held: ((sawAbsenceOnTarget * 2) > rows.length) && ((sawAbsenceOnDecoy * 2) <= rows.length),
+    held: (rows.length > 0)
+      && ((sawAbsenceOnTarget * 2) > rows.length)
+      && ((sawAbsenceOnDecoy * 2) <= rows.length),
     sawAbsenceOnTarget,
     sawAbsenceOnDecoy,
     rows,
+    refusals,
   };
 }
 

@@ -224,9 +224,22 @@ async function main(): Promise<void> {
   const {
     held,
     rows,
+    refusals,
     sawAbsenceOnTarget,
     sawAbsenceOnDecoy,
   } = control;
+
+  /**
+   * Cases the roster declined to call covered before anything was damaged.
+   *
+   * REPORTED SEPARATELY FROM ANCHORING FAILURES because these are the wire
+   * voting absence on text nobody touched, which is a stronger reading than any
+   * damaged case can give.
+   */
+  const notCarried = refusals
+    .filter(function declinedUndamaged(refusal,): boolean {
+      return refusal.reason === 'not-carried';
+    },);
 
   console.log(
     `COVERAGE control ${held ? 'HELD' : 'DID NOT HOLD'} over ${
@@ -236,13 +249,40 @@ async function main(): Promise<void> {
     } targeted cuts and on ${String(sawAbsenceOnDecoy,)} equally large cuts taken elsewhere`,
   );
   console.log(
-    held
-      ? 'The roster voted absence once the rendering it pointed at was gone, so an absence '
+    `COVERAGE control ${String(refusals.length,)} cases could not be damaged: ${
+      String(notCarried.length,)
+    } because the roster never called them covered, ${
+      String(refusals.length - notCarried.length,)
+    } because its evidence could not be found in the page`,
+  );
+
+  if (notCarried.length > 0)
+    console.log(
+      'THE ROSTER DECLINED TO CALL THOSE PASSAGES COVERED WITH NO DAMAGE DONE, which is an '
+        + 'absence reading on standing corpus text rather than on a page this probe cut.',
+    );
+  if (held) {
+    console.log(
+      'The roster voted absence once the rendering it pointed at was gone, so an absence '
         + 'vote is reachable and a run that produced none is reporting the corpus rather '
-        + 'than the instrument.'
-      : 'THE ROSTER DID NOT VOTE ABSENCE even with the rendering it pointed at deleted. '
-        + 'Every block-scale coverage reading is then a property of the wire, not of the '
-        + 'translations, and the unanimity behind question 28 cannot be read as coverage.',
+        + 'than the instrument.',
+    );
+    return;
+  }
+
+  if (rows.length === 0) {
+    console.log(
+      'NOTHING WAS DAMAGED on this entry, so it says nothing either way about whether a '
+        + 'deleted rendering is noticed. Read its refusals above instead: they are what the '
+        + 'roster says about this page as it stands.',
+    );
+    return;
+  }
+
+  console.log(
+    'THE ROSTER DID NOT VOTE ABSENCE even with the rendering it pointed at deleted, or it '
+      + 'voted absence on an unrelated cut of the same size. Either way its coverage readings '
+      + 'here are a property of the wire rather than of the translation.',
   );
 }
 
