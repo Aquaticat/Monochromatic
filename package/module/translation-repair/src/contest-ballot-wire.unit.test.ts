@@ -100,7 +100,10 @@ await describe({
     it({
       name: 'names each contest separately, so two stages stay distinguishable',
       fn: async () => {
-        expect(contestResponseFormat({ schemaName: 'cat_contest', },)
+        expect(contestResponseFormat({
+          schemaName: 'cat_contest',
+          asksArchive: false,
+        },)
           .json_schema
           .name,).toBe('cat_contest',);
       },
@@ -108,10 +111,25 @@ await describe({
     it({
       name: 'requires every field a ballot is read from',
       fn: async () => {
-        expect(contestResponseFormat({ schemaName: 'cat_contest', },)
+        expect(contestResponseFormat({
+          schemaName: 'cat_contest',
+          asksArchive: false,
+        },)
           .json_schema
           .schema
           .required,).toEqual([ 'choice', 'unsupported', 'dropped', 'reason', ],);
+      },
+    },),
+    it({
+      name: 'ASKS FOR THE ARCHIVE VERDICT ONLY WHERE THE CONTEST WANTS ONE, so the gate is not made to answer a question whose answer its own choice already carries',
+      fn: async () => {
+        expect(contestResponseFormat({
+          schemaName: 'cat_contest',
+          asksArchive: true,
+        },)
+          .json_schema
+          .schema
+          .required,).toEqual([ 'choice', 'unsupported', 'dropped', 'reason', 'archive', ],);
       },
     },),
   ],

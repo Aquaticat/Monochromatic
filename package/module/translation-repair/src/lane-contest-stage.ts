@@ -54,7 +54,10 @@ const HEARD_NEEDED = 2;
 /**
  * Schema a reply must satisfy before it reaches the reader.
  */
-const CONTEST_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({ schemaName: 'lane_contest', },);
+const CONTEST_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({
+  schemaName: 'lane_contest',
+  asksArchive: true,
+},);
 
 /**
  * What the roster settled on for one contested slice.

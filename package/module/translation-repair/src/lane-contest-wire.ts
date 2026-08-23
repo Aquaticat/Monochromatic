@@ -48,6 +48,20 @@ import { selectFence, } from './prompt-fence.ts';
 export type LaneChoice = 'repair' | 'translate' | 'neither';
 
 /**
+ * What a judge thinks of the archive rendering shown beside the candidates.
+ *
+ * ORTHOGONAL TO {@link LaneChoice}, not a fourth member of it. The choice asks
+ * which candidate to ship; this asks whether the text already published is fit
+ * to keep. A slice can have a clear winner AND a sound archive, or no winner
+ * and a sound archive, and one field cannot say both.
+ *
+ * TWO VALUES, matching the two questions the candidates are judged on. A judge
+ * that cannot tell omits the field rather than answering a third way, and the
+ * settling rule reads that absence as a voice that did not speak.
+ */
+export type ArchiveVerdict = 'publishable' | 'flawed';
+
+/**
  * One judge's reading of one contested slice.
  *
  * @example
@@ -90,6 +104,16 @@ export type LaneContestBallot = {
    * Why, for the audit trail rather than for validity.
    */
   readonly reason: string;
+
+  /**
+   * Whether this judge would publish the archive rendering as it stands.
+   *
+   * OPTIONAL BECAUSE ITS ABSENCE IS NOT A FAULT. The schema asks for it on
+   * every ballot, but a judge that omits it has still chosen between the
+   * candidates, and refusing the whole ballot over a missing archive answer
+   * would trade a lane verdict for an archive one.
+   */
+  readonly archive?: ArchiveVerdict;
 };
 
 /**
@@ -100,6 +124,7 @@ export type LaneContestWire = {
   readonly unsupported: readonly string[];
   readonly dropped: readonly string[];
   readonly reason: string;
+  readonly archive?: string;
 };
 
 /**
@@ -127,6 +152,33 @@ function isLaneChoice(value: unknown,): value is LaneChoice {
   return namesOneOf({
     value,
     names: CANDIDATE_NAMES,
+  },);
+}
+
+/**
+ * Verdicts a judge may give the archive rendering.
+ */
+const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
+  'publishable',
+  'flawed',
+];
+
+/**
+ * Whether a value is one of the archive verdicts.
+ *
+ * @param value - archive answer from a reply
+ *
+ * @returns Whether it names a verdict
+ *
+ * @example
+ * ```ts
+ * const named = isArchiveVerdict('publishable',);
+ * ```
+ */
+function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
+  return namesOneOf({
+    value,
+    names: ARCHIVE_VERDICTS,
   },);
 }
 
@@ -180,7 +232,19 @@ export function isLaneContestWire(value: unknown,): value is LaneContestWire {
 export function readLaneContestBallot(
   { wire, }: { readonly wire: LaneContestWire; },
 ): LaneContestBallot {
+  /**
+   * Archive answer this judge gave, present only when it gave a readable one.
+   *
+   * SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
+   * under `exactOptionalPropertyTypes` and an explicit `undefined` would not
+   * typecheck against it.
+   */
+  const archive = isArchiveVerdict(wire.archive,)
+    ? { archive: wire.archive, }
+    : {};
+
   return {
+    ...archive,
     choice: isLaneChoice(wire.choice,)
       ? wire.choice
       : 'neither',
@@ -345,9 +409,17 @@ export function buildLaneContestMessages(
         `${fence}\n${subject.translateText}\n${fence}`,
         '',
         ...sizeBlock,
+        'SEPARATELY from that choice, judge the ARCHIVE RENDERING shown above.',
+        'It is the text already published. Ask of it the same two questions you',
+        'asked of the candidates: does it say anything the original does not',
+        'support, and does it omit anything the original says? Answer',
+        '"publishable" only if it passes both, and "flawed" otherwise. This',
+        'answer does not name a candidate and does not affect your choice.',
+        '',
         'Return JSON: choice one of "repair", "translate", "neither";',
         'unsupported and dropped each a list naming any of "repair", "translate";',
-        'reason one sentence.',
+        'reason one sentence;',
+        'archive one of "publishable", "flawed".',
       ].join('\n',),
     },
   ];

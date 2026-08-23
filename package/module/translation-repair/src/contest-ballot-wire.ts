@@ -78,16 +78,45 @@ export const CONTEST_POLICY: string = [
  *
  * @param schemaName - name this contest's replies are recorded under
  *
+ * @param asksArchive - whether this contest also judges the archive rendering
+ *
  * @returns Response format for the round
  *
  * @example
  * ```ts
- * const format = contestResponseFormat({ schemaName: 'lane_contest', },);
+ * const format = contestResponseFormat({ schemaName: 'lane_contest', asksArchive: true, },);
  * ```
  */
 export function contestResponseFormat(
-  { schemaName, }: { readonly schemaName: string; },
+  {
+    schemaName,
+    asksArchive,
+  }: {
+    readonly schemaName: string;
+    readonly asksArchive: boolean;
+  },
 ): JsonSchemaResponseFormat {
+  /**
+   * Archive property, present only for the contest that asks about it.
+   *
+   * NOT DEFAULTED. Both contests state the answer at their own call site,
+   * so a third contest added later cannot inherit a choice nobody made.
+   */
+  const archiveProperty = asksArchive
+    ? { archive: { type: 'string', }, }
+    : {};
+
+  /**
+   * Archive entry in the required list, matching the property.
+   *
+   * REQUIRED HERE THOUGH THE LANE GUARD READS ITS ABSENCE LENIENTLY. The
+   * schema is how a compliant model is told to answer; the guard is how a
+   * model that ignores it is kept from losing its lane ballot too.
+   */
+  const archiveRequired: readonly string[] = asksArchive
+    ? ['archive',]
+    : [];
+
   return {
     type: 'json_schema',
     json_schema: {
@@ -105,12 +134,14 @@ export function contestResponseFormat(
             items: { type: 'string', },
           },
           reason: { type: 'string', },
+          ...archiveProperty,
         },
         required: [
           'choice',
           'unsupported',
           'dropped',
           'reason',
+          ...archiveRequired,
         ],
       },
     },

@@ -50,7 +50,13 @@ const HEARD_NEEDED = 2;
 /**
  * Schema a reply must satisfy before it reaches the reader.
  */
-const GATE_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({ schemaName: 'consolidate_gate', },);
+const GATE_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({
+  schemaName: 'consolidate_gate',
+  // FALSE, AND NOT AN OVERSIGHT. This contest's `standing` choice IS the
+  // archive, so a judge preferring it has already said the archive is worth
+  // keeping. Asking again would record the same opinion twice.
+  asksArchive: false,
+},);
 
 /**
  * Rendering that ships once the gate has answered.
