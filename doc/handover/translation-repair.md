@@ -16642,3 +16642,61 @@ THE FIRST DRAW SLICE, recorded because it is the pattern to watch for and not be
 decides anything: the arms differed, the narrow arm run twice ALSO differed from itself, and the
 head-to-head came back `position-decided`, meaning the panel picked whichever candidate sat first in
 both orders. That is what a null result looks like. It is one slice. It is not the answer.
+
+## Task 186, the third defect, which biased the answer rather than the plumbing
+
+Found 2026-08-23 by auditing the remaining probe modules for the pattern the first two shared:
+a comment asserting a property the code did not have.
+This one is worse than the other two, because it did not break the run, it tilted the result.
+
+The contest seats two shipped repairs and asks the panel which it prefers.
+The winner was read by comparing the shipped text against each arm's text.
+
+AN ARM THAT DECLINES TO REPAIR OFFERS THE UNTOUCHED TRANSLATION.
+So does the fallback the stage ships when the panel will not separate the pair.
+They are byte-identical, so the text comparison could not tell them apart,
+and the reader credited the declining arm with every indecision.
+
+The comment beside that fallback said the opposite:
+"A PAIR THE PANEL WILL NOT SEPARATE FALLS BACK TO NEITHER",
+with a note that seating the fallback as the first candidate would launder position bias into a result.
+The intent was right; nothing enforced it.
+`editor-ensemble.ts:449` reports `shippedProducer: indecisionFallback.producer` verbatim,
+and the fallback was built as a composite with no contributors,
+which is exactly what an arm whose own producer went unattributed carries.
+So neither the text nor the producer separated them.
+
+WHY THE DIRECTION MATTERS.
+The wide arm fields twice the candidates against the same selection minimum,
+so it splits its own vote and declines more often than the narrow arm does.
+The arm that declines more often is the arm that collects more spurious wins.
+The bias therefore ran toward "widening helps", which is the conclusion the draw exists to test.
+
+THE FIX reads the SEAT a round settled on rather than the text:
+the fallback is marked `incumbent` and a rejection is `unattributed`,
+while both arms are always seated as composites,
+so the producer kind alone separates a decided round from a declined one.
+The two orders then map seats to opposite arms, which is what cancels position bias.
+
+GFP-PROVEN. Removing the producer-kind guard fails exactly the two collision cases,
+the indecision and the rejection, while the genuine-win case still passes.
+Restored byte-identical from the commit.
+
+The three defects share one shape, and it is worth naming for whoever reads this next:
+every one was a COMMENT THAT DESCRIBED AN INVARIANT NOTHING CHECKED.
+The null band said it measured the lane's own variance and silently dropped the rows that carried it.
+The sample said it held half back and had no way to run that half.
+The fallback said it credited neither arm and credited whichever one had declined.
+Reading the comments as documentation would have found none of them;
+reading each one as a claim to verify found all three.
+
+## Task 186, draw A is running
+
+Launched 2026-08-23 at about 09:22, sample of 40, draw A of 20, draw B untouched.
+Runs dir is a throwaway under `~/temp/agent/186-width-draw-a`, never the real runs directory.
+At the measured fifteen minutes a slice it should finish in roughly five hours.
+The report is rewritten after every slice, so it can be read at any point and a killed run keeps
+everything it paid for.
+
+READ IT AGAINST THE NULL BAND, never on its own,
+and read the two one-sided ship counts before calling any move an improvement.
