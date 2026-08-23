@@ -16151,3 +16151,32 @@ and let the lenient guard settle it `unjudged` as it already does for a silent j
 
 Probe: `${HOME}/temp/agent/181-live.mjs`, results in `181-live-asks-archive.json`
 and `181-live-no-archive.json`. Ids, counts and verdicts only; no passages.
+
+## #181 closed: the absent archive is guarded, and the case was measured before it was built
+
+The last owed case is built rather than deferred.
+A contested slice whose archive is absent shows judges an empty block
+while the schema still asks whether the archive is publishable,
+so `contestLaneSlice` now drops archive answers when `incumbentText` is empty.
+
+Stripped in the STAGE rather than where the record is built.
+The recorded verdict is derived from exactly the ballots that get stored,
+so removing the answer in one place keeps the stored ballots
+and the verdict derived from them in agreement,
+and the artifact reader re-derives `unjudged` from what it reads back.
+
+MEASURED BEFORE BUILDING, and the measurement did not excuse the work.
+Across 13 settled artifacts, all 108 comparison rows carry `incumbentKind: present`,
+so none of the 92 contested slices has an empty archive.
+`IncumbentKind` nevertheless admits `absent`, and `wording-coherence.ts` handles it,
+so the state is representable and merely unobserved in the artifacts to hand.
+Unobserved is a reason to guard it, not a reason to assume it away.
+
+GFP: removing the strip fails the DROPS case
+with `expected 'declined' to equal 'unjudged'`, node exits 1,
+while the KEEPS positive control beside it still passes,
+which is what shows the assertion is specific to the strip
+rather than to the archive machinery in general.
+
+FINAL GATE: suite 540 PASS / 0 FAIL / exit 0, lint 0 warnings 0 errors, `lint:types` exit 0.
+Commits: 83cfaa4bd, 377e3e62f, 2d8fc8914, 37feccb35, 2c08becfc, f69f15342, 731dcc3e2.
