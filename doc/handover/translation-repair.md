@@ -15751,3 +15751,48 @@ and no bound is passed on its calls.
 Every observed runaway was in the translate lane,
 so this is a scope statement rather than a known gap,
 but a repair-lane runaway would still be policed only by the absolute default.
+
+## #181 adopted: option B, on a standing instruction rather than a fresh preference
+
+### Why this stopped being a question
+
+The ranking B > C > A was already argued from the measurement.
+What was left looked like a preference call between B and C,
+and it is not one.
+
+C accepts that nothing ever evaluates the shipped text
+on about 16 percent of contested slices,
+on the ground that the archive is the conservative default.
+The standing instruction for this work is that whatever we produce must be good
+even when the originals are not.
+That instruction decides between them directly:
+an unevaluated archive is exactly the case it was given for.
+So B is adopted, and the adoption is a derivation from an instruction already given
+rather than a new decision taken on the owner's behalf.
+It is open to veto on that basis.
+
+A stays last for the reason the measurement gave:
+it buys one case in six and adds a second trigger path to reason about,
+so it is worse than doing nothing deliberately.
+
+### What B has to solve, which the ranking did not settle
+
+The collision named in the task is real and is the first thing to work out.
+Both contests share `CONTEST_POLICY`,
+and B needs a way for the contest to reach the incumbent
+when both candidates are declined,
+without the policy naming either side's candidates.
+
+Two things the measurement already fixes about the shape.
+It must cover all six observed cases rather than the one with a flagged incumbent,
+because the size note is incidental to this path.
+And it must not read a recorded terminal as a stable property of an entry:
+Zha_Ke and gaoyanger both settled differently across pipeline versions at identical slice sizes,
+so run identity and code identity are confounded in the record.
+
+### What is still not shown
+
+Nothing establishes that the archive at any of those six slices is WRONG,
+only that nothing evaluated it.
+Deciding any of them is wrong means reading the passage,
+which is a separate act under the corpus rules.
