@@ -17246,3 +17246,59 @@ measurements behind it. The summary here is a pointer; that file is the record.
 
 The first two attempts to write it were refused by the harness classifier, through a shell
 heredoc and through the file-writing tool. The owner granted the permission and it landed.
+
+### The corroboration gate is built and GFP-proven, 2026-08-23
+
+`coverage-corroboration.ts`, exported through `translate-barrel.ts` beside the coverage stage.
+This is the half of `doc/decision/translation-repair-absence-verdict.md` that consults no model:
+the roster must call a passage absent AND the page must be measurably too short to hold it.
+
+`CORPUS_EXPANSION = 2.65` is the CORPUS MEDIAN, re-derived in CODE POINTS over all 92 pinned
+pairs, which is what the code counts:
+p5 1.42, p25 2.28, p50 2.65, p75 3.00, p95 4.52.
+Code points and UTF-16 units give identical percentiles here, so the constant is stable under
+either counting.
+
+Per-page shortfall against that median, on the six entries the absence control ran over:
+
+-   `shi_Yumiaoya` source 3935, english 1458, expected 10428, SHORT BY 8970
+-   `Aniloviraw` source 879, english 1653, expected 2329, SHORT BY 676
+-   `XingZ60` source 16733, english 33451, expected 44342, SHORT BY 10891
+-   `Futajuhuacha` source 2282, english 6369, expected 6047, over by 322
+-   `mikaela_khara` source 3451, english 10629, expected 9145, over by 1484
+-   `TianqiChen666` source 2422, english 7530, expected 6418, over by 1112
+
+The first three are exactly the entries where the roster refused to call any candidate covered.
+The last three are exactly the entries where it called passages carried and noticed their
+deletion. NO THRESHOLD WAS FITTED: the corpus median separates them as it stands.
+This answers the objection recorded against option C, that a threshold tuned on two entries is
+a threshold tuned on nothing.
+
+`admitWithinShortfall` spends the shortfall as a BUDGET rather than testing each candidate
+alone. A page is short by a definite amount, and admitting candidates whose renderings would
+together exceed it writes in more English than the page is missing. On `shi_Yumiaoya`, short by
+8970 with 8 block candidates, that is the difference between restoring a page and rewriting one.
+A candidate too large is skipped and smaller later ones still admitted, so one large candidate
+cannot veto every later one.
+
+`codePointCount` moved out of `translate-alignment.ts` into `code-points.ts` rather than being
+copied. The refusal guard and this gate both divide one of these counts by another, and a copy
+that drifted would let the two disagree about the same page while both looked right.
+
+GFP, each mutation built and run separately, then restored:
+
+-   Removing the `Math.max(0, ...)` floor fails exactly `FLOORS at zero` and `REPORTS a page of
+    ordinary length as not short`, at -1.1 and -191.1. Ten others pass.
+-   Removing the budget check fails exactly `ADMITS nothing into a page of ordinary length`,
+    `STOPS at what the page is actually missing` and `SKIPS a passage too large`, each admitting
+    every candidate. Nine others pass.
+-   Counting UTF-16 units instead of code points fails exactly `COUNTS code points`, at 5.3
+    against 2.65, which is precisely double: the surrogate pair counted twice. Eleven pass.
+
+Restored, all twelve pass. Commit `7511369c5`.
+
+A FIXTURE ERROR THE SUITE CAUGHT, worth recording because it is the interesting boundary: the
+oversize candidate was first written at exactly the page's own source length, so its rendering
+cost exactly the whole budget and was ADMITTED. That is correct behaviour, a candidate exactly
+filling the budget fits, and the fixture rather than the code was wrong. The fixture now uses
+twice the source length and carries a comment saying why.
