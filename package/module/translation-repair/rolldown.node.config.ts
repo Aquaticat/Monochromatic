@@ -44,6 +44,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "sentinel-probe": "./src/corpus-run/sentinel-probe.ts",
     "coverage-probe": "./src/corpus-run/coverage-probe.ts",
     "displacement-probe": "./src/corpus-run/displacement-probe.ts",
+    "editor-width-probe": "./src/corpus-run/editor-width-probe.ts",
     "judge-fidelity-probe": "./src/corpus-run/judge-fidelity-probe.ts",
     "slice-census": "./src/corpus-run/slice-census.ts",
     "slice-cost-report": "./src/corpus-run/slice-cost-report.ts",

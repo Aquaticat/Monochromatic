@@ -110,6 +110,11 @@ description = "#107: read per-slice size ratios against each document's own medi
 depends = ["build"]
 run = "node dist/final/node/displacement-probe.mjs"
 
+[tasks."editor-width-probe"]
+description = "#186: run the same slices at the production editor width and at the whole roster, judged by one fixed panel, with the narrow arm repeated as a null band and the two winners contested in both seating orders; SPENDS QUOTA (pass a sample size after --, default 18 halved into two draws)"
+depends = ["build"]
+run = "node dist/final/node/editor-width-probe.mjs"
+
 [tasks."judge-fidelity-probe"]
 description = "#84: ask the translate judges to choose between a real archive slice and a damaged twin, in both directions and both ballot positions; SPENDS QUOTA (pass --only ids, --cap n, --damage deletion|insertion|alteration, --context after --)"
 depends = ["build"]
