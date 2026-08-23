@@ -210,7 +210,7 @@ export async function repairPreparedDocument(
    */
   const lineStructuredSlices = prepared.lineStructuredSliceIndices;
   rl.info(
-    `${String(prepared.alignmentPairCount,)} chunk pairs, ${
+    `${String(prepared.alignmentPairCount,)} aligned units, ${
       String(slices.length,)
     } slices, ${String(alignmentFindings.length,)} alignment findings`,
   );

@@ -111,8 +111,22 @@ export type PreparedDocumentPair = {
   readonly alignmentFindings: readonly string[];
 
   /**
-   * Aligned section pairs, which is the count worth logging beside the slice
-   * count: a document with far more slices than pairs subdivided heavily.
+   * Entries in the aligned unit list, which is the count worth logging beside
+   * the slice count: a document with far more slices than units subdivided
+   * heavily.
+   *
+   * INSERTIONS ARE INCLUDED, and they are not section PAIRS: an insertion names
+   * a place in the translation where an untranslated original belongs, so it
+   * has an original on one side and a boundary on the other. The name predates
+   * insertions existing and is kept because settled version 2 artifacts record
+   * it, and because every consumer wants exactly this number: it is the bound
+   * `parseBlockPairingV2` refuses a section index against, and a real-pair
+   * count there would falsely refuse a block pairing filed after an insertion.
+   *
+   * WHICH entries are insertions is reported by
+   * {@link PreparedDocumentPair.alignmentFindings}, where each one names its
+   * source section and either the boundary it was placed at or the refusal that
+   * stopped it. That is the separate report, rather than a second count here.
    */
   readonly alignmentPairCount: number;
 
