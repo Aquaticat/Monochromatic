@@ -17239,10 +17239,10 @@ DECISION: take A as the verdict, gate insertion on C's corroboration as well, an
 
 This releases the wiring gate recorded on `#106`.
 
-### The decision record could not be written where it belongs
+### Where the decision lives
 
-`doc/decision/translation-repair-absence-verdict.md` was refused by the harness classifier,
-through both a shell heredoc and the file-writing tool.
-`DRR` puts decisions under `doc/decision/` once the owner accepts or delegates, which they did,
-so this handover section is a stopgap and not the intended home.
-Ask the owner to allow writes under `doc/decision/`, then move this section there verbatim.
+`doc/decision/translation-repair-absence-verdict.md`, which carries the reasoning and the
+measurements behind it. The summary here is a pointer; that file is the record.
+
+The first two attempts to write it were refused by the harness classifier, through a shell
+heredoc and through the file-writing tool. The owner granted the permission and it landed.
