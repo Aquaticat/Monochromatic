@@ -39,6 +39,29 @@ function isLaneChoiceName(value: unknown,): boolean {
 }
 
 /**
+ * Whether a value is an archive verdict, or the absence of one.
+ *
+ * ABSENCE PASSES. Every entry cached before the question existed carries no
+ * such key, and refusing those would rebuy a contest this store exists to
+ * avoid rebuying. A key naming something else is still refused, so the cast
+ * this guard licenses stays honest.
+ *
+ * @param value - archive field of a parsed cache entry
+ *
+ * @returns Whether it names a verdict or nothing at all
+ *
+ * @example
+ * ```ts
+ * const named = isArchiveName(parsed.archive,);
+ * ```
+ */
+function isArchiveName(value: unknown,): boolean {
+  return (value === undefined)
+    || (value === 'publishable')
+    || (value === 'flawed');
+}
+
+/**
  * Whether a value is one judge`s ballot as this schema writes it.
  *
  * @param value - parsed cache entry
@@ -57,7 +80,8 @@ function isLaneContestBallot(value: unknown,): value is LaneContestBallot {
     && Array.isArray(value.unsupportedRaw,)
     && Array.isArray(value.dropped,)
     && Array.isArray(value.droppedRaw,)
-    && ((typeof value.reason) === 'string');
+    && ((typeof value.reason) === 'string')
+    && isArchiveName(value.archive,);
 }
 
 /**

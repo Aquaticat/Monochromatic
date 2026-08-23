@@ -8,6 +8,7 @@ import {
   requireString,
 } from '../artifact-guard.ts';
 import type {
+  ArchiveVerdict,
   LaneChoice,
   LaneContestBallot,
 } from '../lane-contest-wire.ts';
@@ -26,6 +27,14 @@ const LANE_CHOICES: readonly LaneChoice[] = [
   'repair',
   'translate',
   'neither',
+];
+
+/**
+ * Archive verdicts a ballot may carry.
+ */
+const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
+  'publishable',
+  'flawed',
 ];
 
 /**
@@ -150,10 +159,30 @@ export function parseContestBallotV2(
       'dropped',
       'droppedRaw',
       'reason',
+      'archive',
     ],
     path,
   },);
+  /**
+   * Archive verdict this ballot carries, present only when it recorded one.
+   *
+   * SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
+   * under `exactOptionalPropertyTypes`. A ballot written before the question
+   * existed carries no such key, and reading it back as absent is what makes
+   * the verdict derived from it agree with the one recorded beside it.
+   */
+  const archive = (ballot.archive === undefined)
+    ? {}
+    : {
+      archive: requireOneOf({
+        value: ballot.archive,
+        allowed: ARCHIVE_VERDICTS,
+        path: `${path}.archive`,
+      },),
+    };
+
   return {
+    ...archive,
     choice: requireOneOf({
       value: ballot.choice,
       allowed: LANE_CHOICES,

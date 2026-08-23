@@ -1,6 +1,7 @@
 import {
   LANE_CONTEST_QUORUM,
   type LaneContestOutcome,
+  settleArchiveBallots,
 } from '../lane-contest-stage.ts';
 import type { LaneContestBallot, } from '../lane-contest-wire.ts';
 import type { ArtifactComparisonRowV2, } from './artifact-v2-vocabulary.ts';
@@ -44,6 +45,16 @@ export type ArtifactContestVerdictV2 =
      * includes a tie: the stage ships nothing on one by design.
      */
     readonly kind: 'settled-neither';
+
+    /**
+     * What the roster made of the archive rendering, when it made anything.
+     *
+     * OMITTED RATHER THAN RECORDED AS `unjudged`, so that a slice nobody
+     * judged the archive at is byte-identical to one settled before the
+     * question was ever asked. Every artifact written before today parses
+     * unchanged because of this, and the exact-keys guard needs no exception.
+     */
+    readonly archive?: 'endorsed' | 'declined';
   }
   | {
     /**
@@ -92,6 +103,41 @@ export type ArtifactContestSliceV2 = {
 /**
  * Reads the artifact`s verdict out of what the contest stage returned.
  *
+/**
+ * Builds the verdict for a slice whose roster backed no candidate.
+ *
+ * DERIVED FROM THE BALLOTS RATHER THAN CARRIED ON THE OUTCOME, so that the
+ * writer and the artifact reader reach the same answer by running the same
+ * rule over the same stored ballots. Nothing has to be kept in step, because
+ * there is only one value.
+ *
+ * @param ballots - usable ballots for this slice
+ *
+ * @returns Verdict naming the archive outcome, or omitting it when unjudged
+ *
+ * @example
+ * ```ts
+ * const verdict = settledNeitherVerdict({ ballots, },);
+ * ```
+ */
+function settledNeitherVerdict(
+  { ballots, }: { readonly ballots: readonly LaneContestBallot[]; },
+): ArtifactContestVerdictV2 {
+  /**
+   * What the roster made of the archive at this slice.
+   */
+  const archive = settleArchiveBallots({ ballots, },);
+  return (archive === 'unjudged')
+    ? { kind: 'settled-neither', }
+    : {
+      kind: 'settled-neither',
+      archive,
+    };
+}
+
+/**
+ * Records one contested slice, verdict and ballots together.
+ *
  * @param chunkIndex - slice this answers
  *
  * @param outcome - what the roster settled
@@ -119,7 +165,7 @@ export function describeContestSlice(
   const verdict: ArtifactContestVerdictV2 = (outcome.usable < LANE_CONTEST_QUORUM)
     ? { kind: 'quorum-not-met', }
     : ((outcome.choice === 'neither')
-      ? { kind: 'settled-neither', }
+      ? settledNeitherVerdict({ ballots: outcome.ballots, },)
       : {
         kind: 'lane-won',
         lane: outcome.choice,

@@ -31,24 +31,136 @@ import type { ArtifactComparisonRowV2, } from './artifact-v2-vocabulary.ts';
 // field nobody re-derives is a field that can quietly become a lie.
 
 /**
+ * Names the keys a recorded verdict may carry, given what its ballots settle.
+ *
+ * @param derived - verdict those ballots settle on
+ *
+ * @returns Key names the record is allowed to use
+ *
+ * @example
+ * ```ts
+ * const allowed = allowedVerdictKeys({ derived, },);
+ * ```
+ */
+function allowedVerdictKeys(
+  { derived, }: { readonly derived: ArtifactContestVerdictV2; },
+): readonly string[] {
+  if (derived.kind === 'lane-won') {
+    return [
+      'kind',
+      'lane',
+    ];
+  }
+
+  // THE ARCHIVE KEY IS ALLOWED ONLY WHERE ONE WAS DERIVED, so a record
+  // carrying the field where the ballots settle nothing is still refused
+  // rather than quietly accepted and then compared away.
+  if ((derived.kind === 'settled-neither') && (derived.archive !== undefined)) {
+    return [
+      'kind',
+      'archive',
+    ];
+  }
+  return ['kind',];
+}
+
+/**
  * Names a verdict in one token, for comparing two of them and for saying which
  * arrived when they differ.
  *
  * @param verdict - verdict to name
  *
- * @returns Kind, carrying the lane when one won
+ * @returns Kind, carrying the lane when one won or the archive verdict when one
+ * was given
  *
  * @example
  * ```ts
- * const label = renderContestVerdict({ verdict, },);
+ * const settled = renderContestVerdict({ verdict, },);
  * ```
  */
 function renderContestVerdict(
   { verdict, }: { readonly verdict: ArtifactContestVerdictV2; },
 ): string {
-  return (verdict.kind === 'lane-won')
-    ? `${verdict.kind}:${verdict.lane}`
-    : verdict.kind;
+  if (verdict.kind === 'lane-won')
+    return `${verdict.kind}:${verdict.lane}`;
+
+  // AN UNJUDGED ARCHIVE RENDERS AS THE BARE KIND, matching the record that
+  // omits the field, so every artifact written before the question existed
+  // still renders to the token its own ballots settle on.
+  if ((verdict.kind === 'settled-neither') && (verdict.archive !== undefined))
+    return `${verdict.kind}:${verdict.archive}`;
+  return verdict.kind;
+}
+
+/**
+ * Renders the recorded verdict in the same one-token form.
+ *
+ * @param recorded - verdict the artifact carries
+ *
+ * @param path - dotted path of that verdict
+ *
+ * @returns Token the record claims
+ *
+ * @throws {@link ArtifactParseError} when a field names nothing this schema knows
+ *
+ * @example
+ * ```ts
+ * const claimed = renderRecordedVerdict({ recorded, path, },);
+ * ```
+ */
+function renderRecordedVerdict(
+  {
+    recorded,
+    path,
+  }: {
+    readonly recorded: Readonly<Record<string, unknown>>;
+    readonly path: string;
+  },
+): string {
+  if (recorded.lane !== undefined) {
+    return `${
+      requireOneOf({
+        value: recorded.kind,
+        allowed: ['lane-won',],
+        path: `${path}.kind`,
+      },)
+    }:${
+      requireOneOf({
+        value: recorded.lane,
+        allowed: [
+          'repair',
+          'translate',
+        ],
+        path: `${path}.lane`,
+      },)
+    }`;
+  }
+  if (recorded.archive !== undefined) {
+    return `${
+      requireOneOf({
+        value: recorded.kind,
+        allowed: ['settled-neither',],
+        path: `${path}.kind`,
+      },)
+    }:${
+      requireOneOf({
+        value: recorded.archive,
+        allowed: [
+          'endorsed',
+          'declined',
+        ],
+        path: `${path}.archive`,
+      },)
+    }`;
+  }
+  return requireOneOf({
+    value: recorded.kind,
+    allowed: [
+      'settled-neither',
+      'quorum-not-met',
+    ],
+    path: `${path}.kind`,
+  },);
 }
 
 /**
@@ -80,12 +192,7 @@ function assertVerdictMatches(
 ): void {
   requireExactKeys({
     record: recorded,
-    allowed: (derived.kind === 'lane-won')
-      ? [
-        'kind',
-        'lane',
-      ]
-      : ['kind',],
+    allowed: allowedVerdictKeys({ derived, },),
     path,
   },);
 
@@ -93,31 +200,10 @@ function assertVerdictMatches(
    * Verdict the record claims, in the one-token form the derived one renders
    * to, so the two compare as values rather than as shapes.
    */
-  const claimed = (recorded.lane === undefined)
-    ? requireOneOf({
-      value: recorded.kind,
-      allowed: [
-        'settled-neither',
-        'quorum-not-met',
-      ],
-      path: `${path}.kind`,
-    },)
-    : `${
-      requireOneOf({
-        value: recorded.kind,
-        allowed: ['lane-won',],
-        path: `${path}.kind`,
-      },)
-    }:${
-      requireOneOf({
-        value: recorded.lane,
-        allowed: [
-          'repair',
-          'translate',
-        ],
-        path: `${path}.lane`,
-      },)
-    }`;
+  const claimed = renderRecordedVerdict({
+    recorded,
+    path,
+  },);
 
   /**
    * Verdict those ballots settle on, in the same form.

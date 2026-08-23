@@ -179,6 +179,69 @@ export function settleLaneContestBallots(
 }
 
 /**
+ * What the roster made of the archive rendering at one slice.
+ *
+ * `unjudged` IS NOT A DECLINE. It covers a roster whose voices omitted the
+ * field, one too small to settle anything, and one that split evenly. None of
+ * those say the archive is flawed, and recording them as a decline would
+ * invent a verdict nobody gave.
+ *
+ * @example
+ * ```ts
+ * const archive: ArchiveOutcome = 'endorsed';
+ * ```
+ */
+export type ArchiveOutcome = 'endorsed' | 'declined' | 'unjudged';
+
+/**
+ * Reads what the roster made of the archive, or that it settled nothing.
+ *
+ * MIRRORS {@link settleVotes} RATHER THAN SETTING ITS OWN BAR. Two voices and
+ * a strict lead is the agreement rule everywhere else in this package, and a
+ * second frozen number would be a second thing every stored verdict is
+ * recomputed against.
+ *
+ * SHARED WITH THE ARTIFACT READER, like the choice rule beside it, so a
+ * recorded archive verdict can be re-derived from the ballots stored with it
+ * and refused when the two disagree.
+ *
+ * @param ballots - usable ballots
+ *
+ * @returns What the roster made of the archive
+ *
+ * @example
+ * ```ts
+ * const archive = settleArchiveBallots({ ballots, },);
+ * ```
+ */
+export function settleArchiveBallots(
+  { ballots, }: { readonly ballots: readonly LaneContestBallot[]; },
+): ArchiveOutcome {
+  /**
+   * Voices that would publish the archive as it stands.
+   */
+  const publishable = ballots
+    .filter(function endorses(ballot,): boolean {
+      return ballot.archive === 'publishable';
+    },)
+    .length;
+
+  /**
+   * Voices that found something wrong with it.
+   */
+  const flawed = ballots
+    .filter(function declines(ballot,): boolean {
+      return ballot.archive === 'flawed';
+    },)
+    .length;
+  if ((publishable >= LANE_CONTEST_QUORUM) && (publishable > flawed))
+    return 'endorsed';
+  if ((flawed >= LANE_CONTEST_QUORUM) && (flawed > publishable))
+    return 'declined';
+  return 'unjudged';
+}
+
+/**
  * Asks the roster which candidate one contested slice should ship.
  *
  * @param client - synthetic chat client
