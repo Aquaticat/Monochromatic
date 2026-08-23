@@ -17551,3 +17551,63 @@ once each, cached.
     `XIEPT2`, whose grid is entirely zero and whose headings carry no romanised names.
 -   Proportional-by-character fallback. That is the design `#71` was opened on, and it corrupted
     `XingZ60` by sliding every pairing two sections along.
+
+### What landed, and what it does to the two entries
+
+Section-scale LLM-assisted pairing, mirroring the block-scale stage `#131` already built:
+
+-   `pair-sections-wire.ts` builds the sheet. Sections go WHOLE and the policy tells the model
+    that a section whose body was never translated STILL CORRESPONDS, which is the instruction
+    `XIEPT2` turns on.
+-   `pair-sections-read.ts` refuses anything unusable. STRICTER THAN THE BLOCK READER on exactly
+    one point: strictly increasing on both sides, because a `ChunkPair` carries one section on
+    each side and a split or a merge would silently drop whichever section lost the race.
+-   `pair-sections-stage.ts` asks the roster and keeps what two voices agreed on, per pair.
+-   `pair-sections-steps.ts` turns the pairing into the aligner's own step vocabulary, so nothing
+    downstream learns a model was involved.
+-   `prepare-section-round.ts` buys the round, and only where the deterministic aligner refused.
+-   `alignDocumentSections` takes the pairing as DATA, exactly as it already takes a block
+    pairing, and a supplied pairing REPLACES the deterministic decision rather than supplementing
+    it. Preparation stays pure and synchronous.
+
+The section round is bought FIRST, before the block rounds, because those are asked one aligned
+section at a time and are therefore questions about an alignment that has to exist already.
+
+### Verified live, both entries, 2026-08-23
+
+Six of six voices answered usably on each.
+
+-   `XIEPT2`: 8 of 8 sections paired, at `0->1 1->2 ... 7->8`. The roster put the EXTRA English
+    section at the front, which no hand-written guess in this session got right. Slices go from
+    ZERO to 9, and source reaching a slice goes from 0 to 7288 of 7365 characters.
+-   `XingZ60`: 13 of 15 sections paired, straight through. The two originals left out become
+    INSERTIONS anchored at offset 33450 of 33451, which is the end of the page, and that is
+    exactly where `#71` recorded the Chinese carrying sections the English lacks. Slices go from
+    84 to 91, and source reaching a slice goes from 10617 to 16467 of 16733 characters.
+
+Corpus-wide that is 13138 of the 13147 characters the slice census reported reaching no slice.
+The `proven` insertion anchor fires on real data for the first time.
+
+### The proven anchor comes from the pairing, not from the table
+
+Two paired sections either side of an unpaired one pin it to the span between them, and when
+that span is one boundary wide the anchor is PROVEN in exactly the sense the deterministic path
+meant by it. Both ends are handled: an original nothing precedes anchors at the front rather than
+at offset zero where front matter sits, and one nothing follows anchors past the last translation.
+That closes the "entirely untranslated page" item `#100` left open, by a different route than the
+one that item guessed at.
+
+### A failing test the corroboration gate had left behind
+
+`translate-document.unit.test.ts` had been failing since `#100` landing 5 landed, and the
+"suite 556 PASS" recorded above was measured before the last wiring of that landing. The case
+appends an untranslated passage to a pair whose translation runs 3.4 English code points per
+source point against a corpus median of 2.65, so the page is not missing anything and the gate
+correctly refuses to write into it. The fixture now uses a pair that runs 1.09, leaving a
+shortfall of 156 against the 45 points the appended passage would render into.
+
+A second case now covers the refusal itself, which nothing tested end to end: it asserts that
+NOTHING was bought, so the passage carries no findings and the run costs exactly what the same
+document costs with nothing appended. GFP-proven: disabling the gate fails that case alone.
+
+Suite 562 PASS, exit 0. Lint 0 warnings 0 errors. Types clean.
