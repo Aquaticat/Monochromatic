@@ -16847,3 +16847,31 @@ WHAT IS STILL TRUE: the 2026-08-16 numbers themselves are gone. No `coverage-pro
 under any runs directory on this machine, so the probe has not been run since persistence landed, and
 those verdicts survive only in session transcripts as the task says. Re-running is the only way to get
 them back, and a re-run now keeps them.
+
+## Waiting on a background run: `pgrep -f` matches the agent's own shell
+
+Cost two false "it finished" notifications on 2026-08-23, once on width draw B and once on the
+coverage probe, and it will keep costing them until someone writes it down.
+
+Waiting for a spawned run by `PID=$(pgrep -f 'some-probe'); while kill -0 "$PID"; do sleep; done`
+fails two ways at once.
+
+FIRST, `pgrep -f` matches on the WHOLE command line, and the agent's own `bash -c` wrapper contains
+the pattern, because the pattern is part of the command being run. So the pgrep frequently returns
+the wrapper's own pid rather than the probe's, and the wait ends the moment that shell exits, which
+is immediately.
+
+SECOND, a mise task with `depends = ["build"]` spends its first half-minute building. A pid captured
+too early belongs to a transient build-phase process that exits on its own, so the waiter reports
+completion while the probe has not started.
+
+WHAT WORKS: wait for the real interpreter process to appear, match it precisely, and confirm it
+before arming.
+
+```bash
+# The node process, never the wrapper: filter the agent's own shell out.
+pgrep -af 'coverage-probe.mjs' | grep -v 'bash -c'
+```
+
+Then check the pid with `ps -o args= -p "$PID"` and confirm the command line is the one expected
+before waiting on it. `kill -0 "$PID"` alone proves a process exists, never that it is the right one.
