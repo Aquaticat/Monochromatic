@@ -15271,3 +15271,39 @@ identical to baseline.
 It excludes short slices from SETTING the document baseline,
 which is right in both directions:
 a twenty-character slice should not get to define what normal expansion is.
+
+#### Whether the fix reaches a judge, and why no key bump was needed
+
+Verifying `contestSizeNote` proves the function speaks.
+It does not prove a judged round will carry the note,
+because the lane contest caches its ballots across runs
+and #163 threaded the note with an explicit no-cache-bump decision,
+taken when the note moved 2 rows rather than 23.
+So the fix could have been inert exactly where it matters.
+
+It is not, and the reason is structural rather than lucky.
+`pass-entry.ts` opens every cache with `generation: pipelineDigest`,
+`openNamespacedCache` (`slice-cache-namespace.ts:462`) resumes only when `cached === generation`
+and calls `discardNamespace` otherwise,
+and `digestPipeline` digests the executable files under `dist/final/node`.
+The lane contest owns its own prefix and marker,
+because `LANE_CONTEST_NAMESPACE` and `EVERY_SLICE_NAMESPACE`
+both read out of `CLAIM_BY_ROLE` in `slice-cache-claims.ts:56`,
+so the discard is its own files rather than another lane's.
+
+Editing `contest-size-note.ts` changed the built bundle,
+which is not inferred:
+the guard test failed against the un-rebuilt `dist` and passed after the rebuild,
+which is direct evidence those bytes moved.
+Different bytes mean a different digest,
+a different generation,
+and a discarded contest cache.
+The 9 newly covered slices are re-judged with the note on the next run.
+
+THE GENERAL RULE THIS ESTABLISHES, worth keeping for every later behaviour change:
+a change to executable source needs no manual cache bump,
+because the digest covers it.
+A cache key bump is needed only when the INPUT to a stage changes
+while the code computing it does not,
+which is what #173 and #178 were about:
+a window or an incumbent that the key never covered.
