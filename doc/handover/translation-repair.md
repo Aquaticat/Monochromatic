@@ -16605,3 +16605,40 @@ one it describes.
 The general lesson is the one the corpus keeps teaching:
 a claim written in a comment is not a mechanism.
 `grep` for the noun a comment promises, and check something reads it.
+
+## Task 186, what the smoke run measured and how the real draw is sized
+
+The smoke run on 2026-08-23 spent four sampled slices, two of which became draw A.
+Its job was to prove the wiring, not to answer anything.
+
+WHAT IT PROVED, at the user boundary:
+
+-   The positive control works and HELD. The panel preferred intact text over the same text with a
+    sentence removed, on both control pairs, over both seating orders. The draw is therefore readable.
+-   The whole chain runs: sample, gather, three arms, contest, report.
+-   The null band is real rather than an artifact. `runEditorStage` holds no cache, and the slice cache
+    lives a level above where this probe calls in, so the narrow arm's repeat is a genuinely fresh run.
+    The first draw slice confirmed it empirically by flipping.
+
+THE ONE MEASURED NUMBER worth carrying forward: about FIFTEEN MINUTES PER SLICE.
+Draw A began at 08:48:35 and its first row landed at roughly 09:03:30.
+That is one gather plus three editor stages plus a two-order contest, run strictly sequentially so
+every arm meets the same provider conditions.
+
+Sizing follows from that number rather than from the eighteen written into the probe:
+
+-   a draw of nine, the old default, runs about two and a quarter hours
+-   a draw of twenty runs about five hours
+-   a draw of thirty runs about seven and a half hours
+
+Twenty is the choice, from a sample of forty, leaving twenty untouched in draw B.
+The reasoning is that the headline comparison is PAIRED, one move bit and one churn bit off the same
+slice, so what decides it is the count of discordant slices rather than the raw draw size.
+Nine slices yields a handful of discordant pairs and cannot separate anything.
+Twenty is affordable in wall time with a week to the deadline, and leaves an equal held-back half so
+a result near the band has a second reading that was never looked at.
+
+THE FIRST DRAW SLICE, recorded because it is the pattern to watch for and not because one slice
+decides anything: the arms differed, the narrow arm run twice ALSO differed from itself, and the
+head-to-head came back `position-decided`, meaning the panel picked whichever candidate sat first in
+both orders. That is what a null result looks like. It is one slice. It is not the answer.
