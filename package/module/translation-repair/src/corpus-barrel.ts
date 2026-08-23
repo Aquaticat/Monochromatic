@@ -236,6 +236,7 @@ export {
   type WidthRow,
   type WidthSummary,
 } from './corpus-run/editor-width-model.ts';
+export { writeWidthReport, } from './corpus-run/editor-width-report.ts';
 export {
   lockRunsDir,
   RunsDirectoryBusyError,

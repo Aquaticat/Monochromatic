@@ -50,6 +50,12 @@ function renderRow(row: WidthRow,): string {
 /**
  * Writes the draw's report.
  *
+ * Probe scaffolding rather than lane contract, exported so the rendering can be
+ * exercised on fixtures instead of being seen for the first time at the end of a
+ * draw that already spent its quota.
+ *
+ * @internal
+ *
  * @param rows - every slice that reached a comparison
  *
  * @param skipped - slices that carried no work, by refusal
@@ -130,7 +136,8 @@ export async function writeWidthReport(
       '',
       '## Counts',
       '',
-      `-   slices that reached a comparison: ${String(summary.slices,)}`,
+      `-   slices that produced a row: ${String(summary.slices,)}`,
+      `-   of those, neither arm shipped anything: ${String(summary.nothingShipped,)}`,
       `-   shipped text moved when the editors widened: ${String(summary.moved,)}`,
       `-   NULL BAND, narrow arm run twice shipped different text: ${String(summary.churned,)}`,
       `-   head-to-head, wide preferred in both orders: ${String(summary.wideWins,)}`,
@@ -142,6 +149,10 @@ export async function writeWidthReport(
       'The band is the same arm run twice, so it already contains every reason the',
       'shipped text changes that has nothing to do with width.',
       'A move count inside it is not evidence that widening did anything.',
+      '',
+      'Both counts are read over every row, the trivial ones included, so they share a',
+      'denominator and can be compared directly.',
+      'The trivial count above is broken out to be seen, not to be subtracted.',
       '',
       '## Slices that carried no work',
       '',

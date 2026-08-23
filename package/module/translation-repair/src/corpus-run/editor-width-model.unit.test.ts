@@ -177,10 +177,10 @@ await describe({
   name: summarizeWidths.name,
   children: [
     it({
-      name: 'COUNTS SLICES THAT REACHED A COMPARISON, leaving out the ones where neither slate '
-        + 'shipped. Those say nothing about width, and counting them would shrink every fraction '
-        + 'read off this summary by however many slices the lane never touched',
-      fn: async function untouchedSlicesAreNotDenominator() {
+      name: 'COUNTS EVERY ROW, breaking out the slices where neither arm shipped rather than '
+        + 'dropping them, so the band and the move count are read over one denominator and may '
+        + 'therefore be compared against each other at all',
+      fn: async function everyRowSharesTheDenominator() {
         const summary = summarizeWidths({
           rows: [
             rowWith({ comparison: 'nothing-shipped', },),
@@ -189,8 +189,28 @@ await describe({
           ],
         },);
 
-        expect(summary.slices,).toBe(1,);
+        expect(summary.slices,).toBe(3,);
+        expect(summary.nothingShipped,).toBe(2,);
         expect(summary.moved,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS CHURN ON A SLICE NEITHER ARM SHIPPED ON, which is the reading the old '
+        + 'comparison-only filter silently dropped: such a slice can carry churn but can never '
+        + 'carry a move, so dropping it shrank the band alone and tilted the draw toward width',
+      fn: async function trivialSlicesStillCarryChurn() {
+        const summary = summarizeWidths({
+          rows: [
+            rowWith({ comparison: 'nothing-shipped', narrowRepeatAgreed: false, },),
+            rowWith({ comparison: 'nothing-shipped', narrowRepeatAgreed: true, },),
+            rowWith({ comparison: 'differs', narrowRepeatAgreed: false, },),
+          ],
+        },);
+
+        // The band sees both flips, not just the one on the slice that differed.
+        expect(summary.churned,).toBe(2,);
+        expect(summary.moved,).toBe(1,);
       },
     },),
 
@@ -209,6 +229,7 @@ await describe({
 
         expect(summary.moved,).toBe(2,);
         expect(summary.churned,).toBe(2,);
+        expect(summary.slices,).toBe(3,);
       },
     },),
 

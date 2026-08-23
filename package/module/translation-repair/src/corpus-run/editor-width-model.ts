@@ -203,9 +203,22 @@ export function readHeadToHead(
  */
 export type WidthSummary = {
   /**
-   * Slices that reached a comparison at all.
+   * Slices that produced a row at all.
+   *
+   * EVERY row, including those where neither arm shipped anything. The band
+   * and the move count are both read over this same set, which is what makes
+   * comparing them legitimate; see {@link WidthSummary.churned}.
    */
   readonly slices: number;
+
+  /**
+   * Slices where neither arm shipped a repair.
+   *
+   * Reported so the reader can see how much of the draw was trivial, without
+   * removing those slices from the two counts that are compared against each
+   * other.
+   */
+  readonly nothingShipped: number;
 
   /**
    * Slices where the shipped text moved when the editors widened.
@@ -215,6 +228,13 @@ export type WidthSummary = {
   /**
    * Slices where the narrow arm run twice shipped different text. This is the
    * null band for {@link WidthSummary.moved} and is measured, not assumed.
+   *
+   * COUNTED OVER EVERY ROW, for the same reason the move count is. Restricting
+   * the band to slices whose arms differed would drop exactly the rows that can
+   * carry churn but can never carry a move: a slice where both arms shipped
+   * nothing, yet the narrow repeat shipped something, is churn the band must
+   * see. Dropping those shrinks the band while leaving the move count alone,
+   * which tilts every reading toward width mattering.
    */
   readonly churned: number;
 
@@ -253,6 +273,22 @@ export type WidthSummary = {
  */
 function movedText(row: WidthRow,): boolean {
   return row.comparison === 'differs';
+}
+
+/**
+ * Whether neither arm shipped a repair on this slice.
+ *
+ * @param row - one slice's comparison
+ *
+ * @returns Whether both arms left the translation as it stood
+ *
+ * @example
+ * ```ts
+ * const trivial = shippedNothing(row,);
+ * ```
+ */
+function shippedNothing(row: WidthRow,): boolean {
+  return row.comparison === 'nothing-shipped';
 }
 
 /**
@@ -345,38 +381,34 @@ function countVerdict(
 export function summarizeWidths(
   { rows, }: { readonly rows: readonly WidthRow[]; },
 ): WidthSummary {
-  /**
-   * Rows that got far enough to say anything about width.
-   */
-  const compared = rows
-    .filter(function reached(row,) {
-      return row.comparison !== 'nothing-shipped';
-    },);
-
   return {
-    slices: compared.length,
+    slices: rows.length,
+    nothingShipped: countWhere({
+      rows,
+      holds: shippedNothing,
+    },),
     moved: countWhere({
-      rows: compared,
+      rows,
       holds: movedText,
     },),
     churned: countWhere({
-      rows: compared,
+      rows,
       holds: churnedOnRepeat,
     },),
     wideWins: countVerdict({
-      rows: compared,
+      rows,
       verdict: 'wide-wins',
     },),
     narrowWins: countVerdict({
-      rows: compared,
+      rows,
       verdict: 'narrow-wins',
     },),
     positionDecided: countVerdict({
-      rows: compared,
+      rows,
       verdict: 'position-decided',
     },),
     tied: countVerdict({
-      rows: compared,
+      rows,
       verdict: 'tied',
     },),
   };
