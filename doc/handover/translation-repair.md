@@ -17431,3 +17431,48 @@ Until that lands, a block-scale insertion is proposed on the pairing roster's ve
 The remaining hardening steps of the recorded algorithm (crossing refusal for an `A, B, A`
 ownership sequence, many-to-one ownership resolution, materializing a target interval by complete
 indices rather than by filtering) are separable from this core and unbuilt.
+
+### Landing 4's corroboration gate landed too, 2026-08-23
+
+Commit `d8f4ca002`. A block-scale insertion now needs both signatures, the same rule section
+scale already obeys.
+
+ONE BUDGET FOR THE WHOLE PAGE, computed once in the driver rather than inside subdivision. The
+shortfall is a property of the page; subdivision runs per section, so spending the page shortfall
+once per section would admit several times what the page is actually missing.
+
+NOTHING IS BOUGHT for a refused slice: it is recorded unfilled with reason `not-corroborated`,
+which landing 3's machinery already supports.
+
+`UnfilledReason` is deliberately WIDER than `TranslateAbsenceReason`. Every reason in the latter
+describes a round that was PAID FOR and came back empty, which is the only kind of answer a stage
+can give; the driver can also decline to buy a round at all. Giving the stage a word for that
+would let a reader think it might return one. This surfaced as a type error when the new reason
+first went into the stage's own union, which is the type system making the same point.
+
+GFP, each mutation built and run separately then restored, each failing a clean partition:
+
+-   Ignoring the shortfall fails exactly the two cases about refusing and budgeting; the three
+    about WHICH slices are proposed still pass.
+-   Weighing paired slices as well fails exactly the three about which slices are proposed; the
+    refusal case still passes.
+
+Suite 556 PASS, exit 0.
+
+### Where `#100` stands after today
+
+Landings 1, 2, 3 and 5 are done. Landing 4's CORE and its corroboration gate are done.
+
+Still unbuilt, and separable from everything above because they harden the PAIRED path rather
+than the insertion one:
+
+-   crossing refusal: an ownership sequence `A, B, A` must be refused rather than stretched into
+    overlapping spans;
+-   many-to-one ownership resolved BEFORE chunks are emitted, so one target node aligned to source
+    nodes in two prospective groups merges them or refuses, never duplicates;
+-   materializing a target interval by COMPLETE indices, `targetNodes.slice(lo, hi + 1)`, rather
+    than by the filtered list of aligned nodes.
+
+Also still open, from landing 5: an entirely untranslated page short-circuits before the aligner
+and gets no anchors, because it needs a body-insertion boundary that must not default to offset
+zero where front matter may sit.
