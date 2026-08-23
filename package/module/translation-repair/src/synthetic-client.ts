@@ -247,6 +247,10 @@ export function createSyntheticClient(
           headers,
           bodyJson,
           signal: exchangeSignal,
+          // Conditional spread keeps the knob absent instead of undefined.
+          ...(request.maxAnswerChars === undefined
+            ? {}
+            : { maxAnswerChars: request.maxAnswerChars, }),
         },
         policy: retryPolicy,
       },);
@@ -323,6 +327,9 @@ export function createSyntheticClient(
       ...(request.exchangeTimeoutMs === undefined
         ? {}
         : { exchangeTimeoutMs: request.exchangeTimeoutMs, }),
+      ...(request.maxAnswerChars === undefined
+        ? {}
+        : { maxAnswerChars: request.maxAnswerChars, }),
       ...(request.maxTokens === undefined
         ? {}
         : { maxTokens: request.maxTokens, }),

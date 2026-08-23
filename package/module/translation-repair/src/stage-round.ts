@@ -197,6 +197,7 @@ export async function runGatherRound<ValueT,>(
     messages,
     signal,
     exchangeTimeoutMs,
+    maxAnswerChars,
     responseFormat,
     validate,
     stage,
@@ -209,6 +210,7 @@ export async function runGatherRound<ValueT,>(
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
+    readonly maxAnswerChars?: number;
     readonly responseFormat: JsonSchemaResponseFormat;
     readonly validate: (value: unknown,) => value is ValueT;
     readonly stage: string;
@@ -262,6 +264,7 @@ export async function runGatherRound<ValueT,>(
           messages,
           signal: roundSignal,
           exchangeTimeoutMs,
+          ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
           responseFormat,
           validate,
           stage,

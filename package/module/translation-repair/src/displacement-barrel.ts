@@ -43,5 +43,10 @@ export {
   type SliceImplausibility,
   sliceImplausibility,
 } from './slice-implausible.ts';
+export {
+  MAX_PRODUCED_TO_SOURCE_RATIO,
+  PRODUCED_VOLUME_FLOOR,
+  producedVolumeBound,
+} from './produced-volume-bound.ts';
 
 //endregion Displacement barrel

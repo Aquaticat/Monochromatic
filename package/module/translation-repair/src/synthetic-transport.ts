@@ -80,6 +80,13 @@ export type TransportExchange = {
    * Abort signal honored for the whole exchange.
    */
   readonly signal: AbortSignal;
+
+  /**
+   * Characters the answer channel may produce before the drain ends the
+   * call, when the caller knows its own input size well enough to bound
+   * the reply against it.
+   */
+  readonly maxAnswerChars?: number;
 };
 
 /**
@@ -130,6 +137,7 @@ export async function fetchTransport(
     headers,
     bodyJson,
     signal,
+    maxAnswerChars,
   } = exchange;
 
   /**
@@ -177,6 +185,7 @@ export async function fetchTransport(
       guard,
       callerSignal: signal,
       label,
+      ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
     },),
   };
 }

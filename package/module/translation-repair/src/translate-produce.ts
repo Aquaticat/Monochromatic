@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { Candidate, } from './candidate-select-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { producedVolumeBound, } from './produced-volume-bound.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import {
   buildTranslateCandidates,
@@ -151,6 +152,11 @@ export async function produceTranslateSlate(
     messages: plan.messages,
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
+    // A TRANSLATION IS ABOUT THREE TIMES ITS CHINESE SOURCE at every
+    // measured length, so this slice's own size bounds what any answer to
+    // it can legitimately be. Without it the only bound is absolute, and
+    // one 56-character slice here produced 10381 characters unchallenged.
+    maxAnswerChars: producedVolumeBound({ sourceChars: sourceText.length, },),
     responseFormat: TRANSLATE_RESPONSE_FORMAT,
     validate: isTranslateReportWire,
     stage: 'translate',

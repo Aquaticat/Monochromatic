@@ -172,6 +172,15 @@ export type ChatTextRequest = {
   readonly exchangeTimeoutMs?: number;
 
   /**
+   * Characters this call may produce on the answer channel before the
+   * stream watch ends it.
+   * Set by a caller that knows how large its own input was, so a bound
+   * relative to that input can end a runaway the absolute default is far
+   * too loose to see.
+   */
+  readonly maxAnswerChars?: number;
+
+  /**
    * Completion token cap when the caller bounds output.
    * Thinking tokens count against it and dominate output on these models
    * (expect 90%+), so set it generously or omit it;

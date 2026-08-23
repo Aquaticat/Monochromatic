@@ -154,6 +154,9 @@ function lostVoiceCause(
  *
  * @param exchangeTimeoutMs - deadline armed inside the per-model slot
  *
+ * @param maxAnswerChars - bound on one answer, when the caller knows how
+ * large its own input was
+ *
  * @param responseFormat - structured-output constraint
  *
  * @param validate - client-side schema guard
@@ -176,6 +179,7 @@ export async function attemptStageCall<ValueT,>(
     messages,
     signal,
     exchangeTimeoutMs,
+    maxAnswerChars,
     responseFormat,
     validate,
     stage,
@@ -186,6 +190,7 @@ export async function attemptStageCall<ValueT,>(
     readonly messages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
+    readonly maxAnswerChars?: number;
     readonly responseFormat: JsonSchemaResponseFormat;
     readonly validate: (value: unknown,) => value is ValueT;
     readonly stage: string;
@@ -201,6 +206,8 @@ export async function attemptStageCall<ValueT,>(
       messages,
       signal,
       exchangeTimeoutMs,
+      // Conditional spread keeps the knob absent instead of undefined.
+      ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
       responseFormat,
       validate,
     },);

@@ -179,6 +179,9 @@ function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome 
  * bound, which catches a runaway whose period is too long to repeat inside
  * what the repetition detectors can hold
  *
+ * @param maxAnswerChars - bound for this one call, when the caller knows its
+ * own input size; the module default polices every call that names none
+ *
  * @example
  * ```ts
  * const bodyText = await drainBody({ response, guard, callerSignal, },);
@@ -190,11 +193,13 @@ export async function drainBody(
     guard,
     callerSignal,
     label,
+    maxAnswerChars,
   }: {
     readonly response: ForeignBorrowed<Response>;
     readonly guard: ForeignBorrowed<IdleGuard>;
     readonly callerSignal: AbortSignal;
     readonly label: string;
+    readonly maxAnswerChars?: number;
   },
 ): Promise<string> {
   /**
@@ -230,12 +235,18 @@ export async function drainBody(
    * guard asks whether bytes are arriving; a degenerating model answers yes
    * forever. Neither can stand in for the other.
    */
-  // Called with no bound of its own ON PURPOSE. `watchRunaway` accepts a
-  // content bound so a role that knows it emits more can raise it, but nothing
-  // in the pipeline passes one: every call here is policed at the same default.
-  // Threading it would mean a parameter through this function and every caller,
-  // and the measurement says one bound clears every role by more than twice.
-  const watch = watchRunaway();
+  // GIVEN THIS CALL'S OWN BOUND WHEN THE CALLER KNOWS ONE, and policed at the
+  // module default otherwise. The default is absolute, and an absolute number
+  // cannot separate a long legitimate passage from a short line that ran away:
+  // the emission that forced this through was 10381 characters against a
+  // 56-character source, well under the default and 185 times its input. A
+  // caller that knows how large its input was can say so, and
+  // `produced-volume-bound.ts` records what that bound rests on.
+  const watch = watchRunaway(
+    (maxAnswerChars === undefined)
+      ? {}
+      : { contentCap: maxAnswerChars, },
+  );
 
   /**
    * Loop cursor, a named record so the body-root binding stays immutable.
