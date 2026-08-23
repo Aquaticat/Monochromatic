@@ -14839,3 +14839,52 @@ Ballots outrank the build, because the run is the perishable thing.
     run each file with `node <file>`, then `test:unit` again. Never run
     `test:unit` before the build; it declares no `depends` and passes vacuously
     against a stale `dist`.
+
+## 2026-08-23: #157 removed the far-longer case #163's note was built to catch
+
+`dogesir_` settled at 00:58:55Z in the `#163` boundary run. The far-longer
+precondition DID NOT REPRODUCE, and the cause is upstream rather than random.
+
+WHAT CHANGED, with the control run first because the obvious alternative is a
+corpus change:
+
+-   `corpusSha` is identical across the two runs,
+    `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`. Same archive, same source.
+-   Sliced SOURCE characters are identical, 1196 in both. The Chinese side is
+    sliced the same way.
+-   Sliced ARCHIVE characters fell from 3475 to 1818. The whole archive is 3716
+    characters, so 1898 of them now sit OUTSIDE the paired region.
+
+So the English side lost 1657 characters from the sliced set while the Chinese
+side did not move at all. That is `#157`, whose declined blocks now leave the
+slice.
+
+THE CONSEQUENCE FOR `#163`. Slice 3 still carries the same 114-character
+Chinese, but its archive rendering is now 226 characters, 1.98 times, where the
+08-18 run had 1766 characters at 15.49 times. The ratio tail is gone, the note
+stays silent, and it is CORRECT that it stays silent: there is no longer a
+disproportion to report.
+
+This narrows an earlier reading without overturning it. `contest-size-note.ts`
+records that both far-longer trips were page-only content rather than
+displacement, established by profiling the document and finding no donor slice.
+That holds. What it did not say is that the surplus was English the pairing had
+no business pulling into the slice at all, so the right fix was never to have a
+judge reason about it. `#157` does that at the pairing.
+
+ALSO SEEN, and it tightens a margin `#163` already called thin: at slice 2 the
+TRANSLATE lane produced 2170 characters against a 232-character source, 9.35
+times. That is a PRODUCED candidate closer to the 10 endpoint than the 9.27 the
+earlier census recorded as its maximum. It carries `block-count-gap`, which is
+excluded from the ratio-tail reasons, so no note fired. The judges caught it
+without one: five of six chose repair and four marked translate `unsupported`.
+
+WHAT IS STILL DECIDABLE. `wangzihao980` slice 3 is the FAR-SHORTER case, 102
+Chinese characters against 66, and `#157` cuts in the opposite direction there:
+removing unpaired English makes a slice's English side SHORTER, which can only
+make a far-shorter tail more reachable, not less. That entry has not started
+yet and is now the whole of the remaining verification.
+
+Nine of the ten slices reached the lane contest. Slice 5, at 276 characters
+against 244, was not contested and appears in `comparison` but not in
+`laneSelection`.
