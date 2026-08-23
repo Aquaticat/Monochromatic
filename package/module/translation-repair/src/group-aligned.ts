@@ -178,6 +178,100 @@ function positionsAfterDecline(
 }
 
 /**
+ * Places blocks held from one-sided runs, never emitting a run with an empty
+ * side and never dropping one.
+ *
+ * TWO SIDES MAKE A SLICE AND ONE SIDE FOLDS. Held blocks on both sides are a
+ * reviewable slice of their own. A single side is not: `runToChunk` builds a
+ * span from a run's first and last node, so a run with an empty side has no
+ * span and throws. Dropping it instead is the opposite failure, and it defeats
+ * `declinedTargetIds` refusing to decline a block precisely so it stays in
+ * review.
+ *
+ * THE TWO SIDES FOLD DIFFERENTLY, because an insertion run carries originals
+ * and a translation OFFSET rather than translation blocks. Held translations
+ * may fold back past an insertion, which contributes none of them. Held
+ * originals may not: that insertion's own originals sit between, so reaching
+ * past them would report the two groups out of document order. They join the
+ * insertion instead, which is where the nearest place for a rendering is.
+ *
+ * @param merged - runs settled so far, extended in place
+ *
+ * @param heldSource - original blocks waiting for somewhere to go, emptied here
+ *
+ * @param heldTarget - translation-side counterpart, emptied here
+ *
+ * @example
+ * ```ts
+ * placeHeldRuns({ merged, heldSource, heldTarget, },);
+ * ```
+ */
+function placeHeldRuns(
+  {
+    merged,
+    heldSource,
+    heldTarget,
+  }: {
+    readonly merged: AlignedRun[];
+    readonly heldSource: DocumentNode[];
+    readonly heldTarget: DocumentNode[];
+  },
+): void {
+  if ((heldSource.length === 0) && (heldTarget.length === 0))
+    return;
+  if ((heldSource.length > 0) && (heldTarget.length > 0)) {
+    merged.push({
+      kind: 'paired',
+      sourceRun: [ ...heldSource, ],
+      targetRun: [ ...heldTarget, ],
+    },);
+    heldSource.length = 0;
+    heldTarget.length = 0;
+    return;
+  }
+
+  /**
+   * Where the held blocks fold, before the last position when only
+   * translations are held and an insertion closed the list.
+   */
+  const at = (heldTarget.length > 0)
+    ? merged.findLastIndex(function isPaired(candidate,): boolean {
+      return candidate.kind === 'paired';
+    },)
+    : merged.length - 1;
+
+  /**
+   * Run absorbing them, absent when nothing settled yet can carry them, which
+   * leaves them held for a later run or for the caller's one-sided fallback.
+   */
+  const host = merged[at];
+  if (host === undefined)
+    return;
+  merged[at] = (host.kind === 'paired')
+    ? {
+      kind: 'paired',
+      sourceRun: [
+        ...host.sourceRun,
+        ...heldSource,
+      ],
+      targetRun: [
+        ...host.targetRun,
+        ...heldTarget,
+      ],
+    }
+    : {
+      kind: 'insertion',
+      sourceRun: [
+        ...host.sourceRun,
+        ...heldSource,
+      ],
+      targetOffset: host.targetOffset,
+    };
+  heldSource.length = 0;
+  heldTarget.length = 0;
+}
+
+/**
  * Folds runs that ended up with nothing on one side into a neighbour, EXCEPT
  * the ones holding originals nothing rendered.
  *
@@ -224,17 +318,17 @@ function mergeOneSidedRuns(
     if (run.anchor !== NOT_AN_INSERTION) {
       // An insertion run stands alone by construction: it carries originals and
       // the place their rendering goes, so there is nothing to fold it into and
-      // nothing it needs from a neighbour. Held blocks still flush ahead of it,
+      // nothing it needs from a neighbour. Held blocks still settle ahead of it,
       // since they precede it in the document.
-      if ((heldSource.length > 0) || (heldTarget.length > 0)) {
-        merged.push({
-          kind: 'paired',
-          sourceRun: [ ...heldSource, ],
-          targetRun: [ ...heldTarget, ],
-        },);
-        heldSource.length = 0;
-        heldTarget.length = 0;
-      }
+      //
+      // THIS USED TO SETTLE THEM ON EITHER SIDE BEING NON-EMPTY, which emitted
+      // a `paired` run with nothing on one side and threw in `runToChunk`. It
+      // reached 123 of 910 randomised reader-legal pairings over the corpus.
+      placeHeldRuns({
+        merged,
+        heldSource,
+        heldTarget,
+      },);
       merged.push({
         kind: 'insertion',
         sourceRun: [ ...run.sourceRun, ],
@@ -300,26 +394,29 @@ function mergeOneSidedRuns(
   // reaches here when both sides carry blocks, so this is what a supplied
   // pairing that pairs nothing produces once the budget splits the unpaired
   // blocks into separate runs: source-only and target-only runs, alternating,
-  // and never a two-sided one to flush into.
+  // and never a two-sided one to settle into.
   //
   // Discarding them dropped the whole section. It was silent, because every
   // later reader works from the runs, and it took `assertSliceCoverage` to see
   // it: 10 of 920 randomised in-range pairings over the corpus lost a section
   // this way.
   //
-  // BOTH SIDES, NOT EITHER. When only one side is held the section genuinely
-  // has an empty side, which is the module's stated exception: a one-sided run
-  // is a slice nobody can review, so the caller's fallback owns that case and
-  // this still returns nothing.
-  if ((heldSource.length > 0) && (heldTarget.length > 0))
-    return [
-      ...merged,
-      {
-        kind: 'paired',
-        sourceRun: [ ...heldSource, ],
-        targetRun: [ ...heldTarget, ],
-      },
-    ];
+  // A ONE-SIDED REMAINDER USED TO BE DROPPED HERE TOO, on the reasoning that a
+  // one-sided run is a slice nobody can review. So it is, but folding it into
+  // a settled run keeps its blocks in review, and dropping them defeated
+  // `declinedTargetIds`, which declines nothing unless the pairing placed every
+  // original precisely so an unclaimed translation stays. 534 of 3000
+  // randomised reader-legal pairings lost a block this way, and
+  // `assertSliceCoverage` then refused the document.
+  //
+  // The module's stated exception survives as the case `placeHeldRuns` cannot
+  // settle: a section with no two-sided run at all leaves the blocks held and
+  // returns without them, which is the caller's one-sided fallback.
+  placeHeldRuns({
+    merged,
+    heldSource,
+    heldTarget,
+  },);
   return merged;
 }
 
