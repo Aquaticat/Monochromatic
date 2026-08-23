@@ -17,12 +17,14 @@ import {
   type ChatJsonRequest,
   type ChunkPair,
   type ChunkRepairOutcome,
+  type IssueAuthorship,
   messageText,
   type RefinedSliceSettlement,
   type RepairModels,
   runRefinePhase,
   type SliceCache,
   type SyntheticClient,
+  type SyntheticModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -48,19 +50,36 @@ const SMOOTH_TEXT =
 const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
 
 /**
+ * Editor named as the author of `T1` where a case sets one.
+ *
+ * KEPT OUT OF THE REFINER ROSTER so a stored authorship carries two
+ * distinguishable ids, which is what lets an assertion tell a union of both
+ * stages apart from either stage alone.
+ */
+const EDITOR_WHO_DID_NOT_REFINE: SyntheticModelId = 'hf:zai-org/GLM-4.7-Flash';
+
+/**
+ * Refiner the scripted client answers as, which is the fixture's other editor.
+ */
+const REFINER_THAT_REWROTE: SyntheticModelId = 'hf:zai-org/GLM-5.2';
+
+/**
  * Roster with the lane on, refiners disjoint from checkers.
  */
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.2',],
   panelModelIds: ['hf:zai-org/GLM-5.2',],
-  editorModelIds: ['hf:zai-org/GLM-5.2',],
+  editorModelIds: [
+    REFINER_THAT_REWROTE,
+    EDITOR_WHO_DID_NOT_REFINE,
+  ],
   judgeModelIds: [
     'hf:zai-org/GLM-5.2',
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   ],
-  refinerModelIds: ['hf:zai-org/GLM-5.2',],
+  refinerModelIds: [REFINER_THAT_REWROTE,],
   checkerModelIds: [
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
@@ -91,22 +110,36 @@ const SLICES: readonly ChunkPair[] = [
 ];
 
 /**
+ * Authorship of hand-written fixture text: no model wrote it, so no checker
+ * in a case that leaves this alone is judging its own work.
+ */
+const NO_MODEL_WROTE_THE_FIXTURE: IssueAuthorship = {
+  perIssue: {},
+  everyIssue: [],
+};
+
+/**
  * Builds one settled accuracy outcome.
  *
  * @param resolvedIssueIds - issues the checkers confirmed in `T1`
+ *
+ * @param authorship - who wrote `T1`, which the phase must union with its
+ * own refiners on any slice where the rewrite ships
  *
  * @returns Outcome the phase refines
  *
  * @example
  * ```ts
- * const outcome = settledOutcome({ resolvedIssueIds: [], },);
+ * const outcome = settledOutcome({ resolvedIssueIds: [], authorship, },);
  * ```
  */
 function settledOutcome(
   {
     resolvedIssueIds,
+    authorship,
   }: {
     readonly resolvedIssueIds: readonly string[];
+    readonly authorship: IssueAuthorship;
   },
 ): ChunkRepairOutcome {
   return {
@@ -125,12 +158,7 @@ function settledOutcome(
     resolvedIssueIds,
     candidateResolvedIssueIds: [],
     repairRegions: [],
-    // Hand-written fixture text, so no model wrote it and no checker in these
-    // cases is judging its own work.
-    authorship: {
-      perIssue: {},
-      everyIssue: [],
-    },
+    authorship,
     accuracyPatchSelected: false,
     refined: false,
     rounds: [],
@@ -255,6 +283,8 @@ function scriptedPhase(
  *
  * @param models - roster override, defaulting to the lane-on roster
  *
+ * @param authorship - who wrote `T1`, defaulting to nobody
+ *
  * @returns Phase result
  *
  * @example
@@ -267,10 +297,12 @@ async function runPhase(
     resolvedIssueIds,
     checkerVerdict,
     models = MODELS,
+    authorship = NO_MODEL_WROTE_THE_FIXTURE,
   }: {
     readonly resolvedIssueIds: readonly string[];
     readonly checkerVerdict: string;
     readonly models?: RepairModels;
+    readonly authorship?: IssueAuthorship;
   },
 ) {
   return runRefinePhase({
@@ -278,7 +310,7 @@ async function runPhase(
     client: scriptedPhase({ checkerVerdict, },),
     targetText: REPAIRED_TEXT,
     slices: SLICES,
-    outcomes: [settledOutcome({ resolvedIssueIds, },),],
+    outcomes: [settledOutcome({ resolvedIssueIds, authorship, },),],
     models,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
@@ -340,6 +372,57 @@ await describe({
               return finding.includes('refine-recheck-passed',);
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'STORES BOTH STAGES ON A RECORD WHOSE REWRITE SHIPPED, so what the '
+        + 'record says about its own text stays true. The recheck already unions '
+        + 'the two for its own weighting, but that union lives in an argument and '
+        + 'dies with the call: left unstored, the record credits the editor with '
+        + 'words a refiner replaced, and a later reader would let that refiner '
+        + 'certify its own rewrite at full weight',
+      fn: async function bothStagesRideTheStoredRecord() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          checkerVerdict: 'fixed',
+          authorship: {
+            perIssue: {},
+            everyIssue: [EDITOR_WHO_DID_NOT_REFINE,],
+          },
+        },);
+
+        // The rewrite shipped, so both stages wrote what this record carries.
+        expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(phase.outcomes[0]?.authorship.everyIssue.toSorted(),).toStrictEqual(
+          [
+            EDITOR_WHO_DID_NOT_REFINE,
+            REFINER_THAT_REWROTE,
+          ].toSorted(),
+        );
+      },
+    },),
+
+    it({
+      name: 'NAMES NO REFINER ON A SLICE IT ROLLED BACK, which is the control '
+        + 'proving the union above is not stored unconditionally. The rewrite '
+        + 'those refiners produced is exactly the text the rollback threw away, '
+        + 'and naming them would discount a checker over words no reader saw',
+      fn: async function aRolledBackRewriteAddsNobody() {
+        const phase = await runPhase({
+          resolvedIssueIds: ['adjudicated/one',],
+          checkerVerdict: 'not-fixed',
+          authorship: {
+            perIssue: {},
+            everyIssue: [EDITOR_WHO_DID_NOT_REFINE,],
+          },
+        },);
+
+        // T1 came back, so its editor alone answers for this record.
+        expect(phase.outcomes[0]?.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(phase.outcomes[0]?.authorship.everyIssue,).toStrictEqual(
+          [EDITOR_WHO_DID_NOT_REFINE,],
+        );
       },
     },),
 
@@ -453,7 +536,7 @@ await describe({
          * confirmed resolved in the text it produced.
          */
         const accuracy: ChunkRepairOutcome = {
-          ...settledOutcome({ resolvedIssueIds: ['issue-1',], },),
+          ...settledOutcome({ resolvedIssueIds: ['issue-1',], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),
           changed: true,
         };
 
@@ -577,7 +660,7 @@ async function runCachedPhase(
     },),
     targetText: REPAIRED_TEXT,
     slices: SLICES,
-    outcomes: [settledOutcome({ resolvedIssueIds: [], },),],
+    outcomes: [settledOutcome({ resolvedIssueIds: [], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),],
     models: MODELS,
     refineCache: memoryRefineCache({ stored, },),
     signal: new AbortController().signal,
