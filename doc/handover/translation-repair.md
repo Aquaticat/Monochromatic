@@ -17372,3 +17372,62 @@ translations sharing no characters, and the aligner correctly refused all of the
 so no insertion could be reached at all. The insertion path is only exercisable on the `XingZ60`
 shape, headings carrying romanised names, because that is the only shape where the aligner has
 evidence to anchor on. That is a property of the corpus, not of the fixture.
+
+### `#100` landing 4 core is built and GFP-proven, 2026-08-23
+
+Commit `59d8a304e`. A run of original blocks the translation never rendered becomes its own
+INSERTION slice carrying the offset its rendering belongs at, instead of being folded into a
+neighbouring run.
+
+WHY THE FOLD WAS WORSE THAN LOSSY. A run's text is cut from its first offset to its last, so
+folding those blocks into a neighbour put them INSIDE that slice's span. No later stage could
+then tell a missing passage from part of the passage beside it, and nothing downstream could
+undo it. Measured on a four-paragraph fixture whose translation drops the third:
+
+-   before: one slice, source `[0,45)`, covering the untranslated paragraph inside it;
+-   after: `[0,21)` paired, `[23,34)` INSERTION at target offset 66, `[36,45)` paired.
+
+Offset 66 is exactly where the next rendered block begins. `assertSliceIndexing` passes.
+
+THE WALK CAN NAME THE PLACE, unlike the heading aligner. It is monotone by construction, so its
+steps ARE the cursor: the anchor is simply where the block sits, before the next rendered block
+or after the last one at the tail. `align-headings-optimal.ts` had to recover the same fact from
+a DP table because the heading aligner emits one decision per source row and then every unclaimed
+target row, carrying no cursor at all.
+
+THREE GUARDS, each shown necessary by a test that fails without it rather than by argument:
+
+-   A MERGE IS NOT AN OMISSION. Two originals rendered as one block arrive as a pairing plus a
+    `continuesPairing` step, and the second IS on the page. Same predicate
+    `declined-target-runs.ts` already uses, kept identical so two readings of "unplaced" cannot
+    drift apart.
+-   THE SCORER MAY NOT PROPOSE INSERTIONS. It scores kind, script-neutral tokens and length;
+    facing four originals rendered as one block it emits one pairing and three bare `source-only`
+    steps, indistinguishable from three originals nobody translated. THIS WAS FOUND BY A TEST,
+    not predicted: the existing "never emits a run empty on one side" case failed, and the cause
+    was the scorer's walk being read as absence.
+-   A PAIRING THAT PLACED NOTHING makes no original absent. Without this guard every original read
+    as unplaced, the unclaimed translation blocks had no run left to fold into, and they were
+    DROPPED. That is the silent section loss the merge function's own comment records (10 of 920
+    randomised pairings lost a section), reintroduced by my change and caught by the test that
+    was left behind for it.
+
+GFP, each mutation built and run separately then restored, each failing exactly one case:
+
+-   merge guard removed: `NEVER PROPOSES AN INSERTION FOR A MERGE`
+-   scorer guard removed: `never emits a run empty on one side`
+-   nothing-paired guard removed: `KEEPS a section whose every run came out one-sided`
+-   anchor reading backwards: `GIVES AN ORIGINAL NOTHING RENDERED ITS OWN RUN`
+
+Two existing tests were pinning the old contract and now state the new one.
+
+WHAT LANDING 4 STILL OWES: the corroboration gate at BLOCK scale. Section scale applies it in
+`chunk-insertion.ts`, where the whole page is in hand; subdivision runs per section, so the page
+shortfall has to be spent as a budget across the whole document in document order. The natural
+place is the driver, which already supports an insertion slice producing nothing:
+landing 3 records an unfilled passage per slice rather than losing the entry.
+Until that lands, a block-scale insertion is proposed on the pairing roster's verdict alone.
+
+The remaining hardening steps of the recorded algorithm (crossing refusal for an `A, B, A`
+ownership sequence, many-to-one ownership resolution, materializing a target interval by complete
+indices rather than by filtering) are separable from this core and unbuilt.
