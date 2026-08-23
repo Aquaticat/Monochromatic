@@ -28,6 +28,7 @@ import {
 
 import {
   type AlignedRun,
+  blockPairingToSteps,
   type DocumentNode,
   groupNodesAligned,
   parseDocument,
@@ -693,5 +694,174 @@ await describe({
       },
     },),
 
+  ],
+},);
+
+//region Roster-pairing disposal
+// What happens to blocks a supplied pairing left one-sided, which is the path
+// the deterministic scorer never produces.
+
+/**
+ * Six originals, which is the smallest count reaching every disposal site.
+ */
+const SIX_SOURCE_TEXT = '猫猫一号在窗台上睡觉。\n\n猫猫二号追蝴蝶。\n\n猫猫三号在门口等着。\n\n'
+  + '猫猫四号喝牛奶。\n\n猫猫五号爬树。\n\n猫猫六号晒太阳。\n';
+
+/**
+ * Five translations, so two originals have no counterpart.
+ */
+const FIVE_TARGET_TEXT = 'Cat one sleeps on the windowsill.\n\n'
+  + 'Cat two chases butterflies.\n\n'
+  + 'Cat three waits by the door.\n\n'
+  + 'Cat four drinks milk.\n\n'
+  + 'Cat five climbs the tree.\n';
+
+/**
+ * Three translations, the shape that leaves an unclaimed one at the very end.
+ */
+const THREE_TARGET_TEXT = 'Cat one sleeps on the windowsill.\n\n'
+  + 'Cat two chases butterflies.\n\n'
+  + 'Cat three waits by the door.\n';
+
+/**
+ * Groups a document pair under a roster pairing, at a budget nothing splits.
+ *
+ * @param sourceText - whole original
+ *
+ * @param targetText - whole translation
+ *
+ * @param pairs - correspondences a roster agreed on
+ *
+ * @returns Runs, beside the blocks they were built from
+ *
+ * @example
+ * ```ts
+ * const { runs, } = groupUnderPairing({ sourceText, targetText, pairs, },);
+ * ```
+ */
+function groupUnderPairing(
+  {
+    sourceText,
+    targetText,
+    pairs,
+  }: {
+    readonly sourceText: string;
+    readonly targetText: string;
+    readonly pairs: readonly { readonly source: number; readonly target: number; }[];
+  },
+) {
+  /**
+   * Original blocks in document order.
+   */
+  const sourceNodes = blocksOf({ text: sourceText, },);
+
+  /**
+   * Translation blocks in document order.
+   */
+  const targetNodes = blocksOf({ text: targetText, },);
+  return {
+    sourceNodes,
+    targetNodes,
+    runs: groupNodesAligned({
+      sourceNodes,
+      targetNodes,
+      sourceBudget: WIDE_BUDGET,
+      targetBudget: WIDE_BUDGET,
+      steps: blockPairingToSteps({
+        pairs,
+        sourceCount: sourceNodes.length,
+        targetCount: targetNodes.length,
+      },),
+    },),
+  };
+}
+
+//endregion Roster-pairing disposal
+
+await describe({
+  name: `${groupNodesAligned.name} disposing of one-sided runs`,
+  children: [
+    it({
+      name: 'LEAVES no run empty on a side when held originals settle ahead of an insertion, since '
+        + 'a run’s span is cut from its first node to its last and a run with no node on a side '
+        + 'has no span to cut',
+      fn: async () => {
+        const {
+          runs,
+          sourceNodes,
+          targetNodes,
+        } = groupUnderPairing({
+          sourceText: SIX_SOURCE_TEXT,
+          targetText: FIVE_TARGET_TEXT,
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 2,
+            },
+            {
+              source: 3,
+              target: 2,
+            },
+          ],
+        },);
+        expect(runs.some(function isEmptySided(run,): boolean {
+          return (run.kind === 'paired')
+            && ((run.sourceRun
+              .length
+              === 0)
+              || (run.targetRun
+                .length
+                === 0));
+        },),).toBe(false,);
+        expectCoversEveryBlockOnce({
+          runs,
+          sourceNodes,
+          targetNodes,
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS an unclaimed translation that arrives AFTER the last insertion, which has no '
+        + 'two-sided run left to fold into. `declinedTargetIds` declines nothing here, because the '
+        + 'pairing left originals unplaced, so the block is one review still owes a reader',
+      fn: async () => {
+        const {
+          runs,
+          sourceNodes,
+          targetNodes,
+        } = groupUnderPairing({
+          sourceText: SIX_SOURCE_TEXT,
+          targetText: THREE_TARGET_TEXT,
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 1,
+              target: 0,
+            },
+            {
+              source: 2,
+              target: 1,
+            },
+            {
+              source: 3,
+              target: 1,
+            },
+          ],
+        },);
+        expectCoversEveryBlockOnce({
+          runs,
+          sourceNodes,
+          targetNodes,
+        },);
+      },
+    },),
   ],
 },);
