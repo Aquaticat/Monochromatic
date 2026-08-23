@@ -16928,3 +16928,58 @@ which makes the null benign and answers `#106`.
 Damage cannot be chosen without asking first:
 coverage candidates are by construction the passages the aligners REFUSE to pair,
 so nothing outside the roster's own answer says which target text renders them.
+
+## `#106` ANSWERED for the block scale: the coverage wire can vote absence
+
+Ran `coverage-control-probe` over `mikaela_khara` at the current wire, roster of six, 118 seconds.
+Three cases reached `carried` with deletable evidence and were damaged:
+
+-   `pair 0 block 6`: `carried` to `absent`, absence votes 0 to 6, cut 6 spans of 112 chars.
+-   `pair 0 block 7`: `carried` to `partly-carried`, absence votes 0 to 0, cut 6 spans of 75 chars.
+-   `pair 0 block 9`: `carried` to `absent`, absence votes 0 to 5, cut 6 spans of 74 chars.
+
+Two of three flipped to a unanimous or near-unanimous absence verdict
+once the spans the roster itself had anchored on were deleted.
+
+THE INSTRUMENT IS NOT BLIND. The recorded block-scale null,
+ninety-six answers with not one vote for absence,
+therefore describes the translations rather than the wire.
+The wire returns `absent`, and returns it with every voice,
+when the rendering is actually gone.
+
+Read beside the deterministic grading of the same entry
+(no cross-block evidence reuse, no order inversions, no evidence too thin to render its source),
+the `carried` unanimity is benign on the measured entry:
+the spans are block-sized, distinct per block, in document order,
+and their removal is detected.
+
+### What one case shows and what it does not
+
+The middle case is worth keeping in view.
+Deleting the anchored spans moved it to `partly-carried` with no absence votes at all,
+which is what a passage partly rendered somewhere else in the page should produce.
+That is the wire discriminating, not failing:
+it declined to call absent something it could still partly find.
+
+Breadth is a separate claim. This is one entry and three cases,
+which is enough for REACHABILITY, the question the control was built to settle,
+and not enough to say the corpus carries everything.
+A reachability control needs one unambiguous flip, not a sample.
+
+### The objection still open when this was recorded
+
+A wire that answered `absent` after ANY deletion would produce the same flip
+and would be as useless as one that never votes absence.
+The middle case argues against that (a 75 character cut produced no absence votes),
+but it is not a size-matched cut taken from somewhere the roster did not point at.
+`coverage-control-decoy.ts` exists to make exactly that cut:
+same document, same passage, same run, same number of characters,
+taken as late in the page as it fits so the frontmatter and title are not what gets deleted.
+A sound wire keeps saying `carried` under it.
+
+### A background waiter reported completion while the probe was still running
+
+Third false finish in this work. The `until ! pgrep` waiter exited immediately with an empty log
+while `ps -o args=` showed the probe alive under the pid captured at launch.
+Do not trust a waiter's completion notification;
+confirm against `pgrep -af '<runner>.mjs' | grep -v 'bash -c'` and the pid before reading a result as final.
