@@ -233,6 +233,7 @@ export {
   summarizeWidths,
   type WidthArm,
   type WidthComparison,
+  type WidthDraw,
   type WidthRow,
   type WidthSummary,
 } from './corpus-run/editor-width-model.ts';

@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import type { SyntheticModelId, } from '../synthetic-catalog.ts';
 import {
   summarizeWidths,
+  type WidthDraw,
   type WidthRow,
 } from './editor-width-model.ts';
 import { resolveRunsDir, } from './run-config.ts';
@@ -20,9 +21,23 @@ import { resolveRunsDir, } from './run-config.ts';
 // decimal places into a sample that cannot carry one. The reader can divide.
 
 /**
- * Name the report is written under.
+ * Builds the name this draw's report is written under.
+ *
+ * NAMED PER DRAW so running the held-back half cannot overwrite the reading it
+ * exists to be checked against.
+ *
+ * @param draw - half of the sample this report describes
+ *
+ * @returns File name for that draw
+ *
+ * @example
+ * ```ts
+ * const name = reportName('b',);
+ * ```
  */
-const REPORT_NAME = 'editor-width.md';
+function reportName(draw: WidthDraw,): string {
+  return `editor-width-${draw}.md`;
+}
 
 /**
  * Renders one row as a line of counts.
@@ -70,11 +85,14 @@ function renderRow(row: WidthRow,): string {
  *
  * @param controlHeld - whether the positive control preferred intact text
  *
+ * @param draw - half of the sample these rows came from, which names the file
+ * so the held-back reading cannot overwrite the first one
+ *
  * @returns Path written, so the caller can name it
  *
  * @example
  * ```ts
- * const path = await writeWidthReport({ rows, skipped, headSha, narrowEditorIds, wideEditorIds, judgeModelIds, controlHeld, },);
+ * const path = await writeWidthReport({ rows, skipped, headSha, narrowEditorIds, wideEditorIds, judgeModelIds, controlHeld, draw, },);
  * ```
  */
 export async function writeWidthReport(
@@ -86,6 +104,7 @@ export async function writeWidthReport(
     wideEditorIds,
     judgeModelIds,
     controlHeld,
+    draw,
   }: {
     readonly rows: readonly WidthRow[];
     readonly skipped: Readonly<Record<string, number>>;
@@ -94,6 +113,7 @@ export async function writeWidthReport(
     readonly wideEditorIds: readonly SyntheticModelId[];
     readonly judgeModelIds: readonly SyntheticModelId[];
     readonly controlHeld: boolean;
+    readonly draw: WidthDraw;
   },
 ): Promise<string> {
   /**
@@ -111,7 +131,7 @@ export async function writeWidthReport(
    */
   const path = join(
     runsDir,
-    REPORT_NAME,
+    reportName(draw,),
   );
 
   await writeFile(
@@ -119,7 +139,10 @@ export async function writeWidthReport(
     [
       '# Editor width: does seating more editors buy a better repair',
       '',
-      `Pipeline commit \`${headSha}\`.`,
+      `Pipeline commit \`${headSha}\`, draw ${draw.toUpperCase()} of a sample split in two.`,
+      draw === 'a'
+        ? 'The other half is untouched, and is the reading to run if this one lands near its band.'
+        : 'This is the held-back half; read it beside draw A rather than instead of it.',
       '',
       `Narrow arm seats ${String(narrowEditorIds.length,)}: ${narrowEditorIds.join(', ',)}.`,
       `Wide arm seats ${String(wideEditorIds.length,)}: ${wideEditorIds.join(', ',)}.`,

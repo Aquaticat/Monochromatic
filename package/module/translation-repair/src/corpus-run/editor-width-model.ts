@@ -42,6 +42,15 @@ export type WidthComparison = 'nothing-shipped' | 'same-text' | 'differs';
 export type HeadToHeadVerdict = 'wide-wins' | 'narrow-wins' | 'position-decided' | 'tied';
 
 /**
+ * Which half of the sample a run spends.
+ *
+ * The sample is split rather than redrawn so a result near its own null band
+ * has a second, untouched reading available. That only means anything if the
+ * second half can actually be run, which is what this selects.
+ */
+export type WidthDraw = 'a' | 'b';
+
+/**
  * Which arm produced a text, so a verdict can name it without carrying it.
  */
 export type WidthArm = 'narrow' | 'wide';

@@ -3,7 +3,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { sampleBenchSlices, } from './bench-sample.ts';
 import { widthControlHolds, } from './editor-width-control.ts';
 import { gatherWidthInput, } from './editor-width-input.ts';
-import type { WidthRow, } from './editor-width-model.ts';
+import type {
+  WidthDraw,
+  WidthRow,
+} from './editor-width-model.ts';
 import { writeWidthReport, } from './editor-width-report.ts';
 import { runWidthSlice, } from './editor-width-slice.ts';
 import {
@@ -39,10 +42,29 @@ import {
 const DEFAULT_SLICES = 18;
 
 /**
+ * Half of the sample spent when the caller names no draw.
+ */
+const DEFAULT_DRAW: WidthDraw = 'a';
+
+/**
+ * Position within the sample each draw takes.
+ *
+ * Alternate positions rather than a front and back half, so both draws stay as
+ * evenly spread across the corpus as the whole sample was.
+ */
+const DRAW_POSITIONS: Readonly<Record<WidthDraw, number>> = {
+  a: 0,
+  b: 1,
+};
+
+/**
  * Runs the whole probe and writes its report.
  *
  * @throws Error when the panel fails the positive control, since every number
  * the draw would produce is unreadable once that happens
+ *
+ * @throws Error when the named draw is neither half, rather than quietly
+ * spending draw A and reporting it under whatever was asked for
  *
  * @example
  * ```ts
@@ -97,26 +119,49 @@ async function main(): Promise<void> {
   );
 
   /**
+   * Half of the sample this run spends, named on the command line.
+   */
+  const asked = process.argv[3] ?? DEFAULT_DRAW;
+
+  if ((asked !== 'a') && (asked !== 'b'))
+    throw new Error(
+      `editor width probe refused: draw must be 'a' or 'b', not '${asked}'; spending draw A `
+        + 'under another name would burn the held-back half of the sample without saying so',
+    );
+
+  /**
+   * That name, narrowed to the two draws that exist.
+   */
+  const draw: WidthDraw = asked;
+
+  /**
    * Whole sample, spread across the corpus.
    */
   const sample = await sampleBenchSlices({ count: wanted, },);
 
   /**
-   * Draw A, the even positions.
+   * Positions this draw takes out of the sample.
    *
-   * SPLIT RATHER THAN REDRAWN, so draw B exists already if draw A lands near
-   * its own null band. Taking alternate positions out of one spread sample
-   * keeps both halves as evenly spread as the whole.
+   * SPLIT RATHER THAN REDRAWN, so the other half exists already if this one
+   * lands near its own null band. Taking alternate positions out of one spread
+   * sample keeps both halves as evenly spread as the whole.
    */
-  const drawA = sample.filter(function isEven(
+  const wantedPosition = DRAW_POSITIONS[draw];
+
+  /**
+   * Slices this run spends, leaving the other half untouched.
+   */
+  const drawn = sample.filter(function inThisDraw(
     _slice,
     at,
   ) {
-    return (at % 2) === 0;
+    return (at % 2) === wantedPosition;
   },);
 
   console.log(
-    `WIDTH sample ${String(sample.length,)}, draw A ${String(drawA.length,)}, draw B held back`,
+    `WIDTH sample ${String(sample.length,)}, draw ${draw.toUpperCase()} ${
+      String(drawn.length,)
+    }, other half held back`,
   );
 
   /**
@@ -137,7 +182,7 @@ async function main(): Promise<void> {
         + 'asks about and the draw was not spent',
     );
 
-  console.log('WIDTH control held; running draw A',);
+  console.log(`WIDTH control held; running draw ${draw.toUpperCase()}`,);
 
   /**
    * Rows accumulated as they finish, so a killed run still has a report.
@@ -149,7 +194,7 @@ async function main(): Promise<void> {
    */
   const skipped: Record<string, number> = {};
 
-  for (const slice of drawA) {
+  for (const slice of drawn) {
     /**
      * Work the critics and panel found in this slice.
      */
@@ -207,6 +252,7 @@ async function main(): Promise<void> {
     wideEditorIds,
     judgeModelIds,
     controlHeld,
+    draw,
   },);
 
   console.log(`WIDTH wrote ${path}`,);
