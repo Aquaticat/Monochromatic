@@ -197,10 +197,11 @@ await describe({
   name: collectIssueAuthors.name,
   children: [
     it({
-      name: 'JOINS THE WINNER BY THE NUMBER JUDGES WERE SHOWN, NOT BY ARRAY POSITION. The slate here '
-        + 'is rotated, so the winner named 1 sits at position 1; reading the array by index would '
-        + 'name the loser, and would read nothing at all when the winner sits last',
-      fn: async function rotatedSlateStillNamesTheWinner() {
+      name: 'JOINS THE WINNER BY THE NUMBER JUDGES WERE SHOWN, NOT BY ARRAY POSITION. Numbers are '
+        + 'ONE-BASED, so the winner numbered 1 sits at position 0 and indexing the array by '
+        + 'selectedIndex silently names the LOSER instead. This is the shape that discriminates: '
+        + 'it fails with a wrong answer rather than with a throw',
+      fn: async function oneBasedNumbersAreNotArrayPositions() {
         expect(collectIssueAuthors({
           editor: editorOf({
             applied: [operationOf('kept',),],
@@ -209,12 +210,12 @@ await describe({
                 envelopeId: 'kept',
                 slate: [
                   slateEntryOf({
-                    index: 2,
-                    modelId: HELPER,
-                  },),
-                  slateEntryOf({
                     index: 1,
                     modelId: AUTHOR,
+                  },),
+                  slateEntryOf({
+                    index: 2,
+                    modelId: HELPER,
                   },),
                 ],
                 selectedIndex: 1,
