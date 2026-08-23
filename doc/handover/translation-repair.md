@@ -15921,3 +15921,95 @@ rather than what a caller may widen it against.
 
 GATE: suite 537 PASS / 0 FAIL / exit 0, `lint` 0 warnings 0 errors, `lint:types` exit 0.
 Commit `b28954495`.
+
+## #181: the build plan, after reading the deciding source
+
+### `CONTEST_POLICY` does not change at all
+
+Step 1 concluded the archive question could be stated once in the shared policy.
+It can be, and it should not be.
+The gap is lane-only.
+`consolidate-gate-wire.ts` offers `neither` between `consolidated` and `standing`,
+and `standing` is the archive,
+so the gate's decline already lands on the archive by construction.
+The lane contest's `neither` is the one that lands nowhere.
+
+The two sheets already carry their own `Return JSON` instructions outside the shared policy,
+so a lane-only field has an established place to live:
+`lane-contest-wire.ts`, beside its own instructions.
+`CONTEST_POLICY` stays byte-identical,
+which also leaves the measured `neither` wording untouched
+(10 of 13 against an 8-of-13 general-preference control).
+If the gate ever needs the same question, the block lifts to shared then.
+
+### The archive verdict must be recomputable, because the reader recomputes
+
+`LANE_CONTEST_QUORUM = 2` is frozen, and its TSDoc says why:
+`artifact-v2-read-contest.ts:221` recomputes every recorded verdict
+by calling `settleLaneContestBallots` over the stored ballots,
+and refuses the artifact when the stored verdict and the recomputed one disagree.
+
+So the archive verdict cannot be a number the stage decides and writes down.
+It has to be a pure function of the stored ballots,
+settled by mirroring `settleVotes` (`lane-contest-stage.ts:137`):
+quorum of two, and a clear winner or none.
+Endorsed at two or more and strictly ahead of declined endorses;
+declined at two or more and strictly ahead declines;
+anything else is unjudged.
+The threshold is mirrored rather than invented,
+so no second frozen constant enters the artifact contract.
+
+### The terminal question resolves differently than expected
+
+The archive verdict does NOT belong in `ConsolidationTerminal`
+(`consolidate-settle.ts:72`).
+That union describes how a CONSOLIDATION ended.
+The lane contest records into a different union,
+`ArtifactContestVerdictV2` (`artifact-v2-contest.ts:119`),
+whose three kinds are `quorum-not-met`, `settled-neither` and `lane-won`.
+`settled-neither` is exactly the state #181 is about,
+so the archive verdict rides there,
+and the eight-member consolidation terminal union is not touched.
+
+This also answers the sub-question about `no-standing-text` carrying two meanings.
+It does not have to be split:
+the ambiguity it was accused of belongs to a different layer than the one being fixed.
+
+### Ask always, count only on a decline
+
+Asking only after a decline needs a second call, a second cache entry and a second failure mode,
+which is the same objection that sank option A.
+The field is asked on every contest ballot and read only when the choice is `neither`.
+Answers on lane-won slices cost nothing extra and are free telemetry on archive quality.
+
+### Shipped bytes change nowhere
+
+Worth stating plainly, because it bounds the risk.
+`no-standing-text` already ships the archive,
+an endorsement ships the archive,
+and a decline also ships the archive, because nothing else exists.
+The deliverable of option B is EVALUATION AND RECORD, not different output.
+The regression guard follows from that:
+a re-run of a settled entry must publish byte-identical pages, the #172 pattern.
+What can move is judge behaviour and artifact shape, and those are what the tests cover.
+
+### Landmines to cover, not to assume away
+
+  - The cache keep-predicate is `outcome.usable >= LANE_CONTEST_QUORUM`
+    (`lane-contest-driver.ts:59`), which is on the voice count, not the verdict,
+    so an unjudged archive still caches. Old cache entries carry no archive field;
+    `lane-contest-cache-store.ts` must read their absence as unjudged rather than refuse them.
+  - A one-sided slice has no archive to judge. The field's meaning has to be guarded there.
+  - The archive must be judged on the SAME two questions as the candidates,
+    or it gets a laxer standard and the endorsement is biased.
+    Mostly-declined is a legitimate outcome, not a failure of the build.
+  - A new required schema field can raise schema-mismatch voice loss on weak models.
+    Measure contest-stage voice loss before and after on live slices; do not predict it.
+
+### Scope check, run rather than assumed
+
+`SETTLED_WITHOUT_A_GATE` (`consolidate-driver.ts:88`) names four terminals
+that never reached a judge.
+Whether `incumbent-only` and `slate-unjudged-standing` also ship unevaluated text
+is the same class of gap as #181.
+If they do, that is a NEW task, not #181 scope.
