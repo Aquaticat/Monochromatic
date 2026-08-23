@@ -303,6 +303,16 @@ export async function settleRefinedSlice(
     outcome: {
       ...withRefineRounds,
       repairedText: refined.refinedText,
+      // WHO WROTE THE TEXT THIS RECORD NOW CARRIES, which stopped being the
+      // editors alone the moment a refinement shipped. `retainsResolvedIssues`
+      // above unions both stages for its own recheck, but that union lives in
+      // an argument and dies with the call. Left un-stored, this record would
+      // credit the editors with words a refiner replaced, and any later reader
+      // of it would let that refiner certify its own rewrite at full weight.
+      authorship: collectRefinedAuthors({
+        editorAuthorship: outcome.authorship,
+        refineContributors: refined.contributors,
+      },),
       changed,
       // Dropped when the refinement landed back on the archive wording, by the
       // same rule the accuracy stage applies: a resolution credited to text the
