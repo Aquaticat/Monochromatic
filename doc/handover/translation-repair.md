@@ -17302,3 +17302,73 @@ oversize candidate was first written at exactly the page's own source length, so
 cost exactly the whole budget and was ADMITTED. That is correct behaviour, a candidate exactly
 filling the budget fits, and the fixture rather than the code was wrong. The fixture now uses
 twice the source length and carries a comment saying why.
+
+### `#100` landing 5 is built and GFP-proven, 2026-08-23
+
+An untranslated section now becomes a pair the lane can WRITE into, rather than only a finding
+saying nothing could be done. Two commits: `a0f3210b5` for the aligner half, `382f15f89` for the
+emission half.
+
+THE ALIGNER HALF. The DP scan collects, per source row, the target COLUMNS at which that row is
+skipped on an optimal path, rather than only whether it can be skipped. A column is a place:
+skipping at column `c` means the section belongs before target unit `c`.
+`InsertionAnchor` is three answers, never a nullable index:
+
+-   `proven`, no optimal alignment pairs it and every optimal alignment skips it at one place.
+-   `may-pair`, some optimal alignment matches it against existing translation, so what it says
+    may already be on the page and writing it in would duplicate content.
+-   `several-boundaries`, nothing pairs it but the optimal alignments disagree about where it
+    sits, so writing it in risks filing real content under the wrong section.
+
+The first refusal is a DUPLICATION and the second a MISFILING. A nullable index reports them as
+the same event.
+
+BOTH REFUSING ARMS ARE MEASURED REACHABLE, not defensive:
+
+-   `['Whiskers', 'Mittens', 'Boots']` against `['Sunbeam']` yields `may-pair` on all three.
+-   `['Whiskers', 'Mittens', 'Whiskers']` against `['Whiskers']` yields boundaries `[0, 1]` on the
+    orphan, since which side of the one surviving translation it belongs to is undetermined.
+
+The DP fill and scan moved to `align-headings-optimal.ts`; `align-headings-forced.ts` was at 283
+of its 300 code lines.
+
+THE EMISSION HALF applies the corroboration gate at chunking, where both whole texts are in hand.
+Measured on ONE fixture pair differing only in translation length:
+
+-   at 1.17 English characters per source character, the missing section is anchored at offset
+    106, which is exactly where its following heading `## Paws` begins;
+-   at 4.16, the identical gap is refused as `page-not-short`.
+
+Four named refusals, since they want opposite remedies: `may-pair`, `several-boundaries`,
+`page-not-short`, `beyond-shortfall`.
+
+A DEFECT FOUND IN MY OWN GATE while writing it: `pageIsShort` was first derived as
+`admitted.size > 0`, which reads "the page is not short" whenever the FIRST candidate exceeds the
+whole shortfall, even though the page is genuinely short. That is the same two-meanings collapse
+the refusal union exists to prevent, reintroduced by the code filling it in. It now measures
+`pageShortfall` directly.
+
+GFP, each mutation built and run separately, then restored:
+
+-   Removing the size signature fails exactly `REFUSES THE SAME MISSING SECTION when the page is
+    not short`.
+-   Removing the alignment signature fails exactly `NAMES WHY IT REFUSED`, and also trips the
+    pre-existing `REFUSES sections it cannot pair rather than merging them proportionally`, so two
+    independent guards catch it.
+-   Anchoring at the following section's END rather than its START fails exactly `ANCHORS A
+    MISSING SECTION FOR INSERTION`, which proves the offset assertion is real rather than
+    trivially satisfied.
+
+Restored, all cases pass.
+
+WHAT LANDING 5 DELIBERATELY DOES NOT DO. An entirely untranslated page still short-circuits
+before the aligner reaches it and gets no anchors. That path needs an explicit body-insertion
+boundary and must not default to offset zero, since front matter may occupy it. The aligner
+itself already answers this case correctly, proving column 0 for every section of an empty
+target; what is missing is the offset that column 0 means in a document with front matter.
+
+A FIXTURE LESSON worth keeping: the first attempt used Chinese headings with English
+translations sharing no characters, and the aligner correctly refused all of them as ambiguous,
+so no insertion could be reached at all. The insertion path is only exercisable on the `XingZ60`
+shape, headings carrying romanised names, because that is the only shape where the aligner has
+evidence to anchor on. That is a property of the corpus, not of the fixture.
