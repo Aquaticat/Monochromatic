@@ -240,6 +240,30 @@ await describe({
     },),
 
     it({
+      name: 'SPLITS THE DISCORDANT SLICES APART FROM THE AGREEING ONES, because both bits are read '
+        + 'off the same slice: one that moved and churned would have changed anyway, so counting it '
+        + 'as evidence for width would credit the roster with the lane arguing with itself',
+      fn: async function onlyDiscordantSlicesCarryTheAnswer() {
+        const summary = summarizeWidths({
+          rows: [
+            rowWith({ comparison: 'differs', narrowRepeatAgreed: false, },),
+            rowWith({ comparison: 'differs', narrowRepeatAgreed: false, },),
+            rowWith({ comparison: 'differs', narrowRepeatAgreed: true, },),
+            rowWith({ comparison: 'same-text', narrowRepeatAgreed: false, },),
+            rowWith({ comparison: 'same-text', narrowRepeatAgreed: true, },),
+          ],
+        },);
+
+        // Three moved and three churned, which read raw looks like a tie; only
+        // one slice each way is discordant, and those are the whole answer.
+        expect(summary.moved,).toBe(3,);
+        expect(summary.churned,).toBe(3,);
+        expect(summary.movedNotChurned,).toBe(1,);
+        expect(summary.churnedNotMoved,).toBe(1,);
+      },
+    },),
+
+    it({
       name: 'SEPARATES A SUPPRESSED REPAIR FROM AN IMPROVED ONE, because the wide arm fields twice '
         + 'the candidates against one selection minimum and can split its own vote into keeping the '
         + 'incumbent; both read as "differs" while being opposite answers to the question',

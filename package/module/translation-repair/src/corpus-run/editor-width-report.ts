@@ -170,6 +170,15 @@ export async function writeWidthReport(
         String(summary.wideOnly,)
       }`,
       `-   NULL BAND, narrow arm run twice shipped different text: ${String(summary.churned,)}`,
+      '',
+      'THE PAIRED READING, which is what actually decides it:',
+      `-   moved WITHOUT churning, so widening changed what the lane would not have: ${
+        String(summary.movedNotChurned,)
+      }`,
+      `-   churned without moving, so the lane changed its own mind alone: ${
+        String(summary.churnedNotMoved,)
+      }`,
+      '',
       `-   head-to-head, wide preferred in both orders: ${String(summary.wideWins,)}`,
       `-   head-to-head, narrow preferred in both orders: ${String(summary.narrowWins,)}`,
       `-   head-to-head, the seat decided rather than the text: ${String(summary.positionDecided,)}`,
@@ -180,6 +189,9 @@ export async function writeWidthReport(
       'shipped text changes that has nothing to do with width.',
       'A move count inside it is not evidence that widening did anything.',
       '',
+      'Both bits are measured on the SAME slice, so slices where they agree decide',
+      'nothing: one that moved and churned would have changed anyway, and one that did',
+      'neither says nothing. Read the two paired counts against each other.',
       'Both counts are read over every row, the trivial ones included, so they share a',
       'denominator and can be compared directly.',
       'A move is not by itself an improvement: the wide arm fields twice the candidates',

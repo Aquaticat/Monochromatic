@@ -265,6 +265,27 @@ export type WidthSummary = {
   readonly churned: number;
 
   /**
+   * Slices that moved WITHOUT churning.
+   *
+   * THIS AND ITS PARTNER ARE WHAT DECIDE IT. Both bits are measured on the same
+   * slice, so slices where they agree carry no information about which happens
+   * more: a slice that both moved and churned would have changed anyway, and a
+   * slice that did neither says nothing either way. The answer lives entirely in
+   * the slices where the two disagree, and comparing the raw totals throws that
+   * away.
+   */
+  readonly movedNotChurned: number;
+
+  /**
+   * Slices that churned without moving, the other half of the paired reading.
+   *
+   * When this is not smaller than {@link WidthSummary.movedNotChurned}, the lane
+   * changes its own mind at least as readily as doubling the roster changes it,
+   * and width has not been shown to do anything.
+   */
+  readonly churnedNotMoved: number;
+
+  /**
    * Slices only the narrow arm shipped a repair on, so widening SUPPRESSED a
    * repair rather than improving one.
    */
@@ -310,6 +331,38 @@ export type WidthSummary = {
  */
 function movedText(row: WidthRow,): boolean {
   return row.comparison === 'differs';
+}
+
+/**
+ * Whether widening changed this slice when the lane would not have.
+ *
+ * @param row - one slice's comparison
+ *
+ * @returns Whether it moved and did not churn
+ *
+ * @example
+ * ```ts
+ * const attributable = movedWithoutChurning(row,);
+ * ```
+ */
+function movedWithoutChurning(row: WidthRow,): boolean {
+  return movedText(row,) && (!churnedOnRepeat(row,));
+}
+
+/**
+ * Whether the lane changed this slice on its own without widening changing it.
+ *
+ * @param row - one slice's comparison
+ *
+ * @returns Whether it churned and did not move
+ *
+ * @example
+ * ```ts
+ * const noise = churnedWithoutMoving(row,);
+ * ```
+ */
+function churnedWithoutMoving(row: WidthRow,): boolean {
+  return churnedOnRepeat(row,) && (!movedText(row,));
 }
 
 /**
@@ -463,6 +516,14 @@ export function summarizeWidths(
     churned: countWhere({
       rows,
       holds: churnedOnRepeat,
+    },),
+    movedNotChurned: countWhere({
+      rows,
+      holds: movedWithoutChurning,
+    },),
+    churnedNotMoved: countWhere({
+      rows,
+      holds: churnedWithoutMoving,
     },),
     narrowOnly: countWhere({
       rows,
