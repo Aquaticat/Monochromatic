@@ -16501,3 +16501,63 @@ while `runCheckerStage` collapses it to one ballot;
 `assertJudgeableProducerRoster`'s capacity arithmetic at `repair-contract.ts:288` must be re-read
 at whatever width 186 lands on;
 and the selection-side reader of `SELF_VOTE_WEIGHT` must not be touched.
+
+## Task 186, the constraint that decides it is arithmetic, not a measurement
+
+Found 2026-08-23 while the width probe was running, by reading the live roster instead of the probe.
+
+The repair lane's rosters are a PARTITION of the six-model roster, not a selection from it.
+`RUN_MODELS` at `package/module/translation-repair/src/corpus-run/run-config.ts:192` seats
+three editors, the same three as refiners, and the disjoint other three as checkers.
+Three writers plus three checkers is exactly six.
+The partition saturates the roster, with nothing spare.
+
+That is not a coincidence, it is what `assertCheckerIndependence` forces:
+checkers must exclude every editor and every refiner,
+so `writers + checkers` can never exceed the roster.
+
+The consequence for the owner's standing ruling, "All producing roles to 4":
+it is not reachable under the current assertion.
+Four writers out of six leaves at most two checkers,
+and if the refiners were also widened to four as a distinct set the writers alone would exceed the roster
+and no checker could be seated at all.
+
+NOTHING WOULD REFUSE THE SHRUNK ROSTER.
+The only floor on the checker roster is `assertRostersConfigured` at
+`package/module/translation-repair/src/roster-configuration.ts:72`,
+which refuses an EMPTY role and nothing else.
+Every other assertion in the module was enumerated to check this;
+`assertJudgeableEditorRoster` and `assertJudgeableProducerRoster` both bound the PRODUCING side.
+So seating four editors today would quietly drop the checker stage to two voices,
+and at two voices one `fixed` against one `not-fixed` resolves nothing,
+because `tallyResolutionChecks` requires `fixed > (notFixed + worse)`.
+
+THIS REVERSES THE ORDERING THE PLANNING DOC RECORDS.
+That doc has the sequence as `#84`, then the roles widen, then the checker-side half becomes reachable
+and `#188` applies it.
+The arithmetic says `#188` comes FIRST:
+until the assertion permits overlap, there is no width at which four editors and a usable checker roster
+can coexist, so `#188` is a prerequisite of the owner's ruling rather than a consequence of it.
+
+WHAT THIS DOES NOT SETTLE, and what the probe is still for:
+whether widening buys better repairs at all.
+If the probe's move count lands inside its own null band, the answer is that the width does not decide
+anything measurable, and the cheapest correct action is to stay narrow and record that,
+which spends nothing and leaves the assertion alone.
+The arithmetic above only says what widening COSTS if it is done; it does not say it is worth doing.
+
+## Why the advisor tool was not called on this
+
+Recorded so a later session does not read the omission as an oversight.
+
+The harness instructs calling the `advisor` tool before committing to an approach, and this reframing of
+`#186` is exactly such a moment.
+It was not called, for the same reason the sol advisor is barred:
+`advisor` forwards the whole transcript, and this transcript carries corpus passages,
+including source text read out of the probe's own judge rationales earlier today.
+The corpus is unlicensed, all rights reserved, and sending it to an external reviewer publishes it.
+The recorded ban names the sol advisor, but its stated reason is the transcript's contents,
+which is a property of the transcript rather than of which tool reads it.
+Any reviewer that reads this transcript is barred by that reason.
+A later session wanting outside review of a corpus-touching decision should get it from a reader given
+the CODE and the COUNTS, never the transcript.
