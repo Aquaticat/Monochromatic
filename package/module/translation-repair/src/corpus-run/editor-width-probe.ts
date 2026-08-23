@@ -185,7 +185,7 @@ async function main(): Promise<void> {
   console.log(`WIDTH control held; running draw ${draw.toUpperCase()}`,);
 
   /**
-   * Rows accumulated as they finish, so a killed run still has a report.
+   * Rows accumulated as they finish.
    */
   const rows: WidthRow[] = [];
 
@@ -193,6 +193,36 @@ async function main(): Promise<void> {
    * Slices that carried no work, counted by the wall they hit.
    */
   const skipped: Record<string, number> = {};
+
+  /**
+   * Pipeline commit these rows were produced by, read BEFORE the draw so the
+   * report can be republished from inside the loop.
+   */
+  const headSha = await readHeadSha();
+
+  /**
+   * Rewrites the report over everything settled so far.
+   *
+   * CALLED AFTER EVERY SLICE, not once at the end. A draw of twenty slices runs
+   * for hours, and a run killed at slice eighteen with the write still ahead of
+   * it would throw away every hour it had already spent. Rewriting a few
+   * kilobytes of markdown twenty times costs nothing worth measuring against
+   * that.
+   *
+   * @returns Path written
+   */
+  async function publish(): Promise<string> {
+    return await writeWidthReport({
+      rows,
+      skipped,
+      headSha,
+      narrowEditorIds,
+      wideEditorIds,
+      judgeModelIds,
+      controlHeld,
+      draw,
+    },);
+  }
 
   for (const slice of drawn) {
     /**
@@ -211,6 +241,8 @@ async function main(): Promise<void> {
       console.log(
         `WIDTH ${outcome.entryId} slice ${String(outcome.chunkIndex,)}: ${outcome.refusal}`,
       );
+      // oxlint-disable-next-line eslint/no-await-in-loop -- the republish is the durability of this run: it must land before the next slice starts, which is exactly what awaiting it here means
+      await publish();
       continue;
     }
 
@@ -234,26 +266,14 @@ async function main(): Promise<void> {
         row.narrowRepeatAgreed ? 'agreed' : 'FLIPPED'
       }, ${row.verdict}`,
     );
+    // oxlint-disable-next-line eslint/no-await-in-loop -- see the republish above: a run killed mid-draw must still leave every slice it paid for
+    await publish();
   }
-
-  /**
-   * Pipeline commit these rows were produced by.
-   */
-  const headSha = await readHeadSha();
 
   /**
    * Where the report landed.
    */
-  const path = await writeWidthReport({
-    rows,
-    skipped,
-    headSha,
-    narrowEditorIds,
-    wideEditorIds,
-    judgeModelIds,
-    controlHeld,
-    draw,
-  },);
+  const path = await publish();
 
   console.log(`WIDTH wrote ${path}`,);
 }
