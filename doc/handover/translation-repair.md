@@ -15428,7 +15428,7 @@ so none suppresses any other.
 
 Measured on `Zha_Ke` in `vub171-20260822`:
 one duplicated span of about 877 words arriving as 866 findings.
-That was 866 of the corpus-wide 945,
+That was 866 of the corpus-wide 947,
 so any rate, trend or threshold read off `introduced-repetition`
 described one slice of one entry rather than the corpus.
 
@@ -15472,16 +15472,34 @@ which is the control:
 without it a lower number afterwards would not have been evidence,
 since the harness might simply have been measuring something else.
 
-    vub171-20260822  Zha_Ke   866 -> 2
-    vub-run1-20260821 Zha_Ke   73 -> 53
-    readable-20260820 Zha_Ke    6 -> 6
-    corpus-wide total         945 -> 61
+    vub171-20260822       Zha_Ke  866 -> 2
+    vub-run1-20260821     Zha_Ke   73 -> 53
+    readable-20260820     Zha_Ke    6 -> 6
+    win107-adj-20260820   lintong   1 -> 1
+    win107-panel-20260820 lintong   1 -> 1
+    corpus-wide total             947 -> 63
 
-CORRECTING AN EARLIER FIGURE:
-the total was recorded as 947 with 8 at `readable-20260820`.
-The exact recount is 945 with 6 there.
+CORRECTING THE FIRST CORRECTION MADE IN THIS SECTION, which was wrong the other way.
+That pass scanned three hardcoded run directories,
+reported 945 -> 61,
+and called the recorded 947 an overcount.
+947 was right for the corpus;
+only its per-directory split was not.
+`readable-20260820` holds 6 rather than 8,
+and the two unaccounted findings are one apiece
+in `win107-adj-20260820` and `win107-panel-20260820`, both on `lintong`.
+Rescanned over every directory under the scratch root,
+22 of which hold artifacts,
+the corpus-wide figure is 947 -> 63.
 
-61 is the number to carry forward.
+Neither `lintong` finding moves,
+for the same reason `readable-20260820` does not:
+a lone repeat has nothing to merge with.
+The fix only ever collapses a run of windows over one passage,
+so a corpus with no runaway in it reads the same before and after,
+which is itself the check that the change is narrow.
+
+63 is the number to carry forward.
 It describes the corpus rather than the reporting shape.
 `readable-20260820` is unchanged because all six of its repeats
 are shorter than the window, so nothing merges;
