@@ -16700,3 +16700,55 @@ everything it paid for.
 
 READ IT AGAINST THE NULL BAND, never on its own,
 and read the two one-sided ship counts before calling any move an improvement.
+
+## Task 186, what draw A measured
+
+Ran 2026-08-23, 09:24 to 14:01, twenty slices of a sample of forty, 4.7 hours.
+Sixteen slices carried work; four were skipped for holding no accepted issue.
+Positive control held on all three pairs before any of it was spent.
+Pipeline commit `4dbf53d0d`.
+
+THE CHANGE SIGNAL IS ENTIRELY INSIDE THE NULL BAND.
+
+-   shipped text moved when the editors doubled: 12 of 16
+-   NULL BAND, the narrow arm run twice shipping different text: 13 of 16
+-   slices that moved WITHOUT churning: 0
+-   slices that churned without moving: 1
+
+Read raw, "twelve of sixteen moved" sounds like width doing something.
+Read against the band it is nothing:
+the same roster run twice against the same work disagrees with itself thirteen times out of sixteen,
+which is MORE often than doubling the roster changed anything.
+The paired reading is the one that decides it, because both bits are measured on the same slice,
+and it is as null as a result can be:
+not one slice in sixteen shipped text under a doubled roster that the narrow roster would not have
+changed on its own.
+
+THE QUALITY READING IS SUGGESTIVE AND DOES NOT SETTLE.
+Of twelve contests, six were decided by the SEAT rather than the text, over both orders.
+Of the six that survived the swap, five preferred the wide arm and one the narrow.
+Five of six is not evidence at this size:
+under no true difference, a split that lopsided or worse arrives about one time in nine.
+Six of twelve contests turning on position is itself worth recording,
+because it bounds how finely this panel can separate two serious repairs of the same passage.
+
+NO SUPPRESSION APPEARED. Both arms shipped a repair on all sixteen rows.
+Nothing was suppressed and nothing was bought:
+the wide arm never split its vote into keeping the incumbent, which was the failure mode
+the one-sided ship counts were added to catch.
+
+A HONEST NOTE ABOUT THE CONTEST FIX.
+Because both arms shipped everywhere, the fallback collision had no case to fire on in this draw:
+with neither arm offering the untouched translation, the fallback text matched neither, and the old
+reader would have returned the same answers.
+The fix did not change these numbers.
+It was still required, because that could not be known before running, and it protects draw B and
+every later run, where a declining arm is not ruled out.
+
+WHY DRAW B IS BEING RUN rather than calling it here.
+The change reading is settled and null.
+The quality reading is not settled, and it is the one `#186` actually asks about.
+Draw B is the untouched half of the same sample, so running it doubles the head-to-head without
+redrawing and without looking at the first half twice.
+If the wide lean survives it, there is something to act on; if it does not, width is answered null on
+both readings and `#188` closes unbuilt.
