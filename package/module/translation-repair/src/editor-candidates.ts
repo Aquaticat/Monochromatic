@@ -180,6 +180,37 @@ export type ChunkCandidateSet = {
 };
 
 /**
+ * Presents one editor's patch as a judgeable candidate.
+ *
+ * SHARED BY THE SLATE AND THE FALLBACK, deliberately. The whole-chunk judges
+ * see candidates built here, and the patch that ships when they decline is
+ * built here too, so the producer recorded against shipped text is the same
+ * shape either way. Building the fallback's producer separately is how the two
+ * drift, and the discount on a checker judging its own work reads that
+ * producer.
+ *
+ * @param candidate - one editor's proposal, already through the apply gate
+ *
+ * @returns Candidate naming that editor as its sole producer
+ *
+ * @example
+ * ```ts
+ * const offered = chunkCandidateOf(candidate,);
+ * ```
+ */
+export function chunkCandidateOf(candidate: EditorCandidate,): Candidate<PatchOutcome> {
+  return {
+    producer: {
+      kind: 'model',
+      modelId: candidate.modelId,
+    },
+    value: candidate.patch,
+    rendered: candidate.patch
+      .patchedText,
+  };
+}
+
+/**
  * Assembles the whole-chunk candidate set, dropping the composite when it
  * repairs nothing and collapsing candidates whose text is identical.
  *
@@ -215,15 +246,7 @@ export function buildChunkCandidates(
    */
   const offered: readonly Candidate<PatchOutcome>[] = [
     ...candidates.map(function toChunkCandidate(candidate,): Candidate<PatchOutcome> {
-      return {
-        producer: {
-          kind: 'model',
-          modelId: candidate.modelId,
-        },
-        value: candidate.patch,
-        rendered: candidate.patch
-          .patchedText,
-      };
+      return chunkCandidateOf(candidate,);
     },),
     ...(composite.applied
       .length
@@ -277,7 +300,7 @@ export function buildChunkCandidates(
 }
 
 /**
- * Picks the patch that ships when chunk-level judges decline.
+ * Picks the editor whose patch ships when chunk-level judges decline.
  *
  * The fallback must repair something. Falling back to the untouched
  * translation would discard fixes the panel already ruled real, turning a
@@ -286,22 +309,22 @@ export function buildChunkCandidates(
  *
  * @param candidates - editor candidates in roster order, none empty
  *
- * @returns Patch with the most applied operations
+ * @returns Candidate with the most applied operations, named so shipped text has an author
  *
  * @throws {@link Error} when handed an empty candidate list
  *
  * @example
  * ```ts
- * const fallback = pickFallbackPatch({ candidates, },);
+ * const fallback = pickFallbackCandidate({ candidates, },);
  * ```
  */
-export function pickFallbackPatch(
+export function pickFallbackCandidate(
   {
     candidates,
   }: {
     readonly candidates: readonly EditorCandidate[];
   },
-): PatchOutcome {
+): EditorCandidate {
   /**
    * Roster-first candidate and the rest, so the fold starts from a real
    * incumbent instead of an absent one.
@@ -331,7 +354,7 @@ export function pickFallbackPatch(
     },
     nonNullishOrThrow(first,),
   );
-  return best.patch;
+  return best;
 }
 
 //endregion Editor candidate assembly

@@ -10,12 +10,14 @@ import type { PatchOperation, } from './apply-patch.ts';
 import { producerModelIds, } from './candidate-select-model.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import type { EditorStageResult, } from './repair-editor-stage.ts';
-import type { RepairRegion, } from './repair-region.ts';
 import {
   CHUNK_SCOPE_ENVELOPE,
   type RepairJudgedRound,
 } from './repair-round-record.ts';
-import type { IssueAuthorship, } from './resolution-authorship.ts';
+import {
+  type IssueAuthorship,
+  UNATTRIBUTED_TEXT,
+} from './resolution-authorship.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Pair shapes
@@ -167,20 +169,27 @@ function roundWinnerAuthors(round: RepairJudgedRound,): readonly SyntheticModelI
 }
 
 /**
- * Authorship recorded by every judged round over one chunk.
+ * Who won each envelope, mapped onto the issues those envelopes served.
+ *
+ * ENVELOPE ROUNDS ONLY, and only worth reading when the COMPOSITE shipped.
+ * A composite is assembled from these winners, so each one really did write
+ * the part of the shipped text its envelope covers. When any other candidate
+ * shipped, these winners lost and wrote nothing that reached the reader, which
+ * is why the caller decides whether to consult this at all rather than this
+ * function unioning itself into every answer.
  *
  * @param rounds - judged rounds that produced the text under check
  *
  * @param issuesByEnvelope - issue ids each surviving envelope served
  *
- * @returns Who wrote what, split by envelope scope and chunk scope
+ * @returns Authors per issue id
  *
  * @example
  * ```ts
- * const authorship = authorsFromRounds({ rounds, issuesByEnvelope, },);
+ * const perIssue = envelopeAuthorsFromRounds({ rounds, issuesByEnvelope, },);
  * ```
  */
-function authorsFromRounds(
+function envelopeAuthorsFromRounds(
   {
     rounds,
     issuesByEnvelope,
@@ -188,20 +197,7 @@ function authorsFromRounds(
     readonly rounds: readonly RepairJudgedRound[];
     readonly issuesByEnvelope: Readonly<Record<string, readonly string[]>>;
   },
-): IssueAuthorship {
-  /**
-   * Winners of rounds that decided the chunk as a whole, each named once.
-   */
-  const everyIssue = [
-    ...new Set(rounds
-      .filter(function decidedTheChunk(round,) {
-        return round.envelopeId === CHUNK_SCOPE_ENVELOPE;
-      },)
-      .flatMap(function toAuthors(round,) {
-        return roundWinnerAuthors(round,);
-      },),),
-  ];
-
+): Readonly<Record<string, readonly SyntheticModelId[]>> {
   /**
    * Winners of rounds that decided one envelope, keyed by that envelope.
    */
@@ -264,10 +260,7 @@ function authorsFromRounds(
       },),
   );
 
-  return {
-    perIssue,
-    everyIssue,
-  };
+  return perIssue;
 }
 
 //endregion
@@ -277,7 +270,14 @@ function authorsFromRounds(
 /**
  * Authors of the patched candidate the accuracy checkers judge.
  *
- * @param editor - editor stage result, carrying both its rounds and its gate
+ * READS THE PRODUCER THE STAGE RECORDED, not the rounds. One shipped patch has
+ * one producer, and the stage knows it at every exit, including the exit where
+ * judges declined to rank anything and a real editor's repair shipped anyway.
+ * That exit is the reason this cannot be reconstructed: its round holds ballots
+ * and no winner, so a reader of rounds alone leaves the author of the shipped
+ * text undiscounted and free to certify its own work at full weight.
+ *
+ * @param editor - editor stage result, carrying its producer, rounds and gate
  *
  * @param envelopes - editable envelopes offered to the editors
  *
@@ -297,54 +297,81 @@ export function collectIssueAuthors(
     readonly envelopes: readonly EditableEnvelope[];
   },
 ): IssueAuthorship {
-  return authorsFromRounds({
-    rounds: editor.rounds,
-    issuesByEnvelope: appliedIssuesByEnvelope({
-      envelopes,
-      applied: editor.patch
-        .applied,
-    },),
-  },);
+  /**
+   * Who wrote what ships, absent when the untouched translation does.
+   */
+  const { shippedProducer, } = editor;
+  if (shippedProducer === undefined)
+    return UNATTRIBUTED_TEXT;
+
+  // A composite is the one shipped patch whose parts have DIFFERENT authors,
+  // and the envelope rounds that assembled it record which. Splitting it that
+  // finely matters: crediting every contributor for every issue would discount
+  // a checker over text its neighbour wrote.
+  if (shippedProducer.kind === 'composite')
+    return {
+      perIssue: envelopeAuthorsFromRounds({
+        rounds: editor.rounds,
+        issuesByEnvelope: appliedIssuesByEnvelope({
+          envelopes,
+          applied: editor.patch
+            .applied,
+        },),
+      },),
+      everyIssue: [],
+    };
+
+  // Any other producer wrote the whole shipped chunk by itself, so it answers
+  // for every issue the credit can reach.
+  return {
+    perIssue: {},
+    everyIssue: producerModelIds(shippedProducer,),
+  };
 }
 
 /**
  * Authors of the refined text the naturalness recheck judges.
  *
- * BOTH STAGES' ROUNDS BELONG HERE. Refined text is the editor's repair rewritten
- * for naturalness, so an editor whose fix survived and a refiner who rewrote
- * around it have each had a hand in what the recheck reads.
+ * BOTH STAGES BELONG HERE, which is why this adds to the editor's answer rather
+ * than replacing it. Refined text is the editor's repair rewritten for
+ * naturalness, so an editor whose fix survived and a refiner who rewrote around
+ * it have each had a hand in what the recheck reads.
  *
- * @param rounds - editor and refine rounds together
+ * A refinement that lost contributes nobody, and the editor's authorship stands
+ * alone: the text that ships is then exactly what the editor produced.
  *
- * @param repairRegions - regions the accuracy stage actually replaced
+ * @param editorAuthorship - who wrote the repaired text this rewrote
+ *
+ * @param refineContributors - models whose rewrite won, empty when none did
  *
  * @returns Who wrote the refined text
  *
  * @example
  * ```ts
- * const authorship = collectRefinedAuthors({ rounds, repairRegions, },);
+ * const authorship = collectRefinedAuthors({ editorAuthorship, refineContributors, },);
  * ```
  */
 export function collectRefinedAuthors(
   {
-    rounds,
-    repairRegions,
+    editorAuthorship,
+    refineContributors,
   }: {
-    readonly rounds: readonly RepairJudgedRound[];
-    readonly repairRegions: readonly RepairRegion[];
+    readonly editorAuthorship: IssueAuthorship;
+    readonly refineContributors: readonly SyntheticModelId[];
   },
 ): IssueAuthorship {
-  return authorsFromRounds({
-    rounds,
-    issuesByEnvelope: Object.fromEntries(
-      repairRegions.map(function toEntry(region,): EnvelopeIssues {
-        return [
-          region.envelopeId,
-          region.issueIds,
-        ];
-      },),
-    ),
-  },);
+  if (refineContributors.length === 0)
+    return editorAuthorship;
+
+  return {
+    perIssue: editorAuthorship.perIssue,
+    everyIssue: [
+      ...new Set([
+        ...editorAuthorship.everyIssue,
+        ...refineContributors,
+      ],),
+    ],
+  };
 }
 
 //endregion

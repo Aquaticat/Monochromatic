@@ -41,8 +41,9 @@ export {
   buildChunkCandidates,
   buildEditorCandidates,
   type ChunkCandidateSet,
+  chunkCandidateOf,
   type EditorCandidateSet,
-  pickFallbackPatch,
+  pickFallbackCandidate,
 } from './editor-candidates.ts';
 
 //endregion Editor barrel

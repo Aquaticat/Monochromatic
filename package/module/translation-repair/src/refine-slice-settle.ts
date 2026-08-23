@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import type { SyntheticModelId, } from './synthetic-catalog.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { parseDocument, } from './parse-document.ts';
 import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
@@ -215,10 +216,12 @@ export async function settleRefinedSlice(
   const retained = await retainsResolvedIssues({
     client,
     models,
-    // BOTH STAGES' ROUNDS, not the bare `outcome`. The recheck reads text the
-    // editors repaired and the refiners then rewrote, so a checker that had a
-    // hand in either is judging its own work and must be discounted for it.
+    // BOTH STAGES' AUTHORS. The recheck reads text the editors repaired and the
+    // refiners then rewrote, so a checker that had a hand in either is judging
+    // its own work and must be discounted for it. The outcome carries the
+    // editor's half; the refiners are named here.
     outcome: withRefineRounds,
+    refineContributors: refined.contributors,
     sourceText,
     refinedText: refined.refinedText,
     signal,
@@ -334,8 +337,10 @@ export async function settleRefinedSlice(
  *
  * @param models - role roster
  *
- * @param outcome - settled accuracy outcome for this slice, carrying the rounds
- * of BOTH stages so authorship of the refined text is readable
+ * @param outcome - settled accuracy outcome for this slice, carrying who wrote
+ * the repaired text this rewrote
+ *
+ * @param refineContributors - models whose rewrite won, empty when none did
  *
  * @param sourceText - original chunk text
  *
@@ -359,6 +364,7 @@ async function retainsResolvedIssues(
     client,
     models,
     outcome,
+    refineContributors,
     sourceText,
     refinedText,
     signal,
@@ -368,6 +374,7 @@ async function retainsResolvedIssues(
     readonly client: SyntheticClient;
     readonly models: RepairModels;
     readonly outcome: ChunkRepairOutcome;
+    readonly refineContributors: readonly SyntheticModelId[];
     readonly sourceText: string;
     readonly refinedText: string;
     readonly signal: AbortSignal;
@@ -406,8 +413,8 @@ async function retainsResolvedIssues(
     patchedText: refinedText,
     issues: confirmed,
     authorship: collectRefinedAuthors({
-      rounds: outcome.rounds,
-      repairRegions: outcome.repairRegions,
+      editorAuthorship: outcome.authorship,
+      refineContributors,
     },),
     signal,
     perCallTimeoutMs,

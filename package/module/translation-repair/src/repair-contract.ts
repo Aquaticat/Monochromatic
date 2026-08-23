@@ -8,6 +8,7 @@ import type { ClaimAttribution, } from './critic-attribution.ts';
 import type { IntroducedDefectReport, } from './introduced-defect-probe.ts';
 import type { RepairRegion, } from './repair-region.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
+import type { IssueAuthorship, } from './resolution-authorship.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Repair contract
@@ -548,6 +549,18 @@ export type ChunkRepairOutcome = {
    * editor agreed on ships unjudged.
    */
   readonly rounds: readonly RepairJudgedRound[];
+
+  /**
+   * Who wrote {@link ChunkRepairOutcome.repairedText}, so a later stage can
+   * discount a checker judging text it wrote itself.
+   *
+   * STORED RATHER THAN DERIVED FROM {@link ChunkRepairOutcome.rounds}. The
+   * naturalness lane rechecks this text and may run from cache, long after the
+   * stage that knew the answer returned. Rounds cannot supply it: one exit
+   * ships a real editor's repair after the judges declined to rank anything,
+   * and a declined round records ballots without a winner.
+   */
+  readonly authorship: IssueAuthorship;
 
   /**
    * Declared names a winning patch would have dropped, empty on every slice

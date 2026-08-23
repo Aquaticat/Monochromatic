@@ -1,4 +1,5 @@
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
+import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
 
 //region Repair not applicable
 // What the repair lane has to say about a passage the archive never translated:
@@ -66,6 +67,8 @@ export function notApplicableRepair(
     // `changed` rather than this, so nothing is written at that boundary.
     repairedText: '',
     changed: false,
+    // No repair was attempted at all, so nothing here has an author.
+    authorship: UNATTRIBUTED_TEXT,
     issues: [],
     claimAttributions: [],
     heardCriticIds: [],

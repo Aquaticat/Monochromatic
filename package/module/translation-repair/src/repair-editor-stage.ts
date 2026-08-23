@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { buildLicensedQuotes, } from './licensed-quotes.ts';
 import type { PatchOutcome, } from './apply-patch.ts';
+import type { CandidateProducer, } from './candidate-select-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { buildEditorMessages, } from './edit-prompt.ts';
 import {
@@ -13,7 +14,8 @@ import {
 import {
   buildChunkCandidates,
   buildEditorCandidates,
-  pickFallbackPatch,
+  chunkCandidateOf,
+  pickFallbackCandidate,
 } from './editor-candidates.ts';
 import {
   applyCandidate,
@@ -68,6 +70,17 @@ export type EditorStageResult = {
    * Wire irregularities and selection telemetry in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Who wrote {@link EditorStageResult.patch}, absent when the untouched
+   * translation ships.
+   *
+   * The one authority on authorship for this stage. Reading it off the rounds
+   * instead misses the editor whose patch ships when the whole-chunk judges
+   * decline, and credits envelope winners whose text lost to a rival
+   * whole-chunk proposal.
+   */
+  readonly shippedProducer: CandidateProducer | undefined;
 };
 
 /**
@@ -239,6 +252,9 @@ export async function runEditorStage(
         .length,
       rounds: [],
       findings: stageFindings,
+      // No operation survived the gate, so the untouched translation ships and
+      // no editor wrote it.
+      shippedProducer: undefined,
     };
   }
 
@@ -285,7 +301,7 @@ export async function runEditorStage(
     candidates: chunkSet.candidates,
     judgeModelIds,
     sourceText,
-    indecisionFallback: pickFallbackPatch({ candidates: repairing, },),
+    indecisionFallback: chunkCandidateOf(pickFallbackCandidate({ candidates: repairing, },),),
     rejectionFallback: unchanged,
     signal,
     perCallTimeoutMs,
@@ -308,6 +324,7 @@ export async function runEditorStage(
 
   return {
     patch,
+    shippedProducer: chunkSelection.shippedProducer,
     heardEditors: gather.voices
       .length,
     rounds: [

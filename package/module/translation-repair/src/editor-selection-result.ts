@@ -2,6 +2,7 @@ import type {
   PatchOperation,
   PatchOutcome,
 } from './apply-patch.ts';
+import type { CandidateProducer, } from './candidate-select-model.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -119,6 +120,19 @@ export type ChunkPatchSelection = {
    * Ballots of the whole-chunk round, empty when no vote was held.
    */
   readonly rounds: readonly RepairJudgedRound[];
+
+  /**
+   * Who wrote {@link ChunkPatchSelection.patch}, absent when the untouched
+   * translation ships and nobody wrote anything.
+   *
+   * RECORDED RATHER THAN RECONSTRUCTED FROM THE ROUNDS. A declined round holds
+   * ballots and no winner, yet one disposition still ships a real editor's
+   * patch, so a reader of the rounds alone cannot name that editor: the
+   * information is not in its input. The stage knows the answer at every exit
+   * and states it here, which is what lets the self-certification discount
+   * reach a checker judging text it wrote itself.
+   */
+  readonly shippedProducer: CandidateProducer | undefined;
 };
 
 //endregion Editor selection result

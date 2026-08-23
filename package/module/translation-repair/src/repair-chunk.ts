@@ -15,6 +15,7 @@ import { buildEditorAddendum, } from './line-structure-addendum.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import { parseDocument, } from './parse-document.ts';
 import { collectRepairRegions, } from './repair-region.ts';
+import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
 import {
   assertCheckerIndependence,
   type ChunkRepairOutcome,
@@ -179,6 +180,9 @@ export async function repairChunk(
     accuracyPatchSelected: false,
     refined: false,
     rounds: [],
+    // Nothing was repaired on any exit that spreads this, so no model wrote the
+    // text and no checker can be certifying its own work.
+    authorship: UNATTRIBUTED_TEXT,
     droppedDeclaredNames: [],
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: critic.contradicted,
@@ -458,6 +462,7 @@ export async function repairChunk(
       tallies: checker.tallies,
     },),
     repairRegions,
+    authorship: appliedEnvelopes.authorship,
     introducedDefects,
     accuracyPatchSelected: patchSelected,
     refined: false,

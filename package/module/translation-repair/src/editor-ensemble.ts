@@ -358,7 +358,7 @@ export async function selectChunkPatch(
     readonly candidates: readonly Candidate<PatchOutcome>[];
     readonly judgeModelIds: readonly SyntheticModelId[];
     readonly sourceText: string;
-    readonly indecisionFallback: PatchOutcome;
+    readonly indecisionFallback: Candidate<PatchOutcome>;
     readonly rejectionFallback: PatchOutcome;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -389,6 +389,7 @@ export async function selectChunkPatch(
       patch: sole.value,
       findings: [],
       rounds: [],
+      shippedProducer: sole.producer,
     };
   }
 
@@ -441,9 +442,10 @@ export async function selectChunkPatch(
     if (outcome.disposition === 'indecision') {
       cl.info(`${outcome.reason}; shipping the strongest repair anyway`,);
       return {
-        patch: indecisionFallback,
+        patch: indecisionFallback.value,
         findings: outcome.findings,
         rounds,
+        shippedProducer: indecisionFallback.producer,
       };
     }
     cl.info(`${outcome.reason}; shipping no repair for this chunk`,);
@@ -451,6 +453,9 @@ export async function selectChunkPatch(
       patch: rejectionFallback,
       findings: outcome.findings,
       rounds,
+      // Nobody: the untouched translation ships, so no editor wrote it and no
+      // checker can be judging its own work here.
+      shippedProducer: undefined,
     };
   }
   cl.info(
@@ -463,6 +468,7 @@ export async function selectChunkPatch(
     patch: outcome.value,
     findings: outcome.findings,
     rounds,
+    shippedProducer: outcome.producer,
   };
 }
 

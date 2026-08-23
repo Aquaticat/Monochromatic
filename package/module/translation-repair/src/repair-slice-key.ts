@@ -264,8 +264,21 @@ import type { RepairModels, } from './repair-contract.ts';
  * the structural check as a substitute would leave a reader of the history
  * unable to tell when the shape moved. It costs nothing beyond version 28,
  * which no run had resumed under.
+ *
+ * VERSION 30, on 2026-08-23, for the same kind of change again: the record grew.
+ * `ChunkRepairOutcome` now carries `authorship`, naming the models that wrote
+ * the repaired text, because the naturalness lane rechecks that text and may do
+ * so from cache, long after the stage that knew the answer returned.
+ *
+ * A version-29 record is recomputed either way, since `isChunkRepairOutcome`
+ * now requires the field. The bump keeps the NUMBER honest, on the same
+ * reasoning version 29 was spent on: reading the structural check as a
+ * substitute leaves a reader of the history unable to tell when the shape moved.
+ * Resuming a version-29 record instead would silently recheck refined text with
+ * nobody named as its author, which is exactly the discount this field exists
+ * to feed.
  */
-export const SLICE_CACHE_VERSION = 29;
+export const SLICE_CACHE_VERSION = 30;
 /**
  * Everything about a repair run that changes what the models are ASKED, folded
  * into every cache key.
