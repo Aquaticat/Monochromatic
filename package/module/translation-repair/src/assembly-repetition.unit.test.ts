@@ -29,6 +29,31 @@ import {
  */
 const PASSAGE = 'do come back and visit the tabby by the gate again soon';
 
+/**
+ * A passage LONGER than the twelve-word window, so it spans several of them.
+ *
+ * Every word is at least five letters, so each window clears the content-word
+ * threshold on its own and the merge rather than the filter is what the test
+ * measures.
+ */
+const LONG_PASSAGE =
+  'afternoon sunlight arrived across weathered floorboards beneath sleeping tabby kittens breathing gently while distant harbour clocks counted quiet hours';
+
+/**
+ * Twelve words exactly, so it is one window and cannot merge with itself.
+ */
+const FIRST_PASSAGE =
+  'weathered floorboards beneath sleeping tabby kittens breathing gently through morning harbour sunlight';
+
+/**
+ * {@inheritDoc FIRST_PASSAGE}
+ *
+ * Shares no twelve-word window with {@link FIRST_PASSAGE}, so any merge between
+ * the two would have come from adjacency rather than from occurrence.
+ */
+const SECOND_PASSAGE =
+  'lanterns glimmered against darkened rooftops wherever autumn evenings settled quietly across sleeping courtyards';
+
 await describe({
   name: findIntroducedRepetitions.name,
   children: [
@@ -131,6 +156,74 @@ await describe({
         expect(findings.length,).toBe(0,);
       },
     },),
+    it({
+      name: 'REPORTS ONE LONG DUPLICATION ONCE, naming its whole length, '
+        + 'rather than once per window position. Growth stops at twelve words, '
+        + 'so a longer passage spans many windows of exactly that length and '
+        + 'the containment rule cannot merge them: they are all the same '
+        + 'length, so no one of them contains another. `#183` measured an '
+        + '877-word duplication arriving as 866 findings, which made every '
+        + 'corpus aggregate over this token a statement about one slice',
+      fn: async () => {
+        const findings = findIntroducedRepetitions({
+          archiveText: 'The kitten dozes quietly.',
+          shippedText: `${LONG_PASSAGE} ${LONG_PASSAGE}`,
+        },);
+
+        expect(findings.length,).toBe(1,);
+        expect(findings[0]?.phrase
+          .split(' ',)
+          .length,).toBe(LONG_PASSAGE.split(' ',).length,);
+        expect(findings[0]?.shippedCount,).toBe(2,);
+        expect(findings[0]?.archiveCount,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'REPORTS A PASSAGE SAID THREE TIMES ONCE TOO, carrying the count '
+        + 'rather than repeating the finding. The walk reaches a passage again '
+        + 'at each of its own occurrences, so reporting on arrival would '
+        + 'reintroduce the same over-counting one level down',
+      fn: async () => {
+        const findings = findIntroducedRepetitions({
+          archiveText: 'The kitten dozes quietly.',
+          shippedText: `${LONG_PASSAGE} ${LONG_PASSAGE} ${LONG_PASSAGE}`,
+        },);
+
+        expect(findings.length,).toBe(1,);
+        expect(findings[0]?.shippedCount,).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS TWO SEPARATE REPEATS SEPARATE even where they abut, which '
+        + 'is what makes merging on occurrences rather than on adjacency '
+        + 'load-bearing: two passages sitting next to each other are not '
+        + 'evidence of one passage, and a merge rule reading only the output '
+        + 'order would invent a span the document never said',
+      fn: async () => {
+        const findings = findIntroducedRepetitions({
+          archiveText: 'The kitten dozes quietly.',
+          // FIRST occurrence puts them side by side, SECOND separates them, so
+          // every window straddling the junction occurs exactly once and no
+          // run can cross it.
+          shippedText:
+            `${FIRST_PASSAGE} ${SECOND_PASSAGE} The kitten dozes quietly. ${FIRST_PASSAGE} `
+            + `Another sentence entirely, unrelated. ${SECOND_PASSAGE}`,
+        },);
+
+        expect(findings.length,).toBe(2,);
+        expect(findings.map(function toLength(found,): number {
+          return found.phrase
+            .split(' ',)
+            .length;
+        },),).toStrictEqual([
+          FIRST_PASSAGE.split(' ',).length,
+          SECOND_PASSAGE.split(' ',).length,
+        ],);
+      },
+    },),
+
     it({
       name: 'stays quiet on an untouched document',
       fn: async () => {

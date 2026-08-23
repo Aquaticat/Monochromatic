@@ -33,13 +33,25 @@ export {
   type AdjacentSliceText,
   findAdjacentRepetitions,
 } from './assembly-adjacent-repetition.ts';
-// `wordsOf` and `countPhrases` are exported from their own module so the
-// adjacency check can share them, and deliberately NOT re-exported here: they
-// are shared internals, not public API, and a barrel is what decides which.
+// SHARED INTERNALS ARE EXPORTED AND MARKED, rather than withheld. Keeping them
+// out of the barrel made them unreachable from a test that imports the built
+// bundle the way every other test here does, which bought nothing: it did not
+// stop a consumer depending on them, it only stopped this package proving they
+// work. `@internal` says what withholding was trying to say, and says it where
+// a reader of the declaration will see it.
 export {
+  countPhrases,
   findIntroducedRepetitions,
   repetitionFindings,
   type RepetitionFinding,
+  wordsOf,
 } from './assembly-repetition.ts';
+export {
+  countSpan,
+  type GrownSpan,
+  grownSpans,
+  indexWindows,
+  type WindowIndex,
+} from './assembly-repetition-span.ts';
 
 //endregion Assembly barrel

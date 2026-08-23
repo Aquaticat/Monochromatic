@@ -1,3 +1,9 @@
+import {
+  countSpan,
+  grownSpans,
+  indexWindows,
+} from './assembly-repetition-span.ts';
+
 //region Assembly repetition
 // DAMAGE THAT IS ONLY VISIBLE IN THE WHOLE DOCUMENT, which every per-slice
 // instrument in this package is structurally blind to.
@@ -66,9 +72,13 @@ const MIN_CONTENT_WORDS = 2;
 /**
  * Longest phrase considered, in words.
  *
- * A longer repeat is still reported, because a maximal match is grown from its
- * shorter parts rather than searched for directly, and any repeat this long is
- * already unmistakable.
+ * A longer repeat is still reported, and reported ONCE. Growth stops here, so
+ * a passage longer than this spans several windows of exactly this length, and
+ * a suppression rule that only drops a phrase contained in a longer one cannot
+ * merge them: they are all the same length, so no one of them contains
+ * another. `#183` measured what that cost, an 877-word duplication reported as
+ * 866 findings, and `assembly-repetition-span.ts` now grows this layer's
+ * windows into the passages they belong to before any of them is reported.
  */
 const MAX_PHRASE_WORDS = 12;
 
@@ -120,6 +130,10 @@ export type RepetitionFinding = {
  * ```ts
  * const words = wordsOf({ text: 'the kitten dozes', },);
  * ```
+ *
+ * Shared with the adjacency check; not part of the lane contract.
+ *
+ * @internal
  */
 export function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
   /**
@@ -205,6 +219,10 @@ function carriesContent({ phrase, }: { readonly phrase: string; },): boolean {
  * ```ts
  * const counts = countPhrases({ words, length: 4, },);
  * ```
+ *
+ * Shared with the adjacency check; not part of the lane contract.
+ *
+ * @internal
  */
 export function countPhrases(
   {
@@ -283,11 +301,91 @@ export function findIntroducedRepetitions(
   const shippedWords = wordsOf({ text: shippedText, },);
 
   /**
-   * Findings so far, longest first, used to suppress their own substrings.
+   * Findings so far, longest first.
    */
   const found: RepetitionFinding[] = [];
 
-  for (let length = MAX_PHRASE_WORDS; length >= MIN_PHRASE_WORDS; length -= 1) {
+  /**
+   * Passages that suppress their own substrings, which is NOT the same list.
+   *
+   * Every finding suppresses, but not everything that suppresses is a finding.
+   * A grown span whose occurrences are all inside a longer span already
+   * reported describes no second duplication, so it earns no finding; the
+   * shorter phrases inside it are derivative for exactly the same reason, so it
+   * still has to suppress them. Keeping one list for both was measured to
+   * report one duplication as eleven findings, the pieces reappearing at every
+   * shorter length once the span holding them stopped being reported.
+   */
+  const covering: string[] = [];
+
+  /**
+   * Windows of the longest length considered, indexed both ways.
+   *
+   * THIS LAYER IS HANDLED APART FROM THE REST, because it is the only one that
+   * can over-report. Growth stops at {@link MAX_PHRASE_WORDS}, so a passage
+   * longer than that spans several windows of this length and nothing below
+   * suppresses one same-length window with another. Every shorter layer is
+   * already covered by the containment rule, since a shorter phrase inside a
+   * reported passage is contained in it.
+   */
+  const longest = indexWindows({
+    words: shippedWords,
+    length: MAX_PHRASE_WORDS,
+  },);
+
+  /**
+   * Archive counts at that same length, for deciding which windows are ours.
+   */
+  const archiveLongest = countPhrases({
+    words: archiveWords,
+    length: MAX_PHRASE_WORDS,
+  },);
+
+  /**
+   * Offsets whose own window is an introduced repetition.
+   *
+   * JUDGED PER WINDOW, BEFORE ANY MERGING. A span is grown only from windows
+   * that each earn a finding on their own, so growing can join what would have
+   * been reported anyway and can never promote a window this test rejected.
+   */
+  const admitted = new Set<number>();
+  for (const [phrase, positions,] of longest.byPhrase) {
+    if (positions.length < 2)
+      continue;
+    if (positions.length <= (archiveLongest.get(phrase,) ?? 0))
+      continue;
+    if (!carriesContent({ phrase, },))
+      continue;
+    for (const at of positions)
+      admitted.add(at,);
+  }
+
+  for (
+    const span of grownSpans({
+      words: shippedWords,
+      length: MAX_PHRASE_WORDS,
+      index: longest,
+      admitted,
+    },)
+  ) {
+    // THE SHIPPED-OVER-ARCHIVE TEST IS NOT REPEATED HERE, because it cannot
+    // fail. A grown span contains the window it started from, so the archive
+    // says the span no more often than it says that window, which it already
+    // says less often than the shipped document does.
+    covering.push(span.phrase,);
+    if (span.accountedFor)
+      continue;
+    found.push({
+      phrase: span.phrase,
+      archiveCount: countSpan({
+        words: archiveWords,
+        phrase: span.phrase,
+      },),
+      shippedCount: span.count,
+    },);
+  }
+
+  for (let length = MAX_PHRASE_WORDS - 1; length >= MIN_PHRASE_WORDS; length -= 1) {
     /**
      * Every phrase of this length in the shipped document.
      */
@@ -319,11 +417,11 @@ export function findIntroducedRepetitions(
         continue;
       if (!carriesContent({ phrase, },))
         continue;
-      if (found.some(function contains(longer,): boolean {
-        return longer.phrase
-          .includes(phrase,);
+      if (covering.some(function contains(longer,): boolean {
+        return longer.includes(phrase,);
       },))
         continue;
+      covering.push(phrase,);
       found.push({
         phrase,
         archiveCount,
