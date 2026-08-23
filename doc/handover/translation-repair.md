@@ -14842,6 +14842,10 @@ Ballots outrank the build, because the run is the perishable thing.
 
 ## 2026-08-23: #157 removed the far-longer case #163's note was built to catch
 
+OVERREACHED, corrected later the same day.
+The measurement in this section is sound; the conclusion it licensed was not.
+See "2026-08-23: the far-longer tail is alive, and the note's own floor is why nobody saw it".
+
 `dogesir_` settled at 00:58:55Z in the `#163` boundary run. The far-longer
 precondition DID NOT REPRODUCE, and the cause is upstream rather than random.
 
@@ -14982,7 +14986,8 @@ currently distinguish the two cases.
 
 VERDICT FOR `#163`: the estimator and the note are LANDED and the note is
 verified to reach judges and to move an outcome where a lane wins. The
-far-longer half now serves no case that still occurs. The far-shorter half is
+far-longer half now serves no case that still occurs (WRONG, corrected below:
+it serves a case at 185x that the note's floor hides). The far-shorter half is
 demonstrated live, and it exposed the `settled-neither` fallback rather than
 being consumed by it.
 
@@ -15155,3 +15160,77 @@ What it does establish is that a gate outcome is not a stable property of an ent
 so nothing should treat a recorded terminal as one.
 Settling it would need the same entry re-settled twice on ONE pipeline version,
 which costs a pass and has not been authorized.
+
+## 2026-08-23: the far-longer tail is alive, and the note's own floor is why nobody saw it
+
+This corrects two claims recorded earlier the same day,
+in "2026-08-23: #157 removed the far-longer case #163's note was built to catch"
+and in the `#163` verdict beneath it.
+Both said the far-longer half of the size note serves no case that still occurs.
+It serves one at 185 times, in an artifact settled after `#157` landed.
+
+### How it surfaced, which is the part worth keeping
+
+Checking whether `#68`'s document-scale repetition check existed turned up `src/assembly-repetition.ts`,
+already built, already wired into both assemblers, already measured.
+Reading what it had FOUND rather than whether it existed
+is what led here.
+
+`vub171-20260822`'s `Zha_Ke` artifact carries 866 `introduced-repetition` findings.
+The token shape is the diagnosis:
+all 866 are exactly 12 words, archiveCount 0, shippedCount 2.
+Twelve is `MAX_PHRASE_WORDS`,
+so that is one long verbatim span duplicated in a lane's assembled document,
+reported once per 12-word window.
+
+In the artifact, `comparison` chunk 2 holds incumbent 56 characters, source 56 characters,
+and a `translateText` of 10381.
+The translate lane ran away on a 56-character slice and emitted 185 times its length, looping.
+
+The runaway did NOT ship.
+That slice settled `slate-kept-standing`, `gate=not-asked`, `shipped=unchanged`,
+so the archive's 56 characters stood.
+The instrument caught it and the downstream guard held.
+
+### The defect
+
+`contest-size-note.ts:162` returns the empty string when the source is under
+`MIN_RATIO_SOURCE_CHARS`, which is 80 (`displacement-ratio.ts:97`),
+BEFORE it looks at any candidate.
+So the judges deciding that slice were never told a candidate was 185 times its source.
+
+`sliceImplausibility` is not floored:
+it returns `target-far-longer` at 56 against 10381.
+The suppression exists only in the note the judges read.
+
+The floor's stated justification is that "a ratio over a twenty-character line reports rounding".
+That holds for `target-far-shorter`.
+It does not hold for `target-far-longer`, where 56 against 10381 is a runaway, not rounding.
+One floor is applied symmetrically to a rule that needs it asymmetrically.
+
+### Measured over every settled artifact
+
+Instrument: `~/temp/agent/182-floor-census.mjs`, ids and ratios only.
+
+    far-longer candidates across every settled artifact   40
+    the note TOLD judges about                             3
+    the 80-char floor SILENCED                            37
+
+    distinct slices silenced                              11
+    distinct entries                 saurikissa, Zha_Ke, zheermao101
+
+The floor inverts the instrument.
+Silenced ratios include 185.4, 137.0, 100.8, 99.1, 94.5, 69.7, 23.8 and 19.2.
+The three it does report are 15.5, 15.5 and 10.1,
+the three mildest in the population.
+The note is quiet exactly where the evidence is strongest.
+
+### What the earlier conclusion actually got wrong
+
+The earlier census was not wrong about what it measured.
+It compared the ARCHIVE side against the source, grouped by artifact date, and its numbers stand.
+It was wrong about what those numbers licensed concluding:
+one side of a comparison does not settle a question about both sides.
+The far-longer tail had moved to the candidate side, where that census never looked.
+
+`#182` carries the fix shape, its measured cost, and the two questions still open before building.
