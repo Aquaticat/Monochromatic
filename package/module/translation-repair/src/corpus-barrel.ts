@@ -227,6 +227,16 @@ export {
   benchWidths,
 } from './corpus-run/bench-report.ts';
 export {
+  classifyWidths,
+  type HeadToHeadVerdict,
+  readHeadToHead,
+  summarizeWidths,
+  type WidthArm,
+  type WidthComparison,
+  type WidthRow,
+  type WidthSummary,
+} from './corpus-run/editor-width-model.ts';
+export {
   lockRunsDir,
   RunsDirectoryBusyError,
 } from './corpus-run/runs-lock.ts';

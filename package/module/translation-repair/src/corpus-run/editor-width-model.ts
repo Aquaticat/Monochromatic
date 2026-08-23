@@ -189,7 +189,11 @@ export function readHeadToHead(
   if (firstOrderWinner === 'narrow')
     return 'narrow-wins';
 
-  return 'tied';
+  // Both orders agree and neither is `none`, which the check above already
+  // handled, so the pair is `wide` or `narrow` and both returned. Reaching here
+  // means an arm was added without a reading, and answering `tied` would report
+  // that omission as a measurement.
+  throw new Error(`unreachable: both orders named ${firstOrderWinner}, which is not an arm`,);
 }
 
 /**
@@ -234,47 +238,35 @@ export type WidthSummary = {
 };
 
 /**
- * Counts the rows into the summary the decision reads.
+ * Whether widening moved this slice's shipped text.
  *
- * @param rows - every slice the draw produced
+ * @param row - one slice's comparison
  *
- * @returns Counts, with no rate computed: a rate over a handful of slices
- * invites reading three of seven as a percentage
+ * @returns Whether the two arms shipped different text
  *
  * @example
  * ```ts
- * const summary = summarizeWidths({ rows, },);
+ * const moved = movedText(row,);
  * ```
  */
-export function summarizeWidths(
-  { rows, }: { readonly rows: readonly WidthRow[]; },
-): WidthSummary {
-  /**
-   * Rows that got far enough to say anything about width.
-   */
-  const compared = rows.filter(function reached(row,) {
-    return row.comparison !== 'nothing-shipped';
-  },);
+function movedText(row: WidthRow,): boolean {
+  return row.comparison === 'differs';
+}
 
-  return {
-    slices: compared.length,
-    moved: countWhere({
-      rows: compared,
-      holds: function movedText(row,) {
-        return row.comparison === 'differs';
-      },
-    },),
-    churned: countWhere({
-      rows: compared,
-      holds: function churned(row,) {
-        return !row.narrowRepeatAgreed;
-      },
-    },),
-    wideWins: countVerdict({ rows: compared, verdict: 'wide-wins', },),
-    narrowWins: countVerdict({ rows: compared, verdict: 'narrow-wins', },),
-    positionDecided: countVerdict({ rows: compared, verdict: 'position-decided', },),
-    tied: countVerdict({ rows: compared, verdict: 'tied', },),
-  };
+/**
+ * Whether the same slate judged twice disagreed with itself.
+ *
+ * @param row - one slice's comparison
+ *
+ * @returns Whether the repeat shipped different text
+ *
+ * @example
+ * ```ts
+ * const churned = churnedOnRepeat(row,);
+ * ```
+ */
+function churnedOnRepeat(row: WidthRow,): boolean {
+  return !row.narrowRepeatAgreed;
 }
 
 /**
@@ -300,7 +292,9 @@ function countWhere(
     readonly holds: (row: WidthRow) => boolean;
   },
 ): number {
-  return rows.filter(holds,).length;
+  return rows
+    .filter(holds,)
+    .length;
 }
 
 /**
@@ -326,9 +320,64 @@ function countVerdict(
     readonly verdict: HeadToHeadVerdict;
   },
 ): number {
-  return rows.filter(function carries(row,) {
-    return row.verdict === verdict;
-  },).length;
+  return rows
+    .filter(function carries(row,) {
+      return row.verdict === verdict;
+    },)
+    .length;
+}
+
+/**
+ * Counts the rows into the summary the decision reads.
+ *
+ * @param rows - every slice the draw produced
+ *
+ * @returns Counts, with no rate computed: a rate over a handful of slices
+ * invites reading three of seven as a percentage
+ *
+ * @example
+ * ```ts
+ * const summary = summarizeWidths({ rows, },);
+ * ```
+ */
+export function summarizeWidths(
+  { rows, }: { readonly rows: readonly WidthRow[]; },
+): WidthSummary {
+  /**
+   * Rows that got far enough to say anything about width.
+   */
+  const compared = rows
+    .filter(function reached(row,) {
+      return row.comparison !== 'nothing-shipped';
+    },);
+
+  return {
+    slices: compared.length,
+    moved: countWhere({
+      rows: compared,
+      holds: movedText,
+    },),
+    churned: countWhere({
+      rows: compared,
+      holds: churnedOnRepeat,
+    },),
+    wideWins: countVerdict({
+      rows: compared,
+      verdict: 'wide-wins',
+    },),
+    narrowWins: countVerdict({
+      rows: compared,
+      verdict: 'narrow-wins',
+    },),
+    positionDecided: countVerdict({
+      rows: compared,
+      verdict: 'position-decided',
+    },),
+    tied: countVerdict({
+      rows: compared,
+      verdict: 'tied',
+    },),
+  };
 }
 
 //endregion Editor width model
