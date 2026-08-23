@@ -205,6 +205,7 @@ export {
   type CoverageVerdict,
   judgeCoverage,
 } from './coverage-verdict.ts';
+export { admitInsertions, } from './insertion-admission.ts';
 export {
   admitWithinShortfall,
   type CandidatePassage,

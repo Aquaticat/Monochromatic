@@ -7,6 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import { admitInsertions, } from './insertion-admission.ts';
 import {
   neighbouringIncumbent,
   neighbouringSource,
@@ -224,11 +225,50 @@ export async function translateDocument(
    * question, and deriving one from the other would lose that.
    */
   const unfilledFindings: string[] = [];
-  for (const slice of prepared.slices) {
+
+  /**
+   * Slices with no translation beside them that the page has room to be missing.
+   *
+   * THE SECOND SIGNATURE, per
+   * `doc/decision/translation-repair-absence-verdict.md`. The pairing leaving an
+   * original unplaced is one reading; a page measurably shorter than its source
+   * predicts is the other, and both are required before anything is written in.
+   * Computed ONCE over the whole document, because the shortfall is a property
+   * of the page rather than of a section, and spending it per section would
+   * admit several times what the page is actually missing.
+   */
+  const admitted = admitInsertions({
+    slices: prepared.slices,
+    sourceText: prepared.sourceText,
+    targetText: prepared.targetText,
+  },);
+
+  for (const [slicePosition, slice,] of prepared.slices
+    .entries()) {
     /**
      * Global index of this slice, which every record and replacement names.
      */
     const { chunkIndex, } = slice.target;
+
+    if (isInsertionChunk(slice.target,) && (!admitted.has(slicePosition,))) {
+      // NOTHING IS BOUGHT HERE. The pairing says this original went unrendered,
+      // but the page carries at least as much English as its source predicts, so
+      // the likelier reading is that the passage was merged into a neighbour and
+      // writing it in would put a second rendering of it into the document.
+      tl.warn(
+        `slice ${String(chunkIndex,)}: an original with no translation beside it, but the page `
+          + 'has no room to be missing it; nothing was bought and the passage stays as it is',
+      );
+      unfilled.push({
+        chunkIndex,
+        reason: 'not-corroborated',
+        findings: [],
+      },);
+      unfilledFindings.push(
+        `${absenceFinding({ reason: 'not-corroborated', },)} chunk ${String(chunkIndex,)}`,
+      );
+      continue;
+    }
 
     /**
      * What this slice cost, reported however this loop body is left.

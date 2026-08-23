@@ -1,6 +1,9 @@
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
-import type { TranslateAbsenceReason, } from './translate-absence.ts';
+import type {
+  TranslateAbsenceReason,
+  UnfilledReason,
+} from './translate-absence.ts';
 import type { SliceAlignmentAssessment, } from './translate-alignment.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 import type { SliceSelection, } from './slice-selection.ts';
@@ -193,7 +196,7 @@ export type UnfilledSlice = {
   /**
    * Why this run produced none either.
    */
-  readonly reason: TranslateAbsenceReason;
+  readonly reason: UnfilledReason;
 
   /**
    * What the stage gathered before it gave up: which translators were heard,

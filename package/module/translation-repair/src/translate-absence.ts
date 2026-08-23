@@ -78,6 +78,30 @@ export type TranslateAbsenceReason =
   | 'no-candidate-backed';
 
 /**
+ * Why a slice with no incumbent was left unfilled, including reasons no stage
+ * can produce.
+ *
+ * WIDER THAN {@link TranslateAbsenceReason} ON PURPOSE. Every reason there
+ * describes a round that was PAID FOR and came back empty, which is the only
+ * kind of answer a stage can give. The driver can also decline to buy a round at
+ * all, and giving the stage a word for that would let a reader think it might
+ * return one.
+ */
+export type UnfilledReason =
+  | TranslateAbsenceReason
+  /**
+   * The page has no room to be missing this passage, so nothing was bought.
+   *
+   * Decided before anything is spent, by
+   * `doc/decision/translation-repair-absence-verdict.md`: a pairing leaving an
+   * original unplaced is one signature and a page measurably shorter than its
+   * source predicts is the other, and both are required. A page of ordinary
+   * length more likely merged that passage than dropped it, and writing it in
+   * would put a second rendering of it into a memorial document.
+   */
+  | 'not-corroborated';
+
+/**
  * Raised when selection returned text that says nothing for a source that does.
  *
  * A DIFFERENT FAULT FROM ABSENCE, and separate because the two have opposite
@@ -232,7 +256,7 @@ export function blankAgainst(
  * ```
  */
 export function absenceFinding(
-  { reason, }: { readonly reason: TranslateAbsenceReason; },
+  { reason, }: { readonly reason: UnfilledReason; },
 ): string {
   return `translate-unfilled (${reason})`;
 }
