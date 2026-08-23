@@ -148,10 +148,19 @@ export function appliedIssuesByEnvelope(
 function roundWinnerAuthors(round: RepairJudgedRound,): readonly SyntheticModelId[] {
   if (round.kind !== 'selected')
     return [];
-  return producerModelIds(
-    nonNullishOrThrow(round.slate[round.selectedIndex],)
-      .producer,
-  );
+
+  /**
+   * Slate entry the judges picked, joined by the number they were SHOWN rather
+   * than by array position. `selectedIndex` is one-based, and the slate may be
+   * rotated before it reaches the judges, so position and number are two
+   * different things: indexing the array reads the neighbour, or nothing at all
+   * when the winner was last.
+   */
+  const winner = round.slate
+    .find(function won(entry,) {
+      return entry.index === round.selectedIndex;
+    },);
+  return producerModelIds(nonNullishOrThrow(winner,).producer,);
 }
 
 /**
