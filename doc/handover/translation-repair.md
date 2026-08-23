@@ -15234,3 +15234,40 @@ one side of a comparison does not settle a question about both sides.
 The far-longer tail had moved to the candidate side, where that census never looked.
 
 `#182` carries the fix shape, its measured cost, and the two questions still open before building.
+
+### The floor fix, landed and verified against the shipped function
+
+`cf1c547c7`. `contest-size-note.ts` now applies its source-length floor to
+`target-far-shorter` alone; `target-far-longer` is reported at any original length.
+
+GFP, done the cheap way rather than by juggling files:
+the tests import from `dist`, so writing the new surplus case and running it BEFORE rebuilding
+runs it against the pre-fix build.
+It failed there with `expected '' to include 'SIZE NOTE'`, and passes after the rebuild.
+Both shortfall cases pass either way, which is the point of an asymmetric floor.
+
+The test that used to sit in that spot asserted silence for an 800-character rendering
+of a 79-character original.
+That is 10.1 times, exactly the shape the note exists to surface,
+so the suite had been pinning the defect in place.
+
+Verified by asking the shipped `contestSizeNote` itself,
+with the three labels `lane-contest-wire.ts` passes,
+over every comparison row on disk (`~/temp/agent/182-verify.mjs`):
+
+    eligible rows          267
+    note fired before        6
+    note fires now          23   (8.6%)
+
+The 23 rows are 9 distinct slices across 5 entries,
+`saurikissa`, `zheermao101`, `Zha_Ke`, `wangzihao980` and `dogesir_`,
+counted more than once because several entries were settled in more than one run directory.
+`vub171-20260822`'s `Zha_Ke` chunk 2, the 185x runaway, is among them.
+
+Gate: `lint` 0 warnings 0 errors, `lint:types` exit 0, suite 531 PASS / 0 FAIL / exit 0,
+identical to baseline.
+
+`displacement-class.ts:361` keeps its blanket floor deliberately.
+It excludes short slices from SETTING the document baseline,
+which is right in both directions:
+a twenty-character slice should not get to define what normal expansion is.
