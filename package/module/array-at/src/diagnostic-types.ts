@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { NegativeNumber, } from './type-arithmetic-number.ts';
+
 //region Independent diagnostics
 
 /**
@@ -84,6 +86,7 @@ export type PastEndDiagnostic<
   Distance extends number = number,
   LastIndex extends number = number,
   Length extends number = number,
+  MinimumNegativeIndex extends number = NegativeNumber<Length>,
 > = {
   readonly code: 'out-of-range';
   readonly message: `Index ${Index} is past the end by ${Distance}.`;
@@ -95,7 +98,7 @@ export type PastEndDiagnostic<
   readonly distance: Distance;
   readonly minimumPositiveIndex: 0;
   readonly maximumPositiveIndex: LastIndex;
-  readonly minimumNegativeIndex: number;
+  readonly minimumNegativeIndex: MinimumNegativeIndex;
   readonly maximumNegativeIndex: -1;
 };
 
@@ -112,6 +115,7 @@ export type BeforeStartDiagnostic<
   Distance extends number = number,
   LastIndex extends number = number,
   Length extends number = number,
+  MinimumNegativeIndex extends number = NegativeNumber<Length>,
 > = {
   readonly code: 'out-of-range';
   readonly message: `Index ${Index} is before the start by ${Distance}.`;
@@ -123,7 +127,7 @@ export type BeforeStartDiagnostic<
   readonly distance: Distance;
   readonly minimumPositiveIndex: 0;
   readonly maximumPositiveIndex: LastIndex;
-  readonly minimumNegativeIndex: number;
+  readonly minimumNegativeIndex: MinimumNegativeIndex;
   readonly maximumNegativeIndex: -1;
 };
 

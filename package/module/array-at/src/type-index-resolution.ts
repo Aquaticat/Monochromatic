@@ -16,6 +16,7 @@ import type {
   Decrement,
   IsExactUndefined,
   IsUsableIndexText,
+  NegativeNumber,
   SubtractNumbers,
 } from './type-arithmetic-number.ts';
 
@@ -96,7 +97,8 @@ type ResolveNegativeLiteralIndex<
     Index,
     SubtractNumbers<Magnitude, Length> & number,
     Decrement<Length>,
-    Length
+    Length,
+    NegativeNumber<Length>
   >>
   : SubtractNumbers<Length, Magnitude>;
 
@@ -120,14 +122,16 @@ type ResolvePositiveLiteralIndex<
     Index,
     SubtractNumbers<Magnitude, Decrement<Length>> & number,
     Decrement<Length>,
-    Length
+    Length,
+    NegativeNumber<Length>
   >>
   : SubtractNumbers<Length, Magnitude> extends 0
     ? ReturnType<typeof createPastEndDiagnostic<
       Index,
       SubtractNumbers<Magnitude, Decrement<Length>> & number,
       Decrement<Length>,
-      Length
+      Length,
+      NegativeNumber<Length>
     >>
     : Magnitude;
 

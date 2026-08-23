@@ -16,6 +16,7 @@ import {
 import {
   arrayAt,
   type ArrayAtDiagnostic,
+  type ArrayAtError,
   type ArrayAtDiagnostics,
   asSafeInteger,
   assertSafeInteger,
@@ -147,6 +148,10 @@ await describe({
       fn: async () => {
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<typeof EMPTY_ARRAY, 1.5>>>()
           .toEqualTypeOf<'empty-array' | 'non-safe-integer'>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<typeof EMPTY_ARRAY, number>>>()
+          .toEqualTypeOf<'empty-array' | 'unproven-safe-integer'>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], number>>>()
+          .toEqualTypeOf<'unproven-safe-integer'>();
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 1>>>()
           .toEqualTypeOf<'out-of-range'>();
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 0>>>()
@@ -156,6 +161,14 @@ await describe({
           .toEqualTypeOf<'non-safe-integer'>();
         expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 100_000_000_000_000_000>>>()
           .toEqualTypeOf<'non-safe-integer'>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 9_007_199_254_740_991>>>()
+          .toEqualTypeOf<'out-of-range'>();
+        expectTypeOf<DiagnosticCodes<ArrayAtDiagnostics<readonly [10], 9_007_199_254_740_992>>>()
+          .toEqualTypeOf<'non-safe-integer'>();
+        expectTypeOf<'code' extends keyof ArrayAtError ? true : false>()
+          .toEqualTypeOf<false>();
+        expectTypeOf<'hint' extends keyof ArrayAtError ? true : false>()
+          .toEqualTypeOf<false>();
       },
     },),
 
@@ -178,13 +191,21 @@ await describe({
           ArrayAtDiagnostics<readonly [10, 20, 30], -1_000_000_000>[number],
           { readonly direction: 'before-start'; }
         >;
+        type ZeroPaddedDifference = Extract<
+          ArrayAtDiagnostics<
+            readonly [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            10
+          >[number],
+          { readonly direction: 'past-end'; }
+        >;
 
         expectTypeOf<PastEnd['distance']>().toEqualTypeOf<1>();
         expectTypeOf<PastEnd['maximumPositiveIndex']>().toEqualTypeOf<0>();
         expectTypeOf<BeforeStart['distance']>().toEqualTypeOf<1>();
-        expectTypeOf<BeforeStart['minimumNegativeIndex']>().toEqualTypeOf<number>();
+        expectTypeOf<BeforeStart['minimumNegativeIndex']>().toEqualTypeOf<-3>();
         expectTypeOf<LargePastEnd['distance']>().toEqualTypeOf<99_998>();
         expectTypeOf<LargeBeforeStart['distance']>().toEqualTypeOf<999_999_997>();
+        expectTypeOf<ZeroPaddedDifference['distance']>().toEqualTypeOf<1>();
       },
     },),
   ],

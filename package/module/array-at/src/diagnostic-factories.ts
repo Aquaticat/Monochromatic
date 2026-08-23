@@ -69,11 +69,12 @@ export function createEmptyArrayDiagnostic(): EmptyArrayDiagnostic {
  *
  * @example
  * ```ts
- * const options: RangeDiagnosticOptions<3, 1, 2, 3> = {
+ * const options: RangeDiagnosticOptions<3, 1, 2, 3, -3> = {
  *   distance: 1,
  *   index: 3,
  *   lastIndex: 2,
  *   length: 3,
+ *   minimumNegativeIndex: -3,
  * };
  * ```
  */
@@ -82,11 +83,13 @@ type RangeDiagnosticOptions<
   Distance extends number,
   LastIndex extends number,
   Length extends number,
+  MinimumNegativeIndex extends number,
 > = {
   readonly index: Index;
   readonly distance: Distance;
   readonly lastIndex: LastIndex;
   readonly length: Length;
+  readonly minimumNegativeIndex: MinimumNegativeIndex;
 };
 
 /**
@@ -100,6 +103,8 @@ type RangeDiagnosticOptions<
  *
  * @param length - Array length defining both valid ranges
  *
+ * @param minimumNegativeIndex - Inclusive negative lower bound
+ *
  * @returns Structured past-end diagnostic
  *
  * @example
@@ -109,6 +114,7 @@ type RangeDiagnosticOptions<
  *   index: 3,
  *   lastIndex: 2,
  *   length: 3,
+ *   minimumNegativeIndex: -3,
  * });
  * ```
  */
@@ -117,16 +123,25 @@ export function createPastEndDiagnostic<
   const Distance extends number,
   const LastIndex extends number,
   const Length extends number,
+  const MinimumNegativeIndex extends number,
 >({
   index,
   distance,
   lastIndex,
   length,
-}: RangeDiagnosticOptions<Index, Distance, LastIndex, Length>): PastEndDiagnostic<
+  minimumNegativeIndex,
+}: RangeDiagnosticOptions<
   Index,
   Distance,
   LastIndex,
-  Length
+  Length,
+  MinimumNegativeIndex
+>): PastEndDiagnostic<
+  Index,
+  Distance,
+  LastIndex,
+  Length,
+  MinimumNegativeIndex
 > {
   return {
     code: 'out-of-range',
@@ -138,7 +153,7 @@ export function createPastEndDiagnostic<
     distance,
     minimumPositiveIndex: 0,
     maximumPositiveIndex: lastIndex,
-    minimumNegativeIndex: -length,
+    minimumNegativeIndex,
     maximumNegativeIndex: -1,
   };
 }
@@ -154,6 +169,8 @@ export function createPastEndDiagnostic<
  *
  * @param length - Array length defining both valid ranges
  *
+ * @param minimumNegativeIndex - Inclusive negative lower bound
+ *
  * @returns Structured before-start diagnostic
  *
  * @example
@@ -163,6 +180,7 @@ export function createPastEndDiagnostic<
  *   index: -4,
  *   lastIndex: 2,
  *   length: 3,
+ *   minimumNegativeIndex: -3,
  * });
  * ```
  */
@@ -171,16 +189,25 @@ export function createBeforeStartDiagnostic<
   const Distance extends number,
   const LastIndex extends number,
   const Length extends number,
+  const MinimumNegativeIndex extends number,
 >({
   index,
   distance,
   lastIndex,
   length,
-}: RangeDiagnosticOptions<Index, Distance, LastIndex, Length>): BeforeStartDiagnostic<
+  minimumNegativeIndex,
+}: RangeDiagnosticOptions<
   Index,
   Distance,
   LastIndex,
-  Length
+  Length,
+  MinimumNegativeIndex
+>): BeforeStartDiagnostic<
+  Index,
+  Distance,
+  LastIndex,
+  Length,
+  MinimumNegativeIndex
 > {
   return {
     code: 'out-of-range',
@@ -192,7 +219,7 @@ export function createBeforeStartDiagnostic<
     distance,
     minimumPositiveIndex: 0,
     maximumPositiveIndex: lastIndex,
-    minimumNegativeIndex: -length,
+    minimumNegativeIndex,
     maximumNegativeIndex: -1,
   };
 }
