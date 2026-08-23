@@ -31,6 +31,10 @@ Requires-Python: <3.14,>=3.11
   (hermes not in venv/bin/ or .venv/bin/ — reinstall with pip install -e '.[all]')
 ```
 
+The same run warns that `python-telegram-bot` and `discord.py` are not installed.
+Those are optional SDKs deliberately excluded from the curated `all` extra and lazy-installed on first use,
+ not evidence that uv dropped requested dependencies.
+
 There is a separate support constraint.
  Hermes Agent's current
 [platform support page][hermes-platform-support] explicitly lists PyPI installs,
@@ -187,6 +191,46 @@ The warning is a false positive for this layout.
  The suggested editable reinstall is not appropriate inside
 an installed `site-packages` directory.
 
+### The all extra omits lazy messaging dependencies
+
+Hermes Agent 0.19.0 intentionally keeps opt-in provider and messaging dependencies outside `all`.
+The package installs those dependencies on first use instead.
+
+`NousResearch/hermes-agent` `pyproject.toml:273-305` at tag `v2026.7.20`:
+
+```toml
+all = [
+  # Policy (2026-05-12): `[all]` includes only extras that genuinely
+  # CAN'T be lazy-installed via `tools/lazy_deps.py` — i.e. things every
+  # session can use, things needed before the agent loop is alive
+  # (terminal/CLI), and skill deps that packagers (Nix, AUR, Homebrew)
+  # need in the wheel. Anything an opt-in backend (provider, search,
+  # TTS, image, memory, messaging platform, terminal sandbox) needs
+  # MUST live exclusively in `LAZY_DEPS` and resolve at first use —
+  # otherwise one quarantined PyPI release breaks every fresh install.
+  #
+  # Removed from [all] on 2026-05-12 (covered by lazy-install):
+  #   anthropic, exa, firecrawl, parallel-web, fal, edge-tts,
+  #   modal, daytona, messaging (telegram/discord/slack),
+  #   matrix, slack, honcho, voice (faster-whisper),
+  #   dingtalk, feishu, bedrock, tts-premium (elevenlabs)
+  "hermes-agent[cron]",
+  "hermes-agent[cli]",
+  "hermes-agent[pty]",
+  "hermes-agent[mcp]",
+  "hermes-agent[homeassistant]",
+  "hermes-agent[sms]",
+  "hermes-agent[acp]",
+  "hermes-agent[google]",
+  "hermes-agent[web]",
+  "hermes-agent[youtube]",
+]
+```
+
+The optional-SDK warnings therefore scope the verified result:
+ the core CLI and curated `all` feature set load,
+ while optional messaging integrations have not been exercised.
+
 ## Verification
 
 The observed versions and source revisions were:
@@ -240,9 +284,13 @@ All installed packages are compatible
 ### Working catalog
 
 - `uvx_args = "--python 3.13"` installs Hermes into a Python 3.13 environment.
-- `uv pip check` reports every package compatible in that environment.
+- `uv pip check` reports every installed package compatible in that environment.
 - A new login shell resolves `hermes` through mise and `hermes --version` succeeds.
-- `mise exec pipx:hermes-agent -- hermes --help` loads the complete CLI parser.
+- After the Python 3.13 reinstall,
+  `mise exec pipx:hermes-agent -- hermes --help` returns status `0` and loads the complete CLI parser.
+- `hermes version` returns status `0` and reports Python `3.13.15`.
+- `hermes doctor` returns status `0` despite counting the missing scratch configuration and false entry-point
+  warning as issues.
 
 ### Failing or misleading catalog
 
@@ -283,6 +331,22 @@ installation.
  Mise can install only versions available from that backend.
  PyPI remained on `0.19.0` during
 verification.
+The curated `all` set also excludes optional messaging and provider SDKs that Hermes intends to install lazily.
+
+### Keep mise as the installation owner
+
+Check or apply upgrades through the same backend that owns the environment:
+
+```bash
+mise upgrade --dry-run pipx:hermes-agent
+mise upgrade --yes pipx:hermes-agent
+```
+
+The dry run completed and reported the published channel up to date.
+
+Tradeoff:
+ this prevents Hermes's self-management commands from competing with mise's environment ownership,
+ but the retired PyPI channel still cannot supply versions that upstream does not publish there.
 
 ### Treat the doctor entry-point message as layout-specific
 
@@ -317,6 +381,8 @@ Other doctor findings still require independent attention.
 - Treating `Up to date` as an upstream-current result is incorrect for the retired PyPI channel.
    It means only
   that no newer version is available through that channel.
+- Optional `python-telegram-bot` and `discord.py` doctor warnings do not mean the `all` resolve is incomplete.
+  Those SDKs belong to the separate `messaging` extra and lazy-install path.
 
 ## Upstream filing decision
 
