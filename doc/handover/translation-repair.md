@@ -17476,3 +17476,78 @@ than the insertion one:
 Also still open, from landing 5: an entirely untranslated page short-circuits before the aligner
 and gets no anchors, because it needs a body-insertion boundary that must not default to offset
 zero where front matter may sit.
+
+## The section aligner is blind across languages, and one page ships untranslated
+
+Measured 2026-08-23 over all 92 pinned pairs at sha `a41fc607`.
+This is `#189`, and it supersedes the "entirely untranslated page" note that closes `#100`:
+the page short-circuits for a much earlier reason than the one that note guessed at.
+
+### What ships today
+
+`XIEPT2` produces ZERO slices.
+Its English page carries nine headings and 246 characters of body against 7365 characters of
+Chinese, a target/source ratio of 0.17 against a corpus median of 2.65, the lowest in the corpus.
+Nothing pairs, so no slice exists, so neither lane is ever asked about it,
+and the page ships exactly as the archive holds it.
+
+Two further pages have slices covering under half their source: `ArtsEpiphany`, 33 of 120
+characters, and `gaoyanger`.
+
+### Why: the affinity grid is all zeros
+
+`headingAffinity` is token overlap, and Chinese headings share no tokens with English ones.
+Cell by cell:
+
+-   `XIEPT2`: all 72 of its 8 by 9 affinity cells read 0.00.
+-   `XingZ60`: 192 of 195 cells read 0.00.
+    The three nonzero cells read 1.00, and they are exactly the three English headings carrying a
+    romanised name that also appears in the Chinese heading.
+
+With an all-zero grid the lexicographic score has nothing to rank pairings by except its
+gap-count term, so every pairing is equally supported, `scanOptimalPaths` reports many optimal
+paths, and the forced aligner refuses.
+All 11 unpaired source sections corpus-wide come back `ambiguous`, and every insertion anchor
+comes back `may-pair`.
+
+THE `proven` ANCHOR NEVER FIRES ON REAL DATA. `#100` landing 5 and its corroboration gate are
+correct and GFP-proven, and they are also unreachable: the refusal happens one step earlier,
+inside the aligner. The gate's evidence remains invented fixtures, and that is now recorded
+rather than assumed.
+
+### What `may-pair` is actually reporting
+
+It is written to mean "some optimal alignment matches this against existing translation, so
+inserting risks duplication".
+On `XIEPT2` it means "I have no information".
+For 6 of the 11 unpaired source sections EVERY possible partner is a target section with a
+ZERO-character body, so no content could be duplicated by any of them.
+`XIEPT2`'s target section bodies are `[7,0,0,0,0,0,0,0,239]`.
+
+### The LLM-assisted mechanism exists and is gated behind the blind one
+
+`#131` landed LLM-assisted pairing, cached, settling both entries cleanly.
+But `SectionBlockPairing` is keyed by `sectionIndex`: it pairs BLOCKS WITHIN a section the
+deterministic aligner already aligned.
+On `XIEPT2` no section aligns, so the roster is never asked anything at all.
+
+### Scope, measured before building
+
+Only TWO entries in the whole corpus would be asked, because 85 of 92 have equal section shape
+and skip the aligner entirely, and 5 of the remaining 7 align with no refusal:
+
+-   `XingZ60`, 15 source against 13 target sections, 4 refusals, 49921 characters whole.
+-   `XIEPT2`, 8 source against 9 target sections, 17 refusals, 7654 characters whole.
+
+SECTIONS GO WHOLE, UNTRUNCATED. The smallest context window in `synthetic-catalog.ts` is 131072
+tokens and the largest sheet is under 50000 characters, so a cap would buy nothing and could only
+withhold the body text the pairing question is about. Cost is not a constraint here: two entries,
+once each, cached.
+
+### Rejected
+
+-   Deterministic cross-language heading affinity, by transliteration or ordinal matching.
+    It already scores 1.00 on precisely the cells it can reach, and would do nothing for
+    `XIEPT2`, whose grid is entirely zero and whose headings carry no romanised names.
+-   Proportional-by-character fallback. That is the design `#71` was opened on, and it corrupted
+    `XingZ60` by sliding every pairing two sections along.
