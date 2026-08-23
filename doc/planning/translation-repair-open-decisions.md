@@ -1942,6 +1942,44 @@ because what the pipeline should DO with a reachable absence verdict is a separa
 
 Runner: `mise run //package/module/translation-repair:coverage-control-probe -- --only <entry>`.
 
+### AND THE NULL ITSELF WAS ONE ENTRY, measured the same day
+
+Ran the same control over six entries, picked off a zero-quota census
+that found 26 of the 92 pairs carry coverage candidates at all.
+
+Three entries HELD, meaning damage was detected and only the right damage:
+`mikaela_khara`, `TianqiChen666` and `Futajuhuacha` gave absence votes on 8 of 9 targeted cuts
+and on 0 of 9 equally sized cuts taken where the roster had not pointed.
+
+On the other three the control had NOTHING TO DAMAGE, because the roster refused to call
+a single candidate covered before anything was cut:
+
+-   `shi_Yumiaoya`, 8 of 8 candidates: seven `absent` with 4 to 6 of 6 voices, one `split`.
+-   `Aniloviraw`, 3 of 3: all `absent`, 5 to 6 voices.
+-   `XingZ60`, 4 of 4: section 13 `absent` with 5 voices, the rest `partly-carried`.
+
+Fifteen of fifteen undamaged candidates were not called covered,
+and not one refusal anywhere in the run was an anchoring failure.
+`XingZ60` also reproduced its recorded section-scale verdicts,
+section 12 `partly-carried` and section 13 `absent`.
+
+SO THE SENTENCE THIS QUESTION LEANS ON, ninety-six answers with not one vote for absence,
+IS A FACT ABOUT `mikaela_khara`.
+It is not a fact about the wire, which votes absence near-unanimously on other pages,
+and it is not a fact about the corpus.
+The reading that follows from it, at most one of twenty-two and plausibly none,
+inherits the same limit and needs re-deriving over a spread before it can carry
+the weight the paragraph-scale refusal puts on it.
+
+NOT ESTABLISHED: whether those absence verdicts are CORRECT.
+They are consistent with genuine omissions rather than merges,
+since a merge puts the content somewhere and that is what `carried` reports while `absent`
+claims it is nowhere, but that is an argument and not a measurement.
+Settling it means reading those passages against their source.
+
+Still nothing wired, and still the owner's call.
+
+
 ### Taken on 2026-08-21, all four vetoable
 
 1.  `#164` IS CLOSED WITH NOTHING BUILT.
