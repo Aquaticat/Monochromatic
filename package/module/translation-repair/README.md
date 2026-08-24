@@ -630,7 +630,7 @@ mise run //package/module/translation-repair:editor-standing-read -- <run dir> [
 ```
 
 It spends nothing and touches no model.
-Three things bound what it can say.
+Four things bound what it can say.
 
 It is OBSERVATIONAL.
 Only models that held a seat ever wrote a candidate,
@@ -652,6 +652,21 @@ and reading an id the roster no longer seats as though it were current
 would let a standing mix two rosters silently.
 Those artifacts are counted apart from malformed ones
 and named with the exact path that held the departed id.
+
+It SEPARATES AN EARLIER SCHEMA FROM A DEFECT.
+A repair result whose `chunks` field is absent entirely
+was settled before the lane recorded rounds at all.
+That record is complete and correct for the build that wrote it;
+it simply cannot answer this question.
+It is counted as `earlierSchema`, not as a parse failure,
+because calling it broken would report a healthy archive as a damaged one.
+Chunks present and not an array stays a parse failure.
+
+The report accounts for every artifact it opened,
+across `read`, `earlierRoster`, `earlierSchema` and refusals,
+so a reader can see what fraction of an archive the standing actually rests on.
+On the archives as of 2026-08-24 that is
+41 artifacts: 2 read, 17 from an earlier roster, 22 from an earlier schema, none malformed.
 
 #### Reading a standing honestly
 

@@ -19788,3 +19788,59 @@ which is what caught the silent line reading `compares 1 models and not 4`.
 Build, lint, type-check and the unit suite are owed
 and are held behind the calibration in flight,
 which holds `dist` and must not be rebuilt under.
+
+## The 14-slice editor calibration finished, and it settles no seat (`#200`)
+
+Ran 2026-08-24 into `~/temp/agent/editor-calibrate-synthetic-2026-08-24`,
+finished in 9496 seconds, exit 0.
+
+### What it measured
+
+29 judged editor rounds, from 10 of 14 slices, across 492 disinterested ballots.
+
+    hf:Qwen/Qwen3.8-27B                  34.7%  (34 of 98)
+    hf:moonshotai/Kimi-K3                27.9%  (29 of 104)
+    hf:zai-org/GLM-5.2                   25.0%  (23 of 92)
+    hf:nvidia/NVIDIA-Nemotron-3-Super    15.5%  (15 of 97)
+    hf:openai/gpt-oss-120b                7.9%  (8 of 101)
+
+The refiner seat produced zero rounds,
+because the binary that ran predates the fix that made the runner drive the naturalness lane at all.
+That fix is in source and will take effect on the next run.
+
+### Why it settles nothing
+
+FIVE MODELS, NOT TEN. Charm Hyper held a zero balance for the whole run,
+confirmed live against `GET /v1/credits` before, during and after,
+so `qwen3.8-max`, `minimax-m3`, `gemma-4-26b-a4b-it`,
+`deepseek-v4-pro-0813` and `deepseek-v4-flash-0731` wrote nothing.
+`gemma-4-26b-a4b-it` currently HOLDS an editor seat,
+so the run is silent about one of the three incumbents it was meant to test.
+
+AND THE FIVE IT DID MEASURE DO NOT SEPARATE.
+Against the pooled null of 22.15 percent,
+`hf:Qwen/Qwen3.8-27B` reaches z 2.99 and `hf:openai/gpt-oss-120b` z -3.44,
+both past the Bonferroni threshold of 2.58 for five comparisons.
+But those 29 rounds come from 10 slices, 2.9 rounds per slice,
+and rounds inside one slice are correlated.
+Charging the worst case, that all rounds within a slice are one observation,
+divides every z by sqrt(2.9) and NOTHING clears:
+Qwen falls to 1.76 and gpt-oss to 2.02.
+
+The truth is between those two readings and this run cannot say where.
+No seat changes on it.
+
+### What it is good for
+
+It is directionally consistent with the writer calibration of the same day,
+where `hf:Qwen/Qwen3.8-27B` also led and `hf:zai-org/GLM-5.2` sat below the null.
+It also confirms the instrument works end to end on a real repair lane:
+critics, panel, editors, judges and checkers all ran,
+and 10 of 14 slices carried an accepted issue, which is the yield the sizing note predicted.
+
+### What is still owed
+
+A full-roster run, once Charm Hyper has credit.
+The owner cannot reset that provider on demand,
+so this waits on the provider's own schedule rather than on anything askable.
+Sizing from production yield says 35 to 40 slices, not 14.
