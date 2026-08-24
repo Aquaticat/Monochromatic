@@ -429,6 +429,63 @@ starting silently would hide a setup mistake until a 429 storm read as a provide
 -   The calibration pass that picks the narrow writer set from the ten,
     which also settles the provisional third editor and refiner seat.
 
+### The twelve-round calibration settles seat one and nothing else
+
+Ten models writing and ten judging the same twelve slices,
+scored by the share of DISINTERESTED ballots each producer's work drew,
+where disinterested means the judge held no stake in that candidate.
+Finished in 3637 seconds.
+
+    hf:Qwen/Qwen3.8-27B         29.7%   27 of 91    z  5.65   CI [20.3, 39.1]
+    gemma-4-26b-a4b-it          17.9%   15 of 84    z  1.98   CI [ 9.7, 26.0]
+    qwen3.8-max                 17.6%   15 of 85    z  1.93   CI [ 9.5, 25.8]
+    hf:openai/gpt-oss-120b      11.8%   10 of 85    z  0.20   CI [ 4.9, 18.6]
+    hf:moonshotai/Kimi-K3       10.6%    9 of 85    z -0.14   CI [ 4.0, 17.1]
+    minimax-m3                   9.6%    9 of 94    z -0.46   CI [ 3.6, 15.5]
+    NVIDIA-Nemotron-3-Super      4.1%    4 of 97    z -2.18   CI [ 0.2,  8.1]
+    deepseek-v4-pro-0813         3.4%    3 of 88    z -2.29   CI [-0.4,  7.2]
+    hf:zai-org/GLM-5.2           2.7%    2 of 74    z -2.29   CI [-1.0,  6.4]
+    deepseek-v4-flash-0731       2.4%    2 of 84    z -2.54   CI [-0.9,  5.6]
+
+The null is the POOLED share, 11.1 percent, 96 wins over 867 ballots:
+what a producer drawing ballots at its fair rate would take.
+Ten models are compared at once,
+so the threshold that survives the multiplicity is Bonferroni's,
+`|z| >= 2.81` rather than 1.96.
+
+WHAT IS SETTLED: `hf:Qwen/Qwen3.8-27B`, at `z = 5.65`,
+with a confidence interval that does not come near the null.
+It clears the corrected threshold twice over and is the first writer's seat.
+
+WHAT IS NOT SETTLED, and this is the part the ranking's ordering hides.
+`gemma-4-26b-a4b-it` and `qwen3.8-max` sit at 17.9 and 17.6 percent,
+which reads like a second and a third place.
+Neither clears the corrected threshold,
+BOTH confidence intervals contain the null,
+and the 0.3 points between them is far inside the noise of either.
+They are tied with each other and unproven against chance.
+Seating them in that order would be reading a ranking as a result.
+
+The four at the bottom are consistently below the null,
+`z` between -2.18 and -2.54,
+and not one of them clears the corrected threshold either.
+Four independent models all landing below by a similar margin is suggestive,
+but no single one of them is individually established as worse.
+
+WHAT IT WOULD TAKE. For a producer at 17.9 percent to clear the null by three standard deviations
+needs about 284 disinterested ballots,
+against the 84 it has.
+At the observed 7.6 ballots per producer per round that is about 37 rounds.
+
+So the twelve-round pass is not a failed measurement;
+it is a measurement whose denominator answers one question and not three.
+The owner's standing instruction decides what follows from that:
+
+> If measurement cannot settle a decision under the guideline of "max quality",
+> you're not measuring right or enough.
+
+A forty-round pass is therefore running rather than three seats being filled from this table.
+
 ### Two models lose voices and eight do not
 
 Measured on the 2026-08-24 producer calibration,
