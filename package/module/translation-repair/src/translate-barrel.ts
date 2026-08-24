@@ -226,6 +226,12 @@ export {
   type VisionMessage,
 } from './chat-contract.ts';
 export {
+  preferenceRate,
+  type PreferenceRate,
+  type ProducerStanding,
+  producerStandings,
+} from './producer-standing.ts';
+export {
   type EncodedAsset,
   encodeImageAsset,
 } from './image-asset.ts';
