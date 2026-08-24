@@ -17862,6 +17862,18 @@ The analyser is `~/temp/agent/checker-width-tally.mjs`, positive-controlled befo
 synthetic log where one round must flip (narrow 2 fixed against 1 not-fixed resolves; three authoring
 writers at half weight take it to 2 against 2.5, undecided) and one must not.
 
+CORRECTED THE SAME DAY, AND THE CORRECTION IS THE LESSON. Reading ballots out of a log was a
+workaround for the artifact not carrying them, and the right fix was to make the artifact carry them.
+`RepairIssueRecord.checkerReading` now holds every ballot, the author flag that sets each weight, the
+seated roster and the tally, so `~/temp/agent/checker-width-from-artifacts.mjs` reads settled runs
+directly and re-tallies at either width with no log parsing and no re-running of the stage. That
+analyser is positive-controlled the same way, and additionally recomputes each stored tally from its
+own ballots so a weighting that changed under a settled artifact becomes visible rather than silent.
+
+The log lines stay, for two reasons that are not the artifact's job: an operator watching a live pass
+has the log and not the artifact, and a run that aborts before settling leaves nothing else. They are
+derived from the readings, so the two cannot drift.
+
 ### How to buy the second arm
 
 `TRANSLATION_REPAIR_WIDE_CHECKERS=1` seats the whole roster and permits self-certification. It rides
@@ -17909,3 +17921,25 @@ source change followed by `test:unit` alone reports on the previous build, which
 change that had no effect. Run `build` first, always. This session read "the new log line never
 appears" off a stale bundle before a positive control on a neighbouring line from the same function
 exposed it.
+
+### Interim reading at 24 rounds, and the statistic that matters most
+
+Across three wide passes, 144 ballots over 24 checker rounds, every round hearing all six:
+
+```
+rounds carrying at least one self-vote                     22 of 24
+rounds where the narrow three split                         2 of 24   <- ceiling on flips
+rounds where a writer said something no narrow checker did  0 of 24
+FLIPS                                                       0 of 24
+```
+
+THE THIRD LINE OUTRANKS THE FOURTH. Zero flips on a ceiling of two is a weak null; the sample simply
+had two chances. But zero rounds where an added voice said anything the disjoint three had not
+already said is a statement about information rather than about arithmetic: on this evidence the
+three extra ballots are not merely failing to change verdicts, they are not contributing a distinct
+opinion at all. If that holds at volume, widening the checker roster buys ballots and no evidence,
+and the narrow three stay.
+
+The discount is genuinely engaged rather than idle: 22 of 24 rounds carry at least one self-vote, so
+this is measuring self-certification and not just panel size. That was the failure mode written down
+in advance, and it did not happen.
