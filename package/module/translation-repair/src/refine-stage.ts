@@ -74,8 +74,14 @@ export type RefineStageResult = {
   readonly rounds: readonly RepairJudgedRound[];
 
   /**
-   * Models whose rewrites the shipped text carries, empty when unchanged;
-   * the caller bars them from rechecking their own work.
+   * Models whose rewrites the shipped text carries, empty when unchanged.
+   *
+   * DISCOUNTED RATHER THAN BARRED, which this said the opposite of. The caller
+   * folds them into the text's `IssueAuthorship`, and `tally-resolution.ts`
+   * then weights a checker's verdict on text it helped write at
+   * `SELF_VOTE_WEIGHT` instead of dropping it. Nothing anywhere stops such a
+   * checker being asked, and a contract that claims a bar invites a reader to
+   * skip the guard that actually exists.
    */
   readonly contributors: readonly SyntheticModelId[];
 
