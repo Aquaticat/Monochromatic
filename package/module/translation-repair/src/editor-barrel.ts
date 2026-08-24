@@ -32,6 +32,10 @@ export {
   type ShippedProducer,
 } from './editor-selection-result.ts';
 export {
+  rankStandings,
+  standingLine,
+} from './producer-standing-report.ts';
+export {
   EDITOR_ROUND_STAGES,
   REFINER_ROUND_STAGES,
   selectionRoundOf,

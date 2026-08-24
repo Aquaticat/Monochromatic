@@ -1,11 +1,11 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { errorName, } from '../error-name.ts';
+import { producerStandings, } from '../producer-standing.ts';
 import {
-  preferenceRate,
-  type ProducerStanding,
-  producerStandings,
-} from '../producer-standing.ts';
+  rankStandings,
+  standingLine,
+} from '../producer-standing-report.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import { runTranslateStage, } from '../translate-stage.ts';
 import {
@@ -49,16 +49,6 @@ import {
  * Slices drawn when the caller names no count.
  */
 const DEFAULT_SLICES = 10;
-
-/**
- * Percent, for rendering a share as one.
- */
-const AS_PERCENT = 100;
-
-/**
- * Decimal places a reported share carries.
- */
-const SHARE_PLACES = 1;
 
 /**
  * Runs one slice with every model writing and every model judging.
@@ -106,75 +96,6 @@ async function runOne(
       },),
     ballots: result.ballots,
   };
-}
-
-/**
- * Renders one model's standing as a report line.
- *
- * @param standing - counts for one model
- *
- * @returns Line naming the share and the evidence behind it
- *
- * @example
- * ```ts
- * console.log(standingLine({ standing, },),);
- * ```
- */
-function standingLine(
-  { standing, }: { readonly standing: ProducerStanding; },
-): string {
-  /**
-   * Share of disinterested ballots, where anything was cast.
-   */
-  const rate = preferenceRate({ standing, },);
-
-  /**
-   * That share rendered, or a mark saying nothing was cast.
-   */
-  const share = rate.measured
-    ? `${(rate.share * AS_PERCENT).toFixed(SHARE_PLACES,)}%`
-    : 'UNJUDGED';
-
-  return `${standing.modelId}: ${share} (${String(standing.disinterestedVotes,)}`
-    + ` of ${String(standing.disinterestedBallots,)} disinterested ballots,`
-    + ` over ${String(standing.candidates,)} candidates)`;
-}
-
-/**
- * Orders standings best first, with unjudged models last.
- *
- * @param standings - what the tally produced
- *
- * @returns Same standings, sorted
- *
- * @example
- * ```ts
- * const ranked = rankStandings({ standings, },);
- * ```
- */
-function rankStandings(
-  { standings, }: { readonly standings: readonly ProducerStanding[]; },
-): readonly ProducerStanding[] {
-  return standings.toSorted(function byShare(
-    left,
-    right,
-  ): number {
-    /**
-     * Both shares, with an unjudged model sorting last rather than as a zero.
-     */
-    const leftRate = preferenceRate({ standing: left, },);
-
-    /**
-     * Right-hand share, read the same way.
-     */
-    const rightRate = preferenceRate({ standing: right, },);
-
-    if (!leftRate.measured)
-      return rightRate.measured ? 1 : 0;
-    if (!rightRate.measured)
-      return -1;
-    return rightRate.share - leftRate.share;
-  },);
 }
 
 /**

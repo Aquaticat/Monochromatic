@@ -48,6 +48,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "coverage-control-probe": "./src/corpus-run/coverage-control-probe.ts",
     "coverage-probe": "./src/corpus-run/coverage-probe.ts",
     "displacement-probe": "./src/corpus-run/displacement-probe.ts",
+    "editor-calibrate": "./src/corpus-run/editor-calibrate.ts",
     "editor-width-probe": "./src/corpus-run/editor-width-probe.ts",
     "judge-fidelity-probe": "./src/corpus-run/judge-fidelity-probe.ts",
     "slice-census": "./src/corpus-run/slice-census.ts",
