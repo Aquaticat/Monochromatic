@@ -640,6 +640,12 @@ Use command tool's session/polling;
  stop stale surviving processes by PID.
 Wrappers only for behavior-under-test or unbounded runtime.
 
+SLF:
+ `pgrep --full <name>` matches the waiting shell's own command line,
+ so `until ! pgrep --full X` never ends.
+Wait on the harness's completion notification,
+ or exclude self by PID.
+
 NXR:
  Transport failure (`No result provided`,
  dropped session) while child may have run:
