@@ -19013,3 +19013,60 @@ a single invocation can give one entry attempt after attempt against a build tha
 What is owed is a live run.
 The queue is proven at the unit boundary and by mutation, not yet at the user boundary,
 and the entry that would prove it is the one that costs thirteen hours.
+
+## The writers are seated, and the queue is being verified live
+
+2026-08-24, after the 40-round producer calibration landed.
+
+### The seating
+
+`editorModelIds` and `refinerModelIds` are now
+`hf:moonshotai/Kimi-K3`, `hf:Qwen/Qwen3.8-27B`, `gemma-4-26b-a4b-it`.
+`hf:zai-org/GLM-5.2` left both seats and `qwen3.8-max` was not given one.
+The whole standing, both raw and availability-adjusted,
+the Mann-Whitney proof that `qwen3.8-max`'s top headline is survivorship,
+and the reason the same table must NOT be used to move a checker seat,
+are in `doc/decision/translation-repair-multi-provider.md`
+under "The forty-round pass seats the writers, 2026-08-24".
+
+Two reach checks ran before the swap, since `gemma-4-26b-a4b-it` is text-only
+and Hyper-served:
+
+-   Pictures never reach these stages.
+    `document-lanes.ts` records that the repair lane edits in place against critic claims
+    and none of its stages asks what a picture says,
+    and reading is its own stage over `RUN_READER_MODELS`,
+    which `run-config.ts` derives from the catalog rather than listing by hand.
+
+-   The catalog's `maxOutputLength` of 25_600 is not a bound this model runs into.
+    Nothing in production reads that field at all,
+    and the model answered 40 rounds of production-sized slices with no cut.
+
+Structured output was checked too, because these seats emit schema-guarded JSON:
+across 937 completed streams in the calibration
+there was exactly ONE schema mismatch, and it was `qwen3.8-max`'s.
+`gemma-4-26b-a4b-it` had none.
+
+### The live verification of `#196`
+
+The queue was GFP-proven but had never run against a provider.
+It does not need XingZ60's thirteen hours to be exercised:
+the mechanism is size-independent,
+so a mid-sized entry under a deliberately tight cap runs the same code path.
+
+    TRANSLATION_REPAIR_RUNS_DIR=<throwaway> TRANSLATION_REPAIR_HARD_CAP_MINUTES=5 \
+      mise run //package/module/translation-repair:corpus-pass -- --only MocaKawai
+
+`--only` already existed; nothing had to be built to bound this.
+What the run has to show is a `REATTEMPT MocaKawai queued` line,
+an attempt count above one in the run's attempt map,
+and a cache that grew between attempts.
+
+A useful thing fell out of reading the cache layer for this:
+`countCachedSlices` counts every `.json` under the entry's cache directory,
+and `slice-cache-namespace.ts` gives pairing, contest, refine and translate records
+that same suffix and that same directory.
+So an attempt that spends its entire cap buying only a section pairing
+still registers as progress and still earns its re-attempt.
+Had setup cached somewhere else, the largest entries,
+the ones this was built for, would have stalled on their first attempt every time.
