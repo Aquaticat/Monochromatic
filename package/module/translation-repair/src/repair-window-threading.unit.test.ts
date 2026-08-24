@@ -102,8 +102,16 @@ const JUDGES = ['hf:zai-org/GLM-4.7-Flash',] as const;
 
 /**
  * {@inheritDoc CRITICS}
+ *
+ * THREE OF THEM BECAUSE FEWER CANNOT DECIDE: `assertCheckerQuorumReachable`
+ * floors the role at three, since a pair that disagrees resolves nothing.
+ * Every one of them stays clear of {@link EDITORS}.
  */
-const CHECKERS = ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',] as const;
+const CHECKERS = [
+  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+  'hf:zai-org/GLM-5.2',
+  'hf:moonshotai/Kimi-K3',
+] as const;
 
 /**
  * One sheet, split into what is under review and what is context.

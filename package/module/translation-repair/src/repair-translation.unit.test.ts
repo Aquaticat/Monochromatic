@@ -44,13 +44,23 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 
 /**
  * Role roster; identities only matter as distinct voices.
+ *
+ * THREE CHECKERS BECAUSE FEWER CANNOT DECIDE. `assertCheckerQuorumReachable`
+ * floors the role at three, since resolution needs more weight behind `fixed`
+ * than behind `not-fixed` and `worse` together and a pair that disagrees
+ * therefore returns nothing. This fixture ran at two until the floor landed,
+ * which made it model a roster production would refuse.
  */
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
   panelModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
   editorModelIds: ['hf:zai-org/GLM-5.2',],
   judgeModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
-  checkerModelIds: ['hf:Qwen/Qwen3.8-27B', 'hf:moonshotai/Kimi-K3',],
+  checkerModelIds: [
+    'hf:Qwen/Qwen3.8-27B',
+    'hf:moonshotai/Kimi-K3',
+    'hf:openai/gpt-oss-120b',
+  ],
 };
 
 /**
