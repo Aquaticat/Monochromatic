@@ -28,6 +28,7 @@ import {
   type AdjudicatedIssue,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type IssueAuthorship,
   runCheckerStage,
   type SyntheticClient,
   UNATTRIBUTED_TEXT,
@@ -144,9 +145,13 @@ async function runStage(
   {
     client,
     issues,
+    authorship = UNATTRIBUTED_TEXT,
+    logger = l,
   }: {
     readonly client: SyntheticClient;
     readonly issues: readonly AdjudicatedIssue[];
+    readonly authorship?: IssueAuthorship;
+    readonly logger?: typeof l;
   },
 ) {
   return await runCheckerStage({
@@ -155,11 +160,49 @@ async function runStage(
     sourceText: SOURCE_TEXT,
     patchedText: PATCHED_TEXT,
     issues,
-    authorship: UNATTRIBUTED_TEXT,
+    authorship,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
-    l,
+    l: logger,
   },);
+}
+
+/**
+ * Logger that keeps every line so a case can read what the stage published.
+ *
+ * @returns Logger beside its captured lines
+ *
+ * @example
+ * ```ts
+ * const { logger, lines, } = capturingLogger();
+ * ```
+ */
+function capturingLogger() {
+  /**
+   * Lines the stage emitted, in order.
+   */
+  const lines: string[] = [];
+
+  /**
+   * Records one line and discards its level, which no case here asks about.
+   *
+   * @param message - line the stage published
+   */
+  function record(message: string,): void {
+    lines.push(message,);
+  }
+  return {
+    lines,
+    logger: {
+      debug: record,
+      error: record,
+      fatal: record,
+      flush: async () => {},
+      info: record,
+      trace: record,
+      warn: record,
+    },
+  };
 }
 
 await describe({
@@ -188,6 +231,88 @@ await describe({
 
         expect(result.heardCheckers,).toBe(CHECKERS.length,);
         expect(result.tallies['adjudicated/tense']?.resolved,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'PUBLISHES one line per ballot naming checker, issue, verdict and whether that checker '
+        + 'wrote the text, because the tally it returns is a sum and a sum cannot be taken apart: '
+        + 'without these lines no settled run can be re-read at another roster width',
+      fn: async () => {
+        const {
+          lines,
+          logger,
+        } = capturingLogger();
+
+        /**
+         * Authorship making the first checker an author of this issue's text
+         * and leaving the other two outsiders, which is the mixed shape a
+         * roster permitted to self-certify produces.
+         */
+        const mixedAuthorship: IssueAuthorship = {
+          perIssue: { 'adjudicated/tense': [CHECKERS[0],], },
+          everyIssue: [],
+        };
+        await runStage({
+          client: checkerClient({
+            reportFor: () => ({
+              checks: [
+                {
+                  issue: 1,
+                  verdict: 'fixed',
+                },
+              ],
+            }),
+          },),
+          issues: [catIssue({ issueId: 'adjudicated/tense', },),],
+          authorship: mixedAuthorship,
+          logger,
+        },);
+
+        /** Ballot lines the stage published. */
+        const published = lines.filter(function isBallot(line,): boolean {
+          return line.startsWith('checker-ballot ',);
+        },);
+        expect(published.length,).toBe(CHECKERS.length,);
+        expect(published,).toContain(
+          `checker-ballot ${CHECKERS[0]} adjudicated/tense fixed author`,
+        );
+        expect(published,).toContain(
+          `checker-ballot ${CHECKERS[1]} adjudicated/tense fixed outsider`,
+        );
+      },
+    },),
+
+    it({
+      name: 'CARRIES NO DOCUMENT TEXT into those lines, since they are published on every run over '
+        + 'an archive nobody licensed us to copy',
+      fn: async () => {
+        const {
+          lines,
+          logger,
+        } = capturingLogger();
+        await runStage({
+          client: checkerClient({
+            reportFor: () => ({
+              checks: [
+                {
+                  issue: 1,
+                  verdict: 'fixed',
+                },
+              ],
+            }),
+          },),
+          issues: [catIssue({ issueId: 'adjudicated/tense', },),],
+          logger,
+        },);
+        for (
+          const line of lines.filter(function isBallot(candidate,): boolean {
+            return candidate.startsWith('checker-ballot ',);
+          },)
+        ) {
+          expect(line.includes(SOURCE_TEXT,),).toBe(false,);
+          expect(line.includes(PATCHED_TEXT,),).toBe(false,);
+        }
       },
     },),
 

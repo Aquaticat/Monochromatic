@@ -1,9 +1,13 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import type { IssueAuthorship, } from './resolution-authorship.ts';
+import {
+  type IssueAuthorship,
+  wroteTextForIssue,
+} from './resolution-authorship.ts';
 import {
   buildResolutionMessages,
   isResolutionReportWire,
@@ -155,6 +159,46 @@ export async function runCheckerStage(
         return ballot.findings;
       },),
   ];
+
+  /**
+   * One line per ballot, naming the checker, the issue and its verdict.
+   *
+   * BECAUSE THE TALLY THAT FOLLOWS IS A SUM, and a sum cannot be taken apart.
+   * Nothing else in the pipeline records which checker said what, so a run that
+   * resolves an issue two-to-one leaves no trace of who dissented and no later
+   * question about this roster can be answered off a settled run without buying
+   * the whole stage again.
+   *
+   * THE AUTHOR MARKER IS WHAT MAKES A RE-TALLY POSSIBLE. It is the one input to
+   * each weight that is not in the ballot itself, so a reader holding these
+   * lines can reproduce this tally, or any tally over a subset of these
+   * checkers, without the authorship record.
+   *
+   * Ids and verdicts only: no line here carries a word of either document.
+   */
+  const ballotLines = gather.voices
+    .flatMap(function toLines(voice,): readonly string[] {
+      /**
+       * This checker's ballot, present because `ballots` was built from these
+       * same voices.
+       */
+      const ballot = nonNullishOrThrow(ballots[voice.modelId],);
+      return Object
+        .entries(ballot.verdicts,)
+        .map(function toLine([issueId, verdict,],): string {
+          return `checker-ballot ${voice.modelId} ${issueId} ${verdict} ${
+            wroteTextForIssue({
+              authorship,
+              issueId,
+              modelId: voice.modelId,
+            },)
+              ? 'author'
+              : 'outsider'
+          }`;
+        },);
+    },);
+  for (const line of ballotLines)
+    l.info(line,);
 
   /**
    * Majority tallies per issue.
