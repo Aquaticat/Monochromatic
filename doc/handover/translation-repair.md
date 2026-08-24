@@ -17810,3 +17810,60 @@ control was already in hand rather than constructed for the occasion.
 The fast path therefore stays. Removing it would buy 336 more calls per pass to reproduce an answer
 measured identical on every entry it serves. What changed is that the risk is measured at zero
 rather than unobserved. The probe is rerunnable on any new corpus at `~/temp/agent/fastpath-ask.mjs`.
+
+## Checker width: ruled to measurement, and the instrument that makes it paired
+
+The owner revised the "all producing roles to 4" ruling on 2026-08-23. Producing roles STAY AT
+THREE, because `#186` measured that exact comparison and came back null and because four writers
+leave two checkers, which cannot decide anything. Checker width was ruled separately and NOT by
+opinion: relax the independence assertion behind a switch, run the arms, compare per-issue
+resolution, ship the winner and delete the loser.
+
+### What landed
+
+`assertCheckerIndependence` takes `selfCertificationPermitted`. Set, the whole roster may check and
+`tallyResolutionChecks` halves a checker per issue whose shipped text it wrote. Unset, which is the
+default, nothing changed. Two refusals ignore the switch entirely: a repeated checker id, because it
+makes `gatherStageVoices` count toward quorum what `runCheckerStage` collapses to one ballot, and a
+roster below three, which is the new `assertCheckerQuorumReachable`.
+
+The floor is `MINIMUM_CHECKER_COUNT = 3`, derived rather than chosen: resolution needs
+`fixed > (notFixed + worse)`, so at two checkers a disagreement returns nothing and only a unanimous
+pair decides. It is scale-free under the discount, since halving both sides of that comparison
+leaves it unchanged.
+
+The floor found two test fixtures modelling rosters production would refuse: `repair-translation`
+ran two checkers and `repair-window-threading` ran one. Both widened to three, every checker still
+clear of that fixture's editors.
+
+### The instrument: one run, both arms
+
+`runCheckerStage` summed three verdicts into a tally and discarded the verdicts. It now publishes
+one line per ballot naming checker, issue, verdict, and whether that checker wrote the text under
+review. Ids and verdicts only, pinned by a test, because it prints on every run over an archive
+nobody licensed us to copy.
+
+THAT LINE IS WHAT MAKES THE COMPARISON PAIRED. `buildResolutionMessages` does not read the roster,
+so the sheet a narrow run sends is the sheet a wide run sends, and every ballot a narrow arm would
+have bought is present in a wide arm's log. Both tallies are therefore read off ONE run:
+
+-   narrow, over the three disjoint checkers at full weight
+-   wide, over all six with the author marker choosing each weight
+
+The arms differ by exactly the three ballots under test, so run-to-run variation, which `#186` found
+large enough to swamp its signal, cannot reach this comparison at all.
+
+Rounds are recovered per issue rather than by log contiguity: the k-th ballot a given model casts on
+a given issue belongs to the k-th time that issue was checked. Issue ids are `adjudicated/<hex>` and
+unique per document, measured 25 distinct over 25 rows on `lintong`, and the refinement recheck asks
+about the same issue a second time, which is why the index is needed.
+
+The analyser is `~/temp/agent/checker-width-tally.mjs`, positive-controlled before use on a
+synthetic log where one round must flip (narrow 2 fixed against 1 not-fixed resolves; three authoring
+writers at half weight take it to 2 against 2.5, undecided) and one must not.
+
+### How to buy the second arm
+
+`TRANSLATION_REPAIR_WIDE_CHECKERS=1` seats the whole roster and permits self-certification. It rides
+in `RUN_MODELS` rather than at a call site so it enters the slice-cache key: a wide run cannot resume
+off narrow cache entries and a narrow run cannot resume off wide ones.
