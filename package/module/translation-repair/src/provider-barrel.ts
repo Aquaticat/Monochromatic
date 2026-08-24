@@ -13,6 +13,22 @@
 
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export {
+  type AnthropicContentBlock,
+  type AnthropicImageSource,
+  contentBlocksFor,
+  MalformedImageUriError,
+  readImageSource,
+} from './anthropic-content.ts';
+export {
+  type AnthropicMessage,
+  type AnthropicRequestBody,
+  type AnthropicToolChoice,
+  buildAnthropicBody,
+  EmptyConversationError,
+  speakingTurns,
+  systemTextOf,
+} from './anthropic-request.ts';
+export {
   answerToolDefinition,
   answerToolName,
   type AnthropicToolDefinition,
