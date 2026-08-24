@@ -389,12 +389,43 @@ one `quotas` and one `credits`,
 which is the caching working rather than a coincidence:
 a second `quotas` line appears only because the probe called the passthrough itself.
 
+### The cross-provider re-ask: landed 2026-08-24
+
+`chatJson` on the routing client reads its outcome,
+and a non-conformant one from a model BOTH providers serve is re-asked on the other stack.
+
+Why this is worth a second call rather than a retry:
+the two providers extract structure by genuinely different mechanisms,
+a forced tool on one and a `response_format` on the other,
+so the same weights can conform on one serving stack and not the other.
+
+It is not a budget failover and does not pretend to be one.
+A bad answer marks nobody as refusing.
+The re-ask is skipped where the other provider does not serve the model,
+which is the `#88` invalid-candidate path the policy names,
+and skipped where the other provider has no budget.
+When both stacks disagree with the schema,
+the PREFERRED provider's answer is returned,
+because the caller's own handling is written against it;
+both are logged.
+
+### Wiring: landed 2026-08-24
+
+`createRunClient` is the one factory every corpus-run entrypoint calls,
+so the routing client reaches all of them at once.
+The returned surface is unchanged, `quotas` included,
+so no caller and not the bench recorder needed touching.
+
+The routing client deliberately does NOT offer `quotas`:
+the two providers meter differently and there is no single reading.
+The wiring layer is where the knowledge that `quotas` means the Synthetic meter belongs.
+
+The second key is OPTIONAL and its absence is LOUD.
+Refusing to start would stop a run the first provider can serve alone;
+starting silently would hide a setup mistake until a 429 storm read as a provider outage.
+
 ### Still to build
 
--   Handing the routing client to the stages,
-    which today still construct `createSyntheticClient` directly.
--   Cross-provider re-ask for the three shared models;
-    `#88`'s repair path for the rest.
 -   The calibration pass that picks the narrow writer set from the ten,
     which also settles the provisional third editor and refiner seat.
 
