@@ -1,8 +1,12 @@
-import {
-  type ChannelDelta,
-  scanStreamDeltas,
-  type StreamChannel,
+import type {
+  ChannelDelta,
+  StreamChannel,
 } from './stream-delta-scan.ts';
+import {
+  DEFAULT_WIRE_FORMAT,
+  scannerFor,
+  type StreamWireFormat,
+} from './stream-wire-format.ts';
 import {
   type DegenerationDetector,
   watchForDegeneration,
@@ -203,14 +207,21 @@ export type RunawayWatch = {
 export function watchRunaway(
   {
     contentCap = CONTENT_OVERRUN_CAP,
+    wireFormat = DEFAULT_WIRE_FORMAT,
   }: {
     readonly contentCap?: number;
+    readonly wireFormat?: StreamWireFormat;
   } = {},
 ): RunawayWatch {
   /**
    * Turns raw server-sent events into generated text, per channel.
+   *
+   * CHOSEN BY GRAMMAR since a second provider joined. Every threshold below was
+   * measured on one wire and applies to both, but only if the events are read
+   * at all: a stream drained with the wrong reader shows an empty answer
+   * channel, which every guard here reads as a perfectly well-behaved call.
    */
-  const scanner = scanStreamDeltas();
+  const scanner = scannerFor({ wireFormat, },);
 
   /**
    * One windowed-ratio detector per channel, judged separately.

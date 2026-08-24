@@ -1,6 +1,7 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { drainBody, } from './stream-drain.ts';
+import type { StreamWireFormat, } from './stream-wire-format.ts';
 import { armIdleGuard, } from './stream-idle-guard.ts';
 
 //region Transport abstraction
@@ -87,6 +88,15 @@ export type TransportExchange = {
    * the reply against it.
    */
   readonly maxAnswerChars?: number;
+
+  /**
+   * Event grammar this endpoint's stream speaks, which is a property of the
+   * PROVIDER rather than of the request, and absent means the older one.
+   *
+   * NAMED BY THE CALLER because only the client knows which provider it is
+   * addressing; the transport is one function serving both.
+   */
+  readonly wireFormat?: StreamWireFormat;
 };
 
 /**
@@ -138,6 +148,7 @@ export async function fetchTransport(
     bodyJson,
     signal,
     maxAnswerChars,
+    wireFormat,
   } = exchange;
 
   /**
@@ -186,6 +197,7 @@ export async function fetchTransport(
       callerSignal: signal,
       label,
       ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
+      ...((wireFormat === undefined) ? {} : { wireFormat, }),
     },),
   };
 }

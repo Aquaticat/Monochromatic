@@ -12,6 +12,11 @@
 // only remedy that works against an exhausted budget.
 
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
+export {
+  DEFAULT_WIRE_FORMAT,
+  scannerFor,
+  type StreamWireFormat,
+} from './stream-wire-format.ts';
 export type {
   HyperOnlyRosterId,
   SyntheticServedId,

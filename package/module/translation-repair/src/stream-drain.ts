@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { IdleGuard, } from './stream-idle-guard.ts';
+import type { StreamWireFormat, } from './stream-wire-format.ts';
 import {
   type RunawayVerdict,
   StreamDegenerateError,
@@ -194,12 +195,14 @@ export async function drainBody(
     callerSignal,
     label,
     maxAnswerChars,
+    wireFormat,
   }: {
     readonly response: ForeignBorrowed<Response>;
     readonly guard: ForeignBorrowed<IdleGuard>;
     readonly callerSignal: AbortSignal;
     readonly label: string;
     readonly maxAnswerChars?: number;
+    readonly wireFormat?: StreamWireFormat;
   },
 ): Promise<string> {
   /**
@@ -242,11 +245,13 @@ export async function drainBody(
   // 56-character source, well under the default and 185 times its input. A
   // caller that knows how large its input was can say so, and
   // `produced-volume-bound.ts` records what that bound rests on.
-  const watch = watchRunaway(
-    (maxAnswerChars === undefined)
-      ? {}
-      : { contentCap: maxAnswerChars, },
-  );
+  const watch = watchRunaway({
+    // Conditional spreads keep each knob absent rather than explicitly
+    // undefined, so the watch applies its own default for whichever the
+    // caller left unsaid.
+    ...((maxAnswerChars === undefined) ? {} : { contentCap: maxAnswerChars, }),
+    ...((wireFormat === undefined) ? {} : { wireFormat, }),
+  },);
 
   /**
    * Loop cursor, a named record so the body-root binding stays immutable.
