@@ -118,7 +118,35 @@ function slateOf(
 }
 
 /**
+ * Builds what one slate position drew.
+ *
+ * @param index - one-based position
+ *
+ * @returns Weight entry as an artifact records one
+ *
+ * @example
+ * ```ts
+ * const drawn = drawnOf({ index: 1, },);
+ * ```
+ */
+function drawnOf(
+  { index, }: { readonly index: number; },
+): Record<string, unknown> {
+  return {
+    index,
+    ballots: 1,
+    fullVotes: 1,
+    selfVotes: 0,
+    weight: 1,
+  };
+}
+
+/**
  * Builds one round around a slate and its ballots.
+ *
+ * CARRIES EVERY FIELD THE LANE WRITES, including the ones a standing never
+ * reads. The reader validates the whole round, so a fixture carrying only what
+ * a standing needs would pin a reader looser than the one that ships.
  *
  * @param slate - candidates judges were shown
  *
@@ -156,6 +184,60 @@ function roundOf(
       abstentions: 0,
       selfVotes: 0,
     },
+    perCandidate: slate.map(function drawn(entry, index,): Record<string, unknown> {
+      return drawnOf({ index: Number(entry.index ?? (index + 1),), },);
+    },),
+    selectedIndex: 1,
+    voteWeight: 1,
+  };
+}
+
+/**
+ * Builds a round that decided nothing, which records two fields the other
+ * outcome does not.
+ *
+ * @param slate - candidates judges were shown
+ *
+ * @param ballots - ballots cast over them
+ *
+ * @returns Declining round as an artifact records one
+ *
+ * @example
+ * ```ts
+ * const round = declinedRoundOf({ slate, ballots, },);
+ * ```
+ */
+function declinedRoundOf(
+  {
+    slate,
+    ballots,
+  }: {
+    readonly slate: readonly Record<string, unknown>[];
+    readonly ballots: readonly Record<string, unknown>[];
+  },
+): Record<string, unknown> {
+  /**
+   * Selecting round, whose six shared fields this reuses so the two fixtures
+   * cannot drift apart on them.
+   */
+  const selecting = roundOf({
+    slate,
+    ballots,
+  },);
+
+  // NAMED ONE BY ONE rather than spread and blanked, because a declining round
+  // records neither `selectedIndex` nor `voteWeight` and a fixture carrying
+  // them as blanks would let a reader that ignored `kind` pass.
+  return {
+    kind: 'declined',
+    stage: selecting.stage,
+    envelopeId: selecting.envelopeId,
+    slate: selecting.slate,
+    ballots: selecting.ballots,
+    tally: selecting.tally,
+    perCandidate: selecting.perCandidate,
+    reason: 'judges split evenly across two candidates',
+    disposition: 'indecision',
   };
 }
 
@@ -236,6 +318,139 @@ await describe({
         expect(perChunk[0]?.length,).toBe(1,);
         expect(perChunk[0]?.[0]?.stage,).toBe('envelope',);
         expect(perChunk[0]?.[0]?.slate.length,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'reads a DECLINING round, keeping what a selecting one has no room for',
+      fn: async () => {
+        /**
+         * A round where judges settled on nothing, which records a reason and a
+         * disposition in place of a winner and its weight.
+         */
+        const perChunk = readRepairRounds({
+          raw: rawOf({
+            chunks: [[
+              declinedRoundOf({
+                slate: [
+                  slateOf({
+                    index: 1,
+                    producer: {
+                      kind: 'model',
+                      modelId: SEATED,
+                    },
+                  },),
+                ],
+                ballots: [
+                  ballotOf({
+                    modelId: ALSO_SEATED,
+                    best: 1,
+                  },),
+                ],
+              },),
+            ],],
+          },),
+          path: PATH,
+        },);
+
+        /**
+         * The round itself, read out so both of its own fields can be asserted.
+         */
+        const round = perChunk[0]?.[0];
+
+        expect(round?.kind,).toBe('declined',);
+        expect(round?.perCandidate.length,).toBe(1,);
+        expect((round?.kind === 'declined') ? round.disposition : 'not-declined',)
+          .toBe('indecision',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a round recording nothing about what each position drew',
+      fn: async () => {
+        /**
+         * What the reader threw when `perCandidate` was absent, which is the
+         * shape every round on disk carries and a partial reader would ignore.
+         */
+        const refusal = caught(function readsAPartialRound() {
+          /**
+           * A well formed round with that one field taken back out.
+           */
+          const {
+            perCandidate,
+            ...withoutDraws
+          } = roundOf({
+            slate: [
+              slateOf({
+                index: 1,
+                producer: {
+                  kind: 'model',
+                  modelId: SEATED,
+                },
+              },),
+            ],
+            ballots: [
+              ballotOf({
+                modelId: ALSO_SEATED,
+                best: 1,
+              },),
+            ],
+          },);
+
+          expect(perCandidate,).toBeDefined();
+
+          readRepairRounds({
+            raw: rawOf({ chunks: [[withoutDraws,],], },),
+            path: PATH,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusal as Error).message,)
+          .toContain(`${PATH}.chunks[0].rounds[0].perCandidate`,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a declining round naming a disposition the lane cannot produce',
+      fn: async () => {
+        /**
+         * What the reader threw on a disposition outside the two the selection
+         * can reach, which is how a hand-edited or foreign record reads.
+         */
+        const refusal = caught(function readsAnUnknownDisposition() {
+          readRepairRounds({
+            raw: rawOf({
+              chunks: [[
+                {
+                  ...declinedRoundOf({
+                    slate: [
+                      slateOf({
+                        index: 1,
+                        producer: {
+                          kind: 'model',
+                          modelId: SEATED,
+                        },
+                      },),
+                    ],
+                    ballots: [
+                      ballotOf({
+                        modelId: ALSO_SEATED,
+                        best: 1,
+                      },),
+                    ],
+                  },),
+                  disposition: 'adjourned',
+                },
+              ],],
+            },),
+            path: PATH,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusal as Error).message,)
+          .toContain(`${PATH}.chunks[0].rounds[0].disposition`,);
       },
     },),
 

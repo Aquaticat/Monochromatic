@@ -22,39 +22,47 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   coverageGapLines,
+  type ProducerStanding,
   readStandingCoverage,
+  type RosterModelId,
   UnseatedStandingError,
 } from '../dist/final/node/index.mjs';
 
 /**
  * Model whose candidates drew ballots in every case that needs one.
  */
-const JUDGED = 'hf:moonshotai/Kimi-K3';
+const JUDGED: RosterModelId = 'hf:moonshotai/Kimi-K3';
 
 /**
  * Model that writes without ever being voted on.
  */
-const UNVOTED = 'hf:Qwen/Qwen3.8-27B';
+const UNVOTED: RosterModelId = 'hf:Qwen/Qwen3.8-27B';
 
 /**
  * Model whose provider is out of budget, so it writes nothing.
  */
-const ABSENT = 'minimax-m3';
+const ABSENT: RosterModelId = 'minimax-m3';
 
 /**
  * Second silent model, so ordering can be checked on more than one.
  */
-const ALSO_ABSENT = 'gemma-4-26b-a4b-it';
+const ALSO_ABSENT: RosterModelId = 'gemma-4-26b-a4b-it';
 
 /**
  * Model the roster dropped on 2026-08-24, which no run seats today.
+ *
+ * CAST ON PURPOSE, and this is the only cast here. `RosterModelId` is a closed
+ * union of models a run may seat, so a departed id cannot be spelled inside it,
+ * and refusing one is exactly what the two cases below check. A test that could
+ * not name a departed model could not check the refusal at all.
+ * `judge-fidelity.unit.test.ts` reaches for the same cast for the same reason.
  */
-const DEPARTED = 'hf:zai-org/GLM-4.7-Flash';
+const DEPARTED = 'hf:zai-org/GLM-4.7-Flash' as unknown as RosterModelId;
 
 /**
  * Seats every case starts from, in the order a report should preserve.
  */
-const ROSTER = [
+const ROSTER: readonly RosterModelId[] = [
   JUDGED,
   UNVOTED,
   ABSENT,
@@ -74,8 +82,8 @@ const ROSTER = [
  * ```
  */
 function standingOf(
-  { modelId, }: { readonly modelId: string; },
-) {
+  { modelId, }: { readonly modelId: RosterModelId; },
+): ProducerStanding {
   return {
     modelId,
     candidates: 3,
