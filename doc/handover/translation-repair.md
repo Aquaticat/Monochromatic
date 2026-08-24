@@ -17723,3 +17723,54 @@ and it left `mise.toml` conflicted. Repaired with `git checkout HEAD -- mise.tom
 entries preserved. Check that a push actually stashed before pairing it with a pop.
 
 Suite 564 PASS, exit 0. Lint 0 warnings 0 errors. Types clean.
+
+## A section nothing rendered is now sliced, and the sparse case turns out to be cured elsewhere
+
+`#90`'s last defect was that subdivision is framed by the TARGET's block runs, so a section with no
+translation at all had nothing to frame by and came back as ONE slice however long its original
+was. The comment at that branch said slicing it needed a driver that inserts rather than replaces.
+That driver landed in `#89`, and `spliceSlices` gained zero-length-span writing and equal-offset
+ordering in `610ea11b9`, so the stated reason had been spent for a week.
+
+Measured on `XingZ60` under the pairing the roster really returned: two insertion slices of 915 and
+1459 source characters become 16 whose largest is 384. Nothing had to be split, because those
+sections hold 6 and 23 blocks whose largest member is 384 against a budget of 400.
+
+### The sparse-but-not-empty case needed no slicing code at all
+
+`XIEPT2` looks like the same defect and is not. Its sections ARE paired, against target sections
+that are a bare heading and a dozen characters of body, so the target chunk is real and the
+insertion branch never applies. Its collapse is cured by BLOCK pairing instead, and the mechanism
+is worth stating because it is not obvious: a roster asked to pair a section whose translation is
+one heading returns exactly one correspondence, the remaining seventeen originals arrive as
+`source-only` steps, `anchorOffsets` proves their anchors, and they become budget-bounded
+insertions of their own.
+
+```text
+XIEPT2         deterministic   9 slices, max 1639,  8 over budget
+               + block pairing 32 slices, max  416,  5 over budget
+shi_Yumiaoya   deterministic   7 slices, max 1313,  4 reducible over budget
+               + block pairing 17 slices, max  409,  0 reducible
+cheonwoomaeng  deterministic  10 slices, max  832
+               + block pairing 12 slices, max  784,  0 reducible
+```
+
+The 32 matches what the live `XIEPT2` pass really produced, which is how the mechanism was
+confirmed rather than assumed: its cached block pairings read `0-0` on seven of eight sections.
+
+### What is left is a floor rather than a defect
+
+Over the whole pinned corpus on the deterministic path, 12 of 1259 slices exceed the 400-character
+source budget, and 7 of those are a SINGLE BLOCK. Splitting a paragraph is out of scope by
+decision, so those seven are the floor. The other five are the sparse-target shape, and block
+pairing takes them to marginal run-closing overshoot or to a single block.
+
+### The assembly side was checked rather than assumed
+
+`spliceSlices` is what has to absorb sixteen insertions at one boundary, and its existing test uses
+two. Driven directly with sixteen: all sixteen written, in slice order, blank-line separated, the
+surrounding text intact, and the whole group placed between the passages either side. The two-item
+test already catches a reversal, so no near-duplicate case was added; this is the record that the
+count the new slicing really produces was exercised.
+
+Suite 565 PASS, exit 0. Lint 0 warnings 0 errors. Types clean.
