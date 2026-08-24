@@ -11,6 +11,8 @@ import {
   REFINER_ROUND_STAGES,
   selectionRoundsFor,
 } from '../repair-selection-rounds.ts';
+import type { IssueAuthorship, } from '../resolution-authorship.ts';
+import type { RosterModelId, } from '../roster-id.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import {
   type BenchSlice,
@@ -82,7 +84,46 @@ type SliceRounds = {
    * Rounds the refiners' candidates were judged in.
    */
   readonly refiner: readonly SelectionRound[];
+
+  /**
+   * Models that wrote the text this slice actually shipped.
+   *
+   * SEPARATE FROM THE ROUNDS, AND NOT A PREFERENCE. Nobody chose between
+   * alternatives on a slice where every editor proposed the same text, so
+   * shipping there says the ensemble agreed and says nothing about who would
+   * have won a vote. Counted anyway, because without it such a slice is
+   * invisible: it repaired, and the standing records nothing.
+   */
+  readonly shipped: readonly RosterModelId[];
 };
+
+/**
+ * Every model credited with writing text that shipped on one slice.
+ *
+ * BOTH HALVES OF THE AUTHORSHIP. A model can write a whole chunk or serve one
+ * issue inside it, and either is having written what shipped.
+ *
+ * @param authorship - what the lane recorded about who wrote the repair
+ *
+ * @returns Models credited, each once
+ *
+ * @example
+ * ```ts
+ * const authors = shippedAuthors({ authorship: outcome.authorship, },);
+ * ```
+ */
+function shippedAuthors(
+  { authorship, }: { readonly authorship: IssueAuthorship; },
+): readonly RosterModelId[] {
+  return [
+    ...new Set([
+      ...authorship.everyIssue,
+      ...Object
+        .values(authorship.perIssue,)
+        .flat(),
+    ],),
+  ];
+}
 
 /**
  * Runs one slice through the whole repair lane, every model editing and
@@ -140,6 +181,7 @@ async function runOne(
       rounds: outcome.rounds,
       stages: REFINER_ROUND_STAGES,
     },),
+    shipped: shippedAuthors({ authorship: outcome.authorship, },),
   };
 }
 
@@ -223,11 +265,93 @@ function reportSeat(
 
   if (silent.length > 0) {
     console.log(
-      `  WROTE NOTHING, so this standing says nothing about them: ${silent.join(', ',)}. `
-        + 'Check the log for lost voices: a model refused for budget leaves no candidate, '
-        + 'which is absence of evidence rather than a poor showing.',
+      `  NO JUDGED CANDIDATE, so this standing says nothing about them: ${silent.join(', ',)}. `
+        + 'Two different things do that and the SHIPPED lines below tell them apart: a model '
+        + 'refused for budget never wrote, and a model whose text every other editor proposed '
+        + 'word for word wrote the thing that shipped without any ballot being cast over it. '
+        + 'Neither is a poor showing.',
     );
   }
+}
+
+/**
+ * Prints what shipped, and how much of it no vote ever touched.
+ *
+ * THE STANDING'S BLIND SPOT, MEASURED. `selectChunkPatch` ships outright when
+ * every proposal is identical, recording no round because there was nothing to
+ * choose between. A slice like that repairs and contributes nothing to a
+ * standing, so without this line a converged run reads as a lane that did no
+ * work. It was found live: a slice whose panel adjudicated seven issues
+ * repaired one of them and reported zero editor rounds.
+ *
+ * SHIPPING IS NOT WINNING. Nobody preferred this text to anything, so these
+ * counts must never be read as a rate against the standing above.
+ *
+ * @param perSlice - what every slice produced
+ *
+ * @example
+ * ```ts
+ * reportShipped({ perSlice, },);
+ * ```
+ */
+function reportShipped(
+  { perSlice, }: { readonly perSlice: readonly SliceRounds[]; },
+): void {
+  /**
+   * Slices that shipped a repair without any editor round being judged.
+   */
+  const unvoted = perSlice.filter(function converged(slice,): boolean {
+    return (slice.editor.length === 0) && (slice.shipped.length > 0);
+  },);
+
+  /**
+   * Slices that shipped a repair at all.
+   */
+  const shipping = perSlice.filter(function repaired(slice,): boolean {
+    return slice.shipped.length > 0;
+  },);
+
+  console.log(
+    `\nSHIPPED on ${String(shipping.length,)} of ${String(perSlice.length,)} slices, `
+      + `${String(unvoted.length,)} of them with no editor round judged at all`,
+  );
+
+  if (shipping.length === 0) {
+    console.log('  NOTHING SHIPPED. No slice in this sample carried an accepted issue.',);
+    return;
+  }
+
+  /**
+   * How many slices each model wrote shipping text on.
+   */
+  const credits = new Map<RosterModelId, number>();
+
+  for (const slice of shipping) {
+    for (const modelId of slice.shipped) {
+      credits.set(
+        modelId,
+        (credits.get(modelId,) ?? 0) + 1,
+      );
+    }
+  }
+
+  for (
+    const [modelId, count,] of [...credits.entries(),].toSorted(function byCount(
+      left,
+      right,
+    ): number {
+      return right[1] - left[1];
+    },)
+  ) {
+    console.log(
+      `  ${modelId}: wrote shipping text on ${String(count,)} of ${String(shipping.length,)} slices`,
+    );
+  }
+
+  console.log(
+    '  THIS IS NOT A PREFERENCE. A model ships here by writing text that survived, including '
+      + 'text every other editor proposed identically, which no judge was ever asked about.',
+  );
 }
 
 /**
@@ -298,7 +422,8 @@ async function main(): Promise<void> {
       `  slice ${String(perSlice.length,)} of ${String(sample.length,)} `
         + `(${slice.entryId} chunk ${String(slice.index,)}): `
         + `${String(editorCount,)} editor rounds, `
-        + `${String(refinerCount,)} refiner rounds`,
+        + `${String(refinerCount,)} refiner rounds, `
+        + `${String(rounds.shipped.length,)} shipping authors`,
     );
   }
 
@@ -315,6 +440,8 @@ async function main(): Promise<void> {
       return rounds.refiner;
     },),
   },);
+
+  reportShipped({ perSlice, },);
 }
 
 await main();
