@@ -118,8 +118,8 @@ function rawResultFor(
 ): Record<string, unknown> {
   return {
     sliceCount: rows.length,
-    shippedChunkIndices: [],
-    withdrawnChunkIndices: [],
+    changedSliceIndices: [],
+    withdrawnSliceIndices: [],
 
     // The two counts the translate lane reports beside its lists. Harmless on
     // the repair result, whose evidence core does not name them, and required

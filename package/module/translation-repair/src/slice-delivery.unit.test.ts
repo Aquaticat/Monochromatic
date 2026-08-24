@@ -234,8 +234,8 @@ await describe({
         const undecided = buildSliceDelivery({
           slices: anchoredSlices(),
           wordings: anchoredWordings({ anchorNotApplicable: false, },),
-          shippedChunkIndices: [],
-          withdrawnChunkIndices: [],
+          changedSliceIndices: [],
+          withdrawnSliceIndices: [],
           blocked: false,
         },);
         expect(undecided[1]?.delivery
@@ -245,8 +245,8 @@ await describe({
         const agreed = buildSliceDelivery({
           slices: anchoredSlices(),
           wordings: anchoredWordings({ anchorNotApplicable: true, },),
-          shippedChunkIndices: [],
-          withdrawnChunkIndices: [],
+          changedSliceIndices: [],
+          withdrawnSliceIndices: [],
           blocked: false,
         },);
         expect(agreed[1]?.delivery
@@ -274,8 +274,8 @@ await describe({
               [2, INCUMBENTS[2],],
             ],),
           },),
-          shippedChunkIndices: [0,],
-          withdrawnChunkIndices: [1,],
+          changedSliceIndices: [0,],
+          withdrawnSliceIndices: [1,],
           blocked: false,
         },);
         expect(ledger.map(function toShipment(record,): string {
@@ -313,8 +313,8 @@ await describe({
           wordings: laneWordings({
             decided: new Map([[0, INCUMBENTS[0],],],),
           },),
-          shippedChunkIndices: [],
-          withdrawnChunkIndices: [],
+          changedSliceIndices: [],
+          withdrawnSliceIndices: [],
           blocked: true,
         },);
         // WHAT THE LANE DID, which is the axis that separates these slices.
@@ -351,8 +351,8 @@ await describe({
           wordings: laneWordings({
             decided: new Map([[0, 'The cat is asleep.',],],),
           },),
-          shippedChunkIndices: [],
-          withdrawnChunkIndices: [],
+          changedSliceIndices: [],
+          withdrawnSliceIndices: [],
           blocked: true,
         },);
         expect(ledger[0]?.delivery,).toEqual({
@@ -383,8 +383,8 @@ await describe({
                 [2, INCUMBENTS[2],],
               ],),
             },),
-            shippedChunkIndices: [],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [],
+            withdrawnSliceIndices: [],
             blocked: false,
           },);
         },);
@@ -404,8 +404,8 @@ await describe({
           buildSliceDelivery({
             slices: preparedSlices(),
             wordings: laneWordings({ decided: everySliceUnchanged(), },),
-            shippedChunkIndices: [0,],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [0,],
+            withdrawnSliceIndices: [],
             blocked: false,
           },);
         },);
@@ -424,8 +424,8 @@ await describe({
                 [2, INCUMBENTS[2],],
               ],),
             },),
-            shippedChunkIndices: [0,],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [0,],
+            withdrawnSliceIndices: [],
             blocked: false,
           },);
         },);
@@ -450,8 +450,8 @@ await describe({
                 0,
                 2,
               ),
-            shippedChunkIndices: [],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [],
+            withdrawnSliceIndices: [],
             blocked: false,
           },);
         },);
@@ -465,8 +465,8 @@ await describe({
           buildSliceDelivery({
             slices: preparedSlices(),
             wordings: laneWordings({ decided: everySliceUnchanged(), },),
-            shippedChunkIndices: [7,],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [7,],
+            withdrawnSliceIndices: [],
             blocked: false,
           },);
         },);
@@ -492,8 +492,8 @@ await describe({
           buildSliceDelivery({
             slices: preparedSlices(),
             wordings: drifted,
-            shippedChunkIndices: [],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [],
+            withdrawnSliceIndices: [],
             blocked: false,
           },);
         },).toThrow(SliceDeliveryError,);
@@ -518,11 +518,11 @@ await describe({
                 'The cat naps.',
               ],],),
             },),
-            shippedChunkIndices: [
+            changedSliceIndices: [
               0,
               0,
             ],
-            withdrawnChunkIndices: [],
+            withdrawnSliceIndices: [],
             blocked: false,
           },);
         },);
@@ -541,8 +541,8 @@ await describe({
                 'The cat dines.',
               ],],),
             },),
-            shippedChunkIndices: [],
-            withdrawnChunkIndices: [
+            changedSliceIndices: [],
+            withdrawnSliceIndices: [
               1,
               1,
             ],
@@ -572,8 +572,8 @@ await describe({
                 'The cat studies the birds.',
               ],],),
             },),
-            shippedChunkIndices: [2,],
-            withdrawnChunkIndices: [2,],
+            changedSliceIndices: [2,],
+            withdrawnSliceIndices: [2,],
             blocked: false,
           },);
         },);
@@ -596,8 +596,8 @@ await describe({
           buildSliceDelivery({
             slices: preparedSlices(),
             wordings: laneWordings({ decided: everySliceUnchanged(), },),
-            shippedChunkIndices: [],
-            withdrawnChunkIndices: [1,],
+            changedSliceIndices: [],
+            withdrawnSliceIndices: [1,],
             blocked: false,
           },);
         },);
@@ -621,8 +621,8 @@ await describe({
             wordings: laneWordings({
               decided: new Map([[0, 'The cat is asleep.',],],),
             },),
-            shippedChunkIndices: [],
-            withdrawnChunkIndices: [0,],
+            changedSliceIndices: [],
+            withdrawnSliceIndices: [0,],
             blocked: true,
           },);
         },);
@@ -646,8 +646,8 @@ await describe({
             wordings: laneWordings({
               decided: new Map([[0, 'The cat is asleep.',],],),
             },),
-            shippedChunkIndices: [0,],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [0,],
+            withdrawnSliceIndices: [],
             blocked: true,
           },);
         },);

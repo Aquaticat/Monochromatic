@@ -1,7 +1,7 @@
 /**
  * Tests for the parser that reads attribution out of settled artifacts.
  *
- * These exist because the report's own tests hand `chunkCritics` in by hand, so
+ * These exist because the report's own tests hand `sliceCritics` in by hand, so
  * they exercise the FOLD and never the WIRING. The eligible-versus-ineligible
  * decision the whole report rests on is not made there at all: it is made in
  * `toEntry`, by OMITTING the key for an artifact that carries no attribution.
@@ -141,25 +141,25 @@ async function writeArtifacts(
  * both empty are satisfied by parsers that always return nothing, so they
  * constrain neither the proposer path nor the issue path.
  *
- * @param chunkCritics - calibration to record
+ * @param sliceCritics - calibration to record
  *
  * @returns Artifact body
  *
  * @example
  * ```ts
- * const body = artifactWith({ chunkCritics, },);
+ * const body = artifactWith({ sliceCritics, },);
  * ```
  */
 function artifactWith(
   {
-    chunkCritics,
+    sliceCritics,
   }: {
-    readonly chunkCritics: unknown;
+    readonly sliceCritics: unknown;
   },
 ): Record<string, unknown> {
   return {
     id: 'Whiskers',
-    chunkCritics,
+    sliceCritics,
     issues: [
       {
         chunkIndex: 0,
@@ -186,7 +186,7 @@ await describe({
         await using scratch = await writeArtifacts({
           artifacts: {
             'Whiskers.json': artifactWith({
-              chunkCritics: [{
+              sliceCritics: [{
                 chunkIndex: 3,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
@@ -206,7 +206,7 @@ await describe({
         /**
          * Chunk record the artifact carried.
          */
-        const record = entries[0]?.chunkCritics?.[0];
+        const record = entries[0]?.sliceCritics?.[0];
 
         expect(record?.chunkIndex,).toBe(3,);
         expect(record?.heardCriticIds,).toStrictEqual([TABBY,],);
@@ -219,9 +219,9 @@ await describe({
     },),
 
     it({
-      name: 'treats an ABSENT chunkCritics key as an entry that predates '
+      name: 'treats an ABSENT sliceCritics key as an entry that predates '
         + 'attribution, which is the decision the whole report rests on and the '
-        + 'one its own tests cannot reach, since they supply chunkCritics by '
+        + 'one its own tests cannot reach, since they supply sliceCritics by '
         + 'hand and so make every entry eligible by construction',
       fn: async () => {
         /**
@@ -239,7 +239,7 @@ await describe({
         // Undefined, NOT an empty array. An empty array would read as an entry
         // whose critics raised nothing, which is the exact conflation the
         // eligible population exists to prevent.
-        expect(entries[0]?.chunkCritics,).toBeUndefined();
+        expect(entries[0]?.sliceCritics,).toBeUndefined();
       },
     },),
 
@@ -256,7 +256,7 @@ await describe({
         await using scratch = await writeArtifacts({
           artifacts: {
             'Whiskers.json': artifactWith({
-              chunkCritics: [{
+              sliceCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [],
@@ -286,7 +286,7 @@ await describe({
     },),
 
     it({
-      name: 'THROWS on a chunkCritics key that is present but not an array, '
+      name: 'THROWS on a sliceCritics key that is present but not an array, '
         + 'rather than reading it as an entry that predates attribution. Only '
         + 'absence means legacy; tolerating null or a string here would let '
         + 'corruption quietly shrink the eligible population instead',
@@ -296,13 +296,13 @@ await describe({
            * Artifact whose attribution key is present and unusable.
            */
           await using scratch = await writeArtifacts({
-            artifacts: { 'Whiskers.json': artifactWith({ chunkCritics: corrupt, },), },
+            artifacts: { 'Whiskers.json': artifactWith({ sliceCritics: corrupt, },), },
           },);
 
           expect(
             (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
               ?.reason,
-          ).toContain('chunkCritics',);
+          ).toContain('sliceCritics',);
         },),);
       },
     },),
@@ -320,7 +320,7 @@ await describe({
           await using scratch = await writeArtifacts({
             artifacts: {
               'Whiskers.json': artifactWith({
-                chunkCritics: [{
+                sliceCritics: [{
                   chunkIndex,
                   heardCriticIds: [TABBY,],
                   claimAttributions: [],
@@ -349,7 +349,7 @@ await describe({
         await using heard = await writeArtifacts({
           artifacts: {
             'Whiskers.json': artifactWith({
-              chunkCritics: [{
+              sliceCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY, TABBY,],
                 claimAttributions: [],
@@ -368,7 +368,7 @@ await describe({
         await using chunks = await writeArtifacts({
           artifacts: {
             'Whiskers.json': artifactWith({
-              chunkCritics: [
+              sliceCritics: [
                 { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
                 { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
               ],
@@ -386,7 +386,7 @@ await describe({
         await using proposers = await writeArtifacts({
           artifacts: {
             'Whiskers.json': artifactWith({
-              chunkCritics: [{
+              sliceCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
@@ -418,7 +418,7 @@ await describe({
         await using scratch = await writeArtifacts({
           artifacts: {
             'Whiskers.json': artifactWith({
-              chunkCritics: [{
+              sliceCritics: [{
                 chunkIndex: 0,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
@@ -441,7 +441,7 @@ await describe({
         + 'root where version 1 kept them. This is the case every other fixture here could not '
         + 'reach: all of them are version-1-shaped, so all of them passed while the reader was '
         + 'blind to every artifact the current pipeline writes. Measured over the settled '
-        + 'population before this held, 0 of 47 artifacts carried chunkCritics at the root and 47 '
+        + 'population before this held, 0 of 47 artifacts carried sliceCritics at the root and 47 '
         + 'of 47 carried it in the lane, so every one was filed as PREDATING attribution, which is '
         + 'the one wrong answer here that reads like an ordinary census of an older corpus. '
         + 'DECOYS sit at the root, deliberately different from the lane records, so a reader still '
@@ -454,7 +454,7 @@ await describe({
           artifacts: {
             'Whiskers.json': {
               id: 'Whiskers',
-              chunkCritics: [{
+              sliceCritics: [{
                 chunkIndex: 9,
                 heardCriticIds: [TABBY,],
                 claimAttributions: [{
@@ -466,7 +466,7 @@ await describe({
               lanes: {
                 repair: {
                   result: {
-                    chunkCritics: [{
+                    sliceCritics: [{
                       chunkIndex: 3,
                       heardCriticIds: [TABBY,],
                       claimAttributions: [{
@@ -498,12 +498,12 @@ await describe({
         // ELIGIBLE, which is the half that decides the population. Reading the
         // root left this undefined and moved the entry into the pre-feature
         // bucket without anything reporting that it had happened.
-        expect(entries[0]?.chunkCritics,).toBeDefined();
+        expect(entries[0]?.sliceCritics,).toBeDefined();
 
         /**
          * Chunk record the repair lane carried.
          */
-        const record = entries[0]?.chunkCritics?.[0];
+        const record = entries[0]?.sliceCritics?.[0];
 
         expect(record?.chunkIndex,).toBe(3,);
         expect(record?.claimAttributions[0]?.claimId,).toBe(NAP,);

@@ -1,4 +1,4 @@
-import type { ChunkCriticRecord, } from './critic-attribution.ts';
+import type { SliceCriticRecord, } from './critic-attribution.ts';
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { RepairIssueRecord, } from './repair-record.ts';
@@ -59,7 +59,7 @@ export type RepairTranslationResult = {
    * the one a rate needs: it is the difference between a critic that was asked
    * and stayed quiet and a critic that was never asked.
    */
-  readonly chunkCritics: readonly ChunkCriticRecord[];
+  readonly sliceCritics: readonly SliceCriticRecord[];
 
   /**
    * Slices the preparation produced, which every index below is out of.
@@ -79,19 +79,19 @@ export type RepairTranslationResult = {
    * lane change the same ones. A count answers neither. Empty on a blocked run,
    * which returns its input whatever each slice decided.
    */
-  readonly shippedChunkIndices: readonly number[];
+  readonly changedSliceIndices: readonly number[];
 
   /**
    * Slices whose repair the assembly guard took back, in document order.
    *
    * Ordered by `orderedChangeSets` rather than left in the order the guard
    * worked, so a reader joining two lanes slice by slice reads both sets by one
-   * rule. Disjoint from {@link RepairTranslationResult.shippedChunkIndices} by
+   * rule. Disjoint from {@link RepairTranslationResult.changedSliceIndices} by
    * construction. Kept apart from the issue records because a withdrawal is a
    * fact about the DOCUMENT, and a slice can be withdrawn while carrying no
    * adjudicated issue of its own.
    */
-  readonly withdrawnChunkIndices: readonly number[];
+  readonly withdrawnSliceIndices: readonly number[];
 
   /**
    * What this lane DECIDED for every prepared slice, beside the archive's own
@@ -99,7 +99,7 @@ export type RepairTranslationResult = {
    *
    * One entry per slice whether or not anything changed, because a rate needs
    * its denominator and "this lane looked and left it alone" is a decision.
-   * Carries no shipped flag: {@link RepairTranslationResult.shippedChunkIndices}
+   * Carries no shipped flag: {@link RepairTranslationResult.changedSliceIndices}
    * is that fact, and repeating it per slice would let the two disagree.
    */
   readonly sliceTexts: readonly LaneSliceText[];
@@ -119,7 +119,7 @@ export type RepairTranslationResult = {
    * slices decided before it, which is why the two numbers are reported
    * separately rather than one being derived from the other.
    *
-   * Withdrawn slices stay here. What assembly took back is `withdrawnChunkIndices`;
+   * Withdrawn slices stay here. What assembly took back is `withdrawnSliceIndices`;
    * this side says what the lane decided, and a withdrawal is only readable
    * against the decision it withdrew.
    */

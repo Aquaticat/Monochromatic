@@ -79,11 +79,11 @@ export function buildSettledArtifact(
         readonly resolved: boolean;
       }[];
       readonly findings: readonly unknown[];
-      readonly chunkCritics: unknown;
+      readonly sliceCritics: unknown;
       readonly repairedText: string;
       readonly sliceCount: number;
-      readonly shippedChunkIndices: readonly number[];
-      readonly withdrawnChunkIndices: readonly number[];
+      readonly changedSliceIndices: readonly number[];
+      readonly withdrawnSliceIndices: readonly number[];
     };
   },
 ): Readonly<Record<string, unknown>> {
@@ -148,7 +148,10 @@ export function buildSettledArtifact(
       .length,
     findings: result.findings,
     issues: result.issues,
-    chunkCritics: result.chunkCritics,
+    // SPELLED THE WAY GENERATION 1 SPELLED IT, which is what
+    // `CHUNK_SPELLED_KEYS` in `artifact-key-vocabulary.ts` reads it back under.
+    // This generation is closed, so the two never move apart.
+    chunkCritics: result.sliceCritics,
     repairedText: result.repairedText,
 
     // Slices the preparation produced, which both index sets below are out of.
@@ -164,8 +167,10 @@ export function buildSettledArtifact(
     // their absence as unknown rather than as empty. `readArtifactChangeSets`
     // is that reader, and the schema version above is what tells it which rule
     // to apply.
-    shippedChunkIndices: result.shippedChunkIndices,
-    withdrawnChunkIndices: result.withdrawnChunkIndices,
+    //
+    // SPELLED THE WAY GENERATION 1 SPELLED IT, as with the critic record above.
+    shippedChunkIndices: result.changedSliceIndices,
+    withdrawnChunkIndices: result.withdrawnSliceIndices,
   };
 }
 

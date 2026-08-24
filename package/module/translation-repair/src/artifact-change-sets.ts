@@ -13,6 +13,7 @@ import {
   readArtifactSchemaVersion,
   ARTIFACT_SCHEMA_VERSION_V1,
 } from './artifact-schema-version.ts';
+import { CHUNK_SPELLED_KEYS, } from './artifact-key-vocabulary.ts';
 
 //region Artifact change sets
 // Which slices a settled run's document carried a change for, read back out of
@@ -23,6 +24,12 @@ import {
 // reader defaults them, and the difference between "we did not write this down"
 // and "this run shipped no repair" is the difference between an unknown and a
 // measurement.
+//
+// EVERY KEY HERE IS SPELLED THE WAY GENERATION 1 SPELLED IT, taken from
+// `CHUNK_SPELLED_KEYS` rather than written out, and it stays that way. This
+// generation is closed: production stopped writing it, and re-spelling the keys
+// of a generation nobody writes any more would stop the files that generation
+// left behind from being read at all, in exchange for nothing.
 
 /**
  * What a settled artifact says about the slices its document changed.
@@ -95,7 +102,7 @@ export type ArtifactChangeSets = {
  *
  * @example
  * ```ts
- * const shipped = readIndexArray({ value: artifact.shippedChunkIndices, path: `${id}.shippedChunkIndices`, },);
+ * const shipped = readIndexArray({ value: artifact[shippedKey], path: `${id}.${shippedKey}`, },);
  * ```
  */
 function readIndexArray(
@@ -168,16 +175,16 @@ function readCheckedSets(
    * Slices the artifact says its document carries a change for.
    */
   const shipped = readIndexArray({
-    value: artifact.shippedChunkIndices,
-    path: `${path}.shippedChunkIndices`,
+    value: artifact[CHUNK_SPELLED_KEYS.changedSliceIndices],
+    path: `${path}.${CHUNK_SPELLED_KEYS.changedSliceIndices}`,
   },);
 
   /**
    * Slices the artifact says the guard took back.
    */
   const withdrawn = readIndexArray({
-    value: artifact.withdrawnChunkIndices,
-    path: `${path}.withdrawnChunkIndices`,
+    value: artifact[CHUNK_SPELLED_KEYS.withdrawnSliceIndices],
+    path: `${path}.${CHUNK_SPELLED_KEYS.withdrawnSliceIndices}`,
   },);
   try {
     if (sliceCount === undefined) {
@@ -261,7 +268,7 @@ export function readArtifactChangeSets(
    */
   const hasShipped = Object.hasOwn(
     artifact,
-    'shippedChunkIndices',
+    CHUNK_SPELLED_KEYS.changedSliceIndices,
   );
 
   /**
@@ -269,11 +276,13 @@ export function readArtifactChangeSets(
    */
   const hasWithdrawn = Object.hasOwn(
     artifact,
-    'withdrawnChunkIndices',
+    CHUNK_SPELLED_KEYS.withdrawnSliceIndices,
   );
   if (hasShipped !== hasWithdrawn)
     throw new ArtifactParseError({
-      path: `${path}.${hasShipped ? 'withdrawnChunkIndices' : 'shippedChunkIndices'}`,
+      path: `${path}.${
+        hasShipped ? CHUNK_SPELLED_KEYS.withdrawnSliceIndices : CHUNK_SPELLED_KEYS.changedSliceIndices
+      }`,
       reason: 'both index sets or neither, since every generation wrote them together',
     },);
 
@@ -324,7 +333,7 @@ export function readArtifactChangeSets(
 
   if (!hasShipped)
     throw new ArtifactParseError({
-      path: `${path}.shippedChunkIndices`,
+      path: `${path}.${CHUNK_SPELLED_KEYS.changedSliceIndices}`,
       reason: `index sets, which schema version ${String(reading.version,)} records for every run`,
     },);
 

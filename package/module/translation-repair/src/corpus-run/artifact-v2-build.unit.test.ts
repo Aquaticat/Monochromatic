@@ -289,8 +289,8 @@ await describe({
           'status',
           'issues',
           'repairedText',
-          'shippedChunkIndices',
-          'withdrawnChunkIndices',
+          'changedSliceIndices',
+          'withdrawnSliceIndices',
           'acceptedCount',
         ]) {
           expect(Object.hasOwn(

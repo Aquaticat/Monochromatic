@@ -469,7 +469,7 @@ await describe({
             return record.chunkIndex;
           },);
         expect(translateShipped,).toEqual(lanes.translate
-          .shippedChunkIndices,);
+          .changedSliceIndices,);
 
         /**
          * Whether any repair row claims the document carries a change, which

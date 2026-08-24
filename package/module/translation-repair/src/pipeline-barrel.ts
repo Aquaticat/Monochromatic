@@ -172,8 +172,8 @@ export {
   properNouns,
 } from './preservation-tokens.ts';
 export {
-  buildChunkCriticRecords,
-  type ChunkCriticRecord,
+  buildSliceCriticRecords,
+  type SliceCriticRecord,
   type ClaimAttribution,
   type ClaimEmission,
   type ClaimProposer,

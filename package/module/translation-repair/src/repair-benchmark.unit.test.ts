@@ -757,7 +757,7 @@ await describe({
             status: 'repaired',
             issues: [],
             findings: [],
-            chunkCritics: [],
+            sliceCritics: [],
 
             // No slice outcome, because this stub never runs one: it rewrites
             // the document whole. An empty list here says the same thing the
@@ -773,8 +773,8 @@ await describe({
             // names the one slice that stands for it. A changed document with
             // no shipped slice would state a thing the contract cannot mean,
             // and the wording pair below is that slice as both sides saw it.
-            shippedChunkIndices: [0,],
-            withdrawnChunkIndices: [],
+            changedSliceIndices: [0,],
+            withdrawnSliceIndices: [],
             sliceTexts: [{
               chunkIndex: 0,
               incumbentKind: 'present',

@@ -10,7 +10,12 @@ import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
-import { decodeChunkCritics, } from './attribution-decode.ts';
+import { decodeSliceCritics, } from './attribution-decode.ts';
+import {
+  CHUNK_SPELLED_KEYS,
+  keyVocabularyOf,
+} from '../artifact-key-vocabulary.ts';
+import { readArtifactSchemaVersion, } from '../artifact-schema-version.ts';
 import type {
   AcceptedIssueView,
   AttributionEntry,
@@ -24,7 +29,7 @@ import { readdirArtifacts, } from './artifact-placement.ts';
 //region Attribution read
 // Parses settled artifacts into the shape the attribution report needs,
 // tolerating every field being absent. An artifact settled before attribution
-// existed carries no `chunkCritics`, and that absence is DATA rather than a
+// existed carries no critic record at all, and that absence is DATA rather than a
 // fault: the report counts those entries separately instead of reading them as
 // critics that raised nothing.
 
@@ -69,9 +74,9 @@ function readClaimIds(
 /**
  * Record carrying this artifact's own attribution and issue records.
  *
- * TWO PATHS, AND EXACTLY ONE PER ARTIFACT. Version 1 wrote `chunkCritics` and
- * `issues` at the artifact root, and version 2 writes them inside the repair
- * lane at `lanes.repair.result`. Reading only the root did not throw and did
+ * TWO PATHS, AND EXACTLY ONE PER ARTIFACT. Version 1 wrote the critic record
+ * and `issues` at the artifact root, and the two-lane generations write them
+ * inside the repair lane at `lanes.repair.result`. Reading only the root did not throw and did
  * not read as absent to anyone looking: it read as an artifact settled BEFORE
  * attribution existed, because an omitted key is exactly what marks the
  * pre-feature population.
@@ -216,6 +221,24 @@ function toEntry(
    */
   const records = recordsHolderOf({ parsed, },);
 
+  /**
+   * Generation this artifact records, or a named absence for one settled
+   * before the field existed.
+   */
+  const reading = readArtifactSchemaVersion({
+    artifact: parsed,
+    path: entryId,
+  },);
+
+  /**
+   * Spelling this artifact's own generation gave the critic record. An
+   * artifact with no version field predates version 1 and so predates every
+   * rename, which is the same spelling version 1 used.
+   */
+  const keys = (reading.kind === 'unversioned')
+    ? CHUNK_SPELLED_KEYS
+    : keyVocabularyOf({ version: reading.version, },);
+
   return {
     id: entryId,
     // ABSENT versus MALFORMED, and the difference decides the population. An
@@ -228,10 +251,10 @@ function toEntry(
     // ASKED OF THE HOLDER, NOT OF THE ARTIFACT. Asking the artifact root put
     // every version 2 artifact into the pre-feature population, which is the
     // one answer here that looks like an ordinary reading of an older corpus.
-    ...(('chunkCritics' in records)
+    ...((keys.sliceCritics in records)
       ? {
-        chunkCritics: decodeChunkCritics({
-          value: records.chunkCritics,
+        sliceCritics: decodeSliceCritics({
+          value: records[keys.sliceCritics],
           entryId,
         },),
       }

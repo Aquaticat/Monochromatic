@@ -268,7 +268,7 @@ export type TranslateDocumentResult = {
    * records would re-derive it WRONG, since a record says what the slice chose
    * rather than what the document carries.
    */
-  readonly shippedChunkIndices: readonly number[];
+  readonly changedSliceIndices: readonly number[];
 
   /**
    * Who won each slice and whether the document kept it, in document order.
@@ -284,11 +284,11 @@ export type TranslateDocumentResult = {
    *
    * Ordered by `orderedChangeSets` rather than left in the order the guard
    * worked, so a reader joining two lanes slice by slice reads both sets by one
-   * rule. Disjoint from {@link TranslateDocumentResult.shippedChunkIndices} by
+   * rule. Disjoint from {@link TranslateDocumentResult.changedSliceIndices} by
    * construction, and the same fact
    * {@link TranslateDocumentResult.withdrawnSliceCount} counts.
    */
-  readonly withdrawnChunkIndices: readonly number[];
+  readonly withdrawnSliceIndices: readonly number[];
 
   /**
    * Slices resumed from the cache rather than translated this run, so a cheap

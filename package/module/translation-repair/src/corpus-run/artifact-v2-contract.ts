@@ -31,10 +31,24 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 // a syntax check as a verification.
 
 /**
- * Version this contract describes.
+ * Generation this contract describes, and the one the pass writes.
  *
  * A LITERAL rather than a reference to the writer's current version, so the
  * type says which generation it is and a later bump cannot quietly re-label it.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V3 = 3;
+
+/**
+ * Generation this same shape was first written under, still read and no longer
+ * written.
+ *
+ * THE SHAPE DID NOT MOVE. Version 2 and version 3 record the same two lanes,
+ * the same comparison and the same lane selection. They differ in three key
+ * spellings, which `artifact-key-vocabulary.ts` holds and a reader selects by
+ * the version the file records.
+ *
+ * The version moved anyway, because a key rename IS a shape change and a
+ * version that does not move on one is the failure this field exists to end.
  */
 export const ARTIFACT_SCHEMA_VERSION_V2 = 2;
 
@@ -235,7 +249,7 @@ export type SettledArtifactV2 = {
    * Which generation this is, stated rather than inferred from which fields
    * happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V2;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V3;
 
   /**
    * Corpus entry this covers.

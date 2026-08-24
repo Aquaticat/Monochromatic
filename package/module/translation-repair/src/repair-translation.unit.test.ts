@@ -408,17 +408,17 @@ await describe({
           signal: new AbortController().signal,
         },);
 
-        expect(result.chunkCritics.length,).toBeGreaterThan(0,);
+        expect(result.sliceCritics.length,).toBeGreaterThan(0,);
 
         // The roster is the DENOMINATOR: a critic asked that raised nothing and
         // a critic never asked both leave no attribution entry, so hits are
         // countable without it and rates are not.
-        for (const record of result.chunkCritics)
+        for (const record of result.sliceCritics)
           expect(record.heardCriticIds,)
             .toStrictEqual([...MODELS.criticModelIds,].toSorted(),);
 
         /** Critics credited with raising something, across every chunk. */
-        const raisers = new Set(result.chunkCritics
+        const raisers = new Set(result.sliceCritics
           .flatMap(function toProposerIds(record,) {
           return record.claimAttributions
             .flatMap(function toIds(attribution,) {
@@ -448,7 +448,7 @@ await describe({
         },);
 
         /** Chunk indexes in recorded order. */
-        const indexes = result.chunkCritics
+        const indexes = result.sliceCritics
           .map(function toIndex(record,) {
           return record.chunkIndex;
         },);
@@ -508,7 +508,7 @@ await describe({
         // The assertion is vacuous unless attribution actually exists, so this
         // proves the run had proposer identity available to leak.
         expect(
-          result.chunkCritics
+          result.sliceCritics
             .some(function hasProposers(record,) {
             return record.claimAttributions.length > 0;
           },),
@@ -1168,7 +1168,7 @@ Meow meow meow meow.
         expect(anchored.sliceTexts
           .length,).toBe(withAnchor.slices
           .length,);
-        expect(anchored.shippedChunkIndices,).not.toContain(anchorIndex,);
+        expect(anchored.changedSliceIndices,).not.toContain(anchorIndex,);
       },
     },),
 
@@ -1239,11 +1239,11 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         }
         // The document-level sets say the same thing at slice granularity,
         // which is what a comparison between the two lanes joins on.
-        expect(result.withdrawnChunkIndices
+        expect(result.withdrawnSliceIndices
           .length,).toBeGreaterThan(0,);
-        expect(result.shippedChunkIndices,).toEqual([],);
-        for (const chunkIndex of result.withdrawnChunkIndices) {
-          expect(result.shippedChunkIndices
+        expect(result.changedSliceIndices,).toEqual([],);
+        for (const chunkIndex of result.withdrawnSliceIndices) {
+          expect(result.changedSliceIndices
             .includes(chunkIndex,),).toBe(false,);
         }
       },
@@ -1623,7 +1623,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           },
         },);
         expect(resumedRun.repairedText,).toBe(first.repairedText,);
-        expect(resumedRun.shippedChunkIndices,).toEqual(first.shippedChunkIndices,);
+        expect(resumedRun.changedSliceIndices,).toEqual(first.changedSliceIndices,);
         expect(resumedRun.issues
           .map(function toChunk(record,): number {
             return record.chunkIndex;

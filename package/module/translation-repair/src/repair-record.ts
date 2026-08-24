@@ -315,7 +315,7 @@ function judgeDisposition(
  * @param blocked - whether the run returned its input for non-translation, in
  * which case no slice repair reached the reader whatever its slice decided
  *
- * @param withdrawnChunkIndices - slices whose repair the assembly guard took
+ * @param withdrawnSliceIndices - slices whose repair the assembly guard took
  * back, whose issues reached no reader for the same reason a blocked document's
  * did; absent means none were
  *
@@ -330,17 +330,17 @@ export function buildIssueRecords(
   {
     outcomes,
     blocked,
-    withdrawnChunkIndices = [],
+    withdrawnSliceIndices = [],
   }: {
     readonly outcomes: readonly ChunkRepairOutcome[];
     readonly blocked: boolean;
-    readonly withdrawnChunkIndices?: readonly number[];
+    readonly withdrawnSliceIndices?: readonly number[];
   },
 ): readonly RepairIssueRecord[] {
   /**
    * Slices the assembly guard took back, for membership tests.
    */
-  const withdrawn = new Set(withdrawnChunkIndices,);
+  const withdrawn = new Set(withdrawnSliceIndices,);
 
   return outcomes.flatMap(function toRecords(outcome,) {
     /**

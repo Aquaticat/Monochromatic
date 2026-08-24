@@ -14,7 +14,14 @@ import {
   assertPreparationIdentity,
   type PreparationIdentity,
 } from '../preparation-identity.ts';
-import { ARTIFACT_SCHEMA_VERSION_V2, } from './artifact-v2-contract.ts';
+import {
+  ARTIFACT_SCHEMA_VERSION_V2,
+  ARTIFACT_SCHEMA_VERSION_V3,
+} from './artifact-v2-contract.ts';
+import {
+  keyVocabularyOf,
+  type ArtifactKeyVocabulary,
+} from '../artifact-key-vocabulary.ts';
 import { assertRecordedComparisonMatches, } from './artifact-v2-read-comparison.ts';
 import { parseLaneSelectionV2, } from './artifact-v2-read-contest.ts';
 import type {
@@ -258,20 +265,27 @@ function parsePreparationV2(
 }
 
 /**
- * Reads one version 2 artifact.
+ * Reads one two-lane artifact, of either generation that wrote the shape.
  *
- * NAMED FOR THE VERSION, and it refuses every other one including version 1:
- * generic dispatch has already happened by the time this is called, so a
- * version 1 artifact arriving here is a caller reading the wrong file rather
- * than an old artifact needing tolerance.
+ * NAMED FOR THE FAMILY, not for one integer. Generations 2 and 3 record the
+ * same two lanes, the same comparison and the same lane selection, and differ
+ * only in how three keys are spelled; `artifact-key-vocabulary.ts` holds that
+ * difference and the recorded version picks the spelling, so no artifact is
+ * ever tried under both.
+ *
+ * IT REFUSES EVERY OTHER GENERATION INCLUDING VERSION 1: generic dispatch has
+ * already happened by the time this is called, so a version 1 artifact arriving
+ * here is a caller reading the wrong file rather than an old artifact needing
+ * tolerance.
  *
  * @param value - artifact JSON, freshly parsed and still untyped
  *
  * @returns Everything the artifact records, with its comparison recomputed
  *
- * @throws {@link ArtifactParseError} when the artifact is not version 2, when
- * any field is missing or the wrong shape, when it carries a key this version
- * does not name, or when any two of its parts contradict each other
+ * @throws {@link ArtifactParseError} when the artifact belongs to neither
+ * generation of this shape, when any field is missing or the wrong shape, when
+ * it carries a key this shape does not name, or when any two of its parts
+ * contradict each other
  *
  * @example
  * ```ts
@@ -288,13 +302,31 @@ export function parseSettledArtifactV2(
     value,
     path: 'artifact',
   },);
-  if (artifact.artifactSchemaVersion !== ARTIFACT_SCHEMA_VERSION_V2) {
+  /**
+   * Generation this artifact records, read as a count first so a string or a
+   * fraction is refused as a malformed version rather than compared against
+   * two numbers and reported as the wrong generation.
+   */
+  const version = requireCount({
+    value: artifact.artifactSchemaVersion,
+    path: 'artifact.artifactSchemaVersion',
+  },);
+  if (
+    (version !== ARTIFACT_SCHEMA_VERSION_V2)
+    && (version !== ARTIFACT_SCHEMA_VERSION_V3)
+  ) {
     throw new ArtifactParseError({
       path: 'artifact.artifactSchemaVersion',
-      reason: `${String(ARTIFACT_SCHEMA_VERSION_V2,)}, since this reader describes that generation only `
-        + 'and dispatch has already chosen it',
+      reason: `${String(ARTIFACT_SCHEMA_VERSION_V2,)} or ${
+        String(ARTIFACT_SCHEMA_VERSION_V3,)
+      }, since this reader describes that two-lane shape only and dispatch has already chosen it`,
     },);
   }
+
+  /**
+   * Spelling this artifact's own generation gave the three renamed keys.
+   */
+  const keys: ArtifactKeyVocabulary = keyVocabularyOf({ version, },);
 
   /**
    * Entry id, which every nested path is reported under.
@@ -338,6 +370,7 @@ export function parseSettledArtifactV2(
     value: artifact.lanes,
     preparation,
     path: `${id}.lanes`,
+    keys,
   },);
 
   /**

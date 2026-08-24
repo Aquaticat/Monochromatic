@@ -115,12 +115,12 @@ export type ArtifactRepairEvidenceV2 = {
   /**
    * Slices the returned document carries a repair for.
    */
-  readonly shippedChunkIndices: readonly number[];
+  readonly changedSliceIndices: readonly number[];
 
   /**
    * Slices whose repair the assembly guard took back.
    */
-  readonly withdrawnChunkIndices: readonly number[];
+  readonly withdrawnSliceIndices: readonly number[];
 
   /**
    * What the lane decided for every prepared slice, in document order.
@@ -165,12 +165,12 @@ export type ArtifactTranslateEvidenceV2 = {
   /**
    * Slices the returned document carries a replacement for.
    */
-  readonly shippedChunkIndices: readonly number[];
+  readonly changedSliceIndices: readonly number[];
 
   /**
    * Slices whose replacement the assembly guard took back.
    */
-  readonly withdrawnChunkIndices: readonly number[];
+  readonly withdrawnSliceIndices: readonly number[];
 
   /**
    * What the lane decided for every prepared slice, in document order.

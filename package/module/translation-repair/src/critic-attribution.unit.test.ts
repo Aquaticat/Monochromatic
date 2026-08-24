@@ -25,7 +25,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  buildChunkCriticRecords,
+  buildSliceCriticRecords,
   type ClaimEmission,
   collectClaimAttributions,
   retainAttributions,
@@ -322,7 +322,7 @@ await describe({
 },);
 
 await describe({
-  name: buildChunkCriticRecords.name,
+  name: buildSliceCriticRecords.name,
   children: [
     it({
       name: 'CANONICALIZES the nested arrays rather than inheriting their '
@@ -334,7 +334,7 @@ await describe({
         /**
          * Records whose nested arrays arrive in one order.
          */
-        const forward = buildChunkCriticRecords({
+        const forward = buildSliceCriticRecords({
           outcomes: [
             {
               chunkIndex: 1,
@@ -357,7 +357,7 @@ await describe({
         /**
          * The same evidence, every nested array reversed.
          */
-        const reversed = buildChunkCriticRecords({
+        const reversed = buildSliceCriticRecords({
           outcomes: [
             { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], },
             {

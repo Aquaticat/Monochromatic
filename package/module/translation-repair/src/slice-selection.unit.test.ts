@@ -203,7 +203,7 @@ await describe({
           ],
           // Neither slice shipped: slice 0 had nothing to ship, slice 1 was
           // taken back.
-          shippedChunkIndices: [],
+          changedSliceIndices: [],
         },);
         expect(selections.length,).toBe(2,);
         expect(selections[0]?.origin,).toBe('incumbent',);
@@ -235,7 +235,7 @@ await describe({
               voteWeight: 3,
             },),
           ],
-          shippedChunkIndices: [7,],
+          changedSliceIndices: [7,],
         },);
         expect(selections[0]?.shipped,).toBe(false,);
         expect(selections[1]?.shipped,).toBe(true,);
@@ -252,7 +252,7 @@ await describe({
             decision: 'judged',
             voteWeight: 2,
           },),],
-          shippedChunkIndices: [0,],
+          changedSliceIndices: [0,],
         },);
         expect(selections[0]?.producer
           .kind,).toBe('model',);
@@ -277,7 +277,7 @@ await describe({
               voteWeight: 2,
             },),
           ],
-          shippedChunkIndices: [],
+          changedSliceIndices: [],
         },);
         expect(selections[0]?.decision,).toBe('declined-indecision',);
         expect(selections[1]?.decision,).toBe('judged',);
@@ -290,7 +290,7 @@ await describe({
       fn: async () => {
         const selections = buildSliceSelections({
           records: [recordWithRound({ chunkIndex: 0, },),],
-          shippedChunkIndices: [0,],
+          changedSliceIndices: [0,],
         },);
 
         /**
@@ -312,7 +312,7 @@ await describe({
       fn: async () => {
         const selections = buildSliceSelections({
           records: [recordWithRound({ chunkIndex: 0, },),],
-          shippedChunkIndices: [0,],
+          changedSliceIndices: [0,],
         },);
 
         /**
@@ -345,7 +345,7 @@ await describe({
               voteWeight: 2,
             },);
           },),
-          shippedChunkIndices: [9,],
+          changedSliceIndices: [9,],
         },);
         expect(selections.map(function toIndex(selection,) {
           return selection.chunkIndex;

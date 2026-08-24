@@ -110,7 +110,7 @@ function indicesMissingFrom(
  *
  * @param documentText - text that lane returned
  *
- * @param shippedChunkIndices - slices that result names as carrying a change
+ * @param changedSliceIndices - slices that result names as carrying a change
  *
  * @throws {@link DeliveryInvariantError} when the rows marked shipped are not
  * the slices the result names, or when writing those rows over the archive
@@ -123,7 +123,7 @@ function indicesMissingFrom(
  *   slices: prepared.slices,
  *   incumbentText: prepared.targetText,
  *   documentText: repair.repairedText,
- *   shippedChunkIndices: repair.shippedChunkIndices,
+ *   changedSliceIndices: repair.changedSliceIndices,
  * },);
  * ```
  */
@@ -133,13 +133,13 @@ export function assertDeliveryAgreesWithDocument(
     slices,
     incumbentText,
     documentText,
-    shippedChunkIndices,
+    changedSliceIndices,
   }: {
     readonly ledger: readonly SliceDeliveryRecord[];
     readonly slices: readonly ChunkPair[];
     readonly incumbentText: string;
     readonly documentText: string;
-    readonly shippedChunkIndices: readonly number[];
+    readonly changedSliceIndices: readonly number[];
   },
 ): void {
   /**
@@ -162,7 +162,7 @@ export function assertDeliveryAgreesWithDocument(
    * Slices the result names, deduplicated so a repeated index is not read as
    * a disagreement about membership.
    */
-  const claimed = [...new Set(shippedChunkIndices,),];
+  const claimed = [...new Set(changedSliceIndices,),];
 
   /**
    * Slices the ledger ships that the result does not name.

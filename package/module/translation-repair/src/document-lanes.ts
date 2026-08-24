@@ -123,9 +123,9 @@ export type DocumentLanesResult = {
  *
  * @param wordings - what this lane decided per slice
  *
- * @param shippedChunkIndices - slices this lane's document carries a change for
+ * @param changedSliceIndices - slices this lane's document carries a change for
  *
- * @param withdrawnChunkIndices - slices whose change assembly took back
+ * @param withdrawnSliceIndices - slices whose change assembly took back
  *
  * @param blocked - whether this lane refused the whole document before assembly
  *
@@ -146,16 +146,16 @@ function laneDelivery(
     incumbentText,
     documentText,
     wordings,
-    shippedChunkIndices,
-    withdrawnChunkIndices,
+    changedSliceIndices,
+    withdrawnSliceIndices,
     blocked,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly incumbentText: string;
     readonly documentText: string;
     readonly wordings: readonly LaneSliceText[];
-    readonly shippedChunkIndices: readonly number[];
-    readonly withdrawnChunkIndices: readonly number[];
+    readonly changedSliceIndices: readonly number[];
+    readonly withdrawnSliceIndices: readonly number[];
     readonly blocked: boolean;
   },
 ): readonly SliceDeliveryRecord[] {
@@ -165,8 +165,8 @@ function laneDelivery(
   const ledger = buildSliceDelivery({
     slices,
     wordings,
-    shippedChunkIndices,
-    withdrawnChunkIndices,
+    changedSliceIndices,
+    withdrawnSliceIndices,
     blocked,
   },);
   assertDeliveryAgreesWithDocument({
@@ -174,7 +174,7 @@ function laneDelivery(
     slices,
     incumbentText,
     documentText,
-    shippedChunkIndices,
+    changedSliceIndices,
   },);
   return ledger;
 }
@@ -383,8 +383,8 @@ export async function runDocumentLanes(
         incumbentText: prepared.targetText,
         documentText: repair.repairedText,
         wordings: repair.sliceTexts,
-        shippedChunkIndices: repair.shippedChunkIndices,
-        withdrawnChunkIndices: repair.withdrawnChunkIndices,
+        changedSliceIndices: repair.changedSliceIndices,
+        withdrawnSliceIndices: repair.withdrawnSliceIndices,
         // The dominance refusal, which returns the archive untouched however
         // many slices had decided a repair by the time it fired. Without this
         // the rows for those slices would read as a contradiction rather than
@@ -400,8 +400,8 @@ export async function runDocumentLanes(
         incumbentText: prepared.targetText,
         documentText: translate.translatedText,
         wordings: translate.sliceTexts,
-        shippedChunkIndices: translate.shippedChunkIndices,
-        withdrawnChunkIndices: translate.withdrawnChunkIndices,
+        changedSliceIndices: translate.changedSliceIndices,
+        withdrawnSliceIndices: translate.withdrawnSliceIndices,
         // The translate lane has no whole-document refusal: it assembles what
         // its slices decided, and the only thing that takes a decision back is
         // the assembly guard, which the withdrawn set already names.

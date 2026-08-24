@@ -237,12 +237,12 @@ export function assembleTranslation(
       .length,
     // The same surviving replacements the count above is the size of, named,
     // and checked against the withdrawn set before either is reported.
-    shippedChunkIndices: ordered.shipped,
+    changedSliceIndices: ordered.shipped,
     sliceSelections: buildSliceSelections({
       records: settled,
-      shippedChunkIndices: ordered.shipped,
+      changedSliceIndices: ordered.shipped,
     },),
-    withdrawnChunkIndices: ordered.withdrawn,
+    withdrawnSliceIndices: ordered.withdrawn,
     // Every prepared slice paired with the archive wording it was judged
     // against. Taken from the PREPARATION rather than from the settled records,
     // which are cache values a resumed run may have written under an earlier

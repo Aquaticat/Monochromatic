@@ -159,7 +159,7 @@ function repairResult(): Record<string, unknown> {
     status: 'unchanged',
     issues: [],
     findings: ['stage-quorum-unmet (critic 0/6)',],
-    chunkCritics: [
+    sliceCritics: [
       {
         chunkIndex: 0,
         heardCriticIds: [],
@@ -167,8 +167,8 @@ function repairResult(): Record<string, unknown> {
       },
     ],
     sliceCount: 2,
-    shippedChunkIndices: [],
-    withdrawnChunkIndices: [],
+    changedSliceIndices: [],
+    withdrawnSliceIndices: [],
     sliceTexts: [
       {
         chunkIndex: 0,
@@ -206,8 +206,8 @@ function translateResult(): Record<string, unknown> {
     changedSliceCount: 1,
     refusedSliceCount: 0,
     withdrawnSliceCount: 0,
-    shippedChunkIndices: [0,],
-    withdrawnChunkIndices: [],
+    changedSliceIndices: [0,],
+    withdrawnSliceIndices: [],
     resumedSliceCount: 0,
     status: 'unfilled',
     unfilled: [{ chunkIndex: 1, },],
@@ -748,7 +748,7 @@ await describe({
               translateDelivery: shifted,
               translateRaw: {
                 ...raw,
-                shippedChunkIndices: [1,],
+                changedSliceIndices: [1,],
                 sliceTexts: (raw.sliceTexts as readonly Record<string, unknown>[])
                   .map(function renumber(row,): Record<string, unknown> {
                     return {
@@ -984,7 +984,7 @@ await describe({
               repairRaw: {
                 ...repairResult(),
                 status: 'blocked-non-translation',
-                shippedChunkIndices: [0,],
+                changedSliceIndices: [0,],
                 sliceTexts: repairDecidedRows(),
               },
             },),
@@ -1009,14 +1009,14 @@ await describe({
             value: artifactWith({
               repairRaw: {
                 ...repairResult(),
-                shippedChunkIndices: [0,],
+                changedSliceIndices: [0,],
               },
             },),
           },);
         },);
 
         expect(refusalOfShippedDisagrees,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfShippedDisagrees as Error).message,).toContain('lanes.repair.result.shippedChunkIndices',);
+        expect((refusalOfShippedDisagrees as Error).message,).toContain('lanes.repair.result.changedSliceIndices',);
 
         /**
          * A blocked run whose blocked withdrawal stays OUT of the withdrawn
@@ -1051,7 +1051,7 @@ await describe({
         },).lanes
           .repair
           .evidence
-          .withdrawnChunkIndices,).toEqual([],);
+          .withdrawnSliceIndices,).toEqual([],);
       },
     },),
     it({

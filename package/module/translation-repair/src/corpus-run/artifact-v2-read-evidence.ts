@@ -11,6 +11,7 @@ import type {
   ArtifactTranslateEvidenceV2,
 } from './artifact-v2-read-contract.ts';
 import { parseEvidenceRowV2, } from './artifact-v2-read-rows.ts';
+import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 //region Artifact version 2 evidence parsing
 // Taking what version 2 requires OUT of the two raw lane results, which it
@@ -43,7 +44,7 @@ import { parseEvidenceRowV2, } from './artifact-v2-read-rows.ts';
  *
  * @example
  * ```ts
- * const shipped = requireIndexList({ value: record.shippedChunkIndices, path, },);
+ * const shipped = requireIndexList({ value: record.changedSliceIndices, path, },);
  * ```
  */
 function requireIndexList(
@@ -71,11 +72,15 @@ function requireIndexList(
 }
 
 /**
- * Reads what version 2 requires of the repair lane's raw result.
+ * Reads what this shape requires of the repair lane's raw result.
  *
  * @param value - raw result JSON
  *
  * @param path - dotted path for error message
+ *
+ * @param keys - spelling the artifact's own generation gave the renamed keys,
+ * so a version 2 file is read under `chunk` and a version 3 file under `slice`
+ * without either being tried against the other
  *
  * @returns Evidence core, with the rest of the record left where it is
  *
@@ -84,16 +89,18 @@ function requireIndexList(
  *
  * @example
  * ```ts
- * const evidence = parseRepairEvidenceV2({ value: raw, path: 'lanes.repair.result', },);
+ * const evidence = parseRepairEvidenceV2({ value: raw, path: 'lanes.repair.result', keys, },);
  * ```
  */
 export function parseRepairEvidenceV2(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactRepairEvidenceV2 {
   /**
@@ -117,13 +124,13 @@ export function parseRepairEvidenceV2(
       value: record.sliceCount,
       path: `${path}.sliceCount`,
     },),
-    shippedChunkIndices: requireIndexList({
-      value: record.shippedChunkIndices,
-      path: `${path}.shippedChunkIndices`,
+    changedSliceIndices: requireIndexList({
+      value: record[keys.changedSliceIndices],
+      path: `${path}.${keys.changedSliceIndices}`,
     },),
-    withdrawnChunkIndices: requireIndexList({
-      value: record.withdrawnChunkIndices,
-      path: `${path}.withdrawnChunkIndices`,
+    withdrawnSliceIndices: requireIndexList({
+      value: record[keys.withdrawnSliceIndices],
+      path: `${path}.${keys.withdrawnSliceIndices}`,
     },),
     sliceTexts: requireArray({
       value: record.sliceTexts,
@@ -142,11 +149,15 @@ export function parseRepairEvidenceV2(
 }
 
 /**
- * Reads what version 2 requires of the translate lane's raw result.
+ * Reads what this shape requires of the translate lane's raw result.
  *
  * @param value - raw result JSON
  *
  * @param path - dotted path for error message
+ *
+ * @param keys - spelling the artifact's own generation gave the renamed keys,
+ * so a version 2 file is read under `chunk` and a version 3 file under `slice`
+ * without either being tried against the other
  *
  * @returns Evidence core, with the rest of the record left where it is
  *
@@ -155,16 +166,18 @@ export function parseRepairEvidenceV2(
  *
  * @example
  * ```ts
- * const evidence = parseTranslateEvidenceV2({ value: raw, path: 'lanes.translate.result', },);
+ * const evidence = parseTranslateEvidenceV2({ value: raw, path: 'lanes.translate.result', keys, },);
  * ```
  */
 export function parseTranslateEvidenceV2(
   {
     value,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ArtifactTranslateEvidenceV2 {
   /**
@@ -195,13 +208,13 @@ export function parseTranslateEvidenceV2(
       value: record.withdrawnSliceCount,
       path: `${path}.withdrawnSliceCount`,
     },),
-    shippedChunkIndices: requireIndexList({
-      value: record.shippedChunkIndices,
-      path: `${path}.shippedChunkIndices`,
+    changedSliceIndices: requireIndexList({
+      value: record[keys.changedSliceIndices],
+      path: `${path}.${keys.changedSliceIndices}`,
     },),
-    withdrawnChunkIndices: requireIndexList({
-      value: record.withdrawnChunkIndices,
-      path: `${path}.withdrawnChunkIndices`,
+    withdrawnSliceIndices: requireIndexList({
+      value: record[keys.withdrawnSliceIndices],
+      path: `${path}.${keys.withdrawnSliceIndices}`,
     },),
     sliceTexts: requireArray({
       value: record.sliceTexts,

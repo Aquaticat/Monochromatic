@@ -80,7 +80,7 @@ await describe({
           entries: [
             {
               id: 'Whiskers',
-              chunkCritics: [
+              sliceCritics: [
                 chunkWith({
                   claims: [
                     ['issue/mackerel', ['hf:zai-org/GLM-5.2',],],
@@ -129,7 +129,7 @@ await describe({
           entries: [
             {
               id: 'Mittens',
-              chunkCritics: [
+              sliceCritics: [
                 chunkWith({
                   claims: [
                     ['issue/tuna', ['hf:Qwen/Qwen3.8-27B',],],
@@ -173,7 +173,7 @@ await describe({
           entries: [
             {
               id: 'Tabby',
-              chunkCritics: [
+              sliceCritics: [
                 chunkWith({
                   claims: [
                     ['issue/unanimous', [...ROSTER,],],
@@ -215,7 +215,7 @@ await describe({
           entries: [
             {
               id: 'Calico',
-              chunkCritics: [
+              sliceCritics: [
                 chunkWith({ claims: [['issue/known', ['hf:zai-org/GLM-5.2',],],], },),
               ],
               issues: [
@@ -253,7 +253,7 @@ await describe({
             },
             {
               id: 'Sooty',
-              chunkCritics: [
+              sliceCritics: [
                 chunkWith({ claims: [['issue/new', ['hf:openai/gpt-oss-120b',],],], },),
               ],
               issues: [
@@ -288,7 +288,7 @@ await describe({
           entries: [
             {
               id: 'Smudge',
-              chunkCritics: [
+              sliceCritics: [
                 chunkWith({ claims: [['issue/legacy', ['hf:retired/model-that-left',],],], },),
               ],
               issues: [

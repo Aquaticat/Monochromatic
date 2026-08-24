@@ -94,7 +94,7 @@ export {
   type AttributionEntry,
   type AttributionReport,
   buildAttributionReport,
-  type ChunkCriticView,
+  type SliceCriticView,
   type CriticTally,
   type ProposerView,
 } from './corpus-run/attribution-report.ts';

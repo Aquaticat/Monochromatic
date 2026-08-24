@@ -434,8 +434,8 @@ function rawResultFor(
 
   return {
     sliceCount: rows.length,
-    shippedChunkIndices: shipped,
-    withdrawnChunkIndices: [],
+    changedSliceIndices: shipped,
+    withdrawnSliceIndices: [],
     changedSliceCount: shipped.length,
     withdrawnSliceCount: 0,
     sliceTexts: rows.map(function toEvidence(row,): Record<string, unknown> {

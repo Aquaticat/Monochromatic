@@ -2,7 +2,10 @@ import {
   ArtifactParseError,
   requireCount,
 } from './artifact-guard.ts';
-import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.ts';
+import {
+  ARTIFACT_SCHEMA_VERSION_V2,
+  ARTIFACT_SCHEMA_VERSION_V3,
+} from './corpus-run/artifact-v2-contract.ts';
 
 //region Artifact schema version
 // What generation a settled artifact belongs to, stated by the writer instead
@@ -38,7 +41,7 @@ import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.t
  *     sets. Every artifact settled to date is one of these, measured over the
  *     164 artifact files on disk on 2026-08-15.
  * -   From 2026-08-14: `pipelineDigest` and `sourceBytes`, still no index sets.
- * -   From 2026-08-15: `shippedChunkIndices` and `withdrawnChunkIndices`, with
+ * -   From 2026-08-15: `changedSliceIndices` and `withdrawnSliceIndices`, with
  *     no `sliceCount` to bound them and no version to announce them.
  *
  * The middle two generations are EMPTY populations today, since no pass has run
@@ -104,6 +107,7 @@ export const ARTIFACT_SCHEMA_VERSION_V1 = 1;
 export const KNOWN_ARTIFACT_SCHEMA_VERSIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V1,
   ARTIFACT_SCHEMA_VERSION_V2,
+  ARTIFACT_SCHEMA_VERSION_V3,
 ];
 
 /**

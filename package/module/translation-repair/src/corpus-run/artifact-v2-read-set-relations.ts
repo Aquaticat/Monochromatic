@@ -98,7 +98,7 @@ function guardWithdrawnIndicesOf(
  *
  * @example
  * ```ts
- * assertListMatches({ recorded, derived, path: 'lanes.repair.result.shippedChunkIndices', },);
+ * assertListMatches({ recorded, derived, path: 'lanes.repair.result.changedSliceIndices', },);
  * ```
  */
 function assertListMatches(
@@ -162,14 +162,14 @@ export function assertIndexSetsMatchLedger(
   },
 ): void {
   assertListMatches({
-    recorded: evidence.shippedChunkIndices,
+    recorded: evidence.changedSliceIndices,
     derived: shippedIndicesOf({ ledger, },),
-    path: `${path}.shippedChunkIndices`,
+    path: `${path}.changedSliceIndices`,
   },);
   assertListMatches({
-    recorded: evidence.withdrawnChunkIndices,
+    recorded: evidence.withdrawnSliceIndices,
     derived: guardWithdrawnIndicesOf({ ledger, },),
-    path: `${path}.withdrawnChunkIndices`,
+    path: `${path}.withdrawnSliceIndices`,
   },);
   if (evidence.sliceCount !== ledger.length) {
     throw new ArtifactParseError({
@@ -282,13 +282,13 @@ export function assertTranslateCountsAgree(
   /**
    * How many slices this lane names as shipped.
    */
-  const shippedCount = evidence.shippedChunkIndices
+  const shippedCount = evidence.changedSliceIndices
     .length;
 
   /**
    * How many it names as withdrawn.
    */
-  const withdrawnCount = evidence.withdrawnChunkIndices
+  const withdrawnCount = evidence.withdrawnSliceIndices
     .length;
   if (evidence.changedSliceCount !== shippedCount) {
     throw new ArtifactParseError({

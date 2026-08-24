@@ -353,7 +353,7 @@ function nonNullishAccepted(
  *
  * @example
  * ```ts
- * assertNoRepeat({ indices: shippedChunkIndices, unique: shipped, named: 'shipped', },);
+ * assertNoRepeat({ indices: changedSliceIndices, unique: shipped, named: 'shipped', },);
  * ```
  */
 function assertNoRepeat(
@@ -389,10 +389,10 @@ function assertNoRepeat(
  *
  * @param wordings - what the lane decided per slice
  *
- * @param shippedChunkIndices - slices the returned document carries a change
+ * @param changedSliceIndices - slices the returned document carries a change
  * for
  *
- * @param withdrawnChunkIndices - slices whose change the assembly guard took
+ * @param withdrawnSliceIndices - slices whose change the assembly guard took
  * back
  *
  * @param blocked - whether the run refused the whole document before assembly,
@@ -406,21 +406,21 @@ function assertNoRepeat(
  *
  * @example
  * ```ts
- * const ledger = buildSliceDelivery({ slices, wordings, shippedChunkIndices, withdrawnChunkIndices, blocked, },);
+ * const ledger = buildSliceDelivery({ slices, wordings, changedSliceIndices, withdrawnSliceIndices, blocked, },);
  * ```
  */
 export function buildSliceDelivery(
   {
     slices,
     wordings,
-    shippedChunkIndices,
-    withdrawnChunkIndices,
+    changedSliceIndices,
+    withdrawnSliceIndices,
     blocked,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly wordings: readonly LaneSliceText[];
-    readonly shippedChunkIndices: readonly number[];
-    readonly withdrawnChunkIndices: readonly number[];
+    readonly changedSliceIndices: readonly number[];
+    readonly withdrawnSliceIndices: readonly number[];
     readonly blocked: boolean;
   },
 ): readonly SliceDeliveryRecord[] {
@@ -435,12 +435,12 @@ export function buildSliceDelivery(
   /**
    * Slices the document carries a change for.
    */
-  const shipped = new Set(shippedChunkIndices,);
+  const shipped = new Set(changedSliceIndices,);
 
   /**
    * Slices whose change was taken back.
    */
-  const withdrawn = new Set(withdrawnChunkIndices,);
+  const withdrawn = new Set(withdrawnSliceIndices,);
 
   // CHECKED AGAINST THE ARRAYS, not the sets built from them. Building a set is
   // what makes a repeated index disappear, so a check that reads the set is
@@ -449,12 +449,12 @@ export function buildSliceDelivery(
   // A lane naming one slice twice has two derivations that disagree about how
   // many slices it changed, and neither the count nor the ledger would show it.
   assertNoRepeat({
-    indices: shippedChunkIndices,
+    indices: changedSliceIndices,
     unique: shipped,
     named: 'shipped',
   },);
   assertNoRepeat({
-    indices: withdrawnChunkIndices,
+    indices: withdrawnSliceIndices,
     unique: withdrawn,
     named: 'withdrawn',
   },);

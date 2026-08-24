@@ -76,7 +76,7 @@ function eligibleEntry(
 ): AttributionEntry {
   return {
     id: 'Whiskers',
-    chunkCritics: [
+    sliceCritics: [
       {
         chunkIndex: 0,
         heardCriticIds: [QUIET, TABBY,],
@@ -263,7 +263,7 @@ await describe({
         const report = buildAttributionReport({
           entries: [{
             id: 'Whiskers',
-            chunkCritics: [
+            sliceCritics: [
               {
                 chunkIndex: 0,
                 heardCriticIds: [QUIET, TABBY,],

@@ -13,7 +13,7 @@ import {
   orderedChangeSets,
 } from './assembly-invariant.ts';
 import type { ChunkPair, } from './chunk-document.ts';
-import { buildChunkCriticRecords, } from './critic-attribution.ts';
+import { buildSliceCriticRecords, } from './critic-attribution.ts';
 import { repairLaneWordings, } from './repair-lane-wordings.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import { buildIssueRecords, } from './repair-record.ts';
@@ -202,7 +202,7 @@ export function assembleRepair(
     // point: the raw set is the normalizer's input and nothing else should take
     // it, or a later change to what normalizing means would reach one reader and
     // not the other.
-    withdrawnChunkIndices: ordered.withdrawn,
+    withdrawnSliceIndices: ordered.withdrawn,
   },);
 
   /**
@@ -219,7 +219,7 @@ export function assembleRepair(
   );
 
   return {
-    chunkCritics: buildChunkCriticRecords({ outcomes, },),
+    sliceCritics: buildSliceCriticRecords({ outcomes, },),
     // The WRAPPED outcomes, so the rounds sit beside the wording that shipped
     // rather than beside a pre-wrap rendering of it.
     chunks: outcomes,
@@ -229,8 +229,8 @@ export function assembleRepair(
     // Read off the guard's surviving replacements, which is the only place that
     // knows what the document carries, and checked against the withdrawn set
     // before either is reported.
-    shippedChunkIndices: ordered.shipped,
-    withdrawnChunkIndices: ordered.withdrawn,
+    changedSliceIndices: ordered.shipped,
+    withdrawnSliceIndices: ordered.withdrawn,
     // Every prepared slice, decided or left alone, paired with the archive's
     // own wording. Built from the outcomes rather than from the surviving
     // replacements, because this side of the record is what the lane CHOSE and

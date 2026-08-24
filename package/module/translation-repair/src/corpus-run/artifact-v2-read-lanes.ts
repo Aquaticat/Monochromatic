@@ -30,6 +30,7 @@ import {
   assertTranslateCountsAgree,
 } from './artifact-v2-read-set-relations.ts';
 import type { ArtifactDeliveryRowV2, } from './artifact-v2-vocabulary.ts';
+import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 //region Artifact version 2 lane reading
 // Reading both lanes, and running every check that belongs to ONE lane.
@@ -160,6 +161,8 @@ function assertLedgerCoversPreparation(
  *
  * @param path - dotted path of the lanes record
  *
+ * @param keys - spelling the artifact's own generation gave the renamed keys
+ *
  * @returns Both lanes, each with its raw record, its evidence core and its
  * ledger
  *
@@ -170,7 +173,7 @@ function assertLedgerCoversPreparation(
  *
  * @example
  * ```ts
- * const lanes = parseLanesV2({ value: artifact.lanes, preparation, path, },);
+ * const lanes = parseLanesV2({ value: artifact.lanes, preparation, path, keys, },);
  * ```
  */
 export function parseLanesV2(
@@ -178,10 +181,12 @@ export function parseLanesV2(
     value,
     preparation,
     path,
+    keys,
   }: {
     readonly value: unknown;
     readonly preparation: ParsedPreparationV2;
     readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): ParsedArtifactV2['lanes'] {
   /**
@@ -222,6 +227,7 @@ export function parseLanesV2(
   const repairEvidence: ArtifactRepairEvidenceV2 = parseRepairEvidenceV2({
     value: repairEnvelope.raw,
     path: `${path}.repair.result`,
+    keys,
   },);
 
   /**
@@ -230,6 +236,7 @@ export function parseLanesV2(
   const translateEvidence: ArtifactTranslateEvidenceV2 = parseTranslateEvidenceV2({
     value: translateEnvelope.raw,
     path: `${path}.translate.result`,
+    keys,
   },);
   assertLedgerCoversPreparation({
     delivery: repairEnvelope.delivery,

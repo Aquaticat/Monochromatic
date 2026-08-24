@@ -1066,21 +1066,21 @@ On the windowsill there is being a bird.
         // And the NAMED sets follow the document rather than the records, which
         // is the whole reason they exist: a reader joining two lanes by slice
         // must not credit this lane with a slice it did not change.
-        expect(result.withdrawnChunkIndices
+        expect(result.withdrawnSliceIndices
           .length,).toBe(result.withdrawnSliceCount,);
-        expect(result.shippedChunkIndices
+        expect(result.changedSliceIndices
           .length,).toBe(result.changedSliceCount,);
-        for (const chunkIndex of result.withdrawnChunkIndices) {
-          expect(result.shippedChunkIndices
+        for (const chunkIndex of result.withdrawnSliceIndices) {
+          expect(result.changedSliceIndices
             .includes(chunkIndex,),).toBe(false,);
         }
-        expect(result.shippedChunkIndices
+        expect(result.changedSliceIndices
           .toSorted(function ascending(
             left,
             right,
           ): number {
             return left - right;
-          },),).toEqual(result.shippedChunkIndices,);
+          },),).toEqual(result.changedSliceIndices,);
       },
     },),
 
@@ -1285,7 +1285,7 @@ The cat is doing the sleeping on the windowsill.
           .length,);
         // The document carries the gap the archive came with: the anchor ships
         // nothing, and the slices around it are unaffected.
-        expect(result.shippedChunkIndices,).not.toContain(anchorIndex,);
+        expect(result.changedSliceIndices,).not.toContain(anchorIndex,);
         expect(result.translatedText,).toContain(FRESH,);
         expect(result.translatedText,).not.toContain('晒太阳',);
       },
@@ -1333,7 +1333,7 @@ The cat is doing the sleeping on the windowsill.
 
         // The page keeps what it had, and the passage is still reported.
         expect(anchored.result
-          .shippedChunkIndices,).not.toContain(anchorIndex,);
+          .changedSliceIndices,).not.toContain(anchorIndex,);
         expect(anchored.result
           .translatedText,).not.toContain('晒太阳',);
       },

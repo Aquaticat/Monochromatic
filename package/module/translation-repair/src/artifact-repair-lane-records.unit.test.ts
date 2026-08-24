@@ -174,7 +174,7 @@ function repairResult(
     status: 'unchanged',
     issues: [LANE_ISSUE,],
     findings: [LANE_FINDING,],
-    chunkCritics: [
+    sliceCritics: [
       {
         chunkIndex: 0,
         heardCriticIds: [],
@@ -182,8 +182,8 @@ function repairResult(
       },
     ],
     sliceCount: 2,
-    shippedChunkIndices: [],
-    withdrawnChunkIndices: [],
+    changedSliceIndices: [],
+    withdrawnSliceIndices: [],
     sliceTexts: [
       {
         chunkIndex: 0,
@@ -222,8 +222,8 @@ function translateResult(): Record<string, unknown> {
     changedSliceCount: 1,
     refusedSliceCount: 0,
     withdrawnSliceCount: 0,
-    shippedChunkIndices: [0,],
-    withdrawnChunkIndices: [],
+    changedSliceIndices: [0,],
+    withdrawnSliceIndices: [],
     resumedSliceCount: 0,
     status: 'unfilled',
     unfilled: [{ chunkIndex: 1, },],

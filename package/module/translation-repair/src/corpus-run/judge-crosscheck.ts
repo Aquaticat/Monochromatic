@@ -205,7 +205,7 @@ export function buildCrosscheckCensus(
      * Proposers of each attributed claim in this entry.
      */
     const proposersOf = new Map<string, readonly string[]>();
-    for (const chunk of entry.chunkCritics ?? []) {
+    for (const chunk of entry.sliceCritics ?? []) {
       for (const attribution of chunk.claimAttributions) {
         proposersOf.set(
           attribution.claimId,
@@ -269,7 +269,7 @@ export function buildCrosscheckCensus(
        * Claim ids this entry attributed.
        */
       const attributed = new Set(
-        (entry.chunkCritics ?? []).flatMap(function toIds(chunk,): readonly string[] {
+        (entry.sliceCritics ?? []).flatMap(function toIds(chunk,): readonly string[] {
           return chunk.claimAttributions
             .map(function toId(attribution,): string {
               return attribution.claimId;
@@ -331,7 +331,7 @@ export function buildCrosscheckCensus(
     unattributedJoinFailures: unattributed.joinFailures,
     entriesWithoutAttribution: entries
       .filter(function isBare(entry,): boolean {
-        return (entry.chunkCritics ?? [])
+        return (entry.sliceCritics ?? [])
           .every(function empty({ claimAttributions, },): boolean {
             return claimAttributions.length === 0;
           },);

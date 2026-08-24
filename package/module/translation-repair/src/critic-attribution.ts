@@ -209,10 +209,10 @@ export function retainAttributions(
  *
  * @example
  * ```ts
- * const record: ChunkCriticRecord = { chunkIndex: 0, heardCriticIds, claimAttributions, };
+ * const record: SliceCriticRecord = { chunkIndex: 0, heardCriticIds, claimAttributions, };
  * ```
  */
-export type ChunkCriticRecord = {
+export type SliceCriticRecord = {
   /**
    * Chunk position within the document.
    */
@@ -251,18 +251,18 @@ export type ChunkCriticRecord = {
  *
  * @example
  * ```ts
- * const chunkCritics = buildChunkCriticRecords({ outcomes, },);
+ * const sliceCritics = buildSliceCriticRecords({ outcomes, },);
  * ```
  */
-export function buildChunkCriticRecords(
+export function buildSliceCriticRecords(
   {
     outcomes,
   }: {
-    readonly outcomes: readonly ChunkCriticRecord[];
+    readonly outcomes: readonly SliceCriticRecord[];
   },
-): readonly ChunkCriticRecord[] {
+): readonly SliceCriticRecord[] {
   return outcomes
-    .map(function toRecord(outcome,): ChunkCriticRecord {
+    .map(function toRecord(outcome,): SliceCriticRecord {
     return {
       chunkIndex: outcome.chunkIndex,
       // CANONICALIZED here rather than trusted from the caller. Every producer

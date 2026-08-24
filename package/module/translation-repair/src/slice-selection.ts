@@ -98,30 +98,30 @@ export type SliceSelection = {
  *
  * @param records - settled slice records in document order
  *
- * @param shippedChunkIndices - slices the assembled document carries a
+ * @param changedSliceIndices - slices the assembled document carries a
  * replacement for
  *
  * @returns One entry per record, in the order the records arrived
  *
  * @example
  * ```ts
- * const selections = buildSliceSelections({ records: settled, shippedChunkIndices: ordered.shipped, },);
+ * const selections = buildSliceSelections({ records: settled, changedSliceIndices: ordered.shipped, },);
  * ```
  */
 export function buildSliceSelections(
   {
     records,
-    shippedChunkIndices,
+    changedSliceIndices,
   }: {
     readonly records: readonly TranslateSliceRecord[];
-    readonly shippedChunkIndices: readonly number[];
+    readonly changedSliceIndices: readonly number[];
   },
 ): readonly SliceSelection[] {
   /**
    * Shipped indices keyed for membership, since a document of any size makes
    * repeated scans of an array the wrong shape.
    */
-  const shipped = new Set(shippedChunkIndices,);
+  const shipped = new Set(changedSliceIndices,);
 
   return records.map(function toSelection(record,): SliceSelection {
     return {

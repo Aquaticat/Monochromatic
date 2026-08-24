@@ -165,8 +165,8 @@ function ledgerFor(
   return buildSliceDelivery({
     slices,
     wordings,
-    shippedChunkIndices: shipped,
-    withdrawnChunkIndices: [],
+    changedSliceIndices: shipped,
+    withdrawnSliceIndices: [],
     blocked: false,
   },);
 }
@@ -230,7 +230,7 @@ await describe({
             slices: REWRITTEN_SLICES,
             incumbentText: ARCHIVE,
             documentText: 'The cat dozes.\n\nShe purrs.\n',
-            shippedChunkIndices: [0,],
+            changedSliceIndices: [0,],
           },);
         },).not.toThrow();
       },
@@ -250,7 +250,7 @@ await describe({
             slices: REWRITTEN_SLICES,
             incumbentText: ARCHIVE,
             documentText: 'The cat naps.\n\nShe purrs.\n',
-            shippedChunkIndices: [0,],
+            changedSliceIndices: [0,],
           },);
         },).toThrow(DeliveryInvariantError,);
       },
@@ -269,7 +269,7 @@ await describe({
             slices: REWRITTEN_SLICES,
             incumbentText: ARCHIVE,
             documentText: 'The cat dozes.\n\nShe purrs.\n',
-            shippedChunkIndices: [
+            changedSliceIndices: [
               0,
               1,
             ],
@@ -315,7 +315,7 @@ await describe({
             slices: REWRITTEN_SLICES,
             incumbentText: ARCHIVE,
             documentText: 'The cat dozes.\n\nShe rumbles.\n',
-            shippedChunkIndices: [0,],
+            changedSliceIndices: [0,],
           },);
         },).toThrow(DeliveryInvariantError,);
       },
@@ -389,7 +389,7 @@ await describe({
             slices,
             incumbentText: ARCHIVE,
             documentText: 'The cat sleeps.\n\nShe stretches.\n\nShe purrs.\n',
-            shippedChunkIndices: [1,],
+            changedSliceIndices: [1,],
           },);
         },).not.toThrow();
       },

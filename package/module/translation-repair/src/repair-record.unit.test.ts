@@ -335,7 +335,7 @@ await describe({
             },),
           ],
           blocked: false,
-          withdrawnChunkIndices: [3,],
+          withdrawnSliceIndices: [3,],
         },);
         expect(withdrawn[0]?.repairDisposition,).toBe('withdrawn',);
         // Still true, and still worth disclosing: the lane did rewrite this

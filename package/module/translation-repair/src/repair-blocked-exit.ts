@@ -1,7 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { deriveShippedIndices, } from './assembly-invariant.ts';
 import { repairLaneWordings, } from './repair-lane-wordings.ts';
-import { buildChunkCriticRecords, } from './critic-attribution.ts';
+import { buildSliceCriticRecords, } from './critic-attribution.ts';
 import { buildIssueRecords, } from './repair-record.ts';
 import { nonTranslationDominanceFinding, } from './non-translation-finding.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
@@ -81,7 +81,7 @@ export function blockedRepairResult(
       outcomes,
       blocked: true,
     },),
-    chunkCritics: buildChunkCriticRecords({ outcomes, },),
+    sliceCritics: buildSliceCriticRecords({ outcomes, },),
     // Only the slices decided before the crossing; `sliceCount` is what they
     // are out of, and the gap is the point rather than a defect.
     chunks: outcomes,
@@ -95,8 +95,8 @@ export function blockedRepairResult(
     // shipped set says none of it reached the document; read together they
     // state "this lane had repairs and the document carries none of them",
     // which two empty index sets alone cannot.
-    shippedChunkIndices: [],
-    withdrawnChunkIndices: [],
+    changedSliceIndices: [],
+    withdrawnSliceIndices: [],
     sliceTexts: repairLaneWordings({
       slices,
       outcomes,

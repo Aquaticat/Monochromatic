@@ -5,7 +5,7 @@
 // indistinguishable from one that was never built.
 //
 // Every count here is restricted to ELIGIBLE entries, meaning artifacts that
-// carry `chunkCritics` at all. Entries settled before attribution existed carry
+// carry `sliceCritics` at all. Entries settled before attribution existed carry
 // none, and averaging over both populations silently mixes "this critic raised
 // nothing" with "this entry could not have recorded that it did".
 
@@ -67,17 +67,17 @@ function bump(
 /**
  * One chunk's calibration, as far as the report needs to read it.
  *
- * Structurally what `ChunkCriticRecord` is, with model ids widened to plain
+ * Structurally what `SliceCriticRecord` is, with model ids widened to plain
  * strings. Stated independently so the reader can PARSE an artifact into this
  * without asserting unknown strings into the model-id union, and a real
- * `ChunkCriticRecord` still satisfies it.
+ * `SliceCriticRecord` still satisfies it.
  *
  * @example
  * ```ts
- * const view: ChunkCriticView = { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], };
+ * const view: SliceCriticView = { chunkIndex: 0, heardCriticIds: [], claimAttributions: [], };
  * ```
  */
-export type ChunkCriticView = {
+export type SliceCriticView = {
   /**
    * Chunk position within the document.
    */
@@ -129,7 +129,7 @@ export type AcceptedIssueView = {
  *
  * @example
  * ```ts
- * const entry: AttributionEntry = { id: 'Acheron', chunkCritics, issues, };
+ * const entry: AttributionEntry = { id: 'Acheron', sliceCritics, issues, };
  * ```
  */
 export type AttributionEntry = {
@@ -142,7 +142,7 @@ export type AttributionEntry = {
    * Per-chunk calibration, absent on entries settled before attribution
    * existed.
    */
-  readonly chunkCritics?: readonly ChunkCriticView[];
+  readonly sliceCritics?: readonly SliceCriticView[];
 
   /**
    * Adjudicated issues of this entry.
@@ -254,27 +254,27 @@ export type AttributionReport = {
 /**
  * Indexes an entry's attributions by claim id.
  *
- * @param chunkCritics - per-chunk calibration records
+ * @param sliceCritics - per-chunk calibration records
  *
  * @returns Claim id to proposer list
  *
  * @example
  * ```ts
- * const index = indexProposers({ chunkCritics, },);
+ * const index = indexProposers({ sliceCritics, },);
  * ```
  */
 function indexProposers(
   {
-    chunkCritics,
+    sliceCritics,
   }: {
-    readonly chunkCritics: readonly ChunkCriticView[];
+    readonly sliceCritics: readonly SliceCriticView[];
   },
 ): Map<string, readonly ProposerView[]> {
   /**
    * Proposers per claim across every chunk of one entry.
    */
   const index = new Map<string, readonly ProposerView[]>();
-  for (const record of chunkCritics) {
+  for (const record of sliceCritics) {
     for (const attribution of record.claimAttributions) {
       // MERGED rather than overwritten. Two chunks can carry the same claim id,
       // and the writer deliberately keeps their proposers apart so neither
@@ -377,7 +377,7 @@ function readIssueSupport(
 /**
  * Turns recorded attribution into per-critic rates and support counts.
  *
- * Restricted to entries carrying `chunkCritics`, because an entry settled
+ * Restricted to entries carrying `sliceCritics`, because an entry settled
  * before attribution existed records no proposer for a claim its critics did
  * raise, and counting it would understate every critic at once.
  *
@@ -401,7 +401,7 @@ export function buildAttributionReport(
    * Entries that could record attribution at all.
    */
   const eligible = entries.filter(function carriesAttribution(entry,): boolean {
-    return entry.chunkCritics !== undefined;
+    return entry.sliceCritics !== undefined;
   },);
 
   /**
@@ -433,13 +433,13 @@ export function buildAttributionReport(
       total,
       entry,
     ): number {
-    return total + (entry.chunkCritics ?? []).length;
+    return total + (entry.sliceCritics ?? []).length;
   },
     0,
   );
 
   for (const entry of eligible) {
-    for (const record of entry.chunkCritics ?? []) {
+    for (const record of entry.sliceCritics ?? []) {
       for (const modelId of record.heardCriticIds)
         bump({
           counter: heard,
@@ -470,7 +470,7 @@ export function buildAttributionReport(
     /**
      * Proposers of this entry's claims, by claim id.
      */
-    const proposersOf = indexProposers({ chunkCritics: entry.chunkCritics ?? [], },);
+    const proposersOf = indexProposers({ sliceCritics: entry.sliceCritics ?? [], },);
 
     return entry.issues
       .filter(function isAccepted(issue,): boolean {

@@ -4,12 +4,12 @@ import {
   isJsonRecord,
 } from '../json-guard.ts';
 import type {
-  ChunkCriticView,
+  SliceCriticView,
   ProposerView,
 } from './attribution-report.ts';
 
 //region Attribution decode
-// STRICT decoding of the `chunkCritics` subtree, in deliberate contrast to how
+// STRICT decoding of the `sliceCritics` subtree, in deliberate contrast to how
 // its ABSENCE is treated.
 //
 // Absence is data: an artifact settled before attribution existed carries no
@@ -42,7 +42,7 @@ import type {
  *
  * @example
  * ```ts
- * const chunkIndex = readCount({ value, path: 'Kitten chunkCritics[0].chunkIndex', minimum: 0, },);
+ * const chunkIndex = readCount({ value, path: 'Kitten sliceCritics[0].chunkIndex', minimum: 0, },);
  * ```
  */
 export function readCount(
@@ -83,7 +83,7 @@ export function readCount(
  *
  * @example
  * ```ts
- * const heard = readDistinctStrings({ value, path: 'Kitten chunkCritics[0].heardCriticIds', },);
+ * const heard = readDistinctStrings({ value, path: 'Kitten sliceCritics[0].heardCriticIds', },);
  * ```
  */
 export function readDistinctStrings(
@@ -138,7 +138,7 @@ export function readDistinctStrings(
  *
  * @example
  * ```ts
- * const proposers = decodeProposers({ value, path: 'Kitten chunkCritics[0].claimAttributions[0].proposers', },);
+ * const proposers = decodeProposers({ value, path: 'Kitten sliceCritics[0].claimAttributions[0].proposers', },);
  * ```
  */
 export function decodeProposers(
@@ -220,7 +220,7 @@ export function decodeProposers(
  *
  * @example
  * ```ts
- * const view = decodeChunkRecord({ value, path: 'Kitten chunkCritics[0]', },);
+ * const view = decodeChunkRecord({ value, path: 'Kitten sliceCritics[0]', },);
  * ```
  */
 export function decodeChunkRecord(
@@ -231,7 +231,7 @@ export function decodeChunkRecord(
     readonly value: unknown;
     readonly path: string;
   },
-): ChunkCriticView {
+): SliceCriticView {
   if (!isJsonRecord(value,))
     throw new ArtifactParseError({
       path,
@@ -254,7 +254,7 @@ export function decodeChunkRecord(
   const claimAttributions = rawAttributions.map(function toAttribution(
     entry,
     index,
-  ): ChunkCriticView['claimAttributions'][number] {
+  ): SliceCriticView['claimAttributions'][number] {
     /**
      * Path of this attribution.
      */
@@ -308,7 +308,7 @@ export function decodeChunkRecord(
 }
 
 /**
- * Decodes an artifact's whole `chunkCritics` array.
+ * Decodes an artifact's whole `sliceCritics` array.
  *
  * @param value - parsed array
  *
@@ -320,10 +320,10 @@ export function decodeChunkRecord(
  *
  * @example
  * ```ts
- * const chunkCritics = decodeChunkCritics({ value, entryId: 'Kitten', },);
+ * const sliceCritics = decodeSliceCritics({ value, entryId: 'Kitten', },);
  * ```
  */
-export function decodeChunkCritics(
+export function decodeSliceCritics(
   {
     value,
     entryId,
@@ -331,10 +331,10 @@ export function decodeChunkCritics(
     readonly value: unknown;
     readonly entryId: string;
   },
-): readonly ChunkCriticView[] {
+): readonly SliceCriticView[] {
   if (!isJsonArray(value,)) {
     throw new ArtifactParseError({
-      path: `${entryId} chunkCritics`,
+      path: `${entryId} sliceCritics`,
       reason: 'an array when present at all, since only an ABSENT key means the entry predates attribution',
     },);
   }
@@ -348,7 +348,7 @@ export function decodeChunkCritics(
   ) {
     return decodeChunkRecord({
       value: record,
-      path: `${entryId} chunkCritics[${String(index,)}]`,
+      path: `${entryId} sliceCritics[${String(index,)}]`,
     },);
   },);
 
@@ -356,7 +356,7 @@ export function decodeChunkCritics(
     return record.chunkIndex;
   },),)).size !== records.length) {
     throw new ArtifactParseError({
-      path: `${entryId} chunkCritics`,
+      path: `${entryId} sliceCritics`,
       reason: 'one record per chunk, since a repeat inflates the chunk count every rate divides by',
     },);
   }
