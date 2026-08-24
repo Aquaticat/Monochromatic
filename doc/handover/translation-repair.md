@@ -19426,3 +19426,81 @@ and nothing in the record could previously show it.
     None can run while the `#200` calibration holds `dist`:
     every mise task declares `depends = ["build"]`
     and would rewrite the bundle underneath a live run.
+
+## The settled artifacts already carry editor rounds, and they do not support the reseat
+
+2026-08-24, found while checking whether an artifact records who was reachable.
+
+### The premise that was wrong
+
+`#200`'s section above says a settled artifact "exposes neither the envelopes nor
+the issues an editor worked from".
+That is true, and it is about the editor's INPUTS.
+What it does not say, and what I had recorded elsewhere as a reason replay was impossible,
+is that the OUTPUTS are absent too.
+They are not.
+Every repair chunk carries `rounds`,
+each with the slate judges saw, each candidate's producer, and every ballot cast:
+
+```text
+stage envelope  slate [(1, Kimi-K3), (2, GLM-5.2)]
+ballots [(GLM-5.2, 2), (Qwen3.8-27B, 2), (Kimi-K3, 2), (Nemotron, 2), (gpt-oss-120b, 1)]
+```
+
+That is exactly what `repair-selection-rounds.ts` projects and `producerStandings` counts.
+So an editor standing can be computed over work already paid for, spending nothing.
+
+### What the existing record says
+
+230 rounds across 18 artifacts, fragmented over nine pipeline digests.
+Pooling across digests is what `artifact-pool.ts` exists to refuse,
+so each is reported alone.
+EDITOR standing, by digest, largest first:
+
+-   `b998af64`, 4 entries, 61 rounds:
+    Kimi-K3 40.9%, GLM-5.2 38.9%, GLM-4.7-Flash 13.1%.
+-   `2384524b`, 6 entries, 36 rounds:
+    Kimi-K3 39.5%, GLM-5.2 36.5%, GLM-4.7-Flash 19.6%.
+-   `6b21df94`, 1 entry, 33 rounds:
+    Kimi-K3 50.3%, GLM-5.2 41.0%, GLM-4.7-Flash 11.4%.
+-   `3850dc98`, 2 entries, 31 rounds:
+    GLM-5.2 47.0%, Kimi-K3 33.7%, GLM-4.7-Flash 16.6%.
+-   `266fca75`, 1 entry, 11 rounds:
+    GLM-5.2 39.3%, GLM-4.7-Flash 25.4%, Kimi-K3 24.6%.
+-   `851f8020`, 1 entry, 5 rounds:
+    Kimi-K3 60.9%, GLM-5.2 25.0%, GLM-4.7-Flash 8.0%.
+
+### The reading
+
+GLM-4.7-Flash is last on five of six digests and never above 25.4%.
+That is consistent and it is the one thing here worth calling a result.
+
+KIMI-K3 AND GLM-5.2 ARE NOT SEPARABLE BY THIS RECORD.
+They alternate first place across digests,
+which is what noise looks like,
+and no digest carries enough independent entries to say otherwise.
+
+THAT IS THE POINT, because on 2026-08-24 GLM-5.2 was removed from both writing seats
+on the strength of the 40-round producer calibration,
+which measures WRITING.
+`#200` exists because editing is a different job.
+The editing record already on disk does not show GLM-5.2 as a weaker editor than the model that kept the seat.
+It does not show it as stronger either.
+It shows the reseat was made on evidence that does not speak to this seat,
+and that the seat is still unmeasured.
+
+Its replacement, Qwen3.8-27B, appears in one digest only,
+`f24b27e5`, one entry, 8 rounds, 60.0% of 35 disinterested ballots.
+Too thin to read as anything.
+
+### What this record cannot do
+
+-   IT IS OBSERVATIONAL. Only seated models ever wrote a candidate,
+    so it ranks the three that held the seat and is silent about the other seven.
+    `gemma-4-26b-a4b-it`, seated on 08-24, has never written an editor candidate at all.
+-   ROUNDS INSIDE ONE ENTRY ARE CORRELATED.
+    Entry counts are 1 to 6, so the effective sample is far smaller than the round counts.
+-   JUDGES VARIED between runs, and nothing here holds them fixed.
+
+So it corroborates and it cross-checks; it does not replace the controlled calibration.
+It raises the value of finishing `#200`, and it lowers the confidence in the current seating.
