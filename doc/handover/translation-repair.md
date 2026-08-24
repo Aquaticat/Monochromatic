@@ -19504,3 +19504,68 @@ Too thin to read as anything.
 
 So it corroborates and it cross-checks; it does not replace the controlled calibration.
 It raises the value of finishing `#200`, and it lowers the confidence in the current seating.
+
+## Zero editor rounds does not mean nothing was repaired (`#200`)
+
+2026-08-24, found by watching the partial calibration rather than by reading code.
+
+### What the log showed
+
+Slice 2 of the run, `coin` chunk 3:
+
+```text
+panel stage: 5/10 heard, 7 issues
+[selectChunkPatch] every proposal was identical; shipping composite(...)
+editor stage: 1 applied, 0 rejected across 1 distinct candidates
+chunk 3: repaired, 1/1 served accepted issues resolved (1 accepted, 0 unenveloped)
+  slice 2 of 14 (coin chunk 3): 0 editor rounds, 0 refiner rounds
+```
+
+The slice REPAIRED and the standing counted nothing.
+
+### Why
+
+`selectChunkPatch` ships outright when every editor proposes the same text.
+There is nothing to choose between,
+so no ballot is cast and no judged round is recorded.
+A standing counts rounds,
+so a slice decided by consensus is invisible to it.
+
+THIS CORRECTS THE `#200` NOTE ABOVE.
+That note said zero rounds meant no issue was ACCEPTED,
+which was true of the one slice it was written from
+and is not true in general.
+Zero rounds has two causes and they are opposite:
+nothing was accepted, or everything agreed.
+
+### What it changes about the measurement
+
+-   A model whose text the rest of the ensemble reproduces word for word
+    wins nothing and appears nowhere.
+    The old `WROTE NOTHING` line would have named it beside a model
+    whose provider was out of budget, which are opposite facts.
+-   The blind spot is not rare.
+    It fired on slice 2 of 14,
+    on a slice that had seven adjudicated issues to work from.
+-   Convergence is plausibly MORE likely on the halved roster this run had,
+    since five models leave fewer distinct proposals than ten,
+    so the partial run understates rounds for a second reason.
+
+### What landed, in `4fdb9391c`
+
+Each slice now carries the authorship of what shipped,
+and the report says how many slices shipped with no editor round judged.
+Kept apart from the standing and labelled,
+because nobody preferred that text to anything:
+shipping by consensus is not winning a vote,
+and the two must never be divided by each other.
+
+The silent line now reads `NO JUDGED CANDIDATE`
+and points at the shipped lines to separate the two causes.
+
+### Consequence for the running measurement
+
+The partial run in flight was launched before this landed,
+so its report will carry the old wording and no shipped lines.
+Read its zero-round slices against this section,
+and treat the full-roster re-run as the one that reports both.
