@@ -618,6 +618,41 @@ and each model's ballots on its own work are then discounted,
 because counting self-votes ranks the most self-confident model first
 rather than the best-written one.
 
+#### The standing that costs nothing
+
+Every settled artifact's repair chunks already record
+the slate judges were shown, each candidate's producer, and every ballot.
+That is what a standing counts,
+so one can be read off work already paid for:
+
+```sh
+mise run //package/module/translation-repair:editor-standing-read -- <run dir> [<run dir> ...]
+```
+
+It spends nothing and touches no model.
+Three things bound what it can say.
+
+It is OBSERVATIONAL.
+Only models that held a seat ever wrote a candidate,
+so it ranks whoever was seated and is silent about everyone else.
+An absent model is unmeasured, not last.
+That is the survivorship the controlled calibrations exist to defeat,
+which is why this corroborates them and never replaces them.
+
+It NEVER POOLS ACROSS PIPELINE DIGESTS,
+because two builds are two configurations
+and a figure summed over both describes neither.
+Each digest is reported alone with its entry count,
+which is the denominator that governs:
+rounds inside one entry are correlated.
+
+It REFUSES AN ARTIFACT FROM AN EARLIER ROSTER, by name.
+Model ids are a closed set,
+and reading an id the roster no longer seats as though it were current
+would let a standing mix two rosters silently.
+Those artifacts are counted apart from malformed ones
+and named with the exact path that held the departed id.
+
 #### Reading a standing honestly
 
 Three things on the report decide whether a standing means anything.
