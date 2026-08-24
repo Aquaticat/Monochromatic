@@ -19964,3 +19964,27 @@ They differ only inside `lanes.*.raw`,
 which is the file's own record passed through unread
 and so carries the file's own spelling by design.
 All six mislabelled files, generation 3 stamp over generation 2 keys, were refused.
+
+### And live, end to end
+
+One entry through the real pipeline,
+`gaoyanger` into `~/temp/agent/gen3-vub-2026-08-24`, exit 0 in 975 seconds:
+
+```text
+TALLY gaoyanger status=SETTLED slices=2 repairStatus=repaired repairIssues=4 repairAccepted=3
+repairResolved=3 repairChanged=1 translateChanged=1 documentsDiffer=1 selection=contested
+```
+
+Read back off disk:
+stamped generation 3,
+all three current keys present,
+zero older keys,
+and its own reader accepts it.
+`verify-published` then agreed:
+`1 of 1 pages carry every wording their artifact promised, at the length it implies`.
+
+Charm Hyper was dry for this too,
+so five of the ten seats lost their voice at every stage
+and the entry settled anyway on the five that answered.
+That is the resilience the owner asked for,
+observed rather than asserted.
