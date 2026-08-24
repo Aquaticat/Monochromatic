@@ -594,6 +594,12 @@ NXR:
 Inspect processes + logs;
  rerun via process tool or bounded execution.
 
+IMX:
+ Importing a module runs its top-level code.
+Never import a CLI entry to check it parses or to read its exports;
+ that starts the run.
+Read the file or type-check instead.
+
 HLT:
  Stop your own runs by PID.
 `pkill`/`killall` patterns match every command line holding the string,
