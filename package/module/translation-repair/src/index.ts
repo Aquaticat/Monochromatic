@@ -246,6 +246,7 @@ export {
   type DegenerationVerdict,
   watchForDegeneration,
 } from './stream-degeneration.ts';
+export { scanAnthropicDeltas, } from './anthropic-delta-scan.ts';
 export {
   type ChannelDelta,
   type DeltaScanner,
