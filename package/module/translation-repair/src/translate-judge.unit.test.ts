@@ -34,6 +34,7 @@ import {
   type SyntheticClient,
   type SyntheticModelId,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
+  TranslateAbsenceError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -254,6 +255,116 @@ async function judgeSheetFor(
     .slice(beforeJudging,)
     .join('\n',);
 }
+
+
+/**
+ * Client that fails if anything asks it a question.
+ *
+ * THE POINT OF THE TWO CASES BELOW IS THAT NO ROUND IS BOUGHT. An empty slate
+ * has nothing to judge, so a judge that called a model would be spending on a
+ * question with no candidates in it, and this turns that into a failure rather
+ * than a slower green.
+ */
+const NOBODY_TO_ASK: SyntheticClient = {
+  chatText: async () => {
+    throw new Error('an empty slate must buy no judging round',);
+  },
+  chatJson: async () => {
+    throw new Error('an empty slate must buy no judging round',);
+  },
+} as unknown as SyntheticClient;
+
+/**
+ * Builds an empty slate that reports how many translators were heard producing
+ * it.
+ *
+ * @param heardTranslators - translators that answered usably, zero when every
+ * voice on the slate was lost
+ *
+ * @returns Slate carrying no candidates
+ *
+ * @example
+ * ```ts
+ * const produced = emptySlate({ heardTranslators: 0, },);
+ * ```
+ */
+function emptySlate(
+  { heardTranslators, }: { readonly heardTranslators: number; },
+): ProducedSlate {
+  return {
+    candidates: [],
+    heardTranslators,
+    findings: [],
+  };
+}
+
+/**
+ * Judges an empty slate over a passage the archive has no English for, and
+ * returns whatever it refused with.
+ *
+ * @param heardTranslators - translators that answered usably
+ *
+ * @returns Refusal raised, so a case can name its class and reason
+ *
+ * @example
+ * ```ts
+ * const refusal = await refusalOverAnchor({ heardTranslators: 0, },);
+ * ```
+ */
+async function refusalOverAnchor(
+  { heardTranslators, }: { readonly heardTranslators: number; },
+): Promise<unknown> {
+  try {
+    await judgeTranslateSlate({
+      client: NOBODY_TO_ASK,
+      produced: emptySlate({ heardTranslators, },),
+      judgeModelIds: JUDGES,
+      sourceText: SOURCE_TEXT,
+      incumbentText: '',
+      incumbentKind: 'absent',
+      lineStructured: false,
+      signal: AbortSignal.timeout(30_000,),
+      perCallTimeoutMs: 5_000,
+      l,
+    },);
+    return undefined;
+  } catch (error) {
+    return error;
+  }
+}
+
+await describe({
+  name: `${judgeTranslateSlate.name} tells a lost voice from a hard passage`,
+  children: [
+    it({
+      name:
+        'REFUSES AN ANCHOR AS `no-voice-heard` WHEN NOBODY ANSWERED, because an empty slate with no '
+        + 'translator heard says nothing about the passage and everything about the hour. Recorded as '
+        + '`no-candidate` until `#198`, which is how a provider having a bad hour left holes in '
+        + 'published pages that nothing could tell from passages the models genuinely could not render',
+      fn: async () => {
+        const refusal = await refusalOverAnchor({ heardTranslators: 0, },);
+
+        expect(refusal,).toBeInstanceOf(TranslateAbsenceError,);
+        expect((refusal as { readonly reason?: unknown; }).reason,).toBe('no-voice-heard',);
+      },
+    },),
+
+    it({
+      name:
+        'REFUSES AN ANCHOR AS `no-candidate` WHEN TRANSLATORS WERE HEARD AND PROPOSED NOTHING USABLE, '
+        + 'which is the half that really is about the passage. Both cases are needed: one reason '
+        + 'covering both would satisfy either case alone, so only the PAIR shows the distinction is '
+        + 'drawn rather than a constant returned',
+      fn: async () => {
+        const refusal = await refusalOverAnchor({ heardTranslators: 3, },);
+
+        expect(refusal,).toBeInstanceOf(TranslateAbsenceError,);
+        expect((refusal as { readonly reason?: unknown; }).reason,).toBe('no-candidate',);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: judgeTranslateSlate.name,

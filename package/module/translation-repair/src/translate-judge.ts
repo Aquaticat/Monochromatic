@@ -234,12 +234,42 @@ export async function judgeTranslateSlate(
     .length
     === 0) {
     /**
+     * Whether the slate is empty because nobody was heard, rather than because
+     * everybody was heard and proposed nothing usable.
+     *
+     * TWO DIFFERENT FACTS WEARING ONE WORD until `#198`. Translators that
+     * answered and proposed nothing a guard would accept are evidence about
+     * THE PASSAGE, and the gap they leave is one a re-run would probably meet
+     * again. A slate where every voice was lost is evidence about THE HOUR,
+     * and its gap is an artefact a later attempt would very likely fill.
+     * Recorded as one reason, a bad hour left holes in published pages that
+     * nothing could tell from real ones.
+     */
+    const nobodyHeard = produced.heardTranslators === 0;
+
+    /**
+     * Reason and decision naming which of the two happened, kept together so
+     * the throwing path and the returning path cannot disagree about it.
+     */
+    const named = nobodyHeard
+      ? {
+        reason: 'no-voice-heard',
+        finding: 'translate-no-voice-heard',
+        said: 'no translator was heard at all',
+      } as const
+      : {
+        reason: 'no-candidate',
+        finding: 'translate-no-candidate',
+        said: 'nothing proposed',
+      } as const;
+
+    /**
      * Findings this exit reports either way, so the refusal carries the same
      * evidence the returned result would have.
      */
     const noCandidateFindings = [
       ...produced.findings,
-      'translate-no-candidate',
+      named.finding,
     ];
     // NOTHING TO KEEP. With a translation in the archive, silence means it
     // stands and the slice is genuinely settled. With none, the same fallback
@@ -247,14 +277,14 @@ export async function judgeTranslateSlate(
     // rendering it never produced for a passage that still has none.
     if (incumbentKind === 'absent') {
       throw new TranslateAbsenceError({
-        reason: 'no-candidate',
+        reason: named.reason,
         findings: noCandidateFindings,
       },);
     }
-    tl.warn('translate stage: nothing proposed; slice unchanged',);
+    tl.warn(`translate stage: ${named.said}; slice unchanged`,);
     return {
       ...keepIncumbent,
-      decision: 'no-candidate',
+      decision: named.reason,
       findings: noCandidateFindings,
     };
   }

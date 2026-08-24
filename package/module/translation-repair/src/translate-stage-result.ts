@@ -35,7 +35,8 @@ export type TranslateDecision =
   | 'declined-indecision'
   | 'declined-rejection'
   | 'no-candidate-backed'
-  | 'no-candidate';
+  | 'no-candidate'
+  | 'no-voice-heard';
 
 /**
  * Everything the translate stage decided for one slice.

@@ -1226,7 +1226,10 @@ The cat is doing the sleeping on the windowsill.
     it({
       name: 'SETTLES A DOCUMENT whose one unfillable passage has no translation in the archive, names '
         + 'that passage rather than reporting it as a slice the judges left alone, and caches nothing '
-        + 'for it, so the next run asks again while every other slice keeps what it cost',
+        + 'for it, so the next run asks again while every other slice keeps what it cost. The reason '
+        + 'is `no-voice-heard` rather than `no-candidate` because this fixture fails every translate '
+        + 'call for that source, which the harness documents as standing in for a provider that is '
+        + 'down: until `#198` those were one word',
       fn: async () => {
         const {
           result,
@@ -1251,7 +1254,7 @@ The cat is doing the sleeping on the windowsill.
             return passage.chunkIndex;
           },),).toEqual([anchorIndex,],);
         expect(result.unfilled[0]
-          ?.reason,).toBe('no-candidate',);
+          ?.reason,).toBe('no-voice-heard',);
         // The evidence has an owner rather than being flattened into one list
         // where nothing says which passage it belongs to.
         expect(result.unfilled[0]
@@ -1260,7 +1263,7 @@ The cat is doing the sleeping on the windowsill.
             return finding.startsWith('translate-candidates',);
           },),).toBe(true,);
         expect(result.findings,).toContain(
-          `${absenceFinding({ reason: 'no-candidate', },)} chunk ${String(anchorIndex,)}`,
+          `${absenceFinding({ reason: 'no-voice-heard', },)} chunk ${String(anchorIndex,)}`,
         );
         // No record for a slice that produced nothing, and one row per prepared
         // slice all the same, so a reader joining the lanes sees the whole

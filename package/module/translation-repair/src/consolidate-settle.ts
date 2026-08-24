@@ -88,8 +88,12 @@ export type ConsolidationTerminal =
  * says nothing about the roster at all, because no judge was asked.
  *
  * `no-candidate` JOINS THE UNJUDGED rather than the declined, because nothing
- * reached a judge on that path either. `no-candidate-backed` joins the
- * declined, because candidates existed and the judges backed none of them.
+ * reached a judge on that path either, and `no-voice-heard` joins it for the
+ * same reason one step earlier: no judge was asked because there was nothing
+ * to ask about. They are separate decisions and the same terminal, because
+ * what they tell a reader differs while what they tell the consolidation does
+ * not. `no-candidate-backed` joins the declined, because candidates existed
+ * and the judges backed none of them.
  *
  * A RECORD RATHER THAN A CHAIN, so a decision added to the union fails to
  * typecheck here instead of falling quietly into whichever branch is last.
@@ -98,6 +102,7 @@ const SLATE_TERMINALS: Record<TranslateDecision, ConsolidationTerminal> = {
   'judged': 'slate-endorsed-standing',
   'sole-candidate': 'slate-unjudged-standing',
   'no-candidate': 'slate-unjudged-standing',
+  'no-voice-heard': 'slate-unjudged-standing',
   'declined-indecision': 'slate-declined-standing',
   'declined-rejection': 'slate-declined-standing',
   'no-candidate-backed': 'slate-declined-standing',

@@ -51,10 +51,31 @@ export type IncumbentKind =
  */
 export type TranslateAbsenceReason =
   /**
-   * Nothing usable was proposed: every translator was silent, blank, or lost
-   * its voice, and there is no incumbent to stand in their place.
+   * Translators answered and none of their answers was usable, and there is no
+   * incumbent to stand in their place.
+   *
+   * SAYS SOMETHING ABOUT THE PASSAGE. Models that were heard and proposed
+   * nothing a guard would accept are evidence that this slice is hard, so the
+   * gap it leaves is one a re-run would probably meet again.
    */
   | 'no-candidate'
+  /**
+   * No translator was heard at all: every voice on the slate was lost.
+   *
+   * SAYS SOMETHING ABOUT THE HOUR RATHER THAN THE PASSAGE, which is why it is
+   * a separate reason. `no-candidate` used to cover this case as well, so a
+   * transient failure and a genuinely hard slice left identical gaps in the
+   * published page and identical absences in the artifact, and nothing
+   * downstream could tell a reader or a resumed pass which it had met.
+   *
+   * Measured on 2026-08-24: voice loss ran at 1 percent for two hours and 20
+   * percent for the next, across two passes on different builds and different
+   * entries, spread evenly over all six models. In that hour XIEPT2's translate
+   * lane went from 13 computed and 0 unfilled to 9 computed and 10 unfilled.
+   * Every one of those ten would have been recorded as a property of the
+   * passage. `#198`.
+   */
+  | 'no-voice-heard'
   /**
    * Judges could not settle on one candidate.
    */
