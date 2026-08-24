@@ -11,10 +11,15 @@ import type { MeterState, } from '../provider-budget.ts';
 // step with the code that decides.
 //
 // NO REGEX. The line is `[level] [iso] [tag] [tag] METERS name=state name=state`,
-// which is three `indexOf` calls and a split. A pattern here would buy nothing
-// and would have to be defended under the repo's regex rule.
+// which is a handful of `indexOf` calls and a split. A pattern here would buy
+// nothing and would have to be defended under the repo's regex rule.
 //
-// A LINE THAT CARRIES THE MARKER AND WILL NOT PARSE IS COUNTED, NOT DROPPED.
+// ABSENCE IS A NAMED VALUE, never a nullish union: `'not-a-record'` for a line
+// that is not one, `'skipped'` for a line that is one and will not read, and
+// `'absent'` for a field a record does not carry. `doc/research/optionality-
+// enforcement.md` records the four accepted forms; this file uses the sentinel.
+//
+// A LINE THAT IS A RECORD AND WILL NOT PARSE IS COUNTED, NOT DROPPED.
 // Interleaved output and truncated writes both produce them, and a reader that
 // silently skipped them would report a cleaner record than the one it read.
 
@@ -28,6 +33,11 @@ const METERS_MARKER = ' METERS ';
  * Separator between a provider's name and what its meter said.
  */
 const FIELD_SEPARATOR = '=';
+
+/**
+ * Value `indexOf` returns for a search that found nothing.
+ */
+const NOT_FOUND = -1;
 
 /**
  * States a meter can be recorded in, as written on the line.
@@ -59,6 +69,15 @@ export type MeterSample = {
 };
 
 /**
+ * What one log line turned out to be.
+ *
+ * The three cases are genuinely different evidence: a line that is not a
+ * record says nothing, and a record that will not read says the log has a hole
+ * in it.
+ */
+export type LineReading = MeterSample | 'skipped' | 'not-a-record';
+
+/**
  * Everything one log yielded, including what it would not yield.
  */
 export type MeterLogReading = {
@@ -68,7 +87,7 @@ export type MeterLogReading = {
   readonly samples: readonly MeterSample[];
 
   /**
-   * Lines carrying the marker that could not be read as a sample.
+   * Records that could not be read.
    *
    * KEPT SO A HOLE IS VISIBLE. A run whose log was truncated mid-line still
    * reports the samples around the hole, and this says the hole is there.
@@ -79,19 +98,108 @@ export type MeterLogReading = {
 /**
  * Narrows a written word to a meter state.
  *
+ * POSITIONAL RATHER THAN DESTRUCTURED, which the repo's object-parameter
+ * convention would otherwise ask for: TypeScript refuses a type predicate that
+ * names an element of a binding pattern (TS1230), so a guard has to take its
+ * subject directly.
+ *
  * @param value - word read off the line
  *
  * @returns Whether it names a state a meter can be in
  *
  * @example
  * ```ts
- * if (isMeterState({ value, },)) { ... }
+ * if (isMeterState(value,)) { ... }
  * ```
  */
-function isMeterState(
-  { value, }: { readonly value: string; },
-): value is MeterState {
+function isMeterState(value: string,): value is MeterState {
   return (METER_STATES as readonly string[]).includes(value,);
+}
+
+/**
+ * Reads one `name=state` field out of the text after the marker.
+ *
+ * @param tail - everything after the marker
+ *
+ * @param name - provider whose field is wanted
+ *
+ * @returns That provider's state, or that the record does not carry it
+ *
+ * @example
+ * ```ts
+ * const state = fieldValue({ tail: 'synthetic=wet hyper=dry', name: 'hyper', },);
+ * ```
+ */
+function fieldValue(
+  {
+    tail,
+    name,
+  }: {
+    readonly tail: string;
+    readonly name: string;
+  },
+): MeterState | 'absent' {
+  for (const field of tail.split(' ',)) {
+    /**
+     * Where this field's name stops and its state starts.
+     */
+    const at = field.indexOf(FIELD_SEPARATOR,);
+
+    if ((at === NOT_FOUND) || (field.slice(
+      0,
+      at,
+    ) !== name))
+      continue;
+
+    /**
+     * Word written after the separator.
+     */
+    const value = field.slice(at + 1,);
+
+    if (isMeterState(value,))
+      return value;
+
+    return 'absent';
+  }
+
+  return 'absent';
+}
+
+/**
+ * Whether the text after the marker opens with a field a record would carry.
+ *
+ * THE GATE BETWEEN A RECORD AND A SENTENCE. Any log line may mention the
+ * marker in prose, and treating those as records that failed to parse would
+ * report a hole in an intact log. A record's first field is `name=state`;
+ * a sentence's first word is not.
+ *
+ * @param tail - everything after the marker
+ *
+ * @returns Whether the first field names a state a meter can be in
+ *
+ * @example
+ * ```ts
+ * firstFieldReads({ tail: 'synthetic=wet hyper=dry', },);
+ * // => true
+ * ```
+ */
+function firstFieldReads(
+  { tail, }: { readonly tail: string; },
+): boolean {
+  /**
+   * First whitespace-separated token after the marker.
+   */
+  const first = tail.split(' ',)[0] ?? '';
+
+  /**
+   * Where that token's name stops and its state starts.
+   */
+  const at = first.indexOf(FIELD_SEPARATOR,);
+
+  if (at === NOT_FOUND)
+    return false;
+
+  return isMeterState(first.slice(at + 1,),);
 }
 
 /**
@@ -102,7 +210,7 @@ function isMeterState(
  *
  * @param line - whole log line
  *
- * @returns Epoch milliseconds, or absent where no timestamp could be read
+ * @returns Epoch milliseconds, or that no timestamp could be read
  *
  * @example
  * ```ts
@@ -111,13 +219,14 @@ function isMeterState(
  */
 function stampOf(
   { line, }: { readonly line: string; },
-): number | undefined {
+): number | 'unstamped' {
   /**
    * End of the level bracket, before which nothing is a timestamp.
    */
   const afterLevel = line.indexOf(']',);
-  if (afterLevel < 0)
-    return undefined;
+
+  if (afterLevel === NOT_FOUND)
+    return 'unstamped';
 
   /**
    * Start of the timestamp bracket.
@@ -126,8 +235,9 @@ function stampOf(
     '[',
     afterLevel,
   );
-  if (opened < 0)
-    return undefined;
+
+  if (opened === NOT_FOUND)
+    return 'unstamped';
 
   /**
    * End of the timestamp bracket.
@@ -136,8 +246,9 @@ function stampOf(
     ']',
     opened,
   );
-  if (closed < 0)
-    return undefined;
+
+  if (closed === NOT_FOUND)
+    return 'unstamped';
 
   /**
    * Epoch milliseconds the bracket parsed to, or NaN where it is not a date.
@@ -148,69 +259,18 @@ function stampOf(
   ),);
 
   if (Number.isNaN(parsed,))
-    return undefined;
+    return 'unstamped';
 
   return parsed;
 }
 
 /**
- * Reads the `name=state` fields that follow the marker.
- *
- * @param tail - everything after the marker
- *
- * @returns States by provider name, empty where a field would not read
- *
- * @example
- * ```ts
- * const states = statesIn({ tail: 'synthetic=wet hyper=dry', },);
- * ```
- */
-function statesIn(
-  { tail, }: { readonly tail: string; },
-): Readonly<Record<string, MeterState>> {
-  return tail
-    .split(' ',)
-    .reduce(
-      function addField(
-        states: Record<string, MeterState>,
-        field: string,
-      ): Record<string, MeterState> {
-        /**
-         * Where this field's name stops and its state starts.
-         */
-        const at = field.indexOf(FIELD_SEPARATOR,);
-        if (at < 0)
-          return states;
-
-        /**
-         * Word written after the separator.
-         */
-        const value = field.slice(at + 1,);
-        if (!isMeterState({ value, },))
-          return states;
-
-        return {
-          ...states,
-          [field.slice(
-            0,
-            at,
-          )]: value,
-        };
-      },
-      {},
-    );
-}
-
-/**
- * Reads one log line as a sample, or reports that it is not one.
- *
- * Returns `undefined` for a line without the marker, which is almost every
- * line in a run log; `'skipped'` for one that carries the marker and will not
- * read, which is the case worth counting.
+ * Reads one log line as a sample, or reports what else it is.
  *
  * @param line - whole log line
  *
- * @returns Sample, `'skipped'`, or absent for an ordinary line
+ * @returns Sample, `'skipped'` for a record that will not read, or
+ * `'not-a-record'` for an ordinary line
  *
  * @example
  * ```ts
@@ -219,35 +279,54 @@ function statesIn(
  */
 export function readMeterLine(
   { line, }: { readonly line: string; },
-): MeterSample | 'skipped' | undefined {
+): LineReading {
   /**
    * Where the marker sits, or that this is an ordinary line.
    */
   const markerAt = line.indexOf(METERS_MARKER,);
-  if (markerAt < 0)
-    return undefined;
+
+  if (markerAt === NOT_FOUND)
+    return 'not-a-record';
+
+  /**
+   * Everything written after the marker.
+   */
+  const tail = line.slice(markerAt + METERS_MARKER.length,);
+
+  // PROSE MENTIONING THE MARKER IS NOT A TRUNCATED RECORD. Found by reading
+  // back a real sample: the sampler's own summary said "the METERS line above
+  // is the record", which counted as a record that would not parse and
+  // reported a hole in a log that had none. A record is recognised by its
+  // first field parsing, which prose does not do, while a record truncated
+  // part way through its second field still does and is still counted.
+  if (!firstFieldReads({ tail, },))
+    return 'not-a-record';
 
   /**
    * When the reading was taken.
    */
   const at = stampOf({ line, },);
-  if (at === undefined)
+
+  if (at === 'unstamped')
     return 'skipped';
 
   /**
-   * What each named provider's meter said.
+   * What the first provider's meter said.
    */
-  const states = statesIn({ tail: line.slice(markerAt + METERS_MARKER.length,), },);
+  const synthetic = fieldValue({
+    tail,
+    name: 'synthetic',
+  },);
 
   /**
-   * Both providers' states, absent where the line named neither or one.
+   * What the second provider's meter said.
    */
-  const {
-    synthetic,
-    hyper,
-  } = states;
+  const hyper = fieldValue({
+    tail,
+    name: 'hyper',
+  },);
 
-  if ((synthetic === undefined) || (hyper === undefined))
+  if ((synthetic === 'absent') || (hyper === 'absent'))
     return 'skipped';
 
   return {
@@ -266,7 +345,7 @@ export function readMeterLine(
  *
  * @param text - whole log
  *
- * @returns Samples in order, plus how many marked lines would not read
+ * @returns Samples in order, plus how many records would not read
  *
  * @example
  * ```ts
@@ -277,26 +356,29 @@ export function readMeterLog(
   { text, }: { readonly text: string; },
 ): MeterLogReading {
   /**
-   * Every line that carried the marker, read or skipped.
+   * Every line that turned out to be a record, read or skipped.
    */
-  const marked = text
+  const records = text
     .split('\n',)
-    .map(function read(line,): MeterSample | 'skipped' | undefined {
+    .map(function read(line,): LineReading {
       return readMeterLine({ line, },);
     },)
-    .filter(function carriedMarker(
-      read,
-    ): read is MeterSample | 'skipped' {
-      return read !== undefined;
+    .filter(function isRecord(reading,): reading is MeterSample | 'skipped' {
+      return reading !== 'not-a-record';
     },);
 
+  /**
+   * Records that would not read, kept so their count can be reported.
+   */
+  const skipped = records.filter(function wasSkipped(reading,): boolean {
+    return reading === 'skipped';
+  },);
+
   return {
-    samples: marked.filter(function isSample(read,): read is MeterSample {
-      return read !== 'skipped';
+    samples: records.filter(function isSample(reading,): reading is MeterSample {
+      return reading !== 'skipped';
     },),
-    skippedLines: marked.filter(function wasSkipped(read,): boolean {
-      return read === 'skipped';
-    },).length,
+    skippedLines: skipped.length,
   };
 }
 

@@ -29,7 +29,7 @@ class MeterUnreachableError extends Error {
 }
 
 await describe({
-  name: 'meterStateOf',
+  name: meterStateOf.name,
   children: [
     it({
       name: 'reads a meter reporting budget left as wet',
@@ -82,7 +82,7 @@ await describe({
 },);
 
 await describe({
-  name: 'routesAsDry',
+  name: routesAsDry.name,
   children: [
     it({
       name: 'holds out only a meter that answered and said dry',

@@ -154,6 +154,16 @@ run = "node dist/final/node/probe-relabel.mjs"
 description = "Ask every roster model one trivial structured question and report what came back, so schema-mismatch can be told apart from a dead model"
 depends = ["build"]
 run = "node dist/final/node/model-health.mjs"
+[tasks."budget-sample"]
+description = "#201: take one reading of both providers' meters and leave it in the log, so an outage's END is observed during the quiet stretches when no pass is running; SPENDS NO GENERATION (capture both streams: `> log 2>&1`)"
+depends = ["build"]
+run = "node dist/final/node/budget-sample.mjs"
+
+[tasks."meter-report"]
+description = "#201: read provider availability back out of run logs and report each provider's duty cycle and longest outage as bounded ranges; SPENDS NO QUOTA (pass one or more log paths after --)"
+depends = ["build"]
+run = "node dist/final/node/meter-report.mjs"
+
 [tasks."model-catalog"]
 description = "Compare what the provider serves against the compiled catalog, so a model that vanished stops costing a silent lost voice per call and a model holding no run role becomes visible"
 depends = ["build"]

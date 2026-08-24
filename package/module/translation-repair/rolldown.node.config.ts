@@ -22,10 +22,12 @@ import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: {
     index: './src/index.ts',
+    "budget-sample": "./src/corpus-run/budget-sample.ts",
     "checker-sensitivity": "./src/corpus-run/checker-sensitivity.ts",
     "corpus-pass": "./src/corpus-run/corpus-pass.ts",
     "damage-sample": "./src/corpus-run/damage-sample.ts",
     "draw-sample": "./src/corpus-run/draw-sample.ts",
+    "meter-report": "./src/corpus-run/meter-report.ts",
     "model-catalog": "./src/corpus-run/model-catalog.ts",
     "audit-sensitivity": "./src/corpus-run/audit-sensitivity.ts",
     "rendering-audit-settled": "./src/corpus-run/rendering-audit-settled.ts",

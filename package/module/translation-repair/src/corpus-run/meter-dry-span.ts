@@ -26,6 +26,11 @@ import type { MeterSample, } from './meter-sample-read.ts';
 // THE DENOMINATOR EXCLUDES UNREADABLE READINGS. A duty cycle is a fraction of
 // the readings that answered; counting readings that did not would push the
 // number toward whichever way the meter endpoint happened to fail.
+//
+// ABSENCE IS NAMED, never nullish: `'none'` for a missing neighbour, and
+// `'no-outage'` for a provider no reading found out. `boundedByMs` is an
+// optional property rather than a nullish one, which is the other accepted
+// form in `doc/research/optionality-enforcement.md`.
 
 /**
  * How many readings fell in each state.
@@ -61,7 +66,7 @@ export type DrySpan = {
    * Milliseconds between the last wet reading before and the first wet reading
    * after, absent where the record does not carry one of them.
    */
-  readonly boundedByMs: number | undefined;
+  readonly boundedByMs?: number;
 
   /**
    * Whether no wet reading precedes this stretch, so it may have started
@@ -86,12 +91,48 @@ export type DrySpan = {
 };
 
 /**
+ * One provider's reading at one moment.
+ */
+export type StateReading = {
+  /**
+   * Epoch milliseconds the reading was taken at.
+   */
+  readonly at: number;
+
+  /**
+   * What that provider's meter said.
+   */
+  readonly state: MeterState;
+};
+
+/**
  * One provider's readings in time order.
  */
-type StateSeries = readonly {
+export type StateSeries = readonly StateReading[];
+
+/**
+ * When the nearest wet reading on one side was, or that there is none.
+ */
+type WetNeighbour = number | 'none';
+
+/**
+ * One reading with the nearest wet reading on each side already attached, so
+ * a span can be closed without indexing back into the series.
+ */
+type BoundedReading = {
   readonly at: number;
   readonly state: MeterState;
-}[];
+  readonly wetBefore: WetNeighbour;
+  readonly wetAfter: WetNeighbour;
+};
+
+/**
+ * A stretch being confirmed, or that none is open.
+ */
+type OpenSpan = {
+  readonly first: BoundedReading;
+  readonly last: BoundedReading;
+} | 'none';
 
 /**
  * Pulls one provider's column out of the samples, in time order.
@@ -117,13 +158,16 @@ export function seriesFor(
   },
 ): StateSeries {
   return samples
-    .map(function toReading(sample,): { readonly at: number; readonly state: MeterState; } {
+    .map(function toReading(sample,): StateReading {
       return {
         at: sample.at,
         state: sample[provider],
       };
     },)
-    .toSorted(function byTime(left, right,): number {
+    .toSorted(function byTime(
+      left,
+      right,
+    ): number {
       return left.at - right.at;
     },);
 }
@@ -144,7 +188,10 @@ export function countStates(
   { series, }: { readonly series: StateSeries; },
 ): StateCounts {
   return series.reduce(
-    function tally(counts: StateCounts, reading,): StateCounts {
+    function tally(
+      counts: StateCounts,
+      reading,
+    ): StateCounts {
       return {
         wet: counts.wet + ((reading.state === 'wet') ? 1 : 0),
         dry: counts.dry + ((reading.state === 'dry') ? 1 : 0),
@@ -164,7 +211,7 @@ export function countStates(
  *
  * @param counts - readings by state
  *
- * @returns Wet fraction, absent where no reading answered
+ * @returns Wet fraction, or that no reading answered
  *
  * @example
  * ```ts
@@ -173,14 +220,14 @@ export function countStates(
  */
 export function dutyCycle(
   { counts, }: { readonly counts: StateCounts; },
-): number | undefined {
+): number | 'none-answered' {
   /**
    * Readings whose meter answered, which is the only honest denominator.
    */
   const answered = counts.wet + counts.dry;
 
   if (answered === 0)
-    return undefined;
+    return 'none-answered';
 
   return counts.wet / answered;
 }
@@ -191,7 +238,7 @@ export function dutyCycle(
  *
  * @param series - that provider's readings
  *
- * @returns Timestamps aligned to `series`, absent where none precedes
+ * @returns Neighbours aligned to `series`
  *
  * @example
  * ```ts
@@ -200,19 +247,20 @@ export function dutyCycle(
  */
 function wetBefore(
   { series, }: { readonly series: StateSeries; },
-): readonly (number | undefined)[] {
+): readonly WetNeighbour[] {
   /**
    * Nearest preceding wet reading per index, filled as the walk proceeds.
    */
-  const found: (number | undefined)[] = [];
+  const found: WetNeighbour[] = [];
 
   /**
    * Most recent wet reading seen so far.
    */
-  let seen: number | undefined = undefined;
+  let seen: WetNeighbour = 'none';
 
   for (const reading of series) {
     found.push(seen,);
+
     if (reading.state === 'wet')
       seen = reading.at;
   }
@@ -225,7 +273,7 @@ function wetBefore(
  *
  * @param series - that provider's readings
  *
- * @returns Timestamps aligned to `series`, absent where none follows
+ * @returns Neighbours aligned to `series`
  *
  * @example
  * ```ts
@@ -234,20 +282,14 @@ function wetBefore(
  */
 function wetAfter(
   { series, }: { readonly series: StateSeries; },
-): readonly (number | undefined)[] {
-  return wetBefore({ series: series.toReversed(), },).toReversed();
-}
+): readonly WetNeighbour[] {
+  /**
+   * Neighbours read off the series walked backwards.
+   */
+  const backwards = wetBefore({ series: series.toReversed(), },);
 
-/**
- * One reading with the nearest wet reading on each side already attached, so
- * a span can be closed without indexing back into the series.
- */
-type BoundedReading = {
-  readonly at: number;
-  readonly state: MeterState;
-  readonly wetBefore: number | undefined;
-  readonly wetAfter: number | undefined;
-};
+  return backwards.toReversed();
+}
 
 /**
  * Closes one confirmed stretch into a span.
@@ -284,11 +326,13 @@ function closeSpan(
 
   return {
     confirmedMs: last.at - first.at,
-    boundedByMs: ((opened === undefined) || (closed === undefined))
-      ? undefined
-      : closed - opened,
-    openBefore: opened === undefined,
-    openAfter: closed === undefined,
+    // Conditional spread keeps an unbounded stretch's field absent rather
+    // than nullish, which is the form this repo models absence with.
+    ...((opened === 'none') || (closed === 'none')
+      ? {}
+      : { boundedByMs: closed - opened, }),
+    openBefore: opened === 'none',
+    openAfter: closed === 'none',
     firstAt: first.at,
     lastAt: last.at,
   };
@@ -323,12 +367,15 @@ export function drySpans(
    * Readings carrying their own bounds, so closing a span never indexes back.
    */
   const bounded: readonly BoundedReading[] = series
-    .map(function attach(reading, index,): BoundedReading {
+    .map(function attach(
+      reading,
+      index,
+    ): BoundedReading {
       return {
         at: reading.at,
         state: reading.state,
-        wetBefore: before[index],
-        wetAfter: after[index],
+        wetBefore: before[index] ?? 'none',
+        wetAfter: after[index] ?? 'none',
       };
     },);
 
@@ -338,14 +385,14 @@ export function drySpans(
   const spans: DrySpan[] = [];
 
   /**
-   * Stretch currently being confirmed, absent between stretches.
+   * Stretch currently being confirmed.
    */
-  let open: { first: BoundedReading; last: BoundedReading; } | undefined = undefined;
+  let open: OpenSpan = 'none';
 
   for (const reading of bounded) {
     if (reading.state === 'dry') {
       open = {
-        first: open?.first ?? reading,
+        first: (open === 'none') ? reading : open.first,
         last: reading,
       };
       continue;
@@ -354,13 +401,13 @@ export function drySpans(
     // Anything that is not a confirmed dry reading ends confirmation, whether
     // it proved recovery or proved nothing. The upper bound already carries
     // what an unreadable meter left unknown.
-    if (open !== undefined) {
+    if (open !== 'none') {
       spans.push(closeSpan(open,),);
-      open = undefined;
+      open = 'none';
     }
   }
 
-  if (open !== undefined)
+  if (open !== 'none')
     spans.push(closeSpan(open,),);
 
   return spans;
@@ -375,7 +422,7 @@ export function drySpans(
  *
  * @param spans - stretches to rank
  *
- * @returns Longest stretch, absent where the provider was never found out
+ * @returns Longest stretch, or that the provider was never found out
  *
  * @example
  * ```ts
@@ -384,14 +431,18 @@ export function drySpans(
  */
 export function longestDrySpan(
   { spans, }: { readonly spans: readonly DrySpan[]; },
-): DrySpan | undefined {
-  return spans.reduce(
-    function longer(worst: DrySpan | undefined, span,): DrySpan {
-      if ((worst === undefined) || (span.confirmedMs > worst.confirmedMs))
+): DrySpan | 'no-outage' {
+  return spans.reduce<DrySpan | 'no-outage'>(
+    function longer(
+      worst,
+      span,
+    ): DrySpan {
+      if ((worst === 'no-outage') || (span.confirmedMs > worst.confirmedMs))
         return span;
+
       return worst;
     },
-    undefined,
+    'no-outage',
   );
 }
 

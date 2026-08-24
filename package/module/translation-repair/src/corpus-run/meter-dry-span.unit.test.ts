@@ -55,7 +55,7 @@ function minuteByMinute(
 }
 
 await describe({
-  name: 'drySpans',
+  name: drySpans.name,
   children: [
     it({
       name: 'finds no stretch in a record where the meter never ran out',
@@ -135,7 +135,7 @@ await describe({
 
         expect(spans[0]?.openBefore,).toBe(true,);
         expect(spans[0]?.boundedByMs,).toBe(undefined,);
-        expect(spans[0]?.confirmedMs,).toBe(1 * MINUTE,);
+        expect(spans[0]?.confirmedMs,).toBe(MINUTE,);
       },
     },),
 
@@ -189,7 +189,7 @@ await describe({
 },);
 
 await describe({
-  name: 'longestDrySpan',
+  name: longestDrySpan.name,
   children: [
     it({
       name: 'ranks by what is confirmed rather than by the widest bound',
@@ -207,21 +207,26 @@ await describe({
           },),
         },);
 
-        expect(longestDrySpan({ spans, },)?.confirmedMs,).toBe(2 * MINUTE,);
+        /**
+         * Whichever stretch the ranking picked.
+         */
+        const worst = longestDrySpan({ spans, },);
+
+        expect(worst === 'no-outage' ? worst : worst.confirmedMs,).toBe(2 * MINUTE,);
       },
     },),
 
     it({
       name: 'ACCEPTS a record with no outage, reporting none rather than zero',
       fn: async () => {
-        expect(longestDrySpan({ spans: [], },),).toBe(undefined,);
+        expect(longestDrySpan({ spans: [], },),).toBe('no-outage',);
       },
     },),
   ],
 },);
 
 await describe({
-  name: 'dutyCycle',
+  name: dutyCycle.name,
   children: [
     it({
       name: 'counts only readings whose meter answered',
@@ -262,7 +267,7 @@ await describe({
           },),
         },);
 
-        expect(dutyCycle({ counts, },),).toBe(undefined,);
+        expect(dutyCycle({ counts, },),).toBe('none-answered',);
       },
     },),
   ],
