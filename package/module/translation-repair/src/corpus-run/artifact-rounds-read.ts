@@ -1,7 +1,6 @@
 import {
   ArtifactParseError,
   requireArray,
-  requireBoolean,
   requireCount,
   requireFinite,
   requireRecord,
@@ -17,10 +16,11 @@ import type {
   RepairRoundStage,
   RepairSlateEntry,
 } from '../repair-round-record.ts';
+import { requireProducer, } from './artifact-producer-read.ts';
 import {
-  requireProducer,
-  requireRosterModelId,
-} from './artifact-producer-read.ts';
+  requireBallot,
+  requireCandidateWeight,
+} from './artifact-vote-read.ts';
 
 //region Artifact rounds read
 // Reads judged repair rounds back out of an artifact's raw lane result.
@@ -38,6 +38,14 @@ import {
 // A ROUND IS ALL-OR-NOTHING. Half a slate is worse evidence than none, because
 // a standing divides by the ballots it saw and a dropped candidate moves every
 // share on the round.
+//
+// A RESULT WITH NO `chunks` AT ALL IS ITS OWN ANSWER, not a malformed one. The
+// repair lane recorded rounds only from a later build, so an artifact settled
+// before that carries a complete, correct result that simply predates the field.
+// Found by running the reader over the archives: 22 of 41 artifacts were absent
+// this field and every one of them records `status: repaired`. Reporting those
+// as parse failures would say 22 records are broken when none is, and would
+// understate how much evidence a reader could hope to find.
 
 /**
  * Stages a recorded round can name.
@@ -63,67 +71,6 @@ const ROUND_DISPOSITIONS = [
   'indecision',
   'rejection',
 ] as const;
-
-/**
- * Reads what one slate position drew.
- *
- * WEIGHTS ARE READ AS FINITE, NOT AS COUNTS. A judge voting on its own work
- * counts for half, so a candidate's summed weight is routinely fractional and
- * a count guard would refuse a round that is entirely well formed.
- *
- * @param value - one entry of `perCandidate`, unread
- *
- * @param path - where in the artifact this sits, for the refusal
- *
- * @returns Counts and weight for that position
- *
- * @throws {@link ArtifactParseError} when a field is missing or mistyped
- *
- * @example
- * ```ts
- * const drawn = requireCandidateWeight({ value, path, },);
- * ```
- */
-function requireCandidateWeight(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): CandidateWeight {
-  /**
-   * Position as a record.
-   */
-  const record = requireRecord({
-    value,
-    path,
-  },);
-
-  return {
-    index: requireCount({
-      value: record.index,
-      path: `${path}.index`,
-    },),
-    ballots: requireCount({
-      value: record.ballots,
-      path: `${path}.ballots`,
-    },),
-    fullVotes: requireCount({
-      value: record.fullVotes,
-      path: `${path}.fullVotes`,
-    },),
-    selfVotes: requireCount({
-      value: record.selfVotes,
-      path: `${path}.selfVotes`,
-    },),
-    weight: requireFinite({
-      value: record.weight,
-      path: `${path}.weight`,
-    },),
-  };
-}
 
 /**
  * Reads one slate position.
@@ -172,65 +119,6 @@ function requireSlateEntry(
     producer: requireProducer({
       value: record.producer,
       path: `${path}.producer`,
-    },),
-  };
-}
-
-/**
- * Reads one ballot.
- *
- * BEST AND WEIGHT ARE FINITE NUMBERS, NOT COUNTS. A judge naming no candidate
- * records a sentinel index, and a judge naming its own writing records a
- * fractional weight, so the count guard would refuse both.
- *
- * @param value - ballot as recorded
- *
- * @param path - dotted path for error messages
- *
- * @returns Ballot as the tally reads it
- *
- * @example
- * ```ts
- * const ballot = requireBallot({ value, path, },);
- * ```
- */
-function requireBallot(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): SelectionBallot {
-  /**
-   * Ballot as a record.
-   */
-  const record = requireRecord({
-    value,
-    path,
-  },);
-
-  return {
-    modelId: requireRosterModelId({
-      value: record.modelId,
-      path: `${path}.modelId`,
-    },),
-    best: requireFinite({
-      value: record.best,
-      path: `${path}.best`,
-    },),
-    reason: requireString({
-      value: record.reason,
-      path: `${path}.reason`,
-    },),
-    weight: requireFinite({
-      value: record.weight,
-      path: `${path}.weight`,
-    },),
-    selfVote: requireBoolean({
-      value: record.selfVote,
-      path: `${path}.selfVote`,
     },),
   };
 }
@@ -397,6 +285,34 @@ function requireJudgedRound(
 }
 
 /**
+ * Raised when a repair result predates rounds being recorded at all.
+ *
+ * SEPARATE FROM A PARSE FAILURE, and this is the whole point of the class. Such
+ * a result is complete and correct for the build that wrote it; it just cannot
+ * answer a question that build was never asked. A reader counting these apart
+ * from malformed ones reports a schema generation rather than a defect.
+ *
+ * @example
+ * ```ts
+ * throw new RoundsNotRecordedError({ path: 'Whiskerfold.lanes.repair.result', },);
+ * ```
+ */
+export class RoundsNotRecordedError extends Error {
+  /**
+   * @param path - where in the artifact the absent field would sit
+   */
+  public constructor(
+    { path, }: { readonly path: string; },
+  ) {
+    super(
+      `${path}.chunks is absent, so this repair result was written before the lane recorded `
+        + 'rounds and carries no ballots to read. It is an earlier shape, not a malformed record',
+    );
+    this.name = 'RoundsNotRecordedError';
+  }
+}
+
+/**
  * Reads every round every chunk of one raw repair result recorded.
  *
  * GROUPED BY CHUNK rather than flattened, because a standing drawn almost
@@ -428,10 +344,7 @@ export function readRepairRounds(
   },
 ): readonly (readonly RepairJudgedRound[])[] {
   if (!('chunks' in raw))
-    throw new ArtifactParseError({
-      path: `${path}.chunks`,
-      reason: 'present, since a repair result records one entry per prepared slice',
-    },);
+    throw new RoundsNotRecordedError({ path, },);
 
   return requireArray({
     value: raw.chunks,

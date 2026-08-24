@@ -102,7 +102,10 @@ export {
   subjectsOf,
 } from './corpus-run/rendering-audit-settled-subject.ts';
 export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
-export { readRepairRounds, } from './corpus-run/artifact-rounds-read.ts';
+export {
+  readRepairRounds,
+  RoundsNotRecordedError,
+} from './corpus-run/artifact-rounds-read.ts';
 export {
   type DigestGroup,
   groupByDigest,

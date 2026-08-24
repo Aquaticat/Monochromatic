@@ -22,7 +22,10 @@ import {
   type DigestGroup,
   groupByDigest,
 } from './digest-group.ts';
-import { readRepairRounds, } from './artifact-rounds-read.ts';
+import {
+  readRepairRounds,
+  RoundsNotRecordedError,
+} from './artifact-rounds-read.ts';
 import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
@@ -241,13 +244,21 @@ async function artifactPaths(
 /**
  * What one artifact turned out to be.
  *
- * OFF-ROSTER IS ITS OWN ANSWER, not a refusal. An artifact settled before a
- * seating change names models the roster no longer holds, which says the
- * record predates the current roster and nothing bad about the record. Folding
- * it in with malformed artifacts would report a healthy archive as a broken
- * one.
+ * TWO OF THE THREE NON-READINGS ARE THEIR OWN ANSWER, not a refusal.
+ *
+ * `off-roster` means the artifact names models the roster no longer holds,
+ * which says the record predates the current seating and nothing bad about the
+ * record.
+ *
+ * `earlier-schema` means its repair result carries no `chunks` at all, because
+ * the lane began recording rounds only in a later build. Found by running this
+ * over the archives: 22 of 41 artifacts were that, every one recording
+ * `status: repaired`.
+ *
+ * Folding either in with malformed artifacts would report a healthy archive as
+ * a broken one, and this reader exists to say how much evidence there is.
  */
-type ArtifactOutcome = ArtifactReading | 'off-roster' | 'refused';
+type ArtifactOutcome = ArtifactReading | 'off-roster' | 'earlier-schema' | 'refused';
 
 /**
  * Reads one artifact into the rounds each of its seats produced.
@@ -312,6 +323,11 @@ async function readOne(
       console.error(`editor-standing-read: ${error.message}`,);
       return 'off-roster';
     }
+
+    // COUNTED, NOT PRINTED PER ARTIFACT. On the archives this is the commonest
+    // outcome by far, and a line each would bury the report it precedes.
+    if (error instanceof RoundsNotRecordedError)
+      return 'earlier-schema';
 
     console.error(
       `editor-standing-read: ${path} refused, ${errorName({ error, },)}: ${caughtValueText(error,)}`,
@@ -450,7 +466,9 @@ async function reportStandings(): Promise<void> {
    * Every artifact that parsed under the current roster.
    */
   const readings = outcomes.filter(function parsed(outcome,): outcome is ArtifactReading {
-    return (outcome !== 'refused') && (outcome !== 'off-roster');
+    return (outcome !== 'refused')
+      && (outcome !== 'off-roster')
+      && (outcome !== 'earlier-schema');
   },);
 
   /**
@@ -458,6 +476,15 @@ async function reportStandings(): Promise<void> {
    */
   const offRoster = outcomes.filter(function earlier(outcome,): boolean {
     return outcome === 'off-roster';
+  },)
+    .length;
+
+  /**
+   * Artifacts settled before the lane recorded rounds, counted apart for the
+   * same reason: a record that cannot answer this question is not a broken one.
+   */
+  const earlierSchema = outcomes.filter(function beforeRounds(outcome,): boolean {
+    return outcome === 'earlier-schema';
   },)
     .length;
 
@@ -482,6 +509,7 @@ async function reportStandings(): Promise<void> {
   console.log(
     `editor-standing-read: archives=${String(roots.length,)} artifacts=${String(paths.length,)} `
       + `read=${String(readings.length,)} earlierRoster=${String(offRoster,)} `
+      + `earlierSchema=${String(earlierSchema,)} `
       + `digestsWithRounds=${String(groups.length,)}`,
   );
   console.log(

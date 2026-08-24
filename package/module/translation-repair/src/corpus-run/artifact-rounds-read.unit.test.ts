@@ -24,6 +24,7 @@ import {
   ArtifactParseError,
   OffRosterModelError,
   readRepairRounds,
+  RoundsNotRecordedError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -666,14 +667,43 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a result carrying no chunks at all, rather than reading it as none',
+      name: 'names a result with no chunks an EARLIER SHAPE, not a malformed one',
       fn: async () => {
-        expect(function read() {
+        /**
+         * What a repair result settled before the lane recorded rounds throws.
+         * It is a complete, correct record that cannot answer this question,
+         * and reporting it as a parse failure would call a healthy archive
+         * broken: 22 of 41 artifacts on disk are exactly this.
+         */
+        const refusal = caught(function readsAnEarlierShape() {
           readRepairRounds({
             raw: { repairedText: 'The cat, having sat, declined to comment.', },
             path: PATH,
           },);
-        },).toThrow(ArtifactParseError,);
+        },);
+
+        expect(refusal,).toBeInstanceOf(RoundsNotRecordedError,);
+        expect(refusal,).not.toBeInstanceOf(ArtifactParseError,);
+        expect((refusal as Error).message,).toContain(`${PATH}.chunks`,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES chunks that are present and not an array, which IS malformed',
+      fn: async () => {
+        /**
+         * A result naming the field with something that cannot hold rounds,
+         * which is the case the earlier-shape answer must not swallow.
+         */
+        const refusal = caught(function readsAMalformedResult() {
+          readRepairRounds({
+            raw: { chunks: 'three of them', },
+            path: PATH,
+          },);
+        },);
+
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(refusal,).not.toBeInstanceOf(RoundsNotRecordedError,);
       },
     },),
 
