@@ -17615,3 +17615,111 @@ NOTHING was bought, so the passage carries no findings and the run costs exactly
 document costs with nothing appended. GFP-proven: disabling the gate fails that case alone.
 
 Suite 562 PASS, exit 0. Lint 0 warnings 0 errors. Types clean.
+
+## The adversarial pairing sweep: two real defects, a third they were masking, and three answered items
+
+`#100` had three hardening items left, all of the form "a roster pairing might produce a shape
+the deterministic path does not". Reasoning about them had gone as far as it could, so the
+question was handed to a sweep instead: generate randomised monotone block pairings, feed them to
+`prepareDocumentPair`, and tally what breaks.
+
+### Validating the instrument came first, and it is what made the result mean anything
+
+The first run reported `SliceCoverageError` on 368 of 910 pairings and a bare `Error` on 123. That
+number was worth nothing at the time, because the generator had never shown that the shapes it
+invents are shapes the production wire accepts. A pairing `readBlockPairing` would refuse can
+never reach `prepareDocumentPair`, so a failure on one says nothing about the pipeline.
+
+Filtering every generated pairing through `readBlockPairing` refused 0 of 910. A zero refusal rate
+is exactly what an inert filter also reports, so a positive control followed: the filter refuses
+backwards-on-source, backwards-on-target, out-of-range on either side, and a duplicated
+correspondence, and accepts the legal split and the legal merge. Only then was the tally evidence.
+
+### Two defects in `mergeOneSidedRuns`, which disposed of held blocks three different ways
+
+The function holds blocks from one-sided runs until something can carry them, and it let them go
+at three sites under three rules. Two of those rules were wrong, and they disagreed with each
+other in the same file.
+
+The flush ahead of an insertion run fired on EITHER held side being non-empty and then pushed a
+`paired` run built from both held lists. With only one side held, that is a run with nothing on
+the other. A run's span is cut from its first node to its last, so `runToChunk` had no span to cut
+and threw a bare `unreachable` error: 123 of 910.
+
+The tail flush fired only on BOTH sides being non-empty and discarded whatever was left. That
+defeated a deliberate gate. `declinedTargetIds` declines nothing unless the pairing placed every
+original, precisely so that an unclaimed translation block stays in review rather than leaving it,
+and the grouping then dropped that block anyway: 534 of 3000 pairings, counted after excluding
+declines exactly as `assertSliceCoverage` excludes them.
+
+Both now go through `placeHeldRuns`, which pushes a new run only when both sides are held and
+otherwise folds. The sides fold differently, and the asymmetry is not a special case but a
+consequence of what an insertion run is: it carries originals and a translation OFFSET rather than
+translation blocks. Held translations may therefore fold back past one, because it contributes
+none of them. Held originals may not, because its own originals sit between, so they join the
+insertion instead.
+
+### The before-and-after was a per-pairing vector, not two totals
+
+Comparing two summary counts would not have shown whether a pairing that passed before now fails.
+Both runs wrote a per-pairing outcome keyed by entry and round, and the diff over the same 910:
+419 passed before and still pass, 60 that crashed now pass outright, 431 moved to a later
+assertion. Zero regressions, stated as a fact about individual pairings rather than about a total.
+
+### The third defect, which the first two had been hiding
+
+Those 431 arrive at `PlacementLayoutError`. The synthetic end-to-end sweep reports the identical
+689 failures with the fix stashed and with it applied, so it is pre-existing rather than caused,
+and the smallest case is two paragraphs against two with only the first pair named:
+
+```text
+steps  P0/0 S1 T1
+runs   paired[src block/0 | tgt block/0, block/1]   insertion[src block/1 | @24]
+target block/0 = 0..22, block/1 = 24..46
+PlacementLayoutError: slice at position 1 starts at 24 while the slice before it runs to 46
+```
+
+`anchorOffsets` reads the monotone walk, and the walk describes the layout right up until merging
+folds an unclaimed translation into a neighbour and stretches that run's span over it. The anchor
+named a boundary that stopped being one. Anchoring now runs after merging, in
+`group-run-anchor.ts`, reading each insertion's boundary off its settled neighbours.
+
+### What that leaves for the three items `#100` was holding
+
+Crossing refusal turns out to need nothing downstream, because the shape cannot be said at the
+wire: `readBlockPairing` refuses `A, B, A` on either side and plain interleaving, since monotone
+on both sides forbids all three. Two of those three had no test and now do.
+
+Many-to-one ownership shows no duplication across 7910 reader-legal pairings whose generator
+merges on a fifth of its steps, measured by an assertion that every block appears exactly once.
+
+Complete-interval materialization is a null from `assertSpanContiguity`, and it is worth something
+only because the detector was checked first: it carries no declined-block exemption, and a
+positive control confirms it refuses a span whose offsets cover three blocks while carrying two
+and accepts the same span carrying all three. That null could not have been taken before today,
+because `assertPlacementLayout` runs first and 431 of the 910 died there.
+
+Every sweep is now clean: 910 corpus pairings, 4000 synthetic end to end, 3000 grouping
+invariants.
+
+### Reach in production, recorded so nobody re-derives it
+
+None of this fired in production, and the reason is worth keeping. Every cached production pairing
+on disk is straight-through or straight-through with one split. `Zha_Ke`'s `0-0 1-1 2-4 3-5` skips
+two translations but places every original, so declines apply and those blocks leave cleanly. The
+live `XIEPT2` pass, the least-translated page in the corpus and the likeliest to leave originals
+unrendered, prepared 8 aligned units with no assertion firing.
+
+The randomised generator skips a source or a target a fifth of the time each, which is far more
+unpaired than any roster reply seen so far. These were latent defects. The fixes are what keep
+them latent when a roster answers differently, which is a property of a model rather than a
+guarantee.
+
+### An incident with `git stash` worth not repeating
+
+`git stash push -- <path>` on a path with no changes creates NO stash entry, so a paired
+`git stash pop` pops whatever was already on the stack. Here that was an unrelated `autostash`,
+and it left `mise.toml` conflicted. Repaired with `git checkout HEAD -- mise.toml`, both stash
+entries preserved. Check that a push actually stashed before pairing it with a pop.
+
+Suite 564 PASS, exit 0. Lint 0 warnings 0 errors. Types clean.
