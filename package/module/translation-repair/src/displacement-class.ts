@@ -147,7 +147,7 @@ const MIN_CONSERVED_FRACTION = (1 / 2) * (1 / 2);
  *
  * @example
  * ```ts
- * const slice: ClassifiedSlice = { sliceIndex: 0, sourceChars: 35, targetChars: 403, ratio: 11.51, residual: 290, sliceClass: 'translated', };
+ * const slice: ClassifiedSlice = { slicePosition: 0, sourceChars: 35, targetChars: 403, ratio: 11.51, residual: 290, sliceClass: 'translated', };
  * ```
  */
 export type ClassifiedSlice = SliceRatio & {
@@ -295,7 +295,7 @@ function indicesOf(
       return slice.sliceClass === sliceClass;
     },)
     .map(function toIndex(slice,) {
-      return slice.sliceIndex;
+      return slice.slicePosition;
     },);
 }
 
@@ -354,9 +354,9 @@ export function classifyDisplacement(
   const baseline = documentBaseline({
     slices: readings.filter(function setsTheBar(
       reading,
-      sliceIndex,
+      slicePosition,
     ) {
-      if (classes[sliceIndex] !== 'translated')
+      if (classes[slicePosition] !== 'translated')
         return false;
       if (reading.sourceChars < MIN_RATIO_SOURCE_CHARS)
         return false;
@@ -370,12 +370,12 @@ export function classifyDisplacement(
   const classified: readonly ClassifiedSlice[] = readings
     .map(function toClassified(
       reading,
-      sliceIndex,
+      slicePosition,
     ): ClassifiedSlice {
       return {
         ...reading,
         residual: reading.targetChars - (baseline.expansion * reading.sourceChars),
-        sliceClass: classes[sliceIndex] ?? 'translated',
+        sliceClass: classes[slicePosition] ?? 'translated',
       };
     },);
 
@@ -392,7 +392,7 @@ export function classifyDisplacement(
       return slice.ratio >= (baseline.expansion * HIGH_FACTOR);
     },)
     .map(function toIndex(slice,) {
-      return slice.sliceIndex;
+      return slice.slicePosition;
     },);
 
   /**

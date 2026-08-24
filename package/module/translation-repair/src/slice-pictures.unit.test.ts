@@ -283,7 +283,7 @@ await describe({
       fn: async () => {
         expect(slicePictureNames({
           slices: ORDERED_SLICES,
-          sliceIndex: 1,
+          slicePosition: 1,
         },),).toEqual([
           'sunbeam.webp',
           'stretch.webp',
@@ -298,7 +298,7 @@ await describe({
       fn: async () => {
         expect(slicePictureNames({
           slices: ORDERED_SLICES,
-          sliceIndex: 0,
+          slicePosition: 0,
         },),).toEqual([
           'sunbeam.webp',
           'stretch.webp',
@@ -312,7 +312,7 @@ await describe({
       fn: async () => {
         expect(slicePictureNames({
           slices: ORDERED_SLICES,
-          sliceIndex: 2,
+          slicePosition: 2,
         },),).toEqual([
           'stretch.webp',
           'nap.webp',
@@ -326,7 +326,7 @@ await describe({
       fn: async () => {
         expect(slicePictureNames({
           slices: DUPING_SLICES,
-          sliceIndex: 1,
+          slicePosition: 1,
         },),).toEqual(['perch.webp',],);
       },
     },),
@@ -338,7 +338,7 @@ await describe({
         expect(function askFractional() {
           return slicePictureNames({
             slices: ORDERED_SLICES,
-            sliceIndex: 1.5,
+            slicePosition: 1.5,
           },);
         },).toThrow(RangeError,);
       },
@@ -352,7 +352,7 @@ await describe({
         expect(function askBeforeStart() {
           return slicePictureNames({
             slices: ORDERED_SLICES,
-            sliceIndex: -1,
+            slicePosition: -1,
           },);
         },).toThrow(RangeError,);
       },
@@ -366,7 +366,7 @@ await describe({
         expect(function askPastEnd() {
           return slicePictureNames({
             slices: ORDERED_SLICES,
-            sliceIndex: ORDERED_SLICES.length,
+            slicePosition: ORDERED_SLICES.length,
           },);
         },).toThrow(RangeError,);
       },
@@ -388,7 +388,7 @@ await describe({
          */
         const rendered = slicePictures({
           slices: MULTI_PICTURE_SLICES,
-          sliceIndex: 1,
+          slicePosition: 1,
           readings: MULTI_PICTURE_READINGS,
         },);
 
@@ -419,7 +419,7 @@ await describe({
               + `${photoElement({ assetNames: ['startled.webp',], },)}\n`,
             chunkIndex: 0,
           },),],
-          sliceIndex: 0,
+          slicePosition: 0,
           readings: UNAVAILABLE_READINGS,
         },);
 
@@ -443,7 +443,7 @@ await describe({
               + `${photoElement({ assetNames: ['shadow.webp',], },)}\n`,
             chunkIndex: 0,
           },),],
-          sliceIndex: 0,
+          slicePosition: 0,
           readings: new Map<string, PairedReading>(),
         },);
 
@@ -465,7 +465,7 @@ await describe({
             text: 'Tabby sleeps through the whole afternoon.\n',
             chunkIndex: 0,
           },),],
-          sliceIndex: 0,
+          slicePosition: 0,
           readings: new Map<string, PairedReading>(),
         },);
 
@@ -514,11 +514,11 @@ await describe({
           readings: MULTI_PICTURE_READINGS,
         },);
 
-        for (const [sliceIndex, slice,] of MULTI_PICTURE_SLICES.entries()) {
+        for (const [slicePosition, slice,] of MULTI_PICTURE_SLICES.entries()) {
           expect(contexts.get(slice.target.chunkIndex,),).toBe(
             slicePictures({
               slices: MULTI_PICTURE_SLICES,
-              sliceIndex,
+              slicePosition,
               readings: MULTI_PICTURE_READINGS,
             },).context,
           );

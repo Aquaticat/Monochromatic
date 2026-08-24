@@ -197,7 +197,7 @@ await describe({
         /** Same slice, renamed by its position. */
         const stamped = reindexSlicePair({
           slice: disagreeing,
-          sliceIndex: 0,
+          slicePosition: 0,
         },);
         expect(stamped.source
           .chunkIndex,).toBe(0,);

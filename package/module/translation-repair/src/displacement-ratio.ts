@@ -204,14 +204,14 @@ export function sliceSizeOf(
  *
  * @example
  * ```ts
- * const reading: SliceRatio = { sliceIndex: 0, sourceChars: 35, targetChars: 403, sourceBlocks: 1, targetBlocks: 1, ratio: 11.51, };
+ * const reading: SliceRatio = { slicePosition: 0, sourceChars: 35, targetChars: 403, sourceBlocks: 1, targetBlocks: 1, ratio: 11.51, };
  * ```
  */
 export type SliceRatio = SliceSize & {
   /**
    * Slice this describes.
    */
-  readonly sliceIndex: number;
+  readonly slicePosition: number;
 
   /**
    * Translation characters per original character.
@@ -243,7 +243,7 @@ export function sliceRatios(
 ): readonly SliceRatio[] {
   return slices.map(function toRatio(
     slice,
-    sliceIndex,
+    slicePosition,
   ): SliceRatio {
     // A SOURCE OF ZERO IS A REAL STATE, not an input to sanitize: a slice can be
     // an insertion anchor with no original at all. Its ratio is the translated
@@ -251,7 +251,7 @@ export function sliceRatios(
     // density.
     if (slice.sourceChars <= 0) {
       return {
-        sliceIndex,
+        slicePosition,
         sourceChars: slice.sourceChars,
         targetChars: slice.targetChars,
         sourceBlocks: slice.sourceBlocks,
@@ -260,7 +260,7 @@ export function sliceRatios(
       };
     }
     return {
-      sliceIndex,
+      slicePosition,
       sourceChars: slice.sourceChars,
       targetChars: slice.targetChars,
       sourceBlocks: slice.sourceBlocks,

@@ -232,7 +232,7 @@ await describe({
             sliceCarrying({ text: 'A neighbouring slice.', },),
             sliceCarrying({ text: DONOR_TEXT, },),
           ],
-          sliceIndex: 0,
+          slicePosition: 0,
         },);
         expect(donors,).toEqual([
           DONOR_TEXT,
@@ -250,7 +250,7 @@ await describe({
             sliceCarrying({ text: DONOR_TEXT, },),
             sliceCarrying({ text: 'Photo credits.', },),
           ],
-          sliceIndex: 0,
+          slicePosition: 0,
         },);
         expect(donors,).toEqual([
           'Photo credits.',
@@ -274,7 +274,7 @@ await describe({
       fn: async () => {
         const donors = donorTextsFor({
           slices: [sliceCarrying({ text: CLEAN_TEXT, },),],
-          sliceIndex: 0,
+          slicePosition: 0,
         },);
         expect(donors,).toEqual([],);
       },
@@ -289,7 +289,7 @@ await describe({
             sliceCarrying({ text: DONOR_TEXT, },),
             sliceCarrying({ text: '', },),
           ],
-          sliceIndex: 0,
+          slicePosition: 0,
         },);
         expect(donors,).toEqual([DONOR_TEXT,],);
       },

@@ -52,32 +52,32 @@ export class SliceIndexingError extends Error {
  *
  * @param slice - pair as subdivision produced it
  *
- * @param sliceIndex - position this pair holds in the whole preparation
+ * @param slicePosition - position this pair holds in the whole preparation
  *
  * @returns Same pair with both sides carrying that index
  *
  * @example
  * ```ts
- * const stamped = reindexSlicePair({ slice, sliceIndex: 4, },);
+ * const stamped = reindexSlicePair({ slice, slicePosition: 4, },);
  * ```
  */
 export function reindexSlicePair(
   {
     slice,
-    sliceIndex,
+    slicePosition,
   }: {
     readonly slice: ChunkPair;
-    readonly sliceIndex: number;
+    readonly slicePosition: number;
   },
 ): ChunkPair {
   return {
     source: {
       ...slice.source,
-      chunkIndex: sliceIndex,
+      chunkIndex: slicePosition,
     },
     target: {
       ...slice.target,
-      chunkIndex: sliceIndex,
+      chunkIndex: slicePosition,
     },
   };
 }

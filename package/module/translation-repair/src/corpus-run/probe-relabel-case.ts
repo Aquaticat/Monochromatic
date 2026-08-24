@@ -213,11 +213,11 @@ export function locateSlice(
     },)
     .map(function stamp(
       slice,
-      sliceIndex,
+      slicePosition,
     ): ChunkPair {
       return reindexSlicePair({
         slice,
-        sliceIndex,
+        slicePosition,
       },);
     },);
 

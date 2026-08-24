@@ -162,7 +162,7 @@ type FidelityRow = {
   /**
    * Slice within that entry's preparation.
    */
-  readonly sliceIndex: number;
+  readonly slicePosition: number;
 
   /**
    * Which side held the clean text.
@@ -388,7 +388,7 @@ async function main(): Promise<void> {
      */
     let pairsHere = 0;
     for (const [
-      sliceIndex,
+      slicePosition,
       slice,
     ] of prepared.slices
       .entries()) {
@@ -426,14 +426,14 @@ async function main(): Promise<void> {
             cleanText,
             donorTexts: donorTextsFor({
               slices: prepared.slices,
-              sliceIndex,
+              slicePosition,
             },),
           },);
         },)
         .filter(function wasBuilt(attempt,): attempt is Extract<DamageAttempt, { kind: 'damaged'; }> {
           if (attempt.kind === 'damaged')
             return true;
-          log.info(`${entryId}/${String(sliceIndex,)}: ${attempt.reason}`,);
+          log.info(`${entryId}/${String(slicePosition,)}: ${attempt.reason}`,);
           return false;
         },);
       if (attempts.length === 0)
@@ -449,7 +449,7 @@ async function main(): Promise<void> {
            * Comparison with a known right answer.
            */
           const trial: FidelityTrial = {
-            trialId: `${entryId}/${String(sliceIndex,)}/${damaged.damageKind}`,
+            trialId: `${entryId}/${String(slicePosition,)}/${damaged.damageKind}`,
             direction: arrangement.direction,
             damageKind: damaged.damageKind,
             sourceText: slice.source
@@ -457,7 +457,7 @@ async function main(): Promise<void> {
             contextText: withContext
               ? neighbouringSource({
                 slices: prepared.slices,
-                sliceIndex,
+                slicePosition,
               },)
               : '',
             cleanText,
@@ -478,7 +478,7 @@ async function main(): Promise<void> {
             },);
             rows.push({
               entryId,
-              sliceIndex,
+              slicePosition,
               direction: outcome.direction,
               damageKind: outcome.damageKind,
               cleanFirst: outcome.cleanFirst,

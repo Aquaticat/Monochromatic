@@ -309,22 +309,22 @@ export function insertBorrowedSentence(
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param sliceIndex - slice being damaged, which cannot donate to itself
+ * @param slicePosition - slice being damaged, which cannot donate to itself
  *
  * @returns English of every other slice that carries some, furthest first
  *
  * @example
  * ```ts
- * const donorTexts = donorTextsFor({ slices, sliceIndex, },);
+ * const donorTexts = donorTextsFor({ slices, slicePosition, },);
  * ```
  */
 export function donorTextsFor(
   {
     slices,
-    sliceIndex,
+    slicePosition,
   }: {
     readonly slices: readonly ChunkPair[];
-    readonly sliceIndex: number;
+    readonly slicePosition: number;
   },
 ): readonly string[] {
   return slices
@@ -343,7 +343,7 @@ export function donorTextsFor(
       const carried = slice.target
         .text;
       return {
-        distance: Math.abs(index - sliceIndex,),
+        distance: Math.abs(index - slicePosition,),
         text: carried,
       };
     },)

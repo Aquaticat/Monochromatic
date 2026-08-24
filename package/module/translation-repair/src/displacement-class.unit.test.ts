@@ -125,7 +125,7 @@ await describe({
         },);
         expect(readings.length,).toBe(3,);
         expect(readings.map(function toIndex(reading,) {
-          return reading.sliceIndex;
+          return reading.slicePosition;
         },),).toEqual([
           0,
           1,

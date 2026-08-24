@@ -247,7 +247,7 @@ export async function repairPreparedDocument(
    * same document settled differently depending on whether a cache existed.
    */
   const settledByKey = new Map<string, ChunkRepairOutcome>();
-  for (const [sliceIndex, slice,] of slices.entries()) {
+  for (const [slicePosition, slice,] of slices.entries()) {
     /**
      * Global index of this slice, which every outcome and every replacement
      * names. NOT part of the cache key since version 26: a key says what the
@@ -272,7 +272,7 @@ export async function repairPreparedDocument(
      */
     const neighbouringSourceText = neighbouringSource({
       slices,
-      sliceIndex,
+      slicePosition,
     },);
 
     /**
@@ -280,7 +280,7 @@ export async function repairPreparedDocument(
      */
     const neighbouringIncumbentText = neighbouringIncumbent({
       slices,
-      sliceIndex,
+      slicePosition,
     },);
 
     /**
@@ -499,12 +499,12 @@ export async function repairPreparedDocument(
   const dominance = assessNonTranslationDominance({
     slices: slices.map(function toTally(
       sliceRef,
-      sliceIndex,
+      slicePosition,
     ) {
       /**
        * This slice's settled outcome.
        */
-      const sliceOutcome = outcomes[sliceIndex];
+      const sliceOutcome = outcomes[slicePosition];
       return {
         targetChars: sliceRef.target
           .text

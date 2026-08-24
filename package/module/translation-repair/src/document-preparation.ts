@@ -373,7 +373,7 @@ export function prepareDocumentPair(
     ): ChunkPair {
       return reindexSlicePair({
         slice: carvedSlice,
-        sliceIndex: slices.length + offset,
+        slicePosition: slices.length + offset,
       },);
     },);
     governance.push({

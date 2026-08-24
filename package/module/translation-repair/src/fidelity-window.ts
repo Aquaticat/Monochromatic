@@ -47,32 +47,32 @@ import type { ChunkPair, } from './chunk-document.ts';
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param sliceIndex - POSITION IN `slices`, never a stamped `chunkIndex`
+ * @param slicePosition - POSITION IN `slices`, never a stamped `chunkIndex`
  *
  * @returns Neighbouring source text, empty when the slice stands alone
  *
- * @throws {@link RangeError} when `sliceIndex` is not a position in `slices`,
+ * @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
  * since the alternative is a silent empty window
  *
  * @example
  * ```ts
- * const contextText = neighbouringSource({ slices, sliceIndex, },);
+ * const contextText = neighbouringSource({ slices, slicePosition, },);
  * ```
  */
 export function neighbouringSource(
   {
     slices,
-    sliceIndex,
+    slicePosition,
   }: {
     readonly slices: readonly ChunkPair[];
-    readonly sliceIndex: number;
+    readonly slicePosition: number;
   },
 ): string {
-  if ((!Number.isInteger(sliceIndex,))
-    || (sliceIndex < 0)
-    || (sliceIndex >= slices.length)) {
+  if ((!Number.isInteger(slicePosition,))
+    || (slicePosition < 0)
+    || (slicePosition >= slices.length)) {
     throw new RangeError(
-      `neighbouringSource asked for slice ${String(sliceIndex,)} of `
+      `neighbouringSource asked for slice ${String(slicePosition,)} of `
         + `${String(slices.length,)}: not a position in this entry. An index `
         + `stamped elsewhere would return an empty window here, which reads as `
         + `a slice with no neighbours and would report a measured null.`,
@@ -80,8 +80,8 @@ export function neighbouringSource(
   }
 
   return [
-    sliceIndex - 1,
-    sliceIndex + 1,
+    slicePosition - 1,
+    slicePosition + 1,
   ]
     .map(function toText(neighbour,): string {
       /**
@@ -130,32 +130,32 @@ export function neighbouringSource(
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param sliceIndex - POSITION IN `slices`, never a stamped `chunkIndex`
+ * @param slicePosition - POSITION IN `slices`, never a stamped `chunkIndex`
  *
  * @returns Neighbouring archive text, empty when the slice stands alone
  *
- * @throws {@link RangeError} when `sliceIndex` is not a position in `slices`,
+ * @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
  * for the reason {@link neighbouringSource} throws
  *
  * @example
  * ```ts
- * const besideText = neighbouringIncumbent({ slices, sliceIndex, },);
+ * const besideText = neighbouringIncumbent({ slices, slicePosition, },);
  * ```
  */
 export function neighbouringIncumbent(
   {
     slices,
-    sliceIndex,
+    slicePosition,
   }: {
     readonly slices: readonly ChunkPair[];
-    readonly sliceIndex: number;
+    readonly slicePosition: number;
   },
 ): string {
-  if ((!Number.isInteger(sliceIndex,))
-    || (sliceIndex < 0)
-    || (sliceIndex >= slices.length)) {
+  if ((!Number.isInteger(slicePosition,))
+    || (slicePosition < 0)
+    || (slicePosition >= slices.length)) {
     throw new RangeError(
-      `neighbouringIncumbent asked for slice ${String(sliceIndex,)} of `
+      `neighbouringIncumbent asked for slice ${String(slicePosition,)} of `
         + `${String(slices.length,)}: not a position in this entry. An index `
         + `stamped elsewhere would return an empty window here, which reads as `
         + `a slice with no neighbours and would report a measured null.`,
@@ -163,8 +163,8 @@ export function neighbouringIncumbent(
   }
 
   return [
-    sliceIndex - 1,
-    sliceIndex + 1,
+    slicePosition - 1,
+    slicePosition + 1,
   ]
     .map(function toText(neighbour,): string {
       /**
@@ -237,7 +237,7 @@ export function sliceNeighbourContexts(
 ): ReadonlyMap<number, SliceNeighbourContext> {
   return new Map(slices.map(function nameSliceWindow(
     slice,
-    sliceIndex,
+    slicePosition,
   ): readonly [
     number,
     SliceNeighbourContext,
@@ -248,11 +248,11 @@ export function sliceNeighbourContexts(
       {
         sourceText: neighbouringSource({
           slices,
-          sliceIndex,
+          slicePosition,
         },),
         incumbentText: neighbouringIncumbent({
           slices,
-          sliceIndex,
+          slicePosition,
         },),
       },
     ];

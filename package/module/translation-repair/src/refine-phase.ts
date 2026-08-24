@@ -261,11 +261,11 @@ export async function runRefinePhase(
       : {
         neighbouringSourceText: neighbouringSource({
           slices,
-          sliceIndex: outcome.chunkIndex,
+          slicePosition: outcome.chunkIndex,
         },),
         neighbouringIncumbentText: neighbouringIncumbent({
           slices,
-          sliceIndex: outcome.chunkIndex,
+          slicePosition: outcome.chunkIndex,
         },),
       };
 

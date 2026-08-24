@@ -53,33 +53,33 @@ export type SlicePictures = {
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param sliceIndex - POSITION IN `slices`, never a stamped `chunkIndex`
+ * @param slicePosition - POSITION IN `slices`, never a stamped `chunkIndex`
  *
  * @returns Asset names in document order, each once
  *
- * @throws {@link RangeError} when `sliceIndex` is not a position in `slices`,
+ * @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
  * since an index stamped elsewhere would silently name no pictures and read as
  * a slice that shows none
  *
  * @example
  * ```ts
- * const names = slicePictureNames({ slices, sliceIndex, },);
+ * const names = slicePictureNames({ slices, slicePosition, },);
  * ```
  */
 export function slicePictureNames(
   {
     slices,
-    sliceIndex,
+    slicePosition,
   }: {
     readonly slices: readonly ChunkPair[];
-    readonly sliceIndex: number;
+    readonly slicePosition: number;
   },
 ): readonly string[] {
-  if ((!Number.isInteger(sliceIndex,))
-    || (sliceIndex < 0)
-    || (sliceIndex >= slices.length)) {
+  if ((!Number.isInteger(slicePosition,))
+    || (slicePosition < 0)
+    || (slicePosition >= slices.length)) {
     throw new RangeError(
-      `slicePictureNames asked for slice ${String(sliceIndex,)} of `
+      `slicePictureNames asked for slice ${String(slicePosition,)} of `
         + `${String(slices.length,)}: not a position in this entry. An index `
         + `stamped elsewhere would name no pictures here, which reads as a `
         + `slice that shows none.`,
@@ -92,9 +92,9 @@ export function slicePictureNames(
   const named = new Set<string>();
 
   for (const at of [
-    sliceIndex - 1,
-    sliceIndex,
-    sliceIndex + 1,
+    slicePosition - 1,
+    slicePosition,
+    slicePosition + 1,
   ]) {
     /**
      * That slice, absent at either end of the document.
@@ -117,7 +117,7 @@ export function slicePictureNames(
  *
  * @param slices - prepared slice pairs of one entry
  *
- * @param sliceIndex - POSITION IN `slices`
+ * @param slicePosition - POSITION IN `slices`
  *
  * @param readings - what reading produced per asset name, for this entry
  *
@@ -127,17 +127,17 @@ export function slicePictureNames(
  *
  * @example
  * ```ts
- * const pictures = slicePictures({ slices, sliceIndex, readings, },);
+ * const pictures = slicePictures({ slices, slicePosition, readings, },);
  * ```
  */
 export function slicePictures(
   {
     slices,
-    sliceIndex,
+    slicePosition,
     readings,
   }: {
     readonly slices: readonly ChunkPair[];
-    readonly sliceIndex: number;
+    readonly slicePosition: number;
     readonly readings: ReadonlyMap<string, PairedReading>;
   },
 ): SlicePictures {
@@ -146,7 +146,7 @@ export function slicePictures(
    */
   const names = slicePictureNames({
     slices,
-    sliceIndex,
+    slicePosition,
   },);
 
   /**
@@ -250,7 +250,7 @@ export function slicePictureContexts(
    */
   const entries = slices.map(function nameSlicePictures(
     slice,
-    sliceIndex,
+    slicePosition,
   ): readonly [
     number,
     string,
@@ -260,7 +260,7 @@ export function slicePictureContexts(
      */
     const rendered = slicePictures({
       slices,
-      sliceIndex,
+      slicePosition,
       readings,
     },);
 

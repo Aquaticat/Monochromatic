@@ -170,7 +170,7 @@ export async function runSliceArms(
    */
   const neighbouringSourceText = neighbouringSource({
     slices,
-    sliceIndex: chunkIndex,
+    slicePosition: chunkIndex,
   },);
   // TRIMMED, not compared against the empty string. A window of blank lines is a
   // window in name only: the wide sheet would differ from the narrow one by

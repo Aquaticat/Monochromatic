@@ -291,17 +291,17 @@ export async function translateDocument(
       ? 'absent'
       : 'present';
 
-    /**
-     * This slice's POSITION in the preparation, which the window is addressed
-     * by.
-     *
-     * BY IDENTITY RATHER THAN BY `chunkIndex`, per `#99`: a stamped index names
-     * three different things depending on who stamped it, and both window
-     * helpers throw on one that is not a position so the mistake cannot pass
-     * quietly. The slice object came out of this array, so identity settles it.
-     */
-    const sliceIndex = prepared.slices
-      .indexOf(slice,);
+    // THE WINDOW IS ADDRESSED BY POSITION, which the loop above already binds
+    // as `slicePosition`. This read a second copy of it out of
+    // `prepared.slices.indexOf(slice)`, which answers the same question for
+    // every array of distinct objects and the WRONG one for an array holding
+    // the same slice object twice: `indexOf` returns the FIRST match, while the
+    // loop index is always this element's own position.
+    //
+    // The reason the second copy was taken by identity still stands, and the
+    // loop index satisfies it better. Per `#99`, a stamped index names
+    // different things depending on who stamped it, and both window helpers
+    // throw on one that is not a position; nothing stamped the loop index.
 
     /**
      * Original of the passages either side.
@@ -312,7 +312,7 @@ export async function translateDocument(
      */
     const neighbouringSourceText = neighbouringSource({
       slices: prepared.slices,
-      sliceIndex,
+      slicePosition,
     },);
 
     /**
@@ -326,7 +326,7 @@ export async function translateDocument(
      */
     const pictures = slicePictures({
       slices: prepared.slices,
-      sliceIndex,
+      slicePosition,
       readings: pictureReadings,
     },);
 
@@ -337,7 +337,7 @@ export async function translateDocument(
      */
     const neighbouringIncumbentText = neighbouringIncumbent({
       slices: prepared.slices,
-      sliceIndex,
+      slicePosition,
     },);
 
     /**

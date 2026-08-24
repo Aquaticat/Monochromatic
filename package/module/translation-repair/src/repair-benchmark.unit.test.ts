@@ -552,16 +552,16 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
         }
 
         /** Slice whose target region covers the planted seed. */
-        const sliceIndex = slices.findIndex(function covers(slice,) {
+        const slicePosition = slices.findIndex(function covers(slice,) {
           return (slice.target.startOffset <= application.startOffset)
             && (application.startOffset < slice.target.endOffset);
         },);
         // The whole point of the fixture: the seed must NOT be in slice zero,
         // because slice zero is the one case the old pair indexing got right.
-        expect(sliceIndex,).toBeGreaterThan(0,);
+        expect(slicePosition,).toBeGreaterThan(0,);
 
         /** Slice the seed landed in, present by the assertion above. */
-        const slice = slices[sliceIndex];
+        const slice = slices[slicePosition];
         if (slice === undefined)
           throw new Error('fixture lost its slice',);
 
@@ -575,7 +575,7 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
           applications,
           issues: [
             {
-              chunkIndex: sliceIndex,
+              chunkIndex: slicePosition,
               resolved: false,
               repairRegions: [],
               repairDisposition: 'no-region' as const,

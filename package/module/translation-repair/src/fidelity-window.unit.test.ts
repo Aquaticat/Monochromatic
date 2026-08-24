@@ -135,7 +135,7 @@ await describe({
       fn: async () => {
         expect(neighbouringSource({
           slices: SLICES,
-          sliceIndex: 1,
+          slicePosition: 1,
         },),).toBe('小猫在窗台上睡觉。\n\n\n傍晚她回到炉火旁。\n',);
       },
     },),
@@ -145,7 +145,7 @@ await describe({
       fn: async () => {
         expect(neighbouringSource({
           slices: SLICES,
-          sliceIndex: 0,
+          slicePosition: 0,
         },),).toBe('她看着外面的鸟。\n',);
       },
     },),
@@ -155,7 +155,7 @@ await describe({
       fn: async () => {
         expect(neighbouringSource({
           slices: SLICES,
-          sliceIndex: 2,
+          slicePosition: 2,
         },),).toBe('她看着外面的鸟。\n',);
       },
     },),
@@ -168,7 +168,7 @@ await describe({
             text: '小猫在窗台上睡觉。\n',
             chunkIndex: 0,
           },),],
-          sliceIndex: 0,
+          slicePosition: 0,
         },),).toBe('',);
       },
     },),
@@ -180,7 +180,7 @@ await describe({
         expect(function askPastEnd() {
           return neighbouringSource({
             slices: SLICES,
-            sliceIndex: SLICES.length,
+            slicePosition: SLICES.length,
           },);
         },).toThrow(RangeError,);
       },
@@ -214,7 +214,7 @@ await describe({
         const refusalOfAskByStamp = caught(function askByStamp() {
           return neighbouringSource({
             slices: stamped,
-            sliceIndex: stamped[0]?.source
+            slicePosition: stamped[0]?.source
               .chunkIndex ?? 0,
           },);
         },);
@@ -231,7 +231,7 @@ await describe({
         expect(function askBeforeStart() {
           return neighbouringSource({
             slices: SLICES,
-            sliceIndex: -1,
+            slicePosition: -1,
           },);
         },).toThrow(RangeError,);
       },
@@ -524,7 +524,7 @@ await describe({
          */
         const beside = neighbouringIncumbent({
           slices: TRANSLATED,
-          sliceIndex: 1,
+          slicePosition: 1,
         },);
 
         expect(beside.includes('window sill',),).toBe(true,);
@@ -541,7 +541,7 @@ await describe({
          */
         const beside = neighbouringIncumbent({
           slices: TRANSLATED,
-          sliceIndex: 0,
+          slicePosition: 0,
         },);
 
         expect(beside.includes('the stove',),).toBe(false,);
@@ -560,7 +560,7 @@ await describe({
           try {
             neighbouringIncumbent({
               slices: TRANSLATED,
-              sliceIndex: TRANSLATED.length,
+              slicePosition: TRANSLATED.length,
             },);
             return 'returned';
           }
