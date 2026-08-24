@@ -414,6 +414,43 @@ and reading one as an instruction has cost this package a defect before.
     so an operator who set it must not be left believing a run is bounded some way it is not.
     A run that overrides logs `CAP OVERRIDDEN` above its work.
 
+The cap ends an ATTEMPT rather than an entry.
+An entry the cap cut goes to the back of the queue
+and is attempted again inside the same invocation,
+against the same frozen pipeline digest,
+so an entry too large for one attempt no longer needs a relaunch per attempt.
+
+A re-attempt is EARNED rather than automatic.
+The pass counts the entry's cache records before and after each attempt,
+and re-queues only when that count grew.
+An attempt that bought nothing logs `STALLED` and the entry is dropped for this invocation,
+because no progress guarantee holds:
+an abort can land before the first persistence,
+and the slices a lane deliberately leaves uncached produce no record however long they took.
+Without the earned rule a stuck entry would spend the whole soft budget.
+
+A re-attempt logs `REATTEMPT <id> queued`, naming what the attempt bought.
+
+### Choosing what a run attempts
+
+These two are command-line flags rather than variables,
+passed after `--`:
+
+-   `--only Id1,Id2`.
+    Restricts the invocation to the named entries and bypasses the ordering.
+    Run it into a throwaway `TRANSLATION_REPAIR_RUNS_DIR`,
+    so a hand-picked entry never joins a pool that later draws treat as natural accumulation.
+    A flag with no value, or one whose value parses to no id at all, is REFUSED:
+    a flag that parsed to nothing would run the WHOLE corpus,
+    which is the opposite of what was asked and expensive to discover afterwards.
+    A restricted run logs `ONLY` and the ids it took.
+
+-   `--plan`.
+    Reads the corpus, builds the pending list, constructs the client,
+    prints `PLAN ok` with the tip, the pipeline digest and the first few pending ids,
+    and returns without calling a model.
+    Use it to check a run's setup, selection and credentials for no quota.
+
 ### Pooling artifacts across builds
 
 Each settled artifact records the digest of the pipeline that produced it,
