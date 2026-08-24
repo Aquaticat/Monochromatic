@@ -190,10 +190,10 @@ export function coverageGapLines(
       ? []
       : [
         `WROTE NOTHING AT ALL: ${coverage.neverWrote.join(', ',)}. No candidate of theirs reached `
-        + `any slate, so the table compares ${String(coverage.judged.length,)} models and not `
-        + `${String(seats,)}. A provider out of budget, a refused sheet and a call that timed out `
-        + 'all look like this from here; the run log names which. Re-run these seats before '
-        + 'reading the table as a comparison of the roster.',
+        + `any slate, so the table covers ${String(coverage.judged.length,)} of `
+        + `${String(seats,)} seats. A provider out of budget, a refused sheet and a call that `
+        + 'timed out all look like this from here; the run log names which. Re-run these seats '
+        + 'before reading the table as a comparison of the roster.',
       ]),
   ];
 }
