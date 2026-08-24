@@ -284,7 +284,7 @@ function artifactWith(
    */
   const translateDelivery = translateLedger();
   return {
-    artifactSchemaVersion: 2,
+    artifactSchemaVersion: 3,
     id: 'CatEntry1',
     tip: 'a'.repeat(40,),
     pipelineDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,

@@ -158,8 +158,12 @@ function artifactWith(
   },
 ): Record<string, unknown> {
   return {
+    // GENERATION 1, stated, because that is the generation that kept these
+    // records at the artifact root and spelled the key `chunkCritics`. An
+    // unversioned body would read the same way and say less.
+    artifactSchemaVersion: 1,
     id: 'Whiskers',
-    sliceCritics,
+    chunkCritics: sliceCritics,
     issues: [
       {
         chunkIndex: 0,
@@ -286,10 +290,12 @@ await describe({
     },),
 
     it({
-      name: 'THROWS on a sliceCritics key that is present but not an array, '
+      name: 'THROWS on a critic key that is present but not an array, '
         + 'rather than reading it as an entry that predates attribution. Only '
         + 'absence means legacy; tolerating null or a string here would let '
-        + 'corruption quietly shrink the eligible population instead',
+        + 'corruption quietly shrink the eligible population instead. The '
+        + 'refusal names the key AS THE FILE SPELLS IT, which on this '
+        + 'generation 1 fixture is chunkCritics',
       fn: async () => {
         await Promise.all([null, {}, 'corrupt', 7,].map(async function rejectsIt(corrupt,) {
           /**
@@ -302,7 +308,7 @@ await describe({
           expect(
             (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
               ?.reason,
-          ).toContain('sliceCritics',);
+          ).toContain('chunkCritics',);
         },),);
       },
     },),
@@ -448,11 +454,13 @@ await describe({
         + 'asking the root is caught rather than agreeing by coincidence',
       fn: async () => {
         /**
-         * Version 2 artifact, with version 1's keys planted at the root.
+         * Two-lane artifact of the generation the pass writes, with a decoy
+         * planted at the root where generation 1 kept these records.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
             'Whiskers.json': {
+              artifactSchemaVersion: 3,
               id: 'Whiskers',
               sliceCritics: [{
                 chunkIndex: 9,
@@ -502,6 +510,68 @@ await describe({
 
         /**
          * Chunk record the repair lane carried.
+         */
+        const record = entries[0]?.sliceCritics?.[0];
+
+        expect(record?.chunkIndex,).toBe(3,);
+        expect(record?.claimAttributions[0]?.claimId,).toBe(NAP,);
+        expect(entries[0]?.issues,)
+          .toStrictEqual([{ status: 'accepted', claimIds: [NAP,], },],);
+      },
+    },),
+
+    it({
+      name: 'READS A GENERATION 2 LANE, which spells the same records chunkCritics, and lands them in '
+        + 'the same place as its generation 3 twin. Without this the rename reads as a clean cut and '
+        + 'is not: 48 settled artifacts carry the older spelling, and a reader that stopped '
+        + 'understanding them would report every one as an entry that predates attribution',
+      fn: async () => {
+        /**
+         * Two-lane artifact of the generation before the rename, spelled the
+         * way that generation spelled it.
+         */
+        await using scratch = await writeArtifacts({
+          artifacts: {
+            'Whiskers.json': {
+              artifactSchemaVersion: 2,
+              id: 'Whiskers',
+              issues: [],
+              lanes: {
+                repair: {
+                  result: {
+                    chunkCritics: [{
+                      chunkIndex: 3,
+                      heardCriticIds: [TABBY,],
+                      claimAttributions: [{
+                        claimId: NAP,
+                        proposers: [{ modelId: TABBY, emissionCount: 2, },],
+                      },],
+                    },],
+                    issues: [
+                      {
+                        chunkIndex: 0,
+                        issue: {
+                          status: 'accepted',
+                          claims: [{ claimId: NAP, },],
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },);
+
+        /**
+         * Entries as the CLI would gather them.
+         */
+        const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+
+        expect(entries[0]?.sliceCritics,).toBeDefined();
+
+        /**
+         * Chunk record the repair lane carried, under the older spelling.
          */
         const record = entries[0]?.sliceCritics?.[0];
 

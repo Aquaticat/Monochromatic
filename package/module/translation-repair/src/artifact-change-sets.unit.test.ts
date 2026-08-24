@@ -32,7 +32,7 @@ import {
  *
  * @example
  * ```ts
- * const refusal = changeSetFailure({ artifact: { changedSliceIndices: [], }, },);
+ * const refusal = changeSetFailure({ artifact: { shippedChunkIndices: [], }, },);
  * ```
  */
 function changeSetFailure(
@@ -56,11 +56,11 @@ function changeSetFailure(
 const VERSIONED_ARTIFACT = {
   artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
   sliceCount: 5,
-  changedSliceIndices: [
+  shippedChunkIndices: [
     3,
     0,
   ],
-  withdrawnSliceIndices: [4,],
+  withdrawnChunkIndices: [4,],
 } as const;
 
 await describe({
@@ -257,8 +257,8 @@ await describe({
           artifact: {
             artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
             sliceCount: 3,
-            changedSliceIndices: [],
-            withdrawnSliceIndices: [],
+            shippedChunkIndices: [],
+            withdrawnChunkIndices: [],
           },
           path: 'Mittens',
         },),).toEqual({
@@ -269,8 +269,8 @@ await describe({
         },);
         expect(readArtifactChangeSets({
           artifact: {
-            changedSliceIndices: [],
-            withdrawnSliceIndices: [],
+            shippedChunkIndices: [],
+            withdrawnChunkIndices: [],
           },
           path: 'Mittens',
         },),).toEqual({
@@ -288,11 +288,11 @@ await describe({
       fn: async () => {
         expect(readArtifactChangeSets({
           artifact: {
-            changedSliceIndices: [
+            shippedChunkIndices: [
               9,
               2,
             ],
-            withdrawnSliceIndices: [],
+            withdrawnChunkIndices: [],
           },
           path: 'Mittens',
         },),).toEqual({
@@ -309,11 +309,11 @@ await describe({
         const refusalOfRepeatedShipped = caught(function repeatedShipped() {
           readArtifactChangeSets({
             artifact: {
-              changedSliceIndices: [
+              shippedChunkIndices: [
                 2,
                 2,
               ],
-              withdrawnSliceIndices: [],
+              withdrawnChunkIndices: [],
             },
             path: 'Mittens',
           },);
@@ -327,8 +327,8 @@ await describe({
         const refusalOfRepeatedWithdrawn = caught(function repeatedWithdrawn() {
           readArtifactChangeSets({
             artifact: {
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [
+              shippedChunkIndices: [],
+              withdrawnChunkIndices: [
                 4,
                 4,
               ],
@@ -351,7 +351,7 @@ await describe({
          */
         const refusalOfShippedAlone = caught(function shippedAlone() {
           readArtifactChangeSets({
-            artifact: { changedSliceIndices: [1,], },
+            artifact: { shippedChunkIndices: [1,], },
             path: 'Mittens',
           },);
         },);
@@ -363,7 +363,7 @@ await describe({
          */
         const refusalOfWithdrawnAlone = caught(function withdrawnAlone() {
           readArtifactChangeSets({
-            artifact: { withdrawnSliceIndices: [1,], },
+            artifact: { withdrawnChunkIndices: [1,], },
             path: 'Mittens',
           },);
         },);
@@ -384,8 +384,8 @@ await describe({
           readArtifactChangeSets({
             artifact: {
               sliceCount: 2,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [],
+              shippedChunkIndices: [],
+              withdrawnChunkIndices: [],
             },
             path: 'Mittens',
           },);
@@ -405,8 +405,8 @@ await describe({
         const refusalOfNullShipped = caught(function nullShipped() {
           readArtifactChangeSets({
             artifact: {
-              changedSliceIndices: null,
-              withdrawnSliceIndices: [],
+              shippedChunkIndices: null,
+              withdrawnChunkIndices: [],
             },
             path: 'Mittens',
           },);
@@ -442,8 +442,8 @@ await describe({
           readArtifactChangeSets({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
-              changedSliceIndices: [0,],
-              withdrawnSliceIndices: [],
+              shippedChunkIndices: [0,],
+              withdrawnChunkIndices: [],
             },
             path: 'Mittens',
           },);
@@ -464,8 +464,8 @@ await describe({
           artifact: {
             artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
             sliceCount: 2,
-            changedSliceIndices: [2,],
-            withdrawnSliceIndices: [],
+            shippedChunkIndices: [2,],
+            withdrawnChunkIndices: [],
           },
         },);
         expect(refusalOfBothOutOfRange,).toBeInstanceOf(ArtifactParseError,);
@@ -479,8 +479,8 @@ await describe({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
               sliceCount: 2,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [7,],
+              shippedChunkIndices: [],
+              withdrawnChunkIndices: [7,],
             },
             path: 'Mittens',
           },);
@@ -502,11 +502,11 @@ await describe({
             artifact: {
               artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION_V1,
               sliceCount: 4,
-              changedSliceIndices: [
+              shippedChunkIndices: [
                 1,
                 3,
               ],
-              withdrawnSliceIndices: [3,],
+              withdrawnChunkIndices: [3,],
             },
             path: 'Mittens',
           },);
@@ -526,26 +526,26 @@ await describe({
         const refusalOfFractionalIndex = caught(function fractionalIndex() {
           readArtifactChangeSets({
             artifact: {
-              changedSliceIndices: [
+              shippedChunkIndices: [
                 0,
                 1.5,
               ],
-              withdrawnSliceIndices: [],
+              withdrawnChunkIndices: [],
             },
             path: 'Mittens',
           },);
         },);
 
         expect(refusalOfFractionalIndex,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfFractionalIndex as Error).message,).toContain('changedSliceIndices[1]',);
+        expect((refusalOfFractionalIndex as Error).message,).toContain('shippedChunkIndices[1]',);
         /**
          * What unsafeIndex raised, read for its class as well as its wording.
          */
         const refusalOfUnsafeIndex = caught(function unsafeIndex() {
           readArtifactChangeSets({
             artifact: {
-              changedSliceIndices: [Number.MAX_SAFE_INTEGER + 2,],
-              withdrawnSliceIndices: [],
+              shippedChunkIndices: [Number.MAX_SAFE_INTEGER + 2,],
+              withdrawnChunkIndices: [],
             },
             path: 'Mittens',
           },);

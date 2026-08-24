@@ -308,11 +308,15 @@ export function decodeChunkRecord(
 }
 
 /**
- * Decodes an artifact's whole `sliceCritics` array.
+ * Decodes an artifact's whole critic-record array.
  *
  * @param value - parsed array
  *
  * @param entryId - artifact identity, so a failure names the file
+ *
+ * @param criticsKey - key this artifact's own generation spelled the array
+ * under, so a refusal names something a reader can find in the file rather than
+ * the name this package happens to use for it
  *
  * @returns Validated chunk views
  *
@@ -320,21 +324,23 @@ export function decodeChunkRecord(
  *
  * @example
  * ```ts
- * const sliceCritics = decodeSliceCritics({ value, entryId: 'Kitten', },);
+ * const sliceCritics = decodeSliceCritics({ value, entryId: 'Kitten', criticsKey: keys.sliceCritics, },);
  * ```
  */
 export function decodeSliceCritics(
   {
     value,
     entryId,
+    criticsKey,
   }: {
     readonly value: unknown;
     readonly entryId: string;
+    readonly criticsKey: string;
   },
 ): readonly SliceCriticView[] {
   if (!isJsonArray(value,)) {
     throw new ArtifactParseError({
-      path: `${entryId} sliceCritics`,
+      path: `${entryId} ${criticsKey}`,
       reason: 'an array when present at all, since only an ABSENT key means the entry predates attribution',
     },);
   }
@@ -348,7 +354,7 @@ export function decodeSliceCritics(
   ) {
     return decodeChunkRecord({
       value: record,
-      path: `${entryId} sliceCritics[${String(index,)}]`,
+      path: `${entryId} ${criticsKey}[${String(index,)}]`,
     },);
   },);
 
@@ -356,7 +362,7 @@ export function decodeSliceCritics(
     return record.chunkIndex;
   },),)).size !== records.length) {
     throw new ArtifactParseError({
-      path: `${entryId} sliceCritics`,
+      path: `${entryId} ${criticsKey}`,
       reason: 'one record per chunk, since a repeat inflates the chunk count every rate divides by',
     },);
   }

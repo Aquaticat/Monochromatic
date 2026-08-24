@@ -256,6 +256,7 @@ function toEntry(
         sliceCritics: decodeSliceCritics({
           value: records[keys.sliceCritics],
           entryId,
+          criticsKey: keys.sliceCritics,
         },),
       }
       : {}),

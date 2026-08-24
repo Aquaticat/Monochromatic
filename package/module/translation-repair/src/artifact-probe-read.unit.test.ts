@@ -251,7 +251,7 @@ function probeArtifact(
     delivery: 'replacement-shipped',
   },);
   return {
-    artifactSchemaVersion: 2,
+    artifactSchemaVersion: 3,
     id,
     tip: 'a'.repeat(40,),
     pipelineDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,

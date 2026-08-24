@@ -282,7 +282,7 @@ function artifactWith(
   } = {},
 ): Record<string, unknown> {
   return {
-    artifactSchemaVersion: 2,
+    artifactSchemaVersion: 3,
     id: 'CatEntry1',
     tip: 'a'.repeat(40,),
     pipelineDigest: `sha256-tree-v1:${'c'.repeat(64,)}`,
@@ -1227,16 +1227,16 @@ await describe({
     },),
     it({
       name:
-        'REFUSES every version but its own, including a MISSING one and a version 2 spelled as text: '
-        + 'dispatch has already chosen this reader by the time it is called, so a file arriving here '
-        + 'under another version is a caller reading the wrong file',
+        'REFUSES every generation but the two that wrote this shape, including a MISSING one and a '
+        + 'version spelled as text: dispatch has already chosen this reader by the time it is called, '
+        + 'so a file arriving here under another version is a caller reading the wrong file',
       fn: async () => {
         expect([
           undefined,
           null,
-          '2',
+          '3',
           1,
-          3,
+          4,
         ].map(function refuses(version,): string {
           try {
             parseSettledArtifactV2({ value: artifactWith({ artifactSchemaVersion: version, },), },);

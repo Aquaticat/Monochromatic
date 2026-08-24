@@ -20,8 +20,8 @@ import {
 /**
  * First schema generation there has ever been.
  *
- * NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V2` and has been
- * since `settleEntry` moved to the two-lane artifact. This was called
+ * NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V3` and has been
+ * a two-lane generation since `settleEntry` moved to one. This was called
  * `SETTLED_ARTIFACT_SCHEMA_VERSION` and documented as the generation the pass
  * writes, which stopped being true at that move; it is renamed rather than
  * re-documented because a caller reaching for what the pass writes reaches for
@@ -32,6 +32,16 @@ import {
  * changed and why a reader could not have worked it out from the fields alone.
  * A version that does NOT move on a shape change is the failure this field
  * exists to end, so say so here when a field is added compatibly.
+ *
+ * VERSION 3, 2026-08-24: three keys renamed and nothing else. Generation 2
+ * spelled them `shippedChunkIndices`, `withdrawnChunkIndices` and
+ * `chunkCritics`, in records that already spelled `sliceCount` and
+ * `withdrawnSliceCount` the other way about the same things. Generation 3
+ * spells all of them `slice`. A reader could NOT have worked this out from the
+ * fields alone: both generations carry the same field COUNT under the same
+ * parents, so a version 2 file read under generation 3 reports three keys as
+ * absent rather than as differently spelled. `artifact-key-vocabulary.ts` holds
+ * the two spellings and the recorded version picks one.
  *
  * Version 1 is the first version there has ever been, which makes its own
  * history the important part. THREE UNVERSIONED GENERATIONS precede it, and a

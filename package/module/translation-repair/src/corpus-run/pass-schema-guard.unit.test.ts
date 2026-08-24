@@ -145,7 +145,7 @@ function emptyVersionTwoArtifact(
   },
 ): Record<string, unknown> {
   return {
-    artifactSchemaVersion: 2,
+    artifactSchemaVersion: 3,
     id: entryId,
     tip: FIXED_TIP,
     pipelineDigest: digest,
@@ -303,12 +303,12 @@ await describe({
           artifactsDir: await writeArtifacts({
             entries: {
               Mittens: {
-                version: 2,
+                version: 3,
                 digest: DIGEST_A,
                 wellFormed: true,
               },
               Pouncer: {
-                version: 2,
+                version: 3,
                 digest: DIGEST_A,
                 wellFormed: true,
               },
@@ -331,7 +331,7 @@ await describe({
         const artifactsDir = await writeArtifacts({
           entries: {
             Mittens: {
-              version: 2,
+              version: 3,
               digest: DIGEST_A,
             },
           },
@@ -341,7 +341,7 @@ await describe({
          * What the guard said about it.
          */
         const said = await refusalOf({ artifactsDir, },);
-        expect(said,).toContain('Mittens declares schema version 2',);
+        expect(said,).toContain('Mittens declares schema version 3',);
         expect(said,).toContain('and is not one',);
       },
     },),
@@ -363,7 +363,7 @@ await describe({
               digest: DIGEST_A,
             },
             Pouncer: {
-              version: 2,
+              version: 3,
               digest: DIGEST_A,
               wellFormed: true,
             },
@@ -393,12 +393,12 @@ await describe({
           artifactsDir: await writeArtifacts({
             entries: {
               Mittens: {
-                version: 2,
+                version: 3,
                 digest: DIGEST_A,
                 wellFormed: true,
               },
               Pouncer: {
-                version: 2,
+                version: 3,
                 digest: DIGEST_B,
                 wellFormed: true,
               },
@@ -468,7 +468,7 @@ await describe({
         expect(said,).toContain('Restore the code those entries were settled under',);
         expect(said,).toContain('Move the incompatible artifacts to an archive directory',);
         expect(said,).toContain('Deleting them outright is the one thing to avoid',);
-        expect(said,).toContain('this pass writes schema version 2',);
+        expect(said,).toContain('this pass writes schema version 3',);
       },
     },),
   ],
@@ -493,7 +493,7 @@ await describe({
               digest: DIGEST_A,
             },
             Mittens: {
-              version: 2,
+              version: 3,
               digest: DIGEST_B,
               wellFormed: true,
             },

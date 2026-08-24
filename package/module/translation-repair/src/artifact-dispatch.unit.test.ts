@@ -49,8 +49,8 @@ function versionOneArtifact(): Record<string, unknown> {
     // BOTH SETS or neither, which is what that generation wrote and what its
     // reader holds artifacts to, with the slice count those sets are out of.
     sliceCount: 2,
-    changedSliceIndices: [],
-    withdrawnSliceIndices: [],
+    shippedChunkIndices: [],
+    withdrawnChunkIndices: [],
   };
 }
 
