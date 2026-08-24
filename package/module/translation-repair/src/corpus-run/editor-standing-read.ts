@@ -17,6 +17,10 @@ import {
 } from '../repair-selection-rounds.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import { OffRosterModelError, } from './artifact-producer-read.ts';
+import {
+  type DigestGroup,
+  groupByDigest,
+} from './digest-group.ts';
 import { readRepairRounds, } from './artifact-rounds-read.ts';
 import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
@@ -84,43 +88,6 @@ type ArtifactReading = {
    */
   readonly refiner: readonly (readonly SelectionRound[])[];
 };
-
-/**
- * Every artifact sharing one built output.
- */
-type DigestGroup = {
-  /**
-   * Built output all of them record.
-   */
-  readonly digest: string;
-
-  /**
-   * Readings under it, in the order found.
-   */
-  readonly readings: readonly ArtifactReading[];
-};
-
-/**
- * One directory listing, or the class that refused it.
- */
-type DirectoryReading =
-  | {
-    readonly kind: 'read';
-
-    /**
-     * Entry names the directory holds.
-     */
-    readonly names: readonly string[];
-  }
-  | {
-    readonly kind: 'unreadable';
-
-    /**
-     * Class that refused it, named rather than quoted: a filesystem error
-     * quotes a path, and a run directory path can name a person.
-     */
-    readonly refusedBy: string;
-  };
 
 /**
  * Lists one directory, reporting an absent one rather than raising.
@@ -325,45 +292,6 @@ async function readOne(
 }
 
 /**
- * Groups readings by the built output that produced them.
- *
- * @param readings - every artifact read
- *
- * @returns One group per digest, largest first
- *
- * @example
- * ```ts
- * const groups = groupByDigest({ readings, },);
- * ```
- */
-function groupByDigest(
-  { readings, }: { readonly readings: readonly ArtifactReading[]; },
-): readonly DigestGroup[] {
-  /**
-   * Digests seen, in no particular order.
-   */
-  const digests = [...new Set(readings.map(function toDigest(reading,): string {
-    return reading.digest;
-  },),),];
-
-  return digests
-    .map(function toGroup(digest,): DigestGroup {
-      return {
-        digest,
-        readings: readings.filter(function under(reading,): boolean {
-          return reading.digest === digest;
-        },),
-      };
-    },)
-    .toSorted(function byEntries(
-      left,
-      right,
-    ): number {
-      return right.readings.length - left.readings.length;
-    },);
-}
-
-/**
  * Prints one seat's standing within one digest.
  *
  * @param seat - seat the standing is about
@@ -421,7 +349,7 @@ function reportSeat(
  * ```
  */
 function reportGroup(
-  { group, }: { readonly group: DigestGroup; },
+  { group, }: { readonly group: DigestGroup<ArtifactReading>; },
 ): void {
   console.log(
     `\n${group.digest} over ${String(group.readings.length,)} entries`,

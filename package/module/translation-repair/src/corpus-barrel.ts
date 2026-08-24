@@ -104,6 +104,10 @@ export {
 export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
 export { readRepairRounds, } from './corpus-run/artifact-rounds-read.ts';
 export {
+  type DigestGroup,
+  groupByDigest,
+} from './corpus-run/digest-group.ts';
+export {
   OffRosterModelError,
   requireProducer,
   requireRosterModelId,
