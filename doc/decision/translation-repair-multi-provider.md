@@ -697,6 +697,26 @@ and the model answered 40 rounds of production-sized slices without a cut.
 
 #### What this still does not decide
 
+THE INSTRUMENT IS ONE STEP FROM THE SEAT IT WAS USED ON.
+`producer-calibrate.ts` drives `runTranslateStage`,
+so the thing measured is a model writing a slice from the SOURCE
+while every other model votes on the result.
+An editor and a refiner both write a slice and are both judged that way,
+but from the archive text and a set of critic claims rather than from the source.
+
+That gap is worth naming rather than glossing,
+and the same honesty is what keeps this table off the checker seats.
+It is nonetheless the nearest instrument that exists,
+the seats it moved rested on NO measurement at all before this,
+and the direction it points is not marginal:
+the model leaving was below the pooled null in two independent passes
+and second worst on reliability,
+while the model arriving was above it with 40 candidates in 40 rounds.
+An editor-role calibration would settle the seat outright.
+It is not a variation on the existing runner:
+the editor's input includes critic claims,
+so the instrument has to buy a critic stage before it can ask an editor anything.
+
 CHECKER SEATS.
 `checkerModelIds` still seats `NVIDIA-Nemotron-3-Super`,
 which this pass establishes as the worst WRITER on the roster at `z = -4.99`.

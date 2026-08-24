@@ -231,15 +231,24 @@ export const RUN_MODELS: RepairModels = {
   // reads no images costs nothing here: pictures are read in their own stage
   // over a catalog-derived roster, and `document-lanes.ts` records that no
   // repair-lane stage ever asks what one says.
+  //
+  // THE INSTRUMENT SITS ONE STEP FROM THIS SEAT, and saying so is the same
+  // discipline that keeps this table away from the checker seats.
+  // `producer-calibrate.ts` drives `runTranslateStage`, so what it measures is a
+  // model writing a slice from the SOURCE while other models vote on the result.
+  // An editor writes a slice and is judged the same way, but from the archive
+  // text and a set of critic claims. That is far nearer than checking, which is
+  // not writing at all, and it is the nearest instrument that exists; the seat
+  // it replaced rested on no measurement whatsoever. An editor-role calibration
+  // would settle it outright and has not been built.
   editorModelIds: [
     'hf:moonshotai/Kimi-K3',
     'hf:Qwen/Qwen3.8-27B',
     'gemma-4-26b-a4b-it',
   ],
   judgeModelIds: RUN_ROSTER,
-  // Same three as the editors, seated on the same 40-round measurement. Both
-  // stages ask a model to write replacement prose for one slice, so the
-  // calibration measures the job both are doing.
+  // Same three as the editors, seated on the same 40-round measurement, and
+  // one step from that instrument for the same reason the editors are.
   refinerModelIds: [
     'hf:moonshotai/Kimi-K3',
     'hf:Qwen/Qwen3.8-27B',
