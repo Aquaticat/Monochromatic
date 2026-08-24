@@ -198,8 +198,35 @@ function reportSeat(
     return;
   }
 
-  for (const standing of rankStandings({ standings: producerStandings({ rounds, },), },)) {
+  /**
+   * What the rounds came to, best first.
+   */
+  const standings = producerStandings({ rounds, },);
+
+  for (const standing of rankStandings({ standings, },)) {
     console.log(`  ${standingLine({ standing, },)}`,);
+  }
+
+  /**
+   * Roster models that wrote no candidate at all.
+   *
+   * NAMED RATHER THAN OMITTED. `producerStandings` lists only models that
+   * wrote something, so a model whose provider was out of budget simply
+   * vanishes from the table, and absence there reads exactly like a model
+   * that wrote and lost. During a provider outage that is half the roster.
+   */
+  const silent = RUN_ROSTER.filter(function wroteNothing(modelId,): boolean {
+    return !standings.some(function isIt(standing,): boolean {
+      return standing.modelId === modelId;
+    },);
+  },);
+
+  if (silent.length > 0) {
+    console.log(
+      `  WROTE NOTHING, so this standing says nothing about them: ${silent.join(', ',)}. `
+        + 'Check the log for lost voices: a model refused for budget leaves no candidate, '
+        + 'which is absence of evidence rather than a poor showing.',
+    );
   }
 }
 
@@ -239,9 +266,40 @@ async function main(): Promise<void> {
   const perSlice: SliceRounds[] = [];
 
   for (const slice of sample) {
-    /* oxlint-disable-next-line no-await-in-loop -- slices run one at a time on
-       purpose; see the note on `perSlice`. */
-    perSlice.push(await runOne({ slice, },),);
+    /* oxlint-disable no-await-in-loop -- slices run one at a time on purpose;
+       see the note on `perSlice`. */
+    /**
+     * Rounds this slice produced, both seats.
+     */
+    const rounds = await runOne({ slice, },);
+    /* oxlint-enable no-await-in-loop */
+
+    perSlice.push(rounds,);
+
+    /**
+     * How many rounds the editors were judged in on this slice.
+     */
+    const editorCount = rounds
+      .editor
+      .length;
+
+    /**
+     * How many the refiners were judged in.
+     */
+    const refinerCount = rounds
+      .refiner
+      .length;
+
+    // PER SLICE RATHER THAN ONLY AT THE END. A whole lane per slice makes this
+    // a long run, and a report that arrives only on completion is unreadable
+    // while it matters most: a reader watching an outage needs to know whether
+    // rounds are accumulating at all.
+    console.log(
+      `  slice ${String(perSlice.length,)} of ${String(sample.length,)} `
+        + `(${slice.entryId} chunk ${String(slice.index,)}): `
+        + `${String(editorCount,)} editor rounds, `
+        + `${String(refinerCount,)} refiner rounds`,
+    );
   }
 
   reportSeat({
