@@ -64,9 +64,11 @@ export {
 export { repairLaneWordings, } from './repair-lane-wordings.ts';
 export {
   assertCheckerIndependence,
+  assertCheckerQuorumReachable,
   assertJudgeableEditorRoster,
   assertJudgeableProducerRoster,
   CheckerIndependenceError,
+  CheckerQuorumError,
   type ChunkRepairOutcome,
   ProducerRosterError,
   type RepairModels,

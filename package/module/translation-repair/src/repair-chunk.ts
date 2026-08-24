@@ -18,6 +18,7 @@ import { collectRepairRegions, } from './repair-region.ts';
 import { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
 import {
   assertCheckerIndependence,
+  assertCheckerQuorumReachable,
   type ChunkRepairOutcome,
   type RepairModels,
 } from './repair-contract.ts';
@@ -126,7 +127,9 @@ export async function repairChunk(
   assertCheckerIndependence({
     editorModelIds: models.editorModelIds,
     checkerModelIds: models.checkerModelIds,
+    selfCertificationPermitted: models.checkerSelfCertificationPermitted ?? false,
   },);
+  assertCheckerQuorumReachable({ checkerModelIds: models.checkerModelIds, },);
 
   /**
    * Neighbouring evidence, spread into every stage that has to reason about it.

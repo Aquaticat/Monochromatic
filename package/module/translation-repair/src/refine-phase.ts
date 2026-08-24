@@ -19,6 +19,7 @@ import {
 } from './refine-slice-settle.ts';
 import {
   assertCheckerIndependence,
+  assertCheckerQuorumReachable,
   type ChunkRepairOutcome,
   type RepairModels,
 } from './repair-contract.ts';
@@ -154,7 +155,9 @@ export async function runRefinePhase(
     editorModelIds: models.editorModelIds,
     refinerModelIds,
     checkerModelIds: models.checkerModelIds,
+    selfCertificationPermitted: models.checkerSelfCertificationPermitted ?? false,
   },);
+  assertCheckerQuorumReachable({ checkerModelIds: models.checkerModelIds, },);
 
   /**
    * Definitions of the assembled `T1`, so a paragraph's references resolve

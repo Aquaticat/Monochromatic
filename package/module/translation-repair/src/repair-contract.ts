@@ -74,10 +74,32 @@ export type RepairModels = {
   readonly refinerModelIds?: readonly SyntheticModelId[];
 
   /**
-   * Resolution checkers proving the repair. Must exclude every editor AND
-   * every refiner, or a model ends up certifying text it wrote.
+   * Resolution checkers proving the repair. Excludes every editor and every
+   * refiner unless {@link RepairModels.checkerSelfCertificationPermitted} says
+   * otherwise, since a model certifying text it wrote is not proof.
    */
   readonly checkerModelIds: readonly SyntheticModelId[];
+
+  /**
+   * Permits a checker to also write, so the whole roster can check.
+   *
+   * MEASUREMENT SWITCH, NOT A SETTING, and it exists because two arms had to be
+   * runnable at once. The owner's ruling of 2026-08-23 sent checker width to
+   * measurement rather than opinion: run the same entries at the disjoint three
+   * and at all six, compare per-issue resolution, ship the winner and delete
+   * the loser. Whichever way that lands, this field goes with it.
+   *
+   * SAFE ONLY BECAUSE THE DISCOUNT ALREADY EXISTS. `tallyResolutionChecks`
+   * picks each checker's weight PER ISSUE through `wroteTextForIssue`, so an
+   * overlapping checker is halved on issues whose shipped text it helped write
+   * and keeps full weight everywhere else. Permitting overlap without that
+   * would let three writers certify themselves at full strength.
+   *
+   * NEVER RELAXES THE OTHER TWO REFUSALS. A repeated checker id stays a fault
+   * whatever this says, and so does a roster too small to reach a verdict: see
+   * {@link assertCheckerQuorumReachable}.
+   */
+  readonly checkerSelfCertificationPermitted?: boolean;
 };
 
 /**
@@ -343,13 +365,25 @@ export class CheckerIndependenceError extends Error {
  * model grading its own rewrite is not proof, and unlike the judge roster this
  * one is not filtered at runtime, so nothing else would catch the overlap.
  *
+ * THE REPEAT REFUSAL IS UNCONDITIONAL and the overlap refusal is not, which is
+ * the asymmetry to read carefully. Overlap is a question about evidence quality
+ * that `tallyResolutionChecks` can answer by discounting, so the owner sent it
+ * to measurement and `selfCertificationPermitted` is how the second arm runs. A
+ * repeated id is not that kind of question: it makes the quorum count disagree
+ * with the ballot count, so no weighting can rescue it.
+ *
  * @param editorModelIds - editors that propose candidates
  *
  * @param refinerModelIds - naturalness rewriters; absent means the lane is off
  *
  * @param checkerModelIds - checkers proving the shipped repair
  *
- * @throws {@link CheckerIndependenceError} when any model holds both roles
+ * @param selfCertificationPermitted - allows overlap, leaving self-votes to be
+ * discounted per issue rather than excluded; see
+ * {@link RepairModels.checkerSelfCertificationPermitted}
+ *
+ * @throws {@link CheckerIndependenceError} when a checker id repeats, or when
+ * a model holds both roles and overlap was not permitted
  *
  * @example
  * ```ts
@@ -361,10 +395,12 @@ export function assertCheckerIndependence(
     editorModelIds,
     refinerModelIds = [],
     checkerModelIds,
+    selfCertificationPermitted = false,
   }: {
     readonly editorModelIds: readonly SyntheticModelId[];
     readonly refinerModelIds?: readonly SyntheticModelId[];
     readonly checkerModelIds: readonly SyntheticModelId[];
+    readonly selfCertificationPermitted?: boolean;
   },
 ): void {
   /**
@@ -390,6 +426,9 @@ export function assertCheckerIndependence(
     },);
   }
 
+  if (selfCertificationPermitted)
+    return;
+
   /**
    * Every model that writes shipped text, keyed for membership tests.
    *
@@ -411,6 +450,74 @@ export function assertCheckerIndependence(
   if (overlapping.length === 0)
     return;
   throw new CheckerIndependenceError({ overlapping, },);
+}
+
+/**
+ * Fewest checkers a split verdict can be read from.
+ *
+ * DERIVED FROM THE TALLY RULE rather than chosen. `tallyResolutionChecks`
+ * resolves an issue on `fixed > (notFixed + worse)`, so at two checkers one
+ * `fixed` against one `not-fixed` decides nothing and only a unanimous two-nil
+ * decides anything: a roster of two that disagrees returns no verdict at all.
+ * Three is the smallest roster where a majority still reads as a majority.
+ *
+ * SCALE-FREE UNDER THE DISCOUNT, which is why one number covers both arms.
+ * Halving every weight on an issue halves both sides of that comparison, so a
+ * roster of three whose members all wrote the text still resolves two-to-one.
+ */
+const MINIMUM_CHECKER_COUNT = 3;
+
+/**
+ * Thrown when a checker roster is too small to return a verdict.
+ *
+ * @example
+ * ```ts
+ * throw new CheckerQuorumError({ checkerModelIds, },);
+ * ```
+ */
+export class CheckerQuorumError extends Error {
+  /**
+   * Builds the report from the roster that cannot decide.
+   *
+   * @param checkerModelIds - checkers configured for this run
+   */
+  constructor({ checkerModelIds, }: { readonly checkerModelIds: readonly SyntheticModelId[]; },) {
+    super(
+      `this run configures ${String(checkerModelIds.length,)} checker(s), [${
+        checkerModelIds.join(', ',)
+      }], against a floor of ${String(MINIMUM_CHECKER_COUNT,)}; below that a disagreement returns no `
+        + `verdict, because resolution needs more weight behind fixed than behind not-fixed and worse `
+        + `together, so checking would run and decide nothing`,
+    );
+    this.name = 'CheckerQuorumError';
+  }
+}
+
+/**
+ * Refuses a checker roster too small for a disagreement to resolve.
+ *
+ * WHY THIS EXISTS SEPARATELY FROM THE EMPTY-ROLE FLOOR. `assertRostersConfigured`
+ * refuses a role with nobody in it and nothing more, so a roster of two passed
+ * every guard while being unable to produce a verdict any two members disagree
+ * about. Narrowing checking is exactly what widening the producing roles does
+ * to a fixed-size roster, so the guard belongs next to the one that permits it.
+ *
+ * @param checkerModelIds - checkers proving the shipped repair
+ *
+ * @throws {@link CheckerQuorumError} when fewer checkers are configured than a
+ * split verdict needs
+ *
+ * @example
+ * ```ts
+ * assertCheckerQuorumReachable({ checkerModelIds, },);
+ * ```
+ */
+export function assertCheckerQuorumReachable(
+  { checkerModelIds, }: { readonly checkerModelIds: readonly SyntheticModelId[]; },
+): void {
+  if (checkerModelIds.length >= MINIMUM_CHECKER_COUNT)
+    return;
+  throw new CheckerQuorumError({ checkerModelIds, },);
 }
 
 /**
