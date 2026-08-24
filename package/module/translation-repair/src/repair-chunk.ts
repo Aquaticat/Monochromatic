@@ -445,6 +445,9 @@ export async function repairChunk(
     issues: deduped.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
     checkerReadings: checker.readings,
+    // THE REPAIR LANE NEVER RECHECKS. Only the naturalness lane rewrites text
+    // that already passed a checker round, so only it can fill this.
+    recheckReadings: {},
     candidateResolvedIssueIds: candidateConfirmedIssueIds({
       acceptedIssues,
       tallies: checker.tallies,

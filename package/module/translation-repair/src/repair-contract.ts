@@ -602,6 +602,24 @@ export type ChunkRepairOutcome = {
   readonly checkerReadings: Readonly<Record<string, IssueCheckerReading>>;
 
   /**
+   * What the checkers said when asked AGAIN about the refined text.
+   *
+   * A SECOND ROUND ABOUT THE SAME ISSUE IDS, and the reason it is a separate
+   * field rather than an update to {@link ChunkRepairOutcome.checkerReadings}.
+   * The naturalness lane rewrites text the editors already repaired, then asks
+   * the checkers whether every confirmed issue survived the rewrite. That round
+   * is a rollback gate: it keeps the rewrite or discards the whole slice, and
+   * never revises {@link ChunkRepairOutcome.resolvedIssueIds}. Merging the two
+   * would present a verdict about the refined text as the one `resolved` rests
+   * on, and would hide a checker that changed its mind between them.
+   *
+   * EMPTY ON EVERY SLICE THE LANE DID NOT REWRITE, which is most of them: a
+   * slice with no confirmed issue buys no recheck, and neither does one whose
+   * refinement changed nothing.
+   */
+  readonly recheckReadings: Readonly<Record<string, IssueCheckerReading>>;
+
+  /**
    * Every accepted issue the checkers confirmed fixed IN THE PATCHED CANDIDATE,
    * whether or not an applied operation served it and whether or not that
    * candidate won.

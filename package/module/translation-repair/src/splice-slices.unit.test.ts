@@ -249,6 +249,7 @@ function outcomeFor(
     candidateResolvedIssueIds: [],
     // No checker round in this fixture, so nothing was said about any issue.
     checkerReadings: {},
+    recheckReadings: {},
     repairRegions: [],
     // The mapping reads only chunkIndex, repairedText, and changed. The rest
     // are filled to satisfy the contract, deliberately at their inert values so

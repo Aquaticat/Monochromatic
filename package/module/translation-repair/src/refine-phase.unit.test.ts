@@ -159,6 +159,7 @@ function settledOutcome(
     candidateResolvedIssueIds: [],
     // No checker round in this fixture, so nothing was said about any issue.
     checkerReadings: {},
+    recheckReadings: {},
     repairRegions: [],
     authorship,
     accuracyPatchSelected: false,
@@ -374,6 +375,76 @@ await describe({
               return finding.includes('refine-recheck-passed',);
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE BALLOTS THAT CAUSED A ROLLBACK, which is the one round '
+        + 'whose evidence decides what a reader sees: `refine-rolled-back` names '
+        + 'the issue and nothing else said who called it a regression, so a '
+        + 'slice that lost its rewrite could not be re-read at all',
+      fn: async function aRollbackKeepsItsEvidence() {
+        const phase = await runPhase({
+          resolvedIssueIds: ['adjudicated/one',],
+          checkerVerdict: 'not-fixed',
+        },);
+
+        /** The recheck round, as the outcome now carries it. */
+        const reading = phase.outcomes[0]?.recheckReadings['adjudicated/one'];
+        expect(reading?.configuredCheckers,).toBe(MODELS.checkerModelIds.length,);
+        expect(reading?.ballots.length,).toBe(MODELS.checkerModelIds.length,);
+        expect(
+          reading?.ballots
+            .every(function saidNotFixed(ballot,) {
+              return ballot.verdict === 'not-fixed';
+            },),
+        ).toBe(true,);
+        expect(reading?.tally.resolved,).toBe(false,);
+
+        // THE DECIDING ROUND IS UNTOUCHED. This fixture's accuracy stage bought
+        // no checker round, so a recheck landing in the wrong field would be
+        // visible here as a reading this outcome never earned.
+        expect(Object.keys(phase.outcomes[0]?.checkerReadings ?? {},).length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS the ballots of a recheck that PASSED as well, so agreement '
+        + 'and rollback leave the same kind of evidence and a reader cannot '
+        + 'mistake an unrecorded round for a unanimous one',
+      fn: async function apassingRecheckKeepsItsEvidence() {
+        const phase = await runPhase({
+          resolvedIssueIds: ['adjudicated/one',],
+          checkerVerdict: 'fixed',
+        },);
+        const reading = phase.outcomes[0]?.recheckReadings['adjudicated/one'];
+        expect(reading?.ballots.length,).toBe(MODELS.checkerModelIds.length,);
+        expect(reading?.tally.resolved,).toBe(true,);
+
+        // The refiner is disjoint from every checker in this roster, so no
+        // ballot here is a self-vote and the tally runs at full weight.
+        expect(
+          reading?.ballots
+            .some(function judgedItsOwnWork(ballot,) {
+              return ballot.wroteTheText;
+            },),
+        ).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'BUYS NO RECHECK on a slice with no confirmed issue, which is the '
+        + 'common case, so an empty reading means the round never ran rather '
+        + 'than a round that said nothing',
+      fn: async function nothingProvedBuysNoRound() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          checkerVerdict: 'fixed',
+        },);
+
+        // The rewrite still shipped; it simply had nothing to re-prove.
+        expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(Object.keys(phase.outcomes[0]?.recheckReadings ?? {},).length,).toBe(0,);
       },
     },),
 

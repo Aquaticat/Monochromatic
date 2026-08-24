@@ -75,6 +75,7 @@ export function notApplicableRepair(
     resolvedIssueIds: [],
     // NO CHECKER RAN, so there is nothing to have said.
     checkerReadings: {},
+    recheckReadings: {},
     candidateResolvedIssueIds: [],
     repairRegions: [],
     accuracyPatchSelected: false,

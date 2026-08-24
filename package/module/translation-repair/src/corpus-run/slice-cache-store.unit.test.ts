@@ -107,6 +107,7 @@ function catOutcome({ chunkIndex, }: { readonly chunkIndex: number; },) {
     candidateResolvedIssueIds: [],
     // No checker round in this fixture, so nothing was said about any issue.
     checkerReadings: {},
+    recheckReadings: {},
     repairRegions: [],
     // POPULATED rather than empty, because an empty record round-trips
     // identically whether the field crossed the wire or was dropped and rebuilt

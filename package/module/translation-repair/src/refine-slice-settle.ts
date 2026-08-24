@@ -11,6 +11,7 @@ import type {
   ChunkRepairOutcome,
   RepairModels,
 } from './repair-contract.ts';
+import type { IssueCheckerReading, } from './checker-reading.ts';
 import { collectRefinedAuthors, } from './issue-authors.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
 
@@ -230,7 +231,14 @@ export async function settleRefinedSlice(
   },);
   if (!retained.retained)
     return {
-      outcome: withRefineRounds,
+      outcome: {
+        ...withRefineRounds,
+        // THE ROUND THAT DECIDED THE ROLLBACK. This is the one path where the
+        // recheck changes what ships, so dropping its ballots here would lose
+        // the most consequential checker round the lane ever buys, and would
+        // leave `refine-rolled-back` naming issues with no evidence behind it.
+        recheckReadings: retained.readings,
+      },
       findings: [
         ...slice.findings,
         ...refined.findings,
@@ -322,6 +330,11 @@ export async function settleRefinedSlice(
       // rollback gate rather than a re-decision: it either keeps the rewrite or
       // discards it whole, and never revises what `resolvedIssueIds` says.
       checkerReadings: outcome.checkerReadings,
+      // THE RECHECK'S OWN, kept apart from the deciding round's rather than
+      // merged into it. Both rounds rule on the same issue ids, so a reader
+      // joining them would present a verdict about the refined text as though
+      // it were the one `resolved` rests on.
+      recheckReadings: retained.readings,
       // Marks every recorded repair in this slice as pre-refinement text, so a
       // grading sheet can say so instead of presenting an editor replacement as
       // the words that shipped.
@@ -398,6 +411,11 @@ async function retainsResolvedIssues(
 ): Promise<{
   readonly retained: boolean;
   readonly findings: readonly string[];
+
+  /**
+   * What each checker said this time, empty where no round was bought.
+   */
+  readonly readings: Readonly<Record<string, IssueCheckerReading>>;
 }> {
   /**
    * Issues the checkers had confirmed fixed in `T1`.
@@ -415,6 +433,9 @@ async function retainsResolvedIssues(
     return {
       retained: true,
       findings: [],
+      // NO ROUND RAN, so there is nothing to have said. Distinct from a round
+      // every checker answered with the same verdict, which leaves ballots.
+      readings: {},
     };
 
   /**
@@ -451,10 +472,12 @@ async function retainsResolvedIssues(
     return {
       retained: true,
       findings: [`refine-recheck-passed (${String(confirmed.length,)} issues)`,],
+      readings: checker.readings,
     };
   return {
     retained: false,
     findings: [`refine-rolled-back (${regressed.join(', ',)})`,],
+    readings: checker.readings,
   };
 }
 

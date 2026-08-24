@@ -174,6 +174,43 @@ const CHECKER_READING = {
 } as const satisfies IssueCheckerReading;
 
 /**
+ * What the same three said when asked again about the REFINED text.
+ *
+ * DELIBERATELY NOT THE SAME SHAPE as `CHECKER_READING`, and one voice changed
+ * its answer between them. That is the state the second field exists to keep:
+ * two rounds rule on the same issue id, so a reader holding one merged record
+ * could not tell which round said what, and the dissent that the deciding round
+ * carried would look as though it had never happened.
+ */
+const RECHECK_READING = {
+  ballots: [
+    {
+      modelId: 'hf:Qwen/Qwen3.8-27B',
+      verdict: 'fixed',
+      wroteTheText: false,
+    },
+    {
+      modelId: 'hf:openai/gpt-oss-120b',
+      verdict: 'fixed',
+      wroteTheText: false,
+    },
+    {
+      modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+      verdict: 'fixed',
+      wroteTheText: false,
+    },
+  ],
+  configuredCheckers: 3,
+  tally: {
+    fixed: 3,
+    notFixed: 0,
+    worse: 0,
+    resolved: true,
+    regressed: false,
+  },
+} as const satisfies IssueCheckerReading;
+
+/**
  * Builds the settled slice outcome the way `repairChunk` returns it.
  *
  * @param accuracyPatchSelected - whether the patched candidate won
@@ -198,6 +235,7 @@ function settledOutcome(
     // A REAL ROUND, two to one, because the point of carrying it is that a
     // one-vote majority and a unanimous one stop looking alike on disk.
     checkerReadings: { [ISSUE.issueId]: CHECKER_READING, },
+    recheckReadings: { [ISSUE.issueId]: RECHECK_READING, },
     repairRegions: collectRepairRegions({
       envelopes: [ENVELOPE,],
       applied: [OPERATION,],
@@ -443,6 +481,7 @@ await describe({
         const silent = {
           ...settledOutcome({ accuracyPatchSelected: true, },),
           checkerReadings: {},
+          recheckReadings: {},
         };
 
         /** Report over that outcome, as bytes. */
@@ -457,6 +496,66 @@ await describe({
           throw new Error('issue report should read back as a list',);
         const [record,] = readBack as readonly { readonly checkerReading?: unknown; }[];
         expect(record?.checkerReading,).toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS the refinement recheck as its own field rather than folding it into the deciding '
+        + 'round, since both rule on the same issue id and only the first one `resolved` rests on',
+      fn: async () => {
+        /** Issue report as bytes, carrying both rounds. */
+        const onDisk = JSON.stringify(buildIssueRecords({
+          outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
+          blocked: false,
+        },),);
+
+        /** Those bytes read back. */
+        const readBack: unknown = JSON.parse(onDisk,);
+        if (!Array.isArray(readBack,))
+          throw new Error('issue report should read back as a list',);
+
+        /** First record, as it came off disk. */
+        const [record,] = readBack as readonly {
+          readonly checkerReading?: unknown;
+          readonly recheckReading?: unknown;
+        }[];
+        expect(record?.checkerReading,).toEqual(CHECKER_READING,);
+        expect(record?.recheckReading,).toEqual(RECHECK_READING,);
+
+        // THE POINT OF TWO FIELDS. One voice answered differently across the
+        // rounds, and a merged record could not report that at all.
+        expect(record?.recheckReading,).not.toEqual(record?.checkerReading,);
+      },
+    },),
+
+    it({
+      name: 'RECORDS NOTHING for a slice the naturalness lane never rewrote, which is most of them, '
+        + 'so an absent recheck never reads as a rewrite that held',
+      fn: async () => {
+        /** Outcome the refinement lane bought no second round on. */
+        const unrefined = {
+          ...settledOutcome({ accuracyPatchSelected: true, },),
+          recheckReadings: {},
+        };
+
+        /** Report over that outcome, as bytes. */
+        const onDisk = JSON.stringify(buildIssueRecords({
+          outcomes: [unrefined,],
+          blocked: false,
+        },),);
+
+        /** Those bytes read back. */
+        const readBack: unknown = JSON.parse(onDisk,);
+        if (!Array.isArray(readBack,))
+          throw new Error('issue report should read back as a list',);
+        const [record,] = readBack as readonly {
+          readonly checkerReading?: unknown;
+          readonly recheckReading?: unknown;
+        }[];
+        expect(record?.recheckReading,).toBe(undefined,);
+
+        // The deciding round is untouched by the lane never running.
+        expect(record?.checkerReading,).toEqual(CHECKER_READING,);
       },
     },),
   ],

@@ -171,6 +171,26 @@ export type RepairIssueRecord = {
   readonly checkerReading?: IssueCheckerReading;
 
   /**
+   * The naturalness lane's SECOND round about this same issue, where it ran.
+   *
+   * NOT PART OF {@link RepairIssueRecord.resolved} AND NOT MERGED INTO
+   * {@link RepairIssueRecord.checkerReading}. The refinement recheck asks the
+   * checkers whether an already-confirmed issue survived a rewrite, and its
+   * only power is to roll the whole slice back. It never revises the deciding
+   * round, so a reader that folded the two together would report a verdict
+   * about text that may have been discarded as the verdict behind what shipped.
+   *
+   * WHERE IT IS ABSENT, in falling order of how often: every slice the lane did
+   * not rewrite, every slice whose rewrite touched no confirmed issue, and any
+   * record written before this field existed.
+   *
+   * WHERE IT IS PRESENT AND THE SLICE ROLLED BACK, the refined text it rules on
+   * is not the text that shipped. That is the case worth reading rather than
+   * the case to hide: it names which checkers judged the rewrite a regression.
+   */
+  readonly recheckReading?: IssueCheckerReading;
+
+  /**
    * Replaced regions serving this issue, so repair quality can be graded apart
    * from whether the issue was real. A region shared with other accepted issues
    * names them all, because one edit judged against one issue's claim has to be
@@ -365,6 +385,12 @@ export function buildIssueRecords(
          */
         const reading = outcome.checkerReadings[issue.issueId];
 
+        /**
+         * What they said about it again after refinement, absent where the
+         * lane bought no second round.
+         */
+        const recheck = outcome.recheckReadings[issue.issueId];
+
         return {
           chunkIndex: outcome.chunkIndex,
           issue,
@@ -374,6 +400,9 @@ export function buildIssueRecords(
           ...(reading === undefined
             ? {}
             : { checkerReading: reading, }),
+          ...(recheck === undefined
+            ? {}
+            : { recheckReading: recheck, }),
           repairRegions: regions,
           repairDisposition: judgeDisposition({
             regions,
