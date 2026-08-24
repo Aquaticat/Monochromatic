@@ -296,7 +296,7 @@ await describe({
             'data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use",'
               + '"id":"toolu_1","name":"whisker_report","input":{}}}',
             'data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta",'
-              + '"partial_json":"{\\"toebeans\\": 4}"}}',
+              + String.raw`"partial_json":"{\"toebeans\": 4}"}}`,
             'data: {"type":"content_block_stop","index":0}',
             'data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},'
               + '"usage":{"input_tokens":102,"output_tokens":15}}',
