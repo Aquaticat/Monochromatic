@@ -305,11 +305,16 @@ await describe({
           issues: [catIssue({ issueId: 'adjudicated/tense', },),],
           logger,
         },);
-        for (
-          const line of lines.filter(function isBallot(candidate,): boolean {
-            return candidate.startsWith('checker-ballot ',);
-          },)
-        ) {
+        /** Ballot lines the stage published. */
+        const published = lines.filter(function isBallot(candidate,): boolean {
+          return candidate.startsWith('checker-ballot ',);
+        },);
+
+        // COUNTED BEFORE SCANNED, so this case cannot pass by there being
+        // nothing to scan. A content check over an empty list is a check that
+        // reports clean exactly when the thing it guards has disappeared.
+        expect(published.length,).toBe(CHECKERS.length,);
+        for (const line of published) {
           expect(line.includes(SOURCE_TEXT,),).toBe(false,);
           expect(line.includes(PATCHED_TEXT,),).toBe(false,);
         }
