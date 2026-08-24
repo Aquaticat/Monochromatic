@@ -17,7 +17,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { groupByDigest, } from '../dist/final/node/index.mjs';
+import { groupByDigest, } from '../../dist/final/node/index.mjs';
 
 /**
  * One build's identifier.

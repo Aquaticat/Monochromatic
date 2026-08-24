@@ -1,5 +1,10 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { producerModelIds, } from '../candidate-select-model.ts';
+import {
+  coverageGapLines,
+  readStandingCoverage,
+} from '../producer-silence.ts';
 import { producerStandings, } from '../producer-standing.ts';
 import {
   rankStandings,
@@ -72,6 +77,19 @@ import {
 // block behind it, so there is nothing to pass; that is a real value here, not
 // an absence dressed as one.
 //
+// THE TWO SEATS ARE CREDITED SEPARATELY, which takes work because the lane
+// unions them. `collectRefinedAuthors` merges the editors with any refiner
+// whose rewrite won, so the refined outcome's authorship names both seats in
+// one list that cannot be split back apart. The editor column is therefore read
+// off the accuracy lane's own outcome, and the refiner column off
+// `settleRefinedSlice`'s `refinedBy`.
+//
+// WHO IS MISSING FROM EACH TABLE IS REPORTED TOO, by `producer-silence.ts`, and
+// the two reasons are separated rather than lumped: a model its provider
+// refused wrote nothing, while a model whose wording every peer proposed word
+// for word shipped without a ballot. The first is evidence nobody bought yet
+// and the second is evidence already paid for.
+//
 // SPENDS QUOTA, and more per slice than the writer calibration does: a whole
 // repair lane rather than one stage. Point `TRANSLATION_REPAIR_RUNS_DIR` at a
 // throwaway directory.
@@ -110,15 +128,30 @@ type SliceRounds = {
   readonly refineAsked: boolean;
 
   /**
-   * Models that wrote the text this slice actually shipped.
+   * Models that wrote the repair this slice shipped, BEFORE refinement.
    *
    * SEPARATE FROM THE ROUNDS, AND NOT A PREFERENCE. Nobody chose between
    * alternatives on a slice where every editor proposed the same text, so
    * shipping there says the ensemble agreed and says nothing about who would
    * have won a vote. Counted anyway, because without it such a slice is
    * invisible: it repaired, and the standing records nothing.
+   *
+   * READ OFF THE PRE-REFINEMENT OUTCOME ON PURPOSE. `collectRefinedAuthors`
+   * unions the editors with any refiner whose rewrite won, so the refined
+   * outcome's authorship credits both seats in one list and cannot be split
+   * back apart. Taking it from the accuracy lane's own outcome keeps this
+   * column about editors, which is what a reader of an EDITOR report assumes.
    */
-  readonly shipped: readonly RosterModelId[];
+  readonly editorShipped: readonly RosterModelId[];
+
+  /**
+   * Models whose rewrite is in the text this slice shipped.
+   *
+   * THE REFINER SEAT'S EQUIVALENT, and the reason `settleRefinedSlice` returns
+   * `refinedBy` at all. Empty on every slice where no rewrite shipped, which
+   * includes a rewrite the recheck rolled back.
+   */
+  readonly refinerShipped: readonly RosterModelId[];
 };
 
 /**
@@ -240,7 +273,8 @@ async function runOne(
       stages: REFINER_ROUND_STAGES,
     },),
     refineAsked: refined.asked,
-    shipped: shippedAuthors({ authorship: refined.outcome.authorship, },),
+    editorShipped: shippedAuthors({ authorship: outcome.authorship, },),
+    refinerShipped: refined.refinedBy,
   };
 }
 
@@ -260,9 +294,11 @@ function reportSeat(
   {
     seat,
     perSlice,
+    produced,
   }: {
     readonly seat: string;
     readonly perSlice: readonly (readonly SelectionRound[])[];
+    readonly produced: readonly RosterModelId[];
   },
 ): void {
   /**
@@ -309,28 +345,48 @@ function reportSeat(
   }
 
   /**
-   * Roster models that wrote no candidate at all.
+   * Which of the seated models this table actually describes.
    *
-   * NAMED RATHER THAN OMITTED. `producerStandings` lists only models that
-   * wrote something, so a model whose provider was out of budget simply
-   * vanishes from the table, and absence there reads exactly like a model
-   * that wrote and lost. During a provider outage that is half the roster.
+   * NAMED RATHER THAN OMITTED. `producerStandings` carries a row only for a
+   * model somebody voted on, so a model whose provider was out of budget
+   * vanishes, and absence there reads exactly like a model that wrote and
+   * lost. During a provider outage that is half the roster.
    */
-  const silent = RUN_ROSTER.filter(function wroteNothing(modelId,): boolean {
-    return !standings.some(function isIt(standing,): boolean {
-      return standing.modelId === modelId;
-    },);
+  const coverage = readStandingCoverage({
+    roster: RUN_ROSTER,
+    standings,
+    produced,
   },);
 
-  if (silent.length > 0) {
-    console.log(
-      `  NO JUDGED CANDIDATE, so this standing says nothing about them: ${silent.join(', ',)}. `
-        + 'Two different things do that and the SHIPPED lines below tell them apart: a model '
-        + 'refused for budget never wrote, and a model whose text every other editor proposed '
-        + 'word for word wrote the thing that shipped without any ballot being cast over it. '
-        + 'Neither is a poor showing.',
-    );
+  for (const line of coverageGapLines({ coverage, },)) {
+    console.log(`  ${line}`,);
   }
+}
+
+/**
+ * Every model holding a stake in any candidate one seat's rounds judged.
+ *
+ * @param perSlice - that seat's rounds, grouped by the slice that bought them
+ *
+ * @returns Model ids, repeats included, in the order the slates carried them
+ *
+ * @example
+ * ```ts
+ * const wrote = judgedAuthors({ perSlice, },);
+ * ```
+ */
+function judgedAuthors(
+  { perSlice, }: { readonly perSlice: readonly (readonly SelectionRound[])[]; },
+): readonly RosterModelId[] {
+  return perSlice
+    .flat()
+    .flatMap(function slateAuthors(round,): readonly RosterModelId[] {
+      return round
+        .producers
+        .flatMap(function stakeholders(producer,): readonly RosterModelId[] {
+          return producerModelIds(producer,);
+        },);
+    },);
 }
 
 /**
@@ -393,18 +449,18 @@ function reportShipped(
    * Slices that shipped a repair without any editor round being judged.
    */
   const unvoted = perSlice.filter(function converged(slice,): boolean {
-    return (slice.editor.length === 0) && (slice.shipped.length > 0);
+    return (slice.editor.length === 0) && (slice.editorShipped.length > 0);
   },);
 
   /**
    * Slices that shipped a repair at all.
    */
   const shipping = perSlice.filter(function repaired(slice,): boolean {
-    return slice.shipped.length > 0;
+    return slice.editorShipped.length > 0;
   },);
 
   console.log(
-    `\nSHIPPED on ${String(shipping.length,)} of ${String(perSlice.length,)} slices, `
+    `\nEDITORS SHIPPED on ${String(shipping.length,)} of ${String(perSlice.length,)} slices, `
       + `${String(unvoted.length,)} of them with no editor round judged at all`,
   );
 
@@ -419,7 +475,7 @@ function reportShipped(
   const credits = new Map<RosterModelId, number>();
 
   for (const slice of shipping) {
-    for (const modelId of slice.shipped) {
+    for (const modelId of slice.editorShipped) {
       credits.set(
         modelId,
         (credits.get(modelId,) ?? 0) + 1,
@@ -516,22 +572,47 @@ async function main(): Promise<void> {
         + `${String(editorCount,)} editor rounds, `
         + `${String(refinerCount,)} refiner rounds`
         + `${rounds.refineAsked ? '' : ' (nothing eligible to rewrite)'}, `
-        + `${String(rounds.shipped.length,)} shipping authors`,
+        + `${String(rounds.editorShipped.length,)} editors shipping`,
     );
   }
 
+  /**
+   * Editor rounds, grouped by the slice that bought them.
+   */
+  const editorPerSlice = perSlice.map(function editorRounds(rounds,): readonly SelectionRound[] {
+    return rounds.editor;
+  },);
+
+  /**
+   * Refiner rounds, grouped the same way.
+   */
+  const refinerPerSlice = perSlice.map(function refinerRounds(rounds,): readonly SelectionRound[] {
+    return rounds.refiner;
+  },);
+
   reportSeat({
     seat: 'EDITOR',
-    perSlice: perSlice.map(function editorRounds(rounds,): readonly SelectionRound[] {
-      return rounds.editor;
-    },),
+    perSlice: editorPerSlice,
+    // JUDGED AUTHORS PLUS SHIPPING ONES, because a slice where every editor
+    // proposed the same text ships it with no round at all, and a model seen
+    // only there wrote something no ballot names.
+    produced: [
+      ...judgedAuthors({ perSlice: editorPerSlice, },),
+      ...perSlice.flatMap(function shippingEditors(rounds,): readonly RosterModelId[] {
+        return rounds.editorShipped;
+      },),
+    ],
   },);
 
   reportSeat({
     seat: 'REFINER',
-    perSlice: perSlice.map(function refinerRounds(rounds,): readonly SelectionRound[] {
-      return rounds.refiner;
-    },),
+    perSlice: refinerPerSlice,
+    produced: [
+      ...judgedAuthors({ perSlice: refinerPerSlice, },),
+      ...perSlice.flatMap(function shippingRefiners(rounds,): readonly RosterModelId[] {
+        return rounds.refinerShipped;
+      },),
+    ],
   },);
 
   reportRefineReach({ perSlice, },);

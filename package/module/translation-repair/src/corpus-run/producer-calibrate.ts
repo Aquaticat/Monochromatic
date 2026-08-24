@@ -1,11 +1,17 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { producerModelIds, } from '../candidate-select-model.ts';
 import { errorName, } from '../error-name.ts';
+import {
+  coverageGapLines,
+  readStandingCoverage,
+} from '../producer-silence.ts';
 import { producerStandings, } from '../producer-standing.ts';
 import {
   rankStandings,
   standingLine,
 } from '../producer-standing-report.ts';
+import type { RosterModelId, } from '../roster-id.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import { runTranslateStage, } from '../translate-stage.ts';
 import {
@@ -42,6 +48,14 @@ import {
 // weight one leads by. A gap smaller than its own denominator supports is not
 // a gap.
 //
+// WHO IS MISSING FROM THE TABLE IS REPORTED TOO. `producerStandings` carries a
+// row only for a model somebody voted on, so a model its provider refused for
+// budget simply vanishes, and an absent row reads exactly like a model that
+// wrote and lost. This runner seated the writers on a day one of the two
+// providers was empty. `producer-silence.ts` splits the seats three ways and
+// names both silent groups; the slates are what tell them apart, which is why
+// every round's authors are carried beside its ballots.
+//
 // SPENDS QUOTA, roughly twenty calls per slice before any re-ask. Point
 // `TRANSLATION_REPAIR_RUNS_DIR` at a throwaway directory.
 
@@ -51,11 +65,38 @@ import {
 const DEFAULT_SLICES = 10;
 
 /**
+ * What one slice produced, with everyone who wrote on it.
+ *
+ * THE AUTHORS ARE CARRIED APART FROM THE ROUND, because a standing is summed
+ * from ballots and a slate can hold a candidate no ballot ever named. Without
+ * this list a model its provider refused and a model whose wording every peer
+ * proposed word for word are both simply absent from the table, and the two
+ * call for opposite readings.
+ *
+ * @example
+ * ```ts
+ * const { round, authors, } = await runOne({ slice, },);
+ * ```
+ */
+type SliceRound = {
+  /**
+   * Slate and ballots, in the shape a standing is summed from.
+   */
+  readonly round: SelectionRound;
+
+  /**
+   * Every model holding a stake in any candidate on that slate, including one
+   * whose text was collapsed into an identical peer's.
+   */
+  readonly authors: readonly RosterModelId[];
+};
+
+/**
  * Runs one slice with every model writing and every model judging.
  *
  * @param slice - passage to translate
  *
- * @returns Slate and ballots of that round
+ * @returns Slate, ballots and authors of that round
  *
  * @example
  * ```ts
@@ -64,7 +105,7 @@ const DEFAULT_SLICES = 10;
  */
 async function runOne(
   { slice, }: { readonly slice: BenchSlice; },
-): Promise<SelectionRound> {
+): Promise<SliceRound> {
   /**
    * Logger tagged for this slice.
    */
@@ -88,13 +129,23 @@ async function runOne(
     l,
   },);
 
+  /**
+   * Provenance of every candidate the judges were shown, in slate order.
+   */
+  const producers = result
+    .slate
+    .map(function toProducer(entry,) {
+      return entry.producer;
+    },);
+
   return {
-    producers: result
-      .slate
-      .map(function toProducer(entry,) {
-        return entry.producer;
-      },),
-    ballots: result.ballots,
+    round: {
+      producers,
+      ballots: result.ballots,
+    },
+    authors: producers.flatMap(function stakeholders(producer,): readonly RosterModelId[] {
+      return producerModelIds(producer,);
+    },),
   };
 }
 
@@ -136,7 +187,7 @@ async function main(): Promise<void> {
    * and running slices concurrently on top would multiply that into the
    * providers at once for no gain in what is being measured.
    */
-  const rounds: SelectionRound[] = [];
+  const rounds: SliceRound[] = [];
 
   for (const slice of sample) {
     try {
@@ -157,10 +208,39 @@ async function main(): Promise<void> {
     }
   }
 
+  /**
+   * What the surviving rounds came to.
+   */
+  const standings = producerStandings({
+    rounds: rounds.map(function toRound(sliceRound,): SelectionRound {
+      return sliceRound.round;
+    },),
+  },);
+
   console.log(`\nSTANDING over ${String(rounds.length,)} rounds, best first:`,);
-  for (const standing of rankStandings({ standings: producerStandings({ rounds, },), },)) {
+  for (const standing of rankStandings({ standings, },)) {
     console.log(`  ${standingLine({ standing, },)}`,);
   }
+
+  /**
+   * Which of the seated models that table actually describes.
+   *
+   * READ AFTER THE TABLE IS PRINTED, so a run whose evidence disagrees with its
+   * own roster still leaves every standing it paid for on stdout before the
+   * refusal.
+   */
+  const coverage = readStandingCoverage({
+    roster: RUN_ROSTER,
+    standings,
+    produced: rounds.flatMap(function authorsOf(sliceRound,): readonly RosterModelId[] {
+      return sliceRound.authors;
+    },),
+  },);
+
+  for (const line of coverageGapLines({ coverage, },)) {
+    console.log(`  ${line}`,);
+  }
+
   console.log(
     '\nA lead smaller than its own denominator supports is not a lead.'
       + ' Read the counts before seating anyone.',

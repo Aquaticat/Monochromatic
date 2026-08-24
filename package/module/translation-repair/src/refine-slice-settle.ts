@@ -64,6 +64,19 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
    * run one that BOUGHT rather than one that only resumed.
    */
   readonly asked: boolean;
+
+  /**
+   * Models whose rewrite is in the text this returns, empty on every path
+   * where no rewrite ships: a non-translation slice, a rewriter that changed
+   * nothing, and a rewrite the recheck rolled back.
+   *
+   * NOT STORED, FOR THE REASON `asked` IS NOT. It names what THIS run bought,
+   * and a slice resumed from disk bought no rewrite. `outcome.authorship`
+   * already carries who wrote the text for every later reader; this exists so
+   * an instrument can tell a refiner whose rewrite shipped without a ballot
+   * from one that never answered, which `authorship` unions away.
+   */
+  readonly refinedBy: readonly RosterModelId[];
 };
 
 /**
@@ -148,6 +161,8 @@ export async function settleRefinedSlice(
       outcome,
       findings: [],
       asked: false,
+      // Nothing was offered to a rewriter, so nobody rewrote anything.
+      refinedBy: [],
     };
 
   /**
@@ -208,6 +223,9 @@ export async function settleRefinedSlice(
         ...refined.findings,
       ],
       asked,
+      // Rewriters answered and none of their text is in what ships, so none of
+      // them wrote it.
+      refinedBy: [],
     };
 
   /**
@@ -245,6 +263,8 @@ export async function settleRefinedSlice(
         ...retained.findings,
       ],
       asked,
+      // The rewrite was rolled back, so what ships is the editors' text again.
+      refinedBy: [],
     };
 
   /**
@@ -348,6 +368,8 @@ export async function settleRefinedSlice(
       ...refinementDefects.findings,
     ],
     asked,
+    // THE ONLY PATH WHERE A REWRITE SHIPS, so the only one that names anybody.
+    refinedBy: refined.contributors,
   };
 }
 

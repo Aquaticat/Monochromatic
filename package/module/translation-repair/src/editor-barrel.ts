@@ -32,6 +32,12 @@ export {
   type ShippedProducer,
 } from './editor-selection-result.ts';
 export {
+  coverageGapLines,
+  readStandingCoverage,
+  type StandingCoverage,
+  UnseatedStandingError,
+} from './producer-silence.ts';
+export {
   rankStandings,
   standingLine,
 } from './producer-standing-report.ts';

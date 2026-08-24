@@ -24,7 +24,7 @@ import {
   ArtifactParseError,
   OffRosterModelError,
   readRepairRounds,
-} from '../dist/final/node/index.mjs';
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Model the roster seats today, used wherever a case is not about the roster.
