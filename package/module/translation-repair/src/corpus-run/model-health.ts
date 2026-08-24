@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { errorName, } from '../error-name.ts';
 import {
   createRunClient,
   RUN_PER_CALL_TIMEOUT_MS,
@@ -44,6 +45,16 @@ const HEALTH_PROMPT =
  * fit in one readable screen.
  */
 const RAW_REPLY_PREVIEW_CHARS = 300;
+
+/**
+ * Exit code left behind when some model could not be reached at all.
+ *
+ * A ROSTER THAT CANNOT BE FULLY PROBED IS A FINDING, and the caller of a
+ * diagnostic reads its exit code. Preserved from the behaviour this replaced,
+ * where an unreachable model crashed the probe and produced a non-zero exit as
+ * a side effect of dying.
+ */
+const ROSTER_INCOMPLETE = 1;
 
 /**
  * Schema the reply must satisfy.
@@ -109,43 +120,84 @@ async function reportModelHealth(): Promise<void> {
    */
   const client = createRunClient();
 
-  for (const modelId of RUN_ROSTER) {
-    /**
-     * What this model returned, or the fault that stopped it.
-     */
-    /* oxlint-disable-next-line no-await-in-loop -- one model at a time on purpose: this is a diagnostic, and concurrent calls would let a provider rate limit read as a model fault */
-    const outcome = await client.chatJson({
-      modelId,
-      messages: [
-        {
-          role: 'user',
-          content: HEALTH_PROMPT,
-        },
-      ],
-      responseFormat: HEALTH_RESPONSE_FORMAT,
-      validate: isHealthReply,
-      exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-      signal: AbortSignal.timeout(RUN_PER_CALL_TIMEOUT_MS,),
-    },);
+  /**
+   * Models whose probe threw before any outcome could be read.
+   *
+   * SEPARATE FROM AN UNHEALTHY REPLY, which is the distinction this whole probe
+   * exists to draw. A model that answered badly is evidence about the model; a
+   * model that could not be asked is evidence about the provider, and reporting
+   * the second as the first would send a reader looking in the wrong place.
+   */
+  const unreachable: string[] = [];
 
-    l.info(
-      `${modelId}: ${outcome.kind}${
-        ('detail' in outcome) ? ` -- ${outcome.detail}` : ''
-      }`,
-    );
-    if (('rawText' in outcome) && ((typeof outcome.rawText) === 'string'))
+  for (const modelId of RUN_ROSTER) {
+    try {
+      /**
+       * What this model returned, or the fault that stopped it.
+       */
+      /* oxlint-disable-next-line no-await-in-loop -- one model at a time on purpose: this is a diagnostic, and concurrent calls would let a provider rate limit read as a model fault */
+      const outcome = await client.chatJson({
+        modelId,
+        messages: [
+          {
+            role: 'user',
+            content: HEALTH_PROMPT,
+          },
+        ],
+        responseFormat: HEALTH_RESPONSE_FORMAT,
+        validate: isHealthReply,
+        exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+        signal: AbortSignal.timeout(RUN_PER_CALL_TIMEOUT_MS,),
+      },);
+
       l.info(
-        `${modelId}: first ${
-          String(RAW_REPLY_PREVIEW_CHARS,)
-        } chars of raw reply: ${
-          JSON.stringify(outcome.rawText
-            .slice(
-              0,
-              RAW_REPLY_PREVIEW_CHARS,
-            ),)
+        `${modelId}: ${outcome.kind}${
+          ('detail' in outcome) ? ` -- ${outcome.detail}` : ''
         }`,
       );
+      if (('rawText' in outcome) && ((typeof outcome.rawText) === 'string'))
+        l.info(
+          `${modelId}: first ${
+            String(RAW_REPLY_PREVIEW_CHARS,)
+          } chars of raw reply: ${
+            JSON.stringify(outcome.rawText
+              .slice(
+                0,
+                RAW_REPLY_PREVIEW_CHARS,
+              ),)
+          }`,
+        );
+    } catch (error) {
+      // A THROW HERE IS A REPORT, not the end of the probe. Before this, the
+      // first model whose provider was out of budget ended the run and every
+      // model after it went unreported, which is precisely the moment someone
+      // is running this.
+      /**
+       * What was thrown, rendered and bounded so a long provider body cannot
+       * fill the report.
+       */
+      const detail = String(error,)
+        .slice(
+          0,
+          RAW_REPLY_PREVIEW_CHARS,
+        );
+
+      unreachable.push(modelId,);
+      l.warn(`${modelId}: UNREACHABLE (${errorName({ error, },)}): ${detail}`,);
+    }
   }
+
+  l.info(
+    `ROSTER ${String(RUN_ROSTER.length - unreachable.length,)} of `
+      + `${String(RUN_ROSTER.length,)} models answered${
+        (unreachable.length === 0)
+          ? ''
+          : `; unreachable: ${unreachable.join(', ',)}`
+      }`,
+  );
+
+  if (unreachable.length > 0)
+    process.exitCode = ROSTER_INCOMPLETE;
 }
 
 if (import.meta.main)
