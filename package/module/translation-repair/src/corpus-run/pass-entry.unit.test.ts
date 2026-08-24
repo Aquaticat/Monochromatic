@@ -460,7 +460,7 @@ await describe({
   children: [
     it({
       name:
-        'settles an entry into ONE artifact at schema version 2 carrying BOTH lanes over ONE '
+        'settles an entry into ONE artifact at schema version 3 carrying BOTH lanes over ONE '
         + 'preparation, which is what the whole two-lane generation is for: the two documents differ '
         + 'by lane rather than by two runs of the aligner',
       fn: async () => {
