@@ -484,6 +484,122 @@ export function pageCarriesEveryWording(
 }
 
 /**
+ * Raised when a page about to be published disagrees with the artifact that
+ * produced it.
+ *
+ * NAMES SLICES AND COUNTS AND QUOTES NOTHING. A run directory holds unlicensed
+ * corpus wording, and an error message travels further than the directory it
+ * was raised in: into logs, into a pass report, into a session transcript.
+ *
+ * @example
+ * ```ts
+ * throw new PublishedPageDisagreesError({ message: 'lintong: 1 wording missing', },);
+ * ```
+ */
+export class PublishedPageDisagreesError extends Error {
+  /**
+   * @param message - what disagreed, in slice indices and character counts
+   */
+  constructor({ message, }: { readonly message: string; },) {
+    super(message,);
+    this.name = 'PublishedPageDisagreesError';
+  }
+}
+
+/**
+ * Refuses a page that does not carry what its artifact says would ship.
+ *
+ * CALLED BEFORE THE PAGE IS WRITTEN, which is what makes the refusal cheap and
+ * truthful. `pass-entry.ts` already reads its tally line before publishing for
+ * the same reason: a question that can refuse an entry has to be asked while
+ * refusing still costs nothing, because raised after the write it would leave a
+ * page on disk that no artifact accounts for. Asked here, a disagreement
+ * publishes nothing and settles nothing, and the stage caches still hold every
+ * answer, so a re-run reproduces the contradiction rather than losing it.
+ *
+ * ONE-SIDED, WHICH IS WHY IT MAY REFUSE AN ENTRY AT ALL. Neither check can call
+ * a correct page wrong: the scan asks only that each wording occur in order,
+ * which a correct page satisfies by construction, and the arithmetic is an
+ * equality only where no anchor was filled and a floor otherwise. A red result
+ * is a defect in assembly or publishing rather than a judgement about quality.
+ *
+ * @param artifact - settled entry, read for what each slice would carry
+ *
+ * @param archive - archive English this entry is published over
+ *
+ * @param pageText - assembled page, not yet written
+ *
+ * @param entryId - person entry, named in the refusal
+ *
+ * @throws {@link PublishedPageDisagreesError} when the page lost, reordered, or
+ * gained text against what the artifact accounts for
+ *
+ * @example
+ * ```ts
+ * refusePageThatDisagrees({ artifact, archive, pageText, entryId, },);
+ * ```
+ */
+export function refusePageThatDisagrees(
+  {
+    artifact,
+    archive,
+    pageText,
+    entryId,
+  }: {
+    readonly artifact: WouldShipSource;
+    readonly archive: ParsedArchiveTextV2;
+    readonly pageText: string;
+    readonly entryId: string;
+  },
+): void {
+  /**
+   * Wordings the page does not carry in slice order.
+   */
+  const { missing, } = pageCarriesEveryWording({
+    artifact,
+    pageText,
+  },);
+
+  if (missing.length > 0)
+    throw new PublishedPageDisagreesError({
+      message: `${entryId}: ${String(missing.length,)} wording(s) the artifact says would ship are not in `
+        + `the page in slice order, at slices ${missing
+          .map(function named(gone,): string {
+            return `${String(gone.chunkIndex,)} (${String(gone.characters,)} characters)`;
+          },)
+          .join(', ',)}`,
+    },);
+
+  /**
+   * What the page should weigh against what it does.
+   */
+  const weight = pageWeighsWhatItShould({
+    artifact,
+    archive,
+    pageText,
+  },);
+
+  if (!pageWeightRefutes({ weight, },))
+    return;
+  if (weight.kind === 'unweighable')
+    return;
+
+  /**
+   * Note that a filled anchor makes the expectation a floor, said only where it
+   * applies so an ordinary refusal does not carry an irrelevant caveat.
+   */
+  const caveat = weight.exact
+    ? ''
+    : ', which a filled anchor makes a floor rather than an equality';
+
+  throw new PublishedPageDisagreesError({
+    message: `${entryId}: page is ${String(weight.actual - weight.expected,)} characters off the `
+      + `${String(weight.expected,)} the archive plus every slice change comes to${caveat}`
+      + '. Text no slice decided on was lost or added',
+  },);
+}
+
+/**
  * How one settled entry's artifact and published page line up.
  *
  * @example

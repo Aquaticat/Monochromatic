@@ -26,6 +26,7 @@ import {
   type WouldShipSource,
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
+import { refusePageThatDisagrees, } from './published-page-check.ts';
 
 /**
  * Directory under a runs dir holding the published corpus tree.
@@ -233,6 +234,21 @@ export async function publishFixedPage(
     targetText: archiveText,
     slices,
     replacements,
+  },);
+
+  // BEFORE THE WRITE, so a page that disagrees with its artifact publishes
+  // nothing rather than landing on disk for a later reader to find. The archive
+  // handed in here is the text actually spliced rather than the copy the
+  // artifact stores, so the weighing is an equality on every entry instead of
+  // reporting an older artifact as unweighable.
+  refusePageThatDisagrees({
+    artifact,
+    archive: {
+      kind: 'stored',
+      text: archiveText,
+    },
+    pageText,
+    entryId,
   },);
 
   /**

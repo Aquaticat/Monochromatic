@@ -290,6 +290,7 @@ export * from './corpus-barrel.ts';
 export * from './displacement-barrel.ts';
 export * from './document-barrel.ts';
 export * from './generation-barrel.ts';
+export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';
 export * from './editor-barrel.ts';
 export * from './pipeline-barrel.ts';

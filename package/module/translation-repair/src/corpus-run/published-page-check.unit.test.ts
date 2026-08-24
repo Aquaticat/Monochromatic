@@ -21,6 +21,8 @@ import {
   pageWeighsWhatItShould,
   pageWeightRefutes,
   pairPublishedPages,
+  PublishedPageDisagreesError,
+  refusePageThatDisagrees,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 
@@ -411,6 +413,160 @@ await describe({
             pageText: SWAPPED_PAGE,
           },),
         },),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: refusePageThatDisagrees.name,
+  children: [
+    it({
+      name:
+        'PUBLISHES A CORRECT PAGE WITHOUT COMPLAINT, which is the control the refusals rest on: a '
+        + 'guard that refused everything would satisfy them all and stop every entry',
+      fn: async () => {
+        expect(() => {
+          refusePageThatDisagrees({
+            artifact: artifactOver(ONE_SWAP,),
+            archive: {
+              kind: 'stored',
+              text: ARCHIVE_PAGE,
+            },
+            pageText: SWAPPED_PAGE,
+            entryId: 'Mittens',
+          },);
+        },).not.toThrow();
+      },
+    },),
+
+    it({
+      name:
+        'REFUSES A PAGE MISSING A WORDING, naming the entry and the slice so the refusal is actionable '
+        + 'from a log line alone',
+      fn: async () => {
+        /**
+         * Whatever the guard raised, caught so its class and text can be read.
+         */
+        const refusal = ((): unknown => {
+          try {
+            refusePageThatDisagrees({
+              artifact: artifactOver(ONE_SWAP,),
+              archive: {
+                kind: 'stored',
+                text: ARCHIVE_PAGE,
+              },
+              pageText: ARCHIVE_PAGE,
+              entryId: 'Mittens',
+            },);
+            return undefined;
+          } catch (error) {
+            return error;
+          }
+        })();
+
+        expect(refusal,).toBeInstanceOf(PublishedPageDisagreesError,);
+        expect((refusal as Error).message,).toContain('Mittens',);
+        expect((refusal as Error).message,).toContain('slice',);
+      },
+    },),
+
+    it({
+      name:
+        'REFUSES A PAGE THAT LOST TEXT NO SLICE DECIDED ON even though every wording is present, which '
+        + 'is the case a live control caught: two hundred characters cut from a real page left the '
+        + 'occurrence scan reporting nothing missing',
+      fn: async () => {
+        /**
+         * Correct page with its unsliced tail removed, which no reading covers.
+         */
+        const cut = SWAPPED_PAGE.replace(
+          ', and nobody decided anything about that',
+          '',
+        );
+
+        expect(pageCarriesEveryWording({
+          artifact: artifactOver(ONE_SWAP,),
+          pageText: cut,
+        },).missing,).toEqual([],);
+
+        expect(() => {
+          refusePageThatDisagrees({
+            artifact: artifactOver(ONE_SWAP,),
+            archive: {
+              kind: 'stored',
+              text: ARCHIVE_PAGE,
+            },
+            pageText: cut,
+            entryId: 'Mittens',
+          },);
+        },).toThrow(PublishedPageDisagreesError,);
+      },
+    },),
+
+    it({
+      name:
+        'QUOTES NO PASSAGE IN ITS REFUSAL, which is a corpus rule rather than a style one. A run '
+        + 'directory holds unlicensed wording and an error message travels further than the directory '
+        + 'it was raised in: into logs, into a pass report, into a session transcript',
+      fn: async () => {
+        /**
+         * Whatever the guard raised, caught so its text can be inspected.
+         */
+        const refusal = ((): unknown => {
+          try {
+            refusePageThatDisagrees({
+              artifact: artifactOver(ONE_SWAP,),
+              archive: {
+                kind: 'stored',
+                text: ARCHIVE_PAGE,
+              },
+              pageText: ARCHIVE_PAGE,
+              entryId: 'Mittens',
+            },);
+            return undefined;
+          } catch (error) {
+            return error;
+          }
+        })();
+
+        /**
+         * What the refusal said, read once for the three claims below.
+         */
+        const said = (refusal as Error).message;
+
+        expect(said.includes(FIRST_NAP,),).toBe(false,);
+        expect(said.includes(OLD_NAP,),).toBe(false,);
+        expect(said.includes(ARCHIVE_PAGE,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name:
+        'ACCEPTS A PAGE LONGER THAN THE SUM WHERE AN ANCHOR WAS FILLED, because `spliceSlices` composes '
+        + 'the separators around an inserted rendering rather than carrying them in any row. Refusing '
+        + 'on that would stop every entry that fills a gap, which is the work this pipeline exists for',
+      fn: async () => {
+        expect(() => {
+          refusePageThatDisagrees({
+            artifact: artifactOver([
+              {
+                incumbent: OLD_NAP,
+                ships: FIRST_NAP,
+              },
+              {
+                incumbent: '',
+                ships: SECOND_NAP,
+              },
+            ],),
+            archive: {
+              kind: 'stored',
+              text: ARCHIVE_PAGE,
+            },
+            pageText: `${SWAPPED_PAGE}\n\n${SECOND_NAP}\n`,
+            entryId: 'Mittens',
+          },);
+        },).not.toThrow();
       },
     },),
   ],
