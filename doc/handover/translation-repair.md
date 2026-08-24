@@ -19698,3 +19698,93 @@ Its refiner standing will be empty,
 and that emptiness means the lane was never run,
 not that the rewriters were silent.
 The full-roster re-run is the one that measures the refiner seat.
+
+## The writer calibration had no silent-model list at all (`#200`)
+
+Found 2026-08-24 by auditing `producer-calibrate.ts` against its own module note,
+the same method that had just falsified `editor-calibrate.ts`'s note twice.
+
+### What the audit confirmed and what it refuted
+
+Three claims in the note hold:
+`translatorModelIds: RUN_ROSTER` and `judgeModelIds: RUN_ROSTER`
+really do seat every model as writer and judge,
+self-votes really are discounted,
+and every rate really does carry its count.
+
+The suspected consensus blind spot is NOT there.
+`editor-ensemble.ts:387` ships any sole candidate unjudged;
+`translate-judge.ts:314` short-circuits only when the sole survivor IS the incumbent,
+and its own comment gives the reason a sole FRESH candidate is still judged:
+the repair pipeline's later safeguards,
+the resolution checkers and the unchanged-versus-patched selection,
+do not exist on the translate path.
+On the editor path they do,
+which is why the editor's short-circuit is a measurement gap and not a correctness one.
+
+### The gap that was real
+
+`producerStandings` carries a row only for a model somebody voted on.
+A model its provider refused for budget writes nothing,
+so it vanishes from the table,
+and an absent row reads exactly like a model that wrote and lost.
+
+`editor-calibrate.ts` named those models.
+`producer-calibrate.ts` did not,
+and that is the instrument that seated the current three writers,
+on a day Charm Hyper was empty.
+
+### What landed, in `eb60eac09`
+
+`producer-silence.ts` splits a seated roster three ways:
+judged, wrote but was never voted on, and wrote nothing at all.
+The two silent groups are named separately because they call for opposite readings:
+one is evidence already paid for,
+the other is evidence nobody has bought yet.
+The silent line carries both denominators, as `covers N of M seats`.
+
+A standing or a slate naming a model the run never seated raises `UnseatedStandingError`,
+since coverage of one roster cannot be read off another.
+Both inputs are checked, because either one naming an unseated model
+means the table and the roster came from different runs.
+
+It is read AFTER the standings are printed in both callers,
+so a run whose evidence disagrees with its own roster
+still leaves every standing it paid for on stdout before the refusal.
+
+`editor-calibrate.ts` drops its inline version and uses the shared one.
+
+### A defect this found in the same file, introduced earlier the same day
+
+`SliceRounds.shipped` was read off the REFINED outcome.
+`issue-authors.ts:354` unions the editors with any refiner whose rewrite won,
+so that field named both seats in one list,
+printed under a heading a reader takes as editor credit.
+With both rosters at all ten the mixing is invisible in the ids and wrong in the attribution.
+
+The editor column now comes from the accuracy lane's own outcome, before refinement.
+The refiner column comes from a new `refinedBy` on `RefinedSliceOutcome`,
+which names the models whose rewrite is actually in the text that ships:
+empty on a non-translation slice, on a rewriter that changed nothing,
+and on a rewrite the recheck rolled back.
+It is kept off the cached `RefinedSliceSettlement` for the reason `asked` is:
+a slice resumed from disk bought no rewrite.
+
+### Two tests were importing a path that does not exist
+
+`artifact-rounds-read.unit.test.ts` and `digest-group.unit.test.ts`,
+both written earlier the same day,
+imported `../dist/final/node/index.mjs` from `src/corpus-run/`,
+which resolves to `src/dist`.
+The 72 sibling tests in that directory use `../../dist/`.
+Both would have thrown at import.
+Corrected before the suite ran, so the suite never recorded a green run over them.
+
+### State
+
+Code and tests landed in `eb60eac09` and `8ed5da052`.
+`producer-silence.ts` was exercised directly against source ahead of the build,
+which is what caught the silent line reading `compares 1 models and not 4`.
+Build, lint, type-check and the unit suite are owed
+and are held behind the calibration in flight,
+which holds `dist` and must not be rebuilt under.

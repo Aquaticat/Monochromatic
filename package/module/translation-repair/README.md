@@ -669,11 +669,52 @@ and contribute nothing to an editor standing.
 A standing drawn entirely from one slice
 reads identically to one drawn evenly from six without this line.
 
-The models that WROTE NOTHING, named at the end.
-A model refused for budget leaves no candidate,
-so it vanishes from the table entirely,
+The models the table DOES NOT DESCRIBE, named at the end.
+A standing carries a row only for a model somebody voted on,
+so every other seated model vanishes,
 and its absence would otherwise read exactly like a model that wrote and lost.
 During a provider outage that is half the roster.
+
+Two different things put a seated model outside the table,
+and both calibrations now name them apart
+rather than reporting one absence:
+
+-   WROTE AND WAS NEVER VOTED ON.
+    Its text reached a slate and no disinterested ballot was cast over it,
+    which is what a slice where every producer proposed the same wording does:
+    it ships unjudged.
+    That evidence is already paid for, and more slices are what would separate it.
+
+-   WROTE NOTHING AT ALL.
+    No candidate of its reached any slate.
+    A provider out of budget, a refused sheet and a call that timed out
+    all look identical from the report, and the run log names which.
+    That evidence has not been bought yet, and re-running those seats buys it.
+
+The silent line carries both denominators,
+as `covers N of M seats`,
+so a table narrowed by an outage cannot read as a full roster comparison.
+
+A standing or a slate naming a model the run never seated is REFUSED,
+because coverage of one roster cannot be read off another.
+
+#### Editor credit and refiner credit are separate columns
+
+The lane unions them, so the split takes work.
+`collectRefinedAuthors` merges the editors
+with any refiner whose rewrite won,
+so the refined outcome's authorship names both seats in one list
+that cannot be split back apart.
+
+The editor column is therefore read off the accuracy lane's own outcome,
+before refinement,
+and the refiner column off `settleRefinedSlice`'s `refinedBy`,
+which names the models whose rewrite is actually in the text that shipped.
+`refinedBy` is empty on every path where no rewrite ships,
+including one the recheck rolled back,
+and it is deliberately kept off the cached settlement
+for the reason `asked` is:
+a slice resumed from disk bought no rewrite.
 
 #### The editor calibration diverges from production in one place
 
