@@ -74,6 +74,34 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
 ];
 
 /**
+ * Whether this run seats the WHOLE roster as resolution checkers.
+ *
+ * THE SECOND ARM OF A MEASUREMENT, not a way to configure a production run.
+ * The owner ruled on 2026-08-23 that checker width is settled by measurement
+ * rather than opinion: the same entries run once with the disjoint three and
+ * once with all six, per-issue resolution compared, winner shipped and loser
+ * deleted. This env switch is how the second run is bought, and it goes when
+ * the measurement lands.
+ *
+ * IT CHANGES THE SLICE-CACHE KEY BY CHANGING THE ROSTER, so a wide run cannot
+ * resume off narrow cache entries and a narrow run cannot resume off wide ones.
+ * That is the property that keeps the two arms from contaminating each other,
+ * and it is why the switch belongs here rather than at the call site.
+ *
+ * @example
+ * ```sh
+ * TRANSLATION_REPAIR_WIDE_CHECKERS=1 mise run //package/module/translation-repair:corpus-pass
+ * ```
+ */
+const WIDE_CHECKERS_SETTING = process.env
+  .TRANSLATION_REPAIR_WIDE_CHECKERS;
+
+/**
+ * {@inheritDoc WIDE_CHECKERS_SETTING}
+ */
+const WIDE_CHECKERS_REQUESTED = (WIDE_CHECKERS_SETTING !== undefined) && (WIDE_CHECKERS_SETTING !== '');
+
+/**
  * Role roster for a corpus run: all SIX critique and adjudicate, THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
@@ -203,11 +231,16 @@ export const RUN_MODELS: RepairModels = {
     'hf:zai-org/GLM-5.2',
     'hf:zai-org/GLM-4.7-Flash',
   ],
-  checkerModelIds: [
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-    'hf:openai/gpt-oss-120b',
-  ],
+  checkerModelIds: WIDE_CHECKERS_REQUESTED
+    ? RUN_ROSTER
+    : [
+      'hf:Qwen/Qwen3.8-27B',
+      'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+      'hf:openai/gpt-oss-120b',
+    ],
+  ...WIDE_CHECKERS_REQUESTED
+    ? { checkerSelfCertificationPermitted: true, }
+    : {},
 };
 
 /**
