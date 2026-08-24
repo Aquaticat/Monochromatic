@@ -19865,3 +19865,102 @@ A full-roster run, once Charm Hyper has credit.
 The owner cannot reset that provider on demand,
 so this waits on the provider's own schedule rather than on anything askable.
 Sizing from production yield says 35 to 40 slices, not 14.
+
+## The writer calibration's coverage report, verified live (2026-08-24)
+
+Both calibrations gained a silence report earlier the same day
+and neither new reporting path had ever run.
+The finished 40-round writer run and the 29-round editor run
+were both settled by the binary that preceded it.
+
+A 3-slice writer calibration into `~/temp/agent/producer-coverage-vub-2026-08-24` closed that gap.
+It printed:
+
+```text
+  WROTE NOTHING AT ALL: qwen3.8-max, minimax-m3, gemma-4-26b-a4b-it, deepseek-v4-pro-0813,
+  deepseek-v4-flash-0731. No candidate of theirs reached any slate, so the table covers 5 of 10 seats.
+```
+
+All five Hyper-only seats named, the denominator right,
+and no spurious "wrote and was never voted on" group,
+since all five Synthetic writers drew ballots.
+Charm Hyper was dry throughout, so the run also exercised the retry path:
+`select: retry round 1 for 6 lost voices`, three times, before settling the slice.
+
+The standing itself settles nothing at 3 rounds and says so in its own last line.
+That was not what the run was for.
+
+## The settled artifact speaks one vocabulary, as generation 3 (`#94`, 2026-08-24)
+
+`withdrawnChunkIndices` sat beside `withdrawnSliceCount` in the same record,
+about the same things.
+`#99` is what that class of confusion costs.
+
+Renamed, at 351 sites:
+
+-   `shippedChunkIndices` becomes `changedSliceIndices`.
+    Not `shippedSliceIndices`:
+    the incumbent ships whenever the archive wording stands,
+    so "shipped" reads ambiguously,
+    while both arrays name slices whose returned text DIFFERS from the archive.
+-   `withdrawnChunkIndices` becomes `withdrawnSliceIndices`.
+-   `chunkCritics` becomes `sliceCritics`,
+    with `ChunkCriticRecord`, `ChunkCriticView`, `buildChunkCriticRecords` and `decodeChunkCritics`.
+
+`chunkIndex` is NOT in this change.
+1731 sites in 194 files, and it reaches cache keys;
+it gets its own change and its own verification.
+
+### Why the version moved, and why the symbols did not
+
+A key rename is a shape change,
+and `artifact-schema-version.ts` states that a version which does not move on one
+is the failure that field exists to end.
+So the pass writes generation 3.
+
+`artifact-v2-build.ts` passes `lanes.repair` and `lanes.translate` through whole as `result`,
+so the internal field names ARE the wire keys.
+There was no internal-only step to land first:
+holding the bytes still would have meant a mapping layer built only to be deleted by the next change.
+
+The 63 `V2` symbols at 808 sites across 63 files did NOT follow the integer.
+`V2` there names the TWO-LANE shape, not the number,
+and the contract file now says so.
+Renaming that family to something version-free is worth doing and is tracked separately.
+
+### How both generations are read
+
+`artifact-key-vocabulary.ts` holds three key names per generation and nothing else.
+`parseSettledArtifactV2` reads the recorded version, selects one table,
+and threads it two hops to `parseLanesV2` and the two evidence parsers.
+`attribution-read.ts` does the same for `sliceCritics`, treating an unversioned artifact as generation 1.
+
+No artifact is ever tried under two spellings.
+A generation 3 stamp over generation 2 keys is refused, which is correct:
+it is not a generation 3 file.
+
+Generation 1 keeps its own spelling on disk, read and written.
+Nothing writes that generation any more,
+and re-spelling it would strand the files it left behind in exchange for nothing.
+
+`assertResumableSchemaGeneration` moved with the writer,
+so a run directory of generation 2 artifacts is now foreign to a resuming pass.
+That is what the guard is for.
+
+### Verified
+
+Suite exit 0, lint 0 warnings and 0 errors, types clean, build clean.
+
+GFP on the new spelling guard:
+making the writer emit `shippedChunkIndices` under a generation 3 stamp
+built cleanly and failed the suite at the `hasOwn` check,
+which is the failure a fixture-only suite could never produce.
+
+At the boundary, through the shipped bundle,
+over the six real generation 2 artifacts in `~/temp/agent/vub-run1-20260821`:
+all six read, all six generation 3 twins read,
+and the two parses are identical on every interpreted field.
+They differ only inside `lanes.*.raw`,
+which is the file's own record passed through unread
+and so carries the file's own spelling by design.
+All six mislabelled files, generation 3 stamp over generation 2 keys, were refused.
