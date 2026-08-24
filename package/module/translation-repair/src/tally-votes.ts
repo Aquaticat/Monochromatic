@@ -15,7 +15,7 @@ import type {
 } from './aggregate-claims.ts';
 import { hashContent, } from './document-node.ts';
 import type { ClaimPanelReading, } from './panel-reading.ts';
-import { readClaim, } from './tally-claim.ts';
+import { panelReadingForClaim, } from './tally-claim.ts';
 import {
   ISSUE_SEVERITIES,
   type IssueSeverity,
@@ -355,7 +355,7 @@ export function tallyVotes(
       /**
        * Every ballot on this member claim, and the tally they sum to.
        */
-      const reading = readClaim({
+      const reading = panelReadingForClaim({
         claimId: member.claimId,
         ballots,
         configuredPanelists,

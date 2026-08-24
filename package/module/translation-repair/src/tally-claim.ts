@@ -140,7 +140,7 @@ function voteWeight(
  * const tally = tallyClaim({ claimId, ballots, config, },);
  * ```
  */
-export function tallyClaim(
+function tallyClaim(
   {
     claimId,
     ballots,
@@ -204,10 +204,10 @@ export function tallyClaim(
  *
  * @example
  * ```ts
- * const reading = readClaim({ claimId, ballots, configuredPanelists: 6, config, },);
+ * const reading = panelReadingForClaim({ claimId, ballots, configuredPanelists: 6, config, },);
  * ```
  */
-export function readClaim(
+export function panelReadingForClaim(
   {
     claimId,
     ballots,

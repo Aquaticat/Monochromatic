@@ -7,6 +7,10 @@
 // pipeline decide by weighted vote, and each of them now records the ballots
 // beside the sums instead of only the sums. A reader auditing one of those
 // decisions imports from exactly one place.
+//
+// TYPES ONLY FROM THE PANEL SIDE. `panelReadingForClaim` builds them and is
+// imported directly by its one caller: putting it here would publish untested
+// surface, since every test of it goes through `tallyVotes`.
 
 export type {
   IssueCheckerBallot,
@@ -16,10 +20,6 @@ export type {
   ClaimPanelReading,
   PanelClaimBallot,
 } from './panel-reading.ts';
-export {
-  readClaim,
-  tallyClaim,
-} from './tally-claim.ts';
 export {
   type IssueResolutionTally,
   resolveResolutionChecks,
