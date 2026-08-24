@@ -5,6 +5,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -260,6 +261,67 @@ await describe({
           syntheticDry: false,
           hyperDry: true,
         },);
+      },
+    },),
+
+    it({
+      name: 'COALESCES concurrent reads into ONE reading of each meter. The '
+        + 'first shape checked staleness before the await and stamped after '
+        + 'it, so every call arriving mid-read started its own: a live '
+        + 'calibration spent 158 quota reads in 46.5 minutes against a '
+        + '60-second window that allows about 46',
+      fn: async () => {
+        /** How many times each meter was read. */
+        const reads = {
+          quota: 0,
+          credits: 0,
+        };
+
+        /** Meters slow enough that concurrent callers genuinely overlap. */
+        const slow = {
+          synthetic: {
+            quotas: async function quotas() {
+              reads.quota += 1;
+              await wait(20,);
+              return WET_QUOTA;
+            },
+          },
+          hyper: {
+            credits: async function credits() {
+              reads.credits += 1;
+              await wait(20,);
+              return { balance: 243, };
+            },
+          },
+        };
+
+        /** Budget layer over the slow meters. */
+        const budgets = createProviderBudgets({
+          synthetic: slow.synthetic,
+          hyper: slow.hyper,
+        },);
+
+        /** Five calls launched before any of them can finish. */
+        const views = await Promise.all([
+          budgets.read({ signal: SIGNAL, },),
+          budgets.read({ signal: SIGNAL, },),
+          budgets.read({ signal: SIGNAL, },),
+          budgets.read({ signal: SIGNAL, },),
+          budgets.read({ signal: SIGNAL, },),
+        ],);
+
+        expect(reads,).toEqual({
+          quota: 1,
+          credits: 1,
+        },);
+
+        // Every sharer must get the reading, not just the caller that started it.
+        for (const view of views) {
+          expect(view,).toEqual({
+            syntheticDry: false,
+            hyperDry: false,
+          },);
+        }
       },
     },),
   ],

@@ -27,6 +27,18 @@ import type { SyntheticClient, } from './chat-contract.ts';
 // normal and the pipeline must not fail on it. Being wrong the other way costs
 // one refused call, which the router already recovers from by failing over.
 //
+// ONE READING IS SHARED BY EVERY CALLER WAITING ON IT, which the first shape
+// got wrong. The staleness check and the stamp sat on either side of the await,
+// so every call arriving while a read was in flight saw the old stamp and
+// started its own. MEASURED on the 2026-08-24 producer calibration: 158 quota
+// reads and 158 credit reads in 46.5 minutes, against a 60-second window that
+// should allow about 46. That is the same shape as the saturation race in
+// `provider-router.ts`: state checked before an await and written after it.
+//
+// The fix collapses "fresh" and "in flight" into one idea. A reading STARTED
+// inside the freshness window is the reading everyone uses, so the stamp goes
+// on before the await rather than after and there is nothing left to race.
+//
 // A REFUSAL IS STICKIER THAN A METER READING. The meter can lag behind a 429 by
 // its own refresh interval, so a provider that just refused us is held dry for
 // a cooldown rather than until the next read, which could clear it immediately
@@ -189,15 +201,70 @@ export function createProviderBudgets(
    * zero for a provider that has never refused us.
    */
   const cache: {
-    view: BudgetView;
-    at: number;
+    startedAt: number;
+    reading: Promise<BudgetView>;
   } = {
-    view: {
+    startedAt: 0,
+    reading: Promise.resolve({
       syntheticDry: false,
       hyperDry: false,
-    },
-    at: 0,
+    },),
   };
+
+  /**
+   * Reads both meters once, for everyone waiting on this reading.
+   *
+   * THE FIRST CALLER'S SIGNAL GOVERNS, which is a real consequence worth
+   * naming rather than hiding. If that caller aborts, both reads reject,
+   * `drynessOf` reports each provider as spendable, and the reading resolves
+   * WET for every sharer. That is this file's answer for an unreadable meter
+   * anyway, and the router still recovers a real refusal through failover.
+   *
+   * @param signal - abort signal of whichever call started this reading
+   *
+   * @returns Both providers' dryness, unreadable meters counting as spendable
+   *
+   * @example
+   * ```ts
+   * cache.reading = takeReading({ signal, },);
+   * ```
+   */
+  async function takeReading(
+    { signal, }: { readonly signal: AbortSignal; },
+  ): Promise<BudgetView> {
+    /**
+     * Logger pre-tagged with this function's name.
+     */
+    const rl = tagged({
+      tag: takeReading.name,
+      l,
+    },);
+
+    /**
+     * Both meters, read together so one slow endpoint does not serialise
+     * behind the other.
+     */
+    const [syntheticDry, hyperDry,] = await Promise.all([
+      drynessOf({
+        name: 'synthetic',
+        readDryness: async function readQuota(): Promise<boolean> {
+          return syntheticIsDry({ quota: await synthetic.quotas({ signal, },), },);
+        },
+      },),
+      drynessOf({
+        name: 'hyper',
+        readDryness: async function readCredits(): Promise<boolean> {
+          return hyperIsDry({ credits: await hyper.credits({ signal, },), },);
+        },
+      },),
+    ],);
+
+    rl.debug(`meters: synthetic ${syntheticDry ? 'dry' : 'wet'}, hyper ${hyperDry ? 'dry' : 'wet'}`,);
+    return {
+      syntheticDry,
+      hyperDry,
+    };
+  }
 
   /**
    * When each provider last refused us, zero for never.
@@ -234,46 +301,20 @@ export function createProviderBudgets(
 
   return {
     read: async function read({ signal, },): Promise<BudgetView> {
-      /**
-       * Logger pre-tagged with this function's name.
-       */
-      const rl = tagged({
-        tag: read.name,
-        l,
-      },);
-
-      if ((cache.at === 0) || ((now() - cache.at) >= freshForMs)) {
-        /**
-         * Both meters, read together so one slow endpoint does not serialise
-         * behind the other.
-         */
-        const [syntheticDry, hyperDry,] = await Promise.all([
-          drynessOf({
-            name: 'synthetic',
-            readDryness: async function readQuota(): Promise<boolean> {
-              return syntheticIsDry({ quota: await synthetic.quotas({ signal, },), },);
-            },
-          },),
-          drynessOf({
-            name: 'hyper',
-            readDryness: async function readCredits(): Promise<boolean> {
-              return hyperIsDry({ credits: await hyper.credits({ signal, },), },);
-            },
-          },),
-        ],);
-
-        cache.view = {
-          syntheticDry,
-          hyperDry,
-        };
-        cache.at = now();
-        rl.debug(`meters: synthetic ${syntheticDry ? 'dry' : 'wet'}, hyper ${hyperDry ? 'dry' : 'wet'}`,);
+      // STAMPED BEFORE THE READ IS STARTED, never after it returns. The stamp
+      // says when this reading BEGAN, so a call arriving while it is still in
+      // flight sees a fresh stamp and waits on the same promise instead of
+      // starting a second read of both meters.
+      if ((cache.startedAt === 0) || ((now() - cache.startedAt) >= freshForMs)) {
+        cache.startedAt = now();
+        cache.reading = takeReading({ signal, },);
       }
 
       /**
-       * Meter reading this call is decided on.
+       * Meter reading this call is decided on, shared with every other call
+       * that arrived inside the same window.
        */
-      const { view, } = cache;
+      const view = await cache.reading;
 
       // The cooldown can only hold a provider OUT, never bring one back in.
       return {
