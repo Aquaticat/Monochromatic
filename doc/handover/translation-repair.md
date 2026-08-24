@@ -18132,3 +18132,73 @@ CONSEQUENCE FOR ANYONE EXTENDING THIS. Buying more `lintong` rounds raises the r
 the ceiling where it is. Entries whose panels actually split are the only ones that can answer the
 width question, and the settled artifacts already say which those are: read `refine-recheck-passed`
 counts and per-entry split rates before choosing what to run.
+
+## The accept gate keeps its ballots too (`#193`)
+
+FOUND BY AUDITING WHAT A SETTLED ARTIFACT ACTUALLY NAMES, rather than by reading code. Walking one
+artifact for every path whose value looks like a catalog id gives the whole inventory of per-model
+evidence in a settled run:
+
+```
+.lanes.repair.result.issues[].checkerReading.ballots[].modelId       174
+.lanes.translate.result.sliceSelections[].round.ballots[].modelId     12
+.lanes.translate.result.slices[].stageResult.ballots[].modelId        12
+.consolidation.slices[].verdicts[].modelId                            12
+.lanes.translate.result.sliceSelections[].round.producers[].modelId   11
+.lanes.repair.result.chunks[].heardCriticIds                           3
+```
+
+The adjudication panel is absent from that list, and it is the stage that decides whether a claim
+becomes an issue the pipeline repairs at all. `AdjudicatedIssue.tallies[claimId]` held five weighted
+numbers and nothing else. One measured entry carried 60 claims, none naming any model, with an
+observed tally reading `supported=1, unsupported=5` and no way to know which panelist said which.
+
+WEIGHTED, SO THE SUMS ARE NOT RE-DERIVABLE. `voteWeight` folds `AdjudicationConfig.weights` into the
+totals before they are stored, and no artifact records that table. Even with the votes, a run under a
+non-default table could not be re-tallied. The ballot therefore stores its own weight.
+
+WHAT ELSE THE AUDIT CLEARED, so nobody re-opens it: `claimAttributions[].proposers` already names who
+FILED each claim (`#76`), and the editor and judge `rounds[]` already carry `ballots`. Only the
+panel's own votes were summed away.
+
+### Why this one is optional where `checkerReadings` is required
+
+`AdjudicatedIssue.readings` is optional, and the reason is a real difference rather than convenience.
+About thirty files construct an `AdjudicatedIssue`, and almost all of them are readers and tools
+rebuilding one from a settled artifact rather than adjudicating anything. Requiring the field would
+make every one of them write an empty record, which would say "no panel voted" where the truth is "I
+am not the panel". Absence here has exactly one meaning: this issue did not come from `tallyVotes`.
+
+`configuredPanelists` IS required on `tallyVotes`, threaded from the roster the caller already counts
+for its log line. A lost voice leaves no ballot while an abstention leaves one, and only the seated
+count separates them.
+
+### Size, measured rather than assumed
+
+Injecting a realistic six-panelist reading per claim into all twelve settled artifacts on disk:
+
+```
+growth per artifact                    9% to 17%
+largest artifact after injection      681 KiB
+ceiling (#168)                       7168 KiB
+headroom                                   91%
+```
+
+### GFP, three mutations
+
+-   `readClaim` returning no ballots failed the three content cases and left the keying case passing,
+    which is the control: that case is about pairing, not about what a ballot says.
+-   Dropping `readings` from the merged-cluster branch failed the keying case and nothing else.
+-   Rebuilding `RepairIssueRecord.issue` field by field, which is how the tally came to be the only
+    thing stored, failed the new disk-boundary case. `buildIssueRecords` passes the issue through
+    whole today, so that case exists to keep it that way.
+
+Suite 569 PASS, 0 FAIL, exit 0. Lint 0/0.
+
+### Two files split, neither for cosmetics
+
+`tally-votes.ts` was exactly at the 300-line cap, so `voteWeight` and `tallyClaim` moved to
+`tally-claim.ts` beside the new `readClaim`. `pipeline-barrel.ts` went to 303 lines, so the ballot and
+reading exports moved to a new `ballot-barrel.ts`, which now holds every export belonging to one
+question: who voted, what they said, and what it summed to. Three stages of this pipeline decide by
+weighted vote and all three now record their ballots.
