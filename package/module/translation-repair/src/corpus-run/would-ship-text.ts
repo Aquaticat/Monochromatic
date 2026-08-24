@@ -118,7 +118,7 @@ export type WouldShipSource = Pick<
  *
  * @example
  * ```ts
- * const slice: WouldShipSlice = { chunkIndex: 0, reading, };
+ * const slice: WouldShipSlice = { chunkIndex: 0, incumbentKind: 'present', reading, };
  * ```
  */
 export type WouldShipSlice = {
@@ -126,6 +126,21 @@ export type WouldShipSlice = {
    * Slice this answers, matching its comparison row.
    */
   readonly chunkIndex: number;
+
+  /**
+   * Whether the archive holds any wording at this slice.
+   *
+   * CARRIED BESIDE THE READING RATHER THAN INFERRED FROM IT, because silence
+   * means two different things and only this separates them. A silent ANCHOR is
+   * a passage that has no rendering and is getting none, so an assembler must
+   * write nothing there at all; a silent CONTENT span is wording the archive
+   * holds and the deciders agreed to remove, so an assembler must write the
+   * empty string over it. `translate-absence.ts` states the rule this follows:
+   * absence is a mode decided once from the target chunk, and reading it back
+   * off an empty text would conflate an anchor with a span whose archive
+   * wording genuinely is blank.
+   */
+  readonly incumbentKind: 'present' | 'absent';
 
   /**
    * What that slice would contribute.
@@ -456,6 +471,7 @@ export function wouldShipTextPerSlice(
     .map(function readIt(row: ArtifactComparisonRowV2,): WouldShipSlice {
       return {
         chunkIndex: row.chunkIndex,
+        incumbentKind: row.incumbentKind,
         reading: wouldShipTextFor({
           artifact,
           row,

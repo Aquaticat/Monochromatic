@@ -52,6 +52,7 @@ import {
   publishFixedPage,
   shippableReplacements,
   SliceSpliceError,
+  spliceSlices,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 
@@ -297,21 +298,22 @@ function artifactShipping(
 }
 
 /**
- * Builds an artifact whose one slice ships nothing at all.
+ * Builds an artifact whose one slice is an ANCHOR nobody filled.
  *
  * REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
- * NOTHING, which is the only way there: every silent reading requires an empty
- * incumbent, so an artifact whose archive speaks cannot produce one however its
- * deciders voted.
+ * NOTHING. `XIEPT2` reached exactly this state live: its translate lane backed
+ * no candidate at slice 12 and recorded the slice unfilled, which left the
+ * contest two blank lanes to choose between and no archive wording to fall back
+ * on.
  *
- * @returns Artifact whose slice carries no wording from anybody
+ * @returns Artifact whose one slice is an unfilled anchor
  *
  * @example
  * ```ts
- * const artifact = artifactShippingNothing();
+ * const artifact = artifactWithAnUnfilledAnchor();
  * ```
  */
-function artifactShippingNothing(): WouldShipSource {
+function artifactWithAnUnfilledAnchor(): WouldShipSource {
   return {
     comparison: [
       {
@@ -554,65 +556,54 @@ await describe({
 
     it({
       name:
-        'REFUSES AN ENTRY WHOSE DECIDERS LEFT A SPOKEN PASSAGE EMPTY, rather than publishing a page '
-        + 'missing it. Writing nothing into a place where a rendering belongs loses the passage while '
-        + 'the run reports the entry delivered, and a half-document is worse than a failed entry '
-        + 'because only the failure gets retried',
+        'PUBLISHES AN ENTRY WHOSE DECIDERS LEFT AN ANCHOR UNFILLED, leaving the gap exactly as the '
+        + 'archive had it. It used to refuse, on the argument that a half-document is worse than a '
+        + 'failed entry because only the failure gets retried. `XIEPT2` settled that: the refusal '
+        + 'landed after four hours and forty-eight minutes of calls, kept neither page nor artifact, '
+        + 'and a retry meets the same passage and the same judges. The archive already carries this '
+        + 'gap, so the page loses nothing that was ever there and keeps every slice the run did buy',
       fn: async () => {
         await using tree = await throwawayTree();
 
         /**
-         * What publishAndRead refused with, held so the class and the wording
-         * can both be asserted: `.rejects` awaits afresh on every matcher call,
-         * so one promise serves two assertions and no capture helper is needed.
+         * Page the publisher wrote over an archive with an unfilled anchor in it.
          */
-        const refusalOfPublishingNoTranslation = publishAndRead({
-          artifact: artifactShippingNothing(),
+        const published = await publishAndRead({
+          artifact: artifactWithAnUnfilledAnchor(),
           publishDir: tree.publishDir,
           slices: documentSlicesWithAGap(),
         },);
 
-        await expect(refusalOfPublishingNoTranslation,).rejects.toBeInstanceOf(SliceSpliceError,);
-        await expect(refusalOfPublishingNoTranslation,).rejects.toThrow('has no translation and writes none',);
+        expect(published.text,).toBe(ARCHIVE,);
       },
     },),
 
     it({
       name:
-        'WRITES NO PAGE AT ALL FOR THAT ENTRY, which is the half of the refusal that matters. A '
-        + 'publisher that assembled the document, wrote it, and then raised would leave a page missing '
-        + 'a passage on disk under the same name a good page would have',
+        'STILL LEAVES THE SPLICE FREE TO REFUSE A BLANK RENDERING AT AN ANCHOR, which is the guard '
+        + 'that caught this and is not being weakened. What changed is upstream of it: a slice '
+        + 'deliberately left unfilled no longer presents itself as a rendering of blank text, so the '
+        + 'guard now only ever sees a caller that really did claim one',
       fn: async () => {
-        await using tree = await throwawayTree();
-
         /**
-         * Where a page would have gone.
+         * What the splice refused when handed the row this publisher no longer
+         * emits, held so the class and the wording can both be asserted.
          */
-        const path = fixedPagePath({
-          publishDir: tree.publishDir,
-          entryId: 'BookshopCat',
-        },);
-
-        /**
-         * What publishing refused with, held so the class can be named. A bare
-         * `.toThrow()` passes for ANY failure, including one raised before the
-         * publisher reached its own check, which would leave this test green
-         * while the absence it goes on to assert had a different cause.
-         */
-        const refusalOfPublishingIntoAGap = publishAndRead({
-          artifact: artifactShippingNothing(),
-          publishDir: tree.publishDir,
+        const refusalOfWritingNothingAtAnAnchor = async (): Promise<string> => spliceSlices({
+          targetText: ARCHIVE,
           slices: documentSlicesWithAGap(),
+          replacements: [
+            {
+              chunkIndex: 1,
+              replacementText: '',
+            },
+          ],
         },);
 
-        await expect(refusalOfPublishingIntoAGap,).rejects.toBeInstanceOf(SliceSpliceError,);
-
-        // ENOENT by name rather than a bare rejection: an unreadable page and an
-        // absent one both reject, and only absence is what this test claims.
-        await expect(readFile(
-          path,
-          'utf8',
-        ),).rejects.toHaveProperty('code', 'ENOENT',);
+        await expect(refusalOfWritingNothingAtAnAnchor(),).rejects.toBeInstanceOf(SliceSpliceError,);
+        await expect(refusalOfWritingNothingAtAnAnchor(),).rejects.toThrow(
+          'has no translation and writes none',
+        );
       },
     },),
 

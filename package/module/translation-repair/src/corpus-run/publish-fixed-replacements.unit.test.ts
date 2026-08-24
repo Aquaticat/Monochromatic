@@ -103,23 +103,28 @@ function artifactShipping(
 }
 
 /**
- * Builds an artifact whose one slice ships nothing at all.
+ * Builds an artifact whose one slice is an ANCHOR nobody filled.
  *
  * REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
- * NOTHING, which is the only way there: every silent reading requires an empty
- * incumbent, so an artifact whose archive speaks cannot produce one however its
- * deciders voted. No settled artifact on disk is in this state, 249 of 249
- * slices carrying archive wording at the last count, which is why the state is
- * built here rather than drawn from output.
+ * NOTHING. This is the state `XIEPT2` reached live: its translate lane recorded
+ * slice 12 unfilled after the judges backed no candidate, the contest then had
+ * two blank lanes to choose between, and the archive had no wording to fall
+ * back on either.
  *
- * @returns Artifact whose slice carries no wording from anybody
+ * PAIRED WITH {@link artifactWhoseLanesRemovedTheWording}, which is silent at a
+ * span the archive DOES render. The two silences assemble differently and the
+ * pair is what proves the builder reads `incumbentKind` rather than the reason
+ * name: these two carry different reasons and the same reason would not
+ * separate them.
+ *
+ * @returns Artifact whose one slice is an unfilled anchor
  *
  * @example
  * ```ts
- * const artifact = artifactShippingNothing();
+ * const artifact = artifactWithAnUnfilledAnchor();
  * ```
  */
-function artifactShippingNothing(): WouldShipSource {
+function artifactWithAnUnfilledAnchor(): WouldShipSource {
   return {
     comparison: [
       {
@@ -154,6 +159,55 @@ function artifactShippingNothing(): WouldShipSource {
   } as unknown as WouldShipSource;
 }
 
+/**
+ * Builds an artifact whose one slice is a CONTENT span both lanes emptied.
+ *
+ * REACHES THE SILENCE THROUGH LANES THAT AGREED, which is the only reading that
+ * can be silent over an archive that speaks: the two contest paths both name a
+ * silent archive in their own reason strings, so a slice the contest never saw
+ * is the way here. The contest names no slice at all for that reason.
+ *
+ * @returns Artifact whose one slice removes wording the archive holds
+ *
+ * @example
+ * ```ts
+ * const artifact = artifactWhoseLanesRemovedTheWording();
+ * ```
+ */
+function artifactWhoseLanesRemovedTheWording(): WouldShipSource {
+  return {
+    comparison: [
+      {
+        chunkIndex: 1,
+        incumbentKind: 'present',
+        incumbentText: ARCHIVE_MIDDLE,
+        repairText: '',
+        translateText: '',
+        laneRelation: 'both-differ',
+        repairOutcome: {
+          kind: 'decided',
+          acceptedText: '',
+        },
+        translateOutcome: {
+          kind: 'decided',
+          acceptedText: '',
+        },
+        decisionComparison: {
+          kind: 'comparable',
+          verdict: 'same',
+        },
+        repairDelivery: { kind: 'replacement-shipped', },
+        translateDelivery: { kind: 'replacement-shipped', },
+      },
+    ],
+    consolidation: { kind: 'not-run', },
+    laneSelection: {
+      kind: 'contested',
+      slices: [],
+    },
+  } as unknown as WouldShipSource;
+}
+
 await describe({
   name: fixedPagePath.name,
   children: [
@@ -177,12 +231,25 @@ await describe({
   children: [
     it({
       name:
-        'HANDS A SILENT SLICE THE EMPTY STRING rather than dropping it from the list, since a slice '
-        + 'the assembler is never told about keeps whatever the archive had there. The deciders '
-        + 'agreeing that nothing belongs at a passage is a decision, and republishing the archive '
-        + 'underneath it would undo it',
+        'NAMES AN UNFILLED ANCHOR NOWHERE, because a row carrying blank text there claims a '
+        + 'rendering was written where none was, and `spliceSlices` refuses that outright. It used '
+        + 'to emit one, and the refusal landed in `publishFixedPage`, which runs before the '
+        + 'artifact is written: `XIEPT2` recorded the slice unfilled three and a half hours in and '
+        + 'then lost the whole entry at the last step, four hours and forty-eight minutes of calls '
+        + 'with no page and no artifact kept',
       fn: async () => {
-        expect(shippableReplacements({ artifact: artifactShippingNothing(), },),).toEqual([
+        expect(shippableReplacements({ artifact: artifactWithAnUnfilledAnchor(), },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name:
+        'STILL HANDS A SILENT CONTENT SPAN THE EMPTY STRING, which is what makes the anchor case '
+        + 'evidence about anchors rather than about silence. Both lanes removing wording the archive '
+        + 'holds is a decision, and a slice the assembler is never told about keeps whatever the '
+        + 'archive had, so dropping this row would republish that wording and undo them',
+      fn: async () => {
+        expect(shippableReplacements({ artifact: artifactWhoseLanesRemovedTheWording(), },),).toEqual([
           {
             chunkIndex: 1,
             replacementText: '',

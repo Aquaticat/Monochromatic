@@ -90,18 +90,36 @@ export function fixedPagePath(
  * Turns one settled entry's per-slice readings into the replacements that
  * assemble its page.
  *
- * A SILENT SLICE CONTRIBUTES EMPTY TEXT, which preserves an archive that says
- * nothing rather than inventing wording for it. Where the archive holds no
- * wording AND the original does, `spliceSlices` refuses this outright: an
- * anchor is where a rendering belongs, so blank text there would leave the
- * passage missing while the run reported it delivered. That refusal is wanted.
- * No slice in any settled artifact on disk is in that state today, 249 of 249
- * carrying archive wording, and it becomes reachable only once one-sided
- * sections are sliced.
+ * A SILENT SLICE CONTRIBUTES EMPTY TEXT AT A CONTENT SPAN AND NOTHING AT ALL AT
+ * AN ANCHOR, which are two answers rather than one because silence itself means
+ * two things. Over a span the archive already renders, the empty string is what
+ * the deciders chose: they agreed the passage carries no wording, and omitting
+ * the row would republish the archive underneath that decision and undo it. At
+ * an anchor there is no archive wording to republish and none to remove, so the
+ * honest contribution is no row at all, leaving `spliceSlices` to pass the gap
+ * through exactly as it found it.
+ *
+ * THE ANCHOR HALF IS WHAT `XIEPT2` COST FOUR HOURS AND FORTY-EIGHT MINUTES TO
+ * ESTABLISH. This builder used to hand every silent slice the empty string, and
+ * `spliceSlices` refuses blank text at an anchor outright, correctly: an anchor
+ * is where a rendering belongs, so writing nothing there would leave the passage
+ * missing while the run reported it delivered. That refusal landed in
+ * `publishFixedPage`, which runs BEFORE the artifact is written, so an entry
+ * whose translate lane had already recorded slice 12 unfilled three and a half
+ * hours earlier died at the last step with no artifact and no page kept.
+ * `translate-absence.ts` promises the opposite and owns the policy: one refused
+ * anchor costs its own slice rather than the entry. The refusal stays; what
+ * changes is that a slice deliberately left unfilled no longer presents itself
+ * to the splice as a blank rendering.
+ *
+ * READ OFF `incumbentKind` RATHER THAN OFF AN EMPTY INCUMBENT, per the same
+ * file: absence is a mode decided once from the target chunk, and testing the
+ * text would conflate an anchor with a content span whose archive wording
+ * genuinely is blank.
  *
  * @param artifact - settled entry, read for what each slice would carry
  *
- * @returns Replacement per slice, in the artifact's own comparison order
+ * @returns Replacement per slice that contributes one, in comparison order
  *
  * @example
  * ```ts
@@ -112,16 +130,28 @@ export function shippableReplacements(
   { artifact, }: { readonly artifact: WouldShipSource; },
 ): readonly SliceReplacement[] {
   return wouldShipTextPerSlice({ artifact, },)
-    .map(function toReplacement(slice,): SliceReplacement {
+    .flatMap(function toReplacement(slice,): readonly SliceReplacement[] {
       /**
        * What this slice would carry, or that it carries nothing.
        */
       const { reading, } = slice;
 
-      return {
+      if (reading.kind === 'wording')
+        return [{
+          chunkIndex: slice.chunkIndex,
+          replacementText: reading.text,
+        },];
+
+      // NOTHING SHIPS HERE, and at an anchor nothing is also what the assembler
+      // must be told: a row carrying blank text claims a rendering was written
+      // where none was, which is the claim the splice exists to refuse.
+      if (slice.incumbentKind === 'absent')
+        return [];
+
+      return [{
         chunkIndex: slice.chunkIndex,
-        replacementText: (reading.kind === 'wording') ? reading.text : '',
-      };
+        replacementText: '',
+      },];
     },);
 }
 
