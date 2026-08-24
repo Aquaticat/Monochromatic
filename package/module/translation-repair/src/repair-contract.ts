@@ -9,6 +9,7 @@ import type { IntroducedDefectReport, } from './introduced-defect-probe.ts';
 import type { RepairRegion, } from './repair-region.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { IssueAuthorship, } from './resolution-authorship.ts';
+import type { IssueCheckerReading, } from './checker-reading.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Repair contract
@@ -583,6 +584,22 @@ export type ChunkRepairOutcome = {
    * empty when unchanged won.
    */
   readonly resolvedIssueIds: readonly string[];
+
+  /**
+   * What the checkers said about each issue, keyed by issue id.
+   *
+   * BESIDE {@link ChunkRepairOutcome.resolvedIssueIds} RATHER THAN INSTEAD OF
+   * IT, because that list is a set of majority verdicts and a majority is not
+   * evidence of itself. Without the ballots a settled run cannot say whether a
+   * resolution was unanimous or one vote wide, cannot name the dissenter, and
+   * cannot be re-read at a roster width this run did not use.
+   *
+   * EMPTY WHERE NO CHECKER RAN, which is a real state rather than a missing
+   * one: a chunk with no accepted issue, or one the lane declined, buys no
+   * checker round at all. Required rather than optional so every construction
+   * site has to say which it is.
+   */
+  readonly checkerReadings: Readonly<Record<string, IssueCheckerReading>>;
 
   /**
    * Every accepted issue the checkers confirmed fixed IN THE PATCHED CANDIDATE,

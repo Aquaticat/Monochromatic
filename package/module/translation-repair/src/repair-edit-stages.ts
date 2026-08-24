@@ -3,6 +3,10 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import type {
+  IssueCheckerBallot,
+  IssueCheckerReading,
+} from './checker-reading.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
   type IssueAuthorship,
@@ -41,6 +45,15 @@ export type CheckerStageResult = {
    * Per-issue resolution tallies keyed by issue id.
    */
   readonly tallies: Readonly<Record<string, IssueResolutionTally>>;
+
+  /**
+   * Per-issue ballots and seated roster beside those tallies, keyed the same.
+   *
+   * Carried so what lands in the artifact is the round rather than its sum. The
+   * tally inside each reading is the very object {@link CheckerStageResult.tallies}
+   * holds, so the two cannot disagree.
+   */
+  readonly readings: Readonly<Record<string, IssueCheckerReading>>;
 
   /**
    * Checkers whose reply arrived and validated.
@@ -161,46 +174,6 @@ export async function runCheckerStage(
   ];
 
   /**
-   * One line per ballot, naming the checker, the issue and its verdict.
-   *
-   * BECAUSE THE TALLY THAT FOLLOWS IS A SUM, and a sum cannot be taken apart.
-   * Nothing else in the pipeline records which checker said what, so a run that
-   * resolves an issue two-to-one leaves no trace of who dissented and no later
-   * question about this roster can be answered off a settled run without buying
-   * the whole stage again.
-   *
-   * THE AUTHOR MARKER IS WHAT MAKES A RE-TALLY POSSIBLE. It is the one input to
-   * each weight that is not in the ballot itself, so a reader holding these
-   * lines can reproduce this tally, or any tally over a subset of these
-   * checkers, without the authorship record.
-   *
-   * Ids and verdicts only: no line here carries a word of either document.
-   */
-  const ballotLines = gather.voices
-    .flatMap(function toLines(voice,): readonly string[] {
-      /**
-       * This checker's ballot, present because `ballots` was built from these
-       * same voices.
-       */
-      const ballot = nonNullishOrThrow(ballots[voice.modelId],);
-      return Object
-        .entries(ballot.verdicts,)
-        .map(function toLine([issueId, verdict,],): string {
-          return `checker-ballot ${voice.modelId} ${issueId} ${verdict} ${
-            wroteTextForIssue({
-              authorship,
-              issueId,
-              modelId: voice.modelId,
-            },)
-              ? 'author'
-              : 'outsider'
-          }`;
-        },);
-    },);
-  for (const line of ballotLines)
-    l.info(line,);
-
-  /**
    * Majority tallies per issue.
    */
   const tallies = tallyResolutionChecks({
@@ -208,6 +181,70 @@ export async function runCheckerStage(
     ballots,
     authorship,
   },);
+
+  /**
+   * Everything this round decided about each issue, kept rather than summed
+   * away, so a settled run can answer who dissented and be re-read at another
+   * roster width without buying the stage again.
+   */
+  const readings: Record<string, IssueCheckerReading> = Object.fromEntries(
+    plan.issueIds
+      .map(function toReading(issueId,): readonly [
+        string,
+        IssueCheckerReading,
+      ] {
+        return [
+          issueId,
+          {
+            ballots: gather.voices
+              .flatMap(function toBallot(voice,): readonly IssueCheckerBallot[] {
+                /**
+                 * This checker's answer, absent where its ballot skipped this
+                 * issue.
+                 */
+                const verdict = nonNullishOrThrow(ballots[voice.modelId],)
+                  .verdicts[issueId];
+                if (verdict === undefined)
+                  return [];
+                return [
+                  {
+                    modelId: voice.modelId,
+                    verdict,
+                    wroteTheText: wroteTextForIssue({
+                      authorship,
+                      issueId,
+                      modelId: voice.modelId,
+                    },),
+                  },
+                ];
+              },),
+            configuredCheckers: checkerModelIds.length,
+            tally: nonNullishOrThrow(tallies[issueId],),
+          },
+        ];
+      },),
+  );
+
+  // ALSO PUBLISHED AS LINES, because an operator watching a live pass has the
+  // log and not the artifact, and because a run that aborts before settling
+  // still leaves them. Derived from the readings so the two cannot drift.
+  //
+  // Ids and verdicts only: no line here carries a word of either document.
+  for (
+    const line of Object
+      .entries(readings,)
+      .flatMap(function toLines([issueId, reading,],): readonly string[] {
+        return reading.ballots
+          .map(function toLine(ballot,): string {
+            return `checker-ballot ${ballot.modelId} ${issueId} ${ballot.verdict} ${
+              ballot.wroteTheText
+                ? 'author'
+                : 'outsider'
+            }`;
+          },);
+      },)
+  )
+    l.info(line,);
 
   l.info(
     `checker stage: ${String(Object.keys(ballots,)
@@ -218,6 +255,7 @@ export async function runCheckerStage(
 
   return {
     tallies,
+    readings,
     heardCheckers: Object.keys(ballots,)
       .length,
     findings,

@@ -21,6 +21,7 @@ import {
 
 import {
   type AdjudicatedIssue,
+  type IssueCheckerReading,
   buildIssueRecords,
   type ChunkRepairOutcome,
   assertSourceBytes,
@@ -139,6 +140,40 @@ const OPERATION: PatchOperation = {
 };
 
 /**
+ * Checker round behind this fixture's verdict: resolved two to one.
+ *
+ * Cat-themed invention. Model ids come from the catalog because that union is
+ * closed.
+ */
+const CHECKER_READING = {
+  ballots: [
+    {
+      modelId: 'hf:Qwen/Qwen3.8-27B',
+      verdict: 'fixed',
+      wroteTheText: false,
+    },
+    {
+      modelId: 'hf:openai/gpt-oss-120b',
+      verdict: 'fixed',
+      wroteTheText: false,
+    },
+    {
+      modelId: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+      verdict: 'not-fixed',
+      wroteTheText: false,
+    },
+  ],
+  configuredCheckers: 3,
+  tally: {
+    fixed: 2,
+    notFixed: 1,
+    worse: 0,
+    resolved: true,
+    regressed: false,
+  },
+} as const satisfies IssueCheckerReading;
+
+/**
  * Builds the settled slice outcome the way `repairChunk` returns it.
  *
  * @param accuracyPatchSelected - whether the patched candidate won
@@ -160,6 +195,9 @@ function settledOutcome(
     issues: [ISSUE,],
     resolvedIssueIds: accuracyPatchSelected ? [ISSUE.issueId,] : [],
     candidateResolvedIssueIds: [ISSUE.issueId,],
+    // A REAL ROUND, two to one, because the point of carrying it is that a
+    // one-vote majority and a unanimous one stop looking alike on disk.
+    checkerReadings: { [ISSUE.issueId]: CHECKER_READING, },
     repairRegions: collectRepairRegions({
       envelopes: [ENVELOPE,],
       applied: [OPERATION,],
@@ -362,6 +400,63 @@ await describe({
         },);
         expect(shipped,).toBe(rejected,);
         expect(shipped.includes(REPLACEMENT,),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'checker round across the disk boundary',
+  children: [
+    it({
+      name: 'CARRIES every ballot and the seated roster through the artifact JSON, because '
+        + '`resolved` alone cannot say whether the checkers were unanimous or one vote apart, and a '
+        + 'field that survives a clone can still vanish through a file',
+      fn: async () => {
+        /**
+         * Issue report as bytes. Written and re-read rather than cloned: JSON
+         * drops what `structuredClone` keeps, and an optional field is exactly
+         * what survives a clone and vanishes through a file.
+         */
+        const onDisk = JSON.stringify(buildIssueRecords({
+          outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
+          blocked: false,
+        },),);
+
+        /** Those bytes read back. */
+        const readBack: unknown = JSON.parse(onDisk,);
+        if (!Array.isArray(readBack,))
+          throw new Error('issue report should read back as a list',);
+
+        /** First record, as it came off disk. */
+        const [record,] = readBack as readonly { readonly checkerReading?: unknown; readonly resolved?: unknown; }[];
+        expect(record?.resolved,).toBe(true,);
+        expect(record?.checkerReading,).toEqual(CHECKER_READING,);
+      },
+    },),
+
+    it({
+      name: 'RECORDS NOTHING for an issue no checker ruled on, so an absent reading never reads as '
+        + 'agreement',
+      fn: async () => {
+        /** Outcome whose checker round said nothing about this issue. */
+        const silent = {
+          ...settledOutcome({ accuracyPatchSelected: true, },),
+          checkerReadings: {},
+        };
+
+        /** Report over that outcome, as bytes. */
+        const onDisk = JSON.stringify(buildIssueRecords({
+          outcomes: [silent,],
+          blocked: false,
+        },),);
+
+        /** Those bytes read back. */
+        const readBack: unknown = JSON.parse(onDisk,);
+        if (!Array.isArray(readBack,))
+          throw new Error('issue report should read back as a list',);
+        const [record,] = readBack as readonly { readonly checkerReading?: unknown; }[];
+        expect(record?.checkerReading,).toBe(undefined,);
       },
     },),
   ],

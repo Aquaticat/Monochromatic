@@ -44,6 +44,8 @@ export function unchangedChunkOutcome(
     repairedText: targetText,
     changed: false,
     resolvedIssueIds: [],
+    // NO CHECKER RAN, so there is nothing to have said.
+    checkerReadings: {},
     candidateResolvedIssueIds: [],
     repairRegions: [],
     accuracyPatchSelected: false,

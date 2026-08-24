@@ -318,6 +318,10 @@ export async function settleRefinedSlice(
       // same rule the accuracy stage applies: a resolution credited to text the
       // document does not carry is a repair no reader saw.
       resolvedIssueIds: changed ? outcome.resolvedIssueIds : [],
+      // THE DECIDING ROUND'S, carried through unchanged. The recheck above is a
+      // rollback gate rather than a re-decision: it either keeps the rewrite or
+      // discards it whole, and never revises what `resolvedIssueIds` says.
+      checkerReadings: outcome.checkerReadings,
       // Marks every recorded repair in this slice as pre-refinement text, so a
       // grading sheet can say so instead of presenting an editor replacement as
       // the words that shipped.

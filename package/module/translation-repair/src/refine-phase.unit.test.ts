@@ -157,6 +157,8 @@ function settledOutcome(
     },),
     resolvedIssueIds,
     candidateResolvedIssueIds: [],
+    // No checker round in this fixture, so nothing was said about any issue.
+    checkerReadings: {},
     repairRegions: [],
     authorship,
     accuracyPatchSelected: false,

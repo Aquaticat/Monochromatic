@@ -62,6 +62,10 @@ export {
   notApplicableRepair,
 } from './repair-not-applicable.ts';
 export { repairLaneWordings, } from './repair-lane-wordings.ts';
+export type {
+  IssueCheckerBallot,
+  IssueCheckerReading,
+} from './checker-reading.ts';
 export {
   assertCheckerIndependence,
   assertCheckerQuorumReachable,

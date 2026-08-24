@@ -73,6 +73,8 @@ export function notApplicableRepair(
     claimAttributions: [],
     heardCriticIds: [],
     resolvedIssueIds: [],
+    // NO CHECKER RAN, so there is nothing to have said.
+    checkerReadings: {},
     candidateResolvedIssueIds: [],
     repairRegions: [],
     accuracyPatchSelected: false,

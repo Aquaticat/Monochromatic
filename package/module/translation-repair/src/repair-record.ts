@@ -1,4 +1,5 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import type { IssueCheckerReading, } from './checker-reading.ts';
 import type { RegionDefectTally, } from './introduced-defect-screen.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { RepairRegion, } from './repair-region.ts';
@@ -150,6 +151,24 @@ export type RepairIssueRecord = {
    * Whether the checkers confirmed it fixed in the shipped text.
    */
   readonly resolved: boolean;
+
+  /**
+   * The round behind {@link RepairIssueRecord.resolved}: every ballot, the
+   * seated roster, and the weights they summed to.
+   *
+   * BECAUSE THE BOOLEAN IS A MAJORITY AND A MAJORITY IS NOT EVIDENCE OF ITSELF.
+   * A three-to-nil resolution and a two-to-one resolution persist identically
+   * without this, so a settled artifact could not say whether the checkers
+   * agreed, could not name a dissenter, and could not be re-read at a roster
+   * width the run never used. `IssueProbeReading` already keeps its tallies and
+   * roster size per issue for exactly this reason; the stage that decides what
+   * ships kept less until this landed.
+   *
+   * ABSENT ON TWO KINDS OF RECORD, and they mean different things: an issue no
+   * checker round ever ruled on, such as one no repair region served, and a
+   * record written before this field existed. Neither can be read as agreement.
+   */
+  readonly checkerReading?: IssueCheckerReading;
 
   /**
    * Replaced regions serving this issue, so repair quality can be graded apart
@@ -341,12 +360,20 @@ export function buildIssueRecords(
             },);
           },);
 
+        /**
+         * What the checkers said about this issue, absent where none ruled.
+         */
+        const reading = outcome.checkerReadings[issue.issueId];
+
         return {
           chunkIndex: outcome.chunkIndex,
           issue,
           resolved: replacementShipped
             && outcome.resolvedIssueIds
             .includes(issue.issueId,),
+          ...(reading === undefined
+            ? {}
+            : { checkerReading: reading, }),
           repairRegions: regions,
           repairDisposition: judgeDisposition({
             regions,

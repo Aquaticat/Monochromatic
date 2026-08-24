@@ -134,6 +134,8 @@ function catOutcome(
     issues,
     resolvedIssueIds,
     candidateResolvedIssueIds: resolvedIssueIds,
+    // No checker round in this fixture, so nothing was said about any issue.
+    checkerReadings: {},
     repairRegions,
     accuracyPatchSelected,
     refined,

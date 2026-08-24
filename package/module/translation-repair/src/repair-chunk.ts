@@ -444,6 +444,7 @@ export async function repairChunk(
     changed,
     issues: deduped.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
+    checkerReadings: checker.readings,
     candidateResolvedIssueIds: candidateConfirmedIssueIds({
       acceptedIssues,
       tallies: checker.tallies,
