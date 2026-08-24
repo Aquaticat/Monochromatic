@@ -200,26 +200,50 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
 export const RUN_MODELS: RepairModels = {
   criticModelIds: RUN_ROSTER,
   panelModelIds: RUN_ROSTER,
-  // THE THIRD WRITER IS PROVISIONAL. `hf:zai-org/GLM-4.7-Flash` held this seat
-  // until the owner blocklisted it on 2026-08-24, and the calibration pass that
-  // picks the narrow writer set out of ten has not run. The replacement is
-  // chosen by the one principle this repository already records rather than by
-  // a preference: `synthetic-catalog.ts` states that fan-out crosses vendor
-  // families so one vendor's blind spots cannot dominate, and the seat being
-  // filled was the second zai model. Any of the three remaining families would
-  // satisfy that; measurement decides which, and until it runs this is a
-  // stated assumption rather than a finding.
+  // MEASURED, and no longer provisional. The calibration this seat waited for
+  // ran on 2026-08-24: 40 rounds in which all ten roster models wrote a
+  // candidate for the same slices and every other model judged them, giving
+  // 2492 disinterested ballots against a pooled null of 13.48 percent.
+  //
+  // AVAILABILITY IS PART OF THE SCORE, and reading it that way is what moved
+  // the ranking. A model absent from a round produced nothing to be judged, so
+  // its headline rate is computed over the rounds it survived and flatters a
+  // model that skipped the hard ones. Charging every model zero for the rounds
+  // it missed, `hf:Qwen/Qwen3.8-27B` leads at 22.3 percent (z 4.27, clearing
+  // the Bonferroni threshold of 2.81 for ten comparisons),
+  // `gemma-4-26b-a4b-it` takes 18.3 percent having answered 40 rounds of 40
+  // with no cut, and `hf:zai-org/GLM-5.2` sits at 8.2 percent, below the null
+  // in this pass and in the 12-round pass before it. GLM-5.2 loses the seat.
+  //
+  // `qwen3.8-max` IS EXCLUDED DESPITE THE BEST HEADLINE, 27.0 percent. It
+  // answered 28 rounds of 40, and the 12 it missed were the LARGER slices:
+  // among the models that did answer, median answer length was 588 characters
+  // in the rounds it missed against 366 in the rounds it made, a ratio of 1.61,
+  // Mann-Whitney z +3.51, p 0.0004. Its headline is survivorship on the easy
+  // half of the corpus, and it took 29 cuts, more than any other model. It
+  // keeps its place in the wide roles below, where a lost voice costs one
+  // ballot; a three-seat stage that empties on the hard slices is a different
+  // bargain, and a worse one.
+  //
+  // THIS SEAT NOW CROSSES PROVIDERS, which no writer seat did before. Charm
+  // Hyper serves `gemma-4-26b-a4b-it` and Synthetic serves the other two, so a
+  // Synthetic outage leaves the stage a writer instead of emptying it. That it
+  // reads no images costs nothing here: pictures are read in their own stage
+  // over a catalog-derived roster, and `document-lanes.ts` records that no
+  // repair-lane stage ever asks what one says.
   editorModelIds: [
     'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.2',
     'hf:Qwen/Qwen3.8-27B',
+    'gemma-4-26b-a4b-it',
   ],
   judgeModelIds: RUN_ROSTER,
-  // Same three as the editors, and provisional for the same reason.
+  // Same three as the editors, seated on the same 40-round measurement. Both
+  // stages ask a model to write replacement prose for one slice, so the
+  // calibration measures the job both are doing.
   refinerModelIds: [
     'hf:moonshotai/Kimi-K3',
-    'hf:zai-org/GLM-5.2',
     'hf:Qwen/Qwen3.8-27B',
+    'gemma-4-26b-a4b-it',
   ],
   // THREE, MEASURED RATHER THAN PREFERRED, and the wide arm is gone. The
   // owner ruled on 2026-08-23 that checker width is settled by measurement:
