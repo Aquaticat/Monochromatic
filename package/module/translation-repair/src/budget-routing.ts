@@ -1,0 +1,251 @@
+import type { HyperCredits, } from './hyper-credits.ts';
+import type { QuotaSnapshot, } from './synthetic-quota.ts';
+
+//region Budget routing
+// WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
+// than from a fixed split.
+//
+// The owner's policy, in the owner's order: send everything to Synthetic until
+// its per-model concurrency limit is reached, then overflow to Hyper, which has
+// no such limit; if Synthetic has run out of quota, use Hyper; if both are out
+// at once, throw an error saying so and end the run.
+//
+// SYNTHETIC HAS TWO LIMITS, not one. A five-hour rolling window and a weekly
+// credit budget, and either being empty is a reason to fail over. `#199` was
+// opened because the weekly one emptied and 866 of 875 lost voices carried a
+// single HTTP 429, while the reader that would have seen it coming had been
+// parsing `weekly.percentRemaining` and discarding it since 2026-07-16.
+//
+// DRYNESS ARRIVES AS A BOOLEAN rather than being read off the snapshots here,
+// so a caller can OR in what it just learned at the wire. A budget reading is
+// minutes old and a 429 is now; a router that could only see the reading would
+// keep sending to a provider that has already started refusing.
+//
+// A MODEL THAT NO LIVE PROVIDER SERVES IS AN OUTCOME, NOT A THROW. Half the
+// roster is served by one provider only, and one of those providers being dry
+// costs that panelist its voice, which the pipeline already records and
+// proceeds without. Only both budgets being empty ends a run, because at that
+// point nothing can be bought at all.
+
+/**
+ * Refusal raised when neither provider has budget left.
+ *
+ * ENDS THE RUN, at the owner's instruction. Every other budget state leaves
+ * something buyable, and this one leaves nothing.
+ *
+ * @example
+ * ```ts
+ * throw new BothProvidersDryError();
+ * ```
+ */
+export class BothProvidersDryError extends Error {
+  /**
+   * Builds failure stating that no provider can serve any call.
+   *
+   * @example
+   * ```ts
+   * new BothProvidersDryError();
+   * ```
+   */
+  public constructor() {
+    super(
+      'Both providers are out of budget at once: Synthetic has no five-hour or weekly credit left '
+        + 'and Charm Hyper has no balance left. Nothing further can be bought, so this run ends. '
+        + 'Synthetic regenerates on its own schedule and Hyper refills roughly every 24 hours.',
+    );
+    this.name = 'BothProvidersDryError';
+  }
+}
+
+/**
+ * Which providers can serve one model at all, before budget is considered.
+ *
+ * STATED RATHER THAN DERIVED, so this decision is testable without a roster and
+ * keeps answering correctly while the roster is being widened.
+ *
+ * @example
+ * ```ts
+ * const reach: ModelReach = { onSynthetic: true, onHyper: true, };
+ * ```
+ */
+export type ModelReach = {
+  /**
+   * Whether the first provider serves this model.
+   */
+  readonly onSynthetic: boolean;
+
+  /**
+   * Whether the second provider serves this model.
+   */
+  readonly onHyper: boolean;
+};
+
+/**
+ * Where one call goes, or why it can go nowhere.
+ *
+ * @example
+ * ```ts
+ * const choice: ProviderChoice = { kind: 'hyper', };
+ * ```
+ */
+export type ProviderChoice =
+  | {
+    /**
+     * Discriminator marking the first provider.
+     */
+    readonly kind: 'synthetic';
+  }
+  | {
+    /**
+     * Discriminator marking the second provider.
+     */
+    readonly kind: 'hyper';
+  }
+  | {
+    /**
+     * Discriminator marking a call no live provider can take.
+     */
+    readonly kind: 'unreachable';
+
+    /**
+     * Why, in terms a voice-loss record can carry.
+     */
+    readonly reason: string;
+  };
+
+/**
+ * Whether Synthetic's budget reading says nothing more can be bought there.
+ *
+ * READS BOTH LIMITS. The provider throttling the account, an empty five-hour
+ * window and an empty weekly budget are three separate ways to be out, and the
+ * one that actually emptied was the weekly budget.
+ *
+ * @param quota - most recent budget reading
+ *
+ * @returns Whether that reading leaves nothing buyable
+ *
+ * @example
+ * ```ts
+ * const dry = syntheticIsDry({ quota, },);
+ * ```
+ */
+export function syntheticIsDry(
+  { quota, }: { readonly quota: QuotaSnapshot; },
+): boolean {
+  /**
+   * Rolling window, whose emptiness is stated two ways.
+   */
+  const {
+    limited,
+    remaining,
+  } = quota.fiveHour;
+
+  if (limited)
+    return true;
+
+  if (remaining <= 0)
+    return true;
+
+  /**
+   * Weekly budget, the limit that actually emptied.
+   */
+  const { percentRemaining, } = quota.weekly;
+
+  return percentRemaining <= 0;
+}
+
+/**
+ * Whether Hyper's balance says nothing more can be bought there.
+ *
+ * NO MARGIN ABOVE ZERO. What one call costs has not been measured, so any
+ * cushion would be a number nobody established. A balance too small for the
+ * next call surfaces as a refusal at the wire, which the caller ORs into the
+ * dryness it passes back in.
+ *
+ * @param credits - most recent balance reading
+ *
+ * @returns Whether that reading leaves nothing buyable
+ *
+ * @example
+ * ```ts
+ * const dry = hyperIsDry({ credits, },);
+ * ```
+ */
+export function hyperIsDry(
+  { credits, }: { readonly credits: HyperCredits; },
+): boolean {
+  return credits.balance <= 0;
+}
+
+/**
+ * Decides which provider serves one call.
+ *
+ * @param reach - providers that serve this model at all
+ *
+ * @param syntheticDry - whether Synthetic has nothing buyable, budget reading
+ * and anything just learned at the wire taken together
+ *
+ * @param hyperDry - same, for Hyper
+ *
+ * @param syntheticSaturated - whether this model's per-model concurrency limit
+ * on Synthetic is already taken, which is the overflow trigger
+ *
+ * @returns Provider to call, or why none can be
+ *
+ * @throws {@link BothProvidersDryError} when neither provider has budget left,
+ * which ends the run
+ *
+ * @example
+ * ```ts
+ * const choice = routeProviderFor({ reach, syntheticDry, hyperDry, syntheticSaturated, },);
+ * ```
+ */
+export function routeProviderFor(
+  {
+    reach,
+    syntheticDry,
+    hyperDry,
+    syntheticSaturated,
+  }: {
+    readonly reach: ModelReach;
+    readonly syntheticDry: boolean;
+    readonly hyperDry: boolean;
+    readonly syntheticSaturated: boolean;
+  },
+): ProviderChoice {
+  if (syntheticDry && hyperDry)
+    throw new BothProvidersDryError();
+
+  /**
+   * Whether the first provider both serves this model and has budget.
+   */
+  const syntheticUsable = reach.onSynthetic && (!syntheticDry);
+
+  /**
+   * Whether the second provider both serves this model and has budget.
+   */
+  const hyperUsable = reach.onHyper && (!hyperDry);
+
+  if ((!syntheticUsable) && (!hyperUsable))
+    return {
+      kind: 'unreachable',
+      reason: (reach.onSynthetic || reach.onHyper)
+        ? 'every provider serving this model is out of budget'
+        : 'no provider serves this model',
+    };
+
+  // Only one side is usable, so saturation cannot divert the call anywhere.
+  if (!hyperUsable)
+    return { kind: 'synthetic', };
+
+  if (!syntheticUsable)
+    return { kind: 'hyper', };
+
+  // Both usable: fill Synthetic to its per-model limit first, overflow to the
+  // provider that has no such limit.
+  return syntheticSaturated
+    ? { kind: 'hyper', }
+    : { kind: 'synthetic', };
+}
+
+//endregion Budget routing

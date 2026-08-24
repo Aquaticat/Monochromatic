@@ -13,6 +13,19 @@
 
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export {
+  BothProvidersDryError,
+  hyperIsDry,
+  type ModelReach,
+  type ProviderChoice,
+  routeProviderFor,
+  syntheticIsDry,
+} from './budget-routing.ts';
+export {
+  CreditsShapeError,
+  type HyperCredits,
+  parseHyperCredits,
+} from './hyper-credits.ts';
+export {
   type AnthropicContentBlock,
   type AnthropicImageSource,
   contentBlocksFor,
