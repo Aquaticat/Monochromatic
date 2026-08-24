@@ -910,3 +910,68 @@ It replaces an argument with an instrument,
 and the instrument has one reading in it:
 2026-08-24T18:17:35Z, `synthetic=wet hyper=dry`,
 which is the same outage the roster probe found earlier that day.
+
+### The editor seats get their own instrument, 2026-08-24
+
+`#200` was opened on a self-correction recorded above:
+the forty-round pass was described as measuring the job both stages do,
+and it does not.
+`producer-calibrate.ts` drives `runTranslateStage`,
+a model writing English from Chinese with nothing in front of it but the source.
+An editor is handed archive text,
+a set of adjudicated claims against it,
+and a window of neighbouring prose,
+and asked to repair what the claims name without disturbing what they do not.
+
+#### The blocker turned out not to exist
+
+The task was held because a settled artifact exposes
+neither the envelopes nor the issues an editor worked from,
+so the claims could not be replayed,
+and the choice looked like extending the artifact schema
+or inventing claims as fixtures.
+
+Reading the contracts settles it differently.
+`ChunkRepairOutcome.rounds` already carries, per round,
+the slate judges saw with each candidate's producer attached,
+and every ballot cast over it.
+That is `SelectionRound` one re-shape away,
+and both sides name the same `CandidateProducer` and `SelectionBallot`.
+
+So the calibration drives the lane live and reads the rounds it records.
+Nothing is replayed, nothing is stored, and no artifact field changes.
+The claims an editor works from are claims models really raised about that passage.
+
+#### What the shape commits to
+
+Every model edits every slice and every model judges,
+for the reason the writer calibration gives:
+a narrow slate compares only the models that happened to be seated.
+
+A declined round counts.
+A standing counts votes rather than wins,
+so dropping the rounds that failed to resolve
+would keep only the slates judges found easy.
+
+The refiner standing is reported off the same spend,
+because the refine rounds are recorded beside the editor's
+and belong to a different seat.
+
+Checkers self-certify, here and nowhere else.
+Production forbids a checker proving its own repair,
+and a full editor roster leaves nobody independent when the roster is ten.
+Rotating editors out would reintroduce the survivorship the shape exists to avoid.
+It is safe for this measurement because checking runs after selection:
+the ballots a standing reads are cast before any checker is asked,
+so self-certification can move how many rounds happen,
+not who won the ones that did.
+
+#### What it does not yet decide
+
+Nothing, until it runs on a full roster.
+Charm Hyper has been dry all day,
+so a run now would seat five of ten
+and produce exactly the survivorship the shape was built to prevent.
+The instrument exists and is verified to execute;
+the measurement waits on availability,
+which `budget-sample` now makes observable.
