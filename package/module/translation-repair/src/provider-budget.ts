@@ -260,7 +260,14 @@ export function createProviderBudgets(
       },),
     ],);
 
-    rl.debug(`meters: synthetic ${syntheticDry ? 'dry' : 'wet'}, hyper ${hyperDry ? 'dry' : 'wet'}`,);
+    // INFO RATHER THAN DEBUG, because this line is the only record that a
+    // provider was AVAILABLE at a given moment, and a run does not record debug.
+    // Refusals alone cannot measure a duty cycle: `NoProviderForModelError`
+    // appears only where something happened to ask for a model that provider
+    // serves, so a quiet period reads identically to a healthy one. This is
+    // bounded by the freshness window rather than by call volume, so it costs
+    // about one line a minute however busy the run is.
+    rl.info(`METERS synthetic=${syntheticDry ? 'dry' : 'wet'} hyper=${hyperDry ? 'dry' : 'wet'}`,);
     return {
       syntheticDry,
       hyperDry,
