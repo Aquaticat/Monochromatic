@@ -1,6 +1,7 @@
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import spawn from 'nano-spawn';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
@@ -20,6 +21,9 @@ import {
   ROSTER_MODEL_IDS,
 } from '../roster-reach.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
+import { createHyperClient, } from '../hyper-client.ts';
+import { createProviderBudgets, } from '../provider-budget.ts';
+import { createRoutingClient, } from '../provider-router.ts';
 import { resolveGit, } from './git-command.ts';
 
 //region Corpus-run configuration
@@ -508,12 +512,31 @@ export async function resolveRunsDir(): Promise<string> {
 }
 
 /**
- * Builds the Synthetic client from the mise-injected API key, read by name and
- * never printed. Per-model concurrency defaults to one.
+ * Logger root for the corpus-run wiring layer.
+ */
+const l = tagged({ tag: 'translation-repair', },);
+
+/**
+ * Builds the client every run calls, over both providers where both are keyed.
  *
- * @returns Ready client
+ * ONE FACTORY, so wiring the second provider here reaches every corpus-run
+ * entrypoint at once rather than each one growing its own routing.
  *
- * @throws {@link Error} when the key env var is unset
+ * IT STILL ANSWERS `quotas`, which is the first provider's meter and nothing
+ * else. The routing client does not offer one, because the two providers meter
+ * differently and there is no single reading; this wiring layer is where the
+ * knowledge that `quotas` means the Synthetic meter belongs, and keeping the
+ * method here leaves every existing caller and the bench recorder untouched.
+ *
+ * THE SECOND KEY IS OPTIONAL AND ITS ABSENCE IS LOUD. Refusing to start would
+ * stop a run the first provider can serve on its own; starting silently would
+ * hide a setup mistake until a 429 storm looked like a provider outage. The
+ * warning names the variable so the fix is legible, and the run continues at
+ * single-provider capacity.
+ *
+ * @returns Ready client, routed across both providers where both are keyed
+ *
+ * @throws {@link RunConfigError} when the first provider's key env var is unset
  *
  * @example
  * ```ts
@@ -521,6 +544,14 @@ export async function resolveRunsDir(): Promise<string> {
  * ```
  */
 export function createRunClient(): SyntheticClient {
+  /**
+   * Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: createRunClient.name,
+    l,
+  },);
+
   /**
    * Synthetic API key, resolved by name from the mise-injected env.
    */
@@ -531,7 +562,48 @@ export function createRunClient(): SyntheticClient {
     throw new RunConfigError({
       message: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is not set; run under mise so sops injects it',
     },);
-  return createSyntheticClient({ apiKey, },);
+
+  /**
+   * First provider's client, which every path below uses.
+   */
+  const synthetic = createSyntheticClient({ apiKey, },);
+
+  /**
+   * Second provider's key, absent on a machine set up before it existed.
+   */
+  const hyperKey = process.env
+    .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
+    ?? '';
+
+  if (hyperKey === '') {
+    rl.warn(
+      'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is not set: running on one provider, '
+        + 'so a call refused for budget has nowhere to go and its voice is lost',
+    );
+    return synthetic;
+  }
+
+  /**
+   * Second provider's client.
+   */
+  const hyper = createHyperClient({ apiKey: hyperKey, },);
+
+  /**
+   * Shared budget view both providers are routed by.
+   */
+  const budgets = createProviderBudgets({
+    synthetic,
+    hyper,
+  },);
+
+  return {
+    ...createRoutingClient({
+      synthetic,
+      hyper,
+      budgets,
+    },),
+    quotas: synthetic.quotas,
+  };
 }
 
 //endregion Corpus-run configuration

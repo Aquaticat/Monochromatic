@@ -227,6 +227,46 @@ function withApiKey({ value, }: { readonly value: string; },): Disposable {
 }
 
 /**
+ * Environment variable carrying the second provider's API key.
+ *
+ * Only its NAME appears in this file, for the same reason as
+ * `API_KEY_VAR`.
+ */
+const HYPER_KEY_VAR = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
+
+/**
+ * Sets the second provider's key for the life of a scope, or removes it.
+ *
+ * @param value - stand-in key; the empty string removes the variable
+ *
+ * @returns Disposable restoring the previous value, including its absence
+ *
+ * @example
+ * ```ts
+ * using _second = withHyperKey({ value: '', },);
+ * ```
+ */
+function withHyperKey({ value, }: { readonly value: string; },): Disposable {
+  /**
+   * Value before this scope; absent means the variable was unset.
+   */
+  const original = process.env[HYPER_KEY_VAR];
+
+  if (value === '')
+    Reflect.deleteProperty(process.env, HYPER_KEY_VAR,);
+  else
+    process.env[HYPER_KEY_VAR] = value;
+  return {
+    [Symbol.dispose](): void {
+      if (original === undefined)
+        Reflect.deleteProperty(process.env, HYPER_KEY_VAR,);
+      else
+        process.env[HYPER_KEY_VAR] = original;
+    },
+  };
+}
+
+/**
  * Removes the API key for the life of a scope and restores it on exit.
  *
  * @returns Disposable restoring the previous value
@@ -265,6 +305,46 @@ await describe({
         const client = createRunClient();
 
         expect(typeof client.chatJson,).toBe('function',);
+        expect(typeof client.chatText,).toBe('function',);
+        expect(typeof client.quotas,).toBe('function',);
+      },
+    },),
+
+    it({
+      name: 'keeps the same surface when the second provider is keyed too, so '
+        + 'every existing caller and the bench recorder are untouched by routing',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+
+        /**
+         * Client built over both providers.
+         */
+        const client = createRunClient();
+
+        // `quotas` is the first provider's meter and nothing else; the routing
+        // client does not offer one, and this wiring layer supplies it.
+        expect(typeof client.chatJson,).toBe('function',);
+        expect(typeof client.chatText,).toBe('function',);
+        expect(typeof client.quotas,).toBe('function',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS a missing second key and runs on one provider, because '
+        + 'refusing would stop a run the first provider can serve alone',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: '', },);
+
+        /**
+         * Client built with only the first provider keyed.
+         */
+        const client = createRunClient();
+
+        // It still builds. The absence is warned about rather than raised,
+        // because a silent single-provider run turns a setup mistake into what
+        // looks like a provider outage once the budget runs out.
         expect(typeof client.chatText,).toBe('function',);
         expect(typeof client.quotas,).toBe('function',);
       },
