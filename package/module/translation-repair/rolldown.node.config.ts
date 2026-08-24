@@ -50,6 +50,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "slice-census": "./src/corpus-run/slice-census.ts",
     "slice-cost-report": "./src/corpus-run/slice-cost-report.ts",
     "translate-probe": "./src/corpus-run/translate-probe.ts",
+    "verify-published": "./src/corpus-run/verify-published.ts",
     "window-trial-probe": "./src/corpus-run/window-trial-probe.ts",
   },
 },);

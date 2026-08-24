@@ -41,13 +41,23 @@ export const FIXED_TREE_DIR = 'fixed';
 
 /**
  * Corpus-relative directory every person entry lives under.
+ *
+ * EXPORTED SO `verify-published.ts` CAN LIST WHAT A RUN PUBLISHED rather than
+ * only compose one path at a time. A verifier that spelled this name itself
+ * would report an empty tree as a clean one.
+ *
+ * @internal
  */
-const PEOPLE_DIR = 'people';
+export const PEOPLE_DIR = 'people';
 
 /**
  * Page file name the corpus gives an entry's English rendering.
+ *
+ * EXPORTED BESIDE {@link PEOPLE_DIR} and for the same reason.
+ *
+ * @internal
  */
-const ENGLISH_PAGE_FILE = 'page.en.md';
+export const ENGLISH_PAGE_FILE = 'page.en.md';
 
 /**
  * Names where one entry's fixed English page is written.

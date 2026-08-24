@@ -54,11 +54,23 @@ export {
   wouldShipTextPerSlice,
 } from './corpus-run/would-ship-text.ts';
 export {
+  ENGLISH_PAGE_FILE,
   FIXED_TREE_DIR,
   fixedPagePath,
+  PEOPLE_DIR,
   publishFixedPage,
   shippableReplacements,
 } from './corpus-run/publish-fixed.ts';
+export {
+  type MissingWording,
+  pageCarriesEveryWording,
+  type PageLengthCheck,
+  pageWeighsWhatItShould,
+  pageWeightRefutes,
+  type PageWordingCheck,
+  pairPublishedPages,
+  type PublishedPairing,
+} from './corpus-run/published-page-check.ts';
 export {
   projectLanesV2,
   type ProjectedLanesV2,

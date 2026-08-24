@@ -173,6 +173,11 @@ description = "Measure the pinned corpus after slicing: slice size spread, secti
 depends = ["build"]
 run = "node dist/final/node/slice-census.mjs"
 
+[tasks."verify-published"]
+description = "Read a published tree back and check it against the artifacts that produced it: every settled entry has a page, and every page carries the wording its artifact says would ship; spends no quota, reads TRANSLATION_REPAIR_RUNS_DIR"
+depends = ["build"]
+run = "node dist/final/node/verify-published.mjs"
+
 [tasks."window-trial-probe"]
 description = "#107: judge flagged slices and matched controls three times over ONE slate, narrow, narrow again, then with the neighbouring original, and report whether the window moved the replacement rate further than two narrow runs move it; SPENDS QUOTA, resumes from its ledger, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR"
 depends = ["build"]
