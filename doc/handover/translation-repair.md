@@ -18622,3 +18622,111 @@ The question they were opened for,
 checker width,
 was answered and closed by `#188`,
 and the switch they set no longer exists.
+
+### The check now runs inside the pass, not only after it
+
+A check nobody runs is not a check.
+`verify-published` reads a run back after the fact;
+`refusePageThatDisagrees` asks the same two questions inside `publishFixedPage`,
+between the splice and the write.
+
+That position is the whole design.
+`pass-entry.ts` already reads its tally line before publishing,
+and states why in the same terms:
+a question that can refuse an entry has to be asked while refusing is still free.
+Raised after the write it would leave a page on disk that no artifact accounts for,
+inverting the ordering a resumed pass depends on.
+Asked here, a disagreement publishes nothing and settles nothing,
+the pass reports the entry failed,
+and the stage caches still hold every answer,
+so a re-run reproduces the contradiction rather than losing it.
+
+The archive handed to the guard is the text actually being spliced
+rather than the copy the artifact stores,
+so the weighing is an equality on every entry
+instead of reporting an older artifact as unweighable.
+
+REFUSING AN ENTRY AT ALL IS ONLY DEFENSIBLE BECAUSE BOTH CHECKS ARE ONE-SIDED.
+The scan asks only that each wording occur in order,
+and greedy leftmost matching finds an assignment whenever any exists,
+so it cannot call a correct page wrong.
+The arithmetic is an equality only where no anchor was filled and a floor otherwise.
+A test pins the filled-anchor case,
+because refusing a page longer than the sum
+would stop every entry that fills a gap,
+which is the work this pipeline exists for.
+
+`corpus-barrel.ts` was at 299 code lines against a 300 cap,
+so the publish chain moved to `publish-barrel.ts`,
+following the seam `control-barrel.ts` and `generation-barrel.ts` used before it:
+by audience.
+The barrel falls to 271.
+
+### GFP found a bad test rather than a bad guard
+
+Four mutations, each rebuilt and run, then restored.
+
+    delete the guard CALL from publishFixedPage    exit 1, 2 cases fail
+    delete the LENGTH branch                       exit 1, 4 cases fail
+    delete the WORDING branch                      exit 0, NOTHING FAILED
+    restored                                       exit 0, 574 PASS
+
+The third one is the finding.
+The case meant to pin the wording branch used a page missing a rendering,
+which is ALSO the wrong length,
+so the arithmetic refused it and the assertions could not tell which branch had spoken.
+`toContain('slice')` did not discriminate either,
+because the length refusal says "every slice change".
+
+Repaired two ways.
+The assertion now looks for "in slice order", which only the scan says.
+And a new case swaps two settled renderings between their slices,
+so the page holds both wordings,
+is exactly as long as it should be,
+and is wrong only in order.
+It asserts both that the two pages are the same length
+and that the arithmetic does NOT refute the swapped one,
+so if that premise ever stops holding
+the case fails rather than quietly measuring the other branch.
+
+Re-run after the repair, the wording mutation fails two cases and restores clean.
+
+### The wiring had no test either
+
+Deleting the guard call from `publishFixedPage` would have left every existing case green.
+That is the same shape of gap that let `#194` ship.
+
+The new case builds an artifact whose comparison row claims more archive wording at a slice
+than the archive holds there,
+so the artifact and the publisher disagree about what the slice covers.
+The wording still ships and still lands in order,
+so only the arithmetic notices.
+It asserts the throw AND that no page exists afterwards,
+since a guard raising after `writeFileAtomic`
+would satisfy the first and still leave the page behind.
+
+## Both ballot readings reach a live artifact, and the launch-ordering diagnosis was right (`#192`, `#193`)
+
+VERIFIED 2026-08-24 on `ballot-reading-vub-2026-08-24/GLaDOSister`,
+settled by a pass launched on a build carrying both fields.
+
+    issue records            120
+    refined AND resolved      26
+    of those carrying recheckReading   26      <- all of them
+
+    chunks[n].recheckReadings                  10
+    chunks[n].issues[n].readings.issue/<id>    240 panel readings
+    configuredPanelists                        264
+    checkerReading / checkerReadings           91 / 10
+
+Every record that bought a recheck round kept its ballots,
+and the accept gate's panel readings are on the artifact per claim.
+Both live-artifact VUBs are met and both tasks close.
+
+This also confirms the reading recorded above rather than merely being consistent with it.
+The 160 records with no reading came from passes whose builds predate the fields;
+the first entry settled by a pass launched after them carries every field on every eligible record.
+No code changed between the two observations.
+
+The same entry's page passes the standalone verifier at `chars=3502=expected`,
+so `#197` has its live boundary check too.
