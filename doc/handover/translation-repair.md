@@ -19292,3 +19292,49 @@ so the gate did not simply switch the detection off.
 
 -   `#200`, an editor-role calibration, is still open and still needs its shape decided.
 -   `#94`, the slice rename, is still deliberately deferred.
+
+## `#200`: the editor calibration is built, and its blocker was imaginary
+
+### The finding that unblocked it
+
+The task was held because a settled artifact exposes neither the envelopes nor
+the issues an editor worked from, so the claims looked unreplayable, and the
+choice looked like an artifact schema change or inventing claims as fixtures.
+
+Neither is needed. `ChunkRepairOutcome.rounds` already carries, per round, the
+slate judges saw with each candidate's producer attached, and every ballot cast
+over it, and both sides name the same `CandidateProducer` and `SelectionBallot`
+out of `candidate-select-model.ts`. That is `SelectionRound` one re-shape away.
+
+So the calibration drives the lane live and reads what it records.
+
+### What shipped
+
+-   `repair-selection-rounds.ts` projects recorded rounds into the standing's
+    shape, sorting by the position judges were shown and REFUSING a slate whose
+    positions are not one to its length. A ballot names a candidate by number,
+    so that is the assumption which cannot be checked afterwards.
+-   `producer-standing-report.ts` holds the rendering both calibrations share.
+-   `editor-calibrate` drives the whole repair lane, all ten editing and all ten
+    judging every slice, and reports the EDITOR and REFINER standings off one
+    spend.
+
+### The one deliberate divergence from production
+
+Checkers self-certify in this runner and nowhere else. Production forbids a
+checker proving its own repair, and a full editor roster leaves nobody
+independent when the roster is ten; rotating editors out would reintroduce the
+survivorship the shape exists to avoid. Safe here because checking runs after
+selection: the ballots a standing reads are cast before any checker is asked.
+
+### What is still owed
+
+The MEASUREMENT, which needs a full roster. Charm Hyper has been dry all day, so
+a run now seats five of ten and produces exactly the survivorship the shape
+prevents. `budget-sample` makes the recovery observable; run the calibration
+once a sample shows `hyper=wet`.
+
+A one-slice smoke run was made against the dry roster to prove the runner
+executes: the checker assertions passed with the full roster seated, the five
+Hyper-only models were refused as lost voices, and the lane continued on the
+five that answered. That verifies mechanism, not standing.
