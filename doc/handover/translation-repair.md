@@ -17867,3 +17867,30 @@ writers at half weight take it to 2 against 2.5, undecided) and one must not.
 `TRANSLATION_REPAIR_WIDE_CHECKERS=1` seats the whole roster and permits self-certification. It rides
 in `RUN_MODELS` rather than at a call site so it enters the slice-cache key: a wide run cannot resume
 off narrow cache entries and a narrow run cannot resume off wide ones.
+
+### The power of this measurement is bounded, and the bound is computable
+
+Measured over 12 settled entries carrying issues, 514 accepted issues in all:
+
+```
+shipped      / resolved=true    303
+shipped      / resolved=false     7
+no-region    / resolved=false   203
+not-selected / resolved=false     1
+```
+
+The headline "58.9 percent resolved" is a dilution, not a finding: `no-region` issues never reach a
+checker, because no repair region served them. Among the 310 issues the checkers actually ruled on,
+303 resolved, which is 97.7 percent and matches the 98.1 percent `checker-sensitivity.ts` recorded.
+
+WHICH ROUNDS CAN FLIP IS DECIDABLE IN ADVANCE, and the answer is narrow: only rounds where the three
+disjoint checkers SPLIT. At three to nil the wide arm adds at most 1.5 of opposing weight against
+3.0, so the verdict holds. At two to one the narrow arm resolves on 2 against 1, and three authoring
+writers answering the other way take it to 2 against 2.5, which does not resolve. So the count of
+narrow-split rounds is a ceiling on the flip count, and the analyser prints it first for that reason.
+
+A NULL FLIP COUNT IS THEREFORE ONLY MEANINGFUL BESIDE THAT CEILING. If the narrow three split on
+almost nothing, zero flips says the checkers agree, not that width is irrelevant, and the honest
+report is that the experiment could not have answered the question at this sample size. The 7 of 310
+unresolved rate suggests the ceiling will be low, so this is the likely outcome and is written down
+BEFORE the data arrives rather than after.
