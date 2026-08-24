@@ -747,6 +747,20 @@ because it prices only the THIRD seat's marginal quality
 while the arrangement above prices the whole stage's survival,
 and survival is the larger term.
 
+THE OUTAGE TABLE STOPPED BEING AN ARGUMENT THE SAME AFTERNOON.
+The 15:36 pass reached the naturalness lane with Charm Hyper still dry
+and logged both halves of the prediction within ten milliseconds:
+
+    17:01:28.240  chunk 2: nothing to edit, unchanged
+    17:01:28.250  refiner gemma-4-26b-a4b-it: NoProviderForModelError: no provider can take it
+    17:04:18.932  refinement from hf:Qwen/Qwen3.8-27B won
+
+The newly seated Hyper model went dark in the seat it had just been given,
+the stage ran on its two remaining seats,
+and a refinement still won and shipped.
+That is the two-of-three row of the table, observed rather than reasoned about,
+and it is the case the swap was defended on.
+
 WHAT WOULD CHANGE THIS: a measured Hyper duty cycle well under 76 percent,
 at which point `hf:openai/gpt-oss-120b` takes the seat on quality as well.
 Recording provider-dry intervals across runs is how that gets measured,
