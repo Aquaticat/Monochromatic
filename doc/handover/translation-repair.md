@@ -18038,3 +18038,25 @@ because a later reader summing the four directories would otherwise treat them a
 The picture has not changed shape since 39 rounds: the ceiling is still 2, and the reason no flip
 has been seen remains that this panel almost never splits. One round in the batch pass lost a voice
 and was decided by five rather than six, which is the only panel-size variation observed.
+
+### Why adding a required outcome field cannot crash a resumed run
+
+THE WORRY, WHICH IS REAL AND ALREADY ANSWERED. `isChunkRepairOutcome` in
+`package/module/translation-repair/src/corpus-run/slice-cache-store.ts` validates a cached outcome
+field by field, and it checks neither `checkerReadings` nor `recheckReadings`. A cache file written
+before those fields existed would therefore pass the guard, and `buildIssueRecords` would then index
+`undefined` and throw. Two required fields were added to that type today, so this is the exact shape
+of failure to check for.
+
+IT CANNOT HAPPEN, because the cache is namespaced by the built pipeline's digest. Each lane keeps its
+own marker file next to its slices (`generation.txt`, `refine-generation.txt`,
+`translate-generation.txt` and so on), `digestPipeline` computes that marker by walking the build
+output directory recursively, and a lane whose marker has moved deletes its own files rather than
+reading them. Measured rather than reasoned: a run started under the pre-`checkerReadings` bundle
+carries `sha256-tree-v1:b...` and one started after carries `sha256-tree-v1:9...`, so the two never
+share a namespace.
+
+THE COST SIDE OF THAT SAME PROPERTY. Any rebuild invalidates every cache, so a pass resumed after a
+source change re-buys everything it had already settled. That is the reason not to restart a
+long-running pass merely to pick up a field: the in-flight passes finish under the bundle they
+started with, and a fresh run directory is what gets the new one.
