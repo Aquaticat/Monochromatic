@@ -236,4 +236,47 @@ export function requireCount(
   return value;
 }
 
+/**
+ * Reads a value that must be a finite number, of any sign or scale.
+ *
+ * SEPARATE FROM `requireCount`, which exists for indices and tallies and
+ * rejects everything below zero and everything fractional. A ballot's weight
+ * is one half when a judge names its own writing, and a ballot naming no
+ * candidate records a sentinel index, so neither is a count.
+ *
+ * @param value - value to check
+ *
+ * @param path - dotted path for error message
+ *
+ * @returns Value as a finite number
+ *
+ * @throws {@link ArtifactParseError} when the value is not one
+ *
+ * @example
+ * ```ts
+ * const weight = requireFinite({ value: ballot.weight, path: 'ballot.weight', },);
+ * ```
+ */
+export function requireFinite(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): number {
+  if ((typeof value) !== 'number')
+    throw new ArtifactParseError({
+      path,
+      reason: 'a number',
+    },);
+  if (!Number.isFinite(value,))
+    throw new ArtifactParseError({
+      path,
+      reason: 'a finite number',
+    },);
+  return value;
+}
+
 //endregion Artifact guards

@@ -16,6 +16,8 @@ import {
   selectionRoundsFor,
 } from '../repair-selection-rounds.ts';
 import type { SelectionRound, } from '../self-preference.ts';
+import { OffRosterModelError, } from './artifact-producer-read.ts';
+import { readRepairRounds, } from './artifact-rounds-read.ts';
 import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
@@ -240,20 +242,31 @@ async function artifactPaths(
 }
 
 /**
+ * What one artifact turned out to be.
+ *
+ * OFF-ROSTER IS ITS OWN ANSWER, not a refusal. An artifact settled before a
+ * seating change names models the roster no longer holds, which says the
+ * record predates the current roster and nothing bad about the record. Folding
+ * it in with malformed artifacts would report a healthy archive as a broken
+ * one.
+ */
+type ArtifactOutcome = ArtifactReading | 'off-roster' | 'refused';
+
+/**
  * Reads one artifact into the rounds each of its seats produced.
  *
  * @param path - artifact file to read
  *
- * @returns Its rounds, or that it would not parse
+ * @returns Its rounds, that it predates the roster, or that it would not parse
  *
  * @example
  * ```ts
- * const reading = await readOne({ path, },);
+ * const outcome = await readOne({ path, },);
  * ```
  */
 async function readOne(
   { path, }: { readonly path: string; },
-): Promise<ArtifactReading | 'refused'> {
+): Promise<ArtifactOutcome> {
   try {
     /**
      * Whole artifact, parsed rather than trusted.
@@ -266,32 +279,47 @@ async function readOne(
     },);
 
     /**
-     * Repair chunks, each of which may have judged nothing.
+     * Rounds every chunk recorded, checked here because version 2 hands the
+     * lane result back unread.
      */
-    const chunks = artifact
-      .lanes
-      .repair
-      .result
-      .chunks;
+    const perChunk = readRepairRounds({
+      raw: artifact
+        .lanes
+        .repair
+        .raw,
+      path: `${artifact.id}.lanes.repair.result`,
+    },);
 
     return {
       digest: artifact.pipelineDigest,
       entryId: artifact.id,
-      editor: chunks.map(function editorRounds(chunk,): readonly SelectionRound[] {
+      editor: perChunk.map(function editorRounds(rounds,): readonly SelectionRound[] {
         return selectionRoundsFor({
-          rounds: chunk.rounds,
+          rounds,
           stages: EDITOR_ROUND_STAGES,
         },);
       },),
-      refiner: chunks.map(function refinerRounds(chunk,): readonly SelectionRound[] {
+      refiner: perChunk.map(function refinerRounds(rounds,): readonly SelectionRound[] {
         return selectionRoundsFor({
-          rounds: chunk.rounds,
+          rounds,
           stages: REFINER_ROUND_STAGES,
         },);
       },),
     };
   } catch (error) {
-    console.error(`editor-standing-read: ${path} refused by ${errorName({ error, },)}`,);
+    // BOTH MESSAGES ARE SAFE TO PRINT. `ArtifactParseError` names a path and
+    // the shape it wanted; `OffRosterModelError` names a path and a model id.
+    // Neither quotes the value it disagrees about, so no passage can reach the
+    // report through them.
+    if (error instanceof OffRosterModelError) {
+      console.error(`editor-standing-read: ${error.message}`,);
+      return 'off-roster';
+    }
+
+    console.error(
+      `editor-standing-read: ${path} refused, ${errorName({ error, },)}: `
+        + `${error instanceof Error ? error.message : 'no message'}`,
+    );
     return 'refused';
   }
 }
@@ -452,14 +480,25 @@ async function reportStandings(): Promise<void> {
   )).flat();
 
   /**
-   * Every artifact that parsed.
+   * What every artifact turned out to be, read or not.
    */
-  const readings = (await Promise.all(paths.map(async function one(path,) {
+  const outcomes = await Promise.all(paths.map(async function one(path,): Promise<ArtifactOutcome> {
     return readOne({ path, },);
-  },),))
-    .filter(function parsed(reading,): reading is ArtifactReading {
-      return reading !== 'refused';
-    },);
+  },),);
+
+  /**
+   * Every artifact that parsed under the current roster.
+   */
+  const readings = outcomes.filter(function parsed(outcome,): outcome is ArtifactReading {
+    return (outcome !== 'refused') && (outcome !== 'off-roster');
+  },);
+
+  /**
+   * Artifacts settled under an earlier seating, counted apart from defects.
+   */
+  const offRoster = outcomes.filter(function earlier(outcome,): boolean {
+    return outcome === 'off-roster';
+  },).length;
 
   /**
    * Groups carrying at least one judged round, since a group with none says
@@ -476,7 +515,8 @@ async function reportStandings(): Promise<void> {
 
   console.log(
     `editor-standing-read: archives=${String(roots.length,)} artifacts=${String(paths.length,)} `
-      + `read=${String(readings.length,)} digestsWithRounds=${String(groups.length,)}`,
+      + `read=${String(readings.length,)} earlierRoster=${String(offRoster,)} `
+      + `digestsWithRounds=${String(groups.length,)}`,
   );
   console.log(
     '  OBSERVATIONAL. Only models that held a seat ever wrote a candidate, so an absent model '
@@ -486,9 +526,13 @@ async function reportStandings(): Promise<void> {
 
   if (groups.length === 0) {
     console.log(
-      '  NO ROUNDS. Nothing read here recorded a judged round. Artifacts settled before the '
-        + 'rounds were stored carry none, and an entry whose every chunk was left unchanged '
-        + 'carries none either.',
+      (offRoster > 0)
+        ? `  NO ROUNDS UNDER THE CURRENT ROSTER. ${String(offRoster,)} of these artifacts name a `
+          + 'model the roster no longer seats, so they were settled under an earlier one and are '
+          + 'not evidence about the models seated now. This is an absent measurement, not a poor one.'
+        : '  NO ROUNDS. Nothing read here recorded a judged round. Artifacts settled before the '
+          + 'rounds were stored carry none, and an entry whose every chunk was left unchanged '
+          + 'carries none either.',
     );
     process.exitCode = NOTHING_RECORDED;
     return;
