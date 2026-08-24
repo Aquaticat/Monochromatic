@@ -372,6 +372,66 @@ where corpus text does not belong.
   damage would flag every refinement the lane ships and would look identical to
   a clean run while doing it.
 
+## Configuration
+
+Every knob is an environment variable,
+and none of them had been written down before 2026-08-24.
+Values are read once per invocation.
+
+An EXPORTED-BUT-EMPTY variable counts as unset throughout,
+which is deliberate rather than incidental:
+an empty export is an ordinary shell accident,
+and reading one as an instruction has cost this package a defect before.
+
+### Credentials
+
+-   `TRANSLATION_REPAIR_SYNTHETIC_API_KEY`.
+    Bearer token for the first provider.
+    A run that reaches a model call without it throws.
+
+-   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
+    Bearer token for the second provider, Charm Hyper.
+    OPTIONAL, and its absence is not an error:
+    `createRunClient` warns and returns a client that speaks to the first provider alone,
+    so a run without it still works and simply has nowhere to fail over to.
+    Note the `CHARM` in the middle;
+    a name missing it is read by nothing and reported by nothing.
+
+### Where a run writes
+
+-   `TRANSLATION_REPAIR_RUNS_DIR`.
+    Root for artifacts, the published tree, slice caches, and the attempt map.
+    Defaults to `node_modules/.monochromatic/translation-repair-runs` under the worktree root.
+    Point it at a throwaway directory for any run whose output should not join a pool later.
+
+### Bounding one run
+
+-   `TRANSLATION_REPAIR_HARD_CAP_MINUTES`.
+    Overrides the per-entry ceiling, a positive number of minutes.
+    A value that is not one is REFUSED rather than replaced by the default,
+    including `30m`, which `parseFloat` would have read as 30:
+    a ceiling is what stops a runaway entry,
+    so an operator who set it must not be left believing a run is bounded some way it is not.
+    A run that overrides logs `CAP OVERRIDDEN` above its work.
+
+### Pooling artifacts across builds
+
+Each settled artifact records the digest of the pipeline that produced it,
+and readers refuse to mix generations unless told to.
+
+-   `TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`.
+    Set to `yes` to resume an accumulation under a build different from the one that filled it.
+    The value is spelled out so a stray `0` cannot silently disable the guard.
+
+-   `TRANSLATION_REPAIR_REQUIRED_COMMIT`.
+    Restricts a pool to entries whose recorded pipeline contains that commit.
+
+-   `TRANSLATION_REPAIR_POOL_ALL`.
+    Set to `yes` to take every generation and say so above the resulting number.
+    Setting this together with `TRANSLATION_REPAIR_REQUIRED_COMMIT` throws:
+    that asks for a filtered pool and an unfiltered one at once,
+    and preferring either would record a policy nobody chose.
+
 ## Status
 
 Milestone one (detection) is complete:
