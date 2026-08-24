@@ -250,7 +250,7 @@ await describe({
         },);
         /** Reply of one exchange with every knob set. */
         const reply = await client.chatText({
-          modelId: 'hf:zai-org/GLM-4.7-Flash',
+          modelId: 'hf:openai/gpt-oss-120b',
           messages: MESSAGES,
           signal: new AbortController().signal,
           maxTokens: 2_048,
@@ -269,7 +269,7 @@ await describe({
 
         /** Request body decoded for knob assertions. */
         const body: unknown = JSON.parse(exchanges[0]?.bodyJson ?? '{}',);
-        expect(isJsonRecord(body,) ? body.model : '',).toBe('hf:zai-org/GLM-4.7-Flash',);
+        expect(isJsonRecord(body,) ? body.model : '',).toBe('hf:openai/gpt-oss-120b',);
         expect(isJsonRecord(body,) ? body.stream : false,).toBe(true,);
         expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(2_048,);
         // The serving stack does not honor sampling knobs reliably;
@@ -309,14 +309,14 @@ await describe({
 
         expect(
           (await client.chatText({
-            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            modelId: 'hf:openai/gpt-oss-120b',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },)).usage,
         ).toBe(undefined,);
         expect(
           (await client.chatText({
-            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            modelId: 'hf:openai/gpt-oss-120b',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },)).usage,
@@ -835,12 +835,12 @@ await describe({
         /** Two same-model calls plus one cross-model call, all in flight. */
         const inFlight = [
           client.chatText({
-            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            modelId: 'hf:openai/gpt-oss-120b',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
           client.chatText({
-            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            modelId: 'hf:openai/gpt-oss-120b',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
@@ -854,7 +854,7 @@ await describe({
 
         // First Flash call and the GLM-5.2 call run; second Flash call is queued.
         expect(entered,).toEqual([
-          'hf:zai-org/GLM-4.7-Flash',
+          'hf:openai/gpt-oss-120b',
           'hf:zai-org/GLM-5.2',
         ],);
 
@@ -903,17 +903,17 @@ await describe({
         /** Three same-model calls in flight against two slots. */
         const inFlight = [
           client.chatText({
-            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            modelId: 'hf:openai/gpt-oss-120b',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
           client.chatText({
-            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            modelId: 'hf:openai/gpt-oss-120b',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
           client.chatText({
-            modelId: 'hf:zai-org/GLM-4.7-Flash',
+            modelId: 'hf:openai/gpt-oss-120b',
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),

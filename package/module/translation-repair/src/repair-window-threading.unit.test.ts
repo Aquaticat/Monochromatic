@@ -98,7 +98,7 @@ const EDITORS = [
 /**
  * {@inheritDoc CRITICS}
  */
-const JUDGES = ['hf:zai-org/GLM-4.7-Flash',] as const;
+const JUDGES = ['minimax-m3',] as const;
 
 /**
  * {@inheritDoc CRITICS}

@@ -64,7 +64,7 @@ const JUDGE_TWO = 'hf:openai/gpt-oss-120b';
 /**
  * Third disinterested judge, for rosters that must exceed the minimum.
  */
-const JUDGE_THREE = 'hf:zai-org/GLM-4.7-Flash';
+const JUDGE_THREE = 'minimax-m3';
 
 await describe({
   name: assertJudgeableProducerRoster.name,

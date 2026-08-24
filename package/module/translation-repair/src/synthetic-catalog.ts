@@ -1,3 +1,5 @@
+import type { SyntheticServedId, } from './roster-id.ts';
+
 //region Synthetic model catalog
 // Facts verified live on 2026-07-16 against `GET /openai/v1/models` (prices, context
 // lengths, feature flags) and https://synthetic.new/rate-limits (weighting rule:
@@ -45,9 +47,19 @@ export type SyntheticVendorFamily =
   | 'openai';
 
 /**
+ * Re-exported so the hundred-odd callers that name a roster model keep one
+ * import, while the identity itself lives in `roster-id.ts` where both catalogs
+ * can see it without a cycle.
+ */
+export type {
+  RosterModelId,
+  SyntheticServedId,
+} from './roster-id.ts';
+
+/**
  * Every always-on Synthetic chat model this pipeline may call.
  *
- * These are the SIX genuinely distinct models the provider offers. The models
+ * These are the models the provider offers that this pipeline seats. The models
  * endpoint also lists `syn:large:text`, `syn:large:vision`, `syn:small:text`,
  * and `syn:small:vision`, and those are DELIBERATELY ABSENT here: each is an
  * alias onto a model already listed, which the endpoint states in its own
@@ -88,18 +100,11 @@ export type SyntheticVendorFamily =
  * not in the transient retry set, so leaving them listed cost a lost voice per
  * stage per call, silently.
  *
- * @example
- * ```ts
- * const modelId: RosterModelId = 'hf:zai-org/GLM-5.2';
- * ```
+ * One id was REMOVED 2026-08-24, `zai-org/GLM-4.7-Flash` (again without the
+ * prefix), blocklisted by the owner. `#136` had measured that it should stay,
+ * and the owner overruled that on a roster that is now ten models rather than
+ * six. It answers normally; nothing here calls it.
  */
-export type RosterModelId =
-  | 'hf:zai-org/GLM-5.2'
-  | 'hf:zai-org/GLM-4.7-Flash'
-  | 'hf:Qwen/Qwen3.8-27B'
-  | 'hf:moonshotai/Kimi-K3'
-  | 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4'
-  | 'hf:openai/gpt-oss-120b';
 
 /**
  * Verified per-model facts routing and budgeting read.
@@ -113,7 +118,7 @@ export type SyntheticModelInfo = {
   /**
    * Model identifier sent in request bodies.
    */
-  readonly id: RosterModelId;
+  readonly id: SyntheticServedId;
 
   /**
    * Vendor family for cross-family fan-out and rerouting.
@@ -168,10 +173,10 @@ export type SyntheticModelInfo = {
  *
  * @example
  * ```ts
- * const flash = SYNTHETIC_MODELS['hf:zai-org/GLM-4.7-Flash'];
+ * const flash = SYNTHETIC_MODELS['hf:openai/gpt-oss-120b'];
  * ```
  */
-export const SYNTHETIC_MODELS: Readonly<Record<RosterModelId, SyntheticModelInfo>> = {
+export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModelInfo>> = {
   'hf:zai-org/GLM-5.2': {
     id: 'hf:zai-org/GLM-5.2',
     readsImages: false,
@@ -180,15 +185,6 @@ export const SYNTHETIC_MODELS: Readonly<Record<RosterModelId, SyntheticModelInfo
     maxOutputLength: 65_536,
     promptDollarsPerToken: 0.000001,
     completionDollarsPerToken: 0.000003,
-  },
-  'hf:zai-org/GLM-4.7-Flash': {
-    id: 'hf:zai-org/GLM-4.7-Flash',
-    readsImages: false,
-    family: 'zai',
-    contextLength: 196_608,
-    maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.0000001,
-    completionDollarsPerToken: 0.0000005,
   },
   'hf:Qwen/Qwen3.8-27B': {
     id: 'hf:Qwen/Qwen3.8-27B',
@@ -232,7 +228,7 @@ export const SYNTHETIC_MODELS: Readonly<Record<RosterModelId, SyntheticModelInfo
  * Baseline model whose calls count as exactly one request against the five-hour
  * limit; the provider documents the baseline as its current default model.
  */
-export const SYNTHETIC_BASELINE_MODEL_ID: RosterModelId = 'hf:zai-org/GLM-5.2';
+export const SYNTHETIC_BASELINE_MODEL_ID: SyntheticServedId = 'hf:zai-org/GLM-5.2';
 
 /**
  * Estimates five-hour-limit weight of one request to one model,
@@ -247,11 +243,11 @@ export const SYNTHETIC_BASELINE_MODEL_ID: RosterModelId = 'hf:zai-org/GLM-5.2';
  *
  * @example
  * ```ts
- * estimateRequestWeight({ modelId: 'hf:zai-org/GLM-4.7-Flash', },);
+ * estimateRequestWeight({ modelId: 'hf:openai/gpt-oss-120b', },);
  * ```
  */
 export function estimateRequestWeight(
-  { modelId, }: { readonly modelId: RosterModelId; },
+  { modelId, }: { readonly modelId: SyntheticServedId; },
 ): number {
   /**
    * Input price of the requested model.

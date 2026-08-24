@@ -28,7 +28,7 @@ import {
   type runRestorationJudge,
   subdivideChunkPair,
   type SeededErrorSpec,
-  SYNTHETIC_MODELS,
+  syntheticEntryFor,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -865,8 +865,14 @@ await describe({
     it({
       name: 'names only cataloged models, distinctly',
       fn: async () => {
+        // ASKED OF THE LOOKUP RATHER THAN OF THE RECORD since 2026-08-24. The
+        // roster now spans two providers, so a roster id is no longer always a
+        // key of one provider's catalog, and indexing that record with one
+        // would need an assertion that the id is one of its keys. These three
+        // judges are all Synthetic-served, which is the stronger claim and the
+        // one worth keeping.
         for (const modelId of DEFAULT_JUDGE_MODEL_IDS)
-          expect(SYNTHETIC_MODELS[modelId]?.id,).toBe(modelId,);
+          expect(syntheticEntryFor({ modelId, },).served,).toBe(true,);
         expect(new Set(DEFAULT_JUDGE_MODEL_IDS,).size,)
           .toBe(DEFAULT_JUDGE_MODEL_IDS.length,);
       },

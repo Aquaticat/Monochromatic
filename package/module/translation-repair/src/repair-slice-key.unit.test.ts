@@ -37,7 +37,7 @@ const MODELS: RepairModels = {
   ],
   panelModelIds: ['hf:Qwen/Qwen3.8-27B',],
   editorModelIds: ['hf:openai/gpt-oss-120b',],
-  judgeModelIds: ['hf:zai-org/GLM-4.7-Flash',],
+  judgeModelIds: ['minimax-m3',],
   refinerModelIds: ['hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',],
   checkerModelIds: ['hf:Qwen/Qwen3.8-27B',],
 };
@@ -108,8 +108,19 @@ await describe({
         // Then version 30, on 2026-08-23, the same kind again: the outcome grew
         // `authorship`, naming who wrote the repaired text so the naturalness
         // recheck can discount a checker judging its own work after a resume.
+        //
+        // THE HASH MOVED ON 2026-08-24 WITHOUT THE DERIVATION MOVING, which is
+        // the case the note above says must not happen, so it is written down
+        // rather than quietly re-pinned. The owner blocklisted
+        // `zai-org/GLM-4.7-Flash`, the fixture roster below named it, and a
+        // fixture that names a model no longer on the roster does not compile.
+        // The roster IS part of the key by design, so a fixture roster change
+        // moves this hash and invalidates only this fixture's own entries.
+        // `SLICE_CACHE_VERSION` is deliberately NOT bumped: nothing about the
+        // question changed, and bumping it would discard every settled slice in
+        // the corpus to record a test fixture edit.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('19a67320f27cf2b06cc53cd131438719add0a7b466c74332d96467f5ef679b31',);
+          .toBe('5c4095e02c112db22bd875e4eaad5535f57a973562c243895625e83baa254a53',);
       },
     },),
     it({

@@ -12,6 +12,20 @@
 // only remedy that works against an exhausted budget.
 
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
+export type {
+  HyperOnlyRosterId,
+  SyntheticServedId,
+} from './roster-id.ts';
+export {
+  hyperIdFor,
+  type HyperSpelling,
+  readsImages,
+  reachOf,
+  ROSTER_MODEL_IDS,
+  type SyntheticEntry,
+  syntheticEntryFor,
+  visionReachOf,
+} from './roster-reach.ts';
 export {
   BothProvidersDryError,
   hyperIsDry,

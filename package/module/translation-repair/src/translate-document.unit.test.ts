@@ -160,7 +160,7 @@ const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
-  'hf:zai-org/GLM-4.7-Flash',
+  'minimax-m3',
 ];
 
 /**

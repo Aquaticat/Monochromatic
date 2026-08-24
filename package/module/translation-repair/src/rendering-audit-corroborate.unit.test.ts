@@ -237,7 +237,7 @@ await describe({
          * Claim whose focus contains the other's, on both sides.
          */
         const containing = claimOf({
-          modelId: 'hf:zai-org/GLM-4.7-Flash',
+          modelId: 'minimax-m3',
           category: 'altered-number',
           sourceLocator: COUNT_SENTENCE_SOURCE,
           sourceFocus: '两只猫',

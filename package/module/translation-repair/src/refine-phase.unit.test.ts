@@ -56,7 +56,7 @@ const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
  * distinguishable ids, which is what lets an assertion tell a union of both
  * stages apart from either stage alone.
  */
-const EDITOR_WHO_DID_NOT_REFINE: RosterModelId = 'hf:zai-org/GLM-4.7-Flash';
+const EDITOR_WHO_DID_NOT_REFINE: RosterModelId = 'minimax-m3';
 
 /**
  * Refiner the scripted client answers as, which is the fixture's other editor.

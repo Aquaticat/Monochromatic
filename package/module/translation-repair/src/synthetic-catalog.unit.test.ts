@@ -66,11 +66,15 @@ await describe({
           'qwen',
           'zai',
         ],);
-        // Six, not the ten ids the models endpoint lists: syn:large:text,
+        // Five, not the ten ids the models endpoint lists: syn:large:text,
         // syn:large:vision, syn:small:text, and syn:small:vision each alias a
         // model already counted here. Admitting one would seat a single model
         // twice on a voting panel and count one opinion as two confirmations.
-        expect(Object.keys(SYNTHETIC_MODELS,),).toHaveLength(6,);
+        //
+        // FIVE RATHER THAN SIX SINCE 2026-08-24, when the owner blocklisted
+        // `zai-org/GLM-4.7-Flash`. Still five vendor families, because the
+        // family it left behind is the one `GLM-5.2` already covers.
+        expect(Object.keys(SYNTHETIC_MODELS,),).toHaveLength(5,);
       },
     },),
   ],

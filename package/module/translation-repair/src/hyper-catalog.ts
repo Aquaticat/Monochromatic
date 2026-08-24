@@ -1,4 +1,7 @@
-import type { RosterModelId, } from './synthetic-catalog.ts';
+import type {
+  HyperOnlyRosterId,
+  SyntheticServedId,
+} from './roster-id.ts';
 
 //region Hyper catalog
 // What Charm Hyper serves, and the two ways it differs from the other provider
@@ -86,7 +89,7 @@ export type HyperModelInfo = {
    * once however it was reached. Which provider actually served a call is
    * recorded per call, for diagnosis, and nowhere else.
    */
-  readonly sharedWith: RosterModelId | typeof HYPER_ONLY;
+  readonly sharedWith: SyntheticServedId | typeof HYPER_ONLY;
 
   /**
    * Whether this model can be sent an image alongside its text.
@@ -277,5 +280,18 @@ export function modelsServedOnlyHere(): readonly HyperServedId[] {
       return info.id;
     },);
 }
+
+/**
+ * Proof that every roster name for a Hyper-only model is an id this provider
+ * serves.
+ *
+ * A TYPE, NOT A TEST, because the two lists live in different files for
+ * cycle reasons and a drift between them would otherwise surface as a request
+ * naming a model that does not exist. Assigning the narrower to the wider fails
+ * to compile the moment a name is added to one and not the other.
+ *
+ * @internal
+ */
+export type HyperOnlyNamesAreServed = HyperOnlyRosterId extends HyperServedId ? true : never;
 
 //endregion Hyper catalog

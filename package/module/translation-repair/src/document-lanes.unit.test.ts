@@ -78,7 +78,7 @@ const FRESH = 'The cat naps on the windowsill.';
 const ROSTER: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
-  'hf:zai-org/GLM-4.7-Flash',
+  'minimax-m3',
   'hf:Qwen/Qwen3.8-27B',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',

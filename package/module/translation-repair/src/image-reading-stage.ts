@@ -6,10 +6,8 @@ import {
 import type { SyntheticClient, } from './chat-contract.ts';
 import { encodeImageAsset, } from './image-asset.ts';
 import { readingMakesSense, } from './image-reading-sense.ts';
-import {
-  SYNTHETIC_MODELS,
-  type RosterModelId,
-} from './synthetic-catalog.ts';
+import { readsImages, } from './roster-reach.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Image reading stage
 // ONE CALL THAT READS A PICTURE, screened before anybody is allowed to use what
@@ -169,16 +167,15 @@ export async function readImageAsset(
     l,
   },);
 
-  /**
-   * What the catalog says about this model.
-   */
-  const model = SYNTHETIC_MODELS[modelId];
-
-  // ASKED OF THE CATALOG RATHER THAN OF THE PROVIDER. A text-only model sent an
-  // image part answers about nothing, or errors, and either way the call is
-  // spent. The catalog's answer comes from the provider's own
-  // `input_modalities`, so this is a lookup rather than a guess.
-  if (!model.readsImages) {
+  // ASKED OF BOTH CATALOGS RATHER THAN OF THE PROVIDER. A text-only model sent
+  // an image part answers about nothing, or errors, and either way the call is
+  // spent. Each catalog's answer comes from that provider's own reported
+  // modalities, so this is a lookup rather than a guess.
+  //
+  // BOTH, because they disagree. `hf:zai-org/GLM-5.2` reads pictures on Charm
+  // Hyper and not on Synthetic, so asking only the older catalog would refuse a
+  // reading this roster can actually buy.
+  if (!readsImages({ modelId, },)) {
     rl.warn(`${modelId} does not read images, so ${assetName} was not sent`,);
     return {
       kind: 'unavailable',

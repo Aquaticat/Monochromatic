@@ -94,7 +94,7 @@ const CANNED: Readonly<Record<string, {
     kind: 'ok',
     json: HIT_REPORT,
   },
-  'hf:zai-org/GLM-4.7-Flash': { kind: 'refusal', },
+  'hf:openai/gpt-oss-120b': { kind: 'refusal', },
   'hf:Qwen/Qwen3.8-27B': { kind: 'mismatch', },
   'hf:moonshotai/Kimi-K3': { kind: 'http', },
 };
@@ -172,7 +172,7 @@ await describe({
           },],
           modelIds: [
             'hf:zai-org/GLM-5.2',
-            'hf:zai-org/GLM-4.7-Flash',
+            'hf:openai/gpt-oss-120b',
             'hf:Qwen/Qwen3.8-27B',
             'hf:moonshotai/Kimi-K3',
           ],
@@ -216,7 +216,7 @@ await describe({
 
         /** Scorecard row of the refusing model. */
         const refusalRow = nonNullishOrThrow(result.scorecard.rows.find(function byModel(row,) {
-          return row.modelId === 'hf:zai-org/GLM-4.7-Flash';
+          return row.modelId === 'hf:openai/gpt-oss-120b';
         },),);
         expect(refusalRow.refusalRate,).toBe(1,);
         expect(refusalRow.seededRecall,).toBe(0,);

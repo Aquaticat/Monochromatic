@@ -75,7 +75,7 @@ const l = tagged({ tag: 'document-verse-rule-reaches-the-wire-test', },);
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
-  'hf:zai-org/GLM-4.7-Flash',
+  'minimax-m3',
 ];
 
 /**

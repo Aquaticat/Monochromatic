@@ -425,7 +425,7 @@ await describe({
         /** Full six-model roster where five fail once then answer. */
         const roster: readonly RosterModelId[] = [
           'hf:zai-org/GLM-5.2',
-          'hf:zai-org/GLM-4.7-Flash',
+          'minimax-m3',
           'hf:Qwen/Qwen3.8-27B',
           'hf:moonshotai/Kimi-K3',
           'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',

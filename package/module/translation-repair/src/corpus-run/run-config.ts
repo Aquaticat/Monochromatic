@@ -14,10 +14,11 @@ import {
   STREAM_FIRST_BYTE_MS,
   STREAM_IDLE_MS,
 } from '../stream-idle-guard.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
-  SYNTHETIC_MODELS,
-  type RosterModelId,
-} from '../synthetic-catalog.ts';
+  readsImages,
+  ROSTER_MODEL_IDS,
+} from '../roster-reach.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import { resolveGit, } from './git-command.ts';
 
@@ -60,18 +61,20 @@ export class RunConfigError extends Error {
 const HERE = import.meta.dirname;
 
 /**
- * Every model on the flat-rate Synthetic plan.
+ * Every model this run may seat, across both providers.
  * Critics and the adjudication panel both use the whole roster so coverage
  * overlaps across models rather than partitioning the work.
+ *
+ * DERIVED RATHER THAN LISTED since 2026-08-24, when the roster stopped being
+ * one provider's model list. A hand-written copy of a two-catalog union goes
+ * stale the first time either catalog moves, and it goes stale silently: a
+ * missing model is a seat nobody notices is empty.
+ *
+ * TEN MODELS, AT FULL WEIGHT IMMEDIATELY. The owner's instruction on the new
+ * five was full weight from the start, on the grounds that nothing is shipping
+ * yet, so a cautious ramp would only delay the evidence.
  */
-export const RUN_ROSTER: readonly RosterModelId[] = [
-  'hf:zai-org/GLM-5.2',
-  'hf:zai-org/GLM-4.7-Flash',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-  'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-  'hf:openai/gpt-oss-120b',
-];
+export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
 
 
 /**
@@ -193,16 +196,26 @@ export const RUN_ROSTER: readonly RosterModelId[] = [
 export const RUN_MODELS: RepairModels = {
   criticModelIds: RUN_ROSTER,
   panelModelIds: RUN_ROSTER,
+  // THE THIRD WRITER IS PROVISIONAL. `hf:zai-org/GLM-4.7-Flash` held this seat
+  // until the owner blocklisted it on 2026-08-24, and the calibration pass that
+  // picks the narrow writer set out of ten has not run. The replacement is
+  // chosen by the one principle this repository already records rather than by
+  // a preference: `synthetic-catalog.ts` states that fan-out crosses vendor
+  // families so one vendor's blind spots cannot dominate, and the seat being
+  // filled was the second zai model. Any of the three remaining families would
+  // satisfy that; measurement decides which, and until it runs this is a
+  // stated assumption rather than a finding.
   editorModelIds: [
     'hf:moonshotai/Kimi-K3',
     'hf:zai-org/GLM-5.2',
-    'hf:zai-org/GLM-4.7-Flash',
+    'hf:Qwen/Qwen3.8-27B',
   ],
   judgeModelIds: RUN_ROSTER,
+  // Same three as the editors, and provisional for the same reason.
   refinerModelIds: [
     'hf:moonshotai/Kimi-K3',
     'hf:zai-org/GLM-5.2',
-    'hf:zai-org/GLM-4.7-Flash',
+    'hf:Qwen/Qwen3.8-27B',
   ],
   // THREE, MEASURED RATHER THAN PREFERRED, and the wide arm is gone. The
   // owner ruled on 2026-08-23 that checker width is settled by measurement:
@@ -220,9 +233,17 @@ export const RUN_MODELS: RepairModels = {
   // reach a split three, which happened on 4 rounds, and on none of those did
   // all three writers dissent together.
   //
-  // DISJOINT FROM EVERY WRITER, which is why `checkerSelfCertificationPermitted`
-  // is left unset and defaults to refusing. No model in this list edits or
-  // refines, so the discount above has nothing to apply to in production.
+  // NO LONGER DISJOINT, and that is the owner's decision of 2026-08-24: enable
+  // the discount and let every model do both. `#187` found the checker-side
+  // discount unreachable in production for exactly the reason the old note
+  // here gave, so the arithmetic above was code nothing could run.
+  //
+  // WHAT MAKES THAT SAFE is measured rather than assumed, and it is the
+  // paragraph above: a checker judging text it helped write counts half, so
+  // three writers bring 1.5 against 3.0 and cannot overturn a unanimous three.
+  // The overlap is one model, not three, so the standing arithmetic bounds it
+  // with room to spare.
+  checkerSelfCertificationPermitted: true,
   checkerModelIds: [
     'hf:Qwen/Qwen3.8-27B',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
@@ -281,12 +302,9 @@ export const RUN_TRANSLATE_MODELS: TranslateModels = {
  * const readings = await readDocumentPictures({ readerModelIds: RUN_READER_MODELS, ... },);
  * ```
  */
-export const RUN_READER_MODELS: readonly RosterModelId[] = Object.values(SYNTHETIC_MODELS,)
-  .filter(function reads(model,): boolean {
-    return model.readsImages;
-  },)
-  .map(function toId(model,): RosterModelId {
-    return model.id;
+export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
+  .filter(function reads(modelId,): boolean {
+    return readsImages({ modelId, },);
   },);
 
 /**

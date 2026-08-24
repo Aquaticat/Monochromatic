@@ -59,7 +59,7 @@ const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with ta
 const TRANSLATORS: readonly RosterModelId[] = [
   'hf:moonshotai/Kimi-K3',
   'hf:zai-org/GLM-5.2',
-  'hf:zai-org/GLM-4.7-Flash',
+  'minimax-m3',
 ];
 
 /**
@@ -365,7 +365,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: '',
@@ -390,7 +390,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'is doing the sleeping',
           incumbentText: INCUMBENT_TEXT,
@@ -416,7 +416,7 @@ await describe({
             // Kimi is absent from the script, so its reply arrives wrapped
             // in prose and fails the wire guard.
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'naps on the sill',
           incumbentText: INCUMBENT_TEXT,
@@ -439,7 +439,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': '   \n  ',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'naps on the sill',
           incumbentText: INCUMBENT_TEXT,
@@ -466,7 +466,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
           incumbentText: INCUMBENT_TEXT,
@@ -493,7 +493,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
           needleAfterRetry: 'dozes',
@@ -516,7 +516,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: INCUMBENT_TEXT,
@@ -539,7 +539,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': INCUMBENT_TEXT,
             'hf:zai-org/GLM-5.2': INCUMBENT_TEXT,
-            'hf:zai-org/GLM-4.7-Flash': INCUMBENT_TEXT,
+            'minimax-m3': INCUMBENT_TEXT,
           },
           needle: 'is doing the sleeping',
           incumbentText: INCUMBENT_TEXT,
@@ -565,7 +565,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: INCUMBENT_TEXT,
@@ -576,7 +576,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: '',
@@ -610,7 +610,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: '',
@@ -648,7 +648,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
           incumbentText: '',
@@ -669,7 +669,7 @@ await describe({
             translations: {
               'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
               'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-              'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+              'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
             },
             needle: '',
             incumbentText: '',
@@ -706,7 +706,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
           needleAfterRetry: 'dozes',
@@ -738,7 +738,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: INCUMBENT_TEXT,
@@ -760,7 +760,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: INCUMBENT_TEXT,
@@ -789,7 +789,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: 'The cat is doing a nap upon the windowsill.',
@@ -814,7 +814,7 @@ await describe({
           translations: {
             'hf:moonshotai/Kimi-K3': 'The cat dozes on the windowsill, tail draped beside the radiator.',
             'hf:zai-org/GLM-5.2': 'A cat naps on the sill, its tail hanging near the heater.',
-            'hf:zai-org/GLM-4.7-Flash': 'The cat sleeps on the ledge, tail beside the radiator.',
+            'minimax-m3': 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
           incumbentText: 'The cat is doing a nap upon the windowsill.',
