@@ -106,14 +106,14 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
 
     if (verdict.kind === 'earned') {
       console.log(
-        `REATTEMPT ${entry.id} queued: cached ${String(verdict.gained,)} more slices, `
+        `REATTEMPT ${entry.id} queued: ${String(verdict.gained,)} more cache records than it had, `
           + 'so the next attempt starts further along',
       );
       queue.push(entry,);
     }
     if (verdict.kind === 'stalled') {
       console.log(
-        `STALLED ${entry.id}: its ${String(verdict.cached,)} cached slices are what it started `
+        `STALLED ${entry.id}: its ${String(verdict.cached,)} cache records are what it started `
           + 'with, so a further attempt in this invocation would repeat it',
       );
     }

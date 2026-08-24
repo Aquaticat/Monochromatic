@@ -34,6 +34,19 @@ import { readDirectoryNames, } from './slice-cache-namespace.ts';
 // left the same number has not and does not. That reads the thing a second
 // attempt is actually for, since its whole value is the cache the first one
 // filled.
+//
+// WHAT COUNTS AS PROGRESS IS EVERY CACHE RECORD, not only a translated slice,
+// and that is deliberate rather than incidental. `slice-cache-namespace.ts`
+// gives the pairing, contest, refine and translate records the same `.json`
+// suffix in the same per-entry directory, so all of them are counted here.
+//
+// The first live run, 2026-08-24, is what this is written from. Its first
+// attempt spent 45 seconds buying two block pairings and was then cut, and
+// those two records are the whole of what it banked. They earned the
+// re-attempt, and the re-attempt reached the lanes in 0.16 seconds instead of
+// 45 by reading them back. Had setup cached anywhere else, the largest entries,
+// which are the ones this exists for, would have stalled on every first
+// attempt.
 
 /**
  * Suffix every persisted slice carries, as against the `.txt` generation
