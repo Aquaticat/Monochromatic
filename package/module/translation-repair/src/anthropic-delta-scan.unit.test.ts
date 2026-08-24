@@ -43,7 +43,12 @@ import {
 function frameOf(
   { body, }: { readonly body: Readonly<Record<string, unknown>>; },
 ): string {
-  return `event: ${String(body['type'],)}\ndata: ${JSON.stringify(body,)}\n\n`;
+  /**
+   * Event name, which every Anthropic frame repeats inside its own payload.
+   */
+  const { type, } = body;
+
+  return `event: ${String(type,)}\ndata: ${JSON.stringify(body,)}\n\n`;
 }
 
 /**

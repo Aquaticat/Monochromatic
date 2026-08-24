@@ -53,6 +53,24 @@ const OPTIONAL_SPACE = ' ';
 const THINKING_BLOCK = 'thinking';
 
 /**
+ * Reading given to a delta type this scanner does not carry.
+ */
+const UNREAD = 'unread';
+
+/**
+ * Channel a delta routes to, or that this scanner does not read its type.
+ *
+ * A THIRD STATE RATHER THAN A NULLISH UNION, so an unread delta is a named
+ * reading instead of an absence a caller has to remember to check.
+ *
+ * @example
+ * ```ts
+ * const routing: DeltaRouting = 'reasoning';
+ * ```
+ */
+type DeltaRouting = StreamChannel | typeof UNREAD;
+
+/**
  * Delta types this scanner reads, mapped to the channel each belongs to.
  *
  * `input_json_delta` IS THE ANSWER CHANNEL, which is the one mapping here that
@@ -108,42 +126,60 @@ function stringField(
    */
   const value = fields[name];
 
-  if (typeof value !== 'string')
+  if ((typeof value) !== 'string')
     return '';
   return value;
 }
 
 /**
- * Reads one number field off a parsed object.
+ * Where a frame said its block sits, or that it named no position.
  *
- * @param fields - parsed object to read
- *
- * @param name - field wanted
- *
- * @returns Field value, or nothing when absent or not a number
+ * A DISCRIMINATED RESULT rather than `number | undefined`, because this repo
+ * models absence without nullish unions and index zero is a real position that
+ * a falsy check would read as absence.
  *
  * @example
  * ```ts
- * const index = numberField({ fields: frame, name: 'index', },);
+ * const at: FrameIndex = { present: true, index: 0, };
  * ```
  */
-function numberField(
-  {
-    fields,
-    name,
-  }: {
-    readonly fields: Readonly<Record<string, unknown>>;
-    readonly name: string;
-  },
-): number | undefined {
-  /**
-   * Raw value under that name, of unknown type.
-   */
-  const value = fields[name];
+type FrameIndex =
+  | {
+    readonly present: true;
 
-  if (typeof value !== 'number')
-    return undefined;
-  return value;
+    /**
+     * Position the frame named.
+     */
+    readonly index: number;
+  }
+  | { readonly present: false; };
+
+/**
+ * Reads the position a frame named for its block.
+ *
+ * @param fields - parsed frame to read
+ *
+ * @returns Position, or that the frame named none
+ *
+ * @example
+ * ```ts
+ * const at = frameIndex({ fields: frame, },);
+ * ```
+ */
+function frameIndex(
+  { fields, }: { readonly fields: Readonly<Record<string, unknown>>; },
+): FrameIndex {
+  /**
+   * Raw value under `index`, of unknown type.
+   */
+  const { index: value, } = fields;
+
+  if ((typeof value) !== 'number')
+    return { present: false, };
+  return {
+    present: true,
+    index: value,
+  };
 }
 
 /**
@@ -156,9 +192,9 @@ function numberField(
  *
  * @param deltaType - `type` of the delta object
  *
- * @param blockType - type the enclosing block declared, when known
+ * @param blockType - type the enclosing block declared, empty when unknown
  *
- * @returns Channel to file this text under, or nothing for an unread type
+ * @returns Channel to file this text under, or that this type is not read
  *
  * @example
  * ```ts
@@ -171,12 +207,12 @@ function channelFor(
     blockType,
   }: {
     readonly deltaType: string;
-    readonly blockType: string | undefined;
+    readonly blockType: string;
   },
-): StreamChannel | undefined {
+): DeltaRouting {
   if (blockType === THINKING_BLOCK)
     return 'reasoning';
-  return DELTA_CHANNELS[deltaType];
+  return DELTA_CHANNELS[deltaType] ?? UNREAD;
 }
 
 /**
@@ -289,25 +325,26 @@ export function scanAnthropicDeltas(): DeltaScanner {
     /**
      * Position this block occupies in the message.
      */
-    const index = numberField({
-      fields: frame,
-      name: 'index',
-    },);
+    const at = frameIndex({ fields: frame, },);
+    if (!at.present)
+      return;
 
     /**
      * Block descriptor the frame carried.
      */
-    const block = frame['content_block'];
-
-    if ((index === undefined) || !isJsonRecord(block,))
+    const { content_block: block, } = frame;
+    if (!isJsonRecord(block,))
       return;
-    state.blockTypes.set(
-      index,
-      stringField({
-        fields: block,
-        name: 'type',
-      },),
-    );
+
+    state
+      .blockTypes
+      .set(
+        at.index,
+        stringField({
+          fields: block,
+          name: 'type',
+        },),
+      );
   }
 
   /**
@@ -328,7 +365,7 @@ export function scanAnthropicDeltas(): DeltaScanner {
     /**
      * Delta descriptor the frame carried.
      */
-    const delta = frame['delta'];
+    const { delta, } = frame;
     if (!isJsonRecord(delta,))
       return [];
 
@@ -343,19 +380,30 @@ export function scanAnthropicDeltas(): DeltaScanner {
     /**
      * Position this delta belongs to, used to recover its block's type.
      */
-    const index = numberField({
-      fields: frame,
-      name: 'index',
-    },);
+    const at = frameIndex({ fields: frame, },);
 
     /**
-     * Channel to file this text under, absent for a type not read here.
+     * Type the enclosing block declared, empty where nothing declared one.
+     */
+    const declared = at.present
+      ? state
+        .blockTypes
+        .get(at.index,)
+      : '';
+
+    /**
+     * That type, with an unopened block reading as no declaration at all.
+     */
+    const blockType = declared ?? '';
+
+    /**
+     * Channel to file this text under, or that this type is not read here.
      */
     const channel = channelFor({
       deltaType,
-      blockType: (index === undefined) ? undefined : state.blockTypes.get(index,),
+      blockType,
     },);
-    if (channel === undefined)
+    if (channel === UNREAD)
       return [];
 
     /**
