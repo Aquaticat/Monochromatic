@@ -19166,3 +19166,80 @@ run 3 is `--only Weideriche_` at the DEFAULT ceiling,
 which settles the entry end to end and reports what it actually cost.
 Do not raise the warning threshold on the 885-second lower bound.
 It is a bound, not a cost.
+
+### Run 3 settles, publishes, and verifies, with half the roster dark
+
+`--only Weideriche_` at the DEFAULT 420-minute ceiling, exit 0 in 7725.66s.
+
+    TALLY Weideriche_ status=SETTLED slices=3 repairStatus=repaired repairIssues=20
+      repairAccepted=14 repairResolved=14 repairFindings=135 repairChanged=2
+      translateStatus=complete translateChanged=2
+    DONE processed=1 of pending=1; artifacts=1/92 elapsed=7723880ms
+
+It wrote one artifact of 412823 bytes and one page,
+`fixed/people/Weideriche_/page.en.md`, of 897 bytes,
+over 253 model streams.
+`verify-published` then read the page back against the artifact that produced it:
+
+    verify-published: matched=1 settledWithNoPage=0 pageWithNoArtifact=0
+    Weideriche_: wordings=3 silent=0 chars=895=expected missing=0
+    verify-published: 1 of 1 pages carry every wording their artifact promised, at the length it implies
+
+`chars=895=expected` is the strong form:
+the page is EXACTLY the archive plus every change the slices made,
+so no text outside a slice was lost or added.
+
+THIS RAN THROUGH A PROVIDER OUTAGE FROM START TO FINISH.
+Charm Hyper was dry from the run's first second,
+so five of the ten roster models never answered,
+including `gemma-4-26b-a4b-it` in the editor and refiner seats it had just been given.
+The entry still settled, still published, and still verified.
+
+#### The cost, and why runs 1 and 2 could never have worked
+
+128.7 minutes for a THREE-SLICE entry,
+the sixth smallest of 92, 828 bytes of source.
+That is roughly 43 minutes a slice, and it settles the earlier puzzle completely:
+a 5-minute ceiling and a 15-minute ceiling were never near buying one.
+
+TREAT 43 MINUTES AS AN UPPER BOUND RATHER THAN THE COST.
+Five models were dark, so every stage ran retry rounds for lost voices
+that could not be filled.
+The lower bound from run 2 is 885 seconds, just under 15 minutes.
+A healthy two-provider slice sits somewhere between the two,
+and nothing has measured it.
+
+THE `CAP TOO TIGHT` THRESHOLD STAYS AT ONE EXCHANGE for exactly that reason.
+Two bounds that differ by a factor of three do not support a threshold,
+and the one-exchange floor is the only value that is provable rather than fitted.
+
+#### A tested edge case turned up live
+
+The entry's cache directory holds ZERO records after settlement,
+having held ten a few minutes earlier.
+That is the first of the two counterintuitive cases `entry-reattempt.ts` carries a test for:
+a settled entry discards its cache on the way out,
+so settlement has to be an INPUT to the re-attempt verdict
+rather than inferred from a count that just fell to zero.
+Inferring it would have read this run as an entry that lost everything it had.
+
+#### What is proved, and the one thing that is not
+
+Proved live, each on its own run:
+
+-   An entry the cap cuts is re-attempted inside one invocation against one frozen digest.
+-   The re-attempt starts further along, off the cache the previous attempt bought.
+-   An attempt that buys nothing stalls the entry rather than looping.
+-   An entry settles, publishes, and its page verifies against its artifact.
+
+NOT directly observed: a chain of EARNED re-attempts ending in settlement.
+Run 3 settled in a single attempt because the production ceiling never cut it.
+Showing the composition needs a ceiling between one slice and one entry,
+which on these numbers means roughly 60 minutes:
+
+    TRANSLATION_REPAIR_RUNS_DIR=<throwaway> TRANSLATION_REPAIR_HARD_CAP_MINUTES=60 \
+      mise run //package/module/translation-repair:corpus-pass -- --only Weideriche_
+
+Expect two or three attempts and about two and a half hours.
+It was not run because Synthetic quota is restorable only sometimes,
+and the composition is arithmetic over four facts each already observed.
