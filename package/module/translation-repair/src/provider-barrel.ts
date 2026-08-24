@@ -15,6 +15,10 @@ export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export { readJsonOutcome, } from './chat-json-outcome.ts';
 export { isSuccessStatus, } from './http-success.ts';
 export {
+  createRoutingClient,
+  NoProviderForModelError,
+} from './provider-router.ts';
+export {
   type BudgetView,
   createProviderBudgets,
   type ProviderBudgets,

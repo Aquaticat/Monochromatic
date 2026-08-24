@@ -127,6 +127,45 @@ export function messageText({ message, }: { readonly message: ChatMessage | Visi
 }
 
 /**
+ * Whether a conversation shows anything that only a vision stack can read.
+ *
+ * ASKED BECAUSE REACH IS NARROWER FOR PICTURES THAN FOR TEXT, and not by the
+ * same models on both providers. `roster-reach.ts` records the case: one model
+ * reads pictures on one provider and not on the other, same weights, different
+ * serving stack. A router that asked one question for both would either send a
+ * picture where it cannot be read or refuse one that can.
+ *
+ * ANY NON-TEXT PART COUNTS, rather than the image part alone. A part this
+ * pipeline has not met yet is still something a text-only stack cannot take,
+ * and guessing the other way is the mistake that costs a call.
+ *
+ * @param messages - conversation as the caller built it
+ *
+ * @returns Whether any message carries a part that is not text
+ *
+ * @example
+ * ```ts
+ * const needsVision = carriesPicture({ messages, },);
+ * ```
+ */
+export function carriesPicture(
+  { messages, }: { readonly messages: readonly (ChatMessage | VisionMessage)[]; },
+): boolean {
+  return messages.some(function showsOne(message,): boolean {
+    /**
+     * Content as this message carries it, string or parts.
+     */
+    const { content, } = message;
+
+    if ((typeof content) === 'string')
+      return false;
+    return content.some(function isPicture(part,): boolean {
+      return part.type !== 'text';
+    },);
+  },);
+}
+
+/**
  * One chat exchange request.
  *
  * @example

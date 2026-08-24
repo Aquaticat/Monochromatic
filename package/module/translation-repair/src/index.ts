@@ -175,6 +175,7 @@ export {
   type SyntheticModelInfo,
   type SyntheticVendorFamily,
 } from './synthetic-catalog.ts';
+export { carriesPicture, } from './chat-contract.ts';
 export type {
   ChatJsonOutcome,
   ChatJsonRequest,
