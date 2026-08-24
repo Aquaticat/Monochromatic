@@ -414,6 +414,15 @@ and reading one as an instruction has cost this package a defect before.
     so an operator who set it must not be left believing a run is bounded some way it is not.
     A run that overrides logs `CAP OVERRIDDEN` above its work.
 
+    THERE IS A FLOOR, and it is one model exchange.
+    A ceiling at or below `RUN_PER_CALL_TIMEOUT_MS`, currently 360_000,
+    cuts every attempt before any exchange can return,
+    so nothing caches, every attempt reports no progress,
+    and the queue drops the entry as stalled after its second try.
+    A run in that state logs `CAP TOO TIGHT` naming both numbers.
+    It is warned rather than refused,
+    because cutting mid-exchange is exactly what a test of the stall path wants.
+
 The cap ends an ATTEMPT rather than an entry.
 An entry the cap cut goes to the back of the queue
 and is attempted again inside the same invocation,

@@ -93,4 +93,71 @@ export function resolveHardCapMinutes(
   return minutes;
 }
 
+/**
+ * Whether a ceiling leaves room for one full-length model exchange.
+ *
+ * MEASURED THE HARD WAY on 2026-08-24. A verification run set the ceiling to
+ * five minutes while `RUN_PER_CALL_TIMEOUT_MS` allowed six for a single
+ * exchange. Both attempts were cut mid-exchange, so no exchange ever returned,
+ * so no slice ever cached, so the queue read no progress and dropped the entry
+ * as stalled. Nothing in the run said why, and the ceiling looked reasonable.
+ *
+ * @param capMs - ceiling one attempt runs under
+ *
+ * @param perCallMs - deadline one exchange is allowed
+ *
+ * @returns Whether an exchange can finish inside an attempt
+ *
+ * @example
+ * ```ts
+ * const roomy = capOutlastsOneCall({ capMs, perCallMs, },);
+ * ```
+ */
+export function capOutlastsOneCall(
+  {
+    capMs,
+    perCallMs,
+  }: {
+    readonly capMs: number;
+    readonly perCallMs: number;
+  },
+): boolean {
+  return capMs > perCallMs;
+}
+
+/**
+ * Explains a ceiling no exchange can finish inside.
+ *
+ * WARNED RATHER THAN REFUSED, and the reason is that cutting mid-exchange is
+ * exactly what a test of the stall path wants. Refusing would have blocked the
+ * run that found this. An operator who meant it keeps their ceiling and reads
+ * why every attempt will report no progress.
+ *
+ * @param capMs - ceiling one attempt runs under
+ *
+ * @param perCallMs - deadline one exchange is allowed
+ *
+ * @returns Line naming both numbers and what follows from them
+ *
+ * @example
+ * ```ts
+ * console.log(capTooTightNote({ capMs, perCallMs, },),);
+ * ```
+ */
+export function capTooTightNote(
+  {
+    capMs,
+    perCallMs,
+  }: {
+    readonly capMs: number;
+    readonly perCallMs: number;
+  },
+): string {
+  return `CAP TOO TIGHT: an attempt runs ${String(capMs,)}ms, which is not longer than the `
+    + `${String(perCallMs,)}ms one model exchange is allowed. Attempts are cut before an `
+    + 'exchange can return, so no slice caches, every attempt reports no progress, and the '
+    + 'queue drops the entry as stalled after its second try. Raise the ceiling above one '
+    + 'exchange to buy anything, or keep it here to exercise the stall path deliberately.';
+}
+
 //endregion Cap override

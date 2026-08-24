@@ -26,6 +26,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  capOutlastsOneCall,
+  capTooTightNote,
   HARD_CAP_VAR,
   HardCapOverrideError,
   resolveHardCapMinutes,
@@ -128,6 +130,81 @@ await describe({
             },);
           },),
         ).toBeInstanceOf(HardCapOverrideError,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: capOutlastsOneCall.name,
+  children: [
+    it({
+      name: 'ACCEPTS a ceiling longer than one exchange, which is the only shape that can buy a slice',
+      fn: async () => {
+        expect(capOutlastsOneCall({
+          capMs: 420_000,
+          perCallMs: 360_000,
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a ceiling equal to one exchange, because the attempt ends at the same instant the '
+        + 'exchange is allowed to and nothing has returned yet',
+      fn: async () => {
+        expect(capOutlastsOneCall({
+          capMs: 360_000,
+          perCallMs: 360_000,
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name:
+        'REFUSES the ceiling a live run actually used, five minutes against a six minute exchange, '
+        + 'which cached nothing across two attempts and reported STALLED',
+      fn: async () => {
+        expect(capOutlastsOneCall({
+          capMs: 300_000,
+          perCallMs: 360_000,
+        },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: capTooTightNote.name,
+  children: [
+    it({
+      name: 'NAMES BOTH NUMBERS, so a reader can tell which one to move without reading the source',
+      fn: async () => {
+        /**
+         * Note built over the ceiling and exchange deadline of the live run.
+         */
+        const note = capTooTightNote({
+          capMs: 300_000,
+          perCallMs: 360_000,
+        },);
+
+        expect(note.includes('300000',),).toBe(true,);
+        expect(note.includes('360000',),).toBe(true,);
+      },
+    },),
+    it({
+      name:
+        'SAYS WHAT FOLLOWS rather than only that something is wrong: no slice caches, so the queue '
+        + 'reads no progress and drops the entry',
+      fn: async () => {
+        /**
+         * Same note, read for its consequence clause.
+         */
+        const note = capTooTightNote({
+          capMs: 300_000,
+          perCallMs: 360_000,
+        },);
+
+        expect(note.includes('no slice caches',),).toBe(true,);
+        expect(note.includes('stalled',),).toBe(true,);
       },
     },),
   ],

@@ -37,6 +37,8 @@ import {
 } from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import {
+  capOutlastsOneCall,
+  capTooTightNote,
   HARD_CAP_VAR,
   resolveHardCapMinutes,
 } from './cap-override.ts';
@@ -49,6 +51,7 @@ import {
   readHeadSha,
   resolveRunsDir,
   RUN_CORPUS_PIN,
+  RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 
 //region Corpus pass
@@ -489,6 +492,16 @@ async function runCorpusPass(): Promise<void> {
         String(HARD_CAP_MS / MS_PER_MINUTE,)
       } minutes rather than the built-in ${String(HARD_CAP_MINUTES,)}`,
     );
+  }
+
+  if (!capOutlastsOneCall({
+    capMs: HARD_CAP_MS,
+    perCallMs: RUN_PER_CALL_TIMEOUT_MS,
+  },)) {
+    console.log(capTooTightNote({
+      capMs: HARD_CAP_MS,
+      perCallMs: RUN_PER_CALL_TIMEOUT_MS,
+    },),);
   }
 
   /**

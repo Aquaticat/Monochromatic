@@ -162,6 +162,8 @@ export {
 } from './corpus-run/pass-entry.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
 export {
+  capOutlastsOneCall,
+  capTooTightNote,
   HARD_CAP_VAR,
   HardCapOverrideError,
   resolveHardCapMinutes,
