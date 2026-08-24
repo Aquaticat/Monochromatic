@@ -763,8 +763,43 @@ and it is the case the swap was defended on.
 
 WHAT WOULD CHANGE THIS: a measured Hyper duty cycle well under 76 percent,
 at which point `hf:openai/gpt-oss-120b` takes the seat on quality as well.
-Recording provider-dry intervals across runs is how that gets measured,
-and nothing does it yet.
+Recording provider-dry intervals across runs is how that gets measured.
+
+#### A first estimate off the existing logs, and why it does not decide anything
+
+Every log already timestamps `NoProviderForModelError`,
+so a first estimate needed no instrumentation and no quota.
+759 agent logs were scanned, and THE DENOMINATOR WAS VALIDATED BEFORE THE RATE:
+a log written before the second provider existed cannot show a refusal,
+so only the 26 that name a Hyper-only model can count as evidence either way.
+Of those, 24 are wet and 2 are dry, and they fall in one clean block each.
+
+    wet   2026-08-24T09:41:17Z .. 14:58:53Z   24 logs, no refusal in any
+    ????  14:58:53Z .. 15:04:28Z              nothing ran, 5m35s wide
+    dry   2026-08-24T15:04:28Z .. 17:53:00Z   2 logs plus a model-health probe
+
+Read as fractions of the 8h11m43s observed: wet 64.6 percent, dry 34.3,
+unknown 1.1. That is BELOW the 76 percent break-even.
+
+IT STILL DOES NOT MOVE THE SEAT, for three reasons, and the third is decisive:
+
+-   ONE TRANSITION IS NOT A DUTY CYCLE. There is a single wet-to-dry edge in the
+    whole record. A rate over one event is the mistake this document already
+    caught once today, in `qwen3.8-max`'s standing.
+
+-   THE DRY INTERVAL IS RIGHT-CENSORED. It was still dry at the last observation,
+    so 2h48m is a floor and the fraction could move either way once it lifts.
+
+-   THE DRYNESS IS PROBABLY SELF-INFLICTED. A 40-round calibration ran 11:22 to
+    14:32 and spent 937 streams, and a corpus pass ran to 14:58. Hyper was dry by
+    15:04. So this measures how fast heavy verification exhausts a budget and how
+    long it takes to refill, which is a fact about the day's usage rather than
+    about the provider. Production traffic has a different shape entirely.
+
+WHAT WOULD SETTLE IT is the same measurement over days rather than one afternoon,
+which is why `#201` persists transitions rather than sampling.
+The number worth having is not the mean but the LONGEST dry interval,
+since that is what decides whether a seat can be relied on at all.
 
 `gemma-4-26b-a4b-it` carries `readsImages: false`,
 which costs nothing in these seats.
