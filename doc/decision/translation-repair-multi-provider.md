@@ -706,6 +706,52 @@ to two-of-three on each. That is the trade, stated in full.
 The wide roles were unaffected on the observed day:
 they carry all ten, so five going dark costs ballots rather than the stage.
 
+#### Neither provider can be restored on demand, and that settles the seat
+
+Stated by the owner on 2026-08-24, correcting an assumption made when the
+outage was found:
+
+>   I cannot reset charm hyper on demand.
+>   I can only reset synthetic, and only sometimes.
+
+So Charm Hyper capacity returns on its own schedule and cannot be bought back,
+and Synthetic capacity can be restored only sometimes.
+BOTH PROVIDERS GO DRY AND NEITHER IS RELIABLY RECOVERABLE.
+
+That is the fact the seating should be judged against, and it argues FOR the
+swap more strongly than the quality table did.
+Count what each arrangement does when a provider goes dry:
+
+    three Synthetic seats  Synthetic dry -> 0 editors, the stage is empty
+                           Hyper dry     -> 3 editors, untouched
+    two Synthetic, one Hyper
+                           Synthetic dry -> 1 editor, a candidate is still produced
+                           Hyper dry     -> 2 editors, quorum clear
+
+The old arrangement had one outage that emptied the stage outright.
+The new one has none.
+An empty stage is a different kind of failure from a thin one:
+a thin stage still produces a candidate to judge,
+and the old shape's whole exposure sat on the provider the owner
+can restore only sometimes.
+
+THE COUNTER-ARGUMENT, weighed and rejected.
+A model that is dark contributes nothing, whatever it scores when awake,
+so the honest comparison is quality times availability.
+The best Synthetic-served alternative for the third seat is
+`hf:openai/gpt-oss-120b` at 13.9 percent against `gemma-4-26b-a4b-it` at 18.3,
+which breaks even when Charm Hyper is up 76 percent of the time.
+Hyper's duty cycle has not been measured, so that ratio cannot be evaluated yet.
+It does not decide the seat either way,
+because it prices only the THIRD seat's marginal quality
+while the arrangement above prices the whole stage's survival,
+and survival is the larger term.
+
+WHAT WOULD CHANGE THIS: a measured Hyper duty cycle well under 76 percent,
+at which point `hf:openai/gpt-oss-120b` takes the seat on quality as well.
+Recording provider-dry intervals across runs is how that gets measured,
+and nothing does it yet.
+
 `gemma-4-26b-a4b-it` carries `readsImages: false`,
 which costs nothing in these seats.
 Pictures are read in `image-reading-stage.ts` over `RUN_READER_MODELS`,
