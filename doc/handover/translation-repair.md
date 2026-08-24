@@ -18084,3 +18084,51 @@ A CAUTION FOR WHOEVER READS THESE ARTIFACTS NEXT. There is no `slices` array und
 `lanes.repair.result`; the per-slice facts ride on the issue rows, and `refined` is a field of
 `RepairIssueRecord`. A reader that walks a `slices` path gets zero from every artifact and the zero
 looks like a measurement.
+
+### The deciding round reaches a real artifact, with a same-entry negative control
+
+VERIFIED AT THE USER BOUNDARY on 2026-08-24, which is what `#188`'s instrument was owed. The pass at
+`~/temp/agent/checker-reading-vub-2026-08-24` settled `lintong` under the bundle that carries
+`checkerReading`, and its artifact holds:
+
+```
+issue records                                     38
+records carrying a reading                        29   all shipped / resolved=true
+records carrying none                              9   all no-region / resolved=false
+ballots per round                                  6
+seated roster recorded                             6
+rounds whose stored tally disagrees with a recompute   0
+```
+
+THE CONTROL IS THE SAME ENTRY ONE BUNDLE EARLIER. `~/temp/agent/checker-width-wide-2026-08-24` ran
+`lintong` with the same settings before the field existed, and its artifact carries 30 issue records
+and zero readings. Same entry, same switch, one build apart: the field is being written rather than
+defaulted.
+
+TWO INDEPENDENT READERS AGREE ON THE SAME RUN. The log reader recovers 29 rounds and 174 ballots from
+`checker-ballot` lines; the artifact reader recovers 29 rounds of 6 ballots from
+`RepairIssueRecord.checkerReading`. They share no code and read different files, so this cross-checks
+both instruments at once, and it also settles that a reading is present for exactly the issues a
+checker ruled on and absent everywhere else.
+
+### The split rate is a property of the ENTRY, which changes how to sample this
+
+At 171 rounds and 1022 ballots across five wide passes:
+
+```
+rounds where the narrow three split                         7 of 171   <- ceiling on flips
+rounds where any of the six dissented                      15 of 171
+rounds where a writer said something no narrow checker did  8 of 171
+FLIPS                                                       0 of 171
+```
+
+WHERE THOSE SEVEN SPLITS LIVE MATTERS MORE THAN THE TOTAL. `lintong` contributes 50 of the 171 rounds
+across two separate passes and zero splits in either. `Arita` and `GLaDOSister` contribute 20 rounds
+so far and 4 splits, which is a fifth of their rounds. The panel's disagreement rate is therefore an
+entry property rather than a constant, and half the rounds bought so far came from the entry least
+able to produce evidence.
+
+CONSEQUENCE FOR ANYONE EXTENDING THIS. Buying more `lintong` rounds raises the round count and leaves
+the ceiling where it is. Entries whose panels actually split are the only ones that can answer the
+width question, and the settled artifacts already say which those are: read `refine-recheck-passed`
+counts and per-entry split rates before choosing what to run.
