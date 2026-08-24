@@ -19243,3 +19243,52 @@ which on these numbers means roughly 60 minutes:
 Expect two or three attempts and about two and a half hours.
 It was not run because Synthetic quota is restorable only sometimes,
 and the composition is arithmetic over four facts each already observed.
+
+## `#201` landed: availability is recorded, readable, and samplable
+
+Four commits on 2026-08-24, all pushed.
+
+### What shipped
+
+-   `provider-budget.ts` logs `METERS synthetic=<state> hyper=<state>` at `info`
+    on every meter reading, once per sixty-second freshness window.
+    It was already computing this and saying it at `debug`, which runs do not record.
+-   The meter now has three states.
+    `meterStateOf` returns `wet`, `dry` or `unreadable`,
+    and `routesAsDry` maps that back to the routing bit.
+    Both are exported `@internal` and pinned by six cases.
+-   `meter-sample-read.ts` parses those lines back into samples.
+    No regex.
+-   `meter-dry-span.ts` computes duty cycle and outage spans as bounded ranges.
+-   `meter-report` reads any number of logs and reports both providers.
+    Spends nothing.
+-   `budget-sample` takes one reading between runs.
+    Spends no generation.
+
+### The defect the round-trip found
+
+Reading a real sampler log back reported `unread=1` on an intact log.
+The sampler's own summary said "the METERS line above is the record",
+and the parser counted that sentence as a record it could not read.
+
+A record is now recognised by its first field parsing.
+Prose does not do that; a record truncated part way through its second field still does.
+Confirmed both ways:
+the real log now reads `unread=0`,
+and the fixture's planted undated record still reads `unread=1`,
+so the gate did not simply switch the detection off.
+
+### State
+
+-   Lint 0 warnings 0 errors on 845 files, types clean, 619 suites pass, 0 fail.
+-   One reading exists so far:
+    2026-08-24T18:17:35.383Z, `synthetic=wet hyper=dry`.
+    Charm Hyper has been dry all day; Synthetic is up.
+-   The record only grows from here,
+    so the numbers are worth reading again after the next few passes
+    rather than now.
+
+### What is left
+
+-   `#200`, an editor-role calibration, is still open and still needs its shape decided.
+-   `#94`, the slice rename, is still deliberately deferred.
