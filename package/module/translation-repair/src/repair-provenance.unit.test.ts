@@ -21,6 +21,7 @@ import {
 
 import {
   type AdjudicatedIssue,
+  type ClaimPanelReading,
   type IssueCheckerReading,
   buildIssueRecords,
   type ChunkRepairOutcome,
@@ -83,6 +84,46 @@ const PATCHED_TEXT = 'The cat is asleep. She wakes at dusk.';
 /**
  * Accepted issue the replacement was written for.
  */
+/**
+ * Weighted mass behind this fixture's claim, as the panel summed it.
+ */
+const PANEL_TALLY = {
+  supported: 2,
+  unsupported: 0,
+  ambiguous: 0,
+  sourceDefect: 0,
+  abstain: 1,
+};
+
+/**
+ * Ballots behind {@link PANEL_TALLY}, one panelist having abstained.
+ *
+ * THE ABSTENTION IS THE POINT. It leaves a ballot, while a panelist whose
+ * reply never arrived leaves none, and a reader holding only the sums cannot
+ * tell those apart at all.
+ */
+const PANEL_READING = {
+  ballots: [
+    {
+      panelistId: 'hf:zai-org/GLM-5.2',
+      vote: 'supported' as const,
+      weight: 1,
+    },
+    {
+      panelistId: 'hf:Qwen/Qwen3.8-27B',
+      vote: 'supported' as const,
+      weight: 1,
+    },
+    {
+      panelistId: 'hf:openai/gpt-oss-120b',
+      vote: 'abstain' as const,
+      weight: 1,
+    },
+  ],
+  configuredPanelists: 4,
+  tally: PANEL_TALLY,
+} as const satisfies ClaimPanelReading;
+
 const ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/nap',
   status: 'accepted' as const,
@@ -115,7 +156,11 @@ const ISSUE: AdjudicatedIssue = {
       },
     },
   ],
-  tallies: {},
+  tallies: { 'claim/nap': PANEL_TALLY, },
+
+  // THE BALLOTS BEHIND THAT TALLY. Two supported and one abstained, which
+  // the five numbers alone cannot say.
+  readings: { 'claim/nap': PANEL_READING, },
 };
 
 /**
@@ -556,6 +601,36 @@ await describe({
 
         // The deciding round is untouched by the lane never running.
         expect(record?.checkerReading,).toEqual(CHECKER_READING,);
+      },
+    },),
+
+    it({
+      name: 'CARRIES THE ADJUDICATION PANEL\'S BALLOTS through the same file, since the accept gate decides whether an issue exists at all and its five weighted numbers cannot say who voted or who abstained',
+      fn: async () => {
+        /** Issue report as bytes. */
+        const onDisk = JSON.stringify(buildIssueRecords({
+          outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
+          blocked: false,
+        },),);
+
+        /** Those bytes read back. */
+        const readBack: unknown = JSON.parse(onDisk,);
+        if (!Array.isArray(readBack,))
+          throw new Error('issue report should read back as a list',);
+
+        /** First record, as it came off disk. */
+        const [record,] = readBack as readonly {
+          readonly issue?: {
+            readonly readings?: Readonly<Record<string, unknown>>;
+            readonly tallies?: Readonly<Record<string, unknown>>;
+          };
+        }[];
+        expect(record?.issue?.readings?.['claim/nap'],).toEqual(PANEL_READING,);
+
+        // KEYED AS THE TALLIES ARE, so nothing has to guess the pairing.
+        expect(Object.keys(record?.issue?.readings ?? {},),).toStrictEqual(
+          Object.keys(record?.issue?.tallies ?? {},),
+        );
       },
     },),
   ],
