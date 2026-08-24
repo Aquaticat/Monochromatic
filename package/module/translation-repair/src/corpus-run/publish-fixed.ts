@@ -145,7 +145,7 @@ export function shippableReplacements(
       // NOTHING SHIPS HERE, and at an anchor nothing is also what the assembler
       // must be told: a row carrying blank text claims a rendering was written
       // where none was, which is the claim the splice exists to refuse.
-      if (slice.incumbentKind === 'absent')
+      if (reading.incumbentKind === 'absent')
         return [];
 
       return [{

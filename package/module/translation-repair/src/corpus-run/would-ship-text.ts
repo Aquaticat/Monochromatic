@@ -91,6 +91,25 @@ export type WouldShipReading =
      * Why nothing stands here.
      */
     readonly reason: WouldShipSilence;
+
+    /**
+     * Whether the archive held any wording at this slice.
+     *
+     * ON THE SILENCE RATHER THAN ON THE SLICE, because silence is where the
+     * ambiguity lives and this is what resolves it. Every reason in
+     * {@link WouldShipSilence} covers two opposite events at once, and
+     * `lanesAgreedOn` says so in its own comment: an agreed empty string
+     * "covers a gap neither lane wrote into and text both lanes removed".
+     * Wording the deciders REMOVED is a change a reader must look at; a gap
+     * they LEFT is the archive standing exactly as it was. Nothing else on a
+     * silent reading tells them apart.
+     *
+     * READ OFF THE COMPARISON ROW, never off an empty incumbent, per
+     * `translate-absence.ts`: absence is a mode decided once from the target
+     * chunk, and testing the text would conflate an anchor with a content span
+     * whose archive wording genuinely is blank.
+     */
+    readonly incumbentKind: 'present' | 'absent';
   };
 
 /**
@@ -118,7 +137,7 @@ export type WouldShipSource = Pick<
  *
  * @example
  * ```ts
- * const slice: WouldShipSlice = { chunkIndex: 0, incumbentKind: 'present', reading, };
+ * const slice: WouldShipSlice = { chunkIndex: 0, reading, };
  * ```
  */
 export type WouldShipSlice = {
@@ -128,22 +147,12 @@ export type WouldShipSlice = {
   readonly chunkIndex: number;
 
   /**
-   * Whether the archive holds any wording at this slice.
-   *
-   * CARRIED BESIDE THE READING RATHER THAN INFERRED FROM IT, because silence
-   * means two different things and only this separates them. A silent ANCHOR is
-   * a passage that has no rendering and is getting none, so an assembler must
-   * write nothing there at all; a silent CONTENT span is wording the archive
-   * holds and the deciders agreed to remove, so an assembler must write the
-   * empty string over it. `translate-absence.ts` states the rule this follows:
-   * absence is a mode decided once from the target chunk, and reading it back
-   * off an empty text would conflate an anchor with a span whose archive
-   * wording genuinely is blank.
-   */
-  readonly incumbentKind: 'present' | 'absent';
-
-  /**
    * What that slice would contribute.
+   *
+   * A SILENT READING CARRIES `incumbentKind` and this does not, which is not
+   * an oversight. The distinction only decides anything where nothing ships,
+   * and two fields that must always agree with nothing enforcing it is worse
+   * than one field where it is needed.
    */
   readonly reading: WouldShipReading;
 };
@@ -223,6 +232,12 @@ function archiveStandsOr(
   return {
     kind: 'nothing-ships',
     reason: silence,
+
+    // BOTH SILENCES THIS FUNCTION PRODUCES NAME AN ARCHIVE THAT SAYS NOTHING,
+    // and neither says whether there is a span here at all. A content slice
+    // whose archive wording is blank reaches this line as readily as an anchor,
+    // and the two are not the same passage.
+    incumbentKind: row.incumbentKind,
   };
 }
 
@@ -351,6 +366,7 @@ function lanesAgreedOn(
     return {
       kind: 'nothing-ships',
       reason: 'lanes-agreed-on-no-wording',
+      incumbentKind: row.incumbentKind,
     };
 
   return {
@@ -471,7 +487,6 @@ export function wouldShipTextPerSlice(
     .map(function readIt(row: ArtifactComparisonRowV2,): WouldShipSlice {
       return {
         chunkIndex: row.chunkIndex,
-        incumbentKind: row.incumbentKind,
         reading: wouldShipTextFor({
           artifact,
           row,

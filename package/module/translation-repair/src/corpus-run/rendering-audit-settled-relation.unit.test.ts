@@ -250,11 +250,13 @@ await describe({
           reading: {
             kind: 'nothing-ships',
             reason: 'contest-declined-and-archive-silent',
+            incumbentKind: 'present',
           } as unknown as Parameters<typeof pageRelationOf>[0]['reading'],
           candidateText: LANE_NAP,
         },),).toEqual({
           kind: 'nothing-would-ship',
           reason: 'contest-declined-and-archive-silent',
+          incumbentKind: 'present',
         },);
       },
     },),
@@ -335,8 +337,42 @@ await describe({
           relation: {
             kind: 'nothing-would-ship',
             reason: 'lanes-agreed-on-no-wording',
+            incumbentKind: 'present',
           } as SettledPageRelation,
-        },),).toBe('silent:lanes-agreed-on-no-wording',);
+        },),).toBe('emptied:lanes-agreed-on-no-wording',);
+      },
+    },),
+
+    it({
+      name:
+        'SEPARATES A GAP FROM AN EMPTYING on the same reason, which is the whole point of carrying '
+        + 'the kind. Every reason names a stage and none of them says whether there was anything here: `lanesAgreedOn` covers a gap neither lane wrote into and text both lanes removed under one string, and a reader scanning this column has to tell a change from nothing happening',
+      fn: async () => {
+        /**
+         * Silence over a span the archive rendered, which the deciders emptied.
+         */
+        const emptied = pageRelationLabel({
+          relation: {
+            kind: 'nothing-would-ship',
+            reason: 'lanes-agreed-on-no-wording',
+            incumbentKind: 'present',
+          } as SettledPageRelation,
+        },);
+
+        /**
+         * The SAME reason at an anchor, where nothing was ever rendered.
+         */
+        const gap = pageRelationLabel({
+          relation: {
+            kind: 'nothing-would-ship',
+            reason: 'lanes-agreed-on-no-wording',
+            incumbentKind: 'absent',
+          } as SettledPageRelation,
+        },);
+
+        expect(emptied,).toBe('emptied:lanes-agreed-on-no-wording',);
+        expect(gap,).toBe('gap:lanes-agreed-on-no-wording',);
+        expect(emptied,).not.toBe(gap,);
       },
     },),
 

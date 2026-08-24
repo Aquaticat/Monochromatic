@@ -75,6 +75,12 @@ export type SettledPageRelation = {
    * Which stage left the slice with no wording.
    */
   readonly reason: WouldShipSilence;
+
+  /**
+   * Whether the archive held wording here, which decides what the silence
+   * means: wording the deciders removed, or a gap they left as they found it.
+   */
+  readonly incumbentKind: 'present' | 'absent';
 } | {
   /**
    * Row persisted before this annotation existed.
@@ -126,6 +132,7 @@ export function pageRelationOf(
     return {
       kind: 'nothing-would-ship',
       reason: reading.reason,
+      incumbentKind: reading.incumbentKind,
     };
 
   if (reading.text === candidateText)
@@ -217,7 +224,11 @@ export function pageRelationLabel(
   if (relation.kind === 'displaced')
     return `displaced:${relation.decidedBy}`;
   if (relation.kind === 'nothing-would-ship')
-    return `silent:${relation.reason}`;
+    // TWO WORDS RATHER THAN ONE, because `silent` alone was the whole defect.
+    // A reader scanning this column has to be able to separate wording the
+    // deciders removed, which is a change worth looking at, from a gap they
+    // left exactly as the archive had it, which is nothing happening.
+    return `${(relation.incumbentKind === 'absent') ? 'gap' : 'emptied'}:${relation.reason}`;
   return relation.kind;
 }
 
