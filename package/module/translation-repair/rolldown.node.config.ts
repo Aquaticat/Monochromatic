@@ -32,6 +32,7 @@ const config: ReturnType<typeof nodeConfig> = nodeConfig({
     "rendering-audit-settled-report": "./src/corpus-run/rendering-audit-settled-report.ts",
     "model-health": "./src/corpus-run/model-health.ts",
     "probe-relabel": "./src/corpus-run/probe-relabel.ts",
+    "producer-calibrate": "./src/corpus-run/producer-calibrate.ts",
     "probe-sensitivity": "./src/corpus-run/probe-sensitivity.ts",
     "probe-verify": "./src/corpus-run/probe-verify.ts",
     "recall-benchmark": "./src/corpus-run/recall-benchmark.ts",
