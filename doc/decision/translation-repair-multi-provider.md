@@ -225,7 +225,11 @@ As of 2026-08-24, in commit order:
 -   `budget-routing.ts` decides which provider serves a call, and is the first thing ever to consume a quota reading.
     GFP-proven with two mutations.
 
-State: types clean, zero lint findings, 590 tests passing, none failing.
+-   `roster-id.ts` and `roster-reach.ts` widen the roster to ten models across two providers,
+    remove the blocklisted model, and derive reach and picture-reading from both catalogs.
+-   `RUN_ROSTER` is now derived rather than listed, and `checkerSelfCertificationPermitted` is on.
+
+State: types clean, zero lint findings, 596 tests passing, none failing.
 
 ### The system prompt the owner asked for
 
@@ -247,17 +251,37 @@ A test checks the tool name in BOTH renderings rather than each alone,
 because two renderings of one schema can drift
 and a drift teaches a model to call a tool that is not the one being offered.
 
+### Correction: the reader sub-roster is five, not six
+
+The option the owner accepted was worded "All 6 read, and re-derive self-certification",
+and the six in that wording was mine, not a measurement.
+Deriving the set from both catalogs gives FIVE:
+`hf:zai-org/GLM-5.2`, `hf:Qwen/Qwen3.8-27B`, `hf:moonshotai/Kimi-K3`, `qwen3.8-max`, `minimax-m3`.
+The substance of the instruction is unchanged and is what landed:
+readers are derived from what the catalogs report rather than listed by hand,
+and self-certification is re-derived.
+The lane still goes from two readers to five.
+
+### Reading is narrower than talking
+
+`hf:zai-org/GLM-5.2` reads pictures on Charm Hyper and does NOT on Synthetic.
+The same model, the same weights, a different serving stack,
+and each catalog reports its own side correctly.
+
+So a call carrying a picture reaches fewer providers than the same model's text call does,
+and `visionReachOf` answers that question separately from `reachOf`.
+Asking one question for both would either send a picture where it cannot be read,
+or refuse one that can.
+
 ### Still to build
 
--   Widening `RosterModelId` to the ten, and removing `hf:zai-org/GLM-4.7-Flash`.
 -   The Hyper transport itself, and threading `routeProviderFor` through the client seam
     so a stage names a panelist and the client decides where to buy it.
 -   Wiring the Synthetic quota reader, which has been built and unwired since 2026-07-16.
 -   Cross-provider re-ask for the three shared models;
     `#88`'s repair path for the rest.
--   Enabling `checkerSelfCertificationPermitted`, widening `RUN_READER_MODELS` to six,
-    and re-deriving self-certification.
--   The calibration pass that picks the narrow writer set from the ten.
+-   The calibration pass that picks the narrow writer set from the ten,
+    which also settles the provisional third editor and refiner seat.
 
 ### A trap worth remembering
 
