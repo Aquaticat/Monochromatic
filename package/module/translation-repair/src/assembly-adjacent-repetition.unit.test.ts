@@ -56,8 +56,8 @@ await describe({
           ],
         },);
         expect(found.length,).toBe(1,);
-        expect(found[0]?.earlierChunkIndex,).toBe(2,);
-        expect(found[0]?.laterChunkIndex,).toBe(3,);
+        expect(found[0]?.earlierSliceIndex,).toBe(2,);
+        expect(found[0]?.laterSliceIndex,).toBe(3,);
         expect(found[0]?.archiveOccurrences,).toBe(1,);
       },
     },),

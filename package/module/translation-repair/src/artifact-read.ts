@@ -10,7 +10,7 @@ import {
   type ParsedArtifact,
   parseSettledArtifact,
 } from './artifact-v1-read.ts';
-import { ARTIFACT_SCHEMA_VERSION_V2, } from './corpus-run/artifact-v2-contract.ts';
+import { TWO_LANE_GENERATIONS, } from './corpus-run/artifact-v2-contract.ts';
 import type { ParsedArtifactV2, } from './corpus-run/artifact-v2-read-contract.ts';
 import { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
 
@@ -60,12 +60,14 @@ export type ParsedArtifactReading = {
   readonly artifact: ParsedArtifact;
 } | {
   /**
-   * Artifact states version 2, the two-lane generation.
+   * Artifact states one of the two-lane generations, which is every version
+   * from 2 onwards. The kind names the SHAPE rather than the integer, since
+   * three versions record it and differ only in how four keys are spelled.
    */
   readonly kind: 'version-2';
 
   /**
-   * What the version 2 reader made of it, comparison recomputed.
+   * What the two-lane reader made of it, comparison recomputed.
    */
   readonly artifact: ParsedArtifactV2;
 };
@@ -122,16 +124,20 @@ export function readSettledArtifact(
       artifact: parseSettledArtifact({ value, },),
     };
   }
-  if (reading.version === ARTIFACT_SCHEMA_VERSION_V2) {
+  // EVERY GENERATION OF THE TWO-LANE SHAPE, from the list the reader itself
+  // accepts, rather than one integer. Naming version 2 alone is what left
+  // generation 3 unreadable here for as long as it existed: the reader had
+  // learned it and this had not.
+  if (TWO_LANE_GENERATIONS.includes(reading.version,)) {
     return {
       kind: 'version-2',
       artifact: parseSettledArtifactV2({ value, },),
     };
   }
 
-  // UNREACHABLE while the version reading refuses what it does not know, and
-  // stated anyway: the day a generation is added to that list and forgotten
-  // here, this says so instead of returning a reading for the wrong one.
+  // REACHED when a generation joins the known list and no reader claims it,
+  // which is the failure this whole function is the single place to catch:
+  // returning a reading for the wrong generation is worse than refusing.
   throw new ArtifactParseError({
     path: 'artifact.artifactSchemaVersion',
     reason: `a generation with a reader: version ${

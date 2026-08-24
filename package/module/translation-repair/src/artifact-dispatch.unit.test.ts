@@ -22,6 +22,7 @@ import {
   ArtifactParseError,
   KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   readSettledArtifact,
+  TWO_LANE_GENERATIONS,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -138,6 +139,38 @@ await describe({
             artifactSchemaVersion: 1,
           },
         },).kind,).toBe('version-1',);
+      },
+    },),
+    it({
+      name:
+        'HANDS EVERY TWO-LANE GENERATION to that reader, not just the first of them. This named version '
+        + '2 alone once, and generation 3 spent its whole life reported here as a generation nothing '
+        + 'reads: the reader had learned it and the dispatch had not',
+      fn: async () => {
+        // READ FROM THE LIST THE READER ITSELF ACCEPTS, so a fourth generation
+        // cannot be added to one and forgotten by the other without this
+        // failing. A body of the wrong SHAPE is fine and is the point: what is
+        // under test is WHICH reader answered, and the two-lane reader saying
+        // the body is wrong proves it ran.
+        expect(TWO_LANE_GENERATIONS.map(function answeredBy(version,): string {
+          /**
+           * What the dispatch did with a version 1 body under this stamp.
+           */
+          const refusal = caught(function readsUnderStamp() {
+            readSettledArtifact({
+              value: {
+                ...versionOneArtifact(),
+                artifactSchemaVersion: version,
+              },
+            },);
+          },);
+
+          return ((refusal as Error).message.includes('CatEntry1.status',))
+            ? 'the two-lane reader'
+            : (refusal as Error).message;
+        },),).toEqual(TWO_LANE_GENERATIONS.map(function everyOne(): string {
+          return 'the two-lane reader';
+        },),);
       },
     },),
     it({

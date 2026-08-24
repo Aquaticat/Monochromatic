@@ -15,9 +15,7 @@ import {
   type PreparationIdentity,
 } from '../preparation-identity.ts';
 import {
-  ARTIFACT_SCHEMA_VERSION_V2,
-  ARTIFACT_SCHEMA_VERSION_V3,
-  ARTIFACT_SCHEMA_VERSION_V4,
+  TWO_LANE_GENERATIONS,
 } from './artifact-v2-contract.ts';
 import {
   keyVocabularyOf,
@@ -264,19 +262,6 @@ function parsePreparationV2(
       },),
   };
 }
-
-/**
- * Generations carrying the two-lane shape this reader describes.
- *
- * NAMED ONE BY ONE RATHER THAN AS A RANGE, because a generation belongs here
- * once someone has checked that `artifact-key-vocabulary.ts` spells it, not
- * because its number falls between two others.
- */
-const TWO_LANE_GENERATIONS: readonly number[] = [
-  ARTIFACT_SCHEMA_VERSION_V2,
-  ARTIFACT_SCHEMA_VERSION_V3,
-  ARTIFACT_SCHEMA_VERSION_V4,
-];
 
 /**
  * Reads one two-lane artifact, of any generation that wrote the shape.

@@ -242,7 +242,7 @@ export function controlSlices(
 
   return unflagged
     .filter(function onStride(
-      _chunkIndex,
+      _sliceIndex,
       position,
     ): boolean {
       return ((position % stride) === offset);

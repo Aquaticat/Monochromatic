@@ -301,7 +301,7 @@ export function buildSliceCriticRecords(
       },),
     };
   },)
-    .toSorted(function byChunkIndex(
+    .toSorted(function bySliceIndex(
       left,
       right,
     ): number {

@@ -52,15 +52,40 @@ export const ARTIFACT_SCHEMA_VERSION_V3 = 3;
  * Generation this same shape was first written under, still read and no longer
  * written.
  *
- * THE SHAPE DID NOT MOVE. Version 2 and version 3 record the same two lanes,
- * the same comparison and the same lane selection. They differ in three key
+ * THE SHAPE DID NOT MOVE. Versions 2, 3 and 4 record the same two lanes, the
+ * same comparison and the same lane selection. They differ in four key
  * spellings, which `artifact-key-vocabulary.ts` holds and a reader selects by
  * the version the file records.
  *
- * The version moved anyway, because a key rename IS a shape change and a
+ * The version moved anyway, twice, because a key rename IS a shape change and a
  * version that does not move on one is the failure this field exists to end.
  */
 export const ARTIFACT_SCHEMA_VERSION_V2 = 2;
+
+/**
+ * Every generation carrying this two-lane shape, oldest first.
+ *
+ * ONE AUTHORITY FOR THE FAMILY, because two places decide something about it:
+ * the reader that accepts a body, and the dispatch that chooses that reader for
+ * a file. Those two lists drifting apart is not a refusal but a WRONG ANSWER,
+ * and it already happened once: generation 3 was minted, the reader learned it,
+ * the dispatch did not, and every generation 3 artifact reaching the dispatch
+ * was reported as a generation nothing reads.
+ *
+ * NAMED ONE BY ONE RATHER THAN AS A RANGE, since a generation belongs here once
+ * someone has checked that `artifact-key-vocabulary.ts` spells it, not because
+ * its number falls between two others.
+ *
+ * @example
+ * ```ts
+ * if (TWO_LANE_GENERATIONS.includes(version,)) { ... }
+ * ```
+ */
+export const TWO_LANE_GENERATIONS: readonly number[] = [
+  ARTIFACT_SCHEMA_VERSION_V2,
+  ARTIFACT_SCHEMA_VERSION_V3,
+  ARTIFACT_SCHEMA_VERSION_V4,
+];
 
 /**
  * What the one field this schema does not describe may hold.

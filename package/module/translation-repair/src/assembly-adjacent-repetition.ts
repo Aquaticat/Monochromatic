@@ -86,8 +86,8 @@ export type AdjacentSliceText = {
  * @example
  * ```ts
  * const found: AdjacentRepetition = {
- *   earlierChunkIndex: 2,
- *   laterChunkIndex: 3,
+ *   earlierSliceIndex: 2,
+ *   laterSliceIndex: 3,
  *   words: 6,
  *   characters: 23,
  *   archiveOccurrences: 1,
@@ -98,12 +98,12 @@ export type AdjacentRepetition = {
   /**
    * Earlier slice of the neighbouring pair.
    */
-  readonly earlierChunkIndex: number;
+  readonly earlierSliceIndex: number;
 
   /**
    * Later slice of the neighbouring pair.
    */
-  readonly laterChunkIndex: number;
+  readonly laterSliceIndex: number;
 
   /**
    * Repeat length in words.
@@ -296,8 +296,8 @@ function repeatsInPair(
       kept.push({
         phrase,
         found: {
-          earlierChunkIndex: earlier.sliceIndex,
-          laterChunkIndex: later.sliceIndex,
+          earlierSliceIndex: earlier.sliceIndex,
+          laterSliceIndex: later.sliceIndex,
           words: length,
           characters: phrase.length,
           archiveOccurrences,
@@ -379,8 +379,8 @@ export function adjacentRepetitionFindings(
     shippedSlices,
   },)
     .map(function toFinding(found,): string {
-      return `adjacent-repetition (slices ${String(found.earlierChunkIndex,)} and ${
-        String(found.laterChunkIndex,)
+      return `adjacent-repetition (slices ${String(found.earlierSliceIndex,)} and ${
+        String(found.laterSliceIndex,)
       }, ${String(found.words,)} words, ${String(found.characters,)} characters, archive ${
         String(found.archiveOccurrences,)
       })`;

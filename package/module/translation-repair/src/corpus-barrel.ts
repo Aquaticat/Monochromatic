@@ -30,6 +30,7 @@ export {
   type SettledArtifactV2,
   type SettledLaneV2,
   type SettledPreparationV2,
+  TWO_LANE_GENERATIONS,
 } from './corpus-run/artifact-v2-contract.ts';
 export {
   type ArtifactContestSliceV2,
