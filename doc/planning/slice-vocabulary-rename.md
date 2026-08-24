@@ -1,4 +1,4 @@
-# Renaming the settled artifact's chunk vocabulary to slice (`#94`)
+# Renaming the settled artifact's chunk vocabulary to slice (`#94`, `#204`)
 
 LANDED 2026-08-24, under the standing instruction to pick whatever yields the best quality
 rather than ask about it.
@@ -154,12 +154,47 @@ the bytes they read and write keep the version 1 spellings,
 because rewriting the spelling of a generation nobody writes any more
 strands the files that generation left behind and buys nothing.
 
-## Pass two: `chunkIndex`
+## Pass two: `chunkIndex`, which was not mechanical (`#204`)
 
-1731 occurrences in 194 files, five times the rest put together,
-and it reaches cache keys.
-Mechanical, but it wants its own change and its own verification
-rather than riding along with the vocabulary rename.
+LANDED 2026-08-24, in two ordered steps rather than the one this section first described.
+
+Two premises this section carried were both wrong, and each was corrected by measuring.
+
+### It reaches no cache key
+
+`chunkIndex` reaches zero of the six cache-key builders.
+The keys hash positional arrays, and `repair-slice-key.ts` records
+that the slice index was removed from the key at version 26.
+
+### The name was already taken, by a different concept
+
+`sliceIndex` already existed:
+122 occurrences in 19 files, meaning POSITION in `prepared.slices`,
+with `neighbouringSource`, `neighbouringIncumbent` and `slicePictures` throwing on a non-position.
+
+A blanket rename collapses two concepts into one name and recreates the defect `#99` was opened on.
+It surfaced as two `TS2451` redeclarations in `translate-document.ts`
+and would have been SILENT everywhere else.
+
+So the rename is two steps, each with its own type-check, suite run and commit:
+
+1.  `sliceIndex` to `slicePosition`, 122 sites in 19 files, freeing the name.
+    Commit `6a3b24533`.
+2.  `chunkIndex` to `sliceIndex`, 1734 sites in 194 files.
+    Commit `49e5a41cd`.
+
+### The wire moves too, as generation 4
+
+`artifact-v2-project.ts` maps the index explicitly, so holding the wire still was available here
+in a way it was not for the arrays.
+It was rejected:
+a file spelling one half the new way and the other half the old way is the defect this task exists to end.
+
+`artifact-key-vocabulary.ts` therefore gains a fourth field and a fourth row,
+and generation 3 becomes what it always was on disk: a MIXTURE,
+spelling the change-set arrays the new way and the index the old way.
+A reader holding a boolean instead of a table
+reads every generation 3 artifact's index as ABSENT.
 
 ## What would change the recommendation
 
@@ -175,7 +210,7 @@ one parameter threaded two hops,
 and one table row.
 The version 2 path is not a second reader and does not duplicate the family.
 
-## What landed
+## What landed, pass one
 
 Commits `17811187c`, `a065879cc`, `eea400e93`, `529e3b690` and `6b9dacc83`.
 Suite exit 0, lint 0 warnings and 0 errors, types clean.
@@ -189,3 +224,27 @@ all six read and all six generation 3 twins read to an identical interpreted rec
 They differ only inside `lanes.*.raw`,
 which is the file's own record passed through unread
 and so carries the file's own spelling by design.
+
+## What landed, pass two
+
+Commits `6a3b24533`, `49e5a41cd` and `155ee76e9`.
+Suite exit 0, lint 0 warnings and 0 errors, types clean.
+
+Three guards were GFP-proven, each shown to fail with the guard removed and then restored:
+
+-   Collapsing the generation 3 mixture into the current table
+    fails the vocabulary dispatch cases AND the cross-generation equality,
+    and makes the one real generation 3 artifact on disk unreadable.
+-   Making the writer spell the ledger index the old way while stamping generation 4
+    fails the end-to-end settle in `pass-entry.unit.test.ts`.
+-   Letting a ledger row tolerate both spellings
+    fails the case that pins a relabelled body is refused.
+
+At the boundary, all 42 real two-lane artifacts under the agent scratch root read with no refusals
+and no blank indices: 41 of generation 2 over 492 ledger rows, and 1 of generation 3 over 4.
+
+That null result has a positive control.
+Each of those files read under a generation it does not carry is REFUSED,
+and each refusal names exactly the key the wrong table asked for:
+a generation 3 body read as 4 refuses at `lanes.repair.delivery[0].chunkIndex`,
+and read as 2 refuses at `lanes.repair.result.shippedChunkIndices`.

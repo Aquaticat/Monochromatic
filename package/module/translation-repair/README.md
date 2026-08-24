@@ -764,23 +764,30 @@ and readers refuse to mix generations unless told to.
 
 ### Schema generations, which the drift opt-in does not cover
 
-The pass writes SCHEMA GENERATION 3, and refuses to resume into a directory holding another one.
+The pass writes SCHEMA GENERATION 4, and refuses to resume into a directory holding another one.
 That refusal is separate from the build guard above and is not waved past by
 `TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`:
 drift is an opinion about which BUILD filled a pool,
 and its remedy works because every file still answers the same questions.
 A file of another schema generation cannot answer them at all.
 
-Generation 3 differs from generation 2 in three key names and nothing else:
+Three generations record the same two-lane shape and differ only in how four keys are spelled.
+Generation 4 spells all four the current way:
 
 -   `changedSliceIndices`, which generation 2 spelled `shippedChunkIndices`.
--   `withdrawnSliceIndices`, which it spelled `withdrawnChunkIndices`.
--   `sliceCritics`, which it spelled `chunkCritics`.
+-   `withdrawnSliceIndices`, which generation 2 spelled `withdrawnChunkIndices`.
+-   `sliceCritics`, which generation 2 spelled `chunkCritics`.
+-   `sliceIndex`, which generations 2 AND 3 spelled `chunkIndex`.
 
-Both generations are READ. The reader takes the spelling from the version the file records,
+Generation 3 is therefore a MIXTURE:
+the change-set arrays already carry their current names there, and the index does not.
+That is why the reader holds a table rather than a flag.
+A reader holding a flag reads every generation 3 artifact's index as ABSENT.
+
+All three generations are READ. The reader takes the spelling from the version the file records,
 so nothing is ever tried under two spellings,
-and a generation 3 stamp over generation 2 keys is refused rather than read as a file
-missing three keys.
+and a stamp over another generation's keys is refused rather than read as a file
+missing the keys it names.
 
 Meeting the refusal on a resume, the ways forward are the ones the message lists:
 start a fresh directory with `TRANSLATION_REPAIR_RUNS_DIR`,

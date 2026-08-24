@@ -19908,8 +19908,10 @@ Renamed, at 351 sites:
     with `ChunkCriticRecord`, `ChunkCriticView`, `buildChunkCriticRecords` and `decodeChunkCritics`.
 
 `chunkIndex` is NOT in this change.
-1731 sites in 194 files, and it reaches cache keys;
-it gets its own change and its own verification.
+It gets its own change and its own verification, which landed as `#204` below.
+The claim recorded here that it reaches cache keys was WRONG,
+and is corrected in that section:
+it reaches none of the six cache-key builders.
 
 ### Why the version moved, and why the symbols did not
 
@@ -19988,3 +19990,79 @@ so five of the ten seats lost their voice at every stage
 and the entry settled anyway on the five that answered.
 That is the resilience the owner asked for,
 observed rather than asserted.
+
+## The stamped index is `sliceIndex`, as generation 4 (`#204`, 2026-08-24)
+
+Pass two of the vocabulary rename, and it was not the mechanical sed the plan described.
+Two recorded premises were wrong, and each was corrected by measuring before acting.
+
+### It reaches no cache key
+
+`chunkIndex` appears in zero of the six cache-key builders.
+The keys hash positional arrays, and `repair-slice-key.ts` records
+that the slice index was removed from the key at version 26.
+The earlier note in the `#94` section is corrected above.
+
+### The name was already taken, by a different concept
+
+`sliceIndex` already existed:
+122 occurrences in 19 files, meaning POSITION in `prepared.slices`,
+with `neighbouringSource`, `neighbouringIncumbent` and `slicePictures` throwing on a non-position.
+
+A blanket rename collapses two concepts into one name
+and recreates exactly the defect `#99` was opened on.
+The attempt surfaced as two `TS2451` redeclarations in `translate-document.ts`
+and would have been SILENT everywhere else.
+It was reverted whole with `git checkout -- package/module/translation-repair/src` and split in two:
+
+1.  `sliceIndex` to `slicePosition`, 122 sites in 19 files, freeing the name.
+    Commit `6a3b24533`.
+2.  `chunkIndex` to `sliceIndex`, 1734 sites in 194 files.
+    Commit `49e5a41cd`.
+
+Reading what broke, rather than trusting the count, is what caught this.
+
+### The wire moved too, and generation 3 is a mixture
+
+`artifact-v2-project.ts` maps the index explicitly, so holding the wire still was available here
+in a way it was not for the arrays.
+It was rejected:
+a file spelling one half the new way and the other half the old way
+is the defect this work exists to end.
+
+So `artifact-key-vocabulary.ts` gains a fourth field and a fourth row,
+and generation 3 becomes what it always was on disk: a MIXTURE.
+Confirmed against the one real generation 3 artifact:
+its `result` spells `sliceCritics` and `changedSliceIndices`,
+and every one of its twenty-odd index keys spells `chunkIndex`.
+
+`parseSettledArtifactV2` now names the generations it reads in a list
+rather than a chain of comparisons, and five parsers plus one lane envelope
+take the vocabulary rather than naming a key.
+
+### Verified
+
+Suite exit 0, lint 0 warnings and 0 errors, types clean, build clean.
+
+Three guards GFP-proven, each shown to fail with the guard removed and then restored:
+
+-   Collapsing the generation 3 mixture into the current table
+    fails the vocabulary dispatch cases and the cross-generation equality,
+    and makes the one real generation 3 artifact unreadable.
+-   Making the writer spell the ledger index the old way while stamping generation 4
+    fails the end-to-end settle in `pass-entry.unit.test.ts`.
+-   Letting a ledger row tolerate both spellings
+    fails the case pinning that a relabelled body is refused.
+
+At the boundary, through the shipped bundle,
+all 42 real two-lane artifacts under the agent scratch root read with no refusals
+and no blank indices:
+41 of generation 2 over 492 ledger rows, and 1 of generation 3 over 4.
+
+That null result has a positive control.
+Each file read under a generation it does not carry is REFUSED,
+and each refusal names exactly the key the wrong table asked for:
+generation 3 read as 4 refuses at `lanes.repair.delivery[0].chunkIndex`,
+read as 2 refuses at `lanes.repair.result.shippedChunkIndices`,
+generation 2 read as 4 refuses at the same delivery key,
+and read as 3 refuses at `lanes.repair.result.changedSliceIndices`.
