@@ -273,12 +273,26 @@ function levelLines(
         + 'dry one here cannot be told from a threshold that was wrong about a budget that was fine',
     ];
 
+  /**
+   * Earliest reading's numbers, rendered for the line.
+   */
+  const firstFields = first
+    .fields
+    .join(' ',);
+
   if (carried.length === 1)
-    return [`  level ${stampText({ at: first.at, },)}: ${first.fields.join(' ',)}`,];
+    return [`  level ${stampText({ at: first.at, },)}: ${firstFields}`,];
+
+  /**
+   * Latest reading's numbers, rendered the same way.
+   */
+  const lastFields = last
+    .fields
+    .join(' ',);
 
   return [
-    `  level first ${stampText({ at: first.at, },)}: ${first.fields.join(' ',)}`,
-    `  level last ${stampText({ at: last.at, },)}: ${last.fields.join(' ',)}`,
+    `  level first ${stampText({ at: first.at, },)}: ${firstFields}`,
+    `  level last ${stampText({ at: last.at, },)}: ${lastFields}`,
   ];
 }
 

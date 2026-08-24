@@ -303,7 +303,11 @@ function requireJudgedRound(
     slate: requireArray({
       value: record.slate,
       path: `${path}.slate`,
-    },).map(function one(entry, index,): RepairSlateEntry {
+    },)
+      .map(function one(
+        entry,
+        index,
+      ): RepairSlateEntry {
       return requireSlateEntry({
         value: entry,
         path: `${path}.slate[${String(index,)}]`,
@@ -312,7 +316,11 @@ function requireJudgedRound(
     ballots: requireArray({
       value: record.ballots,
       path: `${path}.ballots`,
-    },).map(function one(entry, index,): SelectionBallot {
+    },)
+      .map(function one(
+        entry,
+        index,
+      ): SelectionBallot {
       return requireBallot({
         value: entry,
         path: `${path}.ballots[${String(index,)}]`,
@@ -339,7 +347,11 @@ function requireJudgedRound(
     perCandidate: requireArray({
       value: record.perCandidate,
       path: `${path}.perCandidate`,
-    },).map(function one(entry, index,): CandidateWeight {
+    },)
+      .map(function one(
+        entry,
+        index,
+      ): CandidateWeight {
       return requireCandidateWeight({
         value: entry,
         path: `${path}.perCandidate[${String(index,)}]`,
@@ -424,7 +436,11 @@ export function readRepairRounds(
   return requireArray({
     value: raw.chunks,
     path: `${path}.chunks`,
-  },).map(function one(chunk, index,): readonly RepairJudgedRound[] {
+  },)
+    .map(function one(
+      chunk,
+      index,
+    ): readonly RepairJudgedRound[] {
     /**
      * Where this chunk sits, for every message below it.
      */
@@ -441,7 +457,11 @@ export function readRepairRounds(
     return requireArray({
       value: record.rounds,
       path: `${at}.rounds`,
-    },).map(function toRound(round, roundIndex,): RepairJudgedRound {
+    },)
+      .map(function toRound(
+        round,
+        roundIndex,
+      ): RepairJudgedRound {
       return requireJudgedRound({
         value: round,
         path: `${at}.rounds[${String(roundIndex,)}]`,

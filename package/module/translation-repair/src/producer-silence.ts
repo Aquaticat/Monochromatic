@@ -142,10 +142,10 @@ export function readStandingCoverage(
       return judged.has(modelId,);
     },),
     wroteUnjudged: roster.filter(function wroteOnly(modelId,): boolean {
-      return wrote.has(modelId,) && !judged.has(modelId,);
+      return wrote.has(modelId,) && (!judged.has(modelId,));
     },),
     neverWrote: roster.filter(function stayedSilent(modelId,): boolean {
-      return !wrote.has(modelId,) && !judged.has(modelId,);
+      return (!wrote.has(modelId,)) && (!judged.has(modelId,));
     },),
   };
 }
@@ -171,29 +171,54 @@ export function coverageGapLines(
   { coverage, }: { readonly coverage: StandingCoverage; },
 ): readonly string[] {
   /**
+   * Models that wrote and drew no ballot, rendered for the line.
+   */
+  const unvoted = coverage
+    .wroteUnjudged
+    .join(', ',);
+
+  /**
+   * Models that wrote nothing, rendered the same way.
+   */
+  const silent = coverage
+    .neverWrote
+    .join(', ',);
+
+  /**
+   * Seats the table describes, which is the numerator the silent line needs.
+   */
+  const described = coverage
+    .judged
+    .length;
+
+  /**
    * Seats the coverage was read over, summed back from its three parts.
    */
-  const seats = coverage.judged.length
-    + coverage.wroteUnjudged.length
-    + coverage.neverWrote.length;
+  const seats = described
+    + coverage
+      .wroteUnjudged
+    .length
+    + coverage
+      .neverWrote
+    .length;
 
   return [
-    ...((coverage.wroteUnjudged.length === 0)
+    ...((unvoted === '')
       ? []
       : [
-        `WROTE AND WAS NEVER VOTED ON: ${coverage.wroteUnjudged.join(', ',)}. Their text reached a `
-        + 'slate and no disinterested ballot was cast over it, which is what a slice where every '
-        + 'producer proposed the same wording does: it ships unjudged. The table says nothing '
-        + 'about them either way, and more slices are what would.',
+        `WROTE AND WAS NEVER VOTED ON: ${unvoted}. Their text reached a slate and no `
+        + 'disinterested ballot was cast over it, which is what a slice where every producer '
+          + 'proposed the same wording does: it ships unjudged. The table says nothing about them '
+          + 'either way, and more slices are what would.',
       ]),
-    ...((coverage.neverWrote.length === 0)
+    ...((silent === '')
       ? []
       : [
-        `WROTE NOTHING AT ALL: ${coverage.neverWrote.join(', ',)}. No candidate of theirs reached `
-        + `any slate, so the table covers ${String(coverage.judged.length,)} of `
-        + `${String(seats,)} seats. A provider out of budget, a refused sheet and a call that `
-        + 'timed out all look like this from here; the run log names which. Re-run these seats '
-        + 'before reading the table as a comparison of the roster.',
+        `WROTE NOTHING AT ALL: ${silent}. No candidate of theirs reached any slate, so the table `
+        + `covers ${String(described,)} of ${String(seats,)} seats. A provider out of budget, a `
+          + 'refused sheet and a call that timed out all look like this from here; the run log '
+          + 'names which. Re-run these seats before reading the table as a comparison of the '
+          + 'roster.',
       ]),
   ];
 }

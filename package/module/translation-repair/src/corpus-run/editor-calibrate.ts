@@ -265,11 +265,13 @@ async function runOne(
 
   return {
     editor: selectionRoundsFor({
-      rounds: refined.outcome.rounds,
+      rounds: refined.outcome
+        .rounds,
       stages: EDITOR_ROUND_STAGES,
     },),
     refiner: selectionRoundsFor({
-      rounds: refined.outcome.rounds,
+      rounds: refined.outcome
+        .rounds,
       stages: REFINER_ROUND_STAGES,
     },),
     refineAsked: refined.asked,
@@ -449,14 +451,20 @@ function reportShipped(
    * Slices that shipped a repair without any editor round being judged.
    */
   const unvoted = perSlice.filter(function converged(slice,): boolean {
-    return (slice.editor.length === 0) && (slice.editorShipped.length > 0);
+    return (slice.editor
+      .length
+      === 0) && (slice.editorShipped
+        .length
+        > 0);
   },);
 
   /**
    * Slices that shipped a repair at all.
    */
   const shipping = perSlice.filter(function repaired(slice,): boolean {
-    return slice.editorShipped.length > 0;
+    return slice.editorShipped
+      .length
+      > 0;
   },);
 
   console.log(
@@ -572,7 +580,8 @@ async function main(): Promise<void> {
         + `${String(editorCount,)} editor rounds, `
         + `${String(refinerCount,)} refiner rounds`
         + `${rounds.refineAsked ? '' : ' (nothing eligible to rewrite)'}, `
-        + `${String(rounds.editorShipped.length,)} editors shipping`,
+        + `${String(rounds.editorShipped
+          .length,)} editors shipping`,
     );
   }
 

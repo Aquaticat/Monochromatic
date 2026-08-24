@@ -74,7 +74,10 @@ export function groupByDigest<const TReading extends DigestBearing,>(
       left,
       right,
     ): number {
-      return right.readings.length - left.readings.length;
+      return right.readings
+        .length
+        - left.readings
+        .length;
     },);
 }
 

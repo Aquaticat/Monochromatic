@@ -4,6 +4,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { errorName, } from '../error-name.ts';
 import { producerStandings, } from '../producer-standing.ts';
 import {
@@ -313,8 +314,7 @@ async function readOne(
     }
 
     console.error(
-      `editor-standing-read: ${path} refused, ${errorName({ error, },)}: `
-        + `${error instanceof Error ? error.message : 'no message'}`,
+      `editor-standing-read: ${path} refused, ${errorName({ error, },)}: ${caughtValueText(error,)}`,
     );
     return 'refused';
   }
@@ -381,20 +381,23 @@ function reportGroup(
   { group, }: { readonly group: DigestGroup<ArtifactReading>; },
 ): void {
   console.log(
-    `\n${group.digest} over ${String(group.readings.length,)} entries`,
+    `\n${group.digest} over ${String(group.readings
+      .length,)} entries`,
   );
 
   for (
     const seat of [
       {
         name: 'EDITOR ',
-        perChunk: group.readings.flatMap(function editorOf(reading,) {
+        perChunk: group.readings
+          .flatMap(function editorOf(reading,) {
           return reading.editor;
         },),
       },
       {
         name: 'REFINER',
-        perChunk: group.readings.flatMap(function refinerOf(reading,) {
+        perChunk: group.readings
+          .flatMap(function refinerOf(reading,) {
           return reading.refiner;
         },),
       },
@@ -432,7 +435,7 @@ async function reportStandings(): Promise<void> {
     (roots.length === 0
       ? [await resolveRunsDir(),]
       : roots).map(async function one(path,): Promise<readonly string[]> {
-      return artifactPaths({ path, },);
+      return await artifactPaths({ path, },);
     },),
   )).flat();
 
@@ -440,7 +443,7 @@ async function reportStandings(): Promise<void> {
    * What every artifact turned out to be, read or not.
    */
   const outcomes = await Promise.all(paths.map(async function one(path,): Promise<ArtifactOutcome> {
-    return readOne({ path, },);
+    return await readOne({ path, },);
   },),);
 
   /**
@@ -455,7 +458,8 @@ async function reportStandings(): Promise<void> {
    */
   const offRoster = outcomes.filter(function earlier(outcome,): boolean {
     return outcome === 'off-roster';
-  },).length;
+  },)
+    .length;
 
   /**
    * Groups carrying at least one judged round, since a group with none says
@@ -466,7 +470,12 @@ async function reportStandings(): Promise<void> {
       return group
         .readings
         .some(function any(reading,): boolean {
-          return (reading.editor.flat().length + reading.refiner.flat().length) > 0;
+          return (reading.editor
+            .flat()
+            .length
+            + reading.refiner
+            .flat()
+            .length) > 0;
         },);
     },);
 

@@ -146,7 +146,11 @@ function requireRosterModelIds(
   return requireArray({
     value,
     path,
-  },).map(function one(entry, index,): RosterModelId {
+  },)
+    .map(function one(
+      entry,
+      index,
+    ): RosterModelId {
     return requireRosterModelId({
       value: entry,
       path: `${path}[${String(index,)}]`,
