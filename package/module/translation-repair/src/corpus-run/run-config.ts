@@ -82,7 +82,7 @@ export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS;
 
 
 /**
- * Role roster for a corpus run: all SIX critique and adjudicate, THREE edit
+ * Role roster for a corpus run: all TEN critique and adjudicate, THREE edit
  * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
  *
