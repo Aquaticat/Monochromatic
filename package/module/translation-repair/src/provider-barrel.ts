@@ -20,6 +20,21 @@ export {
   NoProviderForModelError,
 } from './provider-router.ts';
 export {
+  countStates,
+  type DrySpan,
+  drySpans,
+  dutyCycle,
+  longestDrySpan,
+  seriesFor,
+  type StateCounts,
+} from './corpus-run/meter-dry-span.ts';
+export {
+  type MeterLogReading,
+  type MeterSample,
+  readMeterLine,
+  readMeterLog,
+} from './corpus-run/meter-sample-read.ts';
+export {
   type BudgetView,
   createProviderBudgets,
   type MeterState,
