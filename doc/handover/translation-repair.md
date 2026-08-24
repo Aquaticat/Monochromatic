@@ -18872,3 +18872,45 @@ both remain open,
 and both need a measurement that CANNOT be taken in the current window:
 anything measured about re-ask effectiveness during a 20 percent hour
 measures the hour rather than the remedy.
+
+### Correction: the cause WAS established, and it was our own quota
+
+Two claims recorded earlier under `#198` are wrong and are retracted here.
+
+RETRACTED: "WHAT IS NOT ESTABLISHED is which external thing it is.
+Provider, network and this host are all consistent with the evidence gathered."
+
+The cause was established by reading the response bodies.
+866 of 875 lost voices carried
+`SyntheticHttpError HTTP 429: {"error":"You've exceeded your subscription rate limits. Upgrade, or try again later..."}`.
+Three were content-based and three were nginx 503.
+It was not provider degradation and not the network.
+It was this account's own Synthetic budget running out,
+and the owner corrected the reading of it further:
+
+> "own subscription rate limit being hit due to concurrency" - it's not concurrency.
+> It's "remaining weekly credits".
+
+That distinction decides the remedy.
+A longer backoff cannot help,
+because retrying an exhausted weekly budget never succeeds.
+Failover to a second provider can.
+
+RETRACTED: that the two remaining `#198` items are blocked on a clean measurement window.
+The owner rejected the premise outright:
+
+> "are blocked on a clean window" - no, provider issues are normal and expected,
+> our pipeline should be resilient enough to not fail even when the provider is having issues.
+
+Refusing to settle is therefore itself a failure mode rather than a way out,
+and waiting for quiet weather is not a plan.
+The remedy is `#199`:
+a second provider, and the quota reader that has been built and unwired since 2026-07-16.
+
+DIAGNOSIS DISCIPLINE, since this went wrong twice in one session.
+The first reading was that XIEPT2 could not fill its own gaps,
+refuted by the hourly time course.
+The second was that the provider was degrading,
+refuted by the 429 body quoted here.
+Both were stated before anyone read a response body.
+The body was one tool call away the entire time.
