@@ -55,6 +55,10 @@ const SIGNAL = new AbortController().signal;
  *
  * @param hyperStatus - status the second provider refuses with, zero to answer
  *
+ * @param syntheticText - what the first provider answers when it answers
+ *
+ * @param hyperText - what the second provider answers when it answers
+ *
  * @returns Both providers plus the log of who was called
  *
  * @example
@@ -66,9 +70,13 @@ function stubProviders(
   {
     syntheticStatus = 0,
     hyperStatus = 0,
+    syntheticText = '{"spot":"windowsill"}',
+    hyperText = '{"spot":"radiator"}',
   }: {
     readonly syntheticStatus?: number;
     readonly hyperStatus?: number;
+    readonly syntheticText?: string;
+    readonly hyperText?: string;
   },
 ) {
   /**
@@ -86,7 +94,7 @@ function stubProviders(
             status: syntheticStatus,
             bodyText: 'refused',
           },);
-        return { text: '{"spot":"windowsill"}', };
+        return { text: syntheticText, };
       },
     },
     hyper: {
@@ -97,7 +105,7 @@ function stubProviders(
             status: hyperStatus,
             bodyText: 'refused',
           },);
-        return { text: '{"spot":"radiator"}', };
+        return { text: hyperText, };
       },
     },
   };
@@ -504,6 +512,122 @@ await describe({
         // The second call finds the one slot busy and goes elsewhere rather
         // than queueing behind it.
         expect(called.toSorted(),).toEqual(['hyper', 'synthetic',],);
+      },
+    },),
+
+    it({
+      name: 'FORWARDS a non-conformant answer to the same model on the other stack',
+      fn: async () => {
+        /** Providers, both answering, the first one unparseably. */
+        const { synthetic, hyper, called, } = stubProviders({ syntheticText: 'I will not do that.', },);
+        /** Budget view with money on both sides. */
+        const { budgets, refused, } = stubBudgets({},);
+        /** Router under test. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets,
+        },);
+        /** Outcome after the re-ask. */
+        const outcome = await client.chatJson({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          messages: MESSAGES,
+          signal: SIGNAL,
+          validate: isNapSpot,
+        },);
+
+        // The two providers extract structure by different mechanisms, a
+        // forced tool on one and a response format on the other, so the same
+        // weights can conform on one stack and not the other.
+        expect(called,).toEqual(['synthetic', 'hyper',],);
+        expect(outcome.kind,).toBe('ok',);
+        // A bad ANSWER is not a budget refusal; nothing is marked.
+        expect(refused,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES to re-ask a model the other provider does not serve',
+      fn: async () => {
+        /** Providers, the first answering unparseably. */
+        const { synthetic, hyper, called, } = stubProviders({ syntheticText: 'I will not do that.', },);
+        /** Budget view with money on both sides. */
+        const { budgets, } = stubBudgets({},);
+        /** Router under test. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets,
+        },);
+        /** Outcome with nowhere else to ask. */
+        const outcome = await client.chatJson({
+          modelId: 'hf:Qwen/Qwen3.8-27B',
+          messages: MESSAGES,
+          signal: SIGNAL,
+          validate: isNapSpot,
+        },);
+
+        // This model has one provider, so the answer falls to `#88`'s
+        // invalid-candidate path rather than to a second stack.
+        expect(called,).toEqual(['synthetic',],);
+        expect(outcome.kind,).toBe('schema-mismatch',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES to re-ask when the other provider has no budget left',
+      fn: async () => {
+        /** Providers, the first answering unparseably. */
+        const { synthetic, hyper, called, } = stubProviders({ syntheticText: 'I will not do that.', },);
+        /** Budget view with the second provider spent. */
+        const { budgets, } = stubBudgets({ hyperDry: true, },);
+        /** Router under test. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets,
+        },);
+        /** Outcome with nowhere affordable to ask. */
+        const outcome = await client.chatJson({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          messages: MESSAGES,
+          signal: SIGNAL,
+          validate: isNapSpot,
+        },);
+
+        expect(called,).toEqual(['synthetic',],);
+        expect(outcome.kind,).toBe('schema-mismatch',);
+      },
+    },),
+
+    it({
+      name: 'keeps the preferred provider\'s answer when the re-ask fails too',
+      fn: async () => {
+        /** Providers, both answering unparseably and distinguishably. */
+        const { synthetic, hyper, called, } = stubProviders({
+          syntheticText: 'first refusal',
+          hyperText: 'second refusal',
+        },);
+        /** Budget view with money on both sides. */
+        const { budgets, } = stubBudgets({},);
+        /** Router under test. */
+        const client = createRoutingClient({
+          synthetic,
+          hyper,
+          budgets,
+        },);
+        /** Outcome after both stacks disagreed with the schema. */
+        const outcome = await client.chatJson({
+          modelId: 'hf:moonshotai/Kimi-K3',
+          messages: MESSAGES,
+          signal: SIGNAL,
+          validate: isNapSpot,
+        },);
+
+        expect(called,).toEqual(['synthetic', 'hyper',],);
+        // The preferred provider's answer is the one the caller's own handling
+        // is written against.
+        expect(outcome.rawText,).toBe('first refusal',);
       },
     },),
 

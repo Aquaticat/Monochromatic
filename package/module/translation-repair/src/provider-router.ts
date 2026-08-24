@@ -1,7 +1,10 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { routeProviderFor, } from './budget-routing.ts';
+import {
+  type ModelReach,
+  routeProviderFor,
+} from './budget-routing.ts';
 import {
   carriesPicture,
   type ChatJsonOutcome,
@@ -112,6 +115,50 @@ export class NoProviderForModelError extends Error {
     this.name = 'NoProviderForModelError';
   }
 }
+
+/**
+ * Providers that can serve one call, narrowed to vision where it carries a
+ * picture.
+ *
+ * @param request - call whose reach is read
+ *
+ * @returns Reach for the policy, or for a re-ask, to decide on
+ *
+ * @example
+ * ```ts
+ * const reach = reachFor({ request, },);
+ * ```
+ */
+function reachFor(
+  { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
+): ModelReach {
+  if (carriesPicture({ messages: request.messages, },))
+    return visionReachOf({ modelId: request.modelId, },);
+  return reachOf({ modelId: request.modelId, },);
+}
+
+/**
+ * One answer plus the provider that produced it.
+ *
+ * THE PROVIDER TRAVELS WITH THE REPLY because the schema re-ask needs to know
+ * where NOT to ask again, and nothing in the reply itself records it.
+ *
+ * @example
+ * ```ts
+ * const answered: RoutedReply = { provider: 'hyper', reply, };
+ * ```
+ */
+type RoutedReply = {
+  /**
+   * Provider that served this call.
+   */
+  readonly provider: ProviderName;
+
+  /**
+   * What it answered.
+   */
+  readonly reply: ChatTextReply;
+};
 
 /**
  * Whether a thrown failure says the provider is out of budget.
@@ -231,12 +278,9 @@ export function createRoutingClient(
     },
   ): Promise<ProviderName> {
     /**
-     * Providers that can serve this model, narrowed to vision where the call
-     * carries a picture.
+     * Providers that can serve this model, narrowed where it carries a picture.
      */
-    const reach = carriesPicture({ messages: request.messages, },)
-      ? visionReachOf({ modelId: request.modelId, },)
-      : reachOf({ modelId: request.modelId, },);
+    const reach = reachFor({ request, },);
 
     /**
      * What each provider's budget looks like right now.
@@ -361,12 +405,14 @@ export function createRoutingClient(
    * const reply = await client.chatText({ modelId, messages, signal, },);
    * ```
    */
-  async function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
+  async function routedText(
+    request: ForeignBorrowed<ChatTextRequest>,
+  ): Promise<RoutedReply> {
     /**
      * Logger pre-tagged with this function's name.
      */
     const rl = tagged({
-      tag: chatText.name,
+      tag: routedText.name,
       l,
     },);
 
@@ -379,10 +425,13 @@ export function createRoutingClient(
     },);
 
     try {
-      return await callOn({
+      return {
         provider: first,
-        request,
-      },);
+        reply: await callOn({
+          provider: first,
+          request,
+        },),
+      };
     } catch (error) {
       if (!isBudgetRefusal({ error, },))
         throw error;
@@ -399,11 +448,80 @@ export function createRoutingClient(
         syntheticDown: first === 'synthetic',
       },);
 
-      return await callOn({
+      return {
         provider: second,
-        request,
-      },);
+        reply: await callOn({
+          provider: second,
+          request,
+        },),
+      };
     }
+  }
+
+  /**
+   * Free-text chat exchange, routed and re-routed once on a budget refusal.
+   *
+   * @param request - exchange to perform
+   *
+   * @mutates request - the delegated client serializes messages and response format; see its contract
+   *
+   * @returns Content text and usage when reported
+   *
+   * @throws {@link NoProviderForModelError} when nowhere can take it
+   *
+   * @example
+   * ```ts
+   * const reply = await client.chatText({ modelId, messages, signal, },);
+   * ```
+   */
+  async function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
+    return (await routedText(request,)).reply;
+  }
+
+  /**
+   * The other provider, where it can also serve this call and has budget.
+   *
+   * @param request - call that was answered badly
+   *
+   * @param served - provider that answered it
+   *
+   * @returns Provider to re-ask, absent where there is nowhere else to ask
+   *
+   * @example
+   * ```ts
+   * const elsewhere = await secondOpinionFrom({ request, served: 'synthetic', },);
+   * ```
+   */
+  async function secondOpinionFrom(
+    {
+      request,
+      served,
+    }: {
+      readonly request: ForeignBorrowed<ChatTextRequest>;
+      readonly served: ProviderName;
+    },
+  ): Promise<readonly ProviderName[]> {
+    /**
+     * Provider that did not answer this call.
+     */
+    const other: ProviderName = (served === 'synthetic') ? 'hyper' : 'synthetic';
+
+    /**
+     * Whether it serves this model at all, pictures included.
+     */
+    const reach = reachFor({ request, },);
+
+    if (!((other === 'hyper') ? reach.onHyper : reach.onSynthetic))
+      return [];
+
+    /**
+     * What each provider's budget looks like right now.
+     */
+    const budget = await budgets.read({ signal: request.signal, },);
+
+    if ((other === 'hyper') ? budget.hyperDry : budget.syntheticDry)
+      return [];
+    return [other,];
   }
 
   /**
@@ -424,15 +542,69 @@ export function createRoutingClient(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ): Promise<ChatJsonOutcome<ValueT>> {
     /**
-     * Raw text reply of the routed exchange.
+     * Logger pre-tagged with this function's name.
      */
-    const reply = await chatText(request,);
+    const rl = tagged({
+      tag: chatJson.name,
+      l,
+    },);
 
-    return readJsonOutcome({
+    /**
+     * Raw text reply of the routed exchange, and who answered it.
+     */
+    const {
+      provider,
+      reply,
+    } = await routedText(request,);
+
+    /**
+     * What that answer turned out to be.
+     */
+    const outcome = readJsonOutcome({
       modelId: request.modelId,
       reply,
       validate: request.validate,
     },);
+
+    if (outcome.kind === 'ok')
+      return outcome;
+
+    /**
+     * Somewhere else to ask, where this model is served and has budget.
+     */
+    const [elsewhere,] = await secondOpinionFrom({
+      request,
+      served: provider,
+    },);
+
+    if (elsewhere === undefined)
+      return outcome;
+
+    rl.info(
+      `${request.modelId}: ${outcome.kind} on ${provider}, asking ${elsewhere} for the same model`,
+    );
+
+    /**
+     * Same model, same question, the other serving stack.
+     */
+    const second = readJsonOutcome({
+      modelId: request.modelId,
+      reply: await callOn({
+        provider: elsewhere,
+        request,
+      },),
+      validate: request.validate,
+    },);
+
+    if (second.kind === 'ok')
+      return second;
+
+    // THE FIRST ANSWER IS RETURNED WHEN BOTH FAIL, because it came from the
+    // provider the policy preferred and the caller's own handling is written
+    // against that. Both are logged, so a reader can see the re-ask happened
+    // and did not help.
+    rl.info(`${request.modelId}: ${elsewhere} answered ${second.kind} too`,);
+    return outcome;
   }
 
   return {
