@@ -1,8 +1,16 @@
 # Renaming the settled artifact's chunk vocabulary to slice (`#94`)
 
-Proposal, not a decision.
-Written 2026-08-24, after measuring the objection the task carried and finding it overstated.
-Revised the same day, after reconnaissance killed the two-pass split the first draft proposed.
+LANDED 2026-08-24, under the standing instruction to pick whatever yields the best quality
+rather than ask about it.
+Written the same day, after measuring the objection the task carried and finding it overstated,
+then revised after reconnaissance killed the two-pass split the first draft proposed.
+
+The one question this proposal said a different answer would change,
+whether to carry a version 2 reader at all,
+was answered by KEEPING IT.
+The reasoning is under "What would change the recommendation" and is open to veto:
+dropping it later costs one deletion,
+while adding it back after those 48 artifacts have been read and discarded costs the evidence.
 
 ## What is wrong
 
@@ -159,3 +167,25 @@ If the owner would rather not carry a version 2 reader at all,
 dropping it is defensible on the measurement above:
 all 48 are scratch, and the files stay on disk for a resurrected reader to claim later.
 That is the one point in this proposal where a different answer leads to different work.
+
+It was decided the other way, and what carrying it actually costs is now measurable
+rather than estimated:
+one module of 44 code lines,
+one parameter threaded two hops,
+and one table row.
+The version 2 path is not a second reader and does not duplicate the family.
+
+## What landed
+
+Commits `17811187c`, `a065879cc`, `eea400e93`, `529e3b690` and `6b9dacc83`.
+Suite exit 0, lint 0 warnings and 0 errors, types clean.
+
+The guard was GFP-proven:
+making the writer emit `shippedChunkIndices` under a generation 3 stamp
+built cleanly and failed the suite at the new `hasOwn` check.
+
+At the boundary, over the six real generation 2 artifacts in `~/temp/agent/vub-run1-20260821`,
+all six read and all six generation 3 twins read to an identical interpreted record.
+They differ only inside `lanes.*.raw`,
+which is the file's own record passed through unread
+and so carries the file's own spelling by design.
