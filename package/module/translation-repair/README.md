@@ -432,7 +432,7 @@ but said so at `debug` level, which a run does not record.
 It now says so at `info`, as one line per reading:
 
 ```text
-[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] METERS synthetic=wet hyper=dry
+[info] [2026-08-24T19:22:07.104Z] [translation-repair] [takeReading] METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0
 ```
 
 Three states, not two.
@@ -441,6 +441,26 @@ which still routes as spendable, because a monitoring failure must not become an
 It is kept distinct in the record because a duty cycle
 that counted an unreachable endpoint as a working provider
 would report an outage as uptime.
+
+The numbers after the states are what those states were decided from,
+and they are there because the verdict alone could not be checked.
+`hyper=dry` is equally what an empty balance
+and a wrong threshold in `budget-routing.ts` look like,
+and separating them once took a live call to the provider,
+which no longer exists for a moment already past.
+Each provider's numbers and its verdict come off one read,
+so they can never describe different instants.
+
+They also separate causes that route identically.
+Synthetic goes dry when its weekly budget empties,
+when its rolling window empties,
+or when the account is actively throttled;
+those are one bit at the router and three different problems to a reader.
+
+A field the reader has never been taught the name of is carried through,
+because a level is defined as any field whose value is not a meter state.
+Records written before the numbers existed carry states alone,
+and the report names that rather than printing nothing.
 
 Read a collection of those lines back with `meter-report`,
 passing one or more log paths after `--`.

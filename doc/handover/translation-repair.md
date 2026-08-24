@@ -19252,9 +19252,12 @@ Four commits on 2026-08-24, all pushed.
 
 -   `provider-budget.ts` logs `METERS synthetic=<state> hyper=<state>` at `info`
     on every meter reading, once per sixty-second freshness window.
+    Since 8f774f34f the line also carries the numbers each state was read from;
+    see the `#202` section.
     It was already computing this and saying it at `debug`, which runs do not record.
 -   The meter now has three states.
-    `meterStateOf` returns `wet`, `dry` or `unreadable`,
+    `meterRecordOf` (named `meterStateOf` until 8f774f34f) reports
+    `wet`, `dry` or `unreadable`,
     and `routesAsDry` maps that back to the routing bit.
     Both are exported `@internal` and pinned by six cases.
 -   `meter-sample-read.ts` parses those lines back into samples.
@@ -19355,3 +19358,71 @@ there is now a positive control in the unit suite: real-shaped rounds driven
 through the projection and the tally together, asserting a standing falls out
 with its counts. That is what makes the live zero readable as "this slice had
 nothing to repair" rather than "the instrument produces nothing".
+
+## `#202`: the record carries the numbers, not only the verdict
+
+One commit on 2026-08-24, 8f774f34f, pushed.
+
+### How it was found
+
+Checking whether Charm Hyper was really out during the `#200` calibration,
+the record answered `METERS synthetic=wet hyper=dry` and nothing else.
+That is exactly what a wrong threshold in `budget-routing.ts` would also print,
+so the only way to tell was a live `GET /v1/credits`,
+which answered:
+
+```json
+{
+  "balance": 0
+}
+```
+
+The meter was right.
+The point is that the record could not say so,
+and for any moment already past there is no second call to make.
+That is the same failure `#201` was opened on,
+one level down:
+a reading was being computed, used, and then dropped.
+
+### What shipped
+
+-   `syntheticMeterLevel` and `hyperMeterLevel` in `budget-routing.ts`
+    render `key=value` tokens from the same snapshot
+    the dryness verdict is read from.
+    One read, so a verdict and its numbers cannot describe different moments.
+-   `meterStateOf` became `meterRecordOf` and returns `{ state, fields }`.
+    A meter that did not answer reports no fields;
+    `state` already carries that it did not.
+-   The record now reads:
+
+    ```text
+    METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0
+    ```
+
+-   `meter-sample-read.ts` defines a level as any field whose value
+    is not a meter state,
+    so a field added later reaches a human instead of being dropped.
+    The report's dedupe key covers levels,
+    so two genuinely different readings at one instant no longer collapse.
+-   `meter-report` prints the level at both ends of the record.
+    Two ends, because the last says what the budget is now
+    and the first says which way it moved to get there,
+    which separates a budget this run drained
+    from one that was empty before it started.
+
+### Why throttling earned its own field
+
+Synthetic reads dry for three reasons that route identically:
+the weekly budget empties,
+the rolling window empties,
+or the account is actively throttled while both still have room.
+`syntheticThrottled=yes` beside a full window is the third,
+and nothing in the record could previously show it.
+
+### State
+
+-   Committed before verification, per `AGENTS.md` `GCE`.
+-   Build, lint, type-check and suite are OWED.
+    None can run while the `#200` calibration holds `dist`:
+    every mise task declares `depends = ["build"]`
+    and would rewrite the bundle underneath a live run.
