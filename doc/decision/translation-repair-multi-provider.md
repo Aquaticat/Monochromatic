@@ -205,18 +205,59 @@ As of 2026-08-24, in commit order:
 -   `RosterModelId` replaces `SyntheticModelId` across 111 files,
     since the type is about to name five models Synthetic does not serve.
 -   `provider-barrel.ts` splits the provider exports out of `index.ts`, which had reached its line budget.
+-   `anthropic-tool.ts` renders one schema into both places the model sees it:
+    the `tools` entry the server validates against,
+    and the system prompt a weak model actually reads.
+    It validates the tool name against what the protocol accepts,
+    rather than letting every call of a stage answer `400`.
+    GFP-proven with two mutations.
+-   `anthropic-content.ts` translates a message into Messages API content blocks,
+    taking a picture's data URI apart into a media type and a payload.
+    GFP-proven with one mutation.
+-   `anthropic-request.ts` assembles the whole body:
+    system prompt lifted out of the messages,
+    `max_tokens` defaulted to the per-model ceiling,
+    streaming always on,
+    conversation checked for the opening user turn this protocol requires.
+    GFP-proven with two mutations.
+-   `hyper-credits.ts` reads `GET /v1/credits`,
+    refusing a non-finite balance because that one value would read as an unlimited budget.
+-   `budget-routing.ts` decides which provider serves a call, and is the first thing ever to consume a quota reading.
+    GFP-proven with two mutations.
 
-State: types clean, zero lint findings, 578 tests passing, none failing.
+State: types clean, zero lint findings, 590 tests passing, none failing.
+
+### The system prompt the owner asked for
+
+The owner's instruction was that a detailed system prompt carrying the full tool schema is required,
+because some model and provider pairs emit the wrong tool-call format without one.
+
+`renderToolSystemPrompt` states the caller's instruction first, then the whole schema as JSON,
+then a list of format rules.
+The rules are not filler.
+Each line names a shape a model has been seen to emit instead of a tool call:
+the answer as fenced text,
+the arguments as a JSON string rather than an object,
+the object wrapped in one more envelope key,
+renamed properties,
+a required field dropped because its honest value was empty,
+a second call carrying the rest.
+
+A test checks the tool name in BOTH renderings rather than each alone,
+because two renderings of one schema can drift
+and a drift teaches a model to call a tool that is not the one being offered.
 
 ### Still to build
 
--   The request side: an Anthropic Messages body carrying the tool definition,
-    and the full tool schema repeated in the system prompt by owner instruction.
--   Hyper's `GET /v1/credits` reader, beside the Synthetic one that already exists.
--   The router: saturate Synthetic at one call per model, overflow to Hyper,
-    fail over on either Synthetic limit, throw when both are dry.
 -   Widening `RosterModelId` to the ten, and removing `hf:zai-org/GLM-4.7-Flash`.
--   Cross-provider re-ask for the three shared models.
+-   The Hyper transport itself, and threading `routeProviderFor` through the client seam
+    so a stage names a panelist and the client decides where to buy it.
+-   Wiring the Synthetic quota reader, which has been built and unwired since 2026-07-16.
+-   Cross-provider re-ask for the three shared models;
+    `#88`'s repair path for the rest.
+-   Enabling `checkerSelfCertificationPermitted`, widening `RUN_READER_MODELS` to six,
+    and re-deriving self-certification.
+-   The calibration pass that picks the narrow writer set from the ten.
 
 ### A trap worth remembering
 
