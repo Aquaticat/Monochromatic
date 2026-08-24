@@ -18244,3 +18244,66 @@ half of `#192` and `#193` that a parser call alone does not cover.
 ALSO FIXED WHILE IN THERE. `rendering-audit-settled-args.ts` used `NO_CAP` as the sentinel for
 `indexOf` returning nothing found, so one constant meant both "buy everything" and "not in the array".
 Split into `NO_CAP` and `FLAG_ABSENT`, which is the `#170` rule applied to a file that had escaped it.
+
+## XIEPT2 lost 4 h 48 m to one hardcoded discriminant (`#194`)
+
+THE `#189` VERIFICATION RUN FINISHED AND DELIVERED NOTHING. `~/temp/agent/xiept2-verify-2026-08-23`
+ran 17,295,337 ms with zero error lines, wrote no artifact and no fixed page, and the background
+command reported exit code 0. The only trace of the failure is the last line of its log:
+
+```
+TALLY XIEPT2 status=ERROR ms=17295337 aborted=false
+error=slice 12 has no translation and writes none: an anchor is where a rendering belongs, ...
+```
+
+`aborted=false`, so this was not the per-entry deadline. It threw at the very end, in `spliceSlices`.
+
+### The root cause is one line
+
+`consolidate-settle.ts` calls `judgeTranslateSlate` with `incumbentKind: 'present'` hardcoded, for
+every slice. `translate-absence.ts` already owns that discriminant and states how it is derived:
+
+```ts
+const incumbentKind: IncumbentKind = isInsertionChunk(slice.target,) ? 'absent' : 'present';
+```
+
+The translate lane knows about anchors and the consolidation lane does not. At an insertion anchor the
+consolidation therefore enters an empty incumbent into its slate, tells its judges an incumbent is
+present when it is a blank, and asks the gate whether to keep a standing text that does not exist.
+
+DO NOT FIX IT BY TESTING `standingText.trim() === ''`. `translate-absence.ts` rejects exactly that and
+gives the reason: it conflates an anchor, where a rendering belongs and none exists, with a content
+span whose archive wording genuinely is blank. Absence is a mode decided once and carried.
+
+### The signal was there three and a half hours early
+
+```
+pass.log:753   00:40  [translateDocument] slice 12: no translation in the archive
+                      and none produced (no-candidate-backed)
+pass.log:1382  02:31  [gateConsolidatedSlice] 6/6 usable, settled on neither, ships standing
+pass.log:1506  02:52  [gateConsolidatedSlice] 6/6 usable, settled on neither, ships standing
+pass.log:1926  04:11  [gateConsolidatedSlice] 6/6 usable, settled on neither, ships standing
+pass.log:1962  04:12  TALLY status=ERROR
+```
+
+The translate lane handled the anchor correctly and named it with the `#105` marker. Nothing read
+that warning. Six judges were then asked, three times, to choose between a rendering and nothing,
+without being told the second option was nothing, and the `#181` settled-neither fallback shipped the
+standing text each time.
+
+THE SPLICE GUARD IS THE HERO HERE AND MUST NOT BE WEAKENED. `splice-slices.ts` refused because blank
+text at an anchor "leaves the passage missing while the run reports it delivered". It is the only
+thing that stopped a silent hole reaching a memorial page.
+
+### What the fix has to do
+
+-   Thread `incumbentKind` into `settleConsolidation` from the slice's target chunk, as the translate
+    lane derives it, and stop passing the literal.
+-   Stop asking `gateConsolidatedSlice` to keep a standing text that is absent; one of its two options
+    does not exist there.
+-   Let `TranslateAbsenceError` do what its own module comment already promises: the driver catches
+    it, records the slice unfilled, and leaves the archive's gap, "so one refused anchor costs its own
+    slice rather than the entry". That is the blast-radius half, and the machinery is already built.
+
+Nothing of the run is recoverable but the log. `slice-cache/` holds 120 files and the pipeline digest
+has moved since, so a resume re-buys everything. Do not re-run XIEPT2 before this lands.
