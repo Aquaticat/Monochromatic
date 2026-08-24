@@ -19123,3 +19123,46 @@ Any such rule has a hard floor at one exchange deadline,
 and a practical floor well above it,
 since a slice runs several exchange rounds in sequence:
 the critic round alone took over 200 seconds on the measured attempt.
+
+### The second run says the floor is much higher than one exchange
+
+Run 2, `--only Weideriche_` under a 15-minute ceiling, exit 0 in 1801.90s.
+It stalled too, and that is the finding:
+
+    CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 15 minutes rather than the built-in 420
+    TALLY Weideriche_ status=ERROR ms=900061 aborted=true
+    REATTEMPT Weideriche_ queued: cached 1 more slices, so the next attempt starts further along
+    TALLY Weideriche_ status=ERROR ms=900002 aborted=true
+    STALLED Weideriche_: its 1 cached slices are what it started with
+    DONE processed=0 of pending=1; artifacts=0/92 elapsed=1800065ms
+
+`Weideriche_` is the SECOND SMALLEST entry in the corpus,
+828 bytes of source against a 41720-byte largest,
+and it cuts into 3 slices.
+The ceiling was 15 minutes, two and a half times the 6-minute exchange deadline,
+so `CAP TOO TIGHT` correctly stayed quiet.
+
+Attempt 1 bought the block pairing in seconds
+and then spent the remaining fourteen and three quarter minutes on CHUNK 0 ALONE,
+reaching critic, then panel, then editor, and never finishing.
+The stage words in that attempt's log come to critic 18, panel 12, editor 2.
+Attempt 2 did the same and banked nothing.
+
+SO ONE REPAIR SLICE COSTS MORE THAN 885 SECONDS, on the second smallest entry.
+That is not surprising once stated:
+a slice runs critic, panel, editor and checker rounds IN SEQUENCE,
+and each round is bounded by `RUN_PER_CALL_TIMEOUT_MS` at 360_000 on its own.
+
+THE `CAP TOO TIGHT` FLOOR IS THEREFORE NECESSARY BUT NOT SUFFICIENT.
+One exchange is a provable lower bound and it is the honest one to assert
+without a measurement.
+The practical floor is a whole round sequence, and 15 minutes is under it.
+The production ceiling of 420 minutes is nowhere near either floor,
+so nothing that ships is affected;
+what was affected was two verification runs that looked reasonable and could not work.
+
+The number to replace the estimate with is being measured now:
+run 3 is `--only Weideriche_` at the DEFAULT ceiling,
+which settles the entry end to end and reports what it actually cost.
+Do not raise the warning threshold on the 885-second lower bound.
+It is a bound, not a cost.
