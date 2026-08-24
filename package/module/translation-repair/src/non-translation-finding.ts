@@ -1,13 +1,16 @@
 //region Non-translation finding
 // The sentence a blocked document carries, in ONE place.
 //
-// WHY IT LIVES ALONE. Two callers build it: `repair-translation.ts` logs it when
-// it decides to block, and `repair-blocked-exit.ts` writes it into the findings
-// of the result that decision produces. They held two copies of the same
-// template, which is how they came to disagree: a correction to one left the
-// other saying something the code no longer did. A reader comparing a log line
-// against an artifact finding is comparing two renderings of one fact, and they
-// have to be one rendering.
+// WHY IT LIVES ALONE. Two USES build it, both in `repair-translation.ts`: the
+// warning line it logs when the reading crosses, and the finding it carries into
+// the result. Those were two copies of one template once, which is how they came
+// to disagree: a correction to one left the other saying something the code no
+// longer did. A reader comparing a log line against an artifact finding is
+// comparing two renderings of one fact, and they have to be one rendering.
+//
+// NOTHING BLOCKS ON IT ANY MORE. `#110` removed every critic early return,
+// because a blocked document was discarding translated slices, so the log line
+// says "reported, not blocking" and the finding is all the decision produces.
 
 /**
  * Sentence naming a non-translation block and the population it was decided
