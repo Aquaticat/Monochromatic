@@ -420,6 +420,72 @@ is not the cost a two-provider run pays, and should be labelled with the outage.
 Any quality figure measured then rests on whoever was awake,
 so five of ten models contributed nothing to it.
 
+#### Measuring how much of the time each provider was there
+
+Three writer seats sit on models only Charm Hyper serves,
+and until 2026-08-24 the argument for them rested on a quality pass
+plus an availability adjustment that was reasoned about rather than measured.
+
+The budget layer already read both meters every sixty seconds
+and already knew dry from wet,
+but said so at `debug` level, which a run does not record.
+It now says so at `info`, as one line per reading:
+
+```text
+[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] METERS synthetic=wet hyper=dry
+```
+
+Three states, not two.
+A meter that could not be reached at all reads as `unreadable`,
+which still routes as spendable, because a monitoring failure must not become an outage.
+It is kept distinct in the record because a duty cycle
+that counted an unreachable endpoint as a working provider
+would report an outage as uptime.
+
+Read a collection of those lines back with `meter-report`,
+passing one or more log paths after `--`.
+It spends no quota:
+
+```sh
+mise run //package/module/translation-repair:meter-report -- run3.log run4.log
+```
+
+It reports, per provider,
+how many readings fell in each state,
+the fraction of answering readings that found budget,
+and the longest outage as a range.
+The range matters.
+A reading happens when a run asks to spend,
+so two readings can be a minute apart or a day apart,
+and an outage seen at one and gone by the next
+began and ended somewhere in between.
+An outage with no wet reading before it, or none after it,
+is reported open rather than as a number,
+since it may have started before the record or may still be running.
+
+Every figure is availability WHEN WE WERE ASKING, not availability.
+That is the quantity that prices a seat,
+and it is not the same thing.
+
+#### Sampling between runs, so a recovery gets observed
+
+An outage that stops a pass also stops the readings,
+so nothing observes when the provider came back,
+and every outage that ended a run reads as open-ended forever.
+
+```sh
+mise run //package/module/translation-repair:budget-sample > sample.log 2>&1
+```
+
+One reading of both meter endpoints.
+No model is called and no token is produced;
+a live run took 2.4 seconds.
+Capture both streams: the reading is at `info` and an unreadable meter warns at `warn`.
+
+Repeat it on a timer to fill the quiet stretches,
+for example `watch --interval 300`,
+and point `meter-report` at the collected logs.
+
 ### Where a run writes
 
 -   `TRANSLATION_REPAIR_RUNS_DIR`.
