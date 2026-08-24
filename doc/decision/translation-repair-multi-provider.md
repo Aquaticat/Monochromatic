@@ -603,3 +603,106 @@ so `grep` and `rg` classify it as binary and report NO MATCHES rather than the m
 A repo-wide rename looked complete and the source looked clean;
 only the bundler disagreed.
 Use `grep -a` when a search over this package must be exhaustive.
+
+### The forty-round pass seats the writers, 2026-08-24
+
+40 rounds, ten models writing a candidate for the same slices
+and every other model judging them:
+2492 disinterested ballots against a pooled null of 13.48 percent.
+That is past the ~284 ballots the twelve-round pass computed as the requirement
+to separate the contenders it left tied.
+
+The raw standing, each rate over the rounds that model produced a candidate in:
+
+    qwen3.8-max              27.0%   47 of 174 ballots, over 28 candidates
+    hf:Qwen/Qwen3.8-27B      24.1%   61 of 253, over 37
+    gemma-4-26b-a4b-it       18.3%   46 of 252, over 40
+    hf:moonshotai/Kimi-K3    14.1%   36 of 255, over 40
+    hf:openai/gpt-oss-120b   13.9%   35 of 252, over 40
+    minimax-m3               12.3%   32 of 260, over 40
+    deepseek-v4-pro-0813     10.7%   28 of 262, over 40
+    deepseek-v4-flash-0731    8.4%   20 of 239, over 40
+    hf:zai-org/GLM-5.2        8.2%   23 of 280, over 40
+    NVIDIA-Nemotron-3-Super   3.0%    8 of 265, over 40
+
+READ THE CANDIDATE COLUMN BEFORE THE RATE COLUMN.
+Two models did not answer every round,
+and a rate computed over the rounds a model survived
+credits it for the rounds it skipped.
+Charging each model zero for every round it missed:
+
+    hf:Qwen/Qwen3.8-27B      22.3%   z  4.27   clears Bonferroni 2.81
+    qwen3.8-max              18.9%   z  2.50   does not clear
+    gemma-4-26b-a4b-it       18.3%   z  2.22   does not clear
+    hf:moonshotai/Kimi-K3    14.1%
+    hf:openai/gpt-oss-120b   13.9%
+    minimax-m3               12.3%
+    deepseek-v4-pro-0813     10.7%
+    deepseek-v4-flash-0731    8.4%
+    hf:zai-org/GLM-5.2        8.2%
+    NVIDIA-Nemotron-3-Super   3.0%   z -4.99   the first established WORST
+
+#### qwen3.8-max's headline is survivorship, and it was proved rather than asserted
+
+The suspicion is cheap and the proof is not,
+so the log was parsed into its 40 round segments
+and the OTHER models' median answer length taken as a proxy for slice size.
+
+Rounds `qwen3.8-max` missed ran a median of 588 characters.
+Rounds it answered ran 366.
+The ratio is 1.61,
+Mann-Whitney `z = +3.51`, `p ≈ 0.0004`,
+and the quartiles barely overlap:
+512 to 687 against 259 to 462.
+
+THE PARSE VALIDATED ITSELF.
+It found 12 missed rounds and 28 answered,
+and 28 is exactly the candidate count the standing reports independently.
+
+So the model that tops the raw table is the model that skips the large slices,
+and it also took 29 cuts, more than any other model on the roster.
+It is a good writer of easy passages and absent on hard ones.
+
+#### What was seated
+
+`editorModelIds` and `refinerModelIds` both become:
+
+-   `hf:moonshotai/Kimi-K3`, kept: 40 of 40 candidates, at the null.
+-   `hf:Qwen/Qwen3.8-27B`, kept: established in both passes, the only model clearing Bonferroni.
+-   `gemma-4-26b-a4b-it`, seated: 40 of 40 candidates, zero cuts, 18.3 percent.
+
+`hf:zai-org/GLM-5.2` leaves both seats.
+It is below the pooled null in both passes,
+and it was independently the second worst model on reliability.
+
+`qwen3.8-max` is not seated and keeps every wide role.
+A wide role loses one ballot when a voice is lost;
+a three-seat stage facing quorum of two loses the stage.
+Those are different bargains and the survivorship finding decides between them.
+
+THE WRITER SEATS NOW CROSS PROVIDERS, which none of them did before.
+Every previous writer seat was Synthetic-served,
+so a Synthetic outage emptied the editor and refiner stages entirely
+however well the router covered the wide roles.
+Charm Hyper serves `gemma-4-26b-a4b-it`.
+
+`gemma-4-26b-a4b-it` carries `readsImages: false`,
+which costs nothing in these seats.
+Pictures are read in `image-reading-stage.ts` over `RUN_READER_MODELS`,
+a roster derived from the catalog rather than written by hand,
+and `document-lanes.ts` records that the repair lane never asks what a picture says.
+Its catalog `maxOutputLength` of 25_600 is likewise not a constraint here:
+nothing in production reads that field,
+and the model answered 40 rounds of production-sized slices without a cut.
+
+#### What this still does not decide
+
+CHECKER SEATS.
+`checkerModelIds` still seats `NVIDIA-Nemotron-3-Super`,
+which this pass establishes as the worst WRITER on the roster at `z = -4.99`.
+That is not evidence about checking.
+The instrument measures who writes a candidate other models vote for;
+a checker writes nothing.
+Moving a checker seat needs a checker-side measurement,
+and `#188` is the shape such a measurement takes.
+Acting on this table would be reading the wrong instrument.
