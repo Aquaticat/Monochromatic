@@ -18730,3 +18730,87 @@ No code changed between the two observations.
 
 The same entry's page passes the standalone verifier at `chars=3502=expected`,
 so `#197` has its live boundary check too.
+
+## A lost voice and a genuine absence land as the same gap (`#198`)
+
+FOUND 2026-08-24 by measurement,
+while diagnosing why XIEPT2 was the only entry in the corpus producing unfilled slices.
+
+`TranslateAbsenceReason`'s `no-candidate` says in its own TSDoc that it covers
+"every translator was silent, blank, or lost its voice".
+Those are three different facts.
+A translator that declined is evidence about the passage;
+a translator whose answer failed to parse is evidence about the hour.
+Both land as the same reason,
+the slice ships as a gap,
+and the artifact records an absence a later reader cannot tell from a real one.
+
+### The first reading was that XIEPT2 cannot fill its own gaps, and it was wrong
+
+XIEPT2 had eight unfilled slices against zero across 108 slices in every other run,
+which reads like a property of the hardest entry in the corpus.
+It is not.
+
+Voice loss is time-varying,
+and it moved by an order of magnitude in one hour:
+
+    xiept2-anchorfix   04:00 UTC    129 streams     4 lost     3%
+                       05:00        229 streams     2 lost     1%
+                       06:00       1896 streams   371 lost    20%
+
+    recheck-ballot     05:00         14 streams     0 lost     0%
+                       06:00       2023 streams   397 lost    20%
+
+The unfilled slices track it exactly:
+
+    XIEPT2 translate lane   05:00 hour    13 computed,   0 unfilled
+                            06:00 hour     9 computed,  10 unfilled
+
+### The cause is outside this build, and that part is proven
+
+XIEPT2 has been running since 01:20 on a build loaded at launch,
+and a rebuild does not change a running pass,
+so none of the five commits landed today can have caused its 3 to 1 to 20 percent.
+It is a frozen-code control that ran straight through the boundary.
+
+Two passes on DIFFERENT builds and DIFFERENT entries
+cross into 20 percent in the same wall-clock hour.
+Loss is spread evenly across all six models,
+59 to 62 each,
+so no single model explains it either,
+and for this window it supersedes `#77`'s finding that Kimi-K3 dominates.
+
+WHAT IS NOT ESTABLISHED is which external thing it is.
+Provider, network and this host are all consistent with the evidence gathered.
+The claim that stands is narrower and sufficient:
+it is not our code.
+
+### Why this is a release concern rather than a bad afternoon
+
+An entry settled during a bad hour publishes a page with holes,
+the artifact calls them absences,
+`pageSilent` counts them,
+and nothing anywhere says they were an artefact of the hour.
+Ten of XIEPT2's slices are in exactly that state as this is written.
+
+Three ways out are recorded on `#198`, unranked pending a decision:
+splitting the reason so the artifact records which of the three happened,
+refusing to settle an entry whose gaps came from lost voices,
+and re-asking a slate whose voices were all lost rather than declined.
+Splitting the reason is a prerequisite for the other two,
+since neither can act on a distinction the pipeline does not record.
+
+### One operational consequence, taken immediately
+
+`recheck-ballot-vub-2026-08-24` was stopped.
+It had been launched to close `#192` and `#193`,
+which `GLaDOSister` closed first,
+so it was redundant before the degradation made its output untrustworthy as well.
+`xiept2-anchorfix` was left running:
+its purpose is the `#194` live boundary check,
+which is about whether the publisher handles a silent anchor correctly,
+and a degraded hour gives it MORE anchors to handle rather than fewer.
+Its output is a test fixture, not a deliverable.
+
+Any quality measurement taken in this window is contaminated,
+including anything `#196` would conclude about the per-entry cap.
