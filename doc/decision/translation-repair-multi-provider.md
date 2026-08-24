@@ -188,6 +188,7 @@ so a truncation is a named refusal rather than a silently short answer a judge s
 - Which stages dominate call volume, since "widen to balance load" is a claim about volume.
 - The calibration pass that picks the narrow writer set from the 10.
 - That no picture-carrying slice is judged only by its own readers.
+- Whether the measured concurrency holds for corpus-sized bodies as it does for a two-line prompt.
 
 ## What has landed
 
@@ -288,15 +289,97 @@ These were measured but never written down, which is how the second session came
 -   A forced tool call arrives as one `input_json_delta` whose `partial_json` is the whole answer object,
     with `stop_reason: "tool_use"` on `message_delta` and usage there rather than on `message_start`.
 
+### The client, the budget view, and the router: landed 2026-08-24
+
+`createHyperClient` in `hyper-client.ts` assembles the parts that were built and unreachable:
+`buildAnthropicBody` for the body,
+`extractAnthropicCompletion` for the drained reply,
+`wireFormat: 'anthropic'` on the exchange so the guards read the stream,
+and the endpoint facts confirmed live.
+
+It raises `SyntheticHttpError`, named after the other provider, DELIBERATELY.
+`benchmark.ts` branches on `error instanceof SyntheticHttpError` to read a status off a failed call,
+and a fresh class here would make that site blind
+to exactly the provider added to survive the other one's exhaustion.
+The name is wrong and the behaviour is right;
+renaming it is held with the `SyntheticClient` rename.
+
+The JSON ladder moved to `chat-json-outcome.ts` rather than being copied.
+None of it is provider-specific:
+it reads text a model wrote and decides whether that text is an answer,
+a refusal, or a mismatch.
+Every step in it stands for a defect found live,
+and a copy would have taken none of the next ones.
+
+`provider-budget.ts` is the first thing that has ever consumed the quota reader built on 2026-07-16.
+It reads both meters, caches the view, and lets a refusal correct it.
+AN UNREADABLE METER READS AS SPENDABLE:
+a budget endpoint that times out is a monitoring failure,
+and treating it as exhaustion converts that into an outage.
+A refusal is stickier than a meter reading,
+because a meter can lag a 429 by its own refresh interval;
+the cooldown is one-directional and can only hold a provider out.
+
+`provider-router.ts` is the client seam `routeProviderFor` now threads through.
+A budget refusal marks that provider and asks the other one, exactly once.
+A failure that is NOT about budget is re-raised untouched,
+because spending the second provider's money on someone else's fault
+hides the fault and pays for it twice.
+Both 429 and 402 count as budget refusals:
+a subscription reports exhaustion as a rate limit and a balance reports it as payment due.
+
+Pictures route by `visionReachOf` rather than `reachOf`,
+which is what the "reading is narrower than talking" finding demands.
+
+### Per-model concurrency: measured, not inherited
+
+The second provider DOES NOT SERIALISE PER MODEL.
+Measured live on 2026-08-24 against `minimax-m3`:
+
+-    4 concurrent calls: all ok, burst 1512 ms.
+-    8 concurrent calls: all ok, burst 2128 ms.
+-   16 concurrent calls: all ok, burst 1589 ms.
+-   32 concurrent calls: all ok, burst 2482 ms.
+
+Single-call band over five runs: 994 to 1641 ms.
+Every burst finished in about the time ONE call takes;
+serialised, the 32 would have taken some 40 seconds.
+Zero refusals at any width.
+
+The default moves from the other provider's 1 to 8.
+It is held below the proven 32 because the probe sent a two-line prompt
+and a corpus call carries orders of magnitude more:
+what was measured is that the provider accepts the width,
+not that 32 large bodies stream at once through our own drain and guards.
+
+The balance did not move across roughly 50 calls,
+so `hyperIsDry` reading `balance <= 0` detects exhaustion but not approach to it.
+
+### A race the saturation test caught
+
+The router's slot count rose at DISPATCH.
+Two calls choosing at once both resume from the budget read before either has been sent,
+so both saw a free slot and both went to the same provider.
+The count now moves in the same synchronous step as the decision,
+with nothing awaited between reading it and incrementing it,
+and the slot is released through a `Disposable` rather than a `finally`
+so a later early return cannot skip it.
+
 ### Still to build
 
--   The Hyper transport itself, and threading `routeProviderFor` through the client seam
-    so a stage names a panelist and the client decides where to buy it.
--   Wiring the Synthetic quota reader, which has been built and unwired since 2026-07-16.
+-   Handing the routing client to the stages,
+    which today still construct `createSyntheticClient` directly.
 -   Cross-provider re-ask for the three shared models;
     `#88`'s repair path for the rest.
 -   The calibration pass that picks the narrow writer set from the ten,
     which also settles the provisional third editor and refiner seat.
+
+### The worktree's secrets file is stale
+
+`.env.local.json` is gitignored, so the feature worktree holds its own copy,
+and that copy predates `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
+Live probes against the second provider must run with the main repo as the mise config root;
+the built bundle can still be imported from the worktree by absolute path.
 
 ### A trap worth remembering
 
