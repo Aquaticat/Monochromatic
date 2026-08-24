@@ -33,6 +33,40 @@ import type {
 export const HYPER_ONLY = 'hyper-only';
 
 /**
+ * Endpoint one call is POSTed to, measured live on 2026-08-24.
+ *
+ * THE MESSAGES API RATHER THAN CHAT COMPLETIONS, for the reason the module
+ * note records: the OpenAI-shaped endpoint accepts `response_format` and
+ * ignores it, so structured output has nowhere else to go.
+ */
+export const HYPER_MESSAGES_URL = 'https://hyper.charm.land/v1/messages';
+
+/**
+ * Endpoint reporting the remaining balance, measured live on 2026-08-24.
+ */
+export const HYPER_CREDITS_URL = 'https://hyper.charm.land/v1/credits';
+
+/**
+ * Value of the `anthropic-version` header every call carries.
+ *
+ * REQUIRED BY THE PROTOCOL rather than chosen: this is the dated contract the
+ * request and response shapes belong to, and the frames this package parses
+ * were captured under it.
+ */
+export const HYPER_API_VERSION = '2023-06-01';
+
+/**
+ * Header carrying the key, which is NOT the one the protocol usually uses.
+ *
+ * MEASURED, AND THE MEASUREMENT CONTRADICTS THE OBVIOUS GUESS. The Messages
+ * API is normally keyed by `x-api-key`, and this gateway answers that header
+ * with `401 missing authorization`. It takes a bearer token instead, so a
+ * client written from the protocol docs alone would fail to authenticate every
+ * call and read it as a bad key.
+ */
+export const HYPER_AUTH_HEADER = 'Authorization';
+
+/**
  * How a model must be asked for a tool call.
  *
  * MEASURED PER MODEL, because it is not a property of the provider. Seven of

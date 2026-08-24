@@ -12,6 +12,8 @@
 // only remedy that works against an exhausted budget.
 
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
+export { readJsonOutcome, } from './chat-json-outcome.ts';
+export { isSuccessStatus, } from './http-success.ts';
 export {
   DEFAULT_WIRE_FORMAT,
   scannerFor,
@@ -71,6 +73,10 @@ export {
 export { scanAnthropicDeltas, } from './anthropic-delta-scan.ts';
 export {
   answerCeilingFor,
+  HYPER_API_VERSION,
+  HYPER_AUTH_HEADER,
+  HYPER_CREDITS_URL,
+  HYPER_MESSAGES_URL,
   HYPER_MODELS,
   HYPER_ONLY,
   type HyperModelInfo,
@@ -79,5 +85,10 @@ export {
   modelsServedByBoth,
   modelsServedOnlyHere,
 } from './hyper-catalog.ts';
+export {
+  createHyperClient,
+  type HyperClient,
+  ModelNotServedError,
+} from './hyper-client.ts';
 
 //endregion Provider barrel

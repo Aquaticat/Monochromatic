@@ -9,15 +9,10 @@ import type {
   ChatTextRequest,
   SyntheticClient,
 } from './chat-contract.ts';
-import { stripChannelMarker, } from './channel-marker.ts';
+import { readJsonOutcome, } from './chat-json-outcome.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
-import {
-  formatUsageNote,
-  parseModelJson,
-  stripCodeFence,
-  stripThinkBlock,
-} from './model-content.ts';
-import { detectRefusalShape, } from './refusal.ts';
+import { isSuccessStatus, } from './http-success.ts';
+import { formatUsageNote, } from './model-content.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import {
   SYNTHETIC_CHAT_BASE_URL,
@@ -48,16 +43,6 @@ import {
 // requests to one model are bounded locally (provider grants 1 concurrent request
 // per model per subscribed pack and queues the excess server-side; a local bound
 // matching the pack count keeps queues short and aborts responsive).
-
-/**
- * Lowest HTTP status treated as success.
- */
-const HTTP_SUCCESS_MIN = 200;
-
-/**
- * First HTTP status past the success family.
- */
-const HTTP_SUCCESS_MAX_EXCLUSIVE = 300;
 
 /**
  * Logger root for this package's model-facing shell.
@@ -255,7 +240,7 @@ export function createSyntheticClient(
         policy: retryPolicy,
       },);
 
-      if ((reply.status < HTTP_SUCCESS_MIN) || (reply.status >= HTTP_SUCCESS_MAX_EXCLUSIVE)) {
+      if (!isSuccessStatus({ status: reply.status, },)) {
         rl.warn(`<- ${request.modelId}: HTTP ${String(reply.status,)}`,);
 
         // BYTES RATHER THAN CHARACTERS, which is the whole trap here. This
@@ -292,6 +277,11 @@ export function createSyntheticClient(
    * Content that parses and passes the guard wins even when it quotes
    * refusal-like phrasing; the refusal scan runs only on parse failure.
    *
+   * THE LADDER ITSELF LIVES IN `chat-json-outcome.ts`, because none of it is
+   * about this provider: it reads text a model wrote and decides whether that
+   * text is an answer. The second provider runs the same steps on replies that
+   * arrived over a different protocol entirely.
+   *
    * @param request - exchange plus content guard
    *
    * @mutates request - `JSON.stringify` may invoke toJSON methods or getters while the delegated exchange serializes messages and response format
@@ -308,14 +298,6 @@ export function createSyntheticClient(
   async function chatJson<ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ): Promise<ChatJsonOutcome<ValueT>> {
-    /**
-     * Logger pre-tagged with this function's name.
-     */
-    const rl = tagged({
-      tag: chatJson.name,
-      l,
-    },);
-
     /**
      * Raw text reply of the underlying exchange.
      */
@@ -338,127 +320,11 @@ export function createSyntheticClient(
         : { responseFormat: request.responseFormat, }),
     },);
 
-    /**
-     * Usage spread carried onto every outcome for budget observability.
-     */
-    const usageSpread = reply.usage === undefined
-      ? {}
-      : { usage: reply.usage, };
-
-    // The API's own refusal field outranks every content heuristic.
-    if (reply.refusal !== undefined) {
-      rl.debug(`${request.modelId}: refusal-shaped (api-refusal-field)`,);
-      return {
-        kind: 'refusal-shaped',
-        rawText: reply.text === ''
-          ? reply.refusal
-          : reply.text,
-        marker: 'api-refusal-field',
-        ...usageSpread,
-      };
-    }
-
-    /**
-     * Answer channel with any embedded thinking block split off;
-     * refusal scanning and parsing judge the answer,
-     * never the deliberation (which harmlessly contains refusal-like phrasing).
-     */
-    const {
-      answer,
-      truncatedThinking,
-    } = stripThinkBlock({ text: reply.text, },);
-
-    if (truncatedThinking) {
-      rl.debug(`${request.modelId}: schema-mismatch (truncated thinking)`,);
-      return {
-        kind: 'schema-mismatch',
-        rawText: reply.text,
-        detail: 'output was truncated inside its thinking block;'
-          + ' raise or omit maxTokens (thinking tokens count against it)',
-        ...usageSpread,
-      };
-    }
-
-    /**
-     * Fence-stripped answer, with any truncated channel marker removed and
-     * reported. The marker is logged rather than dropped: the only reason the
-     * 2026-08-13 recurrence was diagnosable is that the raw opening had been
-     * recorded, and a silent strip loses that signal the next time the
-     * provider's token filter changes shape.
-     */
-    const {
-      content,
-      marker,
-    } = stripChannelMarker({ text: stripCodeFence({ text: answer, },), },);
-
-    if (marker !== '')
-      rl.info(`${request.modelId}: stripped channel marker ${JSON.stringify(marker,)} ahead of JSON`,);
-
-    /**
-     * Parse attempt over the unwrapped answer. The fence stripper runs a SECOND
-     * time because it cannot see a fence hidden behind a marker: a reply of
-     * `ep|>` then a fenced object leaves the first pass looking at the marker,
-     * and without this the voice is lost to the very defect just repaired.
-     */
-    const attempt = parseModelJson({
-      text: (marker === '') ? content : stripCodeFence({ text: content, },),
+    return readJsonOutcome({
+      modelId: request.modelId,
+      reply,
+      validate: request.validate,
     },);
-
-    if (!attempt.parsed) {
-      /**
-       * Refusal classification of the unparseable answer.
-       */
-      const scan = detectRefusalShape({ text: answer, },);
-      if (scan.refusalShaped) {
-        rl.debug(`${request.modelId}: refusal-shaped (${scan.marker})`,);
-        return {
-          kind: 'refusal-shaped',
-          rawText: reply.text,
-          marker: scan.marker,
-          ...usageSpread,
-        };
-      }
-      /**
-       * Why the model stopped, when the provider said, named in the detail.
-       *
-       * A REPLY THAT STOPPED EARLY IS NOT A MALFORMED ONE, and the two need
-       * opposite remediation: a schema mismatch sends a reader to the prompt
-       * and the guard, while `length` sends them to the token ceiling. Both
-       * arrive here as content that does not parse, and until this the message
-       * said only the second thing.
-       */
-      const stopped = (reply.finishReason === undefined)
-        ? ''
-        : ` (model stopped with finish_reason=${reply.finishReason})`;
-      rl.debug(`${request.modelId}: schema-mismatch (unparseable)${stopped}`,);
-      return {
-        kind: 'schema-mismatch',
-        rawText: reply.text,
-        detail: `content is not valid JSON: ${attempt.detail}${stopped}`,
-        ...usageSpread,
-      };
-    }
-
-    /**
-     * Parsed content awaiting the caller's guard.
-     */
-    const candidate = attempt.value;
-    if (!request.validate(candidate,)) {
-      rl.debug(`${request.modelId}: schema-mismatch (guard rejected)`,);
-      return {
-        kind: 'schema-mismatch',
-        rawText: reply.text,
-        detail: 'content parsed as JSON but failed the caller schema guard',
-        ...usageSpread,
-      };
-    }
-
-    return {
-      kind: 'ok',
-      value: candidate,
-      rawText: reply.text,
-      ...usageSpread,
-    };
   }
 
   /**
@@ -503,7 +369,7 @@ export function createSyntheticClient(
       policy: retryPolicy,
     },);
 
-    if ((reply.status < HTTP_SUCCESS_MIN) || (reply.status >= HTTP_SUCCESS_MAX_EXCLUSIVE)) {
+    if (!isSuccessStatus({ status: reply.status, },)) {
       throw new SyntheticHttpError({
         status: reply.status,
         bodyText: reply.bodyText,

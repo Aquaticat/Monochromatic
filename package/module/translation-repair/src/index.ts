@@ -181,6 +181,7 @@ export type {
   ChatTextReply,
   ChatTextRequest,
   JsonSchemaResponseFormat,
+  ModelCaller,
   SyntheticClient,
 } from './chat-contract.ts';
 export {

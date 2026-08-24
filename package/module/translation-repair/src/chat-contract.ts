@@ -326,14 +326,20 @@ export type ChatJsonOutcome<ValueT,> =
   };
 
 /**
- * Injected-transport client surface drivers consume.
+ * What every provider's client can do, whichever protocol it speaks.
+ *
+ * THE PART THAT IS NOT ABOUT BUDGET. Both providers take a conversation and
+ * return an answer; what they do NOT share is how the money is counted, which
+ * is a five-hour and weekly quota on one and a credit balance on the other.
+ * Splitting the surface here lets a router hold two clients as one type and
+ * lets a stage take either without knowing which it has.
  *
  * @example
  * ```ts
- * const client: SyntheticClient = createSyntheticClient({ apiKey, },);
+ * async function ask({ caller, }: { readonly caller: ModelCaller; },): Promise<void> {}
  * ```
  */
-export type SyntheticClient = {
+export type ModelCaller = {
   /**
    * Free-text chat exchange.
    */
@@ -345,7 +351,17 @@ export type SyntheticClient = {
   readonly chatJson: <ValueT,>(
     request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
   ) => Promise<ChatJsonOutcome<ValueT>>;
+};
 
+/**
+ * Injected-transport client surface drivers consume.
+ *
+ * @example
+ * ```ts
+ * const client: SyntheticClient = createSyntheticClient({ apiKey, },);
+ * ```
+ */
+export type SyntheticClient = ModelCaller & {
   /**
    * Current quota snapshot; free per provider docs.
    */
