@@ -17922,24 +17922,36 @@ change that had no effect. Run `build` first, always. This session read "the new
 appears" off a stale bundle before a positive control on a neighbouring line from the same function
 exposed it.
 
-### Interim reading at 24 rounds, and the statistic that matters most
+### Interim reading, and one interim statistic that already moved
 
-Across three wide passes, 144 ballots over 24 checker rounds, every round hearing all six:
+Across three wide passes, 234 ballots over 39 checker rounds, every round hearing all six:
 
 ```
-rounds carrying at least one self-vote                     22 of 24
-rounds where the narrow three split                         2 of 24   <- ceiling on flips
-rounds where a writer said something no narrow checker did  0 of 24
-FLIPS                                                       0 of 24
+rounds carrying at least one self-vote                     36 of 39
+rounds where the narrow three split                         2 of 39   <- ceiling on flips
+rounds where any of the six dissented                       4 of 39
+rounds where a writer said something no narrow checker did  2 of 39
+FLIPS                                                       0 of 39
 ```
 
-THE THIRD LINE OUTRANKS THE FOURTH. Zero flips on a ceiling of two is a weak null; the sample simply
-had two chances. But zero rounds where an added voice said anything the disjoint three had not
-already said is a statement about information rather than about arithmetic: on this evidence the
-three extra ballots are not merely failing to change verdicts, they are not contributing a distinct
-opinion at all. If that holds at volume, widening the checker roster buys ballots and no evidence,
-and the narrow three stay.
+CORRECTING AN EARLIER READING OF THIS SAME RUN. At 24 rounds the last line read 0 of 24, and that
+was written up as the finding that carried the weight: the added voices were not contributing a
+distinct opinion at all. Fifteen rounds later it reads 2, so that claim was an artefact of sample
+size and is withdrawn. This is recorded rather than quietly overwritten because it is the exact
+failure the ceiling discipline exists to catch, and it caught it here on the strength of the numbers
+rather than on anybody noticing.
 
-The discount is genuinely engaged rather than idle: 22 of 24 rounds carry at least one self-vote, so
-this is measuring self-certification and not just panel size. That was the failure mode written down
+WHAT THE NUMBERS SUPPORT SO FAR, stated no more strongly than they earn. The three added voices do
+occasionally say something the disjoint three did not, about one round in twenty. In none of those
+rounds did the verdict move, and the arithmetic says why: those rounds had a UNANIMOUS narrow panel,
+so the wide arm reads 3.0 against at most 1.5 and cannot resolve differently. The two rounds that
+could have flipped, the ones where the narrow three split, are not the two where a writer dissented
+uniquely.
+
+So the honest position at 39 rounds is that no flip has been observed and only two rounds have ever
+been able to produce one. That is not yet an answer about width; it is a measurement of how rarely
+this checker panel splits at all, which is 2 of 39.
+
+The discount is genuinely engaged rather than idle: 36 of 39 rounds carry at least one self-vote, so
+this measures self-certification and not merely panel size. That was the failure mode written down
 in advance, and it did not happen.
