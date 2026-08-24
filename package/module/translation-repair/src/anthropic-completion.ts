@@ -163,9 +163,13 @@ function foldUsage(
   const { output_tokens: output, } = usage;
 
   if ((typeof input) === 'number')
-    fold.promptTokens.push(input,);
+    fold
+      .promptTokens
+      .push(input,);
   if ((typeof output) === 'number')
-    fold.completionTokens.push(output,);
+    fold
+      .completionTokens
+      .push(output,);
 }
 
 /**
@@ -243,12 +247,16 @@ function foldDelta(
   },);
 
   if (kind === 'text_delta')
-    fold.answerParts.push(stringField({
+    fold
+      .answerParts
+      .push(stringField({
       fields: delta,
       name: 'text',
     },),);
   if (kind === 'input_json_delta')
-    fold.answerParts.push(stringField({
+    fold
+      .answerParts
+      .push(stringField({
       fields: delta,
       name: 'partial_json',
     },),);
@@ -296,35 +304,79 @@ function foldMessageDelta(
   },);
 
   if (reason !== '')
-    fold.stopReasons.push(reason,);
+    fold
+      .stopReasons
+      .push(reason,);
 }
+
+/**
+ * Token counts as a READER sees them, with no way to append.
+ *
+ * A SEPARATE TYPE FROM {@link AnthropicFold} because the accumulator is
+ * deliberately mutable and this function only reads it. Taking the accumulator
+ * here would hand a reader the ability to change what it is reporting on.
+ *
+ * @example
+ * ```ts
+ * const counts: ReportedCounts = { promptTokens: [41,], completionTokens: [12,], };
+ * ```
+ */
+type ReportedCounts = {
+  /**
+   * Prompt tokens, in arrival order.
+   */
+  readonly promptTokens: readonly number[];
+
+  /**
+   * Completion tokens, in arrival order.
+   */
+  readonly completionTokens: readonly number[];
+};
 
 /**
  * Usage fragment for the result, present only when the stream reported counts.
  *
- * @param fold - accumulator after the whole body was read
+ * @param counts - token counts the body reported, read only
  *
  * @returns Spreadable fragment carrying usage, or nothing
  *
  * @example
  * ```ts
- * const fragment = usageOf({ fold, },);
+ * const fragment = usageOf({ counts: fold, },);
  * ```
  */
 function usageOf(
-  { fold, }: { readonly fold: AnthropicFold; },
+  { counts, }: { readonly counts: ReportedCounts; },
 ): Pick<ExtractedCompletion, 'usage'> {
+  /**
+   * Both count series, named so neither read is a three-step chain.
+   */
+  const {
+    promptTokens,
+    completionTokens,
+  } = counts;
+
   /**
    * Prompt tokens, which arrive once in `message_start`.
    */
-  const prompt = fold.promptTokens.at(-1,) ?? 0;
+  const prompt = promptTokens
+    .at(-1,)
+    ?? 0;
 
   /**
    * Completion tokens, whose last report is the running total.
    */
-  const completion = fold.completionTokens.at(-1,) ?? 0;
+  const completion = completionTokens
+    .at(-1,)
+    ?? 0;
 
-  if ((fold.promptTokens.length === 0) && (fold.completionTokens.length === 0))
+  /**
+   * Whether the provider reported any count at all.
+   */
+  const silent = (promptTokens.length === 0)
+    && (completionTokens.length === 0);
+
+  if (silent)
     return {};
   return {
     usage: {
@@ -389,7 +441,7 @@ export function extractAnthropicCompletion(
     /**
      * Parsed event payload.
      */
-    const frame: unknown = ((): unknown => {
+    const frame: unknown = (function parseFrame(): unknown {
       try {
         return JSON.parse(payload,) as unknown;
       } catch (error) {
@@ -436,12 +488,17 @@ export function extractAnthropicCompletion(
   /**
    * Stop reason, when the stream reported one.
    */
-  const stopReason = fold.stopReasons.at(-1,) ?? '';
+  const stopReason = fold
+    .stopReasons
+    .at(-1,)
+    ?? '';
 
   return {
-    text: fold.answerParts.join('',),
+    text: fold
+      .answerParts
+      .join('',),
     ...((stopReason === '') ? {} : { finishReason: stopReason, }),
-    ...usageOf({ fold, },),
+    ...usageOf({ counts: fold, },),
   };
 }
 

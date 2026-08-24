@@ -18,7 +18,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { extractAnthropicCompletion, } from '../dist/final/node/index.mjs';
+import {
+  extractAnthropicCompletion,
+  MalformedCompletionError,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one event line as the wire sends it.
@@ -141,7 +144,7 @@ function deltaOf(
 }
 
 await describe({
-  name: 'extractAnthropicCompletion',
+  name: extractAnthropicCompletion.name,
   children: [
     it({
       name: 'RETURNS the tool arguments as the answer, which is the whole reply on a schema\'d '
@@ -234,7 +237,7 @@ await describe({
                 text: '{"mood":"rav',
               },),
           },);
-        },).toThrow(/message_stop/,);
+        },).toThrow(MalformedCompletionError,);
       },
     },),
 
@@ -249,7 +252,7 @@ await describe({
               outputTokens: 1,
             },)}`,
           },);
-        },).toThrow(/not JSON/,);
+        },).toThrow(MalformedCompletionError,);
       },
     },),
 
