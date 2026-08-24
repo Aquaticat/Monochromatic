@@ -10,6 +10,7 @@ export {
   requireArray,
   requireBoolean,
   requireCount,
+  requireFinite,
   requireRecord,
   requireString,
 } from './artifact-guard.ts';

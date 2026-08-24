@@ -102,6 +102,12 @@ export {
   subjectsOf,
 } from './corpus-run/rendering-audit-settled-subject.ts';
 export { parseSettledArtifactV2, } from './corpus-run/artifact-v2-read.ts';
+export { readRepairRounds, } from './corpus-run/artifact-rounds-read.ts';
+export {
+  OffRosterModelError,
+  requireProducer,
+  requireRosterModelId,
+} from './corpus-run/artifact-producer-read.ts';
 export { verifyArtifactV2AgainstPreparation, } from './corpus-run/artifact-v2-corpus-verify.ts';
 export { parseLanesV2, } from './corpus-run/artifact-v2-read-lanes.ts';
 export {

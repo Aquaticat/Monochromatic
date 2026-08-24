@@ -89,6 +89,8 @@ export class OffRosterModelError extends Error {
  * ```ts
  * const modelId = requireRosterModelId({ value, path, },);
  * ```
+ *
+ * @internal
  */
 export function requireRosterModelId(
   {
@@ -165,6 +167,8 @@ function requireRosterModelIds(
  * ```ts
  * const producer = requireProducer({ value, path, },);
  * ```
+ *
+ * @internal
  */
 export function requireProducer(
   {
