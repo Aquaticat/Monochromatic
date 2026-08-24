@@ -31,6 +31,7 @@
  * @module
  */
 
+import { existsSync, } from 'node:fs';
 import {
   mkdtemp,
   readFile,
@@ -50,6 +51,7 @@ import {
   type ChunkPair,
   fixedPagePath,
   publishFixedPage,
+  PublishedPageDisagreesError,
   shippableReplacements,
   SliceSpliceError,
   spliceSlices,
@@ -382,6 +384,50 @@ async function throwawayTree(): Promise<{ readonly publishDir: string; } & Async
 }
 
 /**
+ * Characters the disagreeing fixture claims the archive holds beyond what it
+ * does, chosen large enough to be unambiguous and small enough to be a
+ * plausible drift rather than a rewrite.
+ */
+const OVERSTATED_BY = 5;
+
+/**
+ * Builds an artifact whose comparison row claims MORE archive wording at the
+ * slice than the archive actually holds there.
+ *
+ * MODELS THE `#194` CLASS RATHER THAN A TYPO: an artifact and the publisher
+ * disagreeing about what a slice covers is exactly the state that cost XIEPT2
+ * four hours and forty-eight minutes, and it is invisible to every check that
+ * reads only one of the two. The wording still ships and still lands in order,
+ * so the occurrence scan passes and only the arithmetic notices.
+ *
+ * @returns Artifact that disagrees with the archive the publisher splices
+ *
+ * @example
+ * ```ts
+ * const artifact = artifactOverstatingTheArchive();
+ * ```
+ */
+function artifactOverstatingTheArchive(): WouldShipSource {
+  /**
+   * The honest fixture, whose one row is then overstated.
+   */
+  const honest = artifactShipping({ translateText: DECIDED_MIDDLE, },) as unknown as {
+    readonly comparison: readonly Record<string, unknown>[];
+  };
+
+  return {
+    ...honest,
+    comparison: honest.comparison
+      .map(function overstate(row,): Record<string, unknown> {
+        return {
+          ...row,
+          incumbentText: `${ARCHIVE_MIDDLE}${'x'.repeat(OVERSTATED_BY,)}`,
+        };
+      },),
+  } as unknown as WouldShipSource;
+}
+
+/**
  * Publishes one entry and reads back what landed.
  *
  * @param artifact - settled entry to publish
@@ -629,6 +675,61 @@ await describe({
 
         await expect(refusalOfPublishingPastTheSlices,).rejects.toBeInstanceOf(SliceSpliceError,);
         await expect(refusalOfPublishingPastTheSlices,).rejects.toThrow('no slice 1 to write into',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${publishFixedPage.name} refuses a page that disagrees with its artifact`,
+  children: [
+    it({
+      name:
+        'WRITES NOTHING AT ALL when the artifact and the archive disagree about what a slice covers, '
+        + 'rather than publishing a page no artifact accounts for. The refusal has to happen before '
+        + 'the write: `pass-entry.ts` publishes BEFORE it settles precisely so that an artifact '
+        + 'existing means a page exists, and a page written then refused would invert that',
+      fn: async () => {
+        await using tree = await throwawayTree();
+
+        /**
+         * Where this case would have published.
+         */
+        const { publishDir, } = tree;
+
+        /**
+         * Whatever the publisher raised, caught so its class can be checked.
+         */
+        const refusal = await (async (): Promise<unknown> => {
+          try {
+            await publishFixedPage({
+              artifact: artifactOverstatingTheArchive(),
+              slices: documentSlices(),
+              archiveText: ARCHIVE,
+              entryId: 'BookshopCat',
+              publishDir,
+              l: tagged({ tag: 'publish-test', },),
+            },);
+            return undefined;
+          } catch (error) {
+            return error;
+          }
+        })();
+
+        expect(refusal,).toBeInstanceOf(PublishedPageDisagreesError,);
+
+        // NOTHING ON DISK, which is the half a reader of the throw alone would
+        // not learn. A guard that raised after `writeFileAtomic` would satisfy
+        // the assertion above and still leave the page behind.
+        /**
+         * Where the page would have landed had the guard let it through.
+         */
+        const wouldBeAt = fixedPagePath({
+          publishDir,
+          entryId: 'BookshopCat',
+        },);
+
+        expect(existsSync(wouldBeAt,),).toBe(false,);
       },
     },),
   ],
