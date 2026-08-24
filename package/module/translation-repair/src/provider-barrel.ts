@@ -11,6 +11,7 @@
 // 866 of 875 lost voices carried a single HTTP 429. A second provider is the
 // only remedy that works against an exhausted budget.
 
+export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export { scanAnthropicDeltas, } from './anthropic-delta-scan.ts';
 export {
   answerCeilingFor,
