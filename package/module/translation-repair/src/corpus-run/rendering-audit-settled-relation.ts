@@ -207,6 +207,45 @@ export function pageRelationFor(
 }
 
 /**
+ * Which of the three things a silence is, as the word a line leads with.
+ *
+ * THREE RATHER THAN TWO, because a row off disk can be older than the field.
+ * `silent` was the only word this column had until 2026-08-24, and it is kept
+ * for a row that predates the distinction rather than guessed at: a run that
+ * never recorded whether the archive had a span here has not said `emptied`,
+ * and printing it would put a removal that nobody observed into a report.
+ * `isRecordedRelation` checks the discriminant and nothing under it, so this
+ * reads the field as the unchecked value it is.
+ *
+ * @param relation - silence to name
+ *
+ * @returns Leading word, one of `gap`, `emptied` or `silent`
+ *
+ * @example
+ * ```ts
+ * const word = silenceWord({ relation, },);
+ * ```
+ */
+function silenceWord(
+  {
+    relation,
+  }: {
+    readonly relation: Extract<SettledPageRelation, { readonly kind: 'nothing-would-ship'; }>;
+  },
+): 'gap' | 'emptied' | 'silent' {
+  /**
+   * What the row carries, which is `undefined` on one written before the field.
+   */
+  const recorded: unknown = relation.incumbentKind;
+
+  if (recorded === 'absent')
+    return 'gap';
+  if (recorded === 'present')
+    return 'emptied';
+  return 'silent';
+}
+
+/**
  * Names a relation in one column-width token, for a line being watched.
  *
  * @param relation - what to name
@@ -224,11 +263,7 @@ export function pageRelationLabel(
   if (relation.kind === 'displaced')
     return `displaced:${relation.decidedBy}`;
   if (relation.kind === 'nothing-would-ship')
-    // TWO WORDS RATHER THAN ONE, because `silent` alone was the whole defect.
-    // A reader scanning this column has to be able to separate wording the
-    // deciders removed, which is a change worth looking at, from a gap they
-    // left exactly as the archive had it, which is nothing happening.
-    return `${(relation.incumbentKind === 'absent') ? 'gap' : 'emptied'}:${relation.reason}`;
+    return `${silenceWord({ relation, },)}:${relation.reason}`;
   return relation.kind;
 }
 

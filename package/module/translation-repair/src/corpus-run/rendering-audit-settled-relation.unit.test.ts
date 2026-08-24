@@ -377,6 +377,20 @@ await describe({
     },),
 
     it({
+      name:
+        'KEEPS THE OLD WORD for a row written before the kind was recorded, rather than guessing '
+        + 'the commoner half. A run that never observed whether the archive had a span here has not said the deciders removed anything, and printing `emptied` would put a removal nobody observed into a report',
+      fn: async () => {
+        expect(pageRelationLabel({
+          relation: {
+            kind: 'nothing-would-ship',
+            reason: 'contest-unasked-and-archive-silent',
+          } as unknown as SettledPageRelation,
+        },),).toBe('silent:contest-unasked-and-archive-silent',);
+      },
+    },),
+
+    it({
       name: 'names the bare kind where there is nothing further to say',
       fn: async () => {
         expect(pageRelationLabel({ relation: { kind: 'survives', } as SettledPageRelation, },),)
