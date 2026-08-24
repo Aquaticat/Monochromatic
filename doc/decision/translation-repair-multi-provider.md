@@ -365,6 +365,30 @@ with nothing awaited between reading it and incrementing it,
 and the slot is released through a `Disposable` rather than a `finally`
 so a later early return cannot skip it.
 
+### Verified live at the production seam, 2026-08-24
+
+`createRunClient()` with both keys, driven from a consuming script.
+The wire label each call carried names the provider that served it,
+because the two providers spell a shared model differently:
+
+-   `hf:moonshotai/Kimi-K3` -> Synthetic, the roster spelling.
+    A shared model with budget goes to the preferred provider.
+-   `deepseek-v4-flash-0731` -> Charm Hyper, its own spelling.
+    The only provider that serves it.
+-   `hf:zai-org/GLM-5.2` -> Synthetic, the roster spelling.
+    Shared, and this was a TEXT call;
+    the same model carrying a picture routes to Hyper instead.
+-   `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` -> Synthetic.
+    The only provider that serves it, and the router did not try Hyper.
+
+All four returned schema-valid answers.
+The `quotas` passthrough answered five-hour 2735/2750, weekly 99.797%.
+
+The budget layer read each meter ONCE across the four calls,
+one `quotas` and one `credits`,
+which is the caching working rather than a coincidence:
+a second `quotas` line appears only because the probe called the passthrough itself.
+
 ### Still to build
 
 -   Handing the routing client to the stages,
