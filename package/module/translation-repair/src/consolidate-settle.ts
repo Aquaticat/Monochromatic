@@ -490,6 +490,16 @@ export async function settleConsolidation(
     judgeModelIds: roster,
     sourceText: subject.sourceText,
     incumbentText: standingText,
+
+    // TRUE BY THE GUARD ABOVE RATHER THAN BY ASSUMPTION, and spelled as a
+    // literal because there is nothing here to read it from. What the judges
+    // fall back on at this stage is `standingText`, not the archive's own
+    // wording, and the `standingText === ''` exit about ninety lines up returns
+    // `no-standing-text` before any judge is bought. So a slate reaching this
+    // call always has a text to keep. Threading the slice`s own
+    // `incumbentKind` here would say something different and wrong: an anchor
+    // whose lanes both produced wording has a standing text to fall back on
+    // even though the archive holds none.
     incumbentKind: 'present',
     ...identity,
     // WHAT THE PRODUCERS WERE SHOWN, forwarded rather than recomputed. `#176`
