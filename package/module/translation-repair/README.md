@@ -459,6 +459,23 @@ passed after `--`:
     prints `PLAN ok` with the tip, the pipeline digest and the first few pending ids,
     and returns without calling a model.
     Use it to check a run's setup, selection and credentials for no quota.
+    Measured at 1.88 seconds with no stream opened.
+
+### Do not run another task while a pass is in flight
+
+Every pass and probe task declares `depends = ["build"]`,
+so invoking one rewrites `dist/final/node` underneath any pass already running.
+A pass computes its pipeline digest ONCE at startup
+and stamps it into every artifact it writes,
+so a rebuild that changes any output file leaves a running pass
+recording a digest that no longer describes what is on disk,
+and leaves its process holding a mix of old modules and new files.
+
+A rebuild with no source change is byte-identical and harmless,
+which is exactly why this is easy to get away with and worth stating anyway:
+the digest is the only thing that reveals it,
+and it reveals it after the fact.
+Wait for the pass, or run the built entry point directly with `node`.
 
 ### Pooling artifacts across builds
 
