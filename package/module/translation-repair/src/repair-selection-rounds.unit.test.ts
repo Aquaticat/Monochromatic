@@ -17,6 +17,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   EDITOR_ROUND_STAGES,
+  producerStandings,
   REFINER_ROUND_STAGES,
   type RepairJudgedRound,
   type RepairSlateEntry,
@@ -216,6 +217,78 @@ await describe({
           rounds: [declined,],
           stages: EDITOR_ROUND_STAGES,
         },).length,).toBe(1,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'editor standing over projected rounds',
+  children: [
+    it({
+      name: 'ACCEPTS real-shaped rounds and produces a standing with counts',
+      fn: async () => {
+        /**
+         * A POSITIVE CONTROL FOR THE WHOLE READING CHAIN.
+         *
+         * The first live smoke run reported zero rounds, correctly: its slice
+         * carried no accepted issue, so no editor was ever asked to write. A
+         * null from a probe never shown able to produce a non-null says
+         * nothing, so this drives projection and tally together and checks a
+         * standing actually falls out with the counts behind it.
+         *
+         * Kimi wrote position one and Qwen position two. Three judges hold no
+         * stake in either, and all three named position one.
+         */
+        const rounds = [
+          {
+            ...SCRAMBLED_ROUND,
+            ballots: [
+              'hf:openai/gpt-oss-120b',
+              'hf:zai-org/GLM-5.2',
+              'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+            ].map(function ballotFor(modelId,) {
+              return {
+                modelId: modelId as RosterModelId,
+                best: 1,
+                reason: 'reads better',
+                weight: 1,
+                selfVote: false,
+              };
+            },),
+          },
+        ] satisfies readonly RepairJudgedRound[];
+
+        /**
+         * What the editors' rounds came to.
+         */
+        const standings = producerStandings({
+          rounds: selectionRoundsFor({
+            rounds,
+            stages: EDITOR_ROUND_STAGES,
+          },),
+        },);
+
+        /**
+         * Kimi's standing, which wrote the candidate all three named.
+         */
+        const kimi = standings.find(function isKimi(standing,): boolean {
+          return standing.modelId === 'hf:moonshotai/Kimi-K3';
+        },);
+
+        expect(kimi?.disinterestedVotes,).toBe(3,);
+        expect(kimi?.disinterestedBallots,).toBe(3,);
+        expect(kimi?.candidates,).toBe(1,);
+
+        /**
+         * Qwen's standing, which wrote the candidate none of them named.
+         */
+        const qwen = standings.find(function isQwen(standing,): boolean {
+          return standing.modelId === 'hf:Qwen/Qwen3.8-27B';
+        },);
+
+        expect(qwen?.disinterestedVotes,).toBe(0,);
+        expect(qwen?.disinterestedBallots,).toBe(3,);
       },
     },),
   ],

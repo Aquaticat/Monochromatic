@@ -148,29 +148,52 @@ async function runOne(
  *
  * @param seat - what the standing is about, for the heading
  *
- * @param rounds - that seat's rounds across every slice
+ * @param perSlice - that seat's rounds, grouped by the slice that bought them
  *
  * @example
  * ```ts
- * reportSeat({ seat: 'EDITOR', rounds, },);
+ * reportSeat({ seat: 'EDITOR', perSlice, },);
  * ```
  */
 function reportSeat(
   {
     seat,
-    rounds,
+    perSlice,
   }: {
     readonly seat: string;
-    readonly rounds: readonly SelectionRound[];
+    readonly perSlice: readonly (readonly SelectionRound[])[];
   },
 ): void {
-  console.log(`\n${seat} standing over ${String(rounds.length,)} judged rounds`,);
+  /**
+   * Every round this seat produced, across every slice.
+   */
+  const rounds = perSlice.flat();
+
+  /**
+   * Slices that produced any round at all.
+   *
+   * THE DENOMINATOR THE ROUND COUNT HIDES. A slice carrying no accepted issue
+   * never asks an editor to write, so it buys critics and a panel and
+   * contributes nothing here. Without this, a standing drawn almost entirely
+   * from one slice reads the same as one drawn evenly from six, and the first
+   * is a much narrower measurement than its round count suggests.
+   */
+  const contributed = perSlice.filter(function paidIn(slice,): boolean {
+    return slice.length > 0;
+  },);
+
+  console.log(
+    `\n${seat} standing over ${String(rounds.length,)} judged rounds, `
+      + `from ${String(contributed.length,)} of ${String(perSlice.length,)} slices`,
+  );
 
   if (rounds.length === 0) {
     console.log(
       '  NO ROUNDS. This seat judged nothing across the sample, so it has no standing. '
-        + 'For the editor seat that means no slice carried an accepted issue to repair; '
-        + 'for the refiner seat it means the naturalness lane proposed nothing.',
+        + 'For the editor seat that means no slice carried an ACCEPTED issue: critics can '
+        + 'raise claims and the panel can adjudicate them and the lane still report '
+        + '"nothing to edit", which is what one live slice did. For the refiner seat it '
+        + 'means the naturalness lane proposed nothing. Draw more slices.',
     );
     return;
   }
@@ -223,14 +246,14 @@ async function main(): Promise<void> {
 
   reportSeat({
     seat: 'EDITOR',
-    rounds: perSlice.flatMap(function editorRounds(rounds,): readonly SelectionRound[] {
+    perSlice: perSlice.map(function editorRounds(rounds,): readonly SelectionRound[] {
       return rounds.editor;
     },),
   },);
 
   reportSeat({
     seat: 'REFINER',
-    rounds: perSlice.flatMap(function refinerRounds(rounds,): readonly SelectionRound[] {
+    perSlice: perSlice.map(function refinerRounds(rounds,): readonly SelectionRound[] {
       return rounds.refiner;
     },),
   },);
