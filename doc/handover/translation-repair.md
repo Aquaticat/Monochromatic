@@ -18202,3 +18202,45 @@ Suite 569 PASS, 0 FAIL, exit 0. Lint 0/0.
 reading exports moved to a new `ballot-barrel.ts`, which now holds every export belonging to one
 question: who voted, what they said, and what it summed to. Three stages of this pipeline decide by
 weighted vote and all three now record their ballots.
+
+### A false verification, and the shell trap that produced it
+
+RECORDED BECAUSE THE CLAIM WAS PUBLISHED BEFORE IT WAS CHECKED. This session reported that the
+settled rendering audit read both a pre-change archive and a new-schema archive cleanly, "exit 0",
+and that passing `--clone` was what made the difference. Both halves were wrong, and one shell line
+caused it:
+
+```sh
+# WRONG: $? is basename's, not the audit's
+printf 'exit=%s\n' "$(basename "$arch")" "$?"
+```
+
+Command substitutions in an argument list run left to right, so `$(basename ...)` executes first and
+resets `$?` to its own status. Every reading came back `0`. Capture the status into a variable on the
+line after the command, before anything else runs:
+
+```sh
+mise run ... > "$OUT" 2>&1
+code=$?
+```
+
+WHAT WAS ACTUALLY HAPPENING, once the status was read correctly. `--clone` never mattered: its
+default is `RUN_CORPUS_PIN.cloneDir`, which is `join(homedir(), 'one-among-us', 'data')` and already
+correct. The refusal was `readArchiveSubjects` doing exactly what it is built and tested to do,
+refusing a directory that carries artifacts at its root AND in subdirectories. A corpus RUN directory
+is such a directory: `artifacts/` beside `attempts.json` and `pass.lock`. The audit wants the
+`artifacts/` directory itself.
+
+```sh
+# from the worktree; note the trailing artifacts/
+mise run //package/module/translation-repair:rendering-audit-settled -- \
+  --archive "${HOME}/<run dir>/artifacts" --cap 0
+```
+
+THE REAL RESULT, measured that way: exit 0 on both, zero error lines, 160 and 155 lines of report.
+A full artifact consumer reads the two new reading fields without complaint, which is the end-to-end
+half of `#192` and `#193` that a parser call alone does not cover.
+
+ALSO FIXED WHILE IN THERE. `rendering-audit-settled-args.ts` used `NO_CAP` as the sentinel for
+`indexOf` returning nothing found, so one constant meant both "buy everything" and "not in the array".
+Split into `NO_CAP` and `FLAG_ABSENT`, which is the `#170` rule applied to a file that had escaped it.

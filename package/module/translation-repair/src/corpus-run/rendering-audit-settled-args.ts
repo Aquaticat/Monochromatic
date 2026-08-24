@@ -26,6 +26,16 @@ const DEFAULT_ARCHIVE_DIR = join(
 const NO_CAP = -1;
 
 /**
+ * What `indexOf` returns for a flag nobody wrote.
+ *
+ * SPELLED SEPARATELY FROM {@link NO_CAP} DESPITE SHARING A VALUE. One is a
+ * cap and the other is an array position, and a reader who meets `NO_CAP` in
+ * an index comparison has to stop and work out whether that is deliberate.
+ * Two meanings on one constant is the defect `#170` was opened for.
+ */
+const FLAG_ABSENT = -1;
+
+/**
  * What the command line asked for.
  *
  * @example
@@ -87,7 +97,7 @@ function valueAfter(
    * Where the flag was written.
    */
   const at = args.indexOf(flag,);
-  if (at === NO_CAP)
+  if (at === FLAG_ABSENT)
     return '';
   return args[at + 1] ?? '';
 }
