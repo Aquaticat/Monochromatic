@@ -468,6 +468,35 @@ That also leaves the checker-side self-vote discount unreachable, which is the s
 recorded in `doc/decision/translation-repair-question-answers.md`, and closes the applying task
 unbuilt rather than shipping a relaxation nothing needs.
 
+### RULED 2026-08-23: three producers, and the checker width goes to measurement
+
+The owner read both facts and REVISED the "all producing roles to 4" ruling. The producing roles
+STAY AT THREE. `#186` measured that exact comparison and found nothing, and widening is not free
+here because it forces a checker change nothing has measured.
+
+The checker roster was ruled separately, and NOT settled by opinion. `assertCheckerIndependence`
+relaxes behind a run-configuration switch, the same entries run once with the disjoint three and
+once with all six, per-issue resolution is compared, and whichever wins ships while the loser is
+deleted. The reasoning is the standing instruction to prototype and measure where the answer is
+unknown, and this one is unknown: no measurement anywhere covers checker width, only producer width.
+
+WHY THIS IS NOT THE SAME QUESTION `#186` ANSWERED, which is the misreading to guard against. `#186`
+compared three writers against six writers and found the ships indistinguishable. Checker width asks
+something else: whether six ballots per issue, three of them discounted for having written the text
+under review, resolve better than three undiscounted ballots from models that wrote nothing. A null
+on producers says nothing about that, because the two arms differ in ballot COUNT rather than in who
+produced the candidate.
+
+THE DISCOUNT IS ALREADY BUILT AND ALREADY LIVE ELSEWHERE, so this measurement adds no new weighting
+mechanism. `tally-resolution.ts:310` picks the weight PER ISSUE through `wroteTextForIssue`, so a
+checker is halved only on issues whose shipped text it helped write and keeps full weight on the
+rest. `candidate-select.ts:276` runs the same overlap-plus-discount pattern on every chunk today.
+The checker stage is the only place in the pipeline that excludes rather than discounts.
+
+The arithmetic that makes the measurement worth running: at all six, an issue written by the three
+writers faces three full independent votes against three halved self-votes, three against one and a
+half, so independents stay dominant while the panel doubles.
+
 A SIDE FINDING WORTH MORE THAN THE ANSWER: the panel's ability to separate two serious repairs of one
 passage is not stable between runs. Draw A decided 6 of 12 contests by seat; draw B decided 1 of 11
 that way, hours apart on the same models and the same sheet. Any later measurement resting on this
