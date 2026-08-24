@@ -2,7 +2,10 @@ import type {
   ChunkPair,
   ContentChunk,
 } from './chunk-document.ts';
-import { makeInsertionChunk, } from './chunk-placement.ts';
+import {
+  isInsertionChunk,
+  makeInsertionChunk,
+} from './chunk-placement.ts';
 import type { DocumentNode, } from './document-node.ts';
 import { groupNodesAligned, } from './group-aligned.ts';
 import { blockPairingToSteps, } from './pair-blocks-steps.ts';
@@ -294,6 +297,41 @@ export function subdivideChunkPair(
       .nodes,
     budget,
   },);
+  // AN INSERTION HAS NO TARGET RUNS TO FRAME BY, so it is sliced by the SOURCE.
+  //
+  // This used to return the whole section as ONE slice, on the reasoning that a
+  // section whose target side is empty has a single zero-length span to splice
+  // every slice of it back into. `spliceSlices` gained the ability to write
+  // into a zero-length span and to order several insertions at one offset by
+  // slice index in `610ea11b9`, so the reason is spent.
+  //
+  // WHAT IT COST WHILE IT STOOD, measured on `XingZ60` under the pairing the
+  // roster really returned: two insertion slices of 915 and 1459 source
+  // characters against a budget of 400, holding 6 and 23 blocks whose largest
+  // member is 384 characters. Nothing had to be split to slice them; they were
+  // one slice only because the side that frames subdivision was empty.
+  if ((sourceRuns.length > 0) && isInsertionChunk(pair.target,))
+    return sourceRuns.map(function toInsertionSlice(
+      run,
+      sliceOffset,
+    ): ChunkPair {
+      return {
+        source: runToChunk({
+          run,
+          documentText: sourceText,
+          chunkIndex: baseIndex + sliceOffset,
+        },),
+
+        // EVERY SLICE AT THE SAME BOUNDARY, in slice order, which is the shape
+        // `spliceSlices` orders. The section has one place to be written, and
+        // its slices go there one after another.
+        target: makeInsertionChunk({
+          chunkIndex: baseIndex + sliceOffset,
+          offset: pair.target
+            .startOffset,
+        },),
+      };
+    },);
   if ((sourceRuns.length === 0) || (targetRuns.length === 0)) {
     // RE-INDEXED, because the pair arrived carrying its SECTION index and
     // every other path stamps the global one. Returning it untouched let two
@@ -301,10 +339,10 @@ export function subdivideChunkPair(
     // subdivided, and slice identity is what the cache key and the splice both
     // rest on.
     //
-    // Still not SLICED, which is `#89`s work rather than an oversight: a
-    // section whose target side is empty has one zero-length span to splice
-    // every slice of it back into, so slicing it needs the driver that knows
-    // how to insert rather than replace.
+    // STILL ONE SLICE where the target carries a span but no blocks, which is
+    // not an insertion: several pairs would have to replace one span rather
+    // than be written into a boundary, and that is a different question from
+    // the one above.
     return [
       {
         source: {

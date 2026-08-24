@@ -17,6 +17,9 @@ import {
 import {
   alignDocumentSections,
   type ChunkPair,
+  chunkByHeadings,
+  isInsertionChunk,
+  makeInsertionChunk,
   parseDocument,
   subdivideChunkPair,
 } from '../dist/final/node/index.mjs';
@@ -374,6 +377,168 @@ await describe({
             .chunkIndex,).toBe(7,);
           expect(slice.target
             .chunkIndex,).toBe(7,);
+        }
+      },
+    },),
+  ],
+},);
+
+//region Insertion subdivision
+// A section nothing rendered has no target runs to frame subdivision by, and
+// used to come back as ONE slice however long its original was.
+
+/**
+ * Original section of eight short paragraphs, none of them near the budget on
+ * its own, together well past it: 330 characters over eight blocks. This is the corpus shape: `XingZ60`'s two
+ * unrendered sections hold 6 and 23 blocks whose largest member is 384
+ * characters, against a budget of 400.
+ */
+const UNRENDERED_SOURCE_TEXT = `## 猫猫的一天
+
+${
+  [
+    '小猫早晨在窗台上晒太阳，尾巴一摇一摇，看着院子里的麻雀发呆，直到太阳升高才慢慢站起来伸个懒腰。',
+    '她跳下窗台，先去水碗边喝了几口水，又绕着桌腿走了两圈，像是在巡视自己的领地一样认真。',
+    '中午的时候她在沙发上睡着了，四只爪子朝天，肚皮一起一伏，谁走过去都不肯睁眼看一下。',
+    '下午她发现了一只飞进屋里的蝴蝶，追着它从客厅跑到卧室，撞翻了一个空纸盒也毫不在意。',
+    '蝴蝶从窗缝飞走以后，她在窗台上又坐了很久，尾巴不停地拍打着玻璃，像是在抱怨什么。',
+    '傍晚她听见门口的脚步声，立刻跑到门边等着，耳朵竖得笔直，喉咙里发出很轻的呼噜声。',
+    '晚饭她吃得很快，吃完还把碗推到墙角，然后回头看了一眼，好像在说这里已经没有东西了。',
+    '睡觉前她跳上床，在枕头边转了三圈才躺下，把头埋进被子里，一整夜都没有再动过。',
+  ].join('\n\n')
+}
+`;
+
+/**
+ * Where in the translation this section's rendering belongs.
+ */
+const ANCHOR_OFFSET = 120;
+
+/**
+ * Slice budget these cases measure against.
+ *
+ * SCALED DOWN FROM THE PRODUCTION 400 so the fixture can stay short enough to
+ * read. What matters is the RATIO of section to budget: this section runs 330
+ * characters over eight blocks, so at 120 it must split about three ways, which
+ * is the same pressure `XingZ60`'s 1459-character unrendered section is under
+ * at 400.
+ */
+const INSERTION_BUDGET = 120;
+
+//endregion Insertion subdivision
+
+await describe({
+  name: `${subdivideChunkPair.name} on a section nothing rendered`,
+  children: [
+    it({
+      name: 'SLICES it by the ORIGINAL, since the translation side offers no runs to frame by, and '
+        + 'a whole unrendered section asked as one unit is a translation call several times the '
+        + 'budget every other slice is held to',
+      fn: async () => {
+        /**
+         * Original section as the aligner hands it over.
+         */
+        const [sourceChunk,] = chunkByHeadings({
+          document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
+        },);
+        if (sourceChunk === undefined)
+          throw new Error('the fixture should parse to one section',);
+
+        /**
+         * Slices this section subdivides into.
+         */
+        const slices = subdivideChunkPair({
+          pair: {
+            source: sourceChunk,
+            target: makeInsertionChunk({
+              chunkIndex: 0,
+              offset: ANCHOR_OFFSET,
+            },),
+          },
+          sourceText: UNRENDERED_SOURCE_TEXT,
+          targetText: UNRENDERED_SOURCE_TEXT,
+          baseIndex: 0,
+          budget: INSERTION_BUDGET,
+        },);
+        expect(slices.length,).toBeGreaterThan(1,);
+
+        // NO PARAGRAPH SPLIT, so every slice stays inside the budget unless one
+        // block alone exceeds it, which this fixture has none of.
+        for (const slice of slices)
+          expect(slice.source
+            .text
+            .length,).toBeLessThanOrEqual(INSERTION_BUDGET,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS every original block, in order, so slicing a section nobody translated cannot '
+        + 'lose part of the passage it exists to write',
+      fn: async () => {
+        const [sourceChunk,] = chunkByHeadings({
+          document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
+        },);
+        if (sourceChunk === undefined)
+          throw new Error('the fixture should parse to one section',);
+        const slices = subdivideChunkPair({
+          pair: {
+            source: sourceChunk,
+            target: makeInsertionChunk({
+              chunkIndex: 0,
+              offset: ANCHOR_OFFSET,
+            },),
+          },
+          sourceText: UNRENDERED_SOURCE_TEXT,
+          targetText: UNRENDERED_SOURCE_TEXT,
+          baseIndex: 0,
+          budget: INSERTION_BUDGET,
+        },);
+        expect(slices.flatMap(function toIds(slice,) {
+          return slice.source
+            .nodes
+            .map(function toId(node,) {
+              return node.id;
+            },);
+        },),).toStrictEqual(sourceChunk.nodes
+          .map(function toId(node,) {
+            return node.id;
+          },),);
+      },
+    },),
+
+    it({
+      name: 'WRITES every slice at the SAME boundary and stamps them in order, which is the shape '
+        + '`spliceSlices` orders several insertions at one offset by. The section has one place to '
+        + 'go, and its slices go there one after another',
+      fn: async () => {
+        const [sourceChunk,] = chunkByHeadings({
+          document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
+        },);
+        if (sourceChunk === undefined)
+          throw new Error('the fixture should parse to one section',);
+        const slices = subdivideChunkPair({
+          pair: {
+            source: sourceChunk,
+            target: makeInsertionChunk({
+              chunkIndex: 0,
+              offset: ANCHOR_OFFSET,
+            },),
+          },
+          sourceText: UNRENDERED_SOURCE_TEXT,
+          targetText: UNRENDERED_SOURCE_TEXT,
+          baseIndex: 7,
+          budget: INSERTION_BUDGET,
+        },);
+        for (const [at, slice,] of slices.entries()) {
+          expect(isInsertionChunk(slice.target,),).toBe(true,);
+          expect(slice.target
+            .startOffset,).toBe(ANCHOR_OFFSET,);
+          expect(slice.target
+            .endOffset,).toBe(ANCHOR_OFFSET,);
+          expect(slice.source
+            .chunkIndex,).toBe(7 + at,);
+          expect(slice.target
+            .chunkIndex,).toBe(7 + at,);
         }
       },
     },),
