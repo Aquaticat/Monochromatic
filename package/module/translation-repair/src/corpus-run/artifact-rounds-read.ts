@@ -8,7 +8,10 @@ import {
   requireString,
 } from '../artifact-guard.ts';
 import { requireOneOf, } from '../artifact-exact-guard.ts';
-import type { SelectionBallot, } from '../candidate-select-model.ts';
+import type {
+  CandidateWeight,
+  SelectionBallot,
+} from '../candidate-select-model.ts';
 import type {
   RepairJudgedRound,
   RepairRoundStage,
@@ -52,6 +55,75 @@ const ROUND_KINDS = [
   'selected',
   'declined',
 ] as const;
+
+/**
+ * Reasons a round can decide nothing.
+ */
+const ROUND_DISPOSITIONS = [
+  'indecision',
+  'rejection',
+] as const;
+
+/**
+ * Reads what one slate position drew.
+ *
+ * WEIGHTS ARE READ AS FINITE, NOT AS COUNTS. A judge voting on its own work
+ * counts for half, so a candidate's summed weight is routinely fractional and
+ * a count guard would refuse a round that is entirely well formed.
+ *
+ * @param value - one entry of `perCandidate`, unread
+ *
+ * @param path - where in the artifact this sits, for the refusal
+ *
+ * @returns Counts and weight for that position
+ *
+ * @throws {@link ArtifactParseError} when a field is missing or mistyped
+ *
+ * @example
+ * ```ts
+ * const drawn = requireCandidateWeight({ value, path, },);
+ * ```
+ */
+function requireCandidateWeight(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): CandidateWeight {
+  /**
+   * Position as a record.
+   */
+  const record = requireRecord({
+    value,
+    path,
+  },);
+
+  return {
+    index: requireCount({
+      value: record.index,
+      path: `${path}.index`,
+    },),
+    ballots: requireCount({
+      value: record.ballots,
+      path: `${path}.ballots`,
+    },),
+    fullVotes: requireCount({
+      value: record.fullVotes,
+      path: `${path}.fullVotes`,
+    },),
+    selfVotes: requireCount({
+      value: record.selfVotes,
+      path: `${path}.selfVotes`,
+    },),
+    weight: requireFinite({
+      value: record.weight,
+      path: `${path}.weight`,
+    },),
+  };
+}
 
 /**
  * Reads one slate position.
@@ -215,12 +287,14 @@ function requireJudgedRound(
     path: `${path}.tally`,
   },);
 
-  return {
-    kind: requireOneOf({
-      value: record.kind,
-      path: `${path}.kind`,
-      allowed: ROUND_KINDS,
-    },),
+  /**
+   * Everything both outcomes record, read once.
+   *
+   * SPLIT FROM THE BRANCH BELOW because the two outcomes agree on six fields
+   * and differ on two, and reading the six twice is how one of the copies
+   * drifts.
+   */
+  const common = {
     stage,
     envelopeId: requireString({
       value: record.envelopeId,
@@ -262,6 +336,51 @@ function requireJudgedRound(
         path: `${path}.tally.selfVotes`,
       },),
     },
+    perCandidate: requireArray({
+      value: record.perCandidate,
+      path: `${path}.perCandidate`,
+    },).map(function one(entry, index,): CandidateWeight {
+      return requireCandidateWeight({
+        value: entry,
+        path: `${path}.perCandidate[${String(index,)}]`,
+      },);
+    },),
+  };
+
+  // THE TWO OUTCOMES CARRY DIFFERENT FIELDS, and reading a declined round's
+  // `reason` off a selected one would find nothing. Branching here is what
+  // makes the returned round the same shape the lane wrote, rather than a
+  // partial one every later reader has to re-check.
+  if (requireOneOf({
+    value: record.kind,
+    path: `${path}.kind`,
+    allowed: ROUND_KINDS,
+  },) === 'declined')
+    return {
+      kind: 'declined',
+      ...common,
+      reason: requireString({
+        value: record.reason,
+        path: `${path}.reason`,
+      },),
+      disposition: requireOneOf({
+        value: record.disposition,
+        path: `${path}.disposition`,
+        allowed: ROUND_DISPOSITIONS,
+      },),
+    };
+
+  return {
+    kind: 'selected',
+    ...common,
+    selectedIndex: requireCount({
+      value: record.selectedIndex,
+      path: `${path}.selectedIndex`,
+    },),
+    voteWeight: requireFinite({
+      value: record.voteWeight,
+      path: `${path}.voteWeight`,
+    },),
   };
 }
 

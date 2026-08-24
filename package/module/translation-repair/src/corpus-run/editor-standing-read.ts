@@ -90,6 +90,35 @@ type ArtifactReading = {
 };
 
 /**
+ * What listing one directory produced.
+ *
+ * A REFUSAL IS NAMED BY CLASS, NEVER QUOTED. A filesystem error carries the
+ * path it failed on, and a run directory path can name a person.
+ *
+ * @example
+ * ```ts
+ * const reading: DirectoryReading = { kind: 'read', names: [], };
+ * ```
+ */
+type DirectoryReading =
+  | {
+    readonly kind: 'read';
+
+    /**
+     * Everything the directory holds, in whatever order it gave them.
+     */
+    readonly names: readonly string[];
+  }
+  | {
+    readonly kind: 'unreadable';
+
+    /**
+     * Class that refused the listing.
+     */
+    readonly refusedBy: string;
+  };
+
+/**
  * Lists one directory, reporting an absent one rather than raising.
  *
  * @param dir - directory to list
