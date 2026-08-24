@@ -19569,3 +19569,66 @@ The partial run in flight was launched before this landed,
 so its report will carry the old wording and no shipped lines.
 Read its zero-round slices against this section,
 and treat the full-roster re-run as the one that reports both.
+
+## How many slices an editor calibration needs, measured from production
+
+2026-08-24. Read off the archive, spending nothing.
+
+### The rate
+
+Across every settled artifact carrying rounds,
+109 repair chunks,
+counting `envelope` and `chunk-patch` rounds only:
+
+-   55 of 109 chunks, half of them, produced any editor round at all.
+-   1.76 editor rounds per chunk overall.
+-   3.49 per chunk that produced any.
+
+Per digest, chunks / contributing / rounds:
+
+-   `19244`: 32 / 2 (6%) / 4.
+    The outlier, and it is `xiept2-anchorfix`:
+    most of its chunks changed nothing.
+-   `b998a`: 21 / 17 (81%) / 61.
+-   `23845`: 18 / 11 (61%) / 36.
+-   `3850d`: 16 / 11 (69%) / 31.
+-   `6b21d`: 10 / 7 (70%) / 33.
+-   The four smallest run 50% to 67%, 1.25 to 3.67 rounds per chunk.
+
+### What it means for sizing a run
+
+HALF OF EVERY SLICE BOUGHT CONTRIBUTES NOTHING TO AN EDITOR STANDING,
+and that is normal rather than a fault:
+a chunk carrying no accepted issue never asks an editor to write,
+and a chunk where every editor agreed ships without a ballot.
+Both are paid for in full.
+
+At production's rate,
+14 slices should yield around 25 editor rounds.
+To reach the 61-round pool that is the largest thing on disk,
+a run wants closer to 35 or 40.
+That is the number to use for the full-roster re-run,
+not the default of six.
+
+### What it does NOT establish
+
+The partial run in flight is at 4 slices,
+1 of them contributing, 2 editor rounds.
+That is a lower rate than production,
+but 25% against 50% on four slices is inside the noise,
+and production's own per-digest spread runs 6% to 81%,
+which is wider than the gap.
+NOTHING HERE SAYS THE HALVED ROSTER YIELDS LESS.
+It is a plausible mechanism, since five models leave fewer distinct proposals
+than ten and consensus ships without a round,
+and it is not measured.
+The full-roster run is what would measure it.
+
+### The efficiency this does establish
+
+A settled entry of ten chunks leaves about eighteen editor rounds on disk,
+for nothing, as a side effect of work already bought.
+`editor-standing-read` reads them.
+It ranks only the three models that held the seat,
+so it cannot replace a calibration that seats ten,
+but any release pass now pays for an observational standing as a by-product.
