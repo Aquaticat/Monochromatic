@@ -161,6 +161,11 @@ export {
   settleEntry,
 } from './corpus-run/pass-entry.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
+export {
+  countCachedSlices,
+  readAttemptOutcome,
+  type ReattemptVerdict,
+} from './corpus-run/entry-reattempt.ts';
 export { openPictureReadingCache, } from './corpus-run/reading-cache-store.ts';
 export {
   belongsToNamespace,

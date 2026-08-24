@@ -4,6 +4,8 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   CorpusReadError,
   listCorpusPeople,
@@ -35,6 +37,10 @@ import {
   settledEntryIds,
 } from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
+import {
+  countCachedSlices,
+  readAttemptOutcome,
+} from './entry-reattempt.ts';
 import { lockRunsDir, } from './runs-lock.ts';
 import { listResumableEntries, } from './slice-cache-store.ts';
 import {
@@ -502,7 +508,28 @@ async function runCorpusPass(): Promise<void> {
    */
   const neverAbort = new AbortController().signal;
 
-  for (const entry of pending) {
+  /**
+   * Attempts still to make: every pending entry once, then the ones that
+   * earned another go pushed on behind them.
+   *
+   * A QUEUE RATHER THAN THE LIST, because an entry too large to settle inside
+   * the hard cap needs a sequence of attempts and this invocation is the one
+   * place a sequence is free: the pipeline digest was taken before this loop
+   * and cannot move under it, so every slice a capped attempt bought is still
+   * this generation's when the next attempt opens the cache.
+   * `entry-reattempt.ts` carries the rest, including what stops the loop.
+   */
+  const queue: CorpusPair[] = [...pending,];
+
+  while (queue.length > 0) {
+    /**
+     * Next attempt, taken from the FRONT so a re-attempt always waits behind
+     * every entry this invocation has not tried even once. Coverage of the
+     * corpus is what a first attempt buys, and a large entry cannot be allowed
+     * to spend the budget before the rest of the corpus has been seen.
+     */
+    const entry = nonNullishOrThrow(queue.shift(),);
+
     /**
      * Wall time elapsed since the loop began.
      */
@@ -511,6 +538,21 @@ async function runCorpusPass(): Promise<void> {
       console.log(`SOFT budget reached after ${String(elapsed,)}ms; not starting new entries`,);
       break;
     }
+
+    /**
+     * This entry's own cache directory, read on both sides of the attempt so
+     * its progress is measured rather than assumed.
+     */
+    const entryCacheDir = join(
+      sliceCacheDir,
+      entry.id,
+    );
+
+    /**
+     * Slices this entry already holds, before the attempt starts.
+     */
+    /* oxlint-disable-next-line no-await-in-loop -- one readdir per attempt, against an attempt that may run seven hours */
+    const cachedBefore = await countCachedSlices({ dir: entryCacheDir, },);
 
     attempts[entry.id] = (attempts[entry.id] ?? 0) + 1;
     /* oxlint-disable-next-line no-await-in-loop -- attempt count persists before each attempt so a crash still records it; sequential by design */
@@ -535,6 +577,43 @@ async function runCorpusPass(): Promise<void> {
       hardCapMs: HARD_CAP_MS,
       baseSignal: neverAbort,
     },);
+
+    /**
+     * Entries carrying an artifact now this attempt has stopped.
+     */
+    /* oxlint-disable-next-line no-await-in-loop -- one readdir per attempt, against an attempt that may run seven hours */
+    const settledNow = await settledEntryIds({ artifactsDir, },);
+
+    /**
+     * Slices present now, against the count taken before the attempt started.
+     */
+    /* oxlint-disable-next-line no-await-in-loop -- pairs with the read bracketing the other side of this attempt */
+    const cachedAfter = await countCachedSlices({ dir: entryCacheDir, },);
+
+    /**
+     * What the attempt earned, read from the artifact directory and the cache
+     * rather than from `settleEntry`, which reports neither.
+     */
+    const verdict = readAttemptOutcome({
+      settled: settledNow.has(entry.id,),
+      cachedBefore,
+      cachedAfter,
+    },);
+
+    if (verdict.kind === 'earned') {
+      console.log(
+        `REATTEMPT ${entry.id} queued after attempt ${String(attempts[entry.id] ?? 0,)}: `
+          + `cached ${String(verdict.gained,)} more slices, so the next attempt starts further along`,
+      );
+      queue.push(entry,);
+    }
+    if (verdict.kind === 'stalled') {
+      console.log(
+        `STALLED ${entry.id} after attempt ${String(attempts[entry.id] ?? 0,)}: `
+          + `its ${String(verdict.cached,)} cached slices are what it started with, `
+          + 'so a further attempt in this invocation would repeat it',
+      );
+    }
   }
 
   /**
