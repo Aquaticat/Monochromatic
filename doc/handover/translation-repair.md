@@ -20066,3 +20066,67 @@ generation 3 read as 4 refuses at `lanes.repair.delivery[0].chunkIndex`,
 read as 2 refuses at `lanes.repair.result.shippedChunkIndices`,
 generation 2 read as 4 refuses at the same delivery key,
 and read as 3 refuses at `lanes.repair.result.changedSliceIndices`.
+
+### And live, end to end
+
+One entry through the real pipeline,
+`gaoyanger` into `~/temp/agent/gen4-vub-2026-08-24`, exit 0:
+
+```text
+TALLY gaoyanger status=SETTLED slices=2 repairStatus=repaired repairIssues=9 repairAccepted=7
+repairResolved=7 repairFindings=55 repairChanged=1 translateStatus=complete translateChanged=2
+documentsDiffer=2 pageChanged=1 pageSilent=0
+```
+
+Read back off disk: stamped generation 4,
+`sliceIndex` the only index spelling anywhere in the file,
+zero of the three older array keys,
+and its own reader accepts it with all four ledger rows carrying a numeric index.
+`verify-published` then agreed:
+`1 of 1 pages carry every wording their artifact promised, at the length it implies`.
+
+Charm Hyper was dry for this too, so five of the ten seats had no voice at any stage
+and the entry settled anyway on the five that answered.
+
+## The read-any-generation dispatch never learned generation 3 (`#206`, 2026-08-24)
+
+Found sweeping for stragglers of the rename above, and it is the more interesting find.
+
+`readSettledArtifact` in `artifact-read.ts` is the barrel's entry point for reading an artifact
+of any generation.
+It compared the recorded version against version 1 and version 2 and nothing else,
+so a generation 3 or 4 body fell through to the final throw
+and was reported as a generation nothing reads.
+
+THE COMMENT ABOVE THAT THROW CALLED ITSELF UNREACHABLE and named this exact drift:
+"the day a generation is added to that list and forgotten here".
+`#94` added generation 3 to `KNOWN_ARTIFACT_SCHEMA_VERSIONS` and did not add it here,
+so every generation 3 artifact has been refused by this path for as long as the generation existed.
+
+### What it did not cost
+
+Nothing inside the package calls it.
+The pass reads through `parseSettledArtifactV2` directly,
+and `verify-published`, `assertResumableSchemaGeneration` and the attribution reader all bypass it.
+So no run was affected and no artifact was misread.
+A consumer of the barrel would have been.
+
+### The fix, and why the list moved
+
+`TWO_LANE_GENERATIONS` now lives in `artifact-v2-contract.ts` and is exported,
+because TWO places decide something about the family:
+the reader that accepts a body, and the dispatch that chooses that reader for a file.
+Those two lists drifting apart is not a refusal but a WRONG ANSWER.
+The final throw is re-commented as reachable rather than as unreachable.
+
+GFP-proven: restoring the drifted form, naming the first generation alone,
+fails the new case, which reads the same list and requires the two-lane reader to have ANSWERED
+for every generation in it.
+
+### The straggler class
+
+Four names the bare-word rename could not reach, because each carries a prefix or suffix:
+`_chunkIndex`, `earlierChunkIndex`, `laterChunkIndex` and `byChunkIndex`.
+None reaches the wire, and no artifact on disk carries any of them.
+A rename measured by counting a bare word will always leave this class behind;
+the sweep that finds it is a case-insensitive search for the token as a SUBSTRING.

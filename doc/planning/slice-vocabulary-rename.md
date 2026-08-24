@@ -248,3 +248,11 @@ Each of those files read under a generation it does not carry is REFUSED,
 and each refusal names exactly the key the wrong table asked for:
 a generation 3 body read as 4 refuses at `lanes.repair.delivery[0].chunkIndex`,
 and read as 2 refuses at `lanes.repair.result.shippedChunkIndices`.
+
+At the user boundary, one entry settled live through the real pipeline into
+`~/temp/agent/gen4-vub-2026-08-24`, exit 0.
+The artifact it wrote is stamped generation 4, spells `sliceIndex` and nothing else,
+carries none of the older array keys, and `verify-published` reads its page back and agrees.
+
+The sweep afterwards found `#206`, a dispatch that had never learned generation 3,
+and four straggler names a bare-word count could not reach.
