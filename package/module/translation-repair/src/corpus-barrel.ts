@@ -161,6 +161,7 @@ export {
   settleEntry,
 } from './corpus-run/pass-entry.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
+export { runAttemptQueue, } from './corpus-run/entry-attempt-queue.ts';
 export {
   countCachedSlices,
   readAttemptOutcome,
