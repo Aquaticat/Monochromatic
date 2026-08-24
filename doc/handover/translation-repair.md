@@ -19785,9 +19785,30 @@ Corrected before the suite ran, so the suite never recorded a green run over the
 Code and tests landed in `eb60eac09` and `8ed5da052`.
 `producer-silence.ts` was exercised directly against source ahead of the build,
 which is what caught the silent line reading `compares 1 models and not 4`.
-Build, lint, type-check and the unit suite are owed
-and are held behind the calibration in flight,
-which holds `dist` and must not be rebuilt under.
+
+All four checks are green as of `fc5dca624`:
+build exit 0,
+unit suite 628 suites passing and 0 failing at exit 0,
+oxlint 0 warnings and 0 errors,
+and `tsc --build` clean.
+The lint pass went from 164 warnings to 0,
+and it caught an auto-fix that had changed behaviour:
+rewriting `error instanceof Error` inside a template literal
+moved the ternary outside the template,
+leaving a non-empty string as the condition
+so the branch was always taken on a value typed `unknown`.
+
+Type-check found two source defects nothing else had:
+`requireJudgedRound` declared `RepairJudgedRound` and returned six of its fields,
+and `editor-standing-read.ts` referenced a `DirectoryReading` type it never declared.
+
+Both new CLIs are verified at the user boundary.
+`budget-sample` now prints
+`METERS synthetic=wet hyper=dry syntheticWeekly=95.98% syntheticFiveHour=2750/2750 syntheticThrottled=no hyperBalance=0`,
+and `meter-report` reads those levels back and prints them beside the verdict,
+which closes `#202`.
+`editor-standing-read` accounts for all 41 archived artifacts, none of them malformed,
+which closes `#203`.
 
 ## The 14-slice editor calibration finished, and it settles no seat (`#200`)
 
