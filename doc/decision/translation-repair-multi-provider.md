@@ -582,6 +582,13 @@ so its abort resolves the reading WET for every sharer.
 That is already this file's answer for an unreadable meter,
 and the router still recovers a real refusal through failover.
 
+VERIFIED AT THE USER BOUNDARY on the forty-round pass,
+which is a live run of the fixed build rather than a test double:
+0.50 quota reads and 0.50 credit reads per minute over a twelve-minute window,
+against 3.40 of each before the fix
+and a ceiling of 1.00 that the sixty-second window permits.
+A 6.8-fold reduction, and under the ceiling rather than merely nearer it.
+
 ### The worktree's secrets file is stale
 
 `.env.local.json` is gitignored, so the feature worktree holds its own copy,
