@@ -19335,6 +19335,23 @@ prevents. `budget-sample` makes the recovery observable; run the calibration
 once a sample shows `hyper=wet`.
 
 A one-slice smoke run was made against the dry roster to prove the runner
-executes: the checker assertions passed with the full roster seated, the five
-Hyper-only models were refused as lost voices, and the lane continued on the
-five that answered. That verifies mechanism, not standing.
+executes. It ran 7m18s and exited 0: the checker assertions passed with the full
+roster seated, the five Hyper-only models were refused as lost voices, and the
+lane continued on the five that answered.
+
+IT REPORTED ZERO ROUNDS, AND THAT IS THE LANE WORKING. Critics raised two claims
+on that slice, the panel adjudicated two issues, and the lane then said
+`chunk 5: nothing to edit, unchanged`, because neither issue was ACCEPTED. No
+editor is asked to write on a slice like that, so no round exists to count.
+
+ADJUDICATED IS NOT ACCEPTED, and that governs how the real measurement must be
+sized. A slice can buy ten critics and a ten-model panel and contribute nothing
+to an editor standing. The default of six slices may well yield very few rounds;
+draw generously and read the new "from N of M slices" line before trusting a
+standing.
+
+Because a null from a probe never shown able to produce a non-null says nothing,
+there is now a positive control in the unit suite: real-shaped rounds driven
+through the projection and the tally together, asserting a standing falls out
+with its counts. That is what makes the live zero readable as "this slice had
+nothing to repair" rather than "the instrument produces nothing".

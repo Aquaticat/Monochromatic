@@ -975,3 +975,26 @@ and produce exactly the survivorship the shape was built to prevent.
 The instrument exists and is verified to execute;
 the measurement waits on availability,
 which `budget-sample` now makes observable.
+
+#### What the first run of it showed
+
+Zero rounds, on one slice, in 7m18s.
+That is the lane working rather than the instrument failing:
+critics raised two claims,
+the panel adjudicated two issues,
+and the lane then reported nothing to edit,
+because neither issue was accepted.
+
+ADJUDICATED IS NOT ACCEPTED.
+A slice can buy ten critics and a ten-model panel
+and contribute nothing to an editor standing,
+so the sample has to be drawn on the rate of ACCEPTED issues,
+not on the rate of claims.
+Both seats now report how many slices paid in beside the round count,
+because a standing drawn entirely from one slice
+reads identically to one drawn evenly from six otherwise.
+
+A null from a probe never shown able to produce a non-null decides nothing,
+so the reading chain now carries a positive control:
+projection and tally driven together over real-shaped rounds,
+asserting a standing with its counts.
