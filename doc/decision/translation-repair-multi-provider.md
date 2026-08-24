@@ -429,6 +429,69 @@ starting silently would hide a setup mistake until a 429 storm read as a provide
 -   The calibration pass that picks the narrow writer set from the ten,
     which also settles the provisional third editor and refiner seat.
 
+### Two models lose voices and eight do not
+
+Measured on the 2026-08-24 producer calibration,
+ten models writing and ten judging the same slices,
+over 46.5 minutes and 216 model streams.
+
+Streams that completed against streams cut off after quorum:
+
+-   `qwen3.8-max`, 17 completed and 3 cut, the worst at about 15 percent.
+-   `hf:zai-org/GLM-5.2`, 19 completed and 2 cut, about 9.5 percent.
+-   Every other model lost nothing at all:
+    `deepseek-v4-flash-0731` 21,
+    `deepseek-v4-pro-0813` 22,
+    `gemma-4-26b-a4b-it` 21,
+    `minimax-m3` 22,
+    `hf:moonshotai/Kimi-K3` 21,
+    `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` 23,
+    `hf:openai/gpt-oss-120b` 24,
+    `hf:Qwen/Qwen3.8-27B` 22.
+
+THE LOSSES ARE A MODEL PROPERTY RATHER THAN A PROVIDER ONE,
+which the split across providers settles:
+`qwen3.8-max` is served only by Hyper and GLM-5.2 was called under its Synthetic spelling,
+so both stacks lost voices while eight models on those same two stacks lost none.
+That distinguishes this from the 2026-08-24 degradation window recorded in the handover,
+where losses were spread and no single model explained them.
+
+`qwen3.8-max` FAILS IN ONE RECOGNISABLE WAY.
+All three of its cuts delivered 0 content characters
+after 33000 to 36000 characters of reasoning,
+each opening with the same words,
+and each was abandoned at the 180-second post-quorum deadline.
+It is not answering slowly;
+it is not answering.
+
+### The router was observed crossing providers
+
+One stream in the same log carries the bare Hyper spelling `gpt-oss-120b`
+where every other call to that model carries the Synthetic spelling `hf:openai/gpt-oss-120b`.
+The two providers name the shared models differently,
+so the wire label is direct evidence of the routing decision
+rather than an inference from it.
+
+### The budget layer was reading its meters 3.4 times too often
+
+Same log:
+158 quota reads and 158 credit reads in 46.5 minutes,
+against a 60-second freshness window that should allow about 46 of each.
+
+The cause is the shape this session already fixed once in `provider-router.ts`:
+state checked before an `await` and written after it.
+Every call arriving while a reading was in flight saw the old stamp and started its own.
+Fixed in `88a092d32` by collapsing "fresh" and "in flight" into one idea:
+a reading STARTED inside the window is the reading every caller uses,
+so the stamp goes on before the await.
+GFP-proven by restoring the late stamp, which fails the new case.
+
+ONE CONSEQUENCE IS NAMED RATHER THAN HIDDEN:
+the first caller's signal governs the shared reading,
+so its abort resolves the reading WET for every sharer.
+That is already this file's answer for an unreadable meter,
+and the router still recovers a real refusal through failover.
+
 ### The worktree's secrets file is stale
 
 `.env.local.json` is gitignored, so the feature worktree holds its own copy,
