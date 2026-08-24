@@ -17811,7 +17811,7 @@ The fast path therefore stays. Removing it would buy 336 more calls per pass to 
 measured identical on every entry it serves. What changed is that the risk is measured at zero
 rather than unobserved. The probe is rerunnable on any new corpus at `~/temp/agent/fastpath-ask.mjs`.
 
-## Checker width: ruled to measurement, and the instrument that makes it paired
+## Checker width: measured over 231 rounds, and the wide arm is deleted (`#188`)
 
 The owner revised the "all producing roles to 4" ruling on 2026-08-23. Producing roles STAY AT
 THREE, because `#186` measured that exact comparison and came back null and because four writers
@@ -18286,7 +18286,7 @@ ALSO FIXED WHILE IN THERE. `rendering-audit-settled-args.ts` used `NO_CAP` as th
 `indexOf` returning nothing found, so one constant meant both "buy everything" and "not in the array".
 Split into `NO_CAP` and `FLAG_ABSENT`, which is the `#170` rule applied to a file that had escaped it.
 
-## XIEPT2 lost 4 h 48 m to one hardcoded discriminant (`#194`)
+## XIEPT2 lost 4 h 48 m at its last step, and the first diagnosis was wrong (`#194`)
 
 THE `#189` VERIFICATION RUN FINISHED AND DELIVERED NOTHING. `~/temp/agent/xiept2-verify-2026-08-23`
 ran 17,295,337 ms with zero error lines, wrote no artifact and no fixed page, and the background
@@ -18299,52 +18299,125 @@ error=slice 12 has no translation and writes none: an anchor is where a renderin
 
 `aborted=false`, so this was not the per-entry deadline. It threw at the very end, in `spliceSlices`.
 
-### The root cause is one line
+### The root cause named here first was WRONG, and the wrong one is the natural reading
 
-`consolidate-settle.ts` calls `judgeTranslateSlate` with `incumbentKind: 'present'` hardcoded, for
-every slice. `translate-absence.ts` already owns that discriminant and states how it is derived:
+RECORDED RATHER THAN QUIETLY REPLACED, because it took a run log to refute and would be
+re-derived by the next reader of `consolidate-settle.ts`.
 
-```ts
-const incumbentKind: IncumbentKind = isInsertionChunk(slice.target,) ? 'absent' : 'present';
-```
+The claim was: `settleConsolidation` calls `judgeTranslateSlate` with `incumbentKind: 'present'`
+hardcoded, so at an anchor it judges and gates against a standing text that does not exist.
+That line is unreachable with a blank standing text.
+`settleConsolidation` returns `no-standing-text` about ninety lines above it,
+at `if (standingText === '')`, before any judge or gate is bought.
+What the judges fall back on at that stage is `standingText`, not the archive's own wording,
+so where the literal is reached there really is a text to keep, and it is true rather than assumed.
+Threading the slice's own `incumbentKind` there would be actively wrong:
+an anchor whose lanes both produced wording does have a standing text.
+`9daa6e728` puts that reasoning in the file beside the literal.
 
-The translate lane knows about anchors and the consolidation lane does not. At an insertion anchor the
-consolidation therefore enters an empty incumbent into its slate, tells its judges an incumbent is
-present when it is a blank, and asks the gate whether to keep a standing text that does not exist.
-
-DO NOT FIX IT BY TESTING `standingText.trim() === ''`. `translate-absence.ts` rejects exactly that and
-gives the reason: it conflates an anchor, where a rendering belongs and none exists, with a content
-span whose archive wording genuinely is blank. Absence is a mode decided once and carried.
-
-### The signal was there three and a half hours early
+### What actually happened, traced through the log
 
 ```
 pass.log:753   00:40  [translateDocument] slice 12: no translation in the archive
-                      and none produced (no-candidate-backed)
-pass.log:1382  02:31  [gateConsolidatedSlice] 6/6 usable, settled on neither, ships standing
-pass.log:1506  02:52  [gateConsolidatedSlice] 6/6 usable, settled on neither, ships standing
-pass.log:1926  04:11  [gateConsolidatedSlice] 6/6 usable, settled on neither, ships standing
-pass.log:1962  04:12  TALLY status=ERROR
+                      and none produced (no-candidate-backed); the passage stays missing
+pass.log:754   00:40  SLICE-COST lane=translate chunk=12 sourceChars=344 exit=unfilled
+pass.log:1962  04:12  TALLY XIEPT2 status=ERROR
+                      error=slice 12 has no translation and writes none
 ```
 
-The translate lane handled the anchor correctly and named it with the `#105` marker. Nothing read
-that warning. Six judges were then asked, three times, to choose between a rendering and nothing,
-without being told the second option was nothing, and the `#181` settled-neither fallback shipped the
-standing text each time.
+THE ABSENCE MACHINERY WORKED.
+`TranslateAbsenceError` was raised, caught, and the slice recorded unfilled,
+which is exactly what `translate-absence.ts` promises:
+one refused anchor costs its own slice rather than the entry.
+The entry then ran the contest and the consolidation for another three and a half hours
+and died at its last step, in `publishFixedPage`.
+`pass-entry.ts` calls that BEFORE the artifact write, deliberately,
+so that an artifact existing means a page was published;
+the cost of the ordering is that a publish refusal keeps neither.
 
-THE SPLICE GUARD IS THE HERO HERE AND MUST NOT BE WEAKENED. `splice-slices.ts` refused because blank
-text at an anchor "leaves the passage missing while the run reports it delivered". It is the only
-thing that stopped a silent hole reaching a memorial page.
+### The defect was one expression in the publisher
 
-### What the fix has to do
+```ts
+// corpus-run/publish-fixed.ts, before 5dabe9c92
+replacementText: (reading.kind === 'wording') ? reading.text : '',
+```
 
--   Thread `incumbentKind` into `settleConsolidation` from the slice's target chunk, as the translate
-    lane derives it, and stop passing the literal.
--   Stop asking `gateConsolidatedSlice` to keep a standing text that is absent; one of its two options
-    does not exist there.
--   Let `TranslateAbsenceError` do what its own module comment already promises: the driver catches
-    it, records the slice unfilled, and leaves the archive's gap, "so one refused anchor costs its own
-    slice rather than the entry". That is the blast-radius half, and the machinery is already built.
+`WouldShipReading` exists to make that unrepresentable.
+Its own comment: "NEVER REPRESENTED AS AN EMPTY STRING, which is the trap this whole shape exists
+to close ... A reading that carries no `text` key at all makes that unrepresentable rather than
+warned against."
+Thirty lines later the builder turned the named absence back into the empty string,
+and handed the splice a blank rendering at an anchor.
 
-Nothing of the run is recoverable but the log. `slice-cache/` holds 120 files and the pipeline digest
-has moved since, so a resume re-buys everything. Do not re-run XIEPT2 before this lands.
+THE EMPTY STRING IS NOT SIMPLY WRONG, which is why the fix is narrower than deleting that branch.
+At a CONTENT span it is a real decision:
+both lanes may have removed wording the archive held, and the splice allows that.
+Dropping the row instead would republish text the deciders agreed to drop.
+
+THE TEST PINNED IT, and its fixture is what gives the game away.
+`publish-fixed-replacements.unit.test.ts` asserted a silent slice gets the empty string,
+reasoning that "republishing the archive underneath it would undo it",
+over a fixture with `incumbentKind: 'absent'` and `repairDelivery: 'gap-remains'`.
+There is no archive wording at an anchor to republish.
+The rationale was about content spans and the fixture proving it was an anchor.
+
+### What shipped
+
+`5dabe9c92`: a silent slice contributes no replacement AT AN ANCHOR and keeps `''` at a content
+span, branching on `incumbentKind` rather than on an empty incumbent,
+per `translate-absence.ts`: testing the text conflates an anchor with a span whose archive wording
+genuinely is blank.
+
+THE SPLICE GUARD IS UNCHANGED AND STILL PROVEN.
+`splice-slices.ts` refuses blank text at an anchor because it "leaves the passage missing while the
+run reports it delivered", and it is the only thing that stopped a silent hole reaching a memorial
+page.
+What changed is upstream: nothing feeds it a rendering nobody wrote.
+Its case moved into `publish-fixed.unit.test.ts` beside the case that now publishes the gap.
+
+GFP-PROVEN BOTH DIRECTIONS.
+Removing the anchor branch fails two cases in 38 ms:
+`shippableReplacements` returns a row where it must return none,
+and `publishFixedPage` raises the very `SliceSpliceError` that cost XIEPT2 its run.
+Two control cases stay green through the removal,
+the content-span silence and the ordinary decided wording,
+so the failures are about anchors rather than about silence.
+
+THE POLICY REVERSAL IS DELIBERATE.
+The publisher used to refuse the entry outright,
+on the argument that a half-document is worse than a failed entry because only the failure gets
+retried.
+XIEPT2 settled that: the refusal kept neither page nor artifact,
+and a retry meets the same passage and the same judges.
+The archive already carries that gap, so the page loses nothing that was ever there
+and keeps every slice the run did buy.
+The run still says so out loud: `pageSilent` has been on the TALLY line since `#175`,
+and the artifact records the slice as `unfilled` and `gap-remains`.
+
+BLAST RADIUS ZERO on what already exists.
+Across 44 artifacts on disk, 37 parsed, 199 slices, every slice reads `wording`
+and none reads `nothing-ships`, so no published page deleted or refused anything.
+The probe is `~/temp/agent/silent-slice-blast.mjs`;
+that null rests on the anchor test case as its positive control rather than on itself.
+
+### The silence column could not tell a gap from an emptying either (`#195`)
+
+Every member of `WouldShipSilence` names which stage left a slice with no wording
+and none of them says whether there was anything there to lose.
+`lanesAgreedOn` admits it in its own comment:
+an agreed empty string "covers a gap neither lane wrote into and text both lanes removed".
+The two contest reasons share the fault at one remove,
+since a content span whose archive wording is blank reaches them as readily as an anchor.
+
+`a86cbb034` and `932e0b280`: the silent reading carries `incumbentKind`, filled from the comparison
+row at both producers, and `pageRelationLabel` reads `gap:<reason>`, `emptied:<reason>`, or
+`silent:<reason>` for a row written before the field existed.
+Three words rather than a name split, so all three reasons are covered and no name is added.
+
+IT ALSO CORRECTED `5dabe9c92`, which had put `incumbentKind` on `WouldShipSlice`.
+Two fields that must always agree with nothing enforcing it is worse than one where it is needed,
+and the distinction only decides anything where nothing ships.
+
+Nothing of the failed run is recoverable but the log.
+The verification re-run is `~/temp/agent/xiept2-anchorfix-2026-08-24`, launched 2026-08-24 04:47
+from the fixed build.
