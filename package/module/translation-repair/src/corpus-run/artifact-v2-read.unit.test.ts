@@ -438,6 +438,103 @@ function evidenceNamingSliceZero(
   },);
 }
 
+/**
+ * Re-spells a generation 4 body as generation 3, which is what the pass wrote
+ * before the index rename reached the wire.
+ *
+ * ONE KEY, EVERYWHERE. A real generation 3 artifact spells the index
+ * `chunkIndex` in all twenty-odd places it appears: both ledgers, both raw
+ * results and every array inside them, the comparison, the lane selection and
+ * the consolidation. The change-set arrays already carried their current names
+ * in that generation, so nothing else moves.
+ *
+ * @param value - generation 4 body to re-spell
+ *
+ * @returns Same artifact as generation 3 wrote it
+ *
+ * @example
+ * ```ts
+ * const older = asGenerationThree(artifactWith(),);
+ * ```
+ */
+function asGenerationThree(value: unknown,): unknown {
+  if (Array.isArray(value,))
+    return value.map(asGenerationThree,);
+
+  if ((value === null) || ((typeof value) !== 'object'))
+    return value;
+
+  return Object.fromEntries(
+    Object.entries(value,)
+      .map(function respell([
+        key,
+        held,
+      ],): readonly [string, unknown] {
+        if (key === 'sliceIndex')
+          return [
+            'chunkIndex',
+            held,
+          ];
+
+        if (key === 'artifactSchemaVersion')
+          return [
+            key,
+            3,
+          ];
+
+        return [
+          key,
+          asGenerationThree(held,),
+        ];
+      },),
+  );
+}
+
+/**
+ * Drops each lane's raw result from a reading, leaving what was INTERPRETED.
+ *
+ * THE RAW RESULT IS THE FILE'S OWN RECORD, handed back unread so a caller
+ * wanting a field this version does not describe can still find it. It
+ * therefore still spells the index the way its own generation wrote it, and
+ * comparing it across generations would compare the two FILES rather than the
+ * two readings. Everything else here is parsed through the key vocabulary and
+ * must come out identical.
+ *
+ * @param artifact - reading to strip
+ *
+ * @returns Same reading with both raw records gone
+ *
+ * @example
+ * ```ts
+ * expect(interpretedOf({ artifact: older, },),).toStrictEqual(interpretedOf({ artifact: current, },),);
+ * ```
+ */
+function interpretedOf(
+  { artifact, }: { readonly artifact: ReturnType<typeof parseSettledArtifactV2>; },
+): Record<string, unknown> {
+  /**
+   * Reading with its lanes held aside, since only those carry a raw record.
+   */
+  const {
+    lanes,
+    ...rest
+  } = artifact;
+
+  return {
+    ...rest,
+    lanes: {
+      repair: {
+        evidence: lanes.repair.evidence,
+        delivery: lanes.repair.delivery,
+      },
+      translate: {
+        evidence: lanes.translate.evidence,
+        delivery: lanes.translate.delivery,
+      },
+    },
+  };
+}
+
 await describe({
   name: parseSettledArtifactV2.name,
   children: [
@@ -1447,6 +1544,80 @@ await describe({
 
         expect(refusalOfUnknownSelection,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfUnknownSelection as Error).message,).toContain('CatEntry1.laneSelection.kind',);
+      },
+    },),
+    it({
+      name:
+        'POSITIVE CONTROL for the generation 3 case below: re-spelling the body actually moves the '
+        + 'index everywhere it appears, so a re-speller that changed nothing would make the equality '
+        + 'that follows say nothing at all',
+      fn: async () => {
+        /**
+         * Generation 4 body as JSON text.
+         */
+        const current = JSON.stringify(artifactWith(),);
+
+        /**
+         * Same body re-spelled, as JSON text.
+         */
+        const older = JSON.stringify(
+          asGenerationThree(artifactWith(),),
+        );
+
+        expect(current.includes('"sliceIndex"',),).toBe(true,);
+        expect(current.includes('"chunkIndex"',),).toBe(false,);
+        expect(older.includes('"sliceIndex"',),).toBe(false,);
+        expect(older.includes('"chunkIndex"',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name:
+        'READS A GENERATION 3 BODY TO EXACTLY WHAT GENERATION 4 READS TO, which is what the key '
+        + 'vocabulary is for: the two files differ only in how the index is spelled, and a reader that '
+        + 'holds one spelling reports the older file`s ledger as naming no slices at all',
+      fn: async () => {
+        /**
+         * Older body's reading.
+         */
+        const older = parseSettledArtifactV2({ value: asGenerationThree(artifactWith(),), },);
+
+        /**
+         * Current body's reading.
+         */
+        const current = parseSettledArtifactV2({ value: artifactWith(), },);
+
+        expect(interpretedOf({ artifact: older, },),)
+          .toStrictEqual(interpretedOf({ artifact: current, },),);
+
+        // AND THE RAW RECORDS DIFFER, which is what makes the exclusion above a
+        // statement rather than a hiding place: each lane's result is the
+        // file's own bytes handed back unread, so it still carries the spelling
+        // its generation wrote.
+        expect(older.lanes.repair.raw,).not.toStrictEqual(current.lanes.repair.raw,);
+      },
+    },),
+
+    it({
+      name:
+        'REFUSES a generation 3 body that declares generation 4, rather than reading its ledger rows '
+        + 'as carrying no index: a relabelled file is the one failure the vocabulary cannot see, since '
+        + 'the label is the only thing that picks the spelling',
+      fn: async () => {
+        /**
+         * What the reader did with an older body under the current label.
+         */
+        const refusalOfRelabelled = caught(function readsRelabelled() {
+          parseSettledArtifactV2({
+            value: {
+              ...asGenerationThree(artifactWith(),) as Record<string, unknown>,
+              artifactSchemaVersion: 4,
+            },
+          },);
+        },);
+
+        expect(refusalOfRelabelled,).toBeInstanceOf(ArtifactParseError,);
+        expect((refusalOfRelabelled as Error).message,).toContain('chunkIndex',);
       },
     },),
   ],
