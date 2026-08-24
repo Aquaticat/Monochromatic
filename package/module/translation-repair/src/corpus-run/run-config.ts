@@ -73,33 +73,6 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
   'hf:openai/gpt-oss-120b',
 ];
 
-/**
- * Whether this run seats the WHOLE roster as resolution checkers.
- *
- * THE SECOND ARM OF A MEASUREMENT, not a way to configure a production run.
- * The owner ruled on 2026-08-23 that checker width is settled by measurement
- * rather than opinion: the same entries run once with the disjoint three and
- * once with all six, per-issue resolution compared, winner shipped and loser
- * deleted. This env switch is how the second run is bought, and it goes when
- * the measurement lands.
- *
- * IT CHANGES THE SLICE-CACHE KEY BY CHANGING THE ROSTER, so a wide run cannot
- * resume off narrow cache entries and a narrow run cannot resume off wide ones.
- * That is the property that keeps the two arms from contaminating each other,
- * and it is why the switch belongs here rather than at the call site.
- *
- * @example
- * ```sh
- * TRANSLATION_REPAIR_WIDE_CHECKERS=1 mise run //package/module/translation-repair:corpus-pass
- * ```
- */
-const WIDE_CHECKERS_SETTING = process.env
-  .TRANSLATION_REPAIR_WIDE_CHECKERS;
-
-/**
- * {@inheritDoc WIDE_CHECKERS_SETTING}
- */
-const WIDE_CHECKERS_REQUESTED = (WIDE_CHECKERS_SETTING !== undefined) && (WIDE_CHECKERS_SETTING !== '');
 
 /**
  * Role roster for a corpus run: all SIX critique and adjudicate, THREE edit
@@ -231,16 +204,30 @@ export const RUN_MODELS: RepairModels = {
     'hf:zai-org/GLM-5.2',
     'hf:zai-org/GLM-4.7-Flash',
   ],
-  checkerModelIds: WIDE_CHECKERS_REQUESTED
-    ? RUN_ROSTER
-    : [
-      'hf:Qwen/Qwen3.8-27B',
-      'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
-      'hf:openai/gpt-oss-120b',
-    ],
-  ...WIDE_CHECKERS_REQUESTED
-    ? { checkerSelfCertificationPermitted: true, }
-    : {},
+  // THREE, MEASURED RATHER THAN PREFERRED, and the wide arm is gone. The
+  // owner ruled on 2026-08-23 that checker width is settled by measurement:
+  // the same entries run once with these three and once with all six,
+  // per-issue resolution compared, winner shipped and loser deleted. Four wide
+  // runs answered it on 2026-08-24 with 231 rounds and 1360 ballots, and NOT
+  // ONE verdict moved.
+  //
+  // THE NULL IS ABOUT WIDTH RATHER THAN ABOUT SILENCE, which is the only way a
+  // null settles anything here. The six disagreed on 14 rounds, and on 10 of
+  // those a writer answered something no checker of these three said, so the
+  // extra ballots carried real information. The arithmetic is what absorbs it:
+  // a checker judging text it helped write counts half, so three writers bring
+  // 1.5 against 3.0 and cannot overturn a unanimous three. They could only
+  // reach a split three, which happened on 4 rounds, and on none of those did
+  // all three writers dissent together.
+  //
+  // DISJOINT FROM EVERY WRITER, which is why `checkerSelfCertificationPermitted`
+  // is left unset and defaults to refusing. No model in this list edits or
+  // refines, so the discount above has nothing to apply to in production.
+  checkerModelIds: [
+    'hf:Qwen/Qwen3.8-27B',
+    'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+    'hf:openai/gpt-oss-120b',
+  ],
 };
 
 /**

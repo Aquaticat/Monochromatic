@@ -17874,11 +17874,52 @@ The log lines stay, for two reasons that are not the artifact's job: an operator
 has the log and not the artifact, and a run that aborts before settling leaves nothing else. They are
 derived from the readings, so the two cannot drift.
 
-### How to buy the second arm
+### ANSWERED 2026-08-24: width changes nothing, and the wide arm is deleted
 
-`TRANSLATION_REPAIR_WIDE_CHECKERS=1` seats the whole roster and permits self-certification. It rides
-in `RUN_MODELS` rather than at a call site so it enters the slice-cache key: a wide run cannot resume
-off narrow cache entries and a narrow run cannot resume off wide ones.
+Four wide runs answered it.
+Read off their `checker-ballot` lines by `~/temp/agent/checker-width-tally.mjs`,
+one arm counting only the disjoint three and the other counting all six with a writer at half weight:
+
+```
+run                                     rounds  ballots  narrow split  six disagreed  flips
+checker-width-wide-batch-2026-08-24         89      515             1              9      0
+checker-width-wide-batch2-2026-08-24        92      545             3              5      0
+checker-width-wide-2026-08-24               21      126             0              0      0
+checker-reading-vub-2026-08-24              29      174             0              0      0
+TOTAL                                      231     1360             4             14      0
+```
+
+THE NULL IS ABOUT WIDTH RATHER THAN ABOUT SILENCE.
+The six disagreed on 14 rounds,
+and on 10 of those a writer answered something no narrow checker said,
+so the three extra ballots carried real information that the arithmetic then absorbed.
+A checker judging text it helped write counts half,
+so three writers bring 1.5 against a unanimous 3.0 and cannot move it.
+They can only reach a split three, which happened on 4 rounds,
+and on none of those did all three writers dissent together.
+
+POSITIVE-CONTROLLED BEFORE THE NULL WAS BELIEVED,
+per QPC.
+`~/temp/agent/control-width-log/cat-control.log` is a synthetic ballot log of two rounds:
+one where the narrow three split 2-1 and three writers dissent,
+which must flip resolved to undecided at 2 against 2.5,
+and one where the narrow three are unanimous and the same three writers dissent,
+which must not flip at 3.0 against 1.5.
+The analyser reports `FLIPS: 1 of 2` and names the right one.
+
+CONSEQUENCE IN THE CODE:
+`TRANSLATION_REPAIR_WIDE_CHECKERS` is gone,
+and `RUN_MODELS.checkerModelIds` is the disjoint three unconditionally.
+`checkerSelfCertificationPermitted` stays on `RepairModels` as the guard that refuses a writer`s
+self-certification, and production leaves it unset,
+so the half-weight discount has nothing to apply to.
+
+ONE CAVEAT FOR A READER RE-DOING THIS FROM ARTIFACTS RATHER THAN LOGS.
+Three of those four runs were launched from a build predating `RepairIssueRecord.checkerReading`,
+so `~/temp/agent/checker-width-from-artifacts.mjs` sees 0 rounds in them and 29 in the fourth.
+The log analyser is what carried this measurement.
+A rebuild does not change a running pass,
+so a pass launched before a field exists never writes it, however long it runs.
 
 ### The power of this measurement is bounded, and the bound is computable
 
