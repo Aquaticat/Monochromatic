@@ -19632,3 +19632,69 @@ for nothing, as a side effect of work already bought.
 It ranks only the three models that held the seat,
 so it cannot replace a calibration that seats ten,
 but any release pass now pays for an observational standing as a by-product.
+
+## The editor calibration never ran the naturalness lane at all (`#200`)
+
+2026-08-24, found by watching the partial run rather than by reading code.
+
+### The signal
+
+Nine slices, every one reporting `0 refiner rounds`,
+and `grep -i refine` over the whole run log returning
+nothing but my own progress lines.
+A stage that declines still logs;
+a stage that never runs does not.
+
+### The cause
+
+`repairChunk` does not reach refinement.
+It accepts `refinerModelIds` only so `repair-contract.ts` can compute
+the union of models the slice must seat,
+sets `refined: false`, and returns.
+`runRefineStage` is called from `refine-slice-settle.ts`,
+which the DOCUMENT driver runs afterwards, per slice, in `refine-phase.ts`.
+
+So the module note in `editor-calibrate.ts` claiming
+
+> IT REPORTS THE REFINER STANDING TOO, off the same spend
+
+was false from the day it was written.
+The refiner standing it printed was always going to be empty,
+and an empty standing there would have read as
+"the rewriters answered nothing",
+which is a different and much worse claim than
+"no rewriter was ever asked".
+
+### The fix, in `f49cde75b`
+
+`settleRefinedSlice` now runs on each slice off the same client,
+and its rounds land on the outcome beside the accuracy lane's.
+That call was already shaped for this:
+it takes the `ChunkRepairOutcome`, the source, the incumbent and the models,
+and derives eligible paragraphs itself.
+Definitions are passed empty,
+which is honest rather than a sentinel:
+a drawn slice carries no document glossary behind it.
+
+It also reports how many slices reached a rewriter at all.
+A paragraph under the eligibility floor is never offered to one,
+so a slice can buy the whole accuracy lane and reach no refiner,
+and without that denominator the standing cannot be read.
+
+### Why this mattered enough to fix mid-run
+
+The refiner seat was reseated on 2026-08-24
+on the same 40-round WRITING calibration the editor seat was.
+It is exactly as unmeasured.
+Measuring one seat while leaving the other
+would have answered half the question `#200` exists for,
+and would have done it while printing an empty table
+that looked like an answer.
+
+### What the partial run in flight will report
+
+Its editor standing stands.
+Its refiner standing will be empty,
+and that emptiness means the lane was never run,
+not that the rewriters were silent.
+The full-roster re-run is the one that measures the refiner seat.
