@@ -246,7 +246,6 @@ export {
   type DegenerationVerdict,
   watchForDegeneration,
 } from './stream-degeneration.ts';
-export { scanAnthropicDeltas, } from './anthropic-delta-scan.ts';
 export {
   type ChannelDelta,
   type DeltaScanner,
@@ -291,6 +290,7 @@ export * from './corpus-barrel.ts';
 export * from './displacement-barrel.ts';
 export * from './document-barrel.ts';
 export * from './generation-barrel.ts';
+export * from './provider-barrel.ts';
 export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';
 export * from './editor-barrel.ts';
