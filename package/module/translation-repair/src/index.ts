@@ -284,6 +284,7 @@ export {
 } from './validate-issue.ts';
 
 export * from './assembly-barrel.ts';
+export * from './ballot-barrel.ts';
 export * from './control-barrel.ts';
 export * from './corpus-barrel.ts';
 export * from './displacement-barrel.ts';

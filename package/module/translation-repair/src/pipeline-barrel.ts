@@ -62,10 +62,6 @@ export {
   notApplicableRepair,
 } from './repair-not-applicable.ts';
 export { repairLaneWordings, } from './repair-lane-wordings.ts';
-export type {
-  IssueCheckerBallot,
-  IssueCheckerReading,
-} from './checker-reading.ts';
 export {
   assertCheckerIndependence,
   assertCheckerQuorumReachable,
@@ -290,12 +286,6 @@ export {
   UNATTRIBUTED_TEXT,
   wroteTextForIssue,
 } from './resolution-authorship.ts';
-export {
-  type IssueResolutionTally,
-  resolveResolutionChecks,
-  type ResolutionBallot,
-  tallyResolutionChecks,
-} from './tally-resolution.ts';
 export {
   type AdjudicationResult,
   tallyVotes,

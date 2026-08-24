@@ -14,6 +14,8 @@ import type {
   ClaimCluster,
 } from './aggregate-claims.ts';
 import { hashContent, } from './document-node.ts';
+import type { ClaimPanelReading, } from './panel-reading.ts';
+import { readClaim, } from './tally-claim.ts';
 import {
   ISSUE_SEVERITIES,
   type IssueSeverity,
@@ -41,119 +43,6 @@ export type AdjudicationResult = {
    */
   readonly issues: readonly AdjudicatedIssue[];
 };
-
-/**
- * Weight behind one vote state on one claim across every ballot;
- * a missing verdict abstains.
- *
- * @param claimId - claim under tally
- *
- * @param ballots - resolved ballots keyed by panelist id
- *
- * @param config - weight table
- *
- * @param state - vote state whose mass is summed
- *
- * @returns Weighted vote mass for the state
- *
- * @example
- * ```ts
- * const mass = voteWeight({ claimId, ballots, config, state: 'supported', },);
- * ```
- */
-function voteWeight(
-  {
-    claimId,
-    ballots,
-    config,
-    state,
-  }: {
-    readonly claimId: string;
-    readonly ballots: Readonly<Record<string, PanelBallot>>;
-    readonly config: AdjudicationConfig;
-    readonly state: PanelVoteState;
-  },
-): number {
-  return Object
-    .entries(ballots,)
-    .reduce(
-      function addBallot(
-        mass: number,
-        [panelistId, ballot,],
-      ): number {
-        /**
-         * Vote cast, with missing verdicts abstaining.
-         */
-        const vote = ballot.verdicts[claimId]
-          ?.vote
-          ?? 'abstain';
-        if (vote !== state)
-          return mass;
-        return mass + (config.weights?.[panelistId] ?? 1);
-      },
-      0,
-    );
-}
-
-/**
- * Weighted tally of one claim across every ballot.
- *
- * @param claimId - claim under tally
- *
- * @param ballots - resolved ballots keyed by panelist id
- *
- * @param config - weight table and thresholds
- *
- * @returns Weighted counts per vote state
- *
- * @example
- * ```ts
- * const tally = tallyClaim({ claimId, ballots, config, },);
- * ```
- */
-function tallyClaim(
-  {
-    claimId,
-    ballots,
-    config,
-  }: {
-    readonly claimId: string;
-    readonly ballots: Readonly<Record<string, PanelBallot>>;
-    readonly config: AdjudicationConfig;
-  },
-): VoteTally {
-  /**
-   * Shared facets of every per-state sum.
-   */
-  const facets = {
-    claimId,
-    ballots,
-    config,
-  };
-
-  return {
-    supported: voteWeight({
-      ...facets,
-      state: 'supported',
-    },),
-    unsupported: voteWeight({
-      ...facets,
-      state: 'unsupported',
-    },),
-    ambiguous: voteWeight({
-      ...facets,
-      state: 'ambiguous',
-    },),
-    sourceDefect: voteWeight({
-      ...facets,
-      state: 'source-defect',
-    },),
-    abstain: voteWeight({
-      ...facets,
-      state: 'abstain',
-    },),
-  };
-}
 
 /**
  * Status one tally decides under the config thresholds.
@@ -416,6 +305,10 @@ function mergedStatus(
  * @param ballots - resolved ballots keyed by panelist id; the shell owns
  *   panelist identity, claims never carry it
  *
+ * @param configuredPanelists - panelists the run seated, heard or not, which
+ *   the ballots cannot say: a lost voice leaves no entry while an abstention
+ *   leaves one, and those are different evidence
+ *
  * @param config - thresholds and weights; defaults to
  *   {@link DEFAULT_ADJUDICATION_CONFIG}
  *
@@ -423,17 +316,19 @@ function mergedStatus(
  *
  * @example
  * ```ts
- * const { issues, } = tallyVotes({ clusters, ballots, },);
+ * const { issues, } = tallyVotes({ clusters, ballots, configuredPanelists: 6, },);
  * ```
  */
 export function tallyVotes(
   {
     clusters,
     ballots,
+    configuredPanelists,
     config = DEFAULT_ADJUDICATION_CONFIG,
   }: {
     readonly clusters: readonly ClaimCluster[];
     readonly ballots: Readonly<Record<string, PanelBallot>>;
+    readonly configuredPanelists: number;
     readonly config?: AdjudicationConfig;
   },
 ): AdjudicationResult {
@@ -443,6 +338,7 @@ export function tallyVotes(
   type GradedMember = {
     readonly member: AggregatedClaim;
     readonly tally: VoteTally;
+    readonly reading: ClaimPanelReading;
     readonly status: AdjudicationStatus;
     readonly severity: IssueSeverity;
   };
@@ -457,19 +353,21 @@ export function tallyVotes(
     const graded = cluster.members
       .map(function gradeMember(member,): GradedMember {
       /**
-       * Weighted tally for this member claim.
+       * Every ballot on this member claim, and the tally they sum to.
        */
-      const tally = tallyClaim({
+      const reading = readClaim({
         claimId: member.claimId,
         ballots,
+        configuredPanelists,
         config,
       },);
 
       return {
         member,
-        tally,
+        tally: reading.tally,
+        reading,
         status: decideStatus({
-          tally,
+          tally: reading.tally,
           config,
         },),
         severity: finalSeverity({
@@ -513,6 +411,13 @@ export function tallyVotes(
             entry.tally,
           ];
         },),),
+        readings: Object.fromEntries(graded.map(function toReading(entry,) {
+          return [
+            entry.member
+              .claimId,
+            entry.reading,
+          ];
+        },),),
       },];
     }
 
@@ -524,6 +429,8 @@ export function tallyVotes(
         claims: [entry.member,],
         tallies: { [entry.member
           .claimId]: entry.tally, },
+        readings: { [entry.member
+          .claimId]: entry.reading, },
       };
     },);
   },);

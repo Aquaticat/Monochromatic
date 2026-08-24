@@ -420,6 +420,7 @@ export async function runPanelStage(
   const { issues, } = tallyVotes({
     clusters,
     ballots,
+    configuredPanelists: panelModelIds.length,
     ...(adjudicationConfig === undefined ? {} : { config: adjudicationConfig, }),
   },);
 

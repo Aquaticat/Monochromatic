@@ -1,5 +1,9 @@
 import type { AggregatedClaim, } from './aggregate-claims.ts';
 import type { IssueSeverity, } from './issue-taxonomy.ts';
+// TYPE-ONLY AND DELIBERATELY CIRCULAR: `panel-reading.ts` names two types from
+// here. Both directions are erased before anything runs, so the cycle costs
+// nothing, and the alternative is a third file holding two type aliases.
+import type { ClaimPanelReading, } from './panel-reading.ts';
 
 //region Adjudication model
 // Vote vocabulary and result types for the provenance-blind panel. Panelists
@@ -208,6 +212,24 @@ export type AdjudicatedIssue = {
    * Per-claim weighted tallies keyed by claim id.
    */
   readonly tallies: Readonly<Record<string, VoteTally>>;
+
+  /**
+   * Per-claim BALLOTS behind those tallies, keyed by claim id.
+   *
+   * BESIDE {@link AdjudicatedIssue.tallies} RATHER THAN INSIDE IT, because the
+   * tally is the decision and the ballots are the evidence for it. Keeping them
+   * in one record is what made the evidence easy to drop: five weighted numbers
+   * look complete on their own, and cannot say whether an acceptance was
+   * unanimous or one weighted vote wide, cannot name a dissenter, and cannot be
+   * re-tallied under a different weight table.
+   *
+   * OPTIONAL, AND ITS ABSENCE HAS ONE MEANING: this issue was not built by
+   * `tallyVotes`. That covers records written before this field existed, and
+   * the readers and tools that rebuild an issue from a settled artifact rather
+   * than adjudicating one. Requiring it would make those write an empty record,
+   * which would say "no panel voted" where the truth is "I am not the panel".
+   */
+  readonly readings?: Readonly<Record<string, ClaimPanelReading>>;
 };
 
 /**
