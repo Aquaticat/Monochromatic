@@ -17955,3 +17955,86 @@ this checker panel splits at all, which is 2 of 39.
 The discount is genuinely engaged rather than idle: 36 of 39 rounds carry at least one self-vote, so
 this measures self-certification and not merely panel size. That was the failure mode written down
 in advance, and it did not happen.
+
+### Correcting the rebuild-safety reason, and a suite-counting rule that was wrong
+
+THE REBUILD CONCLUSION HOLDS, THE REASON GIVEN FOR IT DOES NOT. The claim above says the package has
+no runtime dynamic import because every `import(` in `src/` is a TSDoc reference. The built bundle
+was then searched directly, which is the artifact a running pass actually executes, and it carries
+two: `await import('node:fs/promises')` and `await import('node:path')`, both inside
+`run-config-*.mjs`. Both resolve to Node builtins rather than to hashed chunks, so a rebuild still
+cannot reach a running pass, but the safety rests on what those two imports name and not on their
+absence. The check to run is:
+
+```sh
+# from package/module/translation-repair
+grep -oE '(^|[^.[:alnum:]_$])import\(' dist/final/node/*.mjs | grep -v 'import.meta' | wc -l
+```
+
+Anything that is not a `node:` specifier would break the guarantee.
+
+`] PASS ` LINE COUNTS DO NOT DETECT FAILURE, which contradicts how this document has been counting
+suites. The runner emits one `] PASS ` line per describe listing the cases that passed, and separate
+`] FAIL ` lines for the ones that did not, so a describe with one failing case out of three emits a
+PASS line AND a FAIL line. A guard-removal run in this session held at 568 PASS while two cases were
+failing, and only the exit code and the FAIL count showed it. Count all three:
+
+```sh
+grep -c '] PASS ' suite.log; grep -c '] FAIL ' suite.log; echo "exit=$?"
+```
+
+Exit code decides. The clean baseline for this package is 568 PASS, 0 FAIL, exit 0.
+
+## The refinement recheck keeps its ballots too (`#192`)
+
+WHAT WAS MISSING. The naturalness lane asks the checkers a second time, about the text a refiner
+rewrote, and until this landed that round left one finding and nothing else: `refine-recheck-passed`
+or `refine-rolled-back (<issue ids>)`. A rolled-back slice therefore named the issues it lost and
+never named who called them lost. That is the same gap the deciding round had one stage over, and it
+was scoped out of that landing deliberately rather than missed.
+
+WHAT LANDED. `ChunkRepairOutcome` gains `recheckReadings` (required, so every construction site says
+whether a round ran) and `RepairIssueRecord` gains `recheckReading` (optional, so an issue nobody
+rechecked is absent rather than falsely unanimous). `retainsResolvedIssues` now returns the readings
+it already had in hand, and both of its callers attach them: the rollback path as well as the
+keep path, because the rollback is the case whose evidence matters most.
+
+WHY IT IS A SECOND FIELD RATHER THAN AN UPDATE TO THE FIRST. Both rounds rule on the same issue ids,
+but `resolved` rests on the first alone. The recheck is a rollback gate: it keeps or discards a
+rewrite whole and never revises `resolvedIssueIds`. A reader that merged them would present a
+verdict about text that may have been thrown away as the verdict behind what shipped, and would hide
+a checker that answered differently between the two rounds.
+
+GFP, BOTH DIRECTIONS, each mutation applied to a committed guard and then reverted:
+
+-   Making `retainsResolvedIssues` return `readings: {}` failed both new `runRefinePhase` cases and
+    left the third one passing, which is the control: a slice with no confirmed issue buys no round,
+    so an empty reading there is correct rather than a loss.
+-   Removing the `recheckReading` spread in `repair-record.ts` failed the new disk-boundary case in
+    `repair-provenance.unit.test.ts` and nothing else.
+
+THE ANALYSER READS BOTH ROUNDS NOW, labelled rather than merged, and was positive-controlled on a
+synthetic artifact carrying one deciding round that cannot flip and one recheck round built to flip.
+It reports `FLIPS: 1 of 3` on that file with the flipping row labelled `recheck`, so a null from it
+is a null about the data rather than about the reader.
+
+### Interim reading at 71 rounds
+
+Four wide passes now, 422 ballots over 71 checker rounds:
+
+```
+rounds carrying at least one self-vote                     68 of 71
+rounds where the narrow three split                         2 of 71   <- ceiling on flips
+rounds where any of the six dissented                       5 of 71
+rounds where a writer said something no narrow checker did  3 of 71
+FLIPS                                                       0 of 71
+```
+
+TWO OF THE FOUR PASSES ARE THE SAME ENTRY, `lintong`, run twice: `checker-width-wide-2026-08-24` and
+`checker-reading-vub-2026-08-24`. Those two contribute 38 of the 71 rounds and rule on the same
+underlying issues, so they are correlated and the effective sample is smaller than 71. Recorded here
+because a later reader summing the four directories would otherwise treat them as independent.
+
+The picture has not changed shape since 39 rounds: the ceiling is still 2, and the reason no flip
+has been seen remains that this panel almost never splits. One round in the batch pass lost a voice
+and was decided by five rather than six, which is the only panel-size variation observed.
