@@ -18421,3 +18421,204 @@ and the distinction only decides anything where nothing ships.
 Nothing of the failed run is recoverable but the log.
 The verification re-run is `~/temp/agent/xiept2-anchorfix-2026-08-24`, launched 2026-08-24 04:47
 from the fixed build.
+
+## The published tree is read back now, and the first check that did it was too weak (`#197`)
+
+FOUND 2026-08-24, while looking for what else could fail the way `#194` did.
+
+`#175` made the mirrored tree of fixed `page.en.md` files the thing this pipeline produces.
+Every check built since reads artifacts.
+An artifact is what the deciders said;
+a page is what a reader gets.
+`#194` is the price of the gap:
+the publisher handed the assembler a blank rendering,
+and the only thing that noticed was a guard inside the splice,
+four hours and forty-eight minutes into the entry.
+
+`verify-published` closes that.
+It spends no quota and touches no model.
+Run it with `TRANSLATION_REPAIR_RUNS_DIR=<dir> mise run //package/module/translation-repair:verify-published`.
+
+### The first version passed a page with two hundred characters cut out of it
+
+The check as first built was an ordered occurrence scan:
+every wording the artifact says would ship must appear in the page,
+in slice order,
+without overlapping.
+Its module note claimed
+"a correct page always passes it,
+and a page that lost or reordered a rendering cannot".
+
+Run against four real run directories it reported everything clean.
+Per QPC that is worth nothing until the probe is shown able to fail,
+so the control was a throwaway copy of `163b-verify`
+with two hundred characters cut from the middle of `dogesir_/page.en.md`.
+
+    dogesir_: wordings=10 silent=0 pageChars=3640 missing=0
+    CONTROL exit=0
+
+`pageChars` fell by exactly two hundred and `missing` stayed at zero.
+The check did not notice.
+
+THE REASON IS STRUCTURAL, not a coding slip.
+The wordings cover the slices.
+A page is the archive with the slice spans replaced,
+so most of it is text no reading describes,
+and a deletion there is invisible to any per-slice check.
+The claim in the module note was true only of losses INSIDE a slice wording.
+
+### What replaced it: arithmetic that covers the text no slice names
+
+Splicing replaces each span with its replacement,
+so the document grows by exactly what each slice added
+and shrinks by what it removed,
+and everything between the spans is carried through untouched.
+That gives a prediction that needs no offsets:
+
+    expected = archiveChars + sum over slices of (shippedChars - incumbentChars)
+
+The archive text is on the artifact already,
+stored by `#128` and decided in `doc/decision/artifact-stores-the-archive-text.md`,
+which is what makes this reachable without adding a field.
+
+MEASURED BEFORE IT WAS TRUSTED, on six real published pages across four runs.
+The prediction was exact on all six:
+`gaoyanger` 349 to 370,
+`dogesir_` 3716 to 3840,
+`wangzihao980` 2133 to 2295,
+`Acheron` 1269 to 1172,
+`AmbeR_the_anpa` 2516 to 2576,
+`Anilovr` 2236 to 2343.
+Five grew and one shrank,
+so the arithmetic is not a restatement of the archive length in either direction.
+
+Both controls then failed the page and the negative control stayed clean:
+
+    untouched:      chars=3840=expected            missing=0   exit=0
+    minus 200:      chars=3640/expected 3840       missing=0   exit=1
+    plus 200:       chars=4040/expected 3840       missing=0   exit=1
+
+`missing=0` on both mutations is the point.
+The occurrence scan still reports nothing wrong;
+only the arithmetic refutes them.
+
+### Where the arithmetic stops being an equality
+
+A FILLED ANCHOR MAKES IT A FLOOR.
+`spliceSlices` composes the separators around an inserted rendering
+rather than carrying them in any row,
+which `delivery-invariants.ts` states in the same words:
+a concatenation of row texts differs from the document while nothing is wrong.
+Those separators are real characters nobody counted,
+so a page with one is longer than the sum predicts.
+`pageWeightRefutes` is one-sided accordingly:
+exact weighings must match,
+inexact ones only set a floor,
+and a page under its floor lost text either way.
+
+An artifact written before `archiveText` was stored reports `UNWEIGHED` rather than agreeing,
+so a run of old artifacts cannot read as a run that was checked.
+
+### Both halves are kept, because neither subsumes the other
+
+The order scan catches wording swapped between two slices of equal size,
+which the length invariant cannot see.
+The length invariant catches the two hundred character cut,
+which the order scan cannot see.
+Each has a test naming the other as the case it does not cover,
+so removing one will fail a test that says why it was there.
+
+Landed in `093b53001`,
+572 PASS,
+0 FAIL,
+0 lint warnings,
+types clean.
+
+## The recheck ballots have still never reached a live artifact, and the reason is not a defect (`#192`)
+
+MEASURED 2026-08-24 over every settled artifact on disk.
+
+`#192` landed in `f65b727b7` and is GFP-proven in unit tests.
+The live-artifact VUB was still owed,
+and reading the artifacts says it is not merely owed but failing:
+
+    issue records total = 1215
+      refined AND resolved = 160      <- these buy a checker round
+      carrying recheckReading = 0
+
+The conjunction is what matters.
+`retainsResolvedIssues` returns early with `readings: {}`
+when the slice has no confirmed-resolved issue,
+so `refined` alone proves nothing.
+A record that is BOTH `refined` and `resolved` went past that early return,
+bought a round,
+and must carry its ballots.
+There are 160 of them across twenty entries and not one has a reading.
+
+### The cause is launch ordering, not a dropped field
+
+Two readings were considered and the first one was wrong.
+
+REFUTED: an explicit artifact projection that lists fields and missed this one.
+There is no such projection.
+`rg 'checkerReadings' src --glob '!*test*'` finds seven hits,
+none under `corpus-run/`,
+so chunk outcomes are serialized whole
+and a required field set to `{}` would appear as `{}`.
+
+STANDS: every one of those artifacts was written by a pass
+whose build predates the field.
+The tell is `checker-reading-vub/lintong`,
+which carries `chunks[n].checkerReadings` and `issues[n].checkerReading`
+and no `recheckReadings` at all,
+while `AmbeR_the_anpa` and `Anilovr` carry none of the three.
+Three different builds, three different field sets, all settling within two hours of each other.
+This is the trap already recorded here:
+a rebuild does not change a running pass,
+and a pass launched before a field exists never writes it, however long it runs.
+
+Every construction site does set the field.
+`repair-chunk.ts`,
+`repair-unchanged-outcome.ts`,
+`repair-not-applicable.ts`,
+and both exits of `refine-slice-settle.ts` all name `recheckReadings`,
+and `ChunkRepairOutcome` makes it required so a new site cannot forget it.
+
+### A search trap that produced the wrong reading first
+
+The refuted reading came from `rg 'recheckReadings' . | head -20`,
+which returned exactly twenty lines and omitted `repair-not-applicable.ts:79`.
+The omission looked like a construction site that forgot the field.
+QRY names this exact failure:
+a `head` cap makes a search report fewer matches than exist and says nothing about it.
+Re-run uncapped before concluding a symbol is absent from a file.
+
+### What is now in flight
+
+`recheck-ballot-vub-2026-08-24` on `093b53001`,
+running `keyword233,saurikissa`.
+Both entries produced the `refined AND resolved` conjunction on every earlier run that settled them,
+`keyword233` at 7 and 5 records and `saurikissa` at 5, 5, 5 and 4,
+so both are expected to buy a recheck round rather than merely maybe.
+
+The same run answers `#193`:
+the accept gate's panel readings have never reached a live artifact either,
+for the same reason and on the same schedule.
+
+### Two batches were stopped rather than left running
+
+`checker-width-wide-batch-2026-08-24` and `checker-width-wide-batch2-2026-08-24`
+had failed at their originally launched task,
+been relaunched with their output going to a closed descriptor,
+and were holding `pass.lock` files naming pids that no longer existed.
+They had produced no log line in fifty-two minutes.
+
+They were stopped by pid and their stale locks removed.
+Nothing was lost:
+their slice caches were pinned to a pipeline digest
+superseded by five commits since,
+so a resume would have re-bought every call regardless.
+The question they were opened for,
+checker width,
+was answered and closed by `#188`,
+and the switch they set no longer exists.
