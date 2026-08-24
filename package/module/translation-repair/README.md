@@ -762,6 +762,33 @@ and readers refuse to mix generations unless told to.
     that asks for a filtered pool and an unfiltered one at once,
     and preferring either would record a policy nobody chose.
 
+### Schema generations, which the drift opt-in does not cover
+
+The pass writes SCHEMA GENERATION 3, and refuses to resume into a directory holding another one.
+That refusal is separate from the build guard above and is not waved past by
+`TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`:
+drift is an opinion about which BUILD filled a pool,
+and its remedy works because every file still answers the same questions.
+A file of another schema generation cannot answer them at all.
+
+Generation 3 differs from generation 2 in three key names and nothing else:
+
+-   `changedSliceIndices`, which generation 2 spelled `shippedChunkIndices`.
+-   `withdrawnSliceIndices`, which it spelled `withdrawnChunkIndices`.
+-   `sliceCritics`, which it spelled `chunkCritics`.
+
+Both generations are READ. The reader takes the spelling from the version the file records,
+so nothing is ever tried under two spellings,
+and a generation 3 stamp over generation 2 keys is refused rather than read as a file
+missing three keys.
+
+Meeting the refusal on a resume, the ways forward are the ones the message lists:
+start a fresh directory with `TRANSLATION_REPAIR_RUNS_DIR`,
+restore the code those entries were settled under and resume there,
+or move the older artifacts to an archive directory and pay for their re-run.
+Deleting them is the one thing to avoid:
+it costs the same re-run and destroys a sound result of the generation that wrote it.
+
 ## Status
 
 Milestone one (detection) is complete:
