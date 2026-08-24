@@ -188,3 +188,40 @@ so a truncation is a named refusal rather than a silently short answer a judge s
 - Which stages dominate call volume, since "widen to balance load" is a claim about volume.
 - The calibration pass that picks the narrow writer set from the 10.
 - That no picture-carrying slice is judged only by its own readers.
+
+## What has landed
+
+As of 2026-08-24, in commit order:
+
+-   `anthropic-delta-scan.ts` implements the existing `DeltaScanner` interface over Anthropic SSE,
+    so every stream guard covers the second transport with no second copy of a measured threshold.
+    GFP-proven with two mutations.
+-   `hyper-catalog.ts` records the eight allowlisted models with their measured tool-choice shape,
+    vision flag and output ceiling, plus `answerCeilingFor` reconciling each model against `#156`.
+    GFP-proven with one mutation.
+-   `anthropic-completion.ts` reassembles a drained Anthropic body into `ExtractedCompletion`,
+    reading tool-call arguments as the answer and requiring `message_stop`.
+    GFP-proven with one mutation.
+-   `RosterModelId` replaces `SyntheticModelId` across 111 files,
+    since the type is about to name five models Synthetic does not serve.
+-   `provider-barrel.ts` splits the provider exports out of `index.ts`, which had reached its line budget.
+
+State: types clean, zero lint findings, 578 tests passing, none failing.
+
+### Still to build
+
+-   The request side: an Anthropic Messages body carrying the tool definition,
+    and the full tool schema repeated in the system prompt by owner instruction.
+-   Hyper's `GET /v1/credits` reader, beside the Synthetic one that already exists.
+-   The router: saturate Synthetic at one call per model, overflow to Hyper,
+    fail over on either Synthetic limit, throw when both are dry.
+-   Widening `RosterModelId` to the ten, and removing `hf:zai-org/GLM-4.7-Flash`.
+-   Cross-provider re-ask for the three shared models.
+
+### A trap worth remembering
+
+`prepare-section-round.ts` carries a literal NUL byte as a cache-key separator,
+so `grep` and `rg` classify it as binary and report NO MATCHES rather than the matches it holds.
+A repo-wide rename looked complete and the source looked clean;
+only the bundler disagreed.
+Use `grep -a` when a search over this package must be exhaustive.
