@@ -113,20 +113,63 @@ export type ProviderBudgets = {
 };
 
 /**
- * Reads one provider's meter, reporting an unreachable meter as WET.
+ * What one provider's meter said, keeping a meter that could not be read
+ * distinct from one that answered.
+ *
+ * THREE STATES RATHER THAN A BOOLEAN, because routing and measurement want
+ * different things out of the same read. Routing needs one bit, spend here or
+ * do not, and an unreachable meter has to fall on the spendable side of it for
+ * the reason `drynessOf` was written with. Measurement needs to know that the
+ * bit was a guess: a duty cycle counting an unreadable meter as an available
+ * provider reports an outage as uptime, which is backwards for the one number
+ * it exists to produce.
+ *
+ * @internal
+ */
+export type MeterState = 'wet' | 'dry' | 'unreadable';
+
+/**
+ * Whether a meter state stops us spending on that provider.
+ *
+ * ONLY A METER THAT ANSWERED AND SAID DRY holds a provider out, so this file's
+ * routing policy is unchanged by the third state existing.
+ *
+ * @param state - what the meter said, or that it said nothing
+ *
+ * @returns Whether the router should treat this provider as out of budget
+ *
+ * @example
+ * ```ts
+ * const dry = routesAsDry({ state: 'unreadable', },);
+ * // => false
+ * ```
+ *
+ * @internal
+ */
+export function routesAsDry(
+  { state, }: { readonly state: MeterState; },
+): boolean {
+  return state === 'dry';
+}
+
+/**
+ * Reads one provider's meter, naming an unreachable meter rather than
+ * flattening it into the answer a working meter would have given.
  *
  * @param name - provider being read, for the log line
  *
  * @param readDryness - meter read, which may reject
  *
- * @returns Whether that provider is out of budget
+ * @returns What that meter said, or that it could not be read
  *
  * @example
  * ```ts
- * const dry = await drynessOf({ name: 'hyper', readDryness, },);
+ * const state = await meterStateOf({ name: 'hyper', readDryness, },);
  * ```
+ *
+ * @internal
  */
-async function drynessOf(
+export async function meterStateOf(
   {
     name,
     readDryness,
@@ -134,17 +177,19 @@ async function drynessOf(
     readonly name: ProviderName;
     readonly readDryness: () => Promise<boolean>;
   },
-): Promise<boolean> {
+): Promise<MeterState> {
   /**
    * Logger pre-tagged with this function's name.
    */
   const rl = tagged({
-    tag: drynessOf.name,
+    tag: meterStateOf.name,
     l,
   },);
 
   try {
-    return await readDryness();
+    return (await readDryness())
+      ? 'dry'
+      : 'wet';
   } catch (error) {
     // A monitoring failure must not become an outage: the router's failover
     // still recovers a real refusal, and a false dry stops calls that work.
@@ -153,7 +198,7 @@ async function drynessOf(
         errorName({ error, },)
       })`,
     );
-    return false;
+    return 'unreadable';
   }
 }
 
@@ -245,14 +290,14 @@ export function createProviderBudgets(
      * Both meters, read together so one slow endpoint does not serialise
      * behind the other.
      */
-    const [syntheticDry, hyperDry,] = await Promise.all([
-      drynessOf({
+    const [syntheticState, hyperState,] = await Promise.all([
+      meterStateOf({
         name: 'synthetic',
         readDryness: async function readQuota(): Promise<boolean> {
           return syntheticIsDry({ quota: await synthetic.quotas({ signal, },), },);
         },
       },),
-      drynessOf({
+      meterStateOf({
         name: 'hyper',
         readDryness: async function readCredits(): Promise<boolean> {
           return hyperIsDry({ credits: await hyper.credits({ signal, },), },);
@@ -262,15 +307,17 @@ export function createProviderBudgets(
 
     // INFO RATHER THAN DEBUG, because this line is the only record that a
     // provider was AVAILABLE at a given moment, and a run does not record debug.
+    // It carries the meter state rather than the routed bit, so an unreadable
+    // meter cannot be read back later as a provider that was up.
     // Refusals alone cannot measure a duty cycle: `NoProviderForModelError`
     // appears only where something happened to ask for a model that provider
     // serves, so a quiet period reads identically to a healthy one. This is
     // bounded by the freshness window rather than by call volume, so it costs
     // about one line a minute however busy the run is.
-    rl.info(`METERS synthetic=${syntheticDry ? 'dry' : 'wet'} hyper=${hyperDry ? 'dry' : 'wet'}`,);
+    rl.info(`METERS synthetic=${syntheticState} hyper=${hyperState}`,);
     return {
-      syntheticDry,
-      hyperDry,
+      syntheticDry: routesAsDry({ state: syntheticState, },),
+      hyperDry: routesAsDry({ state: hyperState, },),
     };
   }
 

@@ -22,8 +22,11 @@ export {
 export {
   type BudgetView,
   createProviderBudgets,
+  type MeterState,
+  meterStateOf,
   type ProviderBudgets,
   type ProviderName,
+  routesAsDry,
 } from './provider-budget.ts';
 export {
   DEFAULT_WIRE_FORMAT,
