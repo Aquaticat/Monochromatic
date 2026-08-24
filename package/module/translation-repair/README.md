@@ -397,6 +397,29 @@ and reading one as an instruction has cost this package a defect before.
     Note the `CHARM` in the middle;
     a name missing it is read by nothing and reported by nothing.
 
+#### Running out of budget is normal, and neither provider is restorable on demand
+
+Charm Hyper capacity cannot be reset on request at all;
+it returns on its own schedule.
+Synthetic capacity can be restored only sometimes.
+Plan a pass around that rather than around a clean window,
+because a clean window cannot be arranged.
+
+A provider that is out of budget does not fail a run.
+The budget layer raises `NoProviderForModelError` for each model
+no reachable provider can take, the stage records a lost voice,
+and the run continues on whoever answered.
+On 2026-08-24 a pass ran with Charm Hyper dry from its first second:
+the five Hyper-only models were refused,
+the five Synthetic-served models kept streaming,
+and both meter endpoints kept reading.
+
+TWO CONSEQUENCES FOR READING A RUN.
+A per-entry cost measured while a provider is dry
+is not the cost a two-provider run pays, and should be labelled with the outage.
+Any quality figure measured then rests on whoever was awake,
+so five of ten models contributed nothing to it.
+
 ### Where a run writes
 
 -   `TRANSLATION_REPAIR_RUNS_DIR`.
