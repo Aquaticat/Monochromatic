@@ -15,6 +15,12 @@ export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export { readJsonOutcome, } from './chat-json-outcome.ts';
 export { isSuccessStatus, } from './http-success.ts';
 export {
+  type BudgetView,
+  createProviderBudgets,
+  type ProviderBudgets,
+  type ProviderName,
+} from './provider-budget.ts';
+export {
   DEFAULT_WIRE_FORMAT,
   scannerFor,
   type StreamWireFormat,

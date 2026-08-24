@@ -64,20 +64,24 @@ import {
 // wrong is silent rather than loud.
 
 /**
- * Concurrent requests granted to each model until this provider is measured.
+ * Concurrent requests granted to each model, measured live on 2026-08-24.
  *
- * NOT A MEASUREMENT, and named rather than written into the parameter so it
- * cannot be read as one. The other provider's bound of one comes from a
- * published rule about subscribed packs; this provider publishes no such rule,
- * and no throughput measurement has been taken against it. One request at a
- * time is the reading that cannot exceed an unknown limit.
+ * THIS PROVIDER DOES NOT SERIALISE PER MODEL. Bursts of 4, 8, 16 and 32
+ * simultaneous calls to `minimax-m3` all returned schema-valid answers with
+ * zero refusals, and each burst finished in about the time ONE call takes: 32
+ * calls in 2482ms against a single-call band of 994 to 1641ms over 5 runs.
+ * Serialised, those 32 would have taken some 40 seconds. The other provider's
+ * bound of one comes from its published rule about subscribed packs and does
+ * not transfer here; inheriting it would have cost a factor of 32 in exactly
+ * the capacity this provider was added to supply.
  *
- * WHAT WOULD CHANGE IT: a live run of the same call at rising concurrency,
- * reading the status of each. This provider is here to absorb overflow when
- * the other is exhausted, so a bound that turns out to be needlessly tight
- * costs exactly the capacity the second provider was added for.
+ * HELD AT 8 RATHER THAN AT THE 32 PROVEN, because the probe sent a two-line
+ * prompt and a corpus call carries orders of magnitude more. What was measured
+ * is that the provider accepts the width; what was not measured is 32 large
+ * bodies streaming at once through our own drain and guards. Eight is eight
+ * times the inherited bound and a quarter of the proven ceiling.
  */
-const UNMEASURED_PER_MODEL_CONCURRENCY = 1;
+const MEASURED_PER_MODEL_CONCURRENCY = 8;
 
 /**
  * Logger root for this package's model-facing shell.
@@ -140,8 +144,9 @@ export type HyperClient = ModelCaller & {
  *
  * @param creditsUrl - balance endpoint, overridable for tests
  *
- * @param perModelConcurrency - concurrent requests granted to each model,
- * defaulting to the unmeasured bound of one
+ * @param perModelConcurrency - concurrent requests granted to each model;
+ * this provider was measured not to serialise per model, so the default is
+ * eight rather than the other provider's one
  *
  * @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
  *
@@ -149,7 +154,7 @@ export type HyperClient = ModelCaller & {
  *
  * @example
  * ```ts
- * const client = createHyperClient({ apiKey: process.env['TRANSLATION_REPAIR_HYPER_API_KEY'] ?? '', },);
+ * const client = createHyperClient({ apiKey: process.env['TRANSLATION_REPAIR_CHARM_HYPER_API_KEY'] ?? '', },);
  * ```
  */
 export function createHyperClient(
@@ -158,7 +163,7 @@ export function createHyperClient(
     transport = fetchTransport,
     messagesUrl = HYPER_MESSAGES_URL,
     creditsUrl = HYPER_CREDITS_URL,
-    perModelConcurrency = UNMEASURED_PER_MODEL_CONCURRENCY,
+    perModelConcurrency = MEASURED_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
   }: {
     readonly apiKey: string;

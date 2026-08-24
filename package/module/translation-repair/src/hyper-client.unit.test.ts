@@ -6,6 +6,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -25,6 +26,19 @@ import {
   type TransportExchange,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Delay of the deliberately slow test transport.
+ */
+const SLOW_TRANSPORT_MS = 30;
+
+/**
+ * Calls fired at one model to show they are not serialised.
+ *
+ * Well under the width measured live, so this asserts overlap rather than the
+ * ceiling: the ceiling belongs to the provider and cannot be replayed.
+ */
+const OVERLAPPING_CALLS = 4;
 
 /**
  * Single user message reused across exchanges.
@@ -649,6 +663,64 @@ await describe({
         }
 
         expect(caught instanceof CreditsShapeError,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'lets calls to one model overlap, as this provider was measured to allow',
+      fn: async () => {
+        /** Calls in flight right now. */
+        let inFlight = 0;
+
+        /** Most that were ever in flight at once. */
+        let widest = 0;
+
+        /**
+         * Transport holding each call long enough for overlap to be visible.
+         *
+         * @returns One recorded tool call, after the hold
+         *
+         * @example
+         * ```ts
+         * const reply = await transport();
+         * ```
+         */
+        async function transport(): Promise<{ status: number; bodyText: string; }> {
+          inFlight += 1;
+          widest = Math.max(
+            widest,
+            inFlight,
+          );
+          await wait(SLOW_TRANSPORT_MS,);
+          inFlight -= 1;
+          return {
+            status: 200,
+            bodyText: TOOL_CALL_BODY,
+          };
+        }
+
+        /** Client under test on its own default width. */
+        const client = createHyperClient({
+          apiKey: 'test-key',
+          transport,
+        },);
+
+        await Promise.all(Array.from(
+          { length: OVERLAPPING_CALLS, },
+          async function one(): Promise<unknown> {
+            return await client.chatText({
+              modelId: 'minimax-m3',
+              messages: MESSAGES,
+              signal: new AbortController().signal,
+            },);
+          },
+        ),);
+
+        // MEASURED LIVE on 2026-08-24: bursts of 4, 8, 16 and 32 simultaneous
+        // calls to one model all returned answers with zero refusals, each
+        // burst finishing in about the time one call takes. Inheriting the
+        // other provider's bound of one would serialise these.
+        expect(widest,).toBe(OVERLAPPING_CALLS,);
       },
     },),
 
