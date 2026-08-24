@@ -19070,3 +19070,56 @@ So an attempt that spends its entire cap buying only a section pairing
 still registers as progress and still earns its re-attempt.
 Had setup cached somewhere else, the largest entries,
 the ones this was built for, would have stalled on their first attempt every time.
+
+### What the first live run proved, and the defect it exposed
+
+Run 1, `--only MocaKawai` under a 5-minute ceiling, into a throwaway runs dir.
+It exercised BOTH branches of the re-attempt policy in one invocation
+and then exited cleanly, exit 0, in 601.84s:
+
+    CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 5 minutes rather than the built-in 420
+    TALLY MocaKawai status=ERROR ms=300002 aborted=true error=Timeout: MocaKawai exceeded its 300000ms deadline
+    REATTEMPT MocaKawai queued: cached 2 more slices, so the next attempt starts further along
+    TALLY MocaKawai status=ERROR ms=300004 aborted=true error=Timeout: MocaKawai exceeded its 300000ms deadline
+    STALLED MocaKawai: its 2 cached slices are what it started with, so a further attempt in this invocation would repeat it
+    DONE processed=0 of pending=1; artifacts=0/92 elapsed=600008ms
+
+`attempts.json` read `{"MocaKawai": 2}`,
+so the second attempt happened inside the SAME invocation
+against the same `sha256-tree-v1:38a0fcb...` digest.
+That is the whole of what `#196` said was untested.
+
+THE RE-ATTEMPT REALLY DID START FURTHER ALONG, and the timestamps show it.
+Attempt 1 reached "both lanes over 13 slices" 45 seconds in, after buying two block pairings.
+Attempt 2 reached the same line 0.16 seconds in, off those cached pairings.
+
+The two records it banked were both `pairing.` files rather than repair slices,
+which is the cache-layout fact working exactly as intended:
+`countCachedSlices` counts every `.json` in the entry's directory,
+so setup progress earns a re-attempt.
+
+#### The ceiling has a floor, and nothing said so
+
+Attempt 2 banked nothing and the entry stalled.
+The cause is not the queue: `RUN_PER_CALL_TIMEOUT_MS` is 360_000
+and the ceiling was 300_000,
+so every attempt was cut BEFORE any single exchange was allowed to return.
+No exchange returned, so no slice cached, so no progress could be read,
+so the queue correctly dropped the entry.
+
+Every component behaved as designed and the run explained none of it,
+while five minutes looks like a perfectly reasonable ceiling to set.
+`capOutlastsOneCall` and `capTooTightNote` now catch it and print
+`CAP TOO TIGHT` naming both numbers.
+
+WARNED RATHER THAN REFUSED, deliberately:
+cutting mid-exchange is exactly what a test of the stall path wants,
+and refusing would have blocked the run that found this.
+GFP-proven at the equal-values boundary,
+which is the case a `>=` would silently accept.
+
+This also answers half of `#196`'s open question about raising the cap by slice count.
+Any such rule has a hard floor at one exchange deadline,
+and a practical floor well above it,
+since a slice runs several exchange rounds in sequence:
+the critic round alone took over 200 seconds on the measured attempt.
