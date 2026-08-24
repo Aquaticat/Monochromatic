@@ -49,6 +49,32 @@ const THIRD_NAP = 'by the till.';
 const OLD_NAP = 'She sleeps somewhere.';
 
 /**
+ * Second archive-side wording, so a fixture can swap two settled renderings
+ * between slices without changing how long the page is.
+ */
+const OLD_PERCH = 'She sits somewhere else.';
+
+/**
+ * Archive carrying two slices with unsliced text around and between them.
+ */
+const ARCHIVE_TWO_SLICES =
+  `# Mittens\n\n${OLD_NAP}\n\n${OLD_PERCH}\n\nNobody decided anything about this line.\n`;
+
+/**
+ * Both slices, each replacing its own archive wording.
+ */
+const TWO_SWAPS = [
+  {
+    incumbent: OLD_NAP,
+    ships: FIRST_NAP,
+  },
+  {
+    incumbent: OLD_PERCH,
+    ships: SECOND_NAP,
+  },
+];
+
+/**
  * One slice as a fixture states it: what the archive held there, and what the
  * lanes settled on shipping in its place.
  *
@@ -467,7 +493,89 @@ await describe({
 
         expect(refusal,).toBeInstanceOf(PublishedPageDisagreesError,);
         expect((refusal as Error).message,).toContain('Mittens',);
-        expect((refusal as Error).message,).toContain('slice',);
+
+        // THE SCAN'S OWN WORDS, not merely the word "slice", which the length
+        // refusal also contains. Asserting the looser thing let a mutation that
+        // deleted this whole branch pass, because the page in this case is the
+        // wrong length too and the arithmetic caught it instead.
+        expect((refusal as Error).message,).toContain('in slice order',);
+      },
+    },),
+
+    it({
+      name:
+        'REFUSES TWO RENDERINGS SWAPPED BETWEEN THEIR SLICES, which the arithmetic cannot see. Both '
+        + 'wordings are present and the page is exactly as long as it should be, so the length '
+        + 'invariant agrees with it and only the ordered scan disagrees. This is the case that keeps '
+        + 'the scan in the guard beside the arithmetic',
+      fn: async () => {
+        /**
+         * Page a correct publish produces over both slices.
+         */
+        const correct = ARCHIVE_TWO_SLICES
+          .replace(
+            OLD_NAP,
+            FIRST_NAP,
+          )
+          .replace(
+            OLD_PERCH,
+            SECOND_NAP,
+          );
+
+        /**
+         * Same page with the two settled renderings in each other's slices.
+         */
+        const swapped = ARCHIVE_TWO_SLICES
+          .replace(
+            OLD_NAP,
+            SECOND_NAP,
+          )
+          .replace(
+            OLD_PERCH,
+            FIRST_NAP,
+          );
+
+        // THE PREMISE OF THE CASE, asserted rather than assumed: if these ever
+        // differed in length the arithmetic would catch it and this would stop
+        // measuring the scan.
+        expect(swapped.length,).toBe(correct.length,);
+
+        expect(pageWeightRefutes({
+          weight: pageWeighsWhatItShould({
+            artifact: artifactOver(TWO_SWAPS,),
+            archive: {
+              kind: 'stored',
+              text: ARCHIVE_TWO_SLICES,
+            },
+            pageText: swapped,
+          },),
+        },),).toBe(false,);
+
+        expect(() => {
+          refusePageThatDisagrees({
+            artifact: artifactOver(TWO_SWAPS,),
+            archive: {
+              kind: 'stored',
+              text: ARCHIVE_TWO_SLICES,
+            },
+            pageText: swapped,
+            entryId: 'Mittens',
+          },);
+        },).toThrow(PublishedPageDisagreesError,);
+
+        // AND THE CORRECT PAGE STILL PASSES, so the case above is about order
+        // rather than about this fixture being unpublishable.
+        expect(() => {
+          refusePageThatDisagrees({
+            artifact: artifactOver(TWO_SWAPS,),
+            archive: {
+              kind: 'stored',
+              text: ARCHIVE_TWO_SLICES,
+            },
+            pageText: correct,
+            entryId: 'Mittens',
+          },);
+        },).not.toThrow();
       },
     },),
 
