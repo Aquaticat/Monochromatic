@@ -681,10 +681,30 @@ a three-seat stage facing quorum of two loses the stage.
 Those are different bargains and the survivorship finding decides between them.
 
 THE WRITER SEATS NOW CROSS PROVIDERS, which none of them did before.
+The argument runs BOTH WAYS and only one direction was written down at first.
 Every previous writer seat was Synthetic-served,
 so a Synthetic outage emptied the editor and refiner stages entirely
 however well the router covered the wide roles.
 Charm Hyper serves `gemma-4-26b-a4b-it`.
+
+THE SYMMETRIC COST IS REAL AND WAS OBSERVED THE SAME DAY.
+A run started 2026-08-24 15:36 found Charm Hyper out of budget from its first second,
+and the five models it refused were exactly the five Hyper-only ones:
+`qwen3.8-max`, `minimax-m3`, `gemma-4-26b-a4b-it`,
+`deepseek-v4-pro-0813` and `deepseek-v4-flash-0731`.
+The five Synthetic-served models kept streaming and both meter endpoints kept reading.
+
+So the seat that protects the editor stage from a Synthetic outage
+also exposes it to a Hyper one, which it was not exposed to before.
+Under either outage the stage keeps two of three seats and clears quorum,
+which is the property that matters and is why the swap still stands;
+what changed is WHICH outage costs the seat, not whether one can.
+Before the swap, all three writer seats fell together on a single Synthetic outage,
+so the stage went from three-of-three exposure on one provider
+to two-of-three on each. That is the trade, stated in full.
+
+The wide roles were unaffected on the observed day:
+they carry all ten, so five going dark costs ballots rather than the stage.
 
 `gemma-4-26b-a4b-it` carries `readsImages: false`,
 which costs nothing in these seats.
