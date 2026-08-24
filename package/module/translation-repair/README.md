@@ -566,6 +566,73 @@ the digest is the only thing that reveals it,
 and it reveals it after the fact.
 Wait for the pass, or run the built entry point directly with `node`.
 
+### Deciding who fills a seat
+
+Two runners rank models on the job the seat actually does.
+Both spend quota, both write nothing to a corpus,
+and both take a slice count after `--`.
+
+```sh
+mise run //package/module/translation-repair:producer-calibrate -- 10
+mise run //package/module/translation-repair:editor-calibrate -- 14
+```
+
+`producer-calibrate` ranks WRITERS.
+It drives the translate stage:
+a model writing English from Chinese
+with nothing in front of it but the source.
+
+`editor-calibrate` ranks EDITORS, and reports the refiner standing off the same spend.
+It drives the whole repair lane,
+so the claims an editor works from
+are claims models really raised about that passage rather than fixtures.
+That costs more per slice than the writer calibration,
+because a slice buys critics, a panel, editors, judges and checkers
+instead of one stage.
+
+Every model writes on every slice in both.
+A narrow slate would compare only the models that happened to be seated,
+so a standing would mean something different for each of them.
+Every model also judges, matching production,
+and each model's ballots on its own work are then discounted,
+because counting self-votes ranks the most self-confident model first
+rather than the best-written one.
+
+#### Reading a standing honestly
+
+Three things on the report decide whether a standing means anything.
+
+The COUNTS beside each share.
+A share with no denominator cannot be told from a share one ballot wide,
+and a lead smaller than its denominator supports is not a lead.
+
+The SLICES that paid in, printed as `from N of M slices`.
+Adjudicated is not accepted:
+a slice can buy ten critics and a ten-model panel,
+have its issues rejected at the accept gate,
+and contribute nothing to an editor standing.
+A standing drawn entirely from one slice
+reads identically to one drawn evenly from six without this line.
+
+The models that WROTE NOTHING, named at the end.
+A model refused for budget leaves no candidate,
+so it vanishes from the table entirely,
+and its absence would otherwise read exactly like a model that wrote and lost.
+During a provider outage that is half the roster.
+
+#### The editor calibration diverges from production in one place
+
+Checkers self-certify there, and only there.
+Production forbids a checker from proving its own repair,
+and seating all ten as editors leaves nobody independent to check.
+Rotating editors out instead would reintroduce
+the survivorship the shape exists to avoid.
+
+It is safe for that measurement because checking runs after selection:
+the ballots a standing reads are cast before any checker is asked,
+so self-certification can move how many rounds happen,
+not who won the ones that did.
+
 ### Pooling artifacts across builds
 
 Each settled artifact records the digest of the pipeline that produced it,
