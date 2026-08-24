@@ -4,6 +4,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { errorName, } from '../error-name.ts';
 import { parseSettledArtifactV2, } from './artifact-v2-read.ts';
 import {
   ENGLISH_PAGE_FILE,
@@ -59,30 +60,6 @@ const ARTIFACTS_DIR = 'artifacts';
  * Suffix every settled artifact file carries.
  */
 const ARTIFACT_SUFFIX = '.json';
-
-/**
- * Names what a thrown value is, without asserting it into a shape.
- *
- * A CATCH BINDING IS `unknown` and asserting it to `Error` is a claim about
- * something nobody checked. Anything can be thrown, and the one time this
- * matters is the one time the report is worth reading.
- *
- * @param error - whatever was caught
- *
- * @returns Class name, or a stand-in for a value that has none
- *
- * @example
- * ```ts
- * console.error(errorName({ error, },),);
- * ```
- */
-function errorName(
-  { error, }: { readonly error: unknown; },
-): string {
-  if (Error.isError(error,))
-    return error.name;
-  return 'a thrown value that is not an Error';
-}
 
 /**
  * Lists a directory, reporting an absent one rather than raising.

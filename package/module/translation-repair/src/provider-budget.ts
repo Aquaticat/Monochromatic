@@ -4,6 +4,7 @@ import {
   hyperIsDry,
   syntheticIsDry,
 } from './budget-routing.ts';
+import { errorName, } from './error-name.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 
@@ -149,7 +150,7 @@ async function drynessOf(
     // still recovers a real refusal, and a false dry stops calls that work.
     rl.warn(
       `${name}: budget unreadable, treating as spendable (${
-        Error.isError(error,) ? error.name : 'a thrown value that is not an Error'
+        errorName({ error, },)
       })`,
     );
     return false;

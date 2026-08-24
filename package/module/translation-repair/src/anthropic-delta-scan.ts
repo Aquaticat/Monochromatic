@@ -3,6 +3,7 @@ import type {
   DeltaScanner,
   StreamChannel,
 } from './stream-delta-scan.ts';
+import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -213,26 +214,6 @@ function channelFor(
   if (blockType === THINKING_BLOCK)
     return 'reasoning';
   return DELTA_CHANNELS[deltaType] ?? UNREAD;
-}
-
-/**
- * Names what a thrown value is, without asserting it into a shape.
- *
- * @param error - whatever was caught
- *
- * @returns Class name, or a stand-in for a value that has none
- *
- * @example
- * ```ts
- * l.debug(errorName({ error, },),);
- * ```
- */
-function errorName(
-  { error, }: { readonly error: unknown; },
-): string {
-  if (Error.isError(error,))
-    return error.name;
-  return 'a thrown value that is not an Error';
 }
 
 /**

@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { errorName, } from '../error-name.ts';
 import {
   preferenceRate,
   type ProducerStanding,
@@ -229,7 +230,7 @@ async function main(): Promise<void> {
       // denominators report how much evidence survived.
       console.log(
         `  ${slice.entryId}#${String(slice.index,)}: LOST (${
-          Error.isError(error,) ? error.name : 'a thrown value that is not an Error'
+          errorName({ error, },)
         })`,
       );
     }

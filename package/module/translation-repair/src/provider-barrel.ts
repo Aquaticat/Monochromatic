@@ -11,6 +11,7 @@
 // 866 of 875 lost voices carried a single HTTP 429. A second provider is the
 // only remedy that works against an exhausted budget.
 
+export { errorName, } from './error-name.ts';
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export { readJsonOutcome, } from './chat-json-outcome.ts';
 export { isSuccessStatus, } from './http-success.ts';
