@@ -36,6 +36,10 @@ import {
   settledEntryIds,
 } from './pass-settled.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
+import {
+  HARD_CAP_VAR,
+  resolveHardCapMinutes,
+} from './cap-override.ts';
 import { runAttemptQueue, } from './entry-attempt-queue.ts';
 import { countCachedSlices, } from './entry-reattempt.ts';
 import { lockRunsDir, } from './runs-lock.ts';
@@ -153,9 +157,15 @@ const HARD_CAP_MINUTES = 420;
 const SOFT_BUDGET_MS = SOFT_BUDGET_MINUTES * MS_PER_MINUTE;
 
 /**
- * Hard ceiling in milliseconds.
+ * Hard ceiling in milliseconds, after any environment override.
+ *
+ * OVERRIDABLE so the re-attempt queue can be exercised against an entry that
+ * fits in one run: the queue only does anything to an entry the cap CUTS, and
+ * the shipped ceiling means the smallest such entry needs thirteen hours.
+ * `cap-override.ts` carries why an unreadable override throws.
  */
-const HARD_CAP_MS = HARD_CAP_MINUTES * MS_PER_MINUTE;
+const HARD_CAP_MS = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },)
+  * MS_PER_MINUTE;
 
 /**
  * Complete zh/en pairs present at the pinned commit; the run target.
@@ -470,6 +480,16 @@ async function runCorpusPass(): Promise<void> {
   console.log(
     `START tip=${tip} pipeline=${pipelineDigest} files=${String(fileCount,)} pending=${String(pending.length,)} done=${String(done.size,)} soft=${String(SOFT_BUDGET_MS,)}ms hard=${String(HARD_CAP_MS,)}ms`,
   );
+
+  // A run must never hide which ceiling it ran under: an artifact settled below
+  // a lowered cap is not comparable with one settled under the shipped one.
+  if (HARD_CAP_MS !== (HARD_CAP_MINUTES * MS_PER_MINUTE)) {
+    console.log(
+      `CAP OVERRIDDEN by ${HARD_CAP_VAR}: entries run under ${
+        String(HARD_CAP_MS / MS_PER_MINUTE,)
+      } minutes rather than the built-in ${String(HARD_CAP_MINUTES,)}`,
+    );
+  }
 
   /**
    * Shared client; per-model concurrency defaults to one.

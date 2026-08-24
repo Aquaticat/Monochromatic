@@ -161,6 +161,11 @@ export {
   settleEntry,
 } from './corpus-run/pass-entry.ts';
 export { gatherEntryPictures, } from './corpus-run/entry-pictures.ts';
+export {
+  HARD_CAP_VAR,
+  HardCapOverrideError,
+  resolveHardCapMinutes,
+} from './corpus-run/cap-override.ts';
 export { runAttemptQueue, } from './corpus-run/entry-attempt-queue.ts';
 export {
   countCachedSlices,
