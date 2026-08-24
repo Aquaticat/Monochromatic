@@ -36,9 +36,12 @@ an unknown top-level field returns 200,
 and every mode returns markdown-fenced JSON with invented keys.
 
 Hyper's Anthropic Messages endpoint with forced tool-use IS viable.
-Measured exact schema conformance on `glm-5.2` and `gpt-oss-120b`,
-with streaming intact over proper SSE event types.
-`kimi-k3` honoured the forced tool on 1 of 3 attempts and needs re-measurement over a larger sample.
+Measured over 20 streaming attempts per model on 2026-08-24, all 8 allowlisted models conform.
+Seven return 20 of 20 under `tool_choice: {type: "tool"}`.
+`qwen3.8-max` REFUSES that shape with `HTTP 400 invalid_request_error` regardless of streaming,
+system prompt, or `max_tokens`, and returns 20 of 20 under `tool_choice: {type: "auto"}` instead.
+An earlier reading that `kimi-k3` honoured the forced tool on only 1 of 3 attempts is RETRACTED:
+it measures 20 of 20.
 
 Anthropic SSE events are NORMALIZED into the event shape the existing guards already consume,
 rather than reimplemented natively.
@@ -54,6 +57,9 @@ Streaming stays ON.
 
 Six of the eight allowlisted Hyper models expose `reasoning.effort_levels`.
 The pipeline requests NONE of them and takes each model's own default.
+Note that `qwen3.8-max` emits native `thinking` content blocks with `thinking_delta` events,
+so on this transport the reasoning channel is TYPED rather than sniffed out of text,
+and `#158`'s spelling blindness cannot recur through it.
 The owner's reasoning:
 
 > Both providers aren't multi-billion enterprises whose only job is to serve models.
@@ -68,14 +74,27 @@ Owner's policy, to be driven by the quota readers:
 - Synthetic out of quota on EITHER the 5-hour limit or the weekly limit sends work to Hyper.
 - Both providers dry throws an error saying so, ending the run.
 
-Synthetic's concurrent-requests-per-model limit is not yet measured and is the one input this policy still lacks.
+Synthetic's per-model concurrency is 1 in production.
+`createSyntheticClient` defaults `perModelConcurrency` to 1 in `synthetic-client.ts`,
+and `run-config.ts` constructs the client without overriding it.
+The provider serves one request per model per subscribed pack and queues the excess server-side.
+So the overflow rule is concrete: one in-flight call per model on Synthetic,
+and every concurrent call beyond that for the same model goes to Hyper.
 
 ### Quota sources
 
 Synthetic `GET /v2/quotas` gives `fiveHour {remaining, max, limited, nextTickAt}`
 regenerating 5% per 15 minutes,
 and `weekly {percentRemaining, nextRegenAt}` regenerating 2% per roughly 3.4 hours.
-Both are already parsed by `src/synthetic-quota.ts`.
+Both are already parsed by `src/synthetic-quota.ts`,
+and a live read on 2026-08-24 confirms the wire shape has not drifted since July.
+
+The live body also carries fields the typed model does not expose:
+`weeklyTokenLimit.remainingCredits` and `maxCredits` as dollar strings,
+`weeklyTokenLimit.nextRegenCredits`,
+`rollingFiveHourLimit.tickPercent`,
+and a `subscription {limit, requests, renewsAt}` block.
+Actual dollars remaining is a better pacing signal than a percentage and should be modelled.
 
 Hyper `GET /v1/credits` gives `{"balance": N}`, measured at 249 on 2026-08-24.
 The balance refreshes every 24 hours at 02:53, so it is a daily budget and needs no spend cap.
@@ -113,6 +132,16 @@ Provider IS recorded per call, for diagnosis.
 Every one of the 8 gets its forced-tool-use conformance measured before it is seated.
 One that measures badly is DROPPED and reported to the owner with its rate,
 rather than seated to produce lost voices at full call cost.
+As measured, NONE are dropped: all 8 seat.
+
+The system prompt must carry the FULL TOOL SCHEMA, by owner instruction:
+
+> Some model/provider pairs can behave badly w/o a detailed system prompt,
+> including but not limited to giving wrong tool call formats.
+> Please make sure to put even the full tool schema into system prompts.
+
+So the schema is sent twice, once through the native tool definition and once in prose,
+and a model that mishandles the protocol can still read what it was asked for.
 
 ### Slot widths
 
@@ -156,8 +185,6 @@ so a truncation is a named refusal rather than a silently short answer a judge s
 
 ## Still to measure
 
-- Synthetic's concurrent-requests-per-model limit, which the routing policy needs.
-- Forced-tool-use conformance for all 8 Hyper models over a sample large enough to separate 33% from 60%.
 - Which stages dominate call volume, since "widen to balance load" is a claim about volume.
 - The calibration pass that picks the narrow writer set from the 10.
 - That no picture-carrying slice is judged only by its own readers.
