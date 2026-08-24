@@ -18814,3 +18814,61 @@ Its output is a test fixture, not a deliverable.
 
 Any quality measurement taken in this window is contaminated,
 including anything `#196` would conclude about the per-entry cap.
+
+### The reason is split, and the fact it splits on was already there
+
+Landed 2026-08-24 in `5a482a74f`.
+
+`no-voice-heard` joins `TranslateAbsenceReason` and `TranslateDecision`.
+`SLATE_TERMINALS` gives it the same terminal as `no-candidate`,
+because what the two tell a reader differs
+while what they tell the consolidation does not:
+neither reached a judge.
+That record is typed `Record<TranslateDecision, ConsolidationTerminal>`
+precisely so a new decision fails to typecheck instead of falling into whichever branch is last,
+and it worked: the choice had to be made rather than defaulted.
+
+THE DISTINGUISHING FACT WAS ALREADY AT THE EXIT THAT COLLAPSED IT.
+`ProducedSlate.heardTranslators` has been carried since the produce and judge halves were split,
+for the reason its own TSDoc gives:
+a decision taken over a thin slate is not the same decision,
+and the judging half has no other way to know.
+Zero heard is the whole test.
+This is the fourth defect this session
+where the information needed was present and discarded one line before it could be recorded.
+
+### A test was pinning the conflation
+
+The document case for an unfillable passage
+builds its fixture with `silentForSource`,
+which the harness documents as
+"original whose slice every translator fails on",
+"standing in for a provider that is down while the signal stays live".
+It asserted `no-candidate`.
+
+So the codebase's own fixture for a dead provider
+was landing on the reason that means the passage is hard.
+It now asserts `no-voice-heard` and its name says why.
+
+### GFP, in both directions, because one direction would prove nothing
+
+    always no-candidate    (the old behaviour)   exit 1, 4 cases fail
+    always no-voice-heard  (the opposite)        exit 1, 2 cases fail
+    restored                                     exit 0, 575 PASS
+
+The new judge-level cases are a PAIR on purpose.
+A single reason covering both states satisfies either case alone,
+so only both together show a distinction is drawn rather than a constant returned,
+and the two mutations are what demonstrate that.
+Their client throws if anything asks it a question,
+since an empty slate must buy no judging round.
+
+### What is left on `#198`
+
+Splitting the reason was the prerequisite.
+Refusing to settle an entry whose gaps came from lost voices,
+and re-asking a slate whose voices were all lost,
+both remain open,
+and both need a measurement that CANNOT be taken in the current window:
+anything measured about re-ask effectiveness during a 20 percent hour
+measures the hour rather than the remedy.
