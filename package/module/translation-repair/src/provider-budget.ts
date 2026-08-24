@@ -2,7 +2,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   hyperIsDry,
+  hyperMeterLevel,
   syntheticIsDry,
+  syntheticMeterLevel,
 } from './budget-routing.ts';
 import { errorName, } from './error-name.ts';
 import type { HyperClient, } from './hyper-client.ts';
@@ -153,43 +155,93 @@ export function routesAsDry(
 }
 
 /**
+ * What one meter answered: the verdict, and the numbers it was drawn from.
+ *
+ * BOTH COME OUT OF ONE READ so they cannot disagree. A verdict rendered from
+ * one snapshot beside a level rendered from a later one would record a moment
+ * that never happened, which is worse evidence than recording no level at all.
+ *
+ * @internal
+ */
+export type MeterLevel = {
+  /**
+   * Whether this reading holds the provider out of spending.
+   */
+  readonly dry: boolean;
+
+  /**
+   * `key=value` tokens naming what was read, no value carrying a space.
+   */
+  readonly fields: readonly string[];
+};
+
+/**
+ * One meter as the availability record should carry it.
+ *
+ * @internal
+ */
+export type MeterRecord = {
+  /**
+   * What the meter said, or that it said nothing.
+   */
+  readonly state: MeterState;
+
+  /**
+   * Numbers behind the state, in the order they should be written.
+   *
+   * EMPTY IS NOT AN ABSENCE SENTINEL HERE. A meter that did not answer has no
+   * numbers to report, and `state` already carries the fact that it did not,
+   * so nothing is being encoded twice and nothing is lost.
+   */
+  readonly fields: readonly string[];
+};
+
+/**
  * Reads one provider's meter, naming an unreachable meter rather than
  * flattening it into the answer a working meter would have given.
  *
  * @param name - provider being read, for the log line
  *
- * @param readDryness - meter read, which may reject
+ * @param readLevel - meter read, which may reject
  *
- * @returns What that meter said, or that it could not be read
+ * @returns What that meter said and was reading, or that it could not be read
  *
  * @example
  * ```ts
- * const state = await meterStateOf({ name: 'hyper', readDryness, },);
+ * const meter = await meterRecordOf({ name: 'hyper', readLevel, },);
  * ```
  *
  * @internal
  */
-export async function meterStateOf(
+export async function meterRecordOf(
   {
     name,
-    readDryness,
+    readLevel,
   }: {
     readonly name: ProviderName;
-    readonly readDryness: () => Promise<boolean>;
+    readonly readLevel: () => Promise<MeterLevel>;
   },
-): Promise<MeterState> {
+): Promise<MeterRecord> {
   /**
    * Logger pre-tagged with this function's name.
    */
   const rl = tagged({
-    tag: meterStateOf.name,
+    tag: meterRecordOf.name,
     l,
   },);
 
   try {
-    return (await readDryness())
-      ? 'dry'
-      : 'wet';
+    /**
+     * Verdict and numbers, both off the same read.
+     */
+    const level = await readLevel();
+
+    return {
+      state: level.dry
+        ? 'dry'
+        : 'wet',
+      fields: level.fields,
+    };
   } catch (error) {
     // A monitoring failure must not become an outage: the router's failover
     // still recovers a real refusal, and a false dry stops calls that work.
@@ -198,7 +250,10 @@ export async function meterStateOf(
         errorName({ error, },)
       })`,
     );
-    return 'unreadable';
+    return {
+      state: 'unreadable',
+      fields: [],
+    };
   }
 }
 
@@ -290,17 +345,33 @@ export function createProviderBudgets(
      * Both meters, read together so one slow endpoint does not serialise
      * behind the other.
      */
-    const [syntheticState, hyperState,] = await Promise.all([
-      meterStateOf({
+    const [syntheticMeter, hyperMeter,] = await Promise.all([
+      meterRecordOf({
         name: 'synthetic',
-        readDryness: async function readQuota(): Promise<boolean> {
-          return syntheticIsDry({ quota: await synthetic.quotas({ signal, },), },);
+        readLevel: async function readQuota(): Promise<MeterLevel> {
+          /**
+           * Snapshot the verdict and the numbers are both drawn from.
+           */
+          const quota = await synthetic.quotas({ signal, },);
+
+          return {
+            dry: syntheticIsDry({ quota, },),
+            fields: syntheticMeterLevel({ quota, },),
+          };
         },
       },),
-      meterStateOf({
+      meterRecordOf({
         name: 'hyper',
-        readDryness: async function readCredits(): Promise<boolean> {
-          return hyperIsDry({ credits: await hyper.credits({ signal, },), },);
+        readLevel: async function readCredits(): Promise<MeterLevel> {
+          /**
+           * Balance the verdict and the number are both drawn from.
+           */
+          const credits = await hyper.credits({ signal, },);
+
+          return {
+            dry: hyperIsDry({ credits, },),
+            fields: hyperMeterLevel({ credits, },),
+          };
         },
       },),
     ],);
@@ -314,10 +385,20 @@ export function createProviderBudgets(
     // serves, so a quiet period reads identically to a healthy one. This is
     // bounded by the freshness window rather than by call volume, so it costs
     // about one line a minute however busy the run is.
-    rl.info(`METERS synthetic=${syntheticState} hyper=${hyperState}`,);
+    //
+    // IT CARRIES THE NUMBERS TOO, added after reading one back. `hyper=dry`
+    // alone could not be told from a threshold in `budget-routing.ts` being
+    // wrong, and answering that took a live call to the provider, which is not
+    // available for a moment that has already passed.
+    rl.info(`METERS ${[
+      `synthetic=${syntheticMeter.state}`,
+      `hyper=${hyperMeter.state}`,
+      ...syntheticMeter.fields,
+      ...hyperMeter.fields,
+    ].join(' ',)}`,);
     return {
-      syntheticDry: routesAsDry({ state: syntheticState, },),
-      hyperDry: routesAsDry({ state: hyperState, },),
+      syntheticDry: routesAsDry({ state: syntheticMeter.state, },),
+      hyperDry: routesAsDry({ state: hyperMeter.state, },),
     };
   }
 

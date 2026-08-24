@@ -45,6 +45,7 @@ await describe({
           at: Date.parse('2026-08-24T18:17:35.383Z',),
           synthetic: 'wet',
           hyper: 'dry',
+          levels: [],
         },);
       },
     },),
@@ -62,6 +63,50 @@ await describe({
           at: Date.parse('2026-08-24T10:00:00.000Z',),
           synthetic: 'unreadable',
           hyper: 'wet',
+          levels: [],
+        },);
+      },
+    },),
+
+    it({
+      name: 'reads the numbers a record carries beside the two states',
+      fn: async () => {
+        /**
+         * A record as `takeReading` writes one now, numbers included.
+         */
+        const line = '[info] [2026-08-24T19:00:00.000Z] [t] [takeReading] METERS '
+          + 'synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 '
+          + 'syntheticThrottled=no hyperBalance=0';
+
+        expect(readMeterLine({ line, },),).toEqual({
+          at: Date.parse('2026-08-24T19:00:00.000Z',),
+          synthetic: 'wet',
+          hyper: 'dry',
+          levels: [
+            'syntheticWeekly=97%',
+            'syntheticFiveHour=48/50',
+            'syntheticThrottled=no',
+            'hyperBalance=0',
+          ],
+        },);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS a level field it has never been taught the name of',
+      fn: async () => {
+        /**
+         * A record from a build that writes a field this reader predates,
+         * which must reach a human rather than being dropped for being new.
+         */
+        const line = '[info] [2026-08-24T19:00:00.000Z] [t] [takeReading] METERS '
+          + 'synthetic=wet hyper=wet hyperResetsAt=03:00';
+
+        expect(readMeterLine({ line, },),).toEqual({
+          at: Date.parse('2026-08-24T19:00:00.000Z',),
+          synthetic: 'wet',
+          hyper: 'wet',
+          levels: ['hyperResetsAt=03:00',],
         },);
       },
     },),

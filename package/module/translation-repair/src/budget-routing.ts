@@ -248,4 +248,69 @@ export function routeProviderFor(
     : { kind: 'synthetic', };
 }
 
+/**
+ * Renders what the first provider's meter actually said, as record fields.
+ *
+ * A VERDICT ALONE CANNOT BE DIAGNOSED. `wet` and `dry` say what routing did,
+ * not what was read: a dry reading could be an emptied weekly budget, an
+ * emptied rolling window, an account this provider is actively throttling, or
+ * a threshold in this file being wrong about a budget that was fine. Only a
+ * second live call separates those, and once the moment has passed there is no
+ * second call to make.
+ *
+ * BOTH LIMITS EVERY TIME, including whichever one is full. A record naming
+ * only the limit that emptied would leave a reader unable to watch the other
+ * one approach.
+ *
+ * @param quota - snapshot the dryness verdict was read from
+ *
+ * @returns `key=value` tokens, no value carrying a space
+ *
+ * @example
+ * ```ts
+ * syntheticMeterLevel({ quota, },);
+ * // => ['syntheticWeekly=97%', 'syntheticFiveHour=48/50', 'syntheticThrottled=no',]
+ * ```
+ */
+export function syntheticMeterLevel(
+  { quota, }: { readonly quota: QuotaSnapshot; },
+): readonly string[] {
+  /**
+   * Rolling window and weekly budget, either of which emptying is a dry meter.
+   */
+  const {
+    fiveHour,
+    weekly,
+  } = quota;
+
+  return [
+    `syntheticWeekly=${String(weekly.percentRemaining,)}%`,
+    `syntheticFiveHour=${String(fiveHour.remaining,)}/${String(fiveHour.max,)}`,
+    `syntheticThrottled=${fiveHour.limited ? 'yes' : 'no'}`,
+  ];
+}
+
+/**
+ * Renders what the second provider's meter actually said, as record fields.
+ *
+ * ONE NUMBER, because this provider reports one. Read back later, a recorded
+ * balance of zero is what separates a provider that was genuinely empty from a
+ * threshold here that was wrong about a balance that was not.
+ *
+ * @param credits - balance the dryness verdict was read from
+ *
+ * @returns `key=value` tokens, no value carrying a space
+ *
+ * @example
+ * ```ts
+ * hyperMeterLevel({ credits, },);
+ * // => ['hyperBalance=0',]
+ * ```
+ */
+export function hyperMeterLevel(
+  { credits, }: { readonly credits: HyperCredits; },
+): readonly string[] {
+  return [`hyperBalance=${String(credits.balance,)}`,];
+}
+
 //endregion Budget routing

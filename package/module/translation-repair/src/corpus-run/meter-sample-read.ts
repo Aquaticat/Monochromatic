@@ -66,6 +66,16 @@ export type MeterSample = {
    * What the second provider's meter said.
    */
   readonly hyper: MeterState;
+
+  /**
+   * Every field beyond the two states, in the order written.
+   *
+   * NOT AN ABSENCE SENTINEL WHEN EMPTY. A record written before the levels
+   * were added carries none, and so does one whose meters both failed to
+   * answer; those two are told apart by the states beside them, which read
+   * `wet` or `dry` in the first case and `unreadable` in the second.
+   */
+  readonly levels: readonly string[];
 };
 
 /**
@@ -203,6 +213,42 @@ function firstFieldReads(
 }
 
 /**
+ * Reads every field the record carries that is not one of the two states.
+ *
+ * DEFINED BY WHAT A VALUE IS NOT, so a field added to the record later is
+ * carried through here without this reader being taught its name. The two
+ * state fields are exactly the ones whose value names a state a meter can be
+ * in; everything else with a separator is a level.
+ *
+ * @param tail - everything after the marker
+ *
+ * @returns Level fields verbatim, in the order they were written
+ *
+ * @example
+ * ```ts
+ * levelFields({ tail: 'synthetic=wet hyper=dry hyperBalance=0', },);
+ * // => ['hyperBalance=0',]
+ * ```
+ */
+function levelFields(
+  { tail, }: { readonly tail: string; },
+): readonly string[] {
+  return tail
+    .split(' ',)
+    .filter(function isLevel(field,): boolean {
+      /**
+       * Where this field's name stops and its value starts.
+       */
+      const at = field.indexOf(FIELD_SEPARATOR,);
+
+      if (at === NOT_FOUND)
+        return false;
+
+      return !isMeterState(field.slice(at + 1,),);
+    },);
+}
+
+/**
  * Reads the bracketed timestamp a console record is prefixed with.
  *
  * The prefix is `[level] [iso] `, so the timestamp is what sits between the
@@ -333,6 +379,7 @@ export function readMeterLine(
     at,
     synthetic,
     hyper,
+    levels: levelFields({ tail, },),
   };
 }
 

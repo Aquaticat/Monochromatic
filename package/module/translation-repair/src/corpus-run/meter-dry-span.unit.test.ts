@@ -44,12 +44,19 @@ const MINUTE = 60_000;
  */
 function minuteByMinute(
   { states, }: { readonly states: readonly ('wet' | 'dry' | 'unreadable')[]; },
-): readonly { at: number; synthetic: 'wet' | 'dry' | 'unreadable'; hyper: 'wet'; }[] {
+): readonly {
+  at: number;
+  synthetic: 'wet' | 'dry' | 'unreadable';
+  hyper: 'wet';
+  levels: readonly string[];
+}[] {
   return states.map(function toSample(state, index,) {
     return {
       at: index * MINUTE,
       synthetic: state,
       hyper: 'wet' as const,
+      // Spans are arithmetic over states; what the meters read does not enter.
+      levels: [],
     };
   },);
 }

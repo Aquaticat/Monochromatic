@@ -23,8 +23,10 @@ import {
 import {
   BothProvidersDryError,
   hyperIsDry,
+  hyperMeterLevel,
   routeProviderFor,
   syntheticIsDry,
+  syntheticMeterLevel,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -304,6 +306,84 @@ await describe({
           kind: 'unreachable',
           reason: 'every provider serving this model is out of budget',
         },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: syntheticMeterLevel.name,
+  children: [
+    it({
+      name: 'names both limits, including the one with room left',
+      fn: async () => {
+        expect(syntheticMeterLevel({ quota: roomyQuota, },),).toEqual([
+          'syntheticWeekly=99.8%',
+          'syntheticFiveHour=750/750',
+          'syntheticThrottled=no',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'separates active throttling from an emptied budget, which route the same way',
+      fn: async () => {
+        /**
+         * A reading whose window is full and whose account is being throttled,
+         * which `syntheticIsDry` calls dry for a reason the state cannot show.
+         */
+        const throttled = syntheticMeterLevel({
+          quota: {
+            ...roomyQuota,
+            fiveHour: {
+              ...roomyQuota.fiveHour,
+              limited: true,
+            },
+          },
+        },);
+
+        expect(syntheticIsDry({
+          quota: {
+            ...roomyQuota,
+            fiveHour: {
+              ...roomyQuota.fiveHour,
+              limited: true,
+            },
+          },
+        },),).toBe(true,);
+        expect(throttled,).toEqual([
+          'syntheticWeekly=99.8%',
+          'syntheticFiveHour=750/750',
+          'syntheticThrottled=yes',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'writes no value carrying a space, which the record splits on',
+      fn: async () => {
+        for (const field of syntheticMeterLevel({ quota: roomyQuota, },)) {
+          expect(field.includes(' ',),).toBe(false,);
+        }
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: hyperMeterLevel.name,
+  children: [
+    it({
+      name: 'records the balance a dry verdict was drawn from',
+      fn: async () => {
+        expect(hyperMeterLevel({ credits: { balance: 0, }, },),).toEqual(['hyperBalance=0',],);
+      },
+    },),
+
+    it({
+      name: 'records a balance with room left, so a falling one can be watched',
+      fn: async () => {
+        expect(hyperMeterLevel({ credits: { balance: 249, }, },),).toEqual(['hyperBalance=249',],);
       },
     },),
   ],

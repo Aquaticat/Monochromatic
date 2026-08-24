@@ -37,8 +37,10 @@ export {
 export {
   type BudgetView,
   createProviderBudgets,
+  type MeterLevel,
+  type MeterRecord,
+  meterRecordOf,
   type MeterState,
-  meterStateOf,
   type ProviderBudgets,
   type ProviderName,
   routesAsDry,
@@ -65,10 +67,12 @@ export {
 export {
   BothProvidersDryError,
   hyperIsDry,
+  hyperMeterLevel,
   type ModelReach,
   type ProviderChoice,
   routeProviderFor,
   syntheticIsDry,
+  syntheticMeterLevel,
 } from './budget-routing.ts';
 export {
   CreditsShapeError,

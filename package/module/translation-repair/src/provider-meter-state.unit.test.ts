@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  meterStateOf,
+  meterRecordOf,
   routesAsDry,
 } from '../dist/final/node/index.mjs';
 
@@ -29,20 +29,23 @@ class MeterUnreachableError extends Error {
 }
 
 await describe({
-  name: meterStateOf.name,
+  name: meterRecordOf.name,
   children: [
     it({
       name: 'reads a meter reporting budget left as wet',
       fn: async () => {
         /**
-         * State a meter answering "there is budget" produces.
+         * Record a meter answering "there is budget" produces.
          */
-        const state = await meterStateOf({
+        const meter = await meterRecordOf({
           name: 'synthetic',
-          readDryness: async () => false,
+          readLevel: async () => ({
+            dry: false,
+            fields: ['syntheticWeekly=97%',],
+          }),
         },);
 
-        expect(state,).toBe('wet',);
+        expect(meter.state,).toBe('wet',);
       },
     },),
 
@@ -50,14 +53,37 @@ await describe({
       name: 'reads a meter reporting nothing left as dry',
       fn: async () => {
         /**
-         * State a meter answering "there is nothing left" produces.
+         * Record a meter answering "there is nothing left" produces.
          */
-        const state = await meterStateOf({
+        const meter = await meterRecordOf({
           name: 'synthetic',
-          readDryness: async () => true,
+          readLevel: async () => ({
+            dry: true,
+            fields: ['syntheticWeekly=0%',],
+          }),
         },);
 
-        expect(state,).toBe('dry',);
+        expect(meter.state,).toBe('dry',);
+      },
+    },),
+
+    it({
+      name: 'FORWARDS the numbers the meter was read from, so a dry verdict can be checked',
+      fn: async () => {
+        /**
+         * Record carrying what the meter actually said, which is what
+         * separates an empty budget from a threshold that was wrong about a
+         * budget that was not.
+         */
+        const meter = await meterRecordOf({
+          name: 'hyper',
+          readLevel: async () => ({
+            dry: true,
+            fields: ['hyperBalance=0',],
+          }),
+        },);
+
+        expect(meter.fields,).toEqual(['hyperBalance=0',],);
       },
     },),
 
@@ -65,17 +91,35 @@ await describe({
       name: 'REFUSES to guess for a meter that could not be read, naming it instead',
       fn: async () => {
         /**
-         * State an unreachable endpoint produces, which is the whole reason
+         * Record an unreachable endpoint produces, which is the whole reason
          * this type has a third member.
          */
-        const state = await meterStateOf({
+        const meter = await meterRecordOf({
           name: 'hyper',
-          readDryness: async () => {
+          readLevel: async () => {
             throw new MeterUnreachableError('endpoint refused the connection',);
           },
         },);
 
-        expect(state,).toBe('unreadable',);
+        expect(meter.state,).toBe('unreadable',);
+      },
+    },),
+
+    it({
+      name: 'reports no numbers for a meter that never answered',
+      fn: async () => {
+        /**
+         * Record of a read that rejected, which has nothing to report a level
+         * from and must not invent one.
+         */
+        const meter = await meterRecordOf({
+          name: 'hyper',
+          readLevel: async () => {
+            throw new MeterUnreachableError('endpoint refused the connection',);
+          },
+        },);
+
+        expect(meter.fields,).toEqual([],);
       },
     },),
   ],
